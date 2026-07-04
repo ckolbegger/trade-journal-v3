@@ -57,7 +57,7 @@ A required Journal Entry (at Plan, Plan Revision, or Close) that was skipped or 
 _Avoid_: missing entry, incomplete journal
 
 **Close Reason**:
-The trader's stated reason a Trade ended, captured at close for later analysis — e.g., Hit Target, Hit Stop, Thesis Invalidated, Timed Out, Rolled. Applies to closing an open Trade and to abandoning a planned one.
+The trader's stated reason a Trade ended, captured at close for later analysis — e.g., Hit Target, Hit Stop, Thesis Invalidated, Timed Out, Rolled, Never Filled (entry order never executed). Applies to closing an open Trade and to abandoning a planned one.
 _Avoid_: exit reason, expired (reserved for contract Expiration)
 
 **Ongoing Risk**:
