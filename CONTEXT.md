@@ -1,19 +1,23 @@
 # Trade Journal
 
-A personal trading journal for a single trader: plan, manage, and review stock and option positions, with journaling to track growth as a trader.
+A personal trading journal for a single trader: plan, manage, and review stock and option Trades, with journaling to track growth as a trader.
 
 ## Language
 
+**Trade**:
+The strategic unit a trader manages — one campaign driven by one thesis, from entry to final exit, held in exactly one Account. Its identity survives changes in composition (legging in/out, scaling). Never used for a single fill — that is an Execution.
+_Avoid_: position (for the campaign), campaign, strategy (for the instance)
+
 **Position**:
-The strategic unit a trader manages — one campaign driven by one thesis, from entry to final exit, held in exactly one Account. Its identity survives changes in composition (legging in/out, scaling).
-_Avoid_: trade, campaign, strategy (for the instance)
+The current holdings of a Trade — the net open quantity across its Legs at a point in time. Always derived from Executions, never stored. Matches what a brokerage displays as "positions."
+_Avoid_: holdings, exposure
 
 **Institution**:
 A brokerage firm at which the trader holds one or more Accounts (e.g., Schwab, Fidelity). A grouping dimension in analytics.
 _Avoid_: broker, brokerage (as entity names)
 
 **Account**:
-One specific account held at an Institution. Every Position belongs to exactly one Account. A grouping dimension in analytics.
+One specific account held at an Institution. Every Trade belongs to exactly one Account. A grouping dimension in analytics.
 _Avoid_: portfolio
 
 **Account Snapshot**:
@@ -21,23 +25,23 @@ A dated observation of an Account's total value (the brokerage's liquidation val
 _Avoid_: balance, statement
 
 **Plan**:
-The trader's statement of intent for a Position, captured before entering: thesis, intended structure, maximum risk, profit target, and exit conditions. Immutable once confirmed.
+The trader's statement of intent for a Trade, captured before entering: thesis, intended structure, maximum risk, profit target, and exit conditions. Immutable once confirmed.
 _Avoid_: setup, idea, trade plan (as an editable document)
 
 **Plan Revision**:
-A dated amendment recording a deliberate change of intent on a Position (e.g., after legging in). Revisions never overwrite the original Plan.
+A dated amendment recording a deliberate change of intent on a Trade (e.g., after legging in). Revisions never overwrite the original Plan.
 _Avoid_: plan edit, plan update
 
 **Leg**:
-A single instrument line within a Position — one option contract (type/strike/expiration) or one stock line — whose held quantity changes as Executions occur.
+A single instrument line within a Trade — one option contract (type/strike/expiration) or one stock line — whose held quantity changes as Executions occur.
 _Avoid_: contract, instrument, line
 
 **Journal Entry**:
-A timestamped piece of trader writing — optionally anchored to a Position or to a moment in its life (plan, revision, execution, review, close), or standalone trader-level reflection. The growth story is the timeline of all entries.
+A timestamped piece of trader writing — optionally anchored to a Trade or to a moment in its life (plan, revision, execution, review, close), or standalone trader-level reflection. The growth story is the timeline of all entries.
 _Avoid_: note, comment, log
 
 **Daily Review**:
-The out-of-hours ritual of collecting the day's Marks, walking open Positions in attention-ranked order (decisions first), and settling Journal Debt.
+The out-of-hours ritual of collecting the day's Marks, walking open Trades in attention-ranked order (decisions first), and settling Journal Debt.
 _Avoid_: end-of-day update, check-in
 
 **Entry Type**:
@@ -53,11 +57,11 @@ A required Journal Entry (at Plan, Plan Revision, or Close) that was skipped or 
 _Avoid_: missing entry, incomplete journal
 
 **Close Reason**:
-The trader's stated reason a Position ended, captured at close for later analysis — e.g., Hit Target, Hit Stop, Thesis Invalidated, Timed Out, Rolled. Applies to closing an open Position and to abandoning a planned one.
+The trader's stated reason a Trade ended, captured at close for later analysis — e.g., Hit Target, Hit Stop, Thesis Invalidated, Timed Out, Rolled. Applies to closing an open Trade and to abandoning a planned one.
 _Avoid_: exit reason, expired (reserved for contract Expiration)
 
 **Ongoing Risk**:
-The loss a Position risks by staying open, measured from today's Marks — including giving back unrealized gains. Shown against two anchors: Planned Risk (down to the Plan's stop) and Worst-Case Risk (down to the structural extreme — stock at zero, spread at full width; may be unlimited).
+The loss a Trade risks by staying open, measured from today's Marks — including giving back unrealized gains. Shown against two anchors: Planned Risk (down to the Plan's stop) and Worst-Case Risk (down to the structural extreme — stock at zero, spread at full width; may be unlimited).
 _Avoid_: current risk, remaining risk (ambiguous with plan-anchored framing)
 
 **Incremental Reward**:
@@ -65,7 +69,7 @@ The gain still available by staying open, measured from today's Marks. Shown aga
 _Avoid_: remaining reward, potential profit
 
 **Mark**:
-A dated price observation for an instrument (underlying or option contract), fetched from a market-data source or manually entered. Exactly one Mark exists per instrument per date, shared by every Position holding that instrument. Marks power valuations, P&L, and visualizations.
+A dated price observation for an instrument (underlying or option contract), fetched from a market-data source or manually entered. Exactly one Mark exists per instrument per date, shared by every Trade holding that instrument. Marks power valuations, P&L, and visualizations.
 _Avoid_: quote, price update, close (as a noun for the observation)
 
 **Expiration**:
@@ -73,7 +77,7 @@ An option contract reaching its expiration date, closing the affected Leg quanti
 _Avoid_: expiry (for theses)
 
 **Strategy**:
-The trading approach a Position declares at Plan time (e.g., PMCC, bull put spread, covered call), chosen from a trader-configurable list and stable for the Position's life. A Strategy is a template: it pre-fills the Plan's Planned Legs and defines the semantics of its stop and target (underlying price, position value, or % of max profit). A unit of cross-underlying performance analysis. P&L and structural risk math never read Strategy — they read Legs, Executions, and Marks.
+The trading approach a Trade declares at Plan time (e.g., PMCC, bull put spread, covered call), chosen from a trader-configurable list and stable for the Trade's life. A Strategy is a template: it pre-fills the Plan's Planned Legs and defines the semantics of its stop and target (underlying price, Trade value, or % of max profit). A unit of cross-underlying performance analysis. P&L and structural risk math never read Strategy — they read Legs, Executions, and Marks.
 _Avoid_: setup type, deriving strategy from current legs
 
 **Planned Leg**:
@@ -85,17 +89,17 @@ A recorded departure of actual trading from the original Plan: structural (a Leg
 _Avoid_: violation, mistake (a Deviation may be a good decision)
 
 **Tag**:
-A free-form label the trader attaches to a Position for arbitrary queryable groupings (e.g., "earnings play", "FOMC week").
+A free-form label the trader attaches to a Trade for arbitrary queryable groupings (e.g., "earnings play", "FOMC week").
 _Avoid_: category, label
 
 **Transfer**:
-Movement of Leg quantity from one Position to another in the same Account, with no market transaction — the trader restructuring campaign boundaries (e.g., moving a LEAP into the Position holding the call rolled against it). Transfers create the lineage links between Positions.
+Movement of Leg quantity from one Trade to another in the same Account, with no market transaction — the trader restructuring campaign boundaries (e.g., moving a LEAP into the Trade holding the call rolled against it). Transfers create the lineage links between Trades.
 _Avoid_: move, reassignment
 
 **Roll**:
-Closing a Leg in whole or in part and opening a successor at a different expiration and/or strike. The closed quantity realizes P&L in its Position; the successor typically opens in a new linked Position, with covering quantity Transferred alongside.
+Closing a Leg in whole or in part and opening a successor at a different expiration and/or strike. The closed quantity realizes P&L in its Trade; the successor typically opens in a new linked Trade, with covering quantity Transferred alongside.
 _Avoid_: adjustment (broader concept)
 
 **Execution**:
 An actual market transaction: buying or selling a quantity of one Leg's instrument at a specific price and time, carrying its total fees and commissions.
-_Avoid_: fill, trade, transaction, order
+_Avoid_: fill, trade (for a fill), transaction, order
