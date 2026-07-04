@@ -1,0 +1,3 @@
+# Derived Position status with Close Reasons
+
+Position status (planned / open / closed) is always computed from contents, never stored or hand-set: a Plan with no Executions is planned, any held Leg quantity means open, and everything gone — by Execution, Expiration, assignment, or Transfer out — means closed. The one trader-initiated lifecycle action is explicitly closing a planned Position whose thesis died before entry. Every close captures a Close Reason (Hit Target, Hit Stop, Thesis Invalidated, Timed Out, Rolled, …) as journal material for pattern analysis. Trader-managed status was rejected because stored status can contradict actual holdings.

@@ -1,0 +1,7 @@
+# Browser SPA with IndexedDB behind deep repository interfaces
+
+The app is a static, PWA-ready single-page app with no backend; each trader's data lives in their own browser's IndexedDB. The domain components (position management, journal, price history) sit behind deep repository interfaces with three bindings: plain in-memory for unit tests, fake-indexeddb for integration tests in CI, and real IndexedDB in production — the latter two exercising identical code. Durability is managed with `navigator.storage.persist()` plus first-class export/import and backup nudges in Daily Review.
+
+Scale guardrail: Positions, Legs, Executions, and Journal Entries are hydrated eagerly at app open (they stay small — tens of thousands of records over years); Marks are loaded lazily per instrument, since instruments × trading days is the one table that grows without bound. With that rule, in-memory filtering keeps analytics sub-second for decades of personal trading volume.
+
+Rejected: Tauri + SQLite (installer distribution, signing costs, and the IPC boundary breaks the injected-database testing story); local server + SQLite (a daemon between the trader and journaling; disqualifying for distribution to non-technical traders); Postgres + testcontainers (operational weight with no query need SQLite doesn't cover). Distribution to other traders is a URL — static hosting, zero marginal cost, no accounts, local-first preserved for every user. SQLite behind the same repository interfaces remains the escape hatch if data volume ever demands it.
