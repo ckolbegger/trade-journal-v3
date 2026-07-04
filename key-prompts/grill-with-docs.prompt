@@ -1,0 +1,8 @@
+/grill-with-docs I want to build a trading journal app to help traders to
+- Track their growth as a trader through journaling
+- Manage their open positions by provide interactive visualizations of both P&L and Risk/Reward that update as the trade plays out
+- Gain an intuitive understanding of how option prices change as the market changes
+- Manage exits by consider not just original risk/reward but ongoing risk/incremental reward comparisons
+- Track the performance of trading a particular underlying, or a strategy across all underlyings, or any other queryable grouping of trades
+- Perform daily review of all open positions, including updating closing prices that power the interactive visualizations
+- Support complex trade management such as legging into a spread, or scaling in and out of a position
