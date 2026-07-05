@@ -20,8 +20,13 @@ cd "$root"
 
 # Create the branch from main if it doesn't exist yet
 if ! git show-ref --verify --quiet "refs/heads/$branch"; then
-    git branch "$branch" main
-    echo "created branch '$branch' from main"
+    if git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+        git branch --track "$branch" "origin/$branch"
+        echo "created branch '$branch' tracking origin/$branch"
+    else
+        git branch "$branch" main
+        echo "created branch '$branch' from main"
+    fi
 fi
 
 # Add the worktree in the standard location
