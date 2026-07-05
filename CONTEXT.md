@@ -25,11 +25,15 @@ A dated observation of an Account's total value (the brokerage's liquidation val
 _Avoid_: balance, statement
 
 **Plan**:
-The trader's statement of intent for a Trade, captured before entering: thesis, intended structure, maximum risk, profit target, and exit conditions. Immutable once confirmed.
+The trader's statement of intent for a Trade, captured before entering: thesis, Idea Source, intended structure, maximum risk, profit target, exit conditions, and optionally a link to the chart showing the setup and targets. Immutable once confirmed.
 _Avoid_: setup, idea, trade plan (as an editable document)
 
+**Idea Source**:
+Where the trade idea came from — a scan, a newsletter or alert service, or the trader's own analysis — chosen at Plan time from a trader-managed list. A grouping dimension in analytics (e.g., "does this newsletter make me money?").
+_Avoid_: signal, tip, referral
+
 **Plan Revision**:
-A dated amendment recording a deliberate change of intent on a Trade (e.g., after legging in). Revisions never overwrite the original Plan.
+A dated amendment recording a deliberate change of intent on a Trade (e.g., after legging in), optionally with its own chart link. Revisions never overwrite the original Plan.
 _Avoid_: plan edit, plan update
 
 **Leg**:

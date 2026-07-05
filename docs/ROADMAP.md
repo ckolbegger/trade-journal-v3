@@ -4,7 +4,7 @@ The domain model (Trade → Leg → Execution, Marks, Journal) is built full-sha
 
 ## Slice 1 — Stock, full lifecycle, with journal
 - Accounts & Institutions (every Trade binds to one Account from day one); optional Account Snapshots
-- Plan (immutable, thesis required, structured Planned Legs) → confirm → buy/sell Executions with fees → close with Close Reason
+- Plan (immutable, thesis required, structured Planned Legs, Idea Source from a trader-managed list, optional chart link) → confirm → buy/sell Executions with fees → close with Close Reason
 - Deviation detection (structure, sizing; stop/target discipline at review)
 - Manual Marks via Daily Review: attention-ranked walk, P&L, all four R/R numbers (Planned/Worst-Case Risk, Planned/Max Reward)
 - Journaling: configurable Entry Types with seeded defaults, required-but-non-blocking entries (Journal Debt settled in review), standalone trader entries
