@@ -69,8 +69,12 @@ The gain still available by staying open, measured from today's Marks. Shown aga
 _Avoid_: remaining reward, potential profit
 
 **Mark**:
-A dated price observation for an instrument (underlying or option contract), fetched from a market-data source or manually entered. Exactly one Mark exists per instrument per date, shared by every Trade holding that instrument. Marks power valuations, P&L, and visualizations.
-_Avoid_: quote, price update, close (as a noun for the observation)
+The price an instrument (underlying or option contract) is valued at for a given date — fetched, defaulted from a Daily Bar's close, or manually entered (e.g., a mid for an illiquid option). Exactly one Mark exists per instrument per date, shared by every Trade holding that instrument. Marks power valuations, P&L, and visualizations.
+_Avoid_: quote, price update, close, closing price (a Mark may deliberately differ from the close)
+
+**Daily Bar**:
+The OHLC observation record for an instrument on a date, stored once automated feeds arrive; the source for candlestick charts and pattern detection. A Bar describes the instrument's day; the Mark decides its valuation.
+_Avoid_: candle (in model language), OHLC record
 
 **Expiration**:
 An option contract reaching its expiration date, closing the affected Leg quantity as a market event. Never used for a thesis running out of time (that Close Reason is "Timed Out").
