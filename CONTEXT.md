@@ -88,6 +88,10 @@ _Avoid_: expiry (for theses)
 The trading approach a Trade declares at Plan time (e.g., PMCC, bull put spread, covered call), chosen from a trader-configurable list and stable for the Trade's life. A Strategy is a template: it pre-fills the Plan's Planned Legs and defines the semantics of its stop and target (underlying price, Trade value, or % of max profit). A unit of cross-underlying performance analysis. P&L and structural risk math never read Strategy — they read Legs, Executions, and Marks.
 _Avoid_: setup type, deriving strategy from current legs
 
+**Exit Level**:
+A stop or target the Plan declares, with a scope (the whole Trade, or one Leg) and a kind: underlying price, structure value, % of max profit, or trailing (high-water of the scoped structure's signed value — shorts contribute negatively, summed within each day's Marks — minus an offset; always derived from Mark history). Trade-scope levels anchor Planned Risk/Reward; Leg-scope levels drive management alerts and discipline Deviations.
+_Avoid_: stop/target as untyped numbers, alert
+
 **Planned Leg**:
 A leg the Plan intends to hold — side, instrument kind, and quantity, with strike/expiration exact or TBD for legging plans. The baseline actual Legs are compared against for Deviation detection.
 _Avoid_: intended leg, leg plan
@@ -107,6 +111,10 @@ _Avoid_: move, reassignment
 **Roll**:
 Closing a Leg in whole or in part and opening a successor at a different expiration and/or strike. The closed quantity realizes P&L in its Trade; the successor typically opens in a new linked Trade, with covering quantity Transferred alongside.
 _Avoid_: adjustment (broader concept)
+
+**Lot**:
+A quantity of a Leg acquired at one price by one opening Execution. Partial closes and Transfers consume Lots oldest-first (FIFO), which is what makes realized P&L reproducible from the Execution record.
+_Avoid_: tranche, batch
 
 **Execution**:
 An actual market transaction: buying or selling a quantity of one Leg's instrument at a specific price and time, carrying its total fees and commissions.

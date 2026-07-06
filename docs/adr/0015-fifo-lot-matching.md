@@ -1,0 +1,3 @@
+# FIFO lot matching for partial closes and Transfers
+
+When part of a multi-lot Leg is closed, the oldest Lot's cost basis is consumed first, and a Transfer carries the oldest remaining basis with it. FIFO makes realized P&L deterministic and reproducible from the Execution record alone, and matches most brokers' default reporting. Average cost was rejected (no broker reports options that way, and a Transfer would carry an invented basis); trader-picked specific lots were rejected as an extra decision on every partial close for fidelity the journal doesn't need — it can be added later as an optional override without disturbing FIFO as the default.
