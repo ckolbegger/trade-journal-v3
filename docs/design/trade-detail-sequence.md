@@ -23,7 +23,7 @@ sequenceDiagram
     V->>TM: instrumentsOf(record)
     TM-->>V: instrument keys (Legs + underlying)
     V->>PB: series(instruments)
-    Note over V,PB: one fetch serves both: latest date = valuation MarkSet;<br/>full series feeds trailing stops & discipline checks
+    Note over V,PB: one fetch serves both — latest date is the valuation MarkSet,<br/>full series feeds trailing stops and discipline checks
     PB-->>V: MarkSeries
     V->>TM: positionOf(record)
     V->>TM: valuation(record, latest Marks)
@@ -32,9 +32,9 @@ sequenceDiagram
     TM-->>V: Position, Valuation, RiskReward, detected Deviations
     opt newly detected discipline Deviations (not yet recorded)
         V->>TB: recordDeviations(tradeId, new)
-        Note over V,TB: ADR 0012 — recorded when first surfaced;<br/>this page IS the surfacing
+        Note over V,TB: ADR 0012 — recorded when first surfaced,<br/>and this page IS the surfacing
     end
-    V-->>UI: TradeDetail bundle<br/>{ facts, Position, Valuation, RiskReward, Deviations }
+    V-->>UI: TradeDetail bundle<br/>(facts, Position, Valuation, RiskReward, Deviations)
     UI->>J: countFor(trade: tradeId)
     J-->>UI: journal entry count (badge on the journal link)
     UI-->>T: holdings · Execution history · P&L · 4 R/R anchors · Deviation flags · journal link · replay button
