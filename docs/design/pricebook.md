@@ -127,7 +127,7 @@ sequenceDiagram
 
     opt end of session
         T->>UI: record Account Snapshots (opportunistic, skippable)
-        UI->>TB: recordSnapshot(account, today, value)
+        UI->>TB: recordAccountValue(account, today, totalValue)
     end
     UI-->>T: review complete
 ```
