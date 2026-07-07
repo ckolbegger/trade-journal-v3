@@ -55,6 +55,14 @@ interface ExecutionOutcome {
   nowFlat: boolean                                         // UI prompts for Close Reason + close journal entry
 }
 
+interface PlanRevisionDraft {
+  date: ISODate
+  reason: string                                           // why intent changed — the honest one-liner
+  exitLevelChanges?: ExitLevel[]                           // replaces the current set going forward
+  addedPlannedLegs?: PlannedLeg[]                          // structure now intended (never edits the original Plan)
+  chartLink?: string
+}
+
 interface RollSpec {
   fromTradeId: TradeId
   closing: { legId: LegId; qty: Qty; price: Money; fees: Money }[]
@@ -72,6 +80,8 @@ interface RollSpec {
 - **`roll()` is one storage transaction.** Closing Executions + successor `confirmPlan` + opening Executions + Transfers + the rolled-from link commit together or not at all — the signature monthly gesture can never half-happen. All touched records are TradeBook's own, so no cross-Book transaction is needed.
 - **`transfer()` enforces same-Account (ADR 0013), consumes FIFO Lots (ADR 0015), carries original basis (ADR 0004), and auto-creates the lineage link.** A no-transfer full roll gets its link from `roll()`.
 - **Detection runs inline on write.** `recordExecution` persists, calls `TradeMath.detectDeviations`, records structural/sizing Deviations, and returns them in `ExecutionOutcome` with `nowFlat` so the UI can prompt for Close Reason at the natural moment.
+- **Deviations dedup on recording.** Structural/sizing: once per (Leg, type) — the unplanned leg flags on its first fill, not on every subsequent one. Discipline: once per episode — a stop crossed, recovered, and crossed again records a new Deviation (a second distinct failure to act); a new episode begins when the prior marked day was not crossed. `recordDeviations` silently drops already-recorded detections.
+- **Revisions change intent, never the baseline.** A Plan Revision may replace current Exit Levels and add intended structure; Planned Risk/Reward anchors and the plan display read the revised state, but Deviation detection always compares against the original Plan (ADR 0012) — the Revision documents the departure, the dedup rule stops it from nagging.
 - **No status writes exist.** Status stays derived (ADR 0005); `setCloseReason` attaches the reason to an already-flat Trade or abandons a planned one.
 - **Registries archive, never delete** — historical Trades reference Strategies, Idea Sources, and Accounts forever.
 - **"Skip journaling" writes the TBD placeholder** (ruling to formalize in the Journal drill-down): skip and placeholder unify, making Journal Debt self-contained as "placeholder entries."
@@ -136,6 +146,31 @@ sequenceDiagram
         UI->>TB: setCloseReason(tradeId, reason)
         UI->>J: write close entry (or TBD placeholder)
     end
+```
+
+## Sequence: revising a Plan (the deviation-driven case)
+
+The most instructive path: an Execution just flagged a structural Deviation and the trader's real intent has changed. The timestamps make adaptation vs rationalization visible forever — here the Revision *follows* the Execution, so this departure reads as documented-after-the-fact (ADR 0012).
+
+```mermaid
+sequenceDiagram
+    actor T as Trader
+    participant UI
+    participant TB as TradeBook
+    participant TM as TradeMath
+    participant J as Journal
+
+    Note over T,UI: recordExecution just returned a structural Deviation —<br/>the short call was not in the long-stock Plan
+    UI-->>T: deviation flag — acknowledge, or revise the Plan?
+    T->>UI: revise — this is a covered call campaign now
+    T->>UI: reason, new Exit Levels, added intended leg (short call), chart link
+    UI->>TB: revisePlan(tradeId, revision)
+    TB->>TB: append dated Revision (original Plan untouched)
+    TB-->>UI: ok
+    Note over TB: current intent = original + revisions, feeds Planned R/R anchors —<br/>Deviation baseline stays the ORIGINAL Plan, dedup stops re-flagging
+    UI->>J: revision entry (required — or TBD placeholder, Journal Debt)
+    UI->>TB: acknowledgeDeviation(deviationId, "revised into covered call")
+    UI-->>T: Trade shows revised intent + its recorded Deviation history
 ```
 
 ## Sequence: rolling a covered call (atomic)
