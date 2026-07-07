@@ -11,8 +11,8 @@ The app is partitioned into a small number of deep modules (Ousterhout sense): a
 |---|---|---|
 | **TradeBook** | System of record for Trades: plan → confirm → execute → close lifecycle; Plan Revisions; Transfers, Rolls, lineage links; Deviation recording; Accounts/Institutions/Snapshots; trader-managed Plan lists (Strategies, Idea Sources). Hides attachment bookkeeping and transactional writes. Stores facts; never does arithmetic on them. | 14–18 |
 | **Journal** | Trader writing: entries anchored to Trade moments or standalone; Entry Types with Prompt schema evolution; Journal Debt derivation; seeded defaults. | 8–10 |
-| **PriceBook** | Price observations: Marks (one per instrument-date, shared, edit-impact warnings); future Daily Bars; missing-Mark queries; lazy per-instrument history; fetch orchestration via PricingSource adapters. | 7–9 |
-| **PricingSource** *(adapter)* | One external market-data provider; N adapters over time (ADR 0008). Manual entry is the absence of one. | 2–3 |
+| **PriceBook** | Price observations: Marks (one per instrument-date, manual sticky over fetched); future Daily Bars; missing-Mark queries; lazy per-instrument history; fetch orchestration via PricingSource adapters with automatic gap recovery. See [pricebook.md](./pricebook.md). | 6 |
+| **PricingSource** *(adapter)* | One external market-data provider; N adapters over time (ADR 0008). Manual entry is the absence of one. | 3 |
 | **TradeMath** *(pure)* | Every per-Trade computation: `positionOf`, `instrumentsOf`, `statusOf`, `valuation`, `riskReward`, `replay`, `detectDeviations`, `attentionScore`, `impliedVol`. See [trademath.md](./trademath.md). | 9 |
 | **Valuations** *(coordinator)* | The only place the Trade↔Marks join happens: takes a tradeId, pulls facts from TradeBook, asks TradeMath what instruments matter, pulls series from PriceBook, runs the math, returns finished items. | 5–6 |
 | **Analytics** | Cross-Trade questions: filter/group by declared dimensions (Strategy, Tag, Idea Source, Account, Institution, underlying) and derived ones (credit/debit…); performance tables; adherence stats; equity & P&L curves. | 3–5 |
