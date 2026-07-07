@@ -10,8 +10,8 @@ interface TradeBook {
   confirmPlan(draft: PlanDraft): Promise<TradeId>          // creates the Trade, status 'planned'
   revisePlan(tradeId: TradeId, revision: PlanRevisionDraft): Promise<void>
   recordExecution(target: ExecutionTarget, exec: ExecutionDraft): Promise<ExecutionOutcome>
-  correctExecution(executionId: ExecutionId, patch: ExecutionPatch, note?: string): Promise<void>
-  voidExecution(executionId: ExecutionId, note: string): Promise<void>
+  correctExecution(executionId: ExecutionId, patch: ExecutionPatch, note?: string): Promise<CorrectionOutcome>
+  voidExecution(executionId: ExecutionId, note: string): Promise<CorrectionOutcome>
   setCloseReason(tradeId: TradeId, reason: CloseReason): Promise<void>
 
   // structural moves
@@ -55,6 +55,13 @@ interface ExecutionOutcome {
   nowFlat: boolean                                         // UI prompts for Close Reason + close journal entry
 }
 
+interface CorrectionOutcome {
+  record: TradeRecord                                      // corrected facts
+  newDeviations: DetectedDeviation[]                       // detection re-ran on the corrected record
+  annotatedDeviations: DeviationId[]                       // recorded ones the corrected facts no longer support
+  statusChange?: { from: TradeStatus; to: TradeStatus }    // corrections can flatten or reopen a Trade
+}
+
 interface PlanRevisionDraft {
   date: ISODate
   reason: string                                           // why intent changed — the honest one-liner
@@ -76,7 +83,9 @@ interface RollSpec {
 ## Decided semantics
 
 - **Plan-first is structural.** `recordExecution` cannot create a Trade — no target shape exists for it. A spontaneous entry is a 30-second `confirmPlan` first; non-blocking journaling (Journal Debt) keeps that cheap.
-- **Corrections are edits with history.** Typos are data-entry errors, not trading history: `correctExecution` patches price/qty/date/fees and keeps prior values as an audit trail on the record; `voidExecution` removes with the same trail. Already-recorded Deviations stand (ADR 0012 — adherence history is immutable); a correction that invalidates one gets an annotation, not deletion. Plans are never correctable — their immutability is the product.
+- **Corrections are edits with history.** Typos are data-entry errors, not trading history: `correctExecution` patches price/qty/date/fees and keeps prior values as an audit trail on the record; `voidExecution` removes with the same trail. Plans are never correctable — their immutability is the product.
+- **Corrections re-run detection and annotate, never delete.** After the patch, `TradeMath.detectDeviations` runs on the corrected record inside the same transaction: newly supported Deviations are recorded (dedup applies); already-recorded Deviations the corrected facts no longer support are annotated by `correctExecution` itself (ADR 0012 — adherence history is immutable). Journal entries anchored to a corrected or voided Execution keep their anchor — the writing happened.
+- **Corrections can change derived status, and the outcome says so.** A correction that reopens a closed Trade clears its Close Reason into the audit trail (it described a close that no longer exists); one that flattens a Trade triggers the same Close Reason prompt as any flattening Execution. `CorrectionOutcome.statusChange` tells the UI which case it's in.
 - **`roll()` is one storage transaction.** Closing Executions + successor `confirmPlan` + opening Executions + Transfers + the rolled-from link commit together or not at all — the signature monthly gesture can never half-happen. All touched records are TradeBook's own, so no cross-Book transaction is needed.
 - **`transfer()` enforces same-Account (ADR 0013), consumes FIFO Lots (ADR 0015), carries original basis (ADR 0004), and auto-creates the lineage link.** A no-transfer full roll gets its link from `roll()`.
 - **Detection runs inline on write.** `recordExecution` persists, calls `TradeMath.detectDeviations`, records structural/sizing Deviations, and returns them in `ExecutionOutcome` with `nowFlat` so the UI can prompt for Close Reason at the natural moment.
@@ -226,6 +235,32 @@ sequenceDiagram
     TB->>TM: detectDeviations(record C)
     TB-->>UI: ExecutionOutcome
     UI-->>T: C stands alone with its own R/R — A shows reduced holdings
+```
+
+## Sequence: correcting an Execution (the ripple)
+
+```mermaid
+sequenceDiagram
+    actor T as Trader
+    participant UI
+    participant TB as TradeBook
+    participant TM as TradeMath
+
+    T->>UI: fix a typo — the buy was 1.48, not 1.84
+    UI->>TB: correctExecution(executionId, patch, note)
+    Note over TB: ONE transaction — patch applied, prior values kept in the audit trail
+    TB->>TM: detectDeviations(corrected record)
+    TM-->>TB: detections against the corrected facts
+    TB->>TB: record NEW Deviations (dedup applies)
+    TB->>TB: annotate recorded Deviations the corrected facts no longer support — never delete
+    alt derived status changed
+        TB->>TB: closed reopened — clear Close Reason into the audit trail
+    end
+    TB-->>UI: CorrectionOutcome (record, newDeviations, annotated, statusChange)
+    opt statusChange flattened the Trade
+        UI-->>T: prompt Close Reason + close entry — same as any flattening Execution
+    end
+    UI-->>T: corrected numbers everywhere — P&L, R/R, replay all derive fresh, nothing stored was stale
 ```
 
 ## Requirements fulfilled / exported
