@@ -14,7 +14,7 @@ The app is partitioned into a small number of deep modules (Ousterhout sense): a
 | **PriceBook** | Price observations: Marks (one per instrument-date, manual sticky over fetched); future Daily Bars; missing-Mark queries; lazy per-instrument history; fetch orchestration via PricingSource adapters with automatic gap recovery. See [pricebook.md](./pricebook.md). | 6 |
 | **PricingSource** *(adapter)* | One external market-data provider; N adapters over time (ADR 0008). Manual entry is the absence of one. | 3 |
 | **TradeMath** *(pure)* | Every per-Trade computation: `positionOf`, `instrumentsOf`, `statusOf`, `valuation`, `riskReward`, `replay`, `detectDeviations`, `attentionScore`, `impliedVol`. See [trademath.md](./trademath.md). | 9 |
-| **Valuations** *(coordinator)* | The only place the Trade↔Marks join happens: takes a tradeId, pulls facts from TradeBook, asks TradeMath what instruments matter, pulls series from PriceBook, runs the math, returns finished items. | 5–6 |
+| **Valuations** *(coordinator)* | The only place TradeBook facts meet TradeMath and PriceBook: per-Trade answers (position, value, detail, replay), cross-Trade boards (attention, discipline, marks needed, expired holdings). Returns finished items. | 8 |
 | **Analytics** | Cross-Trade questions: filter/group by declared dimensions (Strategy, Tag, Idea Source, Account, Institution, underlying) and derived ones (credit/debit…); performance tables; adherence stats; equity & P&L curves. | 3–5 |
 | **Review** | The behavioral session: agenda + attention-ranked walk with reviewed-today flags. Each checkpoint records an Action ("what will you do with this Trade based on today?") as a review-anchored Journal entry — reviewing IS recording. Owns the Trade↔Journal join; stores nothing. See [review.md](./review.md). | 2 |
 | **Workspace** | Durability & lifecycle: versioned export / replace-only import (secrets excluded), storage-persistence health, additive seed-iff-absent, persistence request, typed settings. See [workspace.md](./workspace.md). | 6 |
@@ -34,6 +34,8 @@ interface Valuations {
   attentionBoard(asOf): Promise<RankedTrade[]>    // open Trades, scored and sorted
   marksNeeded(asOf): Promise<MarksNeeded>         // which instruments need Marks, per Trade, over which ranges —
                                                   // the collection half of Review's agenda (a Trade↔Marks join)
+  expiredHoldings(asOf): Promise<ExpiredHolding[]> // Legs past expiration still holding quantity (facts + positionOf,
+                                                  // no Marks) — Review surfaces them for outcome recording
 }
 ```
 

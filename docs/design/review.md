@@ -13,6 +13,8 @@ interface Review {
 interface ReviewAgenda {
   marksNeeded: { tradeId: TradeId; instruments: InstrumentKey[]; range: DateRange }[]  // via Valuations.marksNeeded
   fetchRange: DateRange                          // earliest gap .. asOf, for the one bulk fetch
+  expiredLegs: ExpiredHolding[]                  // via Valuations.expiredHoldings — contracts past expiration
+                                                 // still holding quantity; outcome must be recorded (Slice 2 UI)
   journalDebt: Entry[]                           // unsettled placeholders (Journal)
   accountsForSnapshot: AccountId[]               // the optional end-of-session prompt
 }
@@ -123,6 +125,40 @@ Once Wednesday's Marks are recorded, Wednesday becomes `lastMarked` — Tuesday 
 **Manual entry is per-trade, not batch.** The automatic fetch runs once (it involves no trader interaction), but manual prompts appear inside each Trade's review page — prices are typed in the context of the Trade they belong to, and the Mark dedup rule means shared instruments prompt only at first encounter.
 
 **Fetch → rank → walk.** Review happens after market hours, so the fetch completes before attention ranking runs — the walk order reflects today's results. An instrument whose fetch failed or is unsupported ranks on its most recent Mark, accepting that the rare stale-ranked Trade may walk out of order (self-correcting per-trade as manual prices land, but the session order stays snapshotted — no mid-walk reshuffling). Slice 1 is the degenerate case: no adapters, so ranking runs entirely on the previous review's closes.
+
+## Sequence: surfacing expired contracts
+
+Nothing else in the system notices a contract expiring — Marks stop existing past expiration and the Trade would sit "open" forever. The agenda owns the surfacing; the outcome is recorded through the ordinary Execution path. (Slice 2 workflow; the agenda seam is shaped now.)
+
+```mermaid
+sequenceDiagram
+    actor T as Trader
+    participant UI as Daily Review UI
+    participant R as Review
+    participant V as Valuations
+    participant TB as TradeBook
+    participant TM as TradeMath
+
+    Note over T,UI: Saturday review — the July calls expired Friday
+    UI->>R: agenda(today)
+    R->>V: expiredHoldings(today)
+    V->>TB: openTrades()
+    TB-->>V: TradeRecords
+    V->>TM: positionOf(each record)
+    Note over V: Legs still holding quantity whose instrument<br/>expiration date has passed — facts + math, no Marks
+    V-->>R: expired holdings (trade, leg, qty, expiredOn)
+    R-->>UI: agenda (marks needed, expired legs, debt, snapshots)
+    UI-->>T: 2 short July 190 calls expired Friday — record the outcome
+    alt expired worthless (out of the money)
+        T->>UI: expired worthless
+        UI->>TB: recordExecution({tradeId, legId}, kind expire, price 0)
+    else in the money — assigned or exercised
+        T->>UI: assigned (short leg) or exercised (long leg)
+        UI->>TB: recordExecution({tradeId, legId}, kind assign or exercise)
+        Note over UI,TB: assignment creates the stock Leg in the SAME Trade —<br/>schema already allows it, Slice 2 wires the UI
+    end
+    Note over TB: same path as any Execution — deviation detection runs,<br/>ExecutionOutcome.nowFlat may prompt the Close Reason
+```
 
 ## The queryable payoff
 
