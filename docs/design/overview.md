@@ -10,7 +10,7 @@ The app is partitioned into a small number of deep modules (Ousterhout sense): a
 | Interface | Abstracts | Ops (est.) |
 |---|---|---|
 | **TradeBook** | System of record for Trades: plan → confirm → execute → close lifecycle; Execution corrections with audit trail; Transfers, atomic Rolls, lineage links; Deviation recording; Accounts/Institutions/Snapshots; trader-managed Plan lists. Stores facts; never does arithmetic on them. See [tradebook.md](./tradebook.md). | 14 |
-| **Journal** | Trader writing: entries anchored to Trade moments or standalone; Entry Types with Prompt schema evolution; Journal Debt derivation; seeded defaults. | 8–10 |
+| **Journal** | Trader writing: immutable entries anchored to Trade moments, other entries (addenda), or standalone; Entry Types with Prompt schema evolution; Journal Debt as unsettled placeholders; seeded defaults. See [journal.md](./journal.md). | 7 |
 | **PriceBook** | Price observations: Marks (one per instrument-date, manual sticky over fetched); future Daily Bars; missing-Mark queries; lazy per-instrument history; fetch orchestration via PricingSource adapters with automatic gap recovery. See [pricebook.md](./pricebook.md). | 6 |
 | **PricingSource** *(adapter)* | One external market-data provider; N adapters over time (ADR 0008). Manual entry is the absence of one. | 3 |
 | **TradeMath** *(pure)* | Every per-Trade computation: `positionOf`, `instrumentsOf`, `statusOf`, `valuation`, `riskReward`, `replay`, `detectDeviations`, `attentionScore`, `impliedVol`. See [trademath.md](./trademath.md). | 9 |
