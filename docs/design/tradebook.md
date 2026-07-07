@@ -34,10 +34,11 @@ interface TradeBook {
     ideaSources: ListRegistry<IdeaSource>
     institutions: ListRegistry<Institution>
     accounts: ListRegistry<Account>
+    closeReasons: ListRegistry<CloseReason>      // seeded defaults; setCloseReason picks from here
   }
 }
 
-interface ListRegistry<T> {                                // one generic shape, reused four times
+interface ListRegistry<T> {                                // one generic shape, reused five times
   list(includeArchived?: boolean): Promise<T[]>
   save(item: T): Promise<void>                             // create or update
   archive(id: string): Promise<void>                       // never delete — Trades reference these

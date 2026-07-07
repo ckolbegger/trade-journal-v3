@@ -17,7 +17,7 @@ The app is partitioned into a small number of deep modules (Ousterhout sense): a
 | **Valuations** *(coordinator)* | The only place the Trade↔Marks join happens: takes a tradeId, pulls facts from TradeBook, asks TradeMath what instruments matter, pulls series from PriceBook, runs the math, returns finished items. | 5–6 |
 | **Analytics** | Cross-Trade questions: filter/group by declared dimensions (Strategy, Tag, Idea Source, Account, Institution, underlying) and derived ones (credit/debit…); performance tables; adherence stats; equity & P&L curves. | 3–5 |
 | **Review** | The behavioral session: agenda + attention-ranked walk with reviewed-today flags. Each checkpoint records an Action ("what will you do with this Trade based on today?") as a review-anchored Journal entry — reviewing IS recording. Owns the Trade↔Journal join; stores nothing. See [review.md](./review.md). | 2 |
-| **Workspace** | Durability & lifecycle: export/import, storage-persistence health, first-run seeding, app settings (e.g., risk-free rate for IV display). | 3–4 |
+| **Workspace** | Durability & lifecycle: versioned export / replace-only import (secrets excluded), storage-persistence health, additive seed-iff-absent, persistence request, typed settings. See [workspace.md](./workspace.md). | 6 |
 | *(internal)* **StorageBinding** | Narrow keyed-record primitives under each Book; the injection point of the testing strategy. Internal seam. | 4–6 each |
 
 ## Valuations (coordinator) sketch
