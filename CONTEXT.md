@@ -45,8 +45,12 @@ A timestamped piece of trader writing — optionally anchored to a Trade or to a
 _Avoid_: note, comment, log
 
 **Daily Review**:
-The out-of-hours ritual of collecting the day's Marks, walking open Trades in attention-ranked order (decisions first), and settling Journal Debt.
+The out-of-hours ritual: collect the day's Marks, walk open Trades in attention-ranked order recording an Action for each, settle Journal Debt. The walk — fresh risk/reward, surfaced Deviations, a conscious stay-or-exit decision per Trade — is the point; Marks are the fuel.
 _Avoid_: end-of-day update, check-in
+
+**Action**:
+The trader's answer at each Daily Review checkpoint to "what are you going to do with this Trade, based on what happened today?" — e.g., Hold, Exit Soon, Adjust, Watch Closely. Recorded as the review entry's central prompt; a Trade counts as reviewed for the day once its Action is recorded.
+_Avoid_: disposition, stance, verdict
 
 **Entry Type**:
 A trader-configurable template that names a kind of Journal Entry and defines the Prompts it asks. Ships with rich defaults; the trader may add types and change a type's Prompts over time.

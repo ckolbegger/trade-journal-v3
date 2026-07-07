@@ -39,7 +39,8 @@ interface Entry {
 interface EntryType {
   id: string
   name: string
-  designatedFor?: 'plan' | 'revision' | 'close'         // which lifecycle moment uses this type (seeded; re-designatable)
+  designatedFor?: 'plan' | 'revision' | 'close' | 'review'   // which moment uses this type (seeded; re-designatable)
+                                                         // 'review' = the Trade Review checkpoint; its select prompt IS the Action list
   prompts: Prompt[]
 }
 

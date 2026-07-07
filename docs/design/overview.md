@@ -16,7 +16,7 @@ The app is partitioned into a small number of deep modules (Ousterhout sense): a
 | **TradeMath** *(pure)* | Every per-Trade computation: `positionOf`, `instrumentsOf`, `statusOf`, `valuation`, `riskReward`, `replay`, `detectDeviations`, `attentionScore`, `impliedVol`. See [trademath.md](./trademath.md). | 9 |
 | **Valuations** *(coordinator)* | The only place the Trade↔Marks join happens: takes a tradeId, pulls facts from TradeBook, asks TradeMath what instruments matter, pulls series from PriceBook, runs the math, returns finished items. | 5–6 |
 | **Analytics** | Cross-Trade questions: filter/group by declared dimensions (Strategy, Tag, Idea Source, Account, Institution, underlying) and derived ones (credit/debit…); performance tables; adherence stats; equity & P&L curves. | 3–5 |
-| **Review** | Daily Review as a domain object: agenda assembly (Marks needed, attention-ranked Trades, Journal Debt, snapshot prompt), session completion. | 4–6 |
+| **Review** | The behavioral session: agenda + attention-ranked walk with reviewed-today flags. Each checkpoint records an Action ("what will you do with this Trade based on today?") as a review-anchored Journal entry — reviewing IS recording. Owns the Trade↔Journal join; stores nothing. See [review.md](./review.md). | 2 |
 | **Workspace** | Durability & lifecycle: export/import, storage-persistence health, first-run seeding, app settings (e.g., risk-free rate for IV display). | 3–4 |
 | *(internal)* **StorageBinding** | Narrow keyed-record primitives under each Book; the injection point of the testing strategy. Internal seam. | 4–6 each |
 
@@ -32,6 +32,8 @@ interface Valuations {
   replay(tradeId): Promise<ReplayPoint[]>
   disciplineCheck(tradeId | 'allOpen', asOf): Promise<DetectedDeviation[]>
   attentionBoard(asOf): Promise<RankedTrade[]>    // open Trades, scored and sorted
+  marksNeeded(asOf): Promise<MarksNeeded>         // which instruments need Marks, per Trade, over which ranges —
+                                                  // the collection half of Review's agenda (a Trade↔Marks join)
 }
 ```
 
@@ -46,7 +48,7 @@ See [trade-detail-sequence.md](./trade-detail-sequence.md) for the full interact
 | Journal | its StorageBinding |
 | PriceBook | its StorageBinding; PricingSource adapters |
 | Valuations | TradeBook, PriceBook, TradeMath |
-| Review | Valuations, Journal, PriceBook, TradeBook |
+| Review | Valuations, Journal, TradeBook |
 | Analytics | TradeBook, Journal, Valuations (bulk), TradeMath |
 | Workspace | StorageBindings (export/import), Books (seeding) |
 | UI | Books for writes (record Execution, write entry, enter Mark) and pure fact reads (journal timeline); Valuations / Review / Analytics for anything computed. Facts arriving inside coordinator bundles are display-only — the UI never derives from them. Never TradeMath or StorageBindings directly. |
@@ -59,7 +61,7 @@ See [trade-detail-sequence.md](./trade-detail-sequence.md) for the full interact
 
 **Record an Execution** — `UI → TradeBook.recordExecution(...)` → TradeBook persists the fact, calls `TradeMath.detectDeviations(record)`, records any structural/sizing Deviations (ADR 0012), returns the updated record and new Deviations for the UI to surface.
 
-**Daily Review** — `UI → Review.agenda(date)` → open-Trade instruments (TradeBook + TradeMath) → `PriceBook.missingMarks(date)` → trader enters/fetches Marks → `Valuations.attentionBoard(date)` ranks the walk → `Valuations.disciplineCheck('allOpen')` detects stop/target crossings, which TradeBook records → `Journal.outstandingDebt()` lists entries to settle.
+**Daily Review** — `UI → Review.agenda(date)` (marks needed via `Valuations.marksNeeded`, Journal Debt, snapshot prompt) → one bulk `PriceBook.fetch` → `Review.walk(date)` (attention-ranked via `Valuations.attentionBoard`, with reviewed-today flags) → per Trade: fill missing Marks inline, `Valuations.detail` (surfaces Deviations), record the **Action** as a review-anchored Journal entry — reviewing IS recording — settle that Trade's debt → optional `recordAccountValue`.
 
 **Analytics query** — `UI → Analytics.run(spec)` → TradeBook lists matching records → per-Trade math (via Valuations for marked valuations, TradeMath for closed-Trade P&L) → group by declared + derived dimensions → result table.
 

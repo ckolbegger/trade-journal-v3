@@ -64,81 +64,9 @@ Adapters are injected in priority order; the first source whose `supports()` acc
 
 Records keyed `(instrument, date)` with an index on instrument — the lazy per-instrument loading guardrail from ADR 0011. Daily Bars arrive as an additive table in their slice; when a bar is stored and no Mark exists for that (instrument, date), the Mark defaults to the bar's close (still override-able — Mark stays the valuation decision, per ADR 0008).
 
-## Daily collection sequence (with gap recovery)
+## PriceBook in the Daily Review session
 
-The trader last reviewed Monday, missed Tuesday, and opens Daily Review on Wednesday evening. The collection range is computed, not asked about — Tuesday is inside it automatically.
-
-```mermaid
-sequenceDiagram
-    actor T as Trader
-    participant UI as Daily Review UI
-    participant R as Review
-    participant V as Valuations
-    participant TB as TradeBook
-    participant TM as TradeMath
-    participant PB as PriceBook
-    participant PS as PricingSource(s)
-    participant J as Journal
-
-    T->>UI: start Daily Review (Wednesday evening)
-    UI->>R: agenda(today)
-    R->>TB: openTrades()
-    TB-->>R: TradeRecords
-    R->>TM: instrumentsOf(each record)
-    TM-->>R: per-Trade instrument lists
-    R->>PB: lastMarked(all instruments)
-    PB-->>R: latest Mark date per instrument
-    Note over R: collection range per instrument — day after its last Mark<br/>through today (never-marked instruments start at their<br/>Trade's first Execution date). Missed Tuesday is inside by construction
-    R->>J: outstandingDebt()
-    J-->>R: Journal Debt list
-    R-->>UI: agenda (per-Trade instruments and ranges, debt)
-
-    UI->>PB: fetch(instruments, earliest gap..today)
-    Note over UI,PB: the UI always fetches — it never knows whether sources exist
-    opt adapters registered (later slices)
-        PB->>PS: fetch(supported instruments, range)
-        PS-->>PB: SourceObservations (per instrument, per date)
-        Note over PB,PS: a closed Tuesday simply returns no observations —<br/>the feed is the calendar, nobody is asked
-        PB->>PB: store fetched Marks (manual Marks never overwritten)
-    end
-    PB-->>UI: FetchReport
-    Note over UI,PB: Slice 1 — no adapters, fetch returns instantly,<br/>everything flows to the per-Trade prompts below
-
-    UI->>R: walk order for today
-    R->>V: attentionBoard(today)
-    Note over V: composes TradeBook + PriceBook + TradeMath —<br/>today's Marks where fetched, most recent Mark otherwise
-    V-->>R: scored open Trades
-    R-->>UI: walk order (snapshotted, stable for the session)
-
-    loop each Trade in the walk
-        UI->>PB: missingMarks(this agenda item's instruments, its range)
-        PB-->>UI: unpriced rows for THIS Trade
-        T->>UI: type prices inline (or skip a gap row, accepting the blind spot)
-        UI->>PB: record(instrument, date, price, manual)
-        Note over UI,PB: shared instruments prompt only at first encounter —<br/>a later Trade holding the same contract has nothing missing
-        UI->>V: detail(tradeId)
-        Note over UI,V: full page sequence in trade-detail-sequence.md —<br/>may record newly surfaced discipline Deviations
-        V-->>UI: TradeDetail with fresh Marks
-        opt this Trade has outstanding Journal Debt
-            T->>UI: settle entries (or defer again)
-            UI->>J: write entries
-        end
-    end
-
-    opt end of session
-        T->>UI: record Account Snapshots (opportunistic, skippable)
-        UI->>TB: recordAccountValue(account, today, totalValue)
-    end
-    UI-->>T: review complete
-```
-
-Once Wednesday's Marks are recorded, Wednesday becomes `lastMarked` — Tuesday is interior history and never reappears in a queue. `FetchReport` explains what happened; `missingMarks` after the fetch is the authoritative remainder.
-
-**The UI has exactly one collection path in every slice.** It always calls `fetch()`; with no adapters registered (Slice 1) the call is an instant no-op whose report routes everything to the per-trade prompts. Enabling a pricing source later changes UI behavior by zero lines — the sources-vs-manual branch lives inside PriceBook, not in the UI.
-
-**Manual entry is per-trade, not batch.** The automatic fetch runs once (it involves no trader interaction), but manual prompts appear inside each Trade's review page — prices are typed in the context of the Trade they belong to, and the Mark dedup rule means shared instruments prompt only at first encounter.
-
-**Fetch → rank → walk.** Review happens after market hours, so the fetch completes before attention ranking runs — the walk order reflects today's results. An instrument whose fetch failed or is unsupported ranks on its most recent Mark, accepting that the rare stale-ranked Trade may walk out of order (self-correcting per-trade as manual prices land, but the session order stays snapshotted — no mid-walk reshuffling). Slice 1 is the degenerate case: no adapters, so ranking runs entirely on the previous review's closes.
+The full session sequence (agenda, bulk fetch, attention-ranked walk, Action checkpoints) lives in [review.md](./review.md) — it is Review's flow. PriceBook's four touchpoints in it: `lastMarked` starts the gap computation, one bulk `fetch` covers the whole gap (a no-op in Slice 1 — the UI has exactly one collection path in every slice, since the sources-vs-manual branch lives inside PriceBook), `missingMarks` supplies each Trade's inline prompts, `record` stores what the trader types. Once today's Marks are recorded, older gaps become interior history and never reappear in a queue.
 
 ## Mark correction sequence
 
