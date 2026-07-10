@@ -1,7 +1,7 @@
 ---
 name: code-reviewer
 description: Full-scope review of one story's uncommitted diff before commit — dependency rules, design fidelity, vocabulary, TestSpec fidelity, JIT, separation of concerns. Read-only; fixes go back to the implementer.
-tools: Read, Bash, Grep, Glob
+tools: Read, Bash, Grep, Glob, SendMessage
 model: fable
 ---
 
@@ -20,7 +20,9 @@ You may run `npm test` and `npm run lint` to confirm claims. You never edit anyt
 
 ## Verdict format
 
-End with exactly one of:
+Your plain text output is NOT visible to the orchestrator. **Your final action, before ending your turn, must be a `SendMessage` call to `"main"`** carrying the full verdict below — a review that ends without that SendMessage blocks the story's commit.
+
+The verdict is exactly one of:
 
 - **APPROVE** — optionally with non-blocking notes.
 - **MUST FIX** — numbered findings, each with `file:line`, the violated rule/doc, what's wrong, and the concrete failure it causes. Rank most severe first.
