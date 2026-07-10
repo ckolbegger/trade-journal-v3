@@ -6,7 +6,7 @@ Design references: [overview.md](../design/overview.md) (module rules, StorageBi
 
 ---
 
-## ☐ Story S0.1 — App shell
+## ☑ Story S0.1 — App shell
 
 > As a trader, I want the app to load in my browser with working navigation, so that every later story has a running application to land in.
 
@@ -14,8 +14,8 @@ Design references: [overview.md](../design/overview.md) (module rules, StorageBi
 
 ### Tasks
 
-- [ ] **S0.1.T1 — Project scaffold.** Vite + React + TypeScript strict; Vitest configured with two projects (unit: `src/**/*.test.ts`, integration: `tests/integration/**` with `fake-indexeddb` auto-loaded); Playwright configured with its own `webServer` (starts the Vite dev server itself) and **excluded from `npm test`** — e2e runs only when explicitly invoked via `npm run test:e2e` (locally or as a separate CI step); ESLint + Prettier; `dexie` dependency. npm scripts: `dev`, `build`, `test` (unit + integration only), `test:integration`, `test:e2e`, `lint`.
-- [ ] **S0.1.T2 — Module boundary lint rule.** ESLint `no-restricted-imports` (or `eslint-plugin-boundaries`) encoding the dependency rules from the index: `src/domain/**` imports nothing from `src/`; `src/books/**` may not import `src/coordinators/**` or `src/ui/**`; `src/ui/**` may not import `src/domain/trademath` internals or `src/storage/**`.
+- [x] **S0.1.T1 — Project scaffold.** Vite + React + TypeScript strict; Vitest configured with two projects (unit: `src/**/*.test.ts`, integration: `tests/integration/**` with `fake-indexeddb` auto-loaded); Playwright configured with its own `webServer` (starts the Vite dev server itself) and **excluded from `npm test`** — e2e runs only when explicitly invoked via `npm run test:e2e` (locally or as a separate CI step); ESLint + Prettier; `dexie` dependency. npm scripts: `dev`, `build`, `test` (unit + integration only), `test:integration`, `test:e2e`, `lint`.
+- [x] **S0.1.T2 — Module boundary lint rule.** ESLint `no-restricted-imports` (or `eslint-plugin-boundaries`) encoding the dependency rules from the index: `src/domain/**` imports nothing from `src/`; `src/books/**` may not import `src/coordinators/**` or `src/ui/**`; `src/ui/**` may not import `src/domain/trademath` internals or `src/storage/**`.
 
   ```
   describe "module boundaries"
@@ -24,7 +24,7 @@ Design references: [overview.md](../design/overview.md) (module rules, StorageBi
   - it passes lint on the scaffold as committed
   ```
 
-- [ ] **S0.1.T3 — App shell & routing.** React Router shell: top-level nav (Trades, Review — both stub pages), an app header, and a route-not-found page. Composition root (`src/ui/main.tsx`) exists as the single place Books/coordinators will later be wired.
+- [x] **S0.1.T3 — App shell & routing.** React Router shell: top-level nav (Trades, Review — both stub pages), an app header, and a route-not-found page. Composition root (`src/ui/main.tsx`) exists as the single place Books/coordinators will later be wired.
 
   ```
   describe "AppShell"
@@ -34,8 +34,8 @@ Design references: [overview.md](../design/overview.md) (module rules, StorageBi
   - it renders not-found for an unknown route
   ```
 
-- [ ] **S0.1.T4 — Playwright e2e: shell smoke** (`e2e/s0-1-shell.spec.ts`): app loads, nav to Review and back works, no console errors.
-- [ ] **S0.1.T5 — Browser verification.** `npm run dev`; open the app in a real browser. Expected observations:
+- [x] **S0.1.T4 — Playwright e2e: shell smoke** (`e2e/s0-1-shell.spec.ts`): app loads, nav to Review and back works, no console errors.
+- [x] **S0.1.T5 — Browser verification.** `npm run dev`; open the app in a real browser. Expected observations:
   - Shell renders with header and nav; Trades and Review pages reachable; unknown URL shows not-found.
   - No console errors or warnings.
   - `npm test` and `npm run test:e2e` both green.
