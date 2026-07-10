@@ -12,5 +12,12 @@ export function createDatabase(name = 'trade-journal'): Dexie {
     institutions: 'id, seq',
     accounts: 'id, institutionId, seq',
   })
+  // v2 adds the Trade lifecycle stores plus the two registries the plan form
+  // reads. v1 stores are never reshaped.
+  db.version(2).stores({
+    trades: 'id, accountId, seq',
+    strategies: 'id, seq',
+    ideaSources: 'id, seq',
+  })
   return db
 }

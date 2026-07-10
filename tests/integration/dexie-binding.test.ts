@@ -26,12 +26,18 @@ describe('DexieBinding (integration, fake-indexeddb)', () => {
     })
   })
 
-  it('upgrades an empty v0 database to schema v1', async () => {
+  it('upgrades an empty v0 database to the current schema', async () => {
     const name = 'upgrade-' + crypto.randomUUID()
     const db = createDatabase(name)
     await db.open()
-    expect(db.verno).toBe(1)
-    expect(db.tables.map((t) => t.name).sort()).toEqual(['accounts', 'institutions'])
+    expect(db.verno).toBe(2)
+    expect(db.tables.map((t) => t.name).sort()).toEqual([
+      'accounts',
+      'ideaSources',
+      'institutions',
+      'strategies',
+      'trades',
+    ])
     expect(await new DexieBinding(db).list('accounts')).toEqual([])
   })
 })

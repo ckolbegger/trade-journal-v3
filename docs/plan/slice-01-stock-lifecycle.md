@@ -18,7 +18,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 ---
 
-## ☐ Story S1.1 — Plan & confirm a stock Trade
+## ☑ Story S1.1 — Plan & confirm a stock Trade
 
 > As a trader, I want to capture my thesis, intended structure, and exit levels as an immutable Plan before I enter, so that my original intent can never be quietly rewritten after the market moves.
 
@@ -26,7 +26,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 ### Tasks
 
-- [ ] **S1.1.T1 — Domain types.** `src/domain/trademath/types.ts`: `TradeRecord`, `PlanFacts`, `PlannedLeg`, `ExitLevel` (`underlyingPrice` stop/target only — the other kinds arrive with the slices that first offer them), `LegFacts`, `ExecutionFacts`, `Instrument` (stock only; options are Slice 3), `InstrumentKey` helpers (build/parse canonical string).
+- [x] **S1.1.T1 — Domain types.** `src/domain/trademath/types.ts`: `TradeRecord`, `PlanFacts`, `PlannedLeg`, `ExitLevel` (`underlyingPrice` stop/target only — the other kinds arrive with the slices that first offer them), `LegFacts`, `ExecutionFacts`, `Instrument` (stock only; options are Slice 3), `InstrumentKey` helpers (build/parse canonical string).
 
   ```
   describe "InstrumentKey"
@@ -34,7 +34,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it parses "AAPL" back to a stock instrument
   ```
 
-- [ ] **S1.1.T2 — TradeMath.statusOf.**
+- [x] **S1.1.T2 — TradeMath.statusOf.**
 
   ```
   describe "TradeMath.statusOf"
@@ -44,7 +44,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it returns 'closed' when Executions exist and every Leg nets to zero
   ```
 
-- [ ] **S1.1.T3 — TradeBook.confirmPlan / get / query.** Creates the Trade with an immutable Plan; no operation on TradeBook can modify `plan` afterward. `query` supports `{ status }` filtering (status computed via `TradeMath.statusOf` at read time — never stored, ADR 0005) and returns insertion order.
+- [x] **S1.1.T3 — TradeBook.confirmPlan / get / query.** Creates the Trade with an immutable Plan; no operation on TradeBook can modify `plan` afterward. `query` supports `{ status }` filtering (status computed via `TradeMath.statusOf` at read time — never stored, ADR 0005) and returns insertion order.
 
   ```
   describe "TradeBook.confirmPlan"
@@ -61,7 +61,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it filters by accountId
   ```
 
-- [ ] **S1.1.T4 — Seeding (Workspace.ensureSeeded, first subset).** Idempotent, apply-iff-absent by id ([workspace.md](../design/workspace.md)); this story seeds Strategy **Long Stock** (planned leg: buy stock, qty asked at plan time; asks for `underlyingPrice` stop + target). Runs at every startup from the composition root.
+- [x] **S1.1.T4 — Seeding (Workspace.ensureSeeded, first subset).** Idempotent, apply-iff-absent by id ([workspace.md](../design/workspace.md)); this story seeds Strategy **Long Stock** (planned leg: buy stock, qty asked at plan time; asks for `underlyingPrice` stop + target). Runs at every startup from the composition root.
 
   ```
   describe "Workspace.ensureSeeded"
@@ -71,7 +71,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it does not resurrect a seeded item the trader archived
   ```
 
-- [ ] **S1.1.T5 — Plan form UI.** "New Trade" from the Trades page: pick Account, pick Strategy (template pre-fills the planned stock leg and asks for stop/target), thesis (required), Idea Source (pick or add inline — trader-managed list, `registries.ideaSources`), qty, optional chart link. Confirm → Trade appears in the list. Dexie schema adds `trades` (+ `ideaSources`, `strategies`) stores.
+- [x] **S1.1.T5 — Plan form UI.** "New Trade" from the Trades page: pick Account, pick Strategy (template pre-fills the planned stock leg and asks for stop/target), thesis (required), Idea Source (pick or add inline — trader-managed list, `registries.ideaSources`), qty, optional chart link. Confirm → Trade appears in the list. Dexie schema adds `trades` (+ `ideaSources`, `strategies`) stores.
 
   ```
   describe "PlanForm"
@@ -83,10 +83,10 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it shows the new Trade with a 'planned' badge, newest last (insertion order)
   ```
 
-- [ ] **S1.1.T6 — Trade detail page (facts only).** Route per Trade showing Plan facts: thesis, Strategy, Idea Source, Planned Legs, Exit Levels, chart link, status badge. (Valuation numbers arrive in S1.5; this story renders facts.)
-- [ ] **S1.1.T7 — Integration tests** (`tests/integration/plan-confirm.test.ts`): over Dexie + fake-indexeddb — seed → confirm plan → reopen DB → `get` returns identical record; `query({status:'planned'})` finds it; plan immutability holds across reopen.
-- [ ] **S1.1.T8 — Playwright e2e** (`e2e/s1-1-plan.spec.ts`): onboard → New Trade → fill worked-example plan → confirm → list shows AAPL planned → detail shows thesis, stop 140, target 170.
-- [ ] **S1.1.T9 — Browser verification.** Run the app; create the worked-example Plan. Expected: Trade listed as `planned`; detail page shows all Plan facts; reload persists everything; no way exists in the UI to edit the confirmed Plan. All suites green.
+- [x] **S1.1.T6 — Trade detail page (facts only).** Route per Trade showing Plan facts: thesis, Strategy, Idea Source, Planned Legs, Exit Levels, chart link, status badge. (Valuation numbers arrive in S1.5; this story renders facts.)
+- [x] **S1.1.T7 — Integration tests** (`tests/integration/plan-confirm.test.ts`): over Dexie + fake-indexeddb — seed → confirm plan → reopen DB → `get` returns identical record; `query({status:'planned'})` finds it; plan immutability holds across reopen.
+- [x] **S1.1.T8 — Playwright e2e** (`e2e/s1-1-plan.spec.ts`): onboard → New Trade → fill worked-example plan → confirm → list shows AAPL planned → detail shows thesis, stop 140, target 170.
+- [x] **S1.1.T9 — Browser verification.** Run the app; create the worked-example Plan. Expected: Trade listed as `planned`; detail page shows all Plan facts; reload persists everything; no way exists in the UI to edit the confirmed Plan. All suites green.
 
 ---
 
