@@ -8,6 +8,12 @@ test('shell loads, navigates to Review and back, with no console errors', async 
   page.on('pageerror', (err) => errors.push(err.message))
 
   await page.goto('/')
+
+  // First run gates on onboarding (S0.2) — complete it to reach the shell.
+  await page.getByLabel(/institution name/i).fill('Schwab')
+  await page.getByLabel(/account name/i).fill('Taxable')
+  await page.getByRole('button', { name: /get started/i }).click()
+
   await expect(page.getByRole('heading', { name: 'Trades' })).toBeVisible()
 
   await page.getByRole('link', { name: 'Review' }).click()

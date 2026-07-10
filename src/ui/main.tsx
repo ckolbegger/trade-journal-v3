@@ -1,10 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
-import { App } from './App'
+import { AppRoot } from './AppRoot'
+import { createTradeBook } from '@/bootstrap'
 
 // Composition root: the single place where Books and coordinators are
-// constructed and wired into the app. They arrive in later stories.
+// constructed and wired into the app.
 
 const rootElement = document.getElementById('root')
 if (!rootElement) {
@@ -14,7 +15,7 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <StrictMode>
     <BrowserRouter>
-      <App />
+      <AppRoot tradeBook={createTradeBook()} />
     </BrowserRouter>
   </StrictMode>,
 )

@@ -42,7 +42,7 @@ Design references: [overview.md](../design/overview.md) (module rules, StorageBi
 
 ---
 
-## ☐ Story S0.2 — Onboarding: Institutions & Accounts
+## ☑ Story S0.2 — Onboarding: Institutions & Accounts
 
 > As a trader, I want to record my brokerage Institutions and Accounts on first run, so that every Trade I plan can bind to the Account that holds it.
 
@@ -50,7 +50,7 @@ Design references: [overview.md](../design/overview.md) (module rules, StorageBi
 
 ### Tasks
 
-- [ ] **S0.2.T1 — StorageBinding interface + in-memory implementation.** Narrow keyed-record primitives (`get`, `put`, `delete`, `list`/`where` by index, `transaction`) in `src/storage/`. The in-memory implementation is the unit-test binding for every Book.
+- [x] **S0.2.T1 — StorageBinding interface + in-memory implementation.** Narrow keyed-record primitives (`get`, `put`, `delete`, `list`/`where` by index, `transaction`) in `src/storage/`. The in-memory implementation is the unit-test binding for every Book.
 
   ```
   describe "InMemoryBinding"
@@ -63,7 +63,7 @@ Design references: [overview.md](../design/overview.md) (module rules, StorageBi
   - it isolates stores (a put in one store is invisible to another)
   ```
 
-- [ ] **S0.2.T2 — Dexie schema v1 + Dexie StorageBinding.** Dexie database with stores for `institutions` and `accounts` (later stories add stores via schema versions, never reshaping these). DexieBinding implements the same interface; integration tests run the *same behavioral suite* as T1 against it (shared test-suite factory — write once, run per binding).
+- [x] **S0.2.T2 — Dexie schema v1 + Dexie StorageBinding.** Dexie database with stores for `institutions` and `accounts` (later stories add stores via schema versions, never reshaping these). DexieBinding implements the same interface; integration tests run the *same behavioral suite* as T1 against it (shared test-suite factory — write once, run per binding).
 
   ```
   describe "DexieBinding (integration, fake-indexeddb)"
@@ -72,7 +72,7 @@ Design references: [overview.md](../design/overview.md) (module rules, StorageBi
   - it upgrades an empty v0 database to schema v1
   ```
 
-- [ ] **S0.2.T3 — ListRegistry generic.** One implementation reused by every registry (design: "one generic shape, reused five times"): `list(includeArchived?)`, `save` (create or update by id), `archive` (never delete).
+- [x] **S0.2.T3 — ListRegistry generic.** One implementation reused by every registry (design: "one generic shape, reused five times"): `list(includeArchived?)`, `save` (create or update by id), `archive` (never delete).
 
   ```
   describe "ListRegistry"
@@ -85,7 +85,7 @@ Design references: [overview.md](../design/overview.md) (module rules, StorageBi
   - it archive() of an unknown id rejects
   ```
 
-- [ ] **S0.2.T4 — TradeBook registries (institutions, accounts).** TradeBook constructed over a StorageBinding, exposing `registries.institutions` and `registries.accounts`. `Account` references its `institutionId`.
+- [x] **S0.2.T4 — TradeBook registries (institutions, accounts).** TradeBook constructed over a StorageBinding, exposing `registries.institutions` and `registries.accounts`. `Account` references its `institutionId`.
 
   ```
   describe "TradeBook.registries"
@@ -96,7 +96,7 @@ Design references: [overview.md](../design/overview.md) (module rules, StorageBi
   - it archives an institution while its accounts remain readable
   ```
 
-- [ ] **S0.2.T5 — Onboarding UI.** On load, the composition root checks for any non-archived Account; none → onboarding flow (create Institution: name; create Account: name, institution) → lands on Trades page. Accounts exist → straight to Trades. A Settings-lite page lists institutions/accounts and allows adding more (full management UI comes later).
+- [x] **S0.2.T5 — Onboarding UI.** On load, the composition root checks for any non-archived Account; none → onboarding flow (create Institution: name; create Account: name, institution) → lands on Trades page. Accounts exist → straight to Trades. A Settings-lite page lists institutions/accounts and allows adding more (full management UI comes later).
 
   ```
   describe "Onboarding"
@@ -106,9 +106,9 @@ Design references: [overview.md](../design/overview.md) (module rules, StorageBi
   - it skips onboarding when an account already exists
   ```
 
-- [ ] **S0.2.T6 — Integration tests** (`tests/integration/onboarding.test.ts`): full flow over Dexie + fake-indexeddb — fresh DB → registries empty → save institution + account → close/reopen DB → both present, onboarding check passes.
-- [ ] **S0.2.T7 — Playwright e2e** (`e2e/s0-2-onboarding.spec.ts`): fresh browser context → onboarding appears → create "Schwab" + "Taxable" → lands on Trades; reload → no onboarding, Settings shows both.
-- [ ] **S0.2.T8 — Browser verification.** Run the app in a real browser with cleared site data. Expected observations:
+- [x] **S0.2.T6 — Integration tests** (`tests/integration/onboarding.test.ts`): full flow over Dexie + fake-indexeddb — fresh DB → registries empty → save institution + account → close/reopen DB → both present, onboarding check passes.
+- [x] **S0.2.T7 — Playwright e2e** (`e2e/s0-2-onboarding.spec.ts`): fresh browser context → onboarding appears → create "Schwab" + "Taxable" → lands on Trades; reload → no onboarding, Settings shows both.
+- [x] **S0.2.T8 — Browser verification.** Run the app in a real browser with cleared site data. Expected observations:
   - Onboarding appears; creating an Institution and Account lands on the Trades page.
   - Reload skips onboarding (data persisted in IndexedDB — verify in DevTools → Application).
   - Settings-lite lists the created Institution and Account; adding a second Account works.
