@@ -19,5 +19,11 @@ export function createDatabase(name = 'trade-journal'): Dexie {
     strategies: 'id, seq',
     ideaSources: 'id, seq',
   })
+  // v3 adds the Journal's two stores. Entries index the nested anchor.tradeId so
+  // entriesFor is one indexed query. Earlier stores are never reshaped.
+  db.version(3).stores({
+    entries: 'id, seq, anchor.tradeId',
+    entryTypes: 'id, seq',
+  })
   return db
 }

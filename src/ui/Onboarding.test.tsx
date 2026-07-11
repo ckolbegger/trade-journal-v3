@@ -4,28 +4,30 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { AppRoot } from './AppRoot'
 import type { TradeBook } from '@/books/tradebook/trade-book'
+import type { Journal } from '@/books/journal/journal'
 import type { Account, Institution } from '@/books/tradebook/types'
-import { inMemoryTradeBook } from '../../tests/support/trade-book'
+import { inMemoryBooks } from '../../tests/support/trade-book'
 
-function renderApp(tradeBook: TradeBook) {
+function renderApp(tradeBook: TradeBook, journal: Journal) {
   return render(
     <MemoryRouter>
-      <AppRoot tradeBook={tradeBook} />
+      <AppRoot tradeBook={tradeBook} journal={journal} />
     </MemoryRouter>,
   )
 }
 
 describe('Onboarding', () => {
   it('shows onboarding when no accounts exist', async () => {
-    renderApp(inMemoryTradeBook())
+    const { tradeBook, journal } = inMemoryBooks()
+    renderApp(tradeBook, journal)
     expect(
       await screen.findByRole('heading', { name: /set up your first account/i }),
     ).toBeInTheDocument()
   })
 
   it('requires an institution name and an account name to proceed', async () => {
-    const tradeBook = inMemoryTradeBook()
-    renderApp(tradeBook)
+    const { tradeBook, journal } = inMemoryBooks()
+    renderApp(tradeBook, journal)
     const user = userEvent.setup()
     await screen.findByRole('heading', { name: /set up your first account/i })
 
@@ -37,8 +39,8 @@ describe('Onboarding', () => {
   })
 
   it('saves the institution and account via TradeBook.registries', async () => {
-    const tradeBook = inMemoryTradeBook()
-    renderApp(tradeBook)
+    const { tradeBook, journal } = inMemoryBooks()
+    renderApp(tradeBook, journal)
     const user = userEvent.setup()
     await screen.findByRole('heading', { name: /set up your first account/i })
 
@@ -57,7 +59,7 @@ describe('Onboarding', () => {
   })
 
   it('skips onboarding when an account already exists', async () => {
-    const tradeBook = inMemoryTradeBook()
+    const { tradeBook, journal } = inMemoryBooks()
     const institution = { id: '', name: 'Schwab' } as Institution
     await tradeBook.registries.institutions.save(institution)
     await tradeBook.registries.accounts.save({
@@ -66,7 +68,7 @@ describe('Onboarding', () => {
       institutionId: institution.id,
     } as Account)
 
-    renderApp(tradeBook)
+    renderApp(tradeBook, journal)
 
     expect(await screen.findByRole('heading', { name: 'Trades' })).toBeInTheDocument()
     expect(

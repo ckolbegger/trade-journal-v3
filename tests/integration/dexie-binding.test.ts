@@ -6,7 +6,7 @@ import { storageBindingContract } from '../contracts/storage-binding.contract'
 
 function makeContractDb(): Dexie {
   const db = new Dexie('contract-' + crypto.randomUUID())
-  db.version(1).stores({ widgets: 'id, kind, seq', gadgets: 'id, seq' })
+  db.version(1).stores({ widgets: 'id, kind, meta.group, seq', gadgets: 'id, seq' })
   return db
 }
 
@@ -30,9 +30,11 @@ describe('DexieBinding (integration, fake-indexeddb)', () => {
     const name = 'upgrade-' + crypto.randomUUID()
     const db = createDatabase(name)
     await db.open()
-    expect(db.verno).toBe(2)
+    expect(db.verno).toBe(3)
     expect(db.tables.map((t) => t.name).sort()).toEqual([
       'accounts',
+      'entries',
+      'entryTypes',
       'ideaSources',
       'institutions',
       'strategies',

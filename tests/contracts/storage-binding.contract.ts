@@ -49,6 +49,14 @@ export function storageBindingContract(
     expect(matches.map((w) => w.id).sort()).toEqual(['w1', 'w3'])
   })
 
+  it('lists records matching a nested indexed value', async () => {
+    await binding.put('widgets', { id: 'w1', meta: { group: 'a' } })
+    await binding.put('widgets', { id: 'w2', meta: { group: 'b' } })
+    await binding.put('widgets', { id: 'w3', meta: { group: 'a' } })
+    const matches = await binding.where<{ id: string }>('widgets', 'meta.group', 'a')
+    expect(matches.map((w) => w.id).sort()).toEqual(['w1', 'w3'])
+  })
+
   it('deletes by key', async () => {
     await binding.put('widgets', { id: 'w1' })
     await binding.delete('widgets', 'w1')

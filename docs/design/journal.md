@@ -31,7 +31,7 @@ interface Entry {
   at: Timestamp                                         // the lifecycle moment it belongs to
   anchor: Anchor
   entryTypeId: string
-  answered: { prompt: Prompt; answer: PromptAnswer }[]  // snapshotted at write time (ADR 0007)
+  answered: { prompt: Prompt; answer?: PromptAnswer }[] // snapshotted at write time (ADR 0007); answer absent on an unsettled placeholder
   placeholder: boolean
   settledAt?: Timestamp                                 // late journaling is visible: at vs settledAt
 }

@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
 import type { TradeBook } from '@/books/tradebook/trade-book'
+import type { Journal } from '@/books/journal/journal'
 import { TradeBookContext } from './tradeBookContext'
+import { JournalContext } from './journalContext'
 import { App } from './App'
 import { Onboarding } from './Onboarding'
 
-// Composition wiring's React entry: provides the TradeBook and gates on whether
-// any non-archived Account exists. None → onboarding; otherwise → the app shell.
+// Composition wiring's React entry: provides the TradeBook and Journal and gates
+// on whether any non-archived Account exists. None → onboarding; otherwise → the
+// app shell.
 
-export function AppRoot({ tradeBook }: { tradeBook: TradeBook }) {
+export function AppRoot({ tradeBook, journal }: { tradeBook: TradeBook; journal: Journal }) {
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null)
 
   useEffect(() => {
@@ -22,13 +25,15 @@ export function AppRoot({ tradeBook }: { tradeBook: TradeBook }) {
 
   return (
     <TradeBookContext.Provider value={tradeBook}>
-      {needsOnboarding === null ? (
-        <p>Loading…</p>
-      ) : needsOnboarding ? (
-        <Onboarding onComplete={() => setNeedsOnboarding(false)} />
-      ) : (
-        <App />
-      )}
+      <JournalContext.Provider value={journal}>
+        {needsOnboarding === null ? (
+          <p>Loading…</p>
+        ) : needsOnboarding ? (
+          <Onboarding onComplete={() => setNeedsOnboarding(false)} />
+        ) : (
+          <App />
+        )}
+      </JournalContext.Provider>
     </TradeBookContext.Provider>
   )
 }

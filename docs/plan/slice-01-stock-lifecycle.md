@@ -90,7 +90,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 ---
 
-## ☐ Story S1.2 — Journal at plan time
+## ☑ Story S1.2 — Journal at plan time
 
 > As a trader, I want to answer the Plan journal prompts when I confirm a Trade — or skip and owe it — so that my reasoning is captured at the moment it exists, without journaling ever blocking a trade.
 
@@ -100,7 +100,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 ### Tasks
 
-- [ ] **S1.2.T1 — Journal core.** `Journal.write` snapshots the Entry Type's prompts into the entry (ADR 0007); placeholder writes carry the snapshot with no answers. `entriesFor({trade})` returns entries anchored anywhere inside the Trade; `countFor` counts them. Dexie adds `entries`, `entryTypes` stores (entry index on `anchor.tradeId`).
+- [x] **S1.2.T1 — Journal core.** `Journal.write` snapshots the Entry Type's prompts into the entry (ADR 0007); placeholder writes carry the snapshot with no answers. `entriesFor({trade})` returns entries anchored anywhere inside the Trade; `countFor` counts them. Dexie adds `entries`, `entryTypes` stores (entry index on `anchor.tradeId`).
 
   ```
   describe "Journal.write"
@@ -119,8 +119,8 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it exposes no operation that edits a written entry's answers
   ```
 
-- [ ] **S1.2.T2 — Seeding extension.** `ensureSeeded` also seeds the Plan Entry Type (same iff-absent tests as S1.1.T4, extended to entry types).
-- [ ] **S1.2.T3 — Entry form at confirm.** After `confirmPlan` succeeds, the Plan entry form renders the seeded prompts (text / select / scale widgets). **Write now** → `Journal.write` full entry. **Skip** → placeholder written silently (this IS Journal Debt — no nag, ADR 0006). Trade detail shows the plan entry (or a "journal owed" marker) and an entry-count badge via `countFor`.
+- [x] **S1.2.T2 — Seeding extension.** `ensureSeeded` also seeds the Plan Entry Type (same iff-absent tests as S1.1.T4, extended to entry types).
+- [x] **S1.2.T3 — Entry form at confirm.** After `confirmPlan` succeeds, the Plan entry form renders the seeded prompts (text / select / scale widgets). **Write now** → `Journal.write` full entry. **Skip** → placeholder written silently (this IS Journal Debt — no nag, ADR 0006). Trade detail shows the plan entry (or a "journal owed" marker) and an entry-count badge via `countFor`.
 
   ```
   describe "PlanEntryForm"
@@ -133,9 +133,9 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it shows an owed marker for a placeholder
   ```
 
-- [ ] **S1.2.T4 — Integration tests**: confirm plan → write entry → reopen DB → `entriesFor({trade})` returns it with snapshot intact; skip path round-trips `placeholder=true`.
-- [ ] **S1.2.T5 — Playwright e2e** (`e2e/s1-2-plan-journal.spec.ts`): confirm a plan → answer prompts (conviction 4, calm) → detail shows the entry; second trade → skip → detail shows owed marker.
-- [ ] **S1.2.T6 — Browser verification.** Both paths in a real browser: written entry displays prompts-as-answered; skipped entry shows debt marker; reload persists both; confirm remains one uninterrupted flow (skip never modal-blocks). All suites green.
+- [x] **S1.2.T4 — Integration tests**: confirm plan → write entry → reopen DB → `entriesFor({trade})` returns it with snapshot intact; skip path round-trips `placeholder=true`.
+- [x] **S1.2.T5 — Playwright e2e** (`e2e/s1-2-plan-journal.spec.ts`): confirm a plan → answer prompts (conviction 4, calm) → detail shows the entry; second trade → skip → detail shows owed marker.
+- [x] **S1.2.T6 — Browser verification.** Both paths in a real browser: written entry displays prompts-as-answered; skipped entry shows debt marker; reload persists both; confirm remains one uninterrupted flow (skip never modal-blocks). All suites green.
 
 ---
 

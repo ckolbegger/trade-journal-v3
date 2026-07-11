@@ -3,6 +3,16 @@ import type { StorageBinding } from './storage-binding'
 // The unit-test binding for every Book. Stores are created lazily; records are
 // shallow-cloned in and out so callers never share references with the store.
 
+function resolvePath(record: object, path: string): unknown {
+  return path
+    .split('.')
+    .reduce<unknown>(
+      (value, key) =>
+        value && typeof value === 'object' ? (value as Record<string, unknown>)[key] : undefined,
+      record,
+    )
+}
+
 export class InMemoryBinding implements StorageBinding {
   private stores = new Map<string, Map<string, { id: string }>>()
 
@@ -33,8 +43,10 @@ export class InMemoryBinding implements StorageBinding {
   }
 
   async where<T>(store: string, index: string, value: unknown): Promise<T[]> {
+    // `index` may be a nested key path ('anchor.tradeId'), matching how Dexie
+    // indexes nested properties — resolve it the same way here.
     return [...this.storeFor(store).values()]
-      .filter((r) => (r as Record<string, unknown>)[index] === value)
+      .filter((r) => resolvePath(r, index) === value)
       .map((r) => ({ ...r }) as T)
   }
 

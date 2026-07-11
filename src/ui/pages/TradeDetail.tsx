@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTradeBook } from '../tradeBookContext'
+import { useJournal } from '../journalContext'
 import { centsToDollars } from '../format'
 import type { TradeRecord, TradeStatus } from '@/books/tradebook/types'
+import type { Entry } from '@/books/journal/types'
 
 // The Trade detail page renders Plan facts only — thesis, Strategy, Idea Source,
 // Planned Legs, Exit Levels, chart link, and the derived status badge. No
@@ -13,11 +15,13 @@ const STATUS_BUCKETS: TradeStatus[] = ['planned', 'open', 'closed']
 
 export function TradeDetail() {
   const tradeBook = useTradeBook()
+  const journal = useJournal()
   const { id } = useParams()
   const [trade, setTrade] = useState<TradeRecord | null>(null)
   const [status, setStatus] = useState<TradeStatus | null>(null)
   const [strategyName, setStrategyName] = useState('')
   const [ideaSourceName, setIdeaSourceName] = useState('')
+  const [entries, setEntries] = useState<Entry[]>([])
 
   useEffect(() => {
     if (!id) return
@@ -26,6 +30,7 @@ export function TradeDetail() {
       const record = await tradeBook.get(tradeId)
       const strategies = await tradeBook.registries.strategies.list(true)
       const ideaSources = await tradeBook.registries.ideaSources.list(true)
+      const journalEntries = await journal.entriesFor({ trade: tradeId })
       // Status is derived — find which status bucket holds this Trade.
       let found: TradeStatus | null = null
       for (const bucket of STATUS_BUCKETS) {
@@ -40,12 +45,13 @@ export function TradeDetail() {
       setStatus(found)
       setStrategyName(strategies.find((s) => s.id === record.plan.strategyId)?.name ?? '')
       setIdeaSourceName(ideaSources.find((s) => s.id === record.plan.ideaSourceId)?.name ?? '')
+      setEntries(journalEntries)
     }
     void load(id)
     return () => {
       active = false
     }
-  }, [tradeBook, id])
+  }, [tradeBook, journal, id])
 
   if (!trade) return <p>Loading…</p>
 
@@ -90,6 +96,25 @@ export function TradeDetail() {
           </a>
         </p>
       )}
+
+      <h3>Journal</h3>
+      <span aria-label="journal entries">{entries.length}</span>
+      {entries.map((entry) => (
+        <div key={entry.id}>
+          {entry.placeholder ? (
+            <p aria-label="journal owed">Journal entry owed</p>
+          ) : (
+            <dl>
+              {entry.answered.map((a, i) => (
+                <div key={i}>
+                  <dt>{a.prompt.text}</dt>
+                  <dd>{a.answer ? String(a.answer.value) : '—'}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </div>
+      ))}
     </section>
   )
 }

@@ -2,16 +2,19 @@ import { describe, it, expect } from 'vitest'
 import { createDatabase } from '@/storage/schema'
 import { DexieBinding } from '@/storage/dexie-binding'
 import { TradeBook } from '@/books/tradebook/trade-book'
+import { Journal } from '@/books/journal/journal'
 import { Workspace } from '@/workspace/workspace'
 import type { Account, Institution, PlanDraft } from '@/books/tradebook/types'
 
 async function bookWithAccount(name: string): Promise<{ book: TradeBook; accountId: string }> {
-  const book = new TradeBook(new DexieBinding(createDatabase(name)))
+  const binding = new DexieBinding(createDatabase(name))
+  const book = new TradeBook(binding)
+  const journal = new Journal(binding)
   const institution = { id: '', name: 'Schwab' } as Institution
   await book.registries.institutions.save(institution)
   const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
   await book.registries.accounts.save(account)
-  await new Workspace(book).ensureSeeded()
+  await new Workspace(book, journal).ensureSeeded()
   return { book, accountId: account.id }
 }
 

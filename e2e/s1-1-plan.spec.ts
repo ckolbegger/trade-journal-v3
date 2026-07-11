@@ -24,6 +24,11 @@ test('plan and confirm a stock Trade (worked example)', async ({ page }) => {
 
   await page.getByRole('button', { name: /confirm plan/i }).click()
 
+  // Confirming now opens the Plan journal (S1.2). Skip it to reach the detail —
+  // journaling never blocks the flow.
+  await expect(page.getByRole('heading', { name: 'Plan journal' })).toBeVisible()
+  await page.getByRole('button', { name: /skip/i }).click()
+
   // Detail page shows the Plan facts.
   await expect(page.getByText('AAPL breaks out')).toBeVisible()
   await expect(page.getByText(/buy 100 AAPL/i)).toBeVisible()

@@ -4,13 +4,15 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { PlanForm } from './PlanForm'
 import { TradeBookContext } from '../tradeBookContext'
+import { JournalContext } from '../journalContext'
 import type { TradeBook } from '@/books/tradebook/trade-book'
+import type { Journal } from '@/books/journal/journal'
 import type { Account, Institution } from '@/books/tradebook/types'
 import { Workspace } from '@/workspace/workspace'
-import { inMemoryTradeBook } from '../../../tests/support/trade-book'
+import { inMemoryBooks } from '../../../tests/support/trade-book'
 
-async function seededBook(): Promise<TradeBook> {
-  const book = inMemoryTradeBook()
+async function seededBook(): Promise<{ book: TradeBook; journal: Journal }> {
+  const { tradeBook: book, journal } = inMemoryBooks()
   const institution = { id: '', name: 'Schwab' } as Institution
   await book.registries.institutions.save(institution)
   await book.registries.accounts.save({
@@ -18,19 +20,21 @@ async function seededBook(): Promise<TradeBook> {
     name: 'Taxable',
     institutionId: institution.id,
   } as Account)
-  await new Workspace(book).ensureSeeded()
-  return book
+  await new Workspace(book, journal).ensureSeeded()
+  return { book, journal }
 }
 
-function renderForm(book: TradeBook) {
+function renderForm(book: TradeBook, journal: Journal) {
   return render(
     <TradeBookContext.Provider value={book}>
-      <MemoryRouter initialEntries={['/trades/new']}>
-        <Routes>
-          <Route path="/trades/new" element={<PlanForm />} />
-          <Route path="/trades/:id" element={<div>detail page</div>} />
-        </Routes>
-      </MemoryRouter>
+      <JournalContext.Provider value={journal}>
+        <MemoryRouter initialEntries={['/trades/new']}>
+          <Routes>
+            <Route path="/trades/new" element={<PlanForm />} />
+            <Route path="/trades/:id" element={<div>detail page</div>} />
+          </Routes>
+        </MemoryRouter>
+      </JournalContext.Provider>
     </TradeBookContext.Provider>,
   )
 }
@@ -45,15 +49,15 @@ async function fillWorkedExample(user: ReturnType<typeof userEvent.setup>) {
 
 describe('PlanForm', () => {
   it('pre-fills a buy-stock Planned Leg from the Long Stock strategy', async () => {
-    const book = await seededBook()
-    renderForm(book)
+    const { book, journal } = await seededBook()
+    renderForm(book, journal)
     expect(await screen.findByText(/buy stock/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/ticker/i)).toBeInTheDocument()
   })
 
   it('blocks confirm until account, thesis, ticker, qty, stop, and target are set', async () => {
-    const book = await seededBook()
-    renderForm(book)
+    const { book, journal } = await seededBook()
+    renderForm(book, journal)
     const user = userEvent.setup()
     const confirm = await screen.findByRole('button', { name: /confirm plan/i })
     expect(confirm).toBeDisabled()
@@ -62,8 +66,8 @@ describe('PlanForm', () => {
   })
 
   it('adds a new Idea Source inline and selects it', async () => {
-    const book = await seededBook()
-    renderForm(book)
+    const { book, journal } = await seededBook()
+    renderForm(book, journal)
     const user = userEvent.setup()
     await screen.findByLabelText(/thesis/i)
 
@@ -78,9 +82,9 @@ describe('PlanForm', () => {
   })
 
   it('calls TradeBook.confirmPlan with a well-formed PlanDraft', async () => {
-    const book = await seededBook()
+    const { book, journal } = await seededBook()
     const spy = vi.spyOn(book, 'confirmPlan')
-    renderForm(book)
+    renderForm(book, journal)
     const user = userEvent.setup()
     await screen.findByLabelText(/thesis/i)
 

@@ -3,18 +3,20 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { TradeDetail } from './TradeDetail'
 import { TradeBookContext } from '../tradeBookContext'
+import { JournalContext } from '../journalContext'
 import type { TradeBook } from '@/books/tradebook/trade-book'
+import type { Journal } from '@/books/journal/journal'
 import type { Account, IdeaSource, Institution, PlanDraft } from '@/books/tradebook/types'
-import { Workspace } from '@/workspace/workspace'
-import { inMemoryTradeBook } from '../../../tests/support/trade-book'
+import { Workspace, PLAN_ENTRY_TYPE_ID } from '@/workspace/workspace'
+import { inMemoryBooks } from '../../../tests/support/trade-book'
 
-async function seededTrade(): Promise<{ book: TradeBook; id: string }> {
-  const book = inMemoryTradeBook()
+async function seededTrade(): Promise<{ book: TradeBook; journal: Journal; id: string }> {
+  const { tradeBook: book, journal } = inMemoryBooks()
   const institution = { id: '', name: 'Schwab' } as Institution
   await book.registries.institutions.save(institution)
   const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
   await book.registries.accounts.save(account)
-  await new Workspace(book).ensureSeeded()
+  await new Workspace(book, journal).ensureSeeded()
   const source: IdeaSource = { id: '', name: 'Newsletter X' }
   await book.registries.ideaSources.save(source)
 
@@ -32,25 +34,27 @@ async function seededTrade(): Promise<{ book: TradeBook; id: string }> {
     chartLink: 'https://charts.example/aapl',
   }
   const id = await book.confirmPlan(draft)
-  return { book, id }
+  return { book, journal, id }
 }
 
-function renderDetail(book: TradeBook, id: string) {
+function renderDetail(book: TradeBook, journal: Journal, id: string) {
   return render(
     <TradeBookContext.Provider value={book}>
-      <MemoryRouter initialEntries={[`/trades/${id}`]}>
-        <Routes>
-          <Route path="/trades/:id" element={<TradeDetail />} />
-        </Routes>
-      </MemoryRouter>
+      <JournalContext.Provider value={journal}>
+        <MemoryRouter initialEntries={[`/trades/${id}`]}>
+          <Routes>
+            <Route path="/trades/:id" element={<TradeDetail />} />
+          </Routes>
+        </MemoryRouter>
+      </JournalContext.Provider>
     </TradeBookContext.Provider>,
   )
 }
 
 describe('TradeDetail', () => {
   it('shows the plan facts, resolved names, and a planned status badge', async () => {
-    const { book, id } = await seededTrade()
-    renderDetail(book, id)
+    const { book, journal, id } = await seededTrade()
+    renderDetail(book, journal, id)
 
     expect(await screen.findByText('AAPL breaks out')).toBeInTheDocument()
     expect(screen.getByText('Long Stock')).toBeInTheDocument()
@@ -66,10 +70,49 @@ describe('TradeDetail', () => {
   })
 
   it('offers no way to edit the confirmed Plan', async () => {
-    const { book, id } = await seededTrade()
-    renderDetail(book, id)
+    const { book, journal, id } = await seededTrade()
+    renderDetail(book, journal, id)
     await screen.findByText('AAPL breaks out')
     expect(screen.queryByRole('button', { name: /edit/i })).toBeNull()
     expect(screen.queryByRole('link', { name: /edit/i })).toBeNull()
+  })
+})
+
+describe('TradeDetail journal section', () => {
+  it("shows the plan entry's prompts and answers", async () => {
+    const { book, journal, id } = await seededTrade()
+    await journal.write({
+      anchor: { kind: 'plan', tradeId: id },
+      entryTypeId: PLAN_ENTRY_TYPE_ID,
+      at: Date.now(),
+      placeholder: false,
+      answers: [
+        { promptId: 'why', value: 'Breakout confirmed' },
+        { promptId: 'conviction', value: 4 },
+        { promptId: 'emotion', value: 'calm' },
+      ],
+    })
+    renderDetail(book, journal, id)
+
+    expect(await screen.findByText('Why this trade, why now?')).toBeInTheDocument()
+    expect(screen.getByText('Breakout confirmed')).toBeInTheDocument()
+    expect(screen.getByText('calm')).toBeInTheDocument()
+    expect(screen.getByLabelText('journal entries')).toHaveTextContent('1')
+    expect(screen.queryByLabelText('journal owed')).toBeNull()
+  })
+
+  it('shows an owed marker for a placeholder', async () => {
+    const { book, journal, id } = await seededTrade()
+    await journal.write({
+      anchor: { kind: 'plan', tradeId: id },
+      entryTypeId: PLAN_ENTRY_TYPE_ID,
+      at: Date.now(),
+      placeholder: true,
+      answers: [],
+    })
+    renderDetail(book, journal, id)
+
+    expect(await screen.findByLabelText('journal owed')).toBeInTheDocument()
+    expect(screen.getByLabelText('journal entries')).toHaveTextContent('1')
   })
 })

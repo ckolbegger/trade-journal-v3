@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTradeBook } from '../tradeBookContext'
+import { PlanEntryForm } from './PlanEntryForm'
 import { dollarsToCents, todayISO } from '../format'
 import type {
   Account,
@@ -34,6 +35,7 @@ export function PlanForm() {
   const [stop, setStop] = useState('')
   const [target, setTarget] = useState('')
   const [chartLink, setChartLink] = useState('')
+  const [confirmedTradeId, setConfirmedTradeId] = useState<string | null>(null)
 
   useEffect(() => {
     let active = true
@@ -112,7 +114,18 @@ export function PlanForm() {
       ...(chartLink.trim() ? { chartLink: chartLink.trim() } : {}),
     }
     const id = await tradeBook.confirmPlan(draft)
-    navigate(`/trades/${id}`)
+    setConfirmedTradeId(id)
+  }
+
+  // Once the Plan is confirmed, the Plan journal prompts take over the page —
+  // answer now or skip (Journal Debt). Either way the trader lands on the detail.
+  if (confirmedTradeId) {
+    return (
+      <PlanEntryForm
+        tradeId={confirmedTradeId}
+        onDone={() => navigate(`/trades/${confirmedTradeId}`)}
+      />
+    )
   }
 
   return (
