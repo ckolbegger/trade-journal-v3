@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { TradeDetail } from './TradeDetail'
 import { TradeBookContext } from '../tradeBookContext'
@@ -118,6 +119,96 @@ describe('TradeDetail journal section', () => {
 
     expect(await screen.findByLabelText('journal owed')).toBeInTheDocument()
     expect(screen.getByLabelText('journal entries')).toHaveTextContent('1')
+  })
+})
+
+async function buy100(book: TradeBook, id: string): Promise<string> {
+  const outcome = await book.recordExecution(
+    { tradeId: id, newLeg: 'AAPL' },
+    {
+      side: 'buy',
+      qty: 100,
+      price: 15000,
+      fees: 100,
+      timestamp: new Date('2026-07-10T12:00:00').getTime(),
+    },
+  )
+  return outcome.record.legs[0].id
+}
+
+async function flatten(book: TradeBook, id: string, legId: string): Promise<void> {
+  await book.recordExecution(
+    { tradeId: id, legId },
+    {
+      side: 'sell',
+      qty: 100,
+      price: 16800,
+      fees: 100,
+      timestamp: new Date('2026-07-11T12:00:00').getTime(),
+    },
+  )
+}
+
+describe('CloseFlow', () => {
+  it('prompts for a Close Reason when a fill flattens the Trade', async () => {
+    const { book, journal, id } = await seededTrade()
+    const legId = await buy100(book, id)
+    await flatten(book, id, legId)
+    renderDetail(book, journal, id)
+
+    expect(await screen.findByLabelText(/close reason/i)).toBeInTheDocument()
+  })
+
+  it('shows the reason and close entry once closed', async () => {
+    const { book, journal, id } = await seededTrade()
+    const legId = await buy100(book, id)
+    await flatten(book, id, legId)
+    await book.setCloseReason(id, { id: 'close-reason-hit-target', name: 'Hit Target' })
+    await journal.write({
+      anchor: { kind: 'close', tradeId: id },
+      entryTypeId: 'entry-type-close',
+      at: Date.now(),
+      placeholder: false,
+      answers: [{ promptId: 'lesson', value: 'Let winners run' }],
+    })
+    renderDetail(book, journal, id)
+
+    expect(await screen.findByLabelText('status')).toHaveTextContent(/closed/i)
+    expect(screen.getByLabelText('close reason')).toHaveTextContent('Hit Target')
+    expect(screen.getByText('Let winners run')).toBeInTheDocument()
+    expect(screen.queryByRole('combobox', { name: /close reason/i })).toBeNull()
+  })
+
+  it('can be dismissed and completed later from the detail page', async () => {
+    const { book, journal, id } = await seededTrade()
+    const legId = await buy100(book, id)
+    await flatten(book, id, legId)
+    renderDetail(book, journal, id)
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: /dismiss/i }))
+    expect(screen.queryByLabelText(/close reason/i)).toBeNull()
+
+    await user.click(screen.getByRole('button', { name: /add close reason/i }))
+    expect(await screen.findByLabelText(/close reason/i)).toBeInTheDocument()
+  })
+})
+
+describe('AbandonFlow', () => {
+  it('offers abandon on a planned Trade and requires a reason', async () => {
+    const { book, journal, id } = await seededTrade()
+    renderDetail(book, journal, id)
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: /abandon/i }))
+
+    const select = await screen.findByLabelText(/close reason/i)
+    expect(select).toBeInTheDocument()
+    await user.selectOptions(select, 'Never Filled')
+    await user.click(screen.getByRole('button', { name: /record close/i }))
+
+    expect(await screen.findByLabelText('status')).toHaveTextContent(/closed/i)
+    expect(screen.getByLabelText('close reason')).toHaveTextContent('Never Filled')
   })
 })
 

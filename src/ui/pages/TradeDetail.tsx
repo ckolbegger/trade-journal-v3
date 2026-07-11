@@ -4,6 +4,7 @@ import { useTradeBook } from '../tradeBookContext'
 import { useJournal } from '../journalContext'
 import { useValuations } from '../valuationsContext'
 import { RecordFillForm } from './RecordFillForm'
+import { CloseForm } from './CloseForm'
 import { centsToDollars, timestampToISODate } from '../format'
 import { StatusBadge } from '../components/Badge'
 import { btnSecondary, card, heading, link, num, subheading } from '../styles'
@@ -29,6 +30,8 @@ export function TradeDetail() {
   const [ideaSourceName, setIdeaSourceName] = useState('')
   const [entries, setEntries] = useState<Entry[]>([])
   const [showFill, setShowFill] = useState(false)
+  const [closeDismissed, setCloseDismissed] = useState(false)
+  const [abandoning, setAbandoning] = useState(false)
   const [refresh, setRefresh] = useState(0)
 
   useEffect(() => {
@@ -66,6 +69,12 @@ export function TradeDetail() {
   if (!trade) return <p>Loading…</p>
 
   const { plan } = trade
+
+  // A flat Trade with no reason yet is awaiting its Close Reason (the flattening
+  // fill just landed). The prompt is non-blocking: it can be dismissed and
+  // completed later. A planned Trade can be abandoned with a reason on demand.
+  const flatNeedsReason = status === 'closed' && !trade.closeReason
+  const showCloseForm = (flatNeedsReason && !closeDismissed) || abandoning
 
   // Every Execution across the Trade's Legs, oldest first — the fact history.
   const executions = trade.legs
@@ -149,6 +158,42 @@ export function TradeDetail() {
               setRefresh((n) => n + 1)
             }}
           />
+        )}
+      </div>
+
+      <div className={`${card} space-y-3`}>
+        <div className="flex items-center justify-between">
+          <h3 className={subheading}>Close</h3>
+          {status === 'planned' && !abandoning && (
+            <button type="button" className={btnSecondary} onClick={() => setAbandoning(true)}>
+              Abandon
+            </button>
+          )}
+          {flatNeedsReason && closeDismissed && !abandoning && (
+            <button type="button" className={btnSecondary} onClick={() => setCloseDismissed(false)}>
+              Add close reason
+            </button>
+          )}
+        </div>
+        {trade.closeReason ? (
+          <p aria-label="close reason" className="text-sm text-slate-800">
+            {trade.closeReason.name}
+          </p>
+        ) : showCloseForm ? (
+          <CloseForm
+            tradeId={trade.id}
+            onDone={() => {
+              setAbandoning(false)
+              setCloseDismissed(false)
+              setRefresh((n) => n + 1)
+            }}
+            onDismiss={() => {
+              setAbandoning(false)
+              setCloseDismissed(true)
+            }}
+          />
+        ) : (
+          <p className="text-sm text-slate-500">No close reason</p>
         )}
       </div>
 

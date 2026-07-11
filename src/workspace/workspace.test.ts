@@ -2,7 +2,13 @@ import { describe, it, expect } from 'vitest'
 import { InMemoryBinding } from '@/storage/in-memory-binding'
 import { TradeBook } from '@/books/tradebook/trade-book'
 import { Journal } from '@/books/journal/journal'
-import { Workspace, LONG_STOCK_STRATEGY_ID, PLAN_ENTRY_TYPE_ID } from './workspace'
+import {
+  Workspace,
+  LONG_STOCK_STRATEGY_ID,
+  PLAN_ENTRY_TYPE_ID,
+  CLOSE_ENTRY_TYPE_ID,
+  CLOSE_REASON_IDS,
+} from './workspace'
 
 function makeWorkspace(): { workspace: Workspace; tradeBook: TradeBook; journal: Journal } {
   const binding = new InMemoryBinding()
@@ -55,30 +61,30 @@ describe('Workspace.ensureSeeded — Plan Entry Type', () => {
   it('seeds the Plan Entry Type into an empty registry', async () => {
     const { workspace, journal } = makeWorkspace()
     await workspace.ensureSeeded()
-    const types = await journal.entryTypes.list()
-    expect(types.map((t) => t.name)).toEqual(['Plan'])
-    const [plan] = types
-    expect(plan.id).toBe(PLAN_ENTRY_TYPE_ID)
-    expect(plan.designatedFor).toBe('plan')
-    expect(plan.prompts.map((p) => p.kind)).toEqual(['text', 'text', 'scale', 'select'])
+    const plan = (await journal.entryTypes.list()).find((t) => t.id === PLAN_ENTRY_TYPE_ID)
+    expect(plan?.name).toBe('Plan')
+    expect(plan?.designatedFor).toBe('plan')
+    expect(plan?.prompts.map((p) => p.kind)).toEqual(['text', 'text', 'scale', 'select'])
   })
 
-  it('does not duplicate on a second run', async () => {
+  it('does not duplicate the Plan type on a second run', async () => {
     const { workspace, journal } = makeWorkspace()
     await workspace.ensureSeeded()
     await workspace.ensureSeeded()
-    expect(await journal.entryTypes.list()).toHaveLength(1)
+    const plans = (await journal.entryTypes.list()).filter((t) => t.id === PLAN_ENTRY_TYPE_ID)
+    expect(plans).toHaveLength(1)
   })
 
   it('does not overwrite a Plan Entry Type the trader edited', async () => {
     const { workspace, journal } = makeWorkspace()
     await workspace.ensureSeeded()
-    const [seeded] = await journal.entryTypes.list()
+    const seeded = (await journal.entryTypes.list()).find((t) => t.id === PLAN_ENTRY_TYPE_ID)!
     await journal.entryTypes.save({ ...seeded, name: 'My Plan' })
 
     await workspace.ensureSeeded()
 
-    expect((await journal.entryTypes.list()).map((t) => t.name)).toEqual(['My Plan'])
+    const plan = (await journal.entryTypes.list()).find((t) => t.id === PLAN_ENTRY_TYPE_ID)
+    expect(plan?.name).toBe('My Plan')
   })
 
   it('does not resurrect a Plan Entry Type the trader archived', async () => {
@@ -88,7 +94,62 @@ describe('Workspace.ensureSeeded — Plan Entry Type', () => {
 
     await workspace.ensureSeeded()
 
-    expect(await journal.entryTypes.list()).toEqual([])
-    expect(await journal.entryTypes.list(true)).toHaveLength(1)
+    expect((await journal.entryTypes.list()).some((t) => t.id === PLAN_ENTRY_TYPE_ID)).toBe(false)
+    expect(
+      (await journal.entryTypes.list(true)).filter((t) => t.id === PLAN_ENTRY_TYPE_ID),
+    ).toHaveLength(1)
+  })
+})
+
+describe('Workspace.ensureSeeded — Close Reasons and Close Entry Type', () => {
+  it('seeds the five Close Reasons and the Close Entry Type iff absent', async () => {
+    const { workspace, tradeBook, journal } = makeWorkspace()
+    await workspace.ensureSeeded()
+
+    const reasons = await tradeBook.registries.closeReasons.list()
+    expect(reasons.map((r) => r.name)).toEqual([
+      'Hit Target',
+      'Hit Stop',
+      'Thesis Invalidated',
+      'Timed Out',
+      'Never Filled',
+    ])
+    expect(reasons.map((r) => r.id)).toEqual(CLOSE_REASON_IDS)
+
+    const close = (await journal.entryTypes.list()).find((t) => t.id === CLOSE_ENTRY_TYPE_ID)
+    expect(close?.name).toBe('Close')
+    expect(close?.designatedFor).toBe('close')
+    expect(close?.prompts.map((p) => p.kind)).toEqual(['text', 'select', 'text'])
+  })
+
+  it('does not duplicate the Close Reasons on a second run', async () => {
+    const { workspace, tradeBook } = makeWorkspace()
+    await workspace.ensureSeeded()
+    await workspace.ensureSeeded()
+    expect(await tradeBook.registries.closeReasons.list()).toHaveLength(5)
+  })
+
+  it('does not overwrite a Close Reason the trader edited', async () => {
+    const { workspace, tradeBook } = makeWorkspace()
+    await workspace.ensureSeeded()
+    const [seeded] = await tradeBook.registries.closeReasons.list()
+    await tradeBook.registries.closeReasons.save({ ...seeded, name: 'Target Reached' })
+
+    await workspace.ensureSeeded()
+
+    const reasons = await tradeBook.registries.closeReasons.list()
+    expect(reasons.find((r) => r.id === seeded.id)?.name).toBe('Target Reached')
+    expect(reasons).toHaveLength(5)
+  })
+
+  it('does not resurrect a Close Reason the trader archived', async () => {
+    const { workspace, tradeBook } = makeWorkspace()
+    await workspace.ensureSeeded()
+    await tradeBook.registries.closeReasons.archive(CLOSE_REASON_IDS[0])
+
+    await workspace.ensureSeeded()
+
+    expect(await tradeBook.registries.closeReasons.list()).toHaveLength(4)
+    expect(await tradeBook.registries.closeReasons.list(true)).toHaveLength(5)
   })
 })

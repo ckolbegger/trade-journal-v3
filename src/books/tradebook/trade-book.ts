@@ -1,4 +1,4 @@
-import type { LegFacts, TradeId, TradeRecord } from '@/domain/trademath/types'
+import type { CloseReason, LegFacts, TradeId, TradeRecord } from '@/domain/trademath/types'
 import type { StorageBinding } from '@/storage/storage-binding'
 import { statusOf } from '@/domain/trademath/status'
 import { parseInstrumentKey } from '@/domain/trademath/instrument'
@@ -29,6 +29,7 @@ export class TradeBook {
     accounts: ListRegistry<Account>
     strategies: ListRegistry<StrategyTemplate>
     ideaSources: ListRegistry<IdeaSource>
+    closeReasons: ListRegistry<CloseReason>
   }
 
   constructor(private binding: StorageBinding) {
@@ -42,6 +43,7 @@ export class TradeBook {
       }),
       strategies: new ListRegistry<StrategyTemplate>(binding, 'strategies'),
       ideaSources: new ListRegistry<IdeaSource>(binding, 'ideaSources'),
+      closeReasons: new ListRegistry<CloseReason>(binding, 'closeReasons'),
     }
   }
 
@@ -90,6 +92,26 @@ export class TradeBook {
       newDeviations: [],
       nowFlat: statusOf(record) === 'closed',
     }
+  }
+
+  // Attaches a Close Reason to an already-flat Trade or abandons a planned one.
+  // No status is written — statusOf reads 'closed' from the reason (ADR 0005).
+  // Rejects a reason not in the registry and refuses to close a Trade that still
+  // holds quantity (flatten it with a closing Execution first).
+  async setCloseReason(tradeId: TradeId, reason: CloseReason): Promise<void> {
+    const record = await this.binding.get<TradeRecord>(TRADES, tradeId)
+    if (!record) throw new Error(`No Trade ${tradeId}`)
+
+    const known = await this.registries.closeReasons.list(true)
+    if (!known.some((r) => r.id === reason.id)) {
+      throw new Error(`Unknown Close Reason ${reason.id}`)
+    }
+    if (statusOf(record) === 'open') {
+      throw new Error(`Cannot close an open Trade ${tradeId} — flatten it first`)
+    }
+
+    record.closeReason = reason
+    await this.binding.put(TRADES, structuredClone(record))
   }
 
   async get(tradeId: TradeId): Promise<TradeRecord> {

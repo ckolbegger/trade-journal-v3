@@ -25,5 +25,10 @@ export function createDatabase(name = 'trade-journal'): Dexie {
     entries: 'id, seq, anchor.tradeId',
     entryTypes: 'id, seq',
   })
+  // v4 adds the Close Reasons registry (seeded defaults; setCloseReason picks
+  // from here). Earlier stores are never reshaped.
+  db.version(4).stores({
+    closeReasons: 'id, seq',
+  })
   return db
 }

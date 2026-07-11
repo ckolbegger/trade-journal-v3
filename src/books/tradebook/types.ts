@@ -104,6 +104,7 @@ export interface ExecutionOutcome {
 // The fact-read shapes the UI renders come through the Book, never straight from
 // the domain layer (module-boundary rule): re-export them here.
 export type {
+  CloseReason,
   ExitLevel,
   Instrument,
   PlanFacts,

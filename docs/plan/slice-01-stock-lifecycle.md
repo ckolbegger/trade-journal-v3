@@ -197,7 +197,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 ---
 
-## ☐ Story S1.4 — Close & abandon
+## ☑ Story S1.4 — Close & abandon
 
 > As a trader, I want the app to notice when a fill flattens my Trade and ask me why it ended — and let me abandon a planned Trade whose thesis died — so that every ended Trade carries a queryable Close Reason.
 
@@ -207,7 +207,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 ### Tasks
 
-- [ ] **S1.4.T1 — setCloseReason + seeds.**
+- [x] **S1.4.T1 — setCloseReason + seeds.**
 
   ```
   describe "TradeBook.setCloseReason"
@@ -219,7 +219,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it seeds the five Close Reasons and the Close Entry Type iff absent
   ```
 
-- [ ] **S1.4.T2 — Close flow UI.** When `recordExecution` returns `nowFlat: true`, prompt for Close Reason (from registry) + the Close entry form (write or skip → placeholder — same mechanics as S1.2). Trade badge shows `closed`; detail shows reason + close entry. Trades page splits or filters by status (Open / Planned / Closed).
+- [x] **S1.4.T2 — Close flow UI.** When `recordExecution` returns `nowFlat: true`, prompt for Close Reason (from registry) + the Close entry form (write or skip → placeholder — same mechanics as S1.2). Trade badge shows `closed`; detail shows reason + close entry. Trades page splits or filters by status (Open / Planned / Closed).
 
   ```
   describe "CloseFlow"
@@ -231,9 +231,9 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it offers 'abandon' on a planned Trade and requires a reason (e.g. Never Filled)
   ```
 
-- [ ] **S1.4.T3 — Integration tests**: open → flattening sell → reason Hit Target + entry → reopen DB → status closed, reason and entry persisted; abandoned planned Trade round-trips as closed with Never Filled.
-- [ ] **S1.4.T4 — Playwright e2e** (`e2e/s1-4-close.spec.ts`): worked example — sell 100 @ 168 fees 1 → close prompt → Hit Target → answer close prompts → badge closed; second planned trade → abandon Never Filled.
-- [ ] **S1.4.T5 — Browser verification.** Drive both endings in a real browser: flattening fill triggers the prompt at the natural moment; dismissing it leaves a completable owed state (never a blocking modal); abandoned plan reads closed/Never Filled; reload persists. All suites green.
+- [x] **S1.4.T3 — Integration tests**: open → flattening sell → reason Hit Target + entry → reopen DB → status closed, reason and entry persisted; abandoned planned Trade round-trips as closed with Never Filled.
+- [x] **S1.4.T4 — Playwright e2e** (`e2e/s1-4-close.spec.ts`): worked example — sell 100 @ 168 fees 1 → close prompt → Hit Target → answer close prompts → badge closed; second planned trade → abandon Never Filled.
+- [x] **S1.4.T5 — Browser verification.** Drive both endings in a real browser: flattening fill triggers the prompt at the natural moment; dismissing it leaves a completable owed state (never a blocking modal); abandoned plan reads closed/Never Filled; reload persists. All suites green.
 
 ---
 

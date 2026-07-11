@@ -66,4 +66,19 @@ describe('TradeList', () => {
     const aapl = await screen.findByRole('listitem', { name: /AAPL/i })
     expect(aapl).toHaveTextContent(/open/i)
   })
+
+  it('shows a closed Trade with a closed badge', async () => {
+    const { book, accountId } = await seededBook()
+    await book.registries.closeReasons.save({
+      id: 'close-reason-never-filled',
+      name: 'Never Filled',
+    })
+    const id = await book.confirmPlan(draft(accountId, 'AAPL'))
+    await book.setCloseReason(id, { id: 'close-reason-never-filled', name: 'Never Filled' })
+
+    renderPage(book)
+
+    const aapl = await screen.findByRole('listitem', { name: /AAPL/i })
+    expect(aapl).toHaveTextContent(/closed/i)
+  })
 })

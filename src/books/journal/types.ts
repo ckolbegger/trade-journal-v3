@@ -13,9 +13,9 @@ export type EntryId = string
 export type TradeId = string
 export type Timestamp = number // epoch ms
 
-// This slice anchors entries only at plan time. Other kinds arrive with the
-// slices that first write them (close in S1.4, review in S1.7, …).
-export type Anchor = { kind: 'plan'; tradeId: TradeId }
+// Anchor kinds arrive with the slices that first write them: plan (S1.2), close
+// (S1.4). review (S1.7) and the rest follow.
+export type Anchor = { kind: 'plan'; tradeId: TradeId } | { kind: 'close'; tradeId: TradeId }
 
 export interface Prompt {
   id: string
@@ -33,7 +33,7 @@ export interface PromptAnswer {
 export interface EntryType {
   id: string
   name: string
-  designatedFor?: 'plan' // which moment uses this type (seeded; re-designatable)
+  designatedFor?: 'plan' | 'close' // which moment uses this type (seeded; re-designatable)
   prompts: Prompt[]
   archived?: boolean // registries archive, never delete
 }

@@ -25,14 +25,17 @@ export function TradesPage() {
       tradeBook.query({}),
       tradeBook.query({ status: 'planned' }),
       tradeBook.query({ status: 'open' }),
-    ]).then(([all, planned, open]) => {
+      tradeBook.query({ status: 'closed' }),
+    ]).then(([all, planned, open, closed]) => {
       if (!active) return
       const plannedIds = new Set(planned.map((t) => t.id))
       const openIds = new Set(open.map((t) => t.id))
+      const closedIds = new Set(closed.map((t) => t.id))
       const next: Row[] = []
       for (const trade of all) {
         if (plannedIds.has(trade.id)) next.push({ trade, status: 'planned' })
         else if (openIds.has(trade.id)) next.push({ trade, status: 'open' })
+        else if (closedIds.has(trade.id)) next.push({ trade, status: 'closed' })
       }
       setRows(next)
     })
