@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useJournal } from '../journalContext'
+import { btnPrimary, btnSecondary, field, heading, input } from '../styles'
 import type { EntryType, PromptAnswer } from '@/books/journal/types'
 
 // Shown right after a Plan is confirmed: the seeded Plan prompts. The trader may
@@ -62,9 +63,10 @@ export function PlanEntryForm({ tradeId, onDone }: { tradeId: string; onDone: ()
   }
 
   return (
-    <section>
-      <h2>Plan journal</h2>
+    <section className="space-y-4">
+      <h2 className={heading}>Plan journal</h2>
       <form
+        className="space-y-4"
         onSubmit={(e) => {
           e.preventDefault()
           void writeNow()
@@ -73,9 +75,11 @@ export function PlanEntryForm({ tradeId, onDone }: { tradeId: string; onDone: ()
         {entryType.prompts.map((prompt) => {
           if (prompt.kind === 'text') {
             return (
-              <label key={prompt.id}>
+              <label key={prompt.id} className={field}>
                 {prompt.text}
                 <textarea
+                  className={input}
+                  rows={3}
                   value={(values[prompt.id] as string) ?? ''}
                   onChange={(e) => setValue(prompt.id, e.target.value)}
                 />
@@ -84,9 +88,10 @@ export function PlanEntryForm({ tradeId, onDone }: { tradeId: string; onDone: ()
           }
           if (prompt.kind === 'select') {
             return (
-              <label key={prompt.id}>
+              <label key={prompt.id} className={field}>
                 {prompt.text}
                 <select
+                  className={input}
                   value={(values[prompt.id] as string) ?? ''}
                   onChange={(e) => setValue(prompt.id, e.target.value)}
                 >
@@ -105,28 +110,34 @@ export function PlanEntryForm({ tradeId, onDone }: { tradeId: string; onDone: ()
           const steps = []
           for (let n = min; n <= max; n++) steps.push(n)
           return (
-            <fieldset key={prompt.id}>
-              <legend>{prompt.text}</legend>
-              {steps.map((n) => (
-                <label key={n}>
-                  <input
-                    type="radio"
-                    name={prompt.id}
-                    value={n}
-                    checked={values[prompt.id] === n}
-                    onChange={() => setValue(prompt.id, n)}
-                  />
-                  {n}
-                </label>
-              ))}
+            <fieldset key={prompt.id} className="space-y-2 rounded-lg border border-slate-200 p-4">
+              <legend className="px-1 text-sm font-medium text-slate-700">{prompt.text}</legend>
+              <div className="flex flex-wrap gap-3">
+                {steps.map((n) => (
+                  <label key={n} className="flex items-center gap-1.5 text-sm text-slate-700">
+                    <input
+                      type="radio"
+                      name={prompt.id}
+                      value={n}
+                      checked={values[prompt.id] === n}
+                      onChange={() => setValue(prompt.id, n)}
+                    />
+                    {n}
+                  </label>
+                ))}
+              </div>
             </fieldset>
           )
         })}
 
-        <button type="submit">Write journal entry</button>
-        <button type="button" onClick={() => void skip()}>
-          Skip
-        </button>
+        <div className="flex items-center gap-2">
+          <button type="submit" className={btnPrimary}>
+            Write journal entry
+          </button>
+          <button type="button" className={btnSecondary} onClick={() => void skip()}>
+            Skip
+          </button>
+        </div>
       </form>
     </section>
   )

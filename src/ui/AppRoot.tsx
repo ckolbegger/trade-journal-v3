@@ -27,7 +27,7 @@ export function AppRoot({ tradeBook, journal }: { tradeBook: TradeBook; journal:
     <TradeBookContext.Provider value={tradeBook}>
       <JournalContext.Provider value={journal}>
         {needsOnboarding === null ? (
-          <p>Loading…</p>
+          <p className="p-6 text-sm text-slate-500">Loading…</p>
         ) : needsOnboarding ? (
           <Onboarding onComplete={() => setNeedsOnboarding(false)} />
         ) : (

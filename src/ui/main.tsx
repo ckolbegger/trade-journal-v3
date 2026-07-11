@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { AppRoot } from './AppRoot'
 import { createBooks, createWorkspace } from '@/bootstrap'
+import './index.css'
 
 // Composition root: the single place where Books and coordinators are
 // constructed and wired into the app.

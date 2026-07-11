@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTradeBook } from '../tradeBookContext'
 import { PlanEntryForm } from './PlanEntryForm'
 import { dollarsToCents, todayISO } from '../format'
+import { btnPrimary, btnSecondary, field, heading, input, num } from '../styles'
 import type {
   Account,
   ExitLevel,
@@ -129,17 +130,22 @@ export function PlanForm() {
   }
 
   return (
-    <section>
-      <h2>New Trade</h2>
+    <section className="space-y-4">
+      <h2 className={heading}>New Trade</h2>
       <form
+        className="space-y-4"
         onSubmit={(e) => {
           e.preventDefault()
           void confirm()
         }}
       >
-        <label>
+        <label className={field}>
           Account
-          <select value={accountId} onChange={(e) => setAccountId(e.target.value)}>
+          <select
+            className={input}
+            value={accountId}
+            onChange={(e) => setAccountId(e.target.value)}
+          >
             {accounts.map((account) => (
               <option key={account.id} value={account.id}>
                 {account.name}
@@ -148,9 +154,13 @@ export function PlanForm() {
           </select>
         </label>
 
-        <label>
+        <label className={field}>
           Strategy
-          <select value={strategyId} onChange={(e) => setStrategyId(e.target.value)}>
+          <select
+            className={input}
+            value={strategyId}
+            onChange={(e) => setStrategyId(e.target.value)}
+          >
             {strategies.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
@@ -160,30 +170,44 @@ export function PlanForm() {
         </label>
 
         {leg && (
-          <fieldset>
-            <legend>Planned Leg</legend>
-            <span>
+          <fieldset className="space-y-3 rounded-lg border border-slate-200 p-4">
+            <legend className="px-1 text-sm font-medium text-slate-700">Planned Leg</legend>
+            <span className="inline-block text-sm text-slate-500 capitalize">
               {leg.side} {leg.instrumentKind}
             </span>
-            <label>
+            <label className={field}>
               Ticker
-              <input value={ticker} onChange={(e) => setTicker(e.target.value)} />
+              <input className={input} value={ticker} onChange={(e) => setTicker(e.target.value)} />
             </label>
-            <label>
+            <label className={field}>
               Quantity
-              <input value={qty} onChange={(e) => setQty(e.target.value)} inputMode="numeric" />
+              <input
+                className={`${input} ${num}`}
+                value={qty}
+                onChange={(e) => setQty(e.target.value)}
+                inputMode="numeric"
+              />
             </label>
           </fieldset>
         )}
 
-        <label>
+        <label className={field}>
           Thesis
-          <textarea value={thesis} onChange={(e) => setThesis(e.target.value)} />
+          <textarea
+            className={input}
+            rows={3}
+            value={thesis}
+            onChange={(e) => setThesis(e.target.value)}
+          />
         </label>
 
-        <label>
+        <label className={field}>
           Idea Source
-          <select value={ideaSourceId} onChange={(e) => setIdeaSourceId(e.target.value)}>
+          <select
+            className={input}
+            value={ideaSourceId}
+            onChange={(e) => setIdeaSourceId(e.target.value)}
+          >
             <option value="">None</option>
             {ideaSources.map((source) => (
               <option key={source.id} value={source.id}>
@@ -192,33 +216,53 @@ export function PlanForm() {
             ))}
           </select>
         </label>
-        <label>
-          New idea source
-          <input value={newIdeaSourceName} onChange={(e) => setNewIdeaSourceName(e.target.value)} />
-        </label>
-        <button type="button" onClick={() => void addIdeaSource()}>
-          Add idea source
-        </button>
+        <div className="flex items-end gap-2">
+          <label className={`${field} flex-1`}>
+            New idea source
+            <input
+              className={input}
+              value={newIdeaSourceName}
+              onChange={(e) => setNewIdeaSourceName(e.target.value)}
+            />
+          </label>
+          <button type="button" className={btnSecondary} onClick={() => void addIdeaSource()}>
+            Add idea source
+          </button>
+        </div>
 
         {asksStop && (
-          <label>
+          <label className={field}>
             Stop (underlying price)
-            <input value={stop} onChange={(e) => setStop(e.target.value)} inputMode="decimal" />
+            <input
+              className={`${input} ${num}`}
+              value={stop}
+              onChange={(e) => setStop(e.target.value)}
+              inputMode="decimal"
+            />
           </label>
         )}
         {asksTarget && (
-          <label>
+          <label className={field}>
             Target (underlying price)
-            <input value={target} onChange={(e) => setTarget(e.target.value)} inputMode="decimal" />
+            <input
+              className={`${input} ${num}`}
+              value={target}
+              onChange={(e) => setTarget(e.target.value)}
+              inputMode="decimal"
+            />
           </label>
         )}
 
-        <label>
+        <label className={field}>
           Chart link (optional)
-          <input value={chartLink} onChange={(e) => setChartLink(e.target.value)} />
+          <input
+            className={input}
+            value={chartLink}
+            onChange={(e) => setChartLink(e.target.value)}
+          />
         </label>
 
-        <button type="submit" disabled={!canConfirm}>
+        <button type="submit" className={btnPrimary} disabled={!canConfirm}>
           Confirm plan
         </button>
       </form>
