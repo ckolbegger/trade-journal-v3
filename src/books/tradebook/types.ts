@@ -76,6 +76,13 @@ export interface TradeFilter {
   accountId?: AccountId
 }
 
+// A Trade holding a given instrument — the shared-Mark edit warning composes over
+// these (naming how many Trades a Mark change revalues). Minimal by design: the
+// warning needs the count, not the facts.
+export interface TradeSummary {
+  id: TradeId
+}
+
 // Where an Execution lands: an existing Leg, or a new Leg in an existing Trade.
 // Deliberately no { newTrade } shape — plan-first is structural (ADR 0003): a
 // spontaneous entry is a 30-second confirmPlan first.
@@ -107,10 +114,13 @@ export type {
   CloseReason,
   ExitLevel,
   Instrument,
+  Money,
   PlanFacts,
   PlannedLeg,
   Position,
+  RiskReward,
   Side,
   TradeRecord,
   TradeStatus,
+  Valuation,
 } from '@/domain/trademath/types'

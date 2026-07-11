@@ -96,3 +96,52 @@ export interface TradeRecord {
   legs: LegFacts[]
   closeReason?: CloseReason // present once closed/abandoned
 }
+
+// A Mark is the price an instrument is valued at for a given date — exactly one
+// per (instrument, date), shared by every Trade holding that instrument. Origin
+// records how it arrived; 'manual' only this slice ('fetched' arrives Slice 4).
+export interface Mark {
+  instrument: InstrumentKey
+  date: ISODate
+  price: Money
+  origin: 'manual' | 'fetched'
+}
+
+// One valuation date's Marks, and date-ordered history per instrument. These are
+// the PriceBook-served halves of TradeMath's fact contract.
+export type MarkSet = ReadonlyMap<InstrumentKey, Mark>
+export type MarkSeries = ReadonlyMap<InstrumentKey, Mark[]>
+
+// Valuation results (money in integer cents). Realized P&L is net of every fee on
+// the Trade; unrealized is gross (no projected exit fees); totalPnL = realized +
+// unrealized (docs/plan/README.md decided semantics). currentValue is the signed
+// structure value at these Marks.
+export interface LegValuation {
+  instrument: Instrument
+  basis: Money // cost of the currently-open quantity
+  realized: Money
+  unrealized: Money
+}
+
+export interface Valuation {
+  realizedPnL: Money
+  unrealizedPnL: Money
+  totalPnL: Money
+  fees: Money
+  currentValue: Money
+  perLeg: LegValuation[]
+}
+
+// All four numbers measure from today's Marks (ADR 0010); `original` measures from
+// the actual entry basis to the ORIGINAL Plan's stop/target, and is 'undefined'
+// until the first Execution exists. 'unlimited'/'undefined' are literal anchors.
+export interface RiskReward {
+  plannedRisk: Money | 'undefined'
+  worstCaseRisk: Money | 'unlimited'
+  plannedReward: Money | 'undefined'
+  maxReward: Money | 'unlimited'
+  original: {
+    risk: Money | 'unlimited' | 'undefined'
+    reward: Money | 'unlimited' | 'undefined'
+  }
+}

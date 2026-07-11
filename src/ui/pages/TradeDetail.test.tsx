@@ -5,16 +5,23 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { TradeDetail } from './TradeDetail'
 import { TradeBookContext } from '../tradeBookContext'
 import { JournalContext } from '../journalContext'
+import { PriceBookContext } from '../priceBookContext'
 import { ValuationsContext } from '../valuationsContext'
 import { Valuations } from '@/coordinators/valuations'
 import type { TradeBook } from '@/books/tradebook/trade-book'
 import type { Journal } from '@/books/journal/journal'
+import type { PriceBook } from '@/books/pricebook/price-book'
 import type { Account, IdeaSource, Institution, PlanDraft } from '@/books/tradebook/types'
 import { Workspace, PLAN_ENTRY_TYPE_ID } from '@/workspace/workspace'
 import { inMemoryBooks } from '../../../tests/support/trade-book'
 
-async function seededTrade(): Promise<{ book: TradeBook; journal: Journal; id: string }> {
-  const { tradeBook: book, journal } = inMemoryBooks()
+async function seededTrade(): Promise<{
+  book: TradeBook
+  journal: Journal
+  priceBook: PriceBook
+  id: string
+}> {
+  const { tradeBook: book, journal, priceBook } = inMemoryBooks()
   const institution = { id: '', name: 'Schwab' } as Institution
   await book.registries.institutions.save(institution)
   const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
@@ -37,20 +44,22 @@ async function seededTrade(): Promise<{ book: TradeBook; journal: Journal; id: s
     chartLink: 'https://charts.example/aapl',
   }
   const id = await book.confirmPlan(draft)
-  return { book, journal, id }
+  return { book, journal, priceBook, id }
 }
 
-function renderDetail(book: TradeBook, journal: Journal, id: string) {
+function renderDetail(book: TradeBook, journal: Journal, priceBook: PriceBook, id: string) {
   return render(
     <TradeBookContext.Provider value={book}>
       <JournalContext.Provider value={journal}>
-        <ValuationsContext.Provider value={new Valuations(book)}>
-          <MemoryRouter initialEntries={[`/trades/${id}`]}>
-            <Routes>
-              <Route path="/trades/:id" element={<TradeDetail />} />
-            </Routes>
-          </MemoryRouter>
-        </ValuationsContext.Provider>
+        <PriceBookContext.Provider value={priceBook}>
+          <ValuationsContext.Provider value={new Valuations(book, priceBook)}>
+            <MemoryRouter initialEntries={[`/trades/${id}`]}>
+              <Routes>
+                <Route path="/trades/:id" element={<TradeDetail />} />
+              </Routes>
+            </MemoryRouter>
+          </ValuationsContext.Provider>
+        </PriceBookContext.Provider>
       </JournalContext.Provider>
     </TradeBookContext.Provider>,
   )
@@ -58,8 +67,8 @@ function renderDetail(book: TradeBook, journal: Journal, id: string) {
 
 describe('TradeDetail', () => {
   it('shows the plan facts, resolved names, and a planned status badge', async () => {
-    const { book, journal, id } = await seededTrade()
-    renderDetail(book, journal, id)
+    const { book, journal, priceBook, id } = await seededTrade()
+    renderDetail(book, journal, priceBook, id)
 
     expect(await screen.findByText('AAPL breaks out')).toBeInTheDocument()
     expect(screen.getByText('Long Stock')).toBeInTheDocument()
@@ -75,8 +84,8 @@ describe('TradeDetail', () => {
   })
 
   it('offers no way to edit the confirmed Plan', async () => {
-    const { book, journal, id } = await seededTrade()
-    renderDetail(book, journal, id)
+    const { book, journal, priceBook, id } = await seededTrade()
+    renderDetail(book, journal, priceBook, id)
     await screen.findByText('AAPL breaks out')
     expect(screen.queryByRole('button', { name: /edit/i })).toBeNull()
     expect(screen.queryByRole('link', { name: /edit/i })).toBeNull()
@@ -85,7 +94,7 @@ describe('TradeDetail', () => {
 
 describe('TradeDetail journal section', () => {
   it("shows the plan entry's prompts and answers", async () => {
-    const { book, journal, id } = await seededTrade()
+    const { book, journal, priceBook, id } = await seededTrade()
     await journal.write({
       anchor: { kind: 'plan', tradeId: id },
       entryTypeId: PLAN_ENTRY_TYPE_ID,
@@ -97,7 +106,7 @@ describe('TradeDetail journal section', () => {
         { promptId: 'emotion', value: 'calm' },
       ],
     })
-    renderDetail(book, journal, id)
+    renderDetail(book, journal, priceBook, id)
 
     expect(await screen.findByText('Why this trade, why now?')).toBeInTheDocument()
     expect(screen.getByText('Breakout confirmed')).toBeInTheDocument()
@@ -107,7 +116,7 @@ describe('TradeDetail journal section', () => {
   })
 
   it('shows an owed marker for a placeholder', async () => {
-    const { book, journal, id } = await seededTrade()
+    const { book, journal, priceBook, id } = await seededTrade()
     await journal.write({
       anchor: { kind: 'plan', tradeId: id },
       entryTypeId: PLAN_ENTRY_TYPE_ID,
@@ -115,7 +124,7 @@ describe('TradeDetail journal section', () => {
       placeholder: true,
       answers: [],
     })
-    renderDetail(book, journal, id)
+    renderDetail(book, journal, priceBook, id)
 
     expect(await screen.findByLabelText('journal owed')).toBeInTheDocument()
     expect(screen.getByLabelText('journal entries')).toHaveTextContent('1')
@@ -151,16 +160,16 @@ async function flatten(book: TradeBook, id: string, legId: string): Promise<void
 
 describe('CloseFlow', () => {
   it('prompts for a Close Reason when a fill flattens the Trade', async () => {
-    const { book, journal, id } = await seededTrade()
+    const { book, journal, priceBook, id } = await seededTrade()
     const legId = await buy100(book, id)
     await flatten(book, id, legId)
-    renderDetail(book, journal, id)
+    renderDetail(book, journal, priceBook, id)
 
     expect(await screen.findByLabelText(/close reason/i)).toBeInTheDocument()
   })
 
   it('shows the reason and close entry once closed', async () => {
-    const { book, journal, id } = await seededTrade()
+    const { book, journal, priceBook, id } = await seededTrade()
     const legId = await buy100(book, id)
     await flatten(book, id, legId)
     await book.setCloseReason(id, { id: 'close-reason-hit-target', name: 'Hit Target' })
@@ -171,7 +180,7 @@ describe('CloseFlow', () => {
       placeholder: false,
       answers: [{ promptId: 'lesson', value: 'Let winners run' }],
     })
-    renderDetail(book, journal, id)
+    renderDetail(book, journal, priceBook, id)
 
     expect(await screen.findByLabelText('status')).toHaveTextContent(/closed/i)
     expect(screen.getByLabelText('close reason')).toHaveTextContent('Hit Target')
@@ -180,10 +189,10 @@ describe('CloseFlow', () => {
   })
 
   it('can be dismissed and completed later from the detail page', async () => {
-    const { book, journal, id } = await seededTrade()
+    const { book, journal, priceBook, id } = await seededTrade()
     const legId = await buy100(book, id)
     await flatten(book, id, legId)
-    renderDetail(book, journal, id)
+    renderDetail(book, journal, priceBook, id)
     const user = userEvent.setup()
 
     await user.click(await screen.findByRole('button', { name: /dismiss/i }))
@@ -196,8 +205,8 @@ describe('CloseFlow', () => {
 
 describe('AbandonFlow', () => {
   it('offers abandon on a planned Trade and requires a reason', async () => {
-    const { book, journal, id } = await seededTrade()
-    renderDetail(book, journal, id)
+    const { book, journal, priceBook, id } = await seededTrade()
+    renderDetail(book, journal, priceBook, id)
     const user = userEvent.setup()
 
     await user.click(await screen.findByRole('button', { name: /abandon/i }))
@@ -214,19 +223,19 @@ describe('AbandonFlow', () => {
 
 describe('TradeDetail position & history', () => {
   it('shows holdings from Valuations.position', async () => {
-    const { book, journal, id } = await seededTrade()
+    const { book, journal, priceBook, id } = await seededTrade()
     await book.recordExecution(
       { tradeId: id, newLeg: 'AAPL' },
       { side: 'buy', qty: 100, price: 15000, fees: 100, timestamp: Date.now() },
     )
-    renderDetail(book, journal, id)
+    renderDetail(book, journal, priceBook, id)
 
     const position = await screen.findByLabelText('position')
     expect(position).toHaveTextContent(/100 AAPL long/i)
   })
 
   it('lists executions oldest-first with fees', async () => {
-    const { book, journal, id } = await seededTrade()
+    const { book, journal, priceBook, id } = await seededTrade()
     await book.recordExecution(
       { tradeId: id, newLeg: 'AAPL' },
       {
@@ -237,7 +246,7 @@ describe('TradeDetail position & history', () => {
         timestamp: new Date('2026-07-10T12:00:00').getTime(),
       },
     )
-    renderDetail(book, journal, id)
+    renderDetail(book, journal, priceBook, id)
 
     const history = await screen.findByLabelText('execution history')
     const rows = within(history).getAllByRole('listitem')

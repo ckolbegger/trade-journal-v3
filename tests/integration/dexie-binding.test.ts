@@ -30,7 +30,7 @@ describe('DexieBinding (integration, fake-indexeddb)', () => {
     const name = 'upgrade-' + crypto.randomUUID()
     const db = createDatabase(name)
     await db.open()
-    expect(db.verno).toBe(4)
+    expect(db.verno).toBe(5)
     expect(db.tables.map((t) => t.name).sort()).toEqual([
       'accounts',
       'closeReasons',
@@ -38,6 +38,7 @@ describe('DexieBinding (integration, fake-indexeddb)', () => {
       'entryTypes',
       'ideaSources',
       'institutions',
+      'marks',
       'strategies',
       'trades',
     ])

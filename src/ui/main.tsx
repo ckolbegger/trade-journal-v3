@@ -13,8 +13,8 @@ if (!rootElement) {
   throw new Error('Root element #root not found')
 }
 
-const { tradeBook, journal } = createBooks()
-const valuations = createValuations(tradeBook)
+const { tradeBook, journal, priceBook } = createBooks()
+const valuations = createValuations(tradeBook, priceBook)
 
 // Seed defaults (apply-iff-absent) at every startup before the first render.
 createWorkspace(tradeBook, journal)
@@ -23,7 +23,12 @@ createWorkspace(tradeBook, journal)
     createRoot(rootElement).render(
       <StrictMode>
         <BrowserRouter>
-          <AppRoot tradeBook={tradeBook} journal={journal} valuations={valuations} />
+          <AppRoot
+            tradeBook={tradeBook}
+            journal={journal}
+            priceBook={priceBook}
+            valuations={valuations}
+          />
         </BrowserRouter>
       </StrictMode>,
     )

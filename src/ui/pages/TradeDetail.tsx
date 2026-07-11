@@ -5,6 +5,7 @@ import { useJournal } from '../journalContext'
 import { useValuations } from '../valuationsContext'
 import { RecordFillForm } from './RecordFillForm'
 import { CloseForm } from './CloseForm'
+import { TradeDashboard } from './TradeDashboard'
 import { centsToDollars, timestampToISODate } from '../format'
 import { StatusBadge } from '../components/Badge'
 import { btnSecondary, card, heading, link, num, subheading } from '../styles'
@@ -160,6 +161,8 @@ export function TradeDetail() {
           />
         )}
       </div>
+
+      {status && status !== 'planned' && <TradeDashboard tradeId={trade.id} />}
 
       <div className={`${card} space-y-3`}>
         <div className="flex items-center justify-between">

@@ -6,29 +6,35 @@ import { AppRoot } from './AppRoot'
 import { Valuations } from '@/coordinators/valuations'
 import type { TradeBook } from '@/books/tradebook/trade-book'
 import type { Journal } from '@/books/journal/journal'
+import type { PriceBook } from '@/books/pricebook/price-book'
 import type { Account, Institution } from '@/books/tradebook/types'
 import { inMemoryBooks } from '../../tests/support/trade-book'
 
-function renderApp(tradeBook: TradeBook, journal: Journal) {
+function renderApp(tradeBook: TradeBook, journal: Journal, priceBook: PriceBook) {
   return render(
     <MemoryRouter>
-      <AppRoot tradeBook={tradeBook} journal={journal} valuations={new Valuations(tradeBook)} />
+      <AppRoot
+        tradeBook={tradeBook}
+        journal={journal}
+        priceBook={priceBook}
+        valuations={new Valuations(tradeBook, priceBook)}
+      />
     </MemoryRouter>,
   )
 }
 
 describe('Onboarding', () => {
   it('shows onboarding when no accounts exist', async () => {
-    const { tradeBook, journal } = inMemoryBooks()
-    renderApp(tradeBook, journal)
+    const { tradeBook, journal, priceBook } = inMemoryBooks()
+    renderApp(tradeBook, journal, priceBook)
     expect(
       await screen.findByRole('heading', { name: /set up your first account/i }),
     ).toBeInTheDocument()
   })
 
   it('requires an institution name and an account name to proceed', async () => {
-    const { tradeBook, journal } = inMemoryBooks()
-    renderApp(tradeBook, journal)
+    const { tradeBook, journal, priceBook } = inMemoryBooks()
+    renderApp(tradeBook, journal, priceBook)
     const user = userEvent.setup()
     await screen.findByRole('heading', { name: /set up your first account/i })
 
@@ -40,8 +46,8 @@ describe('Onboarding', () => {
   })
 
   it('saves the institution and account via TradeBook.registries', async () => {
-    const { tradeBook, journal } = inMemoryBooks()
-    renderApp(tradeBook, journal)
+    const { tradeBook, journal, priceBook } = inMemoryBooks()
+    renderApp(tradeBook, journal, priceBook)
     const user = userEvent.setup()
     await screen.findByRole('heading', { name: /set up your first account/i })
 
@@ -60,7 +66,7 @@ describe('Onboarding', () => {
   })
 
   it('skips onboarding when an account already exists', async () => {
-    const { tradeBook, journal } = inMemoryBooks()
+    const { tradeBook, journal, priceBook } = inMemoryBooks()
     const institution = { id: '', name: 'Schwab' } as Institution
     await tradeBook.registries.institutions.save(institution)
     await tradeBook.registries.accounts.save({
@@ -69,7 +75,7 @@ describe('Onboarding', () => {
       institutionId: institution.id,
     } as Account)
 
-    renderApp(tradeBook, journal)
+    renderApp(tradeBook, journal, priceBook)
 
     expect(await screen.findByRole('heading', { name: 'Trades' })).toBeInTheDocument()
     expect(

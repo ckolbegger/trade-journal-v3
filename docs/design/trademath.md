@@ -72,7 +72,7 @@ interface RiskReward {
   worstCaseRisk: Money | 'unlimited'        // structural extreme
   plannedReward: Money | 'undefined'        // to current target
   maxReward: Money | 'unlimited'            // structural extreme
-  original: { risk: Money | 'unlimited'; reward: Money | 'unlimited' }  // from the original Plan, for contrast
+  original: { risk: Money | 'unlimited' | 'undefined'; reward: Money | 'unlimited' | 'undefined' }  // from the original Plan, for contrast; 'undefined' until the first Execution exists
 }
 
 interface ReplayPoint { date: ISODate; valuation: Valuation; riskReward: RiskReward }

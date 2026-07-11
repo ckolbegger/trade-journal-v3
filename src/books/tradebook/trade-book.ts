@@ -1,7 +1,14 @@
-import type { CloseReason, LegFacts, TradeId, TradeRecord } from '@/domain/trademath/types'
+import type {
+  CloseReason,
+  InstrumentKey,
+  LegFacts,
+  TradeId,
+  TradeRecord,
+} from '@/domain/trademath/types'
 import type { StorageBinding } from '@/storage/storage-binding'
 import { statusOf } from '@/domain/trademath/status'
-import { parseInstrumentKey } from '@/domain/trademath/instrument'
+import { positionOf } from '@/domain/trademath/position'
+import { buildInstrumentKey, parseInstrumentKey } from '@/domain/trademath/instrument'
 import { ListRegistry } from '../list-registry'
 import type {
   Account,
@@ -13,6 +20,7 @@ import type {
   PlanDraft,
   StrategyTemplate,
   TradeFilter,
+  TradeSummary,
 } from './types'
 
 const TRADES = 'trades'
@@ -118,6 +126,18 @@ export class TradeBook {
     const record = await this.binding.get<TradeRecord>(TRADES, tradeId)
     if (!record) throw new Error(`No Trade ${tradeId}`)
     return structuredClone(record)
+  }
+
+  // Every Trade with an open (nonzero net) position in the instrument. Powers the
+  // shared-Mark edit warning: changing a Mark revalues exactly these Trades. Held
+  // is derived from Executions (TradeMath.positionOf) — never stored.
+  async tradesHolding(instrument: InstrumentKey): Promise<TradeSummary[]> {
+    const all = await this.binding.list<TradeRecord>(TRADES)
+    return all
+      .filter((t) =>
+        positionOf(t).holdings.some((h) => buildInstrumentKey(h.instrument) === instrument),
+      )
+      .map((t) => ({ id: t.id }))
   }
 
   async query(filter: TradeFilter): Promise<TradeRecord[]> {

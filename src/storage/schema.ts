@@ -30,5 +30,13 @@ export function createDatabase(name = 'trade-journal'): Dexie {
   db.version(4).stores({
     closeReasons: 'id, seq',
   })
+  // v5 adds the Marks store. Its `id` is the composite (instrument, date) key —
+  // one Mark per (instrument, date) — kept as a string primary key so PriceBook
+  // uses the same StorageBinding contract as every other Book. The `instrument`
+  // index is the lazy per-instrument loading guardrail (ADR 0011). Earlier stores
+  // are never reshaped.
+  db.version(5).stores({
+    marks: 'id, instrument, seq',
+  })
   return db
 }

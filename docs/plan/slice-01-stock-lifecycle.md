@@ -237,7 +237,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 ---
 
-## ☐ Story S1.5 — Manual Marks & valuation
+## ☑ Story S1.5 — Manual Marks & valuation
 
 > As a trader, I want to enter today's price and see my P&L and all four risk/reward numbers, so that I judge staying in by what I'm risking from *today's* value, not by a stale plan.
 
@@ -245,7 +245,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 ### Tasks
 
-- [ ] **S1.5.T1 — PriceBook core.** One Mark per (instrument, date); origin `'manual'` this slice; Dexie adds `marks` store keyed `(instrument, date)` with instrument index (lazy-loading guardrail, ADR 0011).
+- [x] **S1.5.T1 — PriceBook core.** One Mark per (instrument, date); origin `'manual'` this slice; Dexie adds `marks` store keyed `(instrument, date)` with instrument index (lazy-loading guardrail, ADR 0011).
 
   ```
   describe "PriceBook.record / markSet / series"
@@ -257,7 +257,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it series() respects a date range; gaps simply have no entry
   ```
 
-- [ ] **S1.5.T2 — TradeMath.instrumentsOf + valuation.** Worked example is the spec.
+- [x] **S1.5.T2 — TradeMath.instrumentsOf + valuation.** Worked example is the spec.
 
   ```
   describe "TradeMath.instrumentsOf"
@@ -270,7 +270,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it throws a typed error when a held instrument's Mark is absent from the MarkSet
   ```
 
-- [ ] **S1.5.T3 — TradeMath.riskReward.** All four numbers mark-to-market (ADR 0010) + `original` from entry basis (see index: decided-in-plan semantics).
+- [x] **S1.5.T3 — TradeMath.riskReward.** All four numbers mark-to-market (ADR 0010) + `original` from entry basis (see index: decided-in-plan semantics).
 
   ```
   describe "TradeMath.riskReward"
@@ -282,7 +282,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it returns original risk/reward 'undefined' before any Execution
   ```
 
-- [ ] **S1.5.T4 — Valuations.value + detail.** `detail` assembles the page bundle from ONE TradeRecord + series snapshot: facts, Position, Valuation, RiskReward (Deviations join in Slice 9). `value` is the lighter pair for list rows.
+- [x] **S1.5.T4 — Valuations.value + detail.** `detail` assembles the page bundle from ONE TradeRecord + series snapshot: facts, Position, Valuation, RiskReward (Deviations join in Slice 9). `value` is the lighter pair for list rows.
 
   ```
   describe "Valuations.detail"
@@ -292,7 +292,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it returns a marks-missing signal (instrument list) instead of numbers when no Mark exists yet
   ```
 
-- [ ] **S1.5.T5 — Mark entry + dashboard UI.** Trade detail: enter/edit today's Mark inline; shows P&L block and the four R/R numbers with the original Plan pair alongside for contrast (ADR 0010). Editing an existing Mark warns first when other Trades hold the instrument (peek `markSet` → `tradesHolding` → confirm → `record`, [pricebook.md](../design/pricebook.md) correction sequence). Trades list shows P&L for marked Trades.
+- [x] **S1.5.T5 — Mark entry + dashboard UI.** Trade detail: enter/edit today's Mark inline; shows P&L block and the four R/R numbers with the original Plan pair alongside for contrast (ADR 0010). Editing an existing Mark warns first when other Trades hold the instrument (peek `markSet` → `tradesHolding` → confirm → `record`, [pricebook.md](../design/pricebook.md) correction sequence). Trades list shows P&L for marked Trades.
 
   ```
   describe "MarkEntry"
@@ -306,9 +306,9 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it prompts for a Mark when none exists instead of showing numbers
   ```
 
-- [ ] **S1.5.T6 — Integration tests**: plan → fill → record mark 160 → reopen DB → `detail` reproduces every worked-example number; re-record 161 → `overwrote` reports 160; two Trades holding AAPL see the same Mark (stored once).
-- [ ] **S1.5.T7 — Playwright e2e** (`e2e/s1-5-valuation.spec.ts`): worked example end-to-end — enter mark 160 → assert all six displayed numbers; edit mark with a second AAPL Trade open → warning names 2 Trades.
-- [ ] **S1.5.T8 — Browser verification.** Verify every worked-example number on screen against the table above, the unlimited/undefined renderings, the shared-Mark warning, and persistence across reload. All suites green.
+- [x] **S1.5.T6 — Integration tests**: plan → fill → record mark 160 → reopen DB → `detail` reproduces every worked-example number; re-record 161 → `overwrote` reports 160; two Trades holding AAPL see the same Mark (stored once).
+- [x] **S1.5.T7 — Playwright e2e** (`e2e/s1-5-valuation.spec.ts`): worked example end-to-end — enter mark 160 → assert all six displayed numbers; edit mark with a second AAPL Trade open → warning names 2 Trades.
+- [x] **S1.5.T8 — Browser verification.** Verify every worked-example number on screen against the table above, the unlimited/undefined renderings, the shared-Mark warning, and persistence across reload. All suites green.
 
 ---
 

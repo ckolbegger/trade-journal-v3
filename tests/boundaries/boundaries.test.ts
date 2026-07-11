@@ -62,5 +62,7 @@ describe('module boundaries', () => {
     )
     expect(errors).toEqual([])
     expect(errorCount).toBe(0)
-  })
+    // Linting the whole tree in-process grows past vitest's 5s default as the
+    // codebase adds files — give this one its own realistic budget.
+  }, 30000)
 })
