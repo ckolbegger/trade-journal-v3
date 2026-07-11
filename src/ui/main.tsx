@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { AppRoot } from './AppRoot'
-import { createBooks, createWorkspace } from '@/bootstrap'
+import { createBooks, createValuations, createWorkspace } from '@/bootstrap'
 import './index.css'
 
 // Composition root: the single place where Books and coordinators are
@@ -14,6 +14,7 @@ if (!rootElement) {
 }
 
 const { tradeBook, journal } = createBooks()
+const valuations = createValuations(tradeBook)
 
 // Seed defaults (apply-iff-absent) at every startup before the first render.
 createWorkspace(tradeBook, journal)
@@ -22,7 +23,7 @@ createWorkspace(tradeBook, journal)
     createRoot(rootElement).render(
       <StrictMode>
         <BrowserRouter>
-          <AppRoot tradeBook={tradeBook} journal={journal} />
+          <AppRoot tradeBook={tradeBook} journal={journal} valuations={valuations} />
         </BrowserRouter>
       </StrictMode>,
     )

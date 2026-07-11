@@ -3,20 +3,38 @@ import { Link } from 'react-router-dom'
 import { useTradeBook } from '../tradeBookContext'
 import { StatusBadge } from '../components/Badge'
 import { btnPrimary, heading } from '../styles'
-import type { TradeRecord } from '@/books/tradebook/types'
+import type { TradeRecord, TradeStatus } from '@/books/tradebook/types'
 
-// The Trades page: start a new Plan, and list planned Trades in insertion order
-// (newest last). Status is derived — the list asks TradeBook for the 'planned'
-// bucket rather than computing status itself.
+// The Trades page: start a new Plan, and list planned and open Trades in
+// insertion order (newest last). Status is derived — the list asks TradeBook for
+// each status bucket rather than computing status itself, so a filled Trade's
+// badge flips planned → open with no manual status control anywhere.
+
+interface Row {
+  trade: TradeRecord
+  status: TradeStatus
+}
 
 export function TradesPage() {
   const tradeBook = useTradeBook()
-  const [planned, setPlanned] = useState<TradeRecord[]>([])
+  const [rows, setRows] = useState<Row[]>([])
 
   useEffect(() => {
     let active = true
-    tradeBook.query({ status: 'planned' }).then((trades) => {
-      if (active) setPlanned(trades)
+    Promise.all([
+      tradeBook.query({}),
+      tradeBook.query({ status: 'planned' }),
+      tradeBook.query({ status: 'open' }),
+    ]).then(([all, planned, open]) => {
+      if (!active) return
+      const plannedIds = new Set(planned.map((t) => t.id))
+      const openIds = new Set(open.map((t) => t.id))
+      const next: Row[] = []
+      for (const trade of all) {
+        if (plannedIds.has(trade.id)) next.push({ trade, status: 'planned' })
+        else if (openIds.has(trade.id)) next.push({ trade, status: 'open' })
+      }
+      setRows(next)
     })
     return () => {
       active = false
@@ -32,7 +50,7 @@ export function TradesPage() {
         </Link>
       </div>
       <ul className="divide-y divide-slate-200 overflow-hidden rounded-lg border border-slate-200 bg-white">
-        {planned.map((trade) => {
+        {rows.map(({ trade, status }) => {
           const ticker = trade.plan.plannedLegs[0]?.instrument.ticker ?? ''
           return (
             <li
@@ -46,7 +64,7 @@ export function TradesPage() {
               >
                 {ticker}
               </Link>
-              <StatusBadge status="planned" />
+              <StatusBadge status={status} />
             </li>
           )
         })}

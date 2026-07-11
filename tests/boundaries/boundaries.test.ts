@@ -30,6 +30,22 @@ describe('module boundaries', () => {
     expect(hasBoundaryError(messages)).toBe(true)
   })
 
+  it('fails lint when a coordinator imports from src/storage', async () => {
+    const messages = await lint(
+      `import { binding } from '@/storage/binding'\nexport const b = binding\n`,
+      'src/coordinators/__fixture__.ts',
+    )
+    expect(hasBoundaryError(messages)).toBe(true)
+  })
+
+  it('fails lint when a coordinator imports from src/ui', async () => {
+    const messages = await lint(
+      `import { thing } from '@/ui/thing'\nexport const b = thing\n`,
+      'src/coordinators/__fixture__.ts',
+    )
+    expect(hasBoundaryError(messages)).toBe(true)
+  })
+
   it('passes lint on the scaffold as committed', async () => {
     const results = await eslint.lintFiles([
       'src/**/*.{ts,tsx}',

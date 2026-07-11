@@ -139,7 +139,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 ---
 
-## ☐ Story S1.3 — Record Executions, see Position
+## ☑ Story S1.3 — Record Executions, see Position
 
 > As a trader, I want to record my fills against a planned Trade, so that the app shows exactly what I hold and my Trade goes open the moment the first fill lands.
 
@@ -147,7 +147,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 ### Tasks
 
-- [ ] **S1.3.T1 — TradeMath.positionOf.** Net open quantity per Leg from Executions. (Short positions arrive with short option legs in Slice 3; Lots in Slice 5.)
+- [x] **S1.3.T1 — TradeMath.positionOf.** Net open quantity per Leg from Executions. (Short positions arrive with short option legs in Slice 3; Lots in Slice 5.)
 
   ```
   describe "TradeMath.positionOf"
@@ -158,7 +158,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it honors asOf: executions after the date are excluded
   ```
 
-- [ ] **S1.3.T2 — TradeBook.recordExecution.** Persists the Execution (side, qty, price, fees, timestamp) against an existing Leg or a new Leg in an existing Trade; returns `ExecutionOutcome` (`record`, `nowFlat`; `newDeviations` always `[]` until Slice 9).
+- [x] **S1.3.T2 — TradeBook.recordExecution.** Persists the Execution (side, qty, price, fees, timestamp) against an existing Leg or a new Leg in an existing Trade; returns `ExecutionOutcome` (`record`, `nowFlat`; `newDeviations` always `[]` until Slice 9).
 
   ```
   describe "TradeBook.recordExecution"
@@ -171,7 +171,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it derives status open after the first fill (statusOf, never stored)
   ```
 
-- [ ] **S1.3.T3 — Valuations.position.** `TradeBook.get` → `TradeMath.positionOf`; no Marks fetched ([overview.md](../design/overview.md) walkthrough).
+- [x] **S1.3.T3 — Valuations.position.** `TradeBook.get` → `TradeMath.positionOf`; no Marks fetched ([overview.md](../design/overview.md) walkthrough).
 
   ```
   describe "Valuations.position"
@@ -179,7 +179,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it touches PriceBook not at all (no marks needed)
   ```
 
-- [ ] **S1.3.T4 — Record-fill UI + detail sections.** "Record fill" on the Trade detail page: pre-selects the planned instrument (existing/new Leg resolved automatically), side, qty, price, fees, date. Detail gains **Position** ("100 AAPL long") and **Execution history** (each fill: date, side, qty, price, fees). Trade list badge flips to `open`.
+- [x] **S1.3.T4 — Record-fill UI + detail sections.** "Record fill" on the Trade detail page: pre-selects the planned instrument (existing/new Leg resolved automatically), side, qty, price, fees, date. Detail gains **Position** ("100 AAPL long") and **Execution history** (each fill: date, side, qty, price, fees). Trade list badge flips to `open`.
 
   ```
   describe "RecordFillForm"
@@ -191,9 +191,9 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it lists executions oldest-first with fees
   ```
 
-- [ ] **S1.3.T5 — Integration tests**: plan → fill → reopen DB → position +100, status open, execution history intact.
-- [ ] **S1.3.T6 — Playwright e2e** (`e2e/s1-3-executions.spec.ts`): worked example — confirm plan, record buy 100 @ 150 fees 1 → badge open, position "100 AAPL", history row correct.
-- [ ] **S1.3.T7 — Browser verification.** Record the worked-example fill in a real browser: status flips planned→open with no manual status control anywhere; position and history correct; reload persists. All suites green.
+- [x] **S1.3.T5 — Integration tests**: plan → fill → reopen DB → position +100, status open, execution history intact.
+- [x] **S1.3.T6 — Playwright e2e** (`e2e/s1-3-executions.spec.ts`): worked example — confirm plan, record buy 100 @ 150 fees 1 → badge open, position "100 AAPL", history row correct.
+- [x] **S1.3.T7 — Browser verification.** Record the worked-example fill in a real browser: status flips planned→open with no manual status control anywhere; position and history correct; reload persists. All suites green.
 
 ---
 

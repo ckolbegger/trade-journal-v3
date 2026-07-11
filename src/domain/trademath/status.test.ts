@@ -35,12 +35,18 @@ describe('TradeMath.statusOf', () => {
   })
 
   it("returns 'open' when any Leg has nonzero net quantity", () => {
-    expect(statusOf(trade([{ instrument: AAPL, executions: [exec('buy', 100)] }]))).toBe('open')
+    expect(
+      statusOf(trade([{ id: 'leg-1', instrument: AAPL, executions: [exec('buy', 100)] }])),
+    ).toBe('open')
   })
 
   it("returns 'closed' when Executions exist and every Leg nets to zero", () => {
     expect(
-      statusOf(trade([{ instrument: AAPL, executions: [exec('buy', 100), exec('sell', 100)] }])),
+      statusOf(
+        trade([
+          { id: 'leg-1', instrument: AAPL, executions: [exec('buy', 100), exec('sell', 100)] },
+        ]),
+      ),
     ).toBe('closed')
   })
 })

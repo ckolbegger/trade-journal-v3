@@ -10,10 +10,18 @@ export function dollarsToCents(dollars: string): number {
 }
 
 // The trader's local date is the trading date (no timezone math in v1).
-export function todayISO(): string {
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  const day = String(now.getDate()).padStart(2, '0')
+function toISODate(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
+}
+
+export function todayISO(): string {
+  return toISODate(new Date())
+}
+
+// An Execution's trading date, read back from its epoch-ms timestamp.
+export function timestampToISODate(timestamp: number): string {
+  return toISODate(new Date(timestamp))
 }

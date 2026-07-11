@@ -1,9 +1,13 @@
+import type { LegFacts, TradeId, TradeRecord } from '@/domain/trademath/types'
 import type { StorageBinding } from '@/storage/storage-binding'
-import type { TradeId, TradeRecord } from '@/domain/trademath/types'
 import { statusOf } from '@/domain/trademath/status'
+import { parseInstrumentKey } from '@/domain/trademath/instrument'
 import { ListRegistry } from '../list-registry'
 import type {
   Account,
+  ExecutionDraft,
+  ExecutionOutcome,
+  ExecutionTarget,
   IdeaSource,
   Institution,
   PlanDraft,
@@ -65,6 +69,29 @@ export class TradeBook {
     return record.id
   }
 
+  // Records a fill against an existing Leg or a new Leg in an existing Trade.
+  // Stores the fact only — netting, status, and nowFlat are derived by TradeMath
+  // (never stored, ADR 0005). No target can create a Trade (plan-first, ADR 0003).
+  async recordExecution(target: ExecutionTarget, exec: ExecutionDraft): Promise<ExecutionOutcome> {
+    if (!Number.isInteger(exec.qty) || exec.qty <= 0)
+      throw new Error('Execution qty must be a positive integer')
+    if (exec.price < 0) throw new Error('Execution price cannot be negative')
+    if (exec.fees < 0) throw new Error('Execution fees cannot be negative')
+
+    const record = await this.binding.get<TradeRecord>(TRADES, target.tradeId)
+    if (!record) throw new Error(`No Trade ${target.tradeId}`)
+
+    const leg = resolveLeg(record, target)
+    leg.executions.push({ ...exec })
+    await this.binding.put(TRADES, structuredClone(record))
+
+    return {
+      record: structuredClone(record),
+      newDeviations: [],
+      nowFlat: statusOf(record) === 'closed',
+    }
+  }
+
   async get(tradeId: TradeId): Promise<TradeRecord> {
     const record = await this.binding.get<TradeRecord>(TRADES, tradeId)
     if (!record) throw new Error(`No Trade ${tradeId}`)
@@ -78,4 +105,22 @@ export class TradeBook {
       .filter((t) => (filter.status ? statusOf(t) === filter.status : true))
       .map((t) => structuredClone(t))
   }
+}
+
+// Finds the Leg an Execution targets, creating a new Leg when the target names an
+// instrument rather than an existing Leg id. The returned Leg is the live object
+// inside `record`, so the caller mutates it in place.
+function resolveLeg(record: TradeRecord, target: ExecutionTarget): LegFacts {
+  if ('legId' in target) {
+    const leg = record.legs.find((l) => l.id === target.legId)
+    if (!leg) throw new Error(`No Leg ${target.legId} on Trade ${record.id}`)
+    return leg
+  }
+  const leg: LegFacts = {
+    id: crypto.randomUUID(),
+    instrument: parseInstrumentKey(target.newLeg),
+    executions: [],
+  }
+  record.legs.push(leg)
+  return leg
 }

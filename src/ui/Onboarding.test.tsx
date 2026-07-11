@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { AppRoot } from './AppRoot'
+import { Valuations } from '@/coordinators/valuations'
 import type { TradeBook } from '@/books/tradebook/trade-book'
 import type { Journal } from '@/books/journal/journal'
 import type { Account, Institution } from '@/books/tradebook/types'
@@ -11,7 +12,7 @@ import { inMemoryBooks } from '../../tests/support/trade-book'
 function renderApp(tradeBook: TradeBook, journal: Journal) {
   return render(
     <MemoryRouter>
-      <AppRoot tradeBook={tradeBook} journal={journal} />
+      <AppRoot tradeBook={tradeBook} journal={journal} valuations={new Valuations(tradeBook)} />
     </MemoryRouter>,
   )
 }

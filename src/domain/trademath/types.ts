@@ -56,8 +56,23 @@ export interface ExecutionFacts {
 }
 
 export interface LegFacts {
+  id: LegId
   instrument: Instrument
   executions: ExecutionFacts[]
+}
+
+// The current holdings of a Trade — the net open quantity per Leg at a point in
+// time. Always derived from Executions, never stored (ADR 0005). Qty is a
+// positive integer; direction lives on `side` (long/short). Long-only this
+// slice; short holdings arrive with short option legs in Slice 3.
+export interface Holding {
+  instrument: Instrument
+  qty: Qty
+  side: 'long' | 'short'
+}
+
+export interface Position {
+  holdings: Holding[]
 }
 
 // PlanFacts groups the immutable statement of intent. The math-relevant fields

@@ -4,9 +4,16 @@
 import type {
   AccountId,
   ExitLevel,
+  InstrumentKey,
   ISODate,
+  LegId,
+  Money,
   PlannedLeg,
+  Qty,
   Side,
+  Timestamp,
+  TradeId,
+  TradeRecord,
   TradeStatus,
 } from '@/domain/trademath/types'
 
@@ -69,6 +76,31 @@ export interface TradeFilter {
   accountId?: AccountId
 }
 
+// Where an Execution lands: an existing Leg, or a new Leg in an existing Trade.
+// Deliberately no { newTrade } shape — plan-first is structural (ADR 0003): a
+// spontaneous entry is a 30-second confirmPlan first.
+export type ExecutionTarget =
+  { tradeId: TradeId; legId: LegId } | { tradeId: TradeId; newLeg: InstrumentKey }
+
+// One fill the trader recorded. Qty is a positive integer; direction lives on
+// `side`. Money is integer cents. The trading date rides in `timestamp`.
+export interface ExecutionDraft {
+  side: Side
+  qty: Qty
+  price: Money
+  fees: Money
+  timestamp: Timestamp
+}
+
+// The result of recording a fill. `nowFlat` tells the UI the fill flattened the
+// Trade (prompt for a Close Reason — consumed in S1.4). `newDeviations` is in the
+// design signature but stays empty until detection arrives in Slice 9.
+export interface ExecutionOutcome {
+  record: TradeRecord
+  newDeviations: never[]
+  nowFlat: boolean
+}
+
 // The fact-read shapes the UI renders come through the Book, never straight from
 // the domain layer (module-boundary rule): re-export them here.
 export type {
@@ -76,6 +108,8 @@ export type {
   Instrument,
   PlanFacts,
   PlannedLeg,
+  Position,
+  Side,
   TradeRecord,
   TradeStatus,
 } from '@/domain/trademath/types'

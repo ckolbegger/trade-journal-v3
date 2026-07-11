@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTradeBook } from '../tradeBookContext'
 import { useJournal } from '../journalContext'
-import { centsToDollars } from '../format'
+import { useValuations } from '../valuationsContext'
+import { RecordFillForm } from './RecordFillForm'
+import { centsToDollars, timestampToISODate } from '../format'
 import { StatusBadge } from '../components/Badge'
-import { card, heading, link, num, subheading } from '../styles'
-import type { TradeRecord, TradeStatus } from '@/books/tradebook/types'
+import { btnSecondary, card, heading, link, num, subheading } from '../styles'
+import type { Position, TradeRecord, TradeStatus } from '@/books/tradebook/types'
 import type { Entry } from '@/books/journal/types'
 
 // The Trade detail page renders Plan facts only — thesis, Strategy, Idea Source,
@@ -18,12 +20,16 @@ const STATUS_BUCKETS: TradeStatus[] = ['planned', 'open', 'closed']
 export function TradeDetail() {
   const tradeBook = useTradeBook()
   const journal = useJournal()
+  const valuations = useValuations()
   const { id } = useParams()
   const [trade, setTrade] = useState<TradeRecord | null>(null)
   const [status, setStatus] = useState<TradeStatus | null>(null)
+  const [position, setPosition] = useState<Position | null>(null)
   const [strategyName, setStrategyName] = useState('')
   const [ideaSourceName, setIdeaSourceName] = useState('')
   const [entries, setEntries] = useState<Entry[]>([])
+  const [showFill, setShowFill] = useState(false)
+  const [refresh, setRefresh] = useState(0)
 
   useEffect(() => {
     if (!id) return
@@ -33,6 +39,7 @@ export function TradeDetail() {
       const strategies = await tradeBook.registries.strategies.list(true)
       const ideaSources = await tradeBook.registries.ideaSources.list(true)
       const journalEntries = await journal.entriesFor({ trade: tradeId })
+      const holdings = await valuations.position(tradeId)
       // Status is derived — find which status bucket holds this Trade.
       let found: TradeStatus | null = null
       for (const bucket of STATUS_BUCKETS) {
@@ -45,6 +52,7 @@ export function TradeDetail() {
       if (!active) return
       setTrade(record)
       setStatus(found)
+      setPosition(holdings)
       setStrategyName(strategies.find((s) => s.id === record.plan.strategyId)?.name ?? '')
       setIdeaSourceName(ideaSources.find((s) => s.id === record.plan.ideaSourceId)?.name ?? '')
       setEntries(journalEntries)
@@ -53,11 +61,16 @@ export function TradeDetail() {
     return () => {
       active = false
     }
-  }, [tradeBook, journal, id])
+  }, [tradeBook, journal, valuations, id, refresh])
 
   if (!trade) return <p>Loading…</p>
 
   const { plan } = trade
+
+  // Every Execution across the Trade's Legs, oldest first — the fact history.
+  const executions = trade.legs
+    .flatMap((leg) => leg.executions.map((e) => ({ ...e, ticker: leg.instrument.ticker })))
+    .sort((a, b) => a.timestamp - b.timestamp)
 
   return (
     <section className="space-y-4">
@@ -111,6 +124,51 @@ export function TradeDetail() {
               Chart
             </a>
           </p>
+        )}
+      </div>
+
+      <div className={`${card} space-y-3`}>
+        <div className="flex items-center justify-between">
+          <h3 className={subheading}>Position</h3>
+          {!showFill && (
+            <button type="button" className={btnSecondary} onClick={() => setShowFill(true)}>
+              Record fill
+            </button>
+          )}
+        </div>
+        <p aria-label="position" className={`text-sm text-slate-800 ${num}`}>
+          {position && position.holdings.length > 0
+            ? position.holdings.map((h) => `${h.qty} ${h.instrument.ticker} ${h.side}`).join(', ')
+            : 'No position'}
+        </p>
+        {showFill && (
+          <RecordFillForm
+            trade={trade}
+            onRecorded={() => {
+              setShowFill(false)
+              setRefresh((n) => n + 1)
+            }}
+          />
+        )}
+      </div>
+
+      <div className={`${card} space-y-3`}>
+        <h3 className={subheading}>Execution history</h3>
+        {executions.length === 0 ? (
+          <p className="text-sm text-slate-500">No executions yet</p>
+        ) : (
+          <ul aria-label="execution history" className="divide-y divide-slate-100">
+            {executions.map((e, i) => (
+              <li key={i} className={`flex flex-wrap gap-x-3 py-2 text-sm text-slate-800 ${num}`}>
+                <span>{timestampToISODate(e.timestamp)}</span>
+                <span className="capitalize">{e.side}</span>
+                <span>{e.qty}</span>
+                <span>{e.ticker}</span>
+                <span>${centsToDollars(e.price)}</span>
+                <span className="text-slate-500">fees ${centsToDollars(e.fees)}</span>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
 

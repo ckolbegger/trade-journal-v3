@@ -52,4 +52,18 @@ describe('TradeList', () => {
     const tickers = screen.getAllByRole('listitem').map((li) => li.getAttribute('aria-label'))
     expect(tickers).toEqual(['AAPL', 'MSFT'])
   })
+
+  it('flips a filled Trade to an open badge', async () => {
+    const { book, accountId } = await seededBook()
+    const id = await book.confirmPlan(draft(accountId, 'AAPL'))
+    await book.recordExecution(
+      { tradeId: id, newLeg: 'AAPL' },
+      { side: 'buy', qty: 100, price: 15000, fees: 100, timestamp: Date.now() },
+    )
+
+    renderPage(book)
+
+    const aapl = await screen.findByRole('listitem', { name: /AAPL/i })
+    expect(aapl).toHaveTextContent(/open/i)
+  })
 })

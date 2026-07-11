@@ -58,6 +58,22 @@ export default tseslint.config([
     },
   },
   {
+    files: ['src/coordinators/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/ui', '@/ui/**', '@/storage', '@/storage/**'],
+              message: 'Coordinators may not import ui or storage (Books + TradeMath only).',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['src/ui/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-imports': [

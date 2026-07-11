@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { TradeDetail } from './TradeDetail'
 import { TradeBookContext } from '../tradeBookContext'
 import { JournalContext } from '../journalContext'
+import { ValuationsContext } from '../valuationsContext'
+import { Valuations } from '@/coordinators/valuations'
 import type { TradeBook } from '@/books/tradebook/trade-book'
 import type { Journal } from '@/books/journal/journal'
 import type { Account, IdeaSource, Institution, PlanDraft } from '@/books/tradebook/types'
@@ -41,11 +43,13 @@ function renderDetail(book: TradeBook, journal: Journal, id: string) {
   return render(
     <TradeBookContext.Provider value={book}>
       <JournalContext.Provider value={journal}>
-        <MemoryRouter initialEntries={[`/trades/${id}`]}>
-          <Routes>
-            <Route path="/trades/:id" element={<TradeDetail />} />
-          </Routes>
-        </MemoryRouter>
+        <ValuationsContext.Provider value={new Valuations(book)}>
+          <MemoryRouter initialEntries={[`/trades/${id}`]}>
+            <Routes>
+              <Route path="/trades/:id" element={<TradeDetail />} />
+            </Routes>
+          </MemoryRouter>
+        </ValuationsContext.Provider>
       </JournalContext.Provider>
     </TradeBookContext.Provider>,
   )
@@ -114,5 +118,43 @@ describe('TradeDetail journal section', () => {
 
     expect(await screen.findByLabelText('journal owed')).toBeInTheDocument()
     expect(screen.getByLabelText('journal entries')).toHaveTextContent('1')
+  })
+})
+
+describe('TradeDetail position & history', () => {
+  it('shows holdings from Valuations.position', async () => {
+    const { book, journal, id } = await seededTrade()
+    await book.recordExecution(
+      { tradeId: id, newLeg: 'AAPL' },
+      { side: 'buy', qty: 100, price: 15000, fees: 100, timestamp: Date.now() },
+    )
+    renderDetail(book, journal, id)
+
+    const position = await screen.findByLabelText('position')
+    expect(position).toHaveTextContent(/100 AAPL long/i)
+  })
+
+  it('lists executions oldest-first with fees', async () => {
+    const { book, journal, id } = await seededTrade()
+    await book.recordExecution(
+      { tradeId: id, newLeg: 'AAPL' },
+      {
+        side: 'buy',
+        qty: 100,
+        price: 15000,
+        fees: 100,
+        timestamp: new Date('2026-07-10T12:00:00').getTime(),
+      },
+    )
+    renderDetail(book, journal, id)
+
+    const history = await screen.findByLabelText('execution history')
+    const rows = within(history).getAllByRole('listitem')
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toHaveTextContent('2026-07-10')
+    expect(rows[0]).toHaveTextContent(/buy/i)
+    expect(rows[0]).toHaveTextContent('100')
+    expect(rows[0]).toHaveTextContent('150.00')
+    expect(rows[0]).toHaveTextContent('1.00')
   })
 })
