@@ -60,6 +60,17 @@ export class Journal {
   async countFor(tradeId: TradeId): Promise<number> {
     return (await this.entriesFor({ trade: tradeId })).length
   }
+
+  // Journal Debt IS the unsettled-placeholder query — no cross-Book derivation
+  // (ADR 0006). Review surfaces these for settlement; nothing nags. (Settling
+  // arrives in S1.7, which narrows this to placeholders without a settledAt.)
+  async outstandingDebt(): Promise<Entry[]> {
+    const entries = await this.binding.list<Entry>(ENTRIES)
+    return entries
+      .filter((e) => e.placeholder)
+      .sort((a, b) => a.at - b.at)
+      .map((e) => structuredClone(e))
+  }
 }
 
 function validateAnswer(entryType: EntryType, answer: PromptAnswer): void {

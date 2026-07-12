@@ -312,7 +312,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 ---
 
-## ☐ Story S1.6 — Daily Review: agenda & Mark collection
+## ☑ Story S1.6 — Daily Review: agenda & Mark collection
 
 > As a trader, I want the app to tell me which prices are missing since my last review — including days I skipped — and what journal I owe, so that a session starts with everything it must cover and a missed Tuesday can't silently corrupt my history.
 
@@ -320,7 +320,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 ### Tasks
 
-- [ ] **S1.6.T1 — PriceBook.lastMarked + missingMarks.**
+- [x] **S1.6.T1 — PriceBook.lastMarked + missingMarks.**
 
   ```
   describe "PriceBook.lastMarked"
@@ -332,7 +332,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it treats every calendar date in range as needed (no trading calendar — the trader's review defines the dates)
   ```
 
-- [ ] **S1.6.T2 — PriceBook.fetch (no-adapter path).** Registered-adapter orchestration is Slice 4; this slice implements the seam: no sources → instant `FetchReport` with everything `unsupported`, nothing stored.
+- [x] **S1.6.T2 — PriceBook.fetch (no-adapter path).** Registered-adapter orchestration is Slice 4; this slice implements the seam: no sources → instant `FetchReport` with everything `unsupported`, nothing stored.
 
   ```
   describe "PriceBook.fetch (no adapters)"
@@ -340,7 +340,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it stores nothing
   ```
 
-- [ ] **S1.6.T3 — Valuations.marksNeeded.** Per open Trade: instruments + range (day after `lastMarked` → asOf; never-marked instruments start at the Trade's first Execution date). Overall `fetchRange` = earliest gap → asOf.
+- [x] **S1.6.T3 — Valuations.marksNeeded.** Per open Trade: instruments + range (day after `lastMarked` → asOf; never-marked instruments start at the Trade's first Execution date). Overall `fetchRange` = earliest gap → asOf.
 
   ```
   describe "Valuations.marksNeeded"
@@ -352,7 +352,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it returns an empty list when everything is marked through asOf
   ```
 
-- [ ] **S1.6.T4 — Review.agenda.** Composition only, stores nothing: marksNeeded + fetchRange + journalDebt (`Journal.outstandingDebt` = unsettled placeholders). (`expiredLegs` joins in Slice 3, `accountsForSnapshot` in Slice 14.)
+- [x] **S1.6.T4 — Review.agenda.** Composition only, stores nothing: marksNeeded + fetchRange + journalDebt (`Journal.outstandingDebt` = unsettled placeholders). (`expiredLegs` joins in Slice 3, `accountsForSnapshot` in Slice 14.)
 
   ```
   describe "Journal.outstandingDebt"
@@ -363,7 +363,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it is empty-agenda when no open Trades and no debt exist
   ```
 
-- [ ] **S1.6.T5 — Review start page UI.** `/review`: start session → agenda renders — open Trades with missing Mark rows (including gap days), owed journal count, then a "begin walk" action. UI calls `fetch` unconditionally before showing the remainder (one collection path in every slice).
+- [x] **S1.6.T5 — Review start page UI.** `/review`: start session → agenda renders — open Trades with missing Mark rows (including gap days), owed journal count, then a "begin walk" action. UI calls `fetch` unconditionally before showing the remainder (one collection path in every slice).
 
   ```
   describe "ReviewAgendaPage"
@@ -374,9 +374,9 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it shows an all-caught-up state when the agenda is empty
   ```
 
-- [ ] **S1.6.T6 — Integration tests**: two open Trades, one marked Monday, review Wednesday → agenda over Dexie shows Tue+Wed rows for one and first-execution-date range for the never-marked one; debt count matches placeholders.
-- [ ] **S1.6.T7 — Playwright e2e** (`e2e/s1-6-agenda.spec.ts`): seeded scenario → open Review → agenda shows the gap rows and debt count.
-- [ ] **S1.6.T8 — Browser verification.** With one Trade marked yesterday and one never marked plus one skipped plan-entry: agenda lists correct gap rows per Trade and the owed entry; marking everything and reopening Review shows all-caught-up. All suites green.
+- [x] **S1.6.T6 — Integration tests**: two open Trades, one marked Monday, review Wednesday → agenda over Dexie shows Tue+Wed rows for one and first-execution-date range for the never-marked one; debt count matches placeholders.
+- [x] **S1.6.T7 — Playwright e2e** (`e2e/s1-6-agenda.spec.ts`): seeded scenario → open Review → agenda shows the gap rows and debt count.
+- [x] **S1.6.T8 — Browser verification.** With one Trade marked yesterday and one never marked plus one skipped plan-entry: agenda lists correct gap rows per Trade and the owed entry; marking everything and reopening Review shows all-caught-up. All suites green.
 
 ---
 
@@ -399,6 +399,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it rejects settling a non-placeholder entry
   - it rejects settling twice
   - it makes the entry disappear from outstandingDebt()
+  - it outstandingDebt() excludes settled placeholders (absorbed from S1.6.T4 — unwritable before settle existed)
   ```
 
 - [ ] **S1.7.T2 — Review.walk.** Open Trades in insertion order; per item `reviewedToday` (a `{kind:'review'}` entry for asOf+tradeId exists) and `outstandingDebt` count. Order snapshotted at session start — no mid-walk reshuffling.

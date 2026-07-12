@@ -139,6 +139,118 @@ describe('Valuations.detail', () => {
   })
 })
 
+// The Daily Review scenario: the trader marked Monday (07-13), skipped Tuesday,
+// and opens the review on Wednesday (07-15). Fills landed Friday 07-10.
+describe('Valuations.marksNeeded', () => {
+  const monday = '2026-07-13'
+  const tuesday = '2026-07-14'
+  const wednesday = '2026-07-15'
+
+  it("lists each open Trade's instruments and gap range", async () => {
+    const { tradeBook, priceBook } = books()
+    const aapl = await seedPlan(tradeBook)
+    await tradeBook.recordExecution({ tradeId: aapl, newLeg: 'AAPL' }, fill())
+    await priceBook.record('AAPL', monday, 16000, 'manual')
+
+    const needed = await new Valuations(tradeBook, priceBook).marksNeeded(wednesday)
+
+    expect(needed.perTrade).toEqual([
+      { tradeId: aapl, instruments: ['AAPL'], range: { from: tuesday, to: wednesday } },
+    ])
+  })
+
+  it("starts a never-marked instrument at its Trade's first Execution date", async () => {
+    const { tradeBook, priceBook } = books()
+    const tradeId = await seedPlan(tradeBook)
+    // The fill is Friday 2026-07-10 — the Trade has needed a Mark since that day.
+    await tradeBook.recordExecution({ tradeId, newLeg: 'AAPL' }, fill())
+
+    const needed = await new Valuations(tradeBook, priceBook).marksNeeded(wednesday)
+
+    expect(needed.perTrade).toEqual([
+      { tradeId, instruments: ['AAPL'], range: { from: '2026-07-10', to: wednesday } },
+    ])
+  })
+
+  it('starts a marked instrument the day after its last Mark', async () => {
+    const { tradeBook, priceBook } = books()
+    const tradeId = await seedPlan(tradeBook)
+    await tradeBook.recordExecution({ tradeId, newLeg: 'AAPL' }, fill())
+    await priceBook.record('AAPL', tuesday, 16100, 'manual')
+
+    const needed = await new Valuations(tradeBook, priceBook).marksNeeded(wednesday)
+
+    expect(needed.perTrade[0].range).toEqual({ from: wednesday, to: wednesday })
+  })
+
+  it('includes skipped days (Monday-marked instrument on Wednesday needs Tue+Wed)', async () => {
+    const { tradeBook, priceBook } = books()
+    const tradeId = await seedPlan(tradeBook)
+    await tradeBook.recordExecution({ tradeId, newLeg: 'AAPL' }, fill())
+    await priceBook.record('AAPL', monday, 16000, 'manual')
+
+    const needed = await new Valuations(tradeBook, priceBook).marksNeeded(wednesday)
+
+    // The skipped Tuesday is inside the gap by construction — nobody was asked.
+    const missing = await priceBook.missingMarks(
+      needed.perTrade[0].instruments,
+      needed.perTrade[0].range,
+    )
+    expect(missing).toEqual([
+      { instrument: 'AAPL', date: tuesday },
+      { instrument: 'AAPL', date: wednesday },
+    ])
+  })
+
+  it('excludes closed and planned Trades', async () => {
+    const { tradeBook, priceBook } = books()
+    await tradeBook.registries.closeReasons.save({ id: 'close-hit-target', name: 'Hit Target' })
+    const open = await seedPlan(tradeBook)
+    await tradeBook.recordExecution({ tradeId: open, newLeg: 'AAPL' }, fill())
+
+    const closed = await seedPlan(tradeBook)
+    const { record } = await tradeBook.recordExecution({ tradeId: closed, newLeg: 'AAPL' }, fill())
+    await tradeBook.recordExecution(
+      { tradeId: closed, legId: record.legs[0].id },
+      { ...fill(), side: 'sell' },
+    )
+    await tradeBook.setCloseReason(closed, { id: 'close-hit-target', name: 'Hit Target' })
+
+    await seedPlan(tradeBook) // planned — never filled
+
+    const needed = await new Valuations(tradeBook, priceBook).marksNeeded(wednesday)
+
+    expect(needed.perTrade.map((t) => t.tradeId)).toEqual([open])
+  })
+
+  it('returns an empty list when everything is marked through asOf', async () => {
+    const { tradeBook, priceBook } = books()
+    const tradeId = await seedPlan(tradeBook)
+    await tradeBook.recordExecution({ tradeId, newLeg: 'AAPL' }, fill())
+    await priceBook.record('AAPL', wednesday, 16000, 'manual')
+
+    const needed = await new Valuations(tradeBook, priceBook).marksNeeded(wednesday)
+
+    expect(needed.perTrade).toEqual([])
+  })
+
+  it('reports the fetch range from the earliest gap through asOf', async () => {
+    const { tradeBook, priceBook } = books()
+    const marked = await seedPlan(tradeBook)
+    await tradeBook.recordExecution({ tradeId: marked, newLeg: 'AAPL' }, fill())
+    await priceBook.record('AAPL', monday, 16000, 'manual')
+
+    const neverMarked = await seedPlan(tradeBook)
+    await tradeBook.recordExecution({ tradeId: neverMarked, newLeg: 'MSFT' }, fill())
+
+    const needed = await new Valuations(tradeBook, priceBook).marksNeeded(wednesday)
+
+    // Earliest gap start: the never-marked MSFT Trade's first Execution (07-10),
+    // ahead of AAPL's day-after-Monday (07-14).
+    expect(needed.fetchRange).toEqual({ from: '2026-07-10', to: wednesday })
+  })
+})
+
 describe('Valuations.value', () => {
   it('returns the Valuation for a marked Trade (lighter list-row pair)', async () => {
     const { tradeBook, priceBook } = books()

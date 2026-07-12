@@ -4,6 +4,7 @@ import { TradeBook } from '@/books/tradebook/trade-book'
 import { Journal } from '@/books/journal/journal'
 import { PriceBook } from '@/books/pricebook/price-book'
 import { Valuations } from '@/coordinators/valuations'
+import { Review } from '@/coordinators/review'
 import { Workspace } from '@/workspace/workspace'
 
 // Production wiring. Lives outside src/ui so the UI never imports storage
@@ -22,6 +23,10 @@ export function createBooks(): { tradeBook: TradeBook; journal: Journal; priceBo
 
 export function createValuations(tradeBook: TradeBook, priceBook: PriceBook): Valuations {
   return new Valuations(tradeBook, priceBook)
+}
+
+export function createReview(valuations: Valuations, journal: Journal): Review {
+  return new Review(valuations, journal)
 }
 
 export function createWorkspace(tradeBook: TradeBook, journal: Journal): Workspace {

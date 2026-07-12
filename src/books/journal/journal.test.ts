@@ -180,3 +180,34 @@ describe('entry immutability', () => {
     expect(again.placeholder).toBe(false)
   })
 })
+
+describe('Journal.outstandingDebt', () => {
+  it('returns unsettled placeholders only', async () => {
+    const journal = await journalWithPlanType()
+    const owed = await journal.write(placeholderDraft('t1'))
+    await journal.write(placeholderDraft('t2'))
+
+    const debt = await journal.outstandingDebt()
+
+    expect(debt.map((e) => e.id)).toContain(owed)
+    expect(debt).toHaveLength(2)
+    expect(debt.every((e) => e.placeholder)).toBe(true)
+  })
+
+  it('excludes full entries', async () => {
+    const journal = await journalWithPlanType()
+    await journal.write(fullDraft('t1'))
+    const owed = await journal.write(placeholderDraft('t2'))
+
+    const debt = await journal.outstandingDebt()
+
+    expect(debt.map((e) => e.id)).toEqual([owed])
+  })
+
+  it('returns nothing when no entry was skipped', async () => {
+    const journal = await journalWithPlanType()
+    await journal.write(fullDraft('t1'))
+
+    expect(await journal.outstandingDebt()).toEqual([])
+  })
+})

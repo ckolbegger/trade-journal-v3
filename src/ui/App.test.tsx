@@ -3,19 +3,27 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { App } from './App'
 import { TradeBookContext } from './tradeBookContext'
+import { PriceBookContext } from './priceBookContext'
 import { ValuationsContext } from './valuationsContext'
+import { ReviewContext } from './reviewContext'
 import { Valuations } from '@/coordinators/valuations'
+import { Review } from '@/coordinators/review'
 import { inMemoryBooks } from '../../tests/support/trade-book'
 
 function renderAt(path: string) {
-  const { tradeBook, priceBook } = inMemoryBooks()
+  const { tradeBook, journal, priceBook } = inMemoryBooks()
+  const valuations = new Valuations(tradeBook, priceBook)
   return render(
     <TradeBookContext.Provider value={tradeBook}>
-      <ValuationsContext.Provider value={new Valuations(tradeBook, priceBook)}>
-        <MemoryRouter initialEntries={[path]}>
-          <App />
-        </MemoryRouter>
-      </ValuationsContext.Provider>
+      <PriceBookContext.Provider value={priceBook}>
+        <ValuationsContext.Provider value={valuations}>
+          <ReviewContext.Provider value={new Review(valuations, journal)}>
+            <MemoryRouter initialEntries={[path]}>
+              <App />
+            </MemoryRouter>
+          </ReviewContext.Provider>
+        </ValuationsContext.Provider>
+      </PriceBookContext.Provider>
     </TradeBookContext.Provider>,
   )
 }

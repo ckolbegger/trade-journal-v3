@@ -21,6 +21,10 @@ export default tseslint.config([
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      // An `_`-prefixed parameter is deliberately unused: a signature comes
+      // verbatim from its design doc even when this slice's subset ignores an
+      // argument (e.g. PriceBook.fetch's range, with no adapters registered).
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
   // --- Module boundary rules (docs/plan/README.md dependency rules) ---

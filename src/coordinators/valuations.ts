@@ -1,6 +1,8 @@
 import type { TradeBook } from '@/books/tradebook/trade-book'
 import type { PriceBook } from '@/books/pricebook/price-book'
+import type { DateRange } from '@/books/pricebook/types'
 import type {
+  ISODate,
   InstrumentKey,
   Mark,
   MarkSet,
@@ -11,6 +13,7 @@ import type {
   TradeRecord,
   Valuation,
 } from '@/domain/trademath/types'
+import { isoDateOf, nextISODate } from '@/domain/dates'
 import { positionOf } from '@/domain/trademath/position'
 import { instrumentsOf, valuation, MissingMarkError } from '@/domain/trademath/valuation'
 import { riskReward } from '@/domain/trademath/risk-reward'
@@ -37,6 +40,22 @@ export interface TradeDetailView {
 export interface TradeValue {
   valuation?: Valuation
   marksMissing?: InstrumentKey[]
+}
+
+// The collection half of Review's agenda (a Trade↔Marks join). Per open Trade:
+// the instruments still missing Marks and the range they are missing them over —
+// day after the instrument's last Mark, or the Trade's first Execution date when
+// it has never been marked, through asOf. `fetchRange` spans the earliest gap
+// through asOf, for the one bulk fetch.
+export interface TradeMarksNeeded {
+  tradeId: TradeId
+  instruments: InstrumentKey[]
+  range: DateRange
+}
+
+export interface MarksNeeded {
+  perTrade: TradeMarksNeeded[]
+  fetchRange: DateRange
 }
 
 export class Valuations {
@@ -69,6 +88,43 @@ export class Valuations {
     }
   }
 
+  // Which instruments need Marks, per open Trade, over which ranges. Planned and
+  // closed Trades hold nothing, so they need nothing. An instrument whose last
+  // Mark is asOf (or later) has no gap and drops out; a Trade with no gap at all
+  // drops out. Skipped review days are inside the ranges by construction — the
+  // gap is "since the last date with Marks", so a missed Tuesday can never
+  // silently become interior history (docs/design/pricebook.md).
+  async marksNeeded(asOf: ISODate): Promise<MarksNeeded> {
+    if (!this.priceBook) throw new Error('Valuations needs a PriceBook for marksNeeded')
+    const open = await this.tradeBook.query({ status: 'open' })
+
+    const perTrade: TradeMarksNeeded[] = []
+    for (const record of open) {
+      const instruments = instrumentsOf(record)
+      const lastMarked = await this.priceBook.lastMarked(instruments)
+      const firstExecution = firstExecutionDate(record)
+
+      const gaps = instruments
+        .map((instrument) => {
+          const last = lastMarked.get(instrument)
+          return { instrument, from: last ? nextISODate(last) : firstExecution }
+        })
+        .filter((gap) => gap.from <= asOf)
+
+      if (gaps.length === 0) continue
+      const from = gaps.map((gap) => gap.from).reduce((a, b) => (a < b ? a : b))
+      perTrade.push({
+        tradeId: record.id,
+        instruments: gaps.map((gap) => gap.instrument),
+        range: { from, to: asOf },
+      })
+    }
+
+    const starts = perTrade.map((item) => item.range.from)
+    const earliest = starts.length === 0 ? asOf : starts.reduce((a, b) => (a < b ? a : b))
+    return { perTrade, fetchRange: { from: earliest, to: asOf } }
+  }
+
   async value(tradeId: TradeId): Promise<TradeValue> {
     const record = await this.tradeBook.get(tradeId)
     const marks = await this.latestMarks(record)
@@ -86,6 +142,13 @@ export class Valuations {
     const series = await this.priceBook.series(instrumentsOf(record))
     return latestMarkSet(series)
   }
+}
+
+// The date the Trade first held anything — where a never-marked instrument's gap
+// starts (an open Trade always has at least one Execution).
+function firstExecutionDate(record: TradeRecord): ISODate {
+  const timestamps = record.legs.flatMap((leg) => leg.executions.map((e) => e.timestamp))
+  return isoDateOf(Math.min(...timestamps))
 }
 
 function latestMarkSet(series: MarkSeries): MarkSet {

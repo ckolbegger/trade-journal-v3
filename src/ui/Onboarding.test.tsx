@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { AppRoot } from './AppRoot'
 import { Valuations } from '@/coordinators/valuations'
+import { Review } from '@/coordinators/review'
 import type { TradeBook } from '@/books/tradebook/trade-book'
 import type { Journal } from '@/books/journal/journal'
 import type { PriceBook } from '@/books/pricebook/price-book'
@@ -11,13 +12,15 @@ import type { Account, Institution } from '@/books/tradebook/types'
 import { inMemoryBooks } from '../../tests/support/trade-book'
 
 function renderApp(tradeBook: TradeBook, journal: Journal, priceBook: PriceBook) {
+  const valuations = new Valuations(tradeBook, priceBook)
   return render(
     <MemoryRouter>
       <AppRoot
         tradeBook={tradeBook}
         journal={journal}
         priceBook={priceBook}
-        valuations={new Valuations(tradeBook, priceBook)}
+        valuations={valuations}
+        review={new Review(valuations, journal)}
       />
     </MemoryRouter>,
   )

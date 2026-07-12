@@ -7,7 +7,8 @@ import type {
   MarkSeries,
   Money,
 } from '@/domain/trademath/types'
-import type { DateRange, RecordResult } from './types'
+import { datesInRange } from '@/domain/dates'
+import type { DateRange, FetchReport, RecordResult } from './types'
 
 const MARKS = 'marks'
 
@@ -64,6 +65,47 @@ export class PriceBook {
       if (stored) marks.set(instrument, toMark(stored))
     }
     return marks
+  }
+
+  // Collects Marks from the registered PricingSources. No sources are registered
+  // this slice, so every instrument is unsupported, nothing is stored, and the
+  // report routes the whole range to the manual per-Trade prompts. The UI calls
+  // this unconditionally — the sources-vs-manual branch lives here, never there
+  // (docs/design/review.md). PricingSource adapters arrive in Slice 4.
+  async fetch(instruments: InstrumentKey[], _range: DateRange): Promise<FetchReport> {
+    return { stored: [], skippedManual: [], unsupported: [...instruments], errors: [] }
+  }
+
+  // The unpriced (instrument, date) rows in a range — the authoritative remainder
+  // after a fetch, and the Daily Review's per-Trade prompts. Every calendar date
+  // in the range is needed: there is no trading calendar (docs/design/pricebook.md).
+  async missingMarks(
+    instruments: InstrumentKey[],
+    range: DateRange,
+  ): Promise<{ instrument: InstrumentKey; date: ISODate }[]> {
+    const missing: { instrument: InstrumentKey; date: ISODate }[] = []
+    for (const instrument of instruments) {
+      const stored = await this.binding.where<StoredMark>(MARKS, 'instrument', instrument)
+      const marked = new Set(stored.map((m) => m.date))
+      for (const date of datesInRange(range.from, range.to)) {
+        if (!marked.has(date)) missing.push({ instrument, date })
+      }
+    }
+    return missing
+  }
+
+  // The gap start per instrument: the latest date each has a Mark for, or
+  // undefined when it has never been marked (the caller supplies that fallback —
+  // Review starts a never-marked instrument at its Trade's first Execution date).
+  // Every requested instrument gets an entry, so absence is explicit.
+  async lastMarked(instruments: InstrumentKey[]): Promise<Map<InstrumentKey, ISODate | undefined>> {
+    const latest = new Map<InstrumentKey, ISODate | undefined>()
+    for (const instrument of instruments) {
+      const stored = await this.binding.where<StoredMark>(MARKS, 'instrument', instrument)
+      const dates = stored.map((m) => m.date).sort()
+      latest.set(instrument, dates[dates.length - 1])
+    }
+    return latest
   }
 
   async series(instruments: InstrumentKey[], range?: DateRange): Promise<MarkSeries> {
