@@ -32,7 +32,7 @@ interface Valuations {
   replay(tradeId): Promise<ReplayPoint[]>
   disciplineCheck(tradeId | 'allOpen', asOf): Promise<DetectedDeviation[]>
   attentionBoard(asOf): Promise<RankedTrade[]>    // open Trades, scored and sorted
-  marksNeeded(asOf): Promise<MarksNeeded>         // which instruments need Marks, per Trade, over which ranges —
+  marksNeeded(asOf): Promise<MarksNeeded>         // which instruments need Marks, each over its own range, grouped per Trade —
                                                   // the collection half of Review's agenda (a Trade↔Marks join)
   expiredHoldings(asOf): Promise<ExpiredHolding[]> // Legs past expiration still holding quantity (facts + positionOf,
                                                   // no Marks) — Review surfaces them for outcome recording

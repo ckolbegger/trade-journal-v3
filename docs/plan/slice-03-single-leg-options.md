@@ -6,6 +6,7 @@ Option contracts become plannable, tradeable, and reviewable: long calls/puts an
 
 - **Contract multiplier is 100.** Option `qty` counts contracts; valuation, R/R, and position math multiply by 100. The multiplier lives in TradeMath, keyed off the instrument kind — never in the UI.
 - **Projecting to an `underlyingPrice` Exit Level values the structure at intrinsic.** No pricing model exists (ADR 0009), so "risk to a $95 stop" on a put is the put's intrinsic value at 95. This understates long-option value at the stop (time value ignored) — accepted, display explains "at intrinsic".
+- **`ReviewAgenda.marksNeeded` carries a range per INSTRUMENT, not per Trade** (user ruling 2026-07-12, resolving the S1.6 review question): `{ tradeId, needs: { instrument, range }[] }[]`. A two-instrument Trade's contract and underlying gap independently; a shared per-Trade range would union the gaps and resurface one instrument's deliberately-skipped dates (accepted blind spots) as empty prompts, violating "older gaps never nag again". Dates that HAVE Marks are never re-surfaced either way — `missingMarks` filters them. review.md and overview.md updated.
 - **Assignment/exercise/expiration are Execution kinds** (`ExecutionFacts.kind: 'fill' | 'expire' | 'assign' | 'exercise'`, default `'fill'`; the field is added now — Slice 1 records carry no kind and read as `'fill'`). They close the option Leg at price 0; assignment/exercise simultaneously opens the stock Leg at the strike price in the SAME Trade (ADR 0002 — schema already allows it). Trade-level P&L stays truthful: the option Leg realizes its full premium; the stock Leg carries strike-based basis.
 
 **Out of scope (JIT):** multi-leg structures (Slice 7), naked short calls (no seeded strategy offers one — `'unlimited'` worst-case risk for shorts first arises in Slice 7 if ever), `trailing` Exit Levels (Slice 10), automated pricing (Slice 4).
@@ -71,11 +72,16 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
   - it seeds Long Call and Long Put iff absent
   ```
 
-- [ ] **S3.1.T4 — Marks for two instruments.** Trade detail and the review walk prompt for both the contract Mark and the underlying Mark (both come from `Valuations.marksNeeded` via the extended `instrumentsOf` — no new seams).
+- [ ] **S3.1.T4 — Marks for two instruments.** Trade detail and the review walk prompt for both the contract Mark and the underlying Mark (both come from `Valuations.marksNeeded` via the extended `instrumentsOf` — no new seams). Reshape `marksNeeded` to per-instrument ranges (decided above): `{ tradeId, needs: { instrument, range }[] }[]`; the UI calls `missingMarks` per instrument over its own range; `fetchRange` stays the union.
 
   ```
+  describe "Valuations.marksNeeded (per-instrument ranges)"
+  - it returns independent ranges when the contract and underlying were last marked on different dates
+  - it starts a never-marked underlying at the Trade's first Execution date while the contract keeps its own gap
+  - it keeps fetchRange = earliest gap start across all instruments → asOf
   describe "MarkEntry (options)"
   - it prompts for contract and underlying Marks
+  - it prompts only the later-gapped instrument's dates (no re-prompt of the other instrument's interior history)
   - it computes valuation from the contract Mark alone when the underlying is unmarked (R/R shows marks-missing for underlying-anchored levels only)
   ```
 

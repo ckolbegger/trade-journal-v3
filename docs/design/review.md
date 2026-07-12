@@ -11,7 +11,10 @@ interface Review {
 }
 
 interface ReviewAgenda {
-  marksNeeded: { tradeId: TradeId; instruments: InstrumentKey[]; range: DateRange }[]  // via Valuations.marksNeeded
+  marksNeeded: { tradeId: TradeId; needs: { instrument: InstrumentKey; range: DateRange }[] }[]
+                                                 // via Valuations.marksNeeded — range is per INSTRUMENT (a contract
+                                                 // and its underlying gap independently; a shared per-Trade range
+                                                 // would resurface one instrument's skipped dates as the other's gap)
   fetchRange: DateRange                          // earliest gap .. asOf, for the one bulk fetch
   expiredLegs: ExpiredHolding[]                  // via Valuations.expiredHoldings — contracts past expiration
                                                  // still holding quantity; outcome must be recorded (Slice 2 UI)
@@ -70,7 +73,7 @@ sequenceDiagram
     V->>PB: lastMarked(all instruments)
     PB-->>V: latest Mark date per instrument
     Note over V: collection range per instrument — day after its last Mark<br/>through today (never-marked instruments start at their<br/>Trade's first Execution date). Missed Tuesday is inside by construction
-    V-->>R: marks needed per Trade + fetchRange
+    V-->>R: per-instrument marks needed, grouped per Trade + fetchRange
     R->>J: outstandingDebt()
     J-->>R: Journal Debt list
     R-->>UI: agenda (marks needed, debt, snapshot prompt)
@@ -94,7 +97,7 @@ sequenceDiagram
     R-->>UI: walk order (snapshotted, stable for the session)
 
     loop each Trade in the walk
-        UI->>PB: missingMarks(this agenda item's instruments, its range)
+        UI->>PB: missingMarks per instrument, each over its own range
         PB-->>UI: unpriced rows for THIS Trade
         T->>UI: type prices inline (or skip a gap row, accepting the blind spot)
         UI->>PB: record(instrument, date, price, manual)
