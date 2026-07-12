@@ -87,8 +87,8 @@ describe('review agenda over Dexie', () => {
     const agenda = await review.agenda(WEDNESDAY)
 
     expect(agenda.marksNeeded).toEqual([
-      { tradeId: aapl, instruments: ['AAPL'], range: { from: TUESDAY, to: WEDNESDAY } },
-      { tradeId: msft, instruments: ['MSFT'], range: { from: FRIDAY, to: WEDNESDAY } },
+      { tradeId: aapl, needs: [{ instrument: 'AAPL', range: { from: TUESDAY, to: WEDNESDAY } }] },
+      { tradeId: msft, needs: [{ instrument: 'MSFT', range: { from: FRIDAY, to: WEDNESDAY } }] },
     ])
     expect(agenda.fetchRange).toEqual({ from: FRIDAY, to: WEDNESDAY })
 
@@ -98,12 +98,12 @@ describe('review agenda over Dexie', () => {
     expect(agenda.journalDebt[0].placeholder).toBe(true)
 
     // The skipped Tuesday is inside AAPL's gap; MSFT owes every day since its fill.
-    const aaplRows = await priceBook.missingMarks(['AAPL'], agenda.marksNeeded[0].range)
+    const aaplRows = await priceBook.missingMarks(['AAPL'], agenda.marksNeeded[0].needs[0].range)
     expect(aaplRows).toEqual([
       { instrument: 'AAPL', date: TUESDAY },
       { instrument: 'AAPL', date: WEDNESDAY },
     ])
-    const msftRows = await priceBook.missingMarks(['MSFT'], agenda.marksNeeded[1].range)
+    const msftRows = await priceBook.missingMarks(['MSFT'], agenda.marksNeeded[1].needs[0].range)
     expect(msftRows.map((r) => r.date)).toEqual([
       FRIDAY,
       '2026-07-11',

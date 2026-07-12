@@ -75,8 +75,7 @@ export function WalkSession({
             key={current.tradeId}
             tradeId={current.tradeId}
             ticker={current.ticker}
-            instruments={current.marks?.instruments ?? []}
-            range={current.marks?.range}
+            needs={current.marks?.needs ?? []}
             asOf={asOf}
             reviewedToday={current.reviewedToday}
             onReviewed={(tradeId) => setReviewed((done) => new Set(done).add(tradeId))}

@@ -94,9 +94,11 @@ describe('the Daily Review walk over Dexie', () => {
     // Per checkpoint: fill THIS Trade's missing Marks, then record the Action.
     for (const item of walk) {
       const needed = agenda.marksNeeded.find((m) => m.tradeId === item.tradeId)!
-      const missing = await session.priceBook.missingMarks(needed.instruments, needed.range)
-      for (const row of missing) {
-        await session.priceBook.record(row.instrument, row.date, 16000, 'manual')
+      for (const need of needed.needs) {
+        const missing = await session.priceBook.missingMarks([need.instrument], need.range)
+        for (const row of missing) {
+          await session.priceBook.record(row.instrument, row.date, 16000, 'manual')
+        }
       }
       await session.journal.write({
         anchor: { kind: 'review', date: WEDNESDAY, tradeId: item.tradeId },

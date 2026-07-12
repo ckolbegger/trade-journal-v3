@@ -5,6 +5,8 @@ import { Journal } from '@/books/journal/journal'
 import {
   Workspace,
   LONG_STOCK_STRATEGY_ID,
+  LONG_CALL_STRATEGY_ID,
+  LONG_PUT_STRATEGY_ID,
   PLAN_ENTRY_TYPE_ID,
   CLOSE_ENTRY_TYPE_ID,
   REVIEW_ENTRY_TYPE_ID,
@@ -25,27 +27,32 @@ describe('Workspace.ensureSeeded — strategies', () => {
     const { workspace, tradeBook } = makeWorkspace()
     await workspace.ensureSeeded()
     const strategies = await tradeBook.registries.strategies.list()
-    expect(strategies.map((s) => s.name)).toEqual(['Long Stock'])
-    expect(strategies[0].id).toBe(LONG_STOCK_STRATEGY_ID)
+    // The full expected trio, so an accidental extra seed can't slip in unnoticed.
+    expect(strategies.map((s) => s.name)).toEqual(['Long Stock', 'Long Call', 'Long Put'])
+    const longStock = strategies.find((s) => s.id === LONG_STOCK_STRATEGY_ID)
+    expect(longStock?.name).toBe('Long Stock')
   })
 
   it('does not duplicate on a second run', async () => {
     const { workspace, tradeBook } = makeWorkspace()
     await workspace.ensureSeeded()
     await workspace.ensureSeeded()
-    expect(await tradeBook.registries.strategies.list()).toHaveLength(1)
+    const strategies = await tradeBook.registries.strategies.list()
+    expect(strategies.filter((s) => s.id === LONG_STOCK_STRATEGY_ID)).toHaveLength(1)
   })
 
   it('does not overwrite a seeded item the trader edited', async () => {
     const { workspace, tradeBook } = makeWorkspace()
     await workspace.ensureSeeded()
-    const [seeded] = await tradeBook.registries.strategies.list()
+    const seeded = (await tradeBook.registries.strategies.list()).find(
+      (s) => s.id === LONG_STOCK_STRATEGY_ID,
+    )!
     await tradeBook.registries.strategies.save({ ...seeded, name: 'My Long Stock' })
 
     await workspace.ensureSeeded()
 
     const strategies = await tradeBook.registries.strategies.list()
-    expect(strategies.map((s) => s.name)).toEqual(['My Long Stock'])
+    expect(strategies.find((s) => s.id === LONG_STOCK_STRATEGY_ID)?.name).toBe('My Long Stock')
   })
 
   it('does not resurrect a seeded item the trader archived', async () => {
@@ -55,8 +62,14 @@ describe('Workspace.ensureSeeded — strategies', () => {
 
     await workspace.ensureSeeded()
 
-    expect(await tradeBook.registries.strategies.list()).toEqual([])
-    expect(await tradeBook.registries.strategies.list(true)).toHaveLength(1)
+    expect(
+      (await tradeBook.registries.strategies.list()).some((s) => s.id === LONG_STOCK_STRATEGY_ID),
+    ).toBe(false)
+    expect(
+      (await tradeBook.registries.strategies.list(true)).filter(
+        (s) => s.id === LONG_STOCK_STRATEGY_ID,
+      ),
+    ).toHaveLength(1)
   })
 })
 
@@ -192,6 +205,38 @@ describe('Workspace.ensureSeeded — Close Reasons and Close Entry Type', () => 
 
     expect(await tradeBook.registries.closeReasons.list()).toHaveLength(4)
     expect(await tradeBook.registries.closeReasons.list(true)).toHaveLength(5)
+  })
+})
+
+describe('seeding (extension)', () => {
+  it('seeds Long Call and Long Put iff absent', async () => {
+    const { workspace, tradeBook } = makeWorkspace()
+    await workspace.ensureSeeded()
+
+    const strategies = await tradeBook.registries.strategies.list()
+    const longCall = strategies.find((s) => s.id === LONG_CALL_STRATEGY_ID)
+    const longPut = strategies.find((s) => s.id === LONG_PUT_STRATEGY_ID)
+
+    expect(longCall?.name).toBe('Long Call')
+    expect(longCall?.legs).toEqual([{ side: 'buy', instrumentKind: 'option', optionType: 'call' }])
+    expect(longCall?.exitLevels).toEqual([
+      { side: 'stop', kind: 'structureValue' },
+      { side: 'target', kind: 'structureValue' },
+    ])
+
+    expect(longPut?.name).toBe('Long Put')
+    expect(longPut?.legs).toEqual([{ side: 'buy', instrumentKind: 'option', optionType: 'put' }])
+    expect(longPut?.exitLevels).toEqual([
+      { side: 'stop', kind: 'structureValue' },
+      { side: 'target', kind: 'structureValue' },
+    ])
+
+    // Not duplicated, and a trader edit survives a second seeding run.
+    await tradeBook.registries.strategies.save({ ...longCall!, name: 'My Long Call' })
+    await workspace.ensureSeeded()
+    const again = await tradeBook.registries.strategies.list()
+    expect(again.filter((s) => s.id === LONG_CALL_STRATEGY_ID)).toHaveLength(1)
+    expect(again.find((s) => s.id === LONG_CALL_STRATEGY_ID)?.name).toBe('My Long Call')
   })
 })
 

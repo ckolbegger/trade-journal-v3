@@ -3,9 +3,18 @@ import { Link } from 'react-router-dom'
 import { useTradeBook } from '../tradeBookContext'
 import { useValuations } from '../valuationsContext'
 import { StatusBadge } from '../components/Badge'
-import { centsToDollars } from '../format'
+import { centsToDollars, optionLabel } from '../format'
 import { btnPrimary, heading, num } from '../styles'
-import type { Money, TradeRecord, TradeStatus } from '@/books/tradebook/types'
+import type { Money, PlannedLeg, TradeRecord, TradeStatus } from '@/books/tradebook/types'
+
+// The Planned Leg rendered for the list row: a stock reads its ticker; an
+// option reads the contract position ("1 × AAPL Jun'27 200C").
+function planLabel(leg: PlannedLeg | undefined): string {
+  if (!leg) return ''
+  return leg.instrument.kind === 'option'
+    ? `${leg.qty} × ${optionLabel(leg.instrument)}`
+    : leg.instrument.ticker
+}
 
 // The Trades page: start a new Plan, and list planned and open Trades in
 // insertion order (newest last). Status is derived — the list asks TradeBook for
@@ -67,18 +76,18 @@ export function TradesPage() {
       </div>
       <ul className="divide-y divide-slate-200 overflow-hidden rounded-lg border border-slate-200 bg-white">
         {rows.map(({ trade, status, pnl }) => {
-          const ticker = trade.plan.plannedLegs[0]?.instrument.ticker ?? ''
+          const label = planLabel(trade.plan.plannedLegs[0])
           return (
             <li
               key={trade.id}
-              aria-label={ticker}
+              aria-label={label}
               className="flex items-center justify-between px-4 py-3 hover:bg-slate-50"
             >
               <Link
                 to={`/trades/${trade.id}`}
                 className="font-medium text-slate-900 hover:text-indigo-600"
               >
-                {ticker}
+                {label}
               </Link>
               <div className="flex items-center gap-3">
                 {pnl !== undefined && (

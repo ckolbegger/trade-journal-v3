@@ -117,8 +117,11 @@ describe('Review.agenda', () => {
     const agenda = await review.agenda(WEDNESDAY)
 
     expect(agenda.marksNeeded).toEqual([
-      { tradeId: aapl, instruments: ['AAPL'], range: { from: TUESDAY, to: WEDNESDAY } },
-      { tradeId: msft, instruments: ['MSFT'], range: { from: '2026-07-10', to: WEDNESDAY } },
+      { tradeId: aapl, needs: [{ instrument: 'AAPL', range: { from: TUESDAY, to: WEDNESDAY } }] },
+      {
+        tradeId: msft,
+        needs: [{ instrument: 'MSFT', range: { from: '2026-07-10', to: WEDNESDAY } }],
+      },
     ])
     expect(agenda.fetchRange).toEqual({ from: '2026-07-10', to: WEDNESDAY })
     expect(agenda.journalDebt.map((e) => e.id)).toEqual([owed])

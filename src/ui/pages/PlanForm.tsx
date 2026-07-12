@@ -9,6 +9,7 @@ import type {
   ExitLevel,
   IdeaSource,
   PlanDraft,
+  StrategyExitTemplate,
   StrategyTemplate,
 } from '@/books/tradebook/types'
 
@@ -32,6 +33,8 @@ export function PlanForm() {
 
   const [thesis, setThesis] = useState('')
   const [ticker, setTicker] = useState('')
+  const [expiration, setExpiration] = useState('')
+  const [strike, setStrike] = useState('')
   const [qty, setQty] = useState('')
   const [stop, setStop] = useState('')
   const [target, setTarget] = useState('')
@@ -59,14 +62,18 @@ export function PlanForm() {
 
   const strategy = strategies.find((s) => s.id === strategyId)
   const leg = strategy?.legs[0]
-  const asksStop = strategy?.exitLevels.some((e) => e.side === 'stop') ?? false
-  const asksTarget = strategy?.exitLevels.some((e) => e.side === 'target') ?? false
+  const isOption = leg?.instrumentKind === 'option'
+  const stopTemplate = strategy?.exitLevels.find((e) => e.side === 'stop')
+  const targetTemplate = strategy?.exitLevels.find((e) => e.side === 'target')
+  const asksStop = stopTemplate !== undefined
+  const asksTarget = targetTemplate !== undefined
 
   const canConfirm =
     Boolean(accountId) &&
     thesis.trim().length > 0 &&
     ticker.trim().length > 0 &&
     Number(qty) > 0 &&
+    (!isOption || (expiration.trim().length > 0 && strike.trim().length > 0)) &&
     (!asksStop || stop.trim().length > 0) &&
     (!asksTarget || target.trim().length > 0)
 
@@ -79,37 +86,38 @@ export function PlanForm() {
     setNewIdeaSourceName('')
   }
 
+  function buildExitLevel(
+    side: 'stop' | 'target',
+    template: StrategyExitTemplate,
+    dollars: string,
+  ): ExitLevel {
+    return template.kind === 'structureValue'
+      ? { scope: { level: 'trade' }, side, kind: 'structureValue', value: dollarsToCents(dollars) }
+      : { scope: { level: 'trade' }, side, kind: 'underlyingPrice', price: dollarsToCents(dollars) }
+  }
+
   async function confirm() {
     if (!canConfirm || !leg) return
     const exitLevels: ExitLevel[] = []
-    if (asksStop) {
-      exitLevels.push({
-        scope: { level: 'trade' },
-        side: 'stop',
-        kind: 'underlyingPrice',
-        price: dollarsToCents(stop),
-      })
-    }
-    if (asksTarget) {
-      exitLevels.push({
-        scope: { level: 'trade' },
-        side: 'target',
-        kind: 'underlyingPrice',
-        price: dollarsToCents(target),
-      })
-    }
+    if (stopTemplate) exitLevels.push(buildExitLevel('stop', stopTemplate, stop))
+    if (targetTemplate) exitLevels.push(buildExitLevel('target', targetTemplate, target))
+
+    const instrument: PlanDraft['plannedLegs'][number]['instrument'] = isOption
+      ? {
+          kind: 'option',
+          ticker: ticker.trim().toUpperCase(),
+          expiration,
+          type: leg.optionType!,
+          strike: dollarsToCents(strike),
+        }
+      : { kind: 'stock', ticker: ticker.trim().toUpperCase() }
+
     const draft: PlanDraft = {
       accountId,
       thesis: thesis.trim(),
       strategyId,
       ideaSourceId,
-      plannedLegs: [
-        {
-          side: leg.side,
-          instrument: { kind: 'stock', ticker: ticker.trim().toUpperCase() },
-          qty: Number(qty),
-        },
-      ],
+      plannedLegs: [{ side: leg.side, instrument, qty: Number(qty) }],
       exitLevels,
       plannedAt: todayISO(),
       ...(chartLink.trim() ? { chartLink: chartLink.trim() } : {}),
@@ -179,6 +187,28 @@ export function PlanForm() {
               Ticker
               <input className={input} value={ticker} onChange={(e) => setTicker(e.target.value)} />
             </label>
+            {isOption && (
+              <>
+                <label className={field}>
+                  Expiration
+                  <input
+                    type="date"
+                    className={input}
+                    value={expiration}
+                    onChange={(e) => setExpiration(e.target.value)}
+                  />
+                </label>
+                <label className={field}>
+                  Strike
+                  <input
+                    className={`${input} ${num}`}
+                    value={strike}
+                    onChange={(e) => setStrike(e.target.value)}
+                    inputMode="decimal"
+                  />
+                </label>
+              </>
+            )}
             <label className={field}>
               Quantity
               <input
@@ -230,9 +260,9 @@ export function PlanForm() {
           </button>
         </div>
 
-        {asksStop && (
+        {stopTemplate && (
           <label className={field}>
-            Stop (underlying price)
+            Stop ({stopTemplate.kind === 'structureValue' ? 'structure value' : 'underlying price'})
             <input
               className={`${input} ${num}`}
               value={stop}
@@ -241,9 +271,10 @@ export function PlanForm() {
             />
           </label>
         )}
-        {asksTarget && (
+        {targetTemplate && (
           <label className={field}>
-            Target (underlying price)
+            Target (
+            {targetTemplate.kind === 'structureValue' ? 'structure value' : 'underlying price'})
             <input
               className={`${input} ${num}`}
               value={target}

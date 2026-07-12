@@ -8,8 +8,9 @@ import { collectAnswers } from '../components/prompt-answers'
 import type { PromptValues } from '../components/prompt-answers'
 import { dollarsToCents } from '../format'
 import { btnPrimary, btnSecondary, card, input, num, subheading } from '../styles'
-import type { DateRange, ISODate, InstrumentKey } from '@/books/pricebook/types'
+import type { ISODate, InstrumentKey } from '@/books/pricebook/types'
 import type { Entry, EntryType, Prompt } from '@/books/journal/types'
+import type { InstrumentMarksNeeded } from '@/coordinators/valuations'
 
 // One Trade's checkpoint in the Daily Review walk, in the session's order:
 //
@@ -31,16 +32,14 @@ type MissingRow = { instrument: InstrumentKey; date: ISODate }
 export function WalkCheckpoint({
   tradeId,
   ticker,
-  instruments,
-  range,
+  needs,
   asOf,
   reviewedToday,
   onReviewed,
 }: {
   tradeId: string
   ticker: string
-  instruments: InstrumentKey[]
-  range?: DateRange
+  needs: InstrumentMarksNeeded[] // each instrument's own gap range (S3.1: contract + underlying gap independently)
   asOf: ISODate
   reviewedToday: boolean // this Trade's Action for asOf already exists (Review.walk)
   onReviewed: (tradeId: string) => void
@@ -56,7 +55,9 @@ export function WalkCheckpoint({
   useEffect(() => {
     let active = true
     async function load() {
-      const rows = range ? await priceBook.missingMarks(instruments, range) : []
+      const rows = (
+        await Promise.all(needs.map((n) => priceBook.missingMarks([n.instrument], n.range)))
+      ).flat()
       const types = await journal.entryTypes.list()
       const entries = await journal.entriesFor({ trade: tradeId })
       if (!active) return

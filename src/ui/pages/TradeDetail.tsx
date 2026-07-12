@@ -6,14 +6,28 @@ import { useValuations } from '../valuationsContext'
 import { RecordFillForm } from './RecordFillForm'
 import { CloseForm } from './CloseForm'
 import { TradeDashboard } from './TradeDashboard'
-import { centsToDollars, timestampToISODate } from '../format'
+import { centsToDollars, optionLabel, timestampToISODate } from '../format'
 import { StatusBadge } from '../components/Badge'
 import { AddAddendum } from '../components/AddAddendum'
 import { AnsweredPrompts } from '../components/AnsweredPrompts'
 import { buildEntryThreads } from '../components/entryThread'
 import { btnSecondary, card, heading, link, num, subheading } from '../styles'
-import type { Position, TradeRecord, TradeStatus } from '@/books/tradebook/types'
+import type { Instrument, Position, TradeRecord, TradeStatus } from '@/books/tradebook/types'
 import type { Entry } from '@/books/journal/types'
+
+// An instrument rendered for display: a stock is just its ticker; an option
+// shows its contract label ("AAPL Jun'27 200C") — display-only, never a key.
+function instrumentLabel(instrument: Instrument): string {
+  return instrument.kind === 'option' ? optionLabel(instrument) : instrument.ticker
+}
+
+// A held Position row: a stock reads "100 AAPL long"; an option reads the
+// contract position ("1 × AAPL Jun'27 200C").
+function holdingLabel(h: Position['holdings'][number]): string {
+  return h.instrument.kind === 'option'
+    ? `${h.qty} × ${optionLabel(h.instrument)}`
+    : `${h.qty} ${h.instrument.ticker} ${h.side}`
+}
 
 // The Trade detail page renders Plan facts only — thesis, Strategy, Idea Source,
 // Planned Legs, Exit Levels, chart link, and the derived status badge. No
@@ -82,7 +96,7 @@ export function TradeDetail() {
 
   // Every Execution across the Trade's Legs, oldest first — the fact history.
   const executions = trade.legs
-    .flatMap((leg) => leg.executions.map((e) => ({ ...e, ticker: leg.instrument.ticker })))
+    .flatMap((leg) => leg.executions.map((e) => ({ ...e, label: instrumentLabel(leg.instrument) })))
     .sort((a, b) => a.timestamp - b.timestamp)
 
   return (
@@ -114,7 +128,7 @@ export function TradeDetail() {
           <ul className="mt-1 space-y-1">
             {plan.plannedLegs.map((leg, i) => (
               <li key={i} className={`text-sm text-slate-800 capitalize ${num}`}>
-                {leg.side} {leg.qty} {leg.instrument.ticker}
+                {leg.side} {leg.qty} {instrumentLabel(leg.instrument)}
               </li>
             ))}
           </ul>
@@ -125,7 +139,8 @@ export function TradeDetail() {
           <ul className="mt-1 space-y-1">
             {plan.exitLevels.map((level, i) => (
               <li key={i} className={`text-sm text-slate-800 capitalize ${num}`}>
-                {level.side}: ${centsToDollars(level.price)}
+                {level.side}: $
+                {centsToDollars(level.kind === 'structureValue' ? level.value : level.price)}
               </li>
             ))}
           </ul>
@@ -151,7 +166,7 @@ export function TradeDetail() {
         </div>
         <p aria-label="position" className={`text-sm text-slate-800 ${num}`}>
           {position && position.holdings.length > 0
-            ? position.holdings.map((h) => `${h.qty} ${h.instrument.ticker} ${h.side}`).join(', ')
+            ? position.holdings.map(holdingLabel).join(', ')
             : 'No position'}
         </p>
         {showFill && (
@@ -217,7 +232,7 @@ export function TradeDetail() {
                 <span>{timestampToISODate(e.timestamp)}</span>
                 <span className="capitalize">{e.side}</span>
                 <span>{e.qty}</span>
-                <span>{e.ticker}</span>
+                <span>{e.label}</span>
                 <span>${centsToDollars(e.price)}</span>
                 <span className="text-slate-500">fees ${centsToDollars(e.fees)}</span>
               </li>

@@ -3,6 +3,7 @@ import { useValuations } from '../valuationsContext'
 import { MarkEntry } from './MarkEntry'
 import { centsToDollars } from '../format'
 import { card, num, subheading } from '../styles'
+import { buildInstrumentKey } from '@/books/tradebook/types'
 import type { Money, RiskReward } from '@/books/tradebook/types'
 import type { TradeDetailView } from '@/coordinators/valuations'
 
@@ -40,7 +41,8 @@ export function TradeDashboard({ tradeId }: { tradeId: string }) {
 
   if (!detail) return null
 
-  const instrument = detail.record.plan.plannedLegs[0]?.instrument.ticker ?? ''
+  const plannedInstrument = detail.record.plan.plannedLegs[0]?.instrument
+  const instrument = plannedInstrument ? buildInstrumentKey(plannedInstrument) : ''
 
   if (detail.marksMissing || !detail.valuation || !detail.riskReward) {
     return (

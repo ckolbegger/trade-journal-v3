@@ -6,14 +6,16 @@ import type {
   TradeRecord,
   Valuation,
 } from './types'
-import { buildInstrumentKey } from './instrument'
+import { buildInstrumentKey, underlyingKeyOf } from './instrument'
+import { contractMultiplierOf } from './multiplier'
 
 // Pure valuation math over a TradeRecord and a MarkSet. Fees: realized P&L is net
 // of every fee on the Trade; unrealized is gross; totalPnL = realized + unrealized
 // (docs/plan/README.md decided semantics). currentValue is the signed structure
 // value at these Marks. Single fill open → single fill close this slice — basis is
 // the average opening price, no FIFO Lots (that refactor arrives in Slice 5,
-// behind these tests).
+// behind these tests). Option Legs value at the contract multiplier (100),
+// keyed off instrument kind — never in the UI.
 
 // Thrown when a held instrument has no Mark in the MarkSet — the coordinator turns
 // this into the "enter a Mark" prompt (Valuations.detail); TradeMath never guesses
@@ -25,10 +27,14 @@ export class MissingMarkError extends Error {
   }
 }
 
-// Every instrument the Trade needs Marks for (legs + underlyings). Stock-only this
-// slice, so a Leg's instrument key is the whole answer.
+// Every instrument the Trade needs Marks for (legs + underlyings). An option Leg
+// also needs its underlying's Mark (underlyingPrice Exit Levels and IV read it) —
+// a stock Leg's key is already its own underlying.
 export function instrumentsOf(trade: TradeRecord): InstrumentKey[] {
-  const keys = trade.legs.map((leg) => buildInstrumentKey(leg.instrument))
+  const keys = trade.legs.flatMap((leg) => {
+    const key = buildInstrumentKey(leg.instrument)
+    return leg.instrument.kind === 'option' ? [key, underlyingKeyOf(key)] : [key]
+  })
   return [...new Set(keys)]
 }
 
@@ -74,11 +80,12 @@ export function valuation(trade: TradeRecord, marks: MarkSet): Valuation {
     const t = totalsFor(leg)
     const key = buildInstrumentKey(leg.instrument)
     const markPrice = marks.get(key)?.price ?? 0
-    const grossRealized = t.soldQty * (t.avgSellPrice - t.avgOpenPrice)
-    const grossUnrealized = t.openQty * (markPrice - t.avgOpenPrice)
+    const multiplier = contractMultiplierOf(leg.instrument)
+    const grossRealized = t.soldQty * (t.avgSellPrice - t.avgOpenPrice) * multiplier
+    const grossUnrealized = t.openQty * (markPrice - t.avgOpenPrice) * multiplier
     return {
       instrument: leg.instrument,
-      basis: t.openQty * t.avgOpenPrice,
+      basis: t.openQty * t.avgOpenPrice * multiplier,
       realized: grossRealized - t.fees,
       unrealized: grossUnrealized,
     }
@@ -87,7 +94,7 @@ export function valuation(trade: TradeRecord, marks: MarkSet): Valuation {
   const currentValue = trade.legs.reduce((sum, leg) => {
     const t = totalsFor(leg)
     const markPrice = marks.get(buildInstrumentKey(leg.instrument))?.price ?? 0
-    return sum + t.openQty * markPrice
+    return sum + t.openQty * markPrice * contractMultiplierOf(leg.instrument)
   }, 0)
 
   const realizedPnL = perLeg.reduce((sum, l) => sum + l.realized, 0)

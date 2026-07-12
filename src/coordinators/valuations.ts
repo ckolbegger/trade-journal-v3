@@ -42,15 +42,22 @@ export interface TradeValue {
   marksMissing?: InstrumentKey[]
 }
 
-// The collection half of Review's agenda (a Trade↔Marks join). Per open Trade:
-// the instruments still missing Marks and the range they are missing them over —
-// day after the instrument's last Mark, or the Trade's first Execution date when
-// it has never been marked, through asOf. `fetchRange` spans the earliest gap
-// through asOf, for the one bulk fetch.
+// The collection half of Review's agenda (a Trade↔Marks join). Per open Trade,
+// per INSTRUMENT it still needs Marks for: its own range — day after that
+// instrument's last Mark, or the Trade's first Execution date when it has never
+// been marked, through asOf. Ranges are per instrument (not per Trade) because a
+// contract and its underlying gap independently: a shared per-Trade range would
+// union the gaps and resurface one instrument's deliberately-skipped dates as the
+// other's (docs/plan/slice-03-single-leg-options.md). `fetchRange` spans the
+// earliest gap across every instrument through asOf, for the one bulk fetch.
+export interface InstrumentMarksNeeded {
+  instrument: InstrumentKey
+  range: DateRange
+}
+
 export interface TradeMarksNeeded {
   tradeId: TradeId
-  instruments: InstrumentKey[]
-  range: DateRange
+  needs: InstrumentMarksNeeded[]
 }
 
 export interface MarksNeeded {
@@ -104,23 +111,19 @@ export class Valuations {
       const lastMarked = await this.priceBook.lastMarked(instruments)
       const firstExecution = firstExecutionDate(record)
 
-      const gaps = instruments
+      const needs = instruments
         .map((instrument) => {
           const last = lastMarked.get(instrument)
-          return { instrument, from: last ? nextISODate(last) : firstExecution }
+          const from = last ? nextISODate(last) : firstExecution
+          return { instrument, range: { from, to: asOf } }
         })
-        .filter((gap) => gap.from <= asOf)
+        .filter((need) => need.range.from <= asOf)
 
-      if (gaps.length === 0) continue
-      const from = gaps.map((gap) => gap.from).reduce((a, b) => (a < b ? a : b))
-      perTrade.push({
-        tradeId: record.id,
-        instruments: gaps.map((gap) => gap.instrument),
-        range: { from, to: asOf },
-      })
+      if (needs.length === 0) continue
+      perTrade.push({ tradeId: record.id, needs })
     }
 
-    const starts = perTrade.map((item) => item.range.from)
+    const starts = perTrade.flatMap((item) => item.needs.map((need) => need.range.from))
     const earliest = starts.length === 0 ? asOf : starts.reduce((a, b) => (a < b ? a : b))
     return { perTrade, fetchRange: { from: earliest, to: asOf } }
   }

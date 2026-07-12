@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useTradeBook } from '../tradeBookContext'
-import { dollarsToCents, todayISO } from '../format'
+import { dollarsToCents, optionLabel, todayISO } from '../format'
 import { btnPrimary, field, input, num } from '../styles'
+import { buildInstrumentKey } from '@/books/tradebook/types'
 import type { ExecutionDraft, ExecutionTarget, Side, TradeRecord } from '@/books/tradebook/types'
 
 // "Record fill" on the Trade detail page. Instrument and side pre-fill from the
@@ -18,7 +19,9 @@ export function RecordFillForm({
 }) {
   const tradeBook = useTradeBook()
   const plannedLeg = trade.plan.plannedLegs[0]
-  const ticker = plannedLeg?.instrument.ticker ?? ''
+  const instrumentKey = plannedLeg ? buildInstrumentKey(plannedLeg.instrument) : ''
+  const instrumentDisplay =
+    plannedLeg?.instrument.kind === 'option' ? optionLabel(plannedLeg.instrument) : instrumentKey
 
   const [side, setSide] = useState<Side>(plannedLeg?.side ?? 'buy')
   const [qty, setQty] = useState('')
@@ -42,10 +45,10 @@ export function RecordFillForm({
     if (nextErrors.qty || nextErrors.price) return
 
     // Resolve the target: an existing Leg for this instrument, or a new Leg.
-    const existing = trade.legs.find((leg) => leg.instrument.ticker === ticker)
+    const existing = trade.legs.find((leg) => buildInstrumentKey(leg.instrument) === instrumentKey)
     const target: ExecutionTarget = existing
       ? { tradeId: trade.id, legId: existing.id }
-      : { tradeId: trade.id, newLeg: ticker }
+      : { tradeId: trade.id, newLeg: instrumentKey }
 
     const draft: ExecutionDraft = {
       side,
@@ -70,7 +73,7 @@ export function RecordFillForm({
         <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
           Instrument
         </span>
-        <p className={`text-sm font-medium text-slate-900 ${num}`}>{ticker}</p>
+        <p className={`text-sm font-medium text-slate-900 ${num}`}>{instrumentDisplay}</p>
       </div>
 
       <label className={field}>

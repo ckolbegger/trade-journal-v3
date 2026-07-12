@@ -19,6 +19,7 @@ import type {
   Institution,
   PlanDraft,
 } from '@/books/tradebook/types'
+import type { InstrumentMarksNeeded } from '@/coordinators/valuations'
 import { inMemoryBooks } from '../../../tests/support/trade-book'
 
 // The Daily Review checkpoint — one open Trade, four steps in order: fill this
@@ -119,8 +120,7 @@ function renderCheckpoint(
             <WalkCheckpoint
               tradeId={tradeId}
               ticker={ticker}
-              instruments={[ticker]}
-              range={{ from: daysAgo(2), to: todayISO() }}
+              needs={[{ instrument: ticker, range: { from: daysAgo(2), to: todayISO() } }]}
               asOf={todayISO()}
               reviewedToday={reviewedToday}
               onReviewed={onReviewed}
@@ -324,6 +324,107 @@ describe('WalkCheckpoint', () => {
       'Breakout confirmed on volume',
     )
     expect(await f.journal.outstandingDebt()).toHaveLength(1) // the other Trade still owes
+  })
+
+  const CONTRACT = 'AAPL 2027-06-18 C 200'
+
+  async function openCallTrade(f: Fixture): Promise<string> {
+    const planDraft: PlanDraft = {
+      accountId: f.accountId,
+      thesis: 'AAPL breaks out',
+      strategyId: 'strategy-long-call',
+      ideaSourceId: '',
+      plannedLegs: [
+        {
+          side: 'buy',
+          instrument: {
+            kind: 'option',
+            ticker: 'AAPL',
+            expiration: '2027-06-18',
+            type: 'call',
+            strike: 20000,
+          },
+          qty: 1,
+        },
+      ],
+      exitLevels: [],
+      plannedAt: daysAgo(2),
+    }
+    const id = await f.tradeBook.confirmPlan(planDraft)
+    await f.tradeBook.recordExecution(
+      { tradeId: id, newLeg: CONTRACT },
+      {
+        side: 'buy',
+        qty: 1,
+        price: 1200,
+        fees: 65,
+        timestamp: new Date(`${daysAgo(2)}T12:00:00`).getTime(),
+      },
+    )
+    return id
+  }
+
+  function renderOptionCheckpoint(f: Fixture, tradeId: string, needs: InstrumentMarksNeeded[]) {
+    return render(
+      <TradeBookContext.Provider value={f.tradeBook}>
+        <JournalContext.Provider value={f.journal}>
+          <PriceBookContext.Provider value={f.priceBook}>
+            <ValuationsContext.Provider value={new Valuations(f.tradeBook, f.priceBook)}>
+              <WalkCheckpoint
+                tradeId={tradeId}
+                ticker="AAPL"
+                needs={needs}
+                asOf={todayISO()}
+                reviewedToday={false}
+                onReviewed={() => {}}
+              />
+            </ValuationsContext.Provider>
+          </PriceBookContext.Provider>
+        </JournalContext.Provider>
+      </TradeBookContext.Provider>,
+    )
+  }
+
+  it('prompts for contract and underlying Marks', async () => {
+    const f = await fixture()
+    const tradeId = await openCallTrade(f)
+
+    renderOptionCheckpoint(f, tradeId, [
+      { instrument: CONTRACT, range: { from: daysAgo(2), to: todayISO() } },
+      { instrument: 'AAPL', range: { from: daysAgo(2), to: todayISO() } },
+    ])
+
+    const rows = await screen.findByRole('list', { name: 'marks needed' })
+    const labels = within(rows)
+      .getAllByRole('listitem')
+      .map((li) => li.getAttribute('aria-label'))
+    expect(labels).toContain(`${CONTRACT} ${todayISO()}`)
+    expect(labels).toContain(`AAPL ${todayISO()}`)
+  })
+
+  it("prompts only the later-gapped instrument's dates (no re-prompt of the other instrument's interior history)", async () => {
+    const f = await fixture()
+    const tradeId = await openCallTrade(f)
+
+    // The contract was marked yesterday (only today's gap remains); the
+    // underlying has never been marked (its gap runs back to the fill).
+    await f.priceBook.record(CONTRACT, daysAgo(1), 1400, 'manual')
+
+    renderOptionCheckpoint(f, tradeId, [
+      { instrument: CONTRACT, range: { from: todayISO(), to: todayISO() } },
+      { instrument: 'AAPL', range: { from: daysAgo(2), to: todayISO() } },
+    ])
+
+    const rows = await screen.findByRole('list', { name: 'marks needed' })
+    const labels = within(rows)
+      .getAllByRole('listitem')
+      .map((li) => li.getAttribute('aria-label'))
+    // The contract owes only today — its marked yesterday never reappears.
+    expect(labels.filter((l) => l?.startsWith(CONTRACT))).toEqual([`${CONTRACT} ${todayISO()}`])
+    // The never-marked underlying owes every day since the fill.
+    expect(
+      [daysAgo(2), daysAgo(1), daysAgo(0)].map((date) => labels.includes(`AAPL ${date}`)),
+    ).toEqual([true, true, true])
   })
 
   it('allows deferring settlement without blocking the walk', async () => {

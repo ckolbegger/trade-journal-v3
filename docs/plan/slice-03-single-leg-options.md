@@ -27,7 +27,7 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
 
 ---
 
-## ☐ Story S3.1 — Plan & manage a long option Trade
+## ☑ Story S3.1 — Plan & manage a long option Trade
 
 > As a trader, I want to plan, open, mark, review, and close a long call or put the same way I do a stock Trade, so that options are first-class campaigns, not workarounds.
 
@@ -37,7 +37,7 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
 
 ### Tasks
 
-- [ ] **S3.1.T1 — Option instrument.**
+- [x] **S3.1.T1 — Option instrument.**
 
   ```
   describe "InstrumentKey (options)"
@@ -46,7 +46,7 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
   - it extracts the underlying ticker from an option key
   ```
 
-- [ ] **S3.1.T2 — TradeMath over contracts.** Multiplier applied; `instrumentsOf` returns the contract *and* its underlying (underlyingPrice Exit Levels and IV need underlying Marks).
+- [x] **S3.1.T2 — TradeMath over contracts.** Multiplier applied; `instrumentsOf` returns the contract *and* its underlying (underlyingPrice Exit Levels and IV need underlying Marks).
 
   ```
   describe "TradeMath.instrumentsOf (options)"
@@ -62,7 +62,7 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
   - it reports original risk 600.00 and reward 1200.00 from entry basis 12.00
   ```
 
-- [ ] **S3.1.T3 — Plan form + seeds.** Strategy picker gains Long Call / Long Put; picking one asks ticker, expiration, strike, qty, structureValue stop/target. Trade detail and list render the contract position ("1 × AAPL Jun'27 200C").
+- [x] **S3.1.T3 — Plan form + seeds.** Strategy picker gains Long Call / Long Put; picking one asks ticker, expiration, strike, qty, structureValue stop/target. Trade detail and list render the contract position ("1 × AAPL Jun'27 200C").
 
   ```
   describe "PlanForm (options)"
@@ -72,7 +72,7 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
   - it seeds Long Call and Long Put iff absent
   ```
 
-- [ ] **S3.1.T4 — Marks for two instruments.** Trade detail and the review walk prompt for both the contract Mark and the underlying Mark (both come from `Valuations.marksNeeded` via the extended `instrumentsOf` — no new seams). Reshape `marksNeeded` to per-instrument ranges (decided above): `{ tradeId, needs: { instrument, range }[] }[]`; the UI calls `missingMarks` per instrument over its own range; `fetchRange` stays the union.
+- [x] **S3.1.T4 — Marks for two instruments.** Trade detail and the review walk prompt for both the contract Mark and the underlying Mark (both come from `Valuations.marksNeeded` via the extended `instrumentsOf` — no new seams). Reshape `marksNeeded` to per-instrument ranges (decided above): `{ tradeId, needs: { instrument, range }[] }[]`; the UI calls `missingMarks` per instrument over its own range; `fetchRange` stays the union.
 
   ```
   describe "Valuations.marksNeeded (per-instrument ranges)"
@@ -85,9 +85,9 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
   - it computes valuation from the contract Mark alone when the underlying is unmarked (R/R shows marks-missing for underlying-anchored levels only)
   ```
 
-- [ ] **S3.1.T5 — Integration tests**: full long-call lifecycle over Dexie — plan → fill → both marks → detail reproduces every worked-example number → close at 18.00 → realized correct with multiplier.
-- [ ] **S3.1.T6 — Playwright e2e** (`e2e/s3-1-long-call.spec.ts`): worked example through the UI; assert the six dashboard numbers.
-- [ ] **S3.1.T7 — Browser verification.** Drive the worked example in a real browser end-to-end including a Daily Review walk over the option Trade (both mark prompts appear once); verify every number against the table. All suites green.
+- [x] **S3.1.T5 — Integration tests**: full long-call lifecycle over Dexie — plan → fill → both marks → detail reproduces every worked-example number → close at 18.00 → realized correct with multiplier.
+- [x] **S3.1.T6 — Playwright e2e** (`e2e/s3-1-long-call.spec.ts`): worked example through the UI; assert the six dashboard numbers.
+- [x] **S3.1.T7 — Browser verification.** Drive the worked example in a real browser end-to-end including a Daily Review walk over the option Trade (both mark prompts appear once); verify every number against the table. All suites green.
 
 ---
 

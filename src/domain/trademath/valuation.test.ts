@@ -61,6 +61,46 @@ describe('TradeMath.instrumentsOf', () => {
   })
 })
 
+describe('TradeMath.instrumentsOf (options)', () => {
+  it('returns the contract and its underlying for an option Leg', () => {
+    const AAPL_CALL = {
+      kind: 'option',
+      ticker: 'AAPL',
+      expiration: '2027-06-18',
+      type: 'call',
+      strike: 20000,
+    } as const
+    const trade: TradeRecord = {
+      id: 'trade-1',
+      accountId: 'account-1',
+      plan: {
+        thesis: 'AAPL breaks out',
+        strategyId: 'strategy-long-call',
+        ideaSourceId: '',
+        plannedLegs: [{ side: 'buy', instrument: AAPL_CALL, qty: 1 }],
+        exitLevels: [],
+        plannedAt: '2026-07-10',
+      },
+      legs: [
+        {
+          id: 'leg-1',
+          instrument: AAPL_CALL,
+          executions: [
+            {
+              side: 'buy',
+              qty: 1,
+              price: 1200,
+              fees: 65,
+              timestamp: new Date('2026-07-10T12:00:00').getTime(),
+            },
+          ],
+        },
+      ],
+    }
+    expect(instrumentsOf(trade)).toEqual(['AAPL 2027-06-18 C 200', 'AAPL'])
+  })
+})
+
 describe('TradeMath.valuation', () => {
   it('values the worked example at mark 160: currentValue 16000.00, unrealized 1000.00, fees 1.00, total 999.00', () => {
     const v = valuation(tradeWith([buy100()]), markSet([mark(16000)]))
@@ -94,5 +134,66 @@ describe('TradeMath.valuation', () => {
 
   it('throws a typed error when a held instrument Mark is absent from the MarkSet', () => {
     expect(() => valuation(tradeWith([buy100()]), markSet([]))).toThrow(MissingMarkError)
+  })
+})
+
+// The long-call worked example (docs/plan/slice-03-single-leg-options.md):
+// Plan Long Call, buy 1 AAPL 2027-06-18 C 200 @ limit; Fill buy 1 @ 12.00, fees
+// $0.65. Marks: contract 14.00, underlying 205.
+describe('TradeMath.valuation (options)', () => {
+  const AAPL_CALL = {
+    kind: 'option',
+    ticker: 'AAPL',
+    expiration: '2027-06-18',
+    type: 'call',
+    strike: 20000,
+  } as const
+
+  function longCallTrade(): TradeRecord {
+    return {
+      id: 'trade-1',
+      accountId: 'account-1',
+      plan: {
+        thesis: 'AAPL breaks out',
+        strategyId: 'strategy-long-call',
+        ideaSourceId: '',
+        plannedLegs: [{ side: 'buy', instrument: AAPL_CALL, qty: 1 }],
+        exitLevels: [
+          { scope: { level: 'trade' }, side: 'stop', kind: 'structureValue', value: 600 },
+          { scope: { level: 'trade' }, side: 'target', kind: 'structureValue', value: 2400 },
+        ],
+        plannedAt: '2026-07-10',
+      },
+      legs: [
+        {
+          id: 'leg-1',
+          instrument: AAPL_CALL,
+          executions: [
+            {
+              side: 'buy',
+              qty: 1,
+              price: 1200,
+              fees: 65,
+              timestamp: new Date('2026-07-10T12:00:00').getTime(),
+            },
+          ],
+        },
+      ],
+    }
+  }
+
+  function longCallMarks(): MarkSet {
+    return markSet([
+      { instrument: 'AAPL 2027-06-18 C 200', date: '2026-07-15', price: 1400, origin: 'manual' },
+      { instrument: 'AAPL', date: '2026-07-15', price: 20500, origin: 'manual' },
+    ])
+  }
+
+  it('values the long-call worked example: currentValue 1400.00, unrealized 200.00, total 199.35', () => {
+    const v = valuation(longCallTrade(), longCallMarks())
+    expect(v.currentValue).toBe(140000)
+    expect(v.unrealizedPnL).toBe(20000)
+    expect(v.fees).toBe(65)
+    expect(v.totalPnL).toBe(19935)
   })
 })

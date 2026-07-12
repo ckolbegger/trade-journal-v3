@@ -43,13 +43,19 @@ export function ReviewPage() {
     const asOf = todayISO()
     const agenda = await review.agenda(asOf)
 
-    const instruments = [...new Set(agenda.marksNeeded.flatMap((item) => item.instruments))]
+    const instruments = [
+      ...new Set(agenda.marksNeeded.flatMap((item) => item.needs.map((n) => n.instrument))),
+    ]
     await priceBook.fetch(instruments, agenda.fetchRange)
 
     const trades = await Promise.all(
       agenda.marksNeeded.map(async (item) => {
         const record = await tradeBook.get(item.tradeId)
-        const missing = await priceBook.missingMarks(item.instruments, item.range)
+        const missing = (
+          await Promise.all(
+            item.needs.map((need) => priceBook.missingMarks([need.instrument], need.range)),
+          )
+        ).flat()
         return {
           tradeId: item.tradeId,
           ticker: record.plan.plannedLegs[0]?.instrument.ticker ?? '',

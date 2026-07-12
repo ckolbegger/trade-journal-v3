@@ -11,6 +11,8 @@ import type { EntryType } from '@/books/journal/types'
 // resurrected. Seeding goes through the Book interfaces, never raw stores.
 
 export const LONG_STOCK_STRATEGY_ID = 'strategy-long-stock'
+export const LONG_CALL_STRATEGY_ID = 'strategy-long-call'
+export const LONG_PUT_STRATEGY_ID = 'strategy-long-put'
 export const PLAN_ENTRY_TYPE_ID = 'entry-type-plan'
 export const CLOSE_ENTRY_TYPE_ID = 'entry-type-close'
 export const REVIEW_ENTRY_TYPE_ID = 'entry-type-trade-review'
@@ -37,6 +39,28 @@ const LONG_STOCK_STRATEGY: StrategyTemplate = {
   exitLevels: [
     { side: 'stop', kind: 'underlyingPrice' },
     { side: 'target', kind: 'underlyingPrice' },
+  ],
+}
+
+// Planned leg buy 1 call/put (strike/expiration asked at plan time); asks
+// structureValue stop + target (docs/plan/slice-03-single-leg-options.md).
+const LONG_CALL_STRATEGY: StrategyTemplate = {
+  id: LONG_CALL_STRATEGY_ID,
+  name: 'Long Call',
+  legs: [{ side: 'buy', instrumentKind: 'option', optionType: 'call' }],
+  exitLevels: [
+    { side: 'stop', kind: 'structureValue' },
+    { side: 'target', kind: 'structureValue' },
+  ],
+}
+
+const LONG_PUT_STRATEGY: StrategyTemplate = {
+  id: LONG_PUT_STRATEGY_ID,
+  name: 'Long Put',
+  legs: [{ side: 'buy', instrumentKind: 'option', optionType: 'put' }],
+  exitLevels: [
+    { side: 'stop', kind: 'structureValue' },
+    { side: 'target', kind: 'structureValue' },
   ],
 }
 
@@ -142,6 +166,12 @@ export class Workspace {
     const strategies = await this.tradeBook.registries.strategies.list(true)
     if (!strategies.some((s) => s.id === LONG_STOCK_STRATEGY.id)) {
       await this.tradeBook.registries.strategies.save({ ...LONG_STOCK_STRATEGY })
+    }
+    if (!strategies.some((s) => s.id === LONG_CALL_STRATEGY.id)) {
+      await this.tradeBook.registries.strategies.save(structuredClone(LONG_CALL_STRATEGY))
+    }
+    if (!strategies.some((s) => s.id === LONG_PUT_STRATEGY.id)) {
+      await this.tradeBook.registries.strategies.save(structuredClone(LONG_PUT_STRATEGY))
     }
 
     const closeReasons = await this.tradeBook.registries.closeReasons.list(true)

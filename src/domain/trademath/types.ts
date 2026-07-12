@@ -19,26 +19,36 @@ export type InstrumentKey = string // canonical string, e.g. "AAPL"
 
 export type TradeStatus = 'planned' | 'open' | 'closed'
 
-// Stock only this slice; option instruments arrive in Slice 3.
-export interface Instrument {
+export interface StockInstrument {
   kind: 'stock'
   ticker: string
 }
+
+// An option contract: underlying ticker, expiration, call/put, strike (Money —
+// integer cents representing dollars, same scale as a Mark price). The contract
+// multiplier (100) is never stored here — it lives in TradeMath, keyed off `kind`.
+export interface OptionInstrument {
+  kind: 'option'
+  ticker: string // underlying ticker
+  expiration: ISODate
+  type: 'call' | 'put'
+  strike: Money
+}
+
+export type Instrument = StockInstrument | OptionInstrument
 
 export interface CloseReason {
   id: string
   name: string
 }
 
-// underlyingPrice stop/target only this slice; the other kinds (structureValue,
-// pctOfMaxProfit, trailing) and leg-scope arrive with the slices that offer them.
+// underlyingPrice (stock) and structureValue (option) this slice; the other
+// kinds (pctOfMaxProfit, trailing) and leg-scope arrive with the slices that
+// offer them.
 export type Scope = { level: 'trade' }
-export interface ExitLevel {
-  scope: Scope
-  side: 'stop' | 'target'
-  kind: 'underlyingPrice'
-  price: Money
-}
+export type ExitLevel =
+  | { scope: Scope; side: 'stop' | 'target'; kind: 'underlyingPrice'; price: Money }
+  | { scope: Scope; side: 'stop' | 'target'; kind: 'structureValue'; value: Money }
 
 // A leg the Plan intends to hold: side, instrument, and quantity.
 export interface PlannedLeg {

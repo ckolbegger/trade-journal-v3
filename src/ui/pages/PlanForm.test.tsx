@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { PlanForm } from './PlanForm'
@@ -104,5 +104,63 @@ describe('PlanForm', () => {
       { scope: { level: 'trade' }, side: 'target', kind: 'underlyingPrice', price: 17000 },
     ])
     expect(draft.strategyId).toBe('strategy-long-stock')
+  })
+})
+
+describe('PlanForm (options)', () => {
+  async function fillLongCall(user: ReturnType<typeof userEvent.setup>) {
+    await user.selectOptions(screen.getByLabelText(/strategy/i), 'Long Call')
+    await user.type(screen.getByLabelText(/thesis/i), 'AAPL breaks out')
+    await user.type(screen.getByLabelText(/ticker/i), 'AAPL')
+    fireEvent.change(screen.getByLabelText(/expiration/i), { target: { value: '2027-06-18' } })
+    await user.type(screen.getByLabelText(/strike/i), '200')
+    await user.type(screen.getByLabelText(/quantity/i), '1')
+    await user.type(screen.getByLabelText(/stop/i), '6')
+    await user.type(screen.getByLabelText(/target/i), '24')
+  }
+
+  it('builds the option Planned Leg from ticker + expiration + strike', async () => {
+    const { book, journal } = await seededBook()
+    const spy = vi.spyOn(book, 'confirmPlan')
+    renderForm(book, journal)
+    const user = userEvent.setup()
+    await screen.findByLabelText(/thesis/i)
+
+    await fillLongCall(user)
+    await user.click(screen.getByRole('button', { name: /confirm plan/i }))
+
+    expect(spy).toHaveBeenCalledTimes(1)
+    const draft = spy.mock.calls[0][0]
+    expect(draft.plannedLegs).toEqual([
+      {
+        side: 'buy',
+        instrument: {
+          kind: 'option',
+          ticker: 'AAPL',
+          expiration: '2027-06-18',
+          type: 'call',
+          strike: 20000,
+        },
+        qty: 1,
+      },
+    ])
+    expect(draft.strategyId).toBe('strategy-long-call')
+  })
+
+  it('asks structureValue stop and target per the strategy template', async () => {
+    const { book, journal } = await seededBook()
+    const spy = vi.spyOn(book, 'confirmPlan')
+    renderForm(book, journal)
+    const user = userEvent.setup()
+    await screen.findByLabelText(/thesis/i)
+
+    await fillLongCall(user)
+    await user.click(screen.getByRole('button', { name: /confirm plan/i }))
+
+    const draft = spy.mock.calls[0][0]
+    expect(draft.exitLevels).toEqual([
+      { scope: { level: 'trade' }, side: 'stop', kind: 'structureValue', value: 600 },
+      { scope: { level: 'trade' }, side: 'target', kind: 'structureValue', value: 2400 },
+    ])
   })
 })

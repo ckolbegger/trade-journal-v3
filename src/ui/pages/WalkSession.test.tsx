@@ -79,7 +79,10 @@ async function openTrade(f: Fixture, ticker: string): Promise<string> {
 }
 
 function marksNeeded(tradeId: string, ticker: string): TradeMarksNeeded {
-  return { tradeId, instruments: [ticker], range: { from: daysAgo(1), to: todayISO() } }
+  return {
+    tradeId,
+    needs: [{ instrument: ticker, range: { from: daysAgo(1), to: todayISO() } }],
+  }
 }
 
 function renderSession(f: Fixture, needed: TradeMarksNeeded[]) {

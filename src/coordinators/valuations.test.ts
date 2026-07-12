@@ -155,7 +155,7 @@ describe('Valuations.marksNeeded', () => {
     const needed = await new Valuations(tradeBook, priceBook).marksNeeded(wednesday)
 
     expect(needed.perTrade).toEqual([
-      { tradeId: aapl, instruments: ['AAPL'], range: { from: tuesday, to: wednesday } },
+      { tradeId: aapl, needs: [{ instrument: 'AAPL', range: { from: tuesday, to: wednesday } }] },
     ])
   })
 
@@ -168,7 +168,10 @@ describe('Valuations.marksNeeded', () => {
     const needed = await new Valuations(tradeBook, priceBook).marksNeeded(wednesday)
 
     expect(needed.perTrade).toEqual([
-      { tradeId, instruments: ['AAPL'], range: { from: '2026-07-10', to: wednesday } },
+      {
+        tradeId,
+        needs: [{ instrument: 'AAPL', range: { from: '2026-07-10', to: wednesday } }],
+      },
     ])
   })
 
@@ -180,7 +183,7 @@ describe('Valuations.marksNeeded', () => {
 
     const needed = await new Valuations(tradeBook, priceBook).marksNeeded(wednesday)
 
-    expect(needed.perTrade[0].range).toEqual({ from: wednesday, to: wednesday })
+    expect(needed.perTrade[0].needs[0].range).toEqual({ from: wednesday, to: wednesday })
   })
 
   it('includes skipped days (Monday-marked instrument on Wednesday needs Tue+Wed)', async () => {
@@ -193,8 +196,8 @@ describe('Valuations.marksNeeded', () => {
 
     // The skipped Tuesday is inside the gap by construction — nobody was asked.
     const missing = await priceBook.missingMarks(
-      needed.perTrade[0].instruments,
-      needed.perTrade[0].range,
+      needed.perTrade[0].needs.map((n) => n.instrument),
+      needed.perTrade[0].needs[0].range,
     )
     expect(missing).toEqual([
       { instrument: 'AAPL', date: tuesday },
@@ -248,6 +251,174 @@ describe('Valuations.marksNeeded', () => {
     // Earliest gap start: the never-marked MSFT Trade's first Execution (07-10),
     // ahead of AAPL's day-after-Monday (07-14).
     expect(needed.fetchRange).toEqual({ from: '2026-07-10', to: wednesday })
+  })
+})
+
+// A Trade holding an option Leg needs Marks for the contract AND its underlying
+// (TradeMath.instrumentsOf) — and the two gap independently (S3.1, resolving the
+// S1.6 review question: a shared per-Trade range would resurface one
+// instrument's deliberately-skipped dates as the other's gap).
+describe('Valuations.marksNeeded (per-instrument ranges)', () => {
+  const monday = '2026-07-13'
+  const tuesday = '2026-07-14'
+  const wednesday = '2026-07-15'
+  const CONTRACT = 'AAPL 2027-06-18 C 200'
+
+  async function seedCallPlan(book: TradeBook): Promise<string> {
+    const institution = { id: '', name: 'Schwab' } as Institution
+    await book.registries.institutions.save(institution)
+    const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
+    await book.registries.accounts.save(account)
+    const draft: PlanDraft = {
+      accountId: account.id,
+      thesis: 'AAPL breaks out',
+      strategyId: 'strategy-long-call',
+      ideaSourceId: '',
+      plannedLegs: [
+        {
+          side: 'buy',
+          instrument: {
+            kind: 'option',
+            ticker: 'AAPL',
+            expiration: '2027-06-18',
+            type: 'call',
+            strike: 20000,
+          },
+          qty: 1,
+        },
+      ],
+      exitLevels: [],
+      plannedAt: '2026-07-10',
+    }
+    return book.confirmPlan(draft)
+  }
+
+  function optionFill(): ExecutionDraft {
+    return {
+      side: 'buy',
+      qty: 1,
+      price: 1200,
+      fees: 65,
+      timestamp: new Date('2026-07-10T12:00:00').getTime(),
+    }
+  }
+
+  it('returns independent ranges when the contract and underlying were last marked on different dates', async () => {
+    const { tradeBook, priceBook } = books()
+    const tradeId = await seedCallPlan(tradeBook)
+    await tradeBook.recordExecution({ tradeId, newLeg: CONTRACT }, optionFill())
+    await priceBook.record(CONTRACT, monday, 1400, 'manual')
+    await priceBook.record('AAPL', tuesday, 20500, 'manual')
+
+    const needed = await new Valuations(tradeBook, priceBook).marksNeeded(wednesday)
+
+    expect(needed.perTrade).toEqual([
+      {
+        tradeId,
+        needs: [
+          { instrument: CONTRACT, range: { from: tuesday, to: wednesday } },
+          { instrument: 'AAPL', range: { from: wednesday, to: wednesday } },
+        ],
+      },
+    ])
+  })
+
+  it("starts a never-marked underlying at the Trade's first Execution date while the contract keeps its own gap", async () => {
+    const { tradeBook, priceBook } = books()
+    const tradeId = await seedCallPlan(tradeBook)
+    await tradeBook.recordExecution({ tradeId, newLeg: CONTRACT }, optionFill())
+    await priceBook.record(CONTRACT, monday, 1400, 'manual')
+    // AAPL (the underlying) has never been marked.
+
+    const needed = await new Valuations(tradeBook, priceBook).marksNeeded(wednesday)
+
+    expect(needed.perTrade).toEqual([
+      {
+        tradeId,
+        needs: [
+          { instrument: CONTRACT, range: { from: tuesday, to: wednesday } },
+          { instrument: 'AAPL', range: { from: '2026-07-10', to: wednesday } },
+        ],
+      },
+    ])
+  })
+
+  it('keeps fetchRange = earliest gap start across all instruments → asOf', async () => {
+    const { tradeBook, priceBook } = books()
+    const tradeId = await seedCallPlan(tradeBook)
+    await tradeBook.recordExecution({ tradeId, newLeg: CONTRACT }, optionFill())
+    await priceBook.record(CONTRACT, monday, 1400, 'manual')
+    // AAPL's gap starts 2026-07-10 (first Execution) — earlier than the
+    // contract's day-after-Monday gap.
+
+    const needed = await new Valuations(tradeBook, priceBook).marksNeeded(wednesday)
+
+    expect(needed.fetchRange).toEqual({ from: '2026-07-10', to: wednesday })
+  })
+})
+
+// The mark-entry seam for an option Trade: today's valuation and R/R never
+// require the underlying's Mark in this slice (Long Call/Put use structureValue
+// Exit Levels, compared straight to the contract's own Mark) — only Marks
+// collection (above) treats the underlying as needed, for future underlyingPrice
+// levels and IV display.
+describe('MarkEntry (options)', () => {
+  const CONTRACT = 'AAPL 2027-06-18 C 200'
+
+  async function seedCallPlan(book: TradeBook): Promise<string> {
+    const institution = { id: '', name: 'Schwab' } as Institution
+    await book.registries.institutions.save(institution)
+    const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
+    await book.registries.accounts.save(account)
+    const draft: PlanDraft = {
+      accountId: account.id,
+      thesis: 'AAPL breaks out',
+      strategyId: 'strategy-long-call',
+      ideaSourceId: '',
+      plannedLegs: [
+        {
+          side: 'buy',
+          instrument: {
+            kind: 'option',
+            ticker: 'AAPL',
+            expiration: '2027-06-18',
+            type: 'call',
+            strike: 20000,
+          },
+          qty: 1,
+        },
+      ],
+      exitLevels: [
+        { scope: { level: 'trade' }, side: 'stop', kind: 'structureValue', value: 600 },
+        { scope: { level: 'trade' }, side: 'target', kind: 'structureValue', value: 2400 },
+      ],
+      plannedAt: '2026-07-10',
+    }
+    return book.confirmPlan(draft)
+  }
+
+  it('computes valuation from the contract Mark alone when the underlying is unmarked (R/R shows marks-missing for underlying-anchored levels only)', async () => {
+    const { tradeBook, priceBook } = books()
+    const tradeId = await seedCallPlan(tradeBook)
+    await tradeBook.recordExecution(
+      { tradeId, newLeg: CONTRACT },
+      {
+        side: 'buy',
+        qty: 1,
+        price: 1200,
+        fees: 65,
+        timestamp: new Date('2026-07-10T12:00:00').getTime(),
+      },
+    )
+    await priceBook.record(CONTRACT, '2026-07-15', 1400, 'manual')
+    // AAPL (the underlying) is never marked.
+
+    const detail = await new Valuations(tradeBook, priceBook).detail(tradeId)
+
+    expect(detail.marksMissing).toBeUndefined()
+    expect(detail.valuation?.currentValue).toBe(140000)
+    expect(detail.valuation?.totalPnL).toBe(19935)
+    expect(detail.riskReward?.plannedRisk).toBe(80000)
   })
 })
 

@@ -38,16 +38,18 @@ export interface IdeaSource {
 }
 
 // A Strategy is a template: it pre-fills the Plan's Planned Legs and names which
-// Exit Levels the plan form asks for. Stock-only this slice. TradeMath never
-// reads Strategy — it stays a TradeBook-owned analytics label.
+// Exit Levels the plan form asks for. TradeMath never reads Strategy — it stays a
+// TradeBook-owned analytics label. `optionType` is present iff instrumentKind is
+// 'option' (the option leg's call/put is fixed by the Strategy, not asked).
 export interface StrategyLegTemplate {
   side: Side
-  instrumentKind: 'stock'
+  instrumentKind: 'stock' | 'option'
+  optionType?: 'call' | 'put'
 }
 
 export interface StrategyExitTemplate {
   side: 'stop' | 'target'
-  kind: 'underlyingPrice'
+  kind: 'underlyingPrice' | 'structureValue'
 }
 
 export interface StrategyTemplate {
@@ -124,3 +126,8 @@ export type {
   TradeStatus,
   Valuation,
 } from '@/domain/trademath/types'
+
+// The InstrumentKey codec: pure serialization of the Instrument shape (not
+// TradeMath's derived math), needed by the UI to name the Leg an Execution
+// targets (`ExecutionTarget.newLeg`) for instruments beyond a stock's own ticker.
+export { buildInstrumentKey } from '@/domain/trademath/instrument'

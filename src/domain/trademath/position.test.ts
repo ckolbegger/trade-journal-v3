@@ -88,3 +88,20 @@ describe('TradeMath.positionOf', () => {
     ])
   })
 })
+
+describe('TradeMath.positionOf (options)', () => {
+  const AAPL_CALL = {
+    kind: 'option',
+    ticker: 'AAPL',
+    expiration: '2027-06-18',
+    type: 'call',
+    strike: 20000,
+  } as const
+
+  it('returns +1 contract after buying 1', () => {
+    const trade = tradeWith([
+      { id: 'leg-1', instrument: AAPL_CALL, executions: [exec({ side: 'buy', qty: 1 })] },
+    ])
+    expect(positionOf(trade).holdings).toEqual([{ instrument: AAPL_CALL, qty: 1, side: 'long' }])
+  })
+})

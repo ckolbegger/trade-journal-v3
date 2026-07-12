@@ -46,3 +46,21 @@ export function shortDate(date: string): string {
   const [, month, day] = date.split('-').map(Number)
   return `${SHORT_MONTHS[month - 1]} ${day}`
 }
+
+// An option contract rendered for display, e.g. "AAPL Jun'27 200C" — display-only
+// formatting (the contract multiplier and canonical InstrumentKey stay in
+// TradeMath; this never feeds a computation).
+export function optionLabel(instrument: {
+  ticker: string
+  expiration: string
+  type: 'call' | 'put'
+  strike: number
+}): string {
+  const [year, month] = instrument.expiration.split('-').map(Number)
+  const strike =
+    instrument.strike % 100 === 0
+      ? String(instrument.strike / 100)
+      : (instrument.strike / 100).toFixed(2)
+  const typeChar = instrument.type === 'call' ? 'C' : 'P'
+  return `${instrument.ticker} ${SHORT_MONTHS[month - 1]}'${String(year).slice(2)} ${strike}${typeChar}`
+}
