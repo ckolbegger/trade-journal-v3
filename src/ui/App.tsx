@@ -2,7 +2,7 @@ import { NavLink, Route, Routes } from 'react-router-dom'
 import { TradesPage } from './pages/TradesPage'
 import { PlanForm } from './pages/PlanForm'
 import { TradeDetail } from './pages/TradeDetail'
-import { JournalPage } from './pages/JournalPage'
+import { TimelinePage } from './pages/TimelinePage'
 import { ReviewPage } from './pages/ReviewPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { NotFound } from './pages/NotFound'
@@ -40,7 +40,7 @@ export function App() {
           <Route path="/" element={<TradesPage />} />
           <Route path="/trades/new" element={<PlanForm />} />
           <Route path="/trades/:id" element={<TradeDetail />} />
-          <Route path="/journal" element={<JournalPage />} />
+          <Route path="/journal" element={<TimelinePage />} />
           <Route path="/review" element={<ReviewPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<NotFound />} />

@@ -1,7 +1,9 @@
 import type { StorageBinding } from '@/storage/storage-binding'
+import { isoDateOf } from '@/domain/dates'
 import { ListRegistry } from '../list-registry'
 import type {
   AnchorQuery,
+  DateRange,
   Entry,
   EntryDraft,
   EntryId,
@@ -9,6 +11,7 @@ import type {
   Prompt,
   PromptAnswer,
   TradeId,
+  Timestamp,
 } from './types'
 
 const ENTRIES = 'entries'
@@ -70,6 +73,19 @@ export class Journal {
     return entries.sort((a, b) => a.at - b.at).map((e) => structuredClone(e))
   }
 
+  // The growth story: every entry, across every anchor kind, in 'at' order —
+  // standalone reflections alongside plan/close/review entries, unsettled
+  // placeholders included (they ARE part of the story, not hidden debt). A
+  // `range` narrows to the trading dates entries fall on (domain/dates'
+  // isoDateOf), inclusive both ends.
+  async timeline(range?: DateRange): Promise<Entry[]> {
+    const entries = await this.binding.list<Entry>(ENTRIES)
+    return entries
+      .filter((e) => inRange(e.at, range))
+      .sort((a, b) => a.at - b.at)
+      .map((e) => structuredClone(e))
+  }
+
   async countFor(tradeId: TradeId): Promise<number> {
     return (await this.entriesFor({ trade: tradeId })).length
   }
@@ -102,6 +118,12 @@ function answerPrompts(
     const answer = answers.find((a) => a.promptId === prompt.id)
     return answer ? { prompt, answer } : { prompt }
   })
+}
+
+function inRange(at: Timestamp, range?: DateRange): boolean {
+  if (!range) return true
+  const date = isoDateOf(at)
+  return date >= range.from && date <= range.to
 }
 
 function validateAnswer(prompts: Prompt[], answer: PromptAnswer): void {

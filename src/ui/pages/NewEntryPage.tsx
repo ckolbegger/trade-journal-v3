@@ -3,18 +3,15 @@ import { useJournal } from '../journalContext'
 import { PromptFields } from '../components/PromptFields'
 import { collectAnswers, type PromptValues } from '../components/prompt-answers'
 import { btnPrimary, field, heading, input } from '../styles'
-import type { Entry, EntryType } from '@/books/journal/types'
+import type { EntryType } from '@/books/journal/types'
 
 // Standalone journal writing: the trader picks any non-archived Entry Type
 // freely — no lifecycle moment dictates it — and answers its prompts. There is
 // no skip/placeholder path here: standalone writing is voluntary, and Journal
-// Debt exists only for required lifecycle entries (ADR 0006).
+// Debt exists only for required lifecycle entries (ADR 0006). The caller reads
+// the written entry back through Journal.timeline — onSaved is just "done".
 
-export function NewEntryPage({
-  onSaved,
-}: {
-  onSaved: (entry: Entry, entryTypeName: string) => void
-}) {
+export function NewEntryPage({ onSaved }: { onSaved: () => void }) {
   const journal = useJournal()
   const [entryTypes, setEntryTypes] = useState<EntryType[] | null>(null)
   const [entryTypeId, setEntryTypeId] = useState('')
@@ -36,27 +33,15 @@ export function NewEntryPage({
 
   async function save() {
     if (!entryType) return
-    const at = Date.now()
     const answers = collectAnswers(entryType.prompts, values)
-    const id = await journal.write({
+    await journal.write({
       anchor: { kind: 'standalone' },
       entryTypeId: entryType.id,
-      at,
+      at: Date.now(),
       answers,
       placeholder: false,
     })
-    const entry: Entry = {
-      id,
-      at,
-      anchor: { kind: 'standalone' },
-      entryTypeId: entryType.id,
-      answered: entryType.prompts.map((prompt) => {
-        const answer = answers.find((a) => a.promptId === prompt.id)
-        return answer ? { prompt, answer } : { prompt }
-      }),
-      placeholder: false,
-    }
-    onSaved(entry, entryType.name)
+    onSaved()
   }
 
   return (

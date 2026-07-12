@@ -44,7 +44,7 @@ Design references: [journal.md](../design/journal.md), ADRs 0006, 0007.
 
 ---
 
-## ☐ Story S2.2 — The growth timeline
+## ☑ Story S2.2 — The growth timeline
 
 > As a trader, I want one chronological timeline of everything I've written — plan entries, reviews, closes, standalone reflections — so that I can read my growth as a trader as a single story.
 
@@ -52,7 +52,7 @@ Design references: [journal.md](../design/journal.md), ADRs 0006, 0007.
 
 ### Tasks
 
-- [ ] **S2.2.T1 — Journal.timeline.**
+- [x] **S2.2.T1 — Journal.timeline.**
 
   ```
   describe "Journal.timeline"
@@ -63,7 +63,7 @@ Design references: [journal.md](../design/journal.md), ADRs 0006, 0007.
   - it returns entries of the same type with different prompt snapshots side by side (ADR 0007)
   ```
 
-- [ ] **S2.2.T2 — Timeline UI.** The Journal page becomes the timeline: each entry shows its date, Entry Type, anchor context ("Plan — AAPL", "Review — AAPL, Jul 3", "Standalone"), and its prompts-as-answered; trade-anchored entries link to their Trade detail; placeholders render as owed with a settle affordance (reusing S1.7's settle flow). A simple date-range control.
+- [x] **S2.2.T2 — Timeline UI.** The Journal page becomes the timeline: each entry shows its date, Entry Type, anchor context ("Plan — AAPL", "Review — AAPL, Jul 3", "Standalone"), and its prompts-as-answered; trade-anchored entries link to their Trade detail; placeholders render as owed with a settle affordance (reusing S1.7's settle flow). A simple date-range control.
 
   ```
   describe "TimelinePage"
@@ -74,9 +74,9 @@ Design references: [journal.md](../design/journal.md), ADRs 0006, 0007.
   - it narrows to the selected date range
   ```
 
-- [ ] **S2.2.T3 — Integration tests**: a seeded lifecycle (plan entry, review entry, close entry, standalone) over Dexie → timeline returns all four in order; range excludes correctly.
-- [ ] **S2.2.T4 — Playwright e2e** (`e2e/s2-2-timeline.spec.ts`): after a lifecycle + standalone entry, the timeline shows all entries in order; clicking a plan entry's Trade label lands on that Trade.
-- [ ] **S2.2.T5 — Browser verification.** With real data from earlier stories: timeline reads as one story; anchors label and link correctly; an owed placeholder settles inline and both timestamps show (late journaling visible). All suites green.
+- [x] **S2.2.T3 — Integration tests**: a seeded lifecycle (plan entry, review entry, close entry, standalone) over Dexie → timeline returns all four in order; range excludes correctly.
+- [x] **S2.2.T4 — Playwright e2e** (`e2e/s2-2-timeline.spec.ts`): after a lifecycle + standalone entry, the timeline shows all entries in order; clicking a plan entry's Trade label lands on that Trade.
+- [x] **S2.2.T5 — Browser verification.** With real data from earlier stories: timeline reads as one story; anchors label and link correctly; an owed placeholder settles inline and both timestamps show (late journaling visible). All suites green.
 
 ---
 

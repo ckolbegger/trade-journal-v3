@@ -67,13 +67,14 @@ describe('NewEntryPage', () => {
     await user.click(screen.getByRole('button', { name: /save entry/i }))
 
     expect(onSaved).toHaveBeenCalledTimes(1)
-    const [entry, entryTypeName] = onSaved.mock.calls[0]
-    expect(entryTypeName).toBe('Trader Reflection')
-    expect(entry.anchor).toEqual({ kind: 'standalone' })
-    expect(entry.placeholder).toBe(false)
-    expect(
-      entry.answered.find((a: { prompt: { id: string } }) => a.prompt.id === 'mind')?.answer,
-    ).toEqual({ promptId: 'mind', value: 'Feeling steady today' })
+    const entries = await journal.timeline()
+    expect(entries).toHaveLength(1)
+    expect(entries[0].anchor).toEqual({ kind: 'standalone' })
+    expect(entries[0].placeholder).toBe(false)
+    expect(entries[0].answered.find((a) => a.prompt.id === 'mind')?.answer).toEqual({
+      promptId: 'mind',
+      value: 'Feeling steady today',
+    })
   })
 
   it('offers no skip/placeholder path', async () => {

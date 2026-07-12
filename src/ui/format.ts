@@ -25,3 +25,24 @@ export function todayISO(): string {
 export function timestampToISODate(timestamp: number): string {
   return toISODate(new Date(timestamp))
 }
+
+const SHORT_MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+]
+
+// An ISODate ('YYYY-MM-DD') rendered compactly for inline display, e.g. "Jul 3".
+export function shortDate(date: string): string {
+  const [, month, day] = date.split('-').map(Number)
+  return `${SHORT_MONTHS[month - 1]} ${day}`
+}

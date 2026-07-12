@@ -3,6 +3,7 @@ import { useJournal } from '../journalContext'
 import { usePriceBook } from '../priceBookContext'
 import { TradeDashboard } from './TradeDashboard'
 import { PromptFields } from '../components/PromptFields'
+import { SettleForm } from '../components/SettleForm'
 import { collectAnswers } from '../components/prompt-answers'
 import type { PromptValues } from '../components/prompt-answers'
 import { dollarsToCents } from '../format'
@@ -251,37 +252,5 @@ function ActionForm({
         Record action
       </button>
     </form>
-  )
-}
-
-function SettleForm({
-  entry,
-  onSettle,
-}: {
-  entry: Entry
-  onSettle: (values: PromptValues) => void
-}) {
-  const [values, setValues] = useState<PromptValues>({})
-
-  return (
-    <li className="space-y-3">
-      <form
-        className="space-y-3"
-        onSubmit={(e) => {
-          e.preventDefault()
-          onSettle(values)
-        }}
-      >
-        <PromptFields
-          prompts={entry.answered.map((a) => a.prompt)}
-          values={values}
-          namespace={`settle-${entry.id}`}
-          onChange={(id, value) => setValues((prev) => ({ ...prev, [id]: value }))}
-        />
-        <button type="submit" className={btnPrimary}>
-          Settle entry
-        </button>
-      </form>
-    </li>
   )
 }

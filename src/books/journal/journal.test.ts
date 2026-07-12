@@ -249,6 +249,146 @@ describe('entry immutability', () => {
   })
 })
 
+const CLOSE_TYPE: EntryType = {
+  id: 'close-type',
+  name: 'Close',
+  designatedFor: 'close',
+  prompts: [{ id: 'lesson', text: 'Lesson', kind: 'text' }],
+}
+
+const REVIEW_TYPE: EntryType = {
+  id: 'review-type',
+  name: 'Trade Review',
+  designatedFor: 'review',
+  prompts: [{ id: 'action', text: 'Action', kind: 'select', options: ['Hold', 'Exit Soon'] }],
+}
+
+describe('Journal.timeline', () => {
+  it("returns all entries across anchors in 'at' order", async () => {
+    const journal = await journalWithPlanType()
+    await journal.entryTypes.save({ ...CLOSE_TYPE })
+
+    await journal.write({
+      anchor: { kind: 'close', tradeId: 't1' },
+      entryTypeId: CLOSE_TYPE.id,
+      at: 3_000,
+      placeholder: false,
+      answers: [{ promptId: 'lesson', value: 'Let it run' }],
+    })
+    const early = fullDraft('t1')
+    early.at = 1_000
+    await journal.write(early)
+    const mid = placeholderDraft('t1')
+    mid.at = 2_000
+    await journal.write(mid)
+
+    const timeline = await journal.timeline()
+    expect(timeline.map((e) => e.at)).toEqual([1_000, 2_000, 3_000])
+  })
+
+  it('includes standalone, plan, close, and review entries together', async () => {
+    const journal = await journalWithPlanType()
+    await journal.entryTypes.save({ ...CLOSE_TYPE })
+    await journal.entryTypes.save({ ...REVIEW_TYPE })
+    await journal.entryTypes.save({ ...REFLECTION_TYPE })
+
+    const plan = fullDraft('t1')
+    plan.at = 1_000
+    await journal.write(plan)
+    await journal.write({
+      anchor: { kind: 'close', tradeId: 't1' },
+      entryTypeId: CLOSE_TYPE.id,
+      at: 2_000,
+      placeholder: false,
+      answers: [{ promptId: 'lesson', value: 'Let it run' }],
+    })
+    await journal.write({
+      anchor: { kind: 'review', date: '2026-07-03', tradeId: 't1' },
+      entryTypeId: REVIEW_TYPE.id,
+      at: 3_000,
+      placeholder: false,
+      answers: [{ promptId: 'action', value: 'Hold' }],
+    })
+    await journal.write({
+      anchor: { kind: 'standalone' },
+      entryTypeId: REFLECTION_TYPE.id,
+      at: 4_000,
+      placeholder: false,
+      answers: [{ promptId: 'mind', value: 'Frothy' }],
+    })
+
+    const timeline = await journal.timeline()
+    expect(timeline.map((e) => e.anchor.kind)).toEqual(['plan', 'close', 'review', 'standalone'])
+  })
+
+  it('respects a date range when given', async () => {
+    const journal = await journalWithPlanType()
+    const before = fullDraft('t1')
+    before.at = new Date('2026-07-01T12:00:00').getTime()
+    const within = fullDraft('t1')
+    within.at = new Date('2026-07-10T12:00:00').getTime()
+    const after = fullDraft('t1')
+    after.at = new Date('2026-07-20T12:00:00').getTime()
+    await journal.write(before)
+    await journal.write(within)
+    await journal.write(after)
+
+    const timeline = await journal.timeline({ from: '2026-07-05', to: '2026-07-15' })
+    expect(timeline).toHaveLength(1)
+    expect(timeline[0].at).toBe(within.at)
+  })
+
+  it('includes unsettled placeholders (owed is part of the story)', async () => {
+    const journal = await journalWithPlanType()
+    await journal.write(placeholderDraft('t1'))
+
+    const timeline = await journal.timeline()
+    expect(timeline).toHaveLength(1)
+    expect(timeline[0].placeholder).toBe(true)
+    expect(timeline[0].answered.every((a) => a.answer === undefined)).toBe(true)
+  })
+
+  it('returns entries of the same type with different prompt snapshots side by side (ADR 0007)', async () => {
+    const journal = new Journal(new InMemoryBinding())
+    await journal.entryTypes.save({ ...REFLECTION_TYPE })
+
+    await journal.write({
+      anchor: { kind: 'standalone' },
+      entryTypeId: REFLECTION_TYPE.id,
+      at: 1_000,
+      placeholder: false,
+      answers: [{ promptId: 'mind', value: 'First shape' }],
+    })
+
+    // The Entry Type's Prompts evolve — a new prompt is added.
+    const evolved = await journal.entryTypes.list()
+    const type = evolved.find((t) => t.id === REFLECTION_TYPE.id)!
+    await journal.entryTypes.save({
+      ...type,
+      prompts: [...type.prompts, { id: 'gratitude', text: 'Grateful for?', kind: 'text' }],
+    })
+
+    await journal.write({
+      anchor: { kind: 'standalone' },
+      entryTypeId: REFLECTION_TYPE.id,
+      at: 2_000,
+      placeholder: false,
+      answers: [{ promptId: 'gratitude', value: 'A green day' }],
+    })
+
+    const timeline = await journal.timeline()
+    expect(timeline).toHaveLength(2)
+    expect(timeline.every((e) => e.entryTypeId === REFLECTION_TYPE.id)).toBe(true)
+    expect(timeline[0].answered.map((a) => a.prompt.id)).toEqual(['mind', 'emotion', 'energy'])
+    expect(timeline[1].answered.map((a) => a.prompt.id)).toEqual([
+      'mind',
+      'emotion',
+      'energy',
+      'gratitude',
+    ])
+  })
+})
+
 describe('Journal.outstandingDebt', () => {
   it('returns unsettled placeholders only', async () => {
     const journal = await journalWithPlanType()

@@ -72,3 +72,12 @@ export interface EntryDraft {
 export interface AnchorQuery {
   trade: TradeId
 }
+
+// Journal-owned (mirrors PriceBook's DateRange shape, but Books never import
+// from one another — see docs/plan/README.md's dependency rules). Bounds
+// timeline() by the trading date entries fall on (Entry.at read through
+// domain/dates.isoDateOf), inclusive both ends.
+export interface DateRange {
+  from: ISODate
+  to: ISODate
+}
