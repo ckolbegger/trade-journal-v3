@@ -44,7 +44,8 @@ async function workspace(): Promise<{
   const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
   await tradeBook.registries.accounts.save(account)
   await journal.entryTypes.save({ ...PLAN_TYPE })
-  const review = new Review(new Valuations(tradeBook, priceBook), journal)
+  await journal.entryTypes.save({ ...REVIEW_TYPE })
+  const review = new Review(new Valuations(tradeBook, priceBook), journal, tradeBook)
   return { tradeBook, journal, priceBook, review, accountId: account.id }
 }
 
@@ -58,6 +59,37 @@ function draft(accountId: string, ticker: string): PlanDraft {
     exitLevels: [],
     plannedAt: '2026-07-10',
   }
+}
+
+const REVIEW_TYPE: EntryType = {
+  id: 'review-type',
+  name: 'Trade Review',
+  designatedFor: 'review',
+  prompts: [
+    {
+      id: 'action',
+      text: 'What will you do with this Trade?',
+      kind: 'select',
+      options: ['Hold', 'Exit Soon', 'Adjust', 'Watch Closely'],
+    },
+  ],
+}
+
+// Reviewing a Trade IS recording its Action — the review-anchored entry for the
+// date is the only "reviewed" state there is (docs/design/review.md).
+async function recordAction(
+  journal: Journal,
+  tradeId: string,
+  date: string,
+  action: string,
+): Promise<void> {
+  await journal.write({
+    anchor: { kind: 'review', date, tradeId },
+    entryTypeId: REVIEW_TYPE.id,
+    at: new Date(`${date}T18:00:00`).getTime(),
+    answers: [{ promptId: 'action', value: action }],
+    placeholder: false,
+  })
 }
 
 describe('Review.agenda', () => {
@@ -111,5 +143,97 @@ describe('Review.agenda', () => {
     const second = await review.agenda(WEDNESDAY)
 
     expect(second).toEqual(first)
+  })
+})
+
+describe('Review.walk', () => {
+  it('lists open Trades in insertion order', async () => {
+    const { tradeBook, review, accountId } = await workspace()
+    const aapl = await tradeBook.confirmPlan(draft(accountId, 'AAPL'))
+    await tradeBook.recordExecution({ tradeId: aapl, newLeg: 'AAPL' }, fill())
+    const msft = await tradeBook.confirmPlan(draft(accountId, 'MSFT'))
+    await tradeBook.recordExecution({ tradeId: msft, newLeg: 'MSFT' }, fill())
+
+    const items = await review.walk(WEDNESDAY)
+
+    expect(items.map((i) => i.tradeId)).toEqual([aapl, msft])
+  })
+
+  it('flags reviewedToday when a review entry exists for that date', async () => {
+    const { tradeBook, journal, review, accountId } = await workspace()
+    const aapl = await tradeBook.confirmPlan(draft(accountId, 'AAPL'))
+    await tradeBook.recordExecution({ tradeId: aapl, newLeg: 'AAPL' }, fill())
+    const msft = await tradeBook.confirmPlan(draft(accountId, 'MSFT'))
+    await tradeBook.recordExecution({ tradeId: msft, newLeg: 'MSFT' }, fill())
+
+    await recordAction(journal, aapl, WEDNESDAY, 'Hold')
+
+    const items = await review.walk(WEDNESDAY)
+
+    expect(items.find((i) => i.tradeId === aapl)?.reviewedToday).toBe(true)
+    expect(items.find((i) => i.tradeId === msft)?.reviewedToday).toBe(false)
+  })
+
+  it('leaves reviewedToday false for entries from other dates', async () => {
+    const { tradeBook, journal, review, accountId } = await workspace()
+    const aapl = await tradeBook.confirmPlan(draft(accountId, 'AAPL'))
+    await tradeBook.recordExecution({ tradeId: aapl, newLeg: 'AAPL' }, fill())
+
+    // Reviewed Monday, not since — Wednesday's walk still owes an Action.
+    await recordAction(journal, aapl, MONDAY, 'Hold')
+
+    const items = await review.walk(WEDNESDAY)
+
+    expect(items.map((i) => i.reviewedToday)).toEqual([false])
+  })
+
+  it("carries each Trade's unsettled-placeholder count", async () => {
+    const { tradeBook, journal, review, accountId } = await workspace()
+    const aapl = await tradeBook.confirmPlan(draft(accountId, 'AAPL'))
+    await tradeBook.recordExecution({ tradeId: aapl, newLeg: 'AAPL' }, fill())
+    const msft = await tradeBook.confirmPlan(draft(accountId, 'MSFT'))
+    await tradeBook.recordExecution({ tradeId: msft, newLeg: 'MSFT' }, fill())
+
+    const owed = await journal.write({
+      anchor: { kind: 'plan', tradeId: aapl },
+      entryTypeId: PLAN_TYPE.id,
+      at: new Date('2026-07-10T11:00:00').getTime(),
+      answers: [],
+      placeholder: true,
+    })
+    const settled = await journal.write({
+      anchor: { kind: 'plan', tradeId: msft },
+      entryTypeId: PLAN_TYPE.id,
+      at: new Date('2026-07-10T11:00:00').getTime(),
+      answers: [],
+      placeholder: true,
+    })
+    await journal.settle(settled, [{ promptId: 'why', value: 'settled last night' }])
+    expect(owed).not.toBe(settled)
+
+    const items = await review.walk(WEDNESDAY)
+
+    expect(items.find((i) => i.tradeId === aapl)?.outstandingDebt).toBe(1)
+    expect(items.find((i) => i.tradeId === msft)?.outstandingDebt).toBe(0)
+  })
+
+  it('excludes planned and closed Trades', async () => {
+    const { tradeBook, review, accountId } = await workspace()
+    // Planned: never filled.
+    await tradeBook.confirmPlan(draft(accountId, 'NVDA'))
+    // Closed: filled, then flattened by a sell on the same Leg.
+    const tsla = await tradeBook.confirmPlan(draft(accountId, 'TSLA'))
+    const opened = await tradeBook.recordExecution({ tradeId: tsla, newLeg: 'TSLA' }, fill())
+    await tradeBook.recordExecution(
+      { tradeId: tsla, legId: opened.record.legs[0].id },
+      { ...fill(), side: 'sell', timestamp: new Date('2026-07-13T12:00:00').getTime() },
+    )
+    // Open.
+    const aapl = await tradeBook.confirmPlan(draft(accountId, 'AAPL'))
+    await tradeBook.recordExecution({ tradeId: aapl, newLeg: 'AAPL' }, fill())
+
+    const items = await review.walk(WEDNESDAY)
+
+    expect(items.map((i) => i.tradeId)).toEqual([aapl])
   })
 })

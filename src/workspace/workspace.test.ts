@@ -7,6 +7,7 @@ import {
   LONG_STOCK_STRATEGY_ID,
   PLAN_ENTRY_TYPE_ID,
   CLOSE_ENTRY_TYPE_ID,
+  REVIEW_ENTRY_TYPE_ID,
   CLOSE_REASON_IDS,
 } from './workspace'
 
@@ -98,6 +99,44 @@ describe('Workspace.ensureSeeded — Plan Entry Type', () => {
     expect(
       (await journal.entryTypes.list(true)).filter((t) => t.id === PLAN_ENTRY_TYPE_ID),
     ).toHaveLength(1)
+  })
+})
+
+describe('Workspace.ensureSeeded — Trade Review Entry Type', () => {
+  it('seeds the Trade Review Entry Type with the Action list as its select options', async () => {
+    const { workspace, journal } = makeWorkspace()
+    await workspace.ensureSeeded()
+
+    const review = (await journal.entryTypes.list()).find((t) => t.id === REVIEW_ENTRY_TYPE_ID)
+    expect(review?.name).toBe('Trade Review')
+    expect(review?.designatedFor).toBe('review')
+    expect(review?.prompts.map((p) => p.kind)).toEqual(['select', 'scale', 'text'])
+    // The Action select's options ARE the Action list — trader-configurable for
+    // free, because editing the Entry Type edits the Actions (review.md).
+    expect(review?.prompts[0].options).toEqual(['Hold', 'Exit Soon', 'Adjust', 'Watch Closely'])
+  })
+
+  it('does not duplicate the Trade Review type on a second run', async () => {
+    const { workspace, journal } = makeWorkspace()
+    await workspace.ensureSeeded()
+    await workspace.ensureSeeded()
+    const types = (await journal.entryTypes.list()).filter((t) => t.id === REVIEW_ENTRY_TYPE_ID)
+    expect(types).toHaveLength(1)
+  })
+
+  it('does not overwrite a Trade Review type the trader edited', async () => {
+    const { workspace, journal } = makeWorkspace()
+    await workspace.ensureSeeded()
+    const seeded = (await journal.entryTypes.list()).find((t) => t.id === REVIEW_ENTRY_TYPE_ID)!
+    await journal.entryTypes.save({
+      ...seeded,
+      prompts: [{ ...seeded.prompts[0], options: ['Hold', 'Close it'] }],
+    })
+
+    await workspace.ensureSeeded()
+
+    const review = (await journal.entryTypes.list()).find((t) => t.id === REVIEW_ENTRY_TYPE_ID)
+    expect(review?.prompts[0].options).toEqual(['Hold', 'Close it'])
   })
 })
 

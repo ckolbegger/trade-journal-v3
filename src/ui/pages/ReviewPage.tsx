@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { useReview } from '../reviewContext'
 import { usePriceBook } from '../priceBookContext'
 import { useTradeBook } from '../tradeBookContext'
+import { WalkSession } from './WalkSession'
 import { todayISO } from '../format'
 import { btnPrimary, card, heading, num, subheading } from '../styles'
 import type { ISODate, InstrumentKey } from '@/books/pricebook/types'
+import type { TradeMarksNeeded } from '@/coordinators/valuations'
 
 // The Daily Review start page: the session's agenda. Starting a session asks the
 // Review coordinator what today must cover, then ALWAYS calls PriceBook.fetch —
@@ -14,7 +16,8 @@ import type { ISODate, InstrumentKey } from '@/books/pricebook/types'
 // after the fetch is the authoritative remainder (PriceBook.missingMarks), shown
 // per Trade so a skipped day's rows are visible rather than silently lost.
 //
-// The walk itself is S1.7 — "Begin walk" is present but inert this slice.
+// "Begin walk" hands the agenda's per-Trade Mark gaps to the walk (WalkSession),
+// which asks Review for the session order and steps through the checkpoints.
 
 interface AgendaTrade {
   tradeId: string
@@ -23,7 +26,9 @@ interface AgendaTrade {
 }
 
 interface Session {
+  asOf: ISODate
   trades: AgendaTrade[]
+  marksNeeded: TradeMarksNeeded[]
   debt: number
 }
 
@@ -32,6 +37,7 @@ export function ReviewPage() {
   const priceBook = usePriceBook()
   const tradeBook = useTradeBook()
   const [session, setSession] = useState<Session | null>(null)
+  const [walking, setWalking] = useState(false)
 
   async function startSession() {
     const asOf = todayISO()
@@ -51,7 +57,7 @@ export function ReviewPage() {
         }
       }),
     )
-    setSession({ trades, debt: agenda.journalDebt.length })
+    setSession({ asOf, trades, marksNeeded: agenda.marksNeeded, debt: agenda.journalDebt.length })
   }
 
   if (!session) {
@@ -64,6 +70,15 @@ export function ReviewPage() {
         <button type="button" className={btnPrimary} onClick={() => void startSession()}>
           Start review
         </button>
+      </section>
+    )
+  }
+
+  if (walking) {
+    return (
+      <section className="space-y-6">
+        <h2 className={heading}>Review</h2>
+        <WalkSession asOf={session.asOf} marksNeeded={session.marksNeeded} />
       </section>
     )
   }
@@ -113,12 +128,14 @@ export function ReviewPage() {
               {session.debt} {session.debt === 1 ? 'entry' : 'entries'} owed
             </p>
           </div>
-
-          <button type="button" className={btnPrimary} disabled>
-            Begin walk
-          </button>
         </>
       )}
+
+      {/* Marks are the fuel; the walk is the point — every open Trade still owes
+          today's Action even when nothing is left to collect. */}
+      <button type="button" className={btnPrimary} onClick={() => setWalking(true)}>
+        Begin walk
+      </button>
     </section>
   )
 }

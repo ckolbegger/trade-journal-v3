@@ -6,6 +6,7 @@ import type {
   EntryDraft,
   EntryId,
   EntryType,
+  Prompt,
   PromptAnswer,
   TradeId,
 } from './types'
@@ -31,14 +32,7 @@ export class Journal {
     const entryType = await this.binding.get<EntryType>(ENTRY_TYPES, draft.entryTypeId)
     if (!entryType) throw new Error(`No Entry Type ${draft.entryTypeId}`)
 
-    for (const answer of draft.answers) {
-      validateAnswer(entryType, answer)
-    }
-
-    const answered = entryType.prompts.map((prompt) => {
-      const answer = draft.answers.find((a) => a.promptId === prompt.id)
-      return answer ? { prompt, answer } : { prompt }
-    })
+    const answered = answerPrompts(entryType.prompts, draft.answers)
 
     const entry: Entry = {
       id: crypto.randomUUID(),
@@ -52,6 +46,25 @@ export class Journal {
     return entry.id
   }
 
+  // Completing a placeholder — completion, not editing (entries are immutable).
+  // The answers land against the prompts the ENTRY snapshotted, not today's
+  // Entry Type: you answer the questions as they were asked at that lifecycle
+  // moment (ADR 0007). Both timestamps survive, so late journaling stays visible.
+  async settle(entryId: EntryId, answers: PromptAnswer[]): Promise<void> {
+    const entry = await this.binding.get<Entry>(ENTRIES, entryId)
+    if (!entry) throw new Error(`No entry ${entryId}`)
+    if (!entry.placeholder) throw new Error(`Entry ${entryId} is not a placeholder`)
+    if (entry.settledAt !== undefined) throw new Error(`Entry ${entryId} is already settled`)
+
+    const prompts = entry.answered.map((a) => a.prompt)
+    const settled: Entry = {
+      ...entry,
+      answered: answerPrompts(prompts, answers),
+      settledAt: Date.now(),
+    }
+    await this.binding.put(ENTRIES, structuredClone(settled))
+  }
+
   async entriesFor(query: AnchorQuery): Promise<Entry[]> {
     const entries = await this.binding.where<Entry>(ENTRIES, 'anchor.tradeId', query.trade)
     return entries.sort((a, b) => a.at - b.at).map((e) => structuredClone(e))
@@ -62,20 +75,38 @@ export class Journal {
   }
 
   // Journal Debt IS the unsettled-placeholder query — no cross-Book derivation
-  // (ADR 0006). Review surfaces these for settlement; nothing nags. (Settling
-  // arrives in S1.7, which narrows this to placeholders without a settledAt.)
+  // (ADR 0006). Review surfaces these for settlement; nothing nags. A settled
+  // placeholder stays a placeholder (its at/settledAt pair is the late-journaling
+  // record) but is no longer owed.
   async outstandingDebt(): Promise<Entry[]> {
     const entries = await this.binding.list<Entry>(ENTRIES)
     return entries
-      .filter((e) => e.placeholder)
+      .filter((e) => e.placeholder && e.settledAt === undefined)
       .sort((a, b) => a.at - b.at)
       .map((e) => structuredClone(e))
   }
 }
 
-function validateAnswer(entryType: EntryType, answer: PromptAnswer): void {
-  const prompt = entryType.prompts.find((p) => p.id === answer.promptId)
-  if (!prompt) throw new Error(`No prompt ${answer.promptId} on Entry Type ${entryType.id}`)
+// Answers pinned to their prompts — the snapshot an entry keeps (ADR 0007). Both
+// write (prompts from the Entry Type) and settle (prompts from the entry itself)
+// answer a prompt list this way, so an answer is validated against exactly the
+// question it answers.
+function answerPrompts(
+  prompts: Prompt[],
+  answers: PromptAnswer[],
+): { prompt: Prompt; answer?: PromptAnswer }[] {
+  for (const answer of answers) {
+    validateAnswer(prompts, answer)
+  }
+  return prompts.map((prompt) => {
+    const answer = answers.find((a) => a.promptId === prompt.id)
+    return answer ? { prompt, answer } : { prompt }
+  })
+}
+
+function validateAnswer(prompts: Prompt[], answer: PromptAnswer): void {
+  const prompt = prompts.find((p) => p.id === answer.promptId)
+  if (!prompt) throw new Error(`No prompt ${answer.promptId} among the answered prompts`)
   if (prompt.kind === 'select' && !prompt.options?.includes(answer.value as string)) {
     throw new Error(`Answer ${String(answer.value)} not among options for prompt ${prompt.id}`)
   }

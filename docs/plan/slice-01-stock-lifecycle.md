@@ -380,7 +380,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 ---
 
-## ☐ Story S1.7 — Daily Review: the walk
+## ☑ Story S1.7 — Daily Review: the walk
 
 > As a trader, I want to walk my open Trades one by one — fill in missing prices, see fresh P&L and risk/reward, and record what I'll do about each — so that every day in a trade is a conscious decision, recorded in one tap.
 
@@ -390,7 +390,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 ### Tasks
 
-- [ ] **S1.7.T1 — Journal.settle.** Completing a placeholder answers its *snapshot* — completion, not editing; both timestamps kept (late journaling visible).
+- [x] **S1.7.T1 — Journal.settle.** Completing a placeholder answers its *snapshot* — completion, not editing; both timestamps kept (late journaling visible).
 
   ```
   describe "Journal.settle"
@@ -402,7 +402,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it outstandingDebt() excludes settled placeholders (absorbed from S1.6.T4 — unwritable before settle existed)
   ```
 
-- [ ] **S1.7.T2 — Review.walk.** Open Trades in insertion order; per item `reviewedToday` (a `{kind:'review'}` entry for asOf+tradeId exists) and `outstandingDebt` count. Order snapshotted at session start — no mid-walk reshuffling.
+- [x] **S1.7.T2 — Review.walk.** Open Trades in insertion order; per item `reviewedToday` (a `{kind:'review'}` entry for asOf+tradeId exists) and `outstandingDebt` count. Order snapshotted at session start — no mid-walk reshuffling.
 
   ```
   describe "Review.walk"
@@ -413,7 +413,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it excludes planned and closed Trades
   ```
 
-- [ ] **S1.7.T3 — Walk UI.** From the agenda, "begin walk" steps through Trades. Per checkpoint: missing-Mark rows for THIS Trade filled inline (shared instruments prompt only at first encounter — already-marked rows don't reappear); a gap row may be skipped, accepting the blind spot; then the dashboard (S1.5's `detail` view) with fresh numbers; then the **Action** prompt (seeded Trade Review type); then that Trade's debt offered for settlement (or deferred again). Skipping a whole Trade is allowed and visible — it stays unreviewed, never nagged.
+- [x] **S1.7.T3 — Walk UI.** From the agenda, "begin walk" steps through Trades. Per checkpoint: missing-Mark rows for THIS Trade filled inline (shared instruments prompt only at first encounter — already-marked rows don't reappear); a gap row may be skipped, accepting the blind spot; then the dashboard (S1.5's `detail` view) with fresh numbers; then the **Action** prompt (seeded Trade Review type); then that Trade's debt offered for settlement (or deferred again). Skipping a whole Trade is allowed and visible — it stays unreviewed, never nagged.
 
   ```
   describe "WalkCheckpoint"
@@ -431,14 +431,14 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it leaves a skipped Trade visibly unreviewed
   ```
 
-- [ ] **S1.7.T4 — Integration tests**: full session over Dexie — two open Trades, one with debt; walk → record marks, Actions on both, settle the placeholder → reopen DB → review entries anchored `{kind:'review'}` with date+tradeId, `reviewedToday` true, `outstandingDebt` empty; re-running `agenda` shows all-caught-up.
-- [ ] **S1.7.T5 — Playwright e2e** (`e2e/s1-7-walk.spec.ts`): seeded two-trade scenario → full walk: type marks, pick "Hold" + conviction, settle owed plan entry → completion state; reopen Review → both flagged reviewed, no debt.
-- [ ] **S1.7.T6 — Browser verification.** Run a complete Daily Review in a real browser end-to-end (agenda → walk → Actions → settlement → done), confirming: inline marks refresh the numbers live, the Action recording flips the reviewed flag, a skipped Trade stays visibly unreviewed, and next-day agenda reflects today's marks as `lastMarked`. All suites green.
+- [x] **S1.7.T4 — Integration tests**: full session over Dexie — two open Trades, one with debt; walk → record marks, Actions on both, settle the placeholder → reopen DB → review entries anchored `{kind:'review'}` with date+tradeId, `reviewedToday` true, `outstandingDebt` empty; re-running `agenda` shows all-caught-up.
+- [x] **S1.7.T5 — Playwright e2e** (`e2e/s1-7-walk.spec.ts`): seeded two-trade scenario → full walk: type marks, pick "Hold" + conviction, settle owed plan entry → completion state; reopen Review → both flagged reviewed, no debt.
+- [x] **S1.7.T6 — Browser verification.** Run a complete Daily Review in a real browser end-to-end (agenda → walk → Actions → settlement → done), confirming: inline marks refresh the numbers live, the Action recording flips the reviewed flag, a skipped Trade stays visibly unreviewed, and next-day agenda reflects today's marks as `lastMarked`. All suites green.
 
 ---
 
 ## Slice complete when
 
-- [ ] Every story above is checked.
-- [ ] The full lifecycle runs in one browser session: onboard → plan → journal → fill → mark → review walk with Action → flattening fill → Close Reason + close entry — with the app reloaded at least once mid-lifecycle and nothing lost.
-- [ ] Playwright suite (7 story specs + shell) green in CI-mode (`npm run test:e2e`).
+- [x] Every story above is checked.
+- [x] The full lifecycle runs in one browser session: onboard → plan → journal → fill → mark → review walk with Action → flattening fill → Close Reason + close entry — with the app reloaded at least once mid-lifecycle and nothing lost.
+- [x] Playwright suite (7 story specs + shell) green in CI-mode (`npm run test:e2e`).

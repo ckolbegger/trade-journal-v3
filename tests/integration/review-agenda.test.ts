@@ -82,7 +82,7 @@ describe('review agenda over Dexie', () => {
     const tradeBook = new TradeBook(binding)
     const journal = new Journal(binding)
     const priceBook = new PriceBook(binding)
-    const review = new Review(new Valuations(tradeBook, priceBook), journal)
+    const review = new Review(new Valuations(tradeBook, priceBook), journal, tradeBook)
 
     const agenda = await review.agenda(WEDNESDAY)
 
@@ -138,7 +138,7 @@ describe('review agenda over Dexie', () => {
     const tradeBook = new TradeBook(binding)
     const journal = new Journal(binding)
     const priceBook = new PriceBook(binding)
-    const review = new Review(new Valuations(tradeBook, priceBook), journal)
+    const review = new Review(new Valuations(tradeBook, priceBook), journal, tradeBook)
 
     // Wednesday's Marks land for both instruments; older gaps become interior
     // history and never nag again.

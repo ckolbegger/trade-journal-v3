@@ -15,7 +15,7 @@ if (!rootElement) {
 
 const { tradeBook, journal, priceBook } = createBooks()
 const valuations = createValuations(tradeBook, priceBook)
-const review = createReview(valuations, journal)
+const review = createReview(valuations, journal, tradeBook)
 
 // Seed defaults (apply-iff-absent) at every startup before the first render.
 createWorkspace(tradeBook, journal)

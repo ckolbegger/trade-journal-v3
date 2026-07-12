@@ -13,6 +13,7 @@ import type { EntryType } from '@/books/journal/types'
 export const LONG_STOCK_STRATEGY_ID = 'strategy-long-stock'
 export const PLAN_ENTRY_TYPE_ID = 'entry-type-plan'
 export const CLOSE_ENTRY_TYPE_ID = 'entry-type-close'
+export const REVIEW_ENTRY_TYPE_ID = 'entry-type-trade-review'
 
 // The five default Close Reasons, in seed order. "Rolled" is deliberately absent
 // — it is seeded by Slice 16 with the roll gesture (no Slice 1 test can select it).
@@ -69,6 +70,25 @@ const CLOSE_ENTRY_TYPE: EntryType = {
   ],
 }
 
+// The Daily Review checkpoint's type. Its Action select IS the Action list — the
+// trader reconfigures their Actions by editing this Entry Type (review.md), and
+// recording the Action is what marks a Trade reviewed.
+const REVIEW_ENTRY_TYPE: EntryType = {
+  id: REVIEW_ENTRY_TYPE_ID,
+  name: 'Trade Review',
+  designatedFor: 'review',
+  prompts: [
+    {
+      id: 'action',
+      text: 'What will you do with this Trade, based on today?',
+      kind: 'select',
+      options: ['Hold', 'Exit Soon', 'Adjust', 'Watch Closely'],
+    },
+    { id: 'conviction', text: 'Conviction', kind: 'scale', scale: { min: 1, max: 5 } },
+    { id: 'note', text: 'Note', kind: 'text' },
+  ],
+}
+
 export class Workspace {
   constructor(
     private tradeBook: TradeBook,
@@ -94,6 +114,9 @@ export class Workspace {
     }
     if (!entryTypes.some((t) => t.id === CLOSE_ENTRY_TYPE.id)) {
       await this.journal.entryTypes.save(structuredClone(CLOSE_ENTRY_TYPE))
+    }
+    if (!entryTypes.some((t) => t.id === REVIEW_ENTRY_TYPE.id)) {
+      await this.journal.entryTypes.save(structuredClone(REVIEW_ENTRY_TYPE))
     }
   }
 }

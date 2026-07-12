@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { TradeDetail } from './TradeDetail'
@@ -13,6 +13,7 @@ import type { Journal } from '@/books/journal/journal'
 import type { PriceBook } from '@/books/pricebook/price-book'
 import type { Account, IdeaSource, Institution, PlanDraft } from '@/books/tradebook/types'
 import { Workspace, PLAN_ENTRY_TYPE_ID } from '@/workspace/workspace'
+import { todayISO } from '../format'
 import { inMemoryBooks } from '../../../tests/support/trade-book'
 
 async function seededTrade(): Promise<{
@@ -129,6 +130,26 @@ describe('TradeDetail journal section', () => {
     expect(await screen.findByLabelText('journal owed')).toBeInTheDocument()
     expect(screen.getByLabelText('journal entries')).toHaveTextContent('1')
   })
+
+  it("shows a settled placeholder's answers instead of the owed marker", async () => {
+    const { book, journal, priceBook, id } = await seededTrade()
+    const entryId = await journal.write({
+      anchor: { kind: 'plan', tradeId: id },
+      entryTypeId: PLAN_ENTRY_TYPE_ID,
+      at: Date.now(),
+      placeholder: true,
+      answers: [],
+    })
+    await journal.settle(entryId, [
+      { promptId: 'why', value: 'Settled during the walk' },
+      { promptId: 'emotion', value: 'eager' },
+    ])
+    renderDetail(book, journal, priceBook, id)
+
+    expect(await screen.findByText('Settled during the walk')).toBeInTheDocument()
+    expect(screen.getByText('eager')).toBeInTheDocument()
+    expect(screen.queryByLabelText('journal owed')).toBeNull()
+  })
 })
 
 async function buy100(book: TradeBook, id: string): Promise<string> {
@@ -218,6 +239,34 @@ describe('AbandonFlow', () => {
 
     expect(await screen.findByLabelText('status')).toHaveTextContent(/closed/i)
     expect(screen.getByLabelText('close reason')).toHaveTextContent('Never Filled')
+  })
+})
+
+describe('TradeDetail valuation refresh', () => {
+  it('refreshes the valuation numbers after a fill lands', async () => {
+    const { book, journal, priceBook, id } = await seededTrade()
+    await buy100(book, id)
+    await priceBook.record('AAPL', todayISO(), 16000, 'manual')
+    renderDetail(book, journal, priceBook, id)
+    const user = userEvent.setup()
+
+    // Open: the worked example at mark 160 — unrealized 1000.00, nothing realized.
+    const open = await screen.findByLabelText('profit and loss')
+    expect(open).toHaveTextContent(/1000\.00/)
+
+    // The flattening sell: 100 @ 168, fees 1 → realized 1798.00, unrealized 0.
+    await user.click(screen.getByRole('button', { name: /record fill/i }))
+    await user.selectOptions(screen.getByLabelText(/side/i), 'sell')
+    await user.type(screen.getByLabelText(/quantity/i), '100')
+    await user.type(screen.getByLabelText(/price/i), '168')
+    await user.type(screen.getByLabelText(/fees/i), '1')
+    await user.click(screen.getByRole('button', { name: /record fill/i }))
+
+    // The panel reads the Trade the Position and the badge already read: flat.
+    const pnl = await screen.findByLabelText('profit and loss')
+    await waitFor(() => expect(pnl).toHaveTextContent(/1798\.00/))
+    expect(await screen.findByLabelText('position')).toHaveTextContent(/no position/i)
+    expect(pnl).not.toHaveTextContent(/1000\.00/)
   })
 })
 

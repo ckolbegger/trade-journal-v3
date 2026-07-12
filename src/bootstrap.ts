@@ -25,8 +25,12 @@ export function createValuations(tradeBook: TradeBook, priceBook: PriceBook): Va
   return new Valuations(tradeBook, priceBook)
 }
 
-export function createReview(valuations: Valuations, journal: Journal): Review {
-  return new Review(valuations, journal)
+export function createReview(
+  valuations: Valuations,
+  journal: Journal,
+  tradeBook: TradeBook,
+): Review {
+  return new Review(valuations, journal, tradeBook)
 }
 
 export function createWorkspace(tradeBook: TradeBook, journal: Journal): Workspace {

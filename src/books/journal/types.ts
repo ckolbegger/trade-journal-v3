@@ -3,19 +3,25 @@
 // fact contract). The tradeId an Anchor carries is an opaque string — the
 // Journal knows nothing about the Trade lifecycle.
 //
-// Slice 1 implements only the subset the plan-time journal needs: the 'plan'
-// Anchor, the text/select/scale prompt kinds the seeded Plan type uses, and the
-// write / entriesFor / countFor operations. Later slices add anchor kinds,
-// prompt kinds, and operations (settle, timeline, outstandingDebt) without
-// reshaping these.
+// Slice 1 implements only the subset the plan-time journal needs: the 'plan',
+// 'close' and 'review' Anchors, the text/select/scale prompt kinds the seeded
+// types use, and the write / settle / entriesFor / countFor / outstandingDebt
+// operations. Later slices add anchor kinds, prompt kinds, and operations
+// (timeline) without reshaping these.
 
 export type EntryId = string
 export type TradeId = string
 export type Timestamp = number // epoch ms
+export type ISODate = string // 'YYYY-MM-DD' — the trading date
 
 // Anchor kinds arrive with the slices that first write them: plan (S1.2), close
-// (S1.4). review (S1.7) and the rest follow.
-export type Anchor = { kind: 'plan'; tradeId: TradeId } | { kind: 'close'; tradeId: TradeId }
+// (S1.4), review (S1.7). The rest follow. A review anchor carries the date it
+// reviews — its existence for (date, tradeId) IS the Trade's reviewed-today flag
+// (docs/design/review.md); nothing about "reviewed" is stored anywhere else.
+export type Anchor =
+  | { kind: 'plan'; tradeId: TradeId }
+  | { kind: 'close'; tradeId: TradeId }
+  | { kind: 'review'; date: ISODate; tradeId: TradeId }
 
 export interface Prompt {
   id: string
@@ -33,7 +39,9 @@ export interface PromptAnswer {
 export interface EntryType {
   id: string
   name: string
-  designatedFor?: 'plan' | 'close' // which moment uses this type (seeded; re-designatable)
+  // Which moment uses this type (seeded; re-designatable). 'review' = the Trade
+  // Review checkpoint; its select prompt IS the Action list.
+  designatedFor?: 'plan' | 'close' | 'review'
   prompts: Prompt[]
   archived?: boolean // registries archive, never delete
 }
@@ -44,9 +52,10 @@ export interface Entry {
   anchor: Anchor
   entryTypeId: string
   // Prompts snapshotted at write time (ADR 0007). A placeholder carries the
-  // snapshot with no answers; settle() (S1.7) answers this same snapshot.
+  // snapshot with no answers; settle() answers this same snapshot.
   answered: { prompt: Prompt; answer?: PromptAnswer }[]
   placeholder: boolean
+  settledAt?: Timestamp // late journaling is visible: at vs settledAt
 }
 
 export interface EntryDraft {

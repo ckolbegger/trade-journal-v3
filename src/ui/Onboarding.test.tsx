@@ -20,7 +20,7 @@ function renderApp(tradeBook: TradeBook, journal: Journal, priceBook: PriceBook)
         journal={journal}
         priceBook={priceBook}
         valuations={valuations}
-        review={new Review(valuations, journal)}
+        review={new Review(valuations, journal, tradeBook)}
       />
     </MemoryRouter>,
   )

@@ -4,10 +4,13 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { ReviewPage } from './ReviewPage'
 import { TradeBookContext } from '../tradeBookContext'
+import { JournalContext } from '../journalContext'
 import { PriceBookContext } from '../priceBookContext'
+import { ValuationsContext } from '../valuationsContext'
 import { ReviewContext } from '../reviewContext'
 import { Valuations } from '@/coordinators/valuations'
 import { Review } from '@/coordinators/review'
+import { Workspace } from '@/workspace/workspace'
 import { todayISO } from '../format'
 import type { TradeBook } from '@/books/tradebook/trade-book'
 import type { Journal } from '@/books/journal/journal'
@@ -56,6 +59,8 @@ async function workspace(): Promise<{
   const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
   await tradeBook.registries.accounts.save(account)
   await journal.entryTypes.save({ ...PLAN_TYPE })
+  // The walk's checkpoint asks the seeded Trade Review type's Action prompt.
+  await new Workspace(tradeBook, journal).ensureSeeded()
   return { tradeBook, journal, priceBook, accountId: account.id }
 }
 
@@ -78,16 +83,21 @@ async function openTrade(tradeBook: TradeBook, accountId: string, ticker: string
 }
 
 function renderPage(tradeBook: TradeBook, journal: Journal, priceBook: PriceBook) {
-  const review = new Review(new Valuations(tradeBook, priceBook), journal)
+  const valuations = new Valuations(tradeBook, priceBook)
+  const review = new Review(valuations, journal, tradeBook)
   return render(
     <TradeBookContext.Provider value={tradeBook}>
-      <PriceBookContext.Provider value={priceBook}>
-        <ReviewContext.Provider value={review}>
-          <MemoryRouter>
-            <ReviewPage />
-          </MemoryRouter>
-        </ReviewContext.Provider>
-      </PriceBookContext.Provider>
+      <JournalContext.Provider value={journal}>
+        <PriceBookContext.Provider value={priceBook}>
+          <ValuationsContext.Provider value={valuations}>
+            <ReviewContext.Provider value={review}>
+              <MemoryRouter>
+                <ReviewPage />
+              </MemoryRouter>
+            </ReviewContext.Provider>
+          </ValuationsContext.Provider>
+        </PriceBookContext.Provider>
+      </JournalContext.Provider>
     </TradeBookContext.Provider>,
   )
 }
@@ -167,6 +177,20 @@ describe('ReviewAgendaPage', () => {
     )
   })
 
+  it('begins the walk from the agenda', async () => {
+    const { tradeBook, journal, priceBook, accountId } = await workspace()
+    await openTrade(tradeBook, accountId, 'AAPL')
+
+    renderPage(tradeBook, journal, priceBook)
+    await startReview()
+
+    await userEvent.click(await screen.findByRole('button', { name: /begin walk/i }))
+
+    // The first checkpoint: the Trade, and a session that has reviewed nothing yet.
+    expect(await screen.findByRole('heading', { name: 'AAPL' })).toBeInTheDocument()
+    expect(screen.getByLabelText('progress')).toHaveTextContent('0 of 1')
+  })
+
   it('shows an all-caught-up state when the agenda is empty', async () => {
     const { tradeBook, journal, priceBook, accountId } = await workspace()
     await openTrade(tradeBook, accountId, 'AAPL')
@@ -180,5 +204,21 @@ describe('ReviewAgendaPage', () => {
 
     expect(await screen.findByText(/all caught up/i)).toBeInTheDocument()
     expect(screen.queryByRole('listitem', { name: 'AAPL' })).not.toBeInTheDocument()
+  })
+
+  it('still offers the walk when nothing is left to collect', async () => {
+    const { tradeBook, journal, priceBook, accountId } = await workspace()
+    await openTrade(tradeBook, accountId, 'AAPL')
+    for (const days of [3, 2, 1, 0]) {
+      await priceBook.record('AAPL', daysAgo(days), 16000, 'manual')
+    }
+
+    renderPage(tradeBook, journal, priceBook)
+    await startReview()
+
+    // Marks are the fuel; the walk is the point — an open Trade still owes an
+    // Action even when every price is already in.
+    await userEvent.click(await screen.findByRole('button', { name: /begin walk/i }))
+    expect(await screen.findByRole('heading', { name: 'AAPL' })).toBeInTheDocument()
   })
 })

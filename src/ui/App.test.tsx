@@ -17,7 +17,7 @@ function renderAt(path: string) {
     <TradeBookContext.Provider value={tradeBook}>
       <PriceBookContext.Provider value={priceBook}>
         <ValuationsContext.Provider value={valuations}>
-          <ReviewContext.Provider value={new Review(valuations, journal)}>
+          <ReviewContext.Provider value={new Review(valuations, journal, tradeBook)}>
             <MemoryRouter initialEntries={[path]}>
               <App />
             </MemoryRouter>

@@ -162,7 +162,10 @@ export function TradeDetail() {
         )}
       </div>
 
-      {status && status !== 'planned' && <TradeDashboard tradeId={trade.id} />}
+      {/* Keyed on the page's refresh counter: an Execution (or a Close Reason)
+          changes what the Trade holds, so the valuation must be re-fetched — it
+          may never keep numbers the Position and the badge have already moved past. */}
+      {status && status !== 'planned' && <TradeDashboard key={refresh} tradeId={trade.id} />}
 
       <div className={`${card} space-y-3`}>
         <div className="flex items-center justify-between">
@@ -232,7 +235,7 @@ export function TradeDetail() {
         </div>
         {entries.map((entry) => (
           <div key={entry.id}>
-            {entry.placeholder ? (
+            {entry.placeholder && entry.settledAt === undefined ? (
               <p
                 aria-label="journal owed"
                 className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
