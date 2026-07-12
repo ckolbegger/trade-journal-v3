@@ -191,4 +191,39 @@ describe('TimelinePage', () => {
     await waitFor(() => expect(screen.queryByText('Early answer')).not.toBeInTheDocument())
     expect(screen.getByText('Late answer')).toBeInTheDocument()
   })
+
+  it('nests an addendum chain under its root entry, not as its own row', async () => {
+    const { tradeBook, journal, tradeId } = await seededTrade('AAPL')
+    const rootId = await journal.write({
+      anchor: { kind: 'plan', tradeId },
+      entryTypeId: PLAN_ENTRY_TYPE_ID,
+      at: new Date('2026-07-01T12:00:00').getTime(),
+      placeholder: false,
+      answers: [{ promptId: 'why', value: 'Breakout confirmed' }],
+    })
+    const addendumId = await journal.write({
+      anchor: { kind: 'entry', entryId: rootId },
+      entryTypeId: PLAN_ENTRY_TYPE_ID,
+      at: new Date('2026-07-02T09:00:00').getTime(),
+      placeholder: false,
+      answers: [{ promptId: 'why', value: 'Held up as planned' }],
+    })
+    await journal.write({
+      anchor: { kind: 'entry', entryId: addendumId },
+      entryTypeId: PLAN_ENTRY_TYPE_ID,
+      at: new Date('2026-07-03T09:00:00').getTime(),
+      placeholder: false,
+      answers: [{ promptId: 'why', value: 'Still holding' }],
+    })
+
+    renderPage(tradeBook, journal)
+
+    // One top-level row for the whole thread, not three.
+    const timeline = await screen.findByLabelText('timeline')
+    const topLevelItems = Array.from(timeline.children)
+    expect(topLevelItems).toHaveLength(1)
+    const addenda = within(topLevelItems[0] as HTMLElement).getByLabelText('addenda')
+    expect(within(addenda).getByText('Held up as planned')).toBeInTheDocument()
+    expect(within(addenda).getByText('Still holding')).toBeInTheDocument()
+  })
 })

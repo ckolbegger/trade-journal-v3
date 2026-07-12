@@ -80,7 +80,7 @@ Design references: [journal.md](../design/journal.md), ADRs 0006, 0007.
 
 ---
 
-## ☐ Story S2.3 — Addenda: growing an immutable entry
+## ☑ Story S2.3 — Addenda: growing an immutable entry
 
 > As a trader, I want to add to something I wrote earlier without editing it, so that hindsight becomes a visible layer on the record instead of a rewrite of it.
 
@@ -90,7 +90,7 @@ Design references: [journal.md](../design/journal.md), ADRs 0006, 0007.
 
 ### Tasks
 
-- [ ] **S2.3.T1 — Addendum anchor.**
+- [x] **S2.3.T1 — Addendum anchor.**
 
   ```
   describe "Journal.write (addendum)"
@@ -102,7 +102,7 @@ Design references: [journal.md](../design/journal.md), ADRs 0006, 0007.
   - it returns an addendum chain flattened under the root entry's context
   ```
 
-- [ ] **S2.3.T2 — Addendum UI.** "Add addendum" on any displayed entry (timeline, trade detail); the form uses the parent's Entry Type by default with a free-text-only fallback type choice; rendered nested under the parent with its own timestamp. Entries themselves remain visibly uneditable (no edit affordance exists anywhere).
+- [x] **S2.3.T2 — Addendum UI.** "Add addendum" on any displayed entry (timeline, trade detail); the form uses the parent's Entry Type by default with a free-text-only fallback type choice; rendered nested under the parent with its own timestamp. Entries themselves remain visibly uneditable (no edit affordance exists anywhere).
 
   ```
   describe "AddendumUI"
@@ -112,6 +112,6 @@ Design references: [journal.md](../design/journal.md), ADRs 0006, 0007.
   - it offers no edit affordance on any written entry
   ```
 
-- [ ] **S2.3.T3 — Integration tests**: write entry → addendum → addendum-to-addendum over Dexie → reopen → `entriesFor({trade})` returns all three; timeline renders the chain under the root.
-- [ ] **S2.3.T4 — Playwright e2e** (`e2e/s2-3-addendum.spec.ts`): add an addendum to a plan entry from Trade detail → appears nested there and on the timeline.
-- [ ] **S2.3.T5 — Browser verification.** Add addenda from both surfaces in a real browser; nesting, timestamps, and links correct; confirm by inspection there is no path to alter a written answer. All suites green.
+- [x] **S2.3.T3 — Integration tests**: write entry → addendum → addendum-to-addendum over Dexie → reopen → `entriesFor({trade})` returns all three; timeline renders the chain under the root.
+- [x] **S2.3.T4 — Playwright e2e** (`e2e/s2-3-addendum.spec.ts`): add an addendum to a plan entry from Trade detail → appears nested there and on the timeline.
+- [x] **S2.3.T5 — Browser verification.** Add addenda from both surfaces in a real browser; nesting, timestamps, and links correct; confirm by inspection there is no path to alter a written answer. All suites green.

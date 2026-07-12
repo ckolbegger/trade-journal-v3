@@ -36,17 +36,31 @@ export class Journal {
     if (!entryType) throw new Error(`No Entry Type ${draft.entryTypeId}`)
 
     const answered = answerPrompts(entryType.prompts, draft.answers)
+    const anchor = await this.resolveAnchor(draft.anchor)
 
     const entry: Entry = {
       id: crypto.randomUUID(),
       at: draft.at,
-      anchor: draft.anchor,
+      anchor,
       entryTypeId: draft.entryTypeId,
       answered,
       placeholder: draft.placeholder,
     }
     await this.binding.put(ENTRIES, structuredClone(entry))
     return entry.id
+  }
+
+  // An addendum's anchor carries its parent's tradeId, copied at write time
+  // (Slice 2's decided-in-slice ruling) — this keeps entriesFor({trade}) one
+  // indexed query no matter how deep the addendum chain runs. "Editing an
+  // entry is intentionally impossible" (journal.md): growth happens by
+  // addendum, never by mutating what was already written.
+  private async resolveAnchor(anchor: EntryDraft['anchor']): Promise<EntryDraft['anchor']> {
+    if (anchor.kind !== 'entry') return anchor
+    const parent = await this.binding.get<Entry>(ENTRIES, anchor.entryId)
+    if (!parent) throw new Error(`No entry ${anchor.entryId}`)
+    const parentTradeId = 'tradeId' in parent.anchor ? parent.anchor.tradeId : undefined
+    return { kind: 'entry', entryId: anchor.entryId, tradeId: parentTradeId }
   }
 
   // Completing a placeholder — completion, not editing (entries are immutable).

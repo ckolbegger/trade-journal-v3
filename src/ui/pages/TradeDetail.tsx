@@ -8,6 +8,8 @@ import { CloseForm } from './CloseForm'
 import { TradeDashboard } from './TradeDashboard'
 import { centsToDollars, timestampToISODate } from '../format'
 import { StatusBadge } from '../components/Badge'
+import { AddAddendum } from '../components/AddAddendum'
+import { buildEntryThreads } from '../components/entryThread'
 import { btnSecondary, card, heading, link, num, subheading } from '../styles'
 import type { Position, TradeRecord, TradeStatus } from '@/books/tradebook/types'
 import type { Entry } from '@/books/journal/types'
@@ -233,9 +235,9 @@ export function TradeDetail() {
             {entries.length}
           </span>
         </div>
-        {entries.map((entry) => (
-          <div key={entry.id}>
-            {entry.placeholder && entry.settledAt === undefined ? (
+        {buildEntryThreads(entries).map(({ root, addenda }) => (
+          <div key={root.id} className="space-y-2">
+            {root.placeholder && root.settledAt === undefined ? (
               <p
                 aria-label="journal owed"
                 className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
@@ -244,7 +246,7 @@ export function TradeDetail() {
               </p>
             ) : (
               <dl className="space-y-2">
-                {entry.answered.map((a, i) => (
+                {root.answered.map((a, i) => (
                   <div key={i}>
                     <dt className={subheading}>{a.prompt.text}</dt>
                     <dd className="mt-0.5 text-sm text-slate-800">
@@ -253,6 +255,27 @@ export function TradeDetail() {
                   </div>
                 ))}
               </dl>
+            )}
+            <AddAddendum entry={root} onAdded={() => setRefresh((n) => n + 1)} />
+            {addenda.length > 0 && (
+              <ul aria-label="addenda" className="ml-4 space-y-3 border-l border-slate-200 pl-4">
+                {addenda.map((addendum) => (
+                  <li key={addendum.id} className="space-y-2">
+                    <p className="text-xs text-slate-500">{timestampToISODate(addendum.at)}</p>
+                    <dl className="space-y-2">
+                      {addendum.answered.map((a, i) => (
+                        <div key={i}>
+                          <dt className={subheading}>{a.prompt.text}</dt>
+                          <dd className="mt-0.5 text-sm text-slate-800">
+                            {a.answer ? String(a.answer.value) : '—'}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                    <AddAddendum entry={addendum} onAdded={() => setRefresh((n) => n + 1)} />
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
         ))}

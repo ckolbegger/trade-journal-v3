@@ -16,6 +16,7 @@ export const CLOSE_ENTRY_TYPE_ID = 'entry-type-close'
 export const REVIEW_ENTRY_TYPE_ID = 'entry-type-trade-review'
 export const TRADER_REFLECTION_ENTRY_TYPE_ID = 'entry-type-trader-reflection'
 export const REVIEW_NOTE_ENTRY_TYPE_ID = 'entry-type-review-note'
+export const ADDENDUM_ENTRY_TYPE_ID = 'entry-type-addendum'
 
 // The five default Close Reasons, in seed order. "Rolled" is deliberately absent
 // — it is seeded by Slice 16 with the roll gesture (no Slice 1 test can select it).
@@ -122,6 +123,15 @@ const REVIEW_NOTE_ENTRY_TYPE: EntryType = {
   ],
 }
 
+// Undesignated: the addendum form's free-text-only fallback (Slice 2, S2.3) —
+// offered alongside the parent's own Entry Type when growing an entry with
+// something that doesn't fit the parent's structured prompts.
+const ADDENDUM_ENTRY_TYPE: EntryType = {
+  id: ADDENDUM_ENTRY_TYPE_ID,
+  name: 'Note',
+  prompts: [{ id: 'note', text: 'Add to the record', kind: 'text' }],
+}
+
 export class Workspace {
   constructor(
     private tradeBook: TradeBook,
@@ -156,6 +166,9 @@ export class Workspace {
     }
     if (!entryTypes.some((t) => t.id === REVIEW_NOTE_ENTRY_TYPE.id)) {
       await this.journal.entryTypes.save(structuredClone(REVIEW_NOTE_ENTRY_TYPE))
+    }
+    if (!entryTypes.some((t) => t.id === ADDENDUM_ENTRY_TYPE.id)) {
+      await this.journal.entryTypes.save(structuredClone(ADDENDUM_ENTRY_TYPE))
     }
   }
 }

@@ -20,11 +20,17 @@ export type ISODate = string // 'YYYY-MM-DD' — the trading date
 // Trade's reviewed-today flag (docs/design/review.md); nothing about
 // "reviewed" is stored anywhere else. A standalone anchor carries no tradeId —
 // trader-level reflection not tied to any one Trade.
+// The 'entry' kind is an addendum — how an immutable entry grows (journal.md:
+// "editing an entry is intentionally impossible"). Its tradeId is copied from
+// the parent at write time when the parent is trade-anchored (Slice 2's
+// decided-in-slice ruling), so entriesFor({trade}) stays one indexed query no
+// matter how deep the addendum chain runs.
 export type Anchor =
   | { kind: 'standalone' }
   | { kind: 'plan'; tradeId: TradeId }
   | { kind: 'close'; tradeId: TradeId }
   | { kind: 'review'; date: ISODate; tradeId: TradeId }
+  | { kind: 'entry'; entryId: EntryId; tradeId?: TradeId }
 
 export interface Prompt {
   id: string

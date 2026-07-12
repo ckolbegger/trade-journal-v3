@@ -389,6 +389,99 @@ describe('Journal.timeline', () => {
   })
 })
 
+describe('Journal.write (addendum)', () => {
+  it("stores an entry anchored {kind:'entry'} to its parent", async () => {
+    const journal = await journalWithPlanType()
+    const parentId = await journal.write(fullDraft('t1'))
+
+    const addendumId = await journal.write({
+      anchor: { kind: 'entry', entryId: parentId },
+      entryTypeId: PLAN_TYPE.id,
+      at: 1_700_000_100_000,
+      placeholder: false,
+      answers: [{ promptId: 'why', value: 'Hindsight: this held up' }],
+    })
+
+    const [entry] = await journal
+      .entriesFor({ trade: 't1' })
+      .then((es) => es.filter((e) => e.id === addendumId))
+    expect(entry.anchor).toEqual({ kind: 'entry', entryId: parentId, tradeId: 't1' })
+  })
+
+  it("copies the parent's tradeId into the anchor when present", async () => {
+    const journal = await journalWithPlanType()
+    const parentId = await journal.write(fullDraft('t1'))
+
+    const addendumId = await journal.write({
+      anchor: { kind: 'entry', entryId: parentId },
+      entryTypeId: PLAN_TYPE.id,
+      at: 1_700_000_100_000,
+      placeholder: false,
+      answers: [],
+    })
+
+    const entries = await journal.entriesFor({ trade: 't1' })
+    const addendum = entries.find((e) => e.id === addendumId)!
+    expect((addendum.anchor as { tradeId?: string }).tradeId).toBe('t1')
+  })
+
+  it('rejects an addendum to a nonexistent entry', async () => {
+    const journal = await journalWithPlanType()
+    await expect(
+      journal.write({
+        anchor: { kind: 'entry', entryId: 'ghost' },
+        entryTypeId: PLAN_TYPE.id,
+        at: 1_700_000_100_000,
+        placeholder: false,
+        answers: [],
+      }),
+    ).rejects.toThrow()
+  })
+})
+
+describe('Journal.entriesFor with addenda', () => {
+  it('returns addenda on trade-anchored entries in entriesFor({trade})', async () => {
+    const journal = await journalWithPlanType()
+    const parentId = await journal.write(fullDraft('t1'))
+    const addendumId = await journal.write({
+      anchor: { kind: 'entry', entryId: parentId },
+      entryTypeId: PLAN_TYPE.id,
+      at: 1_700_000_100_000,
+      placeholder: false,
+      answers: [],
+    })
+
+    const entries = await journal.entriesFor({ trade: 't1' })
+    expect(entries.map((e) => e.id)).toContain(addendumId)
+  })
+
+  it("returns an addendum chain flattened under the root entry's context", async () => {
+    const journal = await journalWithPlanType()
+    const rootId = await journal.write(fullDraft('t1'))
+    const addendumId = await journal.write({
+      anchor: { kind: 'entry', entryId: rootId },
+      entryTypeId: PLAN_TYPE.id,
+      at: 1_700_000_100_000,
+      placeholder: false,
+      answers: [],
+    })
+    const addendumToAddendumId = await journal.write({
+      anchor: { kind: 'entry', entryId: addendumId },
+      entryTypeId: PLAN_TYPE.id,
+      at: 1_700_000_200_000,
+      placeholder: false,
+      answers: [],
+    })
+
+    const entries = await journal.entriesFor({ trade: 't1' })
+    expect(entries.map((e) => e.id)).toEqual(
+      expect.arrayContaining([rootId, addendumId, addendumToAddendumId]),
+    )
+    const grandchild = entries.find((e) => e.id === addendumToAddendumId)!
+    expect((grandchild.anchor as { tradeId?: string }).tradeId).toBe('t1')
+  })
+})
+
 describe('Journal.outstandingDebt', () => {
   it('returns unsettled placeholders only', async () => {
     const journal = await journalWithPlanType()

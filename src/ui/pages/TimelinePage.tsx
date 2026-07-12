@@ -4,6 +4,8 @@ import { useJournal } from '../journalContext'
 import { useTradeBook } from '../tradeBookContext'
 import { NewEntryPage } from './NewEntryPage'
 import { SettleForm } from '../components/SettleForm'
+import { AddAddendum } from '../components/AddAddendum'
+import { buildEntryThreads } from '../components/entryThread'
 import { collectAnswers } from '../components/prompt-answers'
 import type { PromptValues } from '../components/prompt-answers'
 import { shortDate, timestampToISODate } from '../format'
@@ -19,6 +21,7 @@ interface Row {
   entry: Entry
   entryTypeName: string
   ticker?: string
+  addenda: Row[]
 }
 
 export function TimelinePage() {
@@ -40,7 +43,11 @@ export function TimelinePage() {
       ])
       const typeNames = new Map(types.map((t) => [t.id, t.name]))
       const tradeIds = [
-        ...new Set(entries.flatMap((e) => ('tradeId' in e.anchor ? [e.anchor.tradeId] : []))),
+        ...new Set(
+          entries.flatMap((e) =>
+            'tradeId' in e.anchor && e.anchor.tradeId ? [e.anchor.tradeId] : [],
+          ),
+        ),
       ]
       const tickers = new Map<string, string>()
       await Promise.all(
@@ -50,14 +57,22 @@ export function TimelinePage() {
         }),
       )
       if (!active) return
+      const toRow = (entry: Entry): Row => ({
+        entry,
+        entryTypeName: typeNames.get(entry.entryTypeId) ?? '',
+        ticker:
+          'tradeId' in entry.anchor && entry.anchor.tradeId
+            ? tickers.get(entry.anchor.tradeId)
+            : undefined,
+        addenda: [],
+      })
       setRows(
-        entries
+        buildEntryThreads(entries)
           .slice()
-          .reverse() // newest-first
-          .map((entry) => ({
-            entry,
-            entryTypeName: typeNames.get(entry.entryTypeId) ?? '',
-            ticker: 'tradeId' in entry.anchor ? tickers.get(entry.anchor.tradeId) : undefined,
+          .sort((a, b) => b.root.at - a.root.at) // newest-first
+          .map(({ root, addenda }) => ({
+            ...toRow(root),
+            addenda: addenda.map(toRow),
           })),
       )
     }
@@ -120,7 +135,7 @@ export function TimelinePage() {
           </div>
 
           <ul aria-label="timeline" className="space-y-3">
-            {rows?.map(({ entry, entryTypeName, ticker }) => (
+            {rows?.map(({ entry, entryTypeName, ticker, addenda }) => (
               <li key={entry.id} className={`${card} space-y-2`}>
                 <div className="space-y-0.5">
                   <p className={subheading}>{entryTypeName}</p>
@@ -155,6 +170,34 @@ export function TimelinePage() {
                     ))}
                   </dl>
                 )}
+                <AddAddendum entry={entry} onAdded={() => setRefresh((n) => n + 1)} />
+                {addenda.length > 0 && (
+                  <ul
+                    aria-label="addenda"
+                    className="ml-4 space-y-3 border-l border-slate-200 pl-4"
+                  >
+                    {addenda.map(({ entry: addendum, entryTypeName: addendumTypeName }) => (
+                      <li key={addendum.id} className="space-y-2">
+                        <p className="text-xs text-slate-500">
+                          {addendumTypeName} · {timestampToISODate(addendum.at)}
+                        </p>
+                        <dl className="space-y-2">
+                          {addendum.answered.map((a, i) => (
+                            <div key={i}>
+                              <dt className="text-sm font-medium text-slate-700">
+                                {a.prompt.text}
+                              </dt>
+                              <dd className="mt-0.5 text-sm text-slate-800">
+                                {a.answer ? String(a.answer.value) : '—'}
+                              </dd>
+                            </div>
+                          ))}
+                        </dl>
+                        <AddAddendum entry={addendum} onAdded={() => setRefresh((n) => n + 1)} />
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </li>
             ))}
           </ul>
@@ -177,6 +220,10 @@ function AnchorLabel({ anchor, ticker }: { anchor: Anchor; ticker?: string }) {
       </span>
     )
   }
+  // Addenda are never rendered as their own timeline row — buildEntryThreads
+  // groups them under their root, which is always 'standalone' | 'plan' |
+  // 'close' | 'review' — so 'entry' never reaches this label in practice.
+  if (anchor.kind === 'entry') return null
   const label = anchor.kind === 'plan' ? 'Plan' : 'Close'
   return (
     <span>

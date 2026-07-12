@@ -152,6 +152,106 @@ describe('TradeDetail journal section', () => {
   })
 })
 
+describe('AddendumUI', () => {
+  it('opens the addendum form from an entry', async () => {
+    const { book, journal, priceBook, id } = await seededTrade()
+    await journal.write({
+      anchor: { kind: 'plan', tradeId: id },
+      entryTypeId: PLAN_ENTRY_TYPE_ID,
+      at: Date.now(),
+      placeholder: false,
+      answers: [{ promptId: 'why', value: 'Breakout confirmed' }],
+    })
+    renderDetail(book, journal, priceBook, id)
+    const user = userEvent.setup()
+
+    await screen.findByText('Breakout confirmed')
+    await user.click(screen.getByRole('button', { name: /add addendum/i }))
+
+    expect(await screen.findByRole('form', { name: /add addendum/i })).toBeInTheDocument()
+  })
+
+  it('renders the addendum nested under its parent with its own date', async () => {
+    const { book, journal, priceBook, id } = await seededTrade()
+    await journal.write({
+      anchor: { kind: 'plan', tradeId: id },
+      entryTypeId: PLAN_ENTRY_TYPE_ID,
+      at: new Date('2026-07-10T12:00:00').getTime(),
+      placeholder: false,
+      answers: [{ promptId: 'why', value: 'Breakout confirmed' }],
+    })
+    renderDetail(book, journal, priceBook, id)
+    const user = userEvent.setup()
+
+    await screen.findByText('Breakout confirmed')
+    await user.click(screen.getByRole('button', { name: /add addendum/i }))
+    await user.type(screen.getByLabelText(/why this trade, why now/i), 'Hindsight: this held up')
+    await user.click(screen.getByRole('button', { name: /save addendum/i }))
+
+    expect(await screen.findByText('Hindsight: this held up')).toBeInTheDocument()
+    const addenda = screen.getByLabelText('addenda')
+    expect(within(addenda).getByText(todayISO(), { exact: false })).toBeInTheDocument()
+  })
+
+  it('nests an addendum-to-an-addendum under the same root', async () => {
+    const { book, journal, priceBook, id } = await seededTrade()
+    await journal.write({
+      anchor: { kind: 'plan', tradeId: id },
+      entryTypeId: PLAN_ENTRY_TYPE_ID,
+      at: Date.now(),
+      placeholder: false,
+      answers: [{ promptId: 'why', value: 'Breakout confirmed' }],
+    })
+    renderDetail(book, journal, priceBook, id)
+    const user = userEvent.setup()
+
+    await screen.findByText('Breakout confirmed')
+    await user.click(screen.getByRole('button', { name: /add addendum/i }))
+    await user.type(screen.getByLabelText(/why this trade, why now/i), 'First addendum')
+    await user.click(screen.getByRole('button', { name: /save addendum/i }))
+    await screen.findByText('First addendum')
+
+    const addenda = screen.getByLabelText('addenda')
+    await user.click(within(addenda).getByRole('button', { name: /add addendum/i }))
+    await user.type(
+      within(addenda).getByLabelText(/why this trade, why now/i),
+      'Second addendum, on the first',
+    )
+    await user.click(within(addenda).getByRole('button', { name: /save addendum/i }))
+
+    await screen.findByText('Second addendum, on the first')
+    // Still one thread — both addenda nested under the single root, not a
+    // second top-level entry.
+    expect(screen.getAllByLabelText('addenda')).toHaveLength(1)
+    expect(within(screen.getByLabelText('addenda')).getByText('First addendum')).toBeInTheDocument()
+    expect(
+      within(screen.getByLabelText('addenda')).getByText('Second addendum, on the first'),
+    ).toBeInTheDocument()
+  })
+
+  it('offers no edit affordance on any written entry', async () => {
+    const { book, journal, priceBook, id } = await seededTrade()
+    await journal.write({
+      anchor: { kind: 'plan', tradeId: id },
+      entryTypeId: PLAN_ENTRY_TYPE_ID,
+      at: Date.now(),
+      placeholder: false,
+      answers: [{ promptId: 'why', value: 'Breakout confirmed' }],
+    })
+    renderDetail(book, journal, priceBook, id)
+    const user = userEvent.setup()
+
+    await screen.findByText('Breakout confirmed')
+    await user.click(screen.getByRole('button', { name: /add addendum/i }))
+    await user.type(screen.getByLabelText(/why this trade, why now/i), 'Grown, not edited')
+    await user.click(screen.getByRole('button', { name: /save addendum/i }))
+    await screen.findByText('Grown, not edited')
+
+    expect(screen.queryByRole('button', { name: /^edit/i })).toBeNull()
+    expect(screen.queryByRole('link', { name: /^edit/i })).toBeNull()
+  })
+})
+
 async function buy100(book: TradeBook, id: string): Promise<string> {
   const outcome = await book.recordExecution(
     { tradeId: id, newLeg: 'AAPL' },
