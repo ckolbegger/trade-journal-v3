@@ -5,6 +5,7 @@ import { useTradeBook } from '../tradeBookContext'
 import { NewEntryPage } from './NewEntryPage'
 import { SettleForm } from '../components/SettleForm'
 import { AddAddendum } from '../components/AddAddendum'
+import { AnsweredPrompts } from '../components/AnsweredPrompts'
 import { buildEntryThreads } from '../components/entryThread'
 import { collectAnswers } from '../components/prompt-answers'
 import type { PromptValues } from '../components/prompt-answers'
@@ -159,16 +160,10 @@ export function TimelinePage() {
                     </ul>
                   </div>
                 ) : (
-                  <dl className="space-y-2">
-                    {entry.answered.map((a, i) => (
-                      <div key={i}>
-                        <dt className="text-sm font-medium text-slate-700">{a.prompt.text}</dt>
-                        <dd className="mt-0.5 text-sm text-slate-800">
-                          {a.answer ? String(a.answer.value) : '—'}
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
+                  <AnsweredPrompts
+                    answered={entry.answered}
+                    promptClass="text-sm font-medium text-slate-700"
+                  />
                 )}
                 <AddAddendum entry={entry} onAdded={() => setRefresh((n) => n + 1)} />
                 {addenda.length > 0 && (
@@ -181,18 +176,10 @@ export function TimelinePage() {
                         <p className="text-xs text-slate-500">
                           {addendumTypeName} · {timestampToISODate(addendum.at)}
                         </p>
-                        <dl className="space-y-2">
-                          {addendum.answered.map((a, i) => (
-                            <div key={i}>
-                              <dt className="text-sm font-medium text-slate-700">
-                                {a.prompt.text}
-                              </dt>
-                              <dd className="mt-0.5 text-sm text-slate-800">
-                                {a.answer ? String(a.answer.value) : '—'}
-                              </dd>
-                            </div>
-                          ))}
-                        </dl>
+                        <AnsweredPrompts
+                          answered={addendum.answered}
+                          promptClass="text-sm font-medium text-slate-700"
+                        />
                         <AddAddendum entry={addendum} onAdded={() => setRefresh((n) => n + 1)} />
                       </li>
                     ))}

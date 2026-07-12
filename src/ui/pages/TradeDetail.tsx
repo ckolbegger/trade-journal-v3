@@ -9,6 +9,7 @@ import { TradeDashboard } from './TradeDashboard'
 import { centsToDollars, timestampToISODate } from '../format'
 import { StatusBadge } from '../components/Badge'
 import { AddAddendum } from '../components/AddAddendum'
+import { AnsweredPrompts } from '../components/AnsweredPrompts'
 import { buildEntryThreads } from '../components/entryThread'
 import { btnSecondary, card, heading, link, num, subheading } from '../styles'
 import type { Position, TradeRecord, TradeStatus } from '@/books/tradebook/types'
@@ -245,16 +246,7 @@ export function TradeDetail() {
                 Journal entry owed
               </p>
             ) : (
-              <dl className="space-y-2">
-                {root.answered.map((a, i) => (
-                  <div key={i}>
-                    <dt className={subheading}>{a.prompt.text}</dt>
-                    <dd className="mt-0.5 text-sm text-slate-800">
-                      {a.answer ? String(a.answer.value) : '—'}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
+              <AnsweredPrompts answered={root.answered} promptClass={subheading} />
             )}
             <AddAddendum entry={root} onAdded={() => setRefresh((n) => n + 1)} />
             {addenda.length > 0 && (
@@ -262,16 +254,7 @@ export function TradeDetail() {
                 {addenda.map((addendum) => (
                   <li key={addendum.id} className="space-y-2">
                     <p className="text-xs text-slate-500">{timestampToISODate(addendum.at)}</p>
-                    <dl className="space-y-2">
-                      {addendum.answered.map((a, i) => (
-                        <div key={i}>
-                          <dt className={subheading}>{a.prompt.text}</dt>
-                          <dd className="mt-0.5 text-sm text-slate-800">
-                            {a.answer ? String(a.answer.value) : '—'}
-                          </dd>
-                        </div>
-                      ))}
-                    </dl>
+                    <AnsweredPrompts answered={addendum.answered} promptClass={subheading} />
                     <AddAddendum entry={addendum} onAdded={() => setRefresh((n) => n + 1)} />
                   </li>
                 ))}
