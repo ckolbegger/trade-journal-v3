@@ -14,6 +14,8 @@ export const LONG_STOCK_STRATEGY_ID = 'strategy-long-stock'
 export const PLAN_ENTRY_TYPE_ID = 'entry-type-plan'
 export const CLOSE_ENTRY_TYPE_ID = 'entry-type-close'
 export const REVIEW_ENTRY_TYPE_ID = 'entry-type-trade-review'
+export const TRADER_REFLECTION_ENTRY_TYPE_ID = 'entry-type-trader-reflection'
+export const REVIEW_NOTE_ENTRY_TYPE_ID = 'entry-type-review-note'
 
 // The five default Close Reasons, in seed order. "Rolled" is deliberately absent
 // — it is seeded by Slice 16 with the roll gesture (no Slice 1 test can select it).
@@ -89,6 +91,37 @@ const REVIEW_ENTRY_TYPE: EntryType = {
   ],
 }
 
+// Undesignated: the trader picks either freely for standalone writing (S2.1) —
+// no lifecycle moment uses these.
+const TRADER_REFLECTION_ENTRY_TYPE: EntryType = {
+  id: TRADER_REFLECTION_ENTRY_TYPE_ID,
+  name: 'Trader Reflection',
+  prompts: [
+    { id: 'mind', text: "What's on your mind?", kind: 'text' },
+    {
+      id: 'emotion',
+      text: 'Current emotional state',
+      kind: 'select',
+      options: ['calm', 'eager', 'anxious', 'FOMO', 'revenge'],
+    },
+    { id: 'energy', text: 'Energy', kind: 'scale', scale: { min: 1, max: 5 } },
+  ],
+}
+
+const REVIEW_NOTE_ENTRY_TYPE: EntryType = {
+  id: REVIEW_NOTE_ENTRY_TYPE_ID,
+  name: 'Review Note',
+  prompts: [
+    { id: 'observation', text: 'Observation', kind: 'text' },
+    {
+      id: 'follow-up',
+      text: 'Follow-up needed?',
+      kind: 'select',
+      options: ['yes', 'no'],
+    },
+  ],
+}
+
 export class Workspace {
   constructor(
     private tradeBook: TradeBook,
@@ -117,6 +150,12 @@ export class Workspace {
     }
     if (!entryTypes.some((t) => t.id === REVIEW_ENTRY_TYPE.id)) {
       await this.journal.entryTypes.save(structuredClone(REVIEW_ENTRY_TYPE))
+    }
+    if (!entryTypes.some((t) => t.id === TRADER_REFLECTION_ENTRY_TYPE.id)) {
+      await this.journal.entryTypes.save(structuredClone(TRADER_REFLECTION_ENTRY_TYPE))
+    }
+    if (!entryTypes.some((t) => t.id === REVIEW_NOTE_ENTRY_TYPE.id)) {
+      await this.journal.entryTypes.save(structuredClone(REVIEW_NOTE_ENTRY_TYPE))
     }
   }
 }

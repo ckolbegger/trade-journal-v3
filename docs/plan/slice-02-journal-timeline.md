@@ -8,7 +8,7 @@ Design references: [journal.md](../design/journal.md), ADRs 0006, 0007.
 
 ---
 
-## ☐ Story S2.1 — Standalone entries
+## ☑ Story S2.1 — Standalone entries
 
 > As a trader, I want to write a reflection that isn't about any one Trade, so that market observations and self-assessment have a home in my journal.
 
@@ -18,7 +18,7 @@ Design references: [journal.md](../design/journal.md), ADRs 0006, 0007.
 
 ### Tasks
 
-- [ ] **S2.1.T1 — Standalone anchor + seeds.**
+- [x] **S2.1.T1 — Standalone anchor + seeds.**
 
   ```
   describe "Journal.write (standalone)"
@@ -28,7 +28,7 @@ Design references: [journal.md](../design/journal.md), ADRs 0006, 0007.
   - it seeds Trader Reflection and Review Note iff absent
   ```
 
-- [ ] **S2.1.T2 — New-entry UI.** A "Journal" nav destination with "New entry": pick an Entry Type from the full list, answer its prompts, save. No skip path — standalone writing is voluntary, so no placeholder exists here (Journal Debt is only for required lifecycle entries, ADR 0006).
+- [x] **S2.1.T2 — New-entry UI.** A "Journal" nav destination with "New entry": pick an Entry Type from the full list, answer its prompts, save. No skip path — standalone writing is voluntary, so no placeholder exists here (Journal Debt is only for required lifecycle entries, ADR 0006).
 
   ```
   describe "NewEntryPage"
@@ -38,9 +38,9 @@ Design references: [journal.md](../design/journal.md), ADRs 0006, 0007.
   - it offers no skip/placeholder path
   ```
 
-- [ ] **S2.1.T3 — Integration tests**: seed → write a Trader Reflection over Dexie → reopen DB → entry present with snapshot, anchored standalone.
-- [ ] **S2.1.T4 — Playwright e2e** (`e2e/s2-1-standalone.spec.ts`): Journal → New entry → Trader Reflection → answer prompts → entry visible on the Journal page.
-- [ ] **S2.1.T5 — Browser verification.** Write one entry of each seeded type in a real browser; both render their distinct prompts; reload persists; no placeholder machinery appears anywhere in the flow. All suites green.
+- [x] **S2.1.T3 — Integration tests**: seed → write a Trader Reflection over Dexie → reopen DB → entry present with snapshot, anchored standalone.
+- [x] **S2.1.T4 — Playwright e2e** (`e2e/s2-1-standalone.spec.ts`): Journal → New entry → Trader Reflection → answer prompts → entry visible on the Journal page.
+- [x] **S2.1.T5 — Browser verification.** Write one entry of each seeded type in a real browser; both render their distinct prompts; reload persists; no placeholder machinery appears anywhere in the flow. All suites green.
 
 ---
 

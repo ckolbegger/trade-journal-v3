@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { InMemoryBinding } from '@/storage/in-memory-binding'
 import { Journal } from './journal'
-import type { EntryDraft, EntryType } from './types'
+import type { Entry, EntryDraft, EntryType } from './types'
 
 const PLAN_TYPE: EntryType = {
   id: 'plan-type',
@@ -118,6 +118,74 @@ describe('Journal.write', () => {
     await journal.write(draft)
     const [entry] = await journal.entriesFor({ trade: 't1' })
     expect(entry.at).toBe(1_712_000_000_000)
+  })
+})
+
+const REFLECTION_TYPE: EntryType = {
+  id: 'reflection-type',
+  name: 'Trader Reflection',
+  prompts: [
+    { id: 'mind', text: "What's on your mind?", kind: 'text' },
+    {
+      id: 'emotion',
+      text: 'Current emotional state',
+      kind: 'select',
+      options: ['calm', 'eager', 'anxious', 'FOMO', 'revenge'],
+    },
+    { id: 'energy', text: 'Energy', kind: 'scale', scale: { min: 1, max: 5 } },
+  ],
+}
+
+describe('Journal.write (standalone)', () => {
+  it("stores an entry anchored {kind:'standalone'} with no tradeId", async () => {
+    const binding = new InMemoryBinding()
+    const journal = new Journal(binding)
+    await journal.entryTypes.save({ ...REFLECTION_TYPE })
+
+    await journal.write({
+      anchor: { kind: 'standalone' },
+      entryTypeId: REFLECTION_TYPE.id,
+      at: 1_700_000_000_000,
+      placeholder: false,
+      answers: [{ promptId: 'mind', value: 'Market feels frothy today' }],
+    })
+
+    const [entry] = await binding.list<Entry>('entries')
+    expect(entry.anchor).toEqual({ kind: 'standalone' })
+    expect((entry.anchor as { tradeId?: string }).tradeId).toBeUndefined()
+  })
+
+  it("snapshots the chosen Entry Type's prompts as answered", async () => {
+    const binding = new InMemoryBinding()
+    const journal = new Journal(binding)
+    await journal.entryTypes.save({ ...REFLECTION_TYPE })
+
+    await journal.write({
+      anchor: { kind: 'standalone' },
+      entryTypeId: REFLECTION_TYPE.id,
+      at: 1_700_000_000_000,
+      placeholder: false,
+      answers: [
+        { promptId: 'mind', value: 'Market feels frothy today' },
+        { promptId: 'emotion', value: 'anxious' },
+        { promptId: 'energy', value: 3 },
+      ],
+    })
+
+    const [entry] = await binding.list<Entry>('entries')
+    expect(entry.answered.map((a) => a.prompt.id)).toEqual(['mind', 'emotion', 'energy'])
+    expect(entry.answered.find((a) => a.prompt.id === 'mind')?.answer).toEqual({
+      promptId: 'mind',
+      value: 'Market feels frothy today',
+    })
+    expect(entry.answered.find((a) => a.prompt.id === 'emotion')?.answer).toEqual({
+      promptId: 'emotion',
+      value: 'anxious',
+    })
+    expect(entry.answered.find((a) => a.prompt.id === 'energy')?.answer).toEqual({
+      promptId: 'energy',
+      value: 3,
+    })
   })
 })
 

@@ -15,10 +15,13 @@ export type Timestamp = number // epoch ms
 export type ISODate = string // 'YYYY-MM-DD' — the trading date
 
 // Anchor kinds arrive with the slices that first write them: plan (S1.2), close
-// (S1.4), review (S1.7). The rest follow. A review anchor carries the date it
-// reviews — its existence for (date, tradeId) IS the Trade's reviewed-today flag
-// (docs/design/review.md); nothing about "reviewed" is stored anywhere else.
+// (S1.4), review (S1.7), standalone (S2.1). The rest follow. A review anchor
+// carries the date it reviews — its existence for (date, tradeId) IS the
+// Trade's reviewed-today flag (docs/design/review.md); nothing about
+// "reviewed" is stored anywhere else. A standalone anchor carries no tradeId —
+// trader-level reflection not tied to any one Trade.
 export type Anchor =
+  | { kind: 'standalone' }
   | { kind: 'plan'; tradeId: TradeId }
   | { kind: 'close'; tradeId: TradeId }
   | { kind: 'review'; date: ISODate; tradeId: TradeId }

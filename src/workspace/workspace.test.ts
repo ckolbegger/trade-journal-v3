@@ -9,6 +9,8 @@ import {
   CLOSE_ENTRY_TYPE_ID,
   REVIEW_ENTRY_TYPE_ID,
   CLOSE_REASON_IDS,
+  TRADER_REFLECTION_ENTRY_TYPE_ID,
+  REVIEW_NOTE_ENTRY_TYPE_ID,
 } from './workspace'
 
 function makeWorkspace(): { workspace: Workspace; tradeBook: TradeBook; journal: Journal } {
@@ -190,5 +192,30 @@ describe('Workspace.ensureSeeded — Close Reasons and Close Entry Type', () => 
 
     expect(await tradeBook.registries.closeReasons.list()).toHaveLength(4)
     expect(await tradeBook.registries.closeReasons.list(true)).toHaveLength(5)
+  })
+})
+
+describe('Workspace.ensureSeeded — Trader Reflection and Review Note Entry Types', () => {
+  it('seeds Trader Reflection and Review Note iff absent', async () => {
+    const { workspace, journal } = makeWorkspace()
+    await workspace.ensureSeeded()
+
+    const types = await journal.entryTypes.list()
+    const reflection = types.find((t) => t.id === TRADER_REFLECTION_ENTRY_TYPE_ID)
+    const reviewNote = types.find((t) => t.id === REVIEW_NOTE_ENTRY_TYPE_ID)
+
+    expect(reflection?.name).toBe('Trader Reflection')
+    expect(reflection?.designatedFor).toBeUndefined()
+    expect(reflection?.prompts.map((p) => p.kind)).toEqual(['text', 'select', 'scale'])
+
+    expect(reviewNote?.name).toBe('Review Note')
+    expect(reviewNote?.designatedFor).toBeUndefined()
+    expect(reviewNote?.prompts.map((p) => p.kind)).toEqual(['text', 'select'])
+
+    // Running seeding again does not duplicate either type.
+    await workspace.ensureSeeded()
+    const again = await journal.entryTypes.list()
+    expect(again.filter((t) => t.id === TRADER_REFLECTION_ENTRY_TYPE_ID)).toHaveLength(1)
+    expect(again.filter((t) => t.id === REVIEW_NOTE_ENTRY_TYPE_ID)).toHaveLength(1)
   })
 })

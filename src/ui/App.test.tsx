@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { App } from './App'
 import { TradeBookContext } from './tradeBookContext'
+import { JournalContext } from './journalContext'
 import { PriceBookContext } from './priceBookContext'
 import { ValuationsContext } from './valuationsContext'
 import { ReviewContext } from './reviewContext'
@@ -15,15 +16,17 @@ function renderAt(path: string) {
   const valuations = new Valuations(tradeBook, priceBook)
   return render(
     <TradeBookContext.Provider value={tradeBook}>
-      <PriceBookContext.Provider value={priceBook}>
-        <ValuationsContext.Provider value={valuations}>
-          <ReviewContext.Provider value={new Review(valuations, journal, tradeBook)}>
-            <MemoryRouter initialEntries={[path]}>
-              <App />
-            </MemoryRouter>
-          </ReviewContext.Provider>
-        </ValuationsContext.Provider>
-      </PriceBookContext.Provider>
+      <JournalContext.Provider value={journal}>
+        <PriceBookContext.Provider value={priceBook}>
+          <ValuationsContext.Provider value={valuations}>
+            <ReviewContext.Provider value={new Review(valuations, journal, tradeBook)}>
+              <MemoryRouter initialEntries={[path]}>
+                <App />
+              </MemoryRouter>
+            </ReviewContext.Provider>
+          </ValuationsContext.Provider>
+        </PriceBookContext.Provider>
+      </JournalContext.Provider>
     </TradeBookContext.Provider>,
   )
 }
@@ -33,12 +36,18 @@ describe('AppShell', () => {
     renderAt('/')
     expect(screen.getByRole('banner')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Trades' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Journal' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Review' })).toBeInTheDocument()
   })
 
   it('renders the Trades stub at /', () => {
     renderAt('/')
     expect(screen.getByRole('heading', { name: 'Trades' })).toBeInTheDocument()
+  })
+
+  it('renders the Journal page at /journal', () => {
+    renderAt('/journal')
+    expect(screen.getByRole('heading', { name: 'Journal' })).toBeInTheDocument()
   })
 
   it('renders the Review stub at /review', () => {
