@@ -21,11 +21,19 @@ function instrumentLabel(instrument: Instrument): string {
   return instrument.kind === 'option' ? optionLabel(instrument) : instrument.ticker
 }
 
+// An Exit Level rendered for display: a dollar value for underlyingPrice/
+// structureValue, a percentage for pctOfMaxProfit.
+function exitLevelDisplay(level: TradeRecord['plan']['exitLevels'][number]): string {
+  if (level.kind === 'pctOfMaxProfit') return `${level.pct}%`
+  return `$${centsToDollars(level.kind === 'structureValue' ? level.value : level.price)}`
+}
+
 // A held Position row: a stock reads "100 AAPL long"; an option reads the
-// contract position ("1 × AAPL Jun'27 200C").
+// contract position ("1 × AAPL Jun'27 200C"), signed negative when short
+// ("-1 × XYZ Aug'26 100P").
 function holdingLabel(h: Position['holdings'][number]): string {
   return h.instrument.kind === 'option'
-    ? `${h.qty} × ${optionLabel(h.instrument)}`
+    ? `${h.side === 'short' ? '-' : ''}${h.qty} × ${optionLabel(h.instrument)}`
     : `${h.qty} ${h.instrument.ticker} ${h.side}`
 }
 
@@ -139,8 +147,7 @@ export function TradeDetail() {
           <ul className="mt-1 space-y-1">
             {plan.exitLevels.map((level, i) => (
               <li key={i} className={`text-sm text-slate-800 capitalize ${num}`}>
-                {level.side}: $
-                {centsToDollars(level.kind === 'structureValue' ? level.value : level.price)}
+                {level.side}: {exitLevelDisplay(level)}
               </li>
             ))}
           </ul>

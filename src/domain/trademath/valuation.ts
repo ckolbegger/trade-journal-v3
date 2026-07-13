@@ -38,33 +38,45 @@ export function instrumentsOf(trade: TradeRecord): InstrumentKey[] {
   return [...new Set(keys)]
 }
 
+// A Leg opens in whichever direction its FIRST Execution takes (long-only or
+// short-only this slice — no flip mid-Leg): `sign` +1 for a bought-first (long)
+// Leg, -1 for a sold-first (short) Leg. `openQty`/`avgOpenPrice` describe the
+// remaining open quantity and its entry price; `closedQty`/`avgClosePrice`
+// describe what has been closed against it, direction-agnostic (a "close" is
+// just whichever side isn't `sign`'s opening side).
 interface LegTotals {
+  sign: 1 | -1
   openQty: number
   avgOpenPrice: number
-  soldQty: number
-  avgSellPrice: number
+  closedQty: number
+  avgClosePrice: number
   fees: number
 }
 
 function totalsFor(leg: LegFacts): LegTotals {
-  let boughtQty = 0
-  let boughtCost = 0
-  let soldQty = 0
-  let soldProceeds = 0
+  if (leg.executions.length === 0) {
+    return { sign: 1, openQty: 0, avgOpenPrice: 0, closedQty: 0, avgClosePrice: 0, fees: 0 }
+  }
+  const openSide = leg.executions[0].side
+  const sign = openSide === 'buy' ? 1 : -1
+  let openedQty = 0
+  let openedCost = 0
+  let closedQty = 0
+  let closedProceeds = 0
   let fees = 0
   for (const e of leg.executions) {
     fees += e.fees
-    if (e.side === 'buy') {
-      boughtQty += e.qty
-      boughtCost += e.qty * e.price
+    if (e.side === openSide) {
+      openedQty += e.qty
+      openedCost += e.qty * e.price
     } else {
-      soldQty += e.qty
-      soldProceeds += e.qty * e.price
+      closedQty += e.qty
+      closedProceeds += e.qty * e.price
     }
   }
-  const avgOpenPrice = boughtQty === 0 ? 0 : boughtCost / boughtQty
-  const avgSellPrice = soldQty === 0 ? 0 : soldProceeds / soldQty
-  return { openQty: boughtQty - soldQty, avgOpenPrice, soldQty, avgSellPrice, fees }
+  const avgOpenPrice = openedQty === 0 ? 0 : openedCost / openedQty
+  const avgClosePrice = closedQty === 0 ? 0 : closedProceeds / closedQty
+  return { sign, openQty: openedQty - closedQty, avgOpenPrice, closedQty, avgClosePrice, fees }
 }
 
 export function valuation(trade: TradeRecord, marks: MarkSet): Valuation {
@@ -81,8 +93,8 @@ export function valuation(trade: TradeRecord, marks: MarkSet): Valuation {
     const key = buildInstrumentKey(leg.instrument)
     const markPrice = marks.get(key)?.price ?? 0
     const multiplier = contractMultiplierOf(leg.instrument)
-    const grossRealized = t.soldQty * (t.avgSellPrice - t.avgOpenPrice) * multiplier
-    const grossUnrealized = t.openQty * (markPrice - t.avgOpenPrice) * multiplier
+    const grossRealized = t.sign * t.closedQty * (t.avgClosePrice - t.avgOpenPrice) * multiplier
+    const grossUnrealized = t.sign * t.openQty * (markPrice - t.avgOpenPrice) * multiplier
     return {
       instrument: leg.instrument,
       basis: t.openQty * t.avgOpenPrice * multiplier,
@@ -94,7 +106,7 @@ export function valuation(trade: TradeRecord, marks: MarkSet): Valuation {
   const currentValue = trade.legs.reduce((sum, leg) => {
     const t = totalsFor(leg)
     const markPrice = marks.get(buildInstrumentKey(leg.instrument))?.price ?? 0
-    return sum + t.openQty * markPrice * contractMultiplierOf(leg.instrument)
+    return sum + t.sign * t.openQty * markPrice * contractMultiplierOf(leg.instrument)
   }, 0)
 
   const realizedPnL = perLeg.reduce((sum, l) => sum + l.realized, 0)

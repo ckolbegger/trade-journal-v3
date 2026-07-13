@@ -3,8 +3,8 @@ import type { ISODate, LegFacts, Position, TradeRecord } from './types'
 // The net open quantity per Leg, derived from Executions (never stored, ADR
 // 0005). A Leg that nets to zero holds nothing and is omitted. `asOf` bounds the
 // Executions counted to a trading date: fills after that date are excluded.
-// Long-only this slice; a negative net (short) resolves to side 'short' so the
-// shape is ready when short legs arrive (Slice 3).
+// A negative net resolves to side 'short' (short Legs arrived with S3.2's
+// sell-to-open).
 
 function cutoffFor(asOf?: ISODate): number {
   return asOf === undefined ? Infinity : new Date(`${asOf}T23:59:59.999`).getTime()

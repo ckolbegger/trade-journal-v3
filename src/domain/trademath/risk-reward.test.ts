@@ -211,3 +211,188 @@ describe('TradeMath.riskReward (structureValue levels)', () => {
     expect(rr.original.reward).toBe(120000)
   })
 })
+
+// The cash-secured put worked example (docs/plan/slice-03-single-leg-options.md):
+// Plan Cash-Secured Put, sell 1 XYZ 2026-08-21 P 100; Exit Levels: underlyingPrice
+// stop 95, pctOfMaxProfit target 80%. Fill sell 1 @ 2.50, fees $0.65. Mark
+// contract 1.25.
+describe('TradeMath.riskReward (short put)', () => {
+  const XYZ_PUT = {
+    kind: 'option',
+    ticker: 'XYZ',
+    expiration: '2026-08-21',
+    type: 'put',
+    strike: 10000,
+  } as const
+
+  const underlyingStop: ExitLevel = {
+    scope: { level: 'trade' },
+    side: 'stop',
+    kind: 'underlyingPrice',
+    price: 9500,
+  }
+  const pctTarget: ExitLevel = {
+    scope: { level: 'trade' },
+    side: 'target',
+    kind: 'pctOfMaxProfit',
+    pct: 80,
+  }
+
+  function cspTrade(executions: ExecutionFacts[], exitLevels: ExitLevel[]): TradeRecord {
+    return {
+      id: 'trade-1',
+      accountId: 'account-1',
+      plan: {
+        thesis: 'XYZ range-bound',
+        strategyId: 'strategy-cash-secured-put',
+        ideaSourceId: '',
+        plannedLegs: [{ side: 'sell', instrument: XYZ_PUT, qty: 1 }],
+        exitLevels,
+        plannedAt: '2026-07-10',
+      },
+      legs: executions.length === 0 ? [] : [{ id: 'leg-1', instrument: XYZ_PUT, executions }],
+    }
+  }
+
+  const sellToOpen = (): ExecutionFacts => ({
+    side: 'sell',
+    qty: 1,
+    price: 250,
+    fees: 65,
+    timestamp: new Date('2026-07-10T12:00:00').getTime(),
+  })
+
+  function contractMark(price: number): MarkSet {
+    return new Map([
+      [
+        'XYZ 2026-08-21 P 100',
+        { instrument: 'XYZ 2026-08-21 P 100', date: '2026-07-15', price, origin: 'manual' },
+      ],
+    ])
+  }
+
+  it('computes plannedRisk 375.00 via intrinsic at the 95 stop', () => {
+    const rr = riskReward(cspTrade([sellToOpen()], [underlyingStop, pctTarget]), contractMark(125))
+    expect(rr.plannedRisk).toBe(37500)
+  })
+
+  it('computes worstCaseRisk 9875.00 (stock to zero)', () => {
+    const rr = riskReward(cspTrade([sellToOpen()], [underlyingStop, pctTarget]), contractMark(125))
+    expect(rr.worstCaseRisk).toBe(987500)
+  })
+
+  it('resolves the 80% pctOfMaxProfit target to a 0.50 buyback and plannedReward 75.00', () => {
+    const rr = riskReward(cspTrade([sellToOpen()], [underlyingStop, pctTarget]), contractMark(125))
+    expect(rr.plannedReward).toBe(7500)
+  })
+
+  it('computes maxReward 125.00 (mark to zero)', () => {
+    const rr = riskReward(cspTrade([sellToOpen()], [underlyingStop, pctTarget]), contractMark(125))
+    expect(rr.maxReward).toBe(12500)
+  })
+
+  it('does not mistake a buy-to-close for a new entry once the short Leg is flat', () => {
+    // A buy-to-close is the OTHER side from the Leg's opening sell — `original`
+    // must still measure from the sell-to-open basis (2.50), not treat the
+    // buyback (0.60) as if it were a fresh long entry.
+    const buyToClose: ExecutionFacts = {
+      side: 'buy',
+      qty: 1,
+      price: 60,
+      fees: 65,
+      timestamp: new Date('2026-07-20T12:00:00').getTime(),
+    }
+    const rr = riskReward(
+      cspTrade([sellToOpen(), buyToClose], [underlyingStop, pctTarget]),
+      new Map(),
+    )
+    expect(rr.original.risk).toBe(25000)
+    expect(rr.original.reward).toBe(20000)
+  })
+})
+
+// Off-template fills: the fill form's side select is free, so a Leg can open
+// on the side the Plan never asked for. The math must stay honest for them.
+describe('TradeMath.riskReward (off-template opening sides)', () => {
+  const XYZ_CALL = {
+    kind: 'option',
+    ticker: 'XYZ',
+    expiration: '2026-08-21',
+    type: 'call',
+    strike: 10000,
+  } as const
+  const XYZ_STOCK = { kind: 'stock', ticker: 'XYZ' } as const
+  const XYZ_PUT = {
+    kind: 'option',
+    ticker: 'XYZ',
+    expiration: '2026-08-21',
+    type: 'put',
+    strike: 10000,
+  } as const
+
+  const pctTarget: ExitLevel = {
+    scope: { level: 'trade' },
+    side: 'target',
+    kind: 'pctOfMaxProfit',
+    pct: 80,
+  }
+
+  function tradeWith(
+    instrument: typeof XYZ_CALL | typeof XYZ_STOCK | typeof XYZ_PUT,
+    side: 'buy' | 'sell',
+    exitLevels: ExitLevel[],
+  ): TradeRecord {
+    return {
+      id: 'trade-1',
+      accountId: 'account-1',
+      plan: {
+        thesis: 'off-template fill',
+        strategyId: 'strategy-1',
+        ideaSourceId: '',
+        plannedLegs: [{ side, instrument, qty: 1 }],
+        exitLevels,
+        plannedAt: '2026-07-10',
+      },
+      legs: [
+        {
+          id: 'leg-1',
+          instrument,
+          executions: [
+            {
+              side,
+              qty: instrument.kind === 'stock' ? 100 : 1,
+              price: instrument.kind === 'stock' ? 10000 : 1200,
+              fees: 65,
+              timestamp: new Date('2026-07-10T12:00:00').getTime(),
+            },
+          ],
+        },
+      ],
+    }
+  }
+
+  function markOf(key: string, price: number): MarkSet {
+    return new Map([[key, { instrument: key, date: '2026-07-15', price, origin: 'manual' }]])
+  }
+
+  it("returns worstCaseRisk 'unlimited' for a short call", () => {
+    const rr = riskReward(tradeWith(XYZ_CALL, 'sell', []), markOf('XYZ 2026-08-21 C 100', 1400))
+    expect(rr.worstCaseRisk).toBe('unlimited')
+  })
+
+  it("returns worstCaseRisk 'unlimited' for short stock", () => {
+    const rr = riskReward(tradeWith(XYZ_STOCK, 'sell', []), markOf('XYZ', 10500))
+    expect(rr.worstCaseRisk).toBe('unlimited')
+  })
+
+  it("returns plannedReward 'undefined' for a long Leg with a pctOfMaxProfit target", () => {
+    // pctOfMaxProfit is a short-credit concept (slice-10: credit × (1 − pct/100));
+    // a long Leg has no credit to take a percentage of.
+    const rr = riskReward(
+      tradeWith(XYZ_PUT, 'buy', [pctTarget]),
+      markOf('XYZ 2026-08-21 P 100', 1400),
+    )
+    expect(rr.plannedReward).toBe('undefined')
+    expect(rr.original.reward).toBe('undefined')
+  })
+})

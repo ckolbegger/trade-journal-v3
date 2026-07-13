@@ -44,6 +44,14 @@ export function TradeDashboard({ tradeId }: { tradeId: string }) {
   const plannedInstrument = detail.record.plan.plannedLegs[0]?.instrument
   const instrument = plannedInstrument ? buildInstrumentKey(plannedInstrument) : ''
 
+  // An underlyingPrice Exit Level on an option Leg values the structure at
+  // intrinsic (no pricing model exists to value time, ADR 0009) — the display
+  // says so wherever that projection feeds a risk/reward anchor.
+  const exitLevels = detail.record.plan.exitLevels
+  const atIntrinsic = (side: 'stop' | 'target'): boolean =>
+    plannedInstrument?.kind === 'option' &&
+    exitLevels.some((l) => l.side === side && l.kind === 'underlyingPrice')
+
   if (detail.marksMissing || !detail.valuation || !detail.riskReward) {
     return (
       <div className={`${card} space-y-3`}>
@@ -77,13 +85,21 @@ export function TradeDashboard({ tradeId }: { tradeId: string }) {
           className="space-y-2 rounded-md border border-slate-200 p-3 text-sm"
         >
           <p className={subheading}>Ongoing (from today's Mark)</p>
-          <Anchor label="planned risk" title="Planned risk" value={anchor(rr.plannedRisk)} />
+          <Anchor
+            label="planned risk"
+            title={atIntrinsic('stop') ? 'Planned risk (at intrinsic)' : 'Planned risk'}
+            value={anchor(rr.plannedRisk)}
+          />
           <Anchor
             label="worst-case risk"
             title="Worst-case risk"
             value={anchor(rr.worstCaseRisk)}
           />
-          <Anchor label="planned reward" title="Planned reward" value={anchor(rr.plannedReward)} />
+          <Anchor
+            label="planned reward"
+            title={atIntrinsic('target') ? 'Planned reward (at intrinsic)' : 'Planned reward'}
+            value={anchor(rr.plannedReward)}
+          />
           <Anchor label="max reward" title="Max reward" value={anchor(rr.maxReward)} />
         </dl>
 

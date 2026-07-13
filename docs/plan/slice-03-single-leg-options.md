@@ -91,7 +91,7 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
 
 ---
 
-## ☐ Story S3.2 — Cash-secured put (first short position)
+## ☑ Story S3.2 — Cash-secured put (first short position)
 
 > As a trader, I want to sell a put I'm willing to be assigned on and track what staying short risks from today's price, so that credit trades show honest mark-to-market risk, not "premium collected" comfort.
 
@@ -101,7 +101,7 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
 
 ### Tasks
 
-- [ ] **S3.2.T1 — Short-position math.**
+- [x] **S3.2.T1 — Short-position math.**
 
   ```
   describe "TradeMath.positionOf (short)"
@@ -117,7 +117,7 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
   - it computes maxReward 125.00 (mark to zero)
   ```
 
-- [ ] **S3.2.T2 — Sell-to-open UI + seeds.** Plan form supports the CSP template; record-fill handles sell-to-open and buy-to-close; dashboard renders short positions ("−1 × XYZ Aug'26 100P") and labels intrinsic-projected risk "at intrinsic".
+- [x] **S3.2.T2 — Sell-to-open UI + seeds.** Plan form supports the CSP template; record-fill handles sell-to-open and buy-to-close; dashboard renders short positions ("−1 × XYZ Aug'26 100P") and labels intrinsic-projected risk "at intrinsic".
 
   ```
   describe "CSP flow"
@@ -129,9 +129,9 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
   - it seeds Cash-Secured Put iff absent
   ```
 
-- [ ] **S3.2.T3 — Integration tests**: CSP lifecycle over Dexie — sell 2.50 → marks → detail matches worked example → buy back 0.60 → realized 188.70, closed.
-- [ ] **S3.2.T4 — Playwright e2e** (`e2e/s3-2-csp.spec.ts`): worked example; assert the ADR-0010-style framing (risking 375 to make 75).
-- [ ] **S3.2.T5 — Browser verification.** Worked example in a real browser; confirm the giveback framing (unrealized gain counted in risk), the "at intrinsic" label, and full close flow. All suites green.
+- [x] **S3.2.T3 — Integration tests**: CSP lifecycle over Dexie — sell 2.50 → marks → detail matches worked example → buy back 0.60 → realized 188.70, closed.
+- [x] **S3.2.T4 — Playwright e2e** (`e2e/s3-2-csp.spec.ts`): worked example; assert the ADR-0010-style framing (risking 375 to make 75).
+- [x] **S3.2.T5 — Browser verification.** Worked example in a real browser; confirm the giveback framing (unrealized gain counted in risk), the "at intrinsic" label, and full close flow. All suites green.
 
 ---
 

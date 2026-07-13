@@ -370,6 +370,127 @@ describe('TradeDetail valuation refresh', () => {
   })
 })
 
+// The cash-secured put worked example (docs/plan/slice-03-single-leg-options.md):
+// Plan Cash-Secured Put, sell 1 XYZ 2026-08-21 P 100; Exit Levels: underlyingPrice
+// stop 95, pctOfMaxProfit target 80%. Fill sell 1 @ 2.50, fees $0.65. Mark
+// contract 1.25.
+const XYZ_PUT_KEY = 'XYZ 2026-08-21 P 100'
+
+async function seededCsp(): Promise<{
+  book: TradeBook
+  journal: Journal
+  priceBook: PriceBook
+  id: string
+}> {
+  const { tradeBook: book, journal, priceBook } = inMemoryBooks()
+  const institution = { id: '', name: 'Schwab' } as Institution
+  await book.registries.institutions.save(institution)
+  const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
+  await book.registries.accounts.save(account)
+  await new Workspace(book, journal).ensureSeeded()
+
+  const draft: PlanDraft = {
+    accountId: account.id,
+    thesis: 'XYZ range-bound',
+    strategyId: 'strategy-cash-secured-put',
+    ideaSourceId: '',
+    plannedLegs: [
+      {
+        side: 'sell',
+        instrument: {
+          kind: 'option',
+          ticker: 'XYZ',
+          expiration: '2026-08-21',
+          type: 'put',
+          strike: 10000,
+        },
+        qty: 1,
+      },
+    ],
+    exitLevels: [
+      { scope: { level: 'trade' }, side: 'stop', kind: 'underlyingPrice', price: 9500 },
+      { scope: { level: 'trade' }, side: 'target', kind: 'pctOfMaxProfit', pct: 80 },
+    ],
+    plannedAt: '2026-07-10',
+  }
+  const id = await book.confirmPlan(draft)
+  return { book, journal, priceBook, id }
+}
+
+describe('CSP flow', () => {
+  it('plans and fills a sell-to-open from the template', async () => {
+    const { book, journal, priceBook, id } = await seededCsp()
+    renderDetail(book, journal, priceBook, id)
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: /record fill/i }))
+    expect(screen.getByLabelText(/side/i)).toHaveValue('sell')
+    await user.type(screen.getByLabelText(/quantity/i), '1')
+    await user.type(screen.getByLabelText(/price/i), '2.50')
+    await user.type(screen.getByLabelText(/fees/i), '0.65')
+    await user.click(screen.getByRole('button', { name: /record fill/i }))
+
+    expect(await screen.findByLabelText('status')).toHaveTextContent(/open/i)
+    expect(screen.getByLabelText('position')).toHaveTextContent("-1 × XYZ Aug'26 100P")
+  })
+
+  it('shows negative position and credit-style P&L', async () => {
+    const { book, journal, priceBook, id } = await seededCsp()
+    await book.recordExecution(
+      { tradeId: id, newLeg: XYZ_PUT_KEY },
+      { side: 'sell', qty: 1, price: 250, fees: 65, timestamp: Date.now() },
+    )
+    await priceBook.record(XYZ_PUT_KEY, todayISO(), 125, 'manual')
+    renderDetail(book, journal, priceBook, id)
+
+    expect(await screen.findByLabelText('position')).toHaveTextContent("-1 × XYZ Aug'26 100P")
+    const pnl = await screen.findByLabelText('profit and loss')
+    expect(pnl).toHaveTextContent('-125.00')
+    expect(pnl).toHaveTextContent('124.35')
+  })
+
+  it('labels the underlying-stop risk figure "at intrinsic"', async () => {
+    const { book, journal, priceBook, id } = await seededCsp()
+    await book.recordExecution(
+      { tradeId: id, newLeg: XYZ_PUT_KEY },
+      { side: 'sell', qty: 1, price: 250, fees: 65, timestamp: Date.now() },
+    )
+    await priceBook.record(XYZ_PUT_KEY, todayISO(), 125, 'manual')
+    renderDetail(book, journal, priceBook, id)
+
+    const plannedRisk = await screen.findByLabelText('planned risk')
+    expect(plannedRisk).toHaveTextContent('375.00')
+    const rr = screen.getByLabelText('ongoing risk and reward')
+    expect(within(rr).getByText(/at intrinsic/i)).toBeInTheDocument()
+  })
+
+  it('closes via buy-to-close and prompts Close Reason on flat', async () => {
+    const { book, journal, priceBook, id } = await seededCsp()
+    await book.recordExecution(
+      { tradeId: id, newLeg: XYZ_PUT_KEY },
+      {
+        side: 'sell',
+        qty: 1,
+        price: 250,
+        fees: 65,
+        timestamp: new Date('2026-07-10T12:00:00').getTime(),
+      },
+    )
+    await priceBook.record(XYZ_PUT_KEY, todayISO(), 125, 'manual')
+    renderDetail(book, journal, priceBook, id)
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: /record fill/i }))
+    await user.selectOptions(screen.getByLabelText(/side/i), 'buy')
+    await user.type(screen.getByLabelText(/quantity/i), '1')
+    await user.type(screen.getByLabelText(/price/i), '0.60')
+    await user.type(screen.getByLabelText(/fees/i), '0.65')
+    await user.click(screen.getByRole('button', { name: /record fill/i }))
+
+    expect(await screen.findByLabelText(/close reason/i)).toBeInTheDocument()
+  })
+})
+
 describe('TradeDetail position & history', () => {
   it('shows holdings from Valuations.position', async () => {
     const { book, journal, priceBook, id } = await seededTrade()

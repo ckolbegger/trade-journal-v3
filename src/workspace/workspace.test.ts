@@ -7,6 +7,7 @@ import {
   LONG_STOCK_STRATEGY_ID,
   LONG_CALL_STRATEGY_ID,
   LONG_PUT_STRATEGY_ID,
+  CASH_SECURED_PUT_STRATEGY_ID,
   PLAN_ENTRY_TYPE_ID,
   CLOSE_ENTRY_TYPE_ID,
   REVIEW_ENTRY_TYPE_ID,
@@ -27,8 +28,13 @@ describe('Workspace.ensureSeeded — strategies', () => {
     const { workspace, tradeBook } = makeWorkspace()
     await workspace.ensureSeeded()
     const strategies = await tradeBook.registries.strategies.list()
-    // The full expected trio, so an accidental extra seed can't slip in unnoticed.
-    expect(strategies.map((s) => s.name)).toEqual(['Long Stock', 'Long Call', 'Long Put'])
+    // The full expected set, so an accidental extra seed can't slip in unnoticed.
+    expect(strategies.map((s) => s.name)).toEqual([
+      'Long Stock',
+      'Long Call',
+      'Long Put',
+      'Cash-Secured Put',
+    ])
     const longStock = strategies.find((s) => s.id === LONG_STOCK_STRATEGY_ID)
     expect(longStock?.name).toBe('Long Stock')
   })
@@ -237,6 +243,25 @@ describe('seeding (extension)', () => {
     const again = await tradeBook.registries.strategies.list()
     expect(again.filter((s) => s.id === LONG_CALL_STRATEGY_ID)).toHaveLength(1)
     expect(again.find((s) => s.id === LONG_CALL_STRATEGY_ID)?.name).toBe('My Long Call')
+  })
+
+  it('seeds Cash-Secured Put iff absent', async () => {
+    const { workspace, tradeBook } = makeWorkspace()
+    await workspace.ensureSeeded()
+
+    const strategies = await tradeBook.registries.strategies.list()
+    const csp = strategies.find((s) => s.id === CASH_SECURED_PUT_STRATEGY_ID)
+
+    expect(csp?.name).toBe('Cash-Secured Put')
+    expect(csp?.legs).toEqual([{ side: 'sell', instrumentKind: 'option', optionType: 'put' }])
+    expect(csp?.exitLevels).toEqual([
+      { side: 'stop', kind: 'underlyingPrice' },
+      { side: 'target', kind: 'pctOfMaxProfit' },
+    ])
+
+    await workspace.ensureSeeded()
+    const again = await tradeBook.registries.strategies.list()
+    expect(again.filter((s) => s.id === CASH_SECURED_PUT_STRATEGY_ID)).toHaveLength(1)
   })
 })
 

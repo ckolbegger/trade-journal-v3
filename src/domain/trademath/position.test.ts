@@ -105,3 +105,31 @@ describe('TradeMath.positionOf (options)', () => {
     expect(positionOf(trade).holdings).toEqual([{ instrument: AAPL_CALL, qty: 1, side: 'long' }])
   })
 })
+
+describe('TradeMath.positionOf (short)', () => {
+  const XYZ_PUT = {
+    kind: 'option',
+    ticker: 'XYZ',
+    expiration: '2026-08-21',
+    type: 'put',
+    strike: 10000,
+  } as const
+
+  it('returns -1 contract after selling to open', () => {
+    const trade = tradeWith([
+      { id: 'leg-1', instrument: XYZ_PUT, executions: [exec({ side: 'sell', qty: 1 })] },
+    ])
+    expect(positionOf(trade).holdings).toEqual([{ instrument: XYZ_PUT, qty: 1, side: 'short' }])
+  })
+
+  it('returns zero after selling 1 and buying 1 back', () => {
+    const trade = tradeWith([
+      {
+        id: 'leg-1',
+        instrument: XYZ_PUT,
+        executions: [exec({ side: 'sell', qty: 1 }), exec({ side: 'buy', qty: 1 })],
+      },
+    ])
+    expect(positionOf(trade).holdings).toEqual([])
+  })
+})

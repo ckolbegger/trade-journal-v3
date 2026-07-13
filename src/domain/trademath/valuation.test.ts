@@ -197,3 +197,66 @@ describe('TradeMath.valuation (options)', () => {
     expect(v.totalPnL).toBe(19935)
   })
 })
+
+// The cash-secured put worked example (docs/plan/slice-03-single-leg-options.md):
+// Plan Cash-Secured Put, sell 1 XYZ 2026-08-21 P 100. Fill sell 1 @ 2.50, fees
+// $0.65. Mark contract 1.25.
+describe('TradeMath.valuation (short)', () => {
+  const XYZ_PUT = {
+    kind: 'option',
+    ticker: 'XYZ',
+    expiration: '2026-08-21',
+    type: 'put',
+    strike: 10000,
+  } as const
+
+  function cspTrade(executions: ExecutionFacts[]): TradeRecord {
+    return {
+      id: 'trade-1',
+      accountId: 'account-1',
+      plan: {
+        thesis: 'XYZ range-bound',
+        strategyId: 'strategy-cash-secured-put',
+        ideaSourceId: '',
+        plannedLegs: [{ side: 'sell', instrument: XYZ_PUT, qty: 1 }],
+        exitLevels: [
+          { scope: { level: 'trade' }, side: 'stop', kind: 'underlyingPrice', price: 9500 },
+          { scope: { level: 'trade' }, side: 'target', kind: 'pctOfMaxProfit', pct: 80 },
+        ],
+        plannedAt: '2026-07-10',
+      },
+      legs: executions.length === 0 ? [] : [{ id: 'leg-1', instrument: XYZ_PUT, executions }],
+    }
+  }
+
+  const sellToOpen = (): ExecutionFacts => ({
+    side: 'sell',
+    qty: 1,
+    price: 250,
+    fees: 65,
+    timestamp: new Date('2026-07-10T12:00:00').getTime(),
+  })
+
+  it('values the CSP worked example: currentValue -125.00, unrealized 125.00, total 124.35', () => {
+    const marks = markSet([
+      { instrument: 'XYZ 2026-08-21 P 100', date: '2026-07-15', price: 125, origin: 'manual' },
+    ])
+    const v = valuation(cspTrade([sellToOpen()]), marks)
+    expect(v.currentValue).toBe(-12500)
+    expect(v.unrealizedPnL).toBe(12500)
+    expect(v.fees).toBe(65)
+    expect(v.totalPnL).toBe(12435)
+  })
+
+  it('realizes credit minus buyback on a buy-to-close at 0.60: realized 188.70 (250 - 60 - 1.30 fees)', () => {
+    const buyToClose: ExecutionFacts = {
+      side: 'buy',
+      qty: 1,
+      price: 60,
+      fees: 65,
+      timestamp: new Date('2026-07-20T12:00:00').getTime(),
+    }
+    const v = valuation(cspTrade([sellToOpen(), buyToClose]), new Map())
+    expect(v.realizedPnL).toBe(18870)
+  })
+})

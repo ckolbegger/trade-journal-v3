@@ -42,13 +42,16 @@ export interface CloseReason {
   name: string
 }
 
-// underlyingPrice (stock) and structureValue (option) this slice; the other
-// kinds (pctOfMaxProfit, trailing) and leg-scope arrive with the slices that
-// offer them.
+// underlyingPrice (stock or, projected at intrinsic, option), structureValue
+// (option), and pctOfMaxProfit (short credit structures, Slice 3) this slice;
+// `trailing` and leg-scope arrive with the slices that offer them. `pct` is a
+// whole percentage (80 means 80%), matching how discipline Deviations resolve
+// it (docs/plan/slice-10-deviations-discipline.md).
 export type Scope = { level: 'trade' }
 export type ExitLevel =
   | { scope: Scope; side: 'stop' | 'target'; kind: 'underlyingPrice'; price: Money }
   | { scope: Scope; side: 'stop' | 'target'; kind: 'structureValue'; value: Money }
+  | { scope: Scope; side: 'stop' | 'target'; kind: 'pctOfMaxProfit'; pct: number }
 
 // A leg the Plan intends to hold: side, instrument, and quantity.
 export interface PlannedLeg {

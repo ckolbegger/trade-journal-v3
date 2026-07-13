@@ -18,6 +18,12 @@ import type {
 // pick or add an Idea Source, set quantity and the stop/target, then confirm.
 // The confirmed Plan is immutable — this form is the only place it is written.
 
+function exitTemplateLabel(kind: StrategyExitTemplate['kind']): string {
+  if (kind === 'structureValue') return 'structure value'
+  if (kind === 'pctOfMaxProfit') return '% of max profit'
+  return 'underlying price'
+}
+
 export function PlanForm() {
   const tradeBook = useTradeBook()
   const navigate = useNavigate()
@@ -89,11 +95,25 @@ export function PlanForm() {
   function buildExitLevel(
     side: 'stop' | 'target',
     template: StrategyExitTemplate,
-    dollars: string,
+    value: string,
   ): ExitLevel {
-    return template.kind === 'structureValue'
-      ? { scope: { level: 'trade' }, side, kind: 'structureValue', value: dollarsToCents(dollars) }
-      : { scope: { level: 'trade' }, side, kind: 'underlyingPrice', price: dollarsToCents(dollars) }
+    if (template.kind === 'pctOfMaxProfit') {
+      return { scope: { level: 'trade' }, side, kind: 'pctOfMaxProfit', pct: Number(value) }
+    }
+    if (template.kind === 'structureValue') {
+      return {
+        scope: { level: 'trade' },
+        side,
+        kind: 'structureValue',
+        value: dollarsToCents(value),
+      }
+    }
+    return {
+      scope: { level: 'trade' },
+      side,
+      kind: 'underlyingPrice',
+      price: dollarsToCents(value),
+    }
   }
 
   async function confirm() {
@@ -262,7 +282,7 @@ export function PlanForm() {
 
         {stopTemplate && (
           <label className={field}>
-            Stop ({stopTemplate.kind === 'structureValue' ? 'structure value' : 'underlying price'})
+            Stop ({exitTemplateLabel(stopTemplate.kind)})
             <input
               className={`${input} ${num}`}
               value={stop}
@@ -273,8 +293,7 @@ export function PlanForm() {
         )}
         {targetTemplate && (
           <label className={field}>
-            Target (
-            {targetTemplate.kind === 'structureValue' ? 'structure value' : 'underlying price'})
+            Target ({exitTemplateLabel(targetTemplate.kind)})
             <input
               className={`${input} ${num}`}
               value={target}

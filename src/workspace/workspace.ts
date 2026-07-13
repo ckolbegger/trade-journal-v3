@@ -13,6 +13,7 @@ import type { EntryType } from '@/books/journal/types'
 export const LONG_STOCK_STRATEGY_ID = 'strategy-long-stock'
 export const LONG_CALL_STRATEGY_ID = 'strategy-long-call'
 export const LONG_PUT_STRATEGY_ID = 'strategy-long-put'
+export const CASH_SECURED_PUT_STRATEGY_ID = 'strategy-cash-secured-put'
 export const PLAN_ENTRY_TYPE_ID = 'entry-type-plan'
 export const CLOSE_ENTRY_TYPE_ID = 'entry-type-close'
 export const REVIEW_ENTRY_TYPE_ID = 'entry-type-trade-review'
@@ -61,6 +62,19 @@ const LONG_PUT_STRATEGY: StrategyTemplate = {
   exitLevels: [
     { side: 'stop', kind: 'structureValue' },
     { side: 'target', kind: 'structureValue' },
+  ],
+}
+
+// Planned leg sell 1 put (strike/expiration asked at plan time); asks
+// underlyingPrice stop + pctOfMaxProfit target (the first short position,
+// docs/plan/slice-03-single-leg-options.md).
+const CASH_SECURED_PUT_STRATEGY: StrategyTemplate = {
+  id: CASH_SECURED_PUT_STRATEGY_ID,
+  name: 'Cash-Secured Put',
+  legs: [{ side: 'sell', instrumentKind: 'option', optionType: 'put' }],
+  exitLevels: [
+    { side: 'stop', kind: 'underlyingPrice' },
+    { side: 'target', kind: 'pctOfMaxProfit' },
   ],
 }
 
@@ -172,6 +186,9 @@ export class Workspace {
     }
     if (!strategies.some((s) => s.id === LONG_PUT_STRATEGY.id)) {
       await this.tradeBook.registries.strategies.save(structuredClone(LONG_PUT_STRATEGY))
+    }
+    if (!strategies.some((s) => s.id === CASH_SECURED_PUT_STRATEGY.id)) {
+      await this.tradeBook.registries.strategies.save(structuredClone(CASH_SECURED_PUT_STRATEGY))
     }
 
     const closeReasons = await this.tradeBook.registries.closeReasons.list(true)

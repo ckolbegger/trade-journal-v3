@@ -164,3 +164,61 @@ describe('PlanForm (options)', () => {
     ])
   })
 })
+
+describe('PlanForm (CSP)', () => {
+  async function fillCsp(user: ReturnType<typeof userEvent.setup>) {
+    await user.selectOptions(screen.getByLabelText(/strategy/i), 'Cash-Secured Put')
+    await user.type(screen.getByLabelText(/thesis/i), 'XYZ range-bound')
+    await user.type(screen.getByLabelText(/ticker/i), 'XYZ')
+    fireEvent.change(screen.getByLabelText(/expiration/i), { target: { value: '2026-08-21' } })
+    await user.type(screen.getByLabelText(/strike/i), '100')
+    await user.type(screen.getByLabelText(/quantity/i), '1')
+    await user.type(screen.getByLabelText(/stop/i), '95')
+    await user.type(screen.getByLabelText(/target/i), '80')
+  }
+
+  it('builds a sell-to-open put Planned Leg from the template', async () => {
+    const { book, journal } = await seededBook()
+    const spy = vi.spyOn(book, 'confirmPlan')
+    renderForm(book, journal)
+    const user = userEvent.setup()
+    await screen.findByLabelText(/thesis/i)
+
+    await fillCsp(user)
+    await user.click(screen.getByRole('button', { name: /confirm plan/i }))
+
+    expect(spy).toHaveBeenCalledTimes(1)
+    const draft = spy.mock.calls[0][0]
+    expect(draft.plannedLegs).toEqual([
+      {
+        side: 'sell',
+        instrument: {
+          kind: 'option',
+          ticker: 'XYZ',
+          expiration: '2026-08-21',
+          type: 'put',
+          strike: 10000,
+        },
+        qty: 1,
+      },
+    ])
+    expect(draft.strategyId).toBe('strategy-cash-secured-put')
+  })
+
+  it('asks an underlyingPrice stop and a pctOfMaxProfit target per the strategy template', async () => {
+    const { book, journal } = await seededBook()
+    const spy = vi.spyOn(book, 'confirmPlan')
+    renderForm(book, journal)
+    const user = userEvent.setup()
+    await screen.findByLabelText(/thesis/i)
+
+    await fillCsp(user)
+    await user.click(screen.getByRole('button', { name: /confirm plan/i }))
+
+    const draft = spy.mock.calls[0][0]
+    expect(draft.exitLevels).toEqual([
+      { scope: { level: 'trade' }, side: 'stop', kind: 'underlyingPrice', price: 9500 },
+      { scope: { level: 'trade' }, side: 'target', kind: 'pctOfMaxProfit', pct: 80 },
+    ])
+  })
+})
