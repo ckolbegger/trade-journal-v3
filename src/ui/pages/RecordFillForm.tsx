@@ -3,7 +3,13 @@ import { useTradeBook } from '../tradeBookContext'
 import { dollarsToCents, optionLabel, todayISO } from '../format'
 import { btnPrimary, field, input, num } from '../styles'
 import { buildInstrumentKey } from '@/books/tradebook/types'
-import type { ExecutionDraft, ExecutionTarget, Side, TradeRecord } from '@/books/tradebook/types'
+import type {
+  ExecutionDraft,
+  ExecutionTarget,
+  Position,
+  Side,
+  TradeRecord,
+} from '@/books/tradebook/types'
 
 // "Record fill" on the Trade detail page. Instrument and side pre-fill from the
 // Planned Leg; the trader never picks a Leg — the existing/new Leg target is
@@ -12,16 +18,25 @@ import type { ExecutionDraft, ExecutionTarget, Side, TradeRecord } from '@/books
 
 export function RecordFillForm({
   trade,
+  position,
   onRecorded,
 }: {
   trade: TradeRecord
+  position?: Position | null
   onRecorded: () => void
 }) {
   const tradeBook = useTradeBook()
   const plannedLeg = trade.plan.plannedLegs[0]
-  const instrumentKey = plannedLeg ? buildInstrumentKey(plannedLeg.instrument) : ''
+  // Assignment/exercise (S3.4) can land a Leg the original Plan never named
+  // (the paired stock Leg) — when the Trade currently holds exactly one Leg,
+  // fills target it; otherwise (nothing held yet — the common first-fill case)
+  // fall back to the Planned Leg's instrument.
+  const heldInstrument =
+    position && position.holdings.length === 1 ? position.holdings[0].instrument : undefined
+  const activeInstrument = heldInstrument ?? plannedLeg?.instrument
+  const instrumentKey = activeInstrument ? buildInstrumentKey(activeInstrument) : ''
   const instrumentDisplay =
-    plannedLeg?.instrument.kind === 'option' ? optionLabel(plannedLeg.instrument) : instrumentKey
+    activeInstrument?.kind === 'option' ? optionLabel(activeInstrument) : instrumentKey
 
   const [side, setSide] = useState<Side>(plannedLeg?.side ?? 'buy')
   const [qty, setQty] = useState('')

@@ -316,3 +316,310 @@ describe("recordExecution (kind 'expire')", () => {
     expect(outcome.nowFlat).toBe(true)
   })
 })
+
+// Assignment/exercise (docs/plan/slice-03-single-leg-options.md, S3.4): ONE
+// recordExecution call closes the option Leg at 0 (kind assign/exercise) AND
+// opens the paired stock Leg at the strike, in the SAME Trade. Both mutations
+// land in the one TradeRecord document the call's single `put` persists.
+describe('recordExecution (assign)', () => {
+  async function bookWithShortPut(
+    openFees = 0,
+  ): Promise<{ book: TradeBook; tradeId: string; legId: string }> {
+    const book = new TradeBook(new InMemoryBinding())
+    const institution = { id: '', name: 'Schwab' } as Institution
+    await book.registries.institutions.save(institution)
+    const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
+    await book.registries.accounts.save(account)
+    const draft: PlanDraft = {
+      accountId: account.id,
+      thesis: 'XYZ range-bound',
+      strategyId: 'strategy-cash-secured-put',
+      ideaSourceId: '',
+      plannedLegs: [
+        {
+          side: 'sell',
+          instrument: {
+            kind: 'option',
+            ticker: 'XYZ',
+            expiration: '2026-08-21',
+            type: 'put',
+            strike: 10000,
+          },
+          qty: 1,
+        },
+      ],
+      exitLevels: [],
+      plannedAt: '2026-07-10',
+    }
+    const tradeId = await book.confirmPlan(draft)
+    const outcome = await book.recordExecution(
+      { tradeId, newLeg: 'XYZ 2026-08-21 P 100' },
+      {
+        side: 'sell',
+        qty: 1,
+        price: 250,
+        fees: openFees,
+        timestamp: new Date('2026-07-10T12:00:00').getTime(),
+      },
+    )
+    return { book, tradeId, legId: outcome.record.legs[0].id }
+  }
+
+  function assignExec(fees = 0): ExecutionDraft {
+    return {
+      side: 'buy',
+      qty: 1,
+      price: 0,
+      fees,
+      kind: 'assign',
+      timestamp: new Date('2026-08-21T16:00:00').getTime(),
+    }
+  }
+
+  it('closes the short put Leg at 0 and opens a buy of 100 shares at the 100 strike in the same Trade', async () => {
+    const { book, tradeId, legId } = await bookWithShortPut()
+    const outcome = await book.recordExecution({ tradeId, legId }, assignExec())
+
+    expect(outcome.record.legs).toHaveLength(2)
+    const [optionLeg, stockLeg] = outcome.record.legs
+    expect(optionLeg.executions[1]).toMatchObject({ side: 'buy', qty: 1, price: 0, kind: 'assign' })
+    expect(stockLeg.instrument).toEqual({ kind: 'stock', ticker: 'XYZ' })
+    expect(stockLeg.executions).toEqual([
+      {
+        side: 'buy',
+        qty: 100,
+        price: 10000,
+        fees: 0,
+        kind: 'fill',
+        timestamp: new Date('2026-08-21T16:00:00').getTime(),
+      },
+    ])
+  })
+
+  it('commits both Executions in one transaction (neither exists alone after a failure)', async () => {
+    const { book, tradeId } = await bookWithPlan() // a stock Trade — assign is invalid on a stock Leg
+    const first = await book.recordExecution(
+      { tradeId, newLeg: 'AAPL' },
+      fill({ side: 'buy', qty: 100 }),
+    )
+    const legId = first.record.legs[0].id
+
+    await expect(
+      book.recordExecution({ tradeId, legId }, { ...assignExec(), qty: 100 }),
+    ).rejects.toThrow()
+
+    const record = await book.get(tradeId)
+    expect(record.legs).toHaveLength(1)
+    expect(record.legs[0].executions).toHaveLength(1) // the bogus assign-close never persisted
+  })
+
+  it('leaves the Trade open (nowFlat=false) holding the stock', async () => {
+    const { book, tradeId, legId } = await bookWithShortPut()
+    const outcome = await book.recordExecution({ tradeId, legId }, assignExec())
+    expect(outcome.nowFlat).toBe(false)
+  })
+
+  it('realizes the full 250.00 credit on the option Leg', async () => {
+    const { book, tradeId, legId } = await bookWithShortPut()
+    const outcome = await book.recordExecution({ tradeId, legId }, assignExec())
+    const v = valuation(
+      outcome.record,
+      new Map([['XYZ', { instrument: 'XYZ', date: '2026-08-21', price: 10000, origin: 'manual' }]]),
+    )
+    expect(v.perLeg[0].realized).toBe(25000) // 250.00, no fees on this fixture
+  })
+})
+
+describe('recordExecution (exercise)', () => {
+  it('closes the long call Leg at 0 and opens a buy of 100 shares at the strike', async () => {
+    const book = new TradeBook(new InMemoryBinding())
+    const institution = { id: '', name: 'Schwab' } as Institution
+    await book.registries.institutions.save(institution)
+    const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
+    await book.registries.accounts.save(account)
+    const draft: PlanDraft = {
+      accountId: account.id,
+      thesis: 'XYZ breaks out',
+      strategyId: 'strategy-long-call',
+      ideaSourceId: '',
+      plannedLegs: [
+        {
+          side: 'buy',
+          instrument: {
+            kind: 'option',
+            ticker: 'XYZ',
+            expiration: '2026-08-21',
+            type: 'call',
+            strike: 10000,
+          },
+          qty: 1,
+        },
+      ],
+      exitLevels: [],
+      plannedAt: '2026-07-10',
+    }
+    const tradeId = await book.confirmPlan(draft)
+    const opened = await book.recordExecution(
+      { tradeId, newLeg: 'XYZ 2026-08-21 C 100' },
+      {
+        side: 'buy',
+        qty: 1,
+        price: 1200,
+        fees: 0,
+        timestamp: new Date('2026-07-10T12:00:00').getTime(),
+      },
+    )
+    const legId = opened.record.legs[0].id
+
+    const outcome = await book.recordExecution(
+      { tradeId, legId },
+      {
+        side: 'sell',
+        qty: 1,
+        price: 0,
+        fees: 0,
+        kind: 'exercise',
+        timestamp: new Date('2026-08-21T16:00:00').getTime(),
+      },
+    )
+
+    expect(outcome.record.legs).toHaveLength(2)
+    const stockLeg = outcome.record.legs[1]
+    expect(stockLeg.instrument).toEqual({ kind: 'stock', ticker: 'XYZ' })
+    expect(stockLeg.executions[0]).toMatchObject({ side: 'buy', qty: 100, price: 10000 })
+  })
+
+  // The SELL branch of the direction rule: a long PUT exercised delivers stock
+  // (the holder sells at the strike), opening a SHORT stock Leg — unlike the
+  // long call above, which buys. Long Put is a seeded strategy (S3.1) and the
+  // agenda offers "Exercised" for any long expired leg, so this path is
+  // reachable today even though this slice's worked examples never book it.
+  it('closes the long put Leg at 0 and opens a sell of 100 shares at the strike', async () => {
+    const book = new TradeBook(new InMemoryBinding())
+    const institution = { id: '', name: 'Schwab' } as Institution
+    await book.registries.institutions.save(institution)
+    const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
+    await book.registries.accounts.save(account)
+    const draft: PlanDraft = {
+      accountId: account.id,
+      thesis: 'XYZ breaks down',
+      strategyId: 'strategy-long-put',
+      ideaSourceId: '',
+      plannedLegs: [
+        {
+          side: 'buy',
+          instrument: {
+            kind: 'option',
+            ticker: 'XYZ',
+            expiration: '2026-08-21',
+            type: 'put',
+            strike: 10000,
+          },
+          qty: 1,
+        },
+      ],
+      exitLevels: [],
+      plannedAt: '2026-07-10',
+    }
+    const tradeId = await book.confirmPlan(draft)
+    const opened = await book.recordExecution(
+      { tradeId, newLeg: 'XYZ 2026-08-21 P 100' },
+      {
+        side: 'buy',
+        qty: 1,
+        price: 1200,
+        fees: 0,
+        timestamp: new Date('2026-07-10T12:00:00').getTime(),
+      },
+    )
+    const legId = opened.record.legs[0].id
+
+    const outcome = await book.recordExecution(
+      { tradeId, legId },
+      {
+        side: 'sell',
+        qty: 1,
+        price: 0,
+        fees: 0,
+        kind: 'exercise',
+        timestamp: new Date('2026-08-21T16:00:00').getTime(),
+      },
+    )
+
+    expect(outcome.record.legs).toHaveLength(2)
+    const stockLeg = outcome.record.legs[1]
+    expect(stockLeg.instrument).toEqual({ kind: 'stock', ticker: 'XYZ' })
+    // 100 shares (contract multiplier) at the 100.00 strike (10000 cents).
+    expect(stockLeg.executions[0]).toMatchObject({ side: 'sell', qty: 100, price: 10000 })
+  })
+})
+
+describe('valuation after assignment', () => {
+  async function assignedTrade(): Promise<ReturnType<typeof valuation>> {
+    const book = new TradeBook(new InMemoryBinding())
+    const institution = { id: '', name: 'Schwab' } as Institution
+    await book.registries.institutions.save(institution)
+    const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
+    await book.registries.accounts.save(account)
+    const draft: PlanDraft = {
+      accountId: account.id,
+      thesis: 'XYZ range-bound',
+      strategyId: 'strategy-cash-secured-put',
+      ideaSourceId: '',
+      plannedLegs: [
+        {
+          side: 'sell',
+          instrument: {
+            kind: 'option',
+            ticker: 'XYZ',
+            expiration: '2026-08-21',
+            type: 'put',
+            strike: 10000,
+          },
+          qty: 1,
+        },
+      ],
+      exitLevels: [],
+      plannedAt: '2026-07-10',
+    }
+    const tradeId = await book.confirmPlan(draft)
+    const opened = await book.recordExecution(
+      { tradeId, newLeg: 'XYZ 2026-08-21 P 100' },
+      {
+        side: 'sell',
+        qty: 1,
+        price: 250,
+        fees: 65,
+        timestamp: new Date('2026-07-10T12:00:00').getTime(),
+      },
+    )
+    const legId = opened.record.legs[0].id
+    const outcome = await book.recordExecution(
+      { tradeId, legId },
+      {
+        side: 'buy',
+        qty: 1,
+        price: 0,
+        fees: 65,
+        kind: 'assign',
+        timestamp: new Date('2026-08-21T16:00:00').getTime(),
+      },
+    )
+    const marks = new Map([
+      ['XYZ', { instrument: 'XYZ', date: '2026-08-22', price: 9700, origin: 'manual' as const }],
+    ])
+    return valuation(outcome.record, marks)
+  }
+
+  it('carries strike-based stock basis: XYZ marked 97 shows -300.00 unrealized on the stock Leg', async () => {
+    const v = await assignedTrade()
+    const stockLeg = v.perLeg.find((l) => l.instrument.kind === 'stock')!
+    expect(stockLeg.basis).toBe(1000000) // 10,000.00
+    expect(stockLeg.unrealized).toBe(-30000) // -300.00
+  })
+
+  it('shows Trade totalPnL as option credit plus stock unrealized (-51.30 with fees at mark 97)', async () => {
+    const v = await assignedTrade()
+    expect(v.totalPnL).toBe(-5130)
+  })
+})

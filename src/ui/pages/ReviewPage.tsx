@@ -78,11 +78,13 @@ export function ReviewPage() {
     })
   }
 
-  // Records the option Leg's expiration at price 0 through the ordinary
-  // Execution path (review.md) — the same recordExecution any fill goes
-  // through, deviation-free until Slice 9. A short holding closes by buying
-  // back; a long holding closes by selling.
-  async function recordExpiredWorthless(leg: ExpiredHolding) {
+  // Records the option Leg's outcome through the ordinary Execution path
+  // (review.md) — the same recordExecution any fill goes through, deviation-free
+  // until Slice 9. A short holding closes by buying back; a long holding closes
+  // by selling. 'assign'/'exercise' additionally open the paired stock Leg in
+  // the same Trade (recordExecution's own job, S3.4) — the Trade stays open
+  // holding it, so it never triggers the Close Reason prompt below.
+  async function recordOutcome(leg: ExpiredHolding, kind: 'expire' | 'assign' | 'exercise') {
     const outcome = await tradeBook.recordExecution(
       { tradeId: leg.tradeId, legId: leg.legId },
       {
@@ -90,7 +92,7 @@ export function ReviewPage() {
         qty: leg.qty,
         price: 0,
         fees: 0,
-        kind: 'expire',
+        kind,
         timestamp: new Date(`${leg.expiredOn}T16:00:00`).getTime(),
       },
     )
@@ -159,13 +161,24 @@ export function ReviewPage() {
                       {leg.qty} × {optionLabel(leg.instrument)}
                       <span className={`ml-2 text-slate-500 ${num}`}>expired {leg.expiredOn}</span>
                     </span>
-                    <button
-                      type="button"
-                      className={btnSecondary}
-                      onClick={() => void recordExpiredWorthless(leg)}
-                    >
-                      Expired worthless
-                    </button>
+                    <span className="flex gap-2">
+                      <button
+                        type="button"
+                        className={btnSecondary}
+                        onClick={() => void recordOutcome(leg, 'expire')}
+                      >
+                        Expired worthless
+                      </button>
+                      <button
+                        type="button"
+                        className={btnSecondary}
+                        onClick={() =>
+                          void recordOutcome(leg, leg.side === 'short' ? 'assign' : 'exercise')
+                        }
+                      >
+                        {leg.side === 'short' ? 'Assigned' : 'Exercised'}
+                      </button>
+                    </span>
                   </li>
                 ))}
               </ul>

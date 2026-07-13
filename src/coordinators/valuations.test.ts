@@ -536,6 +536,32 @@ describe('Valuations.expiredHoldings', () => {
 
     expect(expired).toHaveLength(1)
   })
+
+  // Watch item from the S3.3 review: Holding carries no legId, so the Leg lookup
+  // matches by InstrumentKey. A stock Leg's key ("XYZ") and this option's key
+  // ("XYZ 2026-08-21 P 100") never collide, so a Trade that also holds stock
+  // (e.g. from an earlier assignment on a different contract, ADR 0002) must
+  // still resolve the expired OPTION Leg correctly.
+  it('resolves the option Leg correctly when the Trade also holds a stock Leg', async () => {
+    const book = inMemoryTradeBook()
+    const tradeId = await seedCsp(book)
+    await book.recordExecution(
+      { tradeId, newLeg: 'XYZ' },
+      {
+        side: 'buy',
+        qty: 100,
+        price: 10000,
+        fees: 0,
+        timestamp: new Date('2026-07-15T12:00:00').getTime(),
+      },
+    )
+
+    const expired = await new Valuations(book).expiredHoldings('2026-08-22')
+
+    expect(expired).toHaveLength(1)
+    expect(expired[0].instrument.kind).toBe('option')
+    expect(expired[0].qty).toBe(1)
+  })
 })
 
 describe('Valuations.value', () => {

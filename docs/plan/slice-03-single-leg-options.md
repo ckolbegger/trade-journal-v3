@@ -175,7 +175,7 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
 
 ---
 
-## ☐ Story S3.4 — Assignment & exercise
+## ☑ Story S3.4 — Assignment & exercise
 
 > As a trader, I want an in-the-money expiration to record assignment (or exercise) and land the resulting stock in the same Trade, so that the campaign's economics stay in one place.
 
@@ -183,7 +183,7 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
 
 ### Tasks
 
-- [ ] **S3.4.T1 — Assignment/exercise recording.** One TradeBook operation call per event: the option Leg closes at 0 (kind assign/exercise) and the stock Leg opens at strike, atomically in one storage transaction.
+- [x] **S3.4.T1 — Assignment/exercise recording.** One TradeBook operation call per event: the option Leg closes at 0 (kind assign/exercise) and the stock Leg opens at strike, atomically in one storage transaction.
 
   ```
   describe "recordExecution (assign)"
@@ -198,7 +198,7 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
   - it shows Trade totalPnL as option credit plus stock unrealized (-51.30 with fees at mark 97)
   ```
 
-- [ ] **S3.4.T2 — Outcome UI.** The expired-leg agenda item (S3.3) gains the in-the-money choices: **assigned** (short) / **exercised** (long); the Trade detail now shows both Legs with per-Leg P&L; the review walk prompts for the new stock Mark next session.
+- [x] **S3.4.T2 — Outcome UI.** The expired-leg agenda item (S3.3) gains the in-the-money choices: **assigned** (short) / **exercised** (long); the Trade detail now shows both Legs with per-Leg P&L; the review walk prompts for the new stock Mark next session.
 
   ```
   describe "AssignmentFlow"
@@ -207,9 +207,9 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
   - it keeps the Trade in the open-Trades walk (still holding)
   ```
 
-- [ ] **S3.4.T3 — Integration tests**: assigned CSP over Dexie → reopen DB → both Legs present, option realized +250, stock basis 10,000, statusOf 'open'; then sell the stock → flat → Close Reason.
-- [ ] **S3.4.T4 — Playwright e2e** (`e2e/s3-4-assignment.spec.ts`): ITM expired put → assigned → Trade shows 100 shares @ 100; sell at 99 → closed with total P&L correct.
-- [ ] **S3.4.T5 — Browser verification.** Drive assignment in a real browser: the stock appears in the same Trade, per-Leg P&L reads sensibly (option +250, stock negative), and the following review walks the Trade with a stock Mark prompt. All suites green.
+- [x] **S3.4.T3 — Integration tests**: assigned CSP over Dexie → reopen DB → both Legs present, option realized +250, stock basis 10,000, statusOf 'open'; then sell the stock → flat → Close Reason.
+- [x] **S3.4.T4 — Playwright e2e** (`e2e/s3-4-assignment.spec.ts`): ITM expired put → assigned → Trade shows 100 shares @ 100; sell at 99 → closed with total P&L correct.
+- [x] **S3.4.T5 — Browser verification.** Drive assignment in a real browser: the stock appears in the same Trade, per-Leg P&L reads sensibly (option +250, stock negative), and the following review walks the Trade with a stock Mark prompt. All suites green.
 
 ---
 

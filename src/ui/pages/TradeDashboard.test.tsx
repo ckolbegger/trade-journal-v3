@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { TradeDashboard } from './TradeDashboard'
 import { TradeBookContext } from '../tradeBookContext'
 import { PriceBookContext } from '../priceBookContext'
@@ -53,6 +54,62 @@ async function seed(book: TradeBook, exitLevels: ExitLevel[]): Promise<string> {
   }
   const id = await book.confirmPlan(draft)
   await book.recordExecution({ tradeId: id, newLeg: 'AAPL' }, buy100)
+  return id
+}
+
+// An assigned CSP: the option Leg closes flat and a stock Leg opens in the
+// same Trade (S3.4) — the sibling fixture to RecordFillForm's post-assignment
+// test. `exitLevels` lets a caller exercise the "at intrinsic" label.
+async function seedAssignedCsp(
+  tradeBook: TradeBook,
+  exitLevels: ExitLevel[] = [],
+): Promise<string> {
+  const institution = { id: '', name: 'Schwab' } as Institution
+  await tradeBook.registries.institutions.save(institution)
+  const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
+  await tradeBook.registries.accounts.save(account)
+  const id = await tradeBook.confirmPlan({
+    accountId: account.id,
+    thesis: 'XYZ range-bound',
+    strategyId: 'strategy-cash-secured-put',
+    ideaSourceId: '',
+    plannedLegs: [
+      {
+        side: 'sell',
+        instrument: {
+          kind: 'option',
+          ticker: 'XYZ',
+          expiration: '2026-08-21',
+          type: 'put',
+          strike: 10000,
+        },
+        qty: 1,
+      },
+    ],
+    exitLevels,
+    plannedAt: '2026-07-10',
+  })
+  const opened = await tradeBook.recordExecution(
+    { tradeId: id, newLeg: 'XYZ 2026-08-21 P 100' },
+    {
+      side: 'sell',
+      qty: 1,
+      price: 250,
+      fees: 65,
+      timestamp: new Date('2026-07-10T12:00:00').getTime(),
+    },
+  )
+  await tradeBook.recordExecution(
+    { tradeId: id, legId: opened.record.legs[0].id },
+    {
+      side: 'buy',
+      qty: 1,
+      price: 0,
+      fees: 0,
+      kind: 'assign',
+      timestamp: new Date('2026-08-21T16:00:00').getTime(),
+    },
+  )
   return id
 }
 
@@ -118,5 +175,107 @@ describe('TradeDashboard', () => {
     expect(await screen.findByLabelText(/mark/i)).toBeInTheDocument()
     expect(screen.queryByLabelText('profit and loss')).toBeNull()
     expect(screen.queryByLabelText('ongoing risk and reward')).toBeNull()
+  })
+
+  // S3.4: after assignment/exercise the Trade holds two Legs (option + paired
+  // stock) — the dashboard shows both, per-Leg, alongside the Trade totals.
+  it('shows per-Leg P&L once the Trade holds more than one Leg (assignment)', async () => {
+    const { tradeBook, priceBook } = inMemoryBooks()
+    const institution = { id: '', name: 'Schwab' } as Institution
+    await tradeBook.registries.institutions.save(institution)
+    const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
+    await tradeBook.registries.accounts.save(account)
+    const id = await tradeBook.confirmPlan({
+      accountId: account.id,
+      thesis: 'XYZ range-bound',
+      strategyId: 'strategy-cash-secured-put',
+      ideaSourceId: '',
+      plannedLegs: [
+        {
+          side: 'sell',
+          instrument: {
+            kind: 'option',
+            ticker: 'XYZ',
+            expiration: '2026-08-21',
+            type: 'put',
+            strike: 10000,
+          },
+          qty: 1,
+        },
+      ],
+      exitLevels: [],
+      plannedAt: '2026-07-10',
+    })
+    const opened = await tradeBook.recordExecution(
+      { tradeId: id, newLeg: 'XYZ 2026-08-21 P 100' },
+      {
+        side: 'sell',
+        qty: 1,
+        price: 250,
+        fees: 65,
+        timestamp: new Date('2026-07-10T12:00:00').getTime(),
+      },
+    )
+    await tradeBook.recordExecution(
+      { tradeId: id, legId: opened.record.legs[0].id },
+      {
+        side: 'buy',
+        qty: 1,
+        price: 0,
+        fees: 0,
+        kind: 'assign',
+        timestamp: new Date('2026-08-21T16:00:00').getTime(),
+      },
+    )
+    await priceBook.record('XYZ', todayISO(), 9700, 'manual')
+
+    renderDashboard(tradeBook, priceBook, id)
+
+    const perLeg = await screen.findByLabelText('per-leg profit and loss')
+    expect(perLeg).toHaveTextContent(/XYZ Aug'26 100P/)
+    expect(perLeg).toHaveTextContent('XYZ')
+    expect(perLeg).toHaveTextContent(/-300\.00/) // stock unrealized
+  })
+
+  // Sibling bug to the one RecordFillForm had (T5 browser verification found
+  // it): the option Leg is now flat, so the Mark prompt — and every later
+  // "record another Mark" form — must target the HELD stock Leg, or the
+  // valuation can never be satisfied from the detail page.
+  it('targets the held stock Leg for the Mark prompt once the option Leg is flat (assigned)', async () => {
+    const { tradeBook, priceBook } = inMemoryBooks()
+    const id = await seedAssignedCsp(tradeBook)
+    renderDashboard(tradeBook, priceBook, id)
+
+    await expect(screen.findByText(/enter today's price/i)).resolves.toBeInTheDocument()
+
+    const user = userEvent.setup()
+    await user.type(screen.getByLabelText(/mark/i), '97')
+    await user.click(screen.getByRole('button', { name: /save mark/i }))
+
+    // Recording against the right instrument clears the missing-marks state.
+    await expect(screen.findByLabelText('profit and loss')).resolves.toBeInTheDocument()
+    const recorded = await priceBook.markSet(['XYZ'], todayISO())
+    expect(recorded.get('XYZ')?.price).toBe(9700)
+    // Never recorded against the dead option contract.
+    const contractMark = await priceBook.markSet(['XYZ 2026-08-21 P 100'], todayISO())
+    expect(contractMark.has('XYZ 2026-08-21 P 100')).toBe(false)
+  })
+
+  // The "at intrinsic" label must follow what risk-reward.ts actually computes
+  // from (the currently HELD Leg), not the original Plan's instrument — once
+  // assignment replaces the held option with stock, the same underlyingPrice
+  // Exit Level resolves to a plain price (priceAtLevel, risk-reward.ts), so the
+  // label must drop "(at intrinsic)".
+  it('drops the "at intrinsic" label once the held Leg is stock, not option (assigned)', async () => {
+    const { tradeBook, priceBook } = inMemoryBooks()
+    const id = await seedAssignedCsp(tradeBook, [
+      { scope: { level: 'trade' }, side: 'stop', kind: 'underlyingPrice', price: 9500 },
+    ])
+    await priceBook.record('XYZ', todayISO(), 9700, 'manual')
+    renderDashboard(tradeBook, priceBook, id)
+
+    const rr = await screen.findByLabelText('ongoing risk and reward')
+    expect(within(rr).getByText('Planned risk')).toBeInTheDocument()
+    expect(within(rr).queryByText(/at intrinsic/i)).not.toBeInTheDocument()
   })
 })

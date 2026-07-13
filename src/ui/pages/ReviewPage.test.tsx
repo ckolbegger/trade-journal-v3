@@ -312,4 +312,59 @@ describe('ReviewAgenda (expired)', () => {
 
     await expect(screen.findByLabelText(/close reason/i)).resolves.toBeInTheDocument()
   })
+
+  // The in-the-money choices (S3.4): assigned for a short leg, exercised for a
+  // long leg, alongside "expired worthless" — the trader knows which happened;
+  // the agenda can't (expiredHoldings consults no Marks).
+  describe('AssignmentFlow', () => {
+    it('offers assigned/exercised for an ITM expired leg', async () => {
+      const { tradeBook, journal, priceBook, accountId } = await workspace()
+      await seedExpiredCsp(tradeBook, accountId) // a short put
+
+      renderPage(tradeBook, journal, priceBook)
+      await startReview()
+
+      const row = await screen.findByRole('listitem', { name: /1 XYZ/ })
+      expect(within(row).getByRole('button', { name: /expired worthless/i })).toBeInTheDocument()
+      expect(within(row).getByRole('button', { name: /^assigned$/i })).toBeInTheDocument()
+      expect(within(row).queryByRole('button', { name: /^exercised$/i })).not.toBeInTheDocument()
+    })
+
+    it('shows the stock Leg on the Trade after recording', async () => {
+      const { tradeBook, journal, priceBook, accountId } = await workspace()
+      const { tradeId } = await seedExpiredCsp(tradeBook, accountId)
+
+      renderPage(tradeBook, journal, priceBook)
+      await startReview()
+
+      const row = await screen.findByRole('listitem', { name: /1 XYZ/ })
+      await userEvent.click(within(row).getByRole('button', { name: /^assigned$/i }))
+
+      await waitFor(async () => {
+        const record = await tradeBook.get(tradeId)
+        expect(record.legs).toHaveLength(2)
+      })
+      const record = await tradeBook.get(tradeId)
+      expect(record.legs[1].instrument).toEqual({ kind: 'stock', ticker: 'XYZ' })
+    })
+
+    it('keeps the Trade in the open-Trades walk (still holding)', async () => {
+      const { tradeBook, journal, priceBook, accountId } = await workspace()
+      const { tradeId } = await seedExpiredCsp(tradeBook, accountId)
+
+      renderPage(tradeBook, journal, priceBook)
+      await startReview()
+
+      const row = await screen.findByRole('listitem', { name: /1 XYZ/ })
+      await userEvent.click(within(row).getByRole('button', { name: /^assigned$/i }))
+
+      // Assignment leaves the Trade holding the stock — never flat, so no Close
+      // Reason prompt, and the Trade stays in the open query.
+      expect(screen.queryByLabelText(/close reason/i)).not.toBeInTheDocument()
+      await waitFor(async () => {
+        const open = await tradeBook.query({ status: 'open' })
+        expect(open.map((t) => t.id)).toContain(tradeId)
+      })
+    })
+  })
 })

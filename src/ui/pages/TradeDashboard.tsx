@@ -1,11 +1,17 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useValuations } from '../valuationsContext'
 import { MarkEntry } from './MarkEntry'
-import { centsToDollars } from '../format'
+import { centsToDollars, optionLabel } from '../format'
 import { card, num, subheading } from '../styles'
 import { buildInstrumentKey } from '@/books/tradebook/types'
-import type { Money, RiskReward } from '@/books/tradebook/types'
+import type { Instrument, Money, RiskReward } from '@/books/tradebook/types'
 import type { TradeDetailView } from '@/coordinators/valuations'
+
+// A held instrument rendered for display — a stock is just its ticker; an
+// option shows its contract label ("AAPL Jun'27 200C").
+function instrumentLabel(instrument: Instrument): string {
+  return instrument.kind === 'option' ? optionLabel(instrument) : instrument.ticker
+}
 
 // The Trade dashboard: P&L and all four mark-to-market Risk/Reward anchors, with
 // the original Plan's risk/reward alongside for contrast (ADR 0010). Every number
@@ -42,14 +48,27 @@ export function TradeDashboard({ tradeId }: { tradeId: string }) {
   if (!detail) return null
 
   const plannedInstrument = detail.record.plan.plannedLegs[0]?.instrument
-  const instrument = plannedInstrument ? buildInstrumentKey(plannedInstrument) : ''
+  // Assignment/exercise (S3.4) can land a Leg the original Plan never named
+  // (the paired stock Leg, with the option Leg now flat) — when the Trade
+  // currently holds exactly one Leg, both the Mark prompt and the "at
+  // intrinsic" labeling below follow it; otherwise (nothing held yet — the
+  // common first-fill case) they fall back to the Planned Leg's instrument
+  // (bit-identical to every pre-assignment flow). Mirrors RecordFillForm's
+  // same fix.
+  const heldInstrument =
+    detail.position.holdings.length === 1 ? detail.position.holdings[0].instrument : undefined
+  const activeInstrument = heldInstrument ?? plannedInstrument
+  const instrument = activeInstrument ? buildInstrumentKey(activeInstrument) : ''
 
-  // An underlyingPrice Exit Level on an option Leg values the structure at
+  // An underlyingPrice Exit Level on a held OPTION Leg values the structure at
   // intrinsic (no pricing model exists to value time, ADR 0009) — the display
-  // says so wherever that projection feeds a risk/reward anchor.
+  // says so wherever that projection feeds a risk/reward anchor. Once
+  // assignment/exercise replaces the held Leg with stock, `priceAtLevel`
+  // (risk-reward.ts) resolves the same Exit Level as a plain price instead —
+  // the label must follow what is actually held, not the original Plan.
   const exitLevels = detail.record.plan.exitLevels
   const atIntrinsic = (side: 'stop' | 'target'): boolean =>
-    plannedInstrument?.kind === 'option' &&
+    activeInstrument?.kind === 'option' &&
     exitLevels.some((l) => l.side === side && l.kind === 'underlyingPrice')
 
   if (detail.marksMissing || !detail.valuation || !detail.riskReward) {
@@ -78,6 +97,23 @@ export function TradeDashboard({ tradeId }: { tradeId: string }) {
         <Row label="Fees" value={money(v.fees)} />
         <Row label="Total P&L" value={money(v.totalPnL)} />
       </dl>
+
+      {/* Multiple Legs only after an assignment/exercise landed a paired stock
+          Leg alongside the option (S3.4) — a single-Leg Trade already shows
+          this same total above, so the per-Leg breakdown stays hidden then. */}
+      {v.perLeg.length > 1 && (
+        <dl aria-label="per-leg profit and loss" className="space-y-1 text-sm">
+          <p className={subheading}>Per Leg</p>
+          {v.perLeg.map((leg, i) => (
+            <div key={i} className="flex justify-between">
+              <dt className="text-slate-500">{instrumentLabel(leg.instrument)}</dt>
+              <dd className={`text-slate-900 ${num}`}>
+                realized {money(leg.realized)} · unrealized {money(leg.unrealized)}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <dl

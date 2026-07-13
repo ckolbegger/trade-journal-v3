@@ -62,6 +62,45 @@ describe('RecordFillForm', () => {
     expect(typeof draft.timestamp).toBe('number')
   })
 
+  it('targets the currently held Leg when it differs from the Planned Leg (post-assignment)', async () => {
+    const { book, trade } = await bookWithPlannedTrade()
+    // Simulate the S3.4 assignment outcome: the Trade now holds a stock Leg the
+    // original Plan never named, with the Planned Leg still reading its (now
+    // flat) option.
+    const assignedTrade: TradeRecord = {
+      ...trade,
+      legs: [{ id: 'leg-stock', instrument: { kind: 'stock', ticker: 'XYZ' }, executions: [] }],
+    }
+    const position = {
+      holdings: [
+        { instrument: { kind: 'stock' as const, ticker: 'XYZ' }, qty: 100, side: 'long' as const },
+      ],
+    }
+    const spy = vi.spyOn(book, 'recordExecution').mockResolvedValue({
+      record: assignedTrade,
+      newDeviations: [],
+      nowFlat: false,
+    })
+    render(
+      <TradeBookContext.Provider value={book}>
+        <RecordFillForm trade={assignedTrade} position={position} onRecorded={() => {}} />
+      </TradeBookContext.Provider>,
+    )
+    const user = userEvent.setup()
+
+    expect(await screen.findByText('XYZ')).toBeInTheDocument()
+
+    await user.click(screen.getByLabelText(/side/i))
+    await user.selectOptions(screen.getByLabelText(/side/i), 'sell')
+    await user.type(screen.getByLabelText(/quantity/i), '100')
+    await user.type(screen.getByLabelText(/price/i), '99')
+    await user.click(screen.getByRole('button', { name: /record fill/i }))
+
+    expect(spy).toHaveBeenCalledTimes(1)
+    const [target] = spy.mock.calls[0]
+    expect(target).toEqual({ tradeId: trade.id, legId: 'leg-stock' })
+  })
+
   it('shows validation errors inline (qty, price)', async () => {
     const { book, trade } = await bookWithPlannedTrade()
     const spy = vi.spyOn(book, 'recordExecution')

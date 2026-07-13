@@ -179,6 +179,7 @@ export function TradeDetail() {
         {showFill && (
           <RecordFillForm
             trade={trade}
+            position={position}
             onRecorded={() => {
               setShowFill(false)
               setRefresh((n) => n + 1)

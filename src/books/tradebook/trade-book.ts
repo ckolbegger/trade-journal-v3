@@ -1,5 +1,6 @@
 import type {
   CloseReason,
+  ExecutionFacts,
   InstrumentKey,
   LegFacts,
   TradeId,
@@ -9,6 +10,7 @@ import type { StorageBinding } from '@/storage/storage-binding'
 import { statusOf } from '@/domain/trademath/status'
 import { positionOf } from '@/domain/trademath/position'
 import { buildInstrumentKey, parseInstrumentKey } from '@/domain/trademath/instrument'
+import { contractMultiplierOf } from '@/domain/trademath/multiplier'
 import { ListRegistry } from '../list-registry'
 import type {
   Account,
@@ -82,17 +84,36 @@ export class TradeBook {
   // Records a fill against an existing Leg or a new Leg in an existing Trade.
   // Stores the fact only — netting, status, and nowFlat are derived by TradeMath
   // (never stored, ADR 0005). No target can create a Trade (plan-first, ADR 0003).
+  //
+  // kind 'assign' / 'exercise' is the one exception: the closing Execution this
+  // call appends to the option Leg is paired, in the SAME call, with an opening
+  // Execution on a brand-new stock Leg at the strike price (ADR 0002 — schema
+  // already allows multiple Legs per Trade; docs/plan/slice-03-single-leg-options.md).
+  // Both land in the one TradeRecord document written by the single `put` below,
+  // so a failure building the stock Leg (thrown before that `put`) leaves NEITHER
+  // Execution persisted — the in-memory mutations are discarded with the record.
   async recordExecution(target: ExecutionTarget, exec: ExecutionDraft): Promise<ExecutionOutcome> {
     if (!Number.isInteger(exec.qty) || exec.qty <= 0)
       throw new Error('Execution qty must be a positive integer')
     if (exec.price < 0) throw new Error('Execution price cannot be negative')
     if (exec.fees < 0) throw new Error('Execution fees cannot be negative')
 
-    const record = await this.binding.get<TradeRecord>(TRADES, target.tradeId)
-    if (!record) throw new Error(`No Trade ${target.tradeId}`)
+    const fetched = await this.binding.get<TradeRecord>(TRADES, target.tradeId)
+    if (!fetched) throw new Error(`No Trade ${target.tradeId}`)
+    // A deep clone before any mutation: some bindings (in-memory) return nested
+    // arrays by reference, and a kind assign/exercise call may throw AFTER
+    // mutating a Leg's executions in memory (building the paired stock Leg) —
+    // mutating only our own clone keeps stored facts untouched until the one
+    // `put` below actually commits.
+    const record = structuredClone(fetched)
 
     const leg = resolveLeg(record, target)
     leg.executions.push({ ...exec })
+
+    if (exec.kind === 'assign' || exec.kind === 'exercise') {
+      record.legs.push(openAssignedStock(leg, exec))
+    }
+
     await this.binding.put(TRADES, structuredClone(record))
 
     return {
@@ -178,4 +199,35 @@ function resolveLeg(record: TradeRecord, target: ExecutionTarget): LegFacts {
   }
   record.legs.push(leg)
   return leg
+}
+
+// The stock Leg an assignment/exercise pairs with the option Leg's close: 100
+// shares per contract (the multiplier), at the strike, in whichever direction
+// the option obligates — short put assigned or long call exercised both buy;
+// short call assigned or long put exercised both sell (option mechanics, not a
+// stored field). `closingExec` is the just-appended closing Execution, so its
+// `side` names the direction that FLATTENED the option Leg — the opposite of
+// how it was held. The new Leg carries no fee of its own (`closingExec.fees` is
+// the option Leg's close fee); a trader-entered assignment fee is a correction
+// this slice doesn't need.
+function openAssignedStock(optionLeg: LegFacts, closingExec: ExecutionFacts): LegFacts {
+  if (optionLeg.instrument.kind !== 'option') {
+    throw new Error(`Cannot ${closingExec.kind} a non-option Leg`)
+  }
+  const instrument = optionLeg.instrument
+  const heldSide: 'long' | 'short' = closingExec.side === 'buy' ? 'short' : 'long'
+  const stockSide = (heldSide === 'short') === (instrument.type === 'put') ? 'buy' : 'sell'
+  return {
+    id: crypto.randomUUID(),
+    instrument: { kind: 'stock', ticker: instrument.ticker },
+    executions: [
+      {
+        side: stockSide,
+        qty: closingExec.qty * contractMultiplierOf(instrument),
+        price: instrument.strike,
+        fees: 0,
+        timestamp: closingExec.timestamp,
+      },
+    ],
+  }
 }
