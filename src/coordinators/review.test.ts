@@ -149,6 +149,57 @@ describe('Review.agenda', () => {
   })
 })
 
+describe('Review.agenda (expired)', () => {
+  const CONTRACT = 'XYZ 2026-08-21 P 100'
+
+  async function seedExpiredCsp(tradeBook: TradeBook, accountId: string): Promise<string> {
+    const draft: PlanDraft = {
+      accountId,
+      thesis: 'XYZ range-bound',
+      strategyId: 'strategy-cash-secured-put',
+      ideaSourceId: '',
+      plannedLegs: [
+        {
+          side: 'sell',
+          instrument: {
+            kind: 'option',
+            ticker: 'XYZ',
+            expiration: '2026-08-21',
+            type: 'put',
+            strike: 10000,
+          },
+          qty: 1,
+        },
+      ],
+      exitLevels: [],
+      plannedAt: '2026-07-10',
+    }
+    const tradeId = await tradeBook.confirmPlan(draft)
+    await tradeBook.recordExecution(
+      { tradeId, newLeg: CONTRACT },
+      {
+        side: 'sell',
+        qty: 1,
+        price: 250,
+        fees: 65,
+        timestamp: new Date('2026-07-10T12:00:00').getTime(),
+      },
+    )
+    return tradeId
+  }
+
+  it('lists expired holdings alongside the rest of the agenda', async () => {
+    const { tradeBook, review, accountId } = await workspace()
+    const tradeId = await seedExpiredCsp(tradeBook, accountId)
+
+    const agenda = await review.agenda('2026-08-22')
+
+    expect(agenda.expiredLegs).toEqual([
+      expect.objectContaining({ tradeId, qty: 1, expiredOn: '2026-08-21' }),
+    ])
+  })
+})
+
 describe('Review.walk', () => {
   it('lists open Trades in insertion order', async () => {
     const { tradeBook, review, accountId } = await workspace()

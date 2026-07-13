@@ -4,10 +4,13 @@ import type { DateRange } from '@/books/pricebook/types'
 import type {
   ISODate,
   InstrumentKey,
+  LegId,
   Mark,
   MarkSet,
   MarkSeries,
+  OptionInstrument,
   Position,
+  Qty,
   RiskReward,
   TradeId,
   TradeRecord,
@@ -15,6 +18,7 @@ import type {
 } from '@/domain/trademath/types'
 import { isoDateOf, nextISODate } from '@/domain/dates'
 import { positionOf } from '@/domain/trademath/position'
+import { buildInstrumentKey } from '@/domain/trademath/instrument'
 import { instrumentsOf, valuation, MissingMarkError } from '@/domain/trademath/valuation'
 import { riskReward } from '@/domain/trademath/risk-reward'
 
@@ -63,6 +67,20 @@ export interface TradeMarksNeeded {
 export interface MarksNeeded {
   perTrade: TradeMarksNeeded[]
   fetchRange: DateRange
+}
+
+// A Leg whose option contract's expiration date has passed but still holds
+// quantity — nothing else in the system notices expiration on its own (Marks
+// simply stop existing past expiration), so Review's agenda surfaces these for
+// the trader to record an outcome for (docs/design/review.md). `side` names
+// which direction closes the Leg (buy to close a short, sell to close a long).
+export interface ExpiredHolding {
+  tradeId: TradeId
+  legId: LegId
+  instrument: OptionInstrument
+  qty: Qty
+  side: 'long' | 'short'
+  expiredOn: ISODate
 }
 
 export class Valuations {
@@ -126,6 +144,33 @@ export class Valuations {
     const starts = perTrade.flatMap((item) => item.needs.map((need) => need.range.from))
     const earliest = starts.length === 0 ? asOf : starts.reduce((a, b) => (a < b ? a : b))
     return { perTrade, fetchRange: { from: earliest, to: asOf } }
+  }
+
+  // Legs whose option contract's expiration has passed while still holding
+  // quantity — facts + positionOf only, no Marks (docs/design/overview.md).
+  // `asOf` is the review date, not the expiration date: a contract expiring
+  // today is not yet past expiration.
+  async expiredHoldings(asOf: ISODate): Promise<ExpiredHolding[]> {
+    const open = await this.tradeBook.query({ status: 'open' })
+    const expired: ExpiredHolding[] = []
+    for (const record of open) {
+      for (const holding of positionOf(record).holdings) {
+        if (holding.instrument.kind !== 'option') continue
+        if (holding.instrument.expiration >= asOf) continue
+        const key = buildInstrumentKey(holding.instrument)
+        const leg = record.legs.find((l) => buildInstrumentKey(l.instrument) === key)
+        if (!leg) continue
+        expired.push({
+          tradeId: record.id,
+          legId: leg.id,
+          instrument: holding.instrument,
+          qty: holding.qty,
+          side: holding.side,
+          expiredOn: holding.instrument.expiration,
+        })
+      }
+    }
+    return expired
   }
 
   async value(tradeId: TradeId): Promise<TradeValue> {

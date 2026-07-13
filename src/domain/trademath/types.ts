@@ -60,12 +60,20 @@ export interface PlannedLeg {
   qty: Qty
 }
 
+// An ordinary fill, or an Execution recording what happened to an expiring
+// option contract: 'expire' closes the Leg at price 0 (Slice 3); 'assign' /
+// 'exercise' do the same and open a paired stock Leg (Slice 4). Absent on every
+// record persisted before this slice existed — no migration runs, so readers
+// treat a missing kind as 'fill' (docs/plan/slice-03-single-leg-options.md).
+export type ExecutionKind = 'fill' | 'expire' | 'assign' | 'exercise'
+
 export interface ExecutionFacts {
   side: Side
   qty: Qty
   price: Money
   fees: Money
   timestamp: Timestamp
+  kind?: ExecutionKind
 }
 
 export interface LegFacts {

@@ -422,6 +422,122 @@ describe('MarkEntry (options)', () => {
   })
 })
 
+// Facts + positionOf only — no Marks (docs/design/overview.md). A contract past
+// its expiration date still holding quantity is surfaced for Review's agenda to
+// present; nothing else in the system notices expiration on its own.
+describe('Valuations.expiredHoldings', () => {
+  const CONTRACT = 'XYZ 2026-08-21 P 100'
+
+  async function seedCsp(book: TradeBook, side: 'buy' | 'sell' = 'sell'): Promise<string> {
+    const institution = { id: '', name: 'Schwab' } as Institution
+    await book.registries.institutions.save(institution)
+    const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
+    await book.registries.accounts.save(account)
+    const draft: PlanDraft = {
+      accountId: account.id,
+      thesis: 'XYZ range-bound',
+      strategyId: 'strategy-cash-secured-put',
+      ideaSourceId: '',
+      plannedLegs: [
+        {
+          side,
+          instrument: {
+            kind: 'option',
+            ticker: 'XYZ',
+            expiration: '2026-08-21',
+            type: 'put',
+            strike: 10000,
+          },
+          qty: 1,
+        },
+      ],
+      exitLevels: [],
+      plannedAt: '2026-07-10',
+    }
+    const tradeId = await book.confirmPlan(draft)
+    await book.recordExecution(
+      { tradeId, newLeg: CONTRACT },
+      {
+        side,
+        qty: 1,
+        price: 250,
+        fees: 65,
+        timestamp: new Date('2026-07-10T12:00:00').getTime(),
+      },
+    )
+    return tradeId
+  }
+
+  it('lists Legs past expiration still holding quantity, with trade, qty, expiredOn', async () => {
+    const book = inMemoryTradeBook()
+    const tradeId = await seedCsp(book)
+
+    const expired = await new Valuations(book).expiredHoldings('2026-08-22')
+
+    expect(expired).toEqual([
+      {
+        tradeId,
+        legId: expect.any(String),
+        instrument: {
+          kind: 'option',
+          ticker: 'XYZ',
+          expiration: '2026-08-21',
+          type: 'put',
+          strike: 10000,
+        },
+        qty: 1,
+        side: 'short',
+        expiredOn: '2026-08-21',
+      },
+    ])
+  })
+
+  it('ignores expired Legs already closed to zero', async () => {
+    const book = inMemoryTradeBook()
+    const tradeId = await seedCsp(book)
+    const record = await book.get(tradeId)
+    await book.recordExecution(
+      { tradeId, legId: record.legs[0].id },
+      {
+        side: 'buy',
+        qty: 1,
+        price: 0,
+        fees: 0,
+        kind: 'expire',
+        timestamp: new Date('2026-08-21T16:00:00').getTime(),
+      },
+    )
+
+    const expired = await new Valuations(book).expiredHoldings('2026-08-22')
+
+    expect(expired).toEqual([])
+  })
+
+  it('ignores stock Legs and unexpired contracts', async () => {
+    const { book, tradeId } = await bookWithPlan() // a stock Trade
+    await book.recordExecution({ tradeId, newLeg: 'AAPL' }, fill())
+    const stillOpenContract = inMemoryTradeBook()
+    await seedCsp(stillOpenContract)
+
+    const stockExpired = await new Valuations(book).expiredHoldings('2026-08-22')
+    expect(stockExpired).toEqual([])
+
+    // The contract has not reached its expiration date yet.
+    const notYetExpired = await new Valuations(stillOpenContract).expiredHoldings('2026-08-21')
+    expect(notYetExpired).toEqual([])
+  })
+
+  it('consults no Marks', async () => {
+    // Constructed with no PriceBook at all — expiredHoldings must not need one.
+    const book = inMemoryTradeBook()
+    await seedCsp(book)
+
+    const expired = await new Valuations(book).expiredHoldings('2026-08-22')
+
+    expect(expired).toHaveLength(1)
+  })
+})
+
 describe('Valuations.value', () => {
   it('returns the Valuation for a marked Trade (lighter list-row pair)', async () => {
     const { tradeBook, priceBook } = books()

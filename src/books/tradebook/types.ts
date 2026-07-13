@@ -3,6 +3,7 @@
 
 import type {
   AccountId,
+  ExecutionKind,
   ExitLevel,
   InstrumentKey,
   ISODate,
@@ -92,13 +93,16 @@ export type ExecutionTarget =
   { tradeId: TradeId; legId: LegId } | { tradeId: TradeId; newLeg: InstrumentKey }
 
 // One fill the trader recorded. Qty is a positive integer; direction lives on
-// `side`. Money is integer cents. The trading date rides in `timestamp`.
+// `side`. Money is integer cents. The trading date rides in `timestamp`. `kind`
+// defaults to 'fill' when absent — 'expire'/'assign'/'exercise' are the option
+// lifecycle events (Slice 3/4).
 export interface ExecutionDraft {
   side: Side
   qty: Qty
   price: Money
   fees: Money
   timestamp: Timestamp
+  kind?: ExecutionKind
 }
 
 // The result of recording a fill. `nowFlat` tells the UI the fill flattened the
@@ -114,6 +118,7 @@ export interface ExecutionOutcome {
 // the domain layer (module-boundary rule): re-export them here.
 export type {
   CloseReason,
+  ExecutionKind,
   ExitLevel,
   Instrument,
   Money,

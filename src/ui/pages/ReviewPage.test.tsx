@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { ReviewPage } from './ReviewPage'
@@ -220,5 +220,96 @@ describe('ReviewAgendaPage', () => {
     // Action even when every price is already in.
     await userEvent.click(await screen.findByRole('button', { name: /begin walk/i }))
     expect(await screen.findByRole('heading', { name: 'AAPL' })).toBeInTheDocument()
+  })
+})
+
+// The trader's local date is the trading date, and the agenda's asOf is
+// "today" (real clock) — so the seeded contract expires yesterday, already
+// past expiration by construction.
+describe('ReviewAgenda (expired)', () => {
+  const EXPIRATION = daysAgo(1)
+  const CONTRACT = `XYZ ${EXPIRATION} P 100`
+
+  async function seedExpiredCsp(
+    tradeBook: TradeBook,
+    accountId: string,
+  ): Promise<{ tradeId: string }> {
+    const draft: PlanDraft = {
+      accountId,
+      thesis: 'XYZ range-bound',
+      strategyId: 'strategy-cash-secured-put',
+      ideaSourceId: '',
+      plannedLegs: [
+        {
+          side: 'sell',
+          instrument: {
+            kind: 'option',
+            ticker: 'XYZ',
+            expiration: EXPIRATION,
+            type: 'put',
+            strike: 10000,
+          },
+          qty: 1,
+        },
+      ],
+      exitLevels: [],
+      plannedAt: daysAgo(3),
+    }
+    const tradeId = await tradeBook.confirmPlan(draft)
+    await tradeBook.recordExecution(
+      { tradeId, newLeg: CONTRACT },
+      {
+        side: 'sell',
+        qty: 1,
+        price: 250,
+        fees: 65,
+        timestamp: new Date(`${daysAgo(3)}T12:00:00`).getTime(),
+      },
+    )
+    return { tradeId }
+  }
+
+  it('lists expired holdings with expiry date', async () => {
+    const { tradeBook, journal, priceBook, accountId } = await workspace()
+    await seedExpiredCsp(tradeBook, accountId)
+
+    renderPage(tradeBook, journal, priceBook)
+    await startReview()
+
+    const row = await screen.findByRole('listitem', { name: /1 XYZ/ })
+    expect(row).toHaveTextContent(`expired ${EXPIRATION}`)
+    expect(within(row).getByRole('button', { name: /expired worthless/i })).toBeInTheDocument()
+  })
+
+  it('records expired-worthless via the ordinary Execution path', async () => {
+    const { tradeBook, journal, priceBook, accountId } = await workspace()
+    const { tradeId } = await seedExpiredCsp(tradeBook, accountId)
+
+    renderPage(tradeBook, journal, priceBook)
+    await startReview()
+
+    const row = await screen.findByRole('listitem', { name: /1 XYZ/ })
+    await userEvent.click(within(row).getByRole('button', { name: /expired worthless/i }))
+
+    // Gone from the agenda — the leg is flat, no outcome left to record.
+    await waitFor(() =>
+      expect(screen.queryByRole('listitem', { name: /1 XYZ/ })).not.toBeInTheDocument(),
+    )
+    const record = await tradeBook.get(tradeId)
+    const execs = record.legs[0].executions
+    expect(execs[execs.length - 1]).toMatchObject({ side: 'buy', qty: 1, price: 0, kind: 'expire' })
+  })
+
+  it('flows into Close Reason when the Trade goes flat', async () => {
+    const { tradeBook, journal, priceBook, accountId } = await workspace()
+    await seedExpiredCsp(tradeBook, accountId)
+
+    renderPage(tradeBook, journal, priceBook)
+    await startReview()
+
+    const row = await screen.findByRole('listitem', { name: /1 XYZ/ })
+    await userEvent.click(within(row).getByRole('button', { name: /expired worthless/i }))
+
+    await expect(screen.findByLabelText(/close reason/i)).resolves.toBeInTheDocument()
   })
 })

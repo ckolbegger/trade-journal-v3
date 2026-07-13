@@ -135,7 +135,7 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
 
 ---
 
-## ☐ Story S3.3 — Expiration surfacing
+## ☑ Story S3.3 — Expiration surfacing
 
 > As a trader, I want Saturday's review to tell me my Friday options expired and record what happened, so that a Trade never sits "open" on a contract that no longer exists.
 
@@ -143,7 +143,7 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
 
 ### Tasks
 
-- [ ] **S3.3.T1 — Execution kinds + expiredHoldings.**
+- [x] **S3.3.T1 — Execution kinds + expiredHoldings.**
 
   ```
   describe "ExecutionFacts.kind"
@@ -160,7 +160,7 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
   - it returns nowFlat=true when expiration empties the Trade
   ```
 
-- [ ] **S3.3.T2 — Agenda + outcome UI.** `Review.agenda` gains `expiredLegs`; the agenda lists them ("1 × XYZ Aug'26 100P expired Friday — record the outcome") with an **expired worthless** action recording the expire Execution; flattening triggers the normal Close Reason flow. (The in-the-money choices join in S3.4.)
+- [x] **S3.3.T2 — Agenda + outcome UI.** `Review.agenda` gains `expiredLegs`; the agenda lists them ("1 × XYZ Aug'26 100P expired Friday — record the outcome") with an **expired worthless** action recording the expire Execution; flattening triggers the normal Close Reason flow. (The in-the-money choices join in S3.4.)
 
   ```
   describe "ReviewAgenda (expired)"
@@ -169,9 +169,9 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
   - it flows into Close Reason when the Trade goes flat
   ```
 
-- [ ] **S3.3.T3 — Integration tests**: CSP whose put expired yesterday over Dexie → agenda surfaces it → record worthless → Trade flat, realized = full credit, Close Reason set → agenda clean next run.
-- [ ] **S3.3.T4 — Playwright e2e** (`e2e/s3-3-expiration.spec.ts`): seeded expired-put scenario → review → record worthless → closed Trade with correct P&L.
-- [ ] **S3.3.T5 — Browser verification.** In a real browser with a past-expiry contract: agenda surfaces it (and nothing else notices it — trade still read "open" before); record the outcome; verify P&L and that the next agenda no longer lists it. All suites green.
+- [x] **S3.3.T3 — Integration tests**: CSP whose put expired yesterday over Dexie → agenda surfaces it → record worthless → Trade flat, realized = full credit, Close Reason set → agenda clean next run.
+- [x] **S3.3.T4 — Playwright e2e** (`e2e/s3-3-expiration.spec.ts`): seeded expired-put scenario → review → record worthless → closed Trade with correct P&L.
+- [x] **S3.3.T5 — Browser verification.** In a real browser with a past-expiry contract: agenda surfaces it (and nothing else notices it — trade still read "open" before); record the outcome; verify P&L and that the next agenda no longer lists it. All suites green.
 
 ---
 

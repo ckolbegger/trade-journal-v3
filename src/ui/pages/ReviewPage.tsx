@@ -3,10 +3,11 @@ import { useReview } from '../reviewContext'
 import { usePriceBook } from '../priceBookContext'
 import { useTradeBook } from '../tradeBookContext'
 import { WalkSession } from './WalkSession'
-import { todayISO } from '../format'
-import { btnPrimary, card, heading, num, subheading } from '../styles'
+import { CloseForm } from './CloseForm'
+import { optionLabel, todayISO } from '../format'
+import { btnPrimary, btnSecondary, card, heading, num, subheading } from '../styles'
 import type { ISODate, InstrumentKey } from '@/books/pricebook/types'
-import type { TradeMarksNeeded } from '@/coordinators/valuations'
+import type { ExpiredHolding, TradeMarksNeeded } from '@/coordinators/valuations'
 
 // The Daily Review start page: the session's agenda. Starting a session asks the
 // Review coordinator what today must cover, then ALWAYS calls PriceBook.fetch —
@@ -29,6 +30,7 @@ interface Session {
   asOf: ISODate
   trades: AgendaTrade[]
   marksNeeded: TradeMarksNeeded[]
+  expiredLegs: ExpiredHolding[]
   debt: number
 }
 
@@ -38,6 +40,10 @@ export function ReviewPage() {
   const tradeBook = useTradeBook()
   const [session, setSession] = useState<Session | null>(null)
   const [walking, setWalking] = useState(false)
+  // A Trade the "expired worthless" action just flattened — the normal Close
+  // Reason flow triggers here rather than waiting for the trader to open the
+  // Trade's own detail page (docs/design/review.md's expiration sequence).
+  const [closingTradeId, setClosingTradeId] = useState<string | null>(null)
 
   async function startSession() {
     const asOf = todayISO()
@@ -63,7 +69,35 @@ export function ReviewPage() {
         }
       }),
     )
-    setSession({ asOf, trades, marksNeeded: agenda.marksNeeded, debt: agenda.journalDebt.length })
+    setSession({
+      asOf,
+      trades,
+      marksNeeded: agenda.marksNeeded,
+      expiredLegs: agenda.expiredLegs,
+      debt: agenda.journalDebt.length,
+    })
+  }
+
+  // Records the option Leg's expiration at price 0 through the ordinary
+  // Execution path (review.md) — the same recordExecution any fill goes
+  // through, deviation-free until Slice 9. A short holding closes by buying
+  // back; a long holding closes by selling.
+  async function recordExpiredWorthless(leg: ExpiredHolding) {
+    const outcome = await tradeBook.recordExecution(
+      { tradeId: leg.tradeId, legId: leg.legId },
+      {
+        side: leg.side === 'short' ? 'buy' : 'sell',
+        qty: leg.qty,
+        price: 0,
+        fees: 0,
+        kind: 'expire',
+        timestamp: new Date(`${leg.expiredOn}T16:00:00`).getTime(),
+      },
+    )
+    setSession((s) =>
+      s ? { ...s, expiredLegs: s.expiredLegs.filter((l) => l.legId !== leg.legId) } : s,
+    )
+    if (outcome.nowFlat) setClosingTradeId(leg.tradeId)
   }
 
   if (!session) {
@@ -89,11 +123,20 @@ export function ReviewPage() {
     )
   }
 
-  const caughtUp = session.trades.length === 0 && session.debt === 0
+  const caughtUp =
+    session.trades.length === 0 && session.debt === 0 && session.expiredLegs.length === 0
 
   return (
     <section className="space-y-6">
       <h2 className={heading}>Review</h2>
+
+      {closingTradeId && (
+        <CloseForm
+          tradeId={closingTradeId}
+          onDone={() => setClosingTradeId(null)}
+          onDismiss={() => setClosingTradeId(null)}
+        />
+      )}
 
       {caughtUp ? (
         <div className={card}>
@@ -101,6 +144,34 @@ export function ReviewPage() {
         </div>
       ) : (
         <>
+          {session.expiredLegs.length > 0 && (
+            <div className={`${card} space-y-3`}>
+              <h3 className={subheading}>Expired options</h3>
+              <ul aria-label="expired options" className="space-y-2">
+                {session.expiredLegs.map((leg) => (
+                  <li
+                    key={leg.legId}
+                    aria-label={`${leg.qty} ${optionLabel(leg.instrument)}`}
+                    className="flex flex-wrap items-center justify-between gap-2 py-1.5 text-sm text-slate-800"
+                  >
+                    <span>
+                      {leg.side === 'short' ? '-' : ''}
+                      {leg.qty} × {optionLabel(leg.instrument)}
+                      <span className={`ml-2 text-slate-500 ${num}`}>expired {leg.expiredOn}</span>
+                    </span>
+                    <button
+                      type="button"
+                      className={btnSecondary}
+                      onClick={() => void recordExpiredWorthless(leg)}
+                    >
+                      Expired worthless
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div className="space-y-4">
             <h3 className={subheading}>Marks needed</h3>
             {session.trades.length === 0 ? (

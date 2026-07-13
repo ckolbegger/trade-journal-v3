@@ -58,6 +58,7 @@ describe('executions over Dexie', () => {
     const restored = await reopened.get(tradeId)
     expect(restored.legs).toHaveLength(1)
     expect(restored.legs[0].instrument).toEqual({ kind: 'stock', ticker: 'AAPL' })
-    expect(restored.legs[0].executions).toEqual([buy100])
+    // kind defaults to 'fill' on read (Slice 3: docs/plan/slice-03-single-leg-options.md).
+    expect(restored.legs[0].executions).toEqual([{ ...buy100, kind: 'fill' }])
   })
 })

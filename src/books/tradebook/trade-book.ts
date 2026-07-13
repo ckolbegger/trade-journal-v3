@@ -96,7 +96,7 @@ export class TradeBook {
     await this.binding.put(TRADES, structuredClone(record))
 
     return {
-      record: structuredClone(record),
+      record: withDefaultKinds(structuredClone(record)),
       newDeviations: [],
       nowFlat: statusOf(record) === 'closed',
     }
@@ -125,7 +125,7 @@ export class TradeBook {
   async get(tradeId: TradeId): Promise<TradeRecord> {
     const record = await this.binding.get<TradeRecord>(TRADES, tradeId)
     if (!record) throw new Error(`No Trade ${tradeId}`)
-    return structuredClone(record)
+    return withDefaultKinds(structuredClone(record))
   }
 
   // Every Trade with an open (nonzero net) position in the instrument. Powers the
@@ -145,7 +145,20 @@ export class TradeBook {
     return all
       .filter((t) => (filter.accountId ? t.accountId === filter.accountId : true))
       .filter((t) => (filter.status ? statusOf(t) === filter.status : true))
-      .map((t) => structuredClone(t))
+      .map((t) => withDefaultKinds(structuredClone(t)))
+  }
+}
+
+// Every record persisted before this slice has no `kind` on its Executions —
+// no migration runs (docs/plan/slice-03-single-leg-options.md), so reads
+// default the absent field to 'fill' rather than leaving it undefined.
+function withDefaultKinds(record: TradeRecord): TradeRecord {
+  return {
+    ...record,
+    legs: record.legs.map((leg) => ({
+      ...leg,
+      executions: leg.executions.map((e) => ({ ...e, kind: e.kind ?? 'fill' })),
+    })),
   }
 }
 

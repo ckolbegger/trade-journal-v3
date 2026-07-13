@@ -3,7 +3,7 @@ import type { Entry } from '@/books/journal/types'
 import type { TradeBook } from '@/books/tradebook/trade-book'
 import type { DateRange } from '@/books/pricebook/types'
 import type { ISODate, TradeId } from '@/domain/trademath/types'
-import type { TradeMarksNeeded, Valuations } from './valuations'
+import type { ExpiredHolding, TradeMarksNeeded, Valuations } from './valuations'
 
 // The behavioral-session coordinator. Review stores nothing: both operations are
 // compositions — `agenda` = Valuations.marksNeeded (the Trade↔Marks join) +
@@ -13,14 +13,14 @@ import type { TradeMarksNeeded, Valuations } from './valuations'
 // session record (docs/design/review.md).
 //
 // The Trade↔Journal join lives here — "which open Trades lack a review entry
-// today" belongs to no other module. `expiredLegs` (Slice 3) and
-// `accountsForSnapshot` (Slice 14) join the agenda in their own slices;
-// WalkItem gains its `attentionScore` in Slice 8 (this slice walks in insertion
-// order).
+// today" belongs to no other module. `accountsForSnapshot` (Slice 14) joins the
+// agenda in its own slice; WalkItem gains its `attentionScore` in Slice 8 (this
+// slice walks in insertion order).
 
 export interface ReviewAgenda {
   marksNeeded: TradeMarksNeeded[] // via Valuations.marksNeeded
   fetchRange: DateRange // earliest gap .. asOf, for the one bulk fetch
+  expiredLegs: ExpiredHolding[] // via Valuations.expiredHoldings — outcome recorded through the ordinary Execution path
   journalDebt: Entry[] // unsettled placeholders (Journal)
 }
 
@@ -39,8 +39,9 @@ export class Review {
 
   async agenda(asOf: ISODate): Promise<ReviewAgenda> {
     const marks = await this.valuations.marksNeeded(asOf)
+    const expiredLegs = await this.valuations.expiredHoldings(asOf)
     const journalDebt = await this.journal.outstandingDebt()
-    return { marksNeeded: marks.perTrade, fetchRange: marks.fetchRange, journalDebt }
+    return { marksNeeded: marks.perTrade, fetchRange: marks.fetchRange, expiredLegs, journalDebt }
   }
 
   // The session's checkpoint list: the open Trades (planned and closed ones hold
