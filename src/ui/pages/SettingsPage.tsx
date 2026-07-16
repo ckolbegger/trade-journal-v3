@@ -1,15 +1,35 @@
 import { useEffect, useState } from 'react'
 import { useTradeBook } from '../tradeBookContext'
-import { btnSecondary, card, field, heading, input, subheading } from '../styles'
+import { useWorkspace } from '../workspaceContext'
+import { btnPrimary, btnSecondary, card, field, heading, input, num, subheading } from '../styles'
 import type { Account, Institution } from '@/books/tradebook/types'
 
 export function SettingsPage() {
   const tradeBook = useTradeBook()
+  const workspace = useWorkspace()
   const [institutions, setInstitutions] = useState<Institution[]>([])
   const [accounts, setAccounts] = useState<Account[]>([])
   const [institutionName, setInstitutionName] = useState('')
   const [accountName, setAccountName] = useState('')
   const [accountInstitutionId, setAccountInstitutionId] = useState('')
+  // Displayed as a whole percentage ("4" for 4%), stored as the decimal
+  // TradeMath.impliedVol reads (workspace.md's Settings.riskFreeRate).
+  const [riskFreeRatePct, setRiskFreeRatePct] = useState('')
+
+  useEffect(() => {
+    let active = true
+    void workspace.settings.get('riskFreeRate').then((rate) => {
+      if (active) setRiskFreeRatePct(String(rate * 100))
+    })
+    return () => {
+      active = false
+    }
+  }, [workspace])
+
+  async function saveRiskFreeRate() {
+    if (riskFreeRatePct.trim() === '') return
+    await workspace.settings.set('riskFreeRate', Number(riskFreeRatePct) / 100)
+  }
 
   async function reload() {
     setInstitutions(await tradeBook.registries.institutions.list())
@@ -113,6 +133,24 @@ export function SettingsPage() {
           </label>
           <button type="button" className={btnSecondary} onClick={() => void addAccount()}>
             Add account
+          </button>
+        </div>
+      </div>
+
+      <div className={`${card} space-y-3`}>
+        <h3 className={subheading}>Implied volatility</h3>
+        <div className="flex items-end gap-2">
+          <label className={`${field} flex-1`}>
+            Risk-free rate (%)
+            <input
+              className={`${input} ${num}`}
+              type="number"
+              value={riskFreeRatePct}
+              onChange={(e) => setRiskFreeRatePct(e.target.value)}
+            />
+          </label>
+          <button type="button" className={btnPrimary} onClick={() => void saveRiskFreeRate()}>
+            Save rate
           </button>
         </div>
       </div>

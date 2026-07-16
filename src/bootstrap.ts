@@ -12,12 +12,18 @@ import { Workspace } from '@/workspace/workspace'
 // TradeBook, Journal, and PriceBook share one binding so they operate on one
 // database.
 
-export function createBooks(): { tradeBook: TradeBook; journal: Journal; priceBook: PriceBook } {
+export function createBooks(): {
+  tradeBook: TradeBook
+  journal: Journal
+  priceBook: PriceBook
+  binding: DexieBinding
+} {
   const binding = new DexieBinding(createDatabase())
   return {
     tradeBook: new TradeBook(binding),
     journal: new Journal(binding),
     priceBook: new PriceBook(binding),
+    binding,
   }
 }
 
@@ -33,6 +39,10 @@ export function createReview(
   return new Review(valuations, journal, tradeBook)
 }
 
-export function createWorkspace(tradeBook: TradeBook, journal: Journal): Workspace {
-  return new Workspace(tradeBook, journal)
+export function createWorkspace(
+  tradeBook: TradeBook,
+  journal: Journal,
+  binding: DexieBinding,
+): Workspace {
+  return new Workspace(tradeBook, journal, binding)
 }

@@ -5,9 +5,12 @@ import { TradeDashboard } from './TradeDashboard'
 import { TradeBookContext } from '../tradeBookContext'
 import { PriceBookContext } from '../priceBookContext'
 import { ValuationsContext } from '../valuationsContext'
+import { WorkspaceContext } from '../workspaceContext'
 import { Valuations } from '@/coordinators/valuations'
+import { Workspace } from '@/workspace/workspace'
 import { todayISO } from '../format'
 import type { TradeBook } from '@/books/tradebook/trade-book'
+import type { Journal } from '@/books/journal/journal'
 import type { PriceBook } from '@/books/pricebook/price-book'
 import type {
   Account,
@@ -123,6 +126,67 @@ function renderDashboard(tradeBook: TradeBook, priceBook: PriceBook, id: string)
       </PriceBookContext.Provider>
     </TradeBookContext.Provider>,
   )
+}
+
+function renderDashboardWithWorkspace(
+  tradeBook: TradeBook,
+  journal: Journal,
+  priceBook: PriceBook,
+  id: string,
+) {
+  return render(
+    <TradeBookContext.Provider value={tradeBook}>
+      <PriceBookContext.Provider value={priceBook}>
+        <ValuationsContext.Provider value={new Valuations(tradeBook, priceBook)}>
+          <WorkspaceContext.Provider value={new Workspace(tradeBook, journal)}>
+            <TradeDashboard tradeId={id} />
+          </WorkspaceContext.Provider>
+        </ValuationsContext.Provider>
+      </PriceBookContext.Provider>
+    </TradeBookContext.Provider>,
+  )
+}
+
+// A single-Leg long call — the independently-computed Black-Scholes worked
+// case (domain/trademath/implied-vol.test.ts): AAPL 2027-01-01 C 200, contract
+// Mark 23.67, underlying 200.00, r=0.04 → IV ~0.25 (25%).
+async function seedLongCall(tradeBook: TradeBook): Promise<string> {
+  const institution = { id: '', name: 'Schwab' } as Institution
+  await tradeBook.registries.institutions.save(institution)
+  const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
+  await tradeBook.registries.accounts.save(account)
+  const id = await tradeBook.confirmPlan({
+    accountId: account.id,
+    thesis: 'AAPL breaks out',
+    strategyId: 'strategy-long-call',
+    ideaSourceId: '',
+    plannedLegs: [
+      {
+        side: 'buy',
+        instrument: {
+          kind: 'option',
+          ticker: 'AAPL',
+          expiration: '2027-01-01',
+          type: 'call',
+          strike: 20000,
+        },
+        qty: 1,
+      },
+    ],
+    exitLevels: [],
+    plannedAt: '2026-01-01',
+  })
+  await tradeBook.recordExecution(
+    { tradeId: id, newLeg: 'AAPL 2027-01-01 C 200' },
+    {
+      side: 'buy',
+      qty: 1,
+      price: 2367,
+      fees: 0,
+      timestamp: new Date('2026-01-01T12:00:00').getTime(),
+    },
+  )
+  return id
 }
 
 describe('TradeDashboard', () => {
@@ -277,5 +341,59 @@ describe('TradeDashboard', () => {
     const rr = await screen.findByLabelText('ongoing risk and reward')
     expect(within(rr).getByText('Planned risk')).toBeInTheDocument()
     expect(within(rr).queryByText(/at intrinsic/i)).not.toBeInTheDocument()
+  })
+})
+
+describe('IV display', () => {
+  it('shows IV for a marked option Leg with a marked underlying', async () => {
+    const { tradeBook, journal, priceBook } = inMemoryBooks()
+    const id = await seedLongCall(tradeBook)
+    await priceBook.record('AAPL 2027-01-01 C 200', '2026-01-01', 2367, 'manual')
+    await priceBook.record('AAPL', '2026-01-01', 20000, 'manual')
+
+    renderDashboardWithWorkspace(tradeBook, journal, priceBook, id)
+
+    const marks = await screen.findByLabelText('option marks')
+    expect(marks).toHaveTextContent('23.67')
+    expect(marks).toHaveTextContent(/IV 25%/)
+  })
+
+  it('shows the contract Mark with no IV when the underlying is unmarked', async () => {
+    const { tradeBook, journal, priceBook } = inMemoryBooks()
+    const id = await seedLongCall(tradeBook)
+    await priceBook.record('AAPL 2027-01-01 C 200', '2026-01-01', 2367, 'manual')
+
+    renderDashboardWithWorkspace(tradeBook, journal, priceBook, id)
+
+    const marks = await screen.findByLabelText('option marks')
+    expect(marks).toHaveTextContent('23.67')
+    expect(marks).not.toHaveTextContent(/IV/)
+  })
+
+  it('updates when the risk-free-rate setting changes', async () => {
+    const { tradeBook, journal, priceBook } = inMemoryBooks()
+    const id = await seedLongCall(tradeBook)
+    await priceBook.record('AAPL 2027-01-01 C 200', '2026-01-01', 2367, 'manual')
+    await priceBook.record('AAPL', '2026-01-01', 20000, 'manual')
+    const workspace = new Workspace(tradeBook, journal)
+    await workspace.settings.set('riskFreeRate', 0.1)
+
+    render(
+      <TradeBookContext.Provider value={tradeBook}>
+        <PriceBookContext.Provider value={priceBook}>
+          <ValuationsContext.Provider value={new Valuations(tradeBook, priceBook)}>
+            <WorkspaceContext.Provider value={workspace}>
+              <TradeDashboard tradeId={id} />
+            </WorkspaceContext.Provider>
+          </ValuationsContext.Provider>
+        </PriceBookContext.Provider>
+      </TradeBookContext.Provider>,
+    )
+
+    const marks = await screen.findByLabelText('option marks')
+    // A higher risk-free rate raises the discounted-forward value the same
+    // Mark implies, so a lower vol reproduces it — the recovered IV drops
+    // below the 0.04-rate case's 25%.
+    expect(marks).not.toHaveTextContent(/IV 25%/)
   })
 })

@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { AppRoot } from './AppRoot'
 import { Valuations } from '@/coordinators/valuations'
 import { Review } from '@/coordinators/review'
+import { Workspace } from '@/workspace/workspace'
 import type { TradeBook } from '@/books/tradebook/trade-book'
 import type { Journal } from '@/books/journal/journal'
 import type { PriceBook } from '@/books/pricebook/price-book'
@@ -21,6 +22,7 @@ function renderApp(tradeBook: TradeBook, journal: Journal, priceBook: PriceBook)
         priceBook={priceBook}
         valuations={valuations}
         review={new Review(valuations, journal, tradeBook)}
+        workspace={new Workspace(tradeBook, journal)}
       />
     </MemoryRouter>,
   )

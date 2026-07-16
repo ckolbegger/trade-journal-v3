@@ -2,6 +2,27 @@ import type { TradeBook } from '@/books/tradebook/trade-book'
 import type { CloseReason, StrategyTemplate } from '@/books/tradebook/types'
 import type { Journal } from '@/books/journal/journal'
 import type { EntryType } from '@/books/journal/types'
+import type { StorageBinding } from '@/storage/storage-binding'
+import { InMemoryBinding } from '@/storage/in-memory-binding'
+
+const SETTINGS = 'settings'
+
+// Typed settings over a Dexie store (workspace.md) — one record per key. First
+// setting: riskFreeRate, the rate TradeMath.impliedVol callers read
+// (display-only IV, ADR 0009; trademath.md's open item resolved as
+// caller-supplies-rate).
+export interface Settings {
+  riskFreeRate: number
+}
+
+const DEFAULT_SETTINGS: Settings = {
+  riskFreeRate: 0.04,
+}
+
+interface StoredSetting<K extends keyof Settings> {
+  id: K
+  value: Settings[K]
+}
 
 // Workspace owns app-lifecycle concerns rather than trading. This slice
 // implements the ensureSeeded subset needed so far: the default Strategy and the
@@ -171,10 +192,24 @@ const ADDENDUM_ENTRY_TYPE: EntryType = {
 }
 
 export class Workspace {
+  // `binding` defaults to a private in-memory store for callers that only need
+  // ensureSeeded (most existing call sites) — settings persistence only matters
+  // where the composition root wires the app's real binding through.
   constructor(
     private tradeBook: TradeBook,
     private journal: Journal,
+    private binding: StorageBinding = new InMemoryBinding(),
   ) {}
+
+  settings = {
+    get: async <K extends keyof Settings>(key: K): Promise<Settings[K]> => {
+      const stored = await this.binding.get<StoredSetting<K>>(SETTINGS, key)
+      return stored ? stored.value : DEFAULT_SETTINGS[key]
+    },
+    set: async <K extends keyof Settings>(key: K, value: Settings[K]): Promise<void> => {
+      await this.binding.put<StoredSetting<K>>(SETTINGS, { id: key, value })
+    },
+  }
 
   async ensureSeeded(): Promise<void> {
     const strategies = await this.tradeBook.registries.strategies.list(true)

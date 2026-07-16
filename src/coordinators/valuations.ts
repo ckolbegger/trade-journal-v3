@@ -8,6 +8,7 @@ import type {
   Mark,
   MarkSet,
   MarkSeries,
+  Money,
   OptionInstrument,
   Position,
   Qty,
@@ -18,9 +19,10 @@ import type {
 } from '@/domain/trademath/types'
 import { isoDateOf, nextISODate } from '@/domain/dates'
 import { positionOf } from '@/domain/trademath/position'
-import { buildInstrumentKey } from '@/domain/trademath/instrument'
+import { buildInstrumentKey, underlyingKeyOf } from '@/domain/trademath/instrument'
 import { instrumentsOf, valuation, MissingMarkError } from '@/domain/trademath/valuation'
 import { riskReward } from '@/domain/trademath/risk-reward'
+import { impliedVol } from '@/domain/trademath/implied-vol'
 
 // The only place TradeBook facts meet TradeMath and PriceBook. Returns finished
 // items the UI renders directly. `detail` assembles the whole Trade-detail bundle
@@ -30,14 +32,26 @@ import { riskReward } from '@/domain/trademath/risk-reward'
 // yet, it returns a marks-missing signal (the instruments needing a Mark) instead
 // of numbers, so the UI prompts for a price.
 
+// One option Leg's contract Mark and the IV implied from it (display only,
+// ADR 0009) — present per option Leg that itself has a Mark; `iv` is undefined
+// when the underlying is unmarked or no volatility reproduces the contract's
+// Mark (domain/trademath/implied-vol.ts).
+export interface LegImpliedVol {
+  legId: LegId
+  markPrice: Money
+  iv?: number
+}
+
 // The Trade-detail page bundle. `valuation`/`riskReward` are present together, or
 // absent with `marksMissing` naming the instruments still needing a Mark.
+// `impliedVols` is populated only when a riskFreeRate is supplied to `detail()`.
 export interface TradeDetailView {
   record: TradeRecord
   position: Position
   valuation?: Valuation
   riskReward?: RiskReward
   marksMissing?: InstrumentKey[]
+  impliedVols?: LegImpliedVol[]
 }
 
 // The lighter list-row pair: P&L only (no facts/position/R-R).
@@ -94,17 +108,24 @@ export class Valuations {
     return positionOf(record)
   }
 
-  async detail(tradeId: TradeId): Promise<TradeDetailView> {
+  // `riskFreeRate` is optional and, when supplied (a Workspace setting), adds
+  // `impliedVols` computed from the SAME MarkSet as `valuation`/`riskReward` —
+  // one snapshot, no second Book round trip that could disagree on dates.
+  async detail(tradeId: TradeId, riskFreeRate?: number): Promise<TradeDetailView> {
     const record = await this.tradeBook.get(tradeId)
     const marks = await this.latestMarks(record)
     const position = positionOf(record)
     try {
-      return {
+      const view: TradeDetailView = {
         record,
         position,
         valuation: valuation(record, marks),
         riskReward: riskReward(record, marks),
       }
+      if (riskFreeRate !== undefined) {
+        view.impliedVols = impliedVolsFor(record, marks, riskFreeRate)
+      }
+      return view
     } catch (error) {
       if (error instanceof MissingMarkError) {
         return { record, position, marksMissing: error.instruments }
@@ -197,6 +218,29 @@ export class Valuations {
 function firstExecutionDate(record: TradeRecord): ISODate {
   const timestamps = record.legs.flatMap((leg) => leg.executions.map((e) => e.timestamp))
   return isoDateOf(Math.min(...timestamps))
+}
+
+// IV per option Leg that itself has a Mark in the snapshot — `iv` is undefined
+// when the underlying is unmarked or TradeMath.impliedVol can't reproduce the
+// contract's Mark (domain/trademath/implied-vol.ts).
+function impliedVolsFor(
+  record: TradeRecord,
+  marks: MarkSet,
+  riskFreeRate: number,
+): LegImpliedVol[] {
+  const result: LegImpliedVol[] = []
+  for (const leg of record.legs) {
+    if (leg.instrument.kind !== 'option') continue
+    const key = buildInstrumentKey(leg.instrument)
+    const contractMark = marks.get(key)
+    if (!contractMark) continue
+    const underlyingMark = marks.get(underlyingKeyOf(key))
+    const iv = underlyingMark
+      ? impliedVol(leg.instrument, contractMark, underlyingMark, riskFreeRate)
+      : undefined
+    result.push({ legId: leg.id, markPrice: contractMark.price, iv })
+  }
+  return result
 }
 
 function latestMarkSet(series: MarkSeries): MarkSet {

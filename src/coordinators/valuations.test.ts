@@ -139,6 +139,86 @@ describe('Valuations.detail', () => {
   })
 })
 
+// A single-Leg long call (independently-computed Black-Scholes worked case,
+// see domain/trademath/implied-vol.test.ts): AAPL 2027-01-01 C 200, marked
+// 2026-01-01 at 23.67 with the underlying at 200.00 — an r=0.04, T=1yr,
+// sigma=0.25 price, so the recovered IV should land within 0.001 of 0.25.
+async function seedOptionPlan(book: TradeBook): Promise<{ tradeId: string; legId: string }> {
+  const institution = { id: '', name: 'Schwab' } as Institution
+  await book.registries.institutions.save(institution)
+  const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
+  await book.registries.accounts.save(account)
+  const tradeId = await book.confirmPlan({
+    accountId: account.id,
+    thesis: 'AAPL breaks out',
+    strategyId: 'strategy-long-call',
+    ideaSourceId: '',
+    plannedLegs: [
+      {
+        side: 'buy',
+        instrument: {
+          kind: 'option',
+          ticker: 'AAPL',
+          expiration: '2027-01-01',
+          type: 'call',
+          strike: 20000,
+        },
+        qty: 1,
+      },
+    ],
+    exitLevels: [],
+    plannedAt: '2026-01-01',
+  })
+  const outcome = await book.recordExecution(
+    { tradeId, newLeg: 'AAPL 2027-01-01 C 200' },
+    {
+      side: 'buy',
+      qty: 1,
+      price: 2367,
+      fees: 0,
+      timestamp: new Date('2026-01-01T12:00:00').getTime(),
+    },
+  )
+  return { tradeId, legId: outcome.record.legs[0].id }
+}
+
+describe('Valuations.detail (implied vol)', () => {
+  it('includes IV for a marked option Leg with a marked underlying', async () => {
+    const { tradeBook, priceBook } = books()
+    const { tradeId, legId } = await seedOptionPlan(tradeBook)
+    await priceBook.record('AAPL 2027-01-01 C 200', '2026-01-01', 2367, 'manual')
+    await priceBook.record('AAPL', '2026-01-01', 20000, 'manual')
+
+    const detail = await new Valuations(tradeBook, priceBook).detail(tradeId, 0.04)
+
+    expect(detail.impliedVols).toHaveLength(1)
+    expect(detail.impliedVols?.[0].legId).toBe(legId)
+    expect(detail.impliedVols?.[0].markPrice).toBe(2367)
+    expect(Math.abs((detail.impliedVols?.[0].iv ?? 0) - 0.25)).toBeLessThan(0.001)
+  })
+
+  it('keeps the contract Mark but drops iv when the underlying is unmarked', async () => {
+    const { tradeBook, priceBook } = books()
+    const { tradeId, legId } = await seedOptionPlan(tradeBook)
+    await priceBook.record('AAPL 2027-01-01 C 200', '2026-01-01', 2367, 'manual')
+
+    const detail = await new Valuations(tradeBook, priceBook).detail(tradeId, 0.04)
+
+    expect(detail.impliedVols).toEqual([{ legId, markPrice: 2367, iv: undefined }])
+  })
+
+  it('omits impliedVols entirely when no riskFreeRate is supplied', async () => {
+    const { tradeBook, priceBook } = books()
+    const { tradeId } = await seedOptionPlan(tradeBook)
+    await priceBook.record('AAPL 2027-01-01 C 200', '2026-01-01', 2367, 'manual')
+    await priceBook.record('AAPL', '2026-01-01', 20000, 'manual')
+
+    const detail = await new Valuations(tradeBook, priceBook).detail(tradeId)
+
+    expect(detail.impliedVols).toBeUndefined()
+  })
+})
+
 // The Daily Review scenario: the trader marked Monday (07-13), skipped Tuesday,
 // and opens the review on Wednesday (07-15). Fills landed Friday 07-10.
 describe('Valuations.marksNeeded', () => {

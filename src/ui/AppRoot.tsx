@@ -4,11 +4,13 @@ import type { Journal } from '@/books/journal/journal'
 import type { PriceBook } from '@/books/pricebook/price-book'
 import type { Valuations } from '@/coordinators/valuations'
 import type { Review } from '@/coordinators/review'
+import type { Workspace } from '@/workspace/workspace'
 import { TradeBookContext } from './tradeBookContext'
 import { JournalContext } from './journalContext'
 import { PriceBookContext } from './priceBookContext'
 import { ValuationsContext } from './valuationsContext'
 import { ReviewContext } from './reviewContext'
+import { WorkspaceContext } from './workspaceContext'
 import { App } from './App'
 import { Onboarding } from './Onboarding'
 
@@ -22,12 +24,14 @@ export function AppRoot({
   priceBook,
   valuations,
   review,
+  workspace,
 }: {
   tradeBook: TradeBook
   journal: Journal
   priceBook: PriceBook
   valuations: Valuations
   review: Review
+  workspace: Workspace
 }) {
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null)
 
@@ -47,13 +51,15 @@ export function AppRoot({
         <PriceBookContext.Provider value={priceBook}>
           <ValuationsContext.Provider value={valuations}>
             <ReviewContext.Provider value={review}>
-              {needsOnboarding === null ? (
-                <p className="p-6 text-sm text-slate-500">Loading…</p>
-              ) : needsOnboarding ? (
-                <Onboarding onComplete={() => setNeedsOnboarding(false)} />
-              ) : (
-                <App />
-              )}
+              <WorkspaceContext.Provider value={workspace}>
+                {needsOnboarding === null ? (
+                  <p className="p-6 text-sm text-slate-500">Loading…</p>
+                ) : needsOnboarding ? (
+                  <Onboarding onComplete={() => setNeedsOnboarding(false)} />
+                ) : (
+                  <App />
+                )}
+              </WorkspaceContext.Provider>
             </ReviewContext.Provider>
           </ValuationsContext.Provider>
         </PriceBookContext.Provider>

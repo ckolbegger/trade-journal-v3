@@ -20,7 +20,7 @@ function makeWorkspace(): { workspace: Workspace; tradeBook: TradeBook; journal:
   const binding = new InMemoryBinding()
   const tradeBook = new TradeBook(binding)
   const journal = new Journal(binding)
-  return { workspace: new Workspace(tradeBook, journal), tradeBook, journal }
+  return { workspace: new Workspace(tradeBook, journal, binding), tradeBook, journal }
 }
 
 describe('Workspace.ensureSeeded — strategies', () => {
@@ -287,5 +287,18 @@ describe('Workspace.ensureSeeded — Trader Reflection and Review Note Entry Typ
     const again = await journal.entryTypes.list()
     expect(again.filter((t) => t.id === TRADER_REFLECTION_ENTRY_TYPE_ID)).toHaveLength(1)
     expect(again.filter((t) => t.id === REVIEW_NOTE_ENTRY_TYPE_ID)).toHaveLength(1)
+  })
+})
+
+describe('Workspace.settings', () => {
+  it('returns a default riskFreeRate (0.04) before any set', async () => {
+    const { workspace } = makeWorkspace()
+    expect(await workspace.settings.get('riskFreeRate')).toBe(0.04)
+  })
+
+  it('round-trips a set value', async () => {
+    const { workspace } = makeWorkspace()
+    await workspace.settings.set('riskFreeRate', 0.05)
+    expect(await workspace.settings.get('riskFreeRate')).toBe(0.05)
   })
 })

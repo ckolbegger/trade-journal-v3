@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 import { useValuations } from '../valuationsContext'
+import { WorkspaceContext } from '../workspaceContext'
 import { MarkEntry } from './MarkEntry'
 import { centsToDollars, optionLabel } from '../format'
 import { card, num, subheading } from '../styles'
@@ -31,17 +32,22 @@ function anchor(value: Money | 'unlimited' | 'undefined'): string {
 
 export function TradeDashboard({ tradeId }: { tradeId: string }) {
   const valuations = useValuations()
+  // Optional: most render trees (and older tests) never provide a Workspace —
+  // IV simply never computes then (detail()'s riskFreeRate param is optional).
+  const workspace = useContext(WorkspaceContext)
   const [detail, setDetail] = useState<TradeDetailView | null>(null)
 
   const load = useCallback(() => {
     let active = true
-    void valuations.detail(tradeId).then((d) => {
+    void (async () => {
+      const riskFreeRate = workspace ? await workspace.settings.get('riskFreeRate') : undefined
+      const d = await valuations.detail(tradeId, riskFreeRate)
       if (active) setDetail(d)
-    })
+    })()
     return () => {
       active = false
     }
-  }, [valuations, tradeId])
+  }, [valuations, tradeId, workspace])
 
   useEffect(load, [load])
 
@@ -97,6 +103,28 @@ export function TradeDashboard({ tradeId }: { tradeId: string }) {
         <Row label="Fees" value={money(v.fees)} />
         <Row label="Total P&L" value={money(v.totalPnL)} />
       </dl>
+
+      {/* IV is display-only (ADR 0009) — never fed back into P&L or R/R. Shown
+          per option Leg that has its own contract Mark; the percentage is
+          omitted when the underlying is unmarked or no vol reproduces the
+          Mark (Valuations.detail's impliedVols, computed from TradeMath.impliedVol). */}
+      {detail.impliedVols && detail.impliedVols.length > 0 && (
+        <dl aria-label="option marks" className="space-y-1 text-sm">
+          {detail.impliedVols.map((entry) => {
+            const leg = detail.record.legs.find((l) => l.id === entry.legId)
+            if (!leg) return null
+            return (
+              <div key={entry.legId} className="flex justify-between">
+                <dt className="text-slate-500">{instrumentLabel(leg.instrument)}</dt>
+                <dd className={`text-slate-900 ${num}`}>
+                  {centsToDollars(entry.markPrice)}
+                  {entry.iv !== undefined && ` · IV ${Math.round(entry.iv * 100)}%`}
+                </dd>
+              </div>
+            )
+          })}
+        </dl>
+      )}
 
       {/* Multiple Legs only after an assignment/exercise landed a paired stock
           Leg alongside the option (S3.4) — a single-Leg Trade already shows

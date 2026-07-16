@@ -38,5 +38,10 @@ export function createDatabase(name = 'trade-journal'): Dexie {
   db.version(5).stores({
     marks: 'id, instrument, seq',
   })
+  // v6 adds the Workspace settings store — one record per setting key (e.g.
+  // `riskFreeRate`). Earlier stores are never reshaped.
+  db.version(6).stores({
+    settings: 'id, seq',
+  })
   return db
 }

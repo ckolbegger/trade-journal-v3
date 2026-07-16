@@ -213,7 +213,7 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
 
 ---
 
-## ☐ Story S3.5 — IV display
+## ☑ Story S3.5 — IV display
 
 > As a trader, I want to see the implied volatility my Marks imply, so that I build intuition about what I'm paying or collecting — without the app ever predicting anything.
 
@@ -221,7 +221,7 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
 
 ### Tasks
 
-- [ ] **S3.5.T1 — Workspace.settings + impliedVol.** Typed settings over a Dexie store; Black-Scholes inversion (bisection is fine), no dividend modeling (accepted display error, [trademath.md](../design/trademath.md) open item resolved caller-supplies-rate).
+- [x] **S3.5.T1 — Workspace.settings + impliedVol.** Typed settings over a Dexie store; Black-Scholes inversion (bisection is fine), no dividend modeling (accepted display error, [trademath.md](../design/trademath.md) open item resolved caller-supplies-rate).
 
   ```
   describe "Workspace.settings"
@@ -233,7 +233,7 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
   - it returns undefined for an expired contract
   ```
 
-- [ ] **S3.5.T2 — Display + setting UI.** Option Legs on Trade detail show IV next to the contract Mark ("14.00 · IV 31%"); Settings gains a risk-free-rate field. IV appears nowhere in any computation path — display only.
+- [x] **S3.5.T2 — Display + setting UI.** Option Legs on Trade detail show IV next to the contract Mark ("14.00 · IV 31%"); Settings gains a risk-free-rate field. IV appears nowhere in any computation path — display only.
 
   ```
   describe "IV display"
@@ -242,6 +242,6 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
   - it updates when the risk-free-rate setting changes
   ```
 
-- [ ] **S3.5.T3 — Integration tests**: set rate → mark contract + underlying over Dexie → detail carries the IV figure; unmarking the underlying drops it.
-- [ ] **S3.5.T4 — Playwright e2e** (`e2e/s3-5-iv.spec.ts`): marked long call shows an IV percentage; changing the rate in Settings changes it.
-- [ ] **S3.5.T5 — Browser verification.** Sanity-check one displayed IV against an external calculator (same inputs, within a percent); confirm IV never appears in R/R or P&L figures. All suites green.
+- [x] **S3.5.T3 — Integration tests**: set rate → mark contract + underlying over Dexie → detail carries the IV figure; unmarking the underlying drops it.
+- [x] **S3.5.T4 — Playwright e2e** (`e2e/s3-5-iv.spec.ts`): marked long call shows an IV percentage; changing the rate in Settings changes it.
+- [x] **S3.5.T5 — Browser verification.** Sanity-check one displayed IV against an external calculator (same inputs, within a percent); confirm IV never appears in R/R or P&L figures. All suites green.
