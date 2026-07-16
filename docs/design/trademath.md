@@ -7,7 +7,8 @@ Pure computation module: no storage, no side effects, no clock. Every operation 
 ```typescript
 interface TradeMath {
   positionOf(trade: TradeRecord, asOf?: ISODate): Position
-  instrumentsOf(trade: TradeRecord): InstrumentKey[]   // every instrument the Trade needs Marks for (legs + underlyings)
+  instrumentsOf(trade: TradeRecord): InstrumentKey[]   // every instrument the Trade ever held (legs + underlyings)
+  heldInstrumentsOf(trade: TradeRecord): InstrumentKey[]   // instruments still needing Marks: held Legs only + their underlyings — a flat Leg never prompts
   statusOf(trade: TradeRecord): 'planned' | 'open' | 'closed'
   valuation(trade: TradeRecord, marks: MarkSet): Valuation
   riskReward(trade: TradeRecord, marks: MarkSet): RiskReward

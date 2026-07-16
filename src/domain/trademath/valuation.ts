@@ -38,6 +38,21 @@ export function instrumentsOf(trade: TradeRecord): InstrumentKey[] {
   return [...new Set(keys)]
 }
 
+// The instruments a Trade still needs Marks for going forward: held Legs only —
+// a flat Leg (e.g. an assigned Trade's expired option) values at zero and
+// prompts for nothing — plus a held option Leg's underlying. The same held
+// filter `valuation` applies to missing-Mark detection; what `marksNeeded`
+// reads (user ruling 2026-07-16).
+export function heldInstrumentsOf(trade: TradeRecord): InstrumentKey[] {
+  const keys = trade.legs
+    .filter((leg) => totalsFor(leg).openQty !== 0)
+    .flatMap((leg) => {
+      const key = buildInstrumentKey(leg.instrument)
+      return leg.instrument.kind === 'option' ? [key, underlyingKeyOf(key)] : [key]
+    })
+  return [...new Set(keys)]
+}
+
 // A Leg opens in whichever direction its FIRST Execution takes (long-only or
 // short-only this slice — no flip mid-Leg): `sign` +1 for a bought-first (long)
 // Leg, -1 for a sold-first (short) Leg. `openQty`/`avgOpenPrice` describe the

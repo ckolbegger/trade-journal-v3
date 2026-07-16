@@ -437,6 +437,80 @@ describe('Valuations.marksNeeded (per-instrument ranges)', () => {
   })
 })
 
+// An assigned Trade keeps its flat expired option Leg (S3.4), but a Leg holding
+// nothing needs no Marks: marksNeeded reads held Legs only (user ruling
+// 2026-07-16), mirroring valuation's held filter — otherwise Daily Review would
+// prompt for the dead contract forever, over a growing range.
+describe('Valuations.marksNeeded (held Legs only)', () => {
+  const wednesday = '2026-07-15'
+  const EXPIRATION = '2026-07-10'
+  const PUT = `XYZ ${EXPIRATION} P 100`
+
+  async function seedAssignedCsp(tradeBook: TradeBook): Promise<string> {
+    const institution = { id: '', name: 'Schwab' } as Institution
+    await tradeBook.registries.institutions.save(institution)
+    const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
+    await tradeBook.registries.accounts.save(account)
+    const draft: PlanDraft = {
+      accountId: account.id,
+      thesis: 'XYZ range-bound',
+      strategyId: 'strategy-cash-secured-put',
+      ideaSourceId: '',
+      plannedLegs: [
+        {
+          side: 'sell',
+          instrument: {
+            kind: 'option',
+            ticker: 'XYZ',
+            expiration: EXPIRATION,
+            type: 'put',
+            strike: 10000,
+          },
+          qty: 1,
+        },
+      ],
+      exitLevels: [],
+      plannedAt: '2026-07-06',
+    }
+    const tradeId = await tradeBook.confirmPlan(draft)
+    const opened = await tradeBook.recordExecution(
+      { tradeId, newLeg: PUT },
+      {
+        side: 'sell',
+        qty: 1,
+        price: 250,
+        fees: 65,
+        timestamp: new Date('2026-07-06T12:00:00').getTime(),
+      },
+    )
+    await tradeBook.recordExecution(
+      { tradeId, legId: opened.record.legs[0].id },
+      {
+        side: 'buy',
+        qty: 1,
+        price: 0,
+        fees: 0,
+        kind: 'assign',
+        timestamp: new Date(`${EXPIRATION}T16:00:00`).getTime(),
+      },
+    )
+    return tradeId
+  }
+
+  it("prompts only for held Legs' instruments — an assigned Trade's flat option Leg drops out", async () => {
+    const { tradeBook, priceBook } = books()
+    const tradeId = await seedAssignedCsp(tradeBook)
+
+    const needed = await new Valuations(tradeBook, priceBook).marksNeeded(wednesday)
+
+    // Only the stock Leg holds anything: XYZ prompts (never marked, so from the
+    // Trade's first Execution); the dead contract never does.
+    expect(needed.perTrade).toEqual([
+      { tradeId, needs: [{ instrument: 'XYZ', range: { from: '2026-07-06', to: wednesday } }] },
+    ])
+  })
+})
+
 // The mark-entry seam for an option Trade: today's valuation and R/R never
 // require the underlying's Mark in this slice (Long Call/Put use structureValue
 // Exit Levels, compared straight to the contract's own Mark) — only Marks

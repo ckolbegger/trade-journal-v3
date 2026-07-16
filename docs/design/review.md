@@ -68,8 +68,8 @@ sequenceDiagram
     R->>V: marksNeeded(today)
     V->>TB: openTrades()
     TB-->>V: TradeRecords
-    V->>TM: instrumentsOf(each record)
-    TM-->>V: per-Trade instrument lists
+    V->>TM: heldInstrumentsOf(each record)
+    TM-->>V: per-Trade instrument lists (held Legs only — a flat Leg never prompts)
     V->>PB: lastMarked(all instruments)
     PB-->>V: latest Mark date per instrument
     Note over V: collection range per instrument — day after its last Mark<br/>through today (never-marked instruments start at their<br/>Trade's first Execution date). Missed Tuesday is inside by construction

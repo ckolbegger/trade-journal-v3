@@ -20,7 +20,12 @@ import type {
 import { isoDateOf, nextISODate } from '@/domain/dates'
 import { positionOf } from '@/domain/trademath/position'
 import { buildInstrumentKey, underlyingKeyOf } from '@/domain/trademath/instrument'
-import { instrumentsOf, valuation, MissingMarkError } from '@/domain/trademath/valuation'
+import {
+  heldInstrumentsOf,
+  instrumentsOf,
+  valuation,
+  MissingMarkError,
+} from '@/domain/trademath/valuation'
 import { riskReward } from '@/domain/trademath/risk-reward'
 import { impliedVol } from '@/domain/trademath/implied-vol'
 
@@ -135,18 +140,20 @@ export class Valuations {
   }
 
   // Which instruments need Marks, per open Trade, over which ranges. Planned and
-  // closed Trades hold nothing, so they need nothing. An instrument whose last
-  // Mark is asOf (or later) has no gap and drops out; a Trade with no gap at all
-  // drops out. Skipped review days are inside the ranges by construction — the
-  // gap is "since the last date with Marks", so a missed Tuesday can never
-  // silently become interior history (docs/design/pricebook.md).
+  // closed Trades hold nothing, so they need nothing; within an open Trade only
+  // held Legs' instruments prompt — a flat Leg (an assigned Trade's expired
+  // option) never nags for a Mark again. An instrument whose last Mark is asOf
+  // (or later) has no gap and drops out; a Trade with no gap at all drops out.
+  // Skipped review days are inside the ranges by construction — the gap is
+  // "since the last date with Marks", so a missed Tuesday can never silently
+  // become interior history (docs/design/pricebook.md).
   async marksNeeded(asOf: ISODate): Promise<MarksNeeded> {
     if (!this.priceBook) throw new Error('Valuations needs a PriceBook for marksNeeded')
     const open = await this.tradeBook.query({ status: 'open' })
 
     const perTrade: TradeMarksNeeded[] = []
     for (const record of open) {
-      const instruments = instrumentsOf(record)
+      const instruments = heldInstrumentsOf(record)
       const lastMarked = await this.priceBook.lastMarked(instruments)
       const firstExecution = firstExecutionDate(record)
 
