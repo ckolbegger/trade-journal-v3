@@ -76,12 +76,14 @@ export class PriceBook {
   // Collects Marks from the registered PricingSources — the first source whose
   // supports() accepts an instrument handles it (priority order). An instrument
   // no registered source accepts is `unsupported`; a source that throws reports
-  // a per-instrument error. Slice 4.1 implements only what "Test this source"
-  // needs: routing, storing what comes back as 'fetched', and surfacing thrown
-  // errors — manual-sticky / re-fetch-replaces / missingMarks-as-remainder
-  // orchestration is Slice 4.2 (docs/plan/slice-04-automated-pricing.md).
+  // a per-instrument error. Manual-sticky: an observation landing on a date that
+  // already carries a manual Mark is never stored (`skippedManual` reports it);
+  // a previously *fetched* Mark on that date is freely replaced (re-fetch is the
+  // whole point of gap recovery). A source simply omitting a date (market closed,
+  // or nothing new) stores nothing for it — the feed is the calendar.
   async fetch(instruments: InstrumentKey[], range: DateRange): Promise<FetchReport> {
     const stored: Mark[] = []
+    const skippedManual = new Set<InstrumentKey>()
     const unsupported: InstrumentKey[] = []
     const errors: { instrument: InstrumentKey; source: string; message: string }[] = []
 
@@ -94,6 +96,14 @@ export class PriceBook {
       try {
         const observations = await source.fetch([instrument], range)
         for (const obs of observations) {
+          const existing = await this.binding.get<StoredMark>(
+            MARKS,
+            markId(obs.instrument, obs.date),
+          )
+          if (existing?.origin === 'manual') {
+            skippedManual.add(obs.instrument)
+            continue
+          }
           const mark: Mark = {
             instrument: obs.instrument,
             date: obs.date,
@@ -115,7 +125,7 @@ export class PriceBook {
       }
     }
 
-    return { stored, skippedManual: [], unsupported, errors }
+    return { stored, skippedManual: [...skippedManual], unsupported, errors }
   }
 
   // The unpriced (instrument, date) rows in a range — the authoritative remainder

@@ -4,9 +4,9 @@ import { usePriceBook } from '../priceBookContext'
 import { useTradeBook } from '../tradeBookContext'
 import { WalkSession } from './WalkSession'
 import { CloseForm } from './CloseForm'
-import { optionLabel, todayISO } from '../format'
+import { centsToDollars, optionLabel, todayISO } from '../format'
 import { btnPrimary, btnSecondary, card, heading, num, subheading } from '../styles'
-import type { ISODate, InstrumentKey } from '@/books/pricebook/types'
+import type { FetchReport, ISODate, InstrumentKey, Mark } from '@/books/pricebook/types'
 import type { ExpiredHolding, TradeMarksNeeded } from '@/coordinators/valuations'
 
 // The Daily Review start page: the session's agenda. Starting a session asks the
@@ -24,6 +24,9 @@ interface AgendaTrade {
   tradeId: string
   ticker: string
   missing: { instrument: InstrumentKey; date: ISODate }[]
+  fetched: Mark[] // FetchReport.stored, for an eyeball check — this Trade's instruments only
+  errors: FetchReport['errors'] // FetchReport.errors, for this Trade's instruments only
+  skippedManual: InstrumentKey[] // FetchReport.skippedManual — a manual Mark the fetch never touched
 }
 
 interface Session {
@@ -52,11 +55,12 @@ export function ReviewPage() {
     const instruments = [
       ...new Set(agenda.marksNeeded.flatMap((item) => item.needs.map((n) => n.instrument))),
     ]
-    await priceBook.fetch(instruments, agenda.fetchRange)
+    const report = await priceBook.fetch(instruments, agenda.fetchRange)
 
     const trades = await Promise.all(
       agenda.marksNeeded.map(async (item) => {
         const record = await tradeBook.get(item.tradeId)
+        const itemInstruments = new Set(item.needs.map((n) => n.instrument))
         const missing = (
           await Promise.all(
             item.needs.map((need) => priceBook.missingMarks([need.instrument], need.range)),
@@ -66,6 +70,9 @@ export function ReviewPage() {
           tradeId: item.tradeId,
           ticker: record.plan.plannedLegs[0]?.instrument.ticker ?? '',
           missing,
+          fetched: report.stored.filter((m) => itemInstruments.has(m.instrument)),
+          errors: report.errors.filter((e) => itemInstruments.has(e.instrument)),
+          skippedManual: report.skippedManual.filter((i) => itemInstruments.has(i)),
         }
       }),
     )
@@ -194,7 +201,51 @@ export function ReviewPage() {
                 {session.trades.map((trade) => (
                   <li key={trade.tradeId} aria-label={trade.ticker} className={card}>
                     <p className="font-medium text-slate-900">{trade.ticker}</p>
-                    <ul className="mt-2 divide-y divide-slate-100">
+                    {trade.fetched.length > 0 && (
+                      <ul aria-label="fetched" className="mt-2 divide-y divide-slate-100">
+                        {trade.fetched.map((mark) => (
+                          <li
+                            key={`${mark.instrument}|${mark.date}`}
+                            aria-label={`${mark.instrument} ${mark.date}`}
+                            className="flex items-center justify-between py-1.5 text-sm text-slate-800"
+                          >
+                            <span>{mark.instrument}</span>
+                            <span className={num}>
+                              {mark.date} · ${centsToDollars(mark.price)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {trade.errors.length > 0 && (
+                      <ul aria-label="errors" className="mt-2 divide-y divide-slate-100">
+                        {trade.errors.map((err) => (
+                          <li
+                            key={err.instrument}
+                            aria-label={`${err.instrument} error`}
+                            className="flex items-center justify-between py-1.5 text-sm text-red-700"
+                          >
+                            <span>{err.instrument}</span>
+                            <span>{err.message}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {trade.skippedManual.length > 0 && (
+                      <ul aria-label="already done" className="mt-2 divide-y divide-slate-100">
+                        {trade.skippedManual.map((instrument) => (
+                          <li
+                            key={instrument}
+                            aria-label={`${instrument} kept manual`}
+                            className="flex items-center justify-between py-1.5 text-sm text-slate-500"
+                          >
+                            <span>{instrument}</span>
+                            <span>kept manual</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <ul aria-label="missing" className="mt-2 divide-y divide-slate-100">
                       {trade.missing.map(({ instrument, date }) => (
                         <li
                           key={`${instrument}|${date}`}

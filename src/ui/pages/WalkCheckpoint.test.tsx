@@ -444,3 +444,23 @@ describe('WalkCheckpoint', () => {
     expect(debt.map((e) => e.id)).toEqual([owed])
   })
 })
+
+describe('walk (fetched marks)', () => {
+  it('prompts only for instruments the fetch did not satisfy', async () => {
+    const f = await fixture()
+    const aapl = await openTrade(f, 'AAPL')
+    // A prior fetch already stored today's Mark — 'fetched' origin, same as
+    // PriceBook.fetch would leave it after the review's one bulk fetch.
+    await f.priceBook.record('AAPL', todayISO(), 16000, 'fetched')
+
+    renderCheckpoint(f, aapl, 'AAPL')
+
+    const rows = await screen.findByRole('list', { name: 'marks needed' })
+    const labels = within(rows)
+      .getAllByRole('listitem')
+      .map((li) => li.getAttribute('aria-label'))
+    // Two of the three gap dates remain; today's fetched Mark never reappears.
+    expect(labels).toEqual([`AAPL ${daysAgo(2)}`, `AAPL ${daysAgo(1)}`])
+    expect(labels).not.toContain(`AAPL ${todayISO()}`)
+  })
+})

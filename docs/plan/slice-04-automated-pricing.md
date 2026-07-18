@@ -60,7 +60,7 @@ Design references: [pricebook.md](../design/pricebook.md) (fetch semantics, Fetc
 
 ---
 
-## ☐ Story S4.2 — The review fetch
+## ☑ Story S4.2 — The review fetch
 
 > As a trader, I want my Daily Review to fetch everything since my last review in one step — including the days I missed — so that I only type the prices my source couldn't provide.
 
@@ -68,7 +68,7 @@ Design references: [pricebook.md](../design/pricebook.md) (fetch semantics, Fetc
 
 ### Tasks
 
-- [ ] **S4.2.T1 — Fetch orchestration.**
+- [x] **S4.2.T1 — Fetch orchestration.**
 
   ```
   describe "PriceBook.fetch (with adapters)"
@@ -83,7 +83,7 @@ Design references: [pricebook.md](../design/pricebook.md) (fetch semantics, Fetc
   - it is the authoritative remainder: fetched dates gone, error/unsupported dates still listed
   ```
 
-- [ ] **S4.2.T2 — Collection screen.** The agenda's post-fetch state renders the `FetchReport`: stored Marks as pre-filled rows for an eyeball check, `skippedManual` as already-done, errors with their reasons ("API key expired" — not five contracts mysteriously needing typing); unsupported + errored instruments flow to the per-Trade manual prompts in the walk, exactly as before.
+- [x] **S4.2.T2 — Collection screen.** The agenda's post-fetch state renders the `FetchReport`: stored Marks as pre-filled rows for an eyeball check, `skippedManual` as already-done, errors with their reasons ("API key expired" — not five contracts mysteriously needing typing); unsupported + errored instruments flow to the per-Trade manual prompts in the walk, exactly as before.
 
   ```
   describe "ReviewCollection (fetched)"
@@ -95,9 +95,9 @@ Design references: [pricebook.md](../design/pricebook.md) (fetch semantics, Fetc
   - it prompts only for instruments the fetch did not satisfy
   ```
 
-- [ ] **S4.2.T3 — Integration tests**: two Trades (stock + option), adapter fixture covering the stock only, three-day gap → fetch stores 3 stock Marks; agenda's manual rows = option contract only; a manual Mark recorded earlier survives re-fetch (`skippedManual`).
-- [ ] **S4.2.T4 — Playwright e2e** (`e2e/s4-2-review-fetch.spec.ts`): mocked source → review session where the stock rows arrive pre-filled and only the contract is typed.
-- [ ] **S4.2.T5 — Browser verification.** A real review session against the live source: gap since last review backfills; the walk prompts only for what the source missed; diff this session's typing against a Slice 1-era session to confirm the deletion of work. Verify no UI code change was needed for the collection path (git diff shows PriceBook/adapters only for the flow itself). All suites green.
+- [x] **S4.2.T3 — Integration tests**: two Trades (stock + option), adapter fixture covering the stock only, three-day gap → fetch stores 3 stock Marks; agenda's manual rows = option contract only; a manual Mark recorded earlier survives re-fetch (`skippedManual`).
+- [x] **S4.2.T4 — Playwright e2e** (`e2e/s4-2-review-fetch.spec.ts`): mocked source → review session where the stock rows arrive pre-filled and only the contract is typed.
+- [x] **S4.2.T5 — Browser verification.** A real review session against the live source: gap since last review backfills; the walk prompts only for what the source missed; diff this session's typing against a Slice 1-era session to confirm the deletion of work. Verify no UI code change was needed for the collection path (git diff shows PriceBook/adapters only for the flow itself). All suites green.
 
 ---
 

@@ -17,6 +17,7 @@ import type { Journal } from '@/books/journal/journal'
 import type { PriceBook } from '@/books/pricebook/price-book'
 import type { Account, ExecutionDraft, Institution, PlanDraft } from '@/books/tradebook/types'
 import type { EntryType } from '@/books/journal/types'
+import type { DateRange, PricingSource, SourceObservation } from '@/books/pricebook/types'
 import { inMemoryBooks } from '../../../tests/support/trade-book'
 
 // The trader's local date is the trading date, and the page reviews "today" — so
@@ -47,13 +48,13 @@ function fill(): ExecutionDraft {
   }
 }
 
-async function workspace(): Promise<{
+async function workspace(sources: PricingSource[] = []): Promise<{
   tradeBook: TradeBook
   journal: Journal
   priceBook: PriceBook
   accountId: string
 }> {
-  const { tradeBook, journal, priceBook } = inMemoryBooks()
+  const { tradeBook, journal, priceBook } = inMemoryBooks(sources)
   const institution = { id: '', name: 'Schwab' } as Institution
   await tradeBook.registries.institutions.save(institution)
   const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
@@ -104,6 +105,24 @@ function renderPage(tradeBook: TradeBook, journal: Journal, priceBook: PriceBook
 
 async function startReview() {
   await userEvent.click(screen.getByRole('button', { name: /start review/i }))
+}
+
+// A minimal PricingSource stub — the collection screen's own seam (rendering the
+// FetchReport), not the adapter's HTTP concerns.
+function stubSource(opts: {
+  id: string
+  supports: (instrument: string) => boolean
+  observations?: SourceObservation[]
+  error?: Error
+}): PricingSource {
+  return {
+    id: opts.id,
+    supports: opts.supports,
+    fetch: async (_instruments: string[], _range: DateRange) => {
+      if (opts.error) throw opts.error
+      return opts.observations ?? []
+    },
+  }
 }
 
 describe('ReviewAgendaPage', () => {
@@ -366,5 +385,132 @@ describe('ReviewAgenda (expired)', () => {
         expect(open.map((t) => t.id)).toContain(tradeId)
       })
     })
+  })
+})
+
+// The agenda's post-fetch state renders the FetchReport (docs/design/pricebook.md):
+// stored Marks as pre-filled rows for an eyeball check, errors with their reason
+// attached to the instrument, and unsupported instruments flow to the ordinary
+// missing-Marks rows the walk prompts for — the same one collection path, just
+// with real fetch results this time.
+describe('ReviewCollection (fetched)', () => {
+  it('shows fetched closes as pre-filled rows per Trade', async () => {
+    const source = stubSource({
+      id: 'test-source',
+      supports: () => true,
+      observations: [3, 2, 1, 0].map((d) => ({
+        instrument: 'AAPL',
+        date: daysAgo(d),
+        close: 16000,
+      })),
+    })
+    const { tradeBook, journal, priceBook, accountId } = await workspace([source])
+    await openTrade(tradeBook, accountId, 'AAPL')
+
+    renderPage(tradeBook, journal, priceBook)
+    await startReview()
+
+    const aapl = await screen.findByRole('listitem', { name: 'AAPL' })
+    const fetched = within(aapl).getByRole('list', { name: 'fetched' })
+    expect(within(fetched).getAllByRole('listitem')).toHaveLength(4)
+    expect(within(fetched).getByRole('listitem', { name: `AAPL ${todayISO()}` })).toHaveTextContent(
+      '160.00',
+    )
+    // The fetch satisfied every date — nothing is left to type manually.
+    expect(within(aapl).getByRole('list', { name: 'missing' }).children).toHaveLength(0)
+  })
+
+  it('shows a manual Mark the fetch skipped as already done', async () => {
+    const source = stubSource({
+      id: 'test-source',
+      supports: () => true,
+      observations: [3, 2, 1, 0].map((d) => ({
+        instrument: 'AAPL',
+        date: daysAgo(d),
+        close: 16000,
+      })),
+    })
+    const { tradeBook, journal, priceBook, accountId } = await workspace([source])
+    await openTrade(tradeBook, accountId, 'AAPL')
+    // The trader already typed yesterday's close by hand, before the fetch ran —
+    // the sticky manual Mark the fetch must never silently overwrite.
+    await priceBook.record('AAPL', daysAgo(1), 15800, 'manual')
+
+    renderPage(tradeBook, journal, priceBook)
+    await startReview()
+
+    const aapl = await screen.findByRole('listitem', { name: 'AAPL' })
+    const alreadyDone = within(aapl).getByRole('list', { name: 'already done' })
+    expect(
+      within(alreadyDone).getByRole('listitem', { name: 'AAPL kept manual' }),
+    ).toBeInTheDocument()
+    // The other three dates still arrive as fetched, pre-filled rows.
+    const fetched = within(aapl).getByRole('list', { name: 'fetched' })
+    expect(within(fetched).getAllByRole('listitem')).toHaveLength(3)
+    expect(within(fetched).queryByRole('listitem', { name: `AAPL ${daysAgo(1)}` })).toBeNull()
+    // Nothing left to type manually.
+    expect(within(aapl).getByRole('list', { name: 'missing' }).children).toHaveLength(0)
+    // The manual Mark itself is untouched.
+    const marks = await priceBook.markSet(['AAPL'], daysAgo(1))
+    expect(marks.get('AAPL')).toEqual({
+      instrument: 'AAPL',
+      date: daysAgo(1),
+      price: 15800,
+      origin: 'manual',
+    })
+  })
+
+  it('shows error reasons attached to their instruments', async () => {
+    const source = stubSource({
+      id: 'test-source',
+      supports: () => true,
+      error: new Error('API key expired'),
+    })
+    const { tradeBook, journal, priceBook, accountId } = await workspace([source])
+    await openTrade(tradeBook, accountId, 'AAPL')
+
+    renderPage(tradeBook, journal, priceBook)
+    await startReview()
+
+    const aapl = await screen.findByRole('listitem', { name: 'AAPL' })
+    const errors = within(aapl).getByRole('list', { name: 'errors' })
+    expect(within(errors).getByRole('listitem', { name: 'AAPL error' })).toHaveTextContent(
+      'API key expired',
+    )
+  })
+
+  it('sends unsupported instruments to the manual walk prompts', async () => {
+    const source = stubSource({ id: 'test-source', supports: () => false })
+    const { tradeBook, journal, priceBook, accountId } = await workspace([source])
+    await openTrade(tradeBook, accountId, 'AAPL')
+
+    renderPage(tradeBook, journal, priceBook)
+    await startReview()
+
+    const aapl = await screen.findByRole('listitem', { name: 'AAPL' })
+    expect(within(aapl).queryByRole('list', { name: 'fetched' })).not.toBeInTheDocument()
+    expect(
+      within(within(aapl).getByRole('list', { name: 'missing' })).getAllByRole('listitem'),
+    ).toHaveLength(4)
+  })
+
+  it('recovers a two-day gap silently when the source covers it', async () => {
+    const source = stubSource({
+      id: 'test-source',
+      supports: () => true,
+      observations: [1, 0].map((d) => ({ instrument: 'AAPL', date: daysAgo(d), close: 16000 })),
+    })
+    const { tradeBook, journal, priceBook, accountId } = await workspace([source])
+    await openTrade(tradeBook, accountId, 'AAPL')
+    // Marked two days ago, then the trader skipped a day: yesterday AND today owed Marks.
+    await priceBook.record('AAPL', daysAgo(2), 16000, 'manual')
+
+    renderPage(tradeBook, journal, priceBook)
+    await startReview()
+
+    const aapl = await screen.findByRole('listitem', { name: 'AAPL' })
+    const fetched = within(aapl).getByRole('list', { name: 'fetched' })
+    expect(within(fetched).getAllByRole('listitem')).toHaveLength(2)
+    expect(within(aapl).getByRole('list', { name: 'missing' }).children).toHaveLength(0)
   })
 })
