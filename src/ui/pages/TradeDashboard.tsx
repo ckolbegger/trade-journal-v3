@@ -66,7 +66,11 @@ export function TradeDashboard({
 
   if (!detail) return null
 
-  const plannedInstrument = detail.record.plan.plannedLegs[0]?.instrument
+  // plannedLegs[0] is always concrete: a single-leg Strategy requires its sole
+  // Planned Leg's strike/expiration up front (PlanForm), and a multi-leg
+  // Strategy's own first leg is Slice 7's stock leg — no strike/expiration to
+  // be TBD about. Only a LATER Planned Leg can be TBD, never read here.
+  const plannedInstrument = detail.record.plan.plannedLegs[0]?.instrument as Instrument | undefined
   // Assignment/exercise (S3.4) can land a Leg the original Plan never named
   // (the paired stock Leg, with the option Leg now flat) — when the Trade
   // currently holds exactly one Leg, both the Mark prompt and the "at
@@ -91,13 +95,22 @@ export function TradeDashboard({
     exitLevels.some((l) => l.side === side && l.kind === 'underlyingPrice')
 
   if (detail.marksMissing || !detail.valuation || !detail.riskReward) {
+    // A multi-leg Trade (covered call: stock + call) can need more than one
+    // Mark before valuation succeeds — one entry per missing instrument, not
+    // just the first (Slice 7).
+    const missing = detail.marksMissing ?? (instrument ? [instrument] : [])
     return (
       <div className={`${card} space-y-3`}>
         <h3 className={subheading}>Valuation</h3>
         <p className="text-sm text-slate-500">
           Enter today's price to see P&amp;L and risk/reward.
         </p>
-        <MarkEntry instrument={instrument} onRecorded={() => load()} />
+        {missing.map((key) => (
+          <div key={key} className="space-y-2">
+            {missing.length > 1 && <p className="text-sm font-medium text-slate-700">{key}</p>}
+            <MarkEntry instrument={key} onRecorded={() => load()} />
+          </div>
+        ))}
       </div>
     )
   }

@@ -98,7 +98,7 @@ type DetectedDeviation =
 ## Decided semantics
 
 - **Mark-to-market anchors (ADR 0010)**: all four R/R numbers measure from today's Marks; unrealized gains count.
-- **Structural extremes**: intrinsic value in the limits S→0 and S→∞ — well-defined for multi-expiration structures, no pricing model (reflective-only).
+- **Structural extremes**: intrinsic value evaluated at S→0, **at every held strike**, and in the S→∞ limit (the finite slope-zero asymptote equals the value at the largest held strike) — a piecewise-linear payoff's extremes live at its kinks, so endpoint-only sampling would misprice non-monotone structures like ratio writes or straddles (amended S7.1 review, 2026-07-18; identical results for all monotone/single-kink shapes). Well-defined for multi-expiration structures, no pricing model (reflective-only).
 - **FIFO lots (ADR 0015)**: partial closes and Transfers consume oldest Lots first; Transfers carry original basis (ADR 0004).
 - **Trailing high-water**: running max of the scoped structure's signed daily value (shorts negative, same-day sums only); derived from MarkSeries, never stored.
 - **Deviations**: `detectDeviations` is pure; recording at detection moments is the Books' job (ADR 0012).

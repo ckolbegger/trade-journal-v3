@@ -30,6 +30,19 @@ function instrumentLabel(instrument: Instrument): string {
   return instrument.kind === 'option' ? optionLabel(instrument) : instrument.ticker
 }
 
+// A Planned Leg's instrument rendered for display — same as `instrumentLabel`
+// for a concrete instrument, but a TBD option leg (strike/expiration left
+// open at plan time, Slice 7) reads "AAPL call (strike TBD)" until a fill
+// completes it.
+function plannedInstrumentLabel(
+  instrument: TradeRecord['plan']['plannedLegs'][number]['instrument'],
+): string {
+  if (instrument.kind !== 'option') return instrument.ticker
+  const { ticker, type, strike, expiration } = instrument
+  if (strike === undefined || expiration === undefined) return `${ticker} ${type} (strike TBD)`
+  return optionLabel({ ticker, type, strike, expiration })
+}
+
 // An Exit Level rendered for display: a dollar value for underlyingPrice/
 // structureValue, a percentage for pctOfMaxProfit.
 function exitLevelDisplay(level: TradeRecord['plan']['exitLevels'][number]): string {
@@ -185,7 +198,7 @@ export function TradeDetail() {
           <ul className="mt-1 space-y-1">
             {plan.plannedLegs.map((leg, i) => (
               <li key={i} className={`text-sm text-slate-800 capitalize ${num}`}>
-                {leg.side} {leg.qty} {instrumentLabel(leg.instrument)}
+                {leg.side} {leg.qty} {plannedInstrumentLabel(leg.instrument)}
               </li>
             ))}
           </ul>
@@ -226,7 +239,7 @@ export function TradeDetail() {
           {position && position.holdings.length > 0
             ? position.holdings
                 .map((h) => holdingLabel(h, avgCostFor(h.instrument, valuation?.perLeg)))
-                .join(', ')
+                .join(' · ')
             : 'No position'}
         </p>
         {showFill && (

@@ -39,9 +39,13 @@ export function PlanForm() {
 
   const [thesis, setThesis] = useState('')
   const [ticker, setTicker] = useState('')
+  // Shared by the (at most one) option leg every current Strategy template
+  // has. S7.2: a spread plans TWO option legs — this state will need to
+  // become per-leg then.
   const [expiration, setExpiration] = useState('')
   const [strike, setStrike] = useState('')
   const [qty, setQty] = useState('')
+  const [qtyByLeg, setQtyByLeg] = useState<Record<number, string>>({})
   const [stop, setStop] = useState('')
   const [target, setTarget] = useState('')
   const [chartLink, setChartLink] = useState('')
@@ -67,19 +71,30 @@ export function PlanForm() {
   }, [tradeBook])
 
   const strategy = strategies.find((s) => s.id === strategyId)
-  const leg = strategy?.legs[0]
-  const isOption = leg?.instrumentKind === 'option'
+  const legs = strategy?.legs ?? []
+  // A multi-leg template (covered call: buy stock + sell call) legs in over
+  // time — its option leg's strike/expiration may be left TBD (decided in
+  // Slice 7), completed later by the fill, not this form. A single-leg
+  // template's option details stay required (unchanged from Slice 3).
+  const isMultiLeg = legs.length > 1
+  const isOption = legs.some((l) => l.instrumentKind === 'option')
   const stopTemplate = strategy?.exitLevels.find((e) => e.side === 'stop')
   const targetTemplate = strategy?.exitLevels.find((e) => e.side === 'target')
   const asksStop = stopTemplate !== undefined
   const asksTarget = targetTemplate !== undefined
 
+  const qtyFor = (i: number): string => (isMultiLeg ? (qtyByLeg[i] ?? '') : qty)
+  const setQtyFor = (i: number, value: string): void => {
+    if (isMultiLeg) setQtyByLeg((prev) => ({ ...prev, [i]: value }))
+    else setQty(value)
+  }
+
   const canConfirm =
     Boolean(accountId) &&
     thesis.trim().length > 0 &&
     ticker.trim().length > 0 &&
-    Number(qty) > 0 &&
-    (!isOption || (expiration.trim().length > 0 && strike.trim().length > 0)) &&
+    legs.every((_, i) => Number(qtyFor(i)) > 0) &&
+    (!isOption || isMultiLeg || (expiration.trim().length > 0 && strike.trim().length > 0)) &&
     (!asksStop || stop.trim().length > 0) &&
     (!asksTarget || target.trim().length > 0)
 
@@ -117,27 +132,33 @@ export function PlanForm() {
   }
 
   async function confirm() {
-    if (!canConfirm || !leg) return
+    if (!canConfirm || legs.length === 0) return
     const exitLevels: ExitLevel[] = []
     if (stopTemplate) exitLevels.push(buildExitLevel('stop', stopTemplate, stop))
     if (targetTemplate) exitLevels.push(buildExitLevel('target', targetTemplate, target))
 
-    const instrument: PlanDraft['plannedLegs'][number]['instrument'] = isOption
-      ? {
-          kind: 'option',
-          ticker: ticker.trim().toUpperCase(),
-          expiration,
-          type: leg.optionType!,
-          strike: dollarsToCents(strike),
-        }
-      : { kind: 'stock', ticker: ticker.trim().toUpperCase() }
+    const tickerUpper = ticker.trim().toUpperCase()
+    const plannedLegs: PlanDraft['plannedLegs'] = legs.map((l, i) => ({
+      side: l.side,
+      qty: Number(qtyFor(i)),
+      instrument:
+        l.instrumentKind === 'option'
+          ? {
+              kind: 'option' as const,
+              ticker: tickerUpper,
+              type: l.optionType!,
+              ...(expiration.trim() ? { expiration } : {}),
+              ...(strike.trim() ? { strike: dollarsToCents(strike) } : {}),
+            }
+          : { kind: 'stock' as const, ticker: tickerUpper },
+    }))
 
     const draft: PlanDraft = {
       accountId,
       thesis: thesis.trim(),
       strategyId,
       ideaSourceId,
-      plannedLegs: [{ side: leg.side, instrument, qty: Number(qty) }],
+      plannedLegs,
       exitLevels,
       plannedAt: todayISO(),
       ...(chartLink.trim() ? { chartLink: chartLink.trim() } : {}),
@@ -197,20 +218,28 @@ export function PlanForm() {
           </select>
         </label>
 
-        {leg && (
-          <fieldset className="space-y-3 rounded-lg border border-slate-200 p-4">
-            <legend className="px-1 text-sm font-medium text-slate-700">Planned Leg</legend>
+        {legs.map((l, i) => (
+          <fieldset key={i} className="space-y-3 rounded-lg border border-slate-200 p-4">
+            <legend className="px-1 text-sm font-medium text-slate-700">
+              {isMultiLeg ? `Planned Leg ${i + 1}` : 'Planned Leg'}
+            </legend>
             <span className="inline-block text-sm text-slate-500 capitalize">
-              {leg.side} {leg.instrumentKind}
+              {l.side} {l.instrumentKind}
             </span>
-            <label className={field}>
-              Ticker
-              <input className={input} value={ticker} onChange={(e) => setTicker(e.target.value)} />
-            </label>
-            {isOption && (
+            {i === 0 && (
+              <label className={field}>
+                Ticker
+                <input
+                  className={input}
+                  value={ticker}
+                  onChange={(e) => setTicker(e.target.value)}
+                />
+              </label>
+            )}
+            {l.instrumentKind === 'option' && (
               <>
                 <label className={field}>
-                  Expiration
+                  Expiration{isMultiLeg ? ' (optional — TBD until the fill)' : ''}
                   <input
                     type="date"
                     className={input}
@@ -218,8 +247,11 @@ export function PlanForm() {
                     onChange={(e) => setExpiration(e.target.value)}
                   />
                 </label>
+                {isMultiLeg && !expiration.trim() && (
+                  <p className="text-xs text-slate-500">Expiration TBD — set at the fill</p>
+                )}
                 <label className={field}>
-                  Strike
+                  Strike{isMultiLeg ? ' (optional — TBD until the fill)' : ''}
                   <input
                     className={`${input} ${num}`}
                     value={strike}
@@ -227,19 +259,25 @@ export function PlanForm() {
                     inputMode="decimal"
                   />
                 </label>
+                {isMultiLeg && !strike.trim() && (
+                  <p className="text-xs text-slate-500">Strike TBD — set at the fill</p>
+                )}
               </>
             )}
             <label className={field}>
               Quantity
+              {isMultiLeg
+                ? ` (${l.side} ${l.instrumentKind === 'option' ? (l.optionType ?? 'option') : l.instrumentKind})`
+                : ''}
               <input
                 className={`${input} ${num}`}
-                value={qty}
-                onChange={(e) => setQty(e.target.value)}
+                value={qtyFor(i)}
+                onChange={(e) => setQtyFor(i, e.target.value)}
                 inputMode="numeric"
               />
             </label>
           </fieldset>
-        )}
+        ))}
 
         <label className={field}>
           Thesis

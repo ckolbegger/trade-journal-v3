@@ -28,7 +28,7 @@ Design references: [trademath.md](../design/trademath.md) (structural extremes, 
 
 ---
 
-## ☐ Story S7.1 — Covered call
+## ☑ Story S7.1 — Covered call
 
 > As a trader, I want one Trade holding my stock and the call I sold against it, so that the campaign's income, risk, and obligations read as one position, the way I actually think about it.
 
@@ -38,7 +38,7 @@ Design references: [trademath.md](../design/trademath.md) (structural extremes, 
 
 ### Tasks
 
-- [ ] **S7.1.T1 — Multi-leg math.**
+- [x] **S7.1.T1 — Multi-leg math.**
 
   ```
   describe "TradeMath.instrumentsOf (multi-leg)"
@@ -51,7 +51,7 @@ Design references: [trademath.md](../design/trademath.md) (structural extremes, 
   - it computes worstCaseRisk 5100.00 and capped maxReward 400.00
   ```
 
-- [ ] **S7.1.T2 — Multi-leg plan + TBD legs.**
+- [x] **S7.1.T2 — Multi-leg plan + TBD legs.**
 
   ```
   describe "PlanDraft (multi-leg)"
@@ -65,10 +65,10 @@ Design references: [trademath.md](../design/trademath.md) (structural extremes, 
   - it attaches the later call fill as the second Leg of the same Trade
   ```
 
-- [ ] **S7.1.T3 — Detail & walk UI.** Position block lists both Legs signed ("100 XYZ · −1 × Sep'26 55C"); per-Leg P&L rows; the review walk prompts Marks for stock and contract (dedup — stock asked once as itself and as underlying).
-- [ ] **S7.1.T4 — Integration tests**: full covered-call lifecycle over Dexie — plan (TBD call) → stock fill → call fill → marks → worked-example numbers → call expires worthless (S3.3 path) → sell stock → closed; realized folds both legs.
-- [ ] **S7.1.T5 — Playwright e2e** (`e2e/s7-1-covered-call.spec.ts`): worked example; assert the four R/R numbers and per-Leg rows.
-- [ ] **S7.1.T6 — Browser verification.** Drive the covered call in a real browser across a legged entry and one review walk; verify each number against the table; confirm the capped maxReward reads as a number while stock-only Trades still show 'unlimited'. All suites green.
+- [x] **S7.1.T3 — Detail & walk UI.** Position block lists both Legs signed ("100 XYZ · −1 × Sep'26 55C"); per-Leg P&L rows; the review walk prompts Marks for stock and contract (dedup — stock asked once as itself and as underlying).
+- [x] **S7.1.T4 — Integration tests**: full covered-call lifecycle over Dexie — plan (TBD call) → stock fill → call fill → marks → worked-example numbers → call expires worthless (S3.3 path) → sell stock → closed; realized folds both legs.
+- [x] **S7.1.T5 — Playwright e2e** (`e2e/s7-1-covered-call.spec.ts`): worked example; assert the four R/R numbers and per-Leg rows.
+- [x] **S7.1.T6 — Browser verification.** Drive the covered call in a real browser across a legged entry and one review walk; verify each number against the table; confirm the capped maxReward reads as a number while stock-only Trades still show 'unlimited'. All suites green.
 
 ---
 

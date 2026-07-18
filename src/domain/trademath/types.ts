@@ -53,10 +53,24 @@ export type ExitLevel =
   | { scope: Scope; side: 'stop' | 'target'; kind: 'structureValue'; value: Money }
   | { scope: Scope; side: 'stop' | 'target'; kind: 'pctOfMaxProfit'; pct: number }
 
+// A Planned Leg's instrument description. A stock leg is always concrete; an
+// option leg's strike/expiration may be TBD at plan time (legging plans,
+// Slice 7) — completed by the fill that opens the Leg, never by editing the
+// Plan. LegFacts.instrument (an actual, filled Leg) is always the concrete
+// `Instrument` — only a Planned Leg can be TBD.
+export interface PlannedOptionInstrument {
+  kind: 'option'
+  ticker: string
+  type: 'call' | 'put'
+  strike?: Money // TBD until the fill
+  expiration?: ISODate // TBD until the fill
+}
+export type PlannedInstrument = StockInstrument | PlannedOptionInstrument
+
 // A leg the Plan intends to hold: side, instrument, and quantity.
 export interface PlannedLeg {
   side: Side
-  instrument: Instrument
+  instrument: PlannedInstrument
   qty: Qty
 }
 

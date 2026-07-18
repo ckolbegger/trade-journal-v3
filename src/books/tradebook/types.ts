@@ -121,6 +121,7 @@ export type {
   ExecutionKind,
   ExitLevel,
   Instrument,
+  LegFacts,
   Money,
   PlanFacts,
   PlannedLeg,

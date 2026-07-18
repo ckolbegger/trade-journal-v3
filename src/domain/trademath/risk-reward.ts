@@ -2,6 +2,7 @@ import type {
   ExitLevel,
   LegFacts,
   MarkSet,
+  Money,
   OptionInstrument,
   RiskReward,
   TradeRecord,
@@ -12,13 +13,27 @@ import { contractMultiplierOf } from './multiplier'
 // Ongoing Risk/Reward, mark-to-market (ADR 0010): the four anchors measure from
 // today's Marks — giving back unrealized gains counts as risk. `original` measures
 // from the actual entry basis to the ORIGINAL Plan's stop/target, for contrast;
-// it is 'undefined' until the first Execution exists. Single-Leg Trades only this
-// slice (multi-leg arrives Slice 7). A Trade-scope stop/target is
+// it is 'undefined' until the first Execution exists. A Trade-scope stop/target is
 // `underlyingPrice` (stock's own scale, or an option projected at intrinsic —
 // ADR 0009, decided in Slice 3), `structureValue` (option, its value the same
 // scale as the contract's own Mark), or `pctOfMaxProfit` (a short credit's
 // buyback price at which that % of the entry credit is realized) —
 // `priceAtLevel` resolves any of them to a raw per-unit price.
+//
+// Multi-leg (Slice 7): worstCaseRisk/maxReward and an `underlyingPrice` stop/
+// target project the WHOLE structure's signed value at a given underlying
+// price — one universal sum over every Leg (ADR 0012, direction carries the
+// signs; nothing branches on Strategy) — rather than each Leg's own extreme in
+// isolation, which is what lets a covered call's maxReward come out CAPPED
+// (the short call's slope cancels the stock's as the underlying rises)
+// instead of 'unlimited', and lets a ratio write's local peak at its short
+// strike show a positive maxReward instead of the nonsense a S→0/S→∞-only
+// scan would produce (a negative "max reward"). `structureValue`/
+// `pctOfMaxProfit` stay resolved against a single held Leg (`priceAtLevel`,
+// below) — Slice 7.2 generalizes `pctOfMaxProfit` to a spread's net credit;
+// not needed here. `original` uses the SAME projection machinery over the
+// Trade's entry basis (every Leg's opening fills) instead of today's Marks —
+// one formula, two inputs.
 
 // An option's intrinsic value at a given underlying price — the only "worth"
 // TradeMath ever assigns an option away from its own Mark (no pricing model,
@@ -59,12 +74,17 @@ function targetLevel(trade: TradeRecord): ExitLevel | undefined {
   return trade.plan.exitLevels.find((l) => l.side === 'target' && l.scope.level === 'trade')
 }
 
-// The currently-held Leg (single-Leg Trades only this slice), with its net open
-// quantity, side, and average entry price. A Leg opens in whichever direction
-// its first Execution takes — long-only or short-only, no flip mid-Leg.
-function heldLeg(
-  trade: TradeRecord,
-): { leg: LegFacts; qty: number; side: 'long' | 'short'; avgEntry: number } | undefined {
+interface LegBasis {
+  leg: LegFacts
+  qty: number
+  side: 'long' | 'short'
+  avgEntry: number
+}
+
+// Every currently-held Leg, with its net open quantity, side, and average
+// entry price.
+function heldLegs(trade: TradeRecord): LegBasis[] {
+  const result: LegBasis[] = []
   for (const leg of trade.legs) {
     if (leg.executions.length === 0) continue
     const openSide = leg.executions[0].side
@@ -81,24 +101,26 @@ function heldLeg(
     }
     const qty = openedQty - closedQty
     if (qty > 0) {
-      return {
+      result.push({
         leg,
         qty,
         side: openSide === 'buy' ? 'long' : 'short',
         avgEntry: openedCost / openedQty,
-      }
+      })
     }
   }
-  return undefined
+  return result
 }
 
-// Total opening quantity and average entry price of the Leg `original` measures
-// from (independent of what is still held) — the Leg's opening side (its first
-// Execution), so a fully-closed short Leg's buy-to-close is never mistaken for
-// an entry.
-function entryBasis(
-  trade: TradeRecord,
-): { leg: LegFacts; qty: number; side: 'long' | 'short'; avgEntry: number } | undefined {
+// Every Leg's entry basis — total opening quantity and average entry price,
+// independent of what is still held (a fully-closed short Leg's buy-to-close
+// is never mistaken for an entry; only its opening side counts). This is what
+// `original` measures from — the Trade's ENTRY structure, across every Leg
+// that ever opened, not just what remains today (multi-leg, Slice 7 — a
+// covered call's original risk/reward is the STOCK entry and the CALL entry
+// summed, not just whichever Leg happens to iterate first).
+function entryBasisLegs(trade: TradeRecord): LegBasis[] {
+  const result: LegBasis[] = []
   for (const leg of trade.legs) {
     if (leg.executions.length === 0) continue
     const openSide = leg.executions[0].side
@@ -111,35 +133,123 @@ function entryBasis(
       }
     }
     if (openedQty > 0) {
-      return {
+      result.push({
         leg,
         qty: openedQty,
         side: openSide === 'buy' ? 'long' : 'short',
         avgEntry: openedCost / openedQty,
-      }
+      })
     }
   }
-  return undefined
+  return result
 }
 
-// A long put's structural ceiling: intrinsic at underlying zero is the strike
-// itself (nothing subtracted — maximally in the money). Long stock and long
-// calls have no such ceiling (intrinsicAtZero is only ever read when bounded).
-function intrinsicAtZero(leg: LegFacts): number {
-  return leg.instrument.kind === 'option' && leg.instrument.type === 'put'
-    ? leg.instrument.strike
-    : 0
+// The structure's signed value at a given underlying price S — a stock Leg's
+// own "intrinsic" IS S; an option Leg intrinsic-projects at S (no pricing
+// model, ADR 0009). Summed across every Leg with its sign, qty, and contract
+// multiplier (ADR 0012 — direction carries the signs, nothing branches on
+// Strategy).
+function structureValueAt(legs: LegBasis[], underlyingPrice: number): number {
+  return legs.reduce((sum, h) => {
+    const sign = h.side === 'short' ? -1 : 1
+    const multiplier = contractMultiplierOf(h.leg.instrument)
+    const value =
+      h.leg.instrument.kind === 'option'
+        ? intrinsicAt(h.leg.instrument, underlyingPrice)
+        : underlyingPrice
+    return sum + sign * h.qty * value * multiplier
+  }, 0)
 }
 
-// Whether the Leg's value grows without bound as the underlying rises: stock
-// and calls. Held long that is unlimited reward; held short it is unlimited
-// loss (trademath.md structural extremes — both S→0 and S→∞ limits).
-function unboundedAbove(leg: LegFacts): boolean {
-  return leg.instrument.kind === 'stock' || leg.instrument.type === 'call'
+// The structure's current signed value from live Marks (mark-to-market,
+// ADR 0010).
+function currentStructureValue(legs: LegBasis[], marks: MarkSet): number {
+  return legs.reduce((sum, h) => {
+    const sign = h.side === 'short' ? -1 : 1
+    const multiplier = contractMultiplierOf(h.leg.instrument)
+    const markPrice = marks.get(buildInstrumentKey(h.leg.instrument))!.price
+    return sum + sign * h.qty * markPrice * multiplier
+  }, 0)
+}
+
+// The structure's value AT ENTRY — each Leg priced at its own average entry,
+// not a Mark. What `original` measures its risk/reward from.
+function entryStructureValue(legs: LegBasis[]): number {
+  return legs.reduce((sum, h) => {
+    const sign = h.side === 'short' ? -1 : 1
+    const multiplier = contractMultiplierOf(h.leg.instrument)
+    return sum + sign * h.qty * h.avgEntry * multiplier
+  }, 0)
+}
+
+// The structure's slope as S→∞: a stock or call Leg's value keeps climbing
+// (slope ±1 × qty × multiplier, signed); a put's intrinsic goes flat to 0
+// beyond its strike (slope 0). A nonzero total slope means one side is
+// structurally unbounded; zero means the legs cancel (a covered call's
+// capped upside) and the limit is a finite constant instead.
+function structureSlopeAtInfinity(legs: LegBasis[]): number {
+  return legs.reduce((sum, h) => {
+    const sign = h.side === 'short' ? -1 : 1
+    const multiplier = contractMultiplierOf(h.leg.instrument)
+    const contributes = h.leg.instrument.kind === 'stock' || h.leg.instrument.type === 'call'
+    return sum + (contributes ? sign * h.qty * multiplier : 0)
+  }, 0)
+}
+
+// Structural extremes (trademath.md): intrinsic value sampled at S→0 and at
+// EVERY strike a held Leg names — a multi-leg structure's payoff is piecewise
+// LINEAR in S, so its only candidate extrema are those kinks; interior points
+// between kinks are never extremal (a ratio write's local peak sits exactly
+// at its short strike, not at 0 or ∞ — a S→0/S→∞-only scan would miss it and
+// can even report a negative "max reward"). The S→∞ tail is either unbounded
+// (nonzero slope — overrides the corresponding bound with ±Infinity) or, when
+// the slope cancels, already equal to the sample at the LARGEST held strike
+// (beyond it the structure is exactly linear with that zero slope, hence
+// constant) — no separate sample needed.
+function structuralExtremes(legs: LegBasis[]): { min: number; max: number } {
+  const strikes = legs
+    .filter(
+      (h): h is LegBasis & { leg: { instrument: OptionInstrument } } =>
+        h.leg.instrument.kind === 'option',
+    )
+    .map((h) => h.leg.instrument.strike)
+  const sampled = [0, ...strikes].map((s) => structureValueAt(legs, s))
+  const slope = structureSlopeAtInfinity(legs)
+  return {
+    min: slope < 0 ? -Infinity : Math.min(...sampled),
+    max: slope > 0 ? Infinity : Math.max(...sampled),
+  }
+}
+
+// Projects an ExitLevel's risk or reward delta against `legs`, from
+// `currentValue` (today's Marks for the ongoing anchors, or the entry
+// structure value for `original`) — the one formula both share. `underlyingPrice`
+// projects the WHOLE structure at that price; `structureValue`/`pctOfMaxProfit`
+// still resolve against a single Leg (Slice 7.2 generalizes `pctOfMaxProfit`
+// to a spread's net credit).
+function projectedDelta(
+  legs: LegBasis[],
+  level: ExitLevel,
+  currentValue: number,
+  direction: 'risk' | 'reward',
+): Money | 'undefined' {
+  let projected: number | undefined
+  if (level.kind === 'underlyingPrice') {
+    projected = structureValueAt(legs, level.price)
+  } else if (legs.length === 1) {
+    const price = priceAtLevel(level, legs[0].leg, legs[0].avgEntry, legs[0].side)
+    if (price !== undefined) {
+      const sign = legs[0].side === 'short' ? -1 : 1
+      const multiplier = contractMultiplierOf(legs[0].leg.instrument)
+      projected = sign * legs[0].qty * price * multiplier
+    }
+  }
+  if (projected === undefined) return 'undefined'
+  return Math.round(direction === 'risk' ? currentValue - projected : projected - currentValue)
 }
 
 export function riskReward(trade: TradeRecord, marks: MarkSet): RiskReward {
-  const held = heldLeg(trade)
+  const held = heldLegs(trade)
   const stop = stopLevel(trade)
   const target = targetLevel(trade)
 
@@ -148,84 +258,29 @@ export function riskReward(trade: TradeRecord, marks: MarkSet): RiskReward {
   let worstCaseRisk: RiskReward['worstCaseRisk'] = 0
   let maxReward: RiskReward['maxReward'] = 0
 
-  if (held) {
-    const multiplier = contractMultiplierOf(held.leg.instrument)
-    const markPrice = marks.get(buildInstrumentKey(held.leg.instrument))!.price
-    const sign = held.side === 'short' ? -1 : 1
-    const currentValue = sign * held.qty * markPrice * multiplier
+  if (held.length > 0) {
+    const currentValue = currentStructureValue(held, marks)
+    const { min, max } = structuralExtremes(held)
+    worstCaseRisk = min === -Infinity ? 'unlimited' : currentValue - min
+    maxReward = max === Infinity ? 'unlimited' : max - currentValue
 
-    if (held.side === 'short') {
-      // Worst case for a short Leg is the underlying extreme working maximally
-      // against it. Short put: stock to zero, intrinsic maxed at the strike.
-      // Short call or stock: the S→∞ limit — structurally unbounded.
-      worstCaseRisk = unboundedAbove(held.leg)
-        ? 'unlimited'
-        : currentValue - sign * held.qty * intrinsicAtZero(held.leg) * multiplier
-      // Best case for any short Leg is the instrument expiring worthless — always
-      // bounded by the credit already banked.
-      maxReward = -currentValue
-    } else {
-      // Worst case for a long Leg is the instrument itself going worthless — the
-      // entire currentValue is lost.
-      worstCaseRisk = currentValue
-      if (unboundedAbove(held.leg)) {
-        maxReward = 'unlimited'
-      } else {
-        const valueAtZero = held.qty * intrinsicAtZero(held.leg) * multiplier
-        maxReward = valueAtZero - currentValue
-      }
-    }
-
-    // Math.round guards against float drift from pctOfMaxProfit's division (all
-    // other level kinds already resolve to whole cents) — money stays integer.
-    if (stop !== undefined) {
-      const stopPrice = priceAtLevel(stop, held.leg, held.avgEntry, held.side)
-      plannedRisk =
-        stopPrice === undefined
-          ? 'undefined'
-          : Math.round(currentValue - sign * held.qty * stopPrice * multiplier)
-    }
-    if (target !== undefined) {
-      const targetPrice = priceAtLevel(target, held.leg, held.avgEntry, held.side)
-      plannedReward =
-        targetPrice === undefined
-          ? 'undefined'
-          : Math.round(sign * held.qty * targetPrice * multiplier - currentValue)
-    }
+    if (stop !== undefined) plannedRisk = projectedDelta(held, stop, currentValue, 'risk')
+    if (target !== undefined) plannedReward = projectedDelta(held, target, currentValue, 'reward')
   }
 
-  const basis = entryBasis(trade)
-  const basisSign = basis?.side === 'short' ? -1 : 1
-  const basisStopPrice =
-    basis === undefined || stop === undefined
-      ? undefined
-      : priceAtLevel(stop, basis.leg, basis.avgEntry, basis.side)
-  const basisTargetPrice =
-    basis === undefined || target === undefined
-      ? undefined
-      : priceAtLevel(target, basis.leg, basis.avgEntry, basis.side)
+  const basis = entryBasisLegs(trade)
   const original: RiskReward['original'] =
-    basis === undefined
+    basis.length === 0
       ? { risk: 'undefined', reward: 'undefined' }
       : {
           risk:
-            basisStopPrice === undefined
+            stop === undefined
               ? 'undefined'
-              : Math.round(
-                  basisSign *
-                    basis.qty *
-                    (basis.avgEntry - basisStopPrice) *
-                    contractMultiplierOf(basis.leg.instrument),
-                ),
+              : projectedDelta(basis, stop, entryStructureValue(basis), 'risk'),
           reward:
-            basisTargetPrice === undefined
+            target === undefined
               ? 'undefined'
-              : Math.round(
-                  basisSign *
-                    basis.qty *
-                    (basisTargetPrice - basis.avgEntry) *
-                    contractMultiplierOf(basis.leg.instrument),
-                ),
+              : projectedDelta(basis, target, entryStructureValue(basis), 'reward'),
         }
 
   return { plannedRisk, worstCaseRisk, plannedReward, maxReward, original }

@@ -134,6 +134,7 @@ export const LONG_STOCK_STRATEGY_ID = 'strategy-long-stock'
 export const LONG_CALL_STRATEGY_ID = 'strategy-long-call'
 export const LONG_PUT_STRATEGY_ID = 'strategy-long-put'
 export const CASH_SECURED_PUT_STRATEGY_ID = 'strategy-cash-secured-put'
+export const COVERED_CALL_STRATEGY_ID = 'strategy-covered-call'
 export const PLAN_ENTRY_TYPE_ID = 'entry-type-plan'
 export const CLOSE_ENTRY_TYPE_ID = 'entry-type-close'
 export const REVIEW_ENTRY_TYPE_ID = 'entry-type-trade-review'
@@ -195,6 +196,22 @@ const CASH_SECURED_PUT_STRATEGY: StrategyTemplate = {
   exitLevels: [
     { side: 'stop', kind: 'underlyingPrice' },
     { side: 'target', kind: 'pctOfMaxProfit' },
+  ],
+}
+
+// Planned legs buy 100 stock + sell 1 call — the call's strike/expiration are
+// left TBD at plan time (legging plans, docs/plan/slice-07-multi-leg.md);
+// asks trade-scope underlyingPrice stop + target.
+const COVERED_CALL_STRATEGY: StrategyTemplate = {
+  id: COVERED_CALL_STRATEGY_ID,
+  name: 'Covered Call',
+  legs: [
+    { side: 'buy', instrumentKind: 'stock' },
+    { side: 'sell', instrumentKind: 'option', optionType: 'call' },
+  ],
+  exitLevels: [
+    { side: 'stop', kind: 'underlyingPrice' },
+    { side: 'target', kind: 'underlyingPrice' },
   ],
 }
 
@@ -406,6 +423,9 @@ export class Workspace {
     }
     if (!strategies.some((s) => s.id === CASH_SECURED_PUT_STRATEGY.id)) {
       await this.tradeBook.registries.strategies.save(structuredClone(CASH_SECURED_PUT_STRATEGY))
+    }
+    if (!strategies.some((s) => s.id === COVERED_CALL_STRATEGY.id)) {
+      await this.tradeBook.registries.strategies.save(structuredClone(COVERED_CALL_STRATEGY))
     }
 
     const closeReasons = await this.tradeBook.registries.closeReasons.list(true)

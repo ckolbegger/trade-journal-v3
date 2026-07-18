@@ -8,12 +8,17 @@ import { btnPrimary, heading, num } from '../styles'
 import type { Money, PlannedLeg, TradeRecord, TradeStatus } from '@/books/tradebook/types'
 
 // The Planned Leg rendered for the list row: a stock reads its ticker; an
-// option reads the contract position ("1 × AAPL Jun'27 200C").
+// option reads the contract position ("1 × AAPL Jun'27 200C") — or, when
+// strike/expiration are still TBD (a legging plan, Slice 7), "1 × AAPL call
+// (strike TBD)".
 function planLabel(leg: PlannedLeg | undefined): string {
   if (!leg) return ''
-  return leg.instrument.kind === 'option'
-    ? `${leg.qty} × ${optionLabel(leg.instrument)}`
-    : leg.instrument.ticker
+  if (leg.instrument.kind !== 'option') return leg.instrument.ticker
+  const { ticker, type, strike, expiration } = leg.instrument
+  if (strike === undefined || expiration === undefined) {
+    return `${leg.qty} × ${ticker} ${type} (strike TBD)`
+  }
+  return `${leg.qty} × ${optionLabel({ ticker, type, strike, expiration })}`
 }
 
 // The Trades page: start a new Plan, and list planned and open Trades in
