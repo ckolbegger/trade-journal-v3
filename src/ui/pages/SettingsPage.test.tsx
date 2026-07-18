@@ -1,11 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SettingsPage } from './SettingsPage'
 import { TradeBookContext } from '../tradeBookContext'
 import { WorkspaceContext } from '../workspaceContext'
 import { PriceBookContext } from '../priceBookContext'
-import { Workspace, type StorageManager } from '@/workspace/workspace'
+import {
+  Workspace,
+  EXPORT_SCHEMA_VERSION,
+  EXPORTED_STORES,
+  type StorageManager,
+} from '@/workspace/workspace'
 import type { DateRange, PricingSource, SourceObservation } from '@/books/pricebook/types'
 import { inMemoryBooks } from '../../../tests/support/trade-book'
 
@@ -21,7 +26,7 @@ function renderSettings(sources: PricingSource[] = [], storageManager?: StorageM
       </WorkspaceContext.Provider>
     </TradeBookContext.Provider>,
   )
-  return { workspace }
+  return { workspace, tradeBook }
 }
 
 function makeStorageManager(overrides: Partial<StorageManager> = {}): StorageManager {
@@ -193,5 +198,47 @@ describe('BackupSettings', () => {
     expect(
       screen.queryByRole('button', { name: /request durable storage/i }),
     ).not.toBeInTheDocument()
+  })
+
+  it('refreshes the institutions and accounts lists after a successful restore', async () => {
+    const { tradeBook, journal, priceBook, binding } = inMemoryBooks()
+    await tradeBook.registries.institutions.save({ id: 'inst-old', name: 'Old Broker' })
+    const workspace = new Workspace(tradeBook, journal, binding)
+    const { container } = render(
+      <TradeBookContext.Provider value={tradeBook}>
+        <WorkspaceContext.Provider value={workspace}>
+          <PriceBookContext.Provider value={priceBook}>
+            <SettingsPage />
+          </PriceBookContext.Provider>
+        </WorkspaceContext.Provider>
+      </TradeBookContext.Provider>,
+    )
+    const user = userEvent.setup()
+    // Institution names also appear as <option>s in the Accounts form's
+    // Institution select — scope to the Institutions card's own list to
+    // disambiguate (it's the first <ul> the page renders).
+    function institutionsList() {
+      return within(container.querySelectorAll('ul')[0]!)
+    }
+    expect(await institutionsList().findByText('Old Broker')).toBeInTheDocument()
+
+    const emptyStores = Object.fromEntries(EXPORTED_STORES.map((store) => [store, []]))
+    const file = new File(
+      [
+        JSON.stringify({
+          schemaVersion: EXPORT_SCHEMA_VERSION,
+          exportedAt: Date.now(),
+          stores: { ...emptyStores, institutions: [{ id: 'inst-new', name: 'New Broker' }] },
+        }),
+      ],
+      'backup.json',
+      { type: 'application/json' },
+    )
+
+    await user.upload(screen.getByLabelText(/backup file/i), file)
+    await user.click(screen.getByRole('button', { name: /replace all data/i }))
+
+    expect(await institutionsList().findByText('New Broker')).toBeInTheDocument()
+    expect(institutionsList().queryByText('Old Broker')).not.toBeInTheDocument()
   })
 })

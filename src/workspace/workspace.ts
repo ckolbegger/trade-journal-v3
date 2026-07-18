@@ -66,6 +66,27 @@ interface ExportFile {
   stores: Record<string, unknown[]>
 }
 
+// importAll's result (workspace.md). `migrated` is always false this slice —
+// no migration machinery exists yet (docs/plan/slice-06-durability.md, JIT
+// ruling): a schemaVersion that isn't an exact match is rejected outright,
+// never migrated.
+export interface ImportReport {
+  schemaVersion: number
+  migrated: boolean
+  counts: Record<string, number>
+}
+
+function isExportFile(value: unknown): value is ExportFile {
+  if (!value || typeof value !== 'object') return false
+  const candidate = value as Record<string, unknown>
+  return (
+    typeof candidate.schemaVersion === 'number' &&
+    typeof candidate.stores === 'object' &&
+    candidate.stores !== null &&
+    !Array.isArray(candidate.stores)
+  )
+}
+
 // A backup file must never carry credentials (workspace.md): the one settings
 // record that can hold one is `pricingSources`; every other settings record
 // passes through untouched.
@@ -294,6 +315,49 @@ export class Workspace {
     await this.binding.put(SETTINGS, { id: LAST_EXPORT_AT_KEY, value: exportedAt })
 
     return new Blob([JSON.stringify(file)], { type: 'application/json' })
+  }
+
+  // Full replace — a restore, not a merge (workspace.md, ADR 0001/0011).
+  // Validation (shape, schema version) happens before any write, so a
+  // rejected file changes nothing. The wipe-then-load runs inside one
+  // storage-binding transaction across every store so a failure partway
+  // through leaves the prior data intact (Dexie transaction; the in-memory
+  // binding snapshots/restores the same way for unit tests). Restored
+  // pricing sources arrive without their (never-exported) apiKey field —
+  // that absence IS "needs-key"; the Settings UI already renders a missing
+  // apiKey as an empty field.
+  async importAll(file: Blob): Promise<ImportReport> {
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(await file.text())
+    } catch {
+      throw new Error('This file is not valid JSON.')
+    }
+    if (!isExportFile(parsed)) {
+      throw new Error('This file is not a Trade Journal backup.')
+    }
+    if (parsed.schemaVersion !== EXPORT_SCHEMA_VERSION) {
+      throw new Error(
+        `This backup is schema version ${parsed.schemaVersion}, but this app reads version ${EXPORT_SCHEMA_VERSION}.`,
+      )
+    }
+
+    const counts: Record<string, number> = {}
+    await this.binding.transaction(EXPORTED_STORES, async () => {
+      for (const store of EXPORTED_STORES) {
+        const existing = await this.binding.list<{ id: string }>(store)
+        for (const record of existing) {
+          await this.binding.delete(store, record.id)
+        }
+        const records = (parsed.stores[store] ?? []) as { id: string }[]
+        for (const record of records) {
+          await this.binding.put(store, record)
+        }
+        counts[store] = records.length
+      }
+    })
+
+    return { schemaVersion: parsed.schemaVersion, migrated: false, counts }
   }
 
   async storageHealth(): Promise<StorageHealth> {

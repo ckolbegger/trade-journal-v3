@@ -57,7 +57,7 @@ Design references: [workspace.md](../design/workspace.md), ADR 0011 (durability 
 
 ---
 
-## ☐ Story S6.2 — Restore from backup
+## ☑ Story S6.2 — Restore from backup
 
 > As a trader, I want to restore my journal from a backup file onto a fresh browser, so that a new machine or a wiped profile is a ten-second recovery, not a data loss.
 
@@ -65,7 +65,7 @@ Design references: [workspace.md](../design/workspace.md), ADR 0011 (durability 
 
 ### Tasks
 
-- [ ] **S6.2.T1 — importAll.**
+- [x] **S6.2.T1 — importAll.**
 
   ```
   describe "Workspace.importAll"
@@ -77,7 +77,7 @@ Design references: [workspace.md](../design/workspace.md), ADR 0011 (durability 
   - it leaves restored pricing sources as needs-key    [only if Slice 4 landed]
   ```
 
-- [ ] **S6.2.T2 — Restore flow UI.** In Backup settings and on the onboarding screen ("returning trader with a backup file" — [workspace.md](../design/workspace.md) init sequence): pick file → confirmation states plainly that current data will be replaced → offers a safety export of current data first → restores → shows the ImportReport.
+- [x] **S6.2.T2 — Restore flow UI.** In Backup settings and on the onboarding screen ("returning trader with a backup file" — [workspace.md](../design/workspace.md) init sequence): pick file → confirmation states plainly that current data will be replaced → offers a safety export of current data first → restores → shows the ImportReport.
 
   ```
   describe "RestoreFlow"
@@ -88,9 +88,9 @@ Design references: [workspace.md](../design/workspace.md), ADR 0011 (durability 
   - it is reachable from onboarding on a fresh profile
   ```
 
-- [ ] **S6.2.T3 — Integration tests**: export populated DB → wipe → import → every Book serves identical content (trades, entries, marks, settings sans secrets); import of a truncated file leaves the wiped DB empty and reports the reason.
-- [ ] **S6.2.T4 — Playwright e2e** (`e2e/s6-2-restore.spec.ts`): populate → export → clear site data → onboarding → restore → the Trade list and journal match pre-wipe.
-- [ ] **S6.2.T5 — Browser verification.** Full circle in a real browser: export, clear site data (DevTools), restore from onboarding, verify a Trade's numbers and a journal entry survived intact; verify a deliberate double-import doesn't duplicate anything (replace, not merge). All suites green.
+- [x] **S6.2.T3 — Integration tests**: export populated DB → wipe → import → every Book serves identical content (trades, entries, marks, settings sans secrets); import of a truncated file leaves the wiped DB empty and reports the reason.
+- [x] **S6.2.T4 — Playwright e2e** (`e2e/s6-2-restore.spec.ts`): populate → export → clear site data → onboarding → restore → the Trade list and journal match pre-wipe.
+- [x] **S6.2.T5 — Browser verification.** Full circle in a real browser: export, clear site data (DevTools), restore from onboarding, verify a Trade's numbers and a journal entry survived intact; verify a deliberate double-import doesn't duplicate anything (replace, not merge). All suites green.
 
 ---
 

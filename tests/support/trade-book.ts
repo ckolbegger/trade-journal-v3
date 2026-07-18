@@ -15,15 +15,21 @@ export function inMemoryTradeBook(): TradeBook {
 // composition root uses, so seeding and cross-Book reads see one database.
 // `sources` lets a test give the PriceBook a fake PricingSource (e.g. to drive
 // a Settings "Test this source" flow) without any real adapter's HTTP concerns.
+// `binding` is returned too — a Workspace under test must be constructed with
+// this SAME binding (`new Workspace(tradeBook, journal, binding)`), or it
+// defaults to its own private InMemoryBinding and export/import silently
+// operate on a database none of these Books can see.
 export function inMemoryBooks(sources: PricingSource[] = []): {
   tradeBook: TradeBook
   journal: Journal
   priceBook: PriceBook
+  binding: InMemoryBinding
 } {
   const binding = new InMemoryBinding()
   return {
     tradeBook: new TradeBook(binding),
     journal: new Journal(binding),
     priceBook: new PriceBook(binding, sources),
+    binding,
   }
 }

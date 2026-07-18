@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { InMemoryBinding } from '@/storage/in-memory-binding'
 import { createDatabase } from '@/storage/schema'
+import type { StorageBinding } from '@/storage/storage-binding'
 import { TradeBook } from '@/books/tradebook/trade-book'
 import { Journal } from '@/books/journal/journal'
 import {
@@ -417,6 +418,129 @@ describe('Workspace.exportAll', () => {
     const db = createDatabase('workspace-export-drift-pin')
     expect(db.tables.map((t) => t.name).sort()).toEqual([...EXPORTED_STORES].sort())
     expect(db.verno).toBe(EXPORT_SCHEMA_VERSION)
+  })
+})
+
+// Every store present but empty — a valid, minimal export file that a test
+// overrides one store of.
+function emptyStores(): Record<string, unknown[]> {
+  return Object.fromEntries(EXPORTED_STORES.map((store) => [store, []]))
+}
+
+function backupBlob(
+  stores: Record<string, unknown[]>,
+  schemaVersion = EXPORT_SCHEMA_VERSION,
+): Blob {
+  return new Blob([
+    JSON.stringify({
+      schemaVersion,
+      exportedAt: Date.now(),
+      stores: { ...emptyStores(), ...stores },
+    }),
+  ])
+}
+
+describe('Workspace.importAll', () => {
+  it('replaces every store with the file’s records (pre-existing data gone)', async () => {
+    const { workspace, tradeBook } = makeWorkspace()
+    await tradeBook.registries.institutions.save({ id: 'inst-old', name: 'Old Broker' })
+
+    await workspace.importAll(
+      backupBlob({ institutions: [{ id: 'inst-new', name: 'New Broker' }] }),
+    )
+
+    const institutions = await tradeBook.registries.institutions.list()
+    expect(institutions.map((i) => i.name)).toEqual(['New Broker'])
+  })
+
+  it('reports per-store restored counts', async () => {
+    const { workspace } = makeWorkspace()
+
+    const report = await workspace.importAll(
+      backupBlob({
+        institutions: [
+          { id: 'a', name: 'A' },
+          { id: 'b', name: 'B' },
+        ],
+      }),
+    )
+
+    expect(report.schemaVersion).toBe(EXPORT_SCHEMA_VERSION)
+    expect(report.counts.institutions).toBe(2)
+    expect(report.counts.accounts).toBe(0)
+  })
+
+  it('rejects a file with an unknown or newer schemaVersion, changing nothing', async () => {
+    const { workspace, tradeBook } = makeWorkspace()
+    await tradeBook.registries.institutions.save({ id: 'inst-old', name: 'Old Broker' })
+
+    await expect(workspace.importAll(backupBlob({}, EXPORT_SCHEMA_VERSION + 1))).rejects.toThrow()
+
+    expect((await tradeBook.registries.institutions.list()).map((i) => i.name)).toEqual([
+      'Old Broker',
+    ])
+  })
+
+  it('rejects a non-export JSON file, changing nothing', async () => {
+    const { workspace, tradeBook } = makeWorkspace()
+    await tradeBook.registries.institutions.save({ id: 'inst-old', name: 'Old Broker' })
+
+    await expect(
+      workspace.importAll(new Blob([JSON.stringify({ hello: 'world' })])),
+    ).rejects.toThrow()
+
+    expect((await tradeBook.registries.institutions.list()).map((i) => i.name)).toEqual([
+      'Old Broker',
+    ])
+  })
+
+  it('restores atomically (a failure mid-import leaves the prior data intact)', async () => {
+    const inner = new InMemoryBinding()
+    const tradeBook = new TradeBook(inner)
+    const journal = new Journal(inner)
+    await tradeBook.registries.institutions.save({ id: 'inst-old', name: 'Old Broker' })
+
+    // Wraps `inner` so writes land in the same store the assertions read from,
+    // but the last store's `put` throws — simulating a failure after earlier
+    // stores in EXPORTED_STORES have already been wiped and reloaded.
+    const faultyBinding: StorageBinding = {
+      get: (store, key) => inner.get(store, key),
+      put: async (store, record) => {
+        if (store === 'settings') throw new Error('simulated failure')
+        return inner.put(store, record)
+      },
+      delete: (store, key) => inner.delete(store, key),
+      list: (store) => inner.list(store),
+      where: (store, index, value) => inner.where(store, index, value),
+      transaction: (stores, fn) => inner.transaction(stores, fn),
+    }
+    const workspace = new Workspace(tradeBook, journal, faultyBinding)
+
+    await expect(
+      workspace.importAll(
+        backupBlob({
+          institutions: [{ id: 'inst-new', name: 'New Broker' }],
+          settings: [{ id: 'riskFreeRate', value: 0.05 }],
+        }),
+      ),
+    ).rejects.toThrow('simulated failure')
+
+    const institutions = await tradeBook.registries.institutions.list()
+    expect(institutions.map((i) => i.name)).toEqual(['Old Broker'])
+  })
+
+  it('leaves restored pricing sources as needs-key', async () => {
+    const { workspace } = makeWorkspace()
+
+    await workspace.importAll(
+      backupBlob({
+        settings: [{ id: 'pricingSources', value: [{ id: 'marketdata.app', enabled: true }] }],
+      }),
+    )
+
+    const sources = await workspace.settings.get('pricingSources')
+    expect(sources).toEqual([{ id: 'marketdata.app', enabled: true }])
+    expect(sources[0].apiKey).toBeUndefined()
   })
 })
 

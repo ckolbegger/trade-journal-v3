@@ -7,6 +7,7 @@ import { centsToDollars, daysAgoISO, timestampToISODate, todayISO } from '../for
 import type { Account, Institution } from '@/books/tradebook/types'
 import { MARKETDATA_SOURCE_ID } from '@/books/pricebook/adapters/marketdata-adapter'
 import type { StorageHealth } from '@/workspace/workspace'
+import { RestoreFlow } from '../components/RestoreFlow'
 
 // Binary MiB, one decimal — plausible-reading figures next to the durable
 // storage flag (workspace.md's StorageHealth is exact bytes; formatting is a
@@ -327,6 +328,12 @@ export function SettingsPage() {
             Export backup
           </button>
         </div>
+        <RestoreFlow
+          onRestored={() => {
+            void reload()
+            void reloadHealth()
+          }}
+        />
       </div>
     </section>
   )

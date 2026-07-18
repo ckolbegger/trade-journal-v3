@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useTradeBook } from './tradeBookContext'
-import { btnPrimary, field, heading, input } from './styles'
+import { btnPrimary, field, heading, input, subheading } from './styles'
 import type { Account, Institution } from '@/books/tradebook/types'
+import { RestoreFlow } from './components/RestoreFlow'
 
 export function Onboarding({ onComplete }: { onComplete: () => void }) {
   const tradeBook = useTradeBook()
@@ -64,6 +65,12 @@ export function Onboarding({ onComplete }: { onComplete: () => void }) {
             Get started
           </button>
         </form>
+
+        <div className="space-y-2 border-t border-slate-200 pt-4">
+          <h3 className={subheading}>Returning trader?</h3>
+          <p className="text-sm text-slate-600">Restore your journal from a backup file.</p>
+          <RestoreFlow onRestored={onComplete} />
+        </div>
       </section>
     </div>
   )
