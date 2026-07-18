@@ -3,7 +3,7 @@ import { useTradeBook } from '../tradeBookContext'
 import { useWorkspace } from '../workspaceContext'
 import { usePriceBook } from '../priceBookContext'
 import { btnPrimary, btnSecondary, card, field, heading, input, num, subheading } from '../styles'
-import { centsToDollars, daysAgoISO, timestampToISODate, todayISO } from '../format'
+import { centsToDollars, daysAgoISO, downloadBlob, timestampToISODate, todayISO } from '../format'
 import type { Account, Institution } from '@/books/tradebook/types'
 import { MARKETDATA_SOURCE_ID } from '@/books/pricebook/adapters/marketdata-adapter'
 import type { StorageHealth } from '@/workspace/workspace'
@@ -114,6 +114,23 @@ export function SettingsPage() {
     setAccounts(await tradeBook.registries.accounts.list())
   }
 
+  const [backupNudgeDays, setBackupNudgeDays] = useState('')
+
+  useEffect(() => {
+    let active = true
+    void workspace.settings.get('backupNudgeDays').then((days) => {
+      if (active) setBackupNudgeDays(String(days))
+    })
+    return () => {
+      active = false
+    }
+  }, [workspace])
+
+  async function saveBackupNudgeDays() {
+    if (backupNudgeDays.trim() === '') return
+    await workspace.settings.set('backupNudgeDays', Number(backupNudgeDays))
+  }
+
   const [health, setHealth] = useState<StorageHealth | null>(null)
 
   async function reloadHealth() {
@@ -137,12 +154,7 @@ export function SettingsPage() {
 
   async function exportBackup() {
     const blob = await workspace.exportAll()
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `trade-journal-${todayISO()}.json`
-    a.click()
-    URL.revokeObjectURL(url)
+    downloadBlob(blob, `trade-journal-${todayISO()}.json`)
     await reloadHealth()
   }
 
@@ -326,6 +338,20 @@ export function SettingsPage() {
           )}
           <button type="button" className={btnPrimary} onClick={() => void exportBackup()}>
             Export backup
+          </button>
+        </div>
+        <div className="flex items-end gap-2">
+          <label className={`${field} flex-1`}>
+            Nudge me to back up after (days)
+            <input
+              className={`${input} ${num}`}
+              type="number"
+              value={backupNudgeDays}
+              onChange={(e) => setBackupNudgeDays(e.target.value)}
+            />
+          </label>
+          <button type="button" className={btnSecondary} onClick={() => void saveBackupNudgeDays()}>
+            Save
           </button>
         </div>
         <RestoreFlow

@@ -1,13 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useReview } from '../reviewContext'
 import { usePriceBook } from '../priceBookContext'
 import { useTradeBook } from '../tradeBookContext'
+import { useWorkspace } from '../workspaceContext'
 import { WalkSession } from './WalkSession'
 import { CloseForm } from './CloseForm'
-import { centsToDollars, optionLabel, todayISO } from '../format'
+import { centsToDollars, downloadBlob, optionLabel, todayISO } from '../format'
 import { btnPrimary, btnSecondary, card, heading, num, subheading } from '../styles'
 import type { FetchReport, ISODate, InstrumentKey, Mark } from '@/books/pricebook/types'
 import type { ExpiredHolding, TradeMarksNeeded } from '@/coordinators/valuations'
+import { computeBackupNudge } from './backupNudge'
 
 // The Daily Review start page: the session's agenda. Starting a session asks the
 // Review coordinator what today must cover, then ALWAYS calls PriceBook.fetch —
@@ -41,12 +43,42 @@ export function ReviewPage() {
   const review = useReview()
   const priceBook = usePriceBook()
   const tradeBook = useTradeBook()
+  const workspace = useWorkspace()
   const [session, setSession] = useState<Session | null>(null)
   const [walking, setWalking] = useState(false)
   // A Trade the "expired worthless" action just flattened — the normal Close
   // Reason flow triggers here rather than waiting for the trader to open the
   // Trade's own detail page (docs/design/review.md's expiration sequence).
   const [closingTradeId, setClosingTradeId] = useState<string | null>(null)
+
+  // The backup nudge (S6.3): checked as soon as the trader opens Review, not
+  // gated behind "Start review" — a stale backup is worth surfacing before
+  // any collection work begins. Session-scoped dismissal only (no fact is
+  // stored for "dismissed"), same posture as the Close Reason prompt on
+  // TradeDetail: visible, never blocking.
+  const [backupNudge, setBackupNudge] = useState<{ neverExported: boolean } | null>(null)
+  const [nudgeDismissed, setNudgeDismissed] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    async function loadNudge() {
+      const [health, backupNudgeDays] = await Promise.all([
+        workspace.storageHealth(),
+        workspace.settings.get('backupNudgeDays'),
+      ])
+      if (active) setBackupNudge(computeBackupNudge(health, backupNudgeDays))
+    }
+    void loadNudge()
+    return () => {
+      active = false
+    }
+  }, [workspace])
+
+  async function exportNow() {
+    const blob = await workspace.exportAll()
+    downloadBlob(blob, `trade-journal-${todayISO()}.json`)
+    setBackupNudge(null)
+  }
 
   async function startSession() {
     const asOf = todayISO()
@@ -113,6 +145,31 @@ export function ReviewPage() {
     return (
       <section className="space-y-4">
         <h2 className={heading}>Review</h2>
+        {backupNudge && !nudgeDismissed && (
+          <div
+            aria-label="backup nudge"
+            className="space-y-2 rounded-md border border-amber-200 bg-amber-50 p-3"
+          >
+            <p className="text-sm text-amber-800">
+              {backupNudge.neverExported
+                ? "You've never exported a backup."
+                : 'Your last backup is getting stale.'}{' '}
+              Protect your trading history with a fresh export.
+            </p>
+            <div className="flex gap-2">
+              <button type="button" className={btnSecondary} onClick={() => void exportNow()}>
+                Export backup
+              </button>
+              <button
+                type="button"
+                className={btnSecondary}
+                onClick={() => setNudgeDismissed(true)}
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        )}
         <p className="text-sm text-slate-600">
           Collect the day&apos;s Marks — including any days you skipped — and settle what you owe.
         </p>

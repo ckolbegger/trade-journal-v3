@@ -94,7 +94,7 @@ Design references: [workspace.md](../design/workspace.md), ADR 0011 (durability 
 
 ---
 
-## ☐ Story S6.3 — Backup nudge
+## ☑ Story S6.3 — Backup nudge
 
 > As a trader, I want my review to remind me when my last backup is getting old, so that staying protected takes no memory of my own.
 
@@ -102,7 +102,7 @@ Design references: [workspace.md](../design/workspace.md), ADR 0011 (durability 
 
 ### Tasks
 
-- [ ] **S6.3.T1 — Nudge.**
+- [x] **S6.3.T1 — Nudge.**
 
   ```
   describe "Review start (backup nudge)"
@@ -115,6 +115,6 @@ Design references: [workspace.md](../design/workspace.md), ADR 0011 (durability 
   - it round-trips backupNudgeDays
   ```
 
-- [ ] **S6.3.T2 — Integration test**: stale lastExportAt over Dexie → agenda page model includes the nudge; fresh export clears it.
-- [ ] **S6.3.T3 — Playwright e2e** (`e2e/s6-3-nudge.spec.ts`): stale state → nudge visible → export → nudge gone.
-- [ ] **S6.3.T4 — Browser verification.** Real browser: set nudge days to 0, open Review — nudge appears; export; nudge gone; session never blocked. All suites green.
+- [x] **S6.3.T2 — Integration test**: stale lastExportAt over Dexie → agenda page model includes the nudge; fresh export clears it.
+- [x] **S6.3.T3 — Playwright e2e** (`e2e/s6-3-nudge.spec.ts`): stale state → nudge visible → export → nudge gone.
+- [x] **S6.3.T4 — Browser verification.** Real browser: set nudge days to 0, open Review — nudge appears; export; nudge gone; session never blocked. All suites green.

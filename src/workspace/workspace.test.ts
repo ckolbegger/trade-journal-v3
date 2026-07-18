@@ -326,6 +326,13 @@ describe('Workspace.settings', () => {
       { id: 'marketdata.app', enabled: true, apiKey: 'abc123' },
     ])
   })
+
+  it('round-trips backupNudgeDays', async () => {
+    const { workspace } = makeWorkspace()
+    expect(await workspace.settings.get('backupNudgeDays')).toBe(7)
+    await workspace.settings.set('backupNudgeDays', 3)
+    expect(await workspace.settings.get('backupNudgeDays')).toBe(3)
+  })
 })
 
 async function parseExport(blob: Blob): Promise<{

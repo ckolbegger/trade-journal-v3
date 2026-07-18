@@ -7,8 +7,10 @@ import { JournalContext } from './journalContext'
 import { PriceBookContext } from './priceBookContext'
 import { ValuationsContext } from './valuationsContext'
 import { ReviewContext } from './reviewContext'
+import { WorkspaceContext } from './workspaceContext'
 import { Valuations } from '@/coordinators/valuations'
 import { Review } from '@/coordinators/review'
+import { Workspace } from '@/workspace/workspace'
 import { inMemoryBooks } from '../../tests/support/trade-book'
 
 function renderAt(path: string) {
@@ -18,13 +20,15 @@ function renderAt(path: string) {
     <TradeBookContext.Provider value={tradeBook}>
       <JournalContext.Provider value={journal}>
         <PriceBookContext.Provider value={priceBook}>
-          <ValuationsContext.Provider value={valuations}>
-            <ReviewContext.Provider value={new Review(valuations, journal, tradeBook)}>
-              <MemoryRouter initialEntries={[path]}>
-                <App />
-              </MemoryRouter>
-            </ReviewContext.Provider>
-          </ValuationsContext.Provider>
+          <WorkspaceContext.Provider value={new Workspace(tradeBook, journal)}>
+            <ValuationsContext.Provider value={valuations}>
+              <ReviewContext.Provider value={new Review(valuations, journal, tradeBook)}>
+                <MemoryRouter initialEntries={[path]}>
+                  <App />
+                </MemoryRouter>
+              </ReviewContext.Provider>
+            </ValuationsContext.Provider>
+          </WorkspaceContext.Provider>
         </PriceBookContext.Provider>
       </JournalContext.Provider>
     </TradeBookContext.Provider>,

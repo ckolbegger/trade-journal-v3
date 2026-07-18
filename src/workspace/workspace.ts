@@ -106,11 +106,16 @@ function redactSecrets(record: { id: string }): unknown {
 export interface Settings {
   riskFreeRate: number
   pricingSources: { id: string; enabled: boolean; apiKey?: string }[]
+  // How stale storageHealth().lastExportAt may get before the Review UI
+  // nudges (workspace.md) — the fact lives here, the nudge policy renders
+  // in the Review UI (S6.3).
+  backupNudgeDays: number
 }
 
 const DEFAULT_SETTINGS: Settings = {
   riskFreeRate: 0.04,
   pricingSources: [],
+  backupNudgeDays: 7,
 }
 
 interface StoredSetting<K extends keyof Settings> {

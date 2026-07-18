@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
@@ -8,6 +8,7 @@ import { JournalContext } from '../journalContext'
 import { PriceBookContext } from '../priceBookContext'
 import { ValuationsContext } from '../valuationsContext'
 import { ReviewContext } from '../reviewContext'
+import { WorkspaceContext } from '../workspaceContext'
 import { Valuations } from '@/coordinators/valuations'
 import { Review } from '@/coordinators/review'
 import { Workspace } from '@/workspace/workspace'
@@ -83,20 +84,27 @@ async function openTrade(tradeBook: TradeBook, accountId: string, ticker: string
   return id
 }
 
-function renderPage(tradeBook: TradeBook, journal: Journal, priceBook: PriceBook) {
+function renderPage(
+  tradeBook: TradeBook,
+  journal: Journal,
+  priceBook: PriceBook,
+  workspaceInstance: Workspace = new Workspace(tradeBook, journal),
+) {
   const valuations = new Valuations(tradeBook, priceBook)
   const review = new Review(valuations, journal, tradeBook)
   return render(
     <TradeBookContext.Provider value={tradeBook}>
       <JournalContext.Provider value={journal}>
         <PriceBookContext.Provider value={priceBook}>
-          <ValuationsContext.Provider value={valuations}>
-            <ReviewContext.Provider value={review}>
-              <MemoryRouter>
-                <ReviewPage />
-              </MemoryRouter>
-            </ReviewContext.Provider>
-          </ValuationsContext.Provider>
+          <WorkspaceContext.Provider value={workspaceInstance}>
+            <ValuationsContext.Provider value={valuations}>
+              <ReviewContext.Provider value={review}>
+                <MemoryRouter>
+                  <ReviewPage />
+                </MemoryRouter>
+              </ReviewContext.Provider>
+            </ValuationsContext.Provider>
+          </WorkspaceContext.Provider>
         </PriceBookContext.Provider>
       </JournalContext.Provider>
     </TradeBookContext.Provider>,
@@ -239,6 +247,102 @@ describe('ReviewAgendaPage', () => {
     // Action even when every price is already in.
     await userEvent.click(await screen.findByRole('button', { name: /begin walk/i }))
     expect(await screen.findByRole('heading', { name: 'AAPL' })).toBeInTheDocument()
+  })
+})
+
+// The backup nudge (S6.3): `lastExportAt` is a fact Workspace records
+// (storageHealth); staleness against Settings.backupNudgeDays is display
+// policy the Review UI computes — never a Workspace operation
+// (workspace.md's facts-vs-behavior split). Checked as soon as Review opens,
+// before "Start review" is even clicked.
+describe('Review start (backup nudge)', () => {
+  const originalCreateObjectURL = URL.createObjectURL
+  const originalRevokeObjectURL = URL.revokeObjectURL
+  const ONE_DAY_MS = 24 * 60 * 60 * 1000
+
+  beforeEach(() => {
+    URL.createObjectURL = vi.fn(() => 'blob:mock-url')
+    URL.revokeObjectURL = vi.fn()
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    URL.createObjectURL = originalCreateObjectURL
+    URL.revokeObjectURL = originalRevokeObjectURL
+    vi.useRealTimers()
+    vi.restoreAllMocks()
+  })
+
+  // Backs up a Workspace's export clock N days ago, without ever touching
+  // storage internals directly — freezes "now", exports (stamping
+  // lastExportAt at the frozen instant), then restores the real clock so the
+  // component's own staleness check runs against the true present.
+  async function exportDaysAgo(ws: Workspace, days: number) {
+    vi.useFakeTimers()
+    vi.setSystemTime(Date.now() - days * ONE_DAY_MS)
+    await ws.exportAll()
+    vi.useRealTimers()
+  }
+
+  it('nudges when lastExportAt is older than backupNudgeDays', async () => {
+    const { tradeBook, journal, priceBook } = await workspace()
+    const ws = new Workspace(tradeBook, journal)
+    await ws.settings.set('backupNudgeDays', 7)
+    await exportDaysAgo(ws, 8)
+
+    renderPage(tradeBook, journal, priceBook, ws)
+
+    expect(await screen.findByLabelText('backup nudge')).toBeInTheDocument()
+  })
+
+  it('nudges when no export has ever happened', async () => {
+    const { tradeBook, journal, priceBook } = await workspace()
+    const ws = new Workspace(tradeBook, journal)
+
+    renderPage(tradeBook, journal, priceBook, ws)
+
+    expect(await screen.findByLabelText('backup nudge')).toBeInTheDocument()
+  })
+
+  it('stays silent within the window', async () => {
+    const { tradeBook, journal, priceBook } = await workspace()
+    const ws = new Workspace(tradeBook, journal)
+    await ws.settings.set('backupNudgeDays', 7)
+    await exportDaysAgo(ws, 3)
+
+    renderPage(tradeBook, journal, priceBook, ws)
+
+    await screen.findByRole('button', { name: /start review/i })
+    expect(screen.queryByLabelText('backup nudge')).not.toBeInTheDocument()
+  })
+
+  it('links to the export action and clears after exporting', async () => {
+    const { tradeBook, journal, priceBook } = await workspace()
+    const ws = new Workspace(tradeBook, journal)
+
+    renderPage(tradeBook, journal, priceBook, ws)
+    const nudge = await screen.findByLabelText('backup nudge')
+
+    await userEvent.click(within(nudge).getByRole('button', { name: /export backup/i }))
+
+    await waitFor(() => expect(screen.queryByLabelText('backup nudge')).not.toBeInTheDocument())
+    expect((await ws.storageHealth()).lastExportAt).toBeDefined()
+  })
+
+  it('never blocks the session (dismissable, same posture as Journal Debt)', async () => {
+    const { tradeBook, journal, priceBook, accountId } = await workspace()
+    await openTrade(tradeBook, accountId, 'AAPL')
+    const ws = new Workspace(tradeBook, journal)
+
+    renderPage(tradeBook, journal, priceBook, ws)
+    const nudge = await screen.findByLabelText('backup nudge')
+
+    await userEvent.click(within(nudge).getByRole('button', { name: /dismiss/i }))
+    expect(screen.queryByLabelText('backup nudge')).not.toBeInTheDocument()
+
+    // Dismissing never blocked the session — the review still starts and runs.
+    await startReview()
+    expect(await screen.findByRole('listitem', { name: 'AAPL' })).toBeInTheDocument()
   })
 })
 

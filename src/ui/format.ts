@@ -52,6 +52,18 @@ export function shortDate(date: string): string {
   return `${SHORT_MONTHS[month - 1]} ${day}`
 }
 
+// Triggers a browser download of a Blob — the click-a-throwaway-anchor dance,
+// shared by every export surface (Settings' Backup card, the Review backup
+// nudge) so there is exactly one place that does it.
+export function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 // An option contract rendered for display, e.g. "AAPL Jun'27 200C" — display-only
 // formatting (the contract multiplier and canonical InstrumentKey stay in
 // TradeMath; this never feeds a computation).
