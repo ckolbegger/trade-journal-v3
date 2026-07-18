@@ -121,6 +121,7 @@ describe('TradeMath.valuation', () => {
       {
         instrument: { kind: 'stock', ticker: 'AAPL' },
         basis: 1500000,
+        avgCost: 15000,
         realized: -100,
         unrealized: 100000,
       },

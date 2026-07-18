@@ -20,7 +20,7 @@ Sell 80 @ $170.00 fees $1.00 → realized adds 13,600 − 12,800 − 1.00 = **$7
 
 ---
 
-## ☐ Story S5.1 — Scaling in
+## ☑ Story S5.1 — Scaling in
 
 > As a trader, I want to add to a position over multiple fills, so that legging into size is recorded as it actually happens instead of as one invented average fill.
 
@@ -28,7 +28,7 @@ Sell 80 @ $170.00 fees $1.00 → realized adds 13,600 − 12,800 − 1.00 = **$7
 
 ### Tasks
 
-- [ ] **S5.1.T1 — Lots on opening Executions.** Valuation internals refactor from basis-sum to Lot list — behavior-identical for single-Lot Trades (all Slice 1/3 tests stay green untouched; that is the regression gate for this refactor).
+- [x] **S5.1.T1 — Lots on opening Executions.** Valuation internals refactor from basis-sum to Lot list — behavior-identical for single-Lot Trades (all Slice 1/3 tests stay green untouched; that is the regression gate for this refactor).
 
   ```
   describe "TradeBook.recordExecution (repeat fills)"
@@ -42,7 +42,7 @@ Sell 80 @ $170.00 fees $1.00 → realized adds 13,600 − 12,800 − 1.00 = **$7
   - it reports fees 2.00
   ```
 
-- [ ] **S5.1.T2 — UI.** "Record fill" already exists; the detail page's position block gains average cost and a per-fill history that reads as building blocks ("100 @ 150 · 100 @ 160"). Adding to a closed Trade is impossible (closed Trades offer no record-fill; a new campaign is a new Plan).
+- [x] **S5.1.T2 — UI.** "Record fill" already exists; the detail page's position block gains average cost and a per-fill history that reads as building blocks ("100 @ 150 · 100 @ 160"). Adding to a closed Trade is impossible (closed Trades offer no record-fill; a new campaign is a new Plan).
 
   ```
   describe "TradeDetail (scaling in)"
@@ -51,9 +51,9 @@ Sell 80 @ $170.00 fees $1.00 → realized adds 13,600 − 12,800 − 1.00 = **$7
   - it offers no record-fill on a closed Trade
   ```
 
-- [ ] **S5.1.T3 — Integration tests**: two buys over Dexie → reopen → position 200, average 155, both fills intact.
-- [ ] **S5.1.T4 — Playwright e2e** (`e2e/s5-1-scale-in.spec.ts`): worked-example buys → position and average cost assert.
-- [ ] **S5.1.T5 — Browser verification.** Scale into a Trade in a real browser across two days (change marks between); history, average cost, and valuation all coherent; Slice 1 e2e specs still green (the refactor broke nothing visible). All suites green.
+- [x] **S5.1.T3 — Integration tests**: two buys over Dexie → reopen → position 200, average 155, both fills intact.
+- [x] **S5.1.T4 — Playwright e2e** (`e2e/s5-1-scale-in.spec.ts`): worked-example buys → position and average cost assert.
+- [x] **S5.1.T5 — Browser verification.** Scale into a Trade in a real browser across two days (change marks between); history, average cost, and valuation all coherent; Slice 1 e2e specs still green (the refactor broke nothing visible). All suites green.
 
 ---
 

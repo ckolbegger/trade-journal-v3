@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTradeBook } from '../tradeBookContext'
 import { useJournal } from '../journalContext'
@@ -12,9 +12,17 @@ import { AddAddendum } from '../components/AddAddendum'
 import { AnsweredPrompts } from '../components/AnsweredPrompts'
 import { buildEntryThreads } from '../components/entryThread'
 import { btnSecondary, card, heading, link, num, subheading } from '../styles'
-import type { Instrument, Position, TradeRecord, TradeStatus } from '@/books/tradebook/types'
+import { buildInstrumentKey } from '@/books/tradebook/types'
+import type {
+  Instrument,
+  Position,
+  TradeRecord,
+  TradeStatus,
+  Valuation,
+} from '@/books/tradebook/types'
 import type { Entry } from '@/books/journal/types'
 import type { FetchReport } from '@/books/pricebook/types'
+import type { TradeDetailView } from '@/coordinators/valuations'
 
 // An instrument rendered for display: a stock is just its ticker; an option
 // shows its contract label ("AAPL Jun'27 200C") — display-only, never a key.
@@ -31,11 +39,29 @@ function exitLevelDisplay(level: TradeRecord['plan']['exitLevels'][number]): str
 
 // A held Position row: a stock reads "100 AAPL long"; an option reads the
 // contract position ("1 × AAPL Jun'27 200C"), signed negative when short
-// ("-1 × XYZ Aug'26 100P").
-function holdingLabel(h: Position['holdings'][number]): string {
-  return h.instrument.kind === 'option'
-    ? `${h.side === 'short' ? '-' : ''}${h.qty} × ${optionLabel(h.instrument)}`
-    : `${h.qty} ${h.instrument.ticker} ${h.side}`
+// ("-1 × XYZ Aug'26 100P"). `avgCost` (cents), when known, appends the
+// weighted average across every opening fill on the Leg — S5.1's "building
+// blocks" summary alongside the per-fill execution history below.
+function holdingLabel(h: Position['holdings'][number], avgCost?: number): string {
+  const base =
+    h.instrument.kind === 'option'
+      ? `${h.side === 'short' ? '-' : ''}${h.qty} × ${optionLabel(h.instrument)}`
+      : `${h.qty} ${h.instrument.ticker} ${h.side}`
+  return avgCost === undefined ? base : `${base} · avg $${centsToDollars(avgCost)}`
+}
+
+// Average cost for a held instrument: TradeMath's own per-unit LegValuation.avgCost
+// (never re-derived here — the UI doesn't know the contract multiplier basis
+// bakes in, so dividing basis/qty would be wrong by 100× for options). `undefined`
+// when the valuation isn't available yet (a Mark is missing) — the position line
+// just shows quantity then, same as before this slice.
+function avgCostFor(
+  instrument: Instrument,
+  perLeg: Valuation['perLeg'] | undefined,
+): number | undefined {
+  if (!perLeg) return undefined
+  const key = buildInstrumentKey(instrument)
+  return perLeg.find((l) => buildInstrumentKey(l.instrument) === key)?.avgCost
 }
 
 // The Trade detail page renders Plan facts only — thesis, Strategy, Idea Source,
@@ -53,6 +79,7 @@ export function TradeDetail() {
   const [trade, setTrade] = useState<TradeRecord | null>(null)
   const [status, setStatus] = useState<TradeStatus | null>(null)
   const [position, setPosition] = useState<Position | null>(null)
+  const [valuation, setValuation] = useState<Valuation | undefined>(undefined)
   const [strategyName, setStrategyName] = useState('')
   const [ideaSourceName, setIdeaSourceName] = useState('')
   const [entries, setEntries] = useState<Entry[]>([])
@@ -93,6 +120,13 @@ export function TradeDetail() {
       active = false
     }
   }, [tradeBook, journal, valuations, id, refresh])
+
+  // TradeMath-supplied average cost for the Position line (S5.1) rides the SAME
+  // valuation snapshot TradeDashboard already fetches (Valuations.detail) —
+  // one computation, not a second round trip that could disagree about which
+  // Marks exist. Stable across renders (empty deps) so TradeDashboard's own
+  // effect never re-fires because of it.
+  const handleDetail = useCallback((detail: TradeDetailView) => setValuation(detail.valuation), [])
 
   if (!trade) return <p>Loading…</p>
 
@@ -180,7 +214,9 @@ export function TradeDetail() {
       <div className={`${card} space-y-3`}>
         <div className="flex items-center justify-between">
           <h3 className={subheading}>Position</h3>
-          {!showFill && (
+          {/* A closed Trade offers no record-fill — adding to a closed campaign
+              is impossible; a new campaign is a new Plan (S5.1). */}
+          {!showFill && status !== 'closed' && (
             <button type="button" className={btnSecondary} onClick={() => setShowFill(true)}>
               Record fill
             </button>
@@ -188,7 +224,9 @@ export function TradeDetail() {
         </div>
         <p aria-label="position" className={`text-sm text-slate-800 ${num}`}>
           {position && position.holdings.length > 0
-            ? position.holdings.map(holdingLabel).join(', ')
+            ? position.holdings
+                .map((h) => holdingLabel(h, avgCostFor(h.instrument, valuation?.perLeg)))
+                .join(', ')
             : 'No position'}
         </p>
         {showFill && (
@@ -248,7 +286,9 @@ export function TradeDetail() {
       {/* Keyed on the page's refresh counter: an Execution (or a Close Reason)
           changes what the Trade holds, so the valuation must be re-fetched — it
           may never keep numbers the Position and the badge have already moved past. */}
-      {status && status !== 'planned' && <TradeDashboard key={refresh} tradeId={trade.id} />}
+      {status && status !== 'planned' && (
+        <TradeDashboard key={refresh} tradeId={trade.id} onDetail={handleDetail} />
+      )}
 
       <div className={`${card} space-y-3`}>
         <div className="flex items-center justify-between">

@@ -53,6 +53,24 @@ export function heldInstrumentsOf(trade: TradeRecord): InstrumentKey[] {
   return [...new Set(keys)]
 }
 
+// A Lot is the quantity+price one opening Execution contributed (ADR 0015) —
+// carries basis only, never fees (all fees net as incurred, README's Fees
+// bullet). FIFO consumption of these against partial closes arrives in Slice
+// 5.2; this slice only builds the list, deriving the same weighted-average
+// totals Slice 1/3 already computed so their tests stay green untouched.
+interface Lot {
+  qty: number
+  price: number
+}
+
+// Every opening-side Execution on a Leg becomes its own Lot, oldest first —
+// the FIFO order S5.2's consumption will walk.
+function lotsFor(leg: LegFacts, openSide: LegFacts['executions'][number]['side']): Lot[] {
+  return leg.executions
+    .filter((e) => e.side === openSide)
+    .map((e) => ({ qty: e.qty, price: e.price }))
+}
+
 // A Leg opens in whichever direction its FIRST Execution takes (long-only or
 // short-only this slice — no flip mid-Leg): `sign` +1 for a bought-first (long)
 // Leg, -1 for a sold-first (short) Leg. `openQty`/`avgOpenPrice` describe the
@@ -74,17 +92,16 @@ function totalsFor(leg: LegFacts): LegTotals {
   }
   const openSide = leg.executions[0].side
   const sign = openSide === 'buy' ? 1 : -1
-  let openedQty = 0
-  let openedCost = 0
+  const lots = lotsFor(leg, openSide)
+  const openedQty = lots.reduce((sum, l) => sum + l.qty, 0)
+  const openedCost = lots.reduce((sum, l) => sum + l.qty * l.price, 0)
+
   let closedQty = 0
   let closedProceeds = 0
   let fees = 0
   for (const e of leg.executions) {
     fees += e.fees
-    if (e.side === openSide) {
-      openedQty += e.qty
-      openedCost += e.qty * e.price
-    } else {
+    if (e.side !== openSide) {
       closedQty += e.qty
       closedProceeds += e.qty * e.price
     }
@@ -113,6 +130,7 @@ export function valuation(trade: TradeRecord, marks: MarkSet): Valuation {
     return {
       instrument: leg.instrument,
       basis: t.openQty * t.avgOpenPrice * multiplier,
+      avgCost: t.avgOpenPrice,
       realized: grossRealized - t.fees,
       unrealized: grossUnrealized,
     }

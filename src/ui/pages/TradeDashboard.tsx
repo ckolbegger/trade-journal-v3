@@ -30,7 +30,17 @@ function anchor(value: Money | 'unlimited' | 'undefined'): string {
   return money(value)
 }
 
-export function TradeDashboard({ tradeId }: { tradeId: string }) {
+// `onDetail`, when supplied, hands the whole detail() snapshot back to the
+// caller as it loads and refreshes (S5.1) — e.g. TradeDetail's Position line
+// reads `valuation.perLeg` for average cost off the SAME snapshot, rather
+// than a second round trip that could disagree about which Marks exist.
+export function TradeDashboard({
+  tradeId,
+  onDetail,
+}: {
+  tradeId: string
+  onDetail?: (detail: TradeDetailView) => void
+}) {
   const valuations = useValuations()
   // Optional: most render trees (and older tests) never provide a Workspace —
   // IV simply never computes then (detail()'s riskFreeRate param is optional).
@@ -42,12 +52,15 @@ export function TradeDashboard({ tradeId }: { tradeId: string }) {
     void (async () => {
       const riskFreeRate = workspace ? await workspace.settings.get('riskFreeRate') : undefined
       const d = await valuations.detail(tradeId, riskFreeRate)
-      if (active) setDetail(d)
+      if (active) {
+        setDetail(d)
+        onDetail?.(d)
+      }
     })()
     return () => {
       active = false
     }
-  }, [valuations, tradeId, workspace])
+  }, [valuations, tradeId, workspace, onDetail])
 
   useEffect(load, [load])
 

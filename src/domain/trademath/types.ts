@@ -140,6 +140,7 @@ export type MarkSeries = ReadonlyMap<InstrumentKey, Mark[]>
 export interface LegValuation {
   instrument: Instrument
   basis: Money // cost of the currently-open quantity
+  avgCost: Money // per-unit average open price (no contract multiplier) — S5.1
   realized: Money
   unrealized: Money
 }

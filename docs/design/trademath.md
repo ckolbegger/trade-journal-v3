@@ -65,9 +65,18 @@ Note: TradeMath never reads Strategy. The Strategy template matters at plan-form
 interface Valuation {
   realizedPnL: Money; unrealizedPnL: Money; totalPnL: Money; fees: Money
   currentValue: Money                       // signed structure value at these Marks
-  perLeg: LegValuation[]                    // basis (FIFO lots), realized, unrealized per Leg
+  perLeg: LegValuation[]                    // basis (FIFO lots), avgCost, realized, unrealized per Leg
 }
+```
 
+`LegValuation.avgCost` (added S5.1, ruling 2026-07-18): per-unit average open price across a
+Leg's opening fills, WITHOUT the contract multiplier `basis` bakes in — the UI renders it
+directly (e.g. a stock's "avg $155.00") without knowing the multiplier, which only TradeMath
+reads (docs/plan/slice-03-single-leg-options.md). An option Leg's `avgCost` is therefore a
+per-contract-unit premium (e.g. 500 cents = "$5.00"), matching how contracts are quoted, not
+`basis`'s already-multiplied total.
+
+```typescript
 interface RiskReward {
   plannedRisk: Money | 'undefined'          // to current stop (trailing resolved from series when needed)
   worstCaseRisk: Money | 'unlimited'        // structural extreme
