@@ -2,7 +2,7 @@
 
 The trader's data stops being hostage to one browser profile: versioned export to a file, replace-only restore from one, durable-storage request, and a review-time nudge when the last backup is stale.
 
-**Decided in this slice (JIT):** `importAll` *validates* the file's schema version and rejects mismatches; the forward-migration machinery the design describes ([workspace.md](../design/workspace.md)) arrives with the first schema change that creates a second version to migrate — until one exists, migration code is untestable. The export file carries `schemaVersion` from day one so old files are migratable then.
+**Decided in this slice (JIT):** `importAll` *validates* the file's schema version and rejects mismatches; the forward-migration machinery the design describes ([workspace.md](../design/workspace.md)) arrives with the first schema change that creates a second version to migrate — until one exists, migration code is untestable. The export file carries `schemaVersion` from day one so old files are migratable then. **Ownership rule (S6.1 review, 2026-07-18): the drift-pin test in workspace.test.ts locks `EXPORTED_STORES` + `EXPORT_SCHEMA_VERSION` to the live Dexie schema — any slice that adds a store or bumps the schema version MUST update the export constants (the pin fails loudly until it does).**
 
 **Cross-slice note:** if Slice 4 (pricing sources) is already complete, this slice adds the secrets-exclusion tests (API keys never exported; restored sources show needs-key). If not, Slice 4 adds them — noted there.
 
@@ -10,7 +10,7 @@ Design references: [workspace.md](../design/workspace.md), ADR 0011 (durability 
 
 ---
 
-## ☐ Story S6.1 — Export & storage health
+## ☑ Story S6.1 — Export & storage health
 
 > As a trader, I want to download my entire journal as one file and see how safe my browser storage is, so that years of trading history can't vanish with a cleared cache.
 
@@ -18,7 +18,7 @@ Design references: [workspace.md](../design/workspace.md), ADR 0011 (durability 
 
 ### Tasks
 
-- [ ] **S6.1.T1 — exportAll + lastExportAt.**
+- [x] **S6.1.T1 — exportAll + lastExportAt.**
 
   ```
   describe "Workspace.exportAll"
@@ -30,7 +30,7 @@ Design references: [workspace.md](../design/workspace.md), ADR 0011 (durability 
   - it excludes pricing-source API keys        [only if Slice 4 landed]
   ```
 
-- [ ] **S6.1.T2 — storageHealth + requestPersistence.**
+- [x] **S6.1.T2 — storageHealth + requestPersistence.**
 
   ```
   describe "Workspace.storageHealth"
@@ -42,7 +42,7 @@ Design references: [workspace.md](../design/workspace.md), ADR 0011 (durability 
   - it is reflected by storageHealth afterward
   ```
 
-- [ ] **S6.1.T3 — UI.** Settings gains a **Backup** section: storage health (persisted?, usage, last export), a "Request durable storage" action shown until granted, and **Export backup** (downloads `trade-journal-YYYY-MM-DD.json`).
+- [x] **S6.1.T3 — UI.** Settings gains a **Backup** section: storage health (persisted?, usage, last export), a "Request durable storage" action shown until granted, and **Export backup** (downloads `trade-journal-YYYY-MM-DD.json`).
 
   ```
   describe "BackupSettings"
@@ -51,9 +51,9 @@ Design references: [workspace.md](../design/workspace.md), ADR 0011 (durability 
   - it hides the persistence request once granted
   ```
 
-- [ ] **S6.1.T4 — Integration tests**: populated database over Dexie → export → parsed file contains the trades/entries/marks counts written; lastExportAt round-trips a reopen.
-- [ ] **S6.1.T5 — Playwright e2e** (`e2e/s6-1-export.spec.ts`): populate → export → assert the downloaded file's counts and version.
-- [ ] **S6.1.T6 — Browser verification.** Real browser: export real data, open the file, eyeball a Trade and an entry in it; storage health shows plausible numbers; persistence grant flips the health flag. All suites green.
+- [x] **S6.1.T4 — Integration tests**: populated database over Dexie → export → parsed file contains the trades/entries/marks counts written; lastExportAt round-trips a reopen.
+- [x] **S6.1.T5 — Playwright e2e** (`e2e/s6-1-export.spec.ts`): populate → export → assert the downloaded file's counts and version.
+- [x] **S6.1.T6 — Browser verification.** Real browser: export real data, open the file, eyeball a Trade and an entry in it; storage health shows plausible numbers; persistence grant flips the health flag. All suites green.
 
 ---
 

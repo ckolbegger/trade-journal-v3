@@ -3,9 +3,17 @@ import { useTradeBook } from '../tradeBookContext'
 import { useWorkspace } from '../workspaceContext'
 import { usePriceBook } from '../priceBookContext'
 import { btnPrimary, btnSecondary, card, field, heading, input, num, subheading } from '../styles'
-import { centsToDollars, daysAgoISO, todayISO } from '../format'
+import { centsToDollars, daysAgoISO, timestampToISODate, todayISO } from '../format'
 import type { Account, Institution } from '@/books/tradebook/types'
 import { MARKETDATA_SOURCE_ID } from '@/books/pricebook/adapters/marketdata-adapter'
+import type { StorageHealth } from '@/workspace/workspace'
+
+// Binary MiB, one decimal — plausible-reading figures next to the durable
+// storage flag (workspace.md's StorageHealth is exact bytes; formatting is a
+// UI concern).
+function formatMB(bytes: number): string {
+  return (bytes / (1024 * 1024)).toFixed(1)
+}
 
 // The one instrument "Test this source" checks connectivity against — a
 // smoke test, not a Trade's actual instrument (docs/plan/slice-04-automated-pricing.md,
@@ -103,6 +111,38 @@ export function SettingsPage() {
   async function reload() {
     setInstitutions(await tradeBook.registries.institutions.list())
     setAccounts(await tradeBook.registries.accounts.list())
+  }
+
+  const [health, setHealth] = useState<StorageHealth | null>(null)
+
+  async function reloadHealth() {
+    setHealth(await workspace.storageHealth())
+  }
+
+  useEffect(() => {
+    let active = true
+    void workspace.storageHealth().then((h) => {
+      if (active) setHealth(h)
+    })
+    return () => {
+      active = false
+    }
+  }, [workspace])
+
+  async function requestPersistence() {
+    await workspace.requestPersistence()
+    await reloadHealth()
+  }
+
+  async function exportBackup() {
+    const blob = await workspace.exportAll()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `trade-journal-${todayISO()}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+    await reloadHealth()
   }
 
   useEffect(() => {
@@ -256,6 +296,35 @@ export function SettingsPage() {
           </label>
           <button type="button" className={btnPrimary} onClick={() => void saveRiskFreeRate()}>
             Save rate
+          </button>
+        </div>
+      </div>
+
+      <div className={`${card} space-y-3`}>
+        <h3 className={subheading}>Backup</h3>
+        {health && (
+          <p className="text-sm text-slate-700">
+            Durable storage: {health.persisted ? 'Yes' : 'No'} · {formatMB(health.usageBytes)} MB /{' '}
+            {formatMB(health.quotaBytes)} MB
+          </p>
+        )}
+        <p className="text-sm text-slate-500">
+          {health?.lastExportAt
+            ? `Last export: ${timestampToISODate(health.lastExportAt)}`
+            : 'Never exported'}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {health && !health.persisted && (
+            <button
+              type="button"
+              className={btnSecondary}
+              onClick={() => void requestPersistence()}
+            >
+              Request durable storage
+            </button>
+          )}
+          <button type="button" className={btnPrimary} onClick={() => void exportBackup()}>
+            Export backup
           </button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { InMemoryBinding } from '@/storage/in-memory-binding'
+import { createDatabase } from '@/storage/schema'
 import { TradeBook } from '@/books/tradebook/trade-book'
 import { Journal } from '@/books/journal/journal'
 import {
@@ -14,13 +15,21 @@ import {
   CLOSE_REASON_IDS,
   TRADER_REFLECTION_ENTRY_TYPE_ID,
   REVIEW_NOTE_ENTRY_TYPE_ID,
+  EXPORT_SCHEMA_VERSION,
+  EXPORTED_STORES,
+  type StorageManager,
 } from './workspace'
 
-function makeWorkspace(): { workspace: Workspace; tradeBook: TradeBook; journal: Journal } {
+function makeWorkspace(): {
+  workspace: Workspace
+  tradeBook: TradeBook
+  journal: Journal
+  binding: InMemoryBinding
+} {
   const binding = new InMemoryBinding()
   const tradeBook = new TradeBook(binding)
   const journal = new Journal(binding)
-  return { workspace: new Workspace(tradeBook, journal, binding), tradeBook, journal }
+  return { workspace: new Workspace(tradeBook, journal, binding), tradeBook, journal, binding }
 }
 
 describe('Workspace.ensureSeeded — strategies', () => {
@@ -315,5 +324,181 @@ describe('Workspace.settings', () => {
     expect(await workspace.settings.get('pricingSources')).toEqual([
       { id: 'marketdata.app', enabled: true, apiKey: 'abc123' },
     ])
+  })
+})
+
+async function parseExport(blob: Blob): Promise<{
+  schemaVersion: number
+  exportedAt: number
+  stores: Record<string, unknown[]>
+}> {
+  return JSON.parse(await blob.text())
+}
+
+describe('Workspace.exportAll', () => {
+  it('produces one JSON blob containing every store’s records', async () => {
+    const { workspace, tradeBook, journal } = makeWorkspace()
+    await tradeBook.registries.institutions.save({ id: '', name: 'Schwab' })
+    await journal.entryTypes.save({ id: 'et-1', name: 'Custom', prompts: [] })
+
+    const file = await parseExport(await workspace.exportAll())
+
+    expect(file.stores.institutions.map((r) => (r as { name: string }).name)).toEqual(['Schwab'])
+    expect(file.stores.entryTypes.map((r) => (r as { id: string }).id)).toContain('et-1')
+  })
+
+  it('stamps schemaVersion and exportedAt', async () => {
+    const { workspace } = makeWorkspace()
+    const before = Date.now()
+
+    const file = await parseExport(await workspace.exportAll())
+
+    expect(file.schemaVersion).toBe(6)
+    expect(file.exportedAt).toBeGreaterThanOrEqual(before)
+    expect(file.exportedAt).toBeLessThanOrEqual(Date.now())
+  })
+
+  it('reads raw stores (a record invalid under current domain rules still exports)', async () => {
+    const { workspace, binding } = makeWorkspace()
+    // Bypasses TradeBook validation entirely — a shape TradeBook would never
+    // produce or accept, proving exportAll reads the binding directly.
+    await binding.put('trades', { id: 'bad-trade', thisFieldDoesNotExist: true })
+
+    const file = await parseExport(await workspace.exportAll())
+
+    expect(file.stores.trades).toEqual([{ id: 'bad-trade', thisFieldDoesNotExist: true }])
+  })
+
+  it('round-trips byte-faithful record content (deep-equal after parse)', async () => {
+    const { workspace, tradeBook } = makeWorkspace()
+    const institution = { id: '', name: 'Fidelity' }
+    await tradeBook.registries.institutions.save(institution)
+    const [saved] = await tradeBook.registries.institutions.list()
+
+    const file = await parseExport(await workspace.exportAll())
+
+    expect(file.stores.institutions).toEqual([saved])
+  })
+
+  it('records lastExportAt as a fact', async () => {
+    const { workspace } = makeWorkspace()
+    expect((await workspace.storageHealth()).lastExportAt).toBeUndefined()
+
+    const before = Date.now()
+    await workspace.exportAll()
+
+    const health = await workspace.storageHealth()
+    expect(health.lastExportAt).toBeGreaterThanOrEqual(before)
+    expect(health.lastExportAt).toBeLessThanOrEqual(Date.now())
+  })
+
+  it('excludes pricing-source API keys', async () => {
+    const { workspace } = makeWorkspace()
+    const secretKey = 'super-secret-key'
+    await workspace.settings.set('pricingSources', [
+      { id: 'marketdata.app', enabled: true, apiKey: secretKey },
+    ])
+
+    const blob = await workspace.exportAll()
+    const text = await blob.text()
+    const file = JSON.parse(text) as Awaited<ReturnType<typeof parseExport>>
+
+    const stored = file.stores.settings.find(
+      (r) => (r as { id: string }).id === 'pricingSources',
+    ) as { value: { id: string; enabled: boolean; apiKey?: string }[] } | undefined
+    expect(stored?.value).toEqual([{ id: 'marketdata.app', enabled: true }])
+    // The strongest form of "secrets never leave" (workspace.md): the literal
+    // credential string appears nowhere in the file, not just absent from the
+    // one field a narrower assertion happens to check.
+    expect(text).not.toContain(secretKey)
+  })
+
+  it('EXPORTED_STORES and EXPORT_SCHEMA_VERSION match the live Dexie schema (drift pin)', () => {
+    const db = createDatabase('workspace-export-drift-pin')
+    expect(db.tables.map((t) => t.name).sort()).toEqual([...EXPORTED_STORES].sort())
+    expect(db.verno).toBe(EXPORT_SCHEMA_VERSION)
+  })
+})
+
+function makeStorageManager(overrides: Partial<StorageManager> = {}): StorageManager {
+  return {
+    persisted: async () => false,
+    persist: async () => false,
+    estimate: async () => ({ usage: 0, quota: 0 }),
+    ...overrides,
+  }
+}
+
+describe('Workspace.storageHealth', () => {
+  it('reports persisted true/false from the storage manager', async () => {
+    const binding = new InMemoryBinding()
+    const workspace = new Workspace(
+      new TradeBook(binding),
+      new Journal(binding),
+      binding,
+      makeStorageManager({ persisted: async () => true }),
+    )
+    expect((await workspace.storageHealth()).persisted).toBe(true)
+  })
+
+  it('reports usage and quota bytes', async () => {
+    const binding = new InMemoryBinding()
+    const workspace = new Workspace(
+      new TradeBook(binding),
+      new Journal(binding),
+      binding,
+      makeStorageManager({ estimate: async () => ({ usage: 12345, quota: 999999 }) }),
+    )
+    const health = await workspace.storageHealth()
+    expect(health.usageBytes).toBe(12345)
+    expect(health.quotaBytes).toBe(999999)
+  })
+
+  it('reports lastExportAt, or absent when never exported', async () => {
+    const { workspace } = makeWorkspace()
+    expect((await workspace.storageHealth()).lastExportAt).toBeUndefined()
+    await workspace.exportAll()
+    expect((await workspace.storageHealth()).lastExportAt).toBeDefined()
+  })
+})
+
+describe('Workspace.requestPersistence', () => {
+  it("returns the browser's grant/deny verdict", async () => {
+    const binding = new InMemoryBinding()
+    const granted = new Workspace(
+      new TradeBook(binding),
+      new Journal(binding),
+      binding,
+      makeStorageManager({ persist: async () => true }),
+    )
+    expect(await granted.requestPersistence()).toBe(true)
+
+    const denied = new Workspace(
+      new TradeBook(binding),
+      new Journal(binding),
+      binding,
+      makeStorageManager({ persist: async () => false }),
+    )
+    expect(await denied.requestPersistence()).toBe(false)
+  })
+
+  it('is reflected by storageHealth afterward', async () => {
+    let persisted = false
+    const binding = new InMemoryBinding()
+    const workspace = new Workspace(
+      new TradeBook(binding),
+      new Journal(binding),
+      binding,
+      makeStorageManager({
+        persist: async () => {
+          persisted = true
+          return true
+        },
+        persisted: async () => persisted,
+      }),
+    )
+    expect((await workspace.storageHealth()).persisted).toBe(false)
+    await workspace.requestPersistence()
+    expect((await workspace.storageHealth()).persisted).toBe(true)
   })
 })

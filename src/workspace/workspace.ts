@@ -2,10 +2,81 @@ import type { TradeBook } from '@/books/tradebook/trade-book'
 import type { CloseReason, StrategyTemplate } from '@/books/tradebook/types'
 import type { Journal } from '@/books/journal/journal'
 import type { EntryType } from '@/books/journal/types'
+import type { Timestamp } from '@/domain/trademath/types'
 import type { StorageBinding } from '@/storage/storage-binding'
 import { InMemoryBinding } from '@/storage/in-memory-binding'
 
 const SETTINGS = 'settings'
+const LAST_EXPORT_AT_KEY = 'lastExportAt'
+
+// Every raw store exportAll dumps — mirrors storage/schema.ts exactly. The
+// export schema version and the Dexie schema version share one lineage
+// (workspace.md); bump both together when a store is added or reshaped.
+// importAll's migration machinery arrives with the first version this needs
+// to migrate (docs/plan/slice-06-durability.md, JIT ruling). Exported so a
+// test can pin both constants against the live Dexie schema and fail loudly
+// on drift — a store schema.ts adds but this list forgets is a store a
+// replace-only restore would silently lose forever.
+export const EXPORT_SCHEMA_VERSION = 6
+export const EXPORTED_STORES = [
+  'institutions',
+  'accounts',
+  'trades',
+  'strategies',
+  'ideaSources',
+  'entries',
+  'entryTypes',
+  'closeReasons',
+  'marks',
+  'settings',
+]
+
+// The narrow subset of the browser's navigator.storage the Workspace needs —
+// structurally identical to the DOM lib's StorageManager, so real
+// navigator.storage satisfies it with no adapter, and tests inject a double.
+export interface StorageManager {
+  persisted(): Promise<boolean>
+  persist(): Promise<boolean>
+  estimate(): Promise<{ usage?: number; quota?: number }>
+}
+
+const NO_STORAGE_MANAGER: StorageManager = {
+  persisted: async () => false,
+  persist: async () => false,
+  estimate: async () => ({ usage: 0, quota: 0 }),
+}
+
+function defaultStorageManager(): StorageManager {
+  if (typeof navigator !== 'undefined' && navigator.storage) {
+    return navigator.storage
+  }
+  return NO_STORAGE_MANAGER
+}
+
+export interface StorageHealth {
+  persisted: boolean
+  usageBytes: number
+  quotaBytes: number
+  lastExportAt?: Timestamp
+}
+
+interface ExportFile {
+  schemaVersion: number
+  exportedAt: Timestamp
+  stores: Record<string, unknown[]>
+}
+
+// A backup file must never carry credentials (workspace.md): the one settings
+// record that can hold one is `pricingSources`; every other settings record
+// passes through untouched.
+function redactSecrets(record: { id: string }): unknown {
+  if (record.id !== 'pricingSources') return record
+  const stored = record as StoredSetting<'pricingSources'>
+  return {
+    ...stored,
+    value: stored.value.map(({ apiKey: _apiKey, ...rest }) => rest),
+  }
+}
 
 // Typed settings over a Dexie store (workspace.md) — one record per key. First
 // setting: riskFreeRate, the rate TradeMath.impliedVol callers read
@@ -197,11 +268,51 @@ export class Workspace {
   // `binding` defaults to a private in-memory store for callers that only need
   // ensureSeeded (most existing call sites) — settings persistence only matters
   // where the composition root wires the app's real binding through.
+  // `storageManager` defaults to the real navigator.storage where present,
+  // else a no-op double (jsdom, or a browser lacking the API) — tests inject
+  // their own double instead.
   constructor(
     private tradeBook: TradeBook,
     private journal: Journal,
     private binding: StorageBinding = new InMemoryBinding(),
+    private storageManager: StorageManager = defaultStorageManager(),
   ) {}
+
+  // Reads raw stores, not Book interfaces (workspace.md) — a faithful dump
+  // that is valid JSON regardless of whether every record still satisfies
+  // today's domain rules. Pricing-source API keys are redacted on the way out
+  // (secrets never leave, workspace.md).
+  async exportAll(): Promise<Blob> {
+    const stores: Record<string, unknown[]> = {}
+    for (const store of EXPORTED_STORES) {
+      const records = await this.binding.list<{ id: string }>(store)
+      stores[store] = store === SETTINGS ? records.map(redactSecrets) : records
+    }
+    const exportedAt: Timestamp = Date.now()
+    const file: ExportFile = { schemaVersion: EXPORT_SCHEMA_VERSION, exportedAt, stores }
+
+    await this.binding.put(SETTINGS, { id: LAST_EXPORT_AT_KEY, value: exportedAt })
+
+    return new Blob([JSON.stringify(file)], { type: 'application/json' })
+  }
+
+  async storageHealth(): Promise<StorageHealth> {
+    const [persisted, estimate, lastExportAtRecord] = await Promise.all([
+      this.storageManager.persisted(),
+      this.storageManager.estimate(),
+      this.binding.get<{ id: string; value: Timestamp }>(SETTINGS, LAST_EXPORT_AT_KEY),
+    ])
+    return {
+      persisted,
+      usageBytes: estimate.usage ?? 0,
+      quotaBytes: estimate.quota ?? 0,
+      lastExportAt: lastExportAtRecord?.value,
+    }
+  }
+
+  async requestPersistence(): Promise<boolean> {
+    return this.storageManager.persist()
+  }
 
   settings = {
     get: async <K extends keyof Settings>(key: K): Promise<Settings[K]> => {

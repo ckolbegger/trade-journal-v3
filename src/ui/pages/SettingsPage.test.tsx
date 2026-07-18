@@ -1,17 +1,17 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SettingsPage } from './SettingsPage'
 import { TradeBookContext } from '../tradeBookContext'
 import { WorkspaceContext } from '../workspaceContext'
 import { PriceBookContext } from '../priceBookContext'
-import { Workspace } from '@/workspace/workspace'
+import { Workspace, type StorageManager } from '@/workspace/workspace'
 import type { DateRange, PricingSource, SourceObservation } from '@/books/pricebook/types'
 import { inMemoryBooks } from '../../../tests/support/trade-book'
 
-function renderSettings(sources: PricingSource[] = []) {
+function renderSettings(sources: PricingSource[] = [], storageManager?: StorageManager) {
   const { tradeBook, journal, priceBook } = inMemoryBooks(sources)
-  const workspace = new Workspace(tradeBook, journal)
+  const workspace = new Workspace(tradeBook, journal, undefined, storageManager)
   render(
     <TradeBookContext.Provider value={tradeBook}>
       <WorkspaceContext.Provider value={workspace}>
@@ -22,6 +22,15 @@ function renderSettings(sources: PricingSource[] = []) {
     </TradeBookContext.Provider>,
   )
   return { workspace }
+}
+
+function makeStorageManager(overrides: Partial<StorageManager> = {}): StorageManager {
+  return {
+    persisted: async () => false,
+    persist: async () => false,
+    estimate: async () => ({ usage: 0, quota: 0 }),
+    ...overrides,
+  }
 }
 
 // A minimal PricingSource stub for "Test this source" — the same seam
@@ -116,5 +125,73 @@ describe('PricingSettings', () => {
     await user.click(await screen.findByRole('button', { name: /test this source/i }))
 
     expect(await screen.findByText(/no price returned for msft/i)).toBeInTheDocument()
+  })
+})
+
+describe('BackupSettings', () => {
+  const originalCreateObjectURL = URL.createObjectURL
+  const originalRevokeObjectURL = URL.revokeObjectURL
+
+  beforeEach(() => {
+    URL.createObjectURL = vi.fn(() => 'blob:mock-url')
+    URL.revokeObjectURL = vi.fn()
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    URL.createObjectURL = originalCreateObjectURL
+    URL.revokeObjectURL = originalRevokeObjectURL
+    vi.restoreAllMocks()
+  })
+
+  it('shows health figures and last-export date', async () => {
+    renderSettings(
+      [],
+      makeStorageManager({
+        persisted: async () => true,
+        estimate: async () => ({ usage: 2_000_000, quota: 100_000_000 }),
+      }),
+    )
+
+    expect(await screen.findByText(/durable storage: yes/i)).toBeInTheDocument()
+    expect(await screen.findByText(/1\.9.*mb.*95\.4.*mb/i)).toBeInTheDocument()
+    expect(await screen.findByText(/never exported/i)).toBeInTheDocument()
+  })
+
+  it('triggers a download and updates lastExportAt', async () => {
+    const { workspace } = renderSettings([], makeStorageManager())
+    const user = userEvent.setup()
+    expect((await workspace.storageHealth()).lastExportAt).toBeUndefined()
+
+    await user.click(await screen.findByRole('button', { name: /export backup/i }))
+
+    expect(await screen.findByText(/last export:/i)).toBeInTheDocument()
+    expect((await workspace.storageHealth()).lastExportAt).toBeDefined()
+  })
+
+  it('hides the persistence request once granted', async () => {
+    let persisted = false
+    renderSettings(
+      [],
+      makeStorageManager({
+        persist: async () => {
+          persisted = true
+          return true
+        },
+        persisted: async () => persisted,
+      }),
+    )
+    const user = userEvent.setup()
+
+    expect(
+      await screen.findByRole('button', { name: /request durable storage/i }),
+    ).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /request durable storage/i }))
+
+    expect(await screen.findByText(/durable storage: yes/i)).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /request durable storage/i }),
+    ).not.toBeInTheDocument()
   })
 })
