@@ -4,19 +4,19 @@ A Trade's size becomes dynamic: repeat fills build the position across multiple 
 
 **Decided in this slice:**
 
-- **Opening fees travel with their Lot, consumed proportionally.** A partial close's realized P&L is net of the closing Execution's fees plus the consumed fraction of each consumed Lot's opening fees. (Slice 1's full-close math is the degenerate case — its tests stay green.)
+- **~~Opening fees travel with their Lot~~ AMENDED by user ruling 2026-07-18 (see README fee bullet): realized P&L nets ALL Trade fees as incurred.** Lots carry basis only, never fees; a partial close's realized P&L = gross realized on the consumed Lots (FIFO) minus every fee on the Trade to date not yet netted — equivalently, realized = cumulative gross realized − cumulative fees. No proportional fee consumption. (Slice 1's full-close math is the degenerate case — its tests stay green, since both models agree whenever the Trade is flat.)
 - **A closing Execution may not cross through zero.** Selling 120 when holding 80 long is rejected; flattening and reversing are two Executions (a flip is a new direction, and silently splitting one fill would invent history).
 
 **Out of scope (JIT):** sizing Deviations (Slice 9 — scaling beyond plan is *recorded* there; here it's just possible), Transfers (Slice 16), trader-picked specific lots (rejected in ADR 0015; FIFO only).
 
 Design references: [trademath.md](../design/trademath.md), ADR 0015, ADR 0004 (basis language).
 
-**Worked example used throughout:**
-Buy 100 AAPL @ $150.00 fees $1.00 (Lot A) · buy 100 @ $160.00 fees $1.00 (Lot B) → position 200, basis $31,000, average $155.00.
-Sell 120 @ $165.00 fees $1.00 → consumes all of Lot A + 20 of Lot B:
-- realized = 19,800 − (15,000 + 3,200) − 1.00 closing − 1.20 consumed opening fees (A's $1.00 + 20% of B's) = **$1,597.80**
-- remaining: 80 shares, basis $12,800, Lot B's unconsumed $0.80 of fees · at mark 165: unrealized $400 (gross)
-Sell 80 @ $170.00 fees $1.00 → realized adds 13,600 − 12,800 − 1.80 = **$798.20**; Trade flat; total realized $2,396.00.
+**Worked example used throughout** (numbers per the 2026-07-18 all-fees-as-incurred ruling):
+Buy 100 AAPL @ $150.00 fees $1.00 (Lot A) · buy 100 @ $160.00 fees $1.00 (Lot B) → position 200, basis $31,000, average $155.00, fees $2.00 (realized −$2.00 while unclosed).
+Sell 120 @ $165.00 fees $1.00 → consumes all of Lot A's basis + 20 shares of Lot B's:
+- realized = 19,800 − (15,000 + 3,200) gross − 3.00 (ALL fees to date) = **$1,597.00**
+- remaining: 80 shares, basis $12,800 · at mark 165: unrealized $400 (gross)
+Sell 80 @ $170.00 fees $1.00 → realized adds 13,600 − 12,800 − 1.00 = **$799.00**; Trade flat; total realized **$2,396.00** (both fee models agree once flat).
 
 ---
 
@@ -69,10 +69,10 @@ Sell 80 @ $170.00 fees $1.00 → realized adds 13,600 − 12,800 − 1.80 = **$7
 
   ```
   describe "TradeMath.valuation (FIFO partial close)"
-  - it realizes 1597.80 on the worked-example sell of 120 (Lot A fully, Lot B 20)
+  - it realizes 1597.00 on the worked-example sell of 120 (Lot A fully, Lot B 20; all fees to date netted)
   - it reports remaining basis 12800.00 over 80 shares
   - it reports unrealized 400.00 at mark 165 on the remainder
-  - it realizes 798.20 on the final sell of 80, totaling 2396.00
+  - it realizes 799.00 more on the final sell of 80, totaling 2396.00
   - it reproduces identical numbers recomputed from the Execution record alone
   - it consumes short Lots FIFO symmetrically (partial buy-to-close of a -2 contract position)
   describe "TradeBook.recordExecution (partial close)"
@@ -85,7 +85,7 @@ Sell 80 @ $170.00 fees $1.00 → realized adds 13,600 − 12,800 − 1.80 = **$7
 
   ```
   describe "TradeDetail (scaling out)"
-  - it shows realized 1597.80 and unrealized 400.00 after the partial
+  - it shows realized 1597.00 and unrealized 400.00 after the partial
   - it does not prompt Close Reason on a partial close
   - it prompts Close Reason at the flattening fill as usual
   - it rejects an oversized close with a message naming held quantity
