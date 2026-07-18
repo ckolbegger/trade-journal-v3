@@ -1,6 +1,6 @@
 import type { TradeBook } from '@/books/tradebook/trade-book'
 import type { PriceBook } from '@/books/pricebook/price-book'
-import type { DateRange } from '@/books/pricebook/types'
+import type { DateRange, FetchReport } from '@/books/pricebook/types'
 import type {
   ISODate,
   InstrumentKey,
@@ -199,6 +199,19 @@ export class Valuations {
       }
     }
     return expired
+  }
+
+  // Ad-hoc refresh from the Trade detail page (pricebook.md's named secondary
+  // FetchReport consumer): today's Marks only, and only for what this Trade
+  // currently holds — a flat Leg's instrument never needs a fresh price, the
+  // same held filter `marksNeeded` reads. `today` comes from the UI (todayISO),
+  // mirroring how Review passes `asOf` in rather than each layer computing its
+  // own date.
+  async refresh(tradeId: TradeId, today: ISODate): Promise<FetchReport> {
+    if (!this.priceBook) throw new Error('Valuations needs a PriceBook for refresh')
+    const record = await this.tradeBook.get(tradeId)
+    const instruments = heldInstrumentsOf(record)
+    return this.priceBook.fetch(instruments, { from: today, to: today })
   }
 
   async value(tradeId: TradeId): Promise<TradeValue> {

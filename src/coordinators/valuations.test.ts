@@ -3,6 +3,12 @@ import type { TradeBook } from '@/books/tradebook/trade-book'
 import type { PriceBook } from '@/books/pricebook/price-book'
 import type { Account, ExecutionDraft, Institution, PlanDraft } from '@/books/tradebook/types'
 import type { ExitLevel } from '@/domain/trademath/types'
+import type {
+  DateRange,
+  InstrumentKey,
+  PricingSource,
+  SourceObservation,
+} from '@/books/pricebook/types'
 import { inMemoryBooks, inMemoryTradeBook } from '../../tests/support/trade-book'
 import { Valuations } from './valuations'
 
@@ -737,5 +743,74 @@ describe('Valuations.value', () => {
     const value = await new Valuations(tradeBook, priceBook).value(tradeId)
     expect(value.marksMissing).toEqual(['AAPL'])
     expect(value.valuation).toBeUndefined()
+  })
+})
+
+// A PricingSource that accepts everything and records every call it received —
+// the S4.3 refresh seam only needs to see WHAT was asked, not real observations.
+function spySource(observations: SourceObservation[] = []): {
+  source: PricingSource
+  calls: { instruments: InstrumentKey[]; range: DateRange }[]
+} {
+  const calls: { instruments: InstrumentKey[]; range: DateRange }[] = []
+  const source: PricingSource = {
+    id: 'fixture-source',
+    supports: () => true,
+    fetch: async (instruments, range) => {
+      calls.push({ instruments, range })
+      return observations.filter((o) => instruments.includes(o.instrument))
+    },
+  }
+  return { source, calls }
+}
+
+describe('Valuations.refresh', () => {
+  it("fetches only the Trade's held instruments for the given date", async () => {
+    const { source, calls } = spySource()
+    const { tradeBook, priceBook } = inMemoryBooks([source])
+    const tradeId = await seedPlan(tradeBook)
+    await tradeBook.recordExecution({ tradeId, newLeg: 'AAPL' }, fill())
+
+    await new Valuations(tradeBook, priceBook).refresh(tradeId, '2026-07-15')
+
+    expect(calls).toEqual([
+      { instruments: ['AAPL'], range: { from: '2026-07-15', to: '2026-07-15' } },
+    ])
+  })
+
+  it("excludes a flat Leg's instrument — a closed Leg never needs a fresh Mark", async () => {
+    const { source, calls } = spySource()
+    const { tradeBook, priceBook } = inMemoryBooks([source])
+    const tradeId = await seedPlan(tradeBook)
+    const opened = await tradeBook.recordExecution({ tradeId, newLeg: 'AAPL' }, fill())
+    await tradeBook.recordExecution(
+      { tradeId, legId: opened.record.legs[0].id },
+      {
+        side: 'sell',
+        qty: 100,
+        price: 16800,
+        fees: 100,
+        timestamp: new Date('2026-07-11T12:00:00').getTime(),
+      },
+    )
+
+    await new Valuations(tradeBook, priceBook).refresh(tradeId, '2026-07-15')
+
+    // The now-flat AAPL Leg drops out entirely (heldInstrumentsOf) — nothing
+    // is fetched.
+    expect(calls).toEqual([])
+  })
+
+  it("returns PriceBook's FetchReport", async () => {
+    const { source } = spySource([{ instrument: 'AAPL', date: '2026-07-15', close: 16000 }])
+    const { tradeBook, priceBook } = inMemoryBooks([source])
+    const tradeId = await seedPlan(tradeBook)
+    await tradeBook.recordExecution({ tradeId, newLeg: 'AAPL' }, fill())
+
+    const report = await new Valuations(tradeBook, priceBook).refresh(tradeId, '2026-07-15')
+
+    expect(report.stored).toEqual([
+      { instrument: 'AAPL', date: '2026-07-15', price: 16000, origin: 'fetched' },
+    ])
   })
 })

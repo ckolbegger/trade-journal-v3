@@ -6,7 +6,7 @@ import { useValuations } from '../valuationsContext'
 import { RecordFillForm } from './RecordFillForm'
 import { CloseForm } from './CloseForm'
 import { TradeDashboard } from './TradeDashboard'
-import { centsToDollars, optionLabel, timestampToISODate } from '../format'
+import { centsToDollars, optionLabel, timestampToISODate, todayISO } from '../format'
 import { StatusBadge } from '../components/Badge'
 import { AddAddendum } from '../components/AddAddendum'
 import { AnsweredPrompts } from '../components/AnsweredPrompts'
@@ -14,6 +14,7 @@ import { buildEntryThreads } from '../components/entryThread'
 import { btnSecondary, card, heading, link, num, subheading } from '../styles'
 import type { Instrument, Position, TradeRecord, TradeStatus } from '@/books/tradebook/types'
 import type { Entry } from '@/books/journal/types'
+import type { FetchReport } from '@/books/pricebook/types'
 
 // An instrument rendered for display: a stock is just its ticker; an option
 // shows its contract label ("AAPL Jun'27 200C") — display-only, never a key.
@@ -59,6 +60,7 @@ export function TradeDetail() {
   const [closeDismissed, setCloseDismissed] = useState(false)
   const [abandoning, setAbandoning] = useState(false)
   const [refresh, setRefresh] = useState(0)
+  const [refreshReport, setRefreshReport] = useState<FetchReport | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -106,6 +108,19 @@ export function TradeDetail() {
   const executions = trade.legs
     .flatMap((leg) => leg.executions.map((e) => ({ ...e, label: instrumentLabel(leg.instrument) })))
     .sort((a, b) => a.timestamp - b.timestamp)
+
+  // Ad-hoc refresh (S4.3): today's Marks only, for whatever this Trade currently
+  // holds (Valuations.refresh — heldInstrumentsOf, mirroring marksNeeded). The
+  // dashboard remount (via `refresh`) re-derives valuation and R/R from the
+  // Marks the fetch just stored; the report itself renders inline below — a
+  // manual Mark for today stays untouched (skippedManual), and any per-source
+  // error is shown with its reason rather than silently dropped.
+  async function refreshPrices() {
+    if (!trade) return
+    const report = await valuations.refresh(trade.id, todayISO())
+    setRefreshReport(report)
+    setRefresh((n) => n + 1)
+  }
 
   return (
     <section className="space-y-4">
@@ -187,6 +202,48 @@ export function TradeDetail() {
           />
         )}
       </div>
+
+      {status && status !== 'planned' && (
+        <div className={`${card} space-y-2`}>
+          <div className="flex items-center justify-between">
+            <h3 className={subheading}>Prices</h3>
+            <button type="button" className={btnSecondary} onClick={() => void refreshPrices()}>
+              Refresh prices
+            </button>
+          </div>
+          {refreshReport &&
+            refreshReport.stored.length === 0 &&
+            refreshReport.skippedManual.length === 0 &&
+            refreshReport.unsupported.length === 0 &&
+            refreshReport.errors.length === 0 && (
+              <p aria-label="refresh empty" className="text-sm text-slate-500">
+                No new price for today — the source has nothing yet (market may still be open, or
+                closed with no update).
+              </p>
+            )}
+          {refreshReport && refreshReport.skippedManual.length > 0 && (
+            <p aria-label="refresh sticky" className="text-sm text-slate-500">
+              Kept today&apos;s manual mark for {refreshReport.skippedManual.join(', ')} — a refresh
+              never overwrites a price you typed yourself.
+            </p>
+          )}
+          {refreshReport && refreshReport.unsupported.length > 0 && (
+            <p aria-label="refresh unsupported" className="text-sm text-slate-500">
+              No pricing source covers {refreshReport.unsupported.join(', ')} — enter it manually
+              below.
+            </p>
+          )}
+          {refreshReport && refreshReport.errors.length > 0 && (
+            <ul aria-label="refresh errors" className="space-y-1">
+              {refreshReport.errors.map((err) => (
+                <li key={err.instrument} className="text-sm text-red-600">
+                  {err.instrument}: {err.message}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       {/* Keyed on the page's refresh counter: an Execution (or a Close Reason)
           changes what the Trade holds, so the valuation must be re-fetched — it

@@ -12,17 +12,18 @@ import type { TradeBook } from '@/books/tradebook/trade-book'
 import type { Journal } from '@/books/journal/journal'
 import type { PriceBook } from '@/books/pricebook/price-book'
 import type { Account, IdeaSource, Institution, PlanDraft } from '@/books/tradebook/types'
+import type { DateRange, InstrumentKey, PricingSource } from '@/books/pricebook/types'
 import { Workspace, PLAN_ENTRY_TYPE_ID } from '@/workspace/workspace'
 import { todayISO } from '../format'
 import { inMemoryBooks } from '../../../tests/support/trade-book'
 
-async function seededTrade(): Promise<{
+async function seededTrade(sources: PricingSource[] = []): Promise<{
   book: TradeBook
   journal: Journal
   priceBook: PriceBook
   id: string
 }> {
-  const { tradeBook: book, journal, priceBook } = inMemoryBooks()
+  const { tradeBook: book, journal, priceBook } = inMemoryBooks(sources)
   const institution = { id: '', name: 'Schwab' } as Institution
   await book.registries.institutions.save(institution)
   const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
@@ -367,6 +368,137 @@ describe('TradeDetail valuation refresh', () => {
     await waitFor(() => expect(pnl).toHaveTextContent(/1798\.00/))
     expect(await screen.findByLabelText('position')).toHaveTextContent(/no position/i)
     expect(pnl).not.toHaveTextContent(/1000\.00/)
+  })
+})
+
+// A PricingSource that accepts everything and records every call — the refresh
+// button's seam only needs to see WHAT was asked and to hand back observations
+// (or throw) on demand.
+function spySource(
+  observations: { instrument: InstrumentKey; date: string; close: number }[] = [],
+): {
+  source: PricingSource
+  calls: { instruments: InstrumentKey[]; range: DateRange }[]
+} {
+  const calls: { instruments: InstrumentKey[]; range: DateRange }[] = []
+  const source: PricingSource = {
+    id: 'fixture-source',
+    supports: () => true,
+    fetch: async (instruments, range) => {
+      calls.push({ instruments, range })
+      return observations.filter((o) => instruments.includes(o.instrument))
+    },
+  }
+  return { source, calls }
+}
+
+function failingSource(message: string): PricingSource {
+  return {
+    id: 'fixture-source',
+    supports: () => true,
+    fetch: async () => {
+      throw new Error(message)
+    },
+  }
+}
+
+// Registered but declines everything — every requested instrument comes back
+// `unsupported` (no adapter accepts it), distinct from an error or a manual-sticky skip.
+function unsupportedSource(): PricingSource {
+  return {
+    id: 'fixture-source',
+    supports: () => false,
+    fetch: async () => [],
+  }
+}
+
+describe('TradeDetail refresh', () => {
+  it("fetches only this Trade's instruments for today", async () => {
+    const { source, calls } = spySource()
+    const { book, journal, priceBook, id } = await seededTrade([source])
+    await buy100(book, id)
+    renderDetail(book, journal, priceBook, id)
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: /refresh prices/i }))
+
+    await waitFor(() => expect(calls.length).toBeGreaterThan(0))
+    expect(calls).toEqual([{ instruments: ['AAPL'], range: { from: todayISO(), to: todayISO() } }])
+  })
+
+  it('re-renders valuation and R/R from the new Marks', async () => {
+    const { source } = spySource([{ instrument: 'AAPL', date: todayISO(), close: 16000 }])
+    const { book, journal, priceBook, id } = await seededTrade([source])
+    await buy100(book, id)
+    renderDetail(book, journal, priceBook, id)
+    const user = userEvent.setup()
+
+    expect(await screen.findByText(/enter today's price/i)).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /refresh prices/i }))
+
+    // The same worked example as above: buy at 150, mark at 160 — unrealized
+    // 1000.00, and R/R now has numbers instead of the missing-Mark prompt.
+    const pnl = await screen.findByLabelText('profit and loss')
+    await waitFor(() => expect(pnl).toHaveTextContent(/1000\.00/))
+    expect(await screen.findByLabelText('planned risk')).toBeInTheDocument()
+  })
+
+  it('leaves a manual Mark for today un-replaced and says so', async () => {
+    const { source, calls } = spySource([{ instrument: 'AAPL', date: todayISO(), close: 16000 }])
+    const { book, journal, priceBook, id } = await seededTrade([source])
+    await buy100(book, id)
+    await priceBook.record('AAPL', todayISO(), 15500, 'manual')
+    renderDetail(book, journal, priceBook, id)
+    const user = userEvent.setup()
+
+    // Buy at 150, manual mid 155 — unrealized 500.00, already showing before refresh.
+    const pnl = await screen.findByLabelText('profit and loss')
+    await waitFor(() => expect(pnl).toHaveTextContent(/500\.00/))
+
+    await user.click(screen.getByRole('button', { name: /refresh prices/i }))
+
+    await waitFor(() => expect(calls.length).toBeGreaterThan(0))
+    expect(await screen.findByLabelText('refresh sticky')).toHaveTextContent(/manual/i)
+    // The manual mid survives — never overwritten by the fetched 160.
+    expect(pnl).toHaveTextContent(/500\.00/)
+    expect(pnl).not.toHaveTextContent(/1000\.00/)
+  })
+
+  it('shows the error reason when the source fails', async () => {
+    const { book, journal, priceBook, id } = await seededTrade([failingSource('API key expired')])
+    await buy100(book, id)
+    renderDetail(book, journal, priceBook, id)
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: /refresh prices/i }))
+
+    expect(await screen.findByLabelText('refresh errors')).toHaveTextContent('API key expired')
+  })
+
+  it('says so when no registered source covers this instrument', async () => {
+    const { book, journal, priceBook, id } = await seededTrade([unsupportedSource()])
+    await buy100(book, id)
+    renderDetail(book, journal, priceBook, id)
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: /refresh prices/i }))
+
+    expect(await screen.findByLabelText('refresh unsupported')).toHaveTextContent('AAPL')
+  })
+
+  it('says so rather than staying blank when the source has nothing new (e.g. a weekend)', async () => {
+    // The source is registered and healthy but simply has no observation for
+    // today (S4.1's live no_data finding) — every FetchReport field is empty.
+    const { source } = spySource([])
+    const { book, journal, priceBook, id } = await seededTrade([source])
+    await buy100(book, id)
+    renderDetail(book, journal, priceBook, id)
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: /refresh prices/i }))
+
+    expect(await screen.findByLabelText('refresh empty')).toHaveTextContent(/no new price/i)
   })
 })
 

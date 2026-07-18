@@ -101,7 +101,7 @@ Design references: [pricebook.md](../design/pricebook.md) (fetch semantics, Fetc
 
 ---
 
-## ☐ Story S4.3 — Ad-hoc refresh
+## ☑ Story S4.3 — Ad-hoc refresh
 
 > As a trader, I want to refresh a Trade's prices from its detail page mid-day or before a decision, so that a judgment call can use a current mark without waiting for tonight's review.
 
@@ -109,7 +109,7 @@ Design references: [pricebook.md](../design/pricebook.md) (fetch semantics, Fetc
 
 ### Tasks
 
-- [ ] **S4.3.T1 — Refresh action.** "Refresh prices" on Trade detail: fetch(instrumentsOf(trade), today..today) → re-render the dashboard; failures surface the report's reasons inline; manual Marks stay sticky (a deliberate mid-price the trader typed is not clobbered by a refresh).
+- [x] **S4.3.T1 — Refresh action.** "Refresh prices" on Trade detail: fetch(heldInstrumentsOf(trade), today..today) → re-render the dashboard; failures surface the report's reasons inline; manual Marks stay sticky (a deliberate mid-price the trader typed is not clobbered by a refresh). (Amended from the original `instrumentsOf` wording, which predated the 2026-07-16 ruling that `marksNeeded` reads held Legs only — a flat Leg never needs a fresh Mark, so refresh follows the same held-instrument filter.)
 
   ```
   describe "TradeDetail refresh"
@@ -119,6 +119,6 @@ Design references: [pricebook.md](../design/pricebook.md) (fetch semantics, Fetc
   - it shows the error reason when the source fails
   ```
 
-- [ ] **S4.3.T2 — Integration test**: refresh over Dexie with fixture adapter updates the Mark and the derived numbers; manual-sticky case included.
-- [ ] **S4.3.T3 — Playwright e2e** (`e2e/s4-3-refresh.spec.ts`): mocked source; refresh updates the dashboard numbers.
-- [ ] **S4.3.T4 — Browser verification.** Live refresh on a real Trade: numbers move to today's close; a manually typed mid survives a second refresh. All suites green.
+- [x] **S4.3.T2 — Integration test**: refresh over Dexie with fixture adapter updates the Mark and the derived numbers; manual-sticky case included.
+- [x] **S4.3.T3 — Playwright e2e** (`e2e/s4-3-refresh.spec.ts`): mocked source; refresh updates the dashboard numbers.
+- [x] **S4.3.T4 — Browser verification.** Live refresh on a real Trade: numbers move to today's close; a manually typed mid survives a second refresh. All suites green.
