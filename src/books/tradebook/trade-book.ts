@@ -27,6 +27,20 @@ import type {
 
 const TRADES = 'trades'
 
+// Thrown when a closing Execution would cross through zero (ADR-adjacent
+// ruling, docs/plan/slice-05-scaling.md: selling 120 when holding 80 long is
+// rejected — flattening and reversing are two Executions, since a flip is a
+// new direction and silently splitting one fill would invent history).
+export class CrossesZeroError extends Error {
+  constructor(
+    public heldQty: number,
+    public attemptedQty: number,
+  ) {
+    super(`Cannot close ${attemptedQty} — only ${heldQty} held`)
+    this.name = 'CrossesZeroError'
+  }
+}
+
 // The system of record for Trades. Stores facts, never does arithmetic on them
 // (netting, status, P&L all live in TradeMath). This slice implements the plan
 // lifecycle's first step — confirmPlan / get / query — plus the trader-managed
@@ -108,6 +122,7 @@ export class TradeBook {
     const record = structuredClone(fetched)
 
     const leg = resolveLeg(record, target)
+    rejectIfCrossesZero(leg, exec)
     leg.executions.push({ ...exec })
 
     if (exec.kind === 'assign' || exec.kind === 'exercise') {
@@ -180,6 +195,22 @@ function withDefaultKinds(record: TradeRecord): TradeRecord {
       ...leg,
       executions: leg.executions.map((e) => ({ ...e, kind: e.kind ?? 'fill' })),
     })),
+  }
+}
+
+// Rejects an Execution that would close more than a Leg currently holds. A new
+// or flat Leg (net zero) has nothing to cross, so any side opens it freely; an
+// Execution on the SAME side as the Leg's current net direction only adds to
+// it (scaling in, S5.1). Only the OPPOSITE side is a close, and it may reduce
+// the net to zero (flattening) but never past it (docs/plan/slice-05-scaling.md
+// — a flip is a new direction, recorded as a separate Execution).
+function rejectIfCrossesZero(leg: LegFacts, exec: ExecutionFacts): void {
+  const net = leg.executions.reduce((n, e) => n + (e.side === 'buy' ? e.qty : -e.qty), 0)
+  if (net === 0) return
+  const delta = exec.side === 'buy' ? exec.qty : -exec.qty
+  const closing = Math.sign(delta) !== Math.sign(net)
+  if (closing && Math.abs(delta) > Math.abs(net)) {
+    throw new CrossesZeroError(Math.abs(net), exec.qty)
   }
 }
 

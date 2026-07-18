@@ -117,6 +117,53 @@ describe('TradeBook.recordExecution', () => {
   })
 })
 
+// S5.2 partial close (docs/plan/slice-05-scaling.md): a fill that closes part
+// of a Leg's position leaves the Trade open (nowFlat=false); only the fill
+// that empties every Leg is nowFlat=true. A closing fill larger than what's
+// held is rejected before it ever touches storage (no crossing zero).
+describe('TradeBook.recordExecution (partial close)', () => {
+  async function scaledInTrade(): Promise<{ book: TradeBook; tradeId: string; legId: string }> {
+    const { book, tradeId } = await bookWithPlan()
+    const first = await book.recordExecution(
+      { tradeId, newLeg: 'AAPL' },
+      fill({ side: 'buy', qty: 100 }),
+    )
+    const legId = first.record.legs[0].id
+    await book.recordExecution({ tradeId, legId }, fill({ side: 'buy', qty: 100, price: 16000 }))
+    return { book, tradeId, legId }
+  }
+
+  it('returns nowFlat=false after the partial sell of 120', async () => {
+    const { book, tradeId, legId } = await scaledInTrade()
+    const outcome = await book.recordExecution(
+      { tradeId, legId },
+      fill({ side: 'sell', qty: 120, price: 16500 }),
+    )
+    expect(outcome.nowFlat).toBe(false)
+  })
+
+  it('returns nowFlat=true only at the final sell', async () => {
+    const { book, tradeId, legId } = await scaledInTrade()
+    await book.recordExecution({ tradeId, legId }, fill({ side: 'sell', qty: 120, price: 16500 }))
+    const outcome = await book.recordExecution(
+      { tradeId, legId },
+      fill({ side: 'sell', qty: 80, price: 17000 }),
+    )
+    expect(outcome.nowFlat).toBe(true)
+  })
+
+  it('rejects a close larger than held quantity (no crossing zero)', async () => {
+    const { book, tradeId, legId } = await scaledInTrade()
+    await book.recordExecution({ tradeId, legId }, fill({ side: 'sell', qty: 120, price: 16500 }))
+    await expect(
+      book.recordExecution({ tradeId, legId }, fill({ side: 'sell', qty: 81, price: 17000 })),
+    ).rejects.toThrow(/80/)
+    // The rejected Execution never persisted.
+    const stored = await book.get(tradeId)
+    expect(stored.legs[0].executions).toHaveLength(3)
+  })
+})
+
 describe('ExecutionFacts.kind', () => {
   it("defaults absent kind to 'fill' when reading Slice 1 records", async () => {
     const binding = new InMemoryBinding()

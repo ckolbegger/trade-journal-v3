@@ -44,6 +44,7 @@ export function RecordFillForm({
   const [fees, setFees] = useState('')
   const [date, setDate] = useState(todayISO())
   const [errors, setErrors] = useState<{ qty?: string; price?: string }>({})
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   async function submit() {
     const nextErrors: { qty?: string; price?: string } = {}
@@ -57,6 +58,7 @@ export function RecordFillForm({
       nextErrors.price = 'Price cannot be negative'
     }
     setErrors(nextErrors)
+    setSubmitError(null)
     if (nextErrors.qty || nextErrors.price) return
 
     // Resolve the target: an existing Leg for this instrument, or a new Leg.
@@ -72,7 +74,15 @@ export function RecordFillForm({
       fees: fees.trim() === '' ? 0 : dollarsToCents(fees),
       timestamp: new Date(`${date}T12:00:00`).getTime(),
     }
-    await tradeBook.recordExecution(target, draft)
+    // An oversized close (crosses through zero, S5.2) is rejected by the Book
+    // rather than pre-validated here — the held quantity it names comes from
+    // TradeMath's own FIFO accounting, not a re-derivation in the UI.
+    try {
+      await tradeBook.recordExecution(target, draft)
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : String(error))
+      return
+    }
     onRecorded()
   }
 
@@ -140,6 +150,12 @@ export function RecordFillForm({
           onChange={(e) => setDate(e.target.value)}
         />
       </label>
+
+      {submitError && (
+        <p role="alert" className="text-sm text-red-600">
+          {submitError}
+        </p>
+      )}
 
       <button type="submit" className={btnPrimary}>
         Record fill

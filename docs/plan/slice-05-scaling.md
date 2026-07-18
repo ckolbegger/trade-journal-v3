@@ -57,7 +57,7 @@ Sell 80 @ $170.00 fees $1.00 → realized adds 13,600 − 12,800 − 1.00 = **$7
 
 ---
 
-## ☐ Story S5.2 — Partial close with FIFO
+## ☑ Story S5.2 — Partial close with FIFO
 
 > As a trader, I want to take some off and see exactly what that realized and what's still at risk, so that scaling out is a recorded decision with honest numbers, not a mystery until flat.
 
@@ -65,7 +65,7 @@ Sell 80 @ $170.00 fees $1.00 → realized adds 13,600 − 12,800 − 1.00 = **$7
 
 ### Tasks
 
-- [ ] **S5.2.T1 — FIFO consumption.**
+- [x] **S5.2.T1 — FIFO consumption.**
 
   ```
   describe "TradeMath.valuation (FIFO partial close)"
@@ -81,7 +81,7 @@ Sell 80 @ $170.00 fees $1.00 → realized adds 13,600 − 12,800 − 1.00 = **$7
   - it rejects a close larger than held quantity (no crossing zero)
   ```
 
-- [ ] **S5.2.T2 — UI.** Detail page shows realized-so-far alongside unrealized-on-remainder (the split is the story of scaling out); no Close Reason prompt until actually flat; history renders partial closes plainly.
+- [x] **S5.2.T2 — UI.** Detail page shows realized-so-far alongside unrealized-on-remainder (the split is the story of scaling out); no Close Reason prompt until actually flat; history renders partial closes plainly.
 
   ```
   describe "TradeDetail (scaling out)"
@@ -91,14 +91,14 @@ Sell 80 @ $170.00 fees $1.00 → realized adds 13,600 − 12,800 − 1.00 = **$7
   - it rejects an oversized close with a message naming held quantity
   ```
 
-- [ ] **S5.2.T3 — Integration tests**: the full worked example over Dexie with a reopen mid-sequence → every number matches; review walk between the sells values the 80-share remainder correctly.
-- [ ] **S5.2.T4 — Playwright e2e** (`e2e/s5-2-scale-out.spec.ts`): full worked example; assert realized/unrealized at each step and the final total.
-- [ ] **S5.2.T5 — Browser verification.** Drive the worked example end-to-end in a real browser, checking each on-screen number against the table above (this is the slice's arithmetic proof); include one Daily Review walk mid-position. All suites green.
+- [x] **S5.2.T3 — Integration tests**: the full worked example over Dexie with a reopen mid-sequence → every number matches; review walk between the sells values the 80-share remainder correctly.
+- [x] **S5.2.T4 — Playwright e2e** (`e2e/s5-2-scale-out.spec.ts`): full worked example; assert realized/unrealized at each step and the final total.
+- [x] **S5.2.T5 — Browser verification.** Drive the worked example end-to-end in a real browser, checking each on-screen number against the table above (this is the slice's arithmetic proof); include one Daily Review walk mid-position. All suites green.
 
 ---
 
 ## Slice complete when
 
-- [ ] Both stories checked.
-- [ ] Slice 1's and Slice 3's Playwright specs pass unmodified (the Lot refactor changed no existing behavior).
-- [ ] The worked example's $2,396.00 total realized P&L reproduces after export-grade recompute (delete the Marks cache is not needed — just re-open the app and confirm derivation from Executions alone).
+- [x] Both stories checked.
+- [x] Slice 1's and Slice 3's Playwright specs pass unmodified (the Lot refactor changed no existing behavior).
+- [x] The worked example's $2,396.00 total realized P&L reproduces after export-grade recompute (delete the Marks cache is not needed — just re-open the app and confirm derivation from Executions alone).

@@ -69,8 +69,10 @@ interface Valuation {
 }
 ```
 
-`LegValuation.avgCost` (added S5.1, ruling 2026-07-18): per-unit average open price across a
-Leg's opening fills, WITHOUT the contract multiplier `basis` bakes in — the UI renders it
+`LegValuation.avgCost` (added S5.1, ruling 2026-07-18; wording clarified S5.2): per-unit
+average open price across the Lots still open — after a FIFO partial close it averages the
+REMAINING Lots only (worked example: 12,800/80 = 160.00, not the all-fills 155.00) —
+WITHOUT the contract multiplier `basis` bakes in — the UI renders it
 directly (e.g. a stock's "avg $155.00") without knowing the multiplier, which only TradeMath
 reads (docs/plan/slice-03-single-leg-options.md). An option Leg's `avgCost` is therefore a
 per-contract-unit premium (e.g. 500 cents = "$5.00"), matching how contracts are quoted, not
