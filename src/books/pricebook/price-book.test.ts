@@ -1,9 +1,28 @@
 import { describe, it, expect } from 'vitest'
 import { InMemoryBinding } from '@/storage/in-memory-binding'
 import { PriceBook } from './price-book'
+import type { DateRange, PricingSource, SourceObservation } from './types'
 
-function priceBook(): PriceBook {
-  return new PriceBook(new InMemoryBinding())
+function priceBook(sources: PricingSource[] = []): PriceBook {
+  return new PriceBook(new InMemoryBinding(), sources)
+}
+
+// A minimal PricingSource stub — exercises PriceBook's own seam (routing,
+// storing, error reporting) without any real adapter's HTTP concerns.
+function stubSource(opts: {
+  id: string
+  supports: (instrument: string) => boolean
+  observations?: SourceObservation[]
+  error?: Error
+}): PricingSource {
+  return {
+    id: opts.id,
+    supports: opts.supports,
+    fetch: async (_instruments: string[], _range: DateRange) => {
+      if (opts.error) throw opts.error
+      return opts.observations ?? []
+    },
+  }
 }
 
 describe('PriceBook.record / markSet / series', () => {
@@ -179,5 +198,59 @@ describe('PriceBook.fetch (no adapters)', () => {
     const missing = await pb.missingMarks(['AAPL'], { from: '2026-07-13', to: '2026-07-15' })
     expect(missing).toHaveLength(3)
     expect(await pb.lastMarked(['AAPL'])).toEqual(new Map([['AAPL', undefined]]))
+  })
+})
+
+describe('PriceBook.fetch (with a registered adapter)', () => {
+  it('routes a supported instrument to the source and stores its observations as fetched Marks', async () => {
+    const source = stubSource({
+      id: 'test-source',
+      supports: () => true,
+      observations: [{ instrument: 'AAPL', date: '2026-07-13', close: 31731 }],
+    })
+    const pb = priceBook([source])
+
+    const report = await pb.fetch(['AAPL'], { from: '2026-07-13', to: '2026-07-13' })
+
+    expect(report).toEqual({
+      stored: [{ instrument: 'AAPL', date: '2026-07-13', price: 31731, origin: 'fetched' }],
+      skippedManual: [],
+      unsupported: [],
+      errors: [],
+    })
+    const marks = await pb.markSet(['AAPL'], '2026-07-13')
+    expect(marks.get('AAPL')).toEqual({
+      instrument: 'AAPL',
+      date: '2026-07-13',
+      price: 31731,
+      origin: 'fetched',
+    })
+  })
+
+  it('reports an instrument no registered source supports as unsupported', async () => {
+    const source = stubSource({ id: 'test-source', supports: () => false })
+    const pb = priceBook([source])
+
+    const report = await pb.fetch(['AAPL'], { from: '2026-07-13', to: '2026-07-13' })
+
+    expect(report).toEqual({ stored: [], skippedManual: [], unsupported: ['AAPL'], errors: [] })
+  })
+
+  it('reports a source error with its id and message, storing nothing for that instrument', async () => {
+    const source = stubSource({
+      id: 'test-source',
+      supports: () => true,
+      error: new Error('API key expired'),
+    })
+    const pb = priceBook([source])
+
+    const report = await pb.fetch(['AAPL'], { from: '2026-07-13', to: '2026-07-13' })
+
+    expect(report).toEqual({
+      stored: [],
+      skippedManual: [],
+      unsupported: [],
+      errors: [{ instrument: 'AAPL', source: 'test-source', message: 'API key expired' }],
+    })
   })
 })

@@ -13,10 +13,12 @@ const SETTINGS = 'settings'
 // caller-supplies-rate).
 export interface Settings {
   riskFreeRate: number
+  pricingSources: { id: string; enabled: boolean; apiKey?: string }[]
 }
 
 const DEFAULT_SETTINGS: Settings = {
   riskFreeRate: 0.04,
+  pricingSources: [],
 }
 
 interface StoredSetting<K extends keyof Settings> {

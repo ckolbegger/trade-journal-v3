@@ -8,7 +8,7 @@ Design references: [pricebook.md](../design/pricebook.md) (fetch semantics, Fetc
 
 ---
 
-## ☐ Story S4.1 — First pricing source
+## ☑ Story S4.1 — First pricing source
 
 > As a trader, I want to enable a market-data provider with my API key, so that the app can fetch closing prices for my tickers and contracts instead of me typing them.
 
@@ -16,10 +16,21 @@ Design references: [pricebook.md](../design/pricebook.md) (fetch semantics, Fetc
 
 **Provider selection is this story's first task, with acceptance criteria** (ADR 0008 defers the choice to here): must serve end-of-day closes for US stocks *and individual option contracts*; callable from a static-hosted browser app (CORS-permissive or key-in-query); free or cheap tier adequate for tens of instruments/day. Evaluate against the trader's actual holdings before wiring.
 
+**Provider decision (2026-07-17): marketdata.app** — criteria verified live by curl with a browser `Origin` header (no API key needed; their keyless trial serves real data):
+
+- ✓ **EOD stock closes**: `GET https://api.marketdata.app/v1/stocks/candles/D/AAPL/?from=2026-07-13&to=2026-07-16` → `{"s":"ok","t":[...4 days...],"c":[317.31,314.86,327.5,333.26],...}`
+- ✓ **Individual option contracts, LEAPs included**: `GET https://api.marketdata.app/v1/options/quotes/AAPL271217C00300000/?from=2026-07-13&to=2026-07-16` → per-day `last`/`mid`/`updated` for a Dec-2027 call (522 DTE) — the trader's actual instrument shape
+- ✓ **Browser-callable from static hosting**: `access-control-allow-origin: *` on both endpoints; auth is `?token=` in the query string — no custom headers, no preflight
+- ✓ **Free tier adequate**: Free Forever plan = 100 requests/day; `from`/`to` range queries mean gap recovery costs **one request per instrument regardless of gap length**, so tens of instruments per review fits comfortably
+- **Mapping**: stock close = candle `c` per day (`t` is a unix timestamp per element); option close = quote `last` per day (`updated` is the day), falling back to `mid` when `last` is null, omitting the date when both are null. `s:"no_data"` or an absent date = no observation (the feed is the calendar). Adapter converts our option InstrumentKey (`AAPL 2027-12-17 C 300`) to the OCC symbol (`AAPL271217C00300000`).
+- **Live findings from T6 (2026-07-18), all curl-verified**: (1) an entirely-empty range returns **HTTP 404 with body `{"s":"no_data","prevTime":null,"nextTime":null}`** — `no_data` must be recognized *before* any non-2xx status is treated as an error; (2) an **unknown symbol is indistinguishable from a closed-market range** (same 404/`no_data`) — the provider offers no distinct unknown-symbol error, so unknown symbols simply produce zero observations and stay in `missingMarks`; (3) **AAPL is the keyless trial symbol** (real data for any token, HTTP 203) — never use it to validate a key; a bad key on any other symbol returns 401 `{"s":"error","errmsg":"Invalid token."}`; (4) HTTP/2 responses carry an empty `statusText`, so provider errors without `errmsg` need an explicit `HTTP <status>` fallback message.
+
+**Runner-up: Polygon.io** — CORS-permissive (reflects `Origin`, verified), `?apiKey=` in query, free Basic tiers cover stock *and* option EOD via `/v2/aggs/ticker/{T}/range/1/day/{from}/{to}` (options use `O:` + OCC ticker). Passed over because the 5 req/min free-tier throttle would force adapter-side pacing, and the data path could not be verified without creating an account — marketdata.app was verified end-to-end keyless. Switch here if marketdata's 100/day ever becomes the constraint.
+
 ### Tasks
 
-- [ ] **S4.1.T1 — Choose the provider.** Document the choice and the runner-up in this file (edit it) with the criteria above checked off for real (curl the endpoints for a stock close and an option-contract close from a browser context).
-- [ ] **S4.1.T2 — Adapter + registration.**
+- [x] **S4.1.T1 — Choose the provider.** Document the choice and the runner-up in this file (edit it) with the criteria above checked off for real (curl the endpoints for a stock close and an option-contract close from a browser context).
+- [x] **S4.1.T2 — Adapter + registration.**
 
   ```
   describe "<Provider>Adapter"
@@ -27,13 +38,14 @@ Design references: [pricebook.md](../design/pricebook.md) (fetch semantics, Fetc
   - it declines instruments it cannot serve (supports() false)
   - it maps provider responses to SourceObservations (instrument, date, close)
   - it returns observations only for dates the provider returned (closed days absent, never zero-filled)
-  - it surfaces provider errors as thrown typed errors (bad key, rate limit, unknown symbol)
+  - it surfaces provider errors as thrown typed errors (bad key, rate limit)
+  - it maps an unknown symbol to zero observations (the provider answers no_data, not an error — see Live findings)
   describe "composition root"
   - it registers enabled adapters in Settings priority order
   - it registers nothing when no source is enabled (Slice 1 no-op path unchanged)
   ```
 
-- [ ] **S4.1.T3 — Settings UI.** Pricing-sources section: enable/disable, API-key entry, and **Test this source** — runs a one-instrument `PriceBook.fetch` and renders the `FetchReport` (success, or the error with its reason).
+- [x] **S4.1.T3 — Settings UI.** Pricing-sources section: enable/disable, API-key entry, and **Test this source** — runs a one-instrument `PriceBook.fetch` and renders the `FetchReport` (success, or the error with its reason).
 
   ```
   describe "PricingSettings"
@@ -42,9 +54,9 @@ Design references: [pricebook.md](../design/pricebook.md) (fetch semantics, Fetc
   - it shows a bad key's error message verbatim
   ```
 
-- [ ] **S4.1.T4 — Integration tests**: adapter against recorded fixtures (no live calls in CI) — fetch a 3-day range → observations mapped; error fixture → typed error.
-- [ ] **S4.1.T5 — Playwright e2e** (`e2e/s4-1-source.spec.ts`): enable source with a fake key against a mocked endpoint → test-source shows a close.
-- [ ] **S4.1.T6 — Browser verification.** With a real API key in a real browser: test-source returns a real close for a held ticker and a held contract; a wrong key shows its reason. All suites green.
+- [x] **S4.1.T4 — Integration tests**: adapter against recorded fixtures (no live calls in CI) — fetch a 3-day range → observations mapped; error fixture → typed error.
+- [x] **S4.1.T5 — Playwright e2e** (`e2e/s4-1-source.spec.ts`): enable source with a fake key against a mocked endpoint → test-source shows a close.
+- [x] **S4.1.T6 — Browser verification.** With a real API key in a real browser: test-source returns a real close for a held ticker and a held contract; a wrong key shows its reason. All suites green.
 
 ---
 

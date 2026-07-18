@@ -301,4 +301,19 @@ describe('Workspace.settings', () => {
     await workspace.settings.set('riskFreeRate', 0.05)
     expect(await workspace.settings.get('riskFreeRate')).toBe(0.05)
   })
+
+  it('returns an empty pricingSources list before any set', async () => {
+    const { workspace } = makeWorkspace()
+    expect(await workspace.settings.get('pricingSources')).toEqual([])
+  })
+
+  it('round-trips a pricingSources set value', async () => {
+    const { workspace } = makeWorkspace()
+    await workspace.settings.set('pricingSources', [
+      { id: 'marketdata.app', enabled: true, apiKey: 'abc123' },
+    ])
+    expect(await workspace.settings.get('pricingSources')).toEqual([
+      { id: 'marketdata.app', enabled: true, apiKey: 'abc123' },
+    ])
+  })
 })

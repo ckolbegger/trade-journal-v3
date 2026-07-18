@@ -1,12 +1,29 @@
 import { useEffect, useState } from 'react'
 import { useTradeBook } from '../tradeBookContext'
 import { useWorkspace } from '../workspaceContext'
+import { usePriceBook } from '../priceBookContext'
 import { btnPrimary, btnSecondary, card, field, heading, input, num, subheading } from '../styles'
+import { centsToDollars, daysAgoISO, todayISO } from '../format'
 import type { Account, Institution } from '@/books/tradebook/types'
+import { MARKETDATA_SOURCE_ID } from '@/books/pricebook/adapters/marketdata-adapter'
+
+// The one instrument "Test this source" checks connectivity against — a
+// smoke test, not a Trade's actual instrument (docs/plan/slice-04-automated-pricing.md,
+// S4.1.T3). Deliberately not AAPL: marketdata.app serves AAPL as its keyless
+// trial symbol (real data for ANY token, even a bad one), so it can't actually
+// validate a key — a liquid non-trial ticker is required for the test to fail
+// on a bad key instead of silently "succeeding".
+const TEST_INSTRUMENT = 'MSFT'
+
+// A trailing window, not just today: a same-day-only test is a false negative
+// every weekend/holiday (a valid key would show "no price" and look broken).
+// The latest close in the window is what's shown, with its date.
+const TEST_WINDOW_DAYS = 6
 
 export function SettingsPage() {
   const tradeBook = useTradeBook()
   const workspace = useWorkspace()
+  const priceBook = usePriceBook()
   const [institutions, setInstitutions] = useState<Institution[]>([])
   const [accounts, setAccounts] = useState<Account[]>([])
   const [institutionName, setInstitutionName] = useState('')
@@ -15,6 +32,14 @@ export function SettingsPage() {
   // Displayed as a whole percentage ("4" for 4%), stored as the decimal
   // TradeMath.impliedVol reads (workspace.md's Settings.riskFreeRate).
   const [riskFreeRatePct, setRiskFreeRatePct] = useState('')
+  const [sourceEnabled, setSourceEnabled] = useState(false)
+  const [apiKey, setApiKey] = useState('')
+  const [sourceSaved, setSourceSaved] = useState(false)
+  const [testResult, setTestResult] = useState<{
+    close?: string
+    date?: string
+    error?: string
+  } | null>(null)
 
   useEffect(() => {
     let active = true
@@ -26,9 +51,53 @@ export function SettingsPage() {
     }
   }, [workspace])
 
+  useEffect(() => {
+    let active = true
+    void workspace.settings.get('pricingSources').then((sources) => {
+      if (!active) return
+      const config = sources.find((s) => s.id === MARKETDATA_SOURCE_ID)
+      if (config) {
+        setSourceEnabled(config.enabled)
+        setApiKey(config.apiKey ?? '')
+      }
+    })
+    return () => {
+      active = false
+    }
+  }, [workspace])
+
   async function saveRiskFreeRate() {
     if (riskFreeRatePct.trim() === '') return
     await workspace.settings.set('riskFreeRate', Number(riskFreeRatePct) / 100)
+  }
+
+  async function savePricingSource() {
+    setSourceSaved(false)
+    await workspace.settings.set('pricingSources', [
+      { id: MARKETDATA_SOURCE_ID, enabled: sourceEnabled, apiKey },
+    ])
+    // Adapter registration reads Settings once, at startup (bootstrap.ts) — a
+    // saved change needs a reload to take effect; this confirms the save
+    // itself completed before the trader (or a test) reloads.
+    setSourceSaved(true)
+  }
+
+  async function testPricingSource() {
+    setTestResult(null)
+    const report = await priceBook.fetch([TEST_INSTRUMENT], {
+      from: daysAgoISO(TEST_WINDOW_DAYS),
+      to: todayISO(),
+    })
+    if (report.errors.length > 0) {
+      setTestResult({ error: report.errors[0].message })
+    } else if (report.stored.length > 0) {
+      const latest = report.stored.reduce((a, b) => (a.date > b.date ? a : b))
+      setTestResult({ close: centsToDollars(latest.price), date: latest.date })
+    } else {
+      setTestResult({
+        error: `No price returned for ${TEST_INSTRUMENT} in the last ${TEST_WINDOW_DAYS + 1} days.`,
+      })
+    }
   }
 
   async function reload() {
@@ -135,6 +204,42 @@ export function SettingsPage() {
             Add account
           </button>
         </div>
+      </div>
+
+      <div className={`${card} space-y-3`}>
+        <h3 className={subheading}>Pricing sources</h3>
+        <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+          <input
+            type="checkbox"
+            checked={sourceEnabled}
+            onChange={(e) => setSourceEnabled(e.target.checked)}
+          />
+          Enable marketdata.app
+        </label>
+        <div className="flex flex-wrap items-end gap-2">
+          <label className={`${field} flex-1`}>
+            API key
+            <input
+              className={input}
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+            />
+          </label>
+          <button type="button" className={btnSecondary} onClick={() => void savePricingSource()}>
+            Save source
+          </button>
+          <button type="button" className={btnSecondary} onClick={() => void testPricingSource()}>
+            Test this source
+          </button>
+        </div>
+        {sourceSaved && <p className="text-sm text-slate-500">Saved.</p>}
+        {testResult && (
+          <p className={`text-sm ${testResult.error ? 'text-red-700' : 'text-slate-700'}`}>
+            {testResult.error ??
+              `${TEST_INSTRUMENT} close (${testResult.date}): $${testResult.close}`}
+          </p>
+        )}
       </div>
 
       <div className={`${card} space-y-3`}>

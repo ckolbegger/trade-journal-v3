@@ -8,7 +8,7 @@ import type {
   Money,
 } from '@/domain/trademath/types'
 import { datesInRange } from '@/domain/dates'
-import type { DateRange, FetchReport, RecordResult } from './types'
+import type { DateRange, FetchReport, PricingSource, RecordResult } from './types'
 
 const MARKS = 'marks'
 
@@ -44,7 +44,13 @@ function inRange(date: ISODate, range?: DateRange): boolean {
 }
 
 export class PriceBook {
-  constructor(private binding: StorageBinding) {}
+  // Sources are injected in priority order (docs/design/pricebook.md) — the
+  // composition root builds this list from Settings.pricingSources
+  // (bootstrap.ts). Empty by default: the Slice 1 no-op fetch path.
+  constructor(
+    private binding: StorageBinding,
+    private sources: PricingSource[] = [],
+  ) {}
 
   async record(
     instrument: InstrumentKey,
@@ -67,13 +73,49 @@ export class PriceBook {
     return marks
   }
 
-  // Collects Marks from the registered PricingSources. No sources are registered
-  // this slice, so every instrument is unsupported, nothing is stored, and the
-  // report routes the whole range to the manual per-Trade prompts. The UI calls
-  // this unconditionally — the sources-vs-manual branch lives here, never there
-  // (docs/design/review.md). PricingSource adapters arrive in Slice 4.
-  async fetch(instruments: InstrumentKey[], _range: DateRange): Promise<FetchReport> {
-    return { stored: [], skippedManual: [], unsupported: [...instruments], errors: [] }
+  // Collects Marks from the registered PricingSources — the first source whose
+  // supports() accepts an instrument handles it (priority order). An instrument
+  // no registered source accepts is `unsupported`; a source that throws reports
+  // a per-instrument error. Slice 4.1 implements only what "Test this source"
+  // needs: routing, storing what comes back as 'fetched', and surfacing thrown
+  // errors — manual-sticky / re-fetch-replaces / missingMarks-as-remainder
+  // orchestration is Slice 4.2 (docs/plan/slice-04-automated-pricing.md).
+  async fetch(instruments: InstrumentKey[], range: DateRange): Promise<FetchReport> {
+    const stored: Mark[] = []
+    const unsupported: InstrumentKey[] = []
+    const errors: { instrument: InstrumentKey; source: string; message: string }[] = []
+
+    for (const instrument of instruments) {
+      const source = this.sources.find((s) => s.supports(instrument))
+      if (!source) {
+        unsupported.push(instrument)
+        continue
+      }
+      try {
+        const observations = await source.fetch([instrument], range)
+        for (const obs of observations) {
+          const mark: Mark = {
+            instrument: obs.instrument,
+            date: obs.date,
+            price: obs.close,
+            origin: 'fetched',
+          }
+          await this.binding.put<StoredMark>(MARKS, {
+            id: markId(obs.instrument, obs.date),
+            ...mark,
+          })
+          stored.push(mark)
+        }
+      } catch (err) {
+        errors.push({
+          instrument,
+          source: source.id,
+          message: err instanceof Error ? err.message : String(err),
+        })
+      }
+    }
+
+    return { stored, skippedManual: [], unsupported, errors }
   }
 
   // The unpriced (instrument, date) rows in a range — the authoritative remainder

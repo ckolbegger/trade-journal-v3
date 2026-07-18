@@ -21,6 +21,11 @@ export function todayISO(): string {
   return toISODate(new Date())
 }
 
+// `days` calendar days before today, in the trader's local date.
+export function daysAgoISO(days: number): string {
+  return toISODate(new Date(Date.now() - days * 24 * 60 * 60 * 1000))
+}
+
 // An Execution's trading date, read back from its epoch-ms timestamp.
 export function timestampToISODate(timestamp: number): string {
   return toISODate(new Date(timestamp))
