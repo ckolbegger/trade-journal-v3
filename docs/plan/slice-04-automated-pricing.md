@@ -122,3 +122,39 @@ Design references: [pricebook.md](../design/pricebook.md) (fetch semantics, Fetc
 - [x] **S4.3.T2 — Integration test**: refresh over Dexie with fixture adapter updates the Mark and the derived numbers; manual-sticky case included.
 - [x] **S4.3.T3 — Playwright e2e** (`e2e/s4-3-refresh.spec.ts`): mocked source; refresh updates the dashboard numbers.
 - [x] **S4.3.T4 — Browser verification.** Live refresh on a real Trade: numbers move to today's close; a manually typed mid survives a second refresh. All suites green.
+
+---
+
+## ☐ Story S4.4 — Quiet weekends & source visibility *(added 2026-07-19 — slice re-opened after live use surfaced two collection-step gaps; the `slice-4-complete` tag remains the historical rollback point for S4.1–S4.3)*
+
+> As a trader, I want my review to stop asking for prices on days the market was closed, and to tell me plainly when no pricing source is set up, so that the collection step only ever shows work that's real.
+
+**Why (observed in live use, 2026-07-19):** (1) `missingMarks` enumerates every calendar date, so Saturdays and Sundays prompt as dead rows forever — even with a working source — contradicting review.md's own "a closed Tuesday simply returns no observations — the feed is the calendar, nobody is asked." (2) A workspace with no pricing source configured silently routes *everything* to manual prompts; the trader cannot distinguish "source failed" from "no source set up" (this is exactly how the trader experienced it).
+
+**Decided in this story:** v1 gains a **weekend-only calendar** — Saturdays and Sundays are never marks-needed, at the enumeration source of truth, for fetched and manual instruments alike. Market holidays still prompt (rare, skippable); the full feed-is-the-calendar treatment (source-observed non-trading days) arrives with Slice 17's Daily Bars. pricebook.md's "there is no trading calendar" bullet is amended (dated) by this story.
+
+**Deep interfaces**: the weekend filter in `PriceBook.missingMarks` (and its follow-through in `Valuations.marksNeeded` ranges); a no-source signal surfaced to the review collection screen (seam is the implementer's call — flag it; the FetchReport's everything-unsupported shape is currently indistinguishable from no-adapters).
+
+### Tasks
+
+- [ ] **S4.4.T1 — Weekend-quiet enumeration.**
+
+  ```
+  describe "PriceBook.missingMarks (weekend-quiet)"
+  - it never lists a Saturday or Sunday
+  - it still lists weekday gaps in the same range
+  describe "Valuations.marksNeeded (weekend-quiet)"
+  - it needs only Monday when a Friday Mark exists and the review runs Monday
+  ```
+
+- [ ] **S4.4.T2 — No-source notice.** The review collection screen states "no pricing source configured" with a pointer to Settings when zero sources are enabled; silent no-op is gone.
+
+  ```
+  describe "ReviewCollection (no source)"
+  - it shows a set-up-a-source notice when no pricing source is enabled
+  - it shows no notice when a source is enabled
+  ```
+
+- [ ] **S4.4.T3 — Integration tests**: Friday Mark → Monday review over Dexie needs Monday only (no weekend rows anywhere in the agenda or walk); a no-source workspace shows the notice, a sourced one doesn't.
+- [ ] **S4.4.T4 — Playwright e2e** (`e2e/s4-4-weekend-quiet.spec.ts`): a review spanning a weekend gap prompts no Saturday/Sunday rows; the no-source notice appears on an unconfigured workspace.
+- [ ] **S4.4.T5 — Browser verification.** Real browser on the live workspace: a review after this weekend prompts no Sat/Sun rows and shows no dead prompts for fetched instruments; the notice appears in a fresh keyless context and disappears once the key is saved. All suites green.
