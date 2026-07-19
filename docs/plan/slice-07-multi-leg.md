@@ -72,7 +72,7 @@ Design references: [trademath.md](../design/trademath.md) (structural extremes, 
 
 ---
 
-## ☐ Story S7.2 — Vertical spread
+## ☑ Story S7.2 — Vertical spread
 
 > As a trader, I want a credit spread tracked as one defined-risk structure, so that the app tells me what staying in actually risks — "risking $950 to make $50" — not what I collected once upon a time.
 
@@ -107,7 +107,7 @@ Design references: [trademath.md](../design/trademath.md) (structural extremes, 
 
 - [ ] **S7.2.T3 — Integration tests**: spread lifecycle over Dexie — both fills same day → marks → numbers → buy back both legs → closed, realized $108.70 + remaining move.
 - [ ] **S7.2.T4 — Playwright e2e** (`e2e/s7-2-spread.spec.ts`): worked example numbers on the dashboard.
-- [ ] **S7.2.T5 — Browser verification.** Real-browser spread lifecycle including one review walk (two contract Marks + underlying prompt once); numbers verified against the table. All suites green.
+- [x] **S7.2.T5 — Browser verification.** Real-browser spread lifecycle including one review walk (two contract Marks + underlying prompt once); numbers verified against the table. All suites green.
 
 ---
 

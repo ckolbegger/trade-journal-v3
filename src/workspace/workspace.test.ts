@@ -11,6 +11,7 @@ import {
   LONG_PUT_STRATEGY_ID,
   CASH_SECURED_PUT_STRATEGY_ID,
   COVERED_CALL_STRATEGY_ID,
+  BULL_PUT_SPREAD_STRATEGY_ID,
   PLAN_ENTRY_TYPE_ID,
   CLOSE_ENTRY_TYPE_ID,
   REVIEW_ENTRY_TYPE_ID,
@@ -46,6 +47,7 @@ describe('Workspace.ensureSeeded — strategies', () => {
       'Long Put',
       'Cash-Secured Put',
       'Covered Call',
+      'Bull Put Spread',
     ])
     const longStock = strategies.find((s) => s.id === LONG_STOCK_STRATEGY_ID)
     expect(longStock?.name).toBe('Long Stock')
@@ -286,7 +288,7 @@ describe('seeding (extension)', () => {
     expect(coveredCall?.name).toBe('Covered Call')
     expect(coveredCall?.legs).toEqual([
       { side: 'buy', instrumentKind: 'stock' },
-      { side: 'sell', instrumentKind: 'option', optionType: 'call' },
+      { side: 'sell', instrumentKind: 'option', optionType: 'call', tbdAllowed: true },
     ])
     expect(coveredCall?.exitLevels).toEqual([
       { side: 'stop', kind: 'underlyingPrice' },
@@ -296,6 +298,28 @@ describe('seeding (extension)', () => {
     await workspace.ensureSeeded()
     const again = await tradeBook.registries.strategies.list()
     expect(again.filter((s) => s.id === COVERED_CALL_STRATEGY_ID)).toHaveLength(1)
+  })
+
+  it('seeds Bull Put Spread iff absent', async () => {
+    const { workspace, tradeBook } = makeWorkspace()
+    await workspace.ensureSeeded()
+
+    const strategies = await tradeBook.registries.strategies.list()
+    const bullPutSpread = strategies.find((s) => s.id === BULL_PUT_SPREAD_STRATEGY_ID)
+
+    expect(bullPutSpread?.name).toBe('Bull Put Spread')
+    expect(bullPutSpread?.legs).toEqual([
+      { side: 'sell', instrumentKind: 'option', optionType: 'put' },
+      { side: 'buy', instrumentKind: 'option', optionType: 'put' },
+    ])
+    expect(bullPutSpread?.exitLevels).toEqual([
+      { side: 'stop', kind: 'underlyingPrice' },
+      { side: 'target', kind: 'pctOfMaxProfit' },
+    ])
+
+    await workspace.ensureSeeded()
+    const again = await tradeBook.registries.strategies.list()
+    expect(again.filter((s) => s.id === BULL_PUT_SPREAD_STRATEGY_ID)).toHaveLength(1)
   })
 })
 

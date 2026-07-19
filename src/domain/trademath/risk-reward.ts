@@ -16,9 +16,11 @@ import { contractMultiplierOf } from './multiplier'
 // it is 'undefined' until the first Execution exists. A Trade-scope stop/target is
 // `underlyingPrice` (stock's own scale, or an option projected at intrinsic —
 // ADR 0009, decided in Slice 3), `structureValue` (option, its value the same
-// scale as the contract's own Mark), or `pctOfMaxProfit` (a short credit's
+// scale as the contract's own Mark), or `pctOfMaxProfit` (a credit structure's
 // buyback price at which that % of the entry credit is realized) —
-// `priceAtLevel` resolves any of them to a raw per-unit price.
+// `projectedDelta` (below) resolves `underlyingPrice`/`pctOfMaxProfit`
+// structurally over every held Leg; `priceAtLevel` resolves only
+// `structureValue`, against a single held Leg.
 //
 // Multi-leg (Slice 7): worstCaseRisk/maxReward and an `underlyingPrice` stop/
 // target project the WHOLE structure's signed value at a given underlying
@@ -28,12 +30,13 @@ import { contractMultiplierOf } from './multiplier'
 // (the short call's slope cancels the stock's as the underlying rises)
 // instead of 'unlimited', and lets a ratio write's local peak at its short
 // strike show a positive maxReward instead of the nonsense a S→0/S→∞-only
-// scan would produce (a negative "max reward"). `structureValue`/
-// `pctOfMaxProfit` stay resolved against a single held Leg (`priceAtLevel`,
-// below) — Slice 7.2 generalizes `pctOfMaxProfit` to a spread's net credit;
-// not needed here. `original` uses the SAME projection machinery over the
-// Trade's entry basis (every Leg's opening fills) instead of today's Marks —
-// one formula, two inputs.
+// scan would produce (a negative "max reward"). `pctOfMaxProfit` resolves
+// structurally too (Slice 7.2, `projectedDelta` below) — a spread's max
+// profit is its NET entry credit, not one Leg's own credit. `structureValue`
+// stays resolved against a single held Leg (`priceAtLevel`, below) — no
+// multi-leg structureValue Exit Level exists yet. `original` uses the SAME
+// projection machinery over the Trade's entry basis (every Leg's opening
+// fills) instead of today's Marks — one formula, two inputs.
 
 // An option's intrinsic value at a given underlying price — the only "worth"
 // TradeMath ever assigns an option away from its own Mark (no pricing model,
@@ -44,23 +47,17 @@ function intrinsicAt(instrument: OptionInstrument, underlyingPrice: number): num
     : Math.max(underlyingPrice - instrument.strike, 0)
 }
 
-// Resolves an ExitLevel to a raw per-unit price, before qty/multiplier/sign are
-// applied. `underlyingPrice` on a stock Leg and `structureValue` on any Leg are
-// already expressed at that per-unit scale; `underlyingPrice` on an option Leg
-// intrinsic-projects the underlying price instead (decided in Slice 3: no
-// pricing model exists to value time). `pctOfMaxProfit` is a short-credit
-// concept only (slice-10: credit × (1 − pct/100)) — max profit is the entry
-// credit, so pct% of it is realized by buying back at avgEntry × (1 − pct/100);
-// on a long Leg it resolves to nothing (undefined), never an invented price.
+// Resolves a `structureValue` ExitLevel to a raw per-unit price, before
+// qty/multiplier/sign are applied — already expressed at that per-unit scale
+// (the contract's own Mark scale). `underlyingPrice` and `pctOfMaxProfit`
+// resolve structurally instead (`projectedDelta`, below, over the WHOLE
+// structure) — this only ever sees `structureValue`, the one kind that still
+// resolves against a single held Leg (no multi-leg structureValue Exit Level
+// exists yet).
 function priceAtLevel(
-  level: ExitLevel,
+  level: Exclude<ExitLevel, { kind: 'pctOfMaxProfit' }>,
   leg: LegFacts,
-  avgEntry: number,
-  side: 'long' | 'short',
 ): number | undefined {
-  if (level.kind === 'pctOfMaxProfit') {
-    return side === 'short' ? avgEntry * (1 - level.pct / 100) : undefined
-  }
   if (level.kind === 'underlyingPrice' && leg.instrument.kind === 'option') {
     return intrinsicAt(leg.instrument, level.price)
   }
@@ -223,10 +220,18 @@ function structuralExtremes(legs: LegBasis[]): { min: number; max: number } {
 
 // Projects an ExitLevel's risk or reward delta against `legs`, from
 // `currentValue` (today's Marks for the ongoing anchors, or the entry
-// structure value for `original`) — the one formula both share. `underlyingPrice`
-// projects the WHOLE structure at that price; `structureValue`/`pctOfMaxProfit`
-// still resolve against a single Leg (Slice 7.2 generalizes `pctOfMaxProfit`
-// to a spread's net credit).
+// structure value for `original`) — the one formula both share.
+// `underlyingPrice` projects the WHOLE structure at that price.
+// `pctOfMaxProfit` resolves structurally too (Slice 7.2): a structure's max
+// profit is its entry credit — `entryStructureValue` summed across every
+// held Leg, not one Leg's own avgEntry — realized when the structure is
+// bought back at 0; pct% of it is realized at `entry * (1 - pct/100)` (the
+// SAME formula a single short Leg already used, since a 1-Leg structure's
+// entryStructureValue reduces to exactly that Leg's signed entry value). A
+// net-debit (or flat) structure has no credit to take a percentage of, same
+// as a single long Leg. `structureValue` still resolves against a single
+// held Leg (`priceAtLevel`) — no multi-leg structureValue Exit Level exists
+// yet to generalize against.
 function projectedDelta(
   legs: LegBasis[],
   level: ExitLevel,
@@ -236,8 +241,11 @@ function projectedDelta(
   let projected: number | undefined
   if (level.kind === 'underlyingPrice') {
     projected = structureValueAt(legs, level.price)
+  } else if (level.kind === 'pctOfMaxProfit') {
+    const entry = entryStructureValue(legs)
+    if (entry < 0) projected = entry * (1 - level.pct / 100)
   } else if (legs.length === 1) {
-    const price = priceAtLevel(level, legs[0].leg, legs[0].avgEntry, legs[0].side)
+    const price = priceAtLevel(level, legs[0].leg)
     if (price !== undefined) {
       const sign = legs[0].side === 'short' ? -1 : 1
       const multiplier = contractMultiplierOf(legs[0].leg.instrument)

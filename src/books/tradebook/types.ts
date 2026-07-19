@@ -42,10 +42,16 @@ export interface IdeaSource {
 // Exit Levels the plan form asks for. TradeMath never reads Strategy — it stays a
 // TradeBook-owned analytics label. `optionType` is present iff instrumentKind is
 // 'option' (the option leg's call/put is fixed by the Strategy, not asked).
+// `tbdAllowed` marks an option leg whose strike/expiration the plan form may
+// leave blank — a LEGGING leg, completed by its later fill, never by editing
+// the Plan (Slice 7). Only a legging Strategy sets it (Covered Call's call);
+// a Strategy whose legs are all concrete at plan time (Bull Put Spread) never
+// does, so the plan form requires strike/expiration on every leg instead.
 export interface StrategyLegTemplate {
   side: Side
   instrumentKind: 'stock' | 'option'
   optionType?: 'call' | 'put'
+  tbdAllowed?: boolean
 }
 
 export interface StrategyExitTemplate {

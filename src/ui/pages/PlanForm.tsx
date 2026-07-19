@@ -39,11 +39,14 @@ export function PlanForm() {
 
   const [thesis, setThesis] = useState('')
   const [ticker, setTicker] = useState('')
-  // Shared by the (at most one) option leg every current Strategy template
-  // has. S7.2: a spread plans TWO option legs — this state will need to
-  // become per-leg then.
+  // Expiration is LINKED across every option leg a template plans (a spread's
+  // two legs share one expiration, S7.2) — one input, applied to every option
+  // leg at confirm time. Strike is per-leg (a spread's legs strike DIFFER),
+  // mirroring qtyByLeg below; `strike` alone still serves a single-option-leg
+  // template (Long Call, Covered Call's call).
   const [expiration, setExpiration] = useState('')
   const [strike, setStrike] = useState('')
+  const [strikeByLeg, setStrikeByLeg] = useState<Record<number, string>>({})
   const [qty, setQty] = useState('')
   const [qtyByLeg, setQtyByLeg] = useState<Record<number, string>>({})
   const [stop, setStop] = useState('')
@@ -72,12 +75,15 @@ export function PlanForm() {
 
   const strategy = strategies.find((s) => s.id === strategyId)
   const legs = strategy?.legs ?? []
-  // A multi-leg template (covered call: buy stock + sell call) legs in over
-  // time — its option leg's strike/expiration may be left TBD (decided in
-  // Slice 7), completed later by the fill, not this form. A single-leg
-  // template's option details stay required (unchanged from Slice 3).
+  // A multi-leg template (covered call: buy stock + sell call) plans quantity
+  // and strike per-leg. TBD-ability is a SEPARATE, per-leg, template-driven
+  // concern (`tbdAllowed`) — only a legging leg (the Covered Call's call) may
+  // be left blank, completed later by its fill, not this form; a template
+  // whose legs are all concrete at plan time (Bull Put Spread) requires every
+  // leg's strike, and expiration, up front (decided in Slice 7.2 — matching
+  // two same-type legs by instrument identity depends on both being concrete).
   const isMultiLeg = legs.length > 1
-  const isOption = legs.some((l) => l.instrumentKind === 'option')
+  const requiresExpiration = legs.some((l) => l.instrumentKind === 'option' && !l.tbdAllowed)
   const stopTemplate = strategy?.exitLevels.find((e) => e.side === 'stop')
   const targetTemplate = strategy?.exitLevels.find((e) => e.side === 'target')
   const asksStop = stopTemplate !== undefined
@@ -89,12 +95,24 @@ export function PlanForm() {
     else setQty(value)
   }
 
+  const strikeFor = (i: number): string => (isMultiLeg ? (strikeByLeg[i] ?? '') : strike)
+  const setStrikeFor = (i: number, value: string): void => {
+    if (isMultiLeg) setStrikeByLeg((prev) => ({ ...prev, [i]: value }))
+    else setStrike(value)
+  }
+  // The expiration input renders once, on the FIRST option leg — its value
+  // drives every option leg (linked expiration, S7.2).
+  const firstOptionLegIndex = legs.findIndex((l) => l.instrumentKind === 'option')
+
   const canConfirm =
     Boolean(accountId) &&
     thesis.trim().length > 0 &&
     ticker.trim().length > 0 &&
     legs.every((_, i) => Number(qtyFor(i)) > 0) &&
-    (!isOption || isMultiLeg || (expiration.trim().length > 0 && strike.trim().length > 0)) &&
+    (!requiresExpiration || expiration.trim().length > 0) &&
+    legs.every(
+      (l, i) => l.instrumentKind !== 'option' || l.tbdAllowed || strikeFor(i).trim().length > 0,
+    ) &&
     (!asksStop || stop.trim().length > 0) &&
     (!asksTarget || target.trim().length > 0)
 
@@ -148,7 +166,7 @@ export function PlanForm() {
               ticker: tickerUpper,
               type: l.optionType!,
               ...(expiration.trim() ? { expiration } : {}),
-              ...(strike.trim() ? { strike: dollarsToCents(strike) } : {}),
+              ...(strikeFor(i).trim() ? { strike: dollarsToCents(strikeFor(i)) } : {}),
             }
           : { kind: 'stock' as const, ticker: tickerUpper },
     }))
@@ -238,28 +256,32 @@ export function PlanForm() {
             )}
             {l.instrumentKind === 'option' && (
               <>
-                <label className={field}>
-                  Expiration{isMultiLeg ? ' (optional — TBD until the fill)' : ''}
-                  <input
-                    type="date"
-                    className={input}
-                    value={expiration}
-                    onChange={(e) => setExpiration(e.target.value)}
-                  />
-                </label>
-                {isMultiLeg && !expiration.trim() && (
-                  <p className="text-xs text-slate-500">Expiration TBD — set at the fill</p>
+                {i === firstOptionLegIndex && (
+                  <>
+                    <label className={field}>
+                      Expiration{!requiresExpiration ? ' (optional — TBD until the fill)' : ''}
+                      <input
+                        type="date"
+                        className={input}
+                        value={expiration}
+                        onChange={(e) => setExpiration(e.target.value)}
+                      />
+                    </label>
+                    {!requiresExpiration && !expiration.trim() && (
+                      <p className="text-xs text-slate-500">Expiration TBD — set at the fill</p>
+                    )}
+                  </>
                 )}
                 <label className={field}>
-                  Strike{isMultiLeg ? ' (optional — TBD until the fill)' : ''}
+                  Strike{l.tbdAllowed ? ' (optional — TBD until the fill)' : ''}
                   <input
                     className={`${input} ${num}`}
-                    value={strike}
-                    onChange={(e) => setStrike(e.target.value)}
+                    value={strikeFor(i)}
+                    onChange={(e) => setStrikeFor(i, e.target.value)}
                     inputMode="decimal"
                   />
                 </label>
-                {isMultiLeg && !strike.trim() && (
+                {l.tbdAllowed && !strikeFor(i).trim() && (
                   <p className="text-xs text-slate-500">Strike TBD — set at the fill</p>
                 )}
               </>

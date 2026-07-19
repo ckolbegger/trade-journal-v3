@@ -42,12 +42,21 @@ function knownInstrument(instrument: PlannedLeg['instrument']): Instrument | und
   }
 }
 
-// Which existing Leg (if any) already represents a Planned Leg — matched on
-// instrument kind (+ ticker, + option type), not the exact strike/expiration,
-// since a TBD Planned Leg only knows those two. One option Leg per Planned
-// option Leg is the S7.1 assumption (a spread's two same-type legs are Slice
-// 7.2's problem).
+// Which existing Leg (if any) already represents a Planned Leg. A CONCRETE
+// Planned Leg (strike/expiration known — `knownInstrument`) names its
+// instrument exactly, so it matches on the exact InstrumentKey — this is
+// what disambiguates a spread's two same-type option legs (S7.2: a bull put
+// spread's short 100 put and long 90 put are both "option XYZ put", but
+// distinct strikes make distinct keys). A TBD Planned Leg only knows kind +
+// ticker + option type, so it falls back to matching on those alone — the
+// S7.1 covered call's single TBD call leg is the only Plan shape that needs
+// this looser match today.
 function matchingLeg(trade: TradeRecord, pl: PlannedLeg): LegFacts | undefined {
+  const known = knownInstrument(pl.instrument)
+  if (known) {
+    const key = buildInstrumentKey(known)
+    return trade.legs.find((leg) => buildInstrumentKey(leg.instrument) === key)
+  }
   return trade.legs.find((leg) => {
     if (leg.instrument.kind !== pl.instrument.kind) return false
     if (leg.instrument.kind === 'stock') return leg.instrument.ticker === pl.instrument.ticker

@@ -135,6 +135,7 @@ export const LONG_CALL_STRATEGY_ID = 'strategy-long-call'
 export const LONG_PUT_STRATEGY_ID = 'strategy-long-put'
 export const CASH_SECURED_PUT_STRATEGY_ID = 'strategy-cash-secured-put'
 export const COVERED_CALL_STRATEGY_ID = 'strategy-covered-call'
+export const BULL_PUT_SPREAD_STRATEGY_ID = 'strategy-bull-put-spread'
 export const PLAN_ENTRY_TYPE_ID = 'entry-type-plan'
 export const CLOSE_ENTRY_TYPE_ID = 'entry-type-close'
 export const REVIEW_ENTRY_TYPE_ID = 'entry-type-trade-review'
@@ -207,11 +208,29 @@ const COVERED_CALL_STRATEGY: StrategyTemplate = {
   name: 'Covered Call',
   legs: [
     { side: 'buy', instrumentKind: 'stock' },
-    { side: 'sell', instrumentKind: 'option', optionType: 'call' },
+    { side: 'sell', instrumentKind: 'option', optionType: 'call', tbdAllowed: true },
   ],
   exitLevels: [
     { side: 'stop', kind: 'underlyingPrice' },
     { side: 'target', kind: 'underlyingPrice' },
+  ],
+}
+
+// Planned legs sell 1 put + buy 1 put (lower strike, same expiration —
+// docs/plan/slice-07-multi-leg.md) — both concrete at plan time (unlike the
+// Covered Call's TBD call leg, this is not a legging plan); asks trade-scope
+// underlyingPrice stop + pctOfMaxProfit target, resolved against the
+// structure's net credit (Slice 7.2).
+const BULL_PUT_SPREAD_STRATEGY: StrategyTemplate = {
+  id: BULL_PUT_SPREAD_STRATEGY_ID,
+  name: 'Bull Put Spread',
+  legs: [
+    { side: 'sell', instrumentKind: 'option', optionType: 'put' },
+    { side: 'buy', instrumentKind: 'option', optionType: 'put' },
+  ],
+  exitLevels: [
+    { side: 'stop', kind: 'underlyingPrice' },
+    { side: 'target', kind: 'pctOfMaxProfit' },
   ],
 }
 
@@ -426,6 +445,9 @@ export class Workspace {
     }
     if (!strategies.some((s) => s.id === COVERED_CALL_STRATEGY.id)) {
       await this.tradeBook.registries.strategies.save(structuredClone(COVERED_CALL_STRATEGY))
+    }
+    if (!strategies.some((s) => s.id === BULL_PUT_SPREAD_STRATEGY.id)) {
+      await this.tradeBook.registries.strategies.save(structuredClone(BULL_PUT_SPREAD_STRATEGY))
     }
 
     const closeReasons = await this.tradeBook.registries.closeReasons.list(true)
