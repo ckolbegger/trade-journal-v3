@@ -113,7 +113,11 @@ Design references: ADR 0012, [trademath.md](../design/trademath.md) (trailing hi
   describe "TradeMath.detectDeviations (trailing)"
   - it detects the crossing on the 154 day
   - it starts episodes fresh as the trail ratchets (a new high resets nothing retroactively)
+  describe "TradeMath.replay (trailing retrofit — moved from S15.1, 2026-07-19)"
+  - it resolves trailing from high-water up to that date only (no future knowledge)
   ```
+
+  *(Replay retrofit: Slice 15 landed replay before this slice existed. Each ReplayPoint's trailing resolution must use the MarkSeries only up to that point's date — verify the ReplayView renders the ratcheting trail level correctly across the worked example's five days and that no chart element leaks future high-water; extend S15.1's replay chart/tests as needed, don't fork them.)*
 
 - [ ] **S10.3.T2 — UI.** Plan form offers trailing (offset $ or %) for trade scope; dashboard shows the current resolved trail level and its high-water ("trail 155.00 · high 160.00"); the locked-floor case renders as protected gain, not negative risk jargon.
 - [ ] **S10.3.T3 — Integration tests**: worked example over Dexie entered across five review days → trail level displayed each day matches hand-computed; crossing day records the Deviation; export/reimport (Slice 6) reproduces identical trail (derived, never stored).

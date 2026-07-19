@@ -4,7 +4,7 @@ The reflective payoff of all the accumulated facts: replay a Trade's actual hist
 
 **Out of scope (JIT):** what-if simulation (rejected for v1, ADR 0009), review-streak/habit analytics ([review.md](../design/review.md) open item — derivable later from review entries; no story asks for it yet), candlesticks (Slice 17).
 
-**Cross-slice note:** the adherence measures in S15.3 require Slices 9–10 (recorded Deviations); if they haven't landed, those `it`s move with them. S15.4's equity curve requires Slice 14.
+**Cross-slice note:** the adherence measures in S15.3 require Slices 9–10 (recorded Deviations); if they haven't landed, those `it`s move with them. *(2026-07-19: S15.4's equity-curve half moved to Slice 14, removing that dependency; the two S15.1 replay TestSpec lines needing revisions/trailing moved to S11.1/S10.3, which retrofit replay when they land.)*
 
 Design references: ADR 0009, [trademath.md](../design/trademath.md) (`replay`), [overview.md](../design/overview.md) (Analytics), ADR 0012 (declared + derived dimensions), ADR 0013 (curves).
 
@@ -24,11 +24,14 @@ Design references: ADR 0009, [trademath.md](../design/trademath.md) (`replay`), 
   describe "TradeMath.replay"
   - it returns one ReplayPoint per marked date the Trade held quantity
   - it computes each point's Valuation and RiskReward from that date's Marks
-  - it anchors planned R/R on the levels effective that date (a revision shifts anchors mid-replay)
-  - it resolves trailing from high-water up to that date only (no future knowledge)
   - it reflects executions as of each date (a partial close changes later points' basis)
   - it renders no point for gap dates (a gap is a gap, never a flat line)
   - it replays a closed Trade start to finish
+  ```
+
+  *(Reordered 2026-07-19: Slice 15 now runs before Slices 10/11, so two TestSpec lines moved to the slices that own their features — "anchors planned R/R on the levels effective that date" retrofits with Plan Revisions in S11.1, "resolves trailing from high-water up to that date only" retrofits with trailing stops in S10.3. Until those land, replay anchors every point on the Plan's original levels and no trailing kind exists. T3's revision scenario moves with the S11 line.)*
+
+  ```
   ```
 
 - [ ] **S15.1.T2 — Time-slider UI.** "Replay" on Trade detail: a chart of total P&L (and planned-risk band) over the Trade's life with a slider; the selected date shows that day's full dashboard numbers; gaps visibly broken. Nothing on this surface projects forward.
@@ -41,7 +44,7 @@ Design references: ADR 0009, [trademath.md](../design/trademath.md) (`replay`), 
   - it contains no forward-looking element
   ```
 
-- [ ] **S15.1.T3 — Integration tests**: a Trade with a revision and a partial close over Dexie → replay points hand-verified at three dates (before revision, after revision, after partial).
+- [ ] **S15.1.T3 — Integration tests**: a Trade with a partial close over Dexie → replay points hand-verified at three dates (before partial, the partial date, after partial). *(Amended 2026-07-19: the revision scenario moved to S11.1 with its TestSpec line.)*
 - [ ] **S15.1.T4 — Playwright e2e** (`e2e/s15-1-replay.spec.ts`): open replay on a seeded lifecycle → slide to a known date → numbers match hand-computed values.
 - [ ] **S15.1.T5 — Browser verification.** Real browser: replay a Trade lived through earlier slices; verify a known day's numbers, the anchor shift at its revision date, and gap rendering across a skipped day. All suites green.
 
@@ -112,26 +115,22 @@ Design references: ADR 0009, [trademath.md](../design/trademath.md) (`replay`), 
 
 ---
 
-## ☐ Story S15.4 — Curves
+## ☐ Story S15.4 — Cumulative P&L curve *(rescoped 2026-07-19: the equity-curve half moved to Slice 14 with the Account Snapshots it plots — this story no longer depends on Slice 14)*
 
-> As a trader, I want my equity curve and cumulative P&L over time, so that the long arc of my trading is visible, not just trade-by-trade snapshots.
+> As a trader, I want my cumulative P&L over time, so that the long arc of my trading is visible, not just trade-by-trade snapshots.
 
-**Deep interfaces**: Account Snapshot series (Slice 14) for the equity curve; Executions (+ Marks for the open remainder) for the cumulative realized P&L curve, per Account and overall. Snapshots cannot separate performance from contributions — accepted and labeled (ADR 0013).
+**Deep interfaces**: Executions for the cumulative realized P&L curve, per Account and overall — derived, never stored.
 
 ### Tasks
 
 - [ ] **S15.4.T1 — Curve data + rendering.**
 
   ```
-  describe "equity curve"
-  - it plots the snapshot series with gaps rendered as gaps (sparse is honest)
-  - it scopes per account and overall (sum on dates where all accounts have points; else gap)
   describe "cumulative P&L curve"
   - it accumulates realized P&L by close date from Executions alone
+  - it scopes per account and overall
   - it reproduces identical values after export/reimport (derived, never stored)
-  describe "curve view"
-  - it labels the equity curve as including deposits/withdrawals (ADR 0013 honesty)
   ```
 
-- [ ] **S15.4.T2 — Integration + e2e** (`e2e/s15-4-curves.spec.ts`): seeded snapshots + closed Trades → both curves match hand-computed points.
-- [ ] **S15.4.T3 — Browser verification.** Real browser: both curves over real accumulated data; verify a known month's cumulative P&L against Analytics' total for that range; verify the sparse-snapshot account draws gaps, not interpolation. All suites green.
+- [ ] **S15.4.T2 — Integration + e2e** (`e2e/s15-4-curves.spec.ts`): seeded closed Trades → the curve matches hand-computed points.
+- [ ] **S15.4.T3 — Browser verification.** Real browser: the curve over real accumulated data; verify a known month's cumulative P&L against Analytics' total for that range. All suites green.

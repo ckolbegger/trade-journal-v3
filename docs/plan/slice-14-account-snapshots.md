@@ -2,7 +2,7 @@
 
 Account value enters the journal as dated observations: recorded opportunistically at the end of a review (or anytime), never derived, never prefilled — a stale number confirmed is a fake data point; an absent one is an honest gap (ADR 0013; [tradebook.md](../design/tradebook.md)).
 
-**Out of scope (JIT):** the equity curve rendered from these snapshots (Slice 15's curves story); cash ledger (rejected forever, ADR 0013).
+**Out of scope (JIT):** cash ledger (rejected forever, ADR 0013). *(2026-07-19: the equity curve moved INTO this slice as S14.2 — Slice 15 now runs first with the cumulative-P&L curve only, so the equity curve lands here beside the snapshots it plots.)*
 
 Design references: ADR 0013, [tradebook.md](../design/tradebook.md) (`recordAccountValue`), [review.md](../design/review.md) (end-of-session prompt).
 
@@ -46,3 +46,26 @@ Design references: ADR 0013, [tradebook.md](../design/tradebook.md) (`recordAcco
 - [ ] **S14.1.T3 — Integration tests**: two accounts over Dexie — record one at session end, skip the other → reopen → history shows the one point; re-record same date replaces; next session prompts blank again.
 - [ ] **S14.1.T4 — Playwright e2e** (`e2e/s14-1-snapshots.spec.ts`): finish a review → enter one account's value → history shows it; the field was blank despite yesterday's snapshot existing.
 - [ ] **S14.1.T5 — Browser verification.** Real browser: full review ending with a snapshot for one of two accounts; verify blank fields, per-account skip, the history table, and that skipping created no debt or nag anywhere. All suites green.
+
+---
+
+## ☐ Story S14.2 — Equity curve *(moved from Slice 15's curves story, 2026-07-19 — plotted beside the snapshots it depends on; reuses the chart surface Slice 15 established)*
+
+> As a trader, I want my equity curve over time, so that the long arc of my accounts is visible at whatever snapshot cadence I actually sustain.
+
+**Deep interfaces**: Account Snapshot series (S14.1) plotted per account and overall. Snapshots cannot separate performance from contributions — accepted and labeled (ADR 0013).
+
+### Tasks
+
+- [ ] **S14.2.T1 — Curve data + rendering.**
+
+  ```
+  describe "equity curve"
+  - it plots the snapshot series with gaps rendered as gaps (sparse is honest)
+  - it scopes per account and overall (sum on dates where all accounts have points; else gap)
+  describe "curve view"
+  - it labels the equity curve as including deposits/withdrawals (ADR 0013 honesty)
+  ```
+
+- [ ] **S14.2.T2 — Integration + e2e** (`e2e/s14-2-equity-curve.spec.ts`): seeded snapshots → the curve matches hand-computed points.
+- [ ] **S14.2.T3 — Browser verification.** Real browser: the curve over real snapshots; verify the sparse-snapshot account draws gaps, not interpolation; verify the deposits/withdrawals label. All suites green.

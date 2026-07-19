@@ -2,7 +2,7 @@
 
 Deliberate changes of intent get their paperwork: a dated Revision can replace the Exit Levels going forward and add intended structure — while the original Plan stays untouched, Deviation detection keeps measuring against it, and the timestamps make adaptation vs rationalization visible forever (ADR 0003, 0012).
 
-**Out of scope (JIT):** replay's knowledge-as-of-date handling of revisions (Slice 15 tests it where replay exists); Corrections (Slice 12).
+**Out of scope (JIT):** Corrections (Slice 12). *(2026-07-19: replay's knowledge-as-of-date handling of revisions moved INTO this slice — Slice 15 now runs first, so S11.1 retrofits replay rather than Slice 15 testing it here.)*
 
 Design references: ADR 0003, ADR 0012, [tradebook.md](../design/tradebook.md) (`PlanRevisionDraft`, revision sequence), [journal.md](../design/journal.md) (`{kind:'revision'}` anchor).
 
@@ -36,7 +36,11 @@ Design references: ADR 0003, ADR 0012, [tradebook.md](../design/tradebook.md) (`
   describe "TradeMath.detectDeviations (revised levels)"
   - it detects discipline crossings against the levels effective on each marked date
   - it does not flag a crossing of a stop that a prior revision had already replaced
+  describe "TradeMath.replay (revision retrofit — moved from S15.1, 2026-07-19)"
+  - it anchors planned R/R on the levels effective that date (a revision shifts anchors mid-replay)
   ```
+
+  *(Replay retrofit: Slice 15 landed replay before this slice existed, anchoring every point on the Plan's original levels. Each ReplayPoint must now overlay revisions up to its own date — and the ReplayView chart must show the planned-risk band SHIFTING at the revision date (extend S15.1's chart and its tests; the moved S15.1.T3 integration scenario — replay points hand-verified before/after a revision — lands here too). Don't fork the replay surface; amend it.)*
 
 - [ ] **S11.1.T2 — Revision flow UI.** "Revise plan" on an open Trade's detail: shows current levels, takes new levels + reason + optional chart link; then the Revision entry form (write or skip → placeholder — Journal Debt). Detail renders the plan as original + dated revision history; dashboard anchors read the revised levels, with `original` contrast unchanged.
 
