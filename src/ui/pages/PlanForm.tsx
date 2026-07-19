@@ -39,12 +39,17 @@ export function PlanForm() {
 
   const [thesis, setThesis] = useState('')
   const [ticker, setTicker] = useState('')
-  // Expiration is LINKED across every option leg a template plans (a spread's
-  // two legs share one expiration, S7.2) — one input, applied to every option
-  // leg at confirm time. Strike is per-leg (a spread's legs strike DIFFER),
-  // mirroring qtyByLeg below; `strike` alone still serves a single-option-leg
-  // template (Long Call, Covered Call's call).
+  // Expiration is LINKED across every CONCRETE option leg a template plans (a
+  // spread's two legs share one expiration, S7.2) — one shared input, applied
+  // to every non-TBD option leg at confirm time. A `tbdAllowed` leg gets its
+  // OWN independent expiration input instead (`expirationByLeg`) — needed
+  // once a template mixes a concrete leg with a TBD one at DIFFERENT
+  // expirations (the PMCC's far LEAP vs. its near, still-unsold call, S7.3);
+  // for a single-option-leg template (Long Call, Covered Call) this reduces
+  // to exactly one input either way. Strike is already per-leg (a spread's
+  // legs' strikes DIFFER), mirroring qtyByLeg below.
   const [expiration, setExpiration] = useState('')
+  const [expirationByLeg, setExpirationByLeg] = useState<Record<number, string>>({})
   const [strike, setStrike] = useState('')
   const [strikeByLeg, setStrikeByLeg] = useState<Record<number, string>>({})
   const [qty, setQty] = useState('')
@@ -100,9 +105,18 @@ export function PlanForm() {
     if (isMultiLeg) setStrikeByLeg((prev) => ({ ...prev, [i]: value }))
     else setStrike(value)
   }
-  // The expiration input renders once, on the FIRST option leg — its value
-  // drives every option leg (linked expiration, S7.2).
-  const firstOptionLegIndex = legs.findIndex((l) => l.instrumentKind === 'option')
+  // A `tbdAllowed` leg's expiration is independent (`expirationByLeg`); every
+  // other option leg shares the ONE `expiration` field (linked, S7.2) — the
+  // shared field renders once, on the first such leg.
+  const expirationFor = (i: number): string =>
+    legs[i]?.tbdAllowed ? (expirationByLeg[i] ?? '') : expiration
+  const setExpirationFor = (i: number, value: string): void => {
+    if (legs[i]?.tbdAllowed) setExpirationByLeg((prev) => ({ ...prev, [i]: value }))
+    else setExpiration(value)
+  }
+  const firstConcreteOptionLegIndex = legs.findIndex(
+    (l) => l.instrumentKind === 'option' && !l.tbdAllowed,
+  )
 
   const canConfirm =
     Boolean(accountId) &&
@@ -165,7 +179,7 @@ export function PlanForm() {
               kind: 'option' as const,
               ticker: tickerUpper,
               type: l.optionType!,
-              ...(expiration.trim() ? { expiration } : {}),
+              ...(expirationFor(i).trim() ? { expiration: expirationFor(i) } : {}),
               ...(strikeFor(i).trim() ? { strike: dollarsToCents(strikeFor(i)) } : {}),
             }
           : { kind: 'stock' as const, ticker: tickerUpper },
@@ -256,18 +270,18 @@ export function PlanForm() {
             )}
             {l.instrumentKind === 'option' && (
               <>
-                {i === firstOptionLegIndex && (
+                {(l.tbdAllowed || i === firstConcreteOptionLegIndex) && (
                   <>
                     <label className={field}>
-                      Expiration{!requiresExpiration ? ' (optional — TBD until the fill)' : ''}
+                      Expiration{l.tbdAllowed ? ' (optional — TBD until the fill)' : ''}
                       <input
                         type="date"
                         className={input}
-                        value={expiration}
-                        onChange={(e) => setExpiration(e.target.value)}
+                        value={expirationFor(i)}
+                        onChange={(e) => setExpirationFor(i, e.target.value)}
                       />
                     </label>
-                    {!requiresExpiration && !expiration.trim() && (
+                    {l.tbdAllowed && !expirationFor(i).trim() && (
                       <p className="text-xs text-slate-500">Expiration TBD — set at the fill</p>
                     )}
                   </>

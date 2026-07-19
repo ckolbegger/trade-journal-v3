@@ -22,7 +22,7 @@ Design references: [trademath.md](../design/trademath.md) (structural extremes, 
 - worstCaseRisk $910 (S→0: −10,000 + 9,000 = −1,000) · maxReward $90 (→ 0)
 - At the ADR 0010 marks (net 0.50): risking $950 to make $50 — the framing test.
 
-*PMCC* — buy 1 `AAPL 2028-01-21 C 150` @ 60.00, sell 1 `AAPL 2026-09-18 C 220` @ 3.00, fees $1.30 total. Marks: LEAP 65.00, short call 2.00, underlying 210.
+*PMCC* — buy 1 `AAPL 2028-01-21 C 150` @ 62.00 (fill corrected from 60.00, S7.3 2026-07-19: with the stated marks only 62.00 reproduces the unrealized 400.00 / total 398.70 below — 60.00 was an arithmetic slip, being exactly intrinsic at S=210 with zero extrinsic), sell 1 `AAPL 2026-09-18 C 220` @ 3.00, fees $1.30 total. Marks: LEAP 65.00, short call 2.00, underlying 210.
 - currentValue $6,300 · unrealized $400 · total $398.70
 - worstCaseRisk $6,300 (S→0 → 0) · maxReward $700 (S→∞ intrinsic, different expirations both to their limits: (S−150)·100 − (S−220)·100 = 7,000)
 
@@ -82,7 +82,7 @@ Design references: [trademath.md](../design/trademath.md) (structural extremes, 
 
 ### Tasks
 
-- [ ] **S7.2.T1 — Spread math.**
+- [x] **S7.2.T1 — Spread math.**
 
   ```
   describe "TradeMath.valuation (bull put spread)"
@@ -96,7 +96,7 @@ Design references: [trademath.md](../design/trademath.md) (structural extremes, 
   - it produces identical formulas for a debit spread (signs carry direction — no credit/debit branch)
   ```
 
-- [ ] **S7.2.T2 — UI + seeds.** Template plans both legs with linked expiration; dashboard shows net structure value and the credit framing.
+- [x] **S7.2.T2 — UI + seeds.** Template plans both legs with linked expiration; dashboard shows net structure value and the credit framing.
 
   ```
   describe "PlanForm (spread)"
@@ -105,13 +105,13 @@ Design references: [trademath.md](../design/trademath.md) (structural extremes, 
   - it shows net structure value and all four R/R numbers per the worked example
   ```
 
-- [ ] **S7.2.T3 — Integration tests**: spread lifecycle over Dexie — both fills same day → marks → numbers → buy back both legs → closed, realized $108.70 + remaining move.
-- [ ] **S7.2.T4 — Playwright e2e** (`e2e/s7-2-spread.spec.ts`): worked example numbers on the dashboard.
+- [x] **S7.2.T3 — Integration tests**: spread lifecycle over Dexie — both fills same day → marks → numbers → buy back both legs → closed, realized $108.70 + remaining move.
+- [x] **S7.2.T4 — Playwright e2e** (`e2e/s7-2-spread.spec.ts`): worked example numbers on the dashboard.
 - [x] **S7.2.T5 — Browser verification.** Real-browser spread lifecycle including one review walk (two contract Marks + underlying prompt once); numbers verified against the table. All suites green.
 
 ---
 
-## ☐ Story S7.3 — PMCC & multi-expiration structures
+## ☑ Story S7.3 — PMCC & multi-expiration structures
 
 > As a trader, I want my LEAP and the call I sell against it valued as one campaign with honest extremes, so that my core monthly structure finally lives in the app the way it lives in my account.
 
@@ -121,7 +121,7 @@ Design references: [trademath.md](../design/trademath.md) (structural extremes, 
 
 ### Tasks
 
-- [ ] **S7.3.T1 — Multi-expiration extremes.**
+- [x] **S7.3.T1 — Multi-expiration extremes.**
 
   ```
   describe "TradeMath.riskReward (PMCC)"
@@ -132,7 +132,7 @@ Design references: [trademath.md](../design/trademath.md) (structural extremes, 
   - it values the worked example: currentValue 6300.00, total 398.70
   ```
 
-- [ ] **S7.3.T2 — Shared-Mark proof.**
+- [x] **S7.3.T2 — Shared-Mark proof.**
 
   ```
   describe "shared Marks across Trades (integration)"
@@ -142,7 +142,7 @@ Design references: [trademath.md](../design/trademath.md) (structural extremes, 
   - it revalues both Trades from the edited Mark
   ```
 
-- [ ] **S7.3.T3 — UI + seeds.** PMCC template with TBD short leg; dashboard renders mixed expirations ("Jan'28 150C · −1 Sep'26 220C").
-- [ ] **S7.3.T4 — Integration tests**: PMCC lifecycle over Dexie — LEAP fill → later short-call fill → marks → worked numbers → short call expires worthless → extremes recompute over the LEAP alone.
-- [ ] **S7.3.T5 — Playwright e2e** (`e2e/s7-3-pmcc.spec.ts`): worked example; assert numbers and the mixed-expiration display.
-- [ ] **S7.3.T6 — Browser verification.** Drive the PMCC in a real browser through a walk and the short call's expiration; verify the extremes shift when the short leg dies; verify the shared-Mark warning with a second Trade holding the same LEAP. All suites green.
+- [x] **S7.3.T3 — UI + seeds.** PMCC template with TBD short leg; dashboard renders mixed expirations ("Jan'28 150C · −1 Sep'26 220C").
+- [x] **S7.3.T4 — Integration tests**: PMCC lifecycle over Dexie — LEAP fill → later short-call fill → marks → worked numbers → short call expires worthless → extremes recompute over the LEAP alone.
+- [x] **S7.3.T5 — Playwright e2e** (`e2e/s7-3-pmcc.spec.ts`): worked example; assert numbers and the mixed-expiration display.
+- [x] **S7.3.T6 — Browser verification.** Drive the PMCC in a real browser through a walk and the short call's expiration; verify the extremes shift when the short leg dies; verify the shared-Mark warning with a second Trade holding the same LEAP. All suites green.

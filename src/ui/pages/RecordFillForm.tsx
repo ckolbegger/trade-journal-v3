@@ -48,16 +48,26 @@ function knownInstrument(instrument: PlannedLeg['instrument']): Instrument | und
 // what disambiguates a spread's two same-type option legs (S7.2: a bull put
 // spread's short 100 put and long 90 put are both "option XYZ put", but
 // distinct strikes make distinct keys). A TBD Planned Leg only knows kind +
-// ticker + option type, so it falls back to matching on those alone — the
-// S7.1 covered call's single TBD call leg is the only Plan shape that needs
-// this looser match today.
+// ticker + option type, so it falls back to matching on those alone —
+// EXCLUDING any Leg some OTHER Planned Leg already claims exactly (the
+// PMCC's near call is TBD but shares ticker+type='call' with its own
+// concrete far LEAP, S7.3 — without this exclusion the loose match would
+// mistake the LEAP's Leg for the near call's).
 function matchingLeg(trade: TradeRecord, pl: PlannedLeg): LegFacts | undefined {
   const known = knownInstrument(pl.instrument)
   if (known) {
     const key = buildInstrumentKey(known)
     return trade.legs.find((leg) => buildInstrumentKey(leg.instrument) === key)
   }
+  const claimedKeys = new Set(
+    trade.plan.plannedLegs
+      .filter((other) => other !== pl)
+      .map((other) => knownInstrument(other.instrument))
+      .filter((instrument): instrument is Instrument => instrument !== undefined)
+      .map((instrument) => buildInstrumentKey(instrument)),
+  )
   return trade.legs.find((leg) => {
+    if (claimedKeys.has(buildInstrumentKey(leg.instrument))) return false
     if (leg.instrument.kind !== pl.instrument.kind) return false
     if (leg.instrument.kind === 'stock') return leg.instrument.ticker === pl.instrument.ticker
     const plOption = pl.instrument as Extract<PlannedLeg['instrument'], { kind: 'option' }>

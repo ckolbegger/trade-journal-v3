@@ -136,6 +136,7 @@ export const LONG_PUT_STRATEGY_ID = 'strategy-long-put'
 export const CASH_SECURED_PUT_STRATEGY_ID = 'strategy-cash-secured-put'
 export const COVERED_CALL_STRATEGY_ID = 'strategy-covered-call'
 export const BULL_PUT_SPREAD_STRATEGY_ID = 'strategy-bull-put-spread'
+export const PMCC_STRATEGY_ID = 'strategy-pmcc'
 export const PLAN_ENTRY_TYPE_ID = 'entry-type-plan'
 export const CLOSE_ENTRY_TYPE_ID = 'entry-type-close'
 export const REVIEW_ENTRY_TYPE_ID = 'entry-type-trade-review'
@@ -231,6 +232,22 @@ const BULL_PUT_SPREAD_STRATEGY: StrategyTemplate = {
   exitLevels: [
     { side: 'stop', kind: 'underlyingPrice' },
     { side: 'target', kind: 'pctOfMaxProfit' },
+  ],
+}
+
+// Planned legs buy 1 call (far expiration, concrete) + sell 1 call (near,
+// strike/expiration TBD — docs/plan/slice-07-multi-leg.md); asks trade-scope
+// structureValue stop + target, anchored over the combined structure (S7.3).
+const PMCC_STRATEGY: StrategyTemplate = {
+  id: PMCC_STRATEGY_ID,
+  name: 'PMCC',
+  legs: [
+    { side: 'buy', instrumentKind: 'option', optionType: 'call' },
+    { side: 'sell', instrumentKind: 'option', optionType: 'call', tbdAllowed: true },
+  ],
+  exitLevels: [
+    { side: 'stop', kind: 'structureValue' },
+    { side: 'target', kind: 'structureValue' },
   ],
 }
 
@@ -448,6 +465,9 @@ export class Workspace {
     }
     if (!strategies.some((s) => s.id === BULL_PUT_SPREAD_STRATEGY.id)) {
       await this.tradeBook.registries.strategies.save(structuredClone(BULL_PUT_SPREAD_STRATEGY))
+    }
+    if (!strategies.some((s) => s.id === PMCC_STRATEGY.id)) {
+      await this.tradeBook.registries.strategies.save(structuredClone(PMCC_STRATEGY))
     }
 
     const closeReasons = await this.tradeBook.registries.closeReasons.list(true)
