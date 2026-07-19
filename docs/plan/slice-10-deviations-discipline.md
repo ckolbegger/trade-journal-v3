@@ -4,7 +4,7 @@ The third Deviation kind: the Marks crossed a planned stop or target and the tra
 
 **Decided in this slice:**
 
-- **Crossing** = a date whose Marks put the scoped value at or beyond the level (stop: at/below for long-shaped scopes, at/beyond against the position's favor generally — the sign comes from the structure; target: at/beyond in its favor). `underlyingPrice` levels compare the underlying's Mark; `structureValue` compares the scoped structure's signed value at that date's Marks; `pctOfMaxProfit` resolves to a structure value (credit × (1 − pct/100)) first.
+- **Crossing** = a date whose Marks put the scoped value at or beyond the level (stop: at/below for long-shaped scopes, at/beyond against the position's favor generally — the sign comes from the structure; target: at/beyond in its favor). `underlyingPrice` levels compare the underlying's Mark; `structureValue` compares the scoped structure's signed value at that date's Marks, resolved from its Position price quote via direction × quote × multiplier × lot count (amended per exit-level ruling 2026-07-19, docs/design/trademath.md — `pctOfMaxProfit` is REMOVED; the former pct-of-credit convenience is now expressed directly as a Position price target, so no separate pct-resolution step exists).
 - **Episode** ([tradebook.md](../design/tradebook.md)): consecutive crossed *marked* days are one episode; a new episode begins when the prior marked day was not crossed. Dedup key: (Exit Level, episode's first crossed date).
 - Detection only considers dates the scope actually held quantity.
 - `Valuations.disciplineCheck` from the overview sketch is **not built** (JIT): the walk surfaces discipline through `detail()`; nothing else needs a separate operation yet.
@@ -17,7 +17,7 @@ Design references: ADR 0012, [trademath.md](../design/trademath.md) (trailing hi
 
 *Episodes* — long stock, underlyingPrice stop 140. Marks: Mon 141, Tue 139, Wed 138, Thu 142, Fri 139 → **two** Deviations: episode 1 crossedOn Tue (Wed continues it), episode 2 crossedOn Fri (Thu was not crossed).
 
-*Leg-scope target* — covered call's short leg sold at 1.50, leg-scope pctOfMaxProfit target 80% → buyback level 0.30. Call marked 0.25 with no action → discipline Deviation on that Leg.
+*Leg-scope target* — covered call's short leg sold at 1.50, leg-scope Position price target 0.30 (the 80%-of-credit-equivalent buyback — amended per exit-level ruling 2026-07-19, was pctOfMaxProfit 80%). Call marked 0.25 with no action → discipline Deviation on that Leg.
 
 *Trailing* — long 100 shares, trailing stop offset $5.00. Closes 150, 155, 160, 158, 154 → high-water 160, trail level 155 → crossed on the 154 day. plannedRisk at mark 154 reads −$100 (the trail is above the mark: a locked-in floor, displayed as such).
 
@@ -38,7 +38,7 @@ Design references: ADR 0012, [trademath.md](../design/trademath.md) (trailing hi
   - it detects the two worked-example episodes with their crossedOn dates
   - it treats consecutive crossed marked days as one episode
   - it detects a target crossing (marks beyond target, no action) symmetrically
-  - it resolves pctOfMaxProfit to its structure value before comparing
+  - it resolves a structureValue Position price target to its signed structure value before comparing (amended per exit-level ruling 2026-07-19, was pctOfMaxProfit)
   - it compares structureValue levels against the scoped signed value
   - it ignores dates before the position existed and after it was flat
   - it skips gap dates (no Mark, no judgment — gaps are gaps)

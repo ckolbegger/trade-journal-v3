@@ -23,7 +23,7 @@ async function planAndSellCsp(page: Page) {
   await page.getByLabel(/strike/i).fill('100')
   await page.getByLabel(/quantity/i).fill('1')
   await page.getByLabel(/stop/i).fill('95')
-  await page.getByLabel(/target/i).fill('80')
+  await page.getByLabel(/target/i).fill('0.50')
   await page.getByRole('button', { name: /confirm plan/i }).click()
   await expect(page.getByRole('heading', { name: 'Plan journal' })).toBeVisible()
   await page.getByRole('button', { name: /skip/i }).click()

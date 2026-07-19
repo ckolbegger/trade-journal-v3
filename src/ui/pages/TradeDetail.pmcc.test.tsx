@@ -55,8 +55,8 @@ async function pmccOpen(): Promise<{
       { side: 'sell', instrument: { kind: 'option', ticker: 'AAPL', type: 'call' }, qty: 1 },
     ],
     exitLevels: [
-      { scope: { level: 'trade' }, side: 'stop', kind: 'structureValue', value: 550000 },
-      { scope: { level: 'trade' }, side: 'target', kind: 'structureValue', value: 680000 },
+      { scope: { level: 'trade' }, side: 'stop', kind: 'structureValue', value: 5500 },
+      { scope: { level: 'trade' }, side: 'target', kind: 'structureValue', value: 6800 },
     ],
     plannedAt: '2026-07-10',
   }

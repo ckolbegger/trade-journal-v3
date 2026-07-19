@@ -68,7 +68,7 @@ async function seedSpread(tradeBook: TradeBook): Promise<string> {
     ],
     exitLevels: [
       { scope: { level: 'trade' }, side: 'stop', kind: 'underlyingPrice', price: 9700 },
-      { scope: { level: 'trade' }, side: 'target', kind: 'pctOfMaxProfit', pct: 75 },
+      { scope: { level: 'trade' }, side: 'target', kind: 'structureValue', value: 50 },
     ],
     plannedAt: '2026-07-10',
   }

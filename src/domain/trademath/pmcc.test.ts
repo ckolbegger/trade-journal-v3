@@ -89,18 +89,19 @@ describe('TradeMath.riskReward (PMCC)', () => {
       scope: { level: 'trade' },
       side: 'stop',
       kind: 'structureValue',
-      value: 550000, // 5,500.00
+      value: 5500, // 55.00 net quote (Position price, exit-level ruling 2026-07-19)
     }
     const target: ExitLevel = {
       scope: { level: 'trade' },
       side: 'target',
       kind: 'structureValue',
-      value: 680000, // 6,800.00
+      value: 6800, // 68.00 net quote
     }
     const rr = riskReward(pmccTrade([stop, target]), pmccMarks())
-    // currentValue 6,300.00: plannedRisk 800.00 (→5,500), plannedReward
-    // 500.00 (→6,800) — the level names the WHOLE structure's value, not one
-    // Leg's own Mark scale (generalized from the single-leg case).
+    // currentValue 6,300.00 (net quote 63.00 × 100): plannedRisk 800.00
+    // (→55.00), plannedReward 500.00 (→68.00) — the per-unit quote scales by
+    // the contract multiplier and lot count, same formula as the single-Leg
+    // case (user ruling 2026-07-19).
     expect(rr.plannedRisk).toBe(80000)
     expect(rr.plannedReward).toBe(50000)
   })

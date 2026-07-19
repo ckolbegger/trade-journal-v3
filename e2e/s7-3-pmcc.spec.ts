@@ -5,9 +5,10 @@ import type { Page } from '@playwright/test'
 // AAPL 2028-01-21 C 150 @ 62.00 fees $0.65, sell 1 AAPL 2026-09-18 C 220 @
 // 3.00 fees $0.65 — the far leg concrete, the near leg TBD until its fill,
 // two DIFFERENT expirations. Marks: LEAP 65.00, short call 2.00 →
-// currentValue 6,300.00, unrealized 400.00, total 398.70; structureValue
-// stop 5,500.00 / target 6,800.00 → plannedRisk 800.00, plannedReward
-// 500.00; worstCaseRisk 6,300.00, maxReward 700.00.
+// currentValue 6,300.00, unrealized 400.00, total 398.70; Position price
+// stop 55.00 / target 68.00 (net quote — amended per exit-level ruling
+// 2026-07-19) → plannedRisk 800.00, plannedReward 500.00; worstCaseRisk
+// 6,300.00, maxReward 700.00.
 
 async function onboard(page: Page) {
   await page.goto('/')
@@ -41,8 +42,8 @@ test('plans, legs in, and marks a PMCC — worked-example dashboard numbers and 
 
   await page.getByLabel(/quantity.*buy/i).fill('1')
   await page.getByLabel(/quantity.*sell/i).fill('1')
-  await page.getByLabel(/stop/i).fill('5500')
-  await page.getByLabel(/target/i).fill('6800')
+  await page.getByLabel(/stop/i).fill('55.00')
+  await page.getByLabel(/target/i).fill('68.00')
   await page.getByRole('button', { name: /confirm plan/i }).click()
   await expect(page.getByRole('heading', { name: 'Plan journal' })).toBeVisible()
   await page.getByRole('button', { name: /skip/i }).click()

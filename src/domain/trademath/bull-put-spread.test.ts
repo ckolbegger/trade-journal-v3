@@ -7,7 +7,8 @@ import { riskReward } from './risk-reward'
 // all money in cents: sell 1 XYZ 2026-08-21 P 100 @ 2.60, buy 1 XYZ
 // 2026-08-21 P 90 @ 0.60; net credit 2.00, total fees $1.30. Marks: short put
 // 1.10, long put 0.20 → structure −$90. Exit Levels: underlyingPrice stop 97,
-// pctOfMaxProfit target 75% (buy back at 0.50).
+// Position price target 0.50 (75% of the 2.00 credit — amended per exit-level
+// ruling 2026-07-19, was pctOfMaxProfit).
 
 const SHORT_PUT = {
   kind: 'option',
@@ -31,11 +32,11 @@ const stop: ExitLevel = {
   kind: 'underlyingPrice',
   price: 9700, // 97
 }
-const pctTarget: ExitLevel = {
+const positionPriceTarget: ExitLevel = {
   scope: { level: 'trade' },
   side: 'target',
-  kind: 'pctOfMaxProfit',
-  pct: 75,
+  kind: 'structureValue',
+  value: 50, // 0.50 buyback — 75% of the 2.00 credit
 }
 
 const timestamp = new Date('2026-07-10T12:00:00').getTime()
@@ -56,7 +57,7 @@ const buyLongPut = (): ExecutionFacts => ({
   timestamp,
 })
 
-function spreadTrade(exitLevels: ExitLevel[] = [stop, pctTarget]): TradeRecord {
+function spreadTrade(exitLevels: ExitLevel[] = [stop, positionPriceTarget]): TradeRecord {
   return {
     id: 'trade-1',
     accountId: 'account-1',
@@ -115,7 +116,7 @@ describe('TradeMath.riskReward (bull put spread)', () => {
     expect(rr.plannedRisk).toBe(21000)
   })
 
-  it('resolves the 75% pctOfMaxProfit target against net credit 2.00 → plannedReward 40.00', () => {
+  it('resolves the 0.50 Position price target (75% of net credit 2.00) → plannedReward 40.00', () => {
     const rr = riskReward(spreadTrade(), spreadMarks())
     expect(rr.plannedReward).toBe(4000)
   })

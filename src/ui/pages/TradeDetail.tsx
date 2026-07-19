@@ -43,11 +43,15 @@ function plannedInstrumentLabel(
   return optionLabel({ ticker, type, strike, expiration })
 }
 
-// An Exit Level rendered for display: a dollar value for underlyingPrice/
-// structureValue, a percentage for pctOfMaxProfit.
+// An Exit Level rendered for display: a dollar value for underlyingPrice, or
+// structureValue's per-unit "Position price" quote. A level whose `kind`
+// matches neither — a pre-ruling (2026-07-19) stored Plan's `pctOfMaxProfit`
+// level, removed from the type but tolerated on read — renders inert rather
+// than crashing on a field that no longer exists.
 function exitLevelDisplay(level: TradeRecord['plan']['exitLevels'][number]): string {
-  if (level.kind === 'pctOfMaxProfit') return `${level.pct}%`
-  return `$${centsToDollars(level.kind === 'structureValue' ? level.value : level.price)}`
+  if (level.kind === 'underlyingPrice') return `$${centsToDollars(level.price)}`
+  if (level.kind === 'structureValue') return `$${centsToDollars(level.value)}`
+  return 'unsupported target'
 }
 
 // A held Position row: a stock reads "100 AAPL long"; an option reads the

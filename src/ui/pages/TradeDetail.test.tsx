@@ -92,6 +92,39 @@ describe('TradeDetail', () => {
     expect(screen.queryByRole('button', { name: /edit/i })).toBeNull()
     expect(screen.queryByRole('link', { name: /edit/i })).toBeNull()
   })
+
+  // A pre-ruling (2026-07-19) stored Plan may still carry a pctOfMaxProfit
+  // Exit Level — removed from the type, tolerated on read, never produced.
+  // Rendering it must not crash, and it must not read as a dollar value it
+  // no longer has (docs/design/trademath.md, "Exit-level semantics").
+  it('renders a legacy pctOfMaxProfit Exit Level inert rather than crashing', async () => {
+    const { tradeBook: book, journal, priceBook } = inMemoryBooks()
+    const institution = { id: '', name: 'Schwab' } as Institution
+    await book.registries.institutions.save(institution)
+    const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
+    await book.registries.accounts.save(account)
+    await new Workspace(book, journal).ensureSeeded()
+
+    const draft = {
+      accountId: account.id,
+      thesis: 'AAPL breaks out',
+      strategyId: 'strategy-long-stock',
+      ideaSourceId: '',
+      plannedLegs: [{ side: 'buy', instrument: { kind: 'stock', ticker: 'AAPL' }, qty: 100 }],
+      exitLevels: [
+        { scope: { level: 'trade' }, side: 'stop', kind: 'underlyingPrice', price: 14000 },
+        { scope: { level: 'trade' }, side: 'target', kind: 'pctOfMaxProfit', pct: 80 },
+      ],
+      plannedAt: '2026-07-10',
+    } as unknown as PlanDraft
+    const id = await book.confirmPlan(draft)
+
+    renderDetail(book, journal, priceBook, id)
+
+    expect(await screen.findByText(/140\.00/)).toBeInTheDocument()
+    expect(screen.getByText(/unsupported target/i)).toBeInTheDocument()
+    expect(screen.queryByText(/80%/)).not.toBeInTheDocument()
+  })
 })
 
 describe('TradeDetail journal section', () => {
@@ -504,8 +537,8 @@ describe('TradeDetail refresh', () => {
 
 // The cash-secured put worked example (docs/plan/slice-03-single-leg-options.md):
 // Plan Cash-Secured Put, sell 1 XYZ 2026-08-21 P 100; Exit Levels: underlyingPrice
-// stop 95, pctOfMaxProfit target 80%. Fill sell 1 @ 2.50, fees $0.65. Mark
-// contract 1.25.
+// stop 95, Position price target 0.50 (amended per exit-level ruling 2026-07-19,
+// was pctOfMaxProfit 80%). Fill sell 1 @ 2.50, fees $0.65. Mark contract 1.25.
 const XYZ_PUT_KEY = 'XYZ 2026-08-21 P 100'
 
 async function seededCsp(): Promise<{
@@ -541,7 +574,7 @@ async function seededCsp(): Promise<{
     ],
     exitLevels: [
       { scope: { level: 'trade' }, side: 'stop', kind: 'underlyingPrice', price: 9500 },
-      { scope: { level: 'trade' }, side: 'target', kind: 'pctOfMaxProfit', pct: 80 },
+      { scope: { level: 'trade' }, side: 'target', kind: 'structureValue', value: 50 },
     ],
     plannedAt: '2026-07-10',
   }

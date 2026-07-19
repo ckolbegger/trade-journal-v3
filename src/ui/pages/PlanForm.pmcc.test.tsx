@@ -75,8 +75,8 @@ describe('PlanForm (PMCC)', () => {
 
     await user.type(screen.getByLabelText(/quantity.*buy/i), '1')
     await user.type(screen.getByLabelText(/quantity.*sell/i), '1')
-    await user.type(screen.getByLabelText(/stop/i), '5500')
-    await user.type(screen.getByLabelText(/target/i), '6800')
+    await user.type(screen.getByLabelText(/stop/i), '55.00')
+    await user.type(screen.getByLabelText(/target/i), '68.00')
     await user.click(screen.getByRole('button', { name: /confirm plan/i }))
 
     expect(spy).toHaveBeenCalledTimes(1)
@@ -96,8 +96,8 @@ describe('PlanForm (PMCC)', () => {
       { side: 'sell', instrument: { kind: 'option', ticker: 'AAPL', type: 'call' }, qty: 1 },
     ])
     expect(draft.exitLevels).toEqual([
-      { scope: { level: 'trade' }, side: 'stop', kind: 'structureValue', value: 550000 },
-      { scope: { level: 'trade' }, side: 'target', kind: 'structureValue', value: 680000 },
+      { scope: { level: 'trade' }, side: 'stop', kind: 'structureValue', value: 5500 },
+      { scope: { level: 'trade' }, side: 'target', kind: 'structureValue', value: 6800 },
     ])
   })
 })

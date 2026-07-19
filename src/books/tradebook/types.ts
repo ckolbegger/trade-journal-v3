@@ -56,7 +56,7 @@ export interface StrategyLegTemplate {
 
 export interface StrategyExitTemplate {
   side: 'stop' | 'target'
-  kind: 'underlyingPrice' | 'structureValue' | 'pctOfMaxProfit'
+  kind: 'underlyingPrice' | 'structureValue'
 }
 
 export interface StrategyTemplate {

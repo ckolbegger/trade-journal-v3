@@ -49,9 +49,20 @@ interface LegFacts {
 type ExitLevel =
   | { scope: Scope; side: 'stop' | 'target'; kind: 'underlyingPrice'; price: Money }
   | { scope: Scope; side: 'stop' | 'target'; kind: 'structureValue';  value: Money }
-  | { scope: Scope; side: 'stop' | 'target'; kind: 'pctOfMaxProfit'; pct: number }
   | { scope: Scope; side: 'stop';            kind: 'trailing';       offset: Money | { pct: number } }
 type Scope = { level: 'trade' } | { level: 'leg'; legId: LegId }
+```
+
+**Exit-level semantics (user ruling 2026-07-19, supersedes earlier readings):**
+
+- **`underlyingPrice`** — the underlying's price that triggers the level ("AAPL at or below 390"). Applicable to any strategy. Unchanged.
+- **`structureValue`** — displayed to the trader as **"Position price"**: the net per-spread-unit QUOTED price of the option legs (the number a broker chain shows — "the 400/420 debit spread trades for 15.00", "the put can be bought back for 0.50"). Always entered as a positive quote; the crossing direction is inferred from the structure's net direction (credit vs debit, from the entry composition) plus stop/target side. Quantity scales internally (2 lots of a 15.00 spread = level still typed 15.00; the math multiplies by lot count × contract multiplier — lot count = the option legs' common quantity factor). Applicable to option-only structures (a structure holding stock offers `underlyingPrice` only). This makes the per-unit scale canonical for single- AND multi-leg — S7.3's transient whole-structure-dollars reading is superseded. The kind string `structureValue` is retained for stored-Plan compatibility; all display copy says "Position price".
+- **`pctOfMaxProfit` — REMOVED by the same ruling.** Every target is a typed price ("price only"); the old 75%-of-credit convenience is expressed directly as a buy-back Position price (75% of a 2.00 credit ≡ target 0.50). Legacy stored Plans carrying a pctOfMaxProfit level are tolerated on read (displayed inert), never produced.
+- **`trailing`** — unchanged, arrives with Slice 10.
+
+These levels feed exactly two consumers: risk/reward projections (original and ongoing) and attention ("this Trade is approaching its stop/target").
+
+```
 
 type MarkSet    = ReadonlyMap<InstrumentKey, Mark>            // one valuation date
 type MarkSeries = ReadonlyMap<InstrumentKey, Mark[]>          // date-ordered, for replay/discipline/trailing

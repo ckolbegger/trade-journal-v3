@@ -8,8 +8,9 @@ import { JournalContext } from '../journalContext'
 import type { TradeBook } from '@/books/tradebook/trade-book'
 import type { Journal } from '@/books/journal/journal'
 import type { Account, Institution } from '@/books/tradebook/types'
-import { Workspace } from '@/workspace/workspace'
+import { Workspace, CASH_SECURED_PUT_STRATEGY_ID } from '@/workspace/workspace'
 import { inMemoryBooks } from '../../../tests/support/trade-book'
+import type { StrategyTemplate } from '@/books/tradebook/types'
 
 async function seededBook(): Promise<{ book: TradeBook; journal: Journal }> {
   const { tradeBook: book, journal } = inMemoryBooks()
@@ -174,7 +175,7 @@ describe('PlanForm (CSP)', () => {
     await user.type(screen.getByLabelText(/strike/i), '100')
     await user.type(screen.getByLabelText(/quantity/i), '1')
     await user.type(screen.getByLabelText(/stop/i), '95')
-    await user.type(screen.getByLabelText(/target/i), '80')
+    await user.type(screen.getByLabelText(/target/i), '0.50')
   }
 
   it('builds a sell-to-open put Planned Leg from the template', async () => {
@@ -205,7 +206,7 @@ describe('PlanForm (CSP)', () => {
     expect(draft.strategyId).toBe('strategy-cash-secured-put')
   })
 
-  it('asks an underlyingPrice stop and a pctOfMaxProfit target per the strategy template', async () => {
+  it('asks an underlyingPrice stop and a Position price target per the strategy template', async () => {
     const { book, journal } = await seededBook()
     const spy = vi.spyOn(book, 'confirmPlan')
     renderForm(book, journal)
@@ -218,7 +219,48 @@ describe('PlanForm (CSP)', () => {
     const draft = spy.mock.calls[0][0]
     expect(draft.exitLevels).toEqual([
       { scope: { level: 'trade' }, side: 'stop', kind: 'underlyingPrice', price: 9500 },
-      { scope: { level: 'trade' }, side: 'target', kind: 'pctOfMaxProfit', pct: 80 },
+      { scope: { level: 'trade' }, side: 'target', kind: 'structureValue', value: 50 },
+    ])
+  })
+
+  // A Strategy row saved before the exit-level ruling (2026-07-19) can still
+  // carry a `pctOfMaxProfit` target template — seeding is apply-iff-absent, so
+  // an existing workspace's CSP row is never rewritten. It can't be typed as
+  // `StrategyExitTemplate` any more, so the fixture casts through `unknown`
+  // to model exactly what a legacy stored row looks like at runtime.
+  it('renders a legacy pctOfMaxProfit target template inert and never produces an underlyingPrice level from it', async () => {
+    const { book, journal } = await seededBook()
+    const csp = (await book.registries.strategies.list()).find(
+      (s) => s.id === CASH_SECURED_PUT_STRATEGY_ID,
+    )!
+    await book.registries.strategies.save({
+      ...csp,
+      exitLevels: [
+        { side: 'stop', kind: 'underlyingPrice' },
+        { side: 'target', kind: 'pctOfMaxProfit' },
+      ],
+    } as unknown as StrategyTemplate)
+
+    const spy = vi.spyOn(book, 'confirmPlan')
+    renderForm(book, journal)
+    const user = userEvent.setup()
+    await user.selectOptions(await screen.findByLabelText(/strategy/i), 'Cash-Secured Put')
+
+    expect(screen.getByText(/unsupported legacy target/i)).toBeInTheDocument()
+    expect(screen.queryByLabelText(/target/i)).not.toBeInTheDocument()
+
+    await user.type(screen.getByLabelText(/thesis/i), 'XYZ range-bound')
+    await user.type(screen.getByLabelText(/ticker/i), 'XYZ')
+    fireEvent.change(screen.getByLabelText(/expiration/i), { target: { value: '2026-08-21' } })
+    await user.type(screen.getByLabelText(/strike/i), '100')
+    await user.type(screen.getByLabelText(/quantity/i), '1')
+    await user.type(screen.getByLabelText(/stop/i), '95')
+    await user.click(screen.getByRole('button', { name: /confirm plan/i }))
+
+    expect(spy).toHaveBeenCalledTimes(1)
+    const draft = spy.mock.calls[0][0]
+    expect(draft.exitLevels).toEqual([
+      { scope: { level: 'trade' }, side: 'stop', kind: 'underlyingPrice', price: 9500 },
     ])
   })
 })

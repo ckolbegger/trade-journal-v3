@@ -272,7 +272,7 @@ describe('seeding (extension)', () => {
     expect(csp?.legs).toEqual([{ side: 'sell', instrumentKind: 'option', optionType: 'put' }])
     expect(csp?.exitLevels).toEqual([
       { side: 'stop', kind: 'underlyingPrice' },
-      { side: 'target', kind: 'pctOfMaxProfit' },
+      { side: 'target', kind: 'structureValue' },
     ])
 
     await workspace.ensureSeeded()
@@ -316,7 +316,7 @@ describe('seeding (extension)', () => {
     ])
     expect(bullPutSpread?.exitLevels).toEqual([
       { side: 'stop', kind: 'underlyingPrice' },
-      { side: 'target', kind: 'pctOfMaxProfit' },
+      { side: 'target', kind: 'structureValue' },
     ])
 
     await workspace.ensureSeeded()

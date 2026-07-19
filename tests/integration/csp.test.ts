@@ -16,9 +16,10 @@ import type {
 
 // The cash-secured put worked example over Dexie + fake-indexeddb
 // (docs/plan/slice-03-single-leg-options.md): Plan Cash-Secured Put, sell 1
-// XYZ 2026-08-21 P 100; Exit Levels: underlyingPrice stop 95, pctOfMaxProfit
-// target 80%. Fill sell 1 @ 2.50, fees $0.65. Mark contract 1.25. Then buy
-// back 0.60, closed.
+// XYZ 2026-08-21 P 100; Exit Levels: underlyingPrice stop 95, Position price
+// target 0.50 (amended per exit-level ruling 2026-07-19, was pctOfMaxProfit
+// 80%). Fill sell 1 @ 2.50, fees $0.65. Mark contract 1.25. Then buy back
+// 0.60, closed.
 
 const CONTRACT = 'XYZ 2026-08-21 P 100'
 
@@ -31,8 +32,8 @@ const stop: ExitLevel = {
 const target: ExitLevel = {
   scope: { level: 'trade' },
   side: 'target',
-  kind: 'pctOfMaxProfit',
-  pct: 80,
+  kind: 'structureValue',
+  value: 50,
 }
 
 const sellToOpen: ExecutionDraft = {

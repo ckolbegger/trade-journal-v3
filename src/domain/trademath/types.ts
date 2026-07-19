@@ -42,16 +42,20 @@ export interface CloseReason {
   name: string
 }
 
-// underlyingPrice (stock or, projected at intrinsic, option), structureValue
-// (option), and pctOfMaxProfit (short credit structures, Slice 3) this slice;
-// `trailing` and leg-scope arrive with the slices that offer them. `pct` is a
-// whole percentage (80 means 80%), matching how discipline Deviations resolve
-// it (docs/plan/slice-10-deviations-discipline.md).
+// underlyingPrice (stock or, projected at intrinsic, option) and structureValue
+// (option) this slice; `trailing` and leg-scope arrive with the slices that
+// offer them. `structureValue` is displayed to the trader as "Position price":
+// the net per-spread-unit QUOTED price of the option legs (always a positive
+// typed quote — the crossing direction is inferred from the entry structure's
+// net direction, credit vs debit — docs/design/trademath.md, "Exit-level
+// semantics", user ruling 2026-07-19). The `pctOfMaxProfit` kind existed
+// through Slice 7 and was REMOVED by that ruling — every target is a typed
+// price now; a legacy stored Plan may still carry one on read (never
+// produced), so consumers must not crash on an unrecognized `kind`.
 export type Scope = { level: 'trade' }
 export type ExitLevel =
   | { scope: Scope; side: 'stop' | 'target'; kind: 'underlyingPrice'; price: Money }
   | { scope: Scope; side: 'stop' | 'target'; kind: 'structureValue'; value: Money }
-  | { scope: Scope; side: 'stop' | 'target'; kind: 'pctOfMaxProfit'; pct: number }
 
 // A Planned Leg's instrument description. A stock leg is always concrete; an
 // option leg's strike/expiration may be TBD at plan time (legging plans,

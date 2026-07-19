@@ -5,7 +5,8 @@ import type { Page } from '@playwright/test'
 // sell 1 XYZ 2026-08-21 P 100 @ 2.60 fees $0.65, buy 1 XYZ 2026-08-21 P 90 @
 // 0.60 fees $0.65 — one linked expiration, two distinct strikes. Marks: short
 // put 1.10, long put 0.20 → structure -90.00, unrealized 110.00, total
-// 108.70; stop 97 / target 75% of max profit → plannedRisk 210.00,
+// 108.70; stop 97 / target Position price 0.50 (75% of the 2.00 credit —
+// amended per exit-level ruling 2026-07-19) → plannedRisk 210.00,
 // plannedReward 40.00, worstCaseRisk 910.00, maxReward 90.00.
 
 async function onboard(page: Page) {
@@ -37,7 +38,7 @@ test('plans, legs in, and marks a bull put spread — worked-example dashboard n
   await page.getByLabel(/quantity.*sell/i).fill('1')
   await page.getByLabel(/quantity.*buy/i).fill('1')
   await page.getByLabel(/stop/i).fill('97')
-  await page.getByLabel(/target/i).fill('75')
+  await page.getByLabel(/target/i).fill('0.50')
   await page.getByRole('button', { name: /confirm plan/i }).click()
   await expect(page.getByRole('heading', { name: 'Plan journal' })).toBeVisible()
   await page.getByRole('button', { name: /skip/i }).click()

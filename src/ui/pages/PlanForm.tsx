@@ -19,9 +19,19 @@ import type {
 // The confirmed Plan is immutable — this form is the only place it is written.
 
 function exitTemplateLabel(kind: StrategyExitTemplate['kind']): string {
-  if (kind === 'structureValue') return 'structure value'
-  if (kind === 'pctOfMaxProfit') return '% of max profit'
+  if (kind === 'structureValue') return 'position price'
   return 'underlying price'
+}
+
+// A Strategy row saved before the exit-level ruling (2026-07-19) may still
+// carry a `pctOfMaxProfit` exit template — seeding is apply-iff-absent, so an
+// existing workspace's CSP/Bull Put Spread rows are never rewritten. That
+// `kind` no longer exists on `StrategyExitTemplate`'s type, but the STORED
+// value can still be it at runtime — this must render inert (never coerced
+// into an underlyingPrice level the trader never asked for) rather than
+// silently falling through the structureValue/underlyingPrice if-else below.
+function isSupportedExitKind(kind: StrategyExitTemplate['kind']): boolean {
+  return kind === 'underlyingPrice' || kind === 'structureValue'
 }
 
 export function PlanForm() {
@@ -91,8 +101,8 @@ export function PlanForm() {
   const requiresExpiration = legs.some((l) => l.instrumentKind === 'option' && !l.tbdAllowed)
   const stopTemplate = strategy?.exitLevels.find((e) => e.side === 'stop')
   const targetTemplate = strategy?.exitLevels.find((e) => e.side === 'target')
-  const asksStop = stopTemplate !== undefined
-  const asksTarget = targetTemplate !== undefined
+  const asksStop = stopTemplate !== undefined && isSupportedExitKind(stopTemplate.kind)
+  const asksTarget = targetTemplate !== undefined && isSupportedExitKind(targetTemplate.kind)
 
   const qtyFor = (i: number): string => (isMultiLeg ? (qtyByLeg[i] ?? '') : qty)
   const setQtyFor = (i: number, value: string): void => {
@@ -144,9 +154,6 @@ export function PlanForm() {
     template: StrategyExitTemplate,
     value: string,
   ): ExitLevel {
-    if (template.kind === 'pctOfMaxProfit') {
-      return { scope: { level: 'trade' }, side, kind: 'pctOfMaxProfit', pct: Number(value) }
-    }
     if (template.kind === 'structureValue') {
       return {
         scope: { level: 'trade' },
@@ -166,8 +173,8 @@ export function PlanForm() {
   async function confirm() {
     if (!canConfirm || legs.length === 0) return
     const exitLevels: ExitLevel[] = []
-    if (stopTemplate) exitLevels.push(buildExitLevel('stop', stopTemplate, stop))
-    if (targetTemplate) exitLevels.push(buildExitLevel('target', targetTemplate, target))
+    if (asksStop) exitLevels.push(buildExitLevel('stop', stopTemplate!, stop))
+    if (asksTarget) exitLevels.push(buildExitLevel('target', targetTemplate!, target))
 
     const tickerUpper = ticker.trim().toUpperCase()
     const plannedLegs: PlanDraft['plannedLegs'] = legs.map((l, i) => ({
@@ -354,28 +361,38 @@ export function PlanForm() {
           </button>
         </div>
 
-        {stopTemplate && (
-          <label className={field}>
-            Stop ({exitTemplateLabel(stopTemplate.kind)})
-            <input
-              className={`${input} ${num}`}
-              value={stop}
-              onChange={(e) => setStop(e.target.value)}
-              inputMode="decimal"
-            />
-          </label>
-        )}
-        {targetTemplate && (
-          <label className={field}>
-            Target ({exitTemplateLabel(targetTemplate.kind)})
-            <input
-              className={`${input} ${num}`}
-              value={target}
-              onChange={(e) => setTarget(e.target.value)}
-              inputMode="decimal"
-            />
-          </label>
-        )}
+        {stopTemplate &&
+          (asksStop ? (
+            <label className={field}>
+              Stop ({exitTemplateLabel(stopTemplate.kind)})
+              <input
+                className={`${input} ${num}`}
+                value={stop}
+                onChange={(e) => setStop(e.target.value)}
+                inputMode="decimal"
+              />
+            </label>
+          ) : (
+            <p className="text-xs text-slate-500">
+              Stop: unsupported legacy target — re-plan with a Position price
+            </p>
+          ))}
+        {targetTemplate &&
+          (asksTarget ? (
+            <label className={field}>
+              Target ({exitTemplateLabel(targetTemplate.kind)})
+              <input
+                className={`${input} ${num}`}
+                value={target}
+                onChange={(e) => setTarget(e.target.value)}
+                inputMode="decimal"
+              />
+            </label>
+          ) : (
+            <p className="text-xs text-slate-500">
+              Target: unsupported legacy target — re-plan with a Position price
+            </p>
+          ))}
 
         <label className={field}>
           Chart link (optional)

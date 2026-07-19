@@ -214,8 +214,9 @@ describe('TradeMath.riskReward (structureValue levels)', () => {
 
 // The cash-secured put worked example (docs/plan/slice-03-single-leg-options.md):
 // Plan Cash-Secured Put, sell 1 XYZ 2026-08-21 P 100; Exit Levels: underlyingPrice
-// stop 95, pctOfMaxProfit target 80%. Fill sell 1 @ 2.50, fees $0.65. Mark
-// contract 1.25.
+// stop 95, Position price target 0.50 (the 20%-of-credit buyback — amended per
+// exit-level ruling 2026-07-19, was pctOfMaxProfit 80%). Fill sell 1 @ 2.50,
+// fees $0.65. Mark contract 1.25.
 describe('TradeMath.riskReward (short put)', () => {
   const XYZ_PUT = {
     kind: 'option',
@@ -231,11 +232,11 @@ describe('TradeMath.riskReward (short put)', () => {
     kind: 'underlyingPrice',
     price: 9500,
   }
-  const pctTarget: ExitLevel = {
+  const positionPriceTarget: ExitLevel = {
     scope: { level: 'trade' },
     side: 'target',
-    kind: 'pctOfMaxProfit',
-    pct: 80,
+    kind: 'structureValue',
+    value: 50, // 0.50 buyback — 20% of the 2.50 credit remains (80% target)
   }
 
   function cspTrade(executions: ExecutionFacts[], exitLevels: ExitLevel[]): TradeRecord {
@@ -272,22 +273,34 @@ describe('TradeMath.riskReward (short put)', () => {
   }
 
   it('computes plannedRisk 375.00 via intrinsic at the 95 stop', () => {
-    const rr = riskReward(cspTrade([sellToOpen()], [underlyingStop, pctTarget]), contractMark(125))
+    const rr = riskReward(
+      cspTrade([sellToOpen()], [underlyingStop, positionPriceTarget]),
+      contractMark(125),
+    )
     expect(rr.plannedRisk).toBe(37500)
   })
 
   it('computes worstCaseRisk 9875.00 (stock to zero)', () => {
-    const rr = riskReward(cspTrade([sellToOpen()], [underlyingStop, pctTarget]), contractMark(125))
+    const rr = riskReward(
+      cspTrade([sellToOpen()], [underlyingStop, positionPriceTarget]),
+      contractMark(125),
+    )
     expect(rr.worstCaseRisk).toBe(987500)
   })
 
-  it('resolves the 80% pctOfMaxProfit target to a 0.50 buyback and plannedReward 75.00', () => {
-    const rr = riskReward(cspTrade([sellToOpen()], [underlyingStop, pctTarget]), contractMark(125))
+  it('resolves the 0.50 Position price target (the 80% pctOfMaxProfit-equivalent buyback) to plannedReward 75.00', () => {
+    const rr = riskReward(
+      cspTrade([sellToOpen()], [underlyingStop, positionPriceTarget]),
+      contractMark(125),
+    )
     expect(rr.plannedReward).toBe(7500)
   })
 
   it('computes maxReward 125.00 (mark to zero)', () => {
-    const rr = riskReward(cspTrade([sellToOpen()], [underlyingStop, pctTarget]), contractMark(125))
+    const rr = riskReward(
+      cspTrade([sellToOpen()], [underlyingStop, positionPriceTarget]),
+      contractMark(125),
+    )
     expect(rr.maxReward).toBe(12500)
   })
 
@@ -303,7 +316,7 @@ describe('TradeMath.riskReward (short put)', () => {
       timestamp: new Date('2026-07-20T12:00:00').getTime(),
     }
     const rr = riskReward(
-      cspTrade([sellToOpen(), buyToClose], [underlyingStop, pctTarget]),
+      cspTrade([sellToOpen(), buyToClose], [underlyingStop, positionPriceTarget]),
       new Map(),
     )
     expect(rr.original.risk).toBe(25000)
@@ -330,12 +343,18 @@ describe('TradeMath.riskReward (off-template opening sides)', () => {
     strike: 10000,
   } as const
 
-  const pctTarget: ExitLevel = {
+  // A `pctOfMaxProfit`-kind level is what a Plan stored before the
+  // exit-level ruling (2026-07-19, docs/design/trademath.md) could carry —
+  // removed from the `ExitLevel` type, tolerated on read, never produced. It
+  // can't be typed as `ExitLevel` any more (that's the point: no code path
+  // constructs one), so the fixture casts through `unknown` to model exactly
+  // what a legacy stored record looks like at runtime.
+  const legacyPctTarget = {
     scope: { level: 'trade' },
     side: 'target',
     kind: 'pctOfMaxProfit',
     pct: 80,
-  }
+  } as unknown as ExitLevel
 
   function tradeWith(
     instrument: typeof XYZ_CALL | typeof XYZ_STOCK | typeof XYZ_PUT,
@@ -385,11 +404,12 @@ describe('TradeMath.riskReward (off-template opening sides)', () => {
     expect(rr.worstCaseRisk).toBe('unlimited')
   })
 
-  it("returns plannedReward 'undefined' for a long Leg with a pctOfMaxProfit target", () => {
-    // pctOfMaxProfit is a short-credit concept (slice-10: credit × (1 − pct/100));
-    // a long Leg has no credit to take a percentage of.
+  it("returns plannedReward 'undefined' for a legacy pctOfMaxProfit-kind level rather than crashing", () => {
+    // Removed by the exit-level ruling (2026-07-19) — a pre-ruling stored
+    // Plan may still carry one; `projectedDelta` must not recognize it and
+    // must not throw, just report 'undefined' (render inert).
     const rr = riskReward(
-      tradeWith(XYZ_PUT, 'buy', [pctTarget]),
+      tradeWith(XYZ_PUT, 'buy', [legacyPctTarget]),
       markOf('XYZ 2026-08-21 P 100', 1400),
     )
     expect(rr.plannedReward).toBe('undefined')

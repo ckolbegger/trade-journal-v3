@@ -15,17 +15,15 @@ import { contractMultiplierOf } from './multiplier'
 // from the actual entry basis to the ORIGINAL Plan's stop/target, for contrast;
 // it is 'undefined' until the first Execution exists. A Trade-scope stop/target is
 // `underlyingPrice` (stock's own scale, or an option projected at intrinsic —
-// ADR 0009, decided in Slice 3), `structureValue` (a Trade value — single-Leg
-// scale, or the whole structure's, see below), or `pctOfMaxProfit` (a credit
-// structure's buyback price at which that % of the entry credit is realized) —
-// `projectedDelta` (below) resolves `underlyingPrice`/`pctOfMaxProfit`
-// structurally over every held Leg, and routes `structureValue` itself: a
-// single held Leg still goes through `priceAtLevel` (its own per-unit Mark
-// scale); two or more Legs read `level.value` directly as the WHOLE
-// structure's signed value (Slice 7.3) — these are two DIFFERENT scales for
-// the same ExitLevel kind, unreconciled pending a ruling (flagged again at
-// `projectedDelta`, below — Slice 10 readers, take note before building
-// discipline detection on top of `structureValue`).
+// ADR 0009, decided in Slice 3) or `structureValue` — displayed to the trader as
+// "Position price": the net per-spread-unit QUOTED price of the option legs,
+// always a positive typed quote (user ruling 2026-07-19, docs/design/
+// trademath.md). This per-unit scale is canonical for single- AND multi-leg
+// structures alike — `projectedDelta` (below) multiplies the quote by the
+// contract multiplier, the option legs' shared lot count (their qty GCD), and
+// a DIRECTION inferred from the entry structure's net sign (credit → negative,
+// debit → positive) — the same one formula a single held Leg already used
+// (Slice 3.1), now generalized rather than special-cased.
 //
 // Multi-leg (Slice 7): worstCaseRisk/maxReward and an `underlyingPrice` stop/
 // target project the WHOLE structure's signed value at a given underlying
@@ -35,12 +33,14 @@ import { contractMultiplierOf } from './multiplier'
 // (the short call's slope cancels the stock's as the underlying rises)
 // instead of 'unlimited', and lets a ratio write's local peak at its short
 // strike show a positive maxReward instead of the nonsense a S→0/S→∞-only
-// scan would produce (a negative "max reward"). `pctOfMaxProfit` resolves
-// structurally too (Slice 7.2, `projectedDelta` below) — a spread's max
-// profit is its NET entry credit, not one Leg's own credit. `structureValue`
-// resolves structurally too as of Slice 7.3 (see above) — `original` uses the
-// SAME projection machinery over the Trade's entry basis (every Leg's opening
+// scan would produce (a negative "max reward"). `original` uses the SAME
+// projection machinery over the Trade's entry basis (every Leg's opening
 // fills) instead of today's Marks — one formula, two inputs.
+//
+// A stray `pctOfMaxProfit`-kind level from a pre-ruling stored Plan (never
+// produced going forward) falls through every `level.kind` branch below —
+// `projected` stays `undefined`, so `projectedDelta` reports 'undefined'
+// rather than crashing (legacy tolerance, same ruling).
 
 // An option's intrinsic value at a given underlying price — the only "worth"
 // TradeMath ever assigns an option away from its own Mark (no pricing model,
@@ -49,25 +49,6 @@ function intrinsicAt(instrument: OptionInstrument, underlyingPrice: number): num
   return instrument.type === 'put'
     ? Math.max(instrument.strike - underlyingPrice, 0)
     : Math.max(underlyingPrice - instrument.strike, 0)
-}
-
-// Resolves a `structureValue` ExitLevel to a raw per-unit price, before
-// qty/multiplier/sign are applied — already expressed at that per-unit scale
-// (the contract's own Mark scale). `underlyingPrice` and `pctOfMaxProfit`
-// resolve structurally instead (`projectedDelta`, below, over the WHOLE
-// structure); `structureValue` on TWO OR MORE Legs also resolves structurally
-// there (`level.value` read directly, no per-unit scale) — this function is
-// reached only for the single-Leg case, where the Leg's own Mark scale is
-// still what `structureValue` names (`projectedDelta`'s `legs.length === 1`
-// branch, below).
-function priceAtLevel(
-  level: Exclude<ExitLevel, { kind: 'pctOfMaxProfit' }>,
-  leg: LegFacts,
-): number | undefined {
-  if (level.kind === 'underlyingPrice' && leg.instrument.kind === 'option') {
-    return intrinsicAt(leg.instrument, level.price)
-  }
-  return level.kind === 'underlyingPrice' ? level.price : level.value
 }
 
 function stopLevel(trade: TradeRecord): ExitLevel | undefined {
@@ -224,27 +205,43 @@ function structuralExtremes(legs: LegBasis[]): { min: number; max: number } {
   }
 }
 
+function gcd(a: number, b: number): number {
+  return b === 0 ? a : gcd(b, a % b)
+}
+
+// The option legs' common quantity factor — every current seed's option legs
+// share one qty (a spread's two legs, a PMCC's two calls, a single held
+// contract), so this is that shared qty; the GCD generalizes it for an
+// uneven multi-lot structure without special-casing the common case (user
+// ruling 2026-07-19).
+function lotCountOf(legs: LegBasis[]): number {
+  return legs.map((l) => l.qty).reduce(gcd)
+}
+
+// Resolves a `structureValue` ExitLevel — displayed as "Position price" — to
+// a signed projected structure value. `level.value` is always a positive
+// per-unit QUOTED price (the broker-chain number, e.g. "the spread trades for
+// 15.00"); DIRECTION is inferred from the entry structure's own net sign
+// (credit → negative, i.e. the same sign a short Leg's entry already carries;
+// debit/flat → positive) — the same formula as `structureValueAt`, just at
+// the quote's own per-unit scale instead of intrinsic value. This is one
+// formula for single- AND multi-leg structures (user ruling 2026-07-19):
+// a single held Leg's own Mark scale already coincided with this per-unit
+// scale (Slice 3.1), so it falls out of the general case unchanged.
+function projectedStructureValue(legs: LegBasis[], quote: number): number {
+  const multiplier = contractMultiplierOf(legs[0].leg.instrument)
+  const direction = entryStructureValue(legs) < 0 ? -1 : 1
+  return direction * quote * multiplier * lotCountOf(legs)
+}
+
 // Projects an ExitLevel's risk or reward delta against `legs`, from
 // `currentValue` (today's Marks for the ongoing anchors, or the entry
 // structure value for `original`) — the one formula both share.
-// `underlyingPrice` projects the WHOLE structure at that price.
-// `pctOfMaxProfit` resolves structurally too (Slice 7.2): a structure's max
-// profit is its entry credit — `entryStructureValue` summed across every
-// held Leg, not one Leg's own avgEntry — realized when the structure is
-// bought back at 0; pct% of it is realized at `entry * (1 - pct/100)` (the
-// SAME formula a single short Leg already used, since a 1-Leg structure's
-// entryStructureValue reduces to exactly that Leg's signed entry value). A
-// net-debit (or flat) structure has no credit to take a percentage of, same
-// as a single long Leg. `structureValue` routes on Leg count: exactly one
-// held Leg still resolves via `priceAtLevel` (that Leg's own per-unit Mark
-// scale, unchanged since Slice 3); two or more read `level.value` directly as
-// the WHOLE structure's signed value (Slice 7.3, PMCC's structureValue stop/
-// target). These are two DIFFERENT scales for the same ExitLevel kind — a
-// single-Leg Trade's `structureValue` does NOT mean the same thing a
-// multi-Leg Trade's does, and nothing here reconciles them; that is a SPEC
-// QUESTION for the user at the next slice boundary that touches
-// `structureValue` (e.g. Slice 10's discipline detection), not a call an
-// implementer resolves silently.
+// `underlyingPrice` projects the WHOLE structure at that price;
+// `structureValue` resolves via `projectedStructureValue` above. A level
+// whose `kind` matches neither (a legacy pre-ruling `pctOfMaxProfit` level,
+// tolerated on read but never produced) leaves `projected` undefined, so this
+// reports 'undefined' rather than crashing.
 function projectedDelta(
   legs: LegBasis[],
   level: ExitLevel,
@@ -254,25 +251,8 @@ function projectedDelta(
   let projected: number | undefined
   if (level.kind === 'underlyingPrice') {
     projected = structureValueAt(legs, level.price)
-  } else if (level.kind === 'pctOfMaxProfit') {
-    const entry = entryStructureValue(legs)
-    if (entry < 0) projected = entry * (1 - level.pct / 100)
   } else if (level.kind === 'structureValue') {
-    if (legs.length === 1) {
-      const price = priceAtLevel(level, legs[0].leg)
-      if (price !== undefined) {
-        const sign = legs[0].side === 'short' ? -1 : 1
-        const multiplier = contractMultiplierOf(legs[0].leg.instrument)
-        projected = sign * legs[0].qty * price * multiplier
-      }
-    } else {
-      // Multi-leg (Slice 7.3): the level names the WHOLE structure's signed
-      // value directly (the same scale as `currentValue`/`structureValueAt`),
-      // generalizing the single-Leg case above — there, a lone Leg's own Mark
-      // scale coincides with the structure's scale, so this is the same
-      // anchor, just no longer tied to one Leg's per-unit price.
-      projected = level.value
-    }
+    projected = projectedStructureValue(legs, level.value)
   }
   if (projected === undefined) return 'undefined'
   return Math.round(direction === 'risk' ? currentValue - projected : projected - currentValue)

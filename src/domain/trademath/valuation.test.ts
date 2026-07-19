@@ -222,7 +222,7 @@ describe('TradeMath.valuation (short)', () => {
         plannedLegs: [{ side: 'sell', instrument: XYZ_PUT, qty: 1 }],
         exitLevels: [
           { scope: { level: 'trade' }, side: 'stop', kind: 'underlyingPrice', price: 9500 },
-          { scope: { level: 'trade' }, side: 'target', kind: 'pctOfMaxProfit', pct: 80 },
+          { scope: { level: 'trade' }, side: 'target', kind: 'structureValue', value: 50 },
         ],
         plannedAt: '2026-07-10',
       },

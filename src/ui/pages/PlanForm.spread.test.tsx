@@ -69,7 +69,7 @@ describe('PlanForm (spread)', () => {
     await user.type(screen.getByLabelText(/quantity.*sell/i), '1')
     await user.type(screen.getByLabelText(/quantity.*buy/i), '1')
     await user.type(screen.getByLabelText(/stop/i), '97')
-    await user.type(screen.getByLabelText(/target/i), '75')
+    await user.type(screen.getByLabelText(/target/i), '0.50')
     await user.click(screen.getByRole('button', { name: /confirm plan/i }))
 
     expect(spy).toHaveBeenCalledTimes(1)
@@ -100,7 +100,7 @@ describe('PlanForm (spread)', () => {
     ])
     expect(draft.exitLevels).toEqual([
       { scope: { level: 'trade' }, side: 'stop', kind: 'underlyingPrice', price: 9700 },
-      { scope: { level: 'trade' }, side: 'target', kind: 'pctOfMaxProfit', pct: 75 },
+      { scope: { level: 'trade' }, side: 'target', kind: 'structureValue', value: 50 },
     ])
   })
 

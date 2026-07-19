@@ -20,10 +20,10 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
 - plannedRisk $800 (14→6) · worstCaseRisk $1,400 (option to zero) · plannedReward $1,000 (14→24) · maxReward `'unlimited'`
 - original: risk $600 (12→6), reward $1,200 (12→24)
 
-*Cash-secured put* — Plan: Cash-Secured Put, sell 1 `XYZ 2026-08-21 P 100`; Exit Levels: underlyingPrice stop 95, pctOfMaxProfit target 80%. Fill: sell 1 @ 2.50, fees $0.65. Marks: contract 1.25, underlying 103.
+*Cash-secured put* — Plan: Cash-Secured Put, sell 1 `XYZ 2026-08-21 P 100`; Exit Levels: underlyingPrice stop 95, Position price target 0.50 (amended per exit-level ruling 2026-07-19, was pctOfMaxProfit target 80%). Fill: sell 1 @ 2.50, fees $0.65. Marks: contract 1.25, underlying 103.
 - Position −1 contract · currentValue −$125 · unrealized +$125 · total $124.35
 - plannedRisk $375 (value −125 → intrinsic at 95 = −500) · worstCaseRisk $9,875 (stock to zero: put worth 100 → value −10,000)
-- plannedReward $75 (target = buy back at 20% of 2.50 credit = 0.50) · maxReward $125 (to zero)
+- plannedReward $75 (target = buy back at 0.50, 20% of the 2.50 credit remains) · maxReward $125 (to zero)
 
 ---
 
@@ -95,9 +95,9 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
 
 > As a trader, I want to sell a put I'm willing to be assigned on and track what staying short risks from today's price, so that credit trades show honest mark-to-market risk, not "premium collected" comfort.
 
-**Deep interfaces**: sell-to-open Executions (short Lots), short-position math throughout `positionOf / valuation / riskReward` (deferred from Slice 1), `ExitLevel` kind `pctOfMaxProfit`, intrinsic projection for `underlyingPrice` levels; seed: Strategy **Cash-Secured Put**.
+**Deep interfaces**: sell-to-open Executions (short Lots), short-position math throughout `positionOf / valuation / riskReward` (deferred from Slice 1), `ExitLevel` kind `structureValue` (Position price target; amended per exit-level ruling 2026-07-19, was `pctOfMaxProfit`), intrinsic projection for `underlyingPrice` levels; seed: Strategy **Cash-Secured Put**.
 
-**Seed content** — Strategy "Cash-Secured Put": planned leg sell 1 put; asks underlyingPrice stop + pctOfMaxProfit target.
+**Seed content** — Strategy "Cash-Secured Put": planned leg sell 1 put; asks underlyingPrice stop + a Position price target.
 
 ### Tasks
 
@@ -113,7 +113,7 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
   describe "TradeMath.riskReward (short put)"
   - it computes plannedRisk 375.00 via intrinsic at the 95 stop
   - it computes worstCaseRisk 9875.00 (stock to zero)
-  - it resolves the 80% pctOfMaxProfit target to a 0.50 buyback and plannedReward 75.00
+  - it resolves the 0.50 Position price target (the 80% pctOfMaxProfit-equivalent buyback — amended per exit-level ruling 2026-07-19) to plannedReward 75.00
   - it computes maxReward 125.00 (mark to zero)
   ```
 

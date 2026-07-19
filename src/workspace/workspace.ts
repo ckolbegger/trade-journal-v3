@@ -189,15 +189,16 @@ const LONG_PUT_STRATEGY: StrategyTemplate = {
 }
 
 // Planned leg sell 1 put (strike/expiration asked at plan time); asks
-// underlyingPrice stop + pctOfMaxProfit target (the first short position,
-// docs/plan/slice-03-single-leg-options.md).
+// underlyingPrice stop + a Position price target (the first short position,
+// docs/plan/slice-03-single-leg-options.md; target kind amended from
+// pctOfMaxProfit per the exit-level ruling 2026-07-19).
 const CASH_SECURED_PUT_STRATEGY: StrategyTemplate = {
   id: CASH_SECURED_PUT_STRATEGY_ID,
   name: 'Cash-Secured Put',
   legs: [{ side: 'sell', instrumentKind: 'option', optionType: 'put' }],
   exitLevels: [
     { side: 'stop', kind: 'underlyingPrice' },
-    { side: 'target', kind: 'pctOfMaxProfit' },
+    { side: 'target', kind: 'structureValue' },
   ],
 }
 
@@ -220,8 +221,9 @@ const COVERED_CALL_STRATEGY: StrategyTemplate = {
 // Planned legs sell 1 put + buy 1 put (lower strike, same expiration —
 // docs/plan/slice-07-multi-leg.md) — both concrete at plan time (unlike the
 // Covered Call's TBD call leg, this is not a legging plan); asks trade-scope
-// underlyingPrice stop + pctOfMaxProfit target, resolved against the
-// structure's net credit (Slice 7.2).
+// underlyingPrice stop + a Position price target, resolved against the
+// structure's net credit (Slice 7.2; target kind amended from pctOfMaxProfit
+// per the exit-level ruling 2026-07-19).
 const BULL_PUT_SPREAD_STRATEGY: StrategyTemplate = {
   id: BULL_PUT_SPREAD_STRATEGY_ID,
   name: 'Bull Put Spread',
@@ -231,7 +233,7 @@ const BULL_PUT_SPREAD_STRATEGY: StrategyTemplate = {
   ],
   exitLevels: [
     { side: 'stop', kind: 'underlyingPrice' },
-    { side: 'target', kind: 'pctOfMaxProfit' },
+    { side: 'target', kind: 'structureValue' },
   ],
 }
 
