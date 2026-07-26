@@ -133,10 +133,12 @@ Aggregates closed Trades' results as multiples of planned risk (R-multiples), th
 - **A separate weekly/monthly review ritual** — the Performance Reporting view with date filtering serves this need.
 
 **Trade lifecycle**:
-A Trade moves through three states:
+A Trade moves through three states, **stored authoritatively** (not derived on read — see ADR 0006):
 - **Planned** — Plan committed, no fills yet. Pre-entry reflection placeholder is due.
 - **Open** — at least one fill has landed. P&L is tracked (unrealized while non-flat).
 - **Closed** — the Trade is over. Post-trade review placeholder is due.
+
+Transitions happen when a fill is recorded: first fill moves Planned→Open; the fill that flats the position moves Open→Closed. `flat` (net-position-zero) is still a CalculationModule function — it's computed **once, at fill-record time, for the one Trade being modified** to detect the transition. It is NOT re-derived across all Trades on every query.
 
 **Close rule**: a Trade closes **when its net position goes flat** (zero shares, zero contracts) — universally, regardless of strategy. This single rule correctly handles every case:
 - A covered call's call expiring does **not** close the Trade (shares still held → not flat).
@@ -144,7 +146,7 @@ A Trade moves through three states:
 - Scaling in/out does **not** close the Trade until the last partial exits.
 - The wheel runs as a **sequence of Trades, one per cycle** — each cycle closes flat (e.g. shares called away), and the next put starts a new Trade with its own Plan. Viewing a whole wheel as one picture is a **reporting grouping** (by symbol + strategy tag), not a lifecycle concept.
 
-Close is **computable from fills** — no strategy-specific logic, no trader-declared close event required.
+Close is **computable from fills** (no strategy-specific logic, no trader-declared close event) — but the resulting status is **stored**, not recomputed per query.
 
 **Journal Placeholder**:
 A pending Journal Entry the trader owes at a consequential moment. Two tiers:
