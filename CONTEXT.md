@@ -35,7 +35,9 @@ The condition(s) that, if met, prove the thesis wrong and signal the Trade shoul
 _Avoid_: Stop (a stop is a price level; invalidation is the broader concept)
 
 **P&L (profit and loss)**:
-The realized and unrealized gain or loss of a Trade, **computed from the fills**, never stored as a fact.
+The realized and unrealized gain or loss of a Trade, **computed from the fills**.
+- **Open Trades**: computed live on every read (marks change daily).
+- **Closed Trades**: a **figure-set snapshot** (P&L + the full `evaluate()` result: R-multiple, planned-vs-realized R:R, risk quantities as-of close, etc.) is **computed once at close and stored** as a regeneratable cache (see ADR 0007). Authoritative for display; invalidated and regenerated when underlying facts or the calc change. Read from the snapshot to avoid O(N)-growing recomputation in reporting over years of closed Trades; lazy-populate if null.
 _Avoid_: Result, return
 
 **Risk:reward**:
@@ -135,10 +137,10 @@ Aggregates closed Trades' results as multiples of planned risk (R-multiples), th
 **Trade lifecycle**:
 A Trade moves through three states, **stored authoritatively** (not derived on read — see ADR 0006):
 - **Planned** — Plan committed, no fills yet. Pre-entry reflection placeholder is due.
-- **Open** — at least one fill has landed. P&L is tracked (unrealized while non-flat).
-- **Closed** — the Trade is over. Post-trade review placeholder is due.
+- **Open** — at least one fill has landed. Figures (P&L, risk, R:R) computed live on every read; marks change daily.
+- **Closed** — the Trade is over. Post-trade review placeholder is due. A **figure-set snapshot** is computed once at close and stored as a regeneratable cache (see ADR 0007) so reporting over years of closed Trades doesn't recompute immutable inputs.
 
-Transitions happen when a fill is recorded: first fill moves Planned→Open; the fill that flats the position moves Open→Closed. `flat` (net-position-zero) is still a CalculationModule function — it's computed **once, at fill-record time, for the one Trade being modified** to detect the transition. It is NOT re-derived across all Trades on every query.
+Transitions happen when a fill is recorded: first fill moves Planned→Open; the fill that flats the position moves Open→Closed (and triggers the figure-set snapshot). `flat` (net-position-zero) is still a CalculationModule function — it's computed **once, at fill-record time, for the one Trade being modified** to detect the transition. It is NOT re-derived across all Trades on every query.
 
 **Close rule**: a Trade closes **when its net position goes flat** (zero shares, zero contracts) — universally, regardless of strategy. This single rule correctly handles every case:
 - A covered call's call expiring does **not** close the Trade (shares still held → not flat).
