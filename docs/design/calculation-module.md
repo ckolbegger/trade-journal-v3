@@ -42,7 +42,9 @@ isFlat(fills: Fill[]): boolean
 ```ts
 /** Identifiers (type aliases for readability; backing type is string). */
 type TradeId = string
+type FillId = string               // store-assigned; calc ignores (needed by TradingRecordStore.correctFill + ReflectionStore fill-level journal)
 type AccountId = string
+type StrategyId = string           // store-owned tag; calc ignores (Performance Reporting filters on it)
 type InstrumentId = string
 type Price = number
 
@@ -53,7 +55,9 @@ type TradeRecord = {
   tradeId: TradeId
   accountId: AccountId
   underlying: InstrumentId          // risk keyed off this; Price Marks looked up by it
+  strategy: StrategyId             // STORE-OWNED — calc ignores; Performance Reporting filters on it
   status: Lifecycle                 // stored authoritatively (ADR 0006); echoed, not derived
+  closedAt?: Date                   // STORE-OWNED (resolved OQ 11) — present iff Closed; snapshot-regen asOf. Calc ignores.
   plan: Plan                        // original levels, committed before first fill
   revisions: PlanRevision[]        // append-only, dated (ADR 0001)
   fills: Fill[]                     // each carries instrument-type per leg (ADR 0005)
@@ -78,6 +82,7 @@ type PlanRevision = {               // never overwrites; appends (ADR 0001)
 }
 
 type Fill = {
+  fillId: FillId                    // STORE-OWNED — calc ignores; needed by TradingRecordStore.correctFill + ReflectionStore fill-level journal
   instrument: InstrumentId
   side: 'buy' | 'sell'
   quantity: number                  // unsigned; sign derived from side

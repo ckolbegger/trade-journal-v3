@@ -101,7 +101,7 @@ module).
 
 | # | Module | Kind | Est. methods | Responsibilities |
 |---|---|---|---|---|
-| 1 | **TradingRecordStore** | store | ~7 | The trading record itself: Trade identity + lifecycle status (Planned/Open/Closed, stored per ADR 0006) + optional finalFigures snapshot (per ADR 0007) + Plan (original levels, thesis, invalidation, entry emotion) + PlanRevision (append-only dated deltas, ADR 0001) + Fill (instrument, side, qty, price, time, instrument-type per leg, underlying). Owns invariants: plan-before-fill, revisions append-only & dated. Owns lifecycle transitions (first fill → Open; flat → Closed + snapshot). Returns a Trade as a cohesive bundle (trade + plan + all revisions + all fills). Stores NO live P&L, position size, or risk — all derived (closed trades cache their final figures). |
+| 1 | **TradingRecordStore** | store | 7 | The trading record itself: Trade identity + lifecycle status (Planned/Open/Closed, stored per ADR 0006) + optional finalFigures snapshot (per ADR 0007) + Plan (original levels, thesis, invalidation, entry emotion) + PlanRevision (append-only dated deltas, ADR 0001) + Fill (instrument, side, qty, price, time, instrument-type per leg, underlying, fillId). Seven ops: `commit`, `recordFill` (the only status-mutating op — absorbs append + transition + close-snapshot; no raw `setStatus` exists), `appendRevision`, `correctFill` (invalidates the snapshot, signals possible status invalidity), `getTradeRecord`, `listTrades` (collapses listOpenTrades + listTradeIds into one filtered op), `importTrade` (verbatim restore with derive-on-import, ADRs 0006/0007). Owns invariants: plan-before-fill, revisions append-only & dated, recordFill-on-Closed rejects, appendRevision-on-Closed rejects. Owns lifecycle transitions (first fill → Open; flat → Closed + snapshot). Returns a Trade as a cohesive bundle (trade + plan + all revisions + all fills). Carries three store-owned fields calc ignores: `strategy` (Reporting filter), `closedAt` (snapshot-regen asOf, OQ 11), `fillId` (correction + fill-level journal). Stores NO live P&L, position size, or risk — all derived (closed trades cache their final figures). Drilled down — see [design doc](trading-record-store.md). |
 | 2 | **ReflectionStore** | store | ~8 | Reflection + its self-describing form: Journal Entry (content, timestamp, 3-level attachment discriminator Trade/Fill/Market per ADR 0004, parent ref, optional market-entry↔trade links) + Entry Schema definitions (live templates, forward-only) + the schema snapshot embedded per entry (ADR 0003). Stores NO "placeholder due" — derived from lifecycle ∩ existing entries. |
 | 3 | **PriceMarkStore** | store | ~4 | End-of-day Price Mark, keyed (instrument, date), shared/deduplicated across Trades (ADR 0002). Pure fact. The clean seam for the deferred market-data API (manual now → API default later). Serves the chart's underlying-price axis and unrealized-P&L marking. |
 | 4 | **AccountStore** | store | ~3 | Account facts (broker, account identity). Slow-changing reference, referenced by ID from Trade. |
@@ -128,10 +128,13 @@ CalculationModule (rules 2 and the data-contract principle).
 // The data contract every store must serve. Dictated here, consumed by stores.
 // See calculation-module.md for the full, pinned interface.
 type TradeRecord = {
-  tradeId, accountId, underlying, status: 'Planned'|'Open'|'Closed',
+  tradeId, accountId, underlying,
+  strategy,                            // STORE-OWNED — calc ignores (Reporting filter)
+  status: 'Planned'|'Open'|'Closed',
+  closedAt?,                           // STORE-OWNED (OQ 11) — present iff Closed; snapshot-regen asOf. Calc ignores.
   plan: { entry, stop, target, thesis, invalidation, entryEmotion, committedAt },
   revisions: PlanRevision[],          // append-only, dated (ADR 0001)
-  fills: Fill[],                       // each carries instrument-type per leg (ADR 0005)
+  fills: Fill[],                       // each carries fillId + instrument-type per leg (ADR 0005)
   finalFigures?: FigureSet,            // present iff Closed (ADR 0007)
 }
 type Marks = Map<InstrumentId, Price>  // plain data, not a function (OQ 1 → B)
@@ -198,16 +201,20 @@ call nothing. Coordinators call stores + pure modules.
 
 | | TradingRecord | Reflection | PriceMark | Account | Taxonomy | Calc | PerfAnalytics |
 |---|---|---|---|---|---|---|---|
-| **PlanCommitCoordinator** | write | write (placeholder) | — | — | — | validate R:R | — |
-| **FillEntryCoordinator** | write (fill, status, finalFigures) | write (placeholders) | read (buildMarksFromFills, at close) | — | — | isFlat, evaluate | — |
-| **DailyReviewCoordinator** | read (open trades) | read (placeholders, market entries) | read/write (marks, buildMarksFromFills) | — | — | evaluate | — |
-| **PerformanceReportingCoordinator** | read (list/get) | — | — | read (group) | read (group) | — | aggregate |
-| **direct read callers (UI, backup)** | getTradeRecord, listTradeIds | getEntry, listEntries | getMarkSeries | listAccounts | getTaxonomy | evaluate | — |
+| **PlanCommitCoordinator** | write (`commit`) | write (placeholder) | — | — | — | validate R:R | — |
+| **FillEntryCoordinator** | write (`recordFill` — absorbs fill+status+snapshot; `correctFill`) | write (placeholders) | read (buildMarksFromFills, at close) | — | — | isFlat, evaluate | — |
+| **DailyReviewCoordinator** | read (`listTrades({status:'Open'})`) | read (placeholders, market entries) | read/write (marks, buildMarksFromFills) | — | — | evaluate | — |
+| **PerformanceReportingCoordinator** | read (`listTrades(filters)`, `getTradeRecord`) | — | — | read (group) | read (group) | — | aggregate |
+| **direct read callers (UI, backup)** | `getTradeRecord`, `listTrades` | getEntry, listEntries | getMarkSeries | listAccounts | getTaxonomy | evaluate | — |
+| **restore tool (import path)** | `importTrade` (per historical trade, derive-on-import) | (TBD — own import op?) | (TBD) | (TBD) | (TBD) | — | — |
 
 **Direct writes that need no coordinator** (rule 8):
 
-- **PlanRevision** → TradingRecordStore only (append a dated revision). Not a
+- **PlanRevision** → TradingRecordStore only (`appendRevision`). Not a
   coordinator.
+- **Fill correction** → TradingRecordStore only (`correctFill` — invalidates the
+  snapshot, signals possible status invalidity). Single-store; the *response* to
+  the signal (snapshot regen, possible re-open) is FillEntryCoordinator's (OQ 12).
 - **JournalWriting** → ReflectionStore only (create entry, embed snapshot,
   optional market-link). Borderline — its only cross-store act is validating a
   parent ref exists; flagged as the coordinator-that-might-not-be in open
@@ -215,9 +222,11 @@ call nothing. Coordinators call stores + pure modules.
 - **PriceMark entry during Daily Review** → handled inside DailyReviewCoordinator
   (it owns the mark-collecting step).
 
-**Backup/export/import** fans out across all five stores at the StorageBinding
-seam — it serializes a consistent snapshot of all facts. Whether it's a storage-
-seam fan-out or a thin lifecycle coordinator is open question 8.
+**Backup/export/import** — TradingRecordStore now exposes `importTrade` for the
+restore path (verbatim record, derive-on-import per ADRs 0006/0007). Whether the
+*broader* backup architecture is a storage-seam fan-out or a lifecycle
+coordinator is still open question 8; this store's slice is served either way
+(`importTrade` is the API-level path; a seam-level fan-out is orthogonal).
 
 ---
 
@@ -240,16 +249,17 @@ is owed.
 
 ```
 trader → FillEntryCoordinator.recordFill(tradeId, fillInput)
-  → TradingRecordStore.appendFill(tradeId, fill)
-  → CalculationModule.isFlat(trade's fills)     // cheap, once, for this one trade (ADR 0006)
+  → existing = TradingRecordStore.getTradeRecord(tradeId)        // load current fills
+  → simFills = [...existing.fills, fillInput]                    // simulate post-fill
+  → CalculationModule.isFlat(simFills)                           // cheap, once, for this one trade (ADR 0006)
   → branch on result:
-      first fill ever      → TradingRecordStore.setStatus(tradeId, 'Open')
-      newly flat           → marks = PriceMarkStore.buildMarksFromFills(fills, now)
-                             → figures = CalculationModule.evaluate(record, marks, now)
-                             → TradingRecordStore.setStatus(tradeId, 'Closed')
-                             → TradingRecordStore.storeFinalFigures(tradeId, figures)   // ADR 0007
-                             → ReflectionStore.createPlaceholder(tradeId, type='post-close', required=true)
-      otherwise            → (no status change)
+      not flat           → TradingRecordStore.recordFill(tradeId, fill)            // first fill → Open internally
+      newly flat         → marks = PriceMarkStore.buildMarksFromFills(simFills, now)
+                            → figures = CalculationModule.evaluate({...existing, fills:simFills}, marks, now)
+                            → TradingRecordStore.recordFill(tradeId, fill, figures)  // ONE call: append + transition
+                            │                                                         //   to Closed + closedAt + snapshot
+                            │                                                         //   (defensively asserts net-zero)
+                            → ReflectionStore.createPlaceholder(tradeId, type='post-close', required=true)
   → ReflectionStore.offerPlaceholder(fillId, type='fill', required=false)  // now/later/none
 ← { statusAfter, placeholdersOffered }
 ```
@@ -257,13 +267,18 @@ trader → FillEntryCoordinator.recordFill(tradeId, fillInput)
 The split pays off here: N−1 fills do the cheap `isFlat` only; the one
 flat-detecting fill pays the single `evaluate` to build the snapshot. The
 flat-detecting fill closes the trade, snapshots its final figures (ADR 0007),
-and owes the post-trade review placeholder — all in one workflow.
+and owes the post-trade review placeholder — all in one workflow. Note the close
+path is now a **single** `recordFill(tradeId, fill, closeFigures)` call — the
+store absorbs append + status transition + `closedAt` + snapshot atomically.
+There is no separate `setStatus` or `storeFinalFigures`; the only status-mutating
+op is `recordFill`, which keeps the lifecycle invariant structurally unbreakable
+(see [TradingRecordStore design doc](trading-record-store.md), decided semantics 2).
 
 ### 3. Daily review
 
 ```
 trader → DailyReviewCoordinator.runDailyReview(today)
-  → TradingRecordStore.listOpenTrades()         // cheap indexed filter on stored status (ADR 0006)
+  → TradingRecordStore.listTrades({ status: 'Open' })  // cheap indexed filter on stored status (ADR 0006)
   → for each open trade:
       resolve underlyings lacking a PriceMark for `today`
       → prompt trader for marks → PriceMarkStore.upsertMark(instrument, today, price)   // deduped, ADR 0002
@@ -308,10 +323,12 @@ store's contract), then harvest modules whose contracts prior sessions pinned.
 1. **CalculationModule** — first. Its parameter types (TradeRecord, Marks,
    FigureSet) become the contract every store serves. Resolved open questions
    1–3. ✓ [design doc](calculation-module.md)
-2. **TradingRecordStore** — second. Its `getTradeRecord` must return exactly
-   what Calc established; resolves OQ 4 (and OQ 11, the `closedAt` field
-   exported from CalculationModule). The deepest, most-touched store; owns
-   status transitions and the finalFigures snapshot.
+2. **TradingRecordStore** — second. Its `getTradeRecord` returns exactly what
+   Calc established (plus three store-owned fields calc ignores: `strategy`,
+   `closedAt`, `fillId`). Resolved OQ 4 (per-Fill instrument-type; legs derived)
+   and OQ 11 (`closedAt` on the record). Seven ops; `recordFill` absorbs the
+   transition + snapshot (no raw `setStatus`); `importTrade` serves the
+   ADR-mandated restore path. ✓ [design doc](trading-record-store.md)
 3. **PriceMarkStore** — third. Small; serves the `Marks` contract and owns the
    exported `buildMarksFromFills` op (OQ 1 downstream); answers the API-seam
    shape.
@@ -338,15 +355,16 @@ session must import.
 | 1 | ~~MarkResolver shape: function `(instrument,date)→price`, pre-materialized map, or coordinator pre-fetch?~~ **RESOLVED** → `Marks: Map<InstrumentId, Price>` (plain data, caller-built). Also exported a deep `buildMarksFromFills(fills, date)` op to PriceMarkStore. | CalculationModule ✓ |
 | 2 | ~~"Unbounded" maximum-risk return shape (sentinel / union / `isBounded` flag)~~ **RESOLVED** → discriminated union `{bounded:true, amount} \| {bounded:false}`. | CalculationModule ✓ |
 | 3 | ~~Dual-presentation (ratio+dollars): returned by calc or computed in a presentation layer?~~ **RESOLVED** → calc returns `Dual` everywhere (the rule is domain-level, not UI). | CalculationModule ✓ |
-| 4 | Legs / instrument-type: per-Fill vs a derived leg view? | TradingRecordStore |
+| 4 | ~~Legs / instrument-type: per-Fill vs a derived leg view?~~ **RESOLVED** → per-Fill (instrumentType is a first-class Fill attribute, ADR 0005). A "leg" is a derivation (grouping fills by instrument), not a fact the store persists. No `getLegs` op. | TradingRecordStore ✓ |
 | 5 | Placeholders: derived how exactly (lifecycle ∩ existing entries)? | ReflectionStore (+ FillEntryCoordinator for when owed) |
 | 6 | JournalWriting: separate coordinator or in-store parent-ref check? | ReflectionStore |
 | 7 | Trade-close: folded into FillEntryCoordinator or split? | FillEntryCoordinator |
-| 8 | Backup/export/import: storage-seam fan-out or lifecycle coordinator? | overview / lifecycle |
+| 8 | Backup/export/import: storage-seam fan-out or lifecycle coordinator? **(Partially served)** — TradingRecordStore now exposes `importTrade` for the restore path (verbatim record, derive-on-import). The *broader* backup architecture (storage-seam fan-out vs. coordinator) remains open. | overview / lifecycle |
 | 9 | Multi-fact write atomicity (commitPlan spans TradingRecord+Reflection): transaction story? | overview / StorageBinding |
 | 10 | Entry Schema definitions: ReflectionStore (snapshot locality) vs ReferenceStore (customization symmetry)? | ReflectionStore |
-| 11 | **(exported from CalculationModule)** Snapshot `asOf`: regenerating a corrected closed-trade snapshot needs the original close date, but `TradeRecord` carries no `closedAt` and `evaluate` only takes `asOf`. Record needs a `closedAt` field, or `finalFigures` must carry its own `asOf`. | TradingRecordStore |
-| 12 | **(exported from CalculationModule)** Status-invalidating correction: a fill correction could change net position from zero to non-zero (Closed → should-be-Open). `isFlat` detects the forward transition; the backward path is unwritten. ADR 0006 requires stored status agree with derived status. | FillEntryCoordinator |
+| 11 | ~~**(exported from CalculationModule)** Snapshot `asOf`: regenerating a corrected closed-trade snapshot needs the original close date, but `TradeRecord` carries no `closedAt` and `evaluate` only takes `asOf`. Record needs a `closedAt` field, or `finalFigures` must carry its own `asOf`.~~ **RESOLVED** → `closedAt?: Date` on TradeRecord, present iff Closed, stored at transition time. Regeneration passes `record.closedAt` as `asOf`. | TradingRecordStore ✓ |
+| 12 | **(exported from CalculationModule)** Status-invalidating correction: a fill correction could change net position from zero to non-zero (Closed → should-be-Open). `isFlat` detects the forward transition; the backward path is unwritten. ADR 0006 requires stored status agree with derived status. **(Updated)** — TradingRecordStore's `correctFill` returns `statusPossiblyInvalid` as a signal but does not re-open (rejects `recordFill` on Closed); the re-open decision is still FillEntryCoordinator's. A snapshot write-back op (`replaceSnapshot` or a widened `correctFill`) is owed to that session. | FillEntryCoordinator |
+| 13 | **(exported from TradingRecordStore)** Snapshot write-back after regeneration. `correctFill` nulls the snapshot; the regen sequence recomputes one, but no op writes it back onto an already-Closed trade (`recordFill` on Closed rejects). Provisional shape: `replaceSnapshot(tradeId, figures)` or widening `correctFill` to accept a recomputed snapshot. | FillEntryCoordinator (decision) → TradingRecordStore (op) |
 
 ---
 
