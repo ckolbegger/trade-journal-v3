@@ -85,7 +85,7 @@ The quantity of an instrument held in a Trade, derivable from the Trade's fills 
 _Avoid_: Size (ambiguous), exposure
 
 **Performance Reporting**:
-Aggregate statistics over many Trades, filterable by date range, strategy, Trade status (open/closed), and underlying. This view serves the "how am I doing over time" question; it replaces the need for a separate weekly/monthly review ritual. Metrics include plan-revision-rate and others (full metric set deferred).
+Aggregate statistics over many Trades, filterable by date range, strategy, Trade status (open/closed), and underlying. This view serves the "how am I doing over time" question; it replaces the need for a separate weekly/monthly review ritual. Outcome metrics (over closed Trades): R-multiple distribution, equity curve by R, win rate, expectancy, profit factor, total realized P&L, and mean plan-revisions per trade (the per-day revision rate remains open).
 _Avoid_: Analytics (too generic)
 
 **Account**:

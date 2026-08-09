@@ -1,14 +1,22 @@
 # CalculationModule — initial interface design
 
-The pure single-trade derivation module. Owns every figure the journal shows for
-one Trade — P&L, position size, the three risk quantities, reward, R:R, R-multiple,
+The pure position-figure derivation module. Owns every figure the journal shows
+for a Trade — P&L, position size, the three risk quantities, reward, R:R, R-multiple,
 lifecycle echo, and revision count — computed from fills + plan + revisions + price
-marks. Deliberately owns **no storage access, no cross-Trade aggregation, no
-presentation logic, and no lifecycle-status derivation**. Its parameter and return
-types are the **data contract every store must serve and every coordinator read**;
-this is why it was drilled down first (overview rule 2).
+marks. Also owns the **aggregate of current exposure across a list of open
+positions** (`evaluateMany`) — the multi-position analog of `evaluate`, same
+inputs (records + marks + asOf), same mark-dependence. Deliberately owns **no
+storage access, no presentation logic, and no lifecycle-status derivation.** Its
+parameter and return types are the **data contract every store must serve and
+every coordinator reads**; this is why it was drilled down first (overview rule
+2).
 
-Two operations, both pure — testable with literal objects, no store, no mock, no
+The mark-dependent figure math — single and aggregate — lives here so it is all
+tested in one place. The mark-free portfolio *outcome* fold (R-distribution,
+win rate, etc. over closed-trade snapshots) is the **PerformanceAnalytics**
+module, a clean mark-free seam.
+
+Three operations, all pure — testable with literal objects, no store, no mock, no
 binding:
 
 ```ts
@@ -23,6 +31,13 @@ evaluate(record: TradeRecord, marks: Marks, asOf: Date): FigureSet
  *  Called once per fill by FillEntryCoordinator to detect the Open→Closed
  *  transition (ADR 0006). */
 isFlat(fills: Fill[]): boolean
+
+/** Aggregate CURRENT exposure across a list of open positions. The multi-
+ *  position analog of evaluate — same inputs (records + marks + asOf), same
+ *  mark-dependence. Internally map(evaluate) + fold, where the fold handles
+ *  null marks (Σ non-null, with a missingMarkCount) and sums dollars only.
+ *  Used by DailyReview / PerformanceReporting for the open-book view. */
+evaluateMany(records: TradeRecord[], marks: Marks, asOf: Date): ExposureReport
 ```
 
 ---
@@ -35,6 +50,8 @@ isFlat(fills: Fill[]): boolean
 evaluate(record: TradeRecord, marks: Marks, asOf: Date): FigureSet
 
 isFlat(fills: Fill[]): boolean
+
+evaluateMany(records: TradeRecord[], marks: Marks, asOf: Date): ExposureReport
 ```
 
 ### Input types — the data contract every store must serve
@@ -154,6 +171,40 @@ type Dual = {
 type MaxRisk =
   | { bounded: true,  amount: Dual }   // stock (whole position), long-option (premium), defined-risk spread
   | { bounded: false }                  // naked short option — catastrophic loss has no cap
+
+/** Aggregate CURRENT exposure across a list of open positions (evaluateMany's
+ *  return). The multi-position analog of FigureSet's current fields. Every
+ *  mark-dependent field carries a `missingMarkCount` — the number of positions
+ *  whose mark was absent (FigureSet field null), so the UI can show "$X
+ *  unrealized across N positions, M missing a mark" (the Daily Review mark-
+ *  collection prompt at portfolio scale). Dollars only: ratios across mixed
+ *  instruments/sizes are meaningless, so Dual is not used here. */
+type ExposureReport = {
+  positionCount: number
+
+  totalUnrealized: {                   // Σ pnl.unrealized across positions with a mark
+    dollars: number                    //   (FigureSet.pnl.unrealized is null iff no mark — calc semantic 4)
+    missingMarkCount: number           //   positions skipped because their mark was absent
+  }
+
+  totalCurrentRisk: {                  // Σ risk.current.dollars across positions with a mark
+    dollars: number                    //   (risk.current is null iff no mark or no position)
+    missingMarkCount: number
+  }
+
+  totalPlannedRisk: {                  // Σ risk.planned.dollars — the commitment baseline across open trades
+    dollars: number                    //   (planned risk is always computable — frozen at plan, no mark needed)
+  }
+
+  totalIncrementalReward: {            // Σ reward.incremental.dollars across positions with a mark
+    dollars: number                    //   (reward.incremental is null iff no mark)
+    missingMarkCount: number
+  }
+}
+// Absent by design: positionSize, risk.maximum, rMultiple, revisionCount, pnl.realized.
+//   - positionSize / risk.maximum don't aggregate across mixed instruments/types.
+//   - rMultiple / pnl.realized are outcome-only (realized) — not exposure.
+//   - revisionCount is a PerformanceAnalytics discipline metric, not a current figure.
 ```
 
 ---
@@ -217,10 +268,12 @@ Each ruling cites the principle or ADR it derives from. Veto any during review.
    unbounded). *(OQ 2 → A; ADR 0005.)*
 
 8. **`revisionCount` (raw count), not `planRevisionRate`.** Calc counts
-   revisions — a fact about the record. Normalizing to a rate (per day, across
-   trades) is PerformanceAnalytics' job. The overview's `planRevisionRate`
-   field is renamed here. *(ADR 0001; depth — one fact, rate is its
-   aggregation.)*
+   revisions — a fact about the record. Normalizing to a rate is the aggregator's
+   job. The overview's `planRevisionRate` field is renamed here. **(Forward note
+   from PerformanceAnalytics drill-down:)** the *per-trade* rate
+   (`meanRevisions`) is PerformanceAnalytics's; the *per-day* rate is not
+   computable from FigureSet (it carries no duration) and is open — OQ 15.
+   *(ADR 0001; depth — one fact, rate is its aggregation.)*
 
 9. **"Current" levels = the latest revision's levels (or the original Plan's
    if no revisions exist).** Planned levels are always the original Plan's
@@ -254,6 +307,45 @@ Each ruling cites the principle or ADR it derives from. Veto any during review.
     strategies (breakout = stock or option; wheel spans puts/shares/calls) and
     strategy is trader-customizable (requiring user-maintained mapping data the
     calc would depend on, breaking purity). *(ADR 0005; rule 2.)*
+
+14. **`evaluateMany` is the multi-position analog of `evaluate` — aggregate
+    *current* exposure across open positions.** Same inputs (`TradeRecord[] +
+    marks + asOf`), same mark-dependence: current P&L and current risk move with
+    the mark. It is `map(evaluate) + fold` internally. The honest reason it
+    earns an op (rather than living in a coordinator) is that the fold is not a
+    plain sum — it applies calc's own null/`Dual` conventions at portfolio scale
+    (semantics 15–17 below), and that tested arithmetic belongs in the module
+    where the conventions originate, not scattered across coordinator/UI code.
+    It does **not** produce a `FigureSet`-shaped roll-up: `positionSize`,
+    `risk.maximum`, `rMultiple`, `pnl.realized` don't aggregate across mixed
+    instruments/types or are outcome-only (realized) — see semantic 17. *(ADR
+    0008; deletion test — deleting it scatters the null-handling + dollars-only
+    sum into N callers.)*
+
+15. **Null marks are counted, not coerced to zero.** `pnl.unrealized`,
+    `risk.current`, and `reward.incremental` are `null` when a position's mark
+    is absent (semantic 4). `evaluateMany` sums the **non-null** values and
+    records a `missingMarkCount` per field. `$0 unrealized` (a flat open
+    position) and `null unrealized` (no mark) are different facts; the aggregate
+    preserves the distinction so the UI can surface "M positions are missing a
+    mark" — the Daily Review mark-collection prompt at portfolio scale. *(Calc
+    semantic 4 extended to the aggregate.)*
+
+16. **Dollars only — `Dual` ratios are not summed across positions.** The
+    per-unit ratio is size-independent but instrument-specific; summing ratios
+    across AAPL shares and SPY calls is meaningless. `ExposureReport` fields
+    carry `dollars` only (no `ratio`). `totalPlannedRisk.dollars` is meaningful
+    because dollars share a unit; the corresponding ratio would not. *(CONTEXT.md:
+    dual presentation rule — the dollar side is the aggregatable form.)*
+
+17. **`ExposureReport` is deliberately narrower than `FigureSet`.** Absent by
+    design: `positionSize` and `risk.maximum` (don't aggregate across mixed
+    instruments/types), `rMultiple` and `pnl.realized` (outcome-only, realized —
+    not current exposure), `revisionCount` (a PerformanceAnalytics discipline
+    metric). The report carries exactly the current-figure aggregates that are
+    meaningful across a mixed open book: unrealized P&L, current risk, planned
+    risk, incremental reward — all dollars, each mark-dependent one with a
+    missing-mark count. *(Depth — don't carry fields that would be N/A.)*
 
 ---
 
@@ -329,6 +421,35 @@ optPnl   = (3.00 - 1.50) × 100  = +$150      // short call leg (sold 3.00, buyb
 unrealized = $200 + $150        = +$350
 ```
 
+### Open book — evaluateMany across three open positions
+
+Three open trades; the caller has already resolved marks for the day (one of
+the three lacks a mark):
+
+| Trade | positionSize | unrealized | risk.current | risk.planned | reward.incremental |
+|-------|-------------|------------|--------------|--------------|--------------------|
+| AAPL (100 @ $150) | +100 | +$200 (mark $152) | $500 | $300 | $400 |
+| MSFT (50 @ $300, stop $294) | +50 | +$250 (mark $305) | $550 | $300 | $250 |
+| TSLA (—, no mark today) | +20 | **null** | **null** | $160 | **null** |
+
+```ts
+const records = tradingRecord.listTrades({ status: 'Open' })
+const marks = priceMarks.buildMarksFromFills(allOpenFills, today)  // AAPL, MSFT present; TSLA absent
+calc.evaluateMany(records, marks, today)
+// → {
+//     positionCount: 3,
+//     totalUnrealized:      { dollars: +$450, missingMarkCount: 1 },  // 200+250; TSLA null → counted
+//     totalCurrentRisk:     { dollars: $1050, missingMarkCount: 1 },  // 500+550
+//     totalPlannedRisk:     { dollars: $760 },                         // 300+300+160 (no mark needed)
+//     totalIncrementalReward:{ dollars: +$650, missingMarkCount: 1 }, // 400+250
+//   }
+```
+
+The TSLA position is **counted in `positionCount` and `totalPlannedRisk`**
+(both mark-free) but **absent from the mark-dependent sums** and reflected in
+`missingMarkCount: 1` — surfacing "1 position is missing a mark" for the Daily
+Review prompt.
+
 ### Caller's-eye usage
 
 ```ts
@@ -354,6 +475,14 @@ for (const day of dateRange) {
 
 // 4. Performance report on a closed trade — NO calc call
 const figures = trade.finalFigures                             // O(1) snapshot read (ADR 0007)
+
+// 5. Open-book exposure (Daily Review / Performance Reporting) — evaluateMany
+const openRecords = tradingRecord.listTrades({ status: 'Open' })
+const allFills = openRecords.flatMap(r => r.fills)
+const marks = priceMarks.buildMarksFromFills(allFills, today)  // one marks map for all open positions
+const exposure = calc.evaluateMany(openRecords, marks, today)  // one call → aggregate current exposure
+// exposure.totalUnrealized.dollars, exposure.totalCurrentRisk.dollars,
+// exposure.totalUnrealized.missingMarkCount → "N positions missing a mark"
 ```
 
 ---
@@ -411,6 +540,28 @@ evaluates. Planned figures are recomputed per day (date-invariant but cheap
 arithmetic over already-loaded fills); the alternative of a calc-owned
 `evolution()` op was rejected for absorbing chart projection into calc.
 
+## Sequence: open-book exposure (evaluateMany)
+
+The aggregate-current-exposure flow. The coordinator resolves one marks map
+across all open positions, then makes one calc call. (Coordinator internals
+are illustrative; pinned in its own drill-down.)
+
+```
+trader → DailyReviewCoordinator.runDailyReview(today)
+  → openRecords = TradingRecordStore.listTrades({ status:'Open' })
+  → allFills = openRecords.flatMap(r => r.fills)
+  → marks = PriceMarkStore.buildMarksFromFills(allFills, today)  // one map for all open positions
+  → exposure = calc.evaluateMany(openRecords, marks, today)       // one call → ExposureReport
+  ← exposure (totalUnrealized, totalCurrentRisk, totalPlannedRisk, totalIncrementalReward + missingMarkCount)
+```
+
+The portfolio-exposure read is a single calc call over a list, mirroring how the
+single-trade read is a single calc call over one record. The mark-resolution
+loop stays in the coordinator (it owns the marks map); the figure-arithmetic
+fold (null-handling, dollars-only) is calc's. Contrast the per-trade daily-
+review loop above, which calls `evaluate` per trade for the per-trade detail
+view — both are mark-dependent calc calls, one point-shaped, one list-shaped.
+
 ---
 
 ## Requirements fulfilled / exported
@@ -439,16 +590,28 @@ These are commitments — downstream drill-downs must serve these shapes:
   for the distinct instruments in `fills` — one op absorbing the build-marks
   step for FillEntry, DailyReview, and the chart. Exact return shape (scalar
   `Price` map vs full `PriceMark`) is the PriceMarkStore drill-down's call.
-- **→ PerformanceAnalytics:** aggregates `FigureSet[]` (one per trade in
-  scope). The per-trade FigureSet carries everything the portfolio roll-up
-  needs: `rMultiple` (for R-distribution), `revisionCount` (for aggregate
-  plan-revision-rate), `pnl.realized` (for P&L summaries), `risk.planned`
-  (for equity-by-R). Closed trades read the snapshot; open trades compute
-  live — **PerformanceAnalytics consumes both uniformly.**
+- **→ PerformanceAnalytics:** aggregates `FigureSet[]` (one per **closed** trade
+  in scope). The per-trade FigureSet carries everything the portfolio *outcome*
+  roll-up needs: `rMultiple` (for R-distribution), `revisionCount` (for aggregate
+  plan-revision-rate), `pnl.realized` (for P&L summaries). Closed trades read
+  the snapshot; **open trades do not feed the outcome aggregate** — `rMultiple`
+  is realized-only (semantic 12), so an open trade's snapshot is a non-outcome
+  zero that would distort every R-based metric. Open-trade **exposure** is a
+  mark-dependent current-figure aggregate — served by calc's `evaluateMany`
+  (semantic 14), *not* by PerformanceAnalytics (which is a mark-free fold).
+  PerformanceAnalytics and calc's `evaluateMany` split cleanly on mark-
+  dependence: outcome statistics (closed snapshots, no marks) vs current
+  exposure (open positions, marks required). *(See performance-analytics.md +
+  ADR 0008.)*
 - **→ FillEntryCoordinator:** owns the `isFlat` → `evaluate` → `storeFinalFigures`
   close path (sequence above). It builds the `Marks` map via the
   `priceMarkStore.buildMarksFromFills(fills, date)` op (exported to
   PriceMarkStore above) — not coordinator-side logic.
+- **→ DailyReviewCoordinator / PerformanceReportingCoordinator:** use
+  `evaluateMany(openRecords, marks, today)` for the open-book exposure view
+  (sequence above). One calc call over the open-position list — the mark-
+  resolution stays coordinator-side, the figure fold is calc's. No coordinator
+  re-implements the null-handling or dollars-only-sum arithmetic.
 - **→ All four coordinators:** consume `FigureSet` as the read shape. No
   coordinator re-derives figures; all read either a live `evaluate()` result
   or a cached `finalFigures` snapshot.
@@ -473,9 +636,13 @@ These are commitments — downstream drill-downs must serve these shapes:
 
 ### Module shape (design-it-twice)
 
-- **Candidate A — Monolith** (adopted). `evaluate()` + `isFlat()`. One universal
-  FigureSet type; the chart composes its per-day series by calling `evaluate`
-  per day. Deepest on op count; one type pins every store's contract. Cost:
+- **Candidate A — Monolith** (adopted). `evaluate()` + `isFlat()` +
+  `evaluateMany()`. One universal FigureSet type for the single-trade result;
+  the chart composes its per-day series by calling `evaluate` per day.
+  `evaluateMany` (added by the PerformanceAnalytics drill-down, ADR 0008) is the
+  multi-position analog of `evaluate` — same inputs, same mark-dependence —
+  returning `ExposureReport` for the open-book aggregate. Deepest on op count
+  relative to behavior; one FigureSet type pins every store's contract. Cost:
   static figures recomputed per chart-day (cheap arithmetic over loaded fills);
   every consumer receives the whole FigureSet even if it wants one number
   (local projection by consumers is the depth payoff).
@@ -553,3 +720,32 @@ These are commitments — downstream drill-downs must serve these shapes:
   Dollars are the "real money" figure, but ratios are the primary pedagogical
   view (trade quality is size-independent). Making ratios secondary works
   against the app's teaching purpose.
+
+### Exposure-aggregate home (ADR 0008)
+
+- **Option A — `evaluateMany` in CalculationModule (adopted).** The aggregate of
+  current exposure across open positions lives in calc as the multi-position
+  analog of `evaluate` — same inputs (`TradeRecord[] + marks + asOf`), same
+  mark-dependence. Chosen because (a) the fold is not a plain sum — it applies
+  calc's null-mark and dollars-only conventions at portfolio scale, and that
+  tested arithmetic belongs where the conventions originate; (b) deleting it
+  scatters the null-handling into N coordinator/UI callers (deletion test pass
+  condition); (c) it keeps all mark-dependent figure math in one tested module.
+  Cost: calc widens from single-trade to single + aggregate current figures, and
+  gains a list-shaped op (charter change — recorded in ADR 0008).
+
+- **Option B — exposure in PerformanceAnalytics (rejected).** A second op
+  `exposure(FigureSet[])` alongside `aggregate`. Rejected because exposure needs
+  marks (current figures move with the mark), and PerformanceAnalytics is a
+  mark-free fold over already-derived snapshots. `FigureSet[]` is the wrong input
+  for a mark-dependent aggregate — it would force PerformanceAnalytics to either
+  take `TradeRecord[] + marks` (abandoning its pinned input type) or re-evaluate
+  internally (pulling calc's job in). The mark-dependence split puts exposure
+  with `evaluate`, not with `aggregate`.
+
+- **Option C — exposure in the coordinator/UI (rejected).** A coordinator-side
+  sum over live `evaluate` results. Rejected because it directly contradicts the
+  overview's stated reason for lifting aggregation into a pure module ("burying
+  it in the coordinator hides testable logic behind a workflow module"), and
+  because the "sum" hides real decisions (null-mark handling, dollars-only)
+  that deserve tested arithmetic, not ad-hoc coordinator code.

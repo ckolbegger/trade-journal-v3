@@ -49,9 +49,14 @@ choosing the partition and must survive drill-down.
 2. **Pure calculation is its own module(s) with no storage access.** Its
    parameter types *are* the data contract every store must serve. This is why
    CalculationModule is drilled down first: it pins every store's read shape.
-   `CalculationModule` is single-trade; `PerformanceAnalytics` is
-   portfolio-level aggregation over lists of single-trade results. Both are
-   pure — testable with literal objects, no store, no mock, no binding.
+   The two pure modules split on **mark-dependence** (ADR 0008), not single-vs-
+   portfolio: `CalculationModule` derives figures from facts + marks — single
+   (`evaluate`) or aggregate current exposure (`evaluateMany`) — and
+   `PerformanceAnalytics` is a mark-free fold over already-derived closed-trade
+   snapshots (`aggregate`). All figure arithmetic (null marks, dollars-only
+   sums) lives in calc, tested in one place; PerformanceAnalytics is a trivially-
+   testable fold. Both pure — testable with literal objects, no store, no mock,
+   no binding.
 
 3. **Lifecycle status is stored authoritatively (ADR 0006).** Planned/Open/Closed
    is a field on the Trade record, not derived on read. Transitions fire when a
@@ -108,8 +113,8 @@ module).
 | 4 | **AccountStore** | store | 4 | Account facts (broker, account identity). Slow-changing reference, referenced by ID from Trade. Four ops: `addAccount`, `listAccounts`, `getAccount`, `deactivateAccount`. Forward-only-retained (deactivated accounts stay valid on historical trades — the Taxonomy pattern; no delete op). No FK validation (convention C6) — provider-of-record, not validator. No import op (the live ops reproduce any backup faithfully; the first store in the partition to pass the import test cleanly). Drilled down — see [design doc](reference-stores.md). |
 | 5 | **TaxonomyStore** | store | 4 | Forward-only categorical value sets (strategy, setup, etc.); retired values retained so existing records keep their tag. Trader-customizable. Four ops: `addValue(category, value)`, `listValues(category, activeOnly?)`, `retireValue(category, id, at)`, `listCategories()`. One store generic over category (Option A — every category shares the forward-only-retained invariant; a new category is data, not code). `TaxonomyValueId` IS `StrategyId` for the 'strategy' category. The canonical instance of the forward-only-retained pattern CONTEXT.md names (cited by PriceMark + Reflection schemas). No import op (passes the import test). Drilled down — see [design doc](reference-stores.md). |
 | — | **PriceProviderStore** | store | 4 | Market-data provider configuration: which providers exist, which is active. Forward-only retained (retired provider ids stay valid on historical PriceMarks). The registry `source: ProviderId` on a PriceMark references — exactly as `strategy: StrategyId` on a Trade references TaxonomyStore. Four ops: `addProvider`, `listProviders`, `setActiveProvider` (the singleton the roadmap fetcher reads — exclusive active flag), `deactivateProvider`. **Credentials excluded** (charter-drift test applied to own scope: secrets-handling is a different invariant class than reference-data; the fetcher resolves credentials from its own secrets source). `'trader'` reserved (a fixed sentinel in PriceMarkStore, never minted here). A partition addition surfaced by the PriceMarkStore drill-down (provenance vs. configuration split). No import op (passes the import test). Drilled down — see [design doc](reference-stores.md). |
-| 6 | **CalculationModule** | pure | 2 | Single-trade derivation: `evaluate(record, marks, asOf) → FigureSet` (the full figure-set behind one call — P&L, position size, three risk quantities, reward, R:R, R-multiple, lifecycle echo, revision count) and `isFlat(fills)` (the cheap transition detector). Its **parameter and return types are the data contract** every store must serve. Drilled down first — see [design doc](calculation-module.md). |
-| 7 | **PerformanceAnalytics** | pure | ~3 | Portfolio-level aggregation over lists of per-trade results: R-multiple distribution, equity curve by R, aggregate plan-revision-rate, P&L summaries. Pure functions over lists. |
+| 6 | **CalculationModule** | pure | 3 | Mark-dependent figure derivation from facts + marks, single or aggregate: `evaluate(record, marks, asOf) → FigureSet` (the full figure-set behind one call — P&L, position size, three risk quantities, reward, R:R, R-multiple, lifecycle echo, revision count), `isFlat(fills)` (the cheap transition detector), and `evaluateMany(records, marks, asOf) → ExposureReport` (aggregate current exposure across open positions — the multi-position analog of `evaluate`, same inputs, same mark-dependence; added by drill-down #6 / ADR 0008). Its **parameter and return types are the data contract** every store must serve. Drilled down first — see [design doc](calculation-module.md). |
+| 7 | **PerformanceAnalytics** | pure | 1 | Closed-trade **outcome** aggregation — a mark-free fold over per-trade FigureSet snapshots: R-multiple distribution, equity curve by R, win rate/expectancy/profit factor, P&L total, plan-revision discipline (per-trade). One op: `aggregate(results: FigureSet[]) → PortfolioReport` (metrics are fields on the return, not separate ops — the `~3` estimate collapsed to one deep op). No marks, no filters (FigureSet carries no filter dimension; the coordinator pre-narrows via `listTrades(filters)`), no temporal series (those are compositions over calc's `evaluate`, owned by the consumer holding the marks). **Closed-trade-only:** `rMultiple` is realized-only, so an open trade's snapshot is a non-outcome zero that distorts every R-based metric; open-trade exposure is served by calc's `evaluateMany` (ADR 0008), not this module. Drilled down — see [design doc](performance-analytics.md). |
 | 8 | **PlanCommitCoordinator** | coordinator | 1 | plan-commit workflow: validates planned R:R via CalculationModule, commits Trade+Plan to TradingRecordStore, creates the required pre-entry reflection placeholder in ReflectionStore. Joins TradingRecord + Reflection + calc. |
 | 9 | **FillEntryCoordinator** | coordinator | 1 | fill-entry workflow: appends Fill to TradingRecordStore, runs flat detection via calc; transitions status if needed (first fill → Open; flat → Closed + finalFigures snapshot per ADR 0007); on close, creates the required post-close placeholder; offers the optional fill-level placeholder (now/later/none). Folds trade-close in. Joins TradingRecord + Reflection + calc. |
 | 10 | **DailyReviewCoordinator** | coordinator | 1 | daily-review workflow: pulls open Trades (cheap indexed filter on stored status), resolves underlyings lacking a mark for the date, computes live risk/P&L via calc, surfaces placeholders due and in-range market entries. The widest join. |
@@ -141,9 +146,11 @@ type TradeRecord = {
 }
 type Marks = Map<InstrumentId, Price>  // plain data, not a function (OQ 1 → B)
 
-// Two operations. evaluate returns the full figure-set behind one call.
+// Three operations. evaluate returns the full figure-set behind one call;
+// evaluateMany is its multi-position analog (aggregate current exposure).
 evaluate(record: TradeRecord, marks: Marks, asOf: Date): FigureSet
 isFlat(fills: Fill[]): boolean         // cheap transition detector (ADR 0006)
+evaluateMany(records: TradeRecord[], marks: Marks, asOf: Date): ExposureReport  // ADR 0008
 
 type FigureSet = {
   pnl:        { realized: number, unrealized: number | null },  // null if no mark
@@ -164,15 +171,25 @@ type FigureSet = {
 }
 type Dual = { ratio: number, dollars: number }                      // dual presentation rule
 type MaxRisk = { bounded: true, amount: Dual } | { bounded: false } // OQ 2 → A
+type ExposureReport = {                                              // evaluateMany's return (ADR 0008)
+  positionCount: number,
+  totalUnrealized:        { dollars: number, missingMarkCount: number },  // null marks counted, not zeroed
+  totalCurrentRisk:       { dollars: number, missingMarkCount: number },  // dollars only (ratios don't sum across sizes)
+  totalPlannedRisk:       { dollars: number },                            // mark-free
+  totalIncrementalReward: { dollars: number, missingMarkCount: number },
+}
 ```
 
 ### PerformanceAnalytics (pure)
 
 ```ts
+// Closed-trade outcome aggregation over snapshots. No filters — FigureSet carries
+// no filter dimension; the coordinator pre-narrows via listTrades(filters) and
+// passes an already-scoped list. See performance-analytics.md.
 aggregate(
-  results: FigureSet[],                 // one per closed Trade in scope
-  filters: { dateRange?, strategy?, status?, underlying?, account? },
-): PortfolioReport
+  results: FigureSet[],                 // one per CLOSED Trade in scope (snapshots, ADR 0007)
+): PortfolioReport                       // rMultiples, expectancy, winRate, equityCurveByR,
+                                         //   totalRealized, profitFactor, totalRevisions, meanRevisions
 ```
 
 ### Coordinators
@@ -205,9 +222,9 @@ call nothing. Coordinators call stores + pure modules.
 |---|---|---|---|---|---|---|---|---|
 | **PlanCommitCoordinator** | write (`commit`) | write (`createPlaceholder` — pre-entry, required) | — | — | — | — | validate R:R | — |
 | **FillEntryCoordinator** | write (`recordFill` — absorbs fill+status+snapshot; `correctFill`) | write (`createPlaceholder` — post-close required + optional fill-level; drives now/later/none) | read (`buildMarksFromFills`, at close) | — | — | — | isFlat, evaluate | — |
-| **DailyReviewCoordinator** | read (`listTrades({status:'Open'})`) | read (`listEntries` — owed placeholders + linked market entries) | read/write (`upsertMark`, `buildMarksFromFills`) | — | — | — | evaluate | — |
+| **DailyReviewCoordinator** | read (`listTrades({status:'Open'})`) | read (`listEntries` — owed placeholders + linked market entries) | read/write (`upsertMark`, `buildMarksFromFills`) | — | — | — | evaluate, evaluateMany | — |
 | **market-data fetcher (roadmap)** | — | — | read (`getMarkSeries`) / write (`backfillMark`) | read (active provider) | — | — | — | — |
-| **PerformanceReportingCoordinator** | read (`listTrades(filters)`, `getTradeRecord`) | — | — | — | read (group) | read (group) | — | aggregate |
+| **PerformanceReportingCoordinator** | read (`listTrades(filters)`, `getTradeRecord`) | — | — | — | read (group) | read (group) | evaluateMany (open-trade exposure path, ADR 0008) | aggregate (closed-trade outcome path) |
 | **direct read callers (UI, backup)** | `getTradeRecord`, `listTrades` | `getEntry`, `listEntries`, `getSchema`, `listSchemas` | `getMarkSeries` | `listProviders` | listAccounts | getTaxonomy | evaluate | — |
 | **restore tool (import path)** | `importTrade` (per historical trade, derive-on-import) | `importSchema` then `importEntry` (verbatim, two-phase) | `importMark` (verbatim, source+history intact) | live ops (add+deactivate) | live ops (add+retire) | live ops (add+setActive+deactivate) | — | — |
 
@@ -311,17 +328,30 @@ trader records observations → ReflectionStore.createEntry(...)   // optional, 
 
 ### 4. Performance reporting
 
+The status filter routes to two different paths. Closed trades feed the outcome
+aggregate (PerformanceAnalytics); open trades build an exposure view that does
+**not** touch PerformanceAnalytics (`rMultiple` is realized-only, so an open
+trade's snapshot is a non-outcome zero that would poison the R-based metrics —
+see [performance-analytics.md](performance-analytics.md) decided semantic 2).
+
 ```
 trader → PerformanceReportingCoordinator.runReport(filters)
-  → TradingRecordStore.listTrades(filters)      // by date/strategy/status/underlying/account
-  → for each closed trade: read finalFigures snapshot (ADR 0007) — NO recomputation
-  → for each open trade (if in scope): CalculationModule.evaluate(...) for live figures
-  → PerformanceAnalytics.aggregate(allFigures, filters)
-  ← PortfolioReport (R-multiple distribution, equity-by-R, revision-rate, P&L summary)
+  → TradingRecordStore.listTrades({ ...filters, status:'Closed' })   // pre-narrowed HERE
+  → snapshots = records.map(r => r.finalFigures)                     // O(1) cache reads (ADR 0007)
+  → PerformanceAnalytics.aggregate(snapshots)                        // one pure call
+  ← PortfolioReport (R-multiple distribution, equity-by-R, win rate, expectancy, P&L summary, revision discipline)
+
+  — open-trade exposure (separate path, status:'Open') —
+  → records = TradingRecordStore.listTrades({ ...filters, status:'Open' })
+  → marks = PriceMarkStore.buildMarksFromFills(records.flatMap(r => r.fills), today)
+  → CalculationModule.evaluateMany(records, marks, today)             // one mark-dependent calc call (ADR 0008)
+  ← ExposureReport (totalUnrealized, totalCurrentRisk, totalPlannedRisk, totalIncrementalReward + missingMarkCount)
 ```
 
-Closed trades are O(1) reads from their snapshot; only open trades in scope
-incur live computation.
+Closed trades are O(1) reads from their snapshot; filtering (date/strategy/
+underlying/account) is the coordinator's job via `listTrades(filters)` —
+PerformanceAnalytics takes an already-scoped list (FigureSet carries no filter
+dimension). Group-by-strategy/account is likewise coordinator-side.
 
 ### 5. Plan revision (no coordinator — direct store write, rule 8)
 
@@ -373,7 +403,14 @@ store's contract), then harvest modules whose contracts prior sessions pinned.
    excluded by a charter-drift test. TaxonomyStore is one store generic over
    category (Option A). ✓ [design doc](reference-stores.md)
 6. **PerformanceAnalytics** — second pure module; depends on the FigureSet type
-   from step 1.
+   from step 1. Resolved the filter-seam question (no filters on `aggregate` —
+   FigureSet carries no filter dimension; the coordinator pre-narrows via
+   `listTrades(filters)`) and the closed/open scope question (closed-trade
+   outcomes only; `rMultiple` is realized-only so open snapshots are non-outcome
+   zeros; open exposure is a coordinator/UI sum). One op: `aggregate` (the
+   overview's `~3` estimate collapsed to one deep op, metrics as fields on the
+   return). Surfaced finding F3 (revision-rate denominator: per-trade now, per-
+   day deferred — FigureSet carries no duration). ✓ [design doc](performance-analytics.md)
 7. **The four coordinators** — last, each thin; their dependencies are fully
    pinned by then. FillEntry owns OQ 7.
 
@@ -402,6 +439,7 @@ session must import.
 | 12 | **(exported from CalculationModule)** Status-invalidating correction: a fill correction could change net position from zero to non-zero (Closed → should-be-Open). `isFlat` detects the forward transition; the backward path is unwritten. ADR 0006 requires stored status agree with derived status. **(Updated)** — TradingRecordStore's `correctFill` returns `statusPossiblyInvalid` as a signal but does not re-open (rejects `recordFill` on Closed); the re-open decision is still FillEntryCoordinator's. A snapshot write-back op (`replaceSnapshot` or a widened `correctFill`) is owed to that session. | FillEntryCoordinator |
 | 13 | **(exported from TradingRecordStore)** Snapshot write-back after regeneration. `correctFill` nulls the snapshot; the regen sequence recomputes one, but no op writes it back onto an already-Closed trade (`recordFill` on Closed rejects). Provisional shape: `replaceSnapshot(tradeId, figures)` or widening `correctFill` to accept a recomputed snapshot. | FillEntryCoordinator (decision) → TradingRecordStore (op) |
 | 14 | **(exported from PriceMarkStore)** Mark correction invalidating a closed-trade snapshot. A mark correction changes the unrealized-P&L a closed trade's snapshot was computed against (ADR 0007), but PriceMarkStore has no back-reference to consuming trades (marks are shared, ADR 0002) and must not call across stores (rule 1). ADR 0007 currently scopes invalidation to fill corrections + calc fixes; whether *mark* corrections join is open. Detection (which closed trades used the old mark?) and response (regenerate via `record.closedAt` as `asOf`) belong to the snapshot-regeneration owner. | FillEntryCoordinator / TradingRecordStore (OQ 12 owner) |
+| 15 | **(surfaced by PerformanceAnalytics)** Per-day plan-revision-rate. ADR 0001 names revisions-over-duration; FigureSet carries `revisionCount` (raw count) but no trade duration (no `committedAt`/`closedAt`), so PerformanceAnalytics reports `meanRevisions` (per-trade) only. Two paths to the per-day rate, neither chosen: (a) calc adds a per-trade `revisionRate` field to FigureSet (reverses calc semantic 8's "rate is PA's job"); (b) the coordinator computes revisions/day from `closedAt − committedAt` it already holds, bypassing PerformanceAnalytics for that one metric. | PerformanceReportingCoordinator drill-down / ADR 0001 |
 
 ---
 
@@ -464,9 +502,13 @@ Recorded so nobody re-proposes them in six months.
   categorical." Split into AccountStore + TaxonomyStore for seam honesty.
 
 - **Portfolio aggregation inside the coordinator** (within Candidate C itself).
-  Rejected because aggregation is pure (functions over lists of FigureSets) and
-  burying it in the coordinator hides testable logic behind a workflow module.
-  Lifted into a second pure module, PerformanceAnalytics.
+  Rejected because aggregation is pure and burying it in the coordinator hides
+  testable logic behind a workflow module. Lifted into pure modules —
+  PerformanceAnalytics (mark-free outcome fold over closed snapshots) and, per
+  ADR 0008, calc's `evaluateMany` (mark-dependent current-exposure fold over open
+  records). The split between the two pure aggregates tracks mark-dependence,
+  not single-vs-portfolio: both exist so no coordinator re-implements figure
+  arithmetic (null marks, dollars-only sums, outcome folds).
 
 - **Lifecycle status derived-only** (the initial Candidate C load-bearing
   decision). Rejected in ADR 0006 after feedback that deriving on read makes the
