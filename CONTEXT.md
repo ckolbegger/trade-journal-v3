@@ -50,6 +50,13 @@ The ratio of planned risk to planned reward, computed from the Plan's quantitati
 
 The pedagogical comparison the app drives: a stock's **current** risk (discipline-dependent — the trader must honor their stop) vs its **maximum** risk (catastrophic — the whole position if the underlying goes to zero) exposes the gap that options structurally close. The same directional trade idea, expressed as a long option instead of stock, collapses maximum risk from "the whole position" to "the premium paid," with no discipline required to enforce the cap.
 
+**Payoff curve**:
+A position's P&L as a function of underlying price at expiry — piecewise-linear, hinged at the strikes. The single construction all structure-level quantities are read from: maximum risk is its worst value, maximum reward its best, and the Breakevens its zero-crossings. The trader's declared stop and target levels are read against the curve rather than fed to a per-strategy formula — the curve's shape carries the trade's direction, so no strategy label or directional-bias input enters the calculation. Covers every structure uniformly: a stock is a straight line, a spread is hinged at its strikes, a condor is the sum of two spreads. An at-expiry (intrinsic-value) picture: it does not express live option value mid-life (time value), which is a separate mark-to-market question.
+_Avoid_: Payoff diagram (that is the chart rendering of the curve)
+
+**Breakeven**:
+An underlying price at which a position's P&L is exactly zero — a zero-crossing of the Payoff curve. Shown on the plan-time payoff visualization and the trade review. A stop placed at a breakeven yields $0 planned risk.
+
 **Journal Entry**:
 A timestamped note capturing the trader's reflection and/or emotional state at a moment in the Trade's life. Entries are explicitly **decoupled from fills** — the trader is never forced to write while trading; focus stays on execution. Each Entry attaches at one of three levels:
 - **Trade-level** — about the Trade as a whole (pre-entry thesis, open-ended reflection, daily-review observation, a market event affecting this position).

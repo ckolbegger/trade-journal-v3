@@ -1,5 +1,10 @@
 # Three distinct risk quantities: planned, current, maximum
 
+**Status:** accepted — the three-quantity decision stands. *Amended by [ADR
+0009](0009-risk-reward-via-payoff-curve.md):* the computation method for
+planned and maximum risk is the position's payoff curve; the formulas below are
+the single-instrument special case, not the general computation.
+
 ## Context
 "Risk" in a Trade is not a single number. A naive implementation treats it as
 one — typically the loss-to-stop — and in doing so loses both the live

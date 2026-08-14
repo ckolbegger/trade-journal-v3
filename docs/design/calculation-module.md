@@ -2,8 +2,11 @@
 
 The pure position-figure derivation module. Owns every figure the journal shows
 for a Trade — P&L, position size, the three risk quantities, reward, R:R, R-multiple,
-lifecycle echo, and revision count — computed from fills + plan + revisions + price
-marks. Also owns the **aggregate of current exposure across a list of open
+breakevens, lifecycle echo, and revision count — computed from fills + plan + revisions + price
+marks. Structure-level quantities (`risk.maximum`, `breakevens`) are read off
+the position's **payoff curve** (ADR 0009) — P&L as a piecewise-linear function
+of underlying price at expiry, built from the filled legs. Also owns the
+**aggregate of current exposure across a list of open
 positions** (`evaluateMany`) — the multi-position analog of `evaluate`, same
 inputs (records + marks + asOf), same mark-dependence. Deliberately owns **no
 storage access, no presentation logic, and no lifecycle-status derivation.** Its
@@ -106,6 +109,16 @@ type Fill = {
   price: Price
   at: Date
   instrumentType: InstrumentType    // per leg — drives maximum risk (ADR 0005)
+  contract?: OptionContract         // present iff this leg is an option (ADR 0009)
+}
+
+/** The option facts the payoff curve hinges on (ADR 0009). Present as a group
+ *  or absent as a group — a stock fill carries no contract; an option fill
+ *  carries all three. Never parsed out of the InstrumentId. */
+type OptionContract = {
+  optionType: 'call' | 'put'        // the curve's hinge direction
+  strike:     Price                 // the hinge point
+  expiry:     Date                  // anchors the at-expiry construction
 }
 
 type InstrumentType = 'stock' | 'long-option' | 'short-option' | 'spread'
@@ -136,13 +149,13 @@ type FigureSet = {
   positionSize: number              // signed net quantity, from fills
 
   risk: {
-    planned: Dual                   // (entry − stop) × size — frozen at initial Plan (ADR 0005)
+    planned: Dual                   // read against the payoff curve at the declared stop (ADR 0009); frozen at initial Plan (ADR 0005)
     current: Dual | null            // (mark − currentStop) × size — live; null if no mark or no position
-    maximum: MaxRisk | null         // instrument-type-aware (ADR 0005); null for Planned (no fills → no instrumentType)
+    maximum: MaxRisk | null         // payoff-curve minimum (ADR 0009), instrument-type-aware (ADR 0005); null for Planned (no fills → no curve)
   }
 
   reward: {
-    planned: Dual                   // (target − entry) × size — frozen at initial Plan
+    planned: Dual                   // read against the payoff curve at the declared target (ADR 0009); frozen at initial Plan
     incremental: Dual | null        // (target − mark) × size — live; null if no mark
   }
 
@@ -152,6 +165,8 @@ type FigureSet = {
   }
 
   rMultiple: number                 // pnl.realized ÷ risk.planned.dollars (in R units)
+
+  breakevens: Price[] | null        // zero-crossings of the payoff curve, ascending (ADR 0009); null for Planned (no fills → no curve)
 
   lifecycle: Lifecycle              // echoed from record.status — NOT derived (ADR 0006)
 
@@ -165,11 +180,12 @@ type Dual = {
   dollars: number                   // trades share the same ratio; dollars scale with size
 }
 
-/** Maximum risk — instrument-type-aware (ADR 0005). A discriminated union so
+/** Maximum risk — the payoff curve's minimum (ADR 0009), instrument-type-aware
+ *  (ADR 0005). A discriminated union so
  *  the type system enforces "narrow before reading amount." The unbounded case
  *  (naked short options) carries no amount — there is no finite number. */
 type MaxRisk =
-  | { bounded: true,  amount: Dual }   // stock (whole position), long-option (premium), defined-risk spread
+  | { bounded: true,  amount: Dual }   // stock (whole position), long-option (premium), defined-risk spread (width − premium, net)
   | { bounded: false }                  // naked short option — catastrophic loss has no cap
 
 /** Aggregate CURRENT exposure across a list of open positions (evaluateMany's
@@ -347,6 +363,29 @@ Each ruling cites the principle or ADR it derives from. Veto any during review.
     risk, incremental reward — all dollars, each mark-dependent one with a
     missing-mark count. *(Depth — don't carry fields that would be N/A.)*
 
+18. **The payoff curve derives the structure-level quantities (ADR 0009).** Calc
+    constructs the position's payoff curve — P&L as a piecewise-linear function
+    of underlying price at expiry, summed across the filled legs — and reads:
+    `risk.maximum` = the curve's minimum (`{bounded: false}` when unbounded
+    below — naked shorts); `breakevens` = its zero-crossings, interpolated
+    within segments, ascending; maximum reward = its maximum (computed
+    internally; exposed on FigureSet when a consumer needs one — none does
+    today). One construction serves every structure — a single stock is a
+    straight line, a spread is hinged at its strikes, a condor is the sum of
+    two spreads — so calc holds **no per-strategy formula catalog** and needs
+    **no directional-bias input**: the curve's shape *is* the bias (this is why
+    `strategy` remains a calc-ignored store-owned tag — ADR 0009 *preserves*
+    the existing decision rather than reversing it). The trader's declared
+    stop/target levels are read against the curve — a stop at a breakeven
+    yields $0 planned risk — though their *representation* on `Plan` for
+    multi-directional structures is open (OQ 16). **Boundary:** the curve is an
+    *expiry* (intrinsic-value) construction. It serves maximum/planned risk and
+    breakevens — not live option P&L or live risk, which are mark-to-market
+    (extrinsic value at the daily mark; semantic 4's mark-dependence) and
+    which the options release must own as a separate computation. For the
+    stock-only MVP nothing changes: the curve is trivially linear (breakeven
+    = cost basis; maximum = whole position to zero). *(ADR 0009.)*
+
 ---
 
 ## Worked examples
@@ -366,6 +405,7 @@ Each ruling cites the principle or ADR it derives from. Veto any during review.
 | `rr.planned` | 6÷3 | `2.0` |
 | `rr.current` | no current risk | `null` |
 | `rMultiple` | no realized P&L | `0R` |
+| `breakevens` | no fills → no curve | `null` |
 
 Note: planned dollars are `$0` because position size is zero pre-entry — the
 *ratio* (1:2) is what validates the plan. Dollar figures gain meaning once fills
@@ -389,6 +429,7 @@ planned R:R is enough to validate the plan before entry (decided semantics 13).
 | `rr.planned` | 600÷300 | `2.0` |
 | `rr.current` | 400÷500 | `0.8` |
 | `rMultiple` | 0÷300 | `0R` |
+| `breakevens` | curve (a line, slope +100/$) crosses zero at cost basis | `[150]` |
 | `revisionCount` | zero revisions | `0` |
 
 **After closing — sell 100 @ $156 (Closed, snapshot cached per ADR 0007):**
@@ -627,8 +668,8 @@ These are commitments — downstream drill-downs must serve these shapes:
 | **Snapshot `asOf` / `closedAt` (audit finding).** `evaluate` takes `asOf: Date`, but regenerating a corrected closed-trade snapshot needs the *original close date* — and nothing in `TradeRecord` carries it. Either the record needs `closedAt`, or the snapshot (`finalFigures`) must carry its own `asOf`. Surface during TradingRecordStore drill-down. | TradingRecordStore drill-down |
 | **Correction invalidating stored status (audit finding).** A fill correction could change net position from zero to non-zero (Closed → should-be-Open). `isFlat` detects the forward transition (Open→Closed); the backward path (status-invalidating correction) is unwritten. ADR 0006 requires stored status agree with derived status. | FillEntryCoordinator drill-down |
 | Exact P&L accounting for multi-leg options (cost-basis tracking across legs) | Implementation; calc's internal seam, not interface. The `Fill[]` input carries enough; the algorithm is internal. |
-| `InstrumentType` value expansion for options sub-types (naked vs covered, put vs call, spread width) | Options-release drill-down. The `InstrumentType` union grows; the `MaxRisk` discriminated union shape is stable. |
-| Spread-width input for defined-risk spread `maximum` | Options-release. A spread's max risk = width − premium; the fill structure must carry strike/width. Deferred until options ship. |
+| `InstrumentType` value expansion for options sub-types (naked vs covered, single-leg vs spread) | Options-release drill-down. The `InstrumentType` union grows; the `MaxRisk` discriminated union shape is stable. Put/call, strike, and expiry are NOT part of this — they live on `OptionContract` (ADR 0009). |
+| **Payoff-curve companion semantics (ADR 0009).** The contract inputs are settled: option legs carry `contract: { optionType, strike, expiry }` on `Fill`, present as a group iff the leg is an option — calc must never parse `InstrumentId` conventions like `'AAPL-155C'`. Still open, as computation semantics (not contract facts): multi-expiry anchoring (which expiry defines "the" curve when legs differ), anchor reconciliation (the curve's minimum is from cost basis net of premium; CONTEXT.md states maximum risk from current price — bridging the two needs the mark-to-market model), and exact multi-leg cost-basis accounting (row below). | Options-release drill-down |
 
 ---
 

@@ -4,7 +4,8 @@ The trading record itself: Trade identity + lifecycle status (Planned/Open/Close
 stored authoritatively per ADR 0006) + optional `finalFigures` snapshot (per ADR
 0007) + Plan (original levels, thesis, invalidation, entry emotion) + Plan
 Revision (append-only dated deltas, ADR 0001) + Fill (instrument, side, qty,
-price, time, instrument-type per leg, underlying). The deepest, most-touched
+price, time, instrument-type per leg, option contract facts when the leg is an
+option — optionType/strike/expiry, ADR 0009). The deepest, most-touched
 store.
 
 It owns three invariants and the lifecycle transitions. It deliberately owns
@@ -127,6 +128,7 @@ type FillInput = {
   price:          Price
   at:             Date                   // caller-provided (see decided semantics 7)
   instrumentType: InstrumentType         // per leg (ADR 0005)
+  contract?:      OptionContract         // present iff an option leg (ADR 0009 payoff curve)
 }
 
 type RevisionInput = {
@@ -190,10 +192,11 @@ type Fill = {
   price:          Price
   at:             Date
   instrumentType: InstrumentType         // per leg — drives maximum risk (ADR 0005)
+  contract?:      OptionContract         // present iff an option leg (ADR 0009 payoff curve)
 }
 
-// Plan, PlanRevision, InstrumentType, Lifecycle, FigureSet, Dual, MaxRisk:
-// UNCHANGED from calculation-module.md. The only contract change: three new
+// Plan, PlanRevision, InstrumentType, OptionContract, Lifecycle, FigureSet, Dual,
+// MaxRisk: UNCHANGED from calculation-module.md. The only contract change: three new
 // store-owned fields (strategy, closedAt on TradeRecord; fillId on Fill), each
 // marked STORE-OWNED and ignored by calc. One canonical TradeRecord type across
 // both docs.
@@ -690,7 +693,7 @@ semantics (14, 15, 16).
 | **Snapshot write-back after regeneration (audit finding).** `correctFill` nulls `finalFigures`, and the regeneration sequence (above) recomputes a snapshot — but no current op writes a regenerated snapshot back onto an already-Closed trade. `recordFill` transitions to Closed (calling it again on a Closed trade is undefined). Provisional shape: a dedicated `replaceSnapshot(tradeId, figures)`, or widening `correctFill` to accept a recomputed snapshot as a third argument. The right home for the decision is the FillEntryCoordinator drill-down, which owns the whole correction path (OQ 12) — but the op itself lives on this store and will be added when that session requests it. | FillEntryCoordinator drill-down (decision) → TradingRecordStore (op) |
 | **OQ 12 — status-invalidating correction.** A fill correction that changes quantity/side/instrument could change net position from zero to non-zero (Closed → should-be-Open). `correctFill` returns `statusPossiblyInvalid: boolean` as a signal but does not re-evaluate status (rule 1: no calc in the store). There is currently no `reopen` op. The FillEntryCoordinator drill-down owns the full correction path and will decide whether re-opening is even a supported flow (alternative: corrections that change flat-ness are rejected, forcing an undo+re-enter). | FillEntryCoordinator drill-down |
 | **StorageBinding shape.** This store assumes `put/get/delete/range-query` over opaque records (overview rule 5), but the StorageBinding interface itself is not yet pinned. The exact primitive set (does range-query support compound filters, or does the store filter in memory?) is deferred to a StorageBinding drill-down or to implementation. | StorageBinding drill-down / implementation |
-| **Multi-fact write atomicity (OQ 9).** `commit` writes Trade+Plan together; `recordFill` (close branch) writes fill+status+closedAt+finalFigures together. These are single-store multi-fact writes that should be atomic. Whether atomicity comes from the StorageBinding (a transaction primitive) or from the store's own batching is OQ 9, owned by the overview/StorageBinding. | overview / StorageBinding (OQ 9) |
+| **Multi-fact write atomicity (OQ 9) — RESOLVED.** `commit` writes Trade+Plan together; `recordFill` (close branch) writes fill+status+closedAt+finalFigures together. These are single-store multi-fact writes, atomic via the **same `StorageBinding.transaction` primitive** the coordinators use cross-store (one mechanism system-wide; decided in the PlanCommitCoordinator session). The primitive's exact API is the StorageBinding shape question (row above). | resolved (OQ 9) — primitive shape: StorageBinding drill-down / implementation |
 | **`TradeId`/`FillId` generation strategy.** Store-assigned (decided semantics 8), but the format (UUID, sequential, prefixed like `tr_001`) is an implementation detail. Deferred. | Implementation |
 
 ---
