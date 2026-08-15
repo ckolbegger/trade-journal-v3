@@ -12,6 +12,7 @@ import type {
   OptionInstrument,
   Position,
   Qty,
+  ReplayPoint,
   RiskReward,
   TradeId,
   TradeRecord,
@@ -27,6 +28,7 @@ import {
   MissingMarkError,
 } from '@/domain/trademath/valuation'
 import { riskReward } from '@/domain/trademath/risk-reward'
+import { replay } from '@/domain/trademath/replay'
 import { impliedVol } from '@/domain/trademath/implied-vol'
 
 // The only place TradeBook facts meet TradeMath and PriceBook. Returns finished
@@ -137,6 +139,18 @@ export class Valuations {
       }
       throw error
     }
+  }
+
+  // The Trade's actual history, replayed (docs/design/trade-detail-sequence.md
+  // "Replay graph"): same join as `detail`, full history instead of the
+  // latest date. `series()` with no range defaults to full history
+  // (docs/design/pricebook.md) — replay wants everything, so nothing is
+  // passed here.
+  async replay(tradeId: TradeId): Promise<ReplayPoint[]> {
+    if (!this.priceBook) throw new Error('Valuations needs a PriceBook for replay')
+    const record = await this.tradeBook.get(tradeId)
+    const series = await this.priceBook.series(instrumentsOf(record))
+    return replay(record, series)
   }
 
   // Which instruments need Marks, per open Trade, over which ranges. Planned and

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useReview } from '../reviewContext'
 import { usePriceBook } from '../priceBookContext'
 import { useTradeBook } from '../tradeBookContext'
@@ -6,7 +7,7 @@ import { useWorkspace } from '../workspaceContext'
 import { WalkSession } from './WalkSession'
 import { CloseForm } from './CloseForm'
 import { centsToDollars, downloadBlob, optionLabel, todayISO } from '../format'
-import { btnPrimary, btnSecondary, card, heading, num, subheading } from '../styles'
+import { btnPrimary, btnSecondary, card, heading, link, num, subheading } from '../styles'
 import type { FetchReport, ISODate, InstrumentKey, Mark } from '@/books/pricebook/types'
 import type { ExpiredHolding, TradeMarksNeeded } from '@/coordinators/valuations'
 import { computeBackupNudge } from './backupNudge'
@@ -69,6 +70,21 @@ export function ReviewPage() {
       if (active) setBackupNudge(computeBackupNudge(health, backupNudgeDays))
     }
     void loadNudge()
+    return () => {
+      active = false
+    }
+  }, [workspace])
+
+  // S4.4.T2: the collection screen's single fetch path (below) can't tell
+  // "source failed" from "no source set up" — the trader needs to know
+  // plainly when nothing is configured, before starting the session.
+  const [noSourceConfigured, setNoSourceConfigured] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    void workspace.settings.get('pricingSources').then((sources) => {
+      if (active) setNoSourceConfigured(!sources.some((s) => s.enabled))
+    })
     return () => {
       active = false
     }
@@ -168,6 +184,20 @@ export function ReviewPage() {
                 Dismiss
               </button>
             </div>
+          </div>
+        )}
+        {noSourceConfigured && (
+          <div
+            aria-label="no source notice"
+            className="space-y-1 rounded-md border border-amber-200 bg-amber-50 p-3"
+          >
+            <p className="text-sm text-amber-800">
+              No pricing source configured — every Mark will need to be typed manually.{' '}
+              <Link to="/settings" className={link}>
+                Set one up in Settings
+              </Link>
+              .
+            </p>
           </div>
         )}
         <p className="text-sm text-slate-600">

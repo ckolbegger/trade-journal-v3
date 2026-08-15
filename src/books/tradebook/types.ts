@@ -132,6 +132,7 @@ export type {
   PlanFacts,
   PlannedLeg,
   Position,
+  ReplayPoint,
   RiskReward,
   Side,
   TradeRecord,

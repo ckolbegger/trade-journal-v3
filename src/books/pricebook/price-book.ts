@@ -7,7 +7,7 @@ import type {
   MarkSeries,
   Money,
 } from '@/domain/trademath/types'
-import { datesInRange } from '@/domain/dates'
+import { datesInRange, isWeekend } from '@/domain/dates'
 import type { DateRange, FetchReport, PricingSource, RecordResult } from './types'
 
 const MARKS = 'marks'
@@ -130,7 +130,9 @@ export class PriceBook {
 
   // The unpriced (instrument, date) rows in a range — the authoritative remainder
   // after a fetch, and the Daily Review's per-Trade prompts. Every calendar date
-  // in the range is needed: there is no trading calendar (docs/design/pricebook.md).
+  // in the range is needed except weekends, which are never marks-needed
+  // (S4.4, docs/design/pricebook.md, amended 2026-07-19) — unconditionally, for
+  // fetched and manual instruments alike.
   async missingMarks(
     instruments: InstrumentKey[],
     range: DateRange,
@@ -140,6 +142,7 @@ export class PriceBook {
       const stored = await this.binding.where<StoredMark>(MARKS, 'instrument', instrument)
       const marked = new Set(stored.map((m) => m.date))
       for (const date of datesInRange(range.from, range.to)) {
+        if (isWeekend(date)) continue
         if (!marked.has(date)) missing.push({ instrument, date })
       }
     }

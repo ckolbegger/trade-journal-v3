@@ -185,3 +185,13 @@ export interface RiskReward {
     reward: Money | 'unlimited' | 'undefined'
   }
 }
+
+// One point in a Trade's replay (docs/design/trademath.md `replay`): a marked
+// date the Trade held quantity, with its Valuation and RiskReward computed
+// from ONLY what was knowable as of that date (Executions up to end-of-date,
+// that date's own Marks) — reflective, never forward-looking (ADR 0009).
+export interface ReplayPoint {
+  date: ISODate
+  valuation: Valuation
+  riskReward: RiskReward
+}

@@ -6,6 +6,7 @@ import { useValuations } from '../valuationsContext'
 import { RecordFillForm } from './RecordFillForm'
 import { CloseForm } from './CloseForm'
 import { TradeDashboard } from './TradeDashboard'
+import { ReplayView } from './ReplayView'
 import { centsToDollars, optionLabel, timestampToISODate, todayISO } from '../format'
 import { StatusBadge } from '../components/Badge'
 import { AddAddendum } from '../components/AddAddendum'
@@ -105,6 +106,7 @@ export function TradeDetail() {
   const [abandoning, setAbandoning] = useState(false)
   const [refresh, setRefresh] = useState(0)
   const [refreshReport, setRefreshReport] = useState<FetchReport | null>(null)
+  const [showReplay, setShowReplay] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -305,6 +307,21 @@ export function TradeDetail() {
           may never keep numbers the Position and the badge have already moved past. */}
       {status && status !== 'planned' && (
         <TradeDashboard key={refresh} tradeId={trade.id} onDetail={handleDetail} />
+      )}
+
+      {status && status !== 'planned' && (
+        <div className="flex justify-end">
+          <button type="button" className={btnSecondary} onClick={() => setShowReplay((v) => !v)}>
+            {showReplay ? 'Hide replay' : 'Replay'}
+          </button>
+        </div>
+      )}
+      {showReplay && (
+        <ReplayView
+          key={`replay-${refresh}`}
+          tradeId={trade.id}
+          executionDates={[...new Set(executions.map((e) => timestampToISODate(e.timestamp)))]}
+        />
       )}
 
       <div className={`${card} space-y-3`}>

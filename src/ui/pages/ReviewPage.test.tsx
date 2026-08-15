@@ -492,6 +492,31 @@ describe('ReviewAgenda (expired)', () => {
   })
 })
 
+// S4.4.T2: the review collection screen tells the trader plainly when no
+// pricing source is enabled, rather than silently routing everything to
+// manual entry (docs/plan/slice-04-automated-pricing.md).
+describe('ReviewCollection (no source)', () => {
+  it('shows a set-up-a-source notice when no pricing source is enabled', async () => {
+    const { tradeBook, journal, priceBook } = await workspace()
+    const ws = new Workspace(tradeBook, journal)
+
+    renderPage(tradeBook, journal, priceBook, ws)
+
+    expect(await screen.findByLabelText('no source notice')).toBeInTheDocument()
+  })
+
+  it('shows no notice when a source is enabled', async () => {
+    const { tradeBook, journal, priceBook } = await workspace()
+    const ws = new Workspace(tradeBook, journal)
+    await ws.settings.set('pricingSources', [{ id: 'test-source', enabled: true }])
+
+    renderPage(tradeBook, journal, priceBook, ws)
+
+    await screen.findByRole('button', { name: /start review/i })
+    expect(screen.queryByLabelText('no source notice')).not.toBeInTheDocument()
+  })
+})
+
 // The agenda's post-fetch state renders the FetchReport (docs/design/pricebook.md):
 // stored Marks as pre-filled rows for an eyeball check, errors with their reason
 // attached to the instrument, and unsupported instruments flow to the ordinary

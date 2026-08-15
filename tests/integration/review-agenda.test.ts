@@ -4,7 +4,7 @@ import { DexieBinding } from '@/storage/dexie-binding'
 import { TradeBook } from '@/books/tradebook/trade-book'
 import { Journal } from '@/books/journal/journal'
 import { PriceBook } from '@/books/pricebook/price-book'
-import { Workspace } from '@/workspace/workspace'
+import { Workspace, REVIEW_ENTRY_TYPE_ID } from '@/workspace/workspace'
 import { Valuations } from '@/coordinators/valuations'
 import { Review } from '@/coordinators/review'
 import type { Account, ExecutionDraft, Institution, PlanDraft } from '@/books/tradebook/types'
@@ -103,15 +103,10 @@ describe('review agenda over Dexie', () => {
       { instrument: 'AAPL', date: TUESDAY },
       { instrument: 'AAPL', date: WEDNESDAY },
     ])
+    // 2026-07-11 and 2026-07-12 are a Saturday and Sunday — weekend-quiet (S4.4)
+    // excludes them even though MSFT's range spans them.
     const msftRows = await priceBook.missingMarks(['MSFT'], agenda.marksNeeded[1].needs[0].range)
-    expect(msftRows.map((r) => r.date)).toEqual([
-      FRIDAY,
-      '2026-07-11',
-      '2026-07-12',
-      MONDAY,
-      TUESDAY,
-      WEDNESDAY,
-    ])
+    expect(msftRows.map((r) => r.date)).toEqual([FRIDAY, MONDAY, TUESDAY, WEDNESDAY])
   })
 
   it('stores nothing when the session fetches with no adapters registered', async () => {
@@ -151,5 +146,105 @@ describe('review agenda over Dexie', () => {
     expect(agenda.fetchRange).toEqual({ from: WEDNESDAY, to: WEDNESDAY })
     // The MSFT plan journal is still owed — settlement arrives in S1.7.
     expect(agenda.journalDebt.map((e) => e.anchor)).toEqual([{ kind: 'plan', tradeId: msft }])
+  })
+})
+
+// S4.4.T3 — the weekend-quiet ruling over Dexie: a Friday Mark followed by a
+// Monday review needs Monday only, in both the agenda's collection path and the
+// walk. The unit-level equivalent (Valuations.marksNeeded (weekend-quiet)) fixes
+// the same worked example; this proves it survives Dexie's round trip end to end.
+describe('review agenda over Dexie (weekend-quiet, S4.4)', () => {
+  it('a Friday Mark and a Monday review need Monday only — no weekend rows in the agenda or the walk', async () => {
+    const dbName = 'review-weekend-quiet-' + crypto.randomUUID()
+    const binding = new DexieBinding(createDatabase(dbName))
+    const tradeBook = new TradeBook(binding)
+    const journal = new Journal(binding)
+    const priceBook = new PriceBook(binding)
+
+    const institution = { id: '', name: 'Schwab' } as Institution
+    await tradeBook.registries.institutions.save(institution)
+    const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
+    await tradeBook.registries.accounts.save(account)
+    await new Workspace(tradeBook, journal).ensureSeeded()
+
+    const aapl = await tradeBook.confirmPlan(draft(account.id, 'AAPL'))
+    await tradeBook.recordExecution({ tradeId: aapl, newLeg: 'AAPL' }, buy100)
+    await priceBook.record('AAPL', FRIDAY, 16000, 'manual')
+
+    // Reopen the database fresh, as the trader would on Monday.
+    const session = {
+      tradeBook: new TradeBook(binding),
+      journal: new Journal(binding),
+      priceBook: new PriceBook(binding),
+    }
+    const review = new Review(
+      new Valuations(session.tradeBook, session.priceBook),
+      session.journal,
+      session.tradeBook,
+    )
+
+    const agenda = await review.agenda(MONDAY)
+    // The range's `from` lands on Saturday (the day after Friday's Mark) — that's
+    // structural bookkeeping, not a prompt (docs/plan/slice-04-automated-pricing.md).
+    expect(agenda.marksNeeded).toEqual([
+      { tradeId: aapl, needs: [{ instrument: 'AAPL', range: { from: '2026-07-11', to: MONDAY } }] },
+    ])
+
+    const missing = await session.priceBook.missingMarks(
+      ['AAPL'],
+      agenda.marksNeeded[0].needs[0].range,
+    )
+    expect(missing).toEqual([{ instrument: 'AAPL', date: MONDAY }])
+
+    const walk = await review.walk(MONDAY)
+    expect(walk).toEqual([{ tradeId: aapl, reviewedToday: false, outstandingDebt: 0 }])
+
+    // Fill Monday's Mark and record the Action — the only checkpoint work owed.
+    await session.priceBook.record('AAPL', MONDAY, 16500, 'manual')
+    await session.journal.write({
+      anchor: { kind: 'review', date: MONDAY, tradeId: aapl },
+      entryTypeId: REVIEW_ENTRY_TYPE_ID,
+      at: new Date(`${MONDAY}T18:00:00`).getTime(),
+      answers: [
+        { promptId: 'action', value: 'Hold' },
+        { promptId: 'conviction', value: 4 },
+      ],
+      placeholder: false,
+    })
+
+    const walkAgain = await review.walk(MONDAY)
+    expect(walkAgain).toEqual([{ tradeId: aapl, reviewedToday: true, outstandingDebt: 0 }])
+    // Caught up: nothing left to collect, and Saturday/Sunday never appear.
+    const after = await review.agenda(MONDAY)
+    expect(after.marksNeeded).toEqual([])
+  })
+})
+
+// S4.4.T3 — the no-source notice's data source (`Settings.pricingSources`) round-
+// trips through Dexie. The notice's rendering is unit-tested at the ReviewPage
+// seam (ReviewPage.test.tsx's "ReviewCollection (no source)" describe, over the
+// in-memory binding); duplicating that render assertion here over Dexie would
+// only prove Dexie can store an array, which dexie-binding.test.ts already
+// covers generically — so this confirms the one thing that IS new: the specific
+// empty/populated shapes the notice branches on survive a reopen.
+describe('pricingSources settings over Dexie (S4.4 no-source notice)', () => {
+  it('defaults to empty (no source configured) and round-trips an enabled source after reopen', async () => {
+    const dbName = 'review-no-source-' + crypto.randomUUID()
+    const binding = new DexieBinding(createDatabase(dbName))
+    const workspace = new Workspace(new TradeBook(binding), new Journal(binding), binding)
+
+    expect(await workspace.settings.get('pricingSources')).toEqual([])
+
+    await workspace.settings.set('pricingSources', [{ id: 'marketdata.app', enabled: true }])
+
+    const reopenedBinding = new DexieBinding(createDatabase(dbName))
+    const reopened = new Workspace(
+      new TradeBook(reopenedBinding),
+      new Journal(reopenedBinding),
+      reopenedBinding,
+    )
+    expect(await reopened.settings.get('pricingSources')).toEqual([
+      { id: 'marketdata.app', enabled: true },
+    ])
   })
 })

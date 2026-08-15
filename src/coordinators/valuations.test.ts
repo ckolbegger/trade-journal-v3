@@ -340,6 +340,37 @@ describe('Valuations.marksNeeded', () => {
   })
 })
 
+// S4.4: weekends are never marks-needed. marksNeeded itself is unchanged — it
+// only returns date RANGES; the actual per-date enumeration (where weekends get
+// dropped) happens downstream in PriceBook.missingMarks. A range's `from` can
+// still legitimately land on a Saturday (the day after a Friday Mark) — that's
+// structural bookkeeping, not a prompt — and missingMarks over that range
+// correctly surfaces only the weekday it should ask about.
+describe('Valuations.marksNeeded (weekend-quiet)', () => {
+  it('needs only Monday when a Friday Mark exists and the review runs Monday', async () => {
+    const { tradeBook, priceBook } = books()
+    const tradeId = await seedPlan(tradeBook)
+    await tradeBook.recordExecution({ tradeId, newLeg: 'AAPL' }, fill())
+    const friday = '2026-07-10'
+    const monday = '2026-07-13'
+    await priceBook.record('AAPL', friday, 16000, 'manual')
+
+    const needed = await new Valuations(tradeBook, priceBook).marksNeeded(monday)
+
+    // The range starts the day after Friday's Mark (Saturday) — structural, not
+    // user-facing (docs/plan/slice-04-automated-pricing.md, S4.4).
+    expect(needed.perTrade).toEqual([
+      { tradeId, needs: [{ instrument: 'AAPL', range: { from: '2026-07-11', to: monday } }] },
+    ])
+
+    const missing = await priceBook.missingMarks(
+      needed.perTrade[0].needs.map((n) => n.instrument),
+      needed.perTrade[0].needs[0].range,
+    )
+    expect(missing).toEqual([{ instrument: 'AAPL', date: monday }])
+  })
+})
+
 // A Trade holding an option Leg needs Marks for the contract AND its underlying
 // (TradeMath.instrumentsOf) — and the two gap independently (S3.1, resolving the
 // S1.6 review question: a shared per-Trade range would resurface one

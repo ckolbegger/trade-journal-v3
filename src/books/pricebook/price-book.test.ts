@@ -150,29 +150,21 @@ describe('PriceBook.missingMarks', () => {
     expect(missing).toEqual([])
   })
 
-  it('treats every calendar date in range as needed (no trading calendar)', async () => {
+  it('never lists a Saturday or Sunday (weekend-quiet, S4.4)', async () => {
     const pb = priceBook()
-    // 2026-07-18 and 2026-07-19 are a Saturday and Sunday — they are still
-    // needed: a date needs a Mark because the trader reviewed it, not because a
-    // calendar said the exchange was open.
+    // 2026-07-18 and 2026-07-19 are a Saturday and Sunday — weekends are never
+    // marks-needed (S4.4), even though the weekday gaps in the same range still
+    // are (see the next test).
     const missing = await pb.missingMarks(['AAPL'], { from: '2026-07-17', to: '2026-07-20' })
-    expect(missing.map((m) => m.date)).toEqual([
-      '2026-07-17',
-      '2026-07-18',
-      '2026-07-19',
-      '2026-07-20',
-    ])
+    expect(missing.map((m) => m.date)).toEqual(['2026-07-17', '2026-07-20'])
   })
 
-  it('spans a month boundary', async () => {
+  it('still lists weekday gaps in the same range', async () => {
     const pb = priceBook()
     const missing = await pb.missingMarks(['AAPL'], { from: '2026-07-30', to: '2026-08-02' })
-    expect(missing.map((m) => m.date)).toEqual([
-      '2026-07-30',
-      '2026-07-31',
-      '2026-08-01',
-      '2026-08-02',
-    ])
+    // 2026-08-01 and 2026-08-02 are a Saturday and Sunday and are excluded;
+    // Thursday and Friday remain.
+    expect(missing.map((m) => m.date)).toEqual(['2026-07-30', '2026-07-31'])
   })
 })
 

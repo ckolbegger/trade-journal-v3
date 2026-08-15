@@ -10,7 +10,7 @@ Design references: ADR 0009, [trademath.md](../design/trademath.md) (`replay`), 
 
 ---
 
-## ☐ Story S15.1 — Replay
+## ☑ Story S15.1 — Replay
 
 > As a trader, I want to slide through a Trade's life and watch its P&L and risk/reward evolve as it actually happened, so that I build intuition from reality instead of from a payoff diagram.
 
@@ -18,14 +18,14 @@ Design references: ADR 0009, [trademath.md](../design/trademath.md) (`replay`), 
 
 ### Tasks
 
-- [ ] **S15.1.T1 — TradeMath.replay.**
+- [x] **S15.1.T1 — TradeMath.replay.**
 
   ```
   describe "TradeMath.replay"
   - it returns one ReplayPoint per marked date the Trade held quantity
   - it computes each point's Valuation and RiskReward from that date's Marks
   - it reflects executions as of each date (a partial close changes later points' basis)
-  - it renders no point for gap dates (a gap is a gap, never a flat line)
+  - it renders no point for gap dates (a gap is a gap, never a flat line; a WEEKEND is an expected absence, not a gap — the chart joins Friday to Monday, per the S4.4 weekend-quiet ruling, amended 2026-07-19)
   - it replays a closed Trade start to finish
   ```
 
@@ -34,7 +34,7 @@ Design references: ADR 0009, [trademath.md](../design/trademath.md) (`replay`), 
   ```
   ```
 
-- [ ] **S15.1.T2 — Time-slider UI.** "Replay" on Trade detail: a chart of total P&L (and planned-risk band) over the Trade's life with a slider; the selected date shows that day's full dashboard numbers; gaps visibly broken. Nothing on this surface projects forward.
+- [x] **S15.1.T2 — Time-slider UI.** "Replay" on Trade detail: a chart of total P&L (and planned-risk band) over the Trade's life with a slider; the selected date shows that day's full dashboard numbers; gaps visibly broken. Nothing on this surface projects forward.
 
   ```
   describe "ReplayView"
@@ -44,9 +44,9 @@ Design references: ADR 0009, [trademath.md](../design/trademath.md) (`replay`), 
   - it contains no forward-looking element
   ```
 
-- [ ] **S15.1.T3 — Integration tests**: a Trade with a partial close over Dexie → replay points hand-verified at three dates (before partial, the partial date, after partial). *(Amended 2026-07-19: the revision scenario moved to S11.1 with its TestSpec line.)*
-- [ ] **S15.1.T4 — Playwright e2e** (`e2e/s15-1-replay.spec.ts`): open replay on a seeded lifecycle → slide to a known date → numbers match hand-computed values.
-- [ ] **S15.1.T5 — Browser verification.** Real browser: replay a Trade lived through earlier slices; verify a known day's numbers, the anchor shift at its revision date, and gap rendering across a skipped day. All suites green.
+- [x] **S15.1.T3 — Integration tests**: a Trade with a partial close over Dexie → replay points hand-verified at three dates (before partial, the partial date, after partial). *(Amended 2026-07-19: the revision scenario moved to S11.1 with its TestSpec line.)*
+- [x] **S15.1.T4 — Playwright e2e** (`e2e/s15-1-replay.spec.ts`): open replay on a seeded lifecycle → slide to a known date → numbers match hand-computed values.
+- [x] **S15.1.T5 — Browser verification.** Real browser: replay a Trade lived through earlier slices; verify a known day's numbers, the anchor shift at its revision date, and gap rendering across a skipped day. All suites green.
 
 ---
 

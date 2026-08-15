@@ -125,7 +125,7 @@ Design references: [pricebook.md](../design/pricebook.md) (fetch semantics, Fetc
 
 ---
 
-## ☐ Story S4.4 — Quiet weekends & source visibility *(added 2026-07-19 — slice re-opened after live use surfaced two collection-step gaps; the `slice-4-complete` tag remains the historical rollback point for S4.1–S4.3)*
+## ☑ Story S4.4 — Quiet weekends & source visibility *(added 2026-07-19 — slice re-opened after live use surfaced two collection-step gaps; the `slice-4-complete` tag remains the historical rollback point for S4.1–S4.3)*
 
 > As a trader, I want my review to stop asking for prices on days the market was closed, and to tell me plainly when no pricing source is set up, so that the collection step only ever shows work that's real.
 
@@ -137,7 +137,7 @@ Design references: [pricebook.md](../design/pricebook.md) (fetch semantics, Fetc
 
 ### Tasks
 
-- [ ] **S4.4.T1 — Weekend-quiet enumeration.**
+- [x] **S4.4.T1 — Weekend-quiet enumeration.**
 
   ```
   describe "PriceBook.missingMarks (weekend-quiet)"
@@ -147,7 +147,7 @@ Design references: [pricebook.md](../design/pricebook.md) (fetch semantics, Fetc
   - it needs only Monday when a Friday Mark exists and the review runs Monday
   ```
 
-- [ ] **S4.4.T2 — No-source notice.** The review collection screen states "no pricing source configured" with a pointer to Settings when zero sources are enabled; silent no-op is gone.
+- [x] **S4.4.T2 — No-source notice.** The review collection screen states "no pricing source configured" with a pointer to Settings when zero sources are enabled; silent no-op is gone.
 
   ```
   describe "ReviewCollection (no source)"
@@ -155,6 +155,6 @@ Design references: [pricebook.md](../design/pricebook.md) (fetch semantics, Fetc
   - it shows no notice when a source is enabled
   ```
 
-- [ ] **S4.4.T3 — Integration tests**: Friday Mark → Monday review over Dexie needs Monday only (no weekend rows anywhere in the agenda or walk); a no-source workspace shows the notice, a sourced one doesn't.
-- [ ] **S4.4.T4 — Playwright e2e** (`e2e/s4-4-weekend-quiet.spec.ts`): a review spanning a weekend gap prompts no Saturday/Sunday rows; the no-source notice appears on an unconfigured workspace.
-- [ ] **S4.4.T5 — Browser verification.** Real browser on the live workspace: a review after this weekend prompts no Sat/Sun rows and shows no dead prompts for fetched instruments; the notice appears in a fresh keyless context and disappears once the key is saved. All suites green.
+- [x] **S4.4.T3 — Integration tests**: Friday Mark → Monday review over Dexie needs Monday only (no weekend rows anywhere in the agenda or walk); a no-source workspace shows the notice, a sourced one doesn't.
+- [x] **S4.4.T4 — Playwright e2e** (`e2e/s4-4-weekend-quiet.spec.ts`): a review spanning a weekend gap prompts no Saturday/Sunday rows; the no-source notice appears on an unconfigured workspace.
+- [x] **S4.4.T5 — Browser verification.** Real browser on the live workspace: a review after this weekend prompts no Sat/Sun rows and shows no dead prompts for fetched instruments; the notice appears in a fresh keyless context and disappears once the key is saved. All suites green.

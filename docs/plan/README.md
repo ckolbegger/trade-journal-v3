@@ -23,7 +23,7 @@ Edge cases live in Vitest (unit/integration). Playwright carries exactly one hap
 | 1 | [Stock trade lifecycle](slice-01-stock-lifecycle.md) | 0 | ☑ |
 | 2 | [Journal timeline & standalone entries](slice-02-journal-timeline.md) | 1 | ☐ |
 | 3 | [Single-leg options](slice-03-single-leg-options.md) | 1 | ☐ |
-| 4 | [Automated pricing (Marks only, no Daily Bars)](slice-04-automated-pricing.md) | 3 | ☐ |
+| 4 | [Automated pricing (Marks only, no Daily Bars)](slice-04-automated-pricing.md) | 3 | ☑ |
 | 5 | [Scaling in & out (FIFO Lots)](slice-05-scaling.md) | 1 | ☐ |
 | 6 | [Durability (export/import, persistence)](slice-06-durability.md) | 1 | ☐ |
 | 7 | [Multi-leg Trades](slice-07-multi-leg.md) | 3, 5 | ☐ |

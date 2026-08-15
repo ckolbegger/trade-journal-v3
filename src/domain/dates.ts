@@ -25,13 +25,21 @@ export function nextISODate(date: ISODate): ISODate {
   return fromUTC(toUTC(date) + DAY_MS)
 }
 
-// Every calendar date from..to inclusive. There is no trading calendar — a date
-// needs Marks because the trader reviewed it, not because an exchange was open
-// (docs/design/pricebook.md). Empty when `to` precedes `from`.
+// Every calendar date from..to inclusive — unchanged by S4.4's weekend-quiet
+// ruling (docs/design/pricebook.md, amended 2026-07-19): this stays a plain
+// calendar enumeration; the filtering of Saturdays/Sundays out of "needed"
+// happens in the caller, PriceBook.missingMarks. Empty when `to` precedes `from`.
 export function datesInRange(from: ISODate, to: ISODate): ISODate[] {
   const dates: ISODate[] = []
   for (let ms = toUTC(from); ms <= toUTC(to); ms += DAY_MS) dates.push(fromUTC(ms))
   return dates
+}
+
+// True for Saturday and Sunday. UTC arithmetic like the rest of this file, so a
+// local DST transition can never shift which weekday a date lands on.
+export function isWeekend(date: ISODate): boolean {
+  const day = new Date(toUTC(date)).getUTCDay()
+  return day === 0 || day === 6
 }
 
 // The trading date an epoch-ms Timestamp falls on, in the trader's local zone.

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
@@ -401,6 +401,33 @@ describe('TradeDetail valuation refresh', () => {
     await waitFor(() => expect(pnl).toHaveTextContent(/1798\.00/))
     expect(await screen.findByLabelText('position')).toHaveTextContent(/no position/i)
     expect(pnl).not.toHaveTextContent(/1000\.00/)
+  })
+})
+
+describe('TradeDetail replay', () => {
+  // The dashboard and the replay panel are siblings that both remount on the
+  // page's refresh counter; each needs its OWN key namespace, or the two
+  // collide on the same React key the moment replay opens (React drops one of
+  // the duplicate-keyed siblings — "unsupported"). Regression: opening replay
+  // must not log a duplicate-key error.
+  it('opens replay without a duplicate React key between the dashboard and the panel', async () => {
+    const { book, journal, priceBook, id } = await seededTrade()
+    await buy100(book, id)
+    await priceBook.record('AAPL', todayISO(), 16000, 'manual')
+    renderDetail(book, journal, priceBook, id)
+    const user = userEvent.setup()
+
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      await user.click(await screen.findByRole('button', { name: /^replay$/i }))
+      // The chart has mounted once the slider is present — the render at which
+      // the sibling keys would collide.
+      await screen.findByLabelText('replay date')
+      const duplicateKey = errors.mock.calls.find((args) => String(args[0]).includes('same key'))
+      expect(duplicateKey).toBeUndefined()
+    } finally {
+      errors.mockRestore()
+    }
   })
 })
 
