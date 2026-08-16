@@ -14,6 +14,7 @@ can implement the same spec independently and be compared side by side.
 | `antigravity`| `worktrees/antigravity`   |
 | `minimax`    | `worktrees/minimax`       |
 | `kimi`       | `worktrees/kimi`          |
+| `qwen3.8-27B`| `worktrees/qwen3.8-27B`   |
 
 Each worktree is an isolated checkout of its branch. Work in a worktree does not
 affect the others.
