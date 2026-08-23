@@ -89,6 +89,10 @@ test('the walk collects Marks, records an Action per Trade, and settles the debt
     '2000.00',
   )
 
+  // S1.8: the checkpoint's own "Today's mark" field pre-fills from the Mark
+  // just collected via the gap-row widget above — it doesn't open blank.
+  await expect(page.getByLabel(/today's mark/i)).toHaveValue('160.00')
+
   // Recording the Action IS reviewing the Trade.
   await page.getByLabel(/what will you do with this trade/i).selectOption('Hold')
   await page.getByRole('radio', { name: '4' }).check()

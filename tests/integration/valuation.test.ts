@@ -94,6 +94,25 @@ describe('valuation over Dexie', () => {
     ])
   })
 
+  // S1.8: the current Mark price survives a real reopen — this is what powers
+  // MarkEntry's pre-fill (TradeDashboard), not just an in-memory mock.
+  it("reopens the DB and detail's marks carry the stored price", async () => {
+    const dbName = 'valuation-marks-' + crypto.randomUUID()
+    const tradeId = await seedTrade(dbName)
+    await new PriceBook(new DexieBinding(createDatabase(dbName))).record(
+      'AAPL',
+      '2026-07-15',
+      16000,
+      'manual',
+    )
+
+    const binding = new DexieBinding(createDatabase(dbName))
+    const valuations = new Valuations(new TradeBook(binding), new PriceBook(binding))
+    const detail = await valuations.detail(tradeId)
+
+    expect(detail.marks.get('AAPL')?.price).toBe(16000)
+  })
+
   it('re-records the Mark and reports the prior Mark in overwrote', async () => {
     const dbName = 'valuation-overwrite-' + crypto.randomUUID()
     await seedTrade(dbName)

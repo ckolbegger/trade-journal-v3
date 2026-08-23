@@ -52,6 +52,9 @@ export interface LegImpliedVol {
 // The Trade-detail page bundle. `valuation`/`riskReward` are present together, or
 // absent with `marksMissing` naming the instruments still needing a Mark.
 // `impliedVols` is populated only when a riskFreeRate is supplied to `detail()`.
+// `marks` is the same MarkSet `latestMarks` fetched to compute `valuation`/
+// `riskReward` — surfaced so callers (e.g. MarkEntry pre-fill) can read an
+// instrument's current price without a second Book round trip.
 export interface TradeDetailView {
   record: TradeRecord
   position: Position
@@ -59,6 +62,7 @@ export interface TradeDetailView {
   riskReward?: RiskReward
   marksMissing?: InstrumentKey[]
   impliedVols?: LegImpliedVol[]
+  marks: MarkSet
 }
 
 // The lighter list-row pair: P&L only (no facts/position/R-R).
@@ -128,6 +132,7 @@ export class Valuations {
         position,
         valuation: valuation(record, marks),
         riskReward: riskReward(record, marks),
+        marks,
       }
       if (riskFreeRate !== undefined) {
         view.impliedVols = impliedVolsFor(record, marks, riskFreeRate)
@@ -135,7 +140,7 @@ export class Valuations {
       return view
     } catch (error) {
       if (error instanceof MissingMarkError) {
-        return { record, position, marksMissing: error.instruments }
+        return { record, position, marksMissing: error.instruments, marks }
       }
       throw error
     }

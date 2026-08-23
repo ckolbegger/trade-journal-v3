@@ -62,6 +62,21 @@ test('enter a Mark and see the worked-example P&L and risk/reward', async ({ pag
   await expect(original.getByLabel('original reward')).toContainText('2000.00')
 })
 
+// S1.8: the "Today's mark" field pre-fills from a Mark already on file — it
+// never opens blank and overwrites a known value silently.
+test("Today's mark pre-fills from the stored Mark after a reload", async ({ page }) => {
+  await onboard(page)
+  await planAndFill(page)
+
+  await page.getByLabel(/mark/i).fill('160')
+  await page.getByRole('button', { name: /save mark/i }).click()
+  await expect(page.getByLabel('profit and loss')).toBeVisible()
+
+  await page.reload()
+
+  await expect(page.getByLabel(/today's mark/i)).toHaveValue('160.00')
+})
+
 test('editing a shared Mark warns, naming the two Trades that hold it', async ({ page }) => {
   await onboard(page)
 

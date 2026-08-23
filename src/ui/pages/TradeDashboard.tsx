@@ -108,7 +108,11 @@ export function TradeDashboard({
         {missing.map((key) => (
           <div key={key} className="space-y-2">
             {missing.length > 1 && <p className="text-sm font-medium text-slate-700">{key}</p>}
-            <MarkEntry instrument={key} onRecorded={() => load()} />
+            <MarkEntry
+              instrument={key}
+              currentPrice={detail.marks.get(key)?.price}
+              onRecorded={() => load()}
+            />
           </div>
         ))}
       </div>
@@ -203,7 +207,11 @@ export function TradeDashboard({
         </dl>
       </div>
 
-      <MarkEntry instrument={instrument} onRecorded={() => load()} />
+      <MarkEntry
+        instrument={instrument}
+        currentPrice={detail.marks.get(instrument)?.price}
+        onRecorded={() => load()}
+      />
     </div>
   )
 }

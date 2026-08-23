@@ -342,6 +342,29 @@ describe('TradeDashboard', () => {
     expect(within(rr).getByText('Planned risk')).toBeInTheDocument()
     expect(within(rr).queryByText(/at intrinsic/i)).not.toBeInTheDocument()
   })
+
+  // S1.8: MarkEntry's currentPrice prop pre-fills "Today's mark" from the
+  // Valuation snapshot's own MarkSet — no separate PriceBook round trip, no
+  // re-typing a value already on file.
+  it("pre-fills the field with the existing Mark's price when one exists", async () => {
+    const { tradeBook, priceBook } = inMemoryBooks()
+    const id = await seed(tradeBook, [stop, target])
+    await priceBook.record('AAPL', todayISO(), 16000, 'manual')
+    renderDashboard(tradeBook, priceBook, id)
+
+    const field = await screen.findByLabelText(/today's mark/i)
+    expect(field).toHaveValue('160.00')
+  })
+
+  it('still opens blank when no Mark exists yet for the instrument', async () => {
+    const { tradeBook, priceBook } = inMemoryBooks()
+    const id = await seed(tradeBook, [stop, target]) // no Mark recorded
+
+    renderDashboard(tradeBook, priceBook, id)
+
+    const field = await screen.findByLabelText(/today's mark/i)
+    expect(field).toHaveValue('')
+  })
 })
 
 describe('IV display', () => {

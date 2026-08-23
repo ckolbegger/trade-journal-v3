@@ -437,6 +437,34 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 ---
 
+## ☑ Story S1.8 — Mark entry doesn't pre-fill an existing Mark *(added 2026-08-14 — slice re-opened after live use surfaced a bug; the `slice-1-complete` tag remains the historical rollback point for S1.1–S1.7)*
+
+> As a trader, I want the "Today's mark" field to already show today's price when one is on file, so that I'm editing a known value instead of re-typing it from memory or overwriting it blind.
+
+**Why (observed in live use, 2026-08-14):** `TradeDashboard` renders `MarkEntry` at two sites (the `marksMissing` prompt and the steady-state valuation view) and neither passes `currentPrice` — the field opens blank even when a Mark for that instrument/date already exists (confirmed: a fetched AAPL Mark for the trading date was present in PriceBook while the Daily Review walk's checkpoint dashboard still showed an empty box captioned "Today's mark"). `MarkEntry` (`src/ui/pages/MarkEntry.tsx:24-26`) already supports pre-fill via its `currentPrice` prop — it's simply never wired. Bug reachable from both the Trade detail page directly and from inside the Daily Review walk (`WalkCheckpoint` renders `TradeDashboard`), so it doubles as a silent-overwrite risk during the walk: saving the blank field re-records today's Mark at whatever the trader retypes, even if it matches what's already stored.
+
+**Decided in this story:** `TradeDetailView` (`src/coordinators/valuations.ts`) gains a way to surface each held instrument's own current Mark price (not just the derived Valuation) so `TradeDashboard` can pass `currentPrice` at both `MarkEntry` call sites (`src/ui/pages/TradeDashboard.tsx:111` and `:206`).
+
+**Deep interfaces**: `Valuations.detail`'s return shape (`TradeDetailView`) — the minimal addition is the per-instrument price `latestMarks` already fetches internally but doesn't expose.
+
+### Tasks
+
+- [x] **S1.8.T1 — Surface the current Mark price and wire pre-fill.**
+
+  ```
+  describe "Valuations.detail"
+  - it exposes each held instrument's current Mark price alongside the Valuation
+  describe "MarkEntry (via TradeDashboard)"
+  - it pre-fills the field with the existing Mark's price when one exists
+  - it still opens blank when no Mark exists yet for the instrument
+  ```
+
+- [x] **S1.8.T2 — Integration test**: plan → fill → record a Mark → reopen DB → Trade detail's `TradeDashboard` shows the field pre-filled with the stored price, not blank.
+- [x] **S1.8.T3 — Playwright e2e**: extend or add to an existing S1.5/S1.7 spec — record a Mark, reload, confirm the field shows the stored value; confirm the same inside a Daily Review walk checkpoint.
+- [x] **S1.8.T4 — Browser verification.** Real browser: a Trade with today's Mark already on file shows it pre-filled on the detail page AND inside the walk checkpoint; a Trade with no Mark yet still opens blank. All suites green.
+
+---
+
 ## Slice complete when
 
 - [x] Every story above is checked.

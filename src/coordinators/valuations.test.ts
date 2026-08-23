@@ -132,6 +132,17 @@ describe('Valuations.detail', () => {
     expect(detail.valuation?.unrealizedPnL).toBe(100000)
   })
 
+  it("exposes each held instrument's current Mark price alongside the Valuation", async () => {
+    const { tradeBook, priceBook } = books()
+    const tradeId = await seedPlan(tradeBook, [stop, target])
+    await tradeBook.recordExecution({ tradeId, newLeg: 'AAPL' }, fill())
+    await priceBook.record('AAPL', '2026-07-15', 16000, 'manual')
+
+    const detail = await new Valuations(tradeBook, priceBook).detail(tradeId)
+
+    expect(detail.marks?.get('AAPL')?.price).toBe(16000)
+  })
+
   it('returns a marks-missing signal (instrument list) instead of numbers when no Mark exists yet', async () => {
     const { tradeBook, priceBook } = books()
     const tradeId = await seedPlan(tradeBook, [stop, target])
