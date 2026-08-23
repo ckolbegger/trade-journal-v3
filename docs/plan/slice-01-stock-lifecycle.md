@@ -512,7 +512,12 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it still reports a placeholder whose prompts are merely unanswered
   ```
 
-- [ ] **S1.9.T2 — Stable option identity.** `Prompt.options` becomes `{ id, label }[]`; a select answer's `value` is the option id. Update every seeded type's select prompts.
+- [ ] **S1.9.T2 — Stable option identity.** `Prompt.options` becomes `{ id, label }[]`; a select answer's `value` is the option id.
+
+  **This is a breaking shape change with four existing consumers — three render options, one validates them. Fix all four before touching the seeds, or the app will not write a select answer at all:**
+
+  - `src/ui/components/PromptFields.tsx:47`, `src/ui/pages/PlanEntryForm.tsx:99`, `src/ui/pages/CloseForm.tsx:122` — each maps options into `<option key={option} value={option}>{option}</option>`, using the bare string as key, value *and* label at once; all three become `option.id` for key/value and `option.label` for display.
+  - `src/books/journal/journal.ts:146` — `validateAnswer` does `prompt.options?.includes(answer.value as string)`. This is the loudest failure and it is **not UI**: `includes` on an array of objects never matches a string, so every select answer throws "not among options" at write time until it compares ids. Plan-time, close-time and review-time journaling all fail together.
 
   ```
   describe "Prompt options"
@@ -520,6 +525,10 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it stores a select answer as the option id, not the label
   - it renders the label for a stored option id
   - it still resolves an answer after the option's label changes
+  describe "Journal.write — select validation"
+  - it accepts an answer matching an option id
+  - it rejects an answer matching a label but no id
+  - it rejects an answer matching neither
   describe "Workspace.ensureSeeded — option ids"
   - it seeds Trade Review's Action options with ids and unchanged labels
   - it seeds Trader Reflection, Review Note and Close select options with ids
