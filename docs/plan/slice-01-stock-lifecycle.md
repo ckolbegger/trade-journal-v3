@@ -211,6 +211,8 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 **Seed content — Close Reasons**: Hit Target · Hit Stop · Thesis Invalidated · Timed Out · Never Filled. ("Rolled" is seeded by Slice 16 with the roll gesture — no Slice 1 test could select it.) **Entry Type "Close"** (`designatedFor: 'close'`): What worked / what didn't? (text) · Would you take this trade again? (select: yes / yes-smaller / no) · Lesson (text).
 
+**Prototype:** none — and the absence is the finding. The prototype's "Close position" is a stub: it toasts "Position closed", returns Home, and leaves the position open (verified with and without fills). It has no Close Reason, no close entry, and no abandon path. Everything this story specifies about *why a Trade ended* is absent there, so the prototype offers no guidance on this screen — see [the planned-trade state](../design/prototype/proto-position-detail-planned-desktop.png) for the only related surface it does render.
+
 ### Tasks
 
 - [x] **S1.4.T1 — setCloseReason + seeds.**
