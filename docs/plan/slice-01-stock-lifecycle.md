@@ -514,12 +514,22 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 - [ ] **S1.9.T2 — Stable option identity.** `Prompt.options` becomes `{ id, label }[]`; a select answer's `value` is the option id.
 
-  **This is a breaking shape change with four existing consumers — three render options, one validates them. Fix all four before touching the seeds, or the app will not write a select answer at all:**
+  **This is a breaking shape change. Shrink the blast radius before making it.** `PromptFields` (`src/ui/components/PromptFields.tsx`) already renders all three prompt kinds and is used by five surfaces (`WalkCheckpoint`, `NewEntryPage`, `SettleForm`, `AddendumForm`, and itself). `PlanEntryForm` and `CloseForm` hand-roll their own copies purely by accident of history: both were written 2026-07-11 (S1.2, S1.4) and `PromptFields` was extracted 2026-07-12 during S1.7, so they were never migrated. **Migrate those two onto `PromptFields` first** — then exactly two files know how an option is rendered or validated, instead of four.
 
-  - `src/ui/components/PromptFields.tsx:47`, `src/ui/pages/PlanEntryForm.tsx:99`, `src/ui/pages/CloseForm.tsx:122` — each maps options into `<option key={option} value={option}>{option}</option>`, using the bare string as key, value *and* label at once; all three become `option.id` for key/value and `option.label` for display.
+  - Migration deltas, all cosmetic and intended: textarea `rows` 3 → 2, scale fieldset padding `p-4` → `p-3`, and radio groups gain the `namespace` prefix that stops two forms on one page from sharing a radio group.
+  - `CloseForm` has **no scale branch at all** — it renders text and select and silently drops anything else. Invisible today because the seeded Close type has no scale prompt; a rendering bug the moment S13 lets the trader add one. Migrating fixes it for free rather than porting the gap forward.
+
+  **Then change the shape in the two remaining places, and do it before touching the seeds** — otherwise the app looks correctly seeded while refusing every write:
+
+  - `src/ui/components/PromptFields.tsx:47` — maps options into `<option key={option} value={option}>{option}</option>`, using the bare string as key, value *and* label at once; becomes `option.id` for key/value and `option.label` for display.
   - `src/books/journal/journal.ts:146` — `validateAnswer` does `prompt.options?.includes(answer.value as string)`. This is the loudest failure and it is **not UI**: `includes` on an array of objects never matches a string, so every select answer throws "not among options" at write time until it compares ids. Plan-time, close-time and review-time journaling all fail together.
 
   ```
+  describe "PromptFields adoption"
+  - it renders the plan entry form's prompts through PromptFields
+  - it renders the close form's prompts through PromptFields
+  - it renders a scale prompt on the close form (previously dropped)
+  - it keeps two forms on one page from sharing a radio group
   describe "Prompt options"
   - it carries a stable id alongside the display label
   - it stores a select answer as the option id, not the label
