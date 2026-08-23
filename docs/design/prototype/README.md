@@ -28,6 +28,7 @@ Each screen has a mobile and a `-desktop` variant.
 | `proto-entry-composer.png` | New entry: free-text prompt + "Feeling" option chips |
 | `proto-journal-timeline.png` | Journal: date-grouped entries, filter chips (All/Plans/Positions/Market/Closes) |
 | `proto-new-plan-step1.png` | New plan, step 1: ticker + strategy picker |
+| `proto-new-plan-step2.png` | New plan, step 2: Thesis, What invalidates it? (required), Catalyst/Timeframe, How are you feeling?, and Risk Parameters (entry low/high, target, stop, size, exit in days) |
 | `proto-stats.png` | Stats: range/strategy filters, KPI tiles, equity curve, Followed-vs-Deviated, by-strategy, closed trades |
 
 ## Known prototype rendering bug
@@ -38,7 +39,6 @@ At narrow widths the equity curve overflows its card and runs off the right edge
 
 | Screen | Why |
 |---|---|
-| New plan, step 2 (thesis + levels) | "Continue" is inert in the published artifact |
 | Close position flow | not reachable without completing a plan |
 | Coach / Insights panel | needs a backend the published artifact can't reach ("Could not reach the coach right now") |
 

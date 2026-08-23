@@ -24,7 +24,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 **Deep interfaces**: `TradeBook.confirmPlan / get / query`, `TradeBook.registries.strategies / ideaSources`, `TradeMath.statusOf`, `Workspace.ensureSeeded` (first subset: Strategy seed). Types: `PlanDraft`, `PlannedLeg`, `ExitLevel`, `TradeRecord` per [trademath.md](../design/trademath.md).
 
-**Prototype:** [new plan](../design/prototype/proto-new-plan-step1.png) ([desktop](../design/prototype/proto-new-plan-step1-desktop.png)), [trade list](../design/prototype/proto-home.png) ([desktop](../design/prototype/proto-home-desktop.png)), [trade detail](../design/prototype/proto-position-detail-stock.png) ([desktop](../design/prototype/proto-position-detail-stock-desktop.png)) — plan form is ticker + strategy picker; step 2 (thesis/levels) was not capturable.
+**Prototype:** [new plan step 1](../design/prototype/proto-new-plan-step1.png) ([desktop](../design/prototype/proto-new-plan-step1-desktop.png)), [step 2](../design/prototype/proto-new-plan-step2.png) ([desktop](../design/prototype/proto-new-plan-step2-desktop.png)), [trade list](../design/prototype/proto-home.png) ([desktop](../design/prototype/proto-home-desktop.png)), [trade detail](../design/prototype/proto-position-detail-stock.png) ([desktop](../design/prototype/proto-position-detail-stock-desktop.png)) — two steps: ticker + strategy, then thesis and risk parameters. Note what the prototype makes **required**: not the thesis but *"What invalidates it?"*, with a nudge ("writing your invalidation before entry makes it 3x more likely you'll honor the stop"). It also captures an emotional state at plan time and expresses entry as a **low/high range** plus an "exit in (days)" horizon.
 
 ### Tasks
 
