@@ -30,7 +30,7 @@ Each screen has a mobile and a `-desktop` variant.
 | `proto-new-plan-step1.png` | New plan, step 1: ticker + strategy picker |
 | `proto-new-plan-step2.png` | New plan, step 2: Thesis, What invalidates it? (required), Catalyst/Timeframe, How are you feeling?, and Risk Parameters (entry low/high, target, stop, size, exit in days) |
 | `proto-new-plan-step2-filled.png` | Step 2 completed — a live Risk/Reward panel appears (ratio, risk/win per share, position risk) |
-| `proto-position-detail-planned-desktop.png` | A saved plan before any fill: "No fills yet", `LEGS & FILLS (0)`, `25 planned`. *Desktop only* — the state is consumed by the first fill |
+| `proto-position-detail-planned.png` | A saved plan before any fill: "No fills yet", `LEGS & FILLS (0)`, `12 planned`, adherence already 85% |
 | `proto-stats.png` | Stats: range/strategy filters, KPI tiles, equity curve, Followed-vs-Deviated, by-strategy, closed trades |
 
 ## Known prototype bugs
