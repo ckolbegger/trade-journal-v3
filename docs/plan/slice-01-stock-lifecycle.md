@@ -475,7 +475,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 ---
 
-## ☐ Story S1.9 — Recording the negative: declined prompts and considered-but-not-taken actions *(added 2026-08-23 — slice re-opened to close a capture gap named in [ADR 0016](../adr/0016-automated-coaching-deferred.md); the `slice-1-complete` tag remains the historical rollback point for S1.1–S1.7)*
+## ☐ Story S1.9 — Recording the negative: declined entries, stable option ids, and considered-but-not-taken actions *(added 2026-08-23 — slice re-opened to close a capture gap named in [ADR 0016](../adr/0016-automated-coaching-deferred.md); the `slice-1-complete` tag remains the historical rollback point for S1.1–S1.7)*
 
 > As a trader, I want one tap to say "nothing to note today", and a place at each Trade's review to record what I considered doing and decided against, so that my restraint and my silence both survive in the record instead of reading as gaps.
 
@@ -486,55 +486,71 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 **Decided in this story:**
 
-- **Declination is per Prompt, not per Entry.** `Entry.answered[]`'s element gains `declined`. A declined prompt is *answered* — the trader said "nothing" — so it is never Journal Debt and never nagged. This generalises to every prompt, including the emotional ones, without another record shape later.
+- **Declination is one act per Entry.** `Entry` gains `declined` — "the trader explicitly had nothing to note" — set by a single action, never per Prompt. A declined entry is *settled*: never Journal Debt, never nagged. **Rejected:** recording declination per Prompt. It would make the trader dismiss each question separately, which is the fastest way to abandon the review ritual altogether; and it would misrepresent what happened, since one decision stored as N declinations invents a precision the trader never expressed. **Cost accepted:** an entry cannot say "answered these two, explicitly declined that one". If that need ever appears, per-Prompt declination is additive on top of this and no history is lost.
 - **Writing is never gated.** The checkpoint stays immediately writable; declining is an explicit action beside save. **Rejected:** gating the entry behind a "make an entry / no entry today" mode that disables the other fields — whichever branch costs zero taps becomes the default, and making silence free reintroduces precisely the goes-thin-where-discipline-failed failure ADR 0006 was written to prevent. Friction belongs on the skip, not on the write.
 - **A declined review entry still marks the Trade reviewed.** No special-casing is needed: a review Anchor's existence for `(date, tradeId)` *is* the reviewed-today flag (`src/books/journal/types.ts` — "nothing about 'reviewed' is stored anywhere else"). Writing the entry is what counts, not what it says.
 - **The question goes on the existing Trade Review type, per Trade.** No new Entry Type. `ensureSeeded` only adds a type when its **id is absent** (`src/workspace/workspace.ts:489`), so editing a seeded type's prompts normally cannot reach a database that already has it — but no real entries exist yet, so the seed is free to change and any existing database can be reseeded from scratch. This window closes the moment real entries accumulate; after that, changing a seeded type's prompts is an S13 concern, not a seed change.
 - **Per-Trade repetition is the accepted cost, and the one-tap decline is its mitigation.** Asked at every checkpoint with several open Trades, the honest answer is usually "nothing", and repetition is the path to blank answers. "Nothing to note today" covers the whole checkpoint in one tap, which keeps the cheap answer *explicit* rather than empty. Note the residual gap: a per-Trade prompt cannot catch an urge with no Trade to hang off — the revenge trade not opened, the position limit not breached. Those still rely on a standalone entry the trader writes unprompted.
 
-**Deep interfaces**: `Journal.write` / `entriesFor` / `outstandingDebt` (the `answered[]` element gains `declined`), `Workspace.ensureSeeded` (Trade Review's prompt set), `Review.walk`'s checkpoint.
+- **Select options get stable ids, and answers store the id.** `Prompt.options` becomes `{ id, label }[]` and a select's `PromptAnswer.value` holds the option **id**, not its display string. Today `options: ['Hold', 'Exit Soon', …]` are bare strings and the answer *is* the string, so the moment S13 lets a trader rename "Watch Closely" to "Monitor", every prior answer is orphaned — nothing anywhere records that they are the same concept. ADR 0007 deliberately tolerates prompt drift; this keeps drift *survivable* by making renames non-destructive. Folded into this story because it rewrites the same seeded types, and because it is nearly free only while no entries exist — once answers are stored as display strings there is nothing to migrate them from.
 
-**Seed content — Entry Type "Trade Review" (revised)**: **Action** (select: Hold / Exit Soon / Adjust / Watch Closely) · Conviction (scale 1–5) · **Considered** (text: "Anything you considered doing and decided against?") · Note (text). Action and Conviction are unchanged from S1.7; Considered is new.
+**Deep interfaces**: `Journal.write` / `entriesFor` / `outstandingDebt` (`Entry` gains `declined`), `Prompt.options` / `PromptAnswer` (option identity), `Workspace.ensureSeeded` (every seeded type's select prompts, plus Trade Review's new prompt), `Review.walk`'s checkpoint.
+
+**Seed content — Entry Type "Trade Review" (revised)**: **Action** (select: Hold / Exit Soon / Adjust / Watch Closely) · Conviction (scale 1–5) · **Considered** (text: "Anything you considered doing and decided against?") · Note (text). Action and Conviction keep their S1.7 wording; Considered is new; Action's options gain ids. The other seeded types carrying select prompts (**Trader Reflection**'s emotional state, **Review Note**'s follow-up, **Close**'s would-you-take-it-again) gain option ids in the same pass — their wording is unchanged.
 
 ### Tasks
 
-- [ ] **S1.9.T1 — Declination as a fact.** `answered[]`'s element gains `declined?: true`; `write` accepts a declined prompt, `entriesFor` reads it back distinctly, `outstandingDebt` treats it as settled.
+- [ ] **S1.9.T1 — Declination as a fact.** `Entry` gains `declined?: true`; `write` accepts it, `entriesFor` reads it back distinctly, `outstandingDebt` treats a declined entry as settled.
 
   ```
-  describe "Journal.write — declined prompts"
-  - it records a prompt as declined, carrying no value
-  - it round-trips declined distinctly from an absent answer
-  - it allows an entry mixing answered, declined and absent prompts
+  describe "Journal.write — declined entries"
+  - it records an entry as explicitly declined
+  - it round-trips declined distinctly from an entry whose prompts are merely unanswered
+  - it allows a declined entry to still carry answers (the Action select)
   describe "Journal.outstandingDebt"
-  - it does not report an entry whose prompts were all declined
+  - it does not report a declined entry
   - it still reports a placeholder whose prompts are merely unanswered
   ```
 
-- [ ] **S1.9.T2 — Add the Considered prompt to the seeded Trade Review type.**
+- [ ] **S1.9.T2 — Stable option identity.** `Prompt.options` becomes `{ id, label }[]`; a select answer's `value` is the option id. Update every seeded type's select prompts.
+
+  ```
+  describe "Prompt options"
+  - it carries a stable id alongside the display label
+  - it stores a select answer as the option id, not the label
+  - it renders the label for a stored option id
+  - it still resolves an answer after the option's label changes
+  describe "Workspace.ensureSeeded — option ids"
+  - it seeds Trade Review's Action options with ids and unchanged labels
+  - it seeds Trader Reflection, Review Note and Close select options with ids
+  ```
+
+- [ ] **S1.9.T3 — Add the Considered prompt to the seeded Trade Review type.**
 
   ```
   describe "Workspace.ensureSeeded — Trade Review prompts"
   - it seeds Trade Review with the Considered prompt on a fresh database
-  - it keeps the Action select's options and the Conviction scale unchanged
+  - it keeps the Action wording and the Conviction scale unchanged
   - it does not re-seed the type when already present
   ```
 
-- [ ] **S1.9.T3 — UI: the Considered prompt and a one-tap decline.** The checkpoint renders the new Considered prompt alongside the existing ones; a **"Nothing to note today"** action beside save writes the review entry with its text prompts declined (the Action select still records — it is the Trade's disposition, not a reflection). No mode switch and no disabled fields anywhere in the checkpoint.
+- [ ] **S1.9.T4 — UI: the Considered prompt and a one-tap decline.** The checkpoint renders the new Considered prompt alongside the existing ones; a single **"Nothing to note today"** action beside save marks the whole entry declined and leaves its text prompts unanswered (the Action select still records — it is the Trade's disposition, not a reflection). One gesture for the entry, never one per prompt. No mode switch and no disabled fields anywhere in the checkpoint.
 
   ```
   describe "WalkCheckpoint — Considered prompt"
   - it renders the Considered prompt at the checkpoint
   - it records a written considered-action on the review entry
   describe "WalkCheckpoint — nothing to note"
-  - it writes a review entry with the text prompts declined
+  - it declines the whole entry from one action
+  - it offers no per-prompt decline control
   - it marks the Trade reviewed, same as a written entry
   - it creates no Journal Debt
   - it leaves every field editable before and after the action
   ```
 
-- [ ] **S1.9.T4 — Integration tests**: full session over Dexie — two open Trades, decline one checkpoint and write a considered-action on the other → reopen DB → both Trades reviewed, the declined prompts read back as declined (not blank), the written considered-action intact on its review entry, `outstandingDebt` empty.
-- [ ] **S1.9.T5 — Playwright e2e** (`e2e/s1-9-declining.spec.ts`): walk two Trades — "Nothing to note today" on the first, an Action plus a written considered-action on the second → reopen Review: both flagged reviewed, no debt; the timeline shows the second Trade's entry carrying its considered-action.
-- [ ] **S1.9.T6 — Browser verification.** Real browser: run a full review declining one Trade and writing another; confirm the checkpoint is writable at every moment (no disabled inputs), that declining marks the Trade reviewed and produces no nag next day, and that S1.7's existing walk behaviour (marks, Action, debt settlement) is unchanged. All suites green.
+- [ ] **S1.9.T5 — Integration tests**: full session over Dexie — two open Trades, decline one checkpoint and write a considered-action on the other → reopen DB → both Trades reviewed, the declined entry reads back as declined (not merely blank), the written considered-action intact, the Action answers stored as option ids, `outstandingDebt` empty.
+- [ ] **S1.9.T6 — Playwright e2e** (`e2e/s1-9-declining.spec.ts`): walk two Trades — "Nothing to note today" on the first, an Action plus a written considered-action on the second → reopen Review: both flagged reviewed, no debt; the timeline shows the second Trade's entry carrying its considered-action.
+- [ ] **S1.9.T7 — Browser verification.** **Start from a cleared database** (clear site data, re-onboard): `ensureSeeded` never re-seeds a type that already exists, so a profile seeded before this story keeps the old three-prompt Trade Review and will never show Considered — verifying on it would report a false failure. Then: run a full review declining one Trade and writing another; confirm the checkpoint is writable at every moment (no disabled inputs), that one action declines the entry and no per-prompt decline control exists, that declining marks the Trade reviewed and produces no nag next day, and that S1.7's existing walk behaviour (marks, Action, debt settlement) is unchanged. All suites green.
 
 ---
 
