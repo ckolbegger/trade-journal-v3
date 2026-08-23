@@ -3,7 +3,8 @@ import { useValuations } from '../valuationsContext'
 import { ReplayChart } from '../components/ReplayChart'
 import { centsToDollars } from '../format'
 import { card, num, subheading } from '../styles'
-import type { Money, ReplayPoint } from '@/books/tradebook/types'
+import type { Money } from '@/books/tradebook/types'
+import type { ReplaySeriesPoint } from '@/coordinators/valuations'
 
 function money(cents: Money): string {
   return `$${centsToDollars(cents)}`
@@ -28,7 +29,7 @@ export function ReplayView({
   executionDates: string[]
 }) {
   const valuations = useValuations()
-  const [points, setPoints] = useState<ReplayPoint[] | null>(null)
+  const [points, setPoints] = useState<ReplaySeriesPoint[] | null>(null)
   const [selectedIndex, setSelectedIndex] = useState(0)
 
   useEffect(() => {
@@ -67,6 +68,7 @@ export function ReplayView({
           totalPnL: p.valuation.totalPnL,
           plannedRisk:
             p.riskReward.plannedRisk === 'undefined' ? undefined : p.riskReward.plannedRisk,
+          joinsPrevious: p.joinsPrevious,
         }))}
         selectedIndex={selectedIndex}
         executionDates={executionDates}

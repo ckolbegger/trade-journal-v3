@@ -35,11 +35,24 @@ export function datesInRange(from: ISODate, to: ISODate): ISODate[] {
   return dates
 }
 
-// True for Saturday and Sunday. UTC arithmetic like the rest of this file, so a
-// local DST transition can never shift which weekday a date lands on.
-export function isWeekend(date: ISODate): boolean {
+// True when the market is closed on `date`. Weekend-only for now (Saturday
+// and Sunday) — a real holiday calendar is Slice 17's job, not this one's.
+// UTC arithmetic like the rest of this file, so a local DST transition can
+// never shift which weekday a date lands on.
+export function isMarketClosed(date: ISODate): boolean {
   const day = new Date(toUTC(date)).getUTCDay()
   return day === 0 || day === 6
+}
+
+// True when every calendar date strictly between `from` and `to` is a day
+// isMarketClosed returns true for (including when there are none — adjacent
+// dates). The only case a gap between two dates still counts as one
+// uninterrupted stretch rather than a real absence.
+export function bridgesOnlyClosure(from: ISODate, to: ISODate): boolean {
+  for (let ms = toUTC(from) + DAY_MS; ms < toUTC(to); ms += DAY_MS) {
+    if (!isMarketClosed(fromUTC(ms))) return false
+  }
+  return true
 }
 
 // The trading date an epoch-ms Timestamp falls on, in the trader's local zone.

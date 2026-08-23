@@ -766,6 +766,47 @@ describe('Valuations.expiredHoldings', () => {
   })
 })
 
+describe('Valuations.replay', () => {
+  it("marks the first point's joinsPrevious as false", async () => {
+    const { tradeBook, priceBook } = books()
+    const tradeId = await seedPlan(tradeBook)
+    await tradeBook.recordExecution({ tradeId, newLeg: 'AAPL' }, fill())
+    await priceBook.record('AAPL', '2026-07-10', 15000, 'manual')
+
+    const points = await new Valuations(tradeBook, priceBook).replay(tradeId)
+
+    expect(points[0].joinsPrevious).toBe(false)
+  })
+
+  it('marks joinsPrevious true when only a weekend separates two points', async () => {
+    const { tradeBook, priceBook } = books()
+    const tradeId = await seedPlan(tradeBook)
+    await tradeBook.recordExecution({ tradeId, newLeg: 'AAPL' }, fill())
+    // Friday 07-10 -> Monday 07-13: only the weekend lies strictly between.
+    await priceBook.record('AAPL', '2026-07-10', 15000, 'manual')
+    await priceBook.record('AAPL', '2026-07-13', 15100, 'manual')
+
+    const points = await new Valuations(tradeBook, priceBook).replay(tradeId)
+
+    expect(points).toHaveLength(2)
+    expect(points[1].joinsPrevious).toBe(true)
+  })
+
+  it('marks joinsPrevious false when a real weekday gap separates two points', async () => {
+    const { tradeBook, priceBook } = books()
+    const tradeId = await seedPlan(tradeBook)
+    await tradeBook.recordExecution({ tradeId, newLeg: 'AAPL' }, fill())
+    // Friday 07-10 -> Tuesday 07-14: Monday 07-13 (a weekday) lies strictly between.
+    await priceBook.record('AAPL', '2026-07-10', 15000, 'manual')
+    await priceBook.record('AAPL', '2026-07-14', 15100, 'manual')
+
+    const points = await new Valuations(tradeBook, priceBook).replay(tradeId)
+
+    expect(points).toHaveLength(2)
+    expect(points[1].joinsPrevious).toBe(false)
+  })
+})
+
 describe('Valuations.value', () => {
   it('returns the Valuation for a marked Trade (lighter list-row pair)', async () => {
     const { tradeBook, priceBook } = books()

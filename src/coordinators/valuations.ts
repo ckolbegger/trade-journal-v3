@@ -18,7 +18,7 @@ import type {
   TradeRecord,
   Valuation,
 } from '@/domain/trademath/types'
-import { isoDateOf, nextISODate } from '@/domain/dates'
+import { bridgesOnlyClosure, isoDateOf, nextISODate } from '@/domain/dates'
 import { positionOf } from '@/domain/trademath/position'
 import { buildInstrumentKey, underlyingKeyOf } from '@/domain/trademath/instrument'
 import {
@@ -38,6 +38,12 @@ import { impliedVol } from '@/domain/trademath/implied-vol'
 // never disagree about which Executions exist. When a held instrument has no Mark
 // yet, it returns a marks-missing signal (the instruments needing a Mark) instead
 // of numbers, so the UI prompts for a price.
+
+// A replay point plus whether it joins the previous one into one unbroken
+// segment for the Replay chart — computed once here (S4.5) from
+// bridgesOnlyClosure, a coordinator-owned view type so the UI never needs to
+// import domain/dates itself (docs/plan/README.md's dependency rule).
+export type ReplaySeriesPoint = ReplayPoint & { joinsPrevious: boolean }
 
 // One option Leg's contract Mark and the IV implied from it (display only,
 // ADR 0009) — present per option Leg that itself has a Mark; `iv` is undefined
@@ -151,11 +157,15 @@ export class Valuations {
   // latest date. `series()` with no range defaults to full history
   // (docs/design/pricebook.md) — replay wants everything, so nothing is
   // passed here.
-  async replay(tradeId: TradeId): Promise<ReplayPoint[]> {
+  async replay(tradeId: TradeId): Promise<ReplaySeriesPoint[]> {
     if (!this.priceBook) throw new Error('Valuations needs a PriceBook for replay')
     const record = await this.tradeBook.get(tradeId)
     const series = await this.priceBook.series(instrumentsOf(record))
-    return replay(record, series)
+    const points = replay(record, series)
+    return points.map((point, i) => ({
+      ...point,
+      joinsPrevious: i === 0 ? false : bridgesOnlyClosure(points[i - 1].date, point.date),
+    }))
   }
 
   // Which instruments need Marks, per open Trade, over which ranges. Planned and

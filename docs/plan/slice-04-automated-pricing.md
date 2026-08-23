@@ -158,3 +158,41 @@ Design references: [pricebook.md](../design/pricebook.md) (fetch semantics, Fetc
 - [x] **S4.4.T3 — Integration tests**: Friday Mark → Monday review over Dexie needs Monday only (no weekend rows anywhere in the agenda or walk); a no-source workspace shows the notice, a sourced one doesn't.
 - [x] **S4.4.T4 — Playwright e2e** (`e2e/s4-4-weekend-quiet.spec.ts`): a review spanning a weekend gap prompts no Saturday/Sunday rows; the no-source notice appears on an unconfigured workspace.
 - [x] **S4.4.T5 — Browser verification.** Real browser on the live workspace: a review after this weekend prompts no Sat/Sun rows and shows no dead prompts for fetched instruments; the notice appears in a fresh keyless context and disappears once the key is saved. All suites green.
+
+---
+
+## ☑ Story S4.5 — isMarketClosed: correct the abstraction & relocate Replay's gap logic *(added 2026-08-23 — slice re-opened after SOC review flagged a UI→domain layering violation in Replay's chart; the `slice-4-complete` tag remains the historical rollback point for S4.1–S4.4)*
+
+> As a developer extending this codebase, I want the "is trading happening today" concept named and owned correctly, so that Slice 17's market-holiday calendar is a pure extension instead of a rename-everywhere migration, and so the Replay chart never needs to import domain logic to render correctly.
+
+**Why:** SOC review of commit 21b86ab found `ReplayChart.tsx` importing `isWeekend` from `domain/dates.ts` directly — the plan's dependency rule reserves domain/TradeMath access for Books/coordinators; UI may only call Books/coordinators. Separately, `isWeekend` is the wrong name for what callers actually need ("is the market closed today"), which only coincides with weekends until the next market holiday.
+
+**Decided in this story:** `isWeekend` renamed to `isMarketClosed` (same weekend-only body; no holiday calendar — that's Slice 17's job). New `bridgesOnlyClosure(from, to)` joins it in `domain/dates.ts`, moved out of `ReplayChart.tsx`. `Valuations.replay` returns `Promise<ReplaySeriesPoint[]>` (`ReplayPoint & { joinsPrevious: boolean }`), computed once in the coordinator. `ReplayChart` drops its domain import, reads `joinsPrevious` instead. No behavior change today.
+
+### Tasks
+
+- [x] **S4.5.T1 — Rename and relocate the calendar predicate.**
+
+  ```
+  describe "domain/dates.isMarketClosed"
+  - it returns true for Saturday and Sunday
+  - it returns false for a weekday
+  describe "domain/dates.bridgesOnlyClosure"
+  - it returns true when the only dates strictly between are a weekend
+  - it returns true for adjacent dates (nothing strictly between)
+  - it returns false when a weekday lies strictly between
+  ```
+
+- [x] **S4.5.T2 — Valuations.replay stamps joinsPrevious.**
+
+  ```
+  describe "Valuations.replay"
+  - it marks the first point's joinsPrevious as false
+  - it marks joinsPrevious true when only a weekend separates two points
+  - it marks joinsPrevious false when a real weekday gap separates two points
+  ```
+
+- [x] **S4.5.T3 — ReplayChart consumes joinsPrevious instead of computing it.** No new tests — existing `ReplayView.test.tsx` segment-bridging assertions must keep passing unchanged, proving this is behavior-preserving.
+- [x] **S4.5.T4 — Full suite green** (`npm test`); confirm no leftover `isWeekend`/`bridgesOnlyWeekend` references (`tsc -b` + grep).
+
+No browser-verification task and no new e2e spec — this story changes no user-observable behavior.

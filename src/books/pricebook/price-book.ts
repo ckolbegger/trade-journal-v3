@@ -7,7 +7,7 @@ import type {
   MarkSeries,
   Money,
 } from '@/domain/trademath/types'
-import { datesInRange, isWeekend } from '@/domain/dates'
+import { datesInRange, isMarketClosed } from '@/domain/dates'
 import type { DateRange, FetchReport, PricingSource, RecordResult } from './types'
 
 const MARKS = 'marks'
@@ -142,7 +142,7 @@ export class PriceBook {
       const stored = await this.binding.where<StoredMark>(MARKS, 'instrument', instrument)
       const marked = new Set(stored.map((m) => m.date))
       for (const date of datesInRange(range.from, range.to)) {
-        if (isWeekend(date)) continue
+        if (isMarketClosed(date)) continue
         if (!marked.has(date)) missing.push({ instrument, date })
       }
     }

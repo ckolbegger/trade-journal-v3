@@ -1,4 +1,3 @@
-import { isWeekend } from '@/domain/dates'
 import { num } from '../styles'
 
 // A small hand-rolled inline SVG (no charting library — ADR 0009 keeps this
@@ -21,6 +20,7 @@ export interface ReplayChartPoint {
   date: string
   totalPnL: number // cents
   plannedRisk?: number // cents; absent when that date's stop projection is 'undefined'
+  joinsPrevious: boolean
 }
 
 export function ReplayChart({
@@ -55,7 +55,7 @@ export function ReplayChart({
   const segments: number[][] = []
   let current: number[] = [0]
   for (let i = 1; i < points.length; i++) {
-    if (bridgesOnlyWeekend(points[i - 1].date, points[i].date)) {
+    if (points[i].joinsPrevious) {
       current.push(i)
     } else {
       segments.push(current)
@@ -149,23 +149,4 @@ export function ReplayChart({
       </ul>
     </div>
   )
-}
-
-// True when every calendar date strictly between `from` and `to` is a
-// Saturday or Sunday (including when there are none — adjacent days) — the
-// only case a gap between two REPLAYED points still joins into one segment.
-// Weekend detection defers to `isWeekend` (domain/dates.ts) — the same
-// source of truth PriceBook.missingMarks uses (S4.4) — rather than a second,
-// independently-maintained day-of-week check.
-function bridgesOnlyWeekend(from: string, to: string): boolean {
-  const [fy, fm, fd] = from.split('-').map(Number)
-  const [ty, tm, td] = to.split('-').map(Number)
-  const dayMs = 24 * 60 * 60 * 1000
-  const fromMs = Date.UTC(fy, fm - 1, fd)
-  const toMs = Date.UTC(ty, tm - 1, td)
-  for (let ms = fromMs + dayMs; ms < toMs; ms += dayMs) {
-    const date = new Date(ms).toISOString().slice(0, 10)
-    if (!isWeekend(date)) return false
-  }
-  return true
 }
