@@ -1,0 +1,15 @@
+# Automated coaching is deferred until the record is complete
+
+Automated coaching — reading the accumulated Plans, Executions and Journal and telling the trader where their process stands — is **not part of the initial deliverable**. It may be built after every planned slice ships. The bet: coaching is a function of a sufficiently rich record, so capturing intent (Plan), behaviour (Executions, Deviations) and the emotional journey (Journal Entries) is enough to layer any number of coaching implementations on later without disturbing the model.
+
+Rejected: building it early. It would run against a near-empty corpus, and it would harden a coaching model against facts that slices 9–11 have not finished defining.
+
+**The deferral is safe only for the coach itself, not for the questions the coach would ask.** A coach can be built at any time; a fact that was never captured in March cannot be recovered in December. The commitments below are therefore on the *capture* side, and each is cheap now and unrecoverable later:
+
+- **Non-events must be capturable.** Urges acted on become Executions; urges resisted currently leave no trace. "You wanted to add and didn't" is coaching's best material and today nothing records it.
+- **Skips must be distinguishable from silence.** Journal Debt (ADR 0006) records that an entry is owed; an emotional prompt left blank must likewise record *declined*, not simply be absent — only the former is analysable.
+- **Lived answers must be distinguishable from reconstructed ones.** Debt settled days later is recollection, not experience. The placeholder's two timestamps already carry this; keep them.
+- **Prompt vocabulary needs stable identity across edits.** ADR 0007 lets Prompts drift and tolerates mixed shapes. For an option Prompt, a renamed or re-ordered option must keep a stable id, or answers from different years cannot be compared at all.
+- **Adherence must be defined as behaviour against plan, and must aggregate.** If it is specified only for per-Trade display, the cross-Trade measure coaching depends on will not be meaningful. (The prototype scores 85% on a plan with zero fills — the failure mode to avoid.)
+- **Standing rules are not modelled.** Per-Trade Plans support "did I follow *this* plan"; they cannot answer "did I follow *my system*" (position limits, risk per trade, instruments avoided). Deciding whether that is in scope is deferrable; noticing that it is absent is not.
+- **Egress and consent.** ADR 0001/0011 make this a local-first tool with no backend. Coaching is the first feature that would send the most personal data in the app to a third party. The PricingSource key pattern (ADR 0008) is the precedent to follow, and the decision stays the trader's.

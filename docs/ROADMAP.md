@@ -23,3 +23,6 @@ The domain model (Trade → Leg → Execution, Marks, Journal) is built full-sha
 - Reflective time-slider replay (ADR 0009)
 - Performance analytics by underlying / Strategy / Tag
 - Automated pricing sources behind the pricing interface (ADR 0008), storing Daily Bars (OHLC) with Marks defaulting to the close — enables candlestick charts and pattern detection
+
+## Explicitly after everything else
+- Automated coaching over the accumulated record (ADR 0016) — deferred, but carries capture-side preconditions that apply *now*
