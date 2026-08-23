@@ -26,6 +26,8 @@ Sell 80 @ $170.00 fees $1.00 → realized adds 13,600 − 12,800 − 1.00 = **$7
 
 **Deep interfaces**: `TradeBook.recordExecution` repeat fills on an existing Leg (deferred from Slice 1), Lot creation per opening Execution (ADR 0015), `TradeMath.positionOf / valuation` across Lots, per-Leg basis display.
 
+**Prototype:** [legs & fills](../design/prototype/proto-position-detail-spread.png) ([desktop](../design/prototype/proto-position-detail-spread-desktop.png)) — per-leg fill rows.
+
 ### Tasks
 
 - [x] **S5.1.T1 — Lots on opening Executions.** Valuation internals refactor from basis-sum to Lot list — behavior-identical for single-Lot Trades (all Slice 1/3 tests stay green untouched; that is the regression gate for this refactor).

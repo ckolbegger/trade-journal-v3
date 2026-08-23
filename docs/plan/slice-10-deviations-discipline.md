@@ -29,6 +29,8 @@ Design references: ADR 0012, [trademath.md](../design/trademath.md) (trailing hi
 
 **Deep interfaces**: `TradeMath.detectDeviations(trade, series)` — the `series` parameter arrives now (deferred from Slice 9); `Valuations.detail` records newly surfaced discipline Deviations (the deliberate write-on-read); episode dedup in `TradeBook.recordDeviations`; flags reuse S9.2's UI and acknowledge/journal paths.
 
+**Prototype:** [stop cushion](../design/prototype/proto-position-detail-stock.png) ([desktop](../design/prototype/proto-position-detail-stock-desktop.png)) — where a crossing story would land.
+
 ### Tasks
 
 - [ ] **S10.1.T1 — Detection.**

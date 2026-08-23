@@ -35,6 +35,8 @@ Design references: [trademath.md](../design/trademath.md) (structural extremes, 
 
 **Deep interfaces**: multi-leg `PlanDraft` (two Planned Legs, TBD strike allowed), fills per Leg over time (legging in — the sequence already exists, [tradebook.md](../design/tradebook.md)), `TradeMath.valuation / riskReward` over signed multi-leg structures, `instrumentsOf` dedup (deferred from Slice 1); seed: Strategy **Covered Call**.
 
+**Prototype:** [covered call row](../design/prototype/proto-home.png) ([desktop](../design/prototype/proto-home-desktop.png))
+
 **Seed content** — Strategy "Covered Call": planned legs buy 100 stock + sell 1 call (strike/expiration may be TBD); asks underlyingPrice stop + target.
 
 ### Tasks
@@ -78,6 +80,8 @@ Design references: [trademath.md](../design/trademath.md) (structural extremes, 
 > As a trader, I want a credit spread tracked as one defined-risk structure, so that the app tells me what staying in actually risks — "risking $950 to make $50" — not what I collected once upon a time.
 
 **Deep interfaces**: same math over two option Legs, `structureValue`'s Position price target resolved against the structure's *net* direction (structure-level, not per-leg; amended per exit-level ruling 2026-07-19, was `pctOfMaxProfit` resolved against net credit); seed: Strategy **Bull Put Spread**.
+
+**Prototype:** [two-leg detail](../design/prototype/proto-position-detail-spread.png) ([desktop](../design/prototype/proto-position-detail-spread-desktop.png))
 
 **Seed content** — Strategy "Bull Put Spread": planned legs sell 1 put + buy 1 put (lower strike, same expiration); asks underlyingPrice stop + a Position price target.
 

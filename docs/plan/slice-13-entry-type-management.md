@@ -12,6 +12,8 @@ Design references: ADR 0007, [journal.md](../design/journal.md) (whole-definitio
 
 **Deep interfaces**: `Journal.entryTypes.save` as whole-definition replacement (no fine-grained prompt operations, by design); ADR 0007 drift tolerated by construction; the Action list = the Trade Review type's select options — editing it changes future checkpoints, zero review-code changes.
 
+**Prototype:** [prompt widgets](../design/prototype/proto-entry-composer.png) ([desktop](../design/prototype/proto-entry-composer-desktop.png)) — the "Feeling" chips are an options prompt rendered as a chip row.
+
 ### Tasks
 
 - [ ] **S13.1.T1 — Whole-definition save semantics.**

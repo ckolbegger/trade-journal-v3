@@ -23,6 +23,8 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
 
 **Deep interfaces**: `TradeMath.attentionScore(trade, marks)`, `Valuations.attentionBoard(asOf)` (open Trades scored and sorted), `Review.walk` consumes the board; `WalkItem` gains its `attentionScore` field (deferred from Slice 1).
 
+**Prototype:** [REVIEW DUE badge](../design/prototype/proto-home.png) ([desktop](../design/prototype/proto-home-desktop.png)) — where the prototype puts an attention cue on the list row.
+
 ### Tasks
 
 - [ ] **S8.1.T1 — attentionScore.**

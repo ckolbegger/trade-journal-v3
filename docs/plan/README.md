@@ -21,12 +21,12 @@ Edge cases live in Vitest (unit/integration). Playwright carries exactly one hap
 |---|-------|-----------|--------|
 | 0 | [Scaffold & Onboarding](slice-00-scaffold-onboarding.md) | — | ☑ |
 | 1 | [Stock trade lifecycle](slice-01-stock-lifecycle.md) | 0 | ☑ |
-| 2 | [Journal timeline & standalone entries](slice-02-journal-timeline.md) | 1 | ☐ |
-| 3 | [Single-leg options](slice-03-single-leg-options.md) | 1 | ☐ |
+| 2 | [Journal timeline & standalone entries](slice-02-journal-timeline.md) | 1 | ☑ |
+| 3 | [Single-leg options](slice-03-single-leg-options.md) | 1 | ☑ |
 | 4 | [Automated pricing (Marks only, no Daily Bars)](slice-04-automated-pricing.md) | 3 | ☑ |
-| 5 | [Scaling in & out (FIFO Lots)](slice-05-scaling.md) | 1 | ☐ |
-| 6 | [Durability (export/import, persistence)](slice-06-durability.md) | 1 | ☐ |
-| 7 | [Multi-leg Trades](slice-07-multi-leg.md) | 3, 5 | ☐ |
+| 5 | [Scaling in & out (FIFO Lots)](slice-05-scaling.md) | 1 | ☑ |
+| 6 | [Durability (export/import, persistence)](slice-06-durability.md) | 1 | ☑ |
+| 7 | [Multi-leg Trades](slice-07-multi-leg.md) | 3, 5 | ☑ |
 | 8 | [Attention ranking](slice-08-attention-ranking.md) | 3, 7 | ☐ |
 | 9 | [Deviations: structural & sizing](slice-09-deviations-structural-sizing.md) | 1 | ☐ |
 | 10 | [Deviations: discipline](slice-10-deviations-discipline.md) | 9 | ☐ |
@@ -34,11 +34,13 @@ Edge cases live in Vitest (unit/integration). Playwright carries exactly one hap
 | 12 | [Corrections (correct/void Executions)](slice-12-corrections.md) | 5, 9 | ☐ |
 | 13 | [Entry Type management](slice-13-entry-type-management.md) | 2 | ☐ |
 | 14 | [Account Snapshots](slice-14-account-snapshots.md) | 1 | ☐ |
-| 15 | [Replay + Analytics](slice-15-replay-analytics.md) | 4, 14 (curves); 9–10 (adherence columns) | ☐ |
+| 15 | [Replay + Analytics](slice-15-replay-analytics.md) | 4, 14 (curves); 9–10 (adherence columns) | ◧ (S15.1 done) |
 | 16 | [Rolls, Transfers & lineage](slice-16-rolls-transfers-lineage.md) | 7, 12 | ☐ |
 | 17 | [Daily Bars (OHLC, candlesticks)](slice-17-daily-bars.md) | 4; 10 (S17.3) | ☐ |
 
 **Parallel-work candidates:** after Slice 1, the chains {2→13}, {3→4}, {5}, {6}, {9→10/11/12}, {14} are mutually independent. Slices 7+ converge.
+
+**Prototype reference:** stories whose UI a Claude Design prototype illustrates carry a `**Prototype:**` line linking screenshots in [docs/design/prototype/](../design/prototype/). Those images are a *visual reference, not a spec* — where a screenshot and a design doc or ADR disagree, the design doc wins. On already-shipped stories they record what the prototype showed, not a defect in what was built.
 
 ## Conventions (fixed for all slices)
 

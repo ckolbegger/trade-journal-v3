@@ -60,6 +60,8 @@ Plan: Long Stock, buy 100 AAPL. (a) Fill buy **150** → sizing Deviation (plann
 
 **Deep interfaces**: `Valuations.detail` bundle gains recorded Deviations (read-only here — the write-on-surface behavior belongs to discipline detection, Slice 10), `TradeBook.acknowledgeDeviation(id, note?)`, Journal anchor `{kind: 'deviation', tradeId, deviationId}` (ADR 0012's "journal-linkable"), flags at the review-walk checkpoint ([review.md](../design/review.md)).
 
+**Prototype:** [list rows](../design/prototype/proto-home.png) ([desktop](../design/prototype/proto-home-desktop.png)), [detail](../design/prototype/proto-position-detail-stock.png) ([desktop](../design/prototype/proto-position-detail-stock-desktop.png)) — the prototype surfaces adherence as a single "% adh" number; this story specifies per-flag detail instead.
+
 ### Tasks
 
 - [ ] **S9.2.T1 — Acknowledge + anchor.**

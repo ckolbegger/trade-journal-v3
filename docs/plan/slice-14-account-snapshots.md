@@ -55,6 +55,8 @@ Design references: ADR 0013, [tradebook.md](../design/tradebook.md) (`recordAcco
 
 **Deep interfaces**: Account Snapshot series (S14.1) plotted per account and overall. Snapshots cannot separate performance from contributions — accepted and labeled (ADR 0013).
 
+**Prototype:** [equity curve](../design/prototype/proto-stats.png) ([desktop](../design/prototype/proto-stats-desktop.png)) — curve styling (the narrow-width overflow there is a prototype bug).
+
 ### Tasks
 
 - [ ] **S14.2.T1 — Curve data + rendering.**

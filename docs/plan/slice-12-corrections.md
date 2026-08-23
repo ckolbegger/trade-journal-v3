@@ -19,6 +19,8 @@ Design references: [tradebook.md](../design/tradebook.md) (corrections are edits
 
 **Deep interfaces**: `TradeBook.correctExecution(executionId, patch, note?)` → `CorrectionOutcome` (`record`, `newDeviations`, `annotatedDeviations`, `statusChange?`); one transaction: patch + audit + re-detection + annotation ([tradebook.md](../design/tradebook.md): corrections re-run detection and annotate, never delete).
 
+**Prototype:** [fill row](../design/prototype/proto-add-fill.png) ([desktop](../design/prototype/proto-add-fill-desktop.png)) — the row a correct/void action attaches to.
+
 ### Tasks
 
 - [ ] **S12.1.T1 — correctExecution.**

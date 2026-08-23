@@ -24,6 +24,8 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 **Deep interfaces**: `TradeBook.confirmPlan / get / query`, `TradeBook.registries.strategies / ideaSources`, `TradeMath.statusOf`, `Workspace.ensureSeeded` (first subset: Strategy seed). Types: `PlanDraft`, `PlannedLeg`, `ExitLevel`, `TradeRecord` per [trademath.md](../design/trademath.md).
 
+**Prototype:** [new plan](../design/prototype/proto-new-plan-step1.png) ([desktop](../design/prototype/proto-new-plan-step1-desktop.png)), [trade list](../design/prototype/proto-home.png) ([desktop](../design/prototype/proto-home-desktop.png)), [trade detail](../design/prototype/proto-position-detail-stock.png) ([desktop](../design/prototype/proto-position-detail-stock-desktop.png)) — plan form is ticker + strategy picker; step 2 (thesis/levels) was not capturable.
+
 ### Tasks
 
 - [x] **S1.1.T1 — Domain types.** `src/domain/trademath/types.ts`: `TradeRecord`, `PlanFacts`, `PlannedLeg`, `ExitLevel` (`underlyingPrice` stop/target only — the other kinds arrive with the slices that first offer them), `LegFacts`, `ExecutionFacts`, `Instrument` (stock only; options are Slice 3), `InstrumentKey` helpers (build/parse canonical string).
@@ -96,6 +98,8 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 **Deep interfaces**: `Journal.write / entriesFor / countFor`, `Journal.entryTypes` registry, `Anchor` `{kind:'plan', tradeId}`, placeholder mechanics (ADR 0006/0007); seed: Entry Type **Plan**.
 
+**Prototype:** [entry composer](../design/prototype/proto-entry-composer.png) ([desktop](../design/prototype/proto-entry-composer-desktop.png)) — free-text prompt plus an option-chip prompt ("Feeling").
+
 **Seed content — Entry Type "Plan"** (`designatedFor: 'plan'`): Why this trade, why now? (text) · What invalidates the thesis? (text) · Conviction (scale 1–5) · Emotional state (select: calm / eager / anxious / FOMO / revenge).
 
 ### Tasks
@@ -144,6 +148,8 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 > As a trader, I want to record my fills against a planned Trade, so that the app shows exactly what I hold and my Trade goes open the moment the first fill lands.
 
 **Deep interfaces**: `TradeBook.recordExecution` (`ExecutionTarget` existing-leg | new-leg; **no new-Trade target exists** — plan-first is structural, ADR 0003), `ExecutionOutcome` (`nowFlat` consumed in S1.4), `TradeMath.positionOf`, `Valuations.position` (first Valuations operation; composition root wires it).
+
+**Prototype:** [record fill](../design/prototype/proto-add-fill.png) ([desktop](../design/prototype/proto-add-fill-desktop.png)), [position & history](../design/prototype/proto-position-detail-stock.png) ([desktop](../design/prototype/proto-position-detail-stock-desktop.png)) — fill form is Buy/Sell, qty, price, instrument.
 
 ### Tasks
 
@@ -242,6 +248,8 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 > As a trader, I want to enter today's price and see my P&L and all four risk/reward numbers, so that I judge staying in by what I'm risking from *today's* value, not by a stale plan.
 
 **Deep interfaces**: `PriceBook.record / markSet / series` (`RecordResult.overwrote` + `TradeBook.tradesHolding` compose the shared-Mark edit warning), `TradeMath.instrumentsOf / valuation / riskReward`, `Valuations.value / detail` ([trade-detail-sequence.md](../design/trade-detail-sequence.md): one record+series snapshot feeds every number).
+
+**Prototype:** [dashboard](../design/prototype/proto-position-detail-stock.png) ([desktop](../design/prototype/proto-position-detail-stock-desktop.png)) — note the prototype frames exits as "$95.90 away" / "$19.10 cushion" rather than the four R/R numbers this story specifies.
 
 ### Tasks
 

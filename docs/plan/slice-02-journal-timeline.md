@@ -14,6 +14,8 @@ Design references: [journal.md](../design/journal.md), ADRs 0006, 0007.
 
 **Deep interfaces**: `Journal.write` with `{kind: 'standalone'}`; `Journal.entryTypes.list` (the picker); seeds: Entry Types **Trader Reflection** and **Review Note** (both undesignated — the trader picks them freely).
 
+**Prototype:** [new entry](../design/prototype/proto-entry-composer.png) ([desktop](../design/prototype/proto-entry-composer-desktop.png))
+
 **Seed content — "Trader Reflection"**: What's on your mind? (text) · Current emotional state (select: calm / eager / anxious / FOMO / revenge) · Energy (scale 1–5). **"Review Note"**: Observation (text) · Follow-up needed? (select: yes / no).
 
 ### Tasks
@@ -49,6 +51,8 @@ Design references: [journal.md](../design/journal.md), ADRs 0006, 0007.
 > As a trader, I want one chronological timeline of everything I've written — plan entries, reviews, closes, standalone reflections — so that I can read my growth as a trader as a single story.
 
 **Deep interfaces**: `Journal.timeline(range?)` ([journal.md](../design/journal.md) — "the growth story"); renders mixed prompt shapes by construction (ADR 0007).
+
+**Prototype:** [timeline](../design/prototype/proto-journal-timeline.png) ([desktop](../design/prototype/proto-journal-timeline-desktop.png)), [trade journal](../design/prototype/proto-position-journal.png) ([desktop](../design/prototype/proto-position-journal-desktop.png)) — date grouping, type badges, filter chips, and a "Tap to view plan →" affordance on Plan entries.
 
 ### Tasks
 

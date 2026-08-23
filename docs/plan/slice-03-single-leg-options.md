@@ -33,6 +33,8 @@ Design references: [trademath.md](../design/trademath.md), [review.md](../design
 
 **Deep interfaces**: option `Instrument` + `InstrumentKey` round-trip (deferred from Slice 1), `TradeMath.positionOf / valuation / riskReward / instrumentsOf` extended for contracts, `ExitLevel` kind `structureValue`, seeds: Strategies **Long Call**, **Long Put**.
 
+**Prototype:** [contract legs](../design/prototype/proto-position-detail-spread.png) ([desktop](../design/prototype/proto-position-detail-spread-desktop.png)), [strategy picker](../design/prototype/proto-new-plan-step1.png) ([desktop](../design/prototype/proto-new-plan-step1-desktop.png)) — contracts render as "215P May17".
+
 **Seed content** — Strategy "Long Call": planned leg buy 1 call (strike/expiration asked at plan time); asks structureValue stop + target. "Long Put": same shape, put.
 
 ### Tasks

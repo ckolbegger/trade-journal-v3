@@ -80,6 +80,8 @@ Design references: ADR 0009, [trademath.md](../design/trademath.md) (`replay`), 
 
 **Deep interfaces**: `Analytics.run(spec)` (TradeBook for records, TradeMath for closed P&L, Valuations bulk for open marked values); **`TradeFilter` settled here**: status, account, institution, strategy, ideaSource, tag, underlying, closed-date range — all optional, AND-combined. **`TimelineFilter` settled here**: entry type, anchor kind, tradeId — the journal timeline gains it (deferred from Slice 2).
 
+**Prototype:** [analytics](../design/prototype/proto-stats.png) ([desktop](../design/prototype/proto-stats-desktop.png)) — KPI tiles, Followed-vs-Deviated split, by-strategy bars, closed-trades table.
+
 ### Tasks
 
 - [ ] **S15.3.T1 — Analytics.run.**
@@ -120,6 +122,8 @@ Design references: ADR 0009, [trademath.md](../design/trademath.md) (`replay`), 
 > As a trader, I want my cumulative P&L over time, so that the long arc of my trading is visible, not just trade-by-trade snapshots.
 
 **Deep interfaces**: Executions for the cumulative realized P&L curve, per Account and overall — derived, never stored.
+
+**Prototype:** [cumulative curve](../design/prototype/proto-stats.png) ([desktop](../design/prototype/proto-stats-desktop.png))
 
 ### Tasks
 

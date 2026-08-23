@@ -12,6 +12,8 @@ Design references: [overview.md](../design/overview.md) (module rules, StorageBi
 
 **Deep interfaces**: none (scaffolding). Establishes the module layout and test harnesses every story uses.
 
+**Prototype:** [shell & nav](../design/prototype/proto-home.png) ([desktop](../design/prototype/proto-home-desktop.png)) — the prototype navigates by bottom tab bar (mobile) / left sidebar (desktop); the built shell uses header nav. Structural difference, not a restyle.
+
 ### Tasks
 
 - [x] **S0.1.T1 — Project scaffold.** Vite + React + TypeScript strict; Vitest configured with two projects (unit: `src/**/*.test.ts`, integration: `tests/integration/**` with `fake-indexeddb` auto-loaded); Playwright configured with its own `webServer` (starts the Vite dev server itself) and **excluded from `npm test`** — e2e runs only when explicitly invoked via `npm run test:e2e` (locally or as a separate CI step); ESLint + Prettier; `dexie` dependency. npm scripts: `dev`, `build`, `test` (unit + integration only), `test:integration`, `test:e2e`, `lint`.
