@@ -2,6 +2,8 @@
 
 The journal's questions become the trader's own: edit any Entry Type's Prompts (including the Trade Review type's Action list), create new types, archive old ones, and re-designate which type each lifecycle moment uses — all safe by construction, because every written entry keeps the prompts it answered (ADR 0007; no migration, no version history).
 
+**Decided before this slice — renames must preserve option ids (ADR 0007, delivered in S1.9.T2.2):** a select option is `{ id, label }` and answers store the id. Whole-definition save makes it easy to rebuild an options list from the edited labels and hand back fresh ids — doing so silently orphans every answer ever given under the old wording. Editing an option's text must carry its existing id through; only a genuinely *new* option gets a new id. This is the single place in the app where the drift model can lose data, and it is not detectable by looking at the entry that broke.
+
 Design references: ADR 0007, [journal.md](../design/journal.md) (whole-definition save; "Managing Entry Type structure"), [review.md](../design/review.md) (the Action list is just a prompt's options).
 
 ---

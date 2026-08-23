@@ -6,6 +6,8 @@ The app starts noticing when trading departs from the Plan: a Leg no Planned Leg
 
 **Out of scope (JIT):** discipline Deviations (Slice 10 — `detectDeviations`' `series` parameter stays unused and unadded), Plan Revisions as the response to a flag (Slice 11 — here the trader acknowledges or journals), correction-driven re-detection (Slice 12).
 
+**Watch-item — Deviations are the substrate of every later adherence number.** S15.3's cross-Trade measures and any future coaching (ADR 0016) aggregate what this slice records. Detection designed only to render a per-Trade flag can aggregate into something meaningless: a Trade with no Executions has not deviated from anything, and any measure that scores it as partially adherent is measuring plan completeness, not behaviour. (The Claude Design prototype does exactly this — 85% adherence on a plan with zero fills. See [docs/design/prototype/](../design/prototype/).) Nothing here needs to *compute* an adherence percentage; the requirement is only that what gets recorded can carry one honestly later.
+
 Design references: ADR 0012, [tradebook.md](../design/tradebook.md) (inline detection, dedup, ExecutionOutcome), [trademath.md](../design/trademath.md) (`DetectedDeviation`).
 
 **Worked examples used throughout:**
