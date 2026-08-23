@@ -475,8 +475,73 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 ---
 
+## ☐ Story S1.9 — Recording the negative: declined prompts and considered-but-not-taken actions *(added 2026-08-23 — slice re-opened to close a capture gap named in [ADR 0016](../adr/0016-automated-coaching-deferred.md); the `slice-1-complete` tag remains the historical rollback point for S1.1–S1.7)*
+
+> As a trader, I want one tap to say "nothing to note today", and one place each session to record what I considered doing and decided against, so that my restraint and my silence both survive in the record instead of reading as gaps.
+
+**Why (ADR 0016):** deferring the coach is safe; deferring the questions it would ask is not. Two facts are unrecoverable after the fact and neither is captured today:
+
+- An urge acted on becomes an Execution. An urge resisted — the add not made, the stop not moved, the revenge trade not opened — leaves no trace anywhere in the model. "You wanted to and didn't" is the best material a coach has, and it is currently unrecordable.
+- A prompt left blank is indistinguishable from a prompt deliberately answered "nothing". `Entry.answered[]` already allows an absent `answer`, but absence means both "skipped" and "declined". The blanks will cluster on exactly the tilted, losing days that matter most, and no later analysis can separate the two.
+
+**Decided in this story:**
+
+- **Declination is per Prompt, not per Entry.** `Entry.answered[]`'s element gains `declined`. A declined prompt is *answered* — the trader said "nothing" — so it is never Journal Debt and never nagged. This generalises to every prompt, including the emotional ones, without another record shape later.
+- **Writing is never gated.** The checkpoint stays immediately writable; declining is an explicit action beside save. **Rejected:** gating the entry behind a "make an entry / no entry today" mode that disables the other fields — whichever branch costs zero taps becomes the default, and making silence free reintroduces precisely the goes-thin-where-discipline-failed failure ADR 0006 was written to prevent. Friction belongs on the skip, not on the write.
+- **A declined review entry still marks the Trade reviewed.** No special-casing is needed: a review Anchor's existence for `(date, tradeId)` *is* the reviewed-today flag (`src/books/journal/types.ts` — "nothing about 'reviewed' is stored anywhere else"). Writing the entry is what counts, not what it says.
+- **The considered-but-not-taken question is asked once per session, not per Trade.** With several open Trades, per-Trade repetition drives the honest answer to blank, and the most dangerous urges — opening a revenge trade, breaching a position limit — have no Trade to hang off. It writes a `standalone` entry at the walk's completion step. A trader who wants it per-Trade can add it to Trade Review once S13 ships.
+- **It rides a new Entry Type, which is what makes it reachable.** `ensureSeeded` adds a seeded type only when its **id is absent** (`src/workspace/workspace.ts:489`), so adding a prompt to the existing Trade Review type would never reach a database that already has it — including the live one. A *new* type is absent everywhere, so the existing additive-iff-absent logic delivers it to old databases for free, with no migration and no risk of resurrecting something a trader later deletes.
+
+**Deep interfaces**: `Journal.write` / `entriesFor` / `outstandingDebt` (the `answered[]` element gains `declined`), `Workspace.ensureSeeded` (one new seeded Entry Type), `Review.walk`'s completion step. Seed: Entry Type **Session Reflection**.
+
+**Seed content — Entry Type "Session Reflection"** (undesignated, written standalone by the walk's completion step): **Considered** (text: "Anything you considered doing today and decided against?") · Note (text). Undesignated because no lifecycle moment *requires* it — the walk offers it, and skipping it is ordinary.
+
+### Tasks
+
+- [ ] **S1.9.T1 — Declination as a fact.** `answered[]`'s element gains `declined?: true`; `write` accepts a declined prompt, `entriesFor` reads it back distinctly, `outstandingDebt` treats it as settled.
+
+  ```
+  describe "Journal.write — declined prompts"
+  - it records a prompt as declined, carrying no value
+  - it round-trips declined distinctly from an absent answer
+  - it allows an entry mixing answered, declined and absent prompts
+  describe "Journal.outstandingDebt"
+  - it does not report an entry whose prompts were all declined
+  - it still reports a placeholder whose prompts are merely unanswered
+  ```
+
+- [ ] **S1.9.T2 — Seed the Session Reflection type.**
+
+  ```
+  describe "Workspace.ensureSeeded — Session Reflection"
+  - it seeds the type on a fresh database
+  - it adds the type to a database seeded before this story existed
+  - it does not re-add the type when already present
+  - it does not modify the Trade Review type's prompts
+  ```
+
+- [ ] **S1.9.T3 — UI: decline at the checkpoint, ask once at the end.** The walk checkpoint's Action prompt keeps its current behaviour; a **"Nothing to note today"** action beside save writes the review entry with its text prompts declined (the Action select still records — it is the Trade's disposition, not a reflection). The walk's completion step offers the Session Reflection question once, skippable, writing a `standalone` entry. No mode switch and no disabled fields anywhere in the checkpoint.
+
+  ```
+  describe "WalkCheckpoint — nothing to note"
+  - it writes a review entry with the text prompts declined
+  - it marks the Trade reviewed, same as a written entry
+  - it creates no Journal Debt
+  - it leaves every field editable before and after the action
+  describe "WalkSession — session reflection"
+  - it offers the considered-actions question once at completion, not per Trade
+  - it writes a standalone entry when answered
+  - it writes nothing when skipped, and creates no debt
+  ```
+
+- [ ] **S1.9.T4 — Integration tests**: full session over Dexie — two open Trades, decline one checkpoint and write the other, answer the session question → reopen DB → both Trades reviewed, the declined prompts read back as declined (not blank), `outstandingDebt` empty, the standalone entry present and unanchored to either Trade.
+- [ ] **S1.9.T5 — Playwright e2e** (`e2e/s1-9-declining.spec.ts`): walk two Trades — "Nothing to note today" on the first, a written note on the second, answer the session question at the end → reopen Review: both flagged reviewed, no debt, timeline shows the standalone entry.
+- [ ] **S1.9.T6 — Browser verification.** Real browser: run a full review declining one Trade and writing another; confirm the checkpoint is writable at every moment (no disabled inputs), that declining marks the Trade reviewed and produces no nag next day, and that the session question appears exactly once regardless of how many Trades were walked. Confirm on a database seeded before this story that the Session Reflection type appears without any migration step. All suites green.
+
+---
+
 ## Slice complete when
 
-- [x] Every story above is checked.
+- [ ] Every story above is checked.
 - [x] The full lifecycle runs in one browser session: onboard → plan → journal → fill → mark → review walk with Action → flattening fill → Close Reason + close entry — with the app reloaded at least once mid-lifecycle and nothing lost.
 - [x] Playwright suite (7 story specs + shell) green in CI-mode (`npm run test:e2e`).
