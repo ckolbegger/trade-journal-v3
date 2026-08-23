@@ -571,6 +571,18 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   ```
 
 - [ ] **S1.9.T5 — Integration tests**: full session over Dexie — two open Trades, decline one checkpoint and write a considered-action on the other → reopen DB → both Trades reviewed, the declined entry reads back as declined (not merely blank), the written considered-action intact, the Action answers stored as option ids, `outstandingDebt` empty.
+
+  Also cover Slice 6's backup round-trip, since both record shapes this story changes travel in the export payload:
+
+  ```
+  describe "export / import — declined entries and option ids"
+  - it round-trips a declined entry through export and re-import
+  - it round-trips a select answer as its option id
+  - it imports a backup written before this story without error
+  - it reads an entry with no declined field as not declined
+  ```
+
+  A pre-S1.9 backup also carries select answers as display strings rather than option ids. **No migration is attempted** — no such backups exist (this story lands before any real entries), so the requirement is only that the importer tolerate the older shape rather than reinterpret it. If real pre-S1.9 backups ever turn out to exist, that becomes a Slice 6 concern, not this story's.
 - [ ] **S1.9.T6 — Playwright e2e** (`e2e/s1-9-declining.spec.ts`): walk two Trades — "Nothing to note today" on the first, an Action plus a written considered-action on the second → reopen Review: both flagged reviewed, no debt; the timeline shows the second Trade's entry carrying its considered-action.
 - [ ] **S1.9.T7 — Browser verification.** **Start from a cleared database** (clear site data, re-onboard): `ensureSeeded` never re-seeds a type that already exists, so a profile seeded before this story keeps the old three-prompt Trade Review and will never show Considered — verifying on it would report a false failure. Then: run a full review declining one Trade and writing another; confirm the checkpoint is writable at every moment (no disabled inputs), that one action declines the entry and no per-prompt decline control exists, that declining marks the Trade reviewed and produces no nag next day, and that S1.7's existing walk behaviour (marks, Action, debt settlement) is unchanged. All suites green.
 
