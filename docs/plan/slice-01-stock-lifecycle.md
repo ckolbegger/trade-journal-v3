@@ -492,7 +492,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 - **The question goes on the existing Trade Review type, per Trade.** No new Entry Type. `ensureSeeded` only adds a type when its **id is absent** (`src/workspace/workspace.ts:489`), so editing a seeded type's prompts normally cannot reach a database that already has it — but no real entries exist yet, so the seed is free to change and any existing database can be reseeded from scratch. This window closes the moment real entries accumulate; after that, changing a seeded type's prompts is an S13 concern, not a seed change.
 - **Per-Trade repetition is the accepted cost, and the one-tap decline is its mitigation.** Asked at every checkpoint with several open Trades, the honest answer is usually "nothing", and repetition is the path to blank answers. "Nothing to note today" covers the whole checkpoint in one tap, which keeps the cheap answer *explicit* rather than empty. Note the residual gap: a per-Trade prompt cannot catch an urge with no Trade to hang off — the revenge trade not opened, the position limit not breached. Those still rely on a standalone entry the trader writes unprompted.
 
-- **Select options get stable ids, and answers store the id.** `Prompt.options` becomes `{ id, label }[]` and a select's `PromptAnswer.value` holds the option **id**, not its display string. Today `options: ['Hold', 'Exit Soon', …]` are bare strings and the answer *is* the string, so the moment S13 lets a trader rename "Watch Closely" to "Monitor", every prior answer is orphaned — nothing anywhere records that they are the same concept. ADR 0007 deliberately tolerates prompt drift; this keeps drift *survivable* by making renames non-destructive. Folded into this story because it rewrites the same seeded types, and because it is nearly free only while no entries exist — once answers are stored as display strings there is nothing to migrate them from.
+- **Select options get stable ids, and answers store the id** (T2.2, after the renderer consolidation in T2.1). `Prompt.options` becomes `{ id, label }[]` and a select's `PromptAnswer.value` holds the option **id**, not its display string. Today `options: ['Hold', 'Exit Soon', …]` are bare strings and the answer *is* the string, so the moment S13 lets a trader rename "Watch Closely" to "Monitor", every prior answer is orphaned — nothing anywhere records that they are the same concept. ADR 0007 deliberately tolerates prompt drift; this keeps drift *survivable* by making renames non-destructive. Folded into this story because it rewrites the same seeded types, and because it is nearly free only while no entries exist — once answers are stored as display strings there is nothing to migrate them from.
 
 **Deep interfaces**: `Journal.write` / `entriesFor` / `outstandingDebt` (`Entry` gains `declined`), `Prompt.options` / `PromptAnswer` (option identity), `Workspace.ensureSeeded` (every seeded type's select prompts, plus Trade Review's new prompt), `Review.walk`'s checkpoint.
 
@@ -512,17 +512,12 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it still reports a placeholder whose prompts are merely unanswered
   ```
 
-- [ ] **S1.9.T2 — Stable option identity.** `Prompt.options` becomes `{ id, label }[]`; a select answer's `value` is the option id.
+- [ ] **S1.9.T2.1 — Consolidate prompt rendering (no behaviour change).** `PromptFields` (`src/ui/components/PromptFields.tsx`) already renders all three prompt kinds and serves five surfaces (`WalkCheckpoint`, `NewEntryPage`, `SettleForm`, `AddendumForm`). `PlanEntryForm` and `CloseForm` hand-roll their own copies purely by accident of history: both were written 2026-07-11 (S1.2, S1.4) and `PromptFields` was extracted 2026-07-12 during S1.7, so they were never migrated. Migrate those two onto it, so that after this task exactly **one** file renders an option and **one** validates it.
 
-  **This is a breaking shape change. Shrink the blast radius before making it.** `PromptFields` (`src/ui/components/PromptFields.tsx`) already renders all three prompt kinds and is used by five surfaces (`WalkCheckpoint`, `NewEntryPage`, `SettleForm`, `AddendumForm`, and itself). `PlanEntryForm` and `CloseForm` hand-roll their own copies purely by accident of history: both were written 2026-07-11 (S1.2, S1.4) and `PromptFields` was extracted 2026-07-12 during S1.7, so they were never migrated. **Migrate those two onto `PromptFields` first** — then exactly two files know how an option is rendered or validated, instead of four.
+  This task changes no behaviour and ships no feature — **S1.2's and S1.4's existing specs must pass untouched.** It stands alone so that if T2.2 goes wrong, the blame is unambiguous.
 
   - Migration deltas, all cosmetic and intended: textarea `rows` 3 → 2, scale fieldset padding `p-4` → `p-3`, and radio groups gain the `namespace` prefix that stops two forms on one page from sharing a radio group.
-  - `CloseForm` has **no scale branch at all** — it renders text and select and silently drops anything else. Invisible today because the seeded Close type has no scale prompt; a rendering bug the moment S13 lets the trader add one. Migrating fixes it for free rather than porting the gap forward.
-
-  **Then change the shape in the two remaining places, and do it before touching the seeds** — otherwise the app looks correctly seeded while refusing every write:
-
-  - `src/ui/components/PromptFields.tsx:47` — maps options into `<option key={option} value={option}>{option}</option>`, using the bare string as key, value *and* label at once; becomes `option.id` for key/value and `option.label` for display.
-  - `src/books/journal/journal.ts:146` — `validateAnswer` does `prompt.options?.includes(answer.value as string)`. This is the loudest failure and it is **not UI**: `includes` on an array of objects never matches a string, so every select answer throws "not among options" at write time until it compares ids. Plan-time, close-time and review-time journaling all fail together.
+  - Fixes a latent bug in passing: `CloseForm` has **no scale branch at all** — it renders text and select and silently drops anything else. Invisible today because the seeded Close type has no scale prompt; a rendering bug the moment S13 lets the trader add one. Migrating fixes it rather than porting the gap forward.
 
   ```
   describe "PromptFields adoption"
@@ -530,6 +525,14 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it renders the close form's prompts through PromptFields
   - it renders a scale prompt on the close form (previously dropped)
   - it keeps two forms on one page from sharing a radio group
+  ```
+
+- [ ] **S1.9.T2.2 — Stable option identity.** `Prompt.options` becomes `{ id, label }[]`; a select answer's `value` is the option id. Depends on T2.1 — with the renderers consolidated there are two consumers left, and **both must change before the seeds do**, or the app looks correctly seeded while refusing every write:
+
+  - `src/ui/components/PromptFields.tsx:47` — maps options into `<option key={option} value={option}>{option}</option>`, using the bare string as key, value *and* label at once; becomes `option.id` for key/value and `option.label` for display.
+  - `src/books/journal/journal.ts:146` — `validateAnswer` does `prompt.options?.includes(answer.value as string)`. This is the loudest failure and it is **not UI**: `includes` on an array of objects never matches a string, so every select answer throws "not among options" at write time until it compares ids. Plan-time, close-time and review-time journaling all fail together.
+
+  ```
   describe "Prompt options"
   - it carries a stable id alongside the display label
   - it stores a select answer as the option id, not the label
