@@ -19,7 +19,7 @@ tested in one place. The mark-free portfolio *outcome* fold (R-distribution,
 win rate, etc. over closed-trade snapshots) is the **PerformanceAnalytics**
 module, a clean mark-free seam.
 
-Three operations, all pure — testable with literal objects, no store, no mock, no
+Four operations, all pure — testable with literal objects, no store, no mock, no
 binding:
 
 ```ts
@@ -41,6 +41,13 @@ isFlat(fills: Fill[]): boolean
  *  null marks (Σ non-null, with a missingMarkCount) and sums dollars only.
  *  Used by DailyReview / PerformanceReporting for the open-book view. */
 evaluateMany(records: TradeRecord[], marks: Marks, asOf: Date): ExposureReport
+
+/** Which declared stops were crossed by the asOf marks — per side (ADR 0010).
+ *  Single-date (EOD) semantics: underlying-quoted sides compare the
+ *  underlying's mark; option-quoted sides compare the option position price
+ *  (net over option legs' marks). A side with incomplete marks is
+ *  unevaluated — reported, never coerced. Called by the Daily Review. */
+stopsHit(record: TradeRecord, marks: Marks, asOf: Date): StopsHit
 ```
 
 ---
@@ -55,6 +62,8 @@ evaluate(record: TradeRecord, marks: Marks, asOf: Date): FigureSet
 isFlat(fills: Fill[]): boolean
 
 evaluateMany(records: TradeRecord[], marks: Marks, asOf: Date): ExposureReport
+
+stopsHit(record: TradeRecord, marks: Marks, asOf: Date): StopsHit
 ```
 
 ### Input types — the data contract every store must serve
@@ -85,19 +94,40 @@ type TradeRecord = {
 }
 
 type Plan = {
-  entry:  Price
-  stop:   Price
-  target: Price
+  entry:  Price                 // planned net entry price per unit — load-bearing for option-quoted readings (ADR 0010)
+  stops:  Stops                 // per risk direction, each side optional (ADR 0010)
+  target: Level                 // ONE profit exit — the role supplies direction (ADR 0010)
   thesis: string
   invalidation: string
   entryEmotion: string
   committedAt: Date
 }
 
+/** Declared exit levels guarding risk directions (ADR 0010). A directional
+ *  Trade declares one side (long stock: downside; short stock: upside); a
+ *  neutral structure (an Iron Condor) may declare both. An absent side means
+ *  no declared level there — NOT "no risk." Two stops on the same side are
+ *  unexpressible: the invariant is structural. */
+type Stops = {
+  downside?: Level
+  upside?:   Level
+}
+
+/** Every declared level is a price (ADR 0010) — never a time, never prose
+ *  (qualitative exit conditions live in `invalidation`). Option-position
+ *  quotes are per-unit unsigned magnitudes; the stop-vs-target role supplies
+ *  the direction ("stop at 4.00" = cost reaches; "target at 0.50" = cost
+ *  falls to). */
+type Level =
+  | { basis: 'underlying',      at: Price }   // the underlying's own price
+  | { basis: 'option-position', at: Price }   // the option position price — net over
+                                               //   OPTION legs only; stocks never in this sum
+
 type PlanRevision = {               // never overwrites; appends (ADR 0001)
   at: Date
-  stop?:   Price                    // absent = unchanged
-  target?: Price                    // absent = unchanged
+  stops?:  { downside?: Level, upside?: Level }  // per-side REPLACE; absent side = unchanged;
+                                                 //   removal inexpressible (ADR 0010)
+  target?: Level                                  // replaces the target
   reason: string
 }
 
@@ -149,14 +179,20 @@ type FigureSet = {
   positionSize: number              // signed net quantity, from fills
 
   risk: {
-    planned: Dual                   // read against the payoff curve at the declared stop (ADR 0009); frozen at initial Plan (ADR 0005)
-    current: Dual | null            // (mark − currentStop) × size — live; null if no mark or no position
+    planned: Dual                   // WORST side's level reading — the single R baseline (ADR 0010); frozen at initial Plan (ADR 0005)
+    plannedByDirection?: {          // per-side readings, honestly signed (ADR 0010) — detail views; PerformanceAnalytics ignores
+      downside?: Dual, upside?: Dual
+    }
+    current: Dual | null            // position price at the current stop vs now — whole-position netting (ADR 0010); live; null if no mark or no position
+    currentByDirection?: {          // the same netting per declared side (ADR 0010) — detail views
+      downside?: Dual, upside?: Dual
+    }
     maximum: MaxRisk | null         // payoff-curve minimum (ADR 0009), instrument-type-aware (ADR 0005); null for Planned (no fills → no curve)
   }
 
   reward: {
-    planned: Dual                   // read against the payoff curve at the declared target (ADR 0009); frozen at initial Plan
-    incremental: Dual | null        // (target − mark) × size — live; null if no mark
+    planned: Dual                   // underlying-quoted: curve at the target (ADR 0009); option-quoted: entry-price arithmetic (ADR 0010); frozen at initial Plan
+    incremental: Dual | null        // position price at the target vs now — whole-position netting (ADR 0010); live; null if no mark
   }
 
   rr: {
@@ -221,6 +257,17 @@ type ExposureReport = {
 //   - positionSize / risk.maximum don't aggregate across mixed instruments/types.
 //   - rMultiple / pnl.realized are outcome-only (realized) — not exposure.
 //   - revisionCount is a PerformanceAnalytics discipline metric, not a current figure.
+
+/** Which declared stops the asOf marks crossed (stopsHit's return, ADR 0010).
+ *  A point-in-time event check on OPEN trades — the Daily Review's question —
+ *  not a figure and never cached in a close snapshot. */
+type StopsHit = {
+  hit: {                            // present iff evaluated AND crossed
+    downside?: { level: Level, mark: Price }
+    upside?:   { level: Level, mark: Price }
+  }
+  unevaluated: Array<'downside' | 'upside'>   // sides whose marks were incomplete —
+}                                              //   counted, not coerced (semantic 4)
 ```
 
 ---
@@ -294,8 +341,9 @@ Each ruling cites the principle or ADR it derives from. Veto any during review.
 9. **"Current" levels = the latest revision's levels (or the original Plan's
    if no revisions exist).** Planned levels are always the original Plan's
    (ADR 0001, frozen); current stop/target walk forward through the revision
-   history. A stop revision changes current risk, never planned risk.
-   *(ADR 0001, 0005.)*
+   history — **per side**: each side's level walks its own revision history
+   independently (ADR 0010). A stop revision changes current risk, never
+   planned risk. *(ADR 0001, 0005, 0010.)*
 
 10. **`positionSize` is signed net from fills** (buy positive, sell negative),
     summed across all legs. Derived, not stored. Determines the dollar scaling
@@ -375,16 +423,84 @@ Each ruling cites the principle or ADR it derives from. Veto any during review.
     two spreads — so calc holds **no per-strategy formula catalog** and needs
     **no directional-bias input**: the curve's shape *is* the bias (this is why
     `strategy` remains a calc-ignored store-owned tag — ADR 0009 *preserves*
-    the existing decision rather than reversing it). The trader's declared
-    stop/target levels are read against the curve — a stop at a breakeven
-    yields $0 planned risk — though their *representation* on `Plan` for
-    multi-directional structures is open (OQ 16). **Boundary:** the curve is an
+   the existing decision rather than reversing it). The trader's declared
+   stop/target levels are read against the curve — a stop at a breakeven
+   yields $0 planned risk. Their representation is settled by ADR 0010:
+   per-direction stops, a single target, each a priced level with an explicit
+   quote basis (semantics 19–21 below). **Boundary:** the curve is an
     *expiry* (intrinsic-value) construction. It serves maximum/planned risk and
     breakevens — not live option P&L or live risk, which are mark-to-market
     (extrinsic value at the daily mark; semantic 4's mark-dependence) and
-    which the options release must own as a separate computation. For the
-    stock-only MVP nothing changes: the curve is trivially linear (breakeven
-    = cost basis; maximum = whole position to zero). *(ADR 0009.)*
+   which the options release must own as a separate computation. For the
+   stock-only MVP nothing changes: the curve is trivially linear (breakeven
+   = cost basis; maximum = whole position to zero). *(ADR 0009.)*
+
+19. **Declared levels: per-direction stops, single target, explicit quote
+   basis (ADR 0010).** `Stops = {downside?, upside?}` — the direction enum is
+   provably closed (one underlying, price moves two ways), so the
+   one-stop-per-side invariant is *structural*; two stops on the same side
+   are unexpressible, and an absent side means "no declared level," not "no
+   risk." `target` is a single level — under the role-supplies-direction
+   convention, a profit exit is one number whichever way the trade profits
+   (a condor's "buy back at $0.50" has no direction to belong to); two-sided
+   profit taking is deferred with its promoted shape recorded (ADR 0010).
+   Every level is a **price** — time is not modeled, and qualitative exit
+   conditions already live in `invalidation`. Levels are **per-unit, not
+   dollars** (declared at plan-commit, before fills establish a size); the
+   option-position basis sums **option legs only** ("buy back the call at
+   $0.20" netted with 100 shares is nonsense), and single-leg option
+   positions collapse to that leg's price. *(ADR 0010.)*
+
+20. **`risk.planned` = the worst side's reading — the single R baseline.**
+   With stops on both directions, each side has its own reading and
+   `rMultiple` divides by **one** figure: the worst (largest-dollar) side.
+   `plannedByDirection` / `currentByDirection` carry the per-side detail as
+   **additive optional** FigureSet fields — detail views display each
+   direction separately; PerformanceAnalytics folds the singles and ignores
+   them; snapshots cache them harmlessly. No consumer changes. *(ADR 0010;
+   the metrics-are-fields precedent from PerformanceAnalytics.)*
+
+21. **Level readings split by basis.** *Underlying-quoted stops* read
+   against the **expiry payoff curve** (semantic 18), honestly signed: a
+   stop inside a neutral structure's profit tent reads as a *profit*, and
+   PlanCommit validation surfaces that teaching moment — calc holds one
+   computation with no special cases, and the store accepts the fact
+   (validation is the coordinator's). *Option-quoted levels* are evaluated
+   by **comparison against net option marks** — a fact lookup, not a
+   valuation; this does not cross ADR 0009's mark-to-market boundary.
+   Planned figures for option-quoted levels are arithmetic off the planned
+   entry price (credit $2.00, stop $4.00 ⇒ $2.00 planned risk — no curve,
+   no marks). A missing option-leg mark leaves the level **unevaluated**
+   (`null`, semantic 4 — "costs $0 to close" and "no mark" are different
+   facts). *(ADR 0009, 0010.)*
+
+22. **`current` risk and `incremental` reward are whole-position
+   mark-netting.** Replaces the stock-era `(mark − stop) × size` /
+   `(target − mark) × size` formulas, which misstate any multi-leg trade: a
+   covered call's live risk includes the short call's remaining value
+   (stock 48 → stop 45 reads $275 whole-position, not $300 stock-only).
+   Both figures = **position price** (net over ALL legs) at the stop/target
+   vs position price now. `risk.maximum` and the planned readings were
+   already whole-position via the payoff curve (ADR 0009 sums every leg);
+   single-leg positions collapse to the old formulas. *(ADR 0010 — the
+   covered-call finding.)*
+
+23. **`stopsHit` — single-date, per-side, unevaluated-not-coerced.** "Hit" =
+   the `asOf` mark crossed the declared level (EOD marks are all the system
+   has; a gap through a level and back intraday is invisible and honestly
+   unreported). Underlying-quoted sides compare the underlying's mark;
+   option-quoted sides compare the option position price from option marks.
+   "Was it hit any day since declaration" composes caller-side over
+   `getMarkSeries` — calc stays per-date. A hit on a multi-direction
+   structure reports the *side*; it does not close the Trade (the universal
+   flat-close rule is untouched — CONTEXT.md: close rule). *(ADR 0010.)*
+
+24. **Revision deltas: per-side replace; removal inexpressible.** A revision
+   replaces a side's level (`stops: {downside: …}`) or the target; an absent
+   side = unchanged. A revision cannot *un-declare* a side — matching the
+   pre-existing model (a stop revision could only ever move the stop).
+   "Moving a stop away" is a revision to a farther level, which the
+   discipline metrics then see. *(ADR 0001, 0010.)*
 
 ---
 
@@ -412,6 +528,11 @@ Note: planned dollars are `$0` because position size is zero pre-entry — the
 establish a position size. This is exactly the plan-commit validation scope:
 planned R:R is enough to validate the plan before entry (decided semantics 13).
 
+Under ADR 0010, this plan declares `stops: { downside: {basis:'underlying',
+at:147} }` and `target: {basis:'underlying', at:156}` — a directional stock
+trade exercises the underlying basis only. `plannedByDirection` is
+`{downside: {3, $0}}`; the worst side is the only side.
+
 ### Stock trade — AAPL, buy 100 @ $150, stop $147, target $156
 
 **Mid-trade, mark at $152 (Open):**
@@ -422,7 +543,9 @@ planned R:R is enough to validate the plan before entry (decided semantics 13).
 | `pnl.realized` | no closing fills | `$0` |
 | `pnl.unrealized` | (152−150)×100 | `+$200` |
 | `risk.planned` | ratio: 150−147=$3, dollars: 3×100 | `{3, $300}` |
-| `risk.current` | ratio: 152−147=$5, dollars: 5×100 | `{5, $500}` |
+| `risk.plannedByDirection` | downside declared, upside absent | `{downside: {3, $300}}` |
+| `risk.current` | whole-position netting, one leg → (152−147)×100 | `{5, $500}` |
+| `risk.currentByDirection` | netting at the downside stop vs now | `{downside: {5, $500}}` |
 | `risk.maximum` | stock to zero: 152×100 | `{bounded, {15200, $15200}}` |
 | `reward.planned` | ratio: 156−150=$6, dollars: 6×100 | `{6, $600}` |
 | `reward.incremental` | ratio: 156−152=$4, dollars: 4×100 | `{4, $400}` |
@@ -524,6 +647,11 @@ const marks = priceMarks.buildMarksFromFills(allFills, today)  // one marks map 
 const exposure = calc.evaluateMany(openRecords, marks, today)  // one call → aggregate current exposure
 // exposure.totalUnrealized.dollars, exposure.totalCurrentRisk.dollars,
 // exposure.totalUnrealized.missingMarkCount → "N positions missing a mark"
+
+// 6. Daily Review — which declared stops did today's marks cross (ADR 0010)
+const hits = calc.stopsHit(record, marks, today)
+// hits.hit.downside → "your downside stop was hit today" (level + crossing mark)
+// hits.unevaluated → sides with incomplete marks — the mark-collection prompt
 ```
 
 ---
@@ -563,7 +691,8 @@ trader → DailyReviewCoordinator.runDailyReview(today)
       → [resolve underlyings lacking a PriceMark for today]
       → marks = PriceMarkStore.buildMarksFromFills(record.fills, today)
       → figures = calc.evaluate(record, marks, today)      // live figures
-      → [assemble into DailyReviewView]
+      → hits = calc.stopsHit(record, marks, today)         // declared stops crossed by today's marks (ADR 0010)
+      → [assemble into DailyReviewView — figures, hits, placeholders, market entries]
 ```
 
 ## Sequence: evolution chart series
@@ -670,6 +799,7 @@ These are commitments — downstream drill-downs must serve these shapes:
 | Exact P&L accounting for multi-leg options (cost-basis tracking across legs) | Implementation; calc's internal seam, not interface. The `Fill[]` input carries enough; the algorithm is internal. |
 | `InstrumentType` value expansion for options sub-types (naked vs covered, single-leg vs spread) | Options-release drill-down. The `InstrumentType` union grows; the `MaxRisk` discriminated union shape is stable. Put/call, strike, and expiry are NOT part of this — they live on `OptionContract` (ADR 0009). |
 | **Payoff-curve companion semantics (ADR 0009).** The contract inputs are settled: option legs carry `contract: { optionType, strike, expiry }` on `Fill`, present as a group iff the leg is an option — calc must never parse `InstrumentId` conventions like `'AAPL-155C'`. Still open, as computation semantics (not contract facts): multi-expiry anchoring (which expiry defines "the" curve when legs differ), anchor reconciliation (the curve's minimum is from cost basis net of premium; CONTEXT.md states maximum risk from current price — bridging the two needs the mark-to-market model), and exact multi-leg cost-basis accounting (row below). | Options-release drill-down |
+| **Deferred level generalizations (ADR 0010 leaves-open).** Per-leg option quotes on multi-direction structures (a condor managed per side — single-direction option trades work today); two-sided profit targets (promoted shape recorded in ADR 0010: `target → {downside?, upside?}` mirroring `Stops`; figures stay single by fold policy, so FigureSet/PerformanceAnalytics/snapshots are untouched and historical data stays valid); time stops (no requirement); mark-to-market level readings (options release; an ADR 0007-style regeneration when it arrives). | When a requirement emerges / options-release drill-down |
 
 ---
 

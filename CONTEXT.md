@@ -34,6 +34,14 @@ _Avoid_: Reason, story
 The condition(s) that, if met, prove the thesis wrong and signal the Trade should be exited. May be a price level (the stop) or a qualitative event ("earnings gap the wrong way").
 _Avoid_: Stop (a stop is a price level; invalidation is the broader concept)
 
+**Stop**:
+A declared exit level guarding one **risk direction** of a Trade — its **downside** or its **upside**. A directional Trade declares one side (long stock: downside; short stock: upside); a neutral structure (an Iron Condor) may declare both; a side left undeclared means no level there, not "no risk." A stop hit on a multi-directional structure exits that *side*, not the Trade — the Trade still closes only when flat. The position's **planned risk** (the R baseline) is the worst side's reading; detail views show each direction separately.
+_Avoid_: Risk element, trigger
+
+**Position price**:
+The net current price of a Trade's whole position, per unit — what it costs to close. Risk and reward figures are computed over position price; stops and targets on option trades are declared in the **option position price**, the same net over the option legs only.
+_Avoid_: Mark value, premium (ambiguous — whose price?)
+
 **P&L (profit and loss)**:
 The realized and unrealized gain or loss of a Trade, **computed from the fills**.
 - **Open Trades**: computed live on every read (marks change daily).
@@ -44,8 +52,8 @@ _Avoid_: Result, return
 The ratio of planned risk to planned reward, computed from the Plan's quantitative levels (stop and target). Always presented alongside its dollar equivalent per the dual presentation rule. Visualizations: the R:R evolution chart (signature), a plan-time payoff snapshot, a planned-vs-realized comparison, and a portfolio-level R-multiple distribution.
 
 **Risk** (three distinct quantities, each shown in both ratio and dollar form):
-- **Planned risk** — `(initial entry − initial stop) × size`. **Frozen at the initial Plan for the Trade's entire life**; ignores later Plan Revisions. The commitment baseline — what the trader signed up to risk. A stop revision changes current risk, never planned risk.
-- **Current risk** — `(current price − current stop) × size`. Moves with price and steps when the stop is revised. "What's at risk right now given where price is and where the stop currently sits."
+- **Planned risk** — the risk at the Trade's declared stops, taken as the **worst (largest-dollar) reading across its risk directions**. **Frozen at the initial Plan for the Trade's entire life**; ignores later Plan Revisions. The commitment baseline — what the trader signed up to risk. A stop revision changes current risk, never planned risk.
+- **Current risk** — the additional loss from now if the current stop executes, computed over the whole position: position price at the current stop vs position price now. Moves with price and steps when the stop is revised. "What's at risk right now given where price is and where the stop currently sits."
 - **Maximum risk** — worst-case loss from current price (underlying to zero / option to worthless). **Instrument-dependent**: whole position value for stock; premium paid for long options; unbounded for naked short options; defined by the spread width for defined-risk spreads. Not discipline-dependent — it's the catastrophic loss the *instrument itself* permits.
 
 The pedagogical comparison the app drives: a stock's **current** risk (discipline-dependent — the trader must honor their stop) vs its **maximum** risk (catastrophic — the whole position if the underlying goes to zero) exposes the gap that options structurally close. The same directional trade idea, expressed as a long option instead of stock, collapses maximum risk from "the whole position" to "the premium paid," with no discipline required to enforce the cap.

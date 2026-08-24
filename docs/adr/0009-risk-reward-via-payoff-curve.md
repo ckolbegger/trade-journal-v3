@@ -53,7 +53,9 @@ may be "hold to expiry for full credit" rather than a price level. The current
 single `stop: Price`, `target: Price` shape on `Plan` is known-insufficient for
 multi-directional structures and is deferred to a dedicated session. **Until
 that session, the payoff-curve ADR records the computation; the stop
-*representation* is unsettled.**
+*representation* is unsettled.** *(Resolved by ADR 0010 — per-direction stops,
+single target, quote basis; the underlying-quoted readings this ADR defines are
+unchanged.)*
 
 **Out of scope here:** mark-to-market (live) P&L and live risk for options,
 which require an option-pricing model (time value / extrinsic) applied to the

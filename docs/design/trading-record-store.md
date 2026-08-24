@@ -138,9 +138,9 @@ type TradeInput = {
   underlying: InstrumentId
   strategy:   StrategyId
   plan: {
-    entry:         Price
-    stop:          Price
-    target:        Price
+    entry:         Price           // planned net entry price per unit (ADR 0010)
+    stops:         Stops           // per risk direction, each side optional (ADR 0010)
+    target:        Level           // ONE profit exit (ADR 0010)
     thesis:        string
     invalidation:  string
     entryEmotion:  string
@@ -159,9 +159,9 @@ type FillInput = {
 }
 
 type RevisionInput = {
-  at:      Date                          // caller-provided
-  stop?:   Price                         // absent = unchanged
-  target?: Price                         // absent = unchanged
+  at:      Date                                      // caller-provided
+  stops?:  { downside?: Level, upside?: Level }      // per-side replace; absent side = unchanged (ADR 0010)
+  target?: Level                                     // replaces the target
   reason:  string
 }
 
@@ -222,7 +222,7 @@ type Fill = {
   contract?:      OptionContract         // present iff an option leg (ADR 0009 payoff curve)
 }
 
-// Plan, PlanRevision, InstrumentType, OptionContract, Lifecycle, FigureSet, Dual,
+// Plan, Stops, Level, PlanRevision, InstrumentType, OptionContract, Lifecycle, FigureSet, Dual,
 // MaxRisk: UNCHANGED from calculation-module.md. The only contract change: three new
 // store-owned fields (strategy, closedAt on TradeRecord; fillId on Fill), each
 // marked STORE-OWNED and ignored by calc. One canonical TradeRecord type across
@@ -421,7 +421,9 @@ const tradeId = store.commit({
   underlying: 'AAPL',
   strategy:   'breakout',
   plan: {
-    entry: 150, stop: 147, target: 156,
+    entry: 150,
+    stops:  { downside: { basis: 'underlying', at: 147 } },   // ADR 0010 — one side declared
+    target: { basis: 'underlying', at: 156 },
     thesis:       'cup-and-handle breakout above $148 resistance',
     invalidation: 'handle fails, closes below $146',
     entryEmotion: 'confident — waited two weeks for this',
@@ -492,12 +494,12 @@ store throws — the defensive net-zero assertion catches the bug at the boundar
 ```ts
 store.appendRevision('tr_001', {
   at: new Date('2024-07-16T14:00:00Z'),
-  stop: 150,              // trailing the stop up from $147 to $150
+  stops: { downside: { basis: 'underlying', at: 150 } },   // trailing the downside stop up $147 → $150
   reason: 'breakeven — locked in after day-1 close above $152',
 })
-// Record now: revisions=[{at, stop:150, reason}]. No status change. No coordinator.
-// Downstream effect: calc's current-risk uses stop=150 (the latest revision);
-// planned-risk still uses the original stop=147 (frozen, ADR 0001).
+// Record now: revisions=[{at, stops:{downside:{…, at:150}}, reason}]. No status change. No coordinator.
+// Downstream effect: calc's current-risk uses the downside stop 150 (the latest revision);
+// planned-risk still uses the original 147 (frozen, ADR 0001).
 ```
 
 ### Fill correction — invalidating the snapshot (ADR 0007)
