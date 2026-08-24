@@ -3,6 +3,12 @@ import { InMemoryBinding } from '@/storage/in-memory-binding'
 import { Journal } from './journal'
 import type { Entry, EntryDraft, EntryType } from './types'
 
+// Select options as {id,label} (S1.9) — tests use the label text as the id
+// since these fixtures never exercise rename-survival themselves.
+function opts(labels: string[]): { id: string; label: string }[] {
+  return labels.map((label) => ({ id: label, label }))
+}
+
 const PLAN_TYPE: EntryType = {
   id: 'plan-type',
   name: 'Plan',
@@ -15,7 +21,7 @@ const PLAN_TYPE: EntryType = {
       id: 'emotion',
       text: 'Emotional state',
       kind: 'select',
-      options: ['calm', 'eager', 'anxious', 'FOMO', 'revenge'],
+      options: opts(['calm', 'eager', 'anxious', 'FOMO', 'revenge']),
     },
   ],
 }
@@ -130,7 +136,7 @@ const REFLECTION_TYPE: EntryType = {
       id: 'emotion',
       text: 'Current emotional state',
       kind: 'select',
-      options: ['calm', 'eager', 'anxious', 'FOMO', 'revenge'],
+      options: opts(['calm', 'eager', 'anxious', 'FOMO', 'revenge']),
     },
     { id: 'energy', text: 'Energy', kind: 'scale', scale: { min: 1, max: 5 } },
   ],
@@ -260,7 +266,7 @@ const REVIEW_TYPE: EntryType = {
   id: 'review-type',
   name: 'Trade Review',
   designatedFor: 'review',
-  prompts: [{ id: 'action', text: 'Action', kind: 'select', options: ['Hold', 'Exit Soon'] }],
+  prompts: [{ id: 'action', text: 'Action', kind: 'select', options: opts(['Hold', 'Exit Soon']) }],
 }
 
 describe('Journal.timeline', () => {
@@ -482,6 +488,127 @@ describe('Journal.entriesFor with addenda', () => {
   })
 })
 
+describe('Journal.write — select validation', () => {
+  it('accepts an answer matching an option id', async () => {
+    const journal = new Journal(new InMemoryBinding())
+    await journal.entryTypes.save({
+      id: 'select-type',
+      name: 'Select',
+      prompts: [
+        {
+          id: 'choice',
+          text: 'Choice',
+          kind: 'select',
+          options: [
+            { id: 'opt-a', label: 'Option A' },
+            { id: 'opt-b', label: 'Option B' },
+          ],
+        },
+      ],
+    })
+
+    await expect(
+      journal.write({
+        anchor: { kind: 'standalone' },
+        entryTypeId: 'select-type',
+        at: 1_000,
+        placeholder: false,
+        answers: [{ promptId: 'choice', value: 'opt-a' }],
+      }),
+    ).resolves.toBeDefined()
+  })
+
+  it('rejects an answer matching a label but no id', async () => {
+    const journal = new Journal(new InMemoryBinding())
+    await journal.entryTypes.save({
+      id: 'select-type',
+      name: 'Select',
+      prompts: [
+        {
+          id: 'choice',
+          text: 'Choice',
+          kind: 'select',
+          options: [{ id: 'opt-a', label: 'Option A' }],
+        },
+      ],
+    })
+
+    await expect(
+      journal.write({
+        anchor: { kind: 'standalone' },
+        entryTypeId: 'select-type',
+        at: 1_000,
+        placeholder: false,
+        answers: [{ promptId: 'choice', value: 'Option A' }],
+      }),
+    ).rejects.toThrow()
+  })
+
+  it('rejects an answer matching neither', async () => {
+    const journal = new Journal(new InMemoryBinding())
+    await journal.entryTypes.save({
+      id: 'select-type',
+      name: 'Select',
+      prompts: [
+        {
+          id: 'choice',
+          text: 'Choice',
+          kind: 'select',
+          options: [{ id: 'opt-a', label: 'Option A' }],
+        },
+      ],
+    })
+
+    await expect(
+      journal.write({
+        anchor: { kind: 'standalone' },
+        entryTypeId: 'select-type',
+        at: 1_000,
+        placeholder: false,
+        answers: [{ promptId: 'choice', value: 'ghost' }],
+      }),
+    ).rejects.toThrow()
+  })
+})
+
+describe('Journal.write — declined entries', () => {
+  it('records an entry as explicitly declined', async () => {
+    const journal = await journalWithPlanType()
+    const draft = placeholderDraft('t1')
+    draft.placeholder = false
+    draft.declined = true
+    await journal.write(draft)
+
+    const [entry] = await journal.entriesFor({ trade: 't1' })
+    expect(entry.declined).toBe(true)
+  })
+
+  it('round-trips declined distinctly from an entry whose prompts are merely unanswered', async () => {
+    const journal = await journalWithPlanType()
+    const declined = placeholderDraft('t1')
+    declined.placeholder = false
+    declined.declined = true
+    await journal.write(declined)
+    await journal.write(placeholderDraft('t2'))
+
+    const [declinedEntry] = await journal.entriesFor({ trade: 't1' })
+    const [unansweredEntry] = await journal.entriesFor({ trade: 't2' })
+    expect(declinedEntry.declined).toBe(true)
+    expect(unansweredEntry.declined).toBeUndefined()
+  })
+
+  it('allows a declined entry to still carry answers (the Action select)', async () => {
+    const journal = await journalWithPlanType()
+    const draft = fullDraft('t1')
+    draft.declined = true
+    await journal.write(draft)
+
+    const [entry] = await journal.entriesFor({ trade: 't1' })
+    expect(entry.declined).toBe(true)
+    expect(entry.answered.find((a) => a.prompt.id === 'emotion')?.answer?.value).toBe('calm')
+  })
+})
+
 describe('Journal.outstandingDebt', () => {
   it('returns unsettled placeholders only', async () => {
     const journal = await journalWithPlanType()
@@ -510,5 +637,23 @@ describe('Journal.outstandingDebt', () => {
     await journal.write(fullDraft('t1'))
 
     expect(await journal.outstandingDebt()).toEqual([])
+  })
+
+  it('does not report a declined entry', async () => {
+    const journal = await journalWithPlanType()
+    const declined = placeholderDraft('t1')
+    declined.placeholder = false
+    declined.declined = true
+    await journal.write(declined)
+
+    expect(await journal.outstandingDebt()).toEqual([])
+  })
+
+  it('still reports a placeholder whose prompts are merely unanswered', async () => {
+    const journal = await journalWithPlanType()
+    const owed = await journal.write(placeholderDraft('t1'))
+
+    const debt = await journal.outstandingDebt()
+    expect(debt.map((e) => e.id)).toEqual([owed])
   })
 })

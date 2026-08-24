@@ -253,6 +253,13 @@ const PMCC_STRATEGY: StrategyTemplate = {
   ],
 }
 
+// A select option's id is stable, independent of its display label (S1.9); the
+// seeded defaults use the label text as the id since no answers exist yet to
+// orphan, and this keeps the wording unchanged while satisfying the shape.
+function options(labels: string[]): { id: string; label: string }[] {
+  return labels.map((label) => ({ id: label, label }))
+}
+
 const PLAN_ENTRY_TYPE: EntryType = {
   id: PLAN_ENTRY_TYPE_ID,
   name: 'Plan',
@@ -265,7 +272,7 @@ const PLAN_ENTRY_TYPE: EntryType = {
       id: 'emotion',
       text: 'Emotional state',
       kind: 'select',
-      options: ['calm', 'eager', 'anxious', 'FOMO', 'revenge'],
+      options: options(['calm', 'eager', 'anxious', 'FOMO', 'revenge']),
     },
   ],
 }
@@ -280,7 +287,7 @@ const CLOSE_ENTRY_TYPE: EntryType = {
       id: 'again',
       text: 'Would you take this trade again?',
       kind: 'select',
-      options: ['yes', 'yes-smaller', 'no'],
+      options: options(['yes', 'yes-smaller', 'no']),
     },
     { id: 'lesson', text: 'Lesson', kind: 'text' },
   ],
@@ -298,9 +305,14 @@ const REVIEW_ENTRY_TYPE: EntryType = {
       id: 'action',
       text: 'What will you do with this Trade, based on today?',
       kind: 'select',
-      options: ['Hold', 'Exit Soon', 'Adjust', 'Watch Closely'],
+      options: options(['Hold', 'Exit Soon', 'Adjust', 'Watch Closely']),
     },
     { id: 'conviction', text: 'Conviction', kind: 'scale', scale: { min: 1, max: 5 } },
+    {
+      id: 'considered',
+      text: 'Anything you considered doing and decided against?',
+      kind: 'text',
+    },
     { id: 'note', text: 'Note', kind: 'text' },
   ],
 }
@@ -316,7 +328,7 @@ const TRADER_REFLECTION_ENTRY_TYPE: EntryType = {
       id: 'emotion',
       text: 'Current emotional state',
       kind: 'select',
-      options: ['calm', 'eager', 'anxious', 'FOMO', 'revenge'],
+      options: options(['calm', 'eager', 'anxious', 'FOMO', 'revenge']),
     },
     { id: 'energy', text: 'Energy', kind: 'scale', scale: { min: 1, max: 5 } },
   ],
@@ -331,7 +343,7 @@ const REVIEW_NOTE_ENTRY_TYPE: EntryType = {
       id: 'follow-up',
       text: 'Follow-up needed?',
       kind: 'select',
-      options: ['yes', 'no'],
+      options: options(['yes', 'no']),
     },
   ],
 }

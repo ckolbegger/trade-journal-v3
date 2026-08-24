@@ -463,6 +463,107 @@ describe('WalkCheckpoint', () => {
   })
 })
 
+describe('WalkCheckpoint — Considered prompt', () => {
+  it('renders the Considered prompt at the checkpoint', async () => {
+    const f = await fixture()
+    const aapl = await openTrade(f, 'AAPL')
+
+    renderCheckpoint(f, aapl, 'AAPL')
+
+    expect(
+      await screen.findByLabelText(/anything you considered doing and decided against/i),
+    ).toBeInTheDocument()
+  })
+
+  it('records a written considered-action on the review entry', async () => {
+    const f = await fixture()
+    const aapl = await openTrade(f, 'AAPL')
+
+    renderCheckpoint(f, aapl, 'AAPL')
+    await userEvent.type(
+      await screen.findByLabelText(/anything you considered doing and decided against/i),
+      'Almost added to the position, held off',
+    )
+    await recordAction('Hold')
+
+    const entries = await f.journal.entriesFor({ trade: aapl })
+    const review = entries.find((e) => e.anchor.kind === 'review')!
+    expect(review.answered.find((a) => a.prompt.id === 'considered')?.answer?.value).toBe(
+      'Almost added to the position, held off',
+    )
+  })
+})
+
+describe('WalkCheckpoint — nothing to note', () => {
+  it('declines the whole entry from one action', async () => {
+    const f = await fixture()
+    const aapl = await openTrade(f, 'AAPL')
+
+    renderCheckpoint(f, aapl, 'AAPL')
+    await userEvent.click(await screen.findByRole('button', { name: /nothing to note today/i }))
+
+    const entries = await f.journal.entriesFor({ trade: aapl })
+    const review = entries.find((e) => e.anchor.kind === 'review')!
+    expect(review.declined).toBe(true)
+    expect(review.placeholder).toBe(false)
+  })
+
+  it('offers no per-prompt decline control', async () => {
+    const f = await fixture()
+    const aapl = await openTrade(f, 'AAPL')
+
+    renderCheckpoint(f, aapl, 'AAPL')
+    await screen.findByLabelText(/anything you considered doing and decided against/i)
+
+    expect(screen.getAllByRole('button', { name: /nothing to note today/i })).toHaveLength(1)
+  })
+
+  it('marks the Trade reviewed, same as a written entry', async () => {
+    const f = await fixture()
+    const aapl = await openTrade(f, 'AAPL')
+    const onReviewed = vi.fn()
+
+    renderCheckpoint(f, aapl, 'AAPL', onReviewed)
+    await userEvent.click(await screen.findByRole('button', { name: /nothing to note today/i }))
+
+    expect(onReviewed).toHaveBeenCalledWith(aapl)
+  })
+
+  it('creates no Journal Debt', async () => {
+    const f = await fixture()
+    const aapl = await openTrade(f, 'AAPL')
+
+    renderCheckpoint(f, aapl, 'AAPL')
+    await userEvent.click(await screen.findByRole('button', { name: /nothing to note today/i }))
+
+    expect(await f.journal.outstandingDebt()).toEqual([])
+  })
+
+  it('leaves every field editable before and after the action', async () => {
+    const f = await fixture()
+    const aapl = await openTrade(f, 'AAPL')
+
+    renderCheckpoint(f, aapl, 'AAPL')
+
+    const considered = (await screen.findByLabelText(
+      /anything you considered doing and decided against/i,
+    )) as HTMLTextAreaElement
+    expect(considered).not.toBeDisabled()
+
+    await userEvent.click(screen.getByRole('button', { name: /nothing to note today/i }))
+
+    const considereAfter = (await screen.findByLabelText(
+      /anything you considered doing and decided against/i,
+    )) as HTMLTextAreaElement
+    expect(considereAfter).not.toBeDisabled()
+    await userEvent.type(considereAfter, 'still editable')
+    expect(considereAfter).toHaveValue('still editable')
+    expect(
+      screen.getByRole('combobox', { name: /what will you do with this trade/i }),
+    ).not.toBeDisabled()
+  })
+})
+
 describe('walk (fetched marks)', () => {
   it('prompts only for instruments the fetch did not satisfy', async () => {
     const f = await fixture()

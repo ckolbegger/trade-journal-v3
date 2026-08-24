@@ -70,7 +70,10 @@ const REVIEW_TYPE: EntryType = {
       id: 'action',
       text: 'What will you do with this Trade?',
       kind: 'select',
-      options: ['Hold', 'Exit Soon', 'Adjust', 'Watch Closely'],
+      options: ['Hold', 'Exit Soon', 'Adjust', 'Watch Closely'].map((label) => ({
+        id: label,
+        label,
+      })),
     },
   ],
 }

@@ -32,11 +32,17 @@ export type Anchor =
   | { kind: 'review'; date: ISODate; tradeId: TradeId }
   | { kind: 'entry'; entryId: EntryId; tradeId?: TradeId }
 
+export interface PromptOption {
+  id: string
+  label: string
+}
+
 export interface Prompt {
   id: string
   text: string
   kind: 'text' | 'select' | 'scale'
-  options?: string[] // select
+  options?: PromptOption[] // select — a select answer's value is the option id (S1.9),
+  // so renaming an option's label never orphans a prior answer (ADR 0007).
   scale?: { min: number; max: number } // scale
 }
 
@@ -65,6 +71,10 @@ export interface Entry {
   answered: { prompt: Prompt; answer?: PromptAnswer }[]
   placeholder: boolean
   settledAt?: Timestamp // late journaling is visible: at vs settledAt
+  // The trader explicitly had nothing to note (S1.9) — one act for the whole
+  // Entry, never per Prompt. A declined Entry is settled: it is never Journal
+  // Debt and is never nagged, same as any other full entry.
+  declined?: true
 }
 
 export interface EntryDraft {
@@ -73,6 +83,7 @@ export interface EntryDraft {
   at: Timestamp
   answers: PromptAnswer[]
   placeholder: boolean
+  declined?: true
 }
 
 export interface AnchorQuery {

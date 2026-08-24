@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTradeBook } from '../tradeBookContext'
 import { useJournal } from '../journalContext'
+import { PromptFields } from '../components/PromptFields'
 import { btnPrimary, btnSecondary, field, heading, input, subheading } from '../styles'
 import type { CloseReason } from '@/books/tradebook/types'
 import type { EntryType, PromptAnswer } from '@/books/journal/types'
@@ -95,39 +96,12 @@ export function CloseForm({
         {entryType && (
           <div className="space-y-4">
             <h3 className={subheading}>Close journal</h3>
-            {entryType.prompts.map((prompt) => {
-              if (prompt.kind === 'text') {
-                return (
-                  <label key={prompt.id} className={field}>
-                    {prompt.text}
-                    <textarea
-                      className={input}
-                      rows={3}
-                      value={(values[prompt.id] as string) ?? ''}
-                      onChange={(e) => setValue(prompt.id, e.target.value)}
-                    />
-                  </label>
-                )
-              }
-              // select
-              return (
-                <label key={prompt.id} className={field}>
-                  {prompt.text}
-                  <select
-                    className={input}
-                    value={(values[prompt.id] as string) ?? ''}
-                    onChange={(e) => setValue(prompt.id, e.target.value)}
-                  >
-                    <option value="">Choose…</option>
-                    {prompt.options?.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              )
-            })}
+            <PromptFields
+              prompts={entryType.prompts}
+              values={values}
+              namespace="close-form"
+              onChange={setValue}
+            />
           </div>
         )}
 

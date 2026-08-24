@@ -147,10 +147,23 @@ describe('Workspace.ensureSeeded — Trade Review Entry Type', () => {
     const review = (await journal.entryTypes.list()).find((t) => t.id === REVIEW_ENTRY_TYPE_ID)
     expect(review?.name).toBe('Trade Review')
     expect(review?.designatedFor).toBe('review')
-    expect(review?.prompts.map((p) => p.kind)).toEqual(['select', 'scale', 'text'])
+    expect(review?.prompts.map((p) => p.kind)).toEqual(['select', 'scale', 'text', 'text'])
+    expect(review?.prompts.map((p) => p.id)).toEqual(['action', 'conviction', 'considered', 'note'])
     // The Action select's options ARE the Action list — trader-configurable for
-    // free, because editing the Entry Type edits the Actions (review.md).
-    expect(review?.prompts[0].options).toEqual(['Hold', 'Exit Soon', 'Adjust', 'Watch Closely'])
+    // free, because editing the Entry Type edits the Actions (review.md). Each
+    // option carries a stable id alongside its label (S1.9).
+    expect(review?.prompts[0].options?.map((o) => o.label)).toEqual([
+      'Hold',
+      'Exit Soon',
+      'Adjust',
+      'Watch Closely',
+    ])
+    expect(review?.prompts[0].options?.map((o) => o.id)).toEqual([
+      'Hold',
+      'Exit Soon',
+      'Adjust',
+      'Watch Closely',
+    ])
   })
 
   it('does not duplicate the Trade Review type on a second run', async () => {
@@ -167,13 +180,101 @@ describe('Workspace.ensureSeeded — Trade Review Entry Type', () => {
     const seeded = (await journal.entryTypes.list()).find((t) => t.id === REVIEW_ENTRY_TYPE_ID)!
     await journal.entryTypes.save({
       ...seeded,
-      prompts: [{ ...seeded.prompts[0], options: ['Hold', 'Close it'] }],
+      prompts: [
+        {
+          ...seeded.prompts[0],
+          options: [
+            { id: 'Hold', label: 'Hold' },
+            { id: 'Close it', label: 'Close it' },
+          ],
+        },
+      ],
     })
 
     await workspace.ensureSeeded()
 
     const review = (await journal.entryTypes.list()).find((t) => t.id === REVIEW_ENTRY_TYPE_ID)
-    expect(review?.prompts[0].options).toEqual(['Hold', 'Close it'])
+    expect(review?.prompts[0].options?.map((o) => o.label)).toEqual(['Hold', 'Close it'])
+  })
+})
+
+describe('Workspace.ensureSeeded — Trade Review prompts', () => {
+  it('seeds Trade Review with the Considered prompt on a fresh database', async () => {
+    const { workspace, journal } = makeWorkspace()
+    await workspace.ensureSeeded()
+
+    const review = (await journal.entryTypes.list()).find((t) => t.id === REVIEW_ENTRY_TYPE_ID)!
+    const considered = review.prompts.find((p) => p.id === 'considered')
+    expect(considered?.kind).toBe('text')
+    expect(considered?.text).toBe('Anything you considered doing and decided against?')
+  })
+
+  it('keeps the Action wording and the Conviction scale unchanged', async () => {
+    const { workspace, journal } = makeWorkspace()
+    await workspace.ensureSeeded()
+
+    const review = (await journal.entryTypes.list()).find((t) => t.id === REVIEW_ENTRY_TYPE_ID)!
+    const action = review.prompts.find((p) => p.id === 'action')!
+    expect(action.text).toBe('What will you do with this Trade, based on today?')
+    const conviction = review.prompts.find((p) => p.id === 'conviction')!
+    expect(conviction.scale).toEqual({ min: 1, max: 5 })
+  })
+
+  it('does not re-seed the type when already present', async () => {
+    const { workspace, journal } = makeWorkspace()
+    await workspace.ensureSeeded()
+    const seeded = (await journal.entryTypes.list()).find((t) => t.id === REVIEW_ENTRY_TYPE_ID)!
+    await journal.entryTypes.save({ ...seeded, name: 'My Review' })
+
+    await workspace.ensureSeeded()
+
+    const review = (await journal.entryTypes.list()).find((t) => t.id === REVIEW_ENTRY_TYPE_ID)
+    expect(review?.name).toBe('My Review')
+  })
+})
+
+describe('Workspace.ensureSeeded — option ids', () => {
+  it("seeds Trade Review's Action options with ids and unchanged labels", async () => {
+    const { workspace, journal } = makeWorkspace()
+    await workspace.ensureSeeded()
+
+    const review = (await journal.entryTypes.list()).find((t) => t.id === REVIEW_ENTRY_TYPE_ID)!
+    const action = review.prompts.find((p) => p.id === 'action')!
+    expect(action.options?.map((o) => o.label)).toEqual([
+      'Hold',
+      'Exit Soon',
+      'Adjust',
+      'Watch Closely',
+    ])
+    expect(action.options?.every((o) => typeof o.id === 'string' && o.id.length > 0)).toBe(true)
+  })
+
+  it('seeds Trader Reflection, Review Note and Close select options with ids', async () => {
+    const { workspace, journal } = makeWorkspace()
+    await workspace.ensureSeeded()
+
+    const types = await journal.entryTypes.list()
+    const reflection = types.find((t) => t.id === TRADER_REFLECTION_ENTRY_TYPE_ID)!
+    const reviewNote = types.find((t) => t.id === REVIEW_NOTE_ENTRY_TYPE_ID)!
+    const close = types.find((t) => t.id === CLOSE_ENTRY_TYPE_ID)!
+
+    const emotion = reflection.prompts.find((p) => p.kind === 'select')!
+    expect(emotion.options?.map((o) => o.label)).toEqual([
+      'calm',
+      'eager',
+      'anxious',
+      'FOMO',
+      'revenge',
+    ])
+    expect(emotion.options?.every((o) => typeof o.id === 'string')).toBe(true)
+
+    const followUp = reviewNote.prompts.find((p) => p.kind === 'select')!
+    expect(followUp.options?.map((o) => o.label)).toEqual(['yes', 'no'])
+    expect(followUp.options?.every((o) => typeof o.id === 'string')).toBe(true)
+
+    const again = close.prompts.find((p) => p.kind === 'select')!
+    expect(again.options?.map((o) => o.label)).toEqual(['yes', 'yes-smaller', 'no'])
+    expect(again.options?.every((o) => typeof o.id === 'string')).toBe(true)
   })
 })
 

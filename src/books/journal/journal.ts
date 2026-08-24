@@ -46,6 +46,7 @@ export class Journal {
       answered,
       placeholder: draft.placeholder,
     }
+    if (draft.declined) entry.declined = true
     await this.binding.put(ENTRIES, structuredClone(entry))
     return entry.id
   }
@@ -143,7 +144,7 @@ function inRange(at: Timestamp, range?: DateRange): boolean {
 function validateAnswer(prompts: Prompt[], answer: PromptAnswer): void {
   const prompt = prompts.find((p) => p.id === answer.promptId)
   if (!prompt) throw new Error(`No prompt ${answer.promptId} among the answered prompts`)
-  if (prompt.kind === 'select' && !prompt.options?.includes(answer.value as string)) {
+  if (prompt.kind === 'select' && !prompt.options?.some((o) => o.id === answer.value)) {
     throw new Error(`Answer ${String(answer.value)} not among options for prompt ${prompt.id}`)
   }
   if (prompt.kind === 'scale') {

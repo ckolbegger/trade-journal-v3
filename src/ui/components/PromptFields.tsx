@@ -45,8 +45,8 @@ export function PromptFields({
               >
                 <option value="">Choose…</option>
                 {prompt.options?.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
+                  <option key={option.id} value={option.id}>
+                    {option.label}
                   </option>
                 ))}
               </select>

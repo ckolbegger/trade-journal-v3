@@ -9,7 +9,7 @@ import type { PromptValues } from '../components/prompt-answers'
 import { dollarsToCents } from '../format'
 import { btnPrimary, btnSecondary, card, input, num, subheading } from '../styles'
 import type { ISODate, InstrumentKey } from '@/books/pricebook/types'
-import type { Entry, EntryType, Prompt } from '@/books/journal/types'
+import type { Entry, EntryType, Prompt, PromptAnswer } from '@/books/journal/types'
 import type { InstrumentMarksNeeded } from '@/coordinators/valuations'
 
 // One Trade's checkpoint in the Daily Review walk, in the session's order:
@@ -112,6 +112,33 @@ export function WalkCheckpoint({
     onReviewed(tradeId)
   }
 
+  // "Nothing to note today" — one act for the whole checkpoint (S1.9). Writing
+  // is never gated: this does not disable or hide the form, it writes the
+  // Entry declined and leaves the fields exactly as they were. Text/scale
+  // reflections stay unanswered; the Action select still records if the
+  // trader had already chosen one — it is the Trade's disposition, not a
+  // reflection.
+  async function declineEntry(values: PromptValues) {
+    const type = reviewType!
+    const actionPrompt = actionPromptOf(type)
+    const answers: PromptAnswer[] = []
+    if (actionPrompt) {
+      const chosen = values[actionPrompt.id]
+      if (chosen !== undefined && chosen !== '') {
+        answers.push({ promptId: actionPrompt.id, value: chosen })
+      }
+    }
+    await journal.write({
+      anchor: { kind: 'review', date: asOf, tradeId },
+      entryTypeId: type.id,
+      at: Date.now(),
+      answers,
+      placeholder: false,
+      declined: true,
+    })
+    onReviewed(tradeId)
+  }
+
   async function settle(entry: Entry, values: PromptValues) {
     await journal.settle(
       entry.id,
@@ -155,7 +182,11 @@ export function WalkCheckpoint({
             {action}
           </p>
         ) : reviewType ? (
-          <ActionForm prompts={reviewType} onRecord={(values) => void recordAction(values)} />
+          <ActionForm
+            prompts={reviewType}
+            onRecord={(values) => void recordAction(values)}
+            onDecline={(values) => void declineEntry(values)}
+          />
         ) : null}
       </div>
 
@@ -224,9 +255,11 @@ function actionOf(entry: Entry | undefined): string {
 function ActionForm({
   prompts,
   onRecord,
+  onDecline,
 }: {
   prompts: EntryType
   onRecord: (values: PromptValues) => void
+  onDecline: (values: PromptValues) => void
 }) {
   const [values, setValues] = useState<PromptValues>({})
   const actionPrompt = actionPromptOf(prompts)
@@ -249,9 +282,14 @@ function ActionForm({
         namespace="action"
         onChange={(id, value) => setValues((prev) => ({ ...prev, [id]: value }))}
       />
-      <button type="submit" className={btnPrimary} disabled={!chosen}>
-        Record action
-      </button>
+      <div className="flex items-center gap-2">
+        <button type="submit" className={btnPrimary} disabled={!chosen}>
+          Record action
+        </button>
+        <button type="button" className={btnSecondary} onClick={() => onDecline(values)}>
+          Nothing to note today
+        </button>
+      </div>
     </form>
   )
 }
