@@ -44,3 +44,6 @@ playwright/.cache/
 
 # Worktrees (each is its own checkout; not nested-tracked)
 worktrees/
+
+# Symlink into the repo root's shared agent skills — points outside this worktree.
+.agents
