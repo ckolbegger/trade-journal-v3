@@ -599,18 +599,20 @@ trader → FillEntryCoordinator.recordFill(tradeId, fillInput)
       → ReflectionStore.createPlaceholder({                      // ← this store
           level:'trade', type:'post-close', tradeId, required:true, createdAt:now
         })
-  → (always) ReflectionStore.createPlaceholder({                // the optional fill-level offer
-      level:'fill', type:'fill', tradeId, fillId, required:false, createdAt:now
-    })
-    ← trader's 3-way choice (now/later/none) drives the coordinator, not this store:
-       'now'   → coordinator calls createEntry (complete) or completePlaceholder immediately
-       'later' → the placeholder created above persists (state:'placeholder')
-       'none'  → coordinator deletes the placeholder (importEntry/none — see Open items)
+  → (always) FillEntryCoordinator returns fillId — the optional fill-level offer
+    ← trader's 3-way choice (now/later/none), resolved AFTER the fill is recorded
+       via DIRECT ReflectionStore calls from the UI (rule 8; amended by the
+       FillEntryCoordinator session — see diagram B below):
+       'now'   → UI calls createEntry (complete, no placeholder ever exists)
+       'later' → UI calls createPlaceholder (state:'placeholder' persists)
+       'none'  → no call — the offer preceded creation, so nothing exists to delete
 ```
 
 The bookend asymmetry (CONTEXT.md: Journal Placeholder): pre-entry and post-close
-are *required* and auto-created; fill-level is *optional* and offered. This store
-creates what it's told to create; the coordinator owns *when* and *whether*.
+are *required* and auto-created by the coordinator; fill-level is *optional* and
+offered. This store creates what it's told to create; the coordinator owns
+*when* the required bookends are created; the UI owns *whether* the optional
+fill-level one ever exists.
 
 ## Sequence: daily-review reflection assembly
 
@@ -727,33 +729,37 @@ the schema snaps to whatever's current when content appears. Decided semantics 1
 sequenceDiagram
     actor T as trader
     participant FEC as FillEntryCoordinator
+    participant UI
     participant RS as ReflectionStore
 
     Note over T,RS: Trade closes (flat). Post-close placeholder owed.
     FEC->>RS: createPlaceholder({type:'post-close', tradeId, required:true})
     RS-->>FEC: ent_012
+    FEC-->>UI: { statusAfter:'Closed', fillId, closedFigures }
 
-    Note over FEC: Fill-level placeholder OFFERED (optional).<br/>Coordinator asks trader: now / later / none?
+    Note over UI: Fill-level placeholder OFFERED (optional) — via fillId<br/>in recordFill's return. UI asks trader: now / later / none?<br/>(Amended by the FillEntryCoordinator session: the UI resolves<br/>directly — each path is single-store, rule 8.)
     alt now (write immediately)
-        T->>FEC: "now"
-        FEC->>RS: createEntry({level:'fill', type:'fill', content, schemaId, at})
+        T->>UI: "now"
+        UI->>RS: createEntry({level:'fill', type:'fill', content, schemaId, at})
         Note over RS: complete entry created directly. NO placeholder.
     else later (defer)
-        T->>FEC: "later"
-        FEC->>RS: createPlaceholder({level:'fill', type:'fill', fillId, required:false})
-        Note over RS: placeholder persists (state='placeholder'). Owed but optional.
+        T->>UI: "later"
+        UI->>RS: createPlaceholder({level:'fill', type:'fill', fillId, required:false})
+        Note over RS: placeholder persists (state:'placeholder'). Owed but optional.
     else none (decline)
-        T->>FEC: "none"
-        Note over FEC: nothing created. The offer preceded creation —<br/>declining means the placeholder never exists. No store op needed.
+        T->>UI: "none"
+        Note over UI: nothing created. The offer preceded creation —<br/>declining means the placeholder never exists. No store op needed.
     end
 end
 ```
 
 This diagram validated the Open-item provisional answer: "none" needs no store op
-because the coordinator's offer *precedes* creation. "Now" creates a complete
-entry directly (no placeholder). "Later" creates the placeholder. The store has
-exactly the right ops; the coordinator owns the branching. **No new finding** —
-but it confirms the design against a flow the initial sketch hadn't drawn.
+because the offer *precedes* creation. "Now" creates a complete entry directly
+(no placeholder). "Later" creates the placeholder. The store has exactly the
+right ops; the **UI** owns the branching via direct store calls — the
+coordinator's only role is returning the offer context (`fillId`). Confirmed by
+the FillEntryCoordinator drill-down (its decided semantics 3); **no new
+finding**.
 
 ---
 
@@ -790,11 +796,12 @@ resolves via `getSchemaVersion` always).
   type:'pre-entry', tradeId, required:true, createdAt:now })` after
   `TradingRecordStore.commit`. Creates the first bookend.
 - **→ FillEntryCoordinator:** on close, calls `createPlaceholder({ level:'trade',
-  type:'post-close', tradeId, required:true, createdAt:now })`; per fill, offers
-  the optional fill-level placeholder via `createPlaceholder({ level:'fill',
-  type:'fill', tradeId, fillId, required:false })` and drives the trader's 3-way
-  choice (now/later/none). The coordinator owns *when* owed; ReflectionStore owns
-  the placeholder concept.
+  type:'post-close', tradeId, required:true, createdAt })`; per fill, returns
+  the optional fill-level offer as context (`fillId` in `recordFill`'s return)
+  — the **UI** resolves the trader's 3-way choice (now/later/none) via direct
+  store calls (amended by the FillEntryCoordinator session, its decided
+  semantics 3; see diagram B). The coordinator owns *when* the required
+  bookends are created; the UI owns *whether* the optional one ever exists.
 - **→ DailyReviewCoordinator:** reads owed placeholders via `listEntries({ tradeId,
   state:'placeholder' })` and linked market entries via `listEntries({
   linkedToTrade:tradeId, level:'market' })`. Two filters, no derivation. The
@@ -815,9 +822,9 @@ resolves via `getSchemaVersion` always).
 
 | Item | Owned by |
 |---|---|
-| **The "none" path of the optional fill-level placeholder.** CONTEXT.md offers a 3-way choice (now/later/none). "now" → createEntry immediately; "later" → the placeholder persists. "none" means the trader declines — but entries are immutable once complete (decided semantics 7) and there is no delete op. Options: (a) a `declinePlaceholder(id)` op that transitions to a `'declined'` terminal state (widening `EntryState`); (b) the coordinator simply doesn't call `createPlaceholder` for "none" (the placeholder only exists once the coordinator creates it, so "none" = never created — the cleanest reading, since the offer precedes creation). Provisional: (b) — "none" is a coordinator-side decision *before* creation, so no store op is needed. Confirm during FillEntryCoordinator drill-down. | FillEntryCoordinator drill-down |
+| **The "none" path of the optional fill-level placeholder — RESOLVED.** Option (b) confirmed by the FillEntryCoordinator drill-down: "none" is a UI-side decision *before* creation — the coordinator returns the offer (`fillId`), the UI resolves now/later/none via direct store calls, and "none" simply makes no call. No `declinePlaceholder` op; `EntryState` stays two-valued. | resolved (FillEntryCoordinator ✓) |
 | **OQ 9 — multi-fact write atomicity.** `createEntry` for a market entry writes content + links together; `completePlaceholder` transitions state + writes content. These are single-store multi-fact writes that should be atomic, same class as `recordFill`'s close path and PriceMarkStore's `upsertMark` read-modify-write. | overview / StorageBinding (OQ 9) |
-| **OQ 14 — mark-correction snapshot invalidation (touched, not owned).** If a mark correction invalidates a closed-trade snapshot, the post-close placeholder may need re-surfacing. But under Candidate B, the post-close placeholder is a stored fact: if the trader already completed it, it's `'complete'` (immutable, decided semantics 7) and won't re-surface; if not, it's still `'placeholder'` and already surfaces. So ReflectionStore has no active role — the question is whether OQ 14's response creates a *new* owed placeholder (a "re-review after correction" type), which would be a coordinator decision, not a store change. | FillEntryCoordinator / TradingRecordStore (OQ 12 owner) |
+| **OQ 14 — mark-correction snapshot invalidation — RESOLVED (side-note closed).** No ReflectionStore role: no "re-review" placeholder is created on snapshot regeneration (entries are immutable once complete; a figure refresh is not a reflection moment — an outstanding post-close placeholder already surfaces). See [fill-entry-coordinator.md](fill-entry-coordinator.md) decided semantics 11. | resolved (FillEntryCoordinator ✓) |
 | **OQ 8 — backup/export/import architecture.** This store's restore slice is served (`importEntry` + `importSchema`, two-phase). The broader architecture (storage-seam fan-out vs. coordinator) remains open globally. | overview / lifecycle (OQ 8) |
 | **StorageBinding shape.** This store assumes put/get/range-query over opaque records (overview rule 5). `listEntries` with multiple optional filters needs either compound range queries or in-memory filtering; the exact primitive set is deferred. | StorageBinding drill-down / implementation |
 | **`EntryId` / `SchemaId` generation strategy.** Store-assigned (decided semantics 14), but the format (UUID, sequential, prefixed like `'ent_001'`, `'pre-entry@3'`) is an implementation detail. | Implementation |

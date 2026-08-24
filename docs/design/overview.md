@@ -72,7 +72,8 @@ choosing the partition and must survive drill-down.
    Trade record. **Open Trades compute figures live** (marks change daily);
    **Closed Trades read the snapshot**, lazy-populating if null. The snapshot
    is authoritative for display but regeneratable — invalidated and regenerated
-   when underlying facts (a fill correction) or the calc (a bug fix) change.
+   when underlying facts (a fill or mark correction) or the calc (a bug fix)
+   change (regeneration: FillEntryCoordinator's `regenerateSnapshots`).
    The honest price: a future calc-bug-fix requires a regeneration migration
    over all closed Trades.
 
@@ -107,7 +108,7 @@ module).
 
 | # | Module | Kind | Est. methods | Responsibilities |
 |---|---|---|---|---|
-| 1 | **TradingRecordStore** | store | 7 | The trading record itself: Trade identity + lifecycle status (Planned/Open/Closed, stored per ADR 0006) + optional finalFigures snapshot (per ADR 0007) + Plan (original levels, thesis, invalidation, entry emotion) + PlanRevision (append-only dated deltas, ADR 0001) + Fill (instrument, side, qty, price, time, instrument-type per leg, option contract facts when the leg is an option — optionType/strike/expiry, ADR 0009, fillId). Seven ops: `commit`, `recordFill` (the only status-mutating op — absorbs append + transition + close-snapshot; no raw `setStatus` exists), `appendRevision`, `correctFill` (invalidates the snapshot, signals possible status invalidity), `getTradeRecord`, `listTrades` (collapses listOpenTrades + listTradeIds into one filtered op), `importTrade` (verbatim restore with derive-on-import, ADRs 0006/0007). Owns invariants: plan-before-fill, revisions append-only & dated, recordFill-on-Closed rejects, appendRevision-on-Closed rejects. Owns lifecycle transitions (first fill → Open; flat → Closed + snapshot). Returns a Trade as a cohesive bundle (trade + plan + all revisions + all fills). Carries three store-owned fields calc ignores: `strategy` (Reporting filter), `closedAt` (snapshot-regen asOf, OQ 11), `fillId` (correction + fill-level journal). Stores NO live P&L, position size, or risk — all derived (closed trades cache their final figures). Drilled down — see [design doc](trading-record-store.md). |
+| 1 | **TradingRecordStore** | store | 7 | The trading record itself: Trade identity + lifecycle status (Planned/Open/Closed, stored per ADR 0006) + optional finalFigures snapshot (per ADR 0007) + Plan (original levels, thesis, invalidation, entry emotion) + PlanRevision (append-only dated deltas, ADR 0001) + Fill (instrument, side, qty, price, time, instrument-type per leg, option contract facts when the leg is an option — optionType/strike/expiry, ADR 0009, fillId). Ten ops: `commit`, `recordFill` (absorbs append + transition + close-snapshot; returns `fillId`; every status mutation is fill-arithmetic-guarded — no raw `setStatus` exists), `appendRevision`, `correctFill` (invalidates the snapshot, signals possible status invalidity), `getTradeRecord`, `listTrades` (collapses listOpenTrades + listTradeIds into one filtered op), `importTrade` (verbatim restore with derive-on-import, ADRs 0006/0007), plus the guarded correction family added by the FillEntryCoordinator session (OQs 12/13): `reopenTrade` (asserts fills ≠ 0; clears closedAt + snapshot), `closeTrade` (asserts fills = 0; the correction edge where a fixed fill flats an Open trade), `replaceSnapshot` (Closed-only regeneration write-back). Owns invariants: plan-before-fill, revisions append-only & dated, recordFill-on-Closed rejects, appendRevision-on-Closed rejects. Owns lifecycle transitions (first fill → Open; flat → Closed + snapshot). Returns a Trade as a cohesive bundle (trade + plan + all revisions + all fills). Carries three store-owned fields calc ignores: `strategy` (Reporting filter), `closedAt` (snapshot-regen asOf, OQ 11), `fillId` (correction + fill-level journal). Stores NO live P&L, position size, or risk — all derived (closed trades cache their final figures). Drilled down — see [design doc](trading-record-store.md). |
 | 2 | **ReflectionStore** | store | 12 | Reflection + its self-describing form: Journal Entry (content, timestamp, 3-level attachment discriminator Trade/Fill/Market per ADR 0004, parent ref, optional market-entry↔trade links) + the Journal Placeholder (an entry in `'placeholder'` state — the owed-reflection mechanism; Required auto-created at plan-commit + close, Optional offered per fill) + Entry Schema definitions (versioned, immutable, forward-only, referenced by `schemaId` — ADR 0003 by reference, not embedded by value). Twelve ops: seven entry ops (`createPlaceholder`, `createEntry`, `completePlaceholder`, `getEntry`, `listEntries`, `setMarketLinks`, `importEntry`) + five schema ops (`saveSchema`, `getSchema`, `getSchemaVersion`, `listSchemas`, `importSchema`). Candidate B write model: a placeholder IS an entry in `'placeholder'` state; `completePlaceholder` transitions the same record to `'complete'`. "What's owed" is a filter on a stored fact (`listEntries({ state:'placeholder' })`), NOT a derivation from lifecycle ∩ entries — OQ 5 dissolved. Journal-writing is a direct store call, not a coordinator (OQ 6 dissolved — convention C6 removes the only cross-store act). `schemaId` absent on placeholders, pinned at completion (audit finding). Drilled down — see [design doc](reflection-store.md). |
 | 3 | **PriceMarkStore** | store | 5 | End-of-day Price Mark, keyed (instrument, date), shared/deduplicated across Trades (ADR 0002). Pure fact — no P&L, no risk, no derivation beyond assembling the `Marks` map calc consumes. Five ops: `upsertMark` (trader force-write; pushes prior to append-only `history`), `backfillMark` (automated write-if-absent — the no-op-on-present IS the set-once protection), `buildMarksFromFills` (the deep read → scalar `Marks` for calc, omitting instruments lacking a mark), `getMarkSeries` (chart price-axis + quality-analytic read, full records incl. provenance), `importMark` (verbatim restore preserving source + history). Carries `source: ProviderId` ('trader' or a provider id) and append-only `history` per mark — provenance for display, provider switching (forward-only retained), and source-quality analytics. The set-once override model: two write ops encode two rights (trader force / automated gentle) structurally, not by fetcher discipline. Drilled down — see [design doc](price-mark-store.md). |
 | 4 | **AccountStore** | store | 4 | Account facts (broker, account identity). Slow-changing reference, referenced by ID from Trade. Four ops: `addAccount`, `listAccounts`, `getAccount`, `deactivateAccount`. Forward-only-retained (deactivated accounts stay valid on historical trades — the Taxonomy pattern; no delete op). No FK validation (convention C6) — provider-of-record, not validator. No import op (the live ops reproduce any backup faithfully; the first store in the partition to pass the import test cleanly). Drilled down — see [design doc](reference-stores.md). |
@@ -116,7 +117,7 @@ module).
 | 6 | **CalculationModule** | pure | 3 | Mark-dependent figure derivation from facts + marks, single or aggregate: `evaluate(record, marks, asOf) → FigureSet` (the full figure-set behind one call — P&L, position size, three risk quantities, reward, R:R, R-multiple, breakevens, lifecycle echo, revision count), `isFlat(fills)` (the cheap transition detector), and `evaluateMany(records, marks, asOf) → ExposureReport` (aggregate current exposure across open positions — the multi-position analog of `evaluate`, same inputs, same mark-dependence; added by drill-down #6 / ADR 0008). Structure-level quantities (`risk.maximum`, `breakevens`) are read off the position's **payoff curve** (ADR 0009) — one algorithm for every structure, no per-strategy formula catalog, no directional-bias input (which is also why `strategy` stays a calc-ignored store-owned tag). Its **parameter and return types are the data contract** every store must serve. Drilled down first — see [design doc](calculation-module.md). |
 | 7 | **PerformanceAnalytics** | pure | 1 | Closed-trade **outcome** aggregation — a mark-free fold over per-trade FigureSet snapshots: R-multiple distribution, equity curve by R, win rate/expectancy/profit factor, P&L total, plan-revision discipline (per-trade). One op: `aggregate(results: FigureSet[]) → PortfolioReport` (metrics are fields on the return, not separate ops — the `~3` estimate collapsed to one deep op). No marks, no filters (FigureSet carries no filter dimension; the coordinator pre-narrows via `listTrades(filters)`), no temporal series (those are compositions over calc's `evaluate`, owned by the consumer holding the marks). **Closed-trade-only:** `rMultiple` is realized-only, so an open trade's snapshot is a non-outcome zero that distorts every R-based metric; open-trade exposure is served by calc's `evaluateMany` (ADR 0008), not this module. Drilled down — see [design doc](performance-analytics.md). |
 | 8 | **PlanCommitCoordinator** | coordinator | 1 | plan-commit workflow: validates planned R:R via CalculationModule, commits Trade+Plan to TradingRecordStore, creates the required pre-entry reflection placeholder in ReflectionStore. Joins TradingRecord + Reflection + calc. |
-| 9 | **FillEntryCoordinator** | coordinator | 1 | fill-entry workflow: appends Fill to TradingRecordStore, runs flat detection via calc; transitions status if needed (first fill → Open; flat → Closed + finalFigures snapshot per ADR 0007); on close, creates the required post-close placeholder; offers the optional fill-level placeholder (now/later/none). Folds trade-close in. Joins TradingRecord + Reflection + calc. |
+| 9 | **FillEntryCoordinator** | coordinator | 3 | Everything that happens because a fill landed or was fixed. Three ops: `recordFill` (first fill → Open; the flat-detecting fill → Closed + snapshot + post-close bookend, in one `StorageBinding.transaction`; returns `fillId` + `closedFigures` — the UI resolves the optional fill-reflection offer now/later/none via direct ReflectionStore calls), `correctFill` (the OQ 12/13 branch map: price-only → regenerate via `replaceSnapshot`; un-flatted Closed → `reopenTrade`; flatted Open → `closeTrade` + bookend in a transaction), `regenerateSnapshots(scope?)` (idempotent sweep serving ADR 0007's calc-bug migration and OQ 14's mark-correction response — detection: Closed ∧ date(closedAt) = mark.date ∧ fill-instrument match). Joins TradingRecord + Reflection + PriceMark + calc. Drilled down — see [design doc](fill-entry-coordinator.md). |
 | 10 | **DailyReviewCoordinator** | coordinator | 1 | daily-review workflow: pulls open Trades (cheap indexed filter on stored status), resolves underlyings lacking a mark for the date, computes live risk/P&L via calc, surfaces placeholders due and in-range market entries. The widest join. |
 | 11 | **PerformanceReportingCoordinator** | coordinator | 1 | aggregate stats over Trades (via PerformanceAnalytics), filterable by date/strategy/status/underlying/account. Joins TradingRecord + Reference (Account/Taxonomy) + PerformanceAnalytics. |
 | — | **StorageBinding** | seam | ~5 | The internal persistence primitive behind all five stores: put/get/delete/range-query over opaque fact records. Two implementations — in-memory (unit tests) and real (prod). Zero business rules. |
@@ -199,11 +200,17 @@ aggregate(
 // PlanCommitCoordinator
 commitPlan(input: PlanInput): { tradeId }
 
-// FillEntryCoordinator
+// FillEntryCoordinator — see fill-entry-coordinator.md for the full, pinned interface
 recordFill(tradeId: TradeId, fill: FillInput): {
   statusAfter: 'Planned'|'Open'|'Closed',
-  placeholdersOffered: PlaceholderPrompt[],   // now/later/none prompts
+  fillId: FillId,                        // anchors the fill-reflection offer (UI resolves
+                                         //   now/later/none via direct ReflectionStore calls)
+  closedFigures?: FigureSet,             // present iff this fill closed the trade
 }
+correctFill(tradeId: TradeId, fillId: FillId, correction: FillInput): {
+  statusAfter, reopened, closedByCorrection, snapshotRegenerated,   // OQ 12/13 branch map
+}
+regenerateSnapshots(scope?: RegenScope): { regenerated: TradeId[] }  // ADR 0007 migration + OQ 14
 
 // DailyReviewCoordinator
 runDailyReview(asOf: Date): DailyReviewView   // open trades, marks due, placeholders, observations
@@ -222,7 +229,7 @@ call nothing. Coordinators call stores + pure modules.
 | | TradingRecord | Reflection | PriceMark | PriceProvider | Account | Taxonomy | Calc | PerfAnalytics |
 |---|---|---|---|---|---|---|---|---|
 | **PlanCommitCoordinator** | write (`commit`) | write (`createPlaceholder` — pre-entry, required) | — | — | — | — | validate R:R | — |
-| **FillEntryCoordinator** | write (`recordFill` — absorbs fill+status+snapshot; `correctFill`) | write (`createPlaceholder` — post-close required + optional fill-level; drives now/later/none) | read (`buildMarksFromFills`, at close) | — | — | — | isFlat, evaluate | — |
+| **FillEntryCoordinator** | write (`recordFill` — absorbs fill+status+snapshot, returns fillId; `correctFill`; `closeTrade`/`reopenTrade`/`replaceSnapshot` — the guarded correction family; `getTradeRecord`) | write (`createPlaceholder` — post-close required, in the close transaction; closed-by-correction bookend) | read (`buildMarksFromFills`, at close + regeneration) | — | — | — | isFlat, evaluate | — |
 | **DailyReviewCoordinator** | read (`listTrades({status:'Open'})`) | read (`listEntries` — owed placeholders + linked market entries) | read/write (`upsertMark`, `buildMarksFromFills`) | — | — | — | evaluate, evaluateMany | — |
 | **market-data fetcher (roadmap)** | — | — | read (`getMarkSeries`) / write (`backfillMark`) | read (active provider) | — | — | — | — |
 | **PerformanceReportingCoordinator** | read (`listTrades(filters)`, `getTradeRecord`) | — | — | — | read (group) | read (group) | evaluateMany (open-trade exposure path, ADR 0008) | aggregate (closed-trade outcome path) |
@@ -235,7 +242,15 @@ call nothing. Coordinators call stores + pure modules.
   coordinator.
 - **Fill correction** → TradingRecordStore only (`correctFill` — invalidates the
   snapshot, signals possible status invalidity). Single-store; the *response* to
-  the signal (snapshot regen, possible re-open) is FillEntryCoordinator's (OQ 12).
+  the signal (snapshot regen, possible re-open) is FillEntryCoordinator's
+  (`correctFill` there — OQs 12/13 resolved; see
+  [fill-entry-coordinator.md](fill-entry-coordinator.md)).
+- **Explicit re-open (late-fill resolution)** → TradingRecordStore only
+  (`reopenTrade` — guarded: fills must sum non-zero). Single store → rule 8;
+  the FillEntryCoordinator rejects a late fill on a Closed trade and the UI
+  confirms an explicit `reopenTrade` before re-recording. The third canonical
+  zero-coordinator single-store workflow (after PlanRevision and
+  JournalWriting).
 - **JournalWriting** → ReflectionStore only (`createEntry` / `completePlaceholder`,
   optional market-link via `setMarketLinks`). **Not a coordinator** (OQ 6 resolved):
   convention C6 (no cross-store referential validation) removed its only cross-store
@@ -282,33 +297,37 @@ is owed.
 ```
 trader → FillEntryCoordinator.recordFill(tradeId, fillInput)
   → existing = TradingRecordStore.getTradeRecord(tradeId)        // load current fills
+  → [status Closed → throw: late-fill rejection; explicit reopen is the resolution]
   → simFills = [...existing.fills, fillInput]                    // simulate post-fill
   → CalculationModule.isFlat(simFills)                           // cheap, once, for this one trade (ADR 0006)
   → branch on result:
       not flat           → TradingRecordStore.recordFill(tradeId, fill)            // first fill → Open internally
-      newly flat         → marks = PriceMarkStore.buildMarksFromFills(simFills, now)
-                            → figures = CalculationModule.evaluate({...existing, fills:simFills}, marks, now)
-                            → TradingRecordStore.recordFill(tradeId, fill, figures)  // ONE call: append + transition
-                            │                                                         //   to Closed + closedAt + snapshot
-                            │                                                         //   (defensively asserts net-zero)
-                            → ReflectionStore.createPlaceholder({                    // required post-close bookend
-                                  level:'trade', type:'post-close', tradeId, required:true, createdAt:now
-                                })
-  → ReflectionStore.createPlaceholder({                              // optional fill-level, now/later/none
-        level:'fill', type:'fill', tradeId, fillId, required:false    // 'none' = never created (coordinator-side)
-      })
-← { statusAfter, placeholdersOffered }
+      newly flat         → marks = PriceMarkStore.buildMarksFromFills(simFills, fill.at)
+                            → figures = CalculationModule.evaluate({...existing, fills:simFills}, marks, fill.at)
+                            → StorageBinding.transaction:                          // cross-store (OQ 9)
+                                TradingRecordStore.recordFill(tradeId, fill, figures)  // ONE call: append +
+                                │                                                     //   transition to Closed + closedAt +
+                                │                                                     //   snapshot (defensively asserts net-zero)
+                                ReflectionStore.createPlaceholder({                // required post-close bookend
+                                      level:'trade', type:'post-close', tradeId, required:true, createdAt:fill.at
+                                    })
+  ← { statusAfter, fillId, closedFigures? }
+  → the UI offers the optional fill-level reflection on fillId — resolved via
+    DIRECT ReflectionStore calls: 'now' → createEntry; 'later' → createPlaceholder;
+    'none' → nothing (offer precedes creation; see fill-entry-coordinator.md)
 ```
 
 The split pays off here: N−1 fills do the cheap `isFlat` only; the one
 flat-detecting fill pays the single `evaluate` to build the snapshot. The
 flat-detecting fill closes the trade, snapshots its final figures (ADR 0007),
-and owes the post-trade review placeholder — all in one workflow. Note the close
-path is now a **single** `recordFill(tradeId, fill, closeFigures)` call — the
-store absorbs append + status transition + `closedAt` + snapshot atomically.
-There is no separate `setStatus` or `storeFinalFigures`; the only status-mutating
-op is `recordFill`, which keeps the lifecycle invariant structurally unbreakable
-(see [TradingRecordStore design doc](trading-record-store.md), decided semantics 2).
+and owes the post-trade review placeholder — all in one transactional
+workflow. The close path is a **single** `recordFill(tradeId, fill,
+closeFigures)` call on the store side — append + status transition + `closedAt`
++ snapshot atomically, with **no separate `setStatus`**; status mutations are
+fill-arithmetic-guarded ops only (see
+[TradingRecordStore design doc](trading-record-store.md), decided semantics 2
+and 17, and [FillEntryCoordinator design doc](fill-entry-coordinator.md) for
+the correction branch map).
 
 ### 3. Daily review
 
@@ -413,7 +432,11 @@ store's contract), then harvest modules whose contracts prior sessions pinned.
    return). Surfaced finding F3 (revision-rate denominator: per-trade now, per-
    day deferred — FigureSet carries no duration). ✓ [design doc](performance-analytics.md)
 7. **The four coordinators** — last, each thin; their dependencies are fully
-   pinned by then. FillEntry owns OQ 7.
+   pinned by then. FillEntry owned OQ 7 (fold confirmed), OQ 12/13 (the
+   guarded correction family `reopenTrade`/`closeTrade`/`replaceSnapshot` +
+   `correctFill`'s branch map), and OQ 14 (`regenerateSnapshots`).
+   **FillEntryCoordinator ✓** [design doc](fill-entry-coordinator.md) —
+   remaining: PlanCommit, DailyReview, PerformanceReporting.
 
 ---
 
@@ -432,14 +455,14 @@ session must import.
 | 4 | ~~Legs / instrument-type: per-Fill vs a derived leg view?~~ **RESOLVED** → per-Fill (instrumentType is a first-class Fill attribute, ADR 0005). A "leg" is a derivation (grouping fills by instrument), not a fact the store persists. No `getLegs` op. | TradingRecordStore ✓ |
 | 5 | ~~Placeholders: derived how exactly (lifecycle ∩ existing entries)?~~ **RESOLVED** → dissolved by Candidate B. Placeholders are stored facts (entries in `'placeholder'` state the coordinators create); "what's owed" is `listEntries({ state:'placeholder' })` — a filter on a stored fact, NOT a derivation. The "lifecycle ∩ existing entries" computation does not exist. | ReflectionStore ✓ |
 | 6 | ~~JournalWriting: separate coordinator or in-store parent-ref check?~~ **RESOLVED** → direct store call, no coordinator. Convention C6 (no cross-store referential validation) removes the only cross-store act; journal-writing touches one store → rule 8. Joins PlanRevision as a zero-coordinator workflow. | ReflectionStore ✓ |
-| 7 | Trade-close: folded into FillEntryCoordinator or split? | FillEntryCoordinator |
+| 7 | ~~Trade-close: folded into FillEntryCoordinator or split?~~ **RESOLVED** → folded, confirmed. Close is a *consequence* of a fill (CONTEXT's close rule: computable from fills, no trader-declared close event) — `recordFill` owns it. The store op `closeTrade` exists only inside the correction workflow, where the flat-making event is a correction instead of a fill. | FillEntryCoordinator ✓ |
 | 8 | Backup/export/import: storage-seam fan-out or lifecycle coordinator? **(Partially served)** — TradingRecordStore exposes `importTrade`, PriceMarkStore exposes `importMark`, ReflectionStore exposes `importEntry` + `importSchema` for the restore path (verbatim records). The three reference stores (Account/Taxonomy/PriceProvider) need **no** import ops — their live write ops reproduce any backup faithfully (the first stores to pass the import test cleanly), *provided* OQ 8 guarantees id stability across restore. The *broader* backup architecture (storage-seam fan-out vs. coordinator) remains open. | overview / lifecycle |
 | 9 | ~~Multi-fact write atomicity (commitPlan spans TradingRecord+Reflection): transaction story?~~ **RESOLVED** → one transaction mechanism, used at two levels (decided in the PlanCommitCoordinator session). **Cross-store**: the coordinator wraps its writes in a `StorageBinding.transaction(...)` — `commitPlan` = `tradingRecord.commit` + `reflection.createPlaceholder` in one transaction; only the coordinator can own this (no single store sees both writes). **Single-store multi-fact**: `commit` (Trade+Plan) and `recordFill`'s close branch (fill+status+closedAt+finalFigures) use the same primitive internally. Rejected: compensating-undo/saga (needs a delete op the system deliberately lacks); accept-torn-write (a Planned trade with a missing *required* pre-entry placeholder breaks the bookend invariant — the trader is never prompted). The primitive's exact API is deferred to the StorageBinding seam (its shape is TradingRecordStore's open item; StorageBinding is not in the drill-down order — design joins the coordinators step or implementation). | resolved — primitive shape: StorageBinding drill-down / implementation |
 | 10 | ~~Entry Schema definitions: ReflectionStore (snapshot locality) vs ReferenceStore (customization symmetry)?~~ **RESOLVED** → ReflectionStore (Option A). The versioned schema registry is structurally a reference collection, but the PriceProviderStore split criterion (separate consumer + separate domain) is not met: entry schemas have one consumer (the journal) in one domain. ADR 0003 by reference (versioned `schemaId`, not embedded snapshot). | ReflectionStore ✓ |
 | 11 | ~~**(exported from CalculationModule)** Snapshot `asOf`: regenerating a corrected closed-trade snapshot needs the original close date, but `TradeRecord` carries no `closedAt` and `evaluate` only takes `asOf`. Record needs a `closedAt` field, or `finalFigures` must carry its own `asOf`.~~ **RESOLVED** → `closedAt?: Date` on TradeRecord, present iff Closed, stored at transition time. Regeneration passes `record.closedAt` as `asOf`. | TradingRecordStore ✓ |
-| 12 | **(exported from CalculationModule)** Status-invalidating correction: a fill correction could change net position from zero to non-zero (Closed → should-be-Open). `isFlat` detects the forward transition; the backward path is unwritten. ADR 0006 requires stored status agree with derived status. **(Updated)** — TradingRecordStore's `correctFill` returns `statusPossiblyInvalid` as a signal but does not re-open (rejects `recordFill` on Closed); the re-open decision is still FillEntryCoordinator's. A snapshot write-back op (`replaceSnapshot` or a widened `correctFill`) is owed to that session. | FillEntryCoordinator |
-| 13 | **(exported from TradingRecordStore)** Snapshot write-back after regeneration. `correctFill` nulls the snapshot; the regen sequence recomputes one, but no op writes it back onto an already-Closed trade (`recordFill` on Closed rejects). Provisional shape: `replaceSnapshot(tradeId, figures)` or widening `correctFill` to accept a recomputed snapshot. | FillEntryCoordinator (decision) → TradingRecordStore (op) |
-| 14 | **(exported from PriceMarkStore)** Mark correction invalidating a closed-trade snapshot. A mark correction changes the unrealized-P&L a closed trade's snapshot was computed against (ADR 0007), but PriceMarkStore has no back-reference to consuming trades (marks are shared, ADR 0002) and must not call across stores (rule 1). ADR 0007 currently scopes invalidation to fill corrections + calc fixes; whether *mark* corrections join is open. Detection (which closed trades used the old mark?) and response (regenerate via `record.closedAt` as `asOf`) belong to the snapshot-regeneration owner. | FillEntryCoordinator / TradingRecordStore (OQ 12 owner) |
+| 12 | ~~**(exported from CalculationModule)** Status-invalidating correction: a fill correction could change net position from zero to non-zero (Closed → should-be-Open).~~ **RESOLVED** → the guarded-transition family on TradingRecordStore: `reopenTrade` (asserts fills ≠ 0; clears `closedAt` + snapshot) and `closeTrade` (asserts fills = 0; takes snapshot + `closedAt`) — the mirror of the edge that no prior session had written: a correction can also flat an *Open* trade. FillEntryCoordinator's `correctFill` owns the branch map. Every status mutation remains fill-arithmetic-guarded; `recordFill` on Closed still rejects (late fills resolve via explicit `reopenTrade` then re-record). | FillEntryCoordinator ✓ / TradingRecordStore ✓ |
+| 13 | ~~**(exported from TradingRecordStore)** Snapshot write-back after regeneration.~~ **RESOLVED** → `replaceSnapshot(tradeId, figures)`, Closed-only guard. Standalone rather than a widened `correctFill` — decisive reason: the mark-correction path (OQ 14) needs snapshot write-back with no fill being corrected. | FillEntryCoordinator ✓ (decision) → TradingRecordStore ✓ (op) |
+| 14 | ~~**(exported from PriceMarkStore)** Mark correction invalidating a closed-trade snapshot.~~ **RESOLVED** → detection + response live in FillEntryCoordinator's `regenerateSnapshots(scope)`: affected = Closed trades where `date(closedAt) === mark.date` and some fill's instrument matches; response = recompute as-of `closedAt` + `replaceSnapshot`. Trigger convention: the UI calls the sweep after an `upsertMark` that *overwrote* an existing mark (history non-empty). Idempotent, so over-calling is harmless. Detection is a coordinator-side filter over `listTrades` — PriceMarkStore stays consumer-agnostic (ADR 0002, rule 1). | FillEntryCoordinator ✓ |
 | 15 | **(surfaced by PerformanceAnalytics)** Per-day plan-revision-rate. ADR 0001 names revisions-over-duration; FigureSet carries `revisionCount` (raw count) but no trade duration (no `committedAt`/`closedAt`), so PerformanceAnalytics reports `meanRevisions` (per-trade) only. Two paths to the per-day rate, neither chosen: (a) calc adds a per-trade `revisionRate` field to FigureSet (reverses calc semantic 8's "rate is PA's job"); (b) the coordinator computes revisions/day from `closedAt − committedAt` it already holds, bypassing PerformanceAnalytics for that one metric. | PerformanceReportingCoordinator drill-down / ADR 0001 |
 | 16 | **(surfaced by the payoff-curve session, ADR 0009)** Plan stop/target representation for multi-directional structures. ADR 0009 reads the trader's declared stop/target levels against the payoff curve; but `Plan` carries single `stop: Price` / `target: Price` — insufficient for a neutral structure with two risk directions (an Iron Condor stopped at both breakevens) and possibly for income strategies whose target is "hold to expiry for credit" rather than a price. Representation (arrays per risk direction, lower/upper zones, structured) unsettled; the payoff-curve computation itself does not depend on the answer. | Stops session (then calc + TradingRecordStore amendments) |
 

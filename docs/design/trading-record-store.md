@@ -16,8 +16,10 @@ shape CalculationModule's `evaluate()` consumes (the data contract pinned in
 [`calculation-module.md`](calculation-module.md)), plus three store-owned fields
 calc ignores (`strategy`, `closedAt`, `fillId`).
 
-Seven operations, over an injected StorageBinding — testable with an in-memory
-binding, no mock, no real backend:
+Ten operations, over an injected StorageBinding — testable with an in-memory
+binding, no mock, no real backend. Seven from the original session; three
+guarded correction-transition ops (`reopenTrade`, `closeTrade`,
+`replaceSnapshot`) added by the FillEntryCoordinator drill-down (OQs 12/13):
 
 ```ts
 /** Create a Trade (status=Planned) with its committed Plan. Returns the new id.
@@ -26,11 +28,15 @@ binding, no mock, no real backend:
 commit(input: TradeInput): TradeId
 
 /** Append a fill + transition status + (if closing) store the snapshot.
- *  The ONLY op that changes lifecycle status — there is no raw setStatus.
- *  The close decision (flat detection) is the caller's job (calc.isFlat); this
- *  store executes the transition and defensively asserts net-zero when closing. */
+ *  The only FILL-DRIVEN status transition — there is no raw setStatus (decided
+ *  semantics 2). The close decision (flat detection) is the caller's job
+ *  (calc.isFlat); this store executes the transition and defensively asserts
+ *  net-zero when closing. Returns the store-assigned fillId so callers need
+ *  not read back and assume last-append (FillEntryCoordinator's reflection
+ *  offer anchors on it). */
 recordFill(tradeId: TradeId, fill: FillInput, closeFigures?: FigureSet): {
   statusAfter: Lifecycle
+  fillId:      FillId
 }
 
 /** Append a dated Plan Revision (ADR 0001 — append-only, never overwrites).
@@ -77,7 +83,7 @@ recordFill(
   tradeId: TradeId,
   fill: FillInput,
   closeFigures?: FigureSet,
-): { statusAfter: Lifecycle }
+): { statusAfter: Lifecycle; fillId: FillId }
 
 appendRevision(tradeId: TradeId, revision: RevisionInput): void
 
@@ -86,6 +92,27 @@ correctFill(
   fillId: FillId,
   correction: FillInput,
 ): { invalidatedSnapshot: boolean; statusPossiblyInvalid: boolean }
+
+/** Re-open a Closed trade. Correction-driven sibling of recordFill's close
+ *  branch (added by the FillEntryCoordinator session, OQ 12): asserts the
+ *  current fills sum NON-zero (the guard — a flat trade cannot re-open),
+ *  clears closedAt, nulls finalFigures (present iff Closed). The old snapshot
+ *  is discarded — regenerable if the trade closes again. */
+reopenTrade(tradeId: TradeId): { statusAfter: 'Open' }
+
+/** Close a trade whose fills became flat via a CORRECTION, not a fill. Same
+ *  guard class as recordFill's close branch: asserts the fills sum to zero,
+ *  then sets status='Closed', closedAt, finalFigures atomically. Exists only
+ *  inside FillEntryCoordinator.correctFill's branch map — there is no
+ *  trader-facing declared close (CONTEXT: close rule). */
+closeTrade(tradeId: TradeId, closedAt: Date, figures: FigureSet): { statusAfter: 'Closed' }
+
+/** Write a REGENERATED snapshot onto an already-Closed trade (ADR 0007's
+ *  regeneratable cache). Closed-only — throws otherwise: an Open trade's
+ *  figures compute live on read, so there is nothing to store. Serves the
+ *  post-correction regeneration path and the calc-bug-fix migration
+ *  (FillEntryCoordinator.regenerateSnapshots). */
+replaceSnapshot(tradeId: TradeId, figures: FigureSet): void
 
 getTradeRecord(tradeId: TradeId): TradeRecord
 
@@ -208,23 +235,31 @@ type Fill = {
 
 Each ruling cites the principle or ADR it derives from. Veto any during review.
 
-1. **Seven operations: `commit`, `recordFill`, `appendRevision`, `correctFill`,
-   `getTradeRecord`, `listTrades`, `importTrade`.** The lifecycle-verb shape
-   (design-it-twice candidate A), plus `importTrade` added by the audit (semantic
-   13) to serve the ADR-mandated restore path. The alternatives (fine-grained
-   entity store with a raw `setStatus`; whole-document save) were rejected — see
-   *Alternatives considered*. *(Overview rule 8; depth principle.)*
+1. **Ten operations: `commit`, `recordFill`, `appendRevision`, `correctFill`,
+   `getTradeRecord`, `listTrades`, `importTrade` + the guarded correction
+   family `reopenTrade`, `closeTrade`, `replaceSnapshot`.** The first seven are
+   the lifecycle-verb shape (design-it-twice candidate A), plus `importTrade`
+   added by the audit (semantic 13) to serve the ADR-mandated restore path, plus
+   the three guarded ops added by the FillEntryCoordinator drill-down (semantic
+   17, OQs 12/13). The alternatives (fine-grained entity store with a raw
+   `setStatus`; whole-document save) were rejected — see *Alternatives
+   considered*. *(Overview rule 8; depth principle.)*
 
-2. **`recordFill` is the only op that changes lifecycle status. No raw `setStatus`
-   exists.** The overview and calculation-module sketches spread the close path
-   across `appendFill` + `setStatus` + `storeFinalFigures`. But `setStatus` is an
-   invariant hole: nothing structurally prevents marking a non-flat trade Closed,
-   and `storeFinalFigures` without a close is meaningless. The transition only
-   ever fires *as a consequence of a fill*, so the fill op absorbs it. `recordFill`
-   appends the fill, detects first-fill → Open internally, and if `closeFigures`
-   was passed, transitions to Closed + stores the snapshot — all in one atomic
-   call. *(ADR 0006 — "TradingRecordStore owns the transition logic"; depth — the
-   hole is closed by the type of the interface, not by caller discipline.)*
+2. **Every status mutation is a fill-arithmetic-guarded op — no raw `setStatus`
+   exists.** *(Reworded by the FillEntryCoordinator session; the original
+   wording — "`recordFill` is the only op that changes lifecycle status" —
+   held until OQ 12 forced the correction-driven siblings.)* The overview and
+   calculation-module sketches spread the close path across `appendFill` +
+   `setStatus` + `storeFinalFigures`. But `setStatus` is an invariant hole:
+   nothing structurally prevents marking a non-flat trade Closed, and
+   `storeFinalFigures` without a close is meaningless. A transition only ever
+   fires *as a consequence of the fills' net position*, so every mutating op
+   carries the matching guard: `recordFill`'s close branch and `closeTrade`
+   assert net-zero; `reopenTrade` asserts net-nonzero. A guard failure throws
+   rather than letting stored status drift from derived — the invariant ADR
+   0006 names this store the owner of is enforced by the types of the
+   interface, not by caller discipline. *(ADR 0006 — "TradingRecordStore owns
+   the transition logic"; depth.)*
 
 3. **The close *decision* is the caller's; the store executes.** `recordFill` takes
    an optional `closeFigures?: FigureSet`. The caller (FillEntryCoordinator) runs
@@ -356,6 +391,24 @@ Each ruling cites the principle or ADR it derives from. Veto any during review.
     *(Audit finding D; the store validates structural invariants, not temporal
     ones.)*
 
+17. **The guarded correction family — `reopenTrade`, `closeTrade`,
+    `replaceSnapshot` (added by the FillEntryCoordinator drill-down, OQs
+    12/13).** A fill correction can change net position in either direction:
+    un-flatting a Closed trade (→ should-be-Open) or flatting an Open one
+    (→ should-be-Closed, with `closedAt = correction.at`). ADR 0006 requires
+    stored status to agree with derived, so the store serves both transitions:
+    `reopenTrade` asserts the fills sum non-zero and clears `closedAt` +
+    `finalFigures`; `closeTrade` asserts net-zero and sets status + `closedAt`
+    + `finalFigures` atomically; `replaceSnapshot` writes a regenerated
+    snapshot onto an already-Closed trade (Closed-only — a live trade's
+    figures compute on read). The guards are the same net-position arithmetic
+    class semantic 3's close assertion already uses — not a new calc
+    dependency (rule 1 holds: the store sums quantities, it never derives
+    figures). `recordFill` on a Closed trade still rejects (semantic 14): late
+    fills resolve via an explicit `reopenTrade` then re-record. See
+    [fill-entry-coordinator.md](fill-entry-coordinator.md) for the branch map
+    that orchestrates these. *(ADR 0006/0007; OQs 12/13 closed.)*
+
 ---
 
 ## Worked examples
@@ -397,7 +450,7 @@ const r1 = store.recordFill('tr_001', {
   instrument: 'AAPL', side: 'buy', quantity: 100, price: 150,
   at: new Date('2024-07-15T15:00:00Z'), instrumentType: 'stock',
 })
-// → { statusAfter: 'Open' }   // first fill ever → Planned→Open. No closeFigures passed.
+// → { statusAfter: 'Open', fillId: 'fill_001' }   // first fill ever → Planned→Open. No closeFigures passed.
 ```
 
 **Branch 2: intermediate fill → status unchanged.** (e.g. scaling in)
@@ -406,7 +459,7 @@ const r1 = store.recordFill('tr_001', {
 const r2 = store.recordFill('tr_001', {
   instrument: 'AAPL', side: 'buy', quantity: 50, price: 151, at: …, instrumentType: 'stock',
 })
-// → { statusAfter: 'Open' }   // not first, no closeFigures → unchanged. Position now +150.
+// → { statusAfter: 'Open', fillId: 'fill_002' }   // not first, no closeFigures → unchanged. Position now +150.
 ```
 
 **Branch 3: closing fill → Closed + snapshot.** The coordinator has already run
@@ -426,7 +479,7 @@ const r3 = store.recordFill('tr_001',
   { instrument:'AAPL', side:'sell', quantity:150, price:156, at: closeTime, instrumentType:'stock' },
   closeFigures,   // ← present: signals "this fill closes the trade"
 )
-// → { statusAfter: 'Closed' }
+// → { statusAfter: 'Closed', fillId: 'fill_003' }
 // Store internally: appends fill, asserts net-zero (150−150=0 ✓), sets status='Closed',
 // sets closedAt=closeTime, sets finalFigures=closeFigures.
 ```
@@ -543,22 +596,20 @@ trader → FillEntryCoordinator.correctFill(tradeId, fillId, correction)
   → branch:
       └─ statusPossiblyInvalid: true (qty/side/instrument changed):
           → re-run calc.isFlat on corrected fills
-          → if no longer flat → TradingRecordStore has no re-open op yet (OQ 12);
-             FillEntryCoordinator drill-down decides the path.
+          → if no longer flat → reopenTrade(tradeId)   // asserts non-zero; clears closedAt, nulls finalFigures
       └─ statusPossiblyInvalid: false AND invalidatedSnapshot: true:
           → record = TradingRecordStore.getTradeRecord(tradeId)
           → marks = PriceMarkStore.buildMarksFromFills(record.fills, record.closedAt)  // ← OQ 11 payoff
           → figures = calc.evaluate(record, marks, record.closedAt)                    // asOf = original close
-          → TradingRecordStore.recordFill(???)  // ← GAP: no op to write back a regenerated snapshot
+          → TradingRecordStore.replaceSnapshot(tradeId, figures)     // ← resolved: the write-back op
 ```
 
-**Audit finding (see Open items):** there is no op to write back a *regenerated*
-snapshot onto an already-Closed trade. `recordFill` transitions to Closed; calling
-it again on a Closed trade is undefined. The regeneration path needs a dedicated
-op (provisionally `replaceSnapshot(tradeId, figures)`) or a widening of
-`correctFill` to accept a recomputed snapshot. Deferred to the
-FillEntryCoordinator drill-down, which owns OQ 12 (the correction path) — but
-flagged here as a requirement this store will owe that session.
+**Resolved by the FillEntryCoordinator drill-down:** the GAP this sequence
+exposed (no op to write a regenerated snapshot onto an already-Closed trade)
+is closed by `replaceSnapshot` (decided semantics 17), and the re-open path by
+`reopenTrade`. The full branch map — including the close-by-correction edge
+(a correction that flats an Open trade) — lives in
+[fill-entry-coordinator.md](fill-entry-coordinator.md).
 
 ## Sequence: daily-review read path (the store's cheap query)
 
@@ -606,8 +657,11 @@ stateDiagram-v2
     [*] --> Planned: commit
     Planned --> Open: recordFill (first fill)
     Open --> Closed: recordFill (closeFigures)
+    Open --> Closed: closeTrade (correction flatted the book)  [semantic 17]
+    Closed --> Open: reopenTrade (correction un-flatted the book)  [semantic 17]
     Open --> Open: recordFill (intermediate)
     Open --> Open: appendRevision
+    Closed --> Closed: replaceSnapshot (regeneration)  [semantic 17]
     Closed --> REJECTED: recordFill (late fill)  [decided semantics 14]
     Closed --> REJECTED: appendRevision           [decided semantics 15]
     note right of Planned
@@ -618,7 +672,10 @@ stateDiagram-v2
 ```
 
 Three edges were undefined in the initial sketch; all three are now decided
-semantics (14, 15, 16).
+semantics (14, 15, 16). The correction-driven edges (`closeTrade`,
+`reopenTrade`, `replaceSnapshot`) were added by the FillEntryCoordinator
+session (OQ 12/13 — semantic 17); every transition remains
+fill-arithmetic-guarded (semantic 2).
 
 ---
 
@@ -636,10 +693,10 @@ semantics (14, 15, 16).
 | Finding | Category | Resolution |
 |---|---|---|
 | **A — No op writes a fully-formed historical record for import/restore.** ADRs 0006/0007 require derive-on-import, but `commit`+`recordFill` build forward through the live timeline. | Missing operation | **`importTrade` added** (decided semantics 13). Writes a record verbatim, derives missing status/snapshot internally, keeps invariants enforced. Chosen over StorageBinding-seam bypass (invariant hole) and deferral (leaves an ADR-required path unserved). |
-| **B — `recordFill` on a Closed trade (a late fill) was undefined.** | Unwritten rule | **Rejects** (decided semantics 14). Re-open is OQ 12, owned by FillEntryCoordinator; the store throws until that session designs the reopen path. |
+| **B — `recordFill` on a Closed trade (a late fill) was undefined.** | Unwritten rule | **Rejects** (decided semantics 14). Re-open was OQ 12, owned by FillEntryCoordinator; designed since — `reopenTrade` (semantic 17), with the late-fill resolution path in [fill-entry-coordinator.md](fill-entry-coordinator.md). `recordFill` on Closed still rejects. |
 | **C — `appendRevision` on a Closed trade was undefined.** | Unwritten rule | **Rejects** (decided semantics 15). A revision to a closed trade's levels is semantically void. |
 | **D — Does the store validate `fill.at >= plan.committedAt`?** | Unwritten rule | **No** (decided semantics 16). Plan-before-fill is an existence invariant, not a temporal one. Backdated fills + import require accepting arbitrary `at`. |
-| **(from drafting) — Snapshot write-back after regeneration.** `correctFill` nulls the snapshot; the regen sequence recomputes one, but no op writes it back onto an already-Closed trade. | Missing operation | **Exported** to FillEntryCoordinator (owns the correction path, OQ 12) — see Open items. Provisional shape: `replaceSnapshot(tradeId, figures)` or a widening of `correctFill`. |
+| **(from drafting) — Snapshot write-back after regeneration.** `correctFill` nulls the snapshot; the regen sequence recomputes one, but no op writes it back onto an already-Closed trade. | Missing operation | **Fulfilled by the FillEntryCoordinator session:** `replaceSnapshot(tradeId, figures)` (decided semantics 17). Standalone rather than a widened `correctFill`, so the mark-correction path (OQ 14) can write back with no fill corrected. |
 
 ### Exported to downstream sessions (commitments)
 
@@ -654,16 +711,14 @@ semantics (14, 15, 16).
   fills, and if flat, compute figures via `calc.evaluate` and pass `closeFigures`
   into `recordFill`. The store defensively asserts net-zero when `closeFigures` is
   present; the coordinator must ensure its simulation and the store's result
-  agree. Owns OQ 12 (the status-invalidating correction path: re-opening a
-  Closed trade).
-- **→ FillEntryCoordinator (new requirement this store owes):** a snapshot
-  *regeneration* path. `correctFill` invalidates the snapshot (nulls it) but there
-  is no op to write a regenerated snapshot back onto an already-Closed trade
-  (`recordFill` transitions to Closed; calling it again on a Closed trade is
-  undefined). Provisional shape: `replaceSnapshot(tradeId, figures)` or a
-  widening of `correctFill` to accept a recomputed snapshot. The FillEntryCoordinator
-  drill-down should drive the decision and request the op from this store — see
-  Open items.
+  agree. Owns OQ 12 (the status-invalidating correction path) — **resolved**
+  by the guarded family above (`reopenTrade`/`closeTrade`/`replaceSnapshot`);
+  see [fill-entry-coordinator.md](fill-entry-coordinator.md) for the branch map.
+- **→ FillEntryCoordinator (requirement fulfilled):** the snapshot
+  *regeneration* path — `replaceSnapshot` (decided semantics 17) writes a
+  regenerated snapshot onto an already-Closed trade; `recordFill` returns
+  `fillId` so the coordinator's fill-reflection offer need not read back and
+  assume last-append.
 - **→ ReflectionStore:** `Fill.fillId` is the join key for fill-level journal
   attachments ("reflection tied to a specific Fill", CONTEXT.md). The store
   assigns `fillId` on `recordFill`; ReflectionStore references it.
@@ -690,8 +745,8 @@ semantics (14, 15, 16).
 
 | Item | Owned by |
 |---|---|
-| **Snapshot write-back after regeneration (audit finding).** `correctFill` nulls `finalFigures`, and the regeneration sequence (above) recomputes a snapshot — but no current op writes a regenerated snapshot back onto an already-Closed trade. `recordFill` transitions to Closed (calling it again on a Closed trade is undefined). Provisional shape: a dedicated `replaceSnapshot(tradeId, figures)`, or widening `correctFill` to accept a recomputed snapshot as a third argument. The right home for the decision is the FillEntryCoordinator drill-down, which owns the whole correction path (OQ 12) — but the op itself lives on this store and will be added when that session requests it. | FillEntryCoordinator drill-down (decision) → TradingRecordStore (op) |
-| **OQ 12 — status-invalidating correction.** A fill correction that changes quantity/side/instrument could change net position from zero to non-zero (Closed → should-be-Open). `correctFill` returns `statusPossiblyInvalid: boolean` as a signal but does not re-evaluate status (rule 1: no calc in the store). There is currently no `reopen` op. The FillEntryCoordinator drill-down owns the full correction path and will decide whether re-opening is even a supported flow (alternative: corrections that change flat-ness are rejected, forcing an undo+re-enter). | FillEntryCoordinator drill-down |
+| **Snapshot write-back after regeneration (audit finding) — RESOLVED.** `replaceSnapshot(tradeId, figures)` added (decided semantics 17); the branch map that orchestrates it lives in [fill-entry-coordinator.md](fill-entry-coordinator.md). | resolved (FillEntryCoordinator ✓) |
+| **OQ 12 — status-invalidating correction — RESOLVED.** `reopenTrade` (un-flatting corrections) + `closeTrade` (flatting corrections) added (decided semantics 17). `recordFill` on Closed still rejects (semantic 14); late fills resolve via explicit `reopenTrade` then re-record. | resolved (FillEntryCoordinator ✓) |
 | **StorageBinding shape.** This store assumes `put/get/delete/range-query` over opaque records (overview rule 5), but the StorageBinding interface itself is not yet pinned. The exact primitive set (does range-query support compound filters, or does the store filter in memory?) is deferred to a StorageBinding drill-down or to implementation. | StorageBinding drill-down / implementation |
 | **Multi-fact write atomicity (OQ 9) — RESOLVED.** `commit` writes Trade+Plan together; `recordFill` (close branch) writes fill+status+closedAt+finalFigures together. These are single-store multi-fact writes, atomic via the **same `StorageBinding.transaction` primitive** the coordinators use cross-store (one mechanism system-wide; decided in the PlanCommitCoordinator session). The primitive's exact API is the StorageBinding shape question (row above). | resolved (OQ 9) — primitive shape: StorageBinding drill-down / implementation |
 | **`TradeId`/`FillId` generation strategy.** Store-assigned (decided semantics 8), but the format (UUID, sequential, prefixed like `tr_001`) is an implementation detail. Deferred. | Implementation |
@@ -702,8 +757,9 @@ semantics (14, 15, 16).
 
 ### Module shape (design-it-twice)
 
-- **Candidate A — Lifecycle-verb store** (adopted). Seven ops: `commit`,
-  `recordFill`, `appendRevision`, `correctFill`, `getTradeRecord`, `listTrades`,
+- **Candidate A — Lifecycle-verb store** (adopted). Seven ops through the
+  audit: `commit`, `recordFill`, `appendRevision`, `correctFill`,
+  `getTradeRecord`, `listTrades`,
   `importTrade` (the last added by the audit, decided semantics 13). Each write
   op matches its natural edit shape (commit = whole plan, recordFill = one fill +
   transition + optional snapshot, appendRevision = one revision, correctFill =
