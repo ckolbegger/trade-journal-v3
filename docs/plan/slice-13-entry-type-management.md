@@ -4,6 +4,8 @@ The journal's questions become the trader's own: edit any Entry Type's Prompts (
 
 **Decided before this slice — renames must preserve option ids (ADR 0007, delivered in S1.9.T2.2):** a select option is `{ id, label }` and answers store the id. Whole-definition save makes it easy to rebuild an options list from the edited labels and hand back fresh ids — doing so silently orphans every answer ever given under the old wording. Editing an option's text must carry its existing id through; only a genuinely *new* option gets a new id. This is the single place in the app where the drift model can lose data, and it is not detectable by looking at the entry that broke.
 
+**The display half is still missing (observed in S1.9's browser verification, 2026-08-24):** carrying the id through is necessary but not sufficient. `AnsweredPrompts.tsx` renders `String(a.answer.value)` — the stored **id** — and `WalkCheckpoint`'s `actionOf()` does the same for the recorded-action chip. Both read correctly today only because S1.9 seeded each option's id as its own label text. The first rename this slice ships makes every past answer display the *old* id on the timeline and Trade detail. ADR 0007 snapshots the prompt with its options into each entry, so the fix is local and needs no lookup: `a.prompt.options.find(o => o.id === value)?.label ?? String(value)`. Do it before shipping option editing, not after.
+
 Design references: ADR 0007, [journal.md](../design/journal.md) (whole-definition save; "Managing Entry Type structure"), [review.md](../design/review.md) (the Action list is just a prompt's options).
 
 ---
