@@ -475,7 +475,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 ---
 
-## ☐ Story S1.9 — Recording the negative: declined entries, stable option ids, and considered-but-not-taken actions *(added 2026-08-23 — slice re-opened to close a capture gap named in [ADR 0016](../adr/0016-automated-coaching-deferred.md); the `slice-1-complete` tag remains the historical rollback point for S1.1–S1.7)*
+## ☑ Story S1.9 — Recording the negative: declined entries, stable option ids, and considered-but-not-taken actions *(added 2026-08-23 — slice re-opened to close a capture gap named in [ADR 0016](../adr/0016-automated-coaching-deferred.md); the `slice-1-complete` tag remains the historical rollback point for S1.1–S1.7)*
 
 > As a trader, I want one tap to say "nothing to note today", and a place at each Trade's review to record what I considered doing and decided against, so that my restraint and my silence both survive in the record instead of reading as gaps.
 
@@ -500,7 +500,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
 
 ### Tasks
 
-- [ ] **S1.9.T1 — Declination as a fact.** `Entry` gains `declined?: true`; `write` accepts it, `entriesFor` reads it back distinctly, `outstandingDebt` treats a declined entry as settled.
+- [x] **S1.9.T1 — Declination as a fact.** `Entry` gains `declined?: true`; `write` accepts it, `entriesFor` reads it back distinctly, `outstandingDebt` treats a declined entry as settled.
 
   ```
   describe "Journal.write — declined entries"
@@ -512,7 +512,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it still reports a placeholder whose prompts are merely unanswered
   ```
 
-- [ ] **S1.9.T2.1 — Consolidate prompt rendering (no behaviour change).** `PromptFields` (`src/ui/components/PromptFields.tsx`) already renders all three prompt kinds and serves five surfaces (`WalkCheckpoint`, `NewEntryPage`, `SettleForm`, `AddendumForm`). `PlanEntryForm` and `CloseForm` hand-roll their own copies purely by accident of history: both were written 2026-07-11 (S1.2, S1.4) and `PromptFields` was extracted 2026-07-12 during S1.7, so they were never migrated. Migrate those two onto it, so that after this task exactly **one** file renders an option and **one** validates it.
+- [x] **S1.9.T2.1 — Consolidate prompt rendering (no behaviour change).** `PromptFields` (`src/ui/components/PromptFields.tsx`) already renders all three prompt kinds and serves five surfaces (`WalkCheckpoint`, `NewEntryPage`, `SettleForm`, `AddendumForm`). `PlanEntryForm` and `CloseForm` hand-roll their own copies purely by accident of history: both were written 2026-07-11 (S1.2, S1.4) and `PromptFields` was extracted 2026-07-12 during S1.7, so they were never migrated. Migrate those two onto it, so that after this task exactly **one** file renders an option and **one** validates it.
 
   This task changes no behaviour and ships no feature — **S1.2's and S1.4's existing specs must pass untouched.** It stands alone so that if T2.2 goes wrong, the blame is unambiguous.
 
@@ -527,7 +527,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it keeps two forms on one page from sharing a radio group
   ```
 
-- [ ] **S1.9.T2.2 — Stable option identity.** `Prompt.options` becomes `{ id, label }[]`; a select answer's `value` is the option id. Depends on T2.1 — with the renderers consolidated there are two consumers left, and **both must change before the seeds do**, or the app looks correctly seeded while refusing every write:
+- [x] **S1.9.T2.2 — Stable option identity.** `Prompt.options` becomes `{ id, label }[]`; a select answer's `value` is the option id. Depends on T2.1 — with the renderers consolidated there are two consumers left, and **both must change before the seeds do**, or the app looks correctly seeded while refusing every write:
 
   - `src/ui/components/PromptFields.tsx:47` — maps options into `<option key={option} value={option}>{option}</option>`, using the bare string as key, value *and* label at once; becomes `option.id` for key/value and `option.label` for display.
   - `src/books/journal/journal.ts:146` — `validateAnswer` does `prompt.options?.includes(answer.value as string)`. This is the loudest failure and it is **not UI**: `includes` on an array of objects never matches a string, so every select answer throws "not among options" at write time until it compares ids. Plan-time, close-time and review-time journaling all fail together.
@@ -547,7 +547,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it seeds Trader Reflection, Review Note and Close select options with ids
   ```
 
-- [ ] **S1.9.T3 — Add the Considered prompt to the seeded Trade Review type.**
+- [x] **S1.9.T3 — Add the Considered prompt to the seeded Trade Review type.**
 
   ```
   describe "Workspace.ensureSeeded — Trade Review prompts"
@@ -556,7 +556,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it does not re-seed the type when already present
   ```
 
-- [ ] **S1.9.T4 — UI: the Considered prompt and a one-tap decline.** The checkpoint renders the new Considered prompt alongside the existing ones; a single **"Nothing to note today"** action beside save marks the whole entry declined and leaves its text prompts unanswered (the Action select still records — it is the Trade's disposition, not a reflection). One gesture for the entry, never one per prompt. No mode switch and no disabled fields anywhere in the checkpoint.
+- [x] **S1.9.T4 — UI: the Considered prompt and a one-tap decline.** The checkpoint renders the new Considered prompt alongside the existing ones; a single **"Nothing to note today"** action beside save marks the whole entry declined and leaves its text prompts unanswered (the Action select still records — it is the Trade's disposition, not a reflection). One gesture for the entry, never one per prompt. No mode switch and no disabled fields anywhere in the checkpoint.
 
   ```
   describe "WalkCheckpoint — Considered prompt"
@@ -570,7 +570,7 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   - it leaves every field editable before and after the action
   ```
 
-- [ ] **S1.9.T5 — Integration tests**: full session over Dexie — two open Trades, decline one checkpoint and write a considered-action on the other → reopen DB → both Trades reviewed, the declined entry reads back as declined (not merely blank), the written considered-action intact, the Action answers stored as option ids, `outstandingDebt` empty.
+- [x] **S1.9.T5 — Integration tests**: full session over Dexie — two open Trades, decline one checkpoint and write a considered-action on the other → reopen DB → both Trades reviewed, the declined entry reads back as declined (not merely blank), the written considered-action intact, the Action answers stored as option ids, `outstandingDebt` empty.
 
   Also cover Slice 6's backup round-trip, since both record shapes this story changes travel in the export payload:
 
@@ -583,13 +583,13 @@ Plan: Long Stock, buy 100 AAPL, stop $140, target $170. Fill: buy 100 @ $150.00,
   ```
 
   A pre-S1.9 backup also carries select answers as display strings rather than option ids. **No migration is attempted** — no such backups exist (this story lands before any real entries), so the requirement is only that the importer tolerate the older shape rather than reinterpret it. If real pre-S1.9 backups ever turn out to exist, that becomes a Slice 6 concern, not this story's.
-- [ ] **S1.9.T6 — Playwright e2e** (`e2e/s1-9-declining.spec.ts`): walk two Trades — "Nothing to note today" on the first, an Action plus a written considered-action on the second → reopen Review: both flagged reviewed, no debt; the timeline shows the second Trade's entry carrying its considered-action.
-- [ ] **S1.9.T7 — Browser verification.** **Start from a cleared database** (clear site data, re-onboard): `ensureSeeded` never re-seeds a type that already exists, so a profile seeded before this story keeps the old three-prompt Trade Review and will never show Considered — verifying on it would report a false failure. Then: run a full review declining one Trade and writing another; confirm the checkpoint is writable at every moment (no disabled inputs), that one action declines the entry and no per-prompt decline control exists, that declining marks the Trade reviewed and produces no nag next day, and that S1.7's existing walk behaviour (marks, Action, debt settlement) is unchanged. All suites green.
+- [x] **S1.9.T6 — Playwright e2e** (`e2e/s1-9-declining.spec.ts`): walk two Trades — "Nothing to note today" on the first, an Action plus a written considered-action on the second → reopen Review: both flagged reviewed, no debt; the timeline shows the second Trade's entry carrying its considered-action.
+- [x] **S1.9.T7 — Browser verification.** **Start from a cleared database** (clear site data, re-onboard): `ensureSeeded` never re-seeds a type that already exists, so a profile seeded before this story keeps the old three-prompt Trade Review and will never show Considered — verifying on it would report a false failure. Then: run a full review declining one Trade and writing another; confirm the checkpoint is writable at every moment (no disabled inputs), that one action declines the entry and no per-prompt decline control exists, that declining marks the Trade reviewed and produces no nag next day, and that S1.7's existing walk behaviour (marks, Action, debt settlement) is unchanged. All suites green.
 
 ---
 
 ## Slice complete when
 
-- [ ] Every story above is checked.
+- [x] Every story above is checked.
 - [x] The full lifecycle runs in one browser session: onboard → plan → journal → fill → mark → review walk with Action → flattening fill → Close Reason + close entry — with the app reloaded at least once mid-lifecycle and nothing lost.
 - [x] Playwright suite (7 story specs + shell) green in CI-mode (`npm run test:e2e`).
