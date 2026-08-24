@@ -19,7 +19,7 @@ A Trade's net position is zero (zero shares, zero contracts across all legs). Th
 An ongoing options strategy that cycles: sell cash-secured puts → take assignment if struck → sell covered calls against the resulting shares → have shares called away if struck → repeat. In this app, a wheel is modeled as a **sequence of Trades, one per cycle**, not one long-lived Trade. The cross-cycle "this is one ongoing thesis" view is a reporting grouping (by symbol + strategy), not a lifecycle concept.
 
 **Plan**:
-The forward-looking intent behind a Trade, defined before any fill is placed. Captures a thesis (why enter), invalidation criteria (what would prove it wrong), quantitative levels (entry zone, stop-loss, profit target), the trader's emotional state at entry, and the associated journal entry. Risk:reward is computed from the levels; it is not stored.
+The forward-looking intent behind a Trade, defined before any fill is placed. Captures a thesis (why enter), invalidation criteria (what would prove it wrong), quantitative levels (entry level, stop-loss, profit target), the trader's emotional state at entry, and the associated journal entry. Risk:reward is computed from the levels; it is not stored.
 A Plan is **versioned**: the original is committed before the first fill, and any later change to the quantitative levels (moving a stop, lifting a target) is recorded as a dated **Plan Revision** with a reason. The original levels and every revision are retained — the Plan's history is a first-class record.
 _Avoid_: Setup, idea (too vague)
 
