@@ -7,15 +7,20 @@ import type { Page } from '@playwright/test'
 // and nothing owed — the review entries are the only "reviewed" record there is.
 
 // The trader's local date is the trading date.
-function daysAgo(days: number): string {
+function weekdaysAgo(n: number): string {
   const date = new Date()
-  date.setDate(date.getDate() - days)
+  // Land on today, or the most recent prior weekday.
+  while (date.getDay() === 0 || date.getDay() === 6) date.setDate(date.getDate() - 1)
+  for (let i = 0; i < n; i++) {
+    date.setDate(date.getDate() - 1)
+    while (date.getDay() === 0 || date.getDay() === 6) date.setDate(date.getDate() - 1)
+  }
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${date.getFullYear()}-${month}-${day}`
 }
 
-const TODAY = daysAgo(0)
+const TODAY = weekdaysAgo(0)
 
 async function onboard(page: Page) {
   await page.goto('/')
@@ -49,7 +54,7 @@ async function planAndFill(page: Page, ticker: string, skipJournal: boolean) {
   await page.getByLabel(/quantity/i).fill('100')
   await page.getByLabel(/price/i).fill('150')
   await page.getByLabel(/fees/i).fill('1')
-  await page.getByLabel(/date/i).fill(daysAgo(1))
+  await page.getByLabel(/date/i).fill(weekdaysAgo(1))
   await page.getByRole('button', { name: /record fill/i }).click()
   await expect(page.getByLabel('status')).toHaveText(/open/i)
 }
@@ -79,7 +84,7 @@ test('the walk collects Marks, records an Action per Trade, and settles the debt
 
   // ——— checkpoint 1: AAPL ———
   await expect(page.getByRole('heading', { name: 'AAPL' })).toBeVisible()
-  await markRow(page, 'AAPL', daysAgo(1), '150')
+  await markRow(page, 'AAPL', weekdaysAgo(1), '150')
   await markRow(page, 'AAPL', TODAY, '160')
 
   // The dashboard refreshes on the Marks the trader just typed — the worked
@@ -104,7 +109,7 @@ test('the walk collects Marks, records an Action per Trade, and settles the debt
 
   // ——— checkpoint 2: MSFT (owes its plan journal) ———
   await expect(page.getByRole('heading', { name: 'MSFT' })).toBeVisible()
-  await markRow(page, 'MSFT', daysAgo(1), '150')
+  await markRow(page, 'MSFT', weekdaysAgo(1), '150')
   await markRow(page, 'MSFT', TODAY, '160')
 
   await page.getByLabel(/what will you do with this trade/i).selectOption('Hold')

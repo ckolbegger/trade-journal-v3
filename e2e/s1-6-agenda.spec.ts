@@ -2,9 +2,14 @@ import { test, expect } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
 // The trader's local date is the trading date.
-function daysAgo(days: number): string {
+function weekdaysAgo(n: number): string {
   const date = new Date()
-  date.setDate(date.getDate() - days)
+  // Land on today, or the most recent prior weekday.
+  while (date.getDay() === 0 || date.getDay() === 6) date.setDate(date.getDate() - 1)
+  for (let i = 0; i < n; i++) {
+    date.setDate(date.getDate() - 1)
+    while (date.getDay() === 0 || date.getDay() === 6) date.setDate(date.getDate() - 1)
+  }
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${date.getFullYear()}-${month}-${day}`
@@ -38,7 +43,7 @@ async function planAndFillThreeDaysAgo(page: Page) {
   await page.getByLabel(/quantity/i).fill('100')
   await page.getByLabel(/price/i).fill('150')
   await page.getByLabel(/fees/i).fill('1')
-  await page.getByLabel(/date/i).fill(daysAgo(3))
+  await page.getByLabel(/date/i).fill(weekdaysAgo(3))
   await page.getByRole('button', { name: /record fill/i }).click()
   await expect(page.getByLabel('status')).toHaveText(/open/i)
 }
@@ -58,7 +63,7 @@ test('the review agenda shows every gap day since the fill and the journal debt'
   await expect(trade).toBeVisible()
   for (const days of [3, 2, 1, 0]) {
     await expect(
-      trade.getByRole('listitem', { name: `AAPL ${daysAgo(days)}`, exact: true }),
+      trade.getByRole('listitem', { name: `AAPL ${weekdaysAgo(days)}`, exact: true }),
     ).toBeVisible()
   }
 

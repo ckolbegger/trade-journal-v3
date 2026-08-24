@@ -9,16 +9,21 @@ import type { Page } from '@playwright/test'
 // changes by zero lines for this (docs/plan/slice-04-automated-pricing.md):
 // the collection screen already calls PriceBook.fetch unconditionally.
 
-function daysAgo(days: number): string {
+function weekdaysAgo(n: number): string {
   const date = new Date()
-  date.setDate(date.getDate() - days)
+  // Land on today, or the most recent prior weekday.
+  while (date.getDay() === 0 || date.getDay() === 6) date.setDate(date.getDate() - 1)
+  for (let i = 0; i < n; i++) {
+    date.setDate(date.getDate() - 1)
+    while (date.getDay() === 0 || date.getDay() === 6) date.setDate(date.getDate() - 1)
+  }
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${date.getFullYear()}-${month}-${day}`
 }
 
-const TODAY = daysAgo(0)
-const YESTERDAY = daysAgo(1)
+const TODAY = weekdaysAgo(0)
+const YESTERDAY = weekdaysAgo(1)
 // AAPL 2027-06-18 C 200 → OCC symbol (ticker + yymmdd + C/P + strike*1000, per
 // pricebook.md's mapping, verified against docs/plan/slice-04-automated-pricing.md's
 // worked example).
