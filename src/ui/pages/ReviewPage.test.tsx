@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach, beforeAll, afterAll } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
@@ -20,6 +20,24 @@ import type { Account, ExecutionDraft, Institution, PlanDraft } from '@/books/tr
 import type { EntryType } from '@/books/journal/types'
 import type { DateRange, PricingSource, SourceObservation } from '@/books/pricebook/types'
 import { inMemoryBooks } from '../../../tests/support/trade-book'
+
+// The gap arithmetic below counts calendar days back from "today", while
+// missingMarks skips market-closed dates (domain/dates.isMarketClosed, the
+// S4.4 weekend-quiet ruling). Left on the wall clock these expectations ask
+// for weekend rows the app correctly refuses, so they fail whenever the run
+// lands near a weekend. Pin today to a Thursday: daysAgo(0..3) are then all
+// trading days and the suite is date-independent.
+const PINNED_TODAY = '2026-08-20T12:00:00' // a Thursday
+
+function pinToday() {
+  vi.useFakeTimers({ shouldAdvanceTime: true })
+  vi.setSystemTime(new Date(PINNED_TODAY))
+}
+
+beforeAll(pinToday)
+afterAll(() => {
+  vi.useRealTimers()
+})
 
 // The trader's local date is the trading date, and the page reviews "today" — so
 // the fixture dates are relative to it: a Mark two days ago leaves yesterday and
@@ -523,6 +541,10 @@ describe('ReviewCollection (no source)', () => {
 // missing-Marks rows the walk prompts for — the same one collection path, just
 // with real fetch results this time.
 describe('ReviewCollection (fetched)', () => {
+  // An earlier describe leaves real timers behind; these expectations count
+  // calendar days back from today and need the pinned Thursday.
+  beforeEach(pinToday)
+
   it('shows fetched closes as pre-filled rows per Trade', async () => {
     const source = stubSource({
       id: 'test-source',

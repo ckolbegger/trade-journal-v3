@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { WalkCheckpoint } from './WalkCheckpoint'
@@ -25,6 +25,24 @@ import { inMemoryBooks } from '../../../tests/support/trade-book'
 // The Daily Review checkpoint — one open Trade, four steps in order: fill this
 // Trade's missing Marks, look at the refreshed numbers, record the Action (that
 // IS reviewing it), then settle whatever journal this Trade owes.
+
+// The gap arithmetic below counts calendar days back from "today", while
+// missingMarks skips market-closed dates (domain/dates.isMarketClosed, the
+// S4.4 weekend-quiet ruling). Left on the wall clock these expectations ask
+// for weekend rows the app correctly refuses, so they fail whenever the run
+// lands near a weekend. Pin today to a Thursday: daysAgo(0..3) are then all
+// trading days and the suite is date-independent.
+const PINNED_TODAY = '2026-08-20T12:00:00' // a Thursday
+
+function pinToday() {
+  vi.useFakeTimers({ shouldAdvanceTime: true })
+  vi.setSystemTime(new Date(PINNED_TODAY))
+}
+
+beforeAll(pinToday)
+afterAll(() => {
+  vi.useRealTimers()
+})
 
 // The trader's local date is the trading date; the fill landed two days ago, so
 // nothing is marked and the gap runs from then through today.
