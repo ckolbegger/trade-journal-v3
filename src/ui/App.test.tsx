@@ -45,7 +45,7 @@ describe('AppShell', () => {
     expect(screen.getByRole('link', { name: 'Review' })).toBeInTheDocument()
   })
 
-  it('renders the Home stub at /, with a Settings link', () => {
+  it('renders Home at /, with a Settings link', () => {
     renderAt('/')
     expect(screen.getByRole('heading', { name: 'Home' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Settings' })).toBeInTheDocument()

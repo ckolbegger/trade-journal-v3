@@ -1,4 +1,5 @@
-import { Link, NavLink, Route, Routes } from 'react-router-dom'
+import { NavLink, Route, Routes } from 'react-router-dom'
+import { HomePage } from './pages/HomePage'
 import { TradesPage } from './pages/TradesPage'
 import { PlanForm } from './pages/PlanForm'
 import { TradeDetail } from './pages/TradeDetail'
@@ -6,44 +7,10 @@ import { TimelinePage } from './pages/TimelinePage'
 import { ReviewPage } from './pages/ReviewPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { NotFound } from './pages/NotFound'
-import { heading, tabItemActive, tabItemInactive } from './styles'
+import { tabItemActive, tabItemInactive } from './styles'
 
 function tabClass({ isActive }: { isActive: boolean }) {
   return isActive ? tabItemActive : tabItemInactive
-}
-
-// Minimal placeholder — the Home screen's greeting arrives with UX.3; its
-// portfolio totals are deferred to Analytics (S15.3), since summing in the UI
-// is forbidden. This story only needs a landing route that carries the
-// Settings link the tab bar no longer does.
-function HomeStub() {
-  return (
-    <section className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className={heading}>Home</h2>
-        <Link
-          to="/settings"
-          aria-label="Settings"
-          className="rounded-full p-2 text-stone-600 hover:bg-stone-100 hover:text-stone-900"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.75"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-5 w-5"
-            aria-hidden="true"
-          >
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
-          </svg>
-        </Link>
-      </div>
-    </section>
-  )
 }
 
 const homeIcon = (
@@ -125,7 +92,7 @@ export function App() {
       </header>
       <main className="mx-auto w-full max-w-3xl px-4 py-6 pb-24">
         <Routes>
-          <Route path="/" element={<HomeStub />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/trades" element={<TradesPage />} />
           <Route path="/trades/new" element={<PlanForm />} />
           <Route path="/trades/:id" element={<TradeDetail />} />

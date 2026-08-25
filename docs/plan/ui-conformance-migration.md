@@ -88,7 +88,9 @@ _Verify:_ every route reachable, active tab correct on each, nothing hidden behi
 
 A new route at `/` that gives the Home tab somewhere to land. **Totals are deferred** (user ruling 2026-08-25): no `Valuations` totals operation is built here, and Home derives nothing — constraint 2 forbids summing in the UI, and the honest alternative to a coordinator operation is to show no totals at all.
 
-Home renders the greeting and the Settings icon, and links onward to the tabs. Where the prototype shows the hero P&L and the "Day N · K open" count line, Home says plainly that portfolio totals arrive with Analytics rather than showing a computed-looking zero.
+Home renders the page heading and the Settings icon. Where the prototype shows the hero P&L and the "Day N · K open" count line, Home states plainly that account-wide totals are not computed yet — **without naming a future slice at the trader**. "Analytics" is a name from this plan; there is no such screen in the app, and a dateless roadmap promise on the first screen becomes a lie the day the slice slips. State the fact, not the plan.
+
+Mind the vocabulary while writing it (this is where UX.3's review found its one blocker): a **Position** is holdings derived from Executions, so "planned positions" is the exact phrase [ADR 0014](../adr/0014-trade-is-the-campaign.md) exists to ban, and `portfolio` is an _Avoid_ term for Account in [CONTEXT.md](../../CONTEXT.md). The noun for what the trader has planned is **Trades**.
 
 _Verify:_ Home is reachable from the tab bar and from `/`; Settings opens; no number on the page is derived in the UI.
 
