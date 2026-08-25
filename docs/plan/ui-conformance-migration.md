@@ -120,9 +120,11 @@ _Verify:_ planned, open and closed rows all render; a row reaches its detail pag
 
 ### UX.5 — Trade detail
 
-The densest screen. Hero card (strategy, large P&L, Current/Target/Stop with the "away"/"cushion" framing, consistent with ADR 0010), then a Plan / Invalidation / Catalyst card, a Legs & Fills card, then actions. Keep Execution wording (constraint 3). Keep the four R/R numbers the design docs require — the prototype's two-number framing is a display idea, not licence to drop them.
+The densest screen. Hero card (strategy, large P&L, Current/Target/Stop), then a Plan / Invalidation / Catalyst card, a Legs & Fills card, then actions. Keep Execution wording (constraint 3). Keep the four R/R numbers the design docs require — the prototype's two-number framing is a display idea, not licence to drop them.
 
 The hero's **day count and adherence chip are omitted for the same reasons as UX.4** — one needs a coordinator field this migration isn't adding, the other needs Slice 9. Both return when their slice lands.
+
+**Scoped 2026-08-25: the "away"/"cushion" framing goes with them.** The prototype renders `TARGET $920.00 / +$95.90 away` and `STOP $805.00 / $19.10 cushion`. Current, Target and Stop are each facts — the Mark, and the plan's `exitLevels` — but the two deltas are arithmetic over them, and nothing in `TradeDetailView` carries either value (grep confirms "away" and "cushion" appear nowhere in `src/`). Computing them in the UI is the same constraint 2 violation as the day count. **Show the three levels; omit the deltas.** They arrive when a coordinator field does.
 
 _Verify:_ the stock, spread and planned-no-fills variants all read correctly.
 
