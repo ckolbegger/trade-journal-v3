@@ -96,13 +96,23 @@ _Deferred to S15.3:_ the `Valuations` totals operation (open P&L, open count, pl
 
 ### UX.4 — Trades list
 
-Conform `TradesPage` to the prototype row: monogram circle, ticker, strategy · day count · adherence, P&L right-aligned. "New plan" stays as the page's own CTA, now a black pill. **Omit** the REVIEW DUE badge — that is attention ranking, S8.1, which links this same screenshot.
+Conform `TradesPage` to the prototype row: monogram circle, ticker, strategy, P&L right-aligned. "New plan" stays as the page's own CTA, now a black pill. **Omit** the REVIEW DUE badge — that is attention ranking, S8.1, which links this same screenshot.
+
+**Scoped 2026-08-25: two thirds of the prototype's subline cannot be built here.** The screenshot's row reads `Long Stock · Day 12 · 100% adh`. Of those three:
+
+- **Strategy** — a stored fact. Show it.
+- **Day count** — `plannedAt` is stored, but "Day 12" is days-between-then-and-today, a calendar computation. Constraint 2 forbids the UI deriving it, and the only sanctioned UI exception is the `InstrumentKey` codec — not `domain/dates`. Needs a coordinator field, which this migration is not adding (same ruling that deferred Home's totals). **Omit.**
+- **Adherence** — does not exist. Deviations are Slice 9, unstarted. [slice-09](./slice-09-deviations-structural-sizing.md) explicitly names the prototype's adherence number as the thing *not* to reproduce: it shows 85% on a plan with zero fills, which measures plan completeness rather than behaviour. **Omit**, and do not invent a placeholder.
+
+So the row is monogram · ticker · strategy · P&L · status badge. Keep the existing `aria-label` on the row and on `pnl` — e2e selects by them.
 
 _Verify:_ planned, open and closed rows all render; a row reaches its detail page.
 
 ### UX.5 — Trade detail
 
-The densest screen. Hero card (day · strategy, large P&L, adherence chip, Current/Target/Stop with the "away"/"cushion" framing, consistent with ADR 0010), then a Plan / Invalidation / Catalyst card, a Legs & Fills card, then actions. Keep Execution wording (constraint 3). Keep the four R/R numbers the design docs require — the prototype's two-number framing is a display idea, not licence to drop them.
+The densest screen. Hero card (strategy, large P&L, Current/Target/Stop with the "away"/"cushion" framing, consistent with ADR 0010), then a Plan / Invalidation / Catalyst card, a Legs & Fills card, then actions. Keep Execution wording (constraint 3). Keep the four R/R numbers the design docs require — the prototype's two-number framing is a display idea, not licence to drop them.
+
+The hero's **day count and adherence chip are omitted for the same reasons as UX.4** — one needs a coordinator field this migration isn't adding, the other needs Slice 9. Both return when their slice lands.
 
 _Verify:_ the stock, spread and planned-no-fills variants all read correctly.
 
