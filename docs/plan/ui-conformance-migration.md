@@ -203,11 +203,18 @@ describe('TimelinePage type badges')
   it('labels a review-anchored entry REVIEW')
   it('labels a standalone entry MARKET')
   it('never labels an entry POSITION')
+
+describe('TimelinePage date-group headers')
+  it('shows Today as the header label for an entry written today')
+  it('groups entries written on the same day under one date header')
+  it('shows a distinct header per date when entries span multiple days')
 ```
 
-The last one is a vocabulary guard, not a display test — it is the assertion that keeps the banned term out of the timeline.
+`it('never labels an entry POSITION')` is a vocabulary guard, not a display test — it is the assertion that keeps the banned term out of the timeline.
 
 _Changes tests:_ the date-group headers restructure the list, so specs asserting the flat row shape may need updating. Those updates belong to this story; the `aria-label="timeline"` and `aria-label="addenda"` lists and the `aria-label="journal owed"` marker must survive unchanged — e2e selects by them.
+
+**Found during UX.6 acceptance, not a defect — the badge and the Entry Type read as a doubled label.** Where the Anchor kind and the Entry Type name coincide a row reads "PLAN  PLAN" or "CLOSE  CLOSE"; where they differ it reads "REVIEW  TRADE REVIEW" or "MARKET  NOTE". The story asks for both — the Anchor-kind badge is new here, and the Entry Type name is pre-existing copy constraint 1 forbids removing for styling — while the prototype shows only one label. So this is the spec working as written. If the doubling is unwanted it is a copy and layout decision for **UX.8**, not something to fix inside UX.6.
 
 _Verify:_ grouping and each filter; addenda still nest; owed placeholders still settle inline.
 

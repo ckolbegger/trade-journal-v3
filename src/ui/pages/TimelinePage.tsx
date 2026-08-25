@@ -6,11 +6,21 @@ import { NewEntryPage } from './NewEntryPage'
 import { SettleForm } from '../components/SettleForm'
 import { AddAddendum } from '../components/AddAddendum'
 import { AnsweredPrompts } from '../components/AnsweredPrompts'
+import { EntryBadge } from '../components/Badge'
 import { buildEntryThreads } from '../components/entryThread'
 import { collectAnswers } from '../components/prompt-answers'
 import type { PromptValues } from '../components/prompt-answers'
-import { shortDate, timestampToISODate } from '../format'
-import { btnPrimary, card, field, heading, input, link as linkClass, subheading } from '../styles'
+import { shortDate, timestampToISODate, todayISO } from '../format'
+import {
+  btnPrimary,
+  btnSecondary,
+  card,
+  field,
+  heading,
+  input,
+  link as linkClass,
+  subheading,
+} from '../styles'
 import type { Anchor, DateRange, Entry } from '@/books/journal/types'
 
 // The Journal nav destination: the growth story, one chronological timeline of
@@ -25,6 +35,23 @@ interface Row {
   addenda: Row[]
 }
 
+// The chip taxonomy keys off Anchor.kind, not Entry Type — Entry Types are
+// trader-editable from Slice 13 and their open set can't carry a fixed
+// palette. 'entry' (addenda) never reaches a timeline row, so it has no chip.
+type FilterId = 'all' | 'plan' | 'close' | 'review' | 'standalone'
+const FILTERS: { id: FilterId; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'plan', label: 'Plans' },
+  { id: 'review', label: 'Reviews' },
+  { id: 'standalone', label: 'Market' },
+  { id: 'close', label: 'Closes' },
+]
+
+// "Today" for the current date-group, otherwise the compact "Jul 3" form.
+function dateGroupLabel(date: string): string {
+  return date === todayISO() ? 'Today' : shortDate(date)
+}
+
 export function TimelinePage() {
   const journal = useJournal()
   const tradeBook = useTradeBook()
@@ -33,6 +60,7 @@ export function TimelinePage() {
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [refresh, setRefresh] = useState(0)
+  const [filter, setFilter] = useState<FilterId>('all')
 
   useEffect(() => {
     let active = true
@@ -82,6 +110,11 @@ export function TimelinePage() {
       active = false
     }
   }, [journal, tradeBook, from, to, refresh])
+
+  // Display-only filtering over already-loaded entries — no Book call, no
+  // coordinator operation. TimelineFilter proper is settled in S15.3.
+  const filteredRows =
+    filter === 'all' ? (rows ?? []) : (rows ?? []).filter((r) => r.entry.anchor.kind === filter)
 
   async function settle(entry: Entry, values: PromptValues) {
     await journal.settle(
@@ -135,58 +168,94 @@ export function TimelinePage() {
             </label>
           </div>
 
-          <ul aria-label="timeline" className="space-y-3">
-            {rows?.map(({ entry, entryTypeName, ticker, addenda }) => (
-              <li key={entry.id} className={`${card} space-y-2`}>
-                <div className="space-y-0.5">
-                  <p className={subheading}>{entryTypeName}</p>
-                  <p className="text-sm text-slate-600">
-                    {entry.placeholder && entry.settledAt !== undefined
-                      ? `written ${timestampToISODate(entry.at)} · settled ${timestampToISODate(entry.settledAt)}`
-                      : timestampToISODate(entry.at)}{' '}
-                    · <AnchorLabel anchor={entry.anchor} ticker={ticker} />
-                  </p>
-                </div>
-                {entry.placeholder && entry.settledAt === undefined ? (
-                  <div className="space-y-3">
-                    <p
-                      aria-label="journal owed"
-                      className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
-                    >
-                      Journal entry owed
-                    </p>
-                    <ul className="space-y-3">
-                      <SettleForm entry={entry} onSettle={(values) => void settle(entry, values)} />
-                    </ul>
-                  </div>
-                ) : (
-                  <AnsweredPrompts
-                    answered={entry.answered}
-                    promptClass="text-sm font-medium text-slate-700"
-                  />
-                )}
-                <AddAddendum entry={entry} onAdded={() => setRefresh((n) => n + 1)} />
-                {addenda.length > 0 && (
-                  <ul
-                    aria-label="addenda"
-                    className="ml-4 space-y-3 border-l border-slate-200 pl-4"
-                  >
-                    {addenda.map(({ entry: addendum, entryTypeName: addendumTypeName }) => (
-                      <li key={addendum.id} className="space-y-2">
-                        <p className="text-xs text-slate-500">
-                          {addendumTypeName} · {timestampToISODate(addendum.at)}
-                        </p>
-                        <AnsweredPrompts
-                          answered={addendum.answered}
-                          promptClass="text-sm font-medium text-slate-700"
-                        />
-                        <AddAddendum entry={addendum} onAdded={() => setRefresh((n) => n + 1)} />
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
+          <div className="flex flex-wrap gap-2">
+            {FILTERS.map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                aria-pressed={filter === f.id}
+                className={filter === f.id ? btnPrimary : btnSecondary}
+                onClick={() => setFilter(f.id)}
+              >
+                {f.label}
+              </button>
             ))}
+          </div>
+
+          <ul aria-label="timeline" className="space-y-3">
+            {filteredRows.map(({ entry, entryTypeName, ticker, addenda }, i) => {
+              const date = timestampToISODate(entry.at)
+              const showHeader =
+                i === 0 || date !== timestampToISODate(filteredRows[i - 1].entry.at)
+              return (
+                <li key={entry.id} className="space-y-2">
+                  {showHeader && <h3 className={subheading}>{dateGroupLabel(date)}</h3>}
+                  <div className={`${card} space-y-2`}>
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        {entry.anchor.kind !== 'entry' && <EntryBadge kind={entry.anchor.kind} />}
+                        <p className={subheading}>{entryTypeName}</p>
+                      </div>
+                      <p className="text-sm text-slate-600">
+                        {entry.placeholder && entry.settledAt !== undefined
+                          ? `written ${timestampToISODate(entry.at)} · settled ${timestampToISODate(entry.settledAt)}`
+                          : timestampToISODate(entry.at)}{' '}
+                        · <AnchorLabel anchor={entry.anchor} ticker={ticker} />
+                      </p>
+                      {entry.anchor.kind === 'plan' && (
+                        <Link to={`/trades/${entry.anchor.tradeId}`} className={linkClass}>
+                          Tap to view plan →
+                        </Link>
+                      )}
+                    </div>
+                    {entry.placeholder && entry.settledAt === undefined ? (
+                      <div className="space-y-3">
+                        <p
+                          aria-label="journal owed"
+                          className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
+                        >
+                          Journal entry owed
+                        </p>
+                        <ul className="space-y-3">
+                          <SettleForm
+                            entry={entry}
+                            onSettle={(values) => void settle(entry, values)}
+                          />
+                        </ul>
+                      </div>
+                    ) : (
+                      <AnsweredPrompts
+                        answered={entry.answered}
+                        promptClass="text-sm font-medium text-slate-700"
+                      />
+                    )}
+                    <AddAddendum entry={entry} onAdded={() => setRefresh((n) => n + 1)} />
+                    {addenda.length > 0 && (
+                      <ul
+                        aria-label="addenda"
+                        className="ml-4 space-y-3 border-l border-slate-200 pl-4"
+                      >
+                        {addenda.map(({ entry: addendum, entryTypeName: addendumTypeName }) => (
+                          <li key={addendum.id} className="space-y-2">
+                            <p className="text-xs text-slate-500">
+                              {addendumTypeName} · {timestampToISODate(addendum.at)}
+                            </p>
+                            <AnsweredPrompts
+                              answered={addendum.answered}
+                              promptClass="text-sm font-medium text-slate-700"
+                            />
+                            <AddAddendum
+                              entry={addendum}
+                              onAdded={() => setRefresh((n) => n + 1)}
+                            />
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </li>
+              )
+            })}
           </ul>
         </>
       )}
