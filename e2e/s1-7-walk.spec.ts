@@ -99,7 +99,7 @@ test('the walk collects Marks, records an Action per Trade, and settles the debt
   await expect(page.getByLabel(/today's mark/i)).toHaveValue('160.00')
 
   // Recording the Action IS reviewing the Trade.
-  await page.getByLabel(/what will you do with this trade/i).selectOption('Hold')
+  await page.getByRole('radio', { name: 'Hold' }).check()
   await page.getByRole('radio', { name: '4' }).check()
   await page.getByRole('button', { name: /record action/i }).click()
   await expect(page.getByLabel('action recorded')).toHaveText('Hold')
@@ -112,7 +112,7 @@ test('the walk collects Marks, records an Action per Trade, and settles the debt
   await markRow(page, 'MSFT', weekdaysAgo(1), '150')
   await markRow(page, 'MSFT', TODAY, '160')
 
-  await page.getByLabel(/what will you do with this trade/i).selectOption('Hold')
+  await page.getByRole('radio', { name: 'Hold' }).check()
   await page.getByRole('button', { name: /record action/i }).click()
   await expect(page.getByLabel('progress')).toHaveText(/2 of 2/)
 

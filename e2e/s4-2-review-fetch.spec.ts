@@ -171,7 +171,7 @@ test('the review fetch pre-fills both stock tickers and leaves only the contract
   // ——— checkpoint 1: the stock Trade — nothing left to type ———
   await expect(page.getByRole('heading', { name: 'MSFT' })).toBeVisible()
   await expect(page.getByRole('list', { name: 'marks needed' })).toHaveCount(0)
-  await page.getByLabel(/what will you do with this trade/i).selectOption('Hold')
+  await page.getByRole('radio', { name: 'Hold' }).check()
   await page.getByRole('button', { name: /record action/i }).click()
   await page.getByRole('button', { name: /next trade/i }).click()
 

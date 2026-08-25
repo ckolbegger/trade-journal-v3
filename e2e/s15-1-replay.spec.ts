@@ -83,7 +83,7 @@ async function markKnownDays(page: Page) {
     await row.getByRole('button', { name: 'Save', exact: true }).click()
   }
 
-  await page.getByLabel(/what will you do with this trade/i).selectOption('Hold')
+  await page.getByRole('radio', { name: 'Hold' }).check()
   await page.getByRole('button', { name: /record action/i }).click()
   await page.getByRole('button', { name: /next trade/i }).click()
   await expect(page.getByRole('heading', { name: 'Review complete' })).toBeVisible()

@@ -46,7 +46,7 @@ test('close a flattened Trade and abandon a planned one (worked example)', async
   // The flattening fill prompts for a Close Reason. Pick Hit Target and answer.
   await expect(page.getByRole('heading', { name: 'Close this Trade' })).toBeVisible()
   await page.getByLabel(/close reason/i).selectOption('Hit Target')
-  await page.getByLabel('Would you take this trade again?').selectOption('yes')
+  await page.getByRole('radio', { name: 'yes', exact: true }).check()
   await page.getByLabel('Lesson').fill('Let winners run to target')
   await page.getByRole('button', { name: /record close/i }).click()
 

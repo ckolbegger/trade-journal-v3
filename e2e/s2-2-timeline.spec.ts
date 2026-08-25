@@ -51,7 +51,7 @@ async function planFillAndReview(page: Page) {
   await expect(page.getByRole('heading', { name: 'Plan journal' })).toBeVisible()
   await page.getByLabel('Why this trade, why now?').fill('Breakout confirmed on volume')
   await page.getByRole('radio', { name: '4' }).check()
-  await page.getByLabel('Emotional state').selectOption('calm')
+  await page.getByRole('radio', { name: 'calm' }).check()
   await page.getByRole('button', { name: /write journal entry/i }).click()
 
   await page.getByRole('button', { name: /record fill/i }).click()
@@ -67,7 +67,7 @@ async function planFillAndReview(page: Page) {
   await page.getByRole('button', { name: /begin walk/i }).click()
   await markRow(page, 'AAPL', weekdaysAgo(1), '150')
   await markRow(page, 'AAPL', TODAY, '160')
-  await page.getByLabel(/what will you do with this trade/i).selectOption('Hold')
+  await page.getByRole('radio', { name: 'Hold' }).check()
   await page.getByRole('button', { name: /record action/i }).click()
   await expect(page.getByLabel('action recorded')).toHaveText('Hold')
 }
@@ -85,7 +85,7 @@ async function closeTrade(page: Page) {
 
   await expect(page.getByRole('heading', { name: 'Close this Trade' })).toBeVisible()
   await page.getByLabel(/close reason/i).selectOption('Hit Target')
-  await page.getByLabel('Would you take this trade again?').selectOption('yes')
+  await page.getByRole('radio', { name: 'yes', exact: true }).check()
   await page.getByLabel('Lesson').fill('Let winners run to target')
   await page.getByRole('button', { name: /record close/i }).click()
   await expect(page.getByLabel('status')).toHaveText(/closed/i)
@@ -96,7 +96,7 @@ async function writeStandaloneReflection(page: Page) {
   await page.getByRole('button', { name: /new entry/i }).click()
   await page.getByRole('combobox', { name: 'Entry Type' }).selectOption('Trader Reflection')
   await page.getByLabel("What's on your mind?").fill('Proud of following the plan')
-  await page.getByRole('combobox', { name: 'Current emotional state' }).selectOption('calm')
+  await page.getByRole('radio', { name: 'calm' }).check()
   await page.getByRole('radio', { name: '4' }).check()
   await page.getByRole('button', { name: /save entry/i }).click()
 }

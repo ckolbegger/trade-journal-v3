@@ -28,9 +28,10 @@ describe('PlanEntryForm', () => {
 
     expect(await screen.findByLabelText('Why this trade, why now?')).toBeInTheDocument()
     expect(screen.getByLabelText('What invalidates the thesis?')).toBeInTheDocument()
-    expect(screen.getByRole('combobox', { name: 'Emotional state' })).toBeInTheDocument()
-    // Conviction 1..5 as a radio group.
-    expect(screen.getAllByRole('radio')).toHaveLength(5)
+    expect(screen.getByRole('group', { name: 'Emotional state' })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: 'calm' })).toBeInTheDocument()
+    // Conviction 1..5 plus the emotion chips (5 options) as radio groups.
+    expect(screen.getAllByRole('radio')).toHaveLength(10)
     expect(screen.getByRole('radio', { name: '4' })).toBeInTheDocument()
   })
 
@@ -41,7 +42,7 @@ describe('PlanEntryForm', () => {
     const user = userEvent.setup()
 
     await user.type(await screen.findByLabelText('Why this trade, why now?'), 'Breakout confirmed')
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Emotional state' }), 'calm')
+    await user.click(screen.getByRole('radio', { name: 'calm' }))
     await user.click(screen.getByRole('radio', { name: '4' }))
     await user.click(screen.getByRole('button', { name: /write journal entry/i }))
 

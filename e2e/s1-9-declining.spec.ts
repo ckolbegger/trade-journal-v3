@@ -86,7 +86,7 @@ test('declining one checkpoint and writing a considered-action on the other both
   await page.getByRole('button', { name: /nothing to note today/i }).click()
   await expect(page.getByLabel('progress')).toHaveText(/1 of 2/)
   // Writing stays live — no disabled fields, no "action recorded" lock.
-  await expect(page.getByLabel(/what will you do with this trade/i)).toBeEditable()
+  await expect(page.getByRole('radio', { name: 'Hold' })).toBeEnabled()
 
   await page.getByRole('button', { name: /next trade/i }).click()
 
@@ -94,7 +94,7 @@ test('declining one checkpoint and writing a considered-action on the other both
   await expect(page.getByRole('heading', { name: 'MSFT' })).toBeVisible()
   await fillAllMarks(page, '160')
 
-  await page.getByLabel(/what will you do with this trade/i).selectOption('Hold')
+  await page.getByRole('radio', { name: 'Hold' }).check()
   await page
     .getByLabel(/anything you considered doing and decided against/i)
     .fill('Thought about adding, held off')

@@ -102,10 +102,7 @@ function renderSession(f: Fixture, needed: TradeMarksNeeded[]) {
 }
 
 async function recordAction(action = 'Hold') {
-  await userEvent.selectOptions(
-    await screen.findByLabelText(/what will you do with this trade/i),
-    action,
-  )
+  await userEvent.click(await screen.findByRole('radio', { name: action }))
   await userEvent.click(screen.getByRole('button', { name: /record action/i }))
 }
 

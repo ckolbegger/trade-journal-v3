@@ -34,7 +34,7 @@ async function writeAReflection(page: Page) {
   await expect(page.getByRole('heading', { name: 'New entry' })).toBeVisible()
   await page.getByRole('combobox', { name: 'Entry Type' }).selectOption('Trader Reflection')
   await page.getByLabel("What's on your mind?").fill('Market feels frothy today')
-  await page.getByRole('combobox', { name: 'Current emotional state' }).selectOption('anxious')
+  await page.getByRole('radio', { name: 'anxious' }).check()
   await page.getByRole('radio', { name: '3' }).check()
   await page.getByRole('button', { name: /save entry/i }).click()
   await expect(page.getByRole('heading', { name: 'Journal', exact: true })).toBeVisible()

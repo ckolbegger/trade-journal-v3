@@ -258,6 +258,10 @@ Conform the walk checkpoint, the review agenda and Settings.
 
 **Discovered 2026-08-25, added to this story:** `ReplayView.tsx` / `ReplayChart.tsx` (the S15.1 replay screen) were missing from this plan's file list entirely. `ReplayChart` draws its series in `indigo-600` with a matching legend swatch — indigo surviving the token rewrite because it is a chart colour rather than a shared constant. (`TradesPage.tsx` also keeps a `hover:text-indigo-600`, but UX.4 converts that one.) Convert it with the rest.
 
+**Found 2026-08-25 during UX.7, added to this story — the per-screen stories each left residual inline `slate` behind on their own screens.** A sweep of `src/ui` after UX.7 found `slate-*` still live in files their owning story was supposed to convert: `TimelinePage.tsx` (five places — UX.6's own screen), `Badge.tsx`'s `closed` StatusBadge tone, `AnsweredPrompts.tsx`, and `RecordFillForm.tsx` (UX.5's screen). `AddendumForm.tsx` still carried `bg-slate-50 border-slate-200` from before the UX.1 token rewrite and was fixed in UX.7. Each story conformed its layout and missed the inline colour strings underneath.
+
+The remaining files in the sweep — `Onboarding.tsx`, `SettingsPage.tsx`, `WalkSession.tsx`, `WalkCheckpoint.tsx`, `ReviewPage.tsx`, `ReplayView.tsx`, `ReplayChart.tsx`, `RestoreFlow.tsx` — are this story's own screens and were always its work. **UX.8 therefore owns the whole sweep, not just its own screens:** finish with zero `slate-*` and zero `indigo-*` in `src/ui`, and make that grep the story's completion check. Reopening UX.5 and UX.6 for it would be churn; folding it in here costs nothing extra since the same pass is already happening.
+
 Then **rewrite [ui-style.md](../design/ui-style.md)** to describe the new system: it currently prescribes the header nav and indigo palette this work replaces, and under constraint 3 a stale design doc outranks the prototype.
 
 _Verify:_ a full review walk; export and restore; all suites green.

@@ -46,8 +46,9 @@ describe('NewEntryPage', () => {
     await user.selectOptions(picker, 'Trader Reflection')
 
     expect(screen.getByLabelText("What's on your mind?")).toBeInTheDocument()
-    expect(screen.getByRole('combobox', { name: 'Current emotional state' })).toBeInTheDocument()
-    expect(screen.getAllByRole('radio')).toHaveLength(5)
+    expect(screen.getByRole('group', { name: 'Current emotional state' })).toBeInTheDocument()
+    // Energy 1..5 plus the emotion chips (5 options) as radio groups.
+    expect(screen.getAllByRole('radio')).toHaveLength(10)
   })
 
   it('writes a standalone entry on save', async () => {
@@ -59,10 +60,7 @@ describe('NewEntryPage', () => {
     const picker = await screen.findByRole('combobox', { name: 'Entry Type' })
     await user.selectOptions(picker, 'Trader Reflection')
     await user.type(screen.getByLabelText("What's on your mind?"), 'Feeling steady today')
-    await user.selectOptions(
-      screen.getByRole('combobox', { name: 'Current emotional state' }),
-      'calm',
-    )
+    await user.click(screen.getByRole('radio', { name: 'calm' }))
     await user.click(screen.getByRole('radio', { name: '3' }))
     await user.click(screen.getByRole('button', { name: /save entry/i }))
 

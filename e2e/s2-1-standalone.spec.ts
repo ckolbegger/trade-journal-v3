@@ -21,7 +21,7 @@ test('write a standalone Trader Reflection and see it on the Journal page', asyn
   await page.getByRole('combobox', { name: 'Entry Type' }).selectOption('Trader Reflection')
 
   await page.getByLabel("What's on your mind?").fill('Market feels frothy today')
-  await page.getByRole('combobox', { name: 'Current emotional state' }).selectOption('anxious')
+  await page.getByRole('radio', { name: 'anxious' }).check()
   await page.getByRole('radio', { name: '3' }).check()
   await page.getByRole('button', { name: /save entry/i }).click()
 

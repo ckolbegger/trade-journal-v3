@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTradeBook } from '../tradeBookContext'
 import { PlanEntryForm } from './PlanEntryForm'
 import { dollarsToCents, todayISO } from '../format'
-import { btnPrimary, btnSecondary, field, heading, input, num } from '../styles'
+import { btnPrimary, btnSecondary, card, field, heading, input, num, subheading } from '../styles'
 import type {
   Account,
   ExitLevel,
@@ -227,42 +227,44 @@ export function PlanForm() {
           void confirm()
         }}
       >
-        <label className={field}>
-          Account
-          <select
-            className={input}
-            value={accountId}
-            onChange={(e) => setAccountId(e.target.value)}
-          >
-            {accounts.map((account) => (
-              <option key={account.id} value={account.id}>
-                {account.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className={`${card} space-y-4`}>
+          <label className={field}>
+            Account
+            <select
+              className={input}
+              value={accountId}
+              onChange={(e) => setAccountId(e.target.value)}
+            >
+              {accounts.map((account) => (
+                <option key={account.id} value={account.id}>
+                  {account.name}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label className={field}>
-          Strategy
-          <select
-            className={input}
-            value={strategyId}
-            onChange={(e) => setStrategyId(e.target.value)}
-          >
-            {strategies.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label className={field}>
+            Strategy
+            <select
+              className={input}
+              value={strategyId}
+              onChange={(e) => setStrategyId(e.target.value)}
+            >
+              {strategies.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
 
         {legs.map((l, i) => (
-          <fieldset key={i} className="space-y-3 rounded-lg border border-slate-200 p-4">
-            <legend className="px-1 text-sm font-medium text-slate-700">
+          <fieldset key={i} className={`${card} space-y-3`}>
+            <legend className={subheading}>
               {isMultiLeg ? `Planned Leg ${i + 1}` : 'Planned Leg'}
             </legend>
-            <span className="inline-block text-sm text-slate-500 capitalize">
+            <span className="inline-block text-sm text-stone-500 capitalize">
               {l.side} {l.instrumentKind}
             </span>
             {i === 0 && (
@@ -289,7 +291,7 @@ export function PlanForm() {
                       />
                     </label>
                     {l.tbdAllowed && !expirationFor(i).trim() && (
-                      <p className="text-xs text-slate-500">Expiration TBD — set at the fill</p>
+                      <p className="text-xs text-stone-500">Expiration TBD — set at the fill</p>
                     )}
                   </>
                 )}
@@ -303,7 +305,7 @@ export function PlanForm() {
                   />
                 </label>
                 {l.tbdAllowed && !strikeFor(i).trim() && (
-                  <p className="text-xs text-slate-500">Strike TBD — set at the fill</p>
+                  <p className="text-xs text-stone-500">Strike TBD — set at the fill</p>
                 )}
               </>
             )}
@@ -322,88 +324,93 @@ export function PlanForm() {
           </fieldset>
         ))}
 
-        <label className={field}>
-          Thesis
-          <textarea
-            className={input}
-            rows={3}
-            value={thesis}
-            onChange={(e) => setThesis(e.target.value)}
-          />
-        </label>
-
-        <label className={field}>
-          Idea Source
-          <select
-            className={input}
-            value={ideaSourceId}
-            onChange={(e) => setIdeaSourceId(e.target.value)}
-          >
-            <option value="">None</option>
-            {ideaSources.map((source) => (
-              <option key={source.id} value={source.id}>
-                {source.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <div className="flex items-end gap-2">
-          <label className={`${field} flex-1`}>
-            New idea source
-            <input
+        <div className={`${card} space-y-4`}>
+          <label className={field}>
+            Thesis
+            <textarea
               className={input}
-              value={newIdeaSourceName}
-              onChange={(e) => setNewIdeaSourceName(e.target.value)}
+              rows={3}
+              value={thesis}
+              onChange={(e) => setThesis(e.target.value)}
             />
           </label>
-          <button type="button" className={btnSecondary} onClick={() => void addIdeaSource()}>
-            Add idea source
-          </button>
+
+          <label className={field}>
+            Idea Source
+            <select
+              className={input}
+              value={ideaSourceId}
+              onChange={(e) => setIdeaSourceId(e.target.value)}
+            >
+              <option value="">None</option>
+              {ideaSources.map((source) => (
+                <option key={source.id} value={source.id}>
+                  {source.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="flex items-end gap-2">
+            <label className={`${field} flex-1`}>
+              New idea source
+              <input
+                className={input}
+                value={newIdeaSourceName}
+                onChange={(e) => setNewIdeaSourceName(e.target.value)}
+              />
+            </label>
+            <button type="button" className={btnSecondary} onClick={() => void addIdeaSource()}>
+              Add idea source
+            </button>
+          </div>
+
+          <label className={field}>
+            Chart link (optional)
+            <input
+              className={input}
+              value={chartLink}
+              onChange={(e) => setChartLink(e.target.value)}
+            />
+          </label>
         </div>
 
-        {stopTemplate &&
-          (asksStop ? (
-            <label className={field}>
-              Stop ({exitTemplateLabel(stopTemplate.kind)})
-              <input
-                className={`${input} ${num}`}
-                value={stop}
-                onChange={(e) => setStop(e.target.value)}
-                inputMode="decimal"
-              />
-            </label>
-          ) : (
-            <p className="text-xs text-slate-500">
-              Stop: unsupported legacy target — re-plan with a Position price
-            </p>
-          ))}
-        {targetTemplate &&
-          (asksTarget ? (
-            <label className={field}>
-              Target ({exitTemplateLabel(targetTemplate.kind)})
-              <input
-                className={`${input} ${num}`}
-                value={target}
-                onChange={(e) => setTarget(e.target.value)}
-                inputMode="decimal"
-              />
-            </label>
-          ) : (
-            <p className="text-xs text-slate-500">
-              Target: unsupported legacy target — re-plan with a Position price
-            </p>
-          ))}
+        <div className={`${card} space-y-4`}>
+          <h3 className={subheading}>Risk parameters</h3>
+          {stopTemplate &&
+            (asksStop ? (
+              <label className={field}>
+                Stop ({exitTemplateLabel(stopTemplate.kind)})
+                <input
+                  className={`${input} ${num}`}
+                  value={stop}
+                  onChange={(e) => setStop(e.target.value)}
+                  inputMode="decimal"
+                />
+              </label>
+            ) : (
+              <p className="text-xs text-stone-500">
+                Stop: unsupported legacy target — re-plan with a Position price
+              </p>
+            ))}
+          {targetTemplate &&
+            (asksTarget ? (
+              <label className={field}>
+                Target ({exitTemplateLabel(targetTemplate.kind)})
+                <input
+                  className={`${input} ${num}`}
+                  value={target}
+                  onChange={(e) => setTarget(e.target.value)}
+                  inputMode="decimal"
+                />
+              </label>
+            ) : (
+              <p className="text-xs text-stone-500">
+                Target: unsupported legacy target — re-plan with a Position price
+              </p>
+            ))}
+        </div>
 
-        <label className={field}>
-          Chart link (optional)
-          <input
-            className={input}
-            value={chartLink}
-            onChange={(e) => setChartLink(e.target.value)}
-          />
-        </label>
-
-        <button type="submit" className={btnPrimary} disabled={!canConfirm}>
+        <button type="submit" className={`${btnPrimary} w-full`} disabled={!canConfirm}>
           Confirm plan
         </button>
       </form>

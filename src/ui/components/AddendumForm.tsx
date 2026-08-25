@@ -59,7 +59,7 @@ export function AddendumForm({
   return (
     <form
       aria-label="add addendum"
-      className="space-y-3 rounded-md border border-slate-200 bg-slate-50 p-3"
+      className="space-y-3 rounded-md border border-stone-200 bg-stone-50 p-3"
       onSubmit={(e) => {
         e.preventDefault()
         void save()

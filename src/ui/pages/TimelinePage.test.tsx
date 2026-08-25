@@ -449,10 +449,7 @@ describe('TimelinePage filter chips', () => {
       'Trader Reflection',
     )
     await user.type(screen.getByLabelText("What's on your mind?"), 'Second reflection')
-    await user.selectOptions(
-      screen.getByRole('combobox', { name: 'Current emotional state' }),
-      'calm',
-    )
+    await user.click(screen.getByRole('radio', { name: 'calm' }))
     await user.click(screen.getByRole('radio', { name: '4' }))
     await user.click(screen.getByRole('button', { name: /save entry/i }))
 

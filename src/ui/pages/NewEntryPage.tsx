@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useJournal } from '../journalContext'
 import { PromptFields } from '../components/PromptFields'
 import { collectAnswers, type PromptValues } from '../components/prompt-answers'
-import { btnPrimary, field, heading, input } from '../styles'
+import { btnPrimary, card, field, heading, input } from '../styles'
 import type { EntryType } from '@/books/journal/types'
 
 // Standalone journal writing: the trader picks any non-archived Entry Type
@@ -54,35 +54,37 @@ export function NewEntryPage({ onSaved }: { onSaved: () => void }) {
           void save()
         }}
       >
-        <label className={field}>
-          Entry Type
-          <select
-            className={input}
-            value={entryTypeId}
-            onChange={(e) => {
-              setEntryTypeId(e.target.value)
-              setValues({})
-            }}
-          >
-            <option value="">Choose…</option>
-            {entryTypes.map((type) => (
-              <option key={type.id} value={type.id}>
-                {type.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className={`${card} space-y-4`}>
+          <label className={field}>
+            Entry Type
+            <select
+              className={input}
+              value={entryTypeId}
+              onChange={(e) => {
+                setEntryTypeId(e.target.value)
+                setValues({})
+              }}
+            >
+              <option value="">Choose…</option>
+              {entryTypes.map((type) => (
+                <option key={type.id} value={type.id}>
+                  {type.name}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        {entryType && (
-          <PromptFields
-            prompts={entryType.prompts}
-            values={values}
-            onChange={(id, value) => setValues((prev) => ({ ...prev, [id]: value }))}
-            namespace="new-entry"
-          />
-        )}
+          {entryType && (
+            <PromptFields
+              prompts={entryType.prompts}
+              values={values}
+              onChange={(id, value) => setValues((prev) => ({ ...prev, [id]: value }))}
+              namespace="new-entry"
+            />
+          )}
+        </div>
 
-        <button type="submit" className={btnPrimary} disabled={!entryType}>
+        <button type="submit" className={`${btnPrimary} w-full`} disabled={!entryType}>
           Save entry
         </button>
       </form>

@@ -1,4 +1,4 @@
-import { field, input } from '../styles'
+import { field, input, promptGroup, promptLegend, chip, chipSelected } from '../styles'
 import type { PromptValues } from './prompt-answers'
 import type { Prompt } from '@/books/journal/types'
 
@@ -36,32 +36,38 @@ export function PromptFields({
         }
         if (prompt.kind === 'select') {
           return (
-            <label key={prompt.id} className={field}>
-              {prompt.text}
-              <select
-                className={input}
-                value={(values[prompt.id] as string) ?? ''}
-                onChange={(e) => onChange(prompt.id, e.target.value)}
-              >
-                <option value="">Choose…</option>
-                {prompt.options?.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <fieldset key={prompt.id} className={promptGroup}>
+              <legend className={promptLegend}>{prompt.text}</legend>
+              <div className="flex flex-wrap gap-2">
+                {prompt.options?.map((option) => {
+                  const checked = values[prompt.id] === option.id
+                  return (
+                    <label key={option.id} className={`relative ${checked ? chipSelected : chip}`}>
+                      <input
+                        type="radio"
+                        className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                        name={`${namespace}-${prompt.id}`}
+                        value={option.id}
+                        checked={checked}
+                        onChange={() => onChange(prompt.id, option.id)}
+                      />
+                      <span className="capitalize">{option.label}</span>
+                    </label>
+                  )
+                })}
+              </div>
+            </fieldset>
           )
         }
         const { min, max } = prompt.scale!
         const steps: number[] = []
         for (let n = min; n <= max; n++) steps.push(n)
         return (
-          <fieldset key={prompt.id} className="space-y-2 rounded-lg border border-slate-200 p-3">
-            <legend className="px-1 text-sm font-medium text-slate-700">{prompt.text}</legend>
+          <fieldset key={prompt.id} className={promptGroup}>
+            <legend className={promptLegend}>{prompt.text}</legend>
             <div className="flex flex-wrap gap-3">
               {steps.map((n) => (
-                <label key={n} className="flex items-center gap-1.5 text-sm text-slate-700">
+                <label key={n} className="flex items-center gap-1.5 text-sm text-stone-700">
                   <input
                     type="radio"
                     name={`${namespace}-${prompt.id}`}

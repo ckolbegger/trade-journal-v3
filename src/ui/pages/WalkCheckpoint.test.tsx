@@ -164,10 +164,7 @@ async function alreadyReviewed(f: Fixture, tradeId: string, action: string): Pro
 }
 
 async function recordAction(action = 'Hold') {
-  await userEvent.selectOptions(
-    await screen.findByLabelText(/what will you do with this trade/i),
-    action,
-  )
+  await userEvent.click(await screen.findByRole('radio', { name: action }))
   await userEvent.click(screen.getByRole('button', { name: /record action/i }))
 }
 
@@ -288,7 +285,9 @@ describe('WalkCheckpoint', () => {
 
     expect(onReviewed).not.toHaveBeenCalled()
     expect(await f.journal.entriesFor({ trade: aapl })).toEqual([])
-    expect(screen.getByLabelText(/what will you do with this trade/i)).toBeInTheDocument()
+    expect(
+      screen.getByRole('group', { name: /what will you do with this trade/i }),
+    ).toBeInTheDocument()
   })
 
   it('shows the Action already recorded today instead of asking again', async () => {
@@ -558,9 +557,7 @@ describe('WalkCheckpoint — nothing to note', () => {
     expect(considereAfter).not.toBeDisabled()
     await userEvent.type(considereAfter, 'still editable')
     expect(considereAfter).toHaveValue('still editable')
-    expect(
-      screen.getByRole('combobox', { name: /what will you do with this trade/i }),
-    ).not.toBeDisabled()
+    expect(screen.getByRole('radio', { name: 'Hold' })).not.toBeDisabled()
   })
 })
 

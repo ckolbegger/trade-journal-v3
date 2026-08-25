@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useJournal } from '../journalContext'
 import { PromptFields } from '../components/PromptFields'
-import { btnPrimary, btnSecondary, heading } from '../styles'
+import { btnPrimary, btnSecondary, card, heading } from '../styles'
 import type { EntryType, PromptAnswer } from '@/books/journal/types'
 
 // Shown right after a Plan is confirmed: the seeded Plan prompts. The trader may
@@ -73,21 +73,21 @@ export function PlanEntryForm({ tradeId, onDone }: { tradeId: string; onDone: ()
           void writeNow()
         }}
       >
-        <PromptFields
-          prompts={entryType.prompts}
-          values={values}
-          namespace="plan-entry"
-          onChange={setValue}
-        />
-
-        <div className="flex items-center gap-2">
-          <button type="submit" className={btnPrimary}>
-            Write journal entry
-          </button>
-          <button type="button" className={btnSecondary} onClick={() => void skip()}>
-            Skip
-          </button>
+        <div className={`${card} space-y-4`}>
+          <PromptFields
+            prompts={entryType.prompts}
+            values={values}
+            namespace="plan-entry"
+            onChange={setValue}
+          />
         </div>
+
+        <button type="submit" className={`${btnPrimary} w-full`}>
+          Write journal entry
+        </button>
+        <button type="button" className={`${btnSecondary} w-full`} onClick={() => void skip()}>
+          Skip
+        </button>
       </form>
     </section>
   )

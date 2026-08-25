@@ -27,7 +27,7 @@ async function planWithJournal(page: Page) {
   await expect(page.getByRole('heading', { name: 'Plan journal' })).toBeVisible()
   await page.getByLabel('Why this trade, why now?').fill('Breakout confirmed on volume')
   await page.getByRole('radio', { name: '4' }).check()
-  await page.getByLabel('Emotional state').selectOption('calm')
+  await page.getByRole('radio', { name: 'calm' }).check()
   await page.getByRole('button', { name: /write journal entry/i }).click()
 }
 
