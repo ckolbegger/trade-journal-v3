@@ -54,6 +54,7 @@ Extract the prototype's language into `src/ui/styles.ts`, which already holds th
 | Accent         | indigo                                               | black for action; green/red reserved for P&L and stop                   |
 | Section label  | `subheading`                                         | same idea, slightly wider tracking — already close                      |
 | Badges         | `StatusBadge` amber/green/slate                      | same shape; add journal **type** tones (PLAN blue, POSITION neutral, MARKET amber, CLOSE red) |
+| Links          | indigo, no underline                                 | black + `underline underline-offset-2` — colour alone no longer distinguishes a link once the accent is the same near-black as body text (added 2026-08-25 after UX.1 review) |
 | Chips          | none                                                 | option chips — black when selected, white outline when not              |
 | Numbers        | `tabular-nums` via `num`                             | unchanged — keep `num` everywhere                                       |
 
@@ -74,6 +75,12 @@ _Verify:_ the full suite passes **unmodified** — that is the proof the change 
 Replace the header nav in `src/ui/App.tsx` with a fixed bottom tab bar: Home · Trades · Journal · Review. The header keeps the page title only. `<main>` gains bottom padding so content clears the bar. Trades moves to `/trades`; `/` becomes Home.
 
 _Changes tests:_ nav selectors and any e2e that navigates by header link. Those updates belong to this story.
+
+**Scoped 2026-08-25, before starting.** The churn is routing, not selectors, and only if the tab bar keeps the accessible names the suites already use:
+
+- Keep the tabs as links named exactly **Trades**, **Journal**, **Review**, and keep a link named exactly **Settings** reachable from Home. 7 e2e specs click `getByRole('link', { name: 'Settings' })`; every nav click in the suite survives untouched if these names hold.
+- **All 31 e2e specs open `goto('/')`.** `Onboarding` is a gate inside `AppRoot`, not a route, so a spec that onboards is still sitting on `/` afterwards — which today renders Trades and after this story renders Home. Every spec that then reaches for the trades list or the "New Trade" link needs one added line (`goto('/trades')` or a Trades tab click). That is the whole cost: one line per spec, no selector rewrites.
+- `AppRoot`'s "Loading…" fallback still carries `text-slate-500`; convert it with the shell.
 
 _Verify:_ every route reachable, active tab correct on each, nothing hidden behind the bar.
 
@@ -111,9 +118,13 @@ Card-grouped sections, small-caps labels, option chips for the feeling prompt, t
 
 _Verify:_ a full plan → confirm → journal round trip.
 
-### UX.8 — Review, Settings, and the design doc
+### UX.8 — Review, Settings, Replay, and the design doc
 
-Conform the walk checkpoint, the review agenda and Settings. Then **rewrite [ui-style.md](../design/ui-style.md)** to describe the new system: it currently prescribes the header nav and indigo palette this work replaces, and under constraint 3 a stale design doc outranks the prototype.
+Conform the walk checkpoint, the review agenda and Settings.
+
+**Discovered 2026-08-25, added to this story:** `ReplayView.tsx` / `ReplayChart.tsx` (the S15.1 replay screen) were missing from this plan's file list entirely. `ReplayChart` draws its series in `indigo-600` with a matching legend swatch — indigo surviving the token rewrite because it is a chart colour rather than a shared constant. (`TradesPage.tsx` also keeps a `hover:text-indigo-600`, but UX.4 converts that one.) Convert it with the rest.
+
+Then **rewrite [ui-style.md](../design/ui-style.md)** to describe the new system: it currently prescribes the header nav and indigo palette this work replaces, and under constraint 3 a stale design doc outranks the prototype.
 
 _Verify:_ a full review walk; export and restore; all suites green.
 
@@ -124,6 +135,7 @@ _Verify:_ a full review walk; export and restore; all suites green.
 - `src/ui/App.tsx` — shell and tab bar (UX.2)
 - `src/ui/pages/HomePage.tsx` — new (UX.3)
 - Per screen: `TradesPage.tsx`, `TradeDetail.tsx` (+ `TradeDashboard.tsx`), `TimelinePage.tsx`, `PlanForm.tsx`, `WalkSession.tsx` / `WalkCheckpoint.tsx`, `ReviewPage.tsx`, `SettingsPage.tsx`, `Onboarding.tsx`
+- Also carrying inline slate/indigo the per-screen stories must convert: `RecordFillForm.tsx`, `CloseForm.tsx`, `MarkEntry.tsx`, `NewEntryPage.tsx`, `PlanEntryForm.tsx`, `AddendumForm.tsx`, `AnsweredPrompts.tsx`, `RestoreFlow.tsx`, `SettleForm.tsx`
 - `src/ui/components/Badge.tsx` — journal type tones; `PromptFields.tsx` — chips
 - [ui-style.md](../design/ui-style.md) — rewritten last (UX.8)
 

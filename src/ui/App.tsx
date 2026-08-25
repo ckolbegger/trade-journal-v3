@@ -9,16 +9,16 @@ import { NotFound } from './pages/NotFound'
 
 function navClass({ isActive }: { isActive: boolean }) {
   return isActive
-    ? 'rounded-md px-3 py-1.5 text-sm font-medium text-indigo-700 bg-indigo-50'
-    : 'rounded-md px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+    ? 'rounded-md px-3 py-1.5 text-sm font-medium text-stone-900 bg-stone-100'
+    : 'rounded-md px-3 py-1.5 text-sm font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-100'
 }
 
 export function App() {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b border-slate-200 bg-white">
+    <div className="min-h-screen bg-cream text-stone-900">
+      <header className="border-b border-stone-200 bg-white">
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between px-4 py-3">
-          <h1 className="text-base font-semibold text-slate-900">Trade Journal</h1>
+          <h1 className="text-base font-semibold text-stone-900">Trade Journal</h1>
           <nav className="flex items-center gap-1">
             <NavLink to="/" end className={navClass}>
               Trades

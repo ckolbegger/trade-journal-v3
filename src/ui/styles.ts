@@ -5,29 +5,29 @@
 // render sections inside it.
 
 // Card-style section wrapper.
-export const card = 'rounded-lg border border-slate-200 bg-white p-4 shadow-sm'
+export const card = 'rounded-2xl border border-stone-200 bg-white p-4'
 
 // Section heading (h2) and sub-heading (h3) tones.
-export const heading = 'text-xl font-semibold text-slate-900'
-export const subheading = 'text-xs font-semibold uppercase tracking-wide text-slate-500'
+export const heading = 'text-xl font-semibold text-stone-900'
+export const subheading = 'text-xs font-semibold uppercase tracking-wider text-stone-600'
 
 // Vertical label wrapping an input/select/textarea.
-export const field = 'flex flex-col gap-1 text-sm font-medium text-slate-700'
+export const field = 'flex flex-col gap-1 text-sm font-medium text-stone-700'
 
 // Text input / select / textarea.
 export const input =
-  'rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500'
+  'rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-500'
 
-// Primary action button (indigo). Reads clearly disabled when disabled.
+// Primary action button — black pill. Reads clearly disabled when disabled.
 export const btnPrimary =
-  'inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none'
+  'inline-flex items-center justify-center rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-900 disabled:cursor-not-allowed disabled:bg-stone-200 disabled:text-stone-400'
 
-// Secondary / ghost button.
+// Secondary / ghost button — white pill, hairline border.
 export const btnSecondary =
-  'inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+  'inline-flex items-center justify-center rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-900'
 
 // Accent link.
-export const link = 'font-medium text-indigo-600 hover:text-indigo-500'
+export const link = 'font-medium text-stone-900 underline underline-offset-2 hover:text-stone-600'
 
 // Right-aligned numerics (money / quantities).
 export const num = 'tabular-nums'

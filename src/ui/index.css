@@ -1,1 +1,6 @@
 @import 'tailwindcss';
+
+/* Warm cream page ground, matched to the Claude Design prototype. */
+@theme {
+  --color-cream: #f2f0e9;
+}
