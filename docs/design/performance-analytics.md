@@ -316,7 +316,7 @@ coordinator-side. (Coordinator internals are illustrative; pinned in its own
 drill-down.)
 
 ```
-trader → PerformanceReportingCoordinator.runReport({ ...filters, status:'Closed' })
+trader → PerformanceReportingCoordinator.runOutcomeReport({ ...filters, groupBy?, asOf })
   → records = TradingRecordStore.listTrades({ ...filters, status:'Closed' })   // pre-narrowed HERE
   → snapshots = records.map(r => r.finalFigures)                               // O(1) reads (ADR 0007)
   → report = PerformanceAnalytics.aggregate(snapshots)                         // one pure mark-free call
@@ -327,7 +327,7 @@ The open-trade exposure path does not touch this module — it calls calc's
 `evaluateMany` (ADR 0008):
 
 ```
-trader → PerformanceReportingCoordinator.runReport({ ...filters, status:'Open' })
+trader → PerformanceReportingCoordinator.runExposureReport({ ...filters, asOf })
   → records = TradingRecordStore.listTrades({ ...filters, status:'Open' })
   → marks = PriceMarkStore.buildMarksFromFills(records.flatMap(r => r.fills), today)
   → exposure = CalculationModule.evaluateMany(records, marks, today)           // mark-dependent fold
@@ -338,6 +338,15 @@ The two paths share the coordinator and the stores but diverge at the pure
 module: closed trades hit PerformanceAnalytics (a mark-free fold over
 snapshots); open trades hit calc (a mark-dependent fold over records). This is
 the mark-dependence split decided semantic 2 + ADR 0008 draw.
+
+*Pinned since (PerformanceReportingCoordinator drill-down): the routing
+became the interface — two ops sharing one request type,
+`runOutcomeReport` (closed-in-scope → this module) and `runExposureReport`
+(open-in-scope → calc), each conjoining its own status onto the store filter.
+Empty scopes are valid zero views, so semantic 7's branch-free payoff holds
+per op. See
+[performance-reporting-coordinator.md](performance-reporting-coordinator.md)
+semantic 1.*
 
 ---
 

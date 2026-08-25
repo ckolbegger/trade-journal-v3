@@ -122,8 +122,8 @@ module).
 | 7 | **PerformanceAnalytics** | pure | 1 | Closed-trade **outcome** aggregation — a mark-free fold over per-trade FigureSet snapshots: R-multiple distribution, equity curve by R, win rate/expectancy/profit factor, P&L total, plan-revision discipline (per-trade). One op: `aggregate(results: FigureSet[]) → PortfolioReport` (metrics are fields on the return, not separate ops — the `~3` estimate collapsed to one deep op). No marks, no filters (FigureSet carries no filter dimension; the coordinator pre-narrows via `listTrades(filters)`), no temporal series (those are compositions over calc's `evaluate`, owned by the consumer holding the marks). **Closed-trade-only:** `rMultiple` is realized-only, so an open trade's snapshot is a non-outcome zero that distorts every R-based metric; open-trade exposure is served by calc's `evaluateMany` (ADR 0008), not this module. Drilled down — see [design doc](performance-analytics.md). |
 | 8 | **PlanCommitCoordinator** | coordinator | 2 | The start of every Trade and its pre-fill exit. `commitPlan(TradeInput) → {tradeId, figures, warnings}`: validates the Plan's R:R geometry via calc — the ADR 0010 charter (no declared stop side / misplaced side / non-profit target **blocks**; an in-tent stop **teaches** via `warnings`) — then commits Trade+Plan + creates the required pre-entry placeholder in ONE `StorageBinding.transaction` (OQ 9's recorded home); returns the plan-time FigureSet for the payoff visualization. `discardPlan(tradeId, at)`: retire a never-filled plan + void its owed placeholder in one transaction (audit finding F1 — the one trader-declared transition, terminal snapshotless `Discarded`). Joins TradingRecord + Reflection + calc — no PriceMarkStore (planned figures are mark-free). Drilled down — see [design doc](plan-commit-coordinator.md). |
 | 9 | **FillEntryCoordinator** | coordinator | 3 | Everything that happens because a fill landed or was fixed. Three ops: `recordFill` (first fill → Open; the flat-detecting fill → Closed + snapshot + post-close bookend, in one `StorageBinding.transaction`; returns `fillId` + `closedFigures` — the UI resolves the optional fill-reflection offer now/later/none via direct ReflectionStore calls), `correctFill` (the OQ 12/13 branch map: price-only → regenerate via `replaceSnapshot`; un-flatted Closed → `reopenTrade`; flatted Open → `closeTrade` + bookend in a transaction), `regenerateSnapshots(scope?)` (idempotent sweep serving ADR 0007's calc-bug migration and OQ 14's mark-correction response — detection: Closed ∧ date(closedAt) = mark.date ∧ fill-instrument match). Joins TradingRecord + Reflection + PriceMark + calc. Drilled down — see [design doc](fill-entry-coordinator.md). |
-| 10 | **DailyReviewCoordinator** | coordinator | 1 | The daily-review assembly — the widest READ join and the system's only read-only coordinator. `runDailyReview(asOf): DailyReviewView` — one op returns the whole day: open trades (records + live figures + `stopsHit` per ADR 0010 + owed + market context), the open-book exposure (`evaluateMany`, ADR 0008), `marksDue` (the mark-collection prompt's data, computed in hand from the marks map's omissions), every owed placeholder across ALL trades (one global read — Planned pre-entries and Closed post-closes included), and the day's interleaved journal stream (ADR 0004). Owns **no writes**: the review is a moment, not a transaction — every review-screen write is a single-store direct call (marks, revisions, entries, completions) or another coordinator's moment (`discardPlan`), performed by the UI (rule 8 — the session's structural finding, correcting the Phase-2 interactive-mark sketch). Present-tense assembly; `asOf` is a lens, not a time machine. Drilled down — see [design doc](daily-review-coordinator.md). |
-| 11 | **PerformanceReportingCoordinator** | coordinator | 1 | aggregate stats over Trades (via PerformanceAnalytics), filterable by date/strategy/status/underlying/account. Joins TradingRecord + Reference (Account/Taxonomy) + PerformanceAnalytics. |
+| 10 | **DailyReviewCoordinator** | coordinator | 1 | The daily-review assembly — the widest READ join and the system's first read-only coordinator (PerformanceReporting is the second). `runDailyReview(asOf): DailyReviewView` — one op returns the whole day: open trades (records + live figures + `stopsHit` per ADR 0010 + owed + market context), the open-book exposure (`evaluateMany`, ADR 0008), `marksDue` (the mark-collection prompt's data, computed in hand from the marks map's omissions), every owed placeholder across ALL trades (one global read — Planned pre-entries and Closed post-closes included), and the day's interleaved journal stream (ADR 0004). Owns **no writes**: the review is a moment, not a transaction — every review-screen write is a single-store direct call (marks, revisions, entries, completions) or another coordinator's moment (`discardPlan`), performed by the UI (rule 8 — the session's structural finding, correcting the Phase-2 interactive-mark sketch). Present-tense assembly; `asOf` is a lens, not a time machine. Drilled down — see [design doc](daily-review-coordinator.md). |
+| 11 | **PerformanceReportingCoordinator** | coordinator | 2 | The read-only reporting assembly — the "how am I doing over time" view. Two ops sharing one `ReportRequest` (owner decision — one op per question the screen asks): `runOutcomeReport` (closed-in-scope → `aggregate` over snapshots, O(1) per ADR 0007, + `closedAt`-ordered drill-down rows) and `runExposureReport` (open-in-scope → `evaluateMany`, ADR 0008, marks via `buildMarksFromFills`). Each op conjoins its own status onto the pass-through `TradeFilters` — status stays a filter, not a router argument; empty scopes are valid zero views. Both accept `groupBy` (single-dimension: strategy/underlying/accountId) with label resolution incl. retired values, group lists ordered label-ascending so the UI can align the two ops' lists. Cold Closed snapshots (null `finalFigures`) are computed in place with `regenerateSnapshots`' recipe minus the write-back. The second read-only coordinator (after DailyReview). Joins TradingRecord + PriceMark (exposure marks + cold-snapshot compute) + Reference (Account/Taxonomy) + Calc + PerformanceAnalytics. Drilled down — see [design doc](performance-reporting-coordinator.md). |
 | — | **StorageBinding** | seam | ~5 | The internal persistence primitive behind all five stores: put/get/delete/range-query over opaque fact records. Two implementations — in-memory (unit tests) and real (prod). Zero business rules. |
 
 ---
@@ -225,8 +225,11 @@ runDailyReview(asOf: Date): DailyReviewView   // open trades + figures + stopsHi
                                               //   context + exposure + marksDue + day stream —
                                               //   READ-ONLY, the only coordinator with no writes
 
-// PerformanceReportingCoordinator
-runReport(filters: ReportFilters): PortfolioReport
+// PerformanceReportingCoordinator — see performance-reporting-coordinator.md for the full, pinned interface
+runOutcomeReport(request: ReportRequest): OutcomeReportView   // closed-in-scope → aggregate (mark-free)
+runExposureReport(request: ReportRequest): ExposureReportView // open-in-scope → evaluateMany (ADR 0008)
+// One shared request type; each op conjoins its own status — status is a
+// filter, not a router argument.
 ```
 
 ---
@@ -242,7 +245,7 @@ call nothing. Coordinators call stores + pure modules.
 | **FillEntryCoordinator** | write (`recordFill` — absorbs fill+status+snapshot, returns fillId; `correctFill`; `closeTrade`/`reopenTrade`/`replaceSnapshot` — the guarded correction family; `getTradeRecord`) | write (`createPlaceholder` — post-close required, in the close transaction; closed-by-correction bookend) | read (`buildMarksFromFills`, at close + regeneration) | — | — | — | isFlat, evaluate | — |
 | **DailyReviewCoordinator** | read (`listTrades({status:'Open'})`) | read (`listEntries` ×3: global owed, per-trade market context, day stream) | read (`buildMarksFromFills` only — the review's mark WRITES are UI-direct, see below) | — | — | — | evaluate, evaluateMany, stopsHit | — |
 | **market-data fetcher (roadmap)** | — | — | read (`getMarkSeries`) / write (`backfillMark`) | read (active provider) | — | — | — | — |
-| **PerformanceReportingCoordinator** | read (`listTrades(filters)`, `getTradeRecord`) | — | — | — | read (group) | read (group) | evaluateMany (open-trade exposure path, ADR 0008) | aggregate (closed-trade outcome path) |
+| **PerformanceReportingCoordinator** | read (`listTrades` — status conjoined per op) | — | read (`buildMarksFromFills` — exposure marks + cold-snapshot compute) | — | read (group labels) | read (group labels, incl. retired) | evaluateMany (`runExposureReport`, ADR 0008) | aggregate (`runOutcomeReport`) |
 | **direct read callers (UI, backup)** | `getTradeRecord`, `listTrades` | `getEntry`, `listEntries`, `getSchema`, `listSchemas` | `getMarkSeries` | `listProviders` | listAccounts | getTaxonomy | evaluate | — |
 | **restore tool (import path)** | `importTrade` (per historical trade, derive-on-import) | `importSchema` then `importEntry` (verbatim, two-phase) | `importMark` (verbatim, source+history intact) | live ops (add+deactivate) | live ops (add+retire) | live ops (add+setActive+deactivate) | — | — |
 
@@ -376,30 +379,39 @@ trader records observations → UI → ReflectionStore.createEntry(...)   // opt
 
 ### 4. Performance reporting
 
-The status filter routes to two different paths. Closed trades feed the outcome
-aggregate (PerformanceAnalytics); open trades build an exposure view that does
-**not** touch PerformanceAnalytics (`rMultiple` is realized-only, so an open
-trade's snapshot is a non-outcome zero that would poison the R-based metrics —
-see [performance-analytics.md](performance-analytics.md) decided semantic 2).
+Two ops share one `ReportRequest` — one per question the screen asks
+(the pinned design; see
+[performance-reporting-coordinator.md](performance-reporting-coordinator.md)).
+The ops split on mark-dependence (ADR 0008): the outcome report is a
+mark-free fold over closed snapshots (PerformanceAnalytics); the exposure
+report is a mark-dependent fold over open records (calc). Open trades never
+feed the outcome aggregate — `rMultiple` is realized-only, so an open
+trade's snapshot is a non-outcome zero that would poison the R-based metrics
+([performance-analytics.md](performance-analytics.md) decided semantic 2).
 
 ```
-trader → PerformanceReportingCoordinator.runReport(filters)
-  → TradingRecordStore.listTrades({ ...filters, status:'Closed' })   // pre-narrowed HERE
-  → snapshots = records.map(r => r.finalFigures)                     // O(1) cache reads (ADR 0007)
-  → PerformanceAnalytics.aggregate(snapshots)                        // one pure call
-  ← PortfolioReport (R-multiple distribution, equity-by-R, win rate, expectancy, P&L summary, revision discipline)
+trader → PerformanceReportingCoordinator.runOutcomeReport({ filters, groupBy?, asOf })
+  → closed = TradingRecordStore.listTrades({ ...filters, status:'Closed' })   // pre-narrowed HERE
+  → figures = closed.sort(by closedAt)
+                 .map(r => r.finalFigures                                      // O(1) cache reads (ADR 0007)
+                         ?? calc.evaluate(r, priceMarks.buildMarksFromFills(   // cold snapshot — the
+                              r.fills, date(r.closedAt)), r.closedAt))         //   regen recipe, no write-back
+  → portfolio = PerformanceAnalytics.aggregate(figures)                        // one mark-free call
+  ← OutcomeReportView { portfolio, trades: closedAt-ordered rows, groups? }    // labels via taxonomy/accounts
 
-  — open-trade exposure (separate path, status:'Open') —
-  → records = TradingRecordStore.listTrades({ ...filters, status:'Open' })
-  → marks = PriceMarkStore.buildMarksFromFills(records.flatMap(r => r.fills), today)
-  → CalculationModule.evaluateMany(records, marks, today)             // one mark-dependent calc call (ADR 0008)
-  ← ExposureReport (totalUnrealized, totalCurrentRisk, totalPlannedRisk, totalIncrementalReward + missingMarkCount)
+trader → PerformanceReportingCoordinator.runExposureReport({ ...sameRequest })
+  → open = TradingRecordStore.listTrades({ ...filters, status:'Open' })
+  → marks = PriceMarkStore.buildMarksFromFills(open.flatMap(r => r.fills), asOf)  // ONE map
+  → exposure = calc.evaluateMany(open, marks, asOf)                            // one mark-dependent call
+  ← ExposureReportView { report, asOf, groups? }                               // group lists align by label
 ```
 
-Closed trades are O(1) reads from their snapshot; filtering (date/strategy/
-underlying/account) is the coordinator's job via `listTrades(filters)` —
-PerformanceAnalytics takes an already-scoped list (FigureSet carries no filter
-dimension). Group-by-strategy/account is likewise coordinator-side.
+Closed trades are O(1) reads from their snapshot (cold ones compute in place,
+read-only); filtering (date/strategy/underlying/account) is the store's via
+`listTrades(filters)`; group-by-strategy/account is coordinator-side with
+label resolution. Empty scopes are valid zero views, never nulls — and the
+per-day revision rate (OQ 15) is deferred to the reporting-UI session with
+the pooled-rate analysis parked in the design doc.
 
 ### 5. Plan revision (no coordinator — direct store write, rule 8)
 
@@ -476,11 +488,21 @@ store's contract), then harvest modules whose contracts prior sessions pinned.
    for `current`/`incremental`, calc's fourth op `stopsHit`. PlanCommit's
    validation charter gains the in-tent stop teaching.
    **DailyReviewCoordinator ✓** [design doc](daily-review-coordinator.md) —
-   the widest read join landed as the system's only read-only coordinator:
+   the widest read join landed as the first of the two read-only coordinators:
    the review's writes ruled UI-direct (rule 8, correcting the Phase-2
    interactive-mark sketch), `marksDue` computed in hand, one global owed
    read, the ADR 0004 day stream, and `stopsHit`'s routing (ADR 0010).
-   — remaining: PerformanceReporting.
+   **PerformanceReportingCoordinator ✓** [design doc](performance-reporting-coordinator.md)
+   — the last coordinator: two ops sharing one `ReportRequest` (owner
+   decision — one op per question the screen asks), grouping folded in on
+   both ops with label resolution incl. retired values, cold Closed
+   snapshots computed in place read-only, OQ 15 visited and deferred to the
+   reporting-UI session (pooled-rate analysis parked), and the second
+   read-only coordinator.
+   **The drill-down order is complete** — all twelve domain modules (eleven
+   partition rows plus PriceProviderStore) are drilled down; remaining design
+   work is the StorageBinding seam (OQ 9's deferred primitive shape, joining
+   implementation) and the parked OQs (8, 15, 17, 18).
 
 ---
 
@@ -507,7 +529,7 @@ session must import.
 | 12 | ~~**(exported from CalculationModule)** Status-invalidating correction: a fill correction could change net position from zero to non-zero (Closed → should-be-Open).~~ **RESOLVED** → the guarded-transition family on TradingRecordStore: `reopenTrade` (asserts fills ≠ 0; clears `closedAt` + snapshot) and `closeTrade` (asserts fills = 0; takes snapshot + `closedAt`) — the mirror of the edge that no prior session had written: a correction can also flat an *Open* trade. FillEntryCoordinator's `correctFill` owns the branch map. Every status mutation remains fill-arithmetic-guarded; `recordFill` on Closed still rejects (late fills resolve via explicit `reopenTrade` then re-record). | FillEntryCoordinator ✓ / TradingRecordStore ✓ |
 | 13 | ~~**(exported from TradingRecordStore)** Snapshot write-back after regeneration.~~ **RESOLVED** → `replaceSnapshot(tradeId, figures)`, Closed-only guard. Standalone rather than a widened `correctFill` — decisive reason: the mark-correction path (OQ 14) needs snapshot write-back with no fill being corrected. | FillEntryCoordinator ✓ (decision) → TradingRecordStore ✓ (op) |
 | 14 | ~~**(exported from PriceMarkStore)** Mark correction invalidating a closed-trade snapshot.~~ **RESOLVED** → detection + response live in FillEntryCoordinator's `regenerateSnapshots(scope)`: affected = Closed trades where `date(closedAt) === mark.date` and some fill's instrument matches; response = recompute as-of `closedAt` + `replaceSnapshot`. Trigger convention: the UI calls the sweep after an `upsertMark` that *overwrote* an existing mark (history non-empty). Idempotent, so over-calling is harmless. Detection is a coordinator-side filter over `listTrades` — PriceMarkStore stays consumer-agnostic (ADR 0002, rule 1). | FillEntryCoordinator ✓ |
-| 15 | **(surfaced by PerformanceAnalytics)** Per-day plan-revision-rate. ADR 0001 names revisions-over-duration; FigureSet carries `revisionCount` (raw count) but no trade duration (no `committedAt`/`closedAt`), so PerformanceAnalytics reports `meanRevisions` (per-trade) only. Two paths to the per-day rate, neither chosen: (a) calc adds a per-trade `revisionRate` field to FigureSet (reverses calc semantic 8's "rate is PA's job"); (b) the coordinator computes revisions/day from `closedAt − committedAt` it already holds, bypassing PerformanceAnalytics for that one metric. | PerformanceReportingCoordinator drill-down / ADR 0001 |
+| 15 | **(surfaced by PerformanceAnalytics)** Per-day plan-revision-rate. ADR 0001 names revisions-over-duration; FigureSet carries `revisionCount` (raw count) but no trade duration (no `committedAt`/`closedAt`), so PerformanceAnalytics reports `meanRevisions` (per-trade) only. Two paths to the per-day rate: (a) calc adds a per-trade `revisionRate` field to FigureSet (reverses calc semantic 8's "rate is PA's job"); (b) the coordinator computes revisions/day from `closedAt − committedAt` it already holds, bypassing PerformanceAnalytics for that one metric. **Visited by the PerformanceReportingCoordinator session — deferred by owner decision**: no per-day field on the view yet; the pooled-rate analysis is parked in [performance-reporting-coordinator.md](performance-reporting-coordinator.md) semantic 7 (pooled `Σ revisionCount ÷ Σ spanDays` — per-trade rates cannot fold to the pooled figure, same-day trades are ÷0, so path (a) would buy the wrong number; path (b) is the parked recommendation, additive on `OutcomeReportView` when adopted). | reporting-feature design (reporting UI session) |
 | 16 | ~~**(surfaced by the payoff-curve session, ADR 0009)** Plan stop/target representation for multi-directional structures.~~ **RESOLVED** → ADR 0010 (the stops session): stops are per risk direction (`{downside?, upside?}`, sides optional — one-stop-per-side is structural, two-on-a-side unexpressible); `target` is a single level; every level is a **price with a quote basis** (`'underlying'` \| `'option-position'` — the net over option legs, per unit, unsigned magnitude; the stop-vs-target role supplies direction). Planned risk = **the worst side's reading** (the single R baseline), per-direction detail as additive FigureSet fields; underlying-quoted stops read against the expiry curve (in-tent stops read as profits — PlanCommit surfaces the teaching); option-quoted levels compare against net option marks (no ADR 0009 boundary crossing); `current`/`incremental` amended to whole-position mark-netting; calc gains `stopsHit`. Deferred generalizations → OQ 17. | Stops session ✓ (ADR 0010) |
 | 17 | **(surfaced by the stops session, ADR 0010)** Deferred level generalizations, parked until a requirement emerges: per-leg option quotes on multi-direction structures (a condor managed per side — single-direction option trades work today, the option position *is* that side); two-sided profit taking (`target` → per-direction sides mirroring `Stops`; figures stay single by fold policy, so FigureSet/PerformanceAnalytics/snapshots are untouched and any fold over a one-sided target is the identity — historical data stays valid); time stops (no requirement). | future session when a requirement emerges |
 | 18 | **(surfaced by the PlanCommit session)** Pre-fill validation basis for option-structure plans. The in-tent teaching needs the planned structure (strikes locate the tent), which the `Plan` type does not carry — pre-fill, underlying-quoted levels on multi-leg option structures are incomputable, and linear arithmetic is basis-incoherent there (option-position entry $2.30 vs underlying stop $150). The charter and the `stop-reads-profit` warning shape are pinned now ([plan-commit-coordinator.md](plan-commit-coordinator.md) semantics 3 + 6); the MVP's validation is correct for everything exercisable (stock linear; option-position entry arithmetic). The options release decides: legs on Plan (additive `legs?`, no seam reshape — opens planned-quantity and entry-vs-legs-net questions) vs teach-at-first-fill (ADR 0005's freeze moves once). Joins the payoff-curve companion semantics parked in calculation-module.md's open items. | options-release drill-down |

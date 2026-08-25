@@ -11,8 +11,9 @@ It deliberately owns **no writes**: the review is a moment, not a transaction.
 Every write a trader makes from the review screen — entering a mark, trailing
 a stop, recording an observation, completing a placeholder, discarding a dead
 plan — is a single-store act (or another coordinator's moment) the UI performs
-directly (rule 8; decided semantics 7). This makes it the system's **only
-read-only coordinator**: no StorageBinding, no transaction, no clock. The
+directly (rule 8; decided semantics 7). This makes it the system's **first
+read-only coordinator** (PerformanceReportingCoordinator, drilled down later,
+is the second): no StorageBinding, no transaction, no clock. The
 Phase-2 walkthrough drew the mark write inside `runDailyReview` behind an
 interactive prompt; at drill-down granularity that sketch fails rule 8
 mechanically (the write touches one store) and rule 6 (a synchronous call

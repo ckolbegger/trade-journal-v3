@@ -514,6 +514,15 @@ Each ruling cites the principle or ADR it derives from. Veto any during review.
    "Moving a stop away" is a revision to a farther level, which the
    discipline metrics then see. *(ADR 0001, 0010.)*
 
+25. **`evaluateMany([])` → a valid zero `ExposureReport`** (added by the
+   PerformanceReportingCoordinator session). Empty records yield
+   `positionCount: 0`, `0` dollars everywhere, `missingMarkCount: 0` — not
+   null, not a throw. The PerformanceAnalytics parallel (its semantic 7 for
+   `aggregate`), for the same reason: `runExposureReport` on an empty open
+   scope (e.g. closed-only filters) leans on the empty fold being branch-free
+   for its caller. *(Consumer ergonomics — performance-reporting-
+   coordinator.md semantic 3.)*
+
 ---
 
 ## Worked examples
