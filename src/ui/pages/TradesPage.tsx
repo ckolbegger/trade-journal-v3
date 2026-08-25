@@ -7,6 +7,12 @@ import { centsToDollars, optionLabel } from '../format'
 import { btnPrimary, heading, num } from '../styles'
 import type { Money, PlannedLeg, TradeRecord, TradeStatus } from '@/books/tradebook/types'
 
+// The row's monogram: the underlying ticker's first two letters, uppercased —
+// string formatting over an already-loaded fact, not domain derivation.
+function monogram(ticker: string): string {
+  return ticker.slice(0, 2).toUpperCase()
+}
+
 // The Planned Leg rendered for the list row: a stock reads its ticker; an
 // option reads the contract position ("1 × AAPL Jun'27 200C") — or, when
 // strike/expiration are still TBD (a legging plan, Slice 7), "1 × AAPL call
@@ -31,6 +37,7 @@ interface Row {
   trade: TradeRecord
   status: TradeStatus
   pnl?: Money
+  strategyName: string
 }
 
 export function TradesPage() {
@@ -41,20 +48,22 @@ export function TradesPage() {
   useEffect(() => {
     let active = true
     async function load() {
-      const [all, planned, open, closed] = await Promise.all([
+      const [all, planned, open, closed, strategies] = await Promise.all([
         tradeBook.query({}),
         tradeBook.query({ status: 'planned' }),
         tradeBook.query({ status: 'open' }),
         tradeBook.query({ status: 'closed' }),
+        tradeBook.registries.strategies.list(true),
       ])
       const plannedIds = new Set(planned.map((t) => t.id))
       const openIds = new Set(open.map((t) => t.id))
       const closedIds = new Set(closed.map((t) => t.id))
       const next: Row[] = []
       for (const trade of all) {
-        if (plannedIds.has(trade.id)) next.push({ trade, status: 'planned' })
-        else if (openIds.has(trade.id)) next.push({ trade, status: 'open' })
-        else if (closedIds.has(trade.id)) next.push({ trade, status: 'closed' })
+        const strategyName = strategies.find((s) => s.id === trade.plan.strategyId)?.name ?? ''
+        if (plannedIds.has(trade.id)) next.push({ trade, status: 'planned', strategyName })
+        else if (openIds.has(trade.id)) next.push({ trade, status: 'open', strategyName })
+        else if (closedIds.has(trade.id)) next.push({ trade, status: 'closed', strategyName })
       }
       await Promise.all(
         next.map(async (row) => {
@@ -79,24 +88,37 @@ export function TradesPage() {
           New Trade
         </Link>
       </div>
-      <ul className="divide-y divide-slate-200 overflow-hidden rounded-lg border border-slate-200 bg-white">
-        {rows.map(({ trade, status, pnl }) => {
+      <ul className="divide-y divide-stone-200 overflow-hidden rounded-2xl border border-stone-200 bg-white">
+        {rows.map(({ trade, status, pnl, strategyName }) => {
           const label = planLabel(trade.plan.plannedLegs[0])
+          const ticker = trade.plan.plannedLegs[0]?.instrument.ticker ?? ''
           return (
             <li
               key={trade.id}
               aria-label={label}
-              className="flex items-center justify-between px-4 py-3 hover:bg-slate-50"
+              className="flex items-center gap-3 px-4 py-3 hover:bg-stone-50"
             >
-              <Link
-                to={`/trades/${trade.id}`}
-                className="font-medium text-slate-900 hover:text-indigo-600"
+              <span
+                aria-hidden="true"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-100 text-xs font-semibold text-stone-700"
               >
-                {label}
-              </Link>
-              <div className="flex items-center gap-3">
+                {monogram(ticker)}
+              </span>
+              <div className="min-w-0 flex-1">
+                <Link
+                  to={`/trades/${trade.id}`}
+                  className="block truncate font-semibold text-stone-900 hover:text-stone-600"
+                >
+                  {label}
+                </Link>
+                {strategyName && <p className="truncate text-sm text-stone-500">{strategyName}</p>}
+              </div>
+              <div className="flex flex-col items-end gap-1">
                 {pnl !== undefined && (
-                  <span aria-label="pnl" className={`text-sm text-slate-600 ${num}`}>
+                  <span
+                    aria-label="pnl"
+                    className={`text-sm font-medium ${num} ${pnl >= 0 ? 'text-green-700' : 'text-red-700'}`}
+                  >
                     ${centsToDollars(pnl)}
                   </span>
                 )}

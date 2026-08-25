@@ -56,7 +56,10 @@ Extract the prototype's language into `src/ui/styles.ts`, which already holds th
 | Badges         | `StatusBadge` amber/green/slate                      | same shape; add journal **type** tones (PLAN blue, POSITION neutral, MARKET amber, CLOSE red) |
 | Links          | indigo, no underline                                 | black + `underline underline-offset-2` — colour alone no longer distinguishes a link once the accent is the same near-black as body text (added 2026-08-25 after UX.1 review) |
 | Chips          | none                                                 | option chips — black when selected, white outline when not              |
+| P&L            | `text-slate-600`, unsigned by colour                 | green/red by sign — but **`green-700`/`red-700`, not 600**: `green-600` is 3.30:1 on white and fails AA outright (added 2026-08-25 after UX.4 review) |
 | Numbers        | `tabular-nums` via `num`                             | unchanged — keep `num` everywhere                                       |
+
+**Contrast rule, stated here because no repo doc states it.** Every colour choice in this migration meets WCAG AA: **4.5:1 for normal text**, 3:1 for large text (18.66px bold / 24px) and for borders. This has already caught two regressions that looked fine on screen — `subheading` at `stone-500` on the new cream ground (4.21:1, UX.1) and positive P&L at `green-600` on white (3.30:1, UX.4). Compute the ratio rather than judging by eye; both failures were invisible to inspection. [ui-style.md](../design/ui-style.md)'s Accessibility section covers only names, roles and focus — UX.8's rewrite should fold this rule in.
 
 Keep the light-theme-only rule and the system font stack; the prototype's typeface is not available and is not worth adding.
 
@@ -109,6 +112,11 @@ Conform `TradesPage` to the prototype row: monogram circle, ticker, strategy, P&
 So the row is monogram · ticker · strategy · P&L · status badge. Keep the existing `aria-label` on the row and on `pnl` — e2e selects by them.
 
 _Verify:_ planned, open and closed rows all render; a row reaches its detail page.
+
+**Found during UX.4 acceptance, both pre-existing and neither a UX.4 defect:**
+
+1. **A closed Trade shows no P&L on its row.** The detail page reports the realized figure (`Realized P&L $118.00` on the verified NVDA Trade), but the row shows only the badge — `pnl` is populated only where a valuation exists, and that loading logic predates this story. A trader scanning the list therefore gets no result for finished Trades. Wants a ruling: surface realized P&L on closed rows, or leave the list to open Trades only. Candidate for UX.5 or S15.3.
+2. **Only the label text is a link, not the whole row.** The monogram, strategy subline and badge sit outside the anchor, so the tap target is smaller than the prototype's row-as-target implies — most noticeably at narrow widths where the label truncates. Pre-existing structure. Candidate for a later story if row-wide tap targets are wanted on mobile.
 
 ### UX.5 — Trade detail
 
