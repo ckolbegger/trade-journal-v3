@@ -648,16 +648,20 @@ fill-level one ever exists.
 ```
 trader → DailyReviewCoordinator.runDailyReview(today)
   → [existing openTrades + marks + evaluate sequence — see TradingRecordStore doc]
+  → owedAll = ReflectionStore.listEntries({ state:'placeholder' })   // ONE global read (OQ 5: a filter) —
+  │    //   grouped by tradeId in hand; catches Planned pre-entries + Closed post-closes too
   → for each open trade:
-      → owed = ReflectionStore.listEntries({ tradeId, state:'placeholder' })   // OQ 5: a filter
       → marketCtx = ReflectionStore.listEntries({ linkedToTrade:tradeId, level:'market' })
-      ← assembled into DailyReviewView (open trades + live figures + owed + market, interleaved by time)
+  → dayEntries = ReflectionStore.listEntries({ from: startOfDay, to: endOfDay, state:'complete' })  // ADR 0004
+  ← assembled into DailyReviewView (open trades + live figures + owed + market + the day's stream)
 trader records an observation → ReflectionStore.createEntry(...)   // optional, journal-writing path
 ```
 
-Two filters, no derivation. This is OQ 5's resolution made concrete: "what's
+Three reads, no derivation. This is OQ 5's resolution made concrete: "what's
 owed" is `listEntries({ state:'placeholder' })`, a fact filter — not a lifecycle
-computation.
+computation. The global-read consolidation (one read replaces N per-trade owed
+queries) and the day-stream read are pinned in
+[daily-review-coordinator.md](daily-review-coordinator.md) (semantic 6).
 
 ## Sequence: journal-writing (direct store call, no coordinator — rule 8)
 
@@ -685,7 +689,6 @@ sequenceDiagram
     T->>RS: getSchemaVersion('pre-entry@1')
     RS-->>T: { schemaId:'pre-entry@1', version:1, fields:[4 fields] }
     Note over RS: Every schemaId ever minted resolves forever.
-end
 ```
 
 Forward-only versioning: old versions are retained so existing entries' references
@@ -710,7 +713,6 @@ sequenceDiagram
         Imp->>RS: importEntry(entry)
         Note over RS: writes entry verbatim — state, schemaId, links, content<br/>bypasses createEntry's pin-current-version and completePlaceholder's transition
     end
-end
 ```
 
 Restore is two-phase (schemas then entries) so `schemaId` references resolve. This
@@ -742,7 +744,6 @@ sequenceDiagram
     T->>RS: completePlaceholder('ent_001', content, 'pre-entry@2', at)
     Note over RS: schemaId pinned NOW (at completion). Content validated<br/>against v2 fields. ADR 0003 purpose honored: content matches<br/>its schema at the moment content appears.
     RS-->>T: ent_001 now state='complete'
-end
 ```
 
 This diagram exposed **audit finding A**: the placeholder record carries no
@@ -779,7 +780,6 @@ sequenceDiagram
         T->>UI: "none"
         Note over UI: nothing created. The offer preceded creation —<br/>declining means the placeholder never exists. No store op needed.
     end
-end
 ```
 
 This diagram validated the Open-item provisional answer: "none" needs no store op
@@ -831,10 +831,13 @@ resolves via `getSchemaVersion` always).
   store calls (amended by the FillEntryCoordinator session, its decided
   semantics 3; see diagram B). The coordinator owns *when* the required
   bookends are created; the UI owns *whether* the optional one ever exists.
-- **→ DailyReviewCoordinator:** reads owed placeholders via `listEntries({ tradeId,
-  state:'placeholder' })` and linked market entries via `listEntries({
-  linkedToTrade:tradeId, level:'market' })`. Two filters, no derivation. The
-  coordinator interleaves these with open-trade figures into the DailyReviewView.
+- **→ DailyReviewCoordinator:** reads owed via ONE global `listEntries({
+  state:'placeholder' })` (grouped by tradeId in hand — catches Planned
+  pre-entries and Closed post-closes too), market context per trade via
+  `listEntries({ linkedToTrade:tradeId, level:'market' })`, and the day's
+  stream via `listEntries({ from, to, state:'complete' })` (ADR 0004). Three
+  reads, no derivation — the consolidation is the DailyReview session's
+  ([daily-review-coordinator.md](daily-review-coordinator.md) semantic 6).
 - **→ CalculationModule (ripple, none required):** ReflectionStore consumes the
   `revisionCount` *concept* (FigureSet's qualitative counterpart is the journal
   stream) but calls no calc op. No type changes in calculation-module.md.

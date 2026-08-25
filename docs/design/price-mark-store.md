@@ -328,29 +328,26 @@ priceMarks.backfillMark('AAPL', aug16, 162.00, 'tiingo', …)
 
 ---
 
-## Sequence: daily-review mark-collecting (the write + read-then-evaluate loop)
+## Sequence: daily-review mark-collecting (the two-phase loop)
 
 The Daily Review is the primary mark-collecting moment (CONTEXT.md). The
-coordinator resolves which underlyings lack a mark for the date, prompts the
-trader, writes each mark once, then builds the Marks map per trade.
+coordinator's view resolves which underlyings lack a mark (`marksDue`); the UI
+collects from the trader and writes each mark **directly** (rule 8 — a
+single-store act), then re-queries. (Pinned in
+[daily-review-coordinator.md](daily-review-coordinator.md); shown here for the
+store's half.)
 
 ```
-trader → DailyReviewCoordinator.runDailyReview(today)
-  → openTrades = TradingRecordStore.listTrades({ status: 'Open' })
-  → underlyings = distinct instruments across openTrades' fills
-  → for each instrument lacking a mark for `today` (check via buildMarksFromFills on a
-      representative fill list, or a direct existence probe):
-      → prompt trader for the end-of-day price
-      → PriceMarkStore.upsertMark(instrument, today, price, now)   // deduped (ADR 0002)
-  → for each open trade:
-      → marks = PriceMarkStore.buildMarksFromFills(record.fills, today)
-      → figures = calc.evaluate(record, marks, today)               // live figures
-      → [assemble into DailyReviewView]
+UI → DailyReviewCoordinator.runDailyReview(today)        // the view incl. marksDue
+trader enters each due end-of-day price
+UI → PriceMarkStore.upsertMark(instrument, today, price, now)   // DIRECT write, deduped (ADR 0002)
+UI → DailyReviewCoordinator.runDailyReview(today)        // re-query (rule 6)
+  → marks = PriceMarkStore.buildMarksFromFills(allOpenFills, today)   // ONE map, every calc call
 ```
 
 The deduplication payoff (ADR 0002): the trader enters AAPL once; `buildMarksFromFills`
 resolves it for every Trade holding an AAPL fill. The write is per-instrument-per-date;
-the read is per-trade-per-date.
+the read is one build over all open fills.
 
 ## Sequence: automated backfill (the roadmap API path)
 
@@ -415,7 +412,6 @@ sequenceDiagram
         Imp->>PMS: importMark(fullPriceMark)
         Note over PMS: CORRECT (post-audit): writes source + history verbatim<br/>backup is authoritative on restore
     end
-end
 ```
 
 This diagram is what exposed finding A. The fix is `importMark` (decided semantics
@@ -428,17 +424,16 @@ restore must not impose on historical data.
 ```mermaid
 sequenceDiagram
     actor T as trader
-    participant DRC as DailyReviewCoordinator
+    participant UI
     participant PMS as PriceMarkStore
     participant TRS as TradingRecordStore
 
     Note over T,TRS: A trade closed Jul15. Its finalFigures snapshot<br/>was computed against the Jul15 AAPL mark (say $150).
-    T->>DRC: correct the Jul15 AAPL mark to $149
-    DRC->>PMS: upsertMark('AAPL', Jul15, 149, now)
+    T->>UI: correct the Jul15 AAPL mark to $149
+    UI->>PMS: upsertMark('AAPL', Jul15, 149, now)
     Note over PMS: prior pushed to history, new currentMark = $149
     Note over PMS,TRS: GAP: PMS has no back-reference to trades that<br/>consumed the old mark (marks are shared, ADR 0002).<br/>It cannot know whose snapshot to flag — nor should it<br/>(rule 1: no cross-store calls).
-    Note over DRC,TRS: The closed trade's snapshot is now stale<br/>but nothing in PMS signals TRS. Whether mark corrections<br/>invalidate snapshots is OQ 14 (FillEntryCoordinator / TRS).
-end
+    Note over UI,TRS: The closed trade's snapshot is now stale<br/>but nothing in PMS signals TRS. Whether mark corrections<br/>invalidate snapshots is OQ 14 (FillEntryCoordinator / TRS).
 ```
 
 Finding B is *exported*, not resolved here: this store has no business knowing
@@ -463,10 +458,12 @@ regeneration path. Recorded as OQ 14.
   `priceMarks.buildMarksFromFills(simFills, now)` before `calc.evaluate` to build
   the close-snapshot marks. Already reflected in TradingRecordStore's close path
   and the overview walkthrough.
-- **→ DailyReviewCoordinator:** owns the mark-collecting step (resolve missing
-  underlyings → `upsertMark` each → `buildMarksFromFills` per trade → evaluate).
-  The overview's daily-review walkthrough already names these calls; they now map
-  to real ops.
+- **→ DailyReviewCoordinator:** owns the mark-DUE resolution and the read path
+  (`buildMarksFromFills` → evaluate; `marksDue` = wanted instruments − map keys,
+  computed in hand). The WRITE is the UI's direct `upsertMark` (rule 8 — a
+  single-store act; refined by the DailyReview session, which corrected this
+  export's original "owns `upsertMark` each" sketch). See
+  [daily-review-coordinator.md](daily-review-coordinator.md) semantics 3 + 5.
 - **→ the (roadmap) market-data fetcher:** consumes `getMarkSeries` (find missing
   dates) + `backfillMark` (write-if-absent). No new op is needed when the API ships
   — the interface is API-ready now because `backfillMark` + provenance already

@@ -571,7 +571,6 @@ sequenceDiagram
         Note over PPS: accepts caller-suggested id. If active in backup:<br/>setActiveProvider(providerId, at). If retired: deactivateProvider.
         PPS-->>Imp: providerId
     end
-end
 ```
 
 Contrast with TradingRecordStore/PriceMarkStore/ReflectionStore, where this same
@@ -599,7 +598,6 @@ sequenceDiagram
     Note over Fetcher: fetcher resolves Tiingo credentials from its own<br/>secrets source (decided semantics 3 — store holds no credentials)
     Fetcher->>PMS: backfillMark('AAPL', today, 162.00, 'tiingo', now)
     Note over PMS: new marks carry source:'tiingo'.<br/>Historical marks (source:'alpha-vantage') unchanged — forward-only-retained.
-end
 ```
 
 The provider switch is a single-store write (PriceProviderStore) that the

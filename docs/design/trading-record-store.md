@@ -712,7 +712,6 @@ sequenceDiagram
         Note over TRS: derive missing status from fills once (ADR 0006)<br/>accept pre-computed finalFigures or leave null<br/>reject Closed trade with non-flat fills
         TRS-->>Imp: tradeId (newly assigned)
     end
-end
 ```
 
 This flow exposed audit finding A: `commit`+`recordFill` build a Trade forward

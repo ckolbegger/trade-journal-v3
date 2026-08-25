@@ -122,7 +122,7 @@ module).
 | 7 | **PerformanceAnalytics** | pure | 1 | Closed-trade **outcome** aggregation — a mark-free fold over per-trade FigureSet snapshots: R-multiple distribution, equity curve by R, win rate/expectancy/profit factor, P&L total, plan-revision discipline (per-trade). One op: `aggregate(results: FigureSet[]) → PortfolioReport` (metrics are fields on the return, not separate ops — the `~3` estimate collapsed to one deep op). No marks, no filters (FigureSet carries no filter dimension; the coordinator pre-narrows via `listTrades(filters)`), no temporal series (those are compositions over calc's `evaluate`, owned by the consumer holding the marks). **Closed-trade-only:** `rMultiple` is realized-only, so an open trade's snapshot is a non-outcome zero that distorts every R-based metric; open-trade exposure is served by calc's `evaluateMany` (ADR 0008), not this module. Drilled down — see [design doc](performance-analytics.md). |
 | 8 | **PlanCommitCoordinator** | coordinator | 2 | The start of every Trade and its pre-fill exit. `commitPlan(TradeInput) → {tradeId, figures, warnings}`: validates the Plan's R:R geometry via calc — the ADR 0010 charter (no declared stop side / misplaced side / non-profit target **blocks**; an in-tent stop **teaches** via `warnings`) — then commits Trade+Plan + creates the required pre-entry placeholder in ONE `StorageBinding.transaction` (OQ 9's recorded home); returns the plan-time FigureSet for the payoff visualization. `discardPlan(tradeId, at)`: retire a never-filled plan + void its owed placeholder in one transaction (audit finding F1 — the one trader-declared transition, terminal snapshotless `Discarded`). Joins TradingRecord + Reflection + calc — no PriceMarkStore (planned figures are mark-free). Drilled down — see [design doc](plan-commit-coordinator.md). |
 | 9 | **FillEntryCoordinator** | coordinator | 3 | Everything that happens because a fill landed or was fixed. Three ops: `recordFill` (first fill → Open; the flat-detecting fill → Closed + snapshot + post-close bookend, in one `StorageBinding.transaction`; returns `fillId` + `closedFigures` — the UI resolves the optional fill-reflection offer now/later/none via direct ReflectionStore calls), `correctFill` (the OQ 12/13 branch map: price-only → regenerate via `replaceSnapshot`; un-flatted Closed → `reopenTrade`; flatted Open → `closeTrade` + bookend in a transaction), `regenerateSnapshots(scope?)` (idempotent sweep serving ADR 0007's calc-bug migration and OQ 14's mark-correction response — detection: Closed ∧ date(closedAt) = mark.date ∧ fill-instrument match). Joins TradingRecord + Reflection + PriceMark + calc. Drilled down — see [design doc](fill-entry-coordinator.md). |
-| 10 | **DailyReviewCoordinator** | coordinator | 1 | daily-review workflow: pulls open Trades (cheap indexed filter on stored status), resolves underlyings lacking a mark for the date, computes live risk/P&L via calc, surfaces placeholders due and in-range market entries. The widest join. |
+| 10 | **DailyReviewCoordinator** | coordinator | 1 | The daily-review assembly — the widest READ join and the system's only read-only coordinator. `runDailyReview(asOf): DailyReviewView` — one op returns the whole day: open trades (records + live figures + `stopsHit` per ADR 0010 + owed + market context), the open-book exposure (`evaluateMany`, ADR 0008), `marksDue` (the mark-collection prompt's data, computed in hand from the marks map's omissions), every owed placeholder across ALL trades (one global read — Planned pre-entries and Closed post-closes included), and the day's interleaved journal stream (ADR 0004). Owns **no writes**: the review is a moment, not a transaction — every review-screen write is a single-store direct call (marks, revisions, entries, completions) or another coordinator's moment (`discardPlan`), performed by the UI (rule 8 — the session's structural finding, correcting the Phase-2 interactive-mark sketch). Present-tense assembly; `asOf` is a lens, not a time machine. Drilled down — see [design doc](daily-review-coordinator.md). |
 | 11 | **PerformanceReportingCoordinator** | coordinator | 1 | aggregate stats over Trades (via PerformanceAnalytics), filterable by date/strategy/status/underlying/account. Joins TradingRecord + Reference (Account/Taxonomy) + PerformanceAnalytics. |
 | — | **StorageBinding** | seam | ~5 | The internal persistence primitive behind all five stores: put/get/delete/range-query over opaque fact records. Two implementations — in-memory (unit tests) and real (prod). Zero business rules. |
 
@@ -220,8 +220,10 @@ correctFill(tradeId: TradeId, fillId: FillId, correction: FillInput): {
 }
 regenerateSnapshots(scope?: RegenScope): { regenerated: TradeId[] }  // ADR 0007 migration + OQ 14
 
-// DailyReviewCoordinator
-runDailyReview(asOf: Date): DailyReviewView   // open trades, marks due, placeholders, observations
+// DailyReviewCoordinator — see daily-review-coordinator.md for the full, pinned interface
+runDailyReview(asOf: Date): DailyReviewView   // open trades + figures + stopsHit + owed + market
+                                              //   context + exposure + marksDue + day stream —
+                                              //   READ-ONLY, the only coordinator with no writes
 
 // PerformanceReportingCoordinator
 runReport(filters: ReportFilters): PortfolioReport
@@ -238,7 +240,7 @@ call nothing. Coordinators call stores + pure modules.
 |---|---|---|---|---|---|---|---|---|
 | **PlanCommitCoordinator** | write (`commit` — asserts ≥1 declared stop side; `discardTrade` — the pre-fill exit, in the discard transaction) | read (`listEntries` — owed pre-entry) / write (`createPlaceholder` — pre-entry, required, in the commit transaction; `voidPlaceholder` — discard) | — | — | — | — | evaluate (planned-figure validation charter) | — |
 | **FillEntryCoordinator** | write (`recordFill` — absorbs fill+status+snapshot, returns fillId; `correctFill`; `closeTrade`/`reopenTrade`/`replaceSnapshot` — the guarded correction family; `getTradeRecord`) | write (`createPlaceholder` — post-close required, in the close transaction; closed-by-correction bookend) | read (`buildMarksFromFills`, at close + regeneration) | — | — | — | isFlat, evaluate | — |
-| **DailyReviewCoordinator** | read (`listTrades({status:'Open'})`) | read (`listEntries` — owed placeholders + linked market entries) | read/write (`upsertMark`, `buildMarksFromFills`) | — | — | — | evaluate, evaluateMany, stopsHit | — |
+| **DailyReviewCoordinator** | read (`listTrades({status:'Open'})`) | read (`listEntries` ×3: global owed, per-trade market context, day stream) | read (`buildMarksFromFills` only — the review's mark WRITES are UI-direct, see below) | — | — | — | evaluate, evaluateMany, stopsHit | — |
 | **market-data fetcher (roadmap)** | — | — | read (`getMarkSeries`) / write (`backfillMark`) | read (active provider) | — | — | — | — |
 | **PerformanceReportingCoordinator** | read (`listTrades(filters)`, `getTradeRecord`) | — | — | — | read (group) | read (group) | evaluateMany (open-trade exposure path, ADR 0008) | aggregate (closed-trade outcome path) |
 | **direct read callers (UI, backup)** | `getTradeRecord`, `listTrades` | `getEntry`, `listEntries`, `getSchema`, `listSchemas` | `getMarkSeries` | `listProviders` | listAccounts | getTaxonomy | evaluate | — |
@@ -265,9 +267,13 @@ call nothing. Coordinators call stores + pure modules.
   act (validating a parent ref exists), so it touches one store → rule 8 applies.
   Journal-writing joins PlanRevision as the canonical zero-coordinator single-store
   workflows. Schema definition (`saveSchema`) is likewise a direct store call.
-- **PriceMark entry during Daily Review** → handled inside DailyReviewCoordinator
-  (it owns the mark-collecting step: resolve missing underlyings → `upsertMark`
-  each → `buildMarksFromFills` per trade).
+- **PriceMark entry during Daily Review** → PriceMarkStore only (`upsertMark`) —
+  a single-store write, direct UI call (rule 8; refined by the DailyReview
+  session, which corrected this bullet's original "handled inside
+  DailyReviewCoordinator" wording). The coordinator's view resolves WHAT's due
+  (`marksDue`, computed in hand); the UI writes each mark and re-queries. A mark
+  *correction* from the review screen is the same path; an overwriting write is
+  followed by the UI's direct `regenerateSnapshots` (OQ 14's trigger).
 - **Automated price backfill (roadmap fetcher)** → PriceMarkStore only
   (`backfillMark`), reading the active provider from PriceProviderStore. Not a
   coordinator — it touches one fact store for writes (the provider read is a
@@ -344,19 +350,28 @@ the correction branch map).
 
 ### 3. Daily review
 
+The review is a two-phase loop: assemble → (UI collects + writes directly) →
+re-assemble. The coordinator is the read join only — the widest in the system,
+and read-only (rule 8: every review-screen write is a single-store direct call
+or another coordinator's moment; pinned in
+[daily-review-coordinator.md](daily-review-coordinator.md)).
+
 ```
-trader → DailyReviewCoordinator.runDailyReview(today)
-  → openTrades = TradingRecordStore.listTrades({ status: 'Open' })  // cheap indexed filter on stored status (ADR 0006)
-  → underlyings = distinct instruments across openTrades' fills
-  → for each instrument lacking a mark for `today`:
-      → prompt trader → PriceMarkStore.upsertMark(instrument, today, price, now)   // deduped, ADR 0002
-  → for each open trade:
-      → marks = PriceMarkStore.buildMarksFromFills(record.fills, today)   // distinct instruments → scalar map
-      → CalculationModule.evaluate(trade, marks, today)   // live figures; marks fresh
-      → ReflectionStore.listEntries({ tradeId, state:'placeholder' })     // owed (OQ 5: a filter, not a derivation)
-      → ReflectionStore.listEntries({ linkedToTrade:tradeId, level:'market' })  // market context
-      ← assembled DailyReviewView (open trades + live P&L/risk + placeholders + market entries, interleaved by time)
-trader records observations → ReflectionStore.createEntry(...)   // optional, journal-writing path (direct store call, OQ 6)
+trader → DailyReviewCoordinator.runDailyReview(today)              // phase 1 — assemble
+  → openTrades = TradingRecordStore.listTrades({ status: 'Open' })   // cheap indexed filter (ADR 0006), full records
+  → marks = PriceMarkStore.buildMarksFromFills(allOpenFills, today)  // ONE map serves every calc call
+  → marksDue = distinct fill instruments − marks keys                 // in hand — the mark-collection prompt's data
+  → per open trade: calc.evaluate(trade, marks, today)                // live figures, nulls honest
+                    + calc.stopsHit(trade, marks, today)              // declared stops crossed (ADR 0010) — reports, never acts
+  → calc.evaluateMany(openTrades, marks, today)                       // the open-book exposure (ADR 0008)
+  → ReflectionStore.listEntries({ state:'placeholder' })              // ONE global owed read — all trades
+  │    (grouped by tradeId in hand — Planned pre-entries + Closed post-closes included)
+  → per open trade: ReflectionStore.listEntries({ linkedToTrade, level:'market' })   // market context
+  → ReflectionStore.listEntries({ from: startOfDay, to: endOfDay, state:'complete' }) // the day's stream (ADR 0004)
+  ← DailyReviewView (open trades + figures + hits + owed + market, exposure, marksDue, dayEntries)
+trader enters missing marks → UI → PriceMarkStore.upsertMark(…) each  // DIRECT single-store write (rule 8)
+UI → DailyReviewCoordinator.runDailyReview(today)                     // phase 2 — re-query (rule 6)
+trader records observations → UI → ReflectionStore.createEntry(...)   // optional, journal-writing path (direct store call, OQ 6)
 ```
 
 ### 4. Performance reporting
@@ -460,7 +475,12 @@ store's contract), then harvest modules whose contracts prior sessions pinned.
    stops, single target, quote basis, worst-side R, whole-position netting
    for `current`/`incremental`, calc's fourth op `stopsHit`. PlanCommit's
    validation charter gains the in-tent stop teaching.
-   — remaining: DailyReview, PerformanceReporting.
+   **DailyReviewCoordinator ✓** [design doc](daily-review-coordinator.md) —
+   the widest read join landed as the system's only read-only coordinator:
+   the review's writes ruled UI-direct (rule 8, correcting the Phase-2
+   interactive-mark sketch), `marksDue` computed in hand, one global owed
+   read, the ADR 0004 day stream, and `stopsHit`'s routing (ADR 0010).
+   — remaining: PerformanceReporting.
 
 ---
 

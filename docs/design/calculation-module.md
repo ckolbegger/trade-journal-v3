@@ -696,15 +696,14 @@ recomputation.
 ## Sequence: daily-review live evaluation
 
 ```
-trader → DailyReviewCoordinator.runDailyReview(today)
-  → TradingRecordStore.listOpenTrades()                    // cheap indexed filter (ADR 0006)
+trader → DailyReviewCoordinator.runDailyReview(today)      // pinned: daily-review-coordinator.md
+  → openRecords = TradingRecordStore.listTrades({ status:'Open' })   // cheap indexed filter (ADR 0006), full records
+  → marks = PriceMarkStore.buildMarksFromFills(allOpenFills, today)  // ONE map for every calc call
   → for each open trade:
-      → record = TradingRecordStore.getTradeRecord(tradeId)
-      → [resolve underlyings lacking a PriceMark for today]
-      → marks = PriceMarkStore.buildMarksFromFills(record.fills, today)
       → figures = calc.evaluate(record, marks, today)      // live figures
       → hits = calc.stopsHit(record, marks, today)         // declared stops crossed by today's marks (ADR 0010)
-      → [assemble into DailyReviewView — figures, hits, placeholders, market entries]
+  → exposure = calc.evaluateMany(openRecords, marks, today)           // the open-book rollup (ADR 0008)
+  → [assemble into DailyReviewView — figures, hits, owed, market, exposure, marksDue, dayEntries]
 ```
 
 ## Sequence: evolution chart series
@@ -725,8 +724,8 @@ arithmetic over already-loaded fills); the alternative of a calc-owned
 ## Sequence: open-book exposure (evaluateMany)
 
 The aggregate-current-exposure flow. The coordinator resolves one marks map
-across all open positions, then makes one calc call. (Coordinator internals
-are illustrative; pinned in its own drill-down.)
+across all open positions, then makes one calc call. (Pinned in
+[daily-review-coordinator.md](daily-review-coordinator.md) semantic 4.)
 
 ```
 trader → DailyReviewCoordinator.runDailyReview(today)

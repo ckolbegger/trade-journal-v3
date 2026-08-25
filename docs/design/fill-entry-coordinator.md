@@ -257,14 +257,17 @@ Each ruling cites the principle or ADR it derives from. Veto any during review.
     the snapshot stands. *(CalculationModule semantic 4; ADR 0007.)*
 
 16. **The regen-sweep trigger when the overwriting mark write happens inside
-    the Daily Review** (audit finding F1). DailyReviewCoordinator owns
-    `upsertMark` in its flow, but the who-calls-whom matrix has no
-    coordinator→coordinator edge — and none is added. Ruling: the **UI** calls
-    `regenerateSnapshots` directly after any overwriting mark write, including
-    one made from the Daily Review screen (the UI knows a mark write just
-    happened; the coordinator that performed the write does not cascade).
-    Exported to the DailyReviewCoordinator session: its doc must not grow a
-    FillEntry call. *(Overview who-calls-whom rules; rule 6 — the UI
+    the Daily Review** (audit finding F1). *(Premise refined by the
+    DailyReview session: mark writes from the review screen are the UI's
+    direct `upsertMark` calls — the review coordinator is read-only — which
+    makes the ruling below cleaner still: the writer and the sweeper are the
+    same actor.)* The who-calls-whom matrix has no coordinator→coordinator
+    edge — and none is added. Ruling: the **UI** calls `regenerateSnapshots`
+    directly after any overwriting mark write, including one made from the
+    Daily Review screen (the UI performed the write and knows it overwrote).
+    Exported to the DailyReviewCoordinator session — **fulfilled**: its doc
+    grows no FillEntry call ([daily-review-coordinator.md](daily-review-coordinator.md)
+    semantic 5). *(Overview who-calls-whom rules; rule 6 — the UI
     re-queries/acts.)*
 
 ---
@@ -309,7 +312,6 @@ sequenceDiagram
     end
     FEC-->>T: statusAfter Closed, fillId, closedFigures
     Note over T: UI shows close figures, offers reflect now / later / none<br/>on fillId (resolved via direct ReflectionStore calls)
-end
 ```
 
 The cheap/rare split (ADR 0006/0007) intact: `isFlat` every fill, `evaluate`
@@ -334,7 +336,6 @@ sequenceDiagram
     else none
         Note over UI: nothing. The offer preceded creation —<br/>declining means no store call at all.
     end
-end
 ```
 
 This amends ReflectionStore's audit diagram B: the **UI** makes the resolution
@@ -430,7 +431,6 @@ sequenceDiagram
     FEC->>RS: createPlaceholder(type post-close, required true, createdAt fill.at)
     Note over RS: ent_019 — the SECOND post-close bookend (decided semantics 11).<br/>fresh closedAt + fresh snapshot. The wheel of corrections turns no more.
     FEC-->>T: (statusAfter Closed, fillId, closedFigures)
-end
 ```
 
 **What drawing this exposed:** the re-opened trade's *first* post-close
@@ -472,7 +472,7 @@ nothing unwritten to expose).
 
 | Finding | Category | Resolution |
 |---|---|---|
-| **F1 — Who calls the regen sweep when the overwriting mark write happens inside the Daily Review?** DailyReviewCoordinator owns `upsertMark` there; coordinators may not call coordinators (who-calls-whom matrix). | Unwritten rule | **The UI calls `regenerateSnapshots` directly, including from the Daily Review screen** (decided semantics 16). No coordinator→coordinator edge added. Exported to the DailyReviewCoordinator session. |
+| **F1 — Who calls the regen sweep when the overwriting mark write happens inside the Daily Review?** (Premise at the time: DailyReviewCoordinator owns `upsertMark` there; coordinators may not call coordinators — who-calls-whom matrix. Later refined: the UI owns the write directly, so writer and sweeper coincide.) | Unwritten rule | **The UI calls `regenerateSnapshots` directly, including from the Daily Review screen** (decided semantics 16). No coordinator→coordinator edge added. Exported to the DailyReviewCoordinator session — fulfilled. |
 | **F2 — Closing fill lands before the EOD mark exists.** Snapshot's `pnl.unrealized` at close: `$0` or `null`-without-mark? | Unwritten rule | **`$0` — flat → "no unrealized P&L" by calc semantic 4; no mark needed** (decided semantics 15). A first-time evening mark changes nothing (only overwrites invalidate). |
 | **(diagram C) — A re-opened trade's first post-close placeholder survives into the second close.** Two post-close entries for one trade. | Unwritten rule (validated) | **Confirmed as designed** (decided semantics 11): each close owes its own bookend; entries are immutable so the first stands. Veto invite on the diagram's ruling. |
 

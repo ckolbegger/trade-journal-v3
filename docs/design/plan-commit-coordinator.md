@@ -399,7 +399,6 @@ sequenceDiagram
         PCC->>RS: createPlaceholder(level 'trade', type 'pre-entry',<br/>tradeId tr_001, required true, createdAt committedAt)
     end
     PCC-->>T: { tradeId, figures, warnings }
-end
 ```
 
 Two writes, one transaction, one teaching channel. The trade exists; the
@@ -456,7 +455,6 @@ sequenceDiagram
         Note over RS: placeholder → void — no longer owed.<br/>Completed entries stay (immutable — the story survives).
     end
     PCC-->>T: void
-end
 ```
 
 The discard is the **one trader-declared transition** — legal precisely
