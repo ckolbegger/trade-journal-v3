@@ -120,13 +120,84 @@ _Verify:_ the stock, spread and planned-no-fills variants all read correctly.
 
 ### UX.6 — Journal timeline
 
-Date-group headers, coloured type badges, filter chips (All / Plans / Positions / Market / Closes), and the "Tap to view plan →" affordance. Filters are display-only over already-loaded entries; `TimelineFilter` proper is settled in S15.3 and is not built here.
+Date-group headers, coloured type badges, filter chips, and the "Tap to view plan →" affordance. Filters are display-only over already-loaded entries; `TimelineFilter` proper is settled in S15.3 and is not built here.
+
+**Built test-first** (user ruling 2026-08-25): this story adds real filtering behaviour, so the implementer invokes the `tdd` skill and works red → green against the TestSpec below.
+
+**Scoped 2026-08-25 — the badge/filter taxonomy is Anchor kind, not Entry Type.** Entry Types are trader-editable from Slice 13 onward, so their set is open and cannot carry a fixed four-colour palette. `Anchor.kind` is a closed set that already maps 1:1 onto the prototype's four badges:
+
+| Prototype badge | Our `Anchor.kind` | Chip label |
+| --- | --- | --- |
+| PLAN | `plan` | Plans |
+| CLOSE | `close` | Closes |
+| POSITION | `review` (Trade-anchored review entries) | **Reviews** |
+| MARKET | `standalone` | Market |
+
+**The prototype's "POSITION" label cannot be used.** A Position is holdings derived from Executions ([CONTEXT.md](../../CONTEXT.md)); using it for a Trade-anchored journal entry is the campaign sense ADR 0014 bans — the same violation UX.3's review caught in Home's copy. The chip is **Reviews** and the badge is **REVIEW**.
+
+`entry` anchors never reach a timeline row (`buildEntryThreads` nests addenda under their root), so they need no chip.
+
+#### TestSpec — `src/ui/pages/TimelinePage.test.tsx`
+
+```
+describe('TimelinePage filter chips')
+  it('renders All, Plans, Reviews, Market and Closes chips')
+  it('shows every entry when All is selected, which is the default')
+  it('shows only plan-anchored entries when Plans is selected')
+  it('shows only close-anchored entries when Closes is selected')
+  it('shows only review-anchored entries when Reviews is selected')
+  it('shows only standalone entries when Market is selected')
+  it('marks the selected chip as pressed and the others as not pressed')
+  it('keeps an owed placeholder settleable inline while a filter is active')
+  it('keeps addenda nested under their root when a filter is active')
+  it('shows an empty timeline, not an error, when a filter matches nothing')
+  it('re-applies the active filter after an entry is added')
+
+describe('TimelinePage type badges')
+  it('labels a plan-anchored entry PLAN')
+  it('labels a close-anchored entry CLOSE')
+  it('labels a review-anchored entry REVIEW')
+  it('labels a standalone entry MARKET')
+  it('never labels an entry POSITION')
+```
+
+The last one is a vocabulary guard, not a display test — it is the assertion that keeps the banned term out of the timeline.
+
+_Changes tests:_ the date-group headers restructure the list, so specs asserting the flat row shape may need updating. Those updates belong to this story; the `aria-label="timeline"` and `aria-label="addenda"` lists and the `aria-label="journal owed"` marker must survive unchanged — e2e selects by them.
 
 _Verify:_ grouping and each filter; addenda still nest; owed placeholders still settle inline.
 
 ### UX.7 — Plan form and entry composer
 
 Card-grouped sections, small-caps labels, option chips for the feeling prompt, the risk/reward summary panel, full-width black submit. `PromptFields` gains a chip rendering for select prompts — in that one component, since S1.9 just consolidated prompt rendering there and it must stay consolidated.
+
+**Built test-first** (user ruling 2026-08-25): converting a `<select>` to chips changes a real interaction, so the implementer invokes the `tdd` skill and works red → green against the TestSpec below.
+
+**Scoped 2026-08-25 — this story CANNOT pass the suites unmodified, and the Verification section's claim that UX.4–UX.7 do is wrong for this one.** Replacing the select changes how every caller drives it:
+
+- `src/ui/pages/PlanEntryForm.test.tsx` — `getByRole('combobox', { name: 'Emotional state' })`
+- `src/ui/pages/WalkSession.test.tsx`, `src/ui/pages/WalkCheckpoint.test.tsx` — the Action prompt select
+- 5 e2e specs — `s1-2`, `s2-1`, `s2-2`, `s2-3`, `s6-2` use Playwright's `selectOption`, which only works on a real `<select>`
+
+That churn is owned by this story and is unavoidable, not a signal something was renamed carelessly. **Render chips as radio inputs inside a `<fieldset>` with the prompt text as its `<legend>`** — the same pattern `PromptFields` already uses for scale prompts, so the two renderings stay consistent and keyboard and screen-reader behaviour is preserved. Do not use buttons with `aria-pressed`; a single-choice prompt is a radio group.
+
+Seeded option ids equal their labels and are lowercase (`calm`, `eager`, `anxious`, `FOMO`, `revenge`), so chips read as `capitalize` — display-only, exactly as `StatusBadge` already does. **The accessible name of each chip is the raw option label**, so `getByRole('radio', { name: 'calm' })` is the new selector.
+
+#### TestSpec — `src/ui/components/PromptFields.test.tsx`
+
+```
+describe('PromptFields select prompts as chips')
+  it('renders one radio per option, named by the option label')
+  it('groups the radios in a fieldset whose legend is the prompt text')
+  it('selects no option initially')
+  it('reports the chosen option id through onChange when a chip is clicked')
+  it('marks only the chosen chip as checked')
+  it('replaces the previous choice when a second chip is clicked')
+  it('keeps radio groups distinct when two select prompts share a form')
+  it('renders text and scale prompts unchanged alongside a select prompt')
+```
+
+The last two are regression guards: `namespace` already exists to keep scale groups distinct and must now do the same job for chips, and S1.9's consolidation of prompt rendering into this one component must survive.
 
 _Verify:_ a full plan → confirm → journal round trip.
 
@@ -157,7 +228,7 @@ Reuse rather than rebuild: the `styles.ts` constants, `StatusBadge`, `PromptFiel
 
 Per story, in order:
 
-1. `npm test` — unit + integration. For UX.1 and UX.4–UX.7 these should pass **unmodified**; a styling change that breaks a test is a signal it touched an accessible name, not that the test is wrong.
+1. `npm test` — unit + integration. For UX.1, UX.4 and UX.5 these should pass **unmodified**; a styling change that breaks a test is a signal it touched an accessible name, not that the test is wrong. **UX.6 and UX.7 are the exceptions** — both add behaviour, both are built test-first, and both own real test churn (see their sections).
 2. `npx tsc -b` and `npm run lint` — lint also enforces the module-boundary rule.
 3. `npm run dev`, then drive the story's screens in a real browser.
 4. `npx playwright test` — 34 specs today; UX.2 and UX.3 add or update specs.
