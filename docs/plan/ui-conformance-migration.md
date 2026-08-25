@@ -1,6 +1,6 @@
 # UI conformance — migrating to the Claude Design prototype
 
-_Planned 2026-08-24. Not yet scheduled: this document is the breakdown, not a commitment to a slice number. See [Open questions](#open-questions)._
+_Planned 2026-08-24. Scheduled 2026-08-25 on branch `ui-conformance` (branched from `claude` at `98f0b14`). Deliberately unnumbered — stories keep their `UX.n` ids rather than becoming a slice; see [Open questions](#open-questions)._
 
 ## Why
 
@@ -8,7 +8,7 @@ The UI was built to [ui-style.md](../design/ui-style.md): a centered `max-w-3xl`
 
 A Claude Design prototype ("TradeCoach") was then captured to [docs/design/prototype/](../design/prototype/) — 24 screenshots across 12 screens. It proposes a different visual language (warm cream ground, white rounded cards, black pill CTAs, small-caps section labels, coloured type badges, option chips) and a different navigation model (bottom tab bar on mobile, left sidebar on desktop).
 
-This work brings the built app to that visual language, plus a bottom tab bar, without disturbing the behaviour underneath. **It is a restyle with exactly one new feature** — a Home screen showing portfolio totals, which cannot be built by summing in the UI (see constraint 2).
+This work brings the built app to that visual language, plus a bottom tab bar, without disturbing the behaviour underneath. **It is a pure restyle**: the portfolio totals that would have made Home a real feature are deferred to Analytics (S15.3) by user ruling, so no new coordinator operation is built here and constraint 2 is never tested.
 
 ## Decided before starting
 
@@ -19,8 +19,8 @@ This work brings the built app to that visual language, plus a bottom tab bar, w
 | Stats tab             | Deferred to Analytics (S15.3), which adds it as a fifth tab                |
 | "New plan"            | **Not** a tab — stays triggered from the Trades page, as built today       |
 | Settings              | Icon on the Home screen, keeping the bar at four                           |
-| Home content          | Open P&L total · open and planned counts · realized P&L to date            |
-| Home totals           | One narrow new coordinator operation, built with this work                 |
+| Home content          | ~~Open P&L total · open and planned counts · realized P&L to date~~ — see the row below |
+| Home totals           | **Deferred to Analytics (S15.3)** — user ruling 2026-08-25. UX.3 ships the Home screen as a shell |
 | Attention cues on Home | Excluded — review-due and journal-owed counts are not shown               |
 
 The desktop sidebar is explicitly **not** adopted. [prototype/README.md](../design/prototype/README.md) calls it "an architecture change, not a restyle", and [ui-style.md](../design/ui-style.md) prescribes no responsive strategy at all. If it is ever wanted, it is its own story.
@@ -31,7 +31,7 @@ Repo law, not preference. Each removes an option that would otherwise look obvio
 
 1. **Never change accessible names, roles, labels, or copy for styling.** [ui-style.md](../design/ui-style.md) states it and the suites enforce it — tests and e2e select by role, label and text (`aria-label="timeline"`, `"pnl"`, `"progress"`, `"journal owed"`). A restyle is therefore **`className`-only plus thin structural wrappers**, and the existing suites are the regression net. Any story that genuinely changes structure or copy owns its test updates and says so.
 
-2. **The UI never derives.** [overview.md](../design/overview.md) — facts arriving in coordinator bundles are display-only; the UI calls Books for facts and coordinators for anything computed, never TradeMath or a StorageBinding. An ESLint boundary rule enforces it. Summing per-Trade P&L inside a Home component is illegal, which is why Home needs a real coordinator operation.
+2. **The UI never derives.** [overview.md](../design/overview.md) — facts arriving in coordinator bundles are display-only; the UI calls Books for facts and coordinators for anything computed, never TradeMath or a StorageBinding. An ESLint boundary rule enforces it. Summing per-Trade P&L inside a Home component is illegal — which is why, with the totals operation deferred, UX.3's Home shows no totals rather than deriving them.
 
 3. **The prototype is a design target, not a spec.** Where a screenshot and a design doc or ADR disagree, the doc wins ([prototype/README.md](../design/prototype/README.md), restated in [README.md](./README.md)). Two conflicts resolve against the prototype:
    - Its **"Add trade"** button violates ADR 0014 — an individual fill is always an _Execution_, and "trade" for a fill is banned in code, UI copy and test names. Keep the built wording.
@@ -79,11 +79,13 @@ _Verify:_ every route reachable, active tab correct on each, nothing hidden behi
 
 ### UX.3 — Home
 
-The new screen, and **the only new non-UI code**: a narrow `Valuations` totals operation returning open P&L, open count, planned count and realized-to-date — signature taken verbatim from [overview.md](../design/overview.md). Unit tests against the in-memory binding, integration over Dexie, one Playwright happy path. Home renders the hero P&L treatment, the count line ("Day N · K open") and the Settings icon.
+A new route at `/` that gives the Home tab somewhere to land. **Totals are deferred** (user ruling 2026-08-25): no `Valuations` totals operation is built here, and Home derives nothing — constraint 2 forbids summing in the UI, and the honest alternative to a coordinator operation is to show no totals at all.
 
-_Decide in this story:_ what totals show when not every open Trade has today's Mark. They must not silently understate; reporting marked/unmarked counts alongside is the suggested answer.
+Home renders the greeting and the Settings icon, and links onward to the tabs. Where the prototype shows the hero P&L and the "Day N · K open" count line, Home says plainly that portfolio totals arrive with Analytics rather than showing a computed-looking zero.
 
-_Verify:_ totals match hand-computed values from a seeded book; unmarked Trades are handled visibly.
+_Verify:_ Home is reachable from the tab bar and from `/`; Settings opens; no number on the page is derived in the UI.
+
+_Deferred to S15.3:_ the `Valuations` totals operation (open P&L, open count, planned count, realized-to-date), the hero P&L treatment, the count line, and the "what shows when a Trade has no Mark today" ruling.
 
 ### UX.4 — Trades list
 
@@ -121,7 +123,6 @@ _Verify:_ a full review walk; export and restore; all suites green.
 - `src/ui/index.css` — Tailwind v4 theme block for the cream ground (today a bare `@import`)
 - `src/ui/App.tsx` — shell and tab bar (UX.2)
 - `src/ui/pages/HomePage.tsx` — new (UX.3)
-- `src/coordinators/valuations.ts` — the totals operation (UX.3)
 - Per screen: `TradesPage.tsx`, `TradeDetail.tsx` (+ `TradeDashboard.tsx`), `TimelinePage.tsx`, `PlanForm.tsx`, `WalkSession.tsx` / `WalkCheckpoint.tsx`, `ReviewPage.tsx`, `SettingsPage.tsx`, `Onboarding.tsx`
 - `src/ui/components/Badge.tsx` — journal type tones; `PromptFields.tsx` — chips
 - [ui-style.md](../design/ui-style.md) — rewritten last (UX.8)
@@ -142,7 +143,7 @@ Whole-migration acceptance: onboard → plan → fill → mark → review walk �
 
 ## Effort
 
-Roughly 2–3× story S1.9 in total. UX.3 is about a third of it on its own and is not a restyle; deferring its numbers to Analytics would shrink the whole materially. UX.5 and UX.7 are the two large files. Everything else is cheap precisely because of constraint 1. The main risk is UX.2, the only story that changes navigation structure and therefore where test churn concentrates.
+Roughly 2–3× story S1.9 as first written; deferring UX.3's totals to Analytics removes about a third of it, so the real figure is nearer 1.5–2×. UX.5 and UX.7 are the two large files. Everything else is cheap precisely because of constraint 1. The main risk is UX.2, the only story that changes navigation structure and therefore where test churn concentrates.
 
 The cheapest useful increment is **UX.1 alone** — one file, and the new visual language appears across every screen, enough to judge the direction before committing to the rest.
 
@@ -150,5 +151,5 @@ The cheapest useful increment is **UX.1 alone** — one file, and the new visual
 
 1. **Slice number.** This is written as stories so the story loop applies unchanged, but it is deliberately unnumbered. Numbering it (Slice 18) makes it schedulable; leaving it unnumbered keeps it a proposal.
 2. **Vertical-slice tension.** The convention is that each slice ships trader-visible functionality; this one is largely horizontal. The story order mitigates it — each story conforms one screen end to end — but the tension is real and worth acknowledging rather than hiding.
-3. **Home and unmarked Trades** — settled inside UX.3.
+3. ~~**Home and unmarked Trades** — settled inside UX.3.~~ Moot: totals deferred to S15.3, which inherits the question.
 4. **Out of scope**: the Stats screen (arrives with Analytics) and the Coach / Insights panel (deferred by ADR 0016).
