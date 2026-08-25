@@ -154,6 +154,38 @@ describe('Valuations.detail', () => {
     expect(detail.valuation).toBeUndefined()
     expect(detail.riskReward).toBeUndefined()
   })
+
+  it("returns the underlying's Mark for a planned Trade with no fills", async () => {
+    const { tradeBook, priceBook } = books()
+    const tradeId = await seedPlan(tradeBook, [stop, target])
+    await priceBook.record('AAPL', '2026-07-15', 16000, 'manual')
+
+    const detail = await new Valuations(tradeBook, priceBook).detail(tradeId)
+
+    expect(detail.marks.get('AAPL')?.price).toBe(16000)
+  })
+
+  it('returns a MarkSet without the underlying for a planned Trade whose underlying is unmarked', async () => {
+    const { tradeBook, priceBook } = books()
+    const tradeId = await seedPlan(tradeBook, [stop, target])
+
+    const detail = await new Valuations(tradeBook, priceBook).detail(tradeId)
+
+    expect(detail.marks.has('AAPL')).toBe(false)
+  })
+
+  it('still values an open option Trade when both the contract and underlying are marked (union does not shift the chosen MarkSet date)', async () => {
+    const { tradeBook, priceBook } = books()
+    const { tradeId } = await seedOptionPlan(tradeBook)
+    await priceBook.record('AAPL 2027-01-01 C 200', '2026-01-01', 2367, 'manual')
+    await priceBook.record('AAPL', '2026-01-01', 20000, 'manual')
+
+    const detail = await new Valuations(tradeBook, priceBook).detail(tradeId)
+
+    expect(detail.marksMissing).toBeUndefined()
+    expect(detail.valuation).toBeDefined()
+    expect(detail.riskReward).toBeDefined()
+  })
 })
 
 // A single-Leg long call (independently-computed Black-Scholes worked case,

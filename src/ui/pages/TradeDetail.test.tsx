@@ -127,6 +127,191 @@ describe('TradeDetail', () => {
   })
 })
 
+describe('Trade detail hero', () => {
+  it('shows the ticker and the underlying price when it is marked today', async () => {
+    const { book, journal, priceBook, id } = await seededTrade()
+    await book.recordExecution(
+      { tradeId: id, newLeg: 'AAPL' },
+      { side: 'buy', qty: 100, price: 15000, fees: 0, timestamp: Date.now() },
+    )
+    await priceBook.record('AAPL', todayISO(), 83000, 'manual')
+    renderDetail(book, journal, priceBook, id)
+
+    await waitFor(() => expect(screen.getByLabelText('underlying')).toHaveTextContent('830.00'))
+    expect(screen.getByLabelText('underlying')).toHaveTextContent('AAPL')
+    // A price marked today carries no date parenthetical — without this, dropping
+    // the today check and always printing the date would still pass.
+    expect(screen.getByLabelText('underlying')).not.toHaveTextContent(todayISO())
+  })
+
+  it('shows the underlying price on a planned Trade with no fills', async () => {
+    const { book, journal, priceBook, id } = await seededTrade()
+    await priceBook.record('AAPL', todayISO(), 83000, 'manual')
+    renderDetail(book, journal, priceBook, id)
+
+    await waitFor(() => expect(screen.getByLabelText('underlying')).toHaveTextContent('830.00'))
+    expect(screen.getByLabelText('underlying')).toHaveTextContent('AAPL')
+    expect(screen.queryByText(/^\+?\$0\.00$/)).not.toBeInTheDocument()
+  })
+
+  it('shows no P&L figure on a planned Trade with no fills', async () => {
+    const { book, journal, priceBook, id } = await seededTrade()
+    await priceBook.record('AAPL', todayISO(), 83000, 'manual')
+    renderDetail(book, journal, priceBook, id)
+
+    await waitFor(() => expect(screen.getByLabelText('underlying')).toHaveTextContent('830.00'))
+    expect(screen.queryByText('+$0.00')).not.toBeInTheDocument()
+    expect(screen.queryByText('$0.00')).not.toBeInTheDocument()
+  })
+
+  it('shows the ticker with an em dash when the underlying has no Mark', async () => {
+    const { book, journal, priceBook, id } = await seededTrade()
+    await book.recordExecution(
+      { tradeId: id, newLeg: 'AAPL' },
+      { side: 'buy', qty: 100, price: 15000, fees: 0, timestamp: Date.now() },
+    )
+    renderDetail(book, journal, priceBook, id)
+
+    const price = await screen.findByLabelText('underlying')
+    expect(price).toHaveTextContent('AAPL')
+    expect(price).toHaveTextContent('—')
+  })
+
+  it('shows a prior-date underlying price with its date in parentheses', async () => {
+    const { book, journal, priceBook, id } = await seededTrade()
+    await book.recordExecution(
+      { tradeId: id, newLeg: 'AAPL' },
+      { side: 'buy', qty: 100, price: 15000, fees: 0, timestamp: Date.now() },
+    )
+    await priceBook.record('AAPL', '2026-07-11', 82410, 'manual')
+    renderDetail(book, journal, priceBook, id)
+
+    await waitFor(() => expect(screen.getByLabelText('underlying')).toHaveTextContent('824.10'))
+    const price = screen.getByLabelText('underlying')
+    expect(price).toHaveTextContent('AAPL')
+    expect(price).toHaveTextContent('(2026-07-11)')
+  })
+
+  it('labels an underlyingPrice level as "underlying price"', async () => {
+    const { book, journal, priceBook, id } = await seededTrade()
+    renderDetail(book, journal, priceBook, id)
+
+    await screen.findByText('AAPL breaks out')
+    // Pinned to both sides, not just "the phrase appears somewhere" — a stock
+    // Trade's levels are BOTH underlying prices, and a weaker matcher would
+    // pass if only one carried its unit.
+    expect(screen.getByText(/target.*underlying price/i)).toBeInTheDocument()
+    expect(screen.getByText(/stop.*underlying price/i)).toBeInTheDocument()
+  })
+
+  it('labels a structureValue level as "position price"', async () => {
+    const { book, journal, priceBook, id } = await seededCsp()
+    renderDetail(book, journal, priceBook, id)
+
+    await screen.findByText('XYZ range-bound')
+    expect(screen.getByText(/position price/i)).toBeInTheDocument()
+  })
+
+  it('renders a cash-secured put whose stop and target carry different units', async () => {
+    const { book, journal, priceBook, id } = await seededCsp()
+    renderDetail(book, journal, priceBook, id)
+
+    await screen.findByText('XYZ range-bound')
+    expect(screen.getByText(/stop.*underlying price/i)).toBeInTheDocument()
+    expect(screen.getByText(/target.*position price/i)).toBeInTheDocument()
+    expect(screen.getByText(/95\.00/)).toBeInTheDocument()
+    expect(screen.getByText(/0\.50/)).toBeInTheDocument()
+  })
+
+  it('shows the underlying price on a multi-leg Trade rather than one leg mark', async () => {
+    const { tradeBook: book, priceBook, journal } = inMemoryBooks()
+    const institution = { id: '', name: 'Schwab' } as Institution
+    await book.registries.institutions.save(institution)
+    const account = { id: '', name: 'Taxable', institutionId: institution.id } as Account
+    await book.registries.accounts.save(account)
+    await new Workspace(book, journal).ensureSeeded()
+
+    const id = await book.confirmPlan({
+      accountId: account.id,
+      thesis: 'XYZ range-bound, bullish bias',
+      strategyId: 'strategy-bull-put-spread',
+      ideaSourceId: '',
+      plannedLegs: [
+        {
+          side: 'sell',
+          instrument: {
+            kind: 'option',
+            ticker: 'XYZ',
+            expiration: '2026-08-21',
+            type: 'put',
+            strike: 10000,
+          },
+          qty: 1,
+        },
+        {
+          side: 'buy',
+          instrument: {
+            kind: 'option',
+            ticker: 'XYZ',
+            expiration: '2026-08-21',
+            type: 'put',
+            strike: 9000,
+          },
+          qty: 1,
+        },
+      ],
+      exitLevels: [
+        { scope: { level: 'trade' }, side: 'stop', kind: 'underlyingPrice', price: 9700 },
+        { scope: { level: 'trade' }, side: 'target', kind: 'structureValue', value: 50 },
+      ],
+      plannedAt: '2026-07-10',
+    })
+    await book.recordExecution(
+      { tradeId: id, newLeg: 'XYZ 2026-08-21 P 100' },
+      {
+        side: 'sell',
+        qty: 1,
+        price: 260,
+        fees: 65,
+        timestamp: new Date('2026-07-10T12:00:00').getTime(),
+      },
+    )
+    await book.recordExecution(
+      { tradeId: id, newLeg: 'XYZ 2026-08-21 P 90' },
+      {
+        side: 'buy',
+        qty: 1,
+        price: 60,
+        fees: 65,
+        timestamp: new Date('2026-07-10T12:00:00').getTime(),
+      },
+    )
+    await priceBook.record('XYZ', todayISO(), 9800, 'manual')
+    // Both contract Marks exist and are deliberately distinct from the stock's,
+    // so "shows the underlying, not one leg" is actually discriminating: with
+    // the old heldInstrument fallback the hero would read 2.50 here.
+    await priceBook.record('XYZ 2026-08-21 P 100', todayISO(), 250, 'manual')
+    await priceBook.record('XYZ 2026-08-21 P 90', todayISO(), 55, 'manual')
+
+    renderDetail(book, journal, priceBook, id)
+
+    await waitFor(() => expect(screen.getByLabelText('underlying')).toHaveTextContent('98.00'))
+    const underlying = screen.getByLabelText('underlying')
+    expect(underlying).toHaveTextContent('XYZ')
+    expect(underlying).not.toHaveTextContent('2.50')
+    expect(underlying).not.toHaveTextContent('0.55')
+  })
+
+  it('renders no Current column', async () => {
+    const { book, journal, priceBook, id } = await seededTrade()
+    await priceBook.record('AAPL', todayISO(), 83000, 'manual')
+    renderDetail(book, journal, priceBook, id)
+
+    await screen.findByText('AAPL breaks out')
+    expect(screen.queryByText('Current')).not.toBeInTheDocument()
+  })
+})
+
 describe('TradeDetail journal section', () => {
   it("shows the plan entry's prompts and answers", async () => {
     const { book, journal, priceBook, id } = await seededTrade()

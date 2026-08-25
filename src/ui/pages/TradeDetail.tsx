@@ -55,6 +55,16 @@ function exitLevelDisplay(level: TradeRecord['plan']['exitLevels'][number]): str
   return 'unsupported target'
 }
 
+// The unit an Exit Level's number is quoted in, in the same wording PlanForm
+// already uses (exitTemplateLabel) — the hero was the one place that dropped
+// it. A level whose `kind` matches neither current variant (the tolerated
+// legacy pctOfMaxProfit) has no unit to name.
+function exitLevelUnit(level: TradeRecord['plan']['exitLevels'][number]): string | undefined {
+  if (level.kind === 'underlyingPrice') return 'underlying price'
+  if (level.kind === 'structureValue') return 'position price'
+  return undefined
+}
+
 // A held Position row: a stock reads "100 AAPL long"; an option reads the
 // contract position ("1 × AAPL Jun'27 200C"), signed negative when short
 // ("-1 × XYZ Aug'26 100P"). `avgCost` (cents), when known, appends the
@@ -82,10 +92,11 @@ function avgCostFor(
   return perLeg.find((l) => buildInstrumentKey(l.instrument) === key)?.avgCost
 }
 
-// The Trade detail page renders Plan facts only — thesis, Strategy, Idea Source,
-// Planned Legs, Exit Levels, chart link, and the derived status badge. No
-// valuation numbers (those arrive in S1.5) and, deliberately, no way to edit the
-// confirmed Plan: its immutability is the product.
+// The Trade detail page. A hero card leads with the strategy, the Trade's total
+// P&L and its exit levels; below it the Plan facts (thesis, Idea Source, Planned
+// Legs, chart link), the Legs & Fills card, and the valuation. There is
+// deliberately no way to edit the confirmed Plan: its immutability is the
+// product.
 
 const STATUS_BUCKETS: TradeStatus[] = ['planned', 'open', 'closed']
 
@@ -97,10 +108,10 @@ export function TradeDetail() {
   const [trade, setTrade] = useState<TradeRecord | null>(null)
   const [status, setStatus] = useState<TradeStatus | null>(null)
   const [position, setPosition] = useState<Position | null>(null)
-  const [valuation, setValuation] = useState<Valuation | undefined>(undefined)
   const [strategyName, setStrategyName] = useState('')
   const [ideaSourceName, setIdeaSourceName] = useState('')
   const [entries, setEntries] = useState<Entry[]>([])
+  const [detail, setDetail] = useState<TradeDetailView | null>(null)
   const [showFill, setShowFill] = useState(false)
   const [closeDismissed, setCloseDismissed] = useState(false)
   const [abandoning, setAbandoning] = useState(false)
@@ -140,16 +151,42 @@ export function TradeDetail() {
     }
   }, [tradeBook, journal, valuations, id, refresh])
 
-  // TradeMath-supplied average cost for the Position line (S5.1) rides the SAME
-  // valuation snapshot TradeDashboard already fetches (Valuations.detail) —
-  // one computation, not a second round trip that could disagree about which
-  // Marks exist. Stable across renders (empty deps) so TradeDashboard's own
-  // effect never re-fires because of it.
-  const handleDetail = useCallback((detail: TradeDetailView) => setValuation(detail.valuation), [])
+  // The whole Valuations.detail snapshot (S5.1) rides the SAME fetch
+  // TradeDashboard already makes — one computation, not a second round trip
+  // that could disagree about which Marks exist. It feeds both the Position
+  // line's average cost (below) and the hero's Current/large-P&L figures.
+  // Stable across renders (empty deps) so TradeDashboard's own effect never
+  // re-fires because of it.
+  const handleDetail = useCallback((d: TradeDetailView) => setDetail(d), [])
 
   if (!trade) return <p>Loading…</p>
 
   const { plan } = trade
+
+  // Target/Stop for the hero: the trade's Exit Levels are facts already read
+  // for the (now-removed) Exit Levels list — a Trade carries at most one of
+  // each side today (the risk/reward model is single-target/single-stop, the
+  // assumption TradeMath's own risk-reward makes), so picking the first of
+  // each side loses nothing.
+  const targetLevel = plan.exitLevels.find((l) => l.side === 'target')
+  const stopLevel = plan.exitLevels.find((l) => l.side === 'stop')
+
+  // The hero's one "current" price: the underlying's own Mark, always a stock
+  // and always the same quantity regardless of strategy — unlike a contract
+  // quote (a CSP's Mark) or a multi-leg Trade's net structure value, neither of
+  // which is comparable to the Plan's Exit Levels (2026-08-25 ruling). Built
+  // from the Trade's ticker (every Planned Leg shares one underlying), not from
+  // whatever happens to be held — a multi-leg Trade holds only option Legs, but
+  // the stock's own Mark is still what the hero shows.
+  //
+  // Marks come from `detail`, the same snapshot TradeDashboard fetches — no
+  // second Book round trip that could disagree on which Marks exist
+  // (docs/design/trade-detail-sequence.md).
+  const ticker = plan.plannedLegs[0]?.instrument.ticker
+  const underlyingKey = ticker ? buildInstrumentKey({ kind: 'stock', ticker }) : undefined
+  const underlyingMark = detail && underlyingKey ? detail.marks.get(underlyingKey) : undefined
+  const targetUnit = targetLevel && exitLevelUnit(targetLevel)
+  const stopUnit = stopLevel && exitLevelUnit(stopLevel)
 
   // A flat Trade with no reason yet is awaiting its Close Reason (the flattening
   // fill just landed). The prompt is non-blocking: it can be dismissed and
@@ -182,40 +219,85 @@ export function TradeDetail() {
         {status && <StatusBadge status={status} aria-label="status" />}
       </div>
 
+      {/* Hero card: strategy, the large total P&L, and the underlying's current
+          price beside it — the one "current" that means the same thing for
+          every strategy (2026-08-25 ruling). Below, Target and Stop, each
+          labelled with the unit its Exit Level is quoted in. The "away"/
+          "cushion" deltas the prototype shows under Target/Stop are arithmetic
+          over these facts and nothing in TradeDetailView carries either value
+          yet (scoped 2026-08-25) — the levels are shown, the deltas are not.
+          The P&L figure is gated on detail.record.legs.length (mirroring
+          TradeDashboard's card guard): a planned Trade has no legs, so
+          valuation(record, marks) still returns a truthy, all-zero Valuation
+          (no legs means nothing is "missing") — without this gate it would
+          print a meaningless "+$0.00" (found 2026-08-25, after removing the
+          `status !== 'planned'` mount gate exposed this hero to planned
+          Trades). */}
+      <div className={`${card} space-y-4`}>
+        {strategyName && <p className={subheading}>{strategyName}</p>}
+        <div className="flex items-start justify-between gap-4">
+          {detail?.valuation && detail.record.legs.length > 0 && (
+            <p
+              className={`text-3xl font-bold ${num} ${
+                detail.valuation.totalPnL >= 0 ? 'text-green-700' : 'text-red-700'
+              }`}
+            >
+              {detail.valuation.totalPnL >= 0 ? '+' : ''}$
+              {centsToDollars(detail.valuation.totalPnL)}
+            </p>
+          )}
+          {/* ml-auto pins this line right even when there is no P&L beside it (a
+              planned Trade with no legs, or an open one whose Mark is
+              missing), so it does not jump left between renders. */}
+          {ticker && (
+            <p
+              aria-label="underlying"
+              className={`mt-1 ml-auto text-sm font-semibold text-stone-900 ${num}`}
+            >
+              {ticker}{' '}
+              {underlyingMark === undefined
+                ? '—'
+                : underlyingMark.date === todayISO()
+                  ? `$${centsToDollars(underlyingMark.price)}`
+                  : `$${centsToDollars(underlyingMark.price)} (${underlyingMark.date})`}
+            </p>
+          )}
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p className={subheading}>Target{targetUnit && ` (${targetUnit})`}</p>
+            <p className={`mt-1 text-sm font-semibold text-green-700 ${num}`}>
+              {targetLevel ? exitLevelDisplay(targetLevel) : '—'}
+            </p>
+          </div>
+          <div>
+            <p className={subheading}>Stop{stopUnit && ` (${stopUnit})`}</p>
+            <p className={`mt-1 text-sm font-semibold text-red-700 ${num}`}>
+              {stopLevel ? exitLevelDisplay(stopLevel) : '—'}
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className={`${card} space-y-4`}>
         <div>
           <h3 className={subheading}>Thesis</h3>
-          <p className="mt-1 text-sm text-slate-800">{plan.thesis}</p>
+          <p className="mt-1 text-sm text-stone-800">{plan.thesis}</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <h3 className={subheading}>Strategy</h3>
-            <p className="mt-1 text-sm text-slate-800">{strategyName}</p>
-          </div>
-          <div>
-            <h3 className={subheading}>Idea Source</h3>
-            <p className="mt-1 text-sm text-slate-800">{ideaSourceName}</p>
-          </div>
+        {/* Strategy itself now leads the hero card above — shown once there,
+            not repeated here. */}
+        <div>
+          <h3 className={subheading}>Idea Source</h3>
+          <p className="mt-1 text-sm text-stone-800">{ideaSourceName}</p>
         </div>
 
         <div>
           <h3 className={subheading}>Planned Legs</h3>
           <ul className="mt-1 space-y-1">
             {plan.plannedLegs.map((leg, i) => (
-              <li key={i} className={`text-sm text-slate-800 capitalize ${num}`}>
+              <li key={i} className={`text-sm text-stone-800 capitalize ${num}`}>
                 {leg.side} {leg.qty} {plannedInstrumentLabel(leg.instrument)}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <h3 className={subheading}>Exit Levels</h3>
-          <ul className="mt-1 space-y-1">
-            {plan.exitLevels.map((level, i) => (
-              <li key={i} className={`text-sm text-slate-800 capitalize ${num}`}>
-                {level.side}: {exitLevelDisplay(level)}
               </li>
             ))}
           </ul>
@@ -232,7 +314,7 @@ export function TradeDetail() {
 
       <div className={`${card} space-y-3`}>
         <div className="flex items-center justify-between">
-          <h3 className={subheading}>Position</h3>
+          <h3 className={subheading}>Legs &amp; Fills</h3>
           {/* A closed Trade offers no record-fill — adding to a closed campaign
               is impossible; a new campaign is a new Plan (S5.1). */}
           {!showFill && status !== 'closed' && (
@@ -241,10 +323,10 @@ export function TradeDetail() {
             </button>
           )}
         </div>
-        <p aria-label="position" className={`text-sm text-slate-800 ${num}`}>
+        <p aria-label="position" className={`text-sm text-stone-800 ${num}`}>
           {position && position.holdings.length > 0
             ? position.holdings
-                .map((h) => holdingLabel(h, avgCostFor(h.instrument, valuation?.perLeg)))
+                .map((h) => holdingLabel(h, avgCostFor(h.instrument, detail?.valuation?.perLeg)))
                 .join(' · ')
             : 'No position'}
         </p>
@@ -257,6 +339,22 @@ export function TradeDetail() {
               setRefresh((n) => n + 1)
             }}
           />
+        )}
+        {executions.length === 0 ? (
+          <p className="text-sm text-stone-500">No executions yet</p>
+        ) : (
+          <ul aria-label="execution history" className="divide-y divide-stone-100">
+            {executions.map((e, i) => (
+              <li key={i} className={`flex flex-wrap gap-x-3 py-2 text-sm text-stone-800 ${num}`}>
+                <span>{timestampToISODate(e.timestamp)}</span>
+                <span className="capitalize">{e.side}</span>
+                <span>{e.qty}</span>
+                <span>{e.label}</span>
+                <span>${centsToDollars(e.price)}</span>
+                <span className="text-stone-500">fees ${centsToDollars(e.fees)}</span>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
 
@@ -273,19 +371,19 @@ export function TradeDetail() {
             refreshReport.skippedManual.length === 0 &&
             refreshReport.unsupported.length === 0 &&
             refreshReport.errors.length === 0 && (
-              <p aria-label="refresh empty" className="text-sm text-slate-500">
+              <p aria-label="refresh empty" className="text-sm text-stone-500">
                 No new price for today — the source has nothing yet (market may still be open, or
                 closed with no update).
               </p>
             )}
           {refreshReport && refreshReport.skippedManual.length > 0 && (
-            <p aria-label="refresh sticky" className="text-sm text-slate-500">
+            <p aria-label="refresh sticky" className="text-sm text-stone-500">
               Kept today&apos;s manual mark for {refreshReport.skippedManual.join(', ')} — a refresh
               never overwrites a price you typed yourself.
             </p>
           )}
           {refreshReport && refreshReport.unsupported.length > 0 && (
-            <p aria-label="refresh unsupported" className="text-sm text-slate-500">
+            <p aria-label="refresh unsupported" className="text-sm text-stone-500">
               No pricing source covers {refreshReport.unsupported.join(', ')} — enter it manually
               below.
             </p>
@@ -304,10 +402,13 @@ export function TradeDetail() {
 
       {/* Keyed on the page's refresh counter: an Execution (or a Close Reason)
           changes what the Trade holds, so the valuation must be re-fetched — it
-          may never keep numbers the Position and the badge have already moved past. */}
-      {status && status !== 'planned' && (
-        <TradeDashboard key={refresh} tradeId={trade.id} onDetail={handleDetail} />
-      )}
+          may never keep numbers the Position and the badge have already moved
+          past. Mounted for a planned Trade too (not just open/closed) —
+          TradeDashboard itself renders nothing then, but its `detail()` fetch
+          is what feeds the hero's underlying price through `onDetail`; a
+          second, UI-owned Book round trip is exactly what
+          docs/design/trade-detail-sequence.md rules out. */}
+      {status && <TradeDashboard key={refresh} tradeId={trade.id} onDetail={handleDetail} />}
 
       {status && status !== 'planned' && (
         <div className="flex justify-end">
@@ -339,7 +440,7 @@ export function TradeDetail() {
           )}
         </div>
         {trade.closeReason ? (
-          <p aria-label="close reason" className="text-sm text-slate-800">
+          <p aria-label="close reason" className="text-sm text-stone-800">
             {trade.closeReason.name}
           </p>
         ) : showCloseForm ? (
@@ -356,27 +457,7 @@ export function TradeDetail() {
             }}
           />
         ) : (
-          <p className="text-sm text-slate-500">No close reason</p>
-        )}
-      </div>
-
-      <div className={`${card} space-y-3`}>
-        <h3 className={subheading}>Execution history</h3>
-        {executions.length === 0 ? (
-          <p className="text-sm text-slate-500">No executions yet</p>
-        ) : (
-          <ul aria-label="execution history" className="divide-y divide-slate-100">
-            {executions.map((e, i) => (
-              <li key={i} className={`flex flex-wrap gap-x-3 py-2 text-sm text-slate-800 ${num}`}>
-                <span>{timestampToISODate(e.timestamp)}</span>
-                <span className="capitalize">{e.side}</span>
-                <span>{e.qty}</span>
-                <span>{e.label}</span>
-                <span>${centsToDollars(e.price)}</span>
-                <span className="text-slate-500">fees ${centsToDollars(e.fees)}</span>
-              </li>
-            ))}
-          </ul>
+          <p className="text-sm text-stone-500">No close reason</p>
         )}
       </div>
 
@@ -385,7 +466,7 @@ export function TradeDetail() {
           <h3 className={subheading}>Journal</h3>
           <span
             aria-label="journal entries"
-            className="inline-flex min-w-5 items-center justify-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 tabular-nums"
+            className="inline-flex min-w-5 items-center justify-center rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-600 tabular-nums"
           >
             {entries.length}
           </span>
@@ -404,10 +485,10 @@ export function TradeDetail() {
             )}
             <AddAddendum entry={root} onAdded={() => setRefresh((n) => n + 1)} />
             {addenda.length > 0 && (
-              <ul aria-label="addenda" className="ml-4 space-y-3 border-l border-slate-200 pl-4">
+              <ul aria-label="addenda" className="ml-4 space-y-3 border-l border-stone-200 pl-4">
                 {addenda.map((addendum) => (
                   <li key={addendum.id} className="space-y-2">
-                    <p className="text-xs text-slate-500">{timestampToISODate(addendum.at)}</p>
+                    <p className="text-xs text-stone-500">{timestampToISODate(addendum.at)}</p>
                     <AnsweredPrompts answered={addendum.answered} promptClass={subheading} />
                     <AddAddendum entry={addendum} onAdded={() => setRefresh((n) => n + 1)} />
                   </li>

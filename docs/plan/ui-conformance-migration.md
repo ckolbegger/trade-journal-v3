@@ -120,11 +120,45 @@ _Verify:_ planned, open and closed rows all render; a row reaches its detail pag
 
 ### UX.5 — Trade detail
 
-The densest screen. Hero card (strategy, large P&L, Current/Target/Stop), then a Plan / Invalidation / Catalyst card, a Legs & Fills card, then actions. Keep Execution wording (constraint 3). Keep the four R/R numbers the design docs require — the prototype's two-number framing is a display idea, not licence to drop them.
+The densest screen. Hero card (strategy; ticker, underlying price and large P&L on the top line; then the labelled exit levels — see the hero ruling below), then a Plan / Invalidation / Catalyst card, a Legs & Fills card, then actions. Keep Execution wording (constraint 3). Keep the four R/R numbers the design docs require — the prototype's two-number framing is a display idea, not licence to drop them.
 
 The hero's **day count and adherence chip are omitted for the same reasons as UX.4** — one needs a coordinator field this migration isn't adding, the other needs Slice 9. Both return when their slice lands.
 
-**Scoped 2026-08-25: the "away"/"cushion" framing goes with them.** The prototype renders `TARGET $920.00 / +$95.90 away` and `STOP $805.00 / $19.10 cushion`. Current, Target and Stop are each facts — the Mark, and the plan's `exitLevels` — but the two deltas are arithmetic over them, and nothing in `TradeDetailView` carries either value (grep confirms "away" and "cushion" appear nowhere in `src/`). Computing them in the UI is the same constraint 2 violation as the day count. **Show the three levels; omit the deltas.** They arrive when a coordinator field does.
+**Hero ruling, user decision 2026-08-25.** The prototype's `Current · Target · Stop` ladder is only truthful on a stock Trade. `ExitLevel` carries exactly one `kind` per side — `underlyingPrice` or `structureValue` — and the Strategy template decides which, so a Cash-Secured Put has its stop in underlying dollars and its target in position dollars. Putting those beside a contract's Mark renders three different quantities as one ladder (`$1.25 · $0.50 · $95.00` reads as enormous cushion where none exists), and on a spread or PMCC there is no single current price at all. The hero instead:
+
+1. **Leads with the ticker and the underlying's current price**, beside the P&L. One unambiguous "current" for every strategy, because it is always the stock. The underlying's Mark is a fact the app already collects — `heldInstrumentsOf` returns it for every held option Leg precisely because "underlyingPrice Exit Levels and IV read it".
+   - No Mark for the underlying at all → show the ticker with `—`.
+   - A Mark from an earlier date → show that price **with its date in parentheses**. `marks` is the latest available MarkSet, not necessarily today's, and every `Mark` carries its own `date`, so staleness is visible rather than silent.
+   - **Open question, raised by UX.5's review.** `latestMarkSet` picks *one* date across all of a Trade's instruments and keeps only Marks on that exact date. So a Trade whose contract is marked today but whose underlying was last marked on Friday puts the underlying in no MarkSet at all: the hero shows `NVDA —` rather than Friday's price with its date. The stale branch is reachable only when the Trade's *whole* latest MarkSet is old. That is a faithful reading of this ruling as written, and it is what shipped — but whether the mixed case should show "—" or Friday's price is undecided. Settling it means reaching past the single MarkSet, which is a coordinator change, not a UI one.
+   - **Acceptance defect, found and fixed 2026-08-25.** A planned Trade (no fills yet, no Legs) has no instrument in `instrumentsOf` at all, so `latestMarks` always fetched an empty series and the hero showed `—` even when the underlying was marked today — exactly the case where comparing today's price against a planned Target/Stop matters most. `Valuations.latestMarks` now unions in the underlying key derived from `plan.plannedLegs[0]` whenever the Trade has no Legs; once a Leg exists, `instrumentsOf` already carries the same key, so the union is a no-op for every open Trade and cannot shift `latestMarkSet`'s chosen date. `TradeDetail` also mounts `TradeDashboard` (the sole `detail()` fetch site) for planned Trades too, since the fetch had been gated behind `status !== 'planned'`; `TradeDashboard` itself still renders nothing for a Trade with no Legs, so the visible valuation card is unchanged. That mount-gate removal had a follow-on: with `TradeDashboard` now mounting for planned Trades, `Valuations.detail()` runs for them too, and `valuation(record, marks)` does not throw on a legless record — `instrumentsOf` returns `[]`, so nothing is "missing" and every money field reduces to zero, returning a truthy all-zero `Valuation`. The hero's P&L block was guarded only on `detail?.valuation` and so printed a meaningless `+$0.00` in `text-3xl font-bold text-green-700` on Trades that had never had a fill. Fixed by gating the hero P&L on `detail?.record.legs.length` as well, mirroring the guard `TradeDashboard` already applies to its own card (`legs.length === 0` → render nothing).
+2. **Labels each level with its unit**, in the wording the plan form already uses: `Target (position price)`, `Stop (underlying price)`. The form is explicit about the unit; the hero was the one place that dropped it.
+3. **Drops the separate Current column** — the top line now carries it, for every strategy.
+
+This is behaviour, not styling, so it is built test-first.
+
+#### TestSpec — `src/ui/pages/TradeDetail.test.tsx`
+
+```
+describe('Trade detail hero')
+  it('shows the ticker and the underlying price when it is marked today')
+  it('shows the ticker with an em dash when the underlying has no Mark')
+  it('shows a prior-date underlying price with its date in parentheses')
+  it('labels an underlyingPrice level as "underlying price"')
+  it('labels a structureValue level as "position price"')
+  it('renders a cash-secured put whose stop and target carry different units')
+  it('shows the underlying price on a multi-leg Trade rather than one leg mark')
+  it('shows the underlying price on a planned Trade with no fills')
+  it('shows no P&L figure on a planned Trade with no fills')
+  it('renders no Current column')
+```
+
+**Scoped 2026-08-25: the "away"/"cushion" framing is still omitted.** The prototype renders `TARGET $920.00 / +$95.90 away` and `STOP $805.00 / $19.10 cushion`. The underlying price and the levels are each facts — a Mark, and the plan's `exitLevels` — but the two deltas are arithmetic over them, and nothing in `TradeDetailView` carries either value (grep confirms "away" and "cushion" appear nowhere in `src/`). Computing them in the UI is the same constraint 2 violation as the day count. **Show the levels; omit the deltas.** They arrive when a coordinator field does.
+
+**Open question, found by UX.5 acceptance 2026-08-25 — the underlying's Mark is unreachable on an option-only Trade.** The hero promises one current price for every strategy, but on a Cash-Secured Put, covered call or PMCC the trader has no way to supply it. `Refresh prices` correctly names the underlying (`marksNeeded` reads `heldInstrumentsOf`, which includes it), yet the manual entry offers only the instruments in `marksMissing` — and `marksMissing` comes from `valuation`'s `MissingMarkError`, which names only what *valuation* needs. A CSP values off its contract, so its underlying is never "missing" and never gets an input. Observed: a CSP hero read `AAPL —` indefinitely, then snapped to `$213.50` the moment an unrelated AAPL **stock** Trade was marked, off the shared PriceBook.
+
+The hero degrades honestly (`—`, never a wrong number), so this is not a correctness bug — but on the option strategies this ruling was written for, its headline number is blank unless the trader happens to hold the stock elsewhere. Fixing it changes **which instruments the app collects Marks for**, which also changes what the review walk nags about — Marks-collection design, not a restyle. **Escalated to the user; needs a ruling and probably its own story.** Deliberately not fixed inside UX.5.
+
+**Open vocabulary question, raised by UX.5's review — "Fills" as UI copy.** CONTEXT.md lists **fill** on the _Avoid_ list for Execution, and UX.5's own text says "Keep Execution wording (constraint 3)" — then names the card "Legs & Fills", taken straight from the prototype. The two contradict each other and one of them should move: either the card becomes "Legs & Executions", or CONTEXT.md's Avoid entry is narrowed to cover code and test names but not this heading. Shipped as "Legs & Fills" because that is what the plan said; `Record fill` on the same page is pre-existing copy either way. **Settle this in UX.8**, which already owns rewriting `docs/design/ui-style.md`.
 
 _Verify:_ the stock, spread and planned-no-fills variants all read correctly.
 

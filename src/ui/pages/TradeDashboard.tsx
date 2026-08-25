@@ -66,6 +66,13 @@ export function TradeDashboard({
 
   if (!detail) return null
 
+  // A planned Trade with no fills holds nothing to value — the card would
+  // otherwise show a meaningless $0.00 P&L. `load()` above still ran and
+  // handed `onDetail` the whole snapshot (marks included), which is what the
+  // Trade-detail hero needs for the underlying price — this component's own
+  // display is what's suppressed, not the fetch.
+  if (detail.record.legs.length === 0) return null
+
   // plannedLegs[0] is always concrete: a single-leg Strategy requires its sole
   // Planned Leg's strike/expiration up front (PlanForm), and a multi-leg
   // Strategy's own first leg is Slice 7's stock leg — no strike/expiration to
@@ -102,12 +109,12 @@ export function TradeDashboard({
     return (
       <div className={`${card} space-y-3`}>
         <h3 className={subheading}>Valuation</h3>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-stone-500">
           Enter today's price to see P&amp;L and risk/reward.
         </p>
         {missing.map((key) => (
           <div key={key} className="space-y-2">
-            {missing.length > 1 && <p className="text-sm font-medium text-slate-700">{key}</p>}
+            {missing.length > 1 && <p className="text-sm font-medium text-stone-700">{key}</p>}
             <MarkEntry
               instrument={key}
               currentPrice={detail.marks.get(key)?.price}
@@ -128,10 +135,10 @@ export function TradeDashboard({
 
       <dl aria-label="profit and loss" className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
         <Row label="Current value" value={money(v.currentValue)} />
-        <Row label="Unrealized P&L" value={money(v.unrealizedPnL)} />
-        <Row label="Realized P&L" value={money(v.realizedPnL)} />
+        <Row label="Unrealized P&L" value={money(v.unrealizedPnL)} tone={v.unrealizedPnL} />
+        <Row label="Realized P&L" value={money(v.realizedPnL)} tone={v.realizedPnL} />
         <Row label="Fees" value={money(v.fees)} />
-        <Row label="Total P&L" value={money(v.totalPnL)} />
+        <Row label="Total P&L" value={money(v.totalPnL)} tone={v.totalPnL} />
       </dl>
 
       {/* IV is display-only (ADR 0009) — never fed back into P&L or R/R. Shown
@@ -145,8 +152,8 @@ export function TradeDashboard({
             if (!leg) return null
             return (
               <div key={entry.legId} className="flex justify-between">
-                <dt className="text-slate-500">{instrumentLabel(leg.instrument)}</dt>
-                <dd className={`text-slate-900 ${num}`}>
+                <dt className="text-stone-500">{instrumentLabel(leg.instrument)}</dt>
+                <dd className={`text-stone-900 ${num}`}>
                   {centsToDollars(entry.markPrice)}
                   {entry.iv !== undefined && ` · IV ${Math.round(entry.iv * 100)}%`}
                 </dd>
@@ -164,8 +171,8 @@ export function TradeDashboard({
           <p className={subheading}>Per Leg</p>
           {v.perLeg.map((leg, i) => (
             <div key={i} className="flex justify-between">
-              <dt className="text-slate-500">{instrumentLabel(leg.instrument)}</dt>
-              <dd className={`text-slate-900 ${num}`}>
+              <dt className="text-stone-500">{instrumentLabel(leg.instrument)}</dt>
+              <dd className={`text-stone-900 ${num}`}>
                 realized {money(leg.realized)} · unrealized {money(leg.unrealized)}
               </dd>
             </div>
@@ -176,7 +183,7 @@ export function TradeDashboard({
       <div className="grid grid-cols-2 gap-4">
         <dl
           aria-label="ongoing risk and reward"
-          className="space-y-2 rounded-md border border-slate-200 p-3 text-sm"
+          className="space-y-2 rounded-md border border-stone-200 p-3 text-sm"
         >
           <p className={subheading}>Ongoing (from today's Mark)</p>
           <Anchor
@@ -199,7 +206,7 @@ export function TradeDashboard({
 
         <dl
           aria-label="original plan risk and reward"
-          className="space-y-2 rounded-md border border-slate-200 p-3 text-sm"
+          className="space-y-2 rounded-md border border-stone-200 p-3 text-sm"
         >
           <p className={subheading}>Original plan</p>
           <Anchor label="original risk" title="Risk" value={anchor(rr.original.risk)} />
@@ -216,11 +223,16 @@ export function TradeDashboard({
   )
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+// `tone` (cents), when supplied, colours the value by sign — green/red, per
+// the design system's P&L rule — a display predicate over an already-fetched
+// Money, never a new computation.
+function Row({ label, value, tone }: { label: string; value: string; tone?: Money }) {
+  const toneClass =
+    tone === undefined ? 'text-stone-900' : tone >= 0 ? 'text-green-700' : 'text-red-700'
   return (
     <div className="flex justify-between">
-      <dt className="text-slate-500">{label}</dt>
-      <dd className={`text-slate-900 ${num}`}>{value}</dd>
+      <dt className="text-stone-500">{label}</dt>
+      <dd className={`${toneClass} ${num}`}>{value}</dd>
     </div>
   )
 }
@@ -228,8 +240,8 @@ function Row({ label, value }: { label: string; value: string }) {
 function Anchor({ label, title, value }: { label: string; title: string; value: string }) {
   return (
     <div className="flex justify-between">
-      <dt className="text-slate-500">{title}</dt>
-      <dd aria-label={label} className={`text-slate-900 ${num}`}>
+      <dt className="text-stone-500">{title}</dt>
+      <dd aria-label={label} className={`text-stone-900 ${num}`}>
         {value}
       </dd>
     </div>

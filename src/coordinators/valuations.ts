@@ -254,10 +254,21 @@ export class Valuations {
     }
   }
 
-  // One series fetch per Trade; its latest date is the valuation MarkSet.
+  // One series fetch per Trade; its latest date is the valuation MarkSet. A
+  // planned Trade has no legs, so `instrumentsOf` returns nothing — union in
+  // the underlying key from the Plan's first leg so the hero can still read
+  // today's price for the ticker (UX.5 acceptance, 2026-08-25). Only done when
+  // there are no legs: once a leg exists, `instrumentsOf` already carries this
+  // same underlying key (a stock leg's key IS the underlying; an option leg's
+  // underlying is added on line 37), so adding it again here would be a no-op
+  // for every open Trade and cannot shift `latestMarkSet`'s chosen date.
   private async latestMarks(record: TradeRecord): Promise<MarkSet> {
     if (!this.priceBook) throw new Error('Valuations needs a PriceBook for valuation')
-    const series = await this.priceBook.series(instrumentsOf(record))
+    const instruments = instrumentsOf(record)
+    if (record.legs.length === 0) {
+      instruments.push(underlyingKeyOf(record.plan.plannedLegs[0].instrument.ticker))
+    }
+    const series = await this.priceBook.series(instruments)
     return latestMarkSet(series)
   }
 }
