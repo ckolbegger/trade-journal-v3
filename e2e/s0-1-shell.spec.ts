@@ -14,7 +14,7 @@ test('shell loads, navigates to Review and back, with no console errors', async 
   await page.getByLabel(/account name/i).fill('Taxable')
   await page.getByRole('button', { name: /get started/i }).click()
 
-  await expect(page.getByRole('heading', { name: 'Trades' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
 
   await page.getByRole('link', { name: 'Review' }).click()
   await expect(page.getByRole('heading', { name: 'Review' })).toBeVisible()

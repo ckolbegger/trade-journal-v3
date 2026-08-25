@@ -40,7 +40,7 @@ async function onboard(page: Page) {
   await page.getByLabel(/institution name/i).fill('Schwab')
   await page.getByLabel(/account name/i).fill('Taxable')
   await page.getByRole('button', { name: /get started/i }).click()
-  await expect(page.getByRole('heading', { name: 'Trades' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
 }
 
 async function planAndFillStock(page: Page) {
@@ -89,6 +89,7 @@ async function planAndFillCall(page: Page) {
 }
 
 async function enableSource(page: Page) {
+  await page.getByRole('link', { name: 'Home' }).click()
   await page.getByRole('link', { name: 'Settings' }).click()
   await page.getByLabel(/enable marketdata\.app/i).check()
   await page.getByLabel(/api key/i).fill('fake-key')

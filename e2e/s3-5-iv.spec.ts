@@ -17,7 +17,7 @@ async function onboard(page: Page) {
   await page.getByLabel(/institution name/i).fill('Schwab')
   await page.getByLabel(/account name/i).fill('Taxable')
   await page.getByRole('button', { name: /get started/i }).click()
-  await expect(page.getByRole('heading', { name: 'Trades' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
 }
 
 // Plans and fills a long call — the worked-example instrument (docs/plan/
@@ -54,6 +54,7 @@ test('marked long call shows an IV percentage; changing the rate in Settings cha
   page,
 }) => {
   await onboard(page)
+  await page.getByRole('link', { name: 'Trades' }).click()
   await planAndFillCall(page)
 
   // The contract Mark, entered directly on the Trade detail page.
@@ -77,6 +78,7 @@ test('marked long call shows an IV percentage; changing the rate in Settings cha
   // Changing the risk-free rate in Settings changes the recovered IV for the
   // same Marks (a lower rate, still within reach of this deep-ITM contract's
   // discounted-intrinsic floor — see domain/trademath/implied-vol.ts).
+  await page.getByRole('link', { name: 'Home' }).click()
   await page.getByRole('link', { name: 'Settings' }).click()
   const rateField = page.getByLabel(/risk-free rate/i)
   await rateField.fill('1')

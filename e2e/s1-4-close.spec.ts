@@ -6,7 +6,7 @@ async function onboard(page: import('@playwright/test').Page) {
   await page.getByLabel(/institution name/i).fill('Schwab')
   await page.getByLabel(/account name/i).fill('Taxable')
   await page.getByRole('button', { name: /get started/i }).click()
-  await expect(page.getByRole('heading', { name: 'Trades' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
 }
 
 async function planAndSkipJournal(page: import('@playwright/test').Page, thesis: string) {
@@ -24,6 +24,7 @@ async function planAndSkipJournal(page: import('@playwright/test').Page, thesis:
 
 test('close a flattened Trade and abandon a planned one (worked example)', async ({ page }) => {
   await onboard(page)
+  await page.getByRole('link', { name: 'Trades' }).click()
 
   // Worked example: plan, buy 100 @ 150, sell 100 @ 168 fees 1 → flat.
   await planAndSkipJournal(page, 'AAPL breaks out')

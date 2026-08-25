@@ -6,11 +6,12 @@ async function onboard(page: import('@playwright/test').Page) {
   await page.getByLabel(/institution name/i).fill('Schwab')
   await page.getByLabel(/account name/i).fill('Taxable')
   await page.getByRole('button', { name: /get started/i }).click()
-  await expect(page.getByRole('heading', { name: 'Trades' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
 }
 
 test('record a fill and see the Position go open (worked example)', async ({ page }) => {
   await onboard(page)
+  await page.getByRole('link', { name: 'Trades' }).click()
 
   // Confirm the worked-example Plan, then skip the Plan journal to reach detail.
   await page.getByRole('link', { name: 'New Trade' }).click()

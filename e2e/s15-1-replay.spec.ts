@@ -42,7 +42,7 @@ async function onboard(page: Page) {
   await page.getByLabel(/institution name/i).fill('Schwab')
   await page.getByLabel(/account name/i).fill('Taxable')
   await page.getByRole('button', { name: /get started/i }).click()
-  await expect(page.getByRole('heading', { name: 'Trades' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
 }
 
 async function planAndFill(page: Page) {
@@ -91,6 +91,7 @@ async function markKnownDays(page: Page) {
 
 test('replays a seeded lifecycle and slides to a known date', async ({ page }) => {
   await onboard(page)
+  await page.getByRole('link', { name: 'Trades' }).click()
   await planAndFill(page)
   await markKnownDays(page)
 

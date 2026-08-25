@@ -7,7 +7,7 @@ async function onboard(page: Page) {
   await page.getByLabel(/institution name/i).fill('Schwab')
   await page.getByLabel(/account name/i).fill('Taxable')
   await page.getByRole('button', { name: /get started/i }).click()
-  await expect(page.getByRole('heading', { name: 'Trades' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
 }
 
 // Plans the worked-example long call, skips the Plan journal, and records the
@@ -37,6 +37,7 @@ async function planAndFillCall(page: Page) {
 
 test('plans, fills, and marks a long call — worked-example dashboard numbers', async ({ page }) => {
   await onboard(page)
+  await page.getByRole('link', { name: 'Trades' }).click()
   await planAndFillCall(page)
 
   // The position reads the contract, not just the underlying ticker.

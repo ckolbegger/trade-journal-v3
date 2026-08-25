@@ -11,7 +11,7 @@ async function onboard(page: Page) {
   await page.getByLabel(/institution name/i).fill('Schwab')
   await page.getByLabel(/account name/i).fill('Taxable')
   await page.getByRole('button', { name: /get started/i }).click()
-  await expect(page.getByRole('heading', { name: 'Trades' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
 }
 
 async function planWithJournal(page: Page) {
@@ -35,6 +35,7 @@ test('add an addendum to a plan entry from Trade detail: nested there and on the
   page,
 }) => {
   await onboard(page)
+  await page.getByRole('link', { name: 'Trades' }).click()
   await planWithJournal(page)
 
   // Trade detail shows the plan entry — grow it with an addendum.

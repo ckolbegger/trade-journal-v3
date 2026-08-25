@@ -11,7 +11,7 @@ async function onboard(page: Page) {
   await page.getByLabel(/institution name/i).fill('Schwab')
   await page.getByLabel(/account name/i).fill('Taxable')
   await page.getByRole('button', { name: /get started/i }).click()
-  await expect(page.getByRole('heading', { name: 'Trades' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
 }
 
 async function planAStock(page: Page) {
@@ -44,9 +44,11 @@ test('restores a Trade and journal entry onto a fresh profile from an exported b
   page,
 }) => {
   await onboard(page)
+  await page.getByRole('link', { name: 'Trades' }).click()
   await planAStock(page)
   await writeAReflection(page)
 
+  await page.getByRole('link', { name: 'Home' }).click()
   await page.getByRole('link', { name: 'Settings' }).click()
   const [download] = await Promise.all([
     page.waitForEvent('download'),
@@ -74,6 +76,7 @@ test('restores a Trade and journal entry onto a fresh profile from an exported b
   await expect(page.getByText(/will replace all current data/i)).toBeVisible()
   await page.getByRole('button', { name: /replace all data/i }).click()
 
+  await page.getByRole('link', { name: 'Trades' }).click()
   await expect(page.getByRole('heading', { name: 'Trades' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'AAPL' })).toBeVisible()
 

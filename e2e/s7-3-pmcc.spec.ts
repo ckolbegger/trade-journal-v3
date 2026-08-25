@@ -16,13 +16,14 @@ async function onboard(page: Page) {
   await page.getByLabel(/institution name/i).fill('Schwab')
   await page.getByLabel(/account name/i).fill('Taxable')
   await page.getByRole('button', { name: /get started/i }).click()
-  await expect(page.getByRole('heading', { name: 'Trades' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
 }
 
 test('plans, legs in, and marks a PMCC — worked-example dashboard numbers and mixed expirations', async ({
   page,
 }) => {
   await onboard(page)
+  await page.getByRole('link', { name: 'Trades' }).click()
 
   // ——— plan: the far LEAP concrete, the near call TBD ———
   await page.getByRole('link', { name: 'New Trade' }).click()

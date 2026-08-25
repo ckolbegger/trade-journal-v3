@@ -13,7 +13,7 @@ async function onboard(page: Page) {
   await page.getByLabel(/institution name/i).fill('Schwab')
   await page.getByLabel(/account name/i).fill('Taxable')
   await page.getByRole('button', { name: /get started/i }).click()
-  await expect(page.getByRole('heading', { name: 'Trades' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
 }
 
 async function recordFill(
@@ -32,6 +32,7 @@ test('scale out of a position across a partial and a final close (worked example
   page,
 }) => {
   await onboard(page)
+  await page.getByRole('link', { name: 'Trades' }).click()
 
   await page.getByRole('link', { name: 'New Trade' }).click()
   await expect(page.getByRole('heading', { name: 'New Trade' })).toBeVisible()

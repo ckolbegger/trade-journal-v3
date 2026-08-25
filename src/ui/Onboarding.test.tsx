@@ -82,7 +82,7 @@ describe('Onboarding', () => {
 
     renderApp(tradeBook, journal, priceBook)
 
-    expect(await screen.findByRole('heading', { name: 'Trades' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Home' })).toBeInTheDocument()
     expect(
       screen.queryByRole('heading', { name: /set up your first account/i }),
     ).not.toBeInTheDocument()

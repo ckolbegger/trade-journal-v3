@@ -16,7 +16,7 @@ async function onboard(page: Page) {
   await page.getByLabel(/institution name/i).fill('Schwab')
   await page.getByLabel(/account name/i).fill('Taxable')
   await page.getByRole('button', { name: /get started/i }).click()
-  await expect(page.getByRole('heading', { name: 'Trades' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
 }
 
 // Plans and sells a cash-secured put expiring yesterday — already past
@@ -49,6 +49,7 @@ test('reviews an expired put, records it worthless, and closes the Trade with co
   page,
 }) => {
   await onboard(page)
+  await page.getByRole('link', { name: 'Trades' }).click()
   await planAndSellExpiredCsp(page)
 
   await page.getByRole('link', { name: 'Review' }).click()

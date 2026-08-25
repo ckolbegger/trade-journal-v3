@@ -36,17 +36,30 @@ function renderAt(path: string) {
 }
 
 describe('AppShell', () => {
-  it('renders the header and nav links', () => {
+  it('renders the header and tab bar links', () => {
     renderAt('/')
     expect(screen.getByRole('banner')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Trades' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Journal' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Review' })).toBeInTheDocument()
   })
 
-  it('renders the Trades stub at /', () => {
+  it('renders the Home stub at /, with a Settings link', () => {
     renderAt('/')
+    expect(screen.getByRole('heading', { name: 'Home' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Settings' })).toBeInTheDocument()
+  })
+
+  it('renders the Trades page at /trades', () => {
+    renderAt('/trades')
     expect(screen.getByRole('heading', { name: 'Trades' })).toBeInTheDocument()
+  })
+
+  it('marks only the current route’s tab as active', () => {
+    renderAt('/trades')
+    expect(screen.getByRole('link', { name: 'Trades' })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('link', { name: 'Home' })).not.toHaveAttribute('aria-current')
   })
 
   it('renders the Journal page at /journal', () => {

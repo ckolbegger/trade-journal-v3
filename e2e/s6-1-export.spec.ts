@@ -12,7 +12,7 @@ async function onboard(page: Page) {
   await page.getByLabel(/institution name/i).fill('Schwab')
   await page.getByLabel(/account name/i).fill('Taxable')
   await page.getByRole('button', { name: /get started/i }).click()
-  await expect(page.getByRole('heading', { name: 'Trades' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
 }
 
 async function planAStock(page: Page) {
@@ -32,8 +32,10 @@ test('exports a backup file whose counts and schema version match the populated 
   page,
 }) => {
   await onboard(page)
+  await page.getByRole('link', { name: 'Trades' }).click()
   await planAStock(page)
 
+  await page.getByRole('link', { name: 'Home' }).click()
   await page.getByRole('link', { name: 'Settings' }).click()
   await expect(page.getByText(/never exported/i)).toBeVisible()
 

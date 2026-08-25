@@ -31,3 +31,9 @@ export const link = 'font-medium text-stone-900 underline underline-offset-2 hov
 
 // Right-aligned numerics (money / quantities).
 export const num = 'tabular-nums'
+
+// Bottom tab bar item — icon above label. Active reads near-black and bold;
+// inactive reads muted grey.
+const tabItem = 'flex flex-1 flex-col items-center gap-1 py-2 text-xs'
+export const tabItemActive = `${tabItem} font-semibold text-stone-900`
+export const tabItemInactive = `${tabItem} font-medium text-stone-500`

@@ -15,13 +15,14 @@ async function onboard(page: Page) {
   await page.getByLabel(/institution name/i).fill('Schwab')
   await page.getByLabel(/account name/i).fill('Taxable')
   await page.getByRole('button', { name: /get started/i }).click()
-  await expect(page.getByRole('heading', { name: 'Trades' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
 }
 
 test('plans, legs in, and marks a bull put spread — worked-example dashboard numbers', async ({
   page,
 }) => {
   await onboard(page)
+  await page.getByRole('link', { name: 'Trades' }).click()
 
   // ——— plan: both legs, one linked expiration, per-leg strikes ———
   await page.getByRole('link', { name: 'New Trade' }).click()

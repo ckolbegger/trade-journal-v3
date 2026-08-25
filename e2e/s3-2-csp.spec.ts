@@ -7,7 +7,7 @@ async function onboard(page: Page) {
   await page.getByLabel(/institution name/i).fill('Schwab')
   await page.getByLabel(/account name/i).fill('Taxable')
   await page.getByRole('button', { name: /get started/i }).click()
-  await expect(page.getByRole('heading', { name: 'Trades' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
 }
 
 // Plans the worked-example cash-secured put, skips the Plan journal, and
@@ -40,6 +40,7 @@ test('plans, sells, and marks a cash-secured put — worked-example dashboard nu
   page,
 }) => {
   await onboard(page)
+  await page.getByRole('link', { name: 'Trades' }).click()
   await planAndSellCsp(page)
 
   // The position reads negative — a short contract, not a long one.

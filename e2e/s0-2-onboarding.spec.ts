@@ -10,12 +10,12 @@ test('onboarding creates an institution and account, persists across reload', as
   await page.getByLabel(/account name/i).fill('Taxable')
   await page.getByRole('button', { name: /get started/i }).click()
 
-  // Lands on Trades.
-  await expect(page.getByRole('heading', { name: 'Trades' })).toBeVisible()
+  // Lands on Home.
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
 
   // Reload → no onboarding (persisted in IndexedDB).
   await page.reload()
-  await expect(page.getByRole('heading', { name: 'Trades' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
   await expect(page.getByRole('heading', { name: /set up your first account/i })).toHaveCount(0)
 
   // Settings lists both.

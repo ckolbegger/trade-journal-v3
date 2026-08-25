@@ -16,7 +16,7 @@ async function onboard(page: Page) {
   await page.getByLabel(/institution name/i).fill('Schwab')
   await page.getByLabel(/account name/i).fill('Taxable')
   await page.getByRole('button', { name: /get started/i }).click()
-  await expect(page.getByRole('heading', { name: 'Trades' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
 }
 
 // Plans and sells an in-the-money cash-secured put expiring yesterday —
@@ -49,6 +49,7 @@ test('reviews an ITM expired put, records assignment, and closes the Trade after
   page,
 }) => {
   await onboard(page)
+  await page.getByRole('link', { name: 'Trades' }).click()
   await planAndSellItmCsp(page)
 
   await page.getByRole('link', { name: 'Review' }).click()

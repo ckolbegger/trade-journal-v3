@@ -53,7 +53,7 @@ export function AppRoot({
             <ReviewContext.Provider value={review}>
               <WorkspaceContext.Provider value={workspace}>
                 {needsOnboarding === null ? (
-                  <p className="p-6 text-sm text-slate-500">Loading…</p>
+                  <p className="p-6 text-sm text-stone-500">Loading…</p>
                 ) : needsOnboarding ? (
                   <Onboarding onComplete={() => setNeedsOnboarding(false)} />
                 ) : (

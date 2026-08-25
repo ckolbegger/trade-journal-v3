@@ -6,7 +6,7 @@ async function onboard(page: import('@playwright/test').Page) {
   await page.getByLabel(/institution name/i).fill('Schwab')
   await page.getByLabel(/account name/i).fill('Taxable')
   await page.getByRole('button', { name: /get started/i }).click()
-  await expect(page.getByRole('heading', { name: 'Trades' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
 }
 
 async function fillPlan(page: import('@playwright/test').Page, thesis: string) {
@@ -22,6 +22,7 @@ async function fillPlan(page: import('@playwright/test').Page, thesis: string) {
 
 test('journal the plan at confirm, and skip it as debt', async ({ page }) => {
   await onboard(page)
+  await page.getByRole('link', { name: 'Trades' }).click()
 
   // First Trade: confirm the plan, then answer the Plan journal prompts.
   await fillPlan(page, 'AAPL breaks out')
