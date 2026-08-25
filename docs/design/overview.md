@@ -32,6 +32,16 @@ interface Valuations {
   replay(tradeId): Promise<ReplayPoint[]>
   disciplineCheck(tradeId | 'allOpen', asOf): Promise<DetectedDeviation[]>
   attentionBoard(asOf): Promise<RankedTrade[]>    // open Trades, scored and sorted
+  totals(asOf): Promise<PortfolioTotals>          // Portfolio line across open Trades: openPnl sums each held
+                                                  // leg valued at its latest Mark, or at fill cost when no Mark exists —
+                                                  // never silently understated: unmarkedAtCostCount travels alongside
+                                                  // (persistent unmarked state is marksNeeded/Review's job, not the
+                                                  // consumer's). Fields: openPnl, markedCount, unmarkedAtCostCount,
+                                                  // plannedCount (plans with no fills), realizedToDate (closed Trades),
+                                                  // marksAsOf = latest Mark date among instruments held by open Trades
+                                                  // (null until any Mark exists). No freshness/staleness concept:
+                                                  // yesterday's close legitimately values today's position
+                                                  // (see trade-detail-sequence.md note 5)
   marksNeeded(asOf): Promise<MarksNeeded>         // which instruments need Marks, each over its own range, grouped per Trade —
                                                   // the collection half of Review's agenda (a Trade↔Marks join)
   expiredHoldings(asOf): Promise<ExpiredHolding[]> // Legs past expiration still holding quantity (facts + positionOf,

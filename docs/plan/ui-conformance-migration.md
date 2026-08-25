@@ -19,7 +19,7 @@ This work brings the built app to that visual language, plus a bottom tab bar, w
 | Stats tab             | Deferred to Analytics (S15.3), which adds it as a fifth tab                |
 | "New plan"            | **Not** a tab — stays triggered from the Trades page, as built today       |
 | Settings              | Icon on the Home screen, keeping the bar at four                           |
-| Home content          | Open P&L total · open and planned counts · realized P&L to date            |
+| Home content          | Open P&L total · "As of ⟨date⟩" mark-freshness line · open and planned counts · realized P&L to date. No position rows, no New-plan CTA |
 | Home totals           | One narrow new coordinator operation, built with this work                 |
 | Attention cues on Home | Excluded — review-due and journal-owed counts are not shown               |
 
@@ -75,31 +75,33 @@ Replace the header nav in `src/ui/App.tsx` with a fixed bottom tab bar: Home · 
 
 _Changes tests:_ nav selectors and any e2e that navigates by header link. Those updates belong to this story.
 
+_No redirects_ (decided): `/` renders Home with no legacy-URL machinery; `/trades/new` and `/trades/:id` are untouched routes; `/settings` stays a real route linked only from Home's icon.
+
 _Verify:_ every route reachable, active tab correct on each, nothing hidden behind the bar.
 
 ### UX.3 — Home
 
-The new screen, and **the only new non-UI code**: a narrow `Valuations` totals operation returning open P&L, open count, planned count and realized-to-date — signature taken verbatim from [overview.md](../design/overview.md). Unit tests against the in-memory binding, integration over Dexie, one Playwright happy path. Home renders the hero P&L treatment, the count line ("Day N · K open") and the Settings icon.
+The new screen, and **the only new non-UI code**: a narrow `Valuations` totals operation returning open P&L, open count, planned count and realized-to-date — signature settled in [overview.md](../design/overview.md) before this story starts. Unit tests against the in-memory binding, integration over Dexie, one Playwright happy path. Home renders the hero P&L treatment, the "As of ⟨date⟩ · K open · M planned" line and the Settings icon — no position rows, no New-plan CTA (those stay on the Trades page).
 
-_Decide in this story:_ what totals show when not every open Trade has today's Mark. They must not silently understate; reporting marked/unmarked counts alongside is the suggested answer.
+_Unmarked semantics (decided):_ each held leg is valued at its latest Mark, or at fill cost when no Mark exists; `unmarkedAtCostCount` travels alongside so the understatement is never silent. No freshness concept — yesterday's close legitimately values today's position. Persistent unmarked state is `marksNeeded`/Review's job.
 
 _Verify:_ totals match hand-computed values from a seeded book; unmarked Trades are handled visibly.
 
 ### UX.4 — Trades list
 
-Conform `TradesPage` to the prototype row: monogram circle, ticker, strategy · day count · adherence, P&L right-aligned. "New plan" stays as the page's own CTA, now a black pill. **Omit** the REVIEW DUE badge — that is attention ranking, S8.1, which links this same screenshot.
+Conform `TradesPage` to the prototype row: monogram circle, ticker, strategy · day count (`daysHeld` added to `TradeValue`), P&L right-aligned. **Adherence is omitted** — it does not exist until Slices 9–10 record Deviations; a placeholder would be dishonest UI. "New plan" stays as the page's own CTA at `/trades/new`, now a black pill. **Omit** the REVIEW DUE badge — that is attention ranking, S8.1, which links this same screenshot.
 
 _Verify:_ planned, open and closed rows all render; a row reaches its detail page.
 
 ### UX.5 — Trade detail
 
-The densest screen. Hero card (day · strategy, large P&L, adherence chip, Current/Target/Stop with the "away"/"cushion" framing, consistent with ADR 0010), then a Plan / Invalidation / Catalyst card, a Legs & Fills card, then actions. Keep Execution wording (constraint 3). Keep the four R/R numbers the design docs require — the prototype's two-number framing is a display idea, not licence to drop them.
+The densest screen. Hero card (day · strategy, large P&L, Current/Target/Stop with the "away"/"cushion" framing, consistent with ADR 0010 — **no adherence chip** for the reason given in UX.4), then a Plan / Invalidation / Catalyst card, a Legs & Fills card, then actions. Keep Execution wording (constraint 3). Keep the four R/R numbers the design docs require — the prototype's two-number framing is a display idea, not licence to drop them.
 
 _Verify:_ the stock, spread and planned-no-fills variants all read correctly.
 
 ### UX.6 — Journal timeline
 
-Date-group headers, coloured type badges, filter chips (All / Plans / Positions / Market / Closes), and the "Tap to view plan →" affordance. Filters are display-only over already-loaded entries; `TimelineFilter` proper is settled in S15.3 and is not built here.
+Date-group headers, coloured type badges, filter chips (All / Plans / Positions / Market / Closes), and the "Tap to view plan →" affordance. The chips genuinely filter the already-loaded entries client-side (an array predicate) and own their new specs; only `TimelineFilter` proper — the data-layer query concept — is settled in S15.3 and not built here.
 
 _Verify:_ grouping and each filter; addenda still nest; owed placeholders still settle inline.
 
@@ -148,7 +150,7 @@ The cheapest useful increment is **UX.1 alone** — one file, and the new visual
 
 ## Open questions
 
-1. **Slice number.** This is written as stories so the story loop applies unchanged, but it is deliberately unnumbered. Numbering it (Slice 18) makes it schedulable; leaving it unnumbered keeps it a proposal.
+1. **Slice number.** This is written as stories so the story loop applies unchanged, but it is deliberately unnumbered — a one-time retrofit, since it is the only build that did not start with its screenshots already in place; future builds get them up front. It stays out of the spec numbering entirely.
 2. **Vertical-slice tension.** The convention is that each slice ships trader-visible functionality; this one is largely horizontal. The story order mitigates it — each story conforms one screen end to end — but the tension is real and worth acknowledging rather than hiding.
-3. **Home and unmarked Trades** — settled inside UX.3.
-4. **Out of scope**: the Stats screen (arrives with Analytics) and the Coach / Insights panel (deferred by ADR 0016).
+3. **Home and unmarked Trades** — settled in overview.md's `totals()` entry: legs value at latest Mark or fill cost, `unmarkedAtCostCount` alongside, `marksAsOf` freshness line.
+4. **Out of scope**: the Stats screen (arrives with Analytics) and the Coach / Insights panel (deferred by ADR 0016); **adherence anywhere** (substrate is Slices 9–10); trades-list filtering (a future query-param design, not covered by S15.3's Analytics page or timeline controls).
