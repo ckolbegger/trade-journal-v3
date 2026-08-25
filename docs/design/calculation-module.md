@@ -155,7 +155,12 @@ type InstrumentType = 'stock' | 'long-option' | 'short-option' | 'spread'
 // MVP exercises 'stock' only. Option sub-types expand when options ship —
 // the shape is stable, the values grow.
 
-type Lifecycle = 'Planned' | 'Open' | 'Closed'
+type Lifecycle = 'Planned' | 'Open' | 'Closed' | 'Discarded'
+// 'Discarded' (added by the PlanCommit session): committed, never entered —
+// the pre-fill exit (trading-record-store semantic 19). Echoed like the rest;
+// a Discarded trade evaluates like a Planned one (fills empty → planned fields
+// computable, live fields null). No consumer ever does — every status filter
+// excludes it.
 
 /** Price marks for a single asOf date, keyed by instrument.
  *  The caller builds this from the fills it holds (the distinct instruments)
@@ -459,6 +464,13 @@ Each ruling cites the principle or ADR it derives from. Veto any during review.
    direction separately; PerformanceAnalytics folds the singles and ignores
    them; snapshots cache them harmlessly. No consumer changes. *(ADR 0010;
    the metrics-are-fields precedent from PerformanceAnalytics.)*
+   **Clarified by the PlanCommit session:** under ADR 0010's honest signing a
+   side's reading can be a *profit* (in-tent); the worst side is the
+   largest-dollar **loss** — a profit-reading side is never worst, and a plan
+   whose every side reads as profit has no baseline (blocked at commit —
+   plan-commit-coordinator.md decided semantics 3). A plan with zero declared
+   sides is structurally unreachable: `commit`/`importTrade` reject it
+   (trading-record-store semantic 18), so `evaluate` never sees empty `Stops`.
 
 21. **Level readings split by basis.** *Underlying-quoted stops* read
    against the **expiry payoff curve** (semantic 18), honestly signed: a

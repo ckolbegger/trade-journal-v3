@@ -5,7 +5,7 @@ A trading journal for traders learning the craft — recording not just what hap
 ## Language
 
 **Trade**:
-The unit the trader journals about. Groups one or more fills across one or more instruments into a single logical unit (e.g. a covered call's share purchase and call sale are legs of one Trade). Every Trade starts with a Plan. Has a lifecycle: Planned → Open → Closed.
+The unit the trader journals about. Groups one or more fills across one or more instruments into a single logical unit (e.g. a covered call's share purchase and call sale are legs of one Trade). Every Trade starts with a Plan. Has a lifecycle: Planned → Open → Closed — or Planned → Discarded (committed but never entered).
 _Avoid_: Position, transaction, order
 
 **Fill**:
@@ -154,8 +154,9 @@ A Trade moves through three states, **stored authoritatively** (not derived on r
 - **Planned** — Plan committed, no fills yet. Pre-entry reflection placeholder is due.
 - **Open** — at least one fill has landed. Figures (P&L, risk, R:R) computed live on every read; marks change daily.
 - **Closed** — the Trade is over. Post-trade review placeholder is due. A **figure-set snapshot** is computed once at close and stored as a regeneratable cache (see ADR 0007) so reporting over years of closed Trades doesn't recompute immutable inputs.
+- **Discarded** — the pre-fill exit: a committed Plan the trader never entered (a typo'd commit, a setup that never came). Retired by the trader's explicit discard — the **one trader-declared transition** (close, by contrast, is always fill-computable); its guard is that no fill ever landed. The Plan and any completed pre-entry reflection are retained (the story survives); the owed pre-entry placeholder is voided. Terminal and snapshotless.
 
-Transitions happen when a fill is recorded: first fill moves Planned→Open; the fill that flats the position moves Open→Closed (and triggers the figure-set snapshot). `flat` (net-position-zero) is still a CalculationModule function — it's computed **once, at fill-record time, for the one Trade being modified** to detect the transition. It is NOT re-derived across all Trades on every query.
+Transitions happen when a fill is recorded: first fill moves Planned→Open; the fill that flats the position moves Open→Closed (and triggers the figure-set snapshot). The one exception is the pre-fill exit: Planned→Discarded is trader-declared — a never-entered trade has no fill arithmetic to compute, so its guard is the zero-fills edge. `flat` (net-position-zero) is still a CalculationModule function — it's computed **once, at fill-record time, for the one Trade being modified** to detect the transition. It is NOT re-derived across all Trades on every query.
 
 **Close rule**: a Trade closes **when its net position goes flat** (zero shares, zero contracts) — universally, regardless of strategy. This single rule correctly handles every case:
 - A covered call's call expiring does **not** close the Trade (shares still held → not flat).
@@ -170,4 +171,4 @@ A pending Journal Entry the trader owes at a consequential moment. Two tiers:
 - **Required** — auto-created at Plan commit (pre-entry reflection) and at Trade close (post-trade review). Must eventually be completed.
 - **Optional** — offered (not auto-created) at each Fill and during the Daily Review, with a three-way choice: enter now, enter later, or no entry required.
 
-The asymmetry is deliberate: the app demands reflection at the two bookends of a Trade but leaves mid-trade reflection to the trader's judgment, so focus stays on execution.
+The asymmetry is deliberate: the app demands reflection at the two bookends of a Trade but leaves mid-trade reflection to the trader's judgment, so focus stays on execution. A placeholder whose plan is discarded before entry is **voided** — no longer owed.

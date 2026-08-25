@@ -1,14 +1,15 @@
 # TradingRecordStore — initial interface design
 
-The trading record itself: Trade identity + lifecycle status (Planned/Open/Closed,
-stored authoritatively per ADR 0006) + optional `finalFigures` snapshot (per ADR
+The trading record itself: Trade identity + lifecycle status (Planned/Open/
+Closed/Discarded, stored authoritatively per ADR 0006) + optional `finalFigures` snapshot (per ADR
 0007) + Plan (original levels, thesis, invalidation, entry emotion) + Plan
 Revision (append-only dated deltas, ADR 0001) + Fill (instrument, side, qty,
 price, time, instrument-type per leg, option contract facts when the leg is an
 option — optionType/strike/expiry, ADR 0009). The deepest, most-touched
 store.
 
-It owns three invariants and the lifecycle transitions. It deliberately owns
+It owns four invariants and the lifecycle transitions (the fourth — a Plan
+declares ≥ 1 stop side — added by the PlanCommitCoordinator session). It deliberately owns
 **no derivation**: no live P&L, no position size, no risk computation, no flat
 detection — those are CalculationModule's (rules 1–2). It holds facts only, over
 an injected StorageBinding (rule 5). Its `getTradeRecord()` returns exactly the
@@ -19,12 +20,15 @@ calc ignores (`strategy`, `closedAt`, `fillId`).
 Ten operations, over an injected StorageBinding — testable with an in-memory
 binding, no mock, no real backend. Seven from the original session; three
 guarded correction-transition ops (`reopenTrade`, `closeTrade`,
-`replaceSnapshot`) added by the FillEntryCoordinator drill-down (OQs 12/13):
+`replaceSnapshot`) added by the FillEntryCoordinator drill-down (OQs 12/13);
+and `discardTrade`, the pre-fill exit, added by the PlanCommitCoordinator
+drill-down (audit finding F1):
 
 ```ts
 /** Create a Trade (status=Planned) with its committed Plan. Returns the new id.
  *  The plan-before-fill invariant starts here: no fill can be recorded against a
- *  tradeId that doesn't exist yet. */
+ *  tradeId that doesn't exist yet. Rejects a Plan declaring no stop side —
+ *  the R-baseline precondition (semantic 18). */
 commit(input: TradeInput): TradeId
 
 /** Append a fill + transition status + (if closing) store the snapshot.
@@ -66,8 +70,21 @@ listTrades(filters?: TradeFilters): TradeRecord[]
  *  status is absent, derives it from fills once (ADR 0006); if a Closed trade's
  *  finalFigures is absent, the caller may pre-compute and pass it, or leave it null
  *  for lazy population on first read (ADR 0007). Keeps invariants enforced — an
- *  imported Closed trade with non-flat fills is rejected. */
+ *  imported Closed trade with non-flat fills is rejected, and a stopless Plan
+ *  is rejected (semantic 18). */
 importTrade(record: TradeRecordInput): TradeId
+
+/** Retire a committed-but-never-filled Trade — the pre-fill exit (added by
+ *  the PlanCommitCoordinator session, audit finding F1). Asserts status
+ *  'Planned' AND zero fills — the degenerate fill arithmetic (the guarded
+ *  family's zero edge) and the system's one trader-declared transition; a
+ *  never-entered trade has no fill arithmetic to compute. Sets
+ *  status='Discarded' — terminal, snapshotless (no closedAt, no
+ *  finalFigures). A status, not a delete: the forward-only grain holds — the
+ *  Plan and any completed pre-entry reflection survive; only the owed
+ *  placeholder voids (PlanCommitCoordinator.discardPlan's transaction).
+ *  Exists only inside that workflow. */
+discardTrade(tradeId: TradeId): { statusAfter: 'Discarded' }
 ```
 
 ---
@@ -119,6 +136,8 @@ getTradeRecord(tradeId: TradeId): TradeRecord
 listTrades(filters?: TradeFilters): TradeRecord[]
 
 importTrade(record: TradeRecordInput): TradeId
+
+discardTrade(tradeId: TradeId): { statusAfter: 'Discarded' }
 ```
 
 ### Input types
@@ -235,13 +254,16 @@ type Fill = {
 
 Each ruling cites the principle or ADR it derives from. Veto any during review.
 
-1. **Ten operations: `commit`, `recordFill`, `appendRevision`, `correctFill`,
+1. **Eleven operations: `commit`, `recordFill`, `appendRevision`, `correctFill`,
    `getTradeRecord`, `listTrades`, `importTrade` + the guarded correction
-   family `reopenTrade`, `closeTrade`, `replaceSnapshot`.** The first seven are
+   family `reopenTrade`, `closeTrade`, `replaceSnapshot` + `discardTrade`
+   (the pre-fill exit).** The first seven are
    the lifecycle-verb shape (design-it-twice candidate A), plus `importTrade`
    added by the audit (semantic 13) to serve the ADR-mandated restore path, plus
    the three guarded ops added by the FillEntryCoordinator drill-down (semantic
-   17, OQs 12/13). The alternatives (fine-grained entity store with a raw
+   17, OQs 12/13), plus `discardTrade` added by the PlanCommitCoordinator
+   drill-down (semantic 19, audit finding F1). The alternatives (fine-grained
+   entity store with a raw
    `setStatus`; whole-document save) were rejected — see *Alternatives
    considered*. *(Overview rule 8; depth principle.)*
 
@@ -255,7 +277,10 @@ Each ruling cites the principle or ADR it derives from. Veto any during review.
    `storeFinalFigures` without a close is meaningless. A transition only ever
    fires *as a consequence of the fills' net position*, so every mutating op
    carries the matching guard: `recordFill`'s close branch and `closeTrade`
-   assert net-zero; `reopenTrade` asserts net-nonzero. A guard failure throws
+   assert net-zero; `reopenTrade` asserts net-nonzero; `discardTrade` asserts
+   the degenerate edge — status Planned and zero fills — so the family stays
+   fill-arithmetic-guarded end to end (the PlanCommit session, semantic 19).
+   A guard failure throws
    rather than letting stored status drift from derived — the invariant ADR
    0006 names this store the owner of is enforced by the types of the
    interface, not by caller discipline. *(ADR 0006 — "TradingRecordStore owns
@@ -366,7 +391,9 @@ Each ruling cites the principle or ADR it derives from. Veto any during review.
     to serve a path the ADRs already require). *(ADR 0006/0007 derive-on-import;
     rule 5 — import still flows through the store, not around it.)*
 
-14. **`recordFill` on a Closed trade rejects (audit finding B).** A late, forgotten
+14. **`recordFill` on a Closed trade rejects (audit finding B); on a Discarded
+    trade rejects too (added by the PlanCommit session — terminal, and a
+    discarded plan must not resurrect via a fill).** A late, forgotten
     fill that arrives after the trade closed is a real scenario, but re-opening
     via such a fill is the status-invalidating correction path — OQ 12, owned by
     FillEntryCoordinator — and the store has no reopen logic. Until that session
@@ -374,7 +401,9 @@ Each ruling cites the principle or ADR it derives from. Veto any during review.
     undefined. *Veto if you want the store to re-open eagerly — but reopen is a
     coordinator-level decision per OQ 12.* *(Audit finding B; ADR 0006.)*
 
-15. **`appendRevision` on a Closed trade rejects (audit finding C).** A revision to
+15. **`appendRevision` on a Closed trade rejects (audit finding C); on a
+    Discarded trade rejects too (PlanCommit session — no position to protect,
+    no going back).** A revision to
     a closed trade's stop/target is semantically void — no position to protect,
     no current-risk figure that consumes it. The store rejects it rather than
     accepting dead data. *Veto if you want silent accept (store-as-dumb-facts) —
@@ -404,10 +433,46 @@ Each ruling cites the principle or ADR it derives from. Veto any during review.
     figures compute on read). The guards are the same net-position arithmetic
     class semantic 3's close assertion already uses — not a new calc
     dependency (rule 1 holds: the store sums quantities, it never derives
-    figures). `recordFill` on a Closed trade still rejects (semantic 14): late
+    figures). From-status made explicit by the PlanCommit session once
+    `Discarded` joined the lifecycle: `reopenTrade` guards from Closed,
+    `closeTrade` from Open — a Discarded trade's fills are trivially
+    net-zero, which must not satisfy `closeTrade`'s arithmetic alone.
+    `recordFill` on a Closed trade still rejects (semantic 14): late
     fills resolve via an explicit `reopenTrade` then re-record. See
     [fill-entry-coordinator.md](fill-entry-coordinator.md) for the branch map
     that orchestrates these. *(ADR 0006/0007; OQs 12/13 closed.)*
+
+18. **A Plan declares ≥ 1 stop side — the R-baseline precondition (added by
+    the PlanCommitCoordinator session).** `commit` and `importTrade` reject a
+    Plan whose `stops` declares no side. Every R-metric — `rMultiple`,
+    expectancy, the R-distribution — divides by planned risk; a stopless plan
+    has no baseline, and calc's `evaluate` over zero declared sides is an
+    unwritten behavior this guard makes structurally unreachable. No
+    legitimate backup contains one (commit blocks them, so none was ever
+    committed) — the same import-fidelity reasoning as reject-non-flat-Closed
+    (semantic 13). *(ADR 0005 — planned risk is the commitment baseline;
+    calculation-module semantic 20.)*
+
+19. **`discardTrade` — the pre-fill exit (added by the PlanCommitCoordinator
+    session, audit finding F1).** Asserts `status = 'Planned'` and
+    `fills = []`, sets `status = 'Discarded'`. Terminal and snapshotless: no
+    `closedAt`, no `finalFigures` — nothing downstream ever consumes a
+    Discarded trade (`recordFill` and `appendRevision` reject, semantics
+    14/15; every existing status filter — Open for Daily Review, Closed for
+    reporting — excludes it by construction; `listTrades({status:
+    'Discarded'})` finds the retired ideas when wanted). The **one
+    trader-declared transition** in the system: close is always
+    fill-computable (no trader-declared close, CONTEXT), but a never-entered
+    trade has no fill arithmetic to compute — its guard *is* the absence of
+    fills. A status, not a delete: the forward-only grain holds (no delete op
+    exists in any store), a trader may have journaled against a plan they
+    were watching (convention C6 tolerates import *ordering*, not permanent
+    orphaning), and the story survives — the Plan and any completed
+    pre-entry reflection are retained; only the owed placeholder voids,
+    inside [PlanCommitCoordinator.discardPlan](plan-commit-coordinator.md)'s
+    transaction. Exists only inside that workflow — the mirror of
+    `closeTrade`-inside-the-correction. *(PlanCommit audit finding F1; ADR
+    0006's guarded family; CONTEXT: Journal Placeholder.)*
 
 ---
 
@@ -543,20 +608,23 @@ store.listTrades({}).map(t => t.tradeId)
 
 ## Sequence: plan-commit (start a Trade)
 
-The store's half of the plan-commit workflow. (Coordinator internals are
-illustrative; pinned in its own drill-down.)
+The store's half of the plan-commit workflow. (Coordinator internals pinned in
+[plan-commit-coordinator.md](plan-commit-coordinator.md).)
 
 ```
-trader → PlanCommitCoordinator.commitPlan(planInput)
-  → CalculationModule.evaluate(recordSketch, emptyMarks, now)   // validate planned R:R
-  → TradingRecordStore.commit(tradeInput)                        // the store's write
+trader → PlanCommitCoordinator.commitPlan(tradeInput)
+  → figures = CalculationModule.evaluate(sketch, ∅, committedAt)  // the validation charter:
+      └─ blocks (no stop side / misplaced side / non-profit target) → throw, nothing written
+  → StorageBinding.transaction:                     // the cross-store commit (OQ 9)
+      TradingRecordStore.commit(tradeInput)         // the store's write
+      │  asserts ≥1 declared stop side (semantic 18)
       └─ assigns tradeId, persists Trade (status=Planned) + Plan
-      ← tradeId
-  → ReflectionStore.createPlaceholder(tradeId, 'pre-entry', required=true)
-← { tradeId }
+      ReflectionStore.createPlaceholder(level:'trade', type:'pre-entry',
+                                        required:true, createdAt: committedAt)
+← { tradeId, figures, warnings }
 ```
 
-Single store write. The plan-before-fill invariant is established: the Trade
+The plan-before-fill invariant is established: the Trade
 exists with a Plan before any fill can land.
 
 ## Sequence: fill-entry (all three branches in one call)
@@ -666,6 +734,8 @@ stateDiagram-v2
     Closed --> Closed: replaceSnapshot (regeneration)  [semantic 17]
     Closed --> REJECTED: recordFill (late fill)  [decided semantics 14]
     Closed --> REJECTED: appendRevision           [decided semantics 15]
+    Planned --> Discarded: discardTrade (pre-fill exit — the one trader-declared transition)  [semantic 19]
+    Discarded --> REJECTED: recordFill / appendRevision  [semantics 14/15]
     note right of Planned
       fill.at may predate plan.committedAt
       (backdated fills + import accepted)

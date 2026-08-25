@@ -17,8 +17,9 @@ filter on a stored fact (a placeholder's `state`), **not** a derivation from
 lifecycle ∩ existing entries — the placeholders the coordinators create *are* the
 owed record, so there is nothing to compute.
 
-Twelve operations — seven entry ops and five schema ops — over an injected
-StorageBinding, testable with an in-memory binding, no mock, no real backend:
+Twelve operations became thirteen — eight entry ops and five schema ops — over
+an injected StorageBinding, testable with an in-memory binding, no mock, no
+real backend:
 
 ```ts
 /** Create an owed placeholder — a Journal Entry in 'placeholder' state. Trade and
@@ -35,6 +36,11 @@ createEntry(input: EntryInput): EntryId
  *  The bookend entries (pre-entry, post-close) are created as placeholders by
  *  coordinators and completed later by the trader. */
 completePlaceholder(id: EntryId, content: Record<string, unknown>, schemaId: SchemaId, at: Date): void
+
+/** Void an owed placeholder — placeholder → void, no longer owed. Exists only
+ *  inside PlanCommitCoordinator.discardPlan (a discarded plan's pre-entry
+ *  bookend). No-op if already void; throws on a complete entry (immutable). */
+voidPlaceholder(id: EntryId, at: Date): void
 
 /** Single read. */
 getEntry(id: EntryId): Entry
@@ -95,6 +101,7 @@ completePlaceholder(
   schemaId: SchemaId,
   at:      Date,
 ): void
+voidPlaceholder(id: EntryId, at: Date): void
 getEntry(id: EntryId): Entry
 listEntries(filters?: EntryFilters): Entry[]
 setMarketLinks(entryId: EntryId, tradeIds: TradeId[]): void
@@ -134,8 +141,10 @@ type AttachmentLevel = 'trade' | 'fill' | 'market'
 
 /** Whether a Journal Entry is still owed or has been written. Under Candidate B
  *  (the adopted write model), a placeholder IS an entry in 'placeholder' state;
- *  completing it transitions the same record to 'complete'. */
-type EntryState = 'placeholder' | 'complete'
+ *  completing it transitions the same record to 'complete'. 'void' (added by
+ *  the PlanCommit session) is the third state: an owed placeholder retired
+ *  with its plan — never written, never owed again (semantic 20). */
+type EntryState = 'placeholder' | 'complete' | 'void'
 
 /** A field in an Entry Schema. kind drives the UI control and the content value's
  *  semantic (a 'select' stores its choice as a string but is not free text). */
@@ -249,9 +258,10 @@ type EntryFilters = {
 
 Each ruling cites the principle or ADR it derives from. Veto any during review.
 
-1. **Twelve operations: seven entry ops + five schema ops.** The one-entity state-
+1. **Thirteen operations: eight entry ops + five schema ops.** The one-entity state-
    machine shape (Candidate B — see *Alternatives considered*). `createPlaceholder`,
-   `createEntry`, `completePlaceholder`, `getEntry`, `listEntries`,
+   `createEntry`, `completePlaceholder`, `voidPlaceholder` (added by the
+   PlanCommit session, semantic 20), `getEntry`, `listEntries`,
    `setMarketLinks`, `importEntry` for entries; `saveSchema`, `getSchema`,
    `getSchemaVersion`, `listSchemas`, `importSchema` for schemas. The schema
    sub-area grew from the user's versioned-schema move (OQ 10 → ADR 0003 by
@@ -307,11 +317,14 @@ Each ruling cites the principle or ADR it derives from. Veto any during review.
    *Veto if you'd rather drop it and resolve through the schema.* *(Depth — a
    cheap denormalization that saves a join on a common filter.)*
 
-7. **Entries are immutable once complete (no edit/delete op).** `completePlaceholder`
+7. **Entries are immutable once complete (no edit/delete op); an owed
+    placeholder may be voided.** `completePlaceholder`
    transitions placeholder → complete on the same record; there is no edit, no
-   delete, no history mechanism on entries. Parallel to append-only Plan
-   Revisions (ADR 0001) and append-only PriceMark history. *Veto if you want
-   history-preserving entry correction — would add an entry-history mechanism
+   delete, no history mechanism on entries. A placeholder — never written, no
+   content exists to preserve — may be *voided* (`voidPlaceholder`, semantic
+   20): retired with its plan, no longer owed. Parallel to append-only Plan
+   Revisions (ADR 0001) and append-only PriceMark history. *Veto if you
+   want history-preserving entry correction — would add an entry-history mechanism
    like PriceMark's, growing the interface.* *(CONTEXT.md append-only pattern.)*
 
 8. **`tradeId` is denormalized onto fill-level entries (convention C2).** Caller-
@@ -408,6 +421,20 @@ Each ruling cites the principle or ADR it derives from. Veto any during review.
     schemas first (`importSchema`), then entries (`importEntry`), so every
     `schemaId` reference resolves. *(OQ 8; audit finding — the importMark
     cautionary tale, applied from the start this time.)*
+
+20. **`voidPlaceholder` — retire an owed placeholder with its plan (added by
+    the PlanCommitCoordinator session, audit finding F1).** Transitions
+    `'placeholder' → 'void'` on the same record: no longer owed (the
+    `state:'placeholder'` filter stops returning it), never written (no
+    content ever existed — voiding preserves nothing because nothing was
+    there). Rules: no-op if already `'void'` (idempotent — over-calling is
+    harmless, the `regenerateSnapshots` philosophy); throws on `'complete'`
+    (immutable, semantic 7); `at` is caller-provided (the discard event's
+    time). Exists only inside
+    [PlanCommitCoordinator.discardPlan](plan-commit-coordinator.md)'s
+    transaction — the mirror of `closeTrade`-inside-the-correction: the store
+    serves the transition, the coordinator owns *when*. *(CONTEXT: Journal
+    Placeholder — a discarded plan's bookend is no longer owed.)*
 
 ---
 
@@ -574,17 +601,19 @@ reflect.listEntries({ from: jul1, to: jul31, state:'complete' })
 
 ## Sequence: plan-commit (the store's half of the bookend)
 
-The store's half of the plan-commit workflow. (Coordinator internals are
-illustrative; pinned in its own drill-down.)
+The store's half of the plan-commit workflow. (Coordinator internals pinned in
+[plan-commit-coordinator.md](plan-commit-coordinator.md).)
 
 ```
-trader → PlanCommitCoordinator.commitPlan(planInput)
-  → CalculationModule.evaluate(recordSketch, emptyMarks, now)   // validate planned R:R
-  → TradingRecordStore.commit(tradeInput)                        // write Trade (Planned) + Plan
-  → ReflectionStore.createPlaceholder({                          // ← this store
-      level:'trade', type:'pre-entry', tradeId, required:true, createdAt:now
-    })
-← { tradeId }
+trader → PlanCommitCoordinator.commitPlan(tradeInput)
+  → figures = CalculationModule.evaluate(sketch, ∅, committedAt)  // the validation charter
+  → StorageBinding.transaction:                                    // the cross-store commit (OQ 9)
+      TradingRecordStore.commit(tradeInput)                        // write Trade (Planned) + Plan
+      ReflectionStore.createPlaceholder({                         // ← this store
+          level:'trade', type:'pre-entry', tradeId, required:true,
+          createdAt: committedAt                                   // event-derived; no coordinator clock
+        })
+← { tradeId, figures, warnings }
 ```
 
 Single store write. The pre-entry placeholder is now owed; the trade's reflection
@@ -830,6 +859,7 @@ resolves via `getSchemaVersion` always).
 | **`EntryId` / `SchemaId` generation strategy.** Store-assigned (decided semantics 14), but the format (UUID, sequential, prefixed like `'ent_001'`, `'pre-entry@3'`) is an implementation detail. | Implementation |
 | **`SchemaField.kind` expansion.** The MVP kinds (text, number, select, rating) cover the journal form types; the union grows as the UI does (date, multi-select, etc.). The shape is stable; the values grow. | UI-release drill-down |
 | **Entry history / correction.** Entries are immutable once complete (decided semantics 7). If traders need to correct a written entry, a history mechanism (like PriceMark's append-only `history`) would be needed. Deferred until the need is real. | later, if the need arises |
+| **Default Entry-Schema seeding on fresh install** (surfaced by the PlanCommit session's audit, finding F2). The first `getSchema('pre-entry')` on an empty registry fails — `commitPlan`'s placeholder needs no schema, but completion does. Convention (veto invite): the app seeds built-in defaults for the fixed EntryTypes via live `saveSchema` at first run — no new mechanism (the reference-stores "live ops reproduce any backup" logic); the wiring is implementation. | Implementation |
 
 ---
 
