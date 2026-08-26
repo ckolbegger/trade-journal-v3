@@ -45,13 +45,13 @@ export function ReplayView({
     }
   }, [valuations, tradeId])
 
-  if (!points) return <p className="text-sm text-slate-500">Loading…</p>
+  if (!points) return <p className="text-sm text-stone-600">Loading…</p>
 
   if (points.length === 0) {
     return (
       <div className={`${card} space-y-2`}>
         <h3 className={subheading}>Replay</h3>
-        <p className="text-sm text-slate-500">Nothing to replay yet.</p>
+        <p className="text-sm text-stone-500">Nothing to replay yet.</p>
       </div>
     )
   }
@@ -74,7 +74,7 @@ export function ReplayView({
         executionDates={executionDates}
       />
 
-      <label className="flex flex-col gap-1 text-sm font-medium text-slate-700">
+      <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
         {selected.date}
         <input
           type="range"
@@ -96,7 +96,7 @@ export function ReplayView({
 
       <dl
         aria-label="replay risk and reward"
-        className="space-y-2 rounded-md border border-slate-200 p-3 text-sm"
+        className="space-y-2 rounded-md border border-stone-200 p-3 text-sm"
       >
         <Anchor label="planned risk" value={anchor(selected.riskReward.plannedRisk)} />
         <Anchor label="worst-case risk" value={anchor(selected.riskReward.worstCaseRisk)} />
@@ -110,8 +110,8 @@ export function ReplayView({
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between">
-      <dt className="text-slate-500">{label}</dt>
-      <dd className={`text-slate-900 ${num}`}>{value}</dd>
+      <dt className="text-stone-500">{label}</dt>
+      <dd className={`text-stone-900 ${num}`}>{value}</dd>
     </div>
   )
 }
@@ -119,8 +119,8 @@ function Row({ label, value }: { label: string; value: string }) {
 function Anchor({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between">
-      <dt className="text-slate-500">{label}</dt>
-      <dd aria-label={label} className={`text-slate-900 ${num}`}>
+      <dt className="text-stone-500">{label}</dt>
+      <dd aria-label={label} className={`text-stone-900 ${num}`}>
         {value}
       </dd>
     </div>

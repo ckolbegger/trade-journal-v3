@@ -253,10 +253,10 @@ export function RecordFillForm({
       )}
 
       <div>
-        <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <span className="text-xs font-semibold uppercase tracking-wide text-stone-500">
           Instrument
         </span>
-        <p className={`text-sm font-medium text-slate-900 ${num}`}>{instrumentDisplay}</p>
+        <p className={`text-sm font-medium text-stone-900 ${num}`}>{instrumentDisplay}</p>
       </div>
 
       {needsTbdInputs && (

@@ -81,14 +81,20 @@ export function ReplayChart({
         viewBox={`0 0 ${width} ${height}`}
         className="w-full"
       >
-        <line x1={padding} y1={y(0)} x2={width - padding} y2={y(0)} stroke="#e2e8f0" />
+        <line
+          x1={padding}
+          y1={y(0)}
+          x2={width - padding}
+          y2={y(0)}
+          stroke="var(--color-stone-200)"
+        />
         {segments.map((segment, i) => (
           <polyline
             key={`pnl-${i}`}
             className="pnl-segment"
             points={segment.map((idx) => `${x(idx)},${y(points[idx].totalPnL)}`).join(' ')}
             fill="none"
-            stroke="#4f46e5"
+            stroke="var(--color-blue-600)"
             strokeWidth={2}
           />
         ))}
@@ -103,21 +109,27 @@ export function ReplayChart({
                 .map((idx) => `${x(idx)},${y(points[idx].totalPnL - points[idx].plannedRisk!)}`)
                 .join(' ')}
               fill="none"
-              stroke="#f59e0b"
+              stroke="var(--color-amber-500)"
               strokeDasharray="4 3"
               strokeWidth={1.5}
             />
           )
         })}
         {executionIndices.map((idx) => (
-          <circle key={idx} cx={x(idx)} cy={y(points[idx].totalPnL)} r={3} fill="#0f172a" />
+          <circle
+            key={idx}
+            cx={x(idx)}
+            cy={y(points[idx].totalPnL)}
+            r={3}
+            fill="var(--color-stone-900)"
+          />
         ))}
         {points[selectedIndex] && (
           <circle
             cx={x(selectedIndex)}
             cy={y(points[selectedIndex].totalPnL)}
             r={4}
-            fill="#4f46e5"
+            fill="var(--color-blue-600)"
             stroke="white"
             strokeWidth={1.5}
           />
@@ -126,9 +138,9 @@ export function ReplayChart({
 
       {/* A visible, named legend — never left anonymous, so the dashed
           reference line can't be misread as a projection (ADR 0009). */}
-      <p className="flex flex-wrap items-center gap-4 text-xs text-slate-500">
+      <p className="flex flex-wrap items-center gap-4 text-xs text-stone-500">
         <span className="flex items-center gap-1.5">
-          <span aria-hidden="true" className="inline-block h-0.5 w-3 bg-indigo-600" />
+          <span aria-hidden="true" className="inline-block h-0.5 w-3 bg-blue-600" />
           Total P&amp;L
         </span>
         {hasRiskLine && (
@@ -142,7 +154,7 @@ export function ReplayChart({
         )}
       </p>
 
-      <ul aria-label="execution dates" className={`text-xs text-slate-500 ${num}`}>
+      <ul aria-label="execution dates" className={`text-xs text-stone-500 ${num}`}>
         {executionDates.map((d) => (
           <li key={d}>{d}</li>
         ))}

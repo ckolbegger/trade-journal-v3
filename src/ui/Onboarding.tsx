@@ -28,9 +28,9 @@ export function Onboarding({ onComplete }: { onComplete: () => void }) {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-cream px-4">
-      <section className="w-full max-w-md space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="w-full max-w-md space-y-4 rounded-lg border border-stone-200 bg-white p-6 shadow-sm">
         <h2 className={heading}>Set up your first account</h2>
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-stone-600">
           Every Trade belongs to an Account held at an Institution. Add your first of each.
         </p>
         <form
@@ -66,9 +66,9 @@ export function Onboarding({ onComplete }: { onComplete: () => void }) {
           </button>
         </form>
 
-        <div className="space-y-2 border-t border-slate-200 pt-4">
+        <div className="space-y-2 border-t border-stone-200 pt-4">
           <h3 className={subheading}>Returning trader?</h3>
-          <p className="text-sm text-slate-600">Restore your journal from a backup file.</p>
+          <p className="text-sm text-stone-600">Restore your journal from a backup file.</p>
           <RestoreFlow onRestored={onComplete} />
         </div>
       </section>

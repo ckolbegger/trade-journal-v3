@@ -198,7 +198,7 @@ export function SettingsPage() {
 
       <div className={`${card} space-y-3`}>
         <h3 className={subheading}>Institutions</h3>
-        <ul className="divide-y divide-slate-100 text-sm text-slate-800">
+        <ul className="divide-y divide-stone-100 text-sm text-stone-800">
           {institutions.map((institution) => (
             <li key={institution.id} className="py-1.5">
               {institution.name}
@@ -222,7 +222,7 @@ export function SettingsPage() {
 
       <div className={`${card} space-y-3`}>
         <h3 className={subheading}>Accounts</h3>
-        <ul className="divide-y divide-slate-100 text-sm text-slate-800">
+        <ul className="divide-y divide-stone-100 text-sm text-stone-800">
           {accounts.map((account) => (
             <li key={account.id} className="py-1.5">
               {account.name}
@@ -261,7 +261,7 @@ export function SettingsPage() {
 
       <div className={`${card} space-y-3`}>
         <h3 className={subheading}>Pricing sources</h3>
-        <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+        <label className="flex items-center gap-2 text-sm font-medium text-stone-700">
           <input
             type="checkbox"
             checked={sourceEnabled}
@@ -286,9 +286,9 @@ export function SettingsPage() {
             Test this source
           </button>
         </div>
-        {sourceSaved && <p className="text-sm text-slate-500">Saved.</p>}
+        {sourceSaved && <p className="text-sm text-stone-500">Saved.</p>}
         {testResult && (
-          <p className={`text-sm ${testResult.error ? 'text-red-700' : 'text-slate-700'}`}>
+          <p className={`text-sm ${testResult.error ? 'text-red-700' : 'text-stone-700'}`}>
             {testResult.error ??
               `${TEST_INSTRUMENT} close (${testResult.date}): $${testResult.close}`}
           </p>
@@ -316,12 +316,12 @@ export function SettingsPage() {
       <div className={`${card} space-y-3`}>
         <h3 className={subheading}>Backup</h3>
         {health && (
-          <p className="text-sm text-slate-700">
+          <p className="text-sm text-stone-700">
             Durable storage: {health.persisted ? 'Yes' : 'No'} · {formatMB(health.usageBytes)} MB /{' '}
             {formatMB(health.quotaBytes)} MB
           </p>
         )}
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-stone-500">
           {health?.lastExportAt
             ? `Last export: ${timestampToISODate(health.lastExportAt)}`
             : 'Never exported'}

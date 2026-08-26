@@ -196,7 +196,7 @@ export function TimelinePage() {
                         {entry.anchor.kind !== 'entry' && <EntryBadge kind={entry.anchor.kind} />}
                         <p className={subheading}>{entryTypeName}</p>
                       </div>
-                      <p className="text-sm text-slate-600">
+                      <p className="text-sm text-stone-600">
                         {entry.placeholder && entry.settledAt !== undefined
                           ? `written ${timestampToISODate(entry.at)} · settled ${timestampToISODate(entry.settledAt)}`
                           : timestampToISODate(entry.at)}{' '}
@@ -226,23 +226,23 @@ export function TimelinePage() {
                     ) : (
                       <AnsweredPrompts
                         answered={entry.answered}
-                        promptClass="text-sm font-medium text-slate-700"
+                        promptClass="text-sm font-medium text-stone-700"
                       />
                     )}
                     <AddAddendum entry={entry} onAdded={() => setRefresh((n) => n + 1)} />
                     {addenda.length > 0 && (
                       <ul
                         aria-label="addenda"
-                        className="ml-4 space-y-3 border-l border-slate-200 pl-4"
+                        className="ml-4 space-y-3 border-l border-stone-200 pl-4"
                       >
                         {addenda.map(({ entry: addendum, entryTypeName: addendumTypeName }) => (
                           <li key={addendum.id} className="space-y-2">
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-stone-500">
                               {addendumTypeName} · {timestampToISODate(addendum.at)}
                             </p>
                             <AnsweredPrompts
                               answered={addendum.answered}
-                              promptClass="text-sm font-medium text-slate-700"
+                              promptClass="text-sm font-medium text-stone-700"
                             />
                             <AddAddendum
                               entry={addendum}

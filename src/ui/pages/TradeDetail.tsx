@@ -94,7 +94,7 @@ function avgCostFor(
 
 // The Trade detail page. A hero card leads with the strategy, the Trade's total
 // P&L and its exit levels; below it the Plan facts (thesis, Idea Source, Planned
-// Legs, chart link), the Legs & Fills card, and the valuation. There is
+// Legs, chart link), the Legs & Executions card, and the valuation. There is
 // deliberately no way to edit the confirmed Plan: its immutability is the
 // product.
 
@@ -314,7 +314,7 @@ export function TradeDetail() {
 
       <div className={`${card} space-y-3`}>
         <div className="flex items-center justify-between">
-          <h3 className={subheading}>Legs &amp; Fills</h3>
+          <h3 className={subheading}>Legs &amp; Executions</h3>
           {/* A closed Trade offers no record-fill — adding to a closed campaign
               is impossible; a new campaign is a new Plan (S5.1). */}
           {!showFill && status !== 'closed' && (

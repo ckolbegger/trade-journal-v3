@@ -74,7 +74,7 @@ export function RestoreFlow({ onRestored }: { onRestored?: (report: ImportReport
 
       {pendingFile && (
         <div className="space-y-3 rounded-md border border-amber-300 bg-amber-50 p-3">
-          <p className="text-sm text-slate-700">
+          <p className="text-sm text-stone-700">
             Restoring <strong>{pendingFile.name}</strong> will replace all current data — every
             Trade, journal entry, and setting — with the contents of this file. This cannot be
             undone.
@@ -94,7 +94,7 @@ export function RestoreFlow({ onRestored }: { onRestored?: (report: ImportReport
       )}
 
       {report && (
-        <p className="text-sm text-slate-700">
+        <p className="text-sm text-stone-700">
           Restored {restoredCount} record{restoredCount === 1 ? '' : 's'}.
         </p>
       )}

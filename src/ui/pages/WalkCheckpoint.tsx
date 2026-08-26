@@ -152,7 +152,7 @@ export function WalkCheckpoint({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-slate-900">{ticker}</h3>
+      <h3 className="text-lg font-semibold text-stone-900">{ticker}</h3>
 
       {missing.length > 0 && (
         <div className={`${card} space-y-3`}>
@@ -222,7 +222,7 @@ function MarkRow({
 
   return (
     <li aria-label={label} className="flex flex-wrap items-end gap-2">
-      <label className="flex flex-1 flex-col gap-1 text-sm font-medium text-slate-700">
+      <label className="flex flex-1 flex-col gap-1 text-sm font-medium text-stone-700">
         {label} price
         <input
           className={`${input} ${num}`}

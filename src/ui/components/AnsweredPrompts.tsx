@@ -17,7 +17,7 @@ export function AnsweredPrompts({
       {answered.map((a, i) => (
         <div key={i}>
           <dt className={promptClass}>{a.prompt.text}</dt>
-          <dd className="mt-0.5 text-sm text-slate-800">
+          <dd className="mt-0.5 text-sm text-stone-800">
             {a.answer ? String(a.answer.value) : '—'}
           </dd>
         </div>

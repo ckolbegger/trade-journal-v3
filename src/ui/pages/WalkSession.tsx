@@ -59,13 +59,13 @@ export function WalkSession({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [review, tradeBook, asOf])
 
-  if (!checkpoints) return <p className="text-sm text-slate-500">Loading…</p>
+  if (!checkpoints) return <p className="text-sm text-stone-600">Loading…</p>
 
   const current = checkpoints[index]
 
   return (
     <div className="space-y-4">
-      <p aria-label="progress" className={`text-sm text-slate-600 ${num}`}>
+      <p aria-label="progress" className={`text-sm text-stone-600 ${num}`}>
         Reviewed {reviewed.size} of {checkpoints.length}
       </p>
 
@@ -87,12 +87,12 @@ export function WalkSession({
       ) : (
         <div className={`${card} space-y-3`}>
           <h3 className={subheading}>Review complete</h3>
-          <ul aria-label="walk summary" className="divide-y divide-slate-100">
+          <ul aria-label="walk summary" className="divide-y divide-stone-100">
             {checkpoints.map((checkpoint) => (
               <li
                 key={checkpoint.tradeId}
                 aria-label={checkpoint.ticker}
-                className="flex items-center justify-between py-2 text-sm text-slate-800"
+                className="flex items-center justify-between py-2 text-sm text-stone-800"
               >
                 <span>{checkpoint.ticker}</span>
                 {reviewed.has(checkpoint.tradeId) ? (
@@ -100,7 +100,7 @@ export function WalkSession({
                     Reviewed
                   </span>
                 ) : (
-                  <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                  <span className="inline-flex items-center rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-600">
                     Not reviewed
                   </span>
                 )}

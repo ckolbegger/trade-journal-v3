@@ -6,7 +6,7 @@ import type { Anchor } from '@/books/journal/types'
 const TONES: Record<string, string> = {
   planned: 'bg-amber-100 text-amber-800',
   open: 'bg-green-100 text-green-800',
-  closed: 'bg-slate-100 text-slate-600',
+  closed: 'bg-stone-100 text-stone-600',
 }
 
 export function StatusBadge({
@@ -28,8 +28,9 @@ export function StatusBadge({
 // Journal timeline type badges — one tone per Anchor.kind (never Entry Type,
 // which is trader-editable from Slice 13 and cannot carry a fixed palette).
 // 'entry' (addenda) never reaches a timeline row, so it has no tone here.
-// Ratios computed against WCAG AA (4.5:1 normal text): PLAN 7.15:1,
-// REVIEW 8.18:1, MARKET 6.37:1, CLOSE 6.80:1.
+// Ratios computed against WCAG AA (4.5:1 normal text), from Tailwind v4's
+// oklch colour values (not the v3 hex swatches): PLAN 7.25:1, REVIEW 8.18:1,
+// MARKET 6.41:1, CLOSE 6.86:1.
 const ENTRY_TONES: Record<Exclude<Anchor['kind'], 'entry'>, string> = {
   plan: 'bg-blue-100 text-blue-800',
   review: 'bg-stone-200 text-stone-700',

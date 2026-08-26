@@ -200,7 +200,7 @@ export function ReviewPage() {
             </p>
           </div>
         )}
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-stone-600">
           Collect the day&apos;s Marks — including any days you skipped — and settle what you owe.
         </p>
         <button type="button" className={btnPrimary} onClick={() => void startSession()}>
@@ -236,7 +236,7 @@ export function ReviewPage() {
 
       {caughtUp ? (
         <div className={card}>
-          <p className="text-sm text-slate-600">All caught up — nothing to collect today.</p>
+          <p className="text-sm text-stone-600">All caught up — nothing to collect today.</p>
         </div>
       ) : (
         <>
@@ -248,12 +248,12 @@ export function ReviewPage() {
                   <li
                     key={leg.legId}
                     aria-label={`${leg.qty} ${optionLabel(leg.instrument)}`}
-                    className="flex flex-wrap items-center justify-between gap-2 py-1.5 text-sm text-slate-800"
+                    className="flex flex-wrap items-center justify-between gap-2 py-1.5 text-sm text-stone-800"
                   >
                     <span>
                       {leg.side === 'short' ? '-' : ''}
                       {leg.qty} × {optionLabel(leg.instrument)}
-                      <span className={`ml-2 text-slate-500 ${num}`}>expired {leg.expiredOn}</span>
+                      <span className={`ml-2 text-stone-500 ${num}`}>expired {leg.expiredOn}</span>
                     </span>
                     <span className="flex gap-2">
                       <button
@@ -282,19 +282,19 @@ export function ReviewPage() {
           <div className="space-y-4">
             <h3 className={subheading}>Marks needed</h3>
             {session.trades.length === 0 ? (
-              <p className="text-sm text-slate-600">Every open Trade is marked through today.</p>
+              <p className="text-sm text-stone-600">Every open Trade is marked through today.</p>
             ) : (
               <ul className="space-y-4">
                 {session.trades.map((trade) => (
                   <li key={trade.tradeId} aria-label={trade.ticker} className={card}>
-                    <p className="font-medium text-slate-900">{trade.ticker}</p>
+                    <p className="font-medium text-stone-900">{trade.ticker}</p>
                     {trade.fetched.length > 0 && (
-                      <ul aria-label="fetched" className="mt-2 divide-y divide-slate-100">
+                      <ul aria-label="fetched" className="mt-2 divide-y divide-stone-100">
                         {trade.fetched.map((mark) => (
                           <li
                             key={`${mark.instrument}|${mark.date}`}
                             aria-label={`${mark.instrument} ${mark.date}`}
-                            className="flex items-center justify-between py-1.5 text-sm text-slate-800"
+                            className="flex items-center justify-between py-1.5 text-sm text-stone-800"
                           >
                             <span>{mark.instrument}</span>
                             <span className={num}>
@@ -305,7 +305,7 @@ export function ReviewPage() {
                       </ul>
                     )}
                     {trade.errors.length > 0 && (
-                      <ul aria-label="errors" className="mt-2 divide-y divide-slate-100">
+                      <ul aria-label="errors" className="mt-2 divide-y divide-stone-100">
                         {trade.errors.map((err) => (
                           <li
                             key={err.instrument}
@@ -319,12 +319,12 @@ export function ReviewPage() {
                       </ul>
                     )}
                     {trade.skippedManual.length > 0 && (
-                      <ul aria-label="already done" className="mt-2 divide-y divide-slate-100">
+                      <ul aria-label="already done" className="mt-2 divide-y divide-stone-100">
                         {trade.skippedManual.map((instrument) => (
                           <li
                             key={instrument}
                             aria-label={`${instrument} kept manual`}
-                            className="flex items-center justify-between py-1.5 text-sm text-slate-500"
+                            className="flex items-center justify-between py-1.5 text-sm text-stone-500"
                           >
                             <span>{instrument}</span>
                             <span>kept manual</span>
@@ -332,12 +332,12 @@ export function ReviewPage() {
                         ))}
                       </ul>
                     )}
-                    <ul aria-label="missing" className="mt-2 divide-y divide-slate-100">
+                    <ul aria-label="missing" className="mt-2 divide-y divide-stone-100">
                       {trade.missing.map(({ instrument, date }) => (
                         <li
                           key={`${instrument}|${date}`}
                           aria-label={`${instrument} ${date}`}
-                          className="flex items-center justify-between py-1.5 text-sm text-slate-600"
+                          className="flex items-center justify-between py-1.5 text-sm text-stone-600"
                         >
                           <span>{instrument}</span>
                           <span className={num}>{date}</span>
@@ -352,7 +352,7 @@ export function ReviewPage() {
 
           <div className={card}>
             <h3 className={subheading}>Journal debt</h3>
-            <p aria-label="journal debt" className={`mt-1 text-sm text-slate-600 ${num}`}>
+            <p aria-label="journal debt" className={`mt-1 text-sm text-stone-600 ${num}`}>
               {session.debt} {session.debt === 1 ? 'entry' : 'entries'} owed
             </p>
           </div>
