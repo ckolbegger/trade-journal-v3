@@ -97,7 +97,15 @@ export function SettingsPage() {
       from: daysAgoISO(TEST_WINDOW_DAYS),
       to: todayISO(),
     })
-    if (report.errors.length > 0) {
+    if (report.unsupported.length > 0) {
+      // No adapter matched at all — distinct from "fetched, but no data in
+      // the window" below. The likeliest cause: a key was just saved, but
+      // PriceBook's adapters are built once at startup (main.tsx) and this
+      // page is still running against the pre-save instance.
+      setTestResult({
+        error: 'No pricing source is registered. Reload the page and try again.',
+      })
+    } else if (report.errors.length > 0) {
       setTestResult({ error: report.errors[0].message })
     } else if (report.stored.length > 0) {
       const latest = report.stored.reduce((a, b) => (a.date > b.date ? a : b))

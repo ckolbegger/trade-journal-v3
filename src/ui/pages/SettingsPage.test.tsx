@@ -131,6 +131,19 @@ describe('PricingSettings', () => {
 
     expect(await screen.findByText(/no price returned for msft/i)).toBeInTheDocument()
   })
+
+  it('names the reload requirement when no source is registered at all (a saved key not yet active)', async () => {
+    // PriceBook's adapters are built once at startup from Settings — saving a
+    // key here does not register a source in the ALREADY-RUNNING PriceBook the
+    // page is testing against (main.tsx). No source ⇒ MSFT lands in
+    // `unsupported`, not `errors`, so this must not read like "no data".
+    renderSettings([])
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: /test this source/i }))
+
+    expect(await screen.findByText(/reload the page/i)).toBeInTheDocument()
+  })
 })
 
 describe('BackupSettings', () => {

@@ -170,7 +170,15 @@ export function WalkCheckpoint({
         </div>
       )}
 
-      <TradeDashboard key={marksVersion} tradeId={tradeId} />
+      {/* Mounted only once THIS checkpoint's own row for today is gone (filled
+          or skipped) — otherwise TradeDashboard's own missing-mark fallback
+          (its "Valuation" card) offers a second input for the same today's
+          Mark this card just asked for. Older catch-up rows (a missed day)
+          don't gate it: valuation only needs today's price, and TradeDashboard
+          knows nothing about historical gap-filling. */}
+      {!missing.some((row) => row.date === asOf) && (
+        <TradeDashboard key={marksVersion} tradeId={tradeId} />
+      )}
 
       <div className={`${card} space-y-3`}>
         <h4 className={subheading}>Action</h4>
