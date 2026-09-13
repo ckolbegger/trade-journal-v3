@@ -1,0 +1,55 @@
+[[skills.config]]
+path = "/home/ckolbegger/.agents/skills/superpowers/brainstorming/SKILL.md"
+enabled = false
+
+[[skills.config]]
+path = "/home/ckolbegger/.agents/skills/superpowers/dispatching-parallel-agents/SKILL.md"
+enabled = false
+
+[[skills.config]]
+path = "/home/ckolbegger/.agents/skills/superpowers/executing-plans/SKILL.md"
+enabled = false
+
+[[skills.config]]
+path = "/home/ckolbegger/.agents/skills/superpowers/finishing-a-development-branch/SKILL.md"
+enabled = false
+
+[[skills.config]]
+path = "/home/ckolbegger/.agents/skills/superpowers/receiving-code-review/SKILL.md"
+enabled = false
+
+[[skills.config]]
+path = "/home/ckolbegger/.agents/skills/superpowers/requesting-code-review/SKILL.md"
+enabled = false
+
+[[skills.config]]
+path = "/home/ckolbegger/.agents/skills/superpowers/subagent-driven-development/SKILL.md"
+enabled = false
+
+[[skills.config]]
+path = "/home/ckolbegger/.agents/skills/superpowers/systematic-debugging/SKILL.md"
+enabled = false
+
+[[skills.config]]
+path = "/home/ckolbegger/.agents/skills/superpowers/test-driven-development/SKILL.md"
+enabled = false
+
+[[skills.config]]
+path = "/home/ckolbegger/.agents/skills/superpowers/using-git-worktrees/SKILL.md"
+enabled = false
+
+[[skills.config]]
+path = "/home/ckolbegger/.agents/skills/superpowers/using-superpowers/SKILL.md"
+enabled = false
+
+[[skills.config]]
+path = "/home/ckolbegger/.agents/skills/superpowers/verification-before-completion/SKILL.md"
+enabled = false
+
+[[skills.config]]
+path = "/home/ckolbegger/.agents/skills/superpowers/writing-plans/SKILL.md"
+enabled = false
+
+[[skills.config]]
+path = "/home/ckolbegger/.agents/skills/superpowers/writing-skills/SKILL.md"
+enabled = false
