@@ -2,6 +2,15 @@
 
 These 24 files are copied once from the canonical prototype capture. Each workflow has a narrow (`.png`) and wide (`-desktop.png`) reference. They illustrate density, hierarchy, cards, controls, and responsive composition only. [UI contract](../../design/ui-contract.md), domain specifications, and the [glossary](../../glossary.md) override screenshot terminology, arithmetic, state, navigation, and missing behavior.
 
+## Capture layouts
+
+The prototype is responsive, and its two layouts differ structurally:
+
+- **Narrow** (`.png`), captured 814px wide: a single-column stack with a bottom tab bar (Home / Journal / New / Stats). Contextual forms slide up as bottom sheets.
+- **Wide** (`-desktop.png`), captured 1440px wide: a content column with a left sidebar (Control Center / Dashboard / Journal / New plan). Contextual forms open as right-hand drawers over a dimmed page.
+
+The sidebar destinations map 1:1 to the narrow tabs (Control Center = Home, Dashboard = Stats), and no screen exists in only one layout. The capture widths are not breakpoints, and the navigation labels are prototype labels; the [UI contract](../../design/ui-contract.md) governs layout and navigation.
+
 | Workflow reference | Narrow | Wide | Use and caveat |
 |---|---|---|---|
 | Home/open Trades | [image](proto-home.png) | [image](proto-home-desktop.png) | Greeting, summary, primary action, Trade rows. “Adherence,” numbers, badges, and nav labels are not authoritative. |
