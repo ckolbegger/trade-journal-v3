@@ -79,11 +79,77 @@ done.
 
 ---
 
+## D2 — Review staleness results: `ReviewChanged` vs `Conflict`
+
+**Status:** settled by user decision, 2026-10-10.
+
+### The gap
+
+`specs/design/daily-review.md:110`: "If a Mark, acknowledgment, Daily Bar, Trade fact, or existing
+Action changed, Save returns `ReviewChanged` or `Conflict` and writes nothing." Five trigger kinds and
+two result names, with no mapping between them.
+
+The pressure comes from `daily-review.md:82`, which binds five independently-versioned things into one
+command — the exact Review view, Trade/Fact revision, evidence snapshot, obligation key, and rendered
+form revision — while only two failure names exist. Diagram 3 (`daily-review.md:112-121`) shows a
+third, unnamed outcome for the Market-evidence path ("No write and refreshed evidence").
+
+Scoping note: the acceptance contract is deliberately label-agnostic here. AC-REV-005 requires Save to
+return "changed/conflict **with refreshed evidence**", so it mandates the payload, not the name. This
+decision therefore does not change what passes acceptance; it removes cross-implementation divergence
+and fixes what the trader is told to do next.
+
+### Decision
+
+Two names, two scopes. `ReviewChanged` is **review-scope**: the assembled Review view itself lost
+coherence. `Conflict` is **subject-scope**: a binding supplied with this one command no longer matches.
+
+| Binding | Scope | Result | Payload the trader needs |
+|---|---|---|---|
+| Review view (eligibility, order, progress) | review | `ReviewChanged` | refreshed Review binding and which items changed |
+| Trade/Fact revision | subject | `Conflict` | current Trade revision and changed domains |
+| Evidence snapshot | subject | `Conflict` | refreshed frames and the new `MarketDataSnapshotId` |
+| Obligation key | subject | `Conflict` | the existing outcome and its identity, for "already saved" and navigation |
+| Rendered form revision | subject | `Conflict` | the current `EntryDefinition` revision, to re-render |
+
+Supplementary rules:
+
+- **Report every stale binding**, not the first, mirroring AC-DEL-004's "reports every known failed
+  check rather than stopping at the first." The payload enumerates all stale bindings, so
+  implementations cannot diverge on evaluation order.
+- **Review-scope dominates the result name:** `ReviewChanged` is returned when the Review-view binding
+  is stale, otherwise `Conflict`. A review-level restatement makes per-form advice moot.
+- **No third result name.** The Market-evidence path returns `Conflict` carrying the refreshed frames
+  and new snapshot id, which is what AC-REV-005's "with refreshed evidence" requires.
+- **`ResolveReviewDebt` follows the same mapping.** The concurrency discipline is not specific to
+  Action saves, even though `daily-review.md:82` phrases its requirements around saving an Action.
+- **Validation is a separate category.** `ui-contract.md:45` distinguishes "validation, and conflict
+  outcomes", and AC-REV-003 has "Exit/Roll/Adjust without Intent reject". That member is named
+  `Rejected`, matching existing use in `ReadViewResult` and `saveSettings`'s "typed Rejected".
+  `NeedsTradeWorkflow` remains an orthogonal routing rejection.
+
+### Rationale
+
+- `daily-review.md:68` already uses `ReviewChanged` for exactly one thing: `getTrade` returning it when
+  "the overview binding is no longer coherent." Review-scope is the term's established meaning inside
+  this module; reusing it for a per-Trade revision mismatch would make the two indistinguishable and
+  leave `Conflict` vestigial.
+- `Conflict` consistently means "a supplied binding no longer matches" elsewhere: `workspace.md:35`
+  `saveSettings` returns "Conflict with current settings"; `workspace.md:110` `exportBackup` returns
+  "Conflict with the current binding"; Trade Workflows uses "no-write conflict."
+- Trade Views' `ChangedDuringAssembly` is the read-side sibling of `ReviewChanged`, keeping the result
+  family internally consistent.
+
+### Not changed
+
+No new operations (`DailyReview` remains 4), no new stored state, no change to the five bindings or to
+the one-outcome-per-obligation-key rule, and no acceptance scenario change.
+
+---
+
 ## Still open
 
-**D2 — `ReviewChanged` vs `Conflict`.** `specs/design/daily-review.md:110` allows either result when
-Mark, acknowledgment, Daily Bar, Trade fact, or existing Action evidence changed before Save. Both
-write nothing; the spec gives no rule for which applies. Not yet decided.
+No specification gaps remain from intake. D1 and D2 were the only two identified.
 
 ---
 
