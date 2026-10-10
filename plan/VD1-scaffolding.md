@@ -12,7 +12,7 @@ This is a living working document: progress, red/green evidence, and critic resu
 |---|---|---|---|
 | T1.1 | Toolchain scaffold | ☑ done 2026-10-10 | Verifications below |
 | T1.2 | Static app shell | ☑ done 2026-10-10 | Verifications below |
-| Gate | Cumulative suites + browser critic | ☐ pending | — |
+| Gate | Cumulative suites + browser critic | ☑ passed 2026-10-10 | Two fresh-critic runs; defect found→fixed test-first→re-verified |
 
 ---
 
@@ -63,9 +63,27 @@ Implementation notes:
 Fix during verification (test-side, not product): first run had 6 failures — `getByRole('heading', { name: 'Settings' })` substring-matched both the `Settings` h1 and the `Workspace settings` h2 (strict-mode violation). Changed the heading assertions to `exact: true`; suite fully green after.
 
 ## Deliverable gate
-- [ ] Cumulative unit suite green
-- [ ] Structural verifications T1.1/T1.2 recorded above with commands + outcomes
-- [ ] Fresh browser-critic pass (critic starts the dev server itself):
-  - [ ] Flow: shell renders in narrow and wide; live resize switches layout without reload/loss
-  - [ ] Flow: axe scan clean
-- [ ] Results log (date, critic run, flows, verdicts):
+- [x] Cumulative unit suite green
+- [x] Structural verifications T1.1/T1.2 recorded above with commands + outcomes
+- [x] Fresh browser-critic pass (critic starts the dev server itself):
+  - [x] Flow: shell renders in narrow and wide; live resize switches layout without reload/loss
+  - [x] Flow: axe scan clean
+- [x] Results log (date, critic run, flows, verdicts):
+
+### Gate record (2026-10-10)
+
+**Cumulative suites (final state, after the defect fix):** `npm run lint` 0 problems · `npm run test` 0 tests / exit 0 · `npm run build` ✓ (JS+CSS bundles, tokens present) · `npm run test:e2e` **48 passed** (16 tests × chromium/webkit/firefox: 7 routes × 2 layouts render+axe, live-resize, design-token rendering).
+
+**Defect found by critic run 1 — fixed test-first per KICKOFF.md:**
+- *Finding:* the `@theme` design tokens were not emitted into the compiled CSS — cream ground/card fills/ink pill rendered white/transparent, so the ui-contract visual language did not actually render. (All three gate flows still passed; the critic recorded it as non-blocking but gate-relevant.)
+- *Red:* added `design tokens render the contracted visual language` to `tests/e2e/shell.spec.ts` (computed-style assertions: body cream `rgb(250,247,242)`, card white/12px, pill ink/9999px, label-caps muted, figure tabular-nums, signed green `rgb(21,128,61)`). `npx playwright test --project=chromium -g "design tokens"` → **failed** (`rgba(0, 0, 0, 0)` vs `rgb(250, 247, 242)`).
+- *Root cause:* the styles.css header comment contained the glob text `bg-*/text-*/border-*`; the `*/` inside it closed the CSS comment early, and the stray tokens made the parser drop the immediately following `@theme` block. Everything after it (utilities, base layer) still compiled, which hid the failure from lint/build/axe.
+- *Fix:* rewrote the comment in prose (no glob-like class patterns inside CSS comments; hygiene note left in the file). Rebuild: `#faf7f2` + `.bg-ink{…}` present in dist CSS; token test → **passed**. One follow-on test-selector fix (pill link scoped via `#main a.pill.bg-ink`; the Home pill and the bottom-nav item share the accessible name "New Plan"). Full cumulative suites re-run green (above).
+
+**Critic run 1 (fresh agent, started its own dev server):** PASS on shell-render (42/42 route visits, both layouts, 3 engines), live resize (marker/scroll/URL preserved in chromium+webkit+firefox), axe (zero critical/serious across 42 scans; zero of any impact). Found the token defect above (non-blocking observation).
+Provenance: playwright 1.64.0, chromium 156.0.8078.4 / webkit 27.2 / firefox 157.0, macOS 26.6.2 (25G83) arm64, node v26.0.0. Artifacts: `/tmp/zcode-glm-5.3-critic/`.
+
+**Critic run 2 (fresh agent after the fix, started its own dev server):** **VERDICT: PASS** — Flow A renders narrow+wide (42/42), Flow B live resize all engines (scrollY 400 + marker preserved), Flow C axe zero critical/serious (and zero moderate/minor) across 42 scans, Flow D token fix re-verified via computed styles in all engines/layouts (cream body, white 12px cards with visible border, near-black 9999px pill with white text, muted small-caps labels, tabular right-aligned figures, green +$42.50) plus screenshot eyeballing.
+Provenance: playwright 1.64.0 + @axe-core/playwright 4.13.0, chromium 156.0.8078.4 / webkit 27.2 / firefox 157.0, macOS 26.6.2 (25G83) arm64. Artifacts: `/tmp/zcode-glm-5.3-critic2/`.
+
+**VD1 status: complete (layer-only checkpoint per plan §5 exception record). VD2 starts only on the user's go.**

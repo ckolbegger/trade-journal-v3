@@ -1,18 +1,23 @@
 @import 'tailwindcss';
 
 /*
- * Design tokens (specs/design/ui-contract.md — visual language).
- * Tailwind v4 reads CSS custom properties from @theme; each --color-*
- * token generates the matching bg-*/text-*/border-* utilities.
+ * Design tokens (specs/design/ui-contract.md, "Visual language").
+ * Tailwind v4 reads CSS custom properties from @theme; every color token
+ * defined here automatically generates the matching background, text, and
+ * border utilities.
+ *
+ * Comment hygiene: never write glob-like class patterns (a dash-star
+ * followed by a slash) inside CSS comments — the stray slash-star closes
+ * the comment early and silently poisons the next rule.
  */
 @theme {
   --color-ground: #faf7f2; /* warm cream page ground */
   --color-card: #ffffff; /* white content cards */
   --color-ink: #1c1917; /* near-black text and primary pill ground */
-  --color-muted: #57534e; /* secondary text — 7:1 on card, 7.2:1 on ground */
+  --color-muted: #57534e; /* secondary text, 7:1 on card and ground */
   --color-line: #e7e2d9; /* restrained card borders */
-  --color-positive: #15803d; /* signed gains only — 5:1 on card */
-  --color-negative: #b91c1c; /* signed losses only — 6.5:1 on card */
+  --color-positive: #15803d; /* signed gains only, 5:1 on card */
+  --color-negative: #b91c1c; /* signed losses only, 6.5:1 on card */
 }
 
 /* Component tokens, defined once and consumed by shell components. */
@@ -33,7 +38,7 @@
   color: var(--color-muted);
 }
 
-/* Right-aligned tabular numerals for Money / Price / Quantity / counts. */
+/* Right-aligned tabular numerals for Money, Price, Quantity, counts. */
 @utility figure {
   font-variant-numeric: tabular-nums;
   text-align: right;

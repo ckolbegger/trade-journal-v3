@@ -46,6 +46,62 @@ for (const layout of [
   }
 }
 
+test('design tokens render the contracted visual language', async ({
+  page,
+}) => {
+  await page.setViewportSize(NARROW)
+  await page.goto('/')
+
+  // cream page ground (ui-contract "Visual language")
+  expect(
+    await page.evaluate(() => getComputedStyle(document.body).backgroundColor),
+  ).toBe('rgb(250, 247, 242)')
+
+  // white rounded card
+  const card = page.locator('.card').first()
+  await expect(card).toBeVisible()
+  expect(await card.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
+    'rgb(255, 255, 255)',
+  )
+  expect(await card.evaluate((el) => getComputedStyle(el).borderRadius)).toBe(
+    '12px',
+  )
+
+  // near-black pill-shaped primary action
+  const primary = page.locator('#main a.pill.bg-ink')
+  await expect(primary).toBeVisible()
+  expect(
+    await primary.evaluate((el) => getComputedStyle(el).backgroundColor),
+  ).toBe('rgb(28, 25, 23)')
+  expect(await primary.evaluate((el) => getComputedStyle(el).borderRadius)).toBe(
+    '9999px',
+  )
+
+  // small-caps section labels render muted
+  expect(
+    await page
+      .locator('.label-caps')
+      .first()
+      .evaluate((el) => getComputedStyle(el).color),
+  ).toBe('rgb(87, 83, 78)')
+
+  // tabular numerals on figures
+  expect(
+    await page
+      .locator('.figure')
+      .first()
+      .evaluate((el) => getComputedStyle(el).fontVariantNumeric),
+  ).toBe('tabular-nums')
+
+  // signed placeholder value uses the positive semantic color
+  expect(
+    await page
+      .locator('.text-positive')
+      .first()
+      .evaluate((el) => getComputedStyle(el).color),
+  ).toBe('rgb(21, 128, 61)')
+})
+
 test('live resize switches layout without reload, route, or scroll loss', async ({
   page,
 }) => {
