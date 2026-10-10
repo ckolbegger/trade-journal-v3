@@ -952,7 +952,7 @@ options or spreads (D9–D14); no Roll (D14); no correction or Void (D15); no Ma
 | AC-LIFE-003 | **Partial** — lifecycle and Lot-Match agreement, no read-time repair | T62, T64, T78 |
 | AC-CALC-002 | **Partial** — independent availability for realized P&L | T61, T75, F9, F10 |
 | AC-UI-001, AC-UI-002 | **Partial** — D3's surfaces and states | T77, F20, F21 |
-| AC-PERF-001 | **Not covered** — the no-N+1 index path is asserted at D3 scale only (T65) | T65; the mature-scale benchmark needs a later deliverable's data volume |
+| AC-PERF-001 | **Partial** — the no-N+1 index path only; no timing evidence | T65 asserts the index path issues no per-Trade load; the mature-scale percentile benchmark needs a later deliverable, and nothing here claims a latency figure |
 
 **Nothing in a "partial" row may be counted as passing.**
 
@@ -1001,6 +1001,19 @@ pass while proving nothing:
    fixture is a disclosed test-only construction and must not be reachable from the production graph.
 
 ---
+
+## 8. `planning-decisions` D3 verification items inside this deliverable
+
+D1 owns items 1, 2, 3, 4, 6, 7, 8, and 9. D3's contribution is a second proof of item 5 with a
+different effect shape, because item 5's own wording is about staged Trade effects surviving a
+participant failure, and Debt is staged differently from an Entry.
+
+| D3 item | Where it is resolved in D3 | Status after D3 |
+|---|---|---|
+| 5 — multi-store rollback with a Position Change participant, Entry and Debt effect shapes | T71 (cases 1, 2, 3, 4), T78 (the real-engine rollback case) | **Resolved for the Defer/Debt shape as well as the Entry shape**; D15 re-proves it for linked corrections |
+| 5 — linked multi-Trade correction rollback | Not D3; needs linked correction across Trades | Later |
+| 1 — Restore/migration replacement at target scale | The candidate/rollback shape D3 relies on is D1:T10, proven here at small scale | Later (D21) |
+
 
 ## Related
 

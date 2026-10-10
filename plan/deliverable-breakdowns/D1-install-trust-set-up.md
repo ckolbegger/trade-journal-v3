@@ -222,9 +222,23 @@ topological order `T1 … T35`, and `result: OK` with exit status 0. The checker
 validated against injected cycles, an undefined edge endpoint, and a structural task with its
 verification removed; it fails on each.
 
-This is a **planning** check, not application code. It exists so that a later revision of this
-file cannot silently break the ordering the deliverable depends on, and so D2 and D3 can be
-validated the same way.
+A second planning check audits claims that only make sense across files:
+
+```sh
+node scripts/audit-breakdown-coverage.mjs
+```
+
+It verifies that every acceptance scenario a breakdown claims exists in the acceptance contract,
+that every scenario cited names tasks that exist in that deliverable, that no row presents partial
+coverage as complete, that a row saying "not covered" does not also claim coverage, that task
+citations for another deliverable are written `D<n>:T<m>` rather than bare, and that each of the
+nine `planning-decisions` D3 verification items has a named owner or an explicit deferral. It was
+validated against injected faults: an invented scenario ID, a row stripped of its tasks, a bare
+cross-deliverable citation, a wrong task-count claim, a bogus cross reference, a task ID in a
+status cell, and a status both claiming and disowning coverage.
+
+Both are **planning** checks, not application code. They exist so that a later revision of these
+files cannot silently break the ordering or the coverage the deliverables depend on.
 
 ### Shared-resource ownership
 
@@ -1308,7 +1322,7 @@ written first and satisfied afterwards; each check is added with its case.
 | 1 — Restore/migration replacement at target scale | Not D1; the migration runner's candidate/rollback shape is installed in T10 | Later (D21), with the mechanism proven here at small scale |
 | 2 — both latency targets at mature scale | Not D1; capacity headroom derivation is T19 | Later deliverable with real data |
 | 5 — multi-store rollback proving a Journal-participant failure rolls back staged Trade effects | Mechanism installed in T11; the Journal-participant case needs D2's Trade staging | Partially here, completed at D2/D3 |
-| 7 — download plus read-back verification yielding a `CompletedBackupReceipt`, secrets excluded | Not D1 (D6/D20) | Later |
+| 7 — download plus read-back verification yielding a `CompletedBackupReceipt`, secrets excluded | Not D1; the export/verification operations are D6 and D20 | Later (D6/D20) |
 | 8 — keyboard-only completion plus axe-core | T33, F19 | **Resolved for D1 scope** |
 
 ---

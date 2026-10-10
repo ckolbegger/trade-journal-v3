@@ -749,6 +749,17 @@ red would hide a real defect:
 
 ---
 
+## 8. `planning-decisions` D3 verification items inside this deliverable
+
+D1 owns items 1, 2, 3, 4, 6, 7, 8, and 9. D2's contribution is item 5, which needs a real
+Journal participant and therefore cannot be proven at D1.
+
+| D3 item | Where it is resolved in D2 | Status after D2 |
+|---|---|---|
+| 5 — multi-store rollback proving a Journal-participant failure rolls back staged Trade effects | T48 (cases 1, 2, 3), T53, F-none (asserted in the integration suite, not a browser flow) | **Resolved for the Plan-Reflection effect shape**; D3 re-proves it for a Defer, and D15 for linked corrections |
+| 5 — the same mechanism with a Debt rather than an Entry effect | D3:T71, because staged Debt needs a Position Change | Later |
+
+
 ## Related
 
 - [vertical-deliverables.md](../vertical-deliverables.md) — D2 scope and user stories
