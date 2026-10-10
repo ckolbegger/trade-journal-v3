@@ -278,19 +278,32 @@ Unplanned Exposure** Deviation categories, completing the four-type taxonomy.
 
 ## D13 — Complex spreads: butterflies, condors, iron condors, broken wings
 
-1. As a trader, I would like to build a butterfly or condor from my own typed shape, so
-   that structures with no built-in template are still first-class.
-2. As a trader, I would like the canonical Iron Condor available with the correct leg
+1. As a trader, I would like to start a butterfly or a condor from a ready template, so
+   that I can build a four-leg structure without hand-ordering every leg myself.
+2. As a trader, I would like to build a broken-wing butterfly with unequal wings, so
+   that an asymmetric structure is expressible and the app never forces symmetric
+   wings on me.
+3. As a trader, I would like the canonical Iron Condor available with the correct leg
    order, so that I do not rebuild it by hand.
-3. As a trader, I would like total risk and reward for four-leg structures, including
+4. As a trader, I would like total risk and reward for four-leg structures, including
    which outcomes are bounded, so that I understand the payoff shape.
 
-`Covers:` trader-created typed Strategy shapes via `ReferenceCatalog.save` (there is no
-generic `Custom` seed); Iron Condor seed with ascending role order; four-leg
-aggregation and payoff extrema with attainment sets.
+`Covers:` shape templates for Butterfly, Broken-Wing Butterfly, and Condor, each
+producing a trader-owned typed Strategy via `ReferenceCatalog.save` rather than a seed
+(there is no generic `Custom` seed); Iron Condor seed with ascending role order;
+four-leg aggregation and payoff extrema with attainment sets.
 
-`AC:` AC-REF-001 (**completes** the canonical eleven strategies), AC-CALC-004,
-AC-POS-005.
+`AC:` AC-REF-001 (**the canonical eleven seeds complete here** — Iron Condor is the
+last of the eleven), AC-CALC-004, AC-POS-005.
+
+Scope note: "AC-REF-001 completes here" refers to the *seeded* set. The supported
+structure space is deliberately wider than the eleven seeds. Butterfly,
+Broken-Wing Butterfly, and Condor are first-class in use but arrive as templates that
+create the trader's own typed Strategy, so the seeded count stays exactly eleven and
+AC-REF-001 is not reinterpreted. Asymmetric wings need no special mechanism: the shape
+vocabulary embeds no wing-width defaults (`reference-catalog.md:80`), and Iron Condor
+already establishes that wing widths may differ. See decision D5 in
+[planning-decisions-2026-10-10.md](planning-decisions-2026-10-10.md).
 
 ## D14 — Roll a position into a new plan
 
@@ -462,7 +475,7 @@ Un-seeded values are absent, never present-but-broken.
 | D9 | Long Call; Long Put |
 | D10 | Cash-Secured Put; Covered Call |
 | D12 | Vertical Call/Put Debit/Credit; PMCC |
-| D13 | Iron Condor — **AC-REF-001 completes** |
+| D13 | Iron Condor seed — **the canonical eleven complete here**. Butterfly, Broken-Wing Butterfly, and Condor arrive as shape templates producing trader-owned typed shapes, not seeds |
 | D17 | Any remaining Sources/definitions — **AC-JOUR-007 completes** |
 
 ### Migration

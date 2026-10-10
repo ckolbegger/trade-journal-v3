@@ -305,12 +305,59 @@ requirement, not a revision of it.
 
 ---
 
+## D5 — Non-canonical option structures use shape templates, not seeds
+
+**Status:** settled by user decision, 2026-10-10.
+
+### Context
+
+The user requires Butterfly, Broken-Wing Butterfly, and Condor support, and objected that the
+deliverable list appeared to "complete at Iron Condor." The frozen specification contains no butterfly
+or condor other than Iron Condor, and AC-REF-001 requires "**exactly** the eleven specified Strategy
+seeds … no Account, Institution, generic Custom, Other, or settlement-as-reason seed exists"
+(`acceptance-contract.md:390`). Traceability records the exact eleven as a settled decision
+("Exact eleven seeds settled; no generic Custom", `traceability.md:76`).
+
+### Decision
+
+Butterfly, Broken-Wing Butterfly, and Condor are supported as **shape templates** offered in the
+shape-creation flow. A template produces the trader's own typed Strategy through
+`ReferenceCatalog.save`. The canonical seed set remains exactly eleven, with Iron Condor as the last
+seed. D13 covers the three templates, asymmetric wings, the Iron Condor seed, and four-leg
+risk/reward.
+
+### Rationale
+
+- The capability is already granted by the spec: "There is no generic Custom seed; traders may create a
+  typed shape when needed" (`reference-catalog.md:98`). The missing piece was usability, not permission.
+- Templates remove the hand-building friction without changing the seeded count, so AC-REF-001 is
+  satisfied by its own terms: at first run exactly eleven seeds exist, and nothing is seeded on demand.
+- Asymmetric wings need no special mechanism. The shape vocabulary embeds no wing-width defaults
+  (`reference-catalog.md:80`), and Iron Condor already establishes that wing widths may differ.
+- Keeping the seeded eleven avoids reopening a settled product decision and diverging the shared
+  baseline, which would affect comparability with the other seven implementation branches.
+
+### Rejected alternative
+
+Adding the three as canonical seeds. Rejected because it requires amending AC-REF-001 (exact
+cardinality), reopening the settled eleven-seed decision in traceability, and changing the shared
+baseline. Acknowledged benefit: byte-identical structures across implementations, which would matter if
+cross-implementation conformance comparison of these structures were a goal. It is not a stated goal,
+so the cost is not justified.
+
+### Not changed
+
+`specs/` remains untouched, AC-REF-001 stands unamended, and the seeded strategy count remains eleven.
+
+---
+
 ## Still open
 
-No specification gaps remain from intake; D1 and D2 were the only two identified. The D3 verification
-items must be resolved inside the plan. The vertical-deliverable list is in final alignment pending one
-structural question: whether the corrections deliverable (Replace, mark correction, Void, history,
-Rebuild) splits so that no deliverable exceeds four user stories.
+No specification gaps remain from intake; D1 and D2 were the only two identified. D3 records the
+approved stack, D4 affirms the frozen offline-delivery requirement, and D5 records an interpretation
+that avoids reopening it. The D3 verification items must be resolved inside the plan. The vertical
+deliverable list is recorded in [vertical-deliverables.md](vertical-deliverables.md); detailed
+task-level breakdowns per deliverable and the acceptance-to-evidence matrix are not yet drafted.
 
 ---
 
