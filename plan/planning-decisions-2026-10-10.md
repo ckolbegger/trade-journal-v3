@@ -147,9 +147,90 @@ the one-outcome-per-obligation-key rule, and no acceptance scenario change.
 
 ---
 
+## D3 — Approved implementation stack
+
+**Status:** settled by user decision, 2026-10-10 (planning-protocol Phase 2). Exact versions are pinned
+later, in the plan (Phase 6 requires the selected stack/version profile).
+
+### Decision
+
+| Layer | Choice |
+|---|---|
+| Language | TypeScript, strict |
+| Build | Vite |
+| Presentation | React |
+| Authoritative store | **IndexedDB**, behind the Persistence/Transaction seam |
+| Schema layer | Object store per fact module + lifecycle-index store + rebuildable projections |
+| Atomic boundary | One IndexedDB multi-store transaction (`oncomplete` / `onabort`) |
+| Restore and migration | Isolated candidate stores, then an atomic pointer flip |
+| Money / Price / Quantity | `decimal.js` behind a Money/Price/Quantity value layer; never JS `number` |
+| Time | Injected `Clock` port; Economic Time, U.S. Trading Date, and Save Time kept distinct |
+| Session calendar | Versioned U.S. market-session data (the spec's session-policy revision) |
+| PWA | `vite-plugin-pwa` / Workbox for manifest and precache, plus our own Offline Release Inventory and Runtime Readiness module |
+| Tests | Vitest + `fake-indexeddb` (Node), Playwright (browser integration, critic gate, axe-core) |
+| Hosting | Static HTTPS; no backend |
+
+### Rationale
+
+IndexedDB carries the decision. It is the only baseline browser storage with real multi-store ACID
+transactions and rollback, which maps onto the spec's "one atomic commit/rollback boundary spanning
+every fact-module effect." It provides real indexes for the stored Lifecycle State and bounded paged
+reads (satisfying "no all-history replay, no one-query-per-Trade"), is baseline across desktop and
+mobile including workers so support can be decided by functional checks rather than an allowlist, and
+its aborts roll back, giving testable crash semantics. The protocol also names `fakeIndexedDB` as an
+acceptable behaviorally-compatible substitute, which indicates this is the intended store.
+
+React is a low-consequence pick: all ten domain modules are pure TypeScript behind interfaces, so the
+UI framework touches presentation only. React is chosen for accessibility and browser-verification
+ecosystem maturity, which this spec demands heavily.
+
+### Rejected alternatives
+
+- **Svelte + IndexedDB** — viable and leaner, with a smaller runtime. Rejected on ecosystem maturity
+  for accessibility tooling and browser verification, not on architecture. The swap stays cheap
+  because the domain layer is framework-free.
+- **SQLite-WASM over OPFS** — strongest query, migration, and backup story. Held as a **fallback**
+  only: OPFS persistence needs a Worker with sync access handles, and reported platform defects on
+  iOS Safari make a flaky store likely, which under a no-allowlist rule surfaces as `Unsupported`
+  sessions rather than fixable errors. Revisit only if benchmarking shows IndexedDB index/scan work
+  is the bottleneck.
+
+### Required verification before the plan is frozen
+
+1. Restore/migration replacement at target scale via candidate + pointer swap, with injected failure
+   proving rollback and prior data remaining usable (AC-REST-003).
+2. Both latency targets at 25,000 Trades / ~200,000 facts with correctness assertions before and
+   after, network disabled.
+3. Offline Release Inventory completeness and digest validation achievable at runtime, and the gate
+   genuinely failing on a missing/corrupt asset and on missing service-worker control (AC-DEL-004).
+4. The write gate rejecting at the **transaction seam**, not merely in the UI.
+5. Multi-store rollback proving a Journal-participant failure rolls back staged Trade effects
+   (AC-CORR-004).
+6. Real-engine readiness on at least two engines; versions recorded as evidence provenance only,
+   never as an allowlist.
+7. Download plus read-back verification yielding a `CompletedBackupReceipt`, with secrets exclusion
+   proven.
+8. Keyboard-only completion of core workflows plus axe-core checks.
+9. Disclosed `fakeIndexedDB` fidelity gaps, with durability-critical proofs against a real engine.
+
+### Unverified claims (not asserted)
+
+- Current cross-browser availability of the **Temporal** API. Until verified, use an explicit date
+  library plus our own calendar rather than depending on it.
+- Whether Workbox's precache manifest can serve as the runtime **digest-valid** inventory check
+  without custom instrumentation. Assumed to need custom work; covered by item 3.
+
+### Not changed
+
+No specification change; `specs/` remains untouched. This records a technology choice only, and
+asserts nothing about atomicity, durability, or migration safety that items 1–5 must not demonstrate.
+
+---
+
 ## Still open
 
-No specification gaps remain from intake. D1 and D2 were the only two identified.
+No specification gaps remain from intake; D1 and D2 were the only two identified. The implementation
+plan itself is not yet drafted, and the D3 verification items above must be resolved inside it.
 
 ---
 
