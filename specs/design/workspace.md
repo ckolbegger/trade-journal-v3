@@ -13,6 +13,7 @@ interface Workspace
   saveSettings(command: SaveWorkspaceSettings) -> SaveWorkspaceSettingsResult
   requestDurability(request: RequestWorkspaceDurability) -> WorkspaceDurabilityResult
   exportBackup(request: ExportWorkspaceBackup) -> ExportWorkspaceBackupResult
+  confirmBackup(request: ConfirmWorkspaceBackup) -> ConfirmWorkspaceBackupResult
   prepareRestore(request: PrepareWorkspaceRestore) -> PrepareWorkspaceRestoreResult
   applyPreparedRestore(command: ApplyPreparedWorkspaceRestore) -> WorkspaceRestoreResult
 ```
@@ -37,7 +38,7 @@ The only Workspace-wide setting is a rules-based time-zone identity. Market sess
 
 Fresh initialization requires `Writable` Runtime Readiness, then creates Workspace metadata and atomically seeds Journal and Catalog defaults. It derives onboarding from the resulting Catalog state bound through that same operation, including real Account availability. A failed readiness gate creates no Workspace, defaults, or imported facts.
 
-`initialize(opening instant, optional first-run time zone)` first re-establishes Runtime Readiness. `WorkspaceInitializationResult` returns Opened with writable status/receipt, Time Zone Selection Required, Migration Blocked with unchanged-data evidence, Integrity Blocked with recovery actions when readiness passed but stored contents fail integrity validation, or the cross-cutting `RuntimeNotWritable` branch. For this operation, `RuntimeNotWritable` carries either `Recovery Only` with readable status/backup actions or `Unsupported` with all failed readiness checks and safe retry/durability actions. A known or possible existing root that cannot be read additionally carries Integrity Blocked Workspace status and can never fall through to fresh initialization. The successful receipt identifies the readiness evidence, fresh/existing status, schema transitions, migrations, seed versions/additions, private rebuilds, and incomplete-transaction recovery.
+`initialize(opening instant, optional first-run time zone)` first re-establishes Runtime Readiness. `WorkspaceInitializationResult` returns Opened with writable status/receipt, Time Zone Selection Required, Migration Blocked with unchanged-data evidence, Integrity Blocked with recovery actions when readiness passed but stored contents fail integrity validation, or the cross-cutting `RuntimeNotWritable` branch. For this operation, `RuntimeNotWritable` carries either `Recovery Only` with readable status/backup actions or `Unsupported` with all failed readiness checks and safe retry actions. A known or possible existing root that cannot be read additionally carries Integrity Blocked Workspace status and can never fall through to fresh initialization. The successful receipt identifies the readiness evidence, fresh/existing status, schema transitions, migrations, seed versions/additions, private rebuilds, and incomplete-transaction recovery.
 
 ```mermaid
 sequenceDiagram
@@ -100,15 +101,17 @@ Normal startup runs the readiness gate on every launch, then uses authoritative 
 - `AlreadyProtected { currentProtection: Protected }`; or
 - `NotImproved { currentProtection: BestEffort(reason) | Unavailable(reason) }`.
 
-Only a result carrying `Protected` can contribute to `Writable`; `Best Effort` and `Unavailable` leave a fresh environment Unsupported or an existing readable Workspace Recovery Only. A denied or unsupported request neither fabricates success nor deletes or exports data. The operation never promises protection against device loss and does not replace backup.
+Protection is advisory and does not affect Runtime Readiness: with `Best Effort` or `Unavailable`, the Workspace remains `Writable` when every readiness check passes, and the UI keeps the not-protected warning visible. A denied or unsupported request neither fabricates success nor deletes or exports data. The operation never promises protection against device loss and does not replace backup.
 
 ## Full backup
 
 A backup is one portable, self-contained, versioned snapshot containing Workspace settings/metadata and the Trade Record, Journal, Market Data, and Reference Catalog authoritative sections. It contains every identity, fact/audit revision, form definition, nonsecret configuration, and seed state required for round-trip equivalence.
 
-`exportBackup(requested time, optional expected Workspace binding, user-directed external destination)` coordinates both artifact construction and its external transfer. `ExportWorkspaceBackupResult` is Completed with a `CompletedBackupReceipt`, Conflict with the current binding, or Not Completed with the failed or unconfirmed stage, reason, and unchanged-Workspace evidence. Completed is returned only after the full digest-valid artifact has been transferred and the destination has positively confirmed completion. A transfer channel that merely initiates a download or cannot confirm completion returns Not Completed and produces no `CompletedBackupReceipt`.
+`exportBackup(requested time, optional expected Workspace binding)` builds one artifact from one full read snapshot and hands it to the host as an ordinary file download. `ExportWorkspaceBackupResult` is Downloaded, Conflict with the current binding, or Not Completed with the failed stage, reason, and unchanged-Workspace evidence. Downloaded carries the source `WorkspaceSnapshotBinding`, full artifact digest, Workspace Backup Manifest digest, and suggested file name. It is not a completed backup: the application cannot observe whether or where the host saved the file, so Downloaded produces no `CompletedBackupReceipt`.
 
-`CompletedBackupReceipt` binds the exact source `WorkspaceSnapshotBinding`, full artifact digest, Workspace Backup Manifest digest, transfer-completion evidence, and completion time. It is result evidence rather than an authoritative Workspace mutation, so successful export remains possible in `Recovery Only`.
+`confirmBackup(trader-selected file, expected source binding and full artifact digest from a Downloaded result)` reads the file the trader selects through the host's ordinary file selection and verifies that it is a complete, digest-valid artifact whose full artifact digest and source binding equal the expected values. `ConfirmWorkspaceBackupResult` is Completed with a `CompletedBackupReceipt`, or Not Verified with the reason: unreadable, incomplete or corrupt, or a different artifact. It writes nothing. The expected values come from the Downloaded result held in view state; no pending verification is stored, so a trader who leaves before verifying exports again. Verification is optional for keeping a copy, but an unverified download is never presented as a completed backup.
+
+`CompletedBackupReceipt` binds the exact source `WorkspaceSnapshotBinding`, full artifact digest, Workspace Backup Manifest digest, read-back verification evidence, and completion time. It is result evidence rather than an authoritative Workspace mutation, so export and verification remain possible in `Recovery Only`.
 
 It excludes credentials, unsaved forms, raw provider payloads, transient diagnostics, reports, replay projections, cursors, and safely rebuildable indexes/caches/projections. The Workspace Backup Manifest records versions, capability footprint, counts, exclusions, section digests, and a full digest.
 
@@ -121,7 +124,7 @@ sequenceDiagram
     participant J as Journal
     participant MD as Market Data
     participant RC as Reference Catalog
-    participant BT as External Backup Destination
+    participant H as Host file download and selection
     UI->>W: exportBackup(expected Workspace binding)
     W->>P: Open one full read snapshot
     P-->>W: Snapshot S18
@@ -139,17 +142,19 @@ sequenceDiagram
         RC-->>W: Catalog section
     end
     W->>W: Build section and full digests
-    W->>BT: Transfer complete artifact bound to S18
-    alt Destination positively confirms completion
-        BT-->>W: Transfer-completion evidence
+    W->>H: Offer complete artifact bound to S18 as a file download
+    W-->>UI: Downloaded with artifact digest and S18 binding, no receipt
+    UI->>W: confirmBackup(trader-selected file, expected digest and S18 binding)
+    W->>H: Read the trader-selected file
+    H-->>W: File contents
+    alt Complete file matches the expected digest and binding
         W-->>UI: Completed and receipt bound to S18 and artifact digest
-    else Transfer fails or cannot be confirmed
-        BT-->>W: Failed or unconfirmed
-        W-->>UI: Not Completed, no completed-backup receipt
+    else Unreadable, incomplete, or a different artifact
+        W-->>UI: Not Verified, no completed-backup receipt
     end
 ```
 
-A concurrent later mutation is outside the artifact rather than torn across sections. Export remains possible for readable internally bound data in `Recovery Only` or when current analytical agreement needs diagnosis; Restore applies the stricter validity bar. A failed read, failed transfer, or unconfirmable transfer returns Not Completed, issues no `CompletedBackupReceipt`, and never claims that a usable backup was created.
+A concurrent later mutation is outside the artifact rather than torn across sections. Export remains possible for readable internally bound data in `Recovery Only` or when current analytical agreement needs diagnosis; Restore applies the stricter validity bar. A failed read returns Not Completed; neither it, an unverified download, nor a failed verification issues a `CompletedBackupReceipt` or is ever presented as a completed backup.
 
 ## Restore
 
@@ -163,7 +168,7 @@ The preview shows source versions/time, exact record/history counts, migrations,
 
 ### `applyPreparedRestore`
 
-Requires `Writable` Runtime Readiness, sufficient resulting capacity/headroom, explicit Replace Entire Workspace authorization, and, when user data exists, either a `CompletedBackupReceipt` bound to the exact live target Workspace or an explicit decline after warning. A prepared, initiated, failed, unconfirmed, or older transfer does not satisfy the safety-backup choice. It rechecks the Restore artifact, installed release/capabilities/seeds, live target, and any completed-backup receipt, then applies every prepared section and Workspace setting in one transaction. Outside `Writable`, it returns `RuntimeNotWritable` without changing the current Workspace.
+Requires `Writable` Runtime Readiness, sufficient resulting capacity/headroom, explicit Replace Entire Workspace authorization, and, when user data exists, either a `CompletedBackupReceipt` bound to the exact live target Workspace or an explicit decline after warning. A failed export, an unverified download, a failed verification, or a receipt for an older Workspace binding does not satisfy the safety-backup choice. It rechecks the Restore artifact, installed release/capabilities/seeds, live target, and any completed-backup receipt, then applies every prepared section and Workspace setting in one transaction. Outside `Writable`, it returns `RuntimeNotWritable` without changing the current Workspace.
 
 ```mermaid
 sequenceDiagram

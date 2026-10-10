@@ -52,6 +52,8 @@ Explicitly outside the MVP:
 - [Device-local Workspace and replace-only Restore](adr/0006-device-local-workspace-and-replace-only-restore.md)
 - [Observed valuation and Expiration Payoff are separate](adr/0007-observed-valuation-and-expiration-payoff.md)
 - [Standards-based PWA delivery and Runtime Readiness](adr/0008-pwa-delivery-and-runtime-readiness.md)
+- [Storage protection is advisory, not a write gate](adr/0009-advisory-storage-protection.md)
+- [Backup is a file download verified by read-back](adr/0010-backup-download-verified-by-read-back.md)
 
 ### Architecture and interfaces
 
@@ -65,11 +67,11 @@ Explicitly outside the MVP:
 - [Performance Analysis](design/performance-analysis.md) — 4 operations
 - [Reference Catalog](design/reference-catalog.md) — 7 operations
 - [Trade Views and Reporting](design/trade-views-and-reporting.md) — 5 operations
-- [Workspace](design/workspace.md) — 7 operations
+- [Workspace](design/workspace.md) — 8 operations
 - [UI contract](design/ui-contract.md)
 - [Delivery contract](design/delivery-contract.md)
 
-The external Pricing Provider port has one operation. Browser-host delivery capabilities provide PWA/readiness and confirmed backup-transfer evidence without becoming domain interfaces. Persistence/Transaction is an internal seam and is never UI-callable.
+The external Pricing Provider port has one operation. Browser-host delivery capabilities provide PWA/readiness, storage-protection status, backup file download, and reading a trader-selected backup file without becoming domain interfaces. Persistence/Transaction is an internal seam and is never UI-callable.
 
 ### Acceptance and later evaluation
 

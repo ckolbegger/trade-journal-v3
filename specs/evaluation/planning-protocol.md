@@ -46,10 +46,10 @@ This check identifies misunderstandings; it does not solicit new product design.
 The assistant presents a small number of credible stack profiles, including one recommended profile, and evaluates each against the frozen contracts. At minimum, each profile addresses:
 
 - standards-based PWA identity, production HTTPS delivery, installation where exposed, browser-tab operation, a secure-loopback strategy for local browser automation where used, and stopped-app offline restart;
-- browser-neutral Runtime Readiness on every launch and after update/Restore, including persistent-storage confirmation, isolated storage probe, plan-derived capacity/headroom, service-worker control, complete Offline Release Inventory, and the persistence-level write gate;
+- browser-neutral Runtime Readiness on every launch and after update/Restore, including isolated storage probe, plan-derived capacity/headroom, service-worker control, complete Offline Release Inventory, the persistence-level write gate, and advisory storage-protection reporting and warning;
 - transactional persistence across Trade, Journal, Market Data, Catalog, and Workspace replacement;
 - exact decimal Money/Price/Quantity handling and deterministic time/calendar behavior;
-- versioned migrations and complete portable backup without secrets, including positive external-transfer confirmation and `CompletedBackupReceipt` semantics;
+- versioned migrations and complete portable backup without secrets, including ordinary file download, read-back verification of the trader-selected saved file, and `CompletedBackupReceipt` semantics;
 - snapshot-consistent reads, optimistic revisions, and rebuildable indexes/projections;
 - 25,000-Trade/200,000-fact scale and both latency targets;
 - responsive/accessibility verification;
@@ -69,7 +69,7 @@ The plan's tasks must form a dependency-valid graph whose vertical-deliverable g
 - name the selected technology versions and architectural mappings;
 - map every canonical module/operation to an implementation boundary without changing its public meaning;
 - preserve the approved dependency direction and prevent UI/domain-calculation duplication;
-- identify the transaction, revision, exact-decimal, clock/calendar, backup-transfer receipt, migration, Installed Capability Manifest, Web App Manifest, Offline Release Inventory, Runtime Readiness, and persistence-level `RuntimeNotWritable` write-gate mechanisms;
+- identify the transaction, revision, exact-decimal, clock/calendar, backup verification receipt, migration, Installed Capability Manifest, Web App Manifest, Offline Release Inventory, Runtime Readiness, and persistence-level `RuntimeNotWritable` write-gate mechanisms;
 - identify each deliverable's user-visible outcome, production-UI entry point, complete capability set, and applicable acceptance scenarios;
 - deliver thin but complete end-to-end behavior early while retaining facts required by later capabilities;
 - declare prerequisites and blocking edges between tasks;
@@ -161,7 +161,7 @@ The matrix distinguishes:
 - browser/responsive/accessibility behavior;
 - PWA installation where exposed, ordinary browser-tab operation, production HTTPS evidence, any browser-recognized secure-loopback automation, browser-neutral readiness pass/failure cases, and exact browser/operating-system evidence provenance;
 - repeated-launch, runtime-failure, `Recovery Only`, restart/offline/update/migration/Restore tests;
-- completed, failed, and unconfirmable backup-transfer results plus exact-target `CompletedBackupReceipt` enforcement before Restore;
+- verified, unverified, and failed-verification backup results plus exact-target `CompletedBackupReceipt` enforcement before Restore;
 - deterministic target-scale correctness and percentile benchmarks.
 
 It also states how secrets exclusion is verified and how no-write/rollback claims compare authoritative before/after state.
@@ -217,7 +217,7 @@ Only then is the [kickoff prompt](kickoff-prompt.md) instantiated with that exac
 - [ ] Every deliverable specifies mock-free, real-stack integration tests using disclosed test infrastructure.
 - [ ] Every deliverable ends with the fresh browser-critic gate and mandatory test-first repair loop.
 - [ ] Every acceptance scenario maps to reproducible planned evidence.
-- [ ] PWA installation/browser-tab, production HTTPS and local secure-context strategy, repeated readiness, offline, update, migration, confirmed/unconfirmed backup transfer and Restore, recovery-only, reconstruction, responsive, accessibility, and scale evidence are planned with exact environment provenance.
+- [ ] PWA installation/browser-tab, production HTTPS and local secure-context strategy, repeated readiness, offline, update, migration, verified/unverified backup download and Restore, recovery-only, reconstruction, responsive, accessibility, and scale evidence are planned with exact environment provenance.
 - [ ] No unsupported capability is advertised and no product semantics were reopened silently.
 - [ ] The user reviewed and approved the final plan.
 - [ ] The plan path and immutable revision/digest are recorded for kickoff.

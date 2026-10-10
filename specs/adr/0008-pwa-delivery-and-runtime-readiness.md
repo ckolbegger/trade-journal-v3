@@ -1,6 +1,6 @@
 # Standards-based PWA delivery and Runtime Readiness
 
-Status: accepted
+Status: accepted; amended by [ADR 0009](0009-advisory-storage-protection.md) and [ADR 0010](0010-backup-download-verified-by-read-back.md).
 
 Trade Journal V3 is delivered from a secure hosted origin as a standards-based Progressive Web Application (PWA). Its Web App Manifest provides stable application identity, icons, launch URL, navigation scope, and standalone presentation. A versioned service worker installs and verifies the complete Offline Release Inventory before that release can be treated as available for stopped-application offline restart. Installation is offered where the host exposes it; an ordinary browser tab remains usable when it passes the same Runtime Readiness gate.
 

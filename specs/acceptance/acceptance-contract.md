@@ -399,12 +399,12 @@ A workflow scenario needs evidence at its public boundary and durable after-stat
 
 ## Backup, Restore, and reconstruction
 
-### AC-BACK-001 — full coherent backup, confirmed transfer, and secrets exclusion
+### AC-BACK-001 — full coherent backup, verified download, and secrets exclusion
 
 - **Given:** a populated Workspace with corrections, Voids, definitions, Marks/Bars/acknowledgments, references, provider settings/credential, and rebuildable projections.
-- **When:** a backup is exported while a concurrent later mutation occurs; controlled source-read, transfer-failure, and transfer-unconfirmable cases are also exercised.
-- **Then:** in the successful case all four authoritative sections and Workspace metadata share one snapshot; every identity/revision/history and nonsecret setting is included; the later mutation is wholly outside it; credentials/raw payloads/diagnostics/reports/cursors/private projections are absent; and Workspace Backup Manifest counts/digests/exclusions are explicit. Only positive transfer completion returns Completed and a `CompletedBackupReceipt` bound to the source Workspace and full artifact digest. Every controlled failure returns Not Completed with no receipt or completed-backup claim.
-- **Evidence:** Workspace Backup Manifest and artifact inspection, source snapshot, concurrent mutation revision, secret nonpresence check, positive transfer evidence and bound receipt, plus each Not Completed result.
+- **When:** a backup is exported while a concurrent later mutation occurs and the downloaded file is then selected for verification; a controlled source-read failure, a download left unverified, and verification of an unreadable, truncated, or different-artifact file are also exercised.
+- **Then:** in the successful case all four authoritative sections and Workspace metadata share one snapshot; every identity/revision/history and nonsecret setting is included; the later mutation is wholly outside it; credentials/raw payloads/diagnostics/reports/cursors/private projections are absent; and Workspace Backup Manifest counts/digests/exclusions are explicit. Export alone returns Downloaded with no receipt. Only verification of a complete selected file matching the artifact digest and source binding returns Completed and a `CompletedBackupReceipt` bound to the source Workspace and full artifact digest. Every controlled failure returns Not Completed or Not Verified with no receipt or completed-backup claim.
+- **Evidence:** Workspace Backup Manifest and artifact inspection, source snapshot, concurrent mutation revision, secret nonpresence check, read-back verification evidence and bound receipt, plus each Downloaded-only, Not Completed, and Not Verified result.
 
 ### AC-REST-001 — preparation validates without mutation
 
@@ -416,9 +416,9 @@ A workflow scenario needs evidence at its public boundary and durable after-stat
 ### AC-REST-002 — replace-only confirmation and safety offer
 
 - **Given:** a valid prepared candidate and a nonempty current Workspace.
-- **When:** apply is attempted without replacement confirmation, without a safety choice, with an older `CompletedBackupReceipt`, with an initiated but unconfirmed transfer, and then with valid confirmation plus either an exact-target completed receipt or explicit decline.
-- **Then:** incomplete, stale, and unconfirmed-transfer attempts write nothing; only the exact-target `CompletedBackupReceipt` satisfies the accepted-backup path; the UI plainly identifies replacement and exact impact; valid apply replaces the entire Workspace, never merges or duplicates; declined safety backup requires explicit warning acknowledgment.
-- **Evidence:** preview, user-visible confirmation states, conflicts, completed receipt with exact target binding, artifact digest, positive transfer evidence, unconfirmed-transfer result, and record counts after apply.
+- **When:** apply is attempted without replacement confirmation, without a safety choice, with an older `CompletedBackupReceipt`, with a downloaded but unverified backup, and then with valid confirmation plus either an exact-target completed receipt or explicit decline.
+- **Then:** incomplete, stale, and unverified-download attempts write nothing; only the exact-target `CompletedBackupReceipt` satisfies the accepted-backup path; the UI plainly identifies replacement and exact impact; valid apply replaces the entire Workspace, never merges or duplicates; declined safety backup requires explicit warning acknowledgment.
+- **Evidence:** preview, user-visible confirmation states, conflicts, completed receipt with exact target binding, artifact digest, read-back verification evidence, unverified-download result, and record counts after apply.
 
 ### AC-REST-003 — all-section atomicity
 
@@ -466,17 +466,17 @@ A workflow scenario needs evidence at its public boundary and durable after-stat
 
 ### AC-DEL-004 — Runtime Readiness gates every write
 
-- **Given:** a fresh environment with all readiness checks passing; separate controlled cases for unconfirmed persistent storage, failed diagnostic transaction, insufficient plan-derived capacity/headroom, missing service-worker control, and incomplete or digest-invalid Offline Release Inventory; and a case with at least two failures at once.
+- **Given:** a fresh environment with all readiness checks passing; the same environment with host storage protection unconfirmed; separate controlled cases for failed diagnostic transaction, insufficient plan-derived capacity/headroom, missing service-worker control, and incomplete or digest-invalid Offline Release Inventory; and a case with at least two failures at once.
 - **When:** the application launches, optionally requests stronger durability through an explicit user action, and Workspace initialization or another mutation is attempted.
-- **Then:** only the all-pass case becomes `Writable`. Each failure produces `Unsupported` with all known reasons, safe retry/durability actions where meaningful, and a recommendation to try another browser; the simultaneous-failure case reports every known failed check rather than stopping at the first. It creates no Workspace, imports no data, and returns the `RuntimeNotWritable` branch from initialization, every other authoritative domain/configuration mutation, and Restore application. The diagnostic transaction leaves no authoritative fact.
-- **Evidence:** per-check pass/failure matrix including the simultaneous-failure result, disclosed capacity derivation using mature data plus migration/backup headroom, readiness result, unchanged authoritative revisions, absence of initialized/imported data, and `RuntimeNotWritable` receipts from UI and persistence boundaries.
+- **Then:** only the all-pass cases become `Writable`; with unconfirmed storage protection the application is `Writable`, accepts writes, keeps the not-protected warning visible, and offers the durability request where the host supports it. Each failed check produces `Unsupported` with all known reasons, safe retry actions where meaningful, and a recommendation to try another browser; the simultaneous-failure case reports every known failed check rather than stopping at the first. It creates no Workspace, imports no data, and returns the `RuntimeNotWritable` branch from initialization, every other authoritative domain/configuration mutation, and Restore application. The diagnostic transaction leaves no authoritative fact.
+- **Evidence:** per-check pass/failure matrix including the simultaneous-failure result, the unconfirmed-protection warning and accepted write, disclosed capacity derivation using mature data plus migration/backup headroom, readiness result, unchanged authoritative revisions, absence of initialized/imported data, and `RuntimeNotWritable` receipts from UI and persistence boundaries.
 
 ### AC-DEL-005 — failed readiness preserves read-only recovery
 
-- **Given:** an existing Workspace that remains readable while each readiness condition is made to fail independently; a separate known existing store that cannot be read; and failed and unconfirmable backup-transfer cases.
+- **Given:** an existing Workspace that remains readable while each readiness condition is made to fail independently; a separate known existing store that cannot be read; and failed-export, unverified-download, and failed-verification backup cases.
 - **When:** the trader opens reads/history, requests backup, attempts fresh initialization, representative domain/configuration writes, and Restore application, and considers another browser.
-- **Then:** each readable case becomes `Recovery Only`; normal reads/history and a positively confirmed backup export remain available; every authoritative mutation and Restore application returns `RuntimeNotWritable` with unchanged revisions. The unreadable existing store has `Unsupported` Runtime Readiness plus Integrity Blocked Workspace status: no reads, fresh initialization, overwrite, mutation, Restore application, or completed-backup claim is permitted. A failed or unconfirmable transfer returns Not Completed and no `CompletedBackupReceipt`. The UI explains each failure and that another browser has independent storage requiring a successfully completed backup/Restore for transfer.
-- **Evidence:** readable views/history, completed receipt and transfer evidence, controlled store-read and transfer failures, preserved unreadable-store bytes/root evidence, absence of fresh initialization/overwrite, `RuntimeNotWritable` mutation results, unchanged readable revisions, and browser-storage isolation explanation.
+- **Then:** each readable case becomes `Recovery Only`; normal reads/history, backup export, and backup verification remain available; every authoritative mutation and Restore application returns `RuntimeNotWritable` with unchanged revisions. The unreadable existing store has `Unsupported` Runtime Readiness plus Integrity Blocked Workspace status: no reads, fresh initialization, overwrite, mutation, Restore application, or completed-backup claim is permitted. A failed export, an unverified download, or a failed verification produces no `CompletedBackupReceipt`. The UI explains each failure and that another browser has independent storage requiring a successfully completed backup/Restore for transfer.
+- **Evidence:** readable views/history, completed receipt and read-back verification evidence, controlled store-read and verification failures, preserved unreadable-store bytes/root evidence, absence of fresh initialization/overwrite, `RuntimeNotWritable` mutation results, unchanged readable revisions, and browser-storage isolation explanation.
 
 ### AC-DEL-006 — readiness is re-established at every safety boundary
 

@@ -95,5 +95,7 @@ Precedence for interpretation is:
 - “Watch Closely” is not a Daily Review Action and absent Action is not Hold.
 - Filling a missing Mark with fill cost or older evidence is rejected.
 - Prototype sheet/drawer containers are references; the narrow-bottom/wide-sidebar responsive navigation contract remains normative.
+- Persistent storage as a Runtime Readiness write gate is superseded by [ADR 0009](../adr/0009-advisory-storage-protection.md) (user decision, 2026-10-10): host storage protection is reported and warned about but does not gate writes. The gate first appeared during specification extraction and is not recorded in the consolidation handoff.
+- Positively confirmed external backup transfer is superseded by [ADR 0010](../adr/0010-backup-download-verified-by-read-back.md) (user decision, 2026-10-10): backup is an ordinary file download, and a `CompletedBackupReceipt` comes only from reading back and verifying the trader-selected saved file.
 
 No known product decision remains open after these supersessions.

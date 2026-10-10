@@ -18,7 +18,7 @@ The design is implementation-stack-neutral except for its standards-based PWA de
 8. **Private acceleration is subordinate to facts.** Indexes, caches, and projections may exist for performance. Except for authoritative stored Lifecycle State, they are rebuildable and cannot change canonical results.
 9. **Capability declarations are honest.** A release advertises only complete installed operation variants and report families. Uninstalled capability is absent, not a fabricated domain `Unavailable` result.
 10. **UI and delivery behavior are separate contracts.** Domain interfaces do not prescribe components, routes, framework, persistence engine, PWA cache tooling, or hosting provider.
-11. **Runtime Readiness gates every write.** Browser-neutral functional checks must establish persistent storage, a working authoritative-store transaction, capacity headroom, service-worker control, and a complete Offline Release Inventory before any authoritative mutation. The persistence/transaction seam rejects writes whenever the current session is not `Writable`.
+11. **Runtime Readiness gates every write.** Browser-neutral functional checks must establish a working authoritative-store transaction, capacity headroom, service-worker control, and a complete Offline Release Inventory before any authoritative mutation. The persistence/transaction seam rejects writes whenever the current session is not `Writable`. Host storage protection is reported and warned about but does not gate writes.
 
 These rules implement [ADR 0001](../adr/0001-domain-facts-pure-analysis-and-coordinators.md), [ADR 0002](../adr/0002-semantic-command-atomicity.md), and the canonical [glossary](../glossary.md).
 
@@ -35,13 +35,13 @@ These rules implement [ADR 0001](../adr/0001-domain-facts-pure-analysis-and-coor
 | [Performance Analysis](performance-analysis.md) | Pure cross-Trade analysis | 4 | Outcomes, Current Exposure, Process Scorecard, and one categorical Journal Field report with fixed populations, dates, grouping, coverage, and sensitivity. |
 | [Reference Catalog](reference-catalog.md) | Authoritative reference module | 7 | Institutions, Accounts, Strategies, Tag Types/Values, Close Reasons, Abandonment Reasons, stable identity/history, typed resolution, seeding, and owned backup section. |
 | [Trade Views and Reporting](trade-views-and-reporting.md) | Read coordinator | 5 | Trade browsing, complete Trade Detail, corrected replay, all deterministic report families, and shared Mark-change impact. |
-| [Workspace](workspace.md) | Lifecycle coordinator | 7 | Runtime Readiness, initialization, settings, durability, installed capabilities, full backup, migration, validated atomic replace-only Restore, and integrity recovery. |
+| [Workspace](workspace.md) | Lifecycle coordinator | 8 | Runtime Readiness, initialization, settings, durability, installed capabilities, full backup and backup verification, migration, validated atomic replace-only Restore, and integrity recovery. |
 | Pricing Provider | External port | 1 | Fetch bounded closing observations and optional Daily Bars for Market Data without leaking provider-specific concepts. |
 | Persistence/Transaction | Internal seam | Not UI-callable | Runtime write gating, durable fact binding, consistent read snapshots, optimistic revisions, transactions, migrations, lifecycle/search indexes, and rebuildable projections. |
 
 Future Insights is outside the MVP and has no interface or dependency in this partition.
 
-Browser-host capabilities for PWA installation, service-worker control, storage protection/capacity, and positively confirmed external backup transfer are delivery/platform seams governed by the Delivery and Workspace contracts. They are not public domain interfaces, data-provider integrations, or authority over journal facts. Workspace aggregates their readiness and transfer outcomes without exposing raw host APIs to the other domain modules.
+Browser-host capabilities for PWA installation, service-worker control, storage protection/capacity, backup file download, and reading a trader-selected backup file are delivery/platform seams governed by the Delivery and Workspace contracts. They are not public domain interfaces, data-provider integrations, or authority over journal facts. Workspace aggregates their readiness, protection, download, and file-read outcomes without exposing raw host APIs to the other domain modules.
 
 ## Dependency shape
 
