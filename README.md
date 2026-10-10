@@ -9,12 +9,12 @@ can implement the same spec independently and be compared side by side.
 | Branch       | Location                  |
 | ------------ | ------------------------- |
 | `claude`     | `worktrees/claude`        |
+| `claude-opus-5.5` | `worktrees/claude-opus-5.5` |
 | `codex`      | `worktrees/codex`         |
+| `codex-gpt-6.1-sol` | `worktrees/codex-gpt-6.1-sol` |
 | `glm`        | `worktrees/glm`           |
-| `antigravity`| `worktrees/antigravity`   |
-| `minimax`    | `worktrees/minimax`       |
-| `kimi`       | `worktrees/kimi`          |
 | `qwen3.8-27B`| `worktrees/qwen3.8-27B`   |
+| `zcode-glm-5.3` | `worktrees/zcode-glm-5.3` |
 
 Each worktree is an isolated checkout of its branch. Work in a worktree does not
 affect the others.
