@@ -518,6 +518,22 @@ Persistence/Transaction seam (`exportSnapshot`, `prepareRestore`, and
 `applyPreparedRestore` for each fact module group into D6 and D21 because they
 participate in Workspace-owned flows).
 
+## Recorded future intent (not scheduled)
+
+- **Different-strike option combos.** A long call plus short put — or the mirror — with the put and
+  call at *different* strikes. This is a risk reversal / combo, not a true synthetic, and it is
+  expressible with the existing **strike-order** constraint, so no vocabulary change is needed.
+  Planned as shape templates producing trader-owned typed shapes, so the seeded eleven are unaffected
+  and AC-REF-001 is untouched.
+  A **true equal-strike synthetic is not supported** as a validated shape: the frozen vocabulary grants
+  strike *order* but not *equality*, so the shape could not enforce the property that defines a
+  synthetic. See decision D6 in
+  [planning-decisions-2026-10-10.md](planning-decisions-2026-10-10.md).
+  Adding this will renumber the deliverables after its insertion point; the current 22-deliverable
+  sequence stands until then.
+
+---
+
 ## Open items
 
 - Detailed task breakdowns per deliverable, with `describe` / `it should` unit tests,

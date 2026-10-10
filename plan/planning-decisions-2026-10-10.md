@@ -351,13 +351,66 @@ so the cost is not justified.
 
 ---
 
+## D6 — Different-strike option combos are supported by strike order; true synthetics are not
+
+**Status:** recorded future intent, 2026-10-10. Not scheduled in the current 22-deliverable sequence.
+
+### Context
+
+The user asked whether synthetic long and short positions could be handled as shape templates. A true
+synthetic is *defined* by equal strikes (long call plus short put, or the mirror, at the same strike and
+expiration), but the enumerated shape vocabulary grants "expiration **order/equality**" and only
+"**strike order**" (`reference-catalog.md:80`). Every one of the eleven seeds uses strict strike
+ordering or no strike relation, so the omission of equality appears deliberate.
+
+The user clarified that in practice they often use **different strikes** for the put and the call
+rather than a true synthetic.
+
+### Decision
+
+Support the different-strike structure through shape templates using the **existing strike-order
+constraint**. No vocabulary extension is made. True equal-strike synthetics are **not** supported as
+validated shapes, because the vocabulary cannot express strike equality.
+
+Terminology: with different strikes the structure is a **combo / risk reversal**, not a synthetic.
+The plan must name it accurately; labelling it "Synthetic Long" would be a misleading name under the
+specification's alias discipline.
+
+Status: future intent, recorded but not scheduled. When added, these are templates producing
+trader-owned typed shapes, so the seeded eleven are unaffected and AC-REF-001 is untouched.
+
+### Rationale
+
+- Different strikes require only a **relative strike ordering**, which the vocabulary already provides.
+  No change to a frozen domain definition is needed — which is why the user's reading is adopted.
+- The analysis side already supports the structures. `expirationPayoff` handles "co-expiring option
+  structures of **any** Strategy" and rejects only *multiple* expirations. Both strike relations yield
+  piecewise-linear payoffs: call strike above put strike gives a flat plateau between the strikes, and
+  call strike below gives a slope-2 middle region.
+- Risk boundedness depends on the relation. A short-put side is unbounded below, so the risk and
+  coverage machinery must report `Unbounded` honestly rather than substituting a number.
+
+### Open detail, to settle when the deliverable is planned
+
+Whether a combo shape requires **strict** strike ordering or non-strict. If the trader sometimes uses
+equal strikes, a strict shape would flag that as a Planned-Leg Terms deviation, whereas a non-strict
+relation would accept both. This is a per-shape decision and does not need resolving now.
+
+### Not changed
+
+`specs/` remains untouched. The vocabulary is read as already sufficient for strike *ordering*; no
+equality constraint is added, so a true synthetic cannot be validated as a shape.
+
+---
+
 ## Still open
 
 No specification gaps remain from intake; D1 and D2 were the only two identified. D3 records the
-approved stack, D4 affirms the frozen offline-delivery requirement, and D5 records an interpretation
-that avoids reopening it. The D3 verification items must be resolved inside the plan. The vertical
-deliverable list is recorded in [vertical-deliverables.md](vertical-deliverables.md); detailed
-task-level breakdowns per deliverable and the acceptance-to-evidence matrix are not yet drafted.
+approved stack, D4 affirms the frozen offline-delivery requirement, and D5–D6 record interpretations
+that avoid reopening frozen definitions. The D3 verification items must be resolved inside the plan.
+The vertical deliverable list is recorded in [vertical-deliverables.md](vertical-deliverables.md);
+detailed task-level breakdowns per deliverable and the acceptance-to-evidence matrix are not yet
+drafted.
 
 ---
 
