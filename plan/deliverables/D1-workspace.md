@@ -25,7 +25,7 @@ Type **S** = structural (exact verification), **B** = behavior (TDD). Seams are 
 
 - **Depends on:** —
 - **Work:** `package.json` with the pinned versions in plan §2 and a lockfile; `tsconfig.json` with `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`; `vite.config.ts` reading `DEV_PORT` from `.env.local` with `strictPort` for dev and preview (README); ESLint with `typescript-eslint` strict type-checked rules, `no-floating-promises`, `switch-exhaustiveness-check`, React hooks rules; Vitest projects `unit` (Node), `component` and `integration` (browser mode, Playwright Chromium, headless); `playwright.config.ts` with `baseURL` from `DEV_PORT` and a `webServer` running build plus preview; scripts `check`, `test:unit`, `test:component`, `test:integration`, `test:e2e`, `test:prod`, `test:all`, `build`, `preview`, and `serve:release` (serves the build on `RELEASE_PORT`, default 4173, never used by tests — PD-002).
-- **Verification:** `npm ci` succeeds; `npm run check` exits 0; `npx playwright install chromium` completes on the development VM (Ubuntu 22.04 arm64) and a one-line smoke spec opens `about:blank`; one structural sanity test runs in each Vitest project. All commands exit 0.
+- **Verification:** `npm ci` succeeds; `npm run check` exits 0; `npx playwright install chromium` completes on the development Mac (macOS 26.6.2, arm64) and a one-line smoke spec opens `about:blank`; one structural sanity test runs in each Vitest project. All commands exit 0.
 
 ### T1.2 Module boundary rules (S)
 
@@ -374,8 +374,8 @@ describe("Form controls")
 
 ### T1.18 Deployment pipeline (S)
 
-- **Depends on:** T1.1; hosting decision (plan §7 question 2).
-- **Work:** GitHub Actions workflow running `npm ci`, `npm run check`, `npm run test:unit`, `npm run build`, then deploying `dist/` to the chosen HTTPS host for this branch.
+- **Depends on:** T1.1; hosting decision PD-007 (Cloudflare Pages); the user's Cloudflare account, project, and the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets.
+- **Work:** GitHub Actions workflow running `npm ci`, `npm run check`, `npm run test:unit`, `npm run build`, then deploying `dist/` to the Cloudflare Pages project with `wrangler pages deploy` (production branch `claude-opus-5.5`). Confirm that direct uploads do not count toward the free plan's build limit.
 - **Verification:** a push to `claude-opus-5.5` produces a deployment; `npm run test:prod` (P1.1) passes against its address.
 
 ## Integration tests (Vitest browser mode, real IndexedDB, temporary profile)

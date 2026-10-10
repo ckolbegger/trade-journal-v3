@@ -15,8 +15,8 @@ The trader records each buy or sell decision as one Position Change containing o
 
 ## Interpretations to confirm
 
-- **Entry Quality comparison:** the spec compares "actual entry risk/reward" with the frozen Plan Baseline. This plan computes actual risk and reward at the Entry Resolution Point from the entered quantity's average opening price including allocated opening fees, using the original Stops and Targets, and classifies **Below Plan** when the actual reward/risk ratio is below the planned ratio, otherwise **Met or Exceeded**. If actual risk is not positive (average entry at or below the nearest Stop), Entry Quality is Unavailable with that reason.
-- **Debt due time:** a deferred reflection is due at its Position Change's Economic Time, so it becomes due in that session's Daily Review.
+- **Entry Quality comparison:** the spec compares "actual entry risk/reward" with the frozen Plan Baseline. This plan computes actual risk and reward at the Entry Resolution Point from the entered quantity's average opening price including allocated opening fees, using the original Stops and Targets, and classifies **Below Plan** when the actual reward/risk ratio is below the planned ratio, otherwise **Met or Exceeded**. If actual risk is not positive (average entry at or below the nearest Stop), Entry Quality is Unavailable with that reason. **Confirmed by the user 2026-10-10.**
+- **Debt due time:** superseded by PD-009 (user, 2026-10-10). A deferred reflection is due at the Review cutoff of the first trading session that ends after the moment it was deferred, and the Debt records its deferral count (1 on creation, at most 3). Re-deferral happens in Daily Review (D7). The affected `it should …` cases are revised once ADR 0012 is on `main`. Computing the next session's cutoff needs the XNYS calendar (PD-006), so the calendar data file and its session lookup move forward from D6 into D3.
 
 ## Installed capabilities after D3 (in addition to D1–D2)
 

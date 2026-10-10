@@ -2,20 +2,20 @@
 
 ## Outcome
 
-The trader reads one Journal timeline across all saved writing, writes voluntary Review Notes and Trader Reflections anchored to nothing, a Trade, or one Execution, and corrects writing through Edit, Addendum, and Void with visible history. Owed reflections (Journal Debt) can be answered against their original prompts or explicitly declined. The trader can revise the prompts and options of each Entry Type for future writing without changing anything already saved.
+The trader reads one Journal timeline across all saved writing, writes voluntary Review Notes and Trader Reflections anchored to nothing, a Trade, or one Execution, and corrects writing through Edit and Void with visible history. Addenda are deferred to D13 (PD-010). Owed reflections (Journal Debt) can be answered against their original prompts or explicitly declined. The trader can revise the prompts and options of each Entry Type for future writing without changing anything already saved.
 
-**Production-UI entry points:** Journal (timeline, filters, Owed reflections); New Entry composer (from Journal and from Trade Detail); Entry view (View history, Edit, Add Addendum, Void); Debt answer/decline form; Settings → Journal forms (definition editor).
+**Production-UI entry points:** Journal (timeline, filters, Owed reflections); New Entry composer (from Journal and from Trade Detail); Entry view (View history, Edit, Void); Debt answer/decline form; Settings → Journal forms (definition editor).
 
 ## Interpretations to confirm
 
-- **Addendum type:** an Addendum is created as a Review Note or Trader Reflection (the trader chooses), using that type's current definition, the parent's Anchor, an explicit parent link, and its own Source and time. It does not inherit the parent's origin.
-- **Void scope in D4:** Void is offered for voluntary Entries (Review Note, Trader Reflection) and for Entries that settled Debt (which reopens that Debt). The spec does not say what happens to an obligation when a workflow-completed Entry (for example a Plan Reflection completed at confirmation) is Voided, so Void is not offered for those Entries until that is settled.
+- **Addendum type:** deferred with Addenda to D13 (PD-010) and decided when D13 is detailed.
+- **Void scope in D4:** Void is offered for voluntary Entries (Review Note, Trader Reflection) and for Entries that settled Debt (which reopens that Debt). The spec does not say what happens to an obligation when a workflow-completed Entry (for example a Plan Reflection completed at confirmation) is Voided, so Void is not offered for those Entries until that is settled. **Confirmed by the user 2026-10-10.** Voiding a Daily Trade Review Action, which the spec allows, arrives in D7.
 
 ## Installed capabilities after D4 (in addition to D1–D3)
 
 | Module | Operations / variants |
 |---|---|
-| Journal | `save` (Create Review Note or Trader Reflection, Edit, Addendum, Void, Resolve Debt by answer or decline), `query` (all projections and filters), `reviseDefinition` |
+| Journal | `save` (Create Review Note or Trader Reflection, Edit, Void, Resolve Debt by answer or decline), `query` (all projections and filters), `reviseDefinition` |
 | Trade Record | `resolveAnchors` |
 | Reference Catalog | `resolve` adds `NewTagValueSelectionUnderExistingBinding` |
 | Trade Views and Reporting | `getTradeDetail` narrative includes Entries anchored to the Trade's Executions |
@@ -29,12 +29,11 @@ The trader reads one Journal timeline across all saved writing, writes voluntary
 
 ```text
 describe("Migration to schema version 4")
-  it should add the Journal version, Addendum, decline, and timeline indexes (moment time, Entry Type, Source, status, due time, Anchor, Prompt/Option/Tag)
+  it should add the Journal version, decline, and timeline indexes (moment time, Entry Type, Source, status, due time, Anchor, Prompt/Option/Tag)
   it should preserve every version 3 record unchanged
   it should abort and leave version 3 intact when the Journal validator fails
 describe("Journal section validator additions")
   it should reject an Entry with zero or two Anchors
-  it should reject an Addendum cycle
   it should reject two current outcomes for one obligation key
   it should reject an illegal Debt transition such as Settled to Outstanding without a Void
 ```
@@ -86,13 +85,9 @@ describe("Edit")
   it should keep Entry Type, Source, origin, first-authored time, Debt settlement, and parent link unchanged
   it should never change frozen Trade facts when a Plan Reflection's Thesis is edited
   it should return Conflict and write nothing for a stale expected revision
-describe("Addendum")
-  it should create a new Entry identity with the parent's Anchor and an explicit parent link
-  it should use the current definition and its own Source and time
-  it should not inherit the parent's origin
 describe("Void")
   it should append a visible Void version with the required reason
-  it should keep every earlier version, Addendum, Anchor, and origin
+  it should keep every earlier version, Anchor, and origin
   it should reopen the same Debt with its original snapshot when the Voided Entry was its only settlement
   it should reject Void for a workflow-completed Entry that did not settle Debt (see interpretations)
 describe("Resolve Debt")
@@ -171,7 +166,7 @@ describe("Installed Capability Manifest for D4")
 ```text
 describe("Journal timeline")
   it should group items by date and show Entry Type, Anchor, Source, and moment time on each card
-  it should show Edited and Void indicators and Addendum relationships
+  it should show Edited and Void indicators
   it should show Debt and decline status without inventing incomplete Entries
   it should filter with toggle chips that have filter semantics, not answer semantics
   it should list Owed reflections with their due time
@@ -192,7 +187,6 @@ describe("Entry composer")
 describe("Entry view")
   it should show View history with each version's save time and changes
   it should open Edit with the Entry's original prompts and labels
-  it should create an Addendum linked to the parent
   it should require a reason to Void and show the Void visibly afterwards
   it should not offer Void for workflow-completed Entries that did not settle Debt
 ```
@@ -227,7 +221,7 @@ describe("Journal form editor")
 | ID | Scenario | Durable-state proof |
 |---|---|---|
 | I4.1 | Create Standalone, Trade-anchored, and Execution-anchored Review Notes. | Reopen database; Trade narrative includes the Trade and Execution Entries once each. |
-| I4.2 | Edit, Addendum, then Void one Entry. | Same identity with versions; Addendum has its own identity and parent link; Full History shows every transition. |
+| I4.2 | Edit, then Void one Entry. | Same identity with versions; Full History shows every transition. |
 | I4.3 | Revise the Position Change Reflection definition, then answer a Debt created before it. | Entry uses the original snapshot; Debt Settled in the same commit. |
 | I4.4 | Decline a Debt. | One explicit decline; the Debt is Declined. |
 | I4.5 | Void the Entry that settled a Debt. | The same Debt identity is Outstanding again with its original snapshot. |
@@ -243,12 +237,12 @@ describe("Journal form editor")
 | ID | Scenario | Acceptance |
 |---|---|---|
 | E4.1 | Open the composer, type, select answers, navigate away, resize, close and restart the browser: no Entry, version, draft, or Debt exists. | AC-JOUR-001 |
-| E4.2 | Create, Edit, Addendum, Void, and View history in wide and narrow layouts. | AC-JOUR-002 |
+| E4.2 | Create, Edit, Void, and View history in wide and narrow layouts. | AC-JOUR-002 (Edit and Void parts; Addendum in D13) |
 | E4.3 | Answer one Debt and decline another from the Journal; Void the answer and see the Debt return. | AC-JOUR-005 |
 | E4.4 | Revise a form; the composer uses it; an older Entry shows its original labels. | AC-JOUR-004 |
 | E4.5 | Update from the D3 release with existing data. | AC-REST-004 (cumulative) |
 | E4.6 | Keyboard-only Entry creation; axe scan; resize mid-composer. | AC-UI-001, AC-UI-002 |
-| E4.7 | No correction, Marks, Review, or Backup actions are offered. | AC-CAP-001 |
+| E4.7 | No correction, Marks, Review, Backup, or Add Addendum actions are offered. | AC-CAP-001 |
 
 ## Critic flows
 
@@ -256,7 +250,7 @@ describe("Journal form editor")
 |---|---|
 | C4.1 | Write a Standalone Trader Reflection and a Trade-anchored Review Note. |
 | C4.2 | Add a note to one Execution from Trade Detail and find it in the Trade narrative. |
-| C4.3 | Edit, Addendum, Void, and View history. |
+| C4.3 | Edit, Void, and View history. |
 | C4.4 | Answer and decline owed reflections. |
 | C4.5 | Revise a form and confirm old Entries keep their labels. |
 | C4.6 | Filter the timeline. |
@@ -268,7 +262,7 @@ describe("Journal form editor")
 | Scenario | Coverage in D4 |
 |---|---|
 | AC-JOUR-001 | T4.10, E4.1 |
-| AC-JOUR-002 | T4.4, T4.5, I4.2, E4.2 |
+| AC-JOUR-002 (Edit and Void parts) | T4.4, T4.5, I4.2, E4.2 |
 | AC-JOUR-004 | T4.6, I4.3, I4.6, E4.4 |
 | AC-JOUR-005 | Void reopening: T4.4, I4.5, E4.3 (retry uniqueness in D3) |
 | AC-JOUR-007 | Seeding after revision: T4.6, I4.7 |

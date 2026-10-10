@@ -6,7 +6,7 @@ The trader plans a Long Stock trade before entering it: Underlying, Account, pla
 
 **Production-UI entry points:** New Plan (two steps); Trades list; Trade Detail; Abandon Plan dialog; Migration Blocked screen.
 
-**Plan preview:** the spec has no non-mutating Plan assessment operation, and the UI may not compute 1R itself, so this deliverable shows 1R and risk/reward from the confirmation result (or explains them in a rejection), not live while typing. If the user approves a preview operation (plan §7 question 3), it is added here as task T2.12 before D2 starts.
+**Plan preview:** PD-008 adds a non-mutating Trade Workflows `previewPlan` operation (ADR 0011, a `main` spec change), so the New Plan form shows 1R and planned reward/risk live from Trade Analysis `assessPlan`; the UI never computes them. It is added here as task T2.12, detailed once the spec change is on `main` and before D2 starts. Until then, the tasks below describe the confirmation-result display, which remains correct after a successful confirmation.
 
 ## Installed capabilities after D2 (in addition to D1)
 
