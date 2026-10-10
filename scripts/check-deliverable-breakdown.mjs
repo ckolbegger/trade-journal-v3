@@ -22,7 +22,8 @@
 //
 // Exit status is non-zero when any check fails. Warnings do not fail the run.
 
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { dirname, join } from "node:path";
 
 /** Read a file, reporting a missing file as a failure rather than a stack trace. */
 function readOrExit(path) {
@@ -69,11 +70,15 @@ function parseTasks(detail) {
     const edgesMatch = body.match(/\*\*Blocking edges:\*\*\s*([^\n]*)/);
     const consumedMatch = body.match(/\*\*Consumed by:\*\*\s*([^\n]*)/);
 
-    // "none (root)" is the documented no-dependency form; anything else is a task list.
+    // "none (root)" is the documented no-dependency form. A declaration may mix local
+    // tasks ("T37") with cross-deliverable tasks ("D1:T9"), so cross-references are pulled
+    // out first and the remainder is read as local edges.
     const edgeText = edgesMatch ? edgesMatch[1] : "";
-    const edges = /^\s*none\b/i.test(edgeText)
-      ? []
-      : [...edgeText.matchAll(/T\d+/g)].map((m) => m[0]);
+    const isNone = /^\s*none\b/i.test(edgeText);
+    const crossRefs = isNone ? [] : [...edgeText.matchAll(/D(\d+)\s*:\s*T(\d+)/g)]
+      .map((m) => ({ deliverable: Number(m[1]), id: `T${m[2]}` }));
+    const localText = edgeText.replace(/D\d+\s*:\s*T\d+/g, " ");
+    const edges = isNone ? [] : [...localText.matchAll(/T\d+/g)].map((m) => m[0]);
 
     const consumedText = consumedMatch ? consumedMatch[1] : "";
     const consumers = /^\s*none\b/i.test(consumedText)
@@ -85,6 +90,7 @@ function parseTasks(detail) {
       type: match[2],
       title: match[3].trim(),
       edges,
+      crossRefs,
       hasEdgesDecl: Boolean(edgesMatch),
       hasExactVerification: /Exact verification/.test(body) || match[2] === "B",
       line: detail.slice(0, match.index).split("\n").length,
@@ -185,7 +191,7 @@ function topologicalOrder(ids, adjacency) {
   return { order, unresolved: ids.filter((id) => !order.includes(id)) };
 }
 
-function checkFile(path) {
+function checkFile(path, knownTaskIds = new Map()) {
   const text = readOrExit(path);
   const failures = [];
   const warnings = [];
@@ -204,6 +210,9 @@ function checkFile(path) {
 
   const ids = tasks.map((t) => t.id);
   const known = new Set(ids);
+  // Local edges only. Cross-deliverable edges point outside this graph, so they are validated
+  // against the other deliverable's task set rather than against this diagram.
+  const crossEdges = new Set();
   // adjacency[prerequisite] = tasks it blocks. A task body declares its prerequisites
   // ("Blocking edges: T1" on T2 means T1 blocks T2), so the edge is stored in the blocking
   // direction: T1 -> T2. Cycle detection and the topological sort both need this direction.
@@ -214,8 +223,20 @@ function checkFile(path) {
     if (!task.hasEdgesDecl) failures.push(`${task.id}: missing "Blocking edges:" declaration`);
     if (task.edges.includes(task.id)) warnings.push(`${task.id}: declares itself as a blocking edge`);
     for (const edge of task.edges) {
-      if (!known.has(edge)) failures.push(`${task.id}: blocking edge ${edge} is not a declared task`);
-      else if (edge !== task.id) adjacency.get(edge).push(task.id);
+      if (!known.has(edge)) {
+        failures.push(`${task.id}: blocking edge ${edge} is not a declared task (write a cross-deliverable edge as D<n>:T<m>)`);
+      } else if (edge !== task.id) {
+        adjacency.get(edge).push(task.id);
+      }
+    }
+    for (const ref of task.crossRefs) {
+      crossEdges.add(`D${ref.deliverable}:${ref.id}`);
+      const declared = knownTaskIds.get(ref.deliverable);
+      if (!declared) {
+        failures.push(`${task.id}: cross-deliverable edge D${ref.deliverable}:${ref.id} names a deliverable with no breakdown file`);
+      } else if (!declared.has(ref.id)) {
+        failures.push(`${task.id}: cross-deliverable edge D${ref.deliverable}:${ref.id} is not a task in that deliverable`);
+      }
     }
     if (task.type === "S" && !task.hasExactVerification) {
       failures.push(`${task.id}: structural task states no "Exact verification"`);
@@ -339,7 +360,9 @@ function checkFile(path) {
   const label = path.split("/").pop();
   console.log(`\n${label}`);
   console.log(`  tasks: ${tasks.length} (${structural} structural, ${behavioural} behaviour-bearing)`);
-  console.log(`  edges: ${proseEdges.size} declared, ${diagramEdges.size} drawn`);
+  console.log(`  edges: ${proseEdges.size} declared, ${diagramEdges.size} drawn` +
+    (crossEdges.size ? `, ${crossEdges.size} cross-deliverable` : ``));
+  if (crossEdges.size) console.log(`  cross-deliverable: ${[...crossEdges].sort().join(", ")}`);
   if (!proseCycle && !unresolved.length) {
     console.log(`  topological order: ${order.join(" -> ")}`);
   } else if (unresolved.length) {
@@ -367,10 +390,32 @@ if (!paths.length) {
   process.exit(2);
 }
 
+// A cross-deliverable edge names a task in another deliverable, so the task sets of the
+// sibling breakdowns in the same directory are loaded first. This is what lets D2 depend
+// on D1's transaction seam and D3 depend on D2's Trade Record without inventing local IDs.
+function loadDeliverableRegistry(directory) {
+  const registry = new Map();
+  let names = [];
+  try {
+    names = readdirSync(directory);
+  } catch {
+    return registry;
+  }
+  for (const name of names) {
+    const match = name.match(/^D(\d+)-.*\.md$/);
+    if (!match) continue;
+    const tasks = parseTasks(section(readFileSync(join(directory, name), "utf8"), "## 3. Task detail"));
+    registry.set(Number(match[1]), new Set(tasks.map((t) => t.id)));
+  }
+  return registry;
+}
+
+const registry = loadDeliverableRegistry(dirname(paths[0]));
+
 let totalFailures = 0;
 let totalWarnings = 0;
 for (const path of paths) {
-  const { failures, warnings } = checkFile(path);
+  const { failures, warnings } = checkFile(path, registry);
   totalFailures += failures;
   totalWarnings += warnings;
 }
