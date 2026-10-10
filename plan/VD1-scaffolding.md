@@ -11,7 +11,7 @@ This is a living working document: progress, red/green evidence, and critic resu
 | Task | Description | Status | Evidence |
 |---|---|---|---|
 | T1.1 | Toolchain scaffold | ☑ done 2026-10-10 | Verifications below |
-| T1.2 | Static app shell | ☐ pending | — |
+| T1.2 | Static app shell | ☑ done 2026-10-10 | Verifications below |
 | Gate | Cumulative suites + browser critic | ☐ pending | — |
 
 ---
@@ -46,6 +46,21 @@ Verification:
 - Shell renders navigation skeleton with placeholder content in narrow (bottom nav) and wide (left sidebar) layouts; Playwright resizes across the disclosed breakpoint live without reload, route, or scroll loss.
 - `@axe-core/playwright` scan of both layouts reports zero critical/serious violations.
 - Design tokens (cream ground, card, pill, tabular-numeral utilities) are defined once in Tailwind config/CSS custom properties and consumed by shell components.
+
+### T1.2 verification record (2026-10-10)
+
+Implementation notes:
+- Breakpoint is Tailwind's `md` (768px) — an implementation choice per ui-contract "Responsive behavior". The layout switch is pure CSS (media queries hide/show the bottom nav vs. left sidebar); the DOM never remounts and `body` stays the scroll container in both layouts, so route, scroll position, and any form state survive a live resize by construction.
+- Navigation labels use canonical domain language (Home, Trades, New Plan, Daily Review, Journal, Reports, Settings); the sidebar also carries the product name. A skip-to-content link, single exposed "Main menu" nav landmark per layout (the hidden nav is `display:none`, outside the a11y tree), visible `:focus-visible` outlines, `aria-current` active states (NavLink), and one `h1` per page are in place for the axe/keyboard baseline.
+- Tokens live once in `src/ui/styles.css`: `@theme` custom properties (`--color-ground` cream, `--color-card`, `--color-ink`, `--color-muted`, `--color-line`, `--color-positive`/`--color-negative` reserved for signed values) plus `@utility` definitions `card`, `pill`, `label-caps` (small-caps section labels), `figure` (right-aligned tabular numerals). Shell components consume them (`bg-ground`, `card`, `pill … bg-ink`, `label-caps`, `figure`, one signed `+$42.50` placeholder using `text-positive`).
+
+| # | Command | Outcome |
+|---|---|---|
+| 1 | `npm run test:e2e` (`tests/e2e/shell.spec.ts`, chromium+webkit+firefox) | ✅ **45/45 passed (7.8s)** — per engine: 7 routes × {narrow 375×667, wide 1280×720} render + axe scans with zero critical/serious violations, plus the live-resize test |
+| 2 | live-resize test detail | ✅ on `/trades`: scrolled to `scrollY=400`, set a `window.__shellAlive` marker, resized narrow→wide→narrow; sidebar/bottom-nav visibility flips each time; URL stays `/trades`, heading stays visible, `scrollY` stays 400, marker survives (no reload) — green in all three engines |
+| 3 | `npm run lint` / `npm run build` / `npm run test` after shell | ✅ lint 0 problems; build emits JS+CSS bundles; Vitest still 0 tests / exit 0 |
+
+Fix during verification (test-side, not product): first run had 6 failures — `getByRole('heading', { name: 'Settings' })` substring-matched both the `Settings` h1 and the `Workspace settings` h2 (strict-mode violation). Changed the heading assertions to `exact: true`; suite fully green after.
 
 ## Deliverable gate
 - [ ] Cumulative unit suite green
