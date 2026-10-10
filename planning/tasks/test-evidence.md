@@ -14,7 +14,7 @@ Each behavior-bearing task records one `describe("<Task-ID> <behavior>")` group 
 2. Make the smallest production change, run that case plus the task's already-green cases, and record passing results.
 3. Repeat for the next case. Do not write all tests and then all production behavior.
 4. Any refactor is a separate review step with affected tests rerun.
-5. Run cumulative unit/integration suites at task completion; retain the commands, test IDs and red/green outcomes.
+5. Have a test-runner subagent run cumulative unit/integration suites at task completion; retain the commands, test IDs and red/green outcomes.
 
 Structural tasks state reproducible checks instead of artificial unit cases. A schema migration with validation/rollback behavior is behavior-bearing and has unit cases.
 
@@ -23,6 +23,18 @@ Automated integration uses production application/domain modules, semantic coord
 Fault injection changes actual infrastructure behavior: transaction abort/denied operations, real network loss, worker control, served asset bytes, available storage and process interruption. Disclose controls and timing. Never replace a module with a canned outcome or flip a gate to passing. For capacity failure use a genuinely constrained/filled isolated profile so its actual estimate falls below the derived bound; unit tests may isolate estimate inputs. Test-only telemetry records operation/query counts but cannot mutate authority or bypass write gating.
 
 Ordinary fixtures use public commands or a supported validated Restore assembled from legal semantic histories. Direct authoritative store mutation is permitted only for the explicitly isolated integrity-corruption specimen, with its injection recorded. Private-store deletion is permitted only for reconstruction evidence. Neither procedure is an ordinary data-seeding shortcut.
+
+## Subagent execution rules
+
+Recorded user instruction, 2026-10-10: **always run cumulative tests in a subagent, and run each browser critic in a new subagent.**
+
+Every cumulative unit, integration and end-to-end acceptance test run is executed by a test-runner subagent, including task-completion checks, deliverable gates and reruns after defect fixes. The main agent delegates the required commands, reviews the results and coordinates fixes; it does not execute cumulative test suites in the main chat. Focused per-case TDD red/green runs remain with the task's implementation agent.
+
+The test-runner receives the worktree path, exact suite scope, commands and evidence requirements. Keep the checked code stable during the run and record its revision/working-tree snapshot, commands, exit results, test counts and failures. Detailed logs remain in evidence artifacts; the subagent returns a concise result summary and artifact paths to keep the main chat context small. The test-runner does not modify implementation.
+
+Each browser-critic attempt uses a newly spawned subagent, separate from the implementation and test-runner agents. Never reuse a prior critic for a retry. The critic starts the runtime itself and follows the independent gate below. Coordinate runtime/storage ownership so cumulative tests and the critic do not interfere.
+
+If a required subagent cannot be provided, report the verification blocker; do not substitute a main-chat test run or self-certify the critic gate.
 
 ## Proposed commands and evidence records
 
@@ -194,10 +206,10 @@ The following flows apply to each installed scope. Link task-specific D#-A scena
 
 ## Fresh independent browser-critic gate
 
-After a deliverable's cumulative unit/integration/browser suites pass, spawn a fresh critic for that attempt as required by the canonical [planning protocol](../../specs/evaluation/planning-protocol.md#independent-browser-critic-gate). This document calls for that delegation during later implementation verification; it does not require a planning subagent now.
+After a test-runner subagent reports the deliverable's cumulative unit/integration/browser suites passing, spawn a new, independent browser-critic subagent for that attempt as required by the canonical [planning protocol](../../specs/evaluation/planning-protocol.md#independent-browser-critic-gate). This document calls for that delegation during later implementation verification; it does not require a planning subagent now.
 
 The critic receives frozen specs and approved plan, current scope and future boundaries, starts the runtime itself, and performs **every** current D#-A and applicable B flow through the production UI. It records actions, expected/observed behavior, pass/fail and screenshots/sanitized console/server evidence per flow, without editing implementation. Automated cumulative suites carry earlier-deliverable regression coverage.
 
 For the release-gate flows D1-A08, D2-A11 and D3-A11, the critic exercises the scale/capability/browser observations and verifies the recorded suite/benchmark evidence. Spawning the critic and collecting its report are main-agent gate procedures, not instructions for a critic to recursively spawn another critic.
 
-Each defect first gains a failing unit/integration/browser regression test; then minimal production fix, cumulative suites, and another fresh critic repeating all current flows. A genuine specification/approved-plan contradiction is escalated instead of invented into a test. No deliverable completes without a passing fresh report. Missing browser/runtime/fresh-agent or required live-provider evidence is a disclosed blocker, never a self-certified pass.
+Each defect first gains a failing unit/integration/browser regression test; then minimal production fix, cumulative suites run by a test-runner subagent, and another newly spawned critic repeating all current flows. A genuine specification/approved-plan contradiction is escalated instead of invented into a test. No deliverable completes without a passing fresh report. Missing browser/runtime/fresh-agent or required live-provider evidence is a disclosed blocker, never a self-certified pass.

@@ -17,6 +17,8 @@ Five tasks are structural checks; 38 are behavior-bearing tasks with per-case TD
 
 Each task contains a named test seam, concrete work, blocking edges, literal unit-case IDs and linked acceptance flows. Each acceptance flow contains fixture, Given/When/Then, durable/failure proof and critic procedure. Read the [shared test/evidence guide](tasks/test-evidence.md) for commands, fixtures, fault controls, benchmark datasets and required red/green evidence.
 
+Execution preference recorded on 2026-10-10: cumulative test suites always run in a test-runner subagent, and every browser-critic attempt uses a newly spawned independent subagent. The main chat coordinates and reviews concise reports; see the [subagent execution rules](tasks/test-evidence.md#subagent-execution-rules).
+
 The [canonical acceptance map](acceptance-map-d1-d3.md) has one row for each of the 67 specification scenarios. Every scenario remains planned or intentionally not advertised; none is currently covered. Rows distinguish early installed variants from later scaling, multi-leg, correction, form-edit and report cases.
 
 ## Scope decisions retained
