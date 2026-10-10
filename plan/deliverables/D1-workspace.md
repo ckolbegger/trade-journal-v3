@@ -19,12 +19,14 @@ Not installed: creating trader-defined Strategy shapes (D10), `NewTagValueSelect
 
 ## Tasks
 
-Type **S** = structural (exact verification), **B** = behavior (TDD). Seams are public module entry points.
+Type **S** = structural (exact verification), **B** = behavior (TDD). Integration and end-to-end tests are written at the start of their first **Green after** task (plan §5). Seams are public module entry points.
+
+**Order:** T1.1, then T1.19 (so every outer test can record evidence), then T1.2 onward by dependency. Task numbers are identities, not execution order.
 
 ### T1.1 Project scaffold (S)
 
 - **Depends on:** —
-- **Work:** `package.json` with the pinned versions in plan §2 and a lockfile; `tsconfig.json` with `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`; `vite.config.ts` reading `DEV_PORT` from `.env.local` with `strictPort` for dev and preview (README); ESLint with `typescript-eslint` strict type-checked rules, `no-floating-promises`, `switch-exhaustiveness-check`, React hooks rules; Vitest projects `unit` (Node), `component` and `integration` (browser mode, Playwright Chromium, headless); `playwright.config.ts` with `baseURL` from `DEV_PORT` and a `webServer` running build plus preview; scripts `check`, `test:unit`, `test:component`, `test:integration`, `test:e2e`, `test:prod`, `test:all`, `build`, `preview`, and `serve:release` (serves the build on `RELEASE_PORT`, default 4173, never used by tests — PD-002).
+- **Work:** `package.json` with the pinned versions in plan §2 and a lockfile; `tsconfig.json` with `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`; `vite.config.ts` reading `DEV_PORT` from `.env.local` with `strictPort` for dev and preview (README); ESLint with `typescript-eslint` strict type-checked rules, `no-floating-promises`, `switch-exhaustiveness-check`, React hooks rules; Vitest projects `unit` (Node), `component` and `integration` (browser mode, Playwright Chromium, headless); `playwright.config.ts` with `baseURL` from `DEV_PORT` and a `webServer` running build plus preview; scripts `check`, `test:unit`, `test:component`, `test:integration`, `test:e2e`, `test:prod`, `test:all`, `evidence:acceptance`, `build`, `preview`, and `serve:release` (serves the build on `RELEASE_PORT`, default 4173, never used by tests — PD-002); `test-results/` added to `.gitignore`; Vite defines the release ID (build commit) for the acceptance recorder.
 - **Verification:** `npm ci` succeeds; `npm run check` exits 0; `npx playwright install chromium` completes on the development Mac (macOS 26.6.2, arm64) and a one-line smoke spec opens `about:blank`; one structural sanity test runs in each Vitest project. All commands exit 0.
 
 ### T1.2 Module boundary rules (S)
@@ -119,7 +121,7 @@ describe("Diagnostic transaction")
 ### T1.7 Offline Release Inventory (B)
 
 - **Depends on:** T1.1
-- **Seam:** `build/inventory.ts` — `createInventory(assets)` and the Vite plugin that writes `inventory.json`.
+- **Seam:** `tools/release/inventory.ts` — `createInventory(assets)` and the Vite plugin that writes `inventory.json`.
 
 ```text
 describe("Offline Release Inventory")
@@ -378,38 +380,58 @@ describe("Form controls")
 - **Work:** GitHub Actions workflow running `npm ci`, `npm run check`, `npm run test:unit`, `npm run build`, then deploying `dist/` to the Cloudflare Pages project with `wrangler pages deploy` (production branch `claude-opus-5.5`). Confirm that direct uploads do not count toward the free plan's build limit.
 - **Verification:** a push to `claude-opus-5.5` produces a deployment; `npm run test:prod` (P1.1) passes against its address.
 
+### T1.19 Acceptance evidence recorder (B)
+
+- **Depends on:** T1.1
+- **Seam:** `test/support/acceptance-evidence.ts` (`recordAcceptanceEvidence`, shared by Vitest and Playwright tests); `tools/evidence/acceptance-report.ts` (`npm run evidence:acceptance`)
+
+```text
+describe("recordAcceptanceEvidence")
+  it should write one JSON record per AC scenario and test under test-results/acceptance
+  it should reject a record without an AC ID, test ID, outcome, release ID, browser and OS, clock, or time zone
+  it should keep exact Money, Price, Quantity, time, and identity values as canonical strings without rounding
+  it should store digests of the full authoritative state before and after for a no-write expectation
+  it should write records from Vitest browser mode and from Playwright tests
+  it should fail an AC-tagged test that finishes without writing its record
+describe("Acceptance report")
+  it should write one row per AC scenario and part with its deliverable, tests, outcome, release, browser and OS, and evidence link
+  it should fail when a scenario in the deliverable's Acceptance mapping has no passing integration, end-to-end, smoke, or benchmark record
+  it should not count unit or component tests as acceptance evidence
+```
+
 ## Integration tests (Vitest browser mode, real IndexedDB, temporary profile)
 
 Disclosed replacement: `TestReleaseHost` (service-worker control and inventory only).
 
-| ID | Scenario | Durable-state proof |
-|---|---|---|
-| I1.1 | Fresh `initialize` creates metadata plus seeded Journal and Catalog in one commit and returns Opened with Needs Institution and Account. | Close and reopen the database connection; query Catalog and definitions; compare with the result. |
-| I1.2 | A second `initialize` returns Opened (existing) with no seed additions. | Content revision unchanged. |
-| I1.3 | Create Institution and Account through services; status becomes Ready for Trade Planning. | Each mutation result equals an independent read at the returned revision (AC-RESP-001). |
-| I1.4 | Rename with a stale revision returns Conflict. | Full store dump before and after is identical. |
-| I1.5 | Readiness invalidated mid-session; a Catalog save returns RuntimeNotWritable at the service boundary, and a direct persistence write also returns it. | Store dump unchanged. |
-| I1.6 | `saveSettings` changes the time zone. | Stored instants and revisions of other records unchanged. |
-| I1.7 | A database at a newer schema version yields Migration Blocked. | Database version and records unchanged. |
-| I1.8 | Rename a seeded Close Reason, then reseed. | Renamed label retained; no new records. |
+| ID | Scenario | Durable-state proof | Green after |
+|---|---|---|---|
+| I1.1 | Fresh `initialize` creates metadata plus seeded Journal and Catalog in one commit and returns Opened with Needs Institution and Account. | Close and reopen the database connection; query Catalog and definitions; compare with the result. | T1.12 |
+| I1.2 | A second `initialize` returns Opened (existing) with no seed additions. | Content revision unchanged. | T1.12 |
+| I1.3 | Create Institution and Account through services; status becomes Ready for Trade Planning. | Each mutation result equals an independent read at the returned revision (AC-RESP-001). | T1.14 |
+| I1.4 | Rename with a stale revision returns Conflict. | Full store dump before and after is identical. | T1.10 |
+| I1.5 | Readiness invalidated mid-session; a Catalog save returns RuntimeNotWritable at the service boundary, and a direct persistence write also returns it. | Store dump unchanged. | T1.14 |
+| I1.6 | `saveSettings` changes the time zone. | Stored instants and revisions of other records unchanged. | T1.12 |
+| I1.7 | A database at a newer schema version yields Migration Blocked. | Database version and records unchanged. | T1.12 |
+| I1.8 | Rename a seeded Close Reason, then reseed. | Renamed label retained; no new records. | T1.10 |
+| I1.9 | Catalog `resolve` against real storage: an archived Account resolves as a retained reference with historical and current labels; a new selection of it is rejected; a retirement committed between loading a form and resolving its selection returns the concurrent-retirement result. | Store dump unchanged by the rejected resolutions. | T1.10 |
 
 ## End-to-end tests (Playwright, production build, real service worker, temporary profiles)
 
-| ID | Scenario | Acceptance |
-|---|---|---|
-| E1.1 | First launch online: verification, Writable, time zone, Opened, create Institution and Account, Ready. | AC-DEL-003 (browser tab), AC-DEL-004 (all pass) |
-| E1.2 | Served manifest has `id`, name, icons, `start_url`, `scope`, `display: standalone`; every inventory digest matches the served asset; the controlling worker reports the same release. | AC-DEL-003 |
-| E1.3 | Offline cold restart: persistent temporary profile directory; close the browser; relaunch with the network disabled; readiness Writable, data present; create a Tag offline; restart again and confirm it persists. | AC-DEL-001 |
-| E1.4 | Fresh-environment readiness matrix, each failing alone: service workers blocked (`serviceWorkers: 'block'`); capacity below minimum (CDP `Storage.overrideQuotaForOrigin`); a cached asset tampered in Cache Storage; diagnostic transaction failing (disclosed init-script fault injection on the probe database); two failures at once. Each yields Unsupported naming every failed check, offers retry and another browser, creates no authoritative database, and services return RuntimeNotWritable. Storage not persisted yields Writable plus the notice. Three different user-agent strings produce identical decisions. | AC-DEL-004, AC-DEL-003 |
-| E1.5 | Existing Workspace, then each failure above: Recovery Only; reads work; mutating controls disabled with one reason; services return RuntimeNotWritable; revisions unchanged; other-browser explanation shown. | AC-DEL-005 (backup part in D8) |
-| E1.6 | Existing database made unreadable (disclosed init-script fault injection on open): Unsupported plus Integrity Blocked; no initialization offered; after removing the injection the original records are intact. | AC-DEL-005 |
-| E1.7 | Repeated launches each produce a fresh readiness receipt; a storage failure injected mid-session makes the next mutation return RuntimeNotWritable and the app enter Recovery Only. | AC-DEL-006 |
-| E1.8 | Update: release A active with an unsaved Institution form; the server switches to release B; notice appears only after B's inventory verifies; A stays in control; the form keeps its values; activation is deferred with an explanation while the form is dirty; after the form is cancelled, activation reloads into B and readiness runs again. A second case serves B with a corrupted asset: no notice, A remains. An offline page keeps A. | AC-DEL-002, AC-DEL-006 |
-| E1.9 | Live resize wide → narrow → wide on the Institution form with partial input: layout switches; route, values, and validation messages persist. | AC-UI-001 |
-| E1.10 | Keyboard-only onboarding; axe scan of every D1 view with no serious or critical findings; Loading, Ready, Empty, and Error distinguishable; focus moves to the first error after failed validation. | AC-UI-002 |
-| E1.11 | Navigation and services offer only D1 capabilities; no Trades, Journal, or Backup destinations. | AC-CAP-001 |
-| P1.1 | Production smoke on the deployed HTTPS address: manifest, worker control, Writable in a fresh profile; exact browser version recorded. | AC-DEL-003 |
-| M1.1 | Manual: install the app in Chrome and Vivaldi on macOS and Linux and in Chrome on Android; capture the installed launch and record exact versions. | AC-DEL-003 |
+| ID | Scenario | Acceptance | Green after |
+|---|---|---|---|
+| E1.1 | First launch online: verification, Writable, time zone, Opened, create Institution and Account, Ready. | AC-DEL-003 (browser tab), AC-DEL-004 (all pass) | T1.16, T1.17 |
+| E1.2 | Served manifest has `id`, name, icons, `start_url`, `scope`, `display: standalone`; every inventory digest matches the served asset; the controlling worker reports the same release. | AC-DEL-003 | T1.8, T1.9 |
+| E1.3 | Offline cold restart: persistent temporary profile directory; close the browser; relaunch with the network disabled; readiness Writable, data present; create a Tag offline; restart again and confirm it persists. | AC-DEL-001 | T1.17 |
+| E1.4 | Fresh-environment readiness matrix, each failing alone: service workers blocked (`serviceWorkers: 'block'`); capacity below minimum (CDP `Storage.overrideQuotaForOrigin`); a cached asset tampered in Cache Storage; diagnostic transaction failing (disclosed init-script fault injection on the probe database); two failures at once. Each yields Unsupported naming every failed check, offers retry and another browser, creates no authoritative database, and services return RuntimeNotWritable. Storage not persisted yields Writable plus the notice. Three different user-agent strings produce identical decisions. | AC-DEL-004, AC-DEL-003 | T1.6, T1.15 |
+| E1.5 | Existing Workspace, then each failure above: Recovery Only; reads work; mutating controls disabled with one reason; services return RuntimeNotWritable; revisions unchanged; other-browser explanation shown. | AC-DEL-005 (backup part in D8) | T1.6, T1.17 |
+| E1.6 | Existing database made unreadable (disclosed init-script fault injection on open): Unsupported plus Integrity Blocked; no initialization offered; after removing the injection the original records are intact. | AC-DEL-005 | T1.15 |
+| E1.7 | Repeated launches each produce a fresh readiness receipt; a storage failure injected mid-session makes the next mutation return RuntimeNotWritable and the app enter Recovery Only. | AC-DEL-006 | T1.17 |
+| E1.8 | Update: release A active with an unsaved Institution form; the server switches to release B; notice appears only after B's inventory verifies; A stays in control; the form keeps its values; activation is deferred with an explanation while the form is dirty; after the form is cancelled, activation reloads into B and readiness runs again. A second case serves B with a corrupted asset: no notice, A remains. An offline page keeps A. | AC-DEL-002, AC-DEL-006 | T1.17 |
+| E1.9 | Live resize wide → narrow → wide on the Institution form with partial input: layout switches; route, values, and validation messages persist. | AC-UI-001 | T1.17 |
+| E1.10 | Keyboard-only onboarding; axe scan of every D1 view with no serious or critical findings; Loading, Ready, Empty, and Error distinguishable; focus moves to the first error after failed validation. | AC-UI-002 | T1.16, T1.17 |
+| E1.11 | Navigation and services offer only D1 capabilities; no Trades, Journal, or Backup destinations. | AC-CAP-001 | T1.15 |
+| P1.1 | Production smoke on the deployed HTTPS address: manifest, worker control, Writable in a fresh profile; exact browser version recorded. | AC-DEL-003 | T1.15, T1.18 |
+| M1.1 | Manual: install the app in Chrome and Vivaldi on macOS and Linux and in Chrome on Android; capture the installed launch and record exact versions. | AC-DEL-003 | — (manual, at deliverable end) |
 
 ## Critic flows
 
@@ -433,7 +455,7 @@ Disclosed replacement: `TestReleaseHost` (service-worker control and inventory o
 |---|---|
 | AC-RESP-001 | I1.3 (Catalog, Settings, Workspace mutation families) |
 | AC-REF-001 | T1.10 seeding cases, I1.1 |
-| AC-REF-002 | T1.10 resolve cases (inactive history, new-selection block, concurrent retirement); Trade and Journal history parts in D2 and D4 |
+| AC-REF-002 | T1.10 resolve cases (inactive history, new-selection block, concurrent retirement), I1.9; Trade and Journal history parts in D2 and D4 |
 | AC-JOUR-007 | T1.11, I1.1, I1.2; reseed after a trader revision in D4 |
 | AC-DEL-001 | E1.3 |
 | AC-DEL-002 | E1.8 |

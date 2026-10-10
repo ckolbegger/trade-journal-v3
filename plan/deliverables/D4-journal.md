@@ -218,31 +218,31 @@ describe("Journal form editor")
 
 ## Integration tests
 
-| ID | Scenario | Durable-state proof |
-|---|---|---|
-| I4.1 | Create Standalone, Trade-anchored, and Execution-anchored Review Notes. | Reopen database; Trade narrative includes the Trade and Execution Entries once each. |
-| I4.2 | Edit, then Void one Entry. | Same identity with versions; Full History shows every transition. |
-| I4.3 | Revise the Position Change Reflection definition, then answer a Debt created before it. | Entry uses the original snapshot; Debt Settled in the same commit. |
-| I4.4 | Decline a Debt. | One explicit decline; the Debt is Declined. |
-| I4.5 | Void the Entry that settled a Debt. | The same Debt identity is Outstanding again with its original snapshot. |
-| I4.6 | Definition revisions: add, reorder, reword, retire; identical resubmission; attempt to remove Thesis. | New composer uses the revision; old Entries keep old labels; Unchanged and rejection write nothing. |
-| I4.7 | Seed defaults after a revision. | No overwrite; no new records. |
-| I4.8 | Tag Select Prompt bound to a Tag Type; retire one Tag Value. | Old Entry shows the retired value with historical and current labels; new selection rejected. |
-| I4.9 | Two Edits with the same expected revision. | Second returns Conflict; one new version only. |
-| I4.10 | Every D4 mutation result compared with an independent read. | AC-RESP-001 equality. |
-| I4.11 | Version 3 database with D3 data migrates to version 4. | Every version 3 record unchanged. |
+| ID | Scenario | Durable-state proof | Green after |
+|---|---|---|---|
+| I4.1 | Create Standalone, Trade-anchored, and Execution-anchored Review Notes. | Reopen database; Trade narrative includes the Trade and Execution Entries once each. | T4.4, T4.7 |
+| I4.2 | Edit, then Void one Entry. | Same identity with versions; Full History shows every transition. | T4.4, T4.5 |
+| I4.3 | Revise the Position Change Reflection definition, then answer a Debt created before it. | Entry uses the original snapshot; Debt Settled in the same commit. | T4.4, T4.6 |
+| I4.4 | Decline a Debt. | One explicit decline; the Debt is Declined. | T4.4 |
+| I4.5 | Void the Entry that settled a Debt. | The same Debt identity is Outstanding again with its original snapshot. | T4.4 |
+| I4.6 | Definition revisions: add, reorder, reword, retire; identical resubmission; attempt to remove Thesis. | New composer uses the revision; old Entries keep old labels; Unchanged and rejection write nothing. | T4.6 |
+| I4.7 | Seed defaults after a revision. | No overwrite; no new records. | T4.6 |
+| I4.8 | Tag Select Prompt bound to a Tag Type; retire one Tag Value. | Old Entry shows the retired value with historical and current labels; new selection rejected. | T4.3, T4.4, T4.6 |
+| I4.9 | Two Edits with the same expected revision. | Second returns Conflict; one new version only. | T4.4 |
+| I4.10 | Every D4 mutation result compared with an independent read. | AC-RESP-001 equality. | T4.4, T4.5, T4.6 |
+| I4.11 | Version 3 database with D3 data migrates to version 4. | Every version 3 record unchanged. | T4.1 |
 
 ## End-to-end tests
 
-| ID | Scenario | Acceptance |
-|---|---|---|
-| E4.1 | Open the composer, type, select answers, navigate away, resize, close and restart the browser: no Entry, version, draft, or Debt exists. | AC-JOUR-001 |
-| E4.2 | Create, Edit, Void, and View history in wide and narrow layouts. | AC-JOUR-002 (Edit and Void parts; Addendum in D13) |
-| E4.3 | Answer one Debt and decline another from the Journal; Void the answer and see the Debt return. | AC-JOUR-005 |
-| E4.4 | Revise a form; the composer uses it; an older Entry shows its original labels. | AC-JOUR-004 |
-| E4.5 | Update from the D3 release with existing data. | AC-REST-004 (cumulative) |
-| E4.6 | Keyboard-only Entry creation; axe scan; resize mid-composer. | AC-UI-001, AC-UI-002 |
-| E4.7 | No correction, Marks, Review, Backup, or Add Addendum actions are offered. | AC-CAP-001 |
+| ID | Scenario | Acceptance | Green after |
+|---|---|---|---|
+| E4.1 | Open the composer, type, select answers, navigate away, resize, close and restart the browser: no Entry, version, draft, or Debt exists. | AC-JOUR-001 | T4.10 |
+| E4.2 | Create, Edit, Void, and View history in wide and narrow layouts. | AC-JOUR-002 (Edit and Void parts; Addendum in D13) | T4.10 |
+| E4.3 | Answer one Debt and decline another from the Journal; Void the answer and see the Debt return. | AC-JOUR-005 | T4.9, T4.11 |
+| E4.4 | Revise a form; the composer uses it; an older Entry shows its original labels. | AC-JOUR-004 | T4.10, T4.12 |
+| E4.5 | Update from the D3 release with existing data. | AC-REST-004 (cumulative) | T4.9 |
+| E4.6 | Keyboard-only Entry creation; axe scan; resize mid-composer. | AC-UI-001, AC-UI-002 | T4.10 |
+| E4.7 | No correction, Marks, Review, Backup, or Add Addendum actions are offered. | AC-CAP-001 | T4.9, T4.10 |
 
 ## Critic flows
 

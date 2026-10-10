@@ -66,7 +66,9 @@ src/
     persistence/           internal seam, never imported by ui/
   ui/                  React application; calls coordinators and the permitted direct module operations
   sw/                  service worker
-build/                 Offline Release Inventory generator, Installed Capability Manifest emitter
+tools/release/         Offline Release Inventory generator, Installed Capability Manifest emitter
+tools/evidence/        acceptance evidence report (A2)
+test/support/          shared test helpers, including the acceptance evidence recorder (A2)
 ```
 
 Each module exposes one `index.ts`. `dependency-cruiser` rules mirror the call table in `specs/design/overview.md`: pure modules import nothing with I/O, fact modules never import coordinators, `ui/` never imports `persistence/` or module internals.
@@ -142,16 +144,35 @@ Every `it should …` case is implemented one at a time: add the test, run it, c
 
 Structural tasks list an exact verification command and expected result instead.
 
+### Outer tests (amendment A1)
+
+Integration, end-to-end, and production-smoke tests (the outer tests) follow the same red-then-green discipline as the `it should …` cases, written just in time:
+
+1. Each row in a deliverable's test tables names the tasks after which it should pass (**Green after**).
+2. At the start of the first of those tasks, write the test and run it. Record it red in `plan/evidence/D<n>.md` with the reason it fails. A test that fails for the wrong reason (a broken fixture, a typo, an unreachable server) is fixed before the task continues.
+3. When the last of its **Green after** tasks completes, rerun it and record it green. One that stays red is a defect in the work just finished.
+
+End-to-end tests locate elements by role and accessible name, which the UI contract fixes, rather than by page structure. If a test changes after it was first run, the change and its reason are recorded in the evidence log, and it never removes or weakens an assertion. Manual checks (`M`) stay outside this loop and are performed at the deliverable's end.
+
+### Acceptance evidence (amendment A2)
+
+The acceptance contract's *Evidence requirements* are captured per scenario, not only as a passing test:
+
+- **Recorder:** integration, end-to-end, and production-smoke tests, plus the structural benchmark tasks, call one shared test helper, `recordAcceptanceEvidence`, built in T1.19. It writes one JSON record per scenario and test to `test-results/acceptance/` (ignored by Git). A test cannot pass without writing its record.
+- **Record contents:** AC ID and part (for example *Edit and Void parts*), test ID, outcome; installed release ID and Installed Capability Manifest identity; browser and OS versions; the explicit clock, Workspace time zone, and calendar version; input facts; the action and its result, including typed failures; before and after authoritative revisions and stable identities; and, where the scenario requires them, calculation basis and coverage, visible history, the Web App Manifest, Offline Release Inventory and Runtime Readiness receipt, and restart read-back. A no-write expectation stores digests of the full authoritative state before and after. Exact values are kept unrounded.
+- **Report:** `npm run evidence:acceptance` reads the records and writes `plan/evidence/acceptance.md`: one row per AC scenario and part, with its deliverable, tests, outcome, release ID, browser and OS, and link to its evidence. It fails if any scenario in the current deliverable's *Acceptance mapping* table lacks a passing record from an integration, end-to-end, production-smoke, or benchmark test, so a scenario covered only by unit tests is caught.
+- **Retention:** at deliverable completion the records for that deliverable are copied to `plan/evidence/acceptance/D<n>/` and committed with the deliverable's evidence. Screenshots are kept only for scenarios whose evidence is visual (for example AC-UI-001, AC-UI-002, installed launch); Playwright traces stay in `test-results/`.
+
 ### Deliverable completion gate
 
-1. `npm run check` and `npm run test:all` pass.
-2. A fresh critic agent receives `specs/`, this plan, and the current deliverable's scope. It builds and starts the app itself, drives Playwright against the production UI in a temporary profile for every critic flow listed, does not edit code, and returns a structured report per flow (actions, observed result, pass/fail, evidence). Reports are saved as `plan/evidence/D<n>-critic-<attempt>.md`.
+1. `npm run check` and `npm run test:all` pass, every outer test is green, and `npm run evidence:acceptance` passes for the deliverable.
+2. A fresh critic agent receives `specs/`, this plan, the current deliverable's scope, and `plan/evidence/acceptance.md`. It builds and starts the app itself, drives Playwright against the production UI in a temporary profile for every critic flow listed, does not edit code, and returns a structured report per flow (actions, observed result, pass/fail, evidence). Reports are saved as `plan/evidence/D<n>-critic-<attempt>.md`.
 3. Each implementation defect gets a failing automated test first, then the fix, then the full suites, then a new fresh critic. Spec or plan ambiguities pause work for the user.
 4. The deliverable is complete only when a fresh critic passes every flow.
 
 ### Commits
 
-Commits happen only after the user explicitly approves them. Proposed cadence: one commit per completed task, plus one for the deliverable's evidence.
+Commits happen only after the user explicitly approves them. Proposed cadence: one commit per completed task, plus one for the deliverable's evidence, including its acceptance records.
 
 ## 6. Detailed deliverables
 
@@ -190,3 +211,6 @@ Commits happen only after the user explicitly approves them. Proposed cadence: o
 
 | Date | Amendment | Approved |
 |---|---|---|
+| 2026-10-10 | **A1** — integration, end-to-end, and production-smoke tests are written just in time at the start of their first **Green after** task, recorded red, and recorded green when their last **Green after** task completes (§5 *Outer tests*; **Green after** columns in D1–D4). | 2026-10-10 |
+| 2026-10-10 | **A2** — per-scenario acceptance evidence: recorder (new task T1.19), `plan/evidence/acceptance.md` report and check, committed records (§5 *Acceptance evidence*; gate and commit rules). Adds integration test I1.9 so AC-REF-002's D1 part has public-boundary evidence. | 2026-10-10 |
+| 2026-10-10 | **A3** — the release tooling directory is `tools/release/`, not `build/`, which `.gitignore` excludes (§3 *Code layout*). T1.1 also ignores `test-results/`. | 2026-10-10 |

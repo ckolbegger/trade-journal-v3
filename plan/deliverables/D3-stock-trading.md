@@ -252,29 +252,29 @@ describe("Trades list for Open and Closed Trades")
 
 ## Integration tests
 
-| ID | Scenario | Durable-state proof |
-|---|---|---|
-| I3.1 | Planned → buy (Open) → second buy (Open, scaled) → sell all (Closed) with a Close Reason. | After each step: lifecycle index membership, expected lifecycle agreement, Terminal Disposition only after closing; reopen database between steps. |
-| I3.2 | Two buys at different prices and fees, a partial sale, and a final sale. | Lots, Lot Match links, fee allocation, and realized P&L equal the worked example; no price or P&L stored on links. |
-| I3.3 | One decision with three Executions. | One Position Change identity, three Execution identities, one reflection outcome. |
-| I3.4 | Defer the reflection. | Outstanding Debt with the trigger-time snapshot exists; no Entry exists; a later Position Change still records normally. |
-| I3.5 | Submit the same reflection outcome twice. | One outcome; the second returns Conflict. |
-| I3.6 | Closing sale without a Close Reason. | CloseReasonRequired; store dump unchanged. |
-| I3.7 | Abandon a Trade that has an Execution. | Rejected; store dump unchanged. |
-| I3.8 | Disclosed raw write making stored lifecycle disagree. | Detail returns IntegrityBlocked and the stored value is unchanged by reads; the next Position Change repairs it and discloses the repair. |
-| I3.9 | Every D3 mutation result compared with an independent read at its revision. | AC-RESP-001 equality. |
+| ID | Scenario | Durable-state proof | Green after |
+|---|---|---|---|
+| I3.1 | Planned → buy (Open) → second buy (Open, scaled) → sell all (Closed) with a Close Reason. | After each step: lifecycle index membership, expected lifecycle agreement, Terminal Disposition only after closing; reopen database between steps. | T3.5 |
+| I3.2 | Two buys at different prices and fees, a partial sale, and a final sale. | Lots, Lot Match links, fee allocation, and realized P&L equal the worked example; no price or P&L stored on links. | T3.5, T3.6 |
+| I3.3 | One decision with three Executions. | One Position Change identity, three Execution identities, one reflection outcome. | T3.5 |
+| I3.4 | Defer the reflection. | Outstanding Debt with the trigger-time snapshot exists; no Entry exists; a later Position Change still records normally. | T3.5 |
+| I3.5 | Submit the same reflection outcome twice. | One outcome; the second returns Conflict. | T3.5 |
+| I3.6 | Closing sale without a Close Reason. | CloseReasonRequired; store dump unchanged. | T3.5 |
+| I3.7 | Abandon a Trade that has an Execution. | Rejected; store dump unchanged. | T3.5 |
+| I3.8 | Disclosed raw write making stored lifecycle disagree. | Detail returns IntegrityBlocked and the stored value is unchanged by reads; the next Position Change repairs it and discloses the repair. | T3.5, T3.6 |
+| I3.9 | Every D3 mutation result compared with an independent read at its revision. | AC-RESP-001 equality. | T3.5, T3.6 |
 
 ## End-to-end tests
 
-| ID | Scenario | Acceptance |
-|---|---|---|
-| E3.1 | Enter, scale in, partially exit, and fully exit a stock Trade through the UI in wide and narrow layouts; restart between steps. | AC-LIFE-001, AC-POS-001 |
-| E3.2 | Close with a Close Reason; complete, decline, and defer the Close Review in three Trades; closure never waits. | AC-POS-004 |
-| E3.3 | Partial fill and an explicitly unplanned extra purchase; fulfillment and Deviations shown. | AC-POS-005 |
-| E3.4 | Defer a reflection, then record another Position Change. | AC-JOUR-003 |
-| E3.5 | Update from the D2 release with existing Plans; migration to version 3 keeps them. | AC-REST-004 (cumulative) |
-| E3.6 | Resize during a half-filled Position Change; axe scan of new screens; keyboard-only Position Change. | AC-UI-001, AC-UI-002 |
-| E3.7 | No correction, Marks, Journal, or Backup actions are offered. | AC-CAP-001 |
+| ID | Scenario | Acceptance | Green after |
+|---|---|---|---|
+| E3.1 | Enter, scale in, partially exit, and fully exit a stock Trade through the UI in wide and narrow layouts; restart between steps. | AC-LIFE-001, AC-POS-001 | T3.8, T3.9 |
+| E3.2 | Close with a Close Reason; complete, decline, and defer the Close Review in three Trades; closure never waits. | AC-POS-004 | T3.8, T3.9 |
+| E3.3 | Partial fill and an explicitly unplanned extra purchase; fulfillment and Deviations shown. | AC-POS-005 | T3.8, T3.9 |
+| E3.4 | Defer a reflection, then record another Position Change. | AC-JOUR-003 | T3.8 |
+| E3.5 | Update from the D2 release with existing Plans; migration to version 3 keeps them. | AC-REST-004 (cumulative) | T3.9 |
+| E3.6 | Resize during a half-filled Position Change; axe scan of new screens; keyboard-only Position Change. | AC-UI-001, AC-UI-002 | T3.8, T3.9 |
+| E3.7 | No correction, Marks, Journal, or Backup actions are offered. | AC-CAP-001 | T3.9 |
 
 ## Critic flows
 

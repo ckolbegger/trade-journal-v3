@@ -275,28 +275,28 @@ describe("Migration Blocked screen")
 
 ## Integration tests
 
-| ID | Scenario | Durable-state proof |
-|---|---|---|
-| I2.1 | `confirmPlan` commits Trade, Plan facts, lifecycle index, and Plan Reflection together. | Reopen the database; Trade Detail equals the confirmation result (AC-RESP-001). |
-| I2.2 | Rejections: Stop above entry (no numeric baseline), two legs (incoherent shape), missing Thesis (missing reflection answer), inactive Account. | Typed issues returned; full store dump unchanged. |
-| I2.3 | Strategy retired between form load and confirmation. | Conflict; store dump unchanged. |
-| I2.4 | `abandonPlan` on a Planned Trade. | Lifecycle Abandoned in index; no Close Reason or Terminal Disposition. |
-| I2.5 | Account renamed after confirmation. | Detail shows historical and current labels; Plan facts unchanged. |
-| I2.6 | Version 1 database with D1 data migrates to version 2. | Every version 1 record unchanged. A disclosed raw write that makes the Catalog invalid yields Migration Blocked with version 1 intact; retry succeeds once removed. |
-| I2.7 | `confirmPlan` while readiness is Recovery Only. | RuntimeNotWritable; store dump unchanged. |
-| I2.8 | 60 Plans across Accounts, Strategies, and Tags. | Filter results follow AND/OR rules; a cursor is rejected after a new Plan is confirmed. |
+| ID | Scenario | Durable-state proof | Green after |
+|---|---|---|---|
+| I2.1 | `confirmPlan` commits Trade, Plan facts, lifecycle index, and Plan Reflection together. | Reopen the database; Trade Detail equals the confirmation result (AC-RESP-001). | T2.6 |
+| I2.2 | Rejections: Stop above entry (no numeric baseline), two legs (incoherent shape), missing Thesis (missing reflection answer), inactive Account. | Typed issues returned; full store dump unchanged. | T2.6 |
+| I2.3 | Strategy retired between form load and confirmation. | Conflict; store dump unchanged. | T2.6 |
+| I2.4 | `abandonPlan` on a Planned Trade. | Lifecycle Abandoned in index; no Close Reason or Terminal Disposition. | T2.6 |
+| I2.5 | Account renamed after confirmation. | Detail shows historical and current labels; Plan facts unchanged. | T2.7 |
+| I2.6 | Version 1 database with D1 data migrates to version 2. | Every version 1 record unchanged. A disclosed raw write that makes the Catalog invalid yields Migration Blocked with version 1 intact; retry succeeds once removed. | T2.2 |
+| I2.7 | `confirmPlan` while readiness is Recovery Only. | RuntimeNotWritable; store dump unchanged. | T2.6 |
+| I2.8 | 60 Plans across Accounts, Strategies, and Tags. | Filter results follow AND/OR rules; a cursor is rejected after a new Plan is confirmed. | T2.7 |
 
 ## End-to-end tests
 
-| ID | Scenario | Acceptance |
-|---|---|---|
-| E2.1 | Plan a Long Stock trade in wide and narrow layouts, keyboard only; detail shows 1R; restart the browser and it persists. | AC-PLAN-001, AC-UI-002 |
-| E2.2 | Submit an invalid Plan; errors appear next to fields; after reload nothing was saved. | AC-PLAN-002 |
-| E2.3 | Abandon a Plan with a reason. | AC-LIFE-002 |
-| E2.4 | Update from the D1 release to the D2 release with existing data: migration succeeds with data intact. Second run with a disclosed corrupting raw write: Migration Blocked screen, retry after removal succeeds. Third run with an old-release tab open: close-other-tabs message. | AC-REST-004 |
-| E2.5 | Resize during a half-filled Plan form. | AC-UI-001 |
-| E2.6 | Axe scan of every new screen. | AC-UI-002 |
-| E2.7 | No Position Change, Journal, or Backup actions are offered. | AC-CAP-001 |
+| ID | Scenario | Acceptance | Green after |
+|---|---|---|---|
+| E2.1 | Plan a Long Stock trade in wide and narrow layouts, keyboard only; detail shows 1R; restart the browser and it persists. | AC-PLAN-001, AC-UI-002 | T2.9, T2.10 |
+| E2.2 | Submit an invalid Plan; errors appear next to fields; after reload nothing was saved. | AC-PLAN-002 | T2.9 |
+| E2.3 | Abandon a Plan with a reason. | AC-LIFE-002 | T2.10 |
+| E2.4 | Update from the D1 release to the D2 release with existing data: migration succeeds with data intact. Second run with a disclosed corrupting raw write: Migration Blocked screen, retry after removal succeeds. Third run with an old-release tab open: close-other-tabs message. | AC-REST-004 | T2.11 |
+| E2.5 | Resize during a half-filled Plan form. | AC-UI-001 | T2.9 |
+| E2.6 | Axe scan of every new screen. | AC-UI-002 | T2.9, T2.10, T2.11 |
+| E2.7 | No Position Change, Journal, or Backup actions are offered. | AC-CAP-001 | T2.10 |
 
 ## Critic flows
 
