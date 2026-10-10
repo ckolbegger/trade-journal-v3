@@ -536,9 +536,20 @@ participate in Workspace-owned flows).
 
 ## Open items
 
-- Detailed task breakdowns per deliverable, with `describe` / `it should` unit tests,
-  are written separately on request.
+- Detailed task breakdowns per deliverable, with `describe` / `it should` unit tests, are written
+  separately on request. **Drafted so far, awaiting review:** D1 in
+  [deliverable-breakdowns/D1-install-trust-set-up.md](deliverable-breakdowns/D1-install-trust-set-up.md)
+  (35 tasks), D2 in
+  [deliverable-breakdowns/D2-confirm-first-plan.md](deliverable-breakdowns/D2-confirm-first-plan.md)
+  (18 tasks), and D3 in
+  [deliverable-breakdowns/D3-record-entry.md](deliverable-breakdowns/D3-record-entry.md) (26 tasks).
+  Their declared task graphs are validated by
+  `scripts/check-deliverable-breakdown.mjs`, which checks blocking edges, cycles, diagram
+  agreement by transitive reduction, and structural-task verifications. The three drafts carry
+  open questions of their own; each has an "Open items and risks" section.
 - The acceptance-to-evidence matrix (planning-protocol Phase 4) is not yet drafted.
 - The nine verification items recorded under D3 in
   [planning-decisions-2026-10-10.md](planning-decisions-2026-10-10.md) must be resolved
-  inside the plan before it is frozen.
+  inside the plan before it is frozen. D1 resolves items 3, 4, 6, and 9; D2 gives item 5 its
+  first honest proof; the rest need the deliverables that own them (see each breakdown's
+  mapping section).
