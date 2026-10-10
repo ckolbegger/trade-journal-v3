@@ -1,6 +1,6 @@
 # Trade Journal V3 implementation plan — `claude-opus-5.5`
 
-**Status:** Draft 2 — D1–D4 detailed, D5–D13 outlined (PD-005, PD-010). Not frozen; nothing is implemented until the user approves the plan.
+**Status:** Approved and frozen 2026-10-10 at commit `b9ef959` (planning protocol Phase 6). D1–D4 detailed; D5–D13 outlined and detailed and approved before each starts (PD-005, PD-010). Changes after the freeze need the user's explicit approval and are logged in §9.
 **Specification baseline:** `specs/` at commit `968bc2b` (includes ADR 0009 and ADR 0010).
 **Process:** follows `specs/evaluation/planning-protocol.md`. Phase 1 (comprehension check) and Phase 2 (technology choice) are complete. This draft starts Phase 3.
 
@@ -179,3 +179,14 @@ Commits happen only after the user explicitly approves them. Proposed cadence: o
 - `durability: 'strict'` costs write latency; measured by the D3 benchmark.
 - All Time reports over 25,000 Trades may need a rebuildable per-Trade results cache.
 - Service-worker update safety is the hardest browser test to automate.
+
+## 9. Freeze record and amendments
+
+- **Approved:** by the user on 2026-10-10, after review of §7.
+- **Frozen revision:** `plan/implementation-plan.md` and `plan/deliverables/` at commit `b9ef959`.
+- **Stack profile:** PD-001 as amended by PD-007, with the versions in §2.
+- **Evidence provenance:** exact browser and operating-system versions are recorded in each `plan/evidence/D<n>.md` as tests run (PD-003); the development machine is listed in §2.
+- **Open prerequisites:** ADR 0011 (`previewPlan`, PD-008) on `main` before D2; ADR 0012 (Debt deferral, PD-009) on `main` before D3.
+
+| Date | Amendment | Approved |
+|---|---|---|
