@@ -7,6 +7,8 @@
 # The relative symlinks tracked on main (.claude/skills/* -> ../../.agents/skills/*)
 # only resolve when the worktree sits exactly two levels below the repo root,
 # i.e. worktrees/<branch>. This script enforces that layout.
+#
+# It also assigns the worktree a unique dev server port (DEV_PORT in .env.local).
 set -euo pipefail
 
 if [ $# -ne 1 ]; then
@@ -49,5 +51,14 @@ fi
 # For agents that read AGENTS.md instead of CLAUDE.md
 [ -e AGENTS.md ] || ln -s CLAUDE.md AGENTS.md
 
+# Dev server port: highest DEV_PORT across the other worktrees + 1, recorded
+# in the (gitignored) .env.local. 5173, Vite's default, is reserved for main.
+if ! grep -q '^DEV_PORT=' .env.local 2>/dev/null; then
+    highest=$( (grep -hs '^DEV_PORT=' "$root"/worktrees/*/.env.local || true) \
+        | cut -d= -f2 | sort -n | tail -n 1)
+    echo "DEV_PORT=$(( ${highest:-5173} + 1 ))" >> .env.local
+fi
+
 echo "worktree ready: worktrees/$branch"
+echo "dev server port: $(grep '^DEV_PORT=' .env.local | cut -d= -f2)"
 echo "note: worktree-local symlinks are untracked; commit them on the branch if wanted"
