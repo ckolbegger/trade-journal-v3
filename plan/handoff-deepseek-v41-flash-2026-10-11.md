@@ -15,12 +15,16 @@ set for D1–D3 was deliberately deleted so the whole set can be produced consis
 This file lives in `plan/` so it travels with the branch. It supersedes the previous session's
 handoff, which lived in the OS temp directory and has been deleted.
 
-> **Update, 2026-10-11.** The work this handoff commissions is done: all seven breakdowns exist and
-> both validators report zero failures and zero warnings. The session that wrote them also settled
-> four alignment items and recorded them as decisions D8–D10. **The current state and the remaining
-> alignment work are tracked in [alignment-agenda-2026-10-11.md](alignment-agenda-2026-10-11.md);
-> read that first.** The sections below remain accurate as a description of the frozen inputs and the
-> constraints that still bind.
+> **Update, 2026-10-11 — this handoff is superseded.** The work it commissions is done: all seven
+> breakdowns exist and both validators report zero failures and zero warnings. The session that wrote
+> them also settled four alignment items and recorded them as decisions D8–D10.
+>
+> **For a new session, start at
+> [handoff-finalize-plan-2026-10-11.md](handoff-finalize-plan-2026-10-11.md)**, which states the
+> worktree, asks the agent to confirm it is there before doing anything, and lists what remains. The
+> item-by-item worklist is
+> [alignment-agenda-2026-10-11.md](alignment-agenda-2026-10-11.md). The sections below remain accurate
+> as a description of the frozen inputs and the constraints that still bind.
 
 ---
 
