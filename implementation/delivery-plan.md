@@ -21,14 +21,14 @@ The [specification](../specs/README.md) remains the product authority.
 | Approved React/Vite/IndexedDB stack, with decimal.js instead of Fraction.js | Accepted by the trader; recorded in the committed stack selection |
 | Long Stock only for the initial Plan, opening, risk/reward, and Daily Review slices | Accepted: “I agree with your Long Stock only recommendation” |
 | Manual Marks for initial stock risk/reward and Daily Review; automated retrieval with the first single-leg options in D7 | Accepted ordering: provider retrieval arrives at the same boundary as single-leg options |
-| Close positions and abandon plans before ordinary Stop/Target/thesis revision | Accepted ordering: closing D6, abandonment D9, ordinary management revision D16 |
+| Close positions and abandon plans before ordinary Stop/Target/thesis revision | Accepted ordering: closing D5, abandonment D9, ordinary management revision D16 |
 | Single-leg options before any correction, Void, or Abandonment | Accepted ordering: ordinary single-leg trading D7 precedes abandonment D9 and correction D18; physical settlement follows separately in D15 |
 | Separate plan confirmation (D1) from opening execution (D2) | Accepted: “Yes, that boundary is fine” |
 | Separate ordinary single-leg trading/automated Marks (D7) from physical settlement (D15), without restricting D7 to cash-settled instruments | Accepted with the trader's condition: no substantial cash-settlement eligibility enforcement; bring D15 forward if an actual assignment/exercise requires it |
 | Ordinary multi-leg trading, including PMCC, before revisions/corrections and before Process Scorecard/Journal Field Analysis | Accepted trader priority: D8 precedes management D16, correction D18, Scorecard D24 and Journal Field D25; deferred physical capture follows in D15 |
 | Leg selection in later revision/correction workflows | Accepted requirement: D16 identifies condition/leg/structure context; D18 selects the exact leg and economic fact with whole-Trade impact |
 | Current Exposure and Outcomes before Journal form customization | Accepted: Current Exposure D21 and Outcomes D22 use existing forms/facts; customization follows in D23 |
-| Backup after all four data categories are populated; Restore later | Accepted trader change: backup/verification D5 follows actual Plan, Execution, Journal and Mark capture in D1–D4; Restore is its own D17 after core trading and before corrections D18 |
+| Backup after full stock closure; Restore later | Accepted trader change: full stock closure D5 precedes backup/verification D6, after Plan, Execution, Journal and Mark capture in D1–D4; Restore remains D17 before corrections D18 |
 | Scaling and legging as separate trader deliverables | Accepted: scaling in D10, scaling out D11, legging in D12 and legging out D13; earlier entry/exit slices cover complete decisions, and all four precede correction D18 |
 | Replay and Abandon before Assignment/Exercise | Accepted: Abandon D9 and Replay D14 precede physical settlement D15 |
 | Voluntary Journal entries with initial Daily Review | Accepted: D4 adds Review Note and Trader Reflection creation; Edit/Addendum/Void remain in D19 |
@@ -40,10 +40,10 @@ No layer-only exceptions are requested or approved.
 
 The trader explicitly moved backup after actual Plan, Execution, Journal and Mark
 population, and separately deferred Restore until core trading functionality is
-usable. D5 delivers export/verification after D1–D4; D4 already includes workflow
-and voluntary Journal creation. D17 delivers Restore after management and before
-corrections. Before D5, readable Recovery Only offers reads/safe retry but no export;
-from D5, export and verification are available there. Restore preparation/application
+usable. D5 delivers full stock closure; D6 delivers export/verification after D1–D5,
+including Close Review history. D4 already includes workflow and voluntary Journal creation. D17 delivers Restore after management and before
+corrections. Before D6, readable Recovery Only offers reads/safe retry but no export;
+from D6, export and verification are available there. Restore preparation/application
 and UI remain uninstalled until D17. Existing facts remain durable, audited,
 migratable and privately reconstructable; preserve prior compatible/readable data
 on migration failure throughout. A pre-D17 verified file is a complete saved copy,
@@ -89,7 +89,7 @@ Every item carries these obligations when it touches them:
   history. Bounded indexed reads and rebuildable projections arrive with their use.
 - Every durable change includes lossless candidate migration, private reconstruction
   and compatibility with previously supported data. Failure preserves the prior
-  readable compatible data. From D5, each change extends complete backup/export
+  readable compatible data. From D6, each change extends complete backup/export
   verification; from D17 it also extends full Restore validation/atomic replacement.
   Retain complete facts and supported artifact provenance without prebuilding
   deferred import/application machinery before D17. Migration
@@ -120,17 +120,17 @@ The inherited scenarios are repeated obligations, rather than separate releases:
 | Scenario | Assignment and declared scope |
 |---|---|
 | AC-DEL-001–004, AC-CAP-001, AC-UI-001 | Full from D1 for each installed release; repeat with every added capability. Deferred backup/Restore paths follow the explicit exception above |
-| AC-DEL-005–006 | Partial D1–D16: read-only recovery, unreadable-store block, rejected writes and launch/update readiness apply immediately. D5 adds Recovery Only export/verification; D17 adds gated Restore and post-Restore readiness. Full D17 |
+| AC-DEL-005–006 | Partial D1–D16: read-only recovery, unreadable-store block, rejected writes and launch/update readiness apply immediately. D6 adds Recovery Only export/verification; D17 adds gated Restore and post-Restore readiness. Full D17 |
 | AC-RESP-001 | Partial D1–D14: every installed mutation returns a usable receipt. D15 supplies bounded multi-Trade settlement; full D15, extended for Restore D17, correction D18 and Roll D27 |
-| AC-BACK-001 | Not installed D1–D4. Partial D5–D22: complete coherent export/read-back of every installed fact from D5. D7 adds provider/credential exclusion; D17 adds restored setup, D18–D19 correction/Journal histories, and D23 customized definitions; full D23, extended with later facts |
+| AC-BACK-001 | Not installed D1–D5. Partial D6–D22: complete coherent export/read-back of every installed fact from D6. D7 adds provider/credential exclusion; D17 adds restored setup, D18–D19 correction/Journal histories, and D23 customized definitions; full D23, extended with later facts |
 | AC-REST-001–003 | Not installed D1–D16 by explicit trader instruction. Full D17: nonmutating preparation, whole-Workspace replacement, exact-target safety receipt or deliberate decline, all-section atomicity, invalidated old views and returned landing state |
-| AC-REST-004 | Partial D2–D16: validated migration candidates preserve prior compatible/readable data; D5 adds recovery export/verification. D17 completes artifact/Restore migration and recovery paths; full D17, extended for every durable change |
+| AC-REST-004 | Partial D2–D16: validated migration candidates preserve prior compatible/readable data; D6 adds recovery export/verification. D17 completes artifact/Restore migration and recovery paths; full D17, extended for every durable change |
 | AC-UI-002 | Partial D1–D16: all installed screens meet accessibility obligations. D14 completes actual Bar/candle/gap replay; D17 adds destructive-Restore views for full D17, extended with later screens |
 | AC-REBUILD-001, AC-PERF-001 | Partial D1–D27: equivalent reconstruction/latency for installed facts, with bounded startup/open-list paths from first use. D28 completes mature mixed-fact fixtures across reports/reviews/provider evidence; no later correctness/performance hardening release |
 
 Thus, for every item below, “inherited obligations” includes its own compatible
 representation transition, complete offline inventory, readiness, receipt,
-backup/verification from D5, Restore from D17, reconstruction, accessibility and
+backup/verification from D6, Restore from D17, reconstruction, accessibility and
 relevant scale behavior. The
 later full fixture is not permission to lose data or miss latency targets earlier.
 
@@ -165,7 +165,7 @@ four-check Runtime Readiness on all specified boundaries, mature-workspace capac
 and headroom derivation, advisory protection warning, and persistence write gate.
 Unsupported fresh stores are not initialized; readable existing stores permit
 Recovery Only reads; unreadable possible roots are never replaced as empty.
-Backup export/verification are absent until D5 and Restore until D17 under the
+Backup export/verification are absent until D6 and Restore until D17 under the
 explicit accepted delivery exception. Explain that temporary absence in recovery/protection
 UI; do not claim a saved backup or offer a transfer that is not installed. Preserve
 readable prior versions and safe retry through intervening migrations. Do not build
@@ -183,7 +183,7 @@ inherited obligations. **Declared scope:** Exact Long Stock/fixed management onl
 D16 adds management variants; D7–D8, D15, D26 and D28 add option/criteria/shape
 variants and complete AC-PLAN-001–002; D2 supplies lot/deviation agreement for full AC-LIFE-003. D19
 adds Journal Edit/Addendum/Void; D15 completes fixed Journal defaults and D27
-completes Catalog defaults. D5 adds complete backup/verification for populated
+completes Catalog defaults. D6 adds complete backup/verification for populated
 Trade, Journal, Market and Catalog sections; D17 adds Restore.
 
 **Prerequisites / parallelism:** None. Once Plan confirmation, receipt, and the
@@ -227,7 +227,7 @@ history with trigger-time form snapshots. Include the first actual D1→D2 migra
 AC-CALC-001, AC-JOUR-003, AC-JOUR-005, AC-JOUR-007; inherited obligations.
 **Declared scope:** One complete initial Stock entry decision. D10 adds staged
 quantities/later adds; D11 completes stock scaling/FIFO and full lifecycle fixtures;
-D12–D13 add selective-leg fulfillment and Entry Resolution endpoints. D6 adds
+D12–D13 add selective-leg fulfillment and Entry Resolution endpoints. D5 adds
 full closing; D16 completes the management/baseline fixture; D26 completes
 objective fulfillment after D8 adds grouped multi-leg fulfillment. D4 supplies due-Debt
 Review blocking for AC-JOUR-003; D19 supplies sole-answer Void/reopen for
@@ -269,7 +269,7 @@ No provider configuration or Bar storage is introduced here.
 
 **Acceptance:** Full AC-MARK-001, AC-MARK-003; partial AC-CALC-001–003,
 AC-MARK-002; inherited obligations. **Declared scope:** Fixed-condition,
-one-Instrument stock analysis and initial evidence capture only. D6 adds full-close
+one-Instrument stock analysis and initial evidence capture only. D5 adds full-close
 realization; D11 adds realized plus remaining-position examples; D16 completes the management/baseline fixture;
 D8 adds independent multi-Instrument availability and completes fixed OR-condition
 fixtures; D11 completes availability with actual partial realization.
@@ -337,50 +337,7 @@ the task-walk/voluntary-composer UI can proceed in parallel after their bound sa
 is fixed. Review shared analysis, cutoff indexes, Journal definitions/schema and
 save/effect validation have one owner.
 
-### 5. Back up and verify the populated trading workspace
-
-**Capability:** Download and verify a complete Workspace containing actual Plans,
-Executions, workflow and voluntary Journal entries, and Manual Marks. Keep a
-portable copy before Restore is installed later.
-
-**User stories**
-
-- As a trader, I would like to download and verify my complete trading workspace,
-  so that I can keep a usable copy of my plans, executions, reflections and prices.
-
-**Introduces:** `Workspace.exportBackup/confirmBackup`, ordinary file download,
-selected-file read-back verification and an exact-source `CompletedBackupReceipt`.
-All four authoritative sections plus metadata/settings come from one bound snapshot;
-concurrent later changes are wholly outside it. Every current identity, fact/audit
-revision, form snapshot, seed state and nonsecret setting is included. Verify the
-complete selected artifact, manifest/digests and expected source binding; Downloaded
-alone is not completed. Export and verification work in readable Recovery Only.
-Use each fact module's owned `exportSnapshot` seam and return bound results without
-read-back of directly changed state. Do not build Restore preparation, analytical
-import validation or replace-Workspace UI; those belong to D17. Until then the UI
-identifies a verified saved copy without claiming that local Restore is installed.
-
-**Defaults and durability:** No new trading defaults or backup-status facts.
-Introduce the versioned portable artifact/manifest, counts/digests, source binding
-and verified result receipt. Private caches/projections, transient diagnostics and
-secrets are excluded. Preserve complete facts and artifact version provenance now,
-so D17 can restore earlier supported versions without inventing history. Every
-later durable change extends complete export/verification immediately.
-
-**Acceptance:** Partial AC-BACK-001, AC-DEL-005–006; inherited obligations.
-**Declared scope:** Complete populated D1–D4 export/read-back verification, including
-voluntary Journal entries. D7 adds provider/credential-exclusion fixtures; D17 adds
-Restore and restored provider setup; D18–D19 add correction/Journal histories;
-D23 completes customized-definition fixtures for full AC-BACK-001. D17 completes
-Restore-related AC-DEL-005–006 boundaries. The pre-D5 export exception ends here;
-the explicitly deferred Restore boundary continues until D17.
-
-**Prerequisites / parallelism:** D4, with actual Plan/Execution/Journal/Mark capture
-from D1–D3. Snapshot/artifact/verification work and backup/file-selection/result UI
-can proceed in parallel once bindings/results are fixed. Artifact/schema versions,
-module exports, snapshot bindings and release manifests have one owner at a time.
-
-### 6. Close a Long Stock trade
+### 5. Close a Long Stock trade
 
 **Capability:** Record a complete exit, see FIFO realized P&L,
 and retain terminal reason and Close Review without blocking factual capture.
@@ -412,9 +369,52 @@ full stock exits under original management only. D10–D11 add scaling and compl
 AC-LIFE-001/AC-POS-001; D16 completes the management/baseline fixture; D7 completes the non-agency terminal fixture; Rolled is added
 with Roll in D27. D15 completes Journal defaults; D27 completes Catalog defaults.
 
-**Prerequisites / parallelism:** D5. FIFO/workflow/Journal effects and exit/Close
+**Prerequisites / parallelism:** D4. FIFO/workflow/Journal effects and exit/Close
 Review/detail UI can proceed in parallel after the command/result is fixed. Trade
 agreement, fee arithmetic, and seed additions require one owner at a time.
+
+### 6. Back up and verify the populated trading workspace
+
+**Capability:** Download and verify a complete Workspace containing actual Plans,
+Executions, full stock-closing facts, workflow/voluntary Journal entries including
+Close Review, and Manual Marks. Keep a portable copy before Restore is installed later.
+
+**User stories**
+
+- As a trader, I would like to download and verify my complete trading workspace,
+  so that I can keep a usable copy of my plans, executions, reflections and prices.
+
+**Introduces:** `Workspace.exportBackup/confirmBackup`, ordinary file download,
+selected-file read-back verification and an exact-source `CompletedBackupReceipt`.
+All four authoritative sections plus metadata/settings come from one bound snapshot;
+concurrent later changes are wholly outside it. Every current identity, fact/audit
+revision, form snapshot, seed state and nonsecret setting is included. Verify the
+complete selected artifact, manifest/digests and expected source binding; Downloaded
+alone is not completed. Export and verification work in readable Recovery Only.
+Use each fact module's owned `exportSnapshot` seam and return bound results without
+read-back of directly changed state. Do not build Restore preparation, analytical
+import validation or replace-Workspace UI; those belong to D17. Until then the UI
+identifies a verified saved copy without claiming that local Restore is installed.
+
+**Defaults and durability:** No new trading defaults or backup-status facts.
+Introduce the versioned portable artifact/manifest, counts/digests, source binding
+and verified result receipt. Private caches/projections, transient diagnostics and
+secrets are excluded. Preserve complete facts and artifact version provenance now,
+so D17 can restore earlier supported versions without inventing history. Every
+later durable change extends complete export/verification immediately.
+
+**Acceptance:** Partial AC-BACK-001, AC-DEL-005–006; inherited obligations.
+**Declared scope:** Complete populated D1–D5 export/read-back verification, including
+full stock closure and voluntary/Close Review Journal entries. D7 adds provider/credential-exclusion fixtures; D17 adds
+Restore and restored provider setup; D18–D19 add correction/Journal histories;
+D23 completes customized-definition fixtures for full AC-BACK-001. D17 completes
+Restore-related AC-DEL-005–006 boundaries. The pre-D6 export exception ends here;
+the explicitly deferred Restore boundary continues until D17.
+
+**Prerequisites / parallelism:** D5, with Plan/Execution/Journal/Mark capture
+from D1–D4 and full stock closure/Close Review from D5. Snapshot/artifact/verification work and backup/file-selection/result UI
+can proceed in parallel once bindings/results are fixed. Artifact/schema versions,
+module exports, snapshot bindings and release manifests have one owner at a time.
 
 ### 7. Trade exact Long Calls and Long Puts with automated Marks
 
@@ -662,7 +662,7 @@ disposal fees exactly once; unconsumed opening fees remain with open lots. Displ
 realized/open/combined results independently and include realized offset in Current
 payoff. Partial realization leaves lifecycle Open; only flat exposure closes it.
 The first reduction resolves any still-open initial entry window immediately before
-that reduction. Final agency/Close Review rules already installed in D6–D8 apply
+that reduction. Final agency/Close Review rules already installed in D5 and D7–D8 apply
 at the actual terminal event. Update risk, Review eligibility and decision-level
 Entry/Exit Scaling classification without counting broker fills as extra decisions.
 
@@ -936,12 +936,12 @@ Show versions, counts, migration/repair/rebuild effects, provider Needs Setup an
 exact target replacement impact. A stale/incompatible/corrupt candidate writes
 nothing. Apply requires Writable readiness, capacity/headroom, explicit whole-
 Workspace replacement, and an exact-target completed safety-backup receipt from
-D5 or deliberate decline after warning. A download alone or older receipt is
+D6 or deliberate decline after warning. A download alone or older receipt is
 insufficient. Atomically replace all sections/settings, rebuild private state,
 invalidate old views, re-establish readiness and return the new landing state.
 No merge, selective import or stable-identity reminting.
 
-Restore supports the earlier D5 artifacts and every schema added through D16,
+Restore supports the earlier D6 artifacts and every schema added through D16,
 using the lossless candidate migrations already required by their originating
 slices. Reproduce Positions, lots/fees, lifecycle, Journal/Debt, exact Mark/Bar
 history, Daily Review and Replay; disclose repairs rather than changing data during
@@ -963,7 +963,7 @@ customized-definition AC-BACK-001 fixtures, and D28 completes the mature mixed-f
 reconstruction/performance fixture. No current fact type is selectively omitted.
 The accepted temporary Restore deferral ends here.
 
-**Prerequisites / parallelism:** D16, consuming D5 backup/verification and every
+**Prerequisites / parallelism:** D16, consuming D6 backup/verification and every
 intervening fact schema. Candidate/migration/replacement work and Restore preview/
 safety-choice/landing UI can proceed in parallel once contracts are fixed. Workspace
 schema/transaction activation, owned validators, manifests, shared analysis and
@@ -1376,7 +1376,8 @@ parallel scheduling across deliverables.
 The D1 versus D2 boundary, approved stack, signature-feature priority and D7/D15
 split without cash-settlement eligibility enforcement remain accepted. D4 adds
 voluntary Journal creation with the first Daily Review; D19 adds Edit/Addendum/Void.
-D5 provides complete export/verification after all four data categories are populated;
+D5 delivers full stock closure; D6 then provides complete export/verification of
+all populated data categories, including closing facts and Close Review history;
 Restore is its own D17 after core trading/management and before correction D18.
 Separate scaling-in/out D10–D11 and legging-in/out D12–D13 precede corrections.
 Abandon D9 and Replay D14 precede Assignment/Exercise D15, which may still be
