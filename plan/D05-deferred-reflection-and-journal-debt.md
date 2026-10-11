@@ -2,7 +2,7 @@
 
 Definition: [implementation plan, D5](implementation-plan.md#d5--deferred-reflection-and-journal-debt). The definition (stories, capability set, introductions, acceptance claims) stays there and is not repeated here. D5 builds directly on D4: its schema-3 layout (D4 A38), the Daily Review coordinator and its task families (T4.14–T4.16), the Review UI (T4.21–T4.22), the clock pin (D4 A49), and the benchmark generator (D4 section 1.3). It also extends D2's Position Change Reflection form (D2 A33, T2.12), Journal obligation index (D2 A28), and migration engine (D2 A30), and D1's Entry snapshots by immutable definition reference (D1 A3) ([D4](D04-daily-review.md), [D2](D02-open-a-long-stock-position.md), and [D1](D01-start-a-workspace-and-confirm-a-long-stock-plan.md) breakdowns).
 
-Status: **draft, under review.** Decisions P16–P18 were agreed on 2026-10-11; P17 reopens part of the Daily Review contract at the user's explicit direction (plan decision 29). Everything else is written against those decisions and the working assumptions listed below.
+Status: **breakdown agreed by the user on 2026-10-11** (the plan as a whole is still a draft). Decisions P16–P18 were agreed on 2026-10-11; P17 reopens part of the Daily Review contract at the user's explicit direction (plan decision 29). Everything else is written against those decisions and the working assumptions listed below.
 
 ---
 
