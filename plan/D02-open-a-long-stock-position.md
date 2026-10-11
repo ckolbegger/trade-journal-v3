@@ -2,7 +2,7 @@
 
 Definition: [implementation plan, D2](implementation-plan.md#d2--open-a-long-stock-position). The definition (stories, capability set, introductions, acceptance claims) stays there and is not repeated here. D2 builds on D1's task identities, storage layout (A10), test tiers (decision 19), and harnesses ([D1 breakdown](D01-start-a-workspace-and-confirm-a-long-stock-plan.md)).
 
-Status: **draft, under review.** Decisions P4–P7 and the D1 amendment were agreed on 2026-10-11 (first section); P5–P7 are recorded as plan decisions 21–23. Everything else is written against them and the working assumptions listed below. References to D3 were changed to D4 on 2026-10-11, after D3 was merged into D4 (plan decision 24).
+Status: **draft, under review.** Decisions P4–P7 and the D1 amendment were agreed on 2026-10-11 (first section); P5–P7 are recorded as plan decisions 21–23. Everything else is written against them and the working assumptions listed below. References to D3 were changed to D4 on 2026-10-11, after D3 was merged into D4 (plan decision 24). Amended on 2026-10-11 during the D5 breakdown: T2.5's "reject Defer" case is replaced from D5 onward ([D5, section 1.2](D05-deferred-reflection-and-journal-debt.md#12-amendment-to-d2-agreed-2026-10-11-and-applied-to-d2s-t25)).
 
 ---
 
@@ -240,7 +240,7 @@ describe("prepareEffects: Position Change Reflection, Complete")
 describe("prepareEffects: Position Change Reflection, Decline")
   it should prepare a decline with the obligation key, Anchor, Source, origin, the definition revision shown, an optional reason, and moment and authored times
   it should reject a reason longer than 500 characters with ReasonTooLong
-  it should reject Defer with DispositionNotAllowed
+  it should reject Defer with DispositionNotAllowed (replaced from D5 by D5 T5.2, which installs Defer; the test is changed to the new expectation then, not deleted)
 
 describe("applyPreparedEffects and the obligation index")
   it should stage the Entry or decline and its obligation record in the shared transaction, mapped to Trade Record's durable Position Change identity

@@ -36,6 +36,8 @@ This document is the ordered list of vertical deliverables. It deliberately cont
 | 25 | **NYSE session policy: covered 2000 through the last published year (expected 2028); a session completes 30 minutes after its close** (D3/D4 breakdown, 2026-10-11). | Regular holidays come from rules; one-off closures and early closes come from a cited, versioned table. Outside coverage the app gives a diagnostic, never a guessed session. The close (16:00, or 13:00) stays the Review Cutoff for eligibility. The session becomes the Expected Mark Date and the latest Review Date at 16:30 (or 13:30). |
 | 26 | **Missing or later evidence is shown as Missing, with a dated last-close line and an at-entry line** (D3/D4 breakdown, 2026-10-11). | Current figures never use an earlier Mark or fill cost. When the current Mark is missing, or shares were bought after its close, a separately labelled line values the Position held at the latest earlier close with that session's own Mark. Shares bought after that close show risk and reward from their execution prices, labelled "at entry", never as P&L. D10's multi-Instrument and D7's option Trades extend the same lines. |
 | 27 | **No Reviews of missed sessions** (D4 breakdown, 2026-10-11). | Daily Review opens on the latest completed session only. Its Marks task also lists skipped sessions without Marks, which can be filled but do not block completion (AC-MARK-004). Opening an exact past date arrives in D15, because AC-REV-001 requires it. |
+| 28 | **A deferred reflection is due one session after the session it belongs to** (D5 breakdown, P16, 2026-10-11). | A Position Change belongs to the first session whose close is at or after its Economic Time, and its deferred reflection is due at the next session's close. The Debt stores its anchor and the rule; Daily Review and Trade Views classify it against session closes from Market Data, so Journal and Trade Workflows need no calendar. A deferral from the current session never reopens a completed Review. D6's Close Review Defer uses the same rule. |
+| 29 | **Spec reopened: owed reflections appear inside each Trade's card in the Daily Review, not as a separate task family** (D5 breakdown, P17, 2026-10-11, at the user's explicit direction). | Reopened passages: Daily Review, "Date, eligibility, and ordering" (task family 2, due Journal Debt) and `getDebt`'s global paging; the overview's "Open and save Daily Review"; AC-REV-002's "Mark, Debt, settlement, Trade order". The order becomes Marks, settlement (D7), then the Trade walk, and each Trade's card shows its Outstanding reflections, due ones blocking completion. Due Debt still blocks completion (glossary; ADR 0005). `getDebt` is not installed while every Trade with Debt is walked; D6 decides where Debt for a Trade outside the walk appears. Owed reflections can also be answered on Trade Detail through `Journal.save`, recording Source Trade Detail. The `specs/` files are unchanged here, because they are the shared baseline for every implementation; the user decides whether to amend them on `main`. |
 
 Review decisions accepted during the walkthrough are appended here.
 
@@ -71,7 +73,7 @@ These scenarios cover properties of the whole product. Every deliverable must re
 | D2 | [Open a Long Stock position](D02-open-a-long-stock-position.md) | 3 |
 | ~~D3~~ | Manual Marks and ongoing risk/reward: **merged into D4** (decision 24) | — |
 | D4 | [Daily Review, with Manual Marks and ongoing risk/reward](D04-daily-review.md) | 7 |
-| D5 | Deferred reflection and Journal Debt | 2 |
+| D5 | [Deferred reflection and Journal Debt](D05-deferred-reflection-and-journal-debt.md) | 2 |
 | D6 | Close a Long Stock position | 3 |
 | D7 | Single-leg options: happy path | 3 |
 | D8 | Backup and Restore | 3 |
@@ -267,7 +269,7 @@ Includes the former D3, Manual Marks and ongoing risk/reward (decision 24).
 - AC-REV-003 — full.
 - AC-JOUR-001 — full.
 - AC-REV-001 — partial (Open-at-cutoff eligibility for the latest session). Declared scope: exact-date open, Trades closed after the cutoff, and restatement after correction are completed in D15.
-- AC-REV-002 — partial (Marks, then Trades). Declared scope: the Debt family is completed in D5, and the settlement family in D7.
+- AC-REV-002 — partial (Marks, then Trades). Declared scope: due reflections in each Trade's card are added in D5 (decision 29), and the settlement family in D7.
 - AC-REV-005 — partial (Mark, acknowledgment, Trade fact, existing Action). Declared scope: correction is completed in D15, and changed Daily Bars in D11.
 - AC-REV-006 — partial. Declared scope: due Debt is completed in D5, settlement in D7, a Voided Action in D13, and fact correction in D15.
 - AC-MARK-003 — partial. Declared scope: "provider error never creates acknowledgment" is completed in D11.
@@ -291,25 +293,29 @@ Includes the former D3, Manual Marks and ongoing risk/reward (decision 24).
 1. As a trader, I would like to defer a Position Change Reflection when I record the fills, so that I can capture facts quickly and reflect when I have time.
 2. As a trader, I would like Daily Review to show my due reflections and let me answer or decline them there, so that I can keep my journal complete without hunting for what I owe.
 
-**Capability set.** Defer on Position Change Reflection creates Debt that snapshots the exact definition shown at the time. Daily Review gains a due-Debt task family after Marks: global, not limited to Open Trades. A due Debt can be answered against its original snapshot, which settles it, or explicitly declined. Debt status appears on Trade Detail.
+**Capability set.** Defer on Position Change Reflection creates Debt that snapshots the exact definition shown at the time. It falls due one session after the session it belongs to (decision 28). In Daily Review, each Trade's card shows its owed reflections, and due ones keep the Review Incomplete (decision 29). An owed reflection can be answered against its original snapshot, which settles it, or explicitly declined, in the Review or on Trade Detail. Debt status appears on Trade Detail. The entry form keeps Reflect now preselected.
 
 **Introduces**
 
 - *Operations:*
-  - Journal: Defer outcome; `save` (Journal-only Debt resolution: answer or decline); `query` (Debt, due-through).
-  - Daily Review: `getDebt` and `save` (`ResolveReviewDebt`).
-- *Mechanisms:* due-time semantics against the Review cutoff; the one-outcome-per-obligation-key invariant.
-- *Seeds:* none.
+  - Journal: Defer outcome; `save` (Journal-only Debt resolution: answer or decline); `query` (Outstanding Debt, Debt in the Trade narrative).
+  - Daily Review: owed reflections in `open` and `getTrade`; `save` (`ResolveReviewDebt`). `getDebt` is not installed (decision 29).
+  - Market Data: the previous session's close in frames.
+- *Mechanisms:* due classification against session closes; the one-outcome-per-obligation-key invariant.
+- *Seeds:* Journal: the Trade Detail Source (seed manifest v4).
 - *Durable representation:* schema change adding Journal Debt with its version history and the settlement link.
 
 **Acceptance**
 
 - AC-JOUR-003 — full.
 - AC-JOUR-005 — partial. Declared scope: Void reopening Debt is completed in D13.
-- AC-REV-002 — partial (Marks, Debt, Trades).
+- AC-REV-002 — partial (Marks, then Trades with due reflections in each Trade's card; decision 29).
 - AC-REV-006 — partial (due Debt).
+- AC-JOUR-004 — partial (Debt answered against its snapshot, proven with a disclosed fixture revision). Declared scope: completed through `reviseDefinition` in D26. Found in the D5 clause-level check.
+- AC-JOUR-007 — partial (the Trade Detail Source).
+- AC-REST-004 — partial (re-proven for the schema-4 migration).
 
-**Parallelism.** The Debt store and obligation invariant, and the Review Debt UI, proceed in parallel once the `getDebt`/`save` shapes are fixed.
+**Parallelism.** The Debt store and obligation invariant, and the Review and Trade Detail reflection UI, proceed in parallel once the Debt projection and the `ResolveDebt` command are fixed.
 
 ---
 
@@ -1119,3 +1125,10 @@ At the user's direction (2026-10-11), the clause-by-clause check of each accepta
 4. **D11:** `MarketData.recover` without a provider is installed in D4. D11 adds the Marketdata.app adapter inside it and the provider-configuration operations, rather than introducing `recover`.
 5. **D12:** `DailyReview.save` gains its Stop-Discipline Deviation reconciliation (D4 has none, A44).
 6. **D15:** add `DailyReview.open` with `ExactCompleted`, which AC-REV-001 requires (decision 27).
+
+### Raised by the D5 breakdown, for later breakdowns
+
+1. **D6:** decide where a Debt whose Trade is not walked appears under decision 29 (a card for that Trade, or a residual list through `getDebt`), with its integration case. Also settle the user's direction that the Review covers positions closed that day: the spec makes only Trades Open at the session's close eligible (Daily Review, "Date, eligibility, and ordering"; AC-REV-001), so a Trade closed during the session is not walked unless that rule is reopened too. Close Review's Defer reuses D5's Debt record, due rule (decision 28), and resolution paths.
+2. **D7:** mark AC-REV-002 full against the ordering reopened by decision 29: Marks, then settlement, then Trades with reflections in their cards.
+3. **D13:** Voiding the sole settling Entry reopens the Debt; the Journal section validator gains that transition.
+4. **D20:** Management Debt needs its place in the Trade card under decision 29 (the spec ranks it ahead of Journal-only Debt), plus `NeedsTradeWorkflow` from `Journal.save` and `ResolveReviewDebt`.
