@@ -26,17 +26,20 @@ This document is the ordered list of vertical deliverables. It deliberately cont
 | 15 | **D11 conditions accepted.** | Browser callability of Marketdata.app is verified before D11's task breakdown, with a stop-and-discuss if it fails; integration tests use a disclosed local HTTP emulator plus an optional live smoke test. |
 | 16 | **Current Exposure is D16, immediately before Revise management.** | It creates the reports area and `runReport` boundary, with no Report Period. Outcomes (D24) adds Report Periods; Scorecard, Journal Field, Customize prompts, and Install keep their order. |
 | 17 | **Customize Journal prompts (D26) precedes the Journal Field report (D27).** | The Journal Field report's Tag Select case needs a trader-configured Tag Select Prompt, which no initial definition has. |
+| 18 | **Capacity requirement uses a mature projection** (D1 breakdown, 2026-10-11). The readiness capacity check requires `quota ≥ 3 × M`, where `M` is the projected on-disk size of a Workspace at the mature dataset profile defined in the D1 breakdown. | D1 measures the record kinds it has and uses stated allowances for the rest. Every schema-changing deliverable replaces its allowances with measurements and recomputes the basis; a build check fails if the schema version changes without a recomputed basis. D8 checks the projection against the benchmark dataset loaded through a real Restore. The benchmark generator (D2 onward) uses the same profile. |
+| 19 | **Two test tiers; three-engine real-state evidence in RC** (D1 breakdown, 2026-10-11). | Routine browser suites run in Chromium only, and every readiness failure in them is produced by a disclosed fault-injection build. The real-state readiness and delivery matrix in Chromium, Firefox, and WebKit is RC, an approved layer-only checkpoint (see "Layer-only exceptions"). Each deliverable's AC-DEL rows cite Chromium evidence, with Firefox, WebKit, and real-state evidence marked pending RC until RC runs. |
+| 20 | **Plan confirmation Economic Time is trader-entered** (D1 breakdown, 2026-10-11). | It defaults to "now" in the Workspace time zone and may not be in the future. Opening Executions (D2 onward) must be at or after it, so a Plan recorded after the close still precedes its entry. |
 
 Review decisions accepted during the walkthrough are appended here.
 
 ## Rules every deliverable follows
 
-- **Vertical and production-reachable.** Every deliverable is operated through the production UI, through the real application/domain code, against real IndexedDB persistence. No deliverable is layer-only, and none is planned as an exception.
+- **Vertical and production-reachable.** Every deliverable is operated through the production UI, through the real application/domain code, against real IndexedDB persistence. No deliverable is layer-only. The one approved layer-only checkpoint, RC, is not a deliverable and advertises no capability (see "Layer-only exceptions").
 - **Selectors offer only deliverable values.** Strategies, Entry Types/definitions, Sources, reasons, Tag Types, Report Periods/families, Break Down By dimensions, and lifecycle filters appear only when the deliverable that can honor them lands.
 - **Seed additions are migrations.** Each deliverable that adds defaults bumps the Catalog or Journal seed-manifest version. Existing Workspaces receive the additions through the startup migration/seed path without overwriting trader changes.
 - **Durable-representation changes carry their migration.** A deliverable marked "schema change" bumps the schema version and includes the forward migration from every earlier supported version through the isolated candidate database and pointer flip. It also includes the migration-failure test. From D8 onward it also bumps the backup artifact version and the Restore migration that goes with it.
 - **Capability honesty.** Each deliverable adds exactly its completed operations and variants to the Installed Capability Manifest. Anything not yet delivered is absent from navigation and calls, never shown as a domain `Unavailable`.
-- **Gate.** Each deliverable ends with its cumulative unit and mock-free integration suites green, then a passing fresh browser critic, as required by the planning protocol.
+- **Gate.** Each deliverable ends with its cumulative unit and mock-free integration suites green, then a passing fresh browser critic, as required by the planning protocol. The browser part of those suites runs in Chromium with the faults build (decision 19). RC runs before every Cloudflare publish.
 
 ### Cumulative obligations
 
@@ -51,13 +54,13 @@ These scenarios cover properties of the whole product. Every deliverable must re
 | AC-UI-001, AC-UI-002 | Each new view has live narrow/wide resize with state kept, Loading/Ready/Empty/Error states, keyboard use, axe checks, and WCAG AA |
 | AC-REBUILD-001 | Each new index or projection rebuilds to observationally equivalent results |
 | AC-PERF-001 | Cold start and warm Open-list latency stay within budget at the dataset scale the deliverable supports (harness introduced in D2) |
-| AC-DEL-003 | Browser-tab launch and browser-neutral readiness each deliverable; installation and installed launch in D28 (decision 9); production HTTPS evidence **pending** until the Cloudflare project exists (decision 4) |
+| AC-DEL-003 | Browser-tab launch and browser-neutral readiness each deliverable (Chromium; Firefox and WebKit through RC, decision 19); installation and installed launch in D28 (decision 9); production HTTPS evidence **pending** until the Cloudflare project exists (decision 4) |
 
 ## Deliverable summary
 
 | # | Deliverable | Stories |
 |---|---|---|
-| D1 | Start a Workspace and confirm a Long Stock Plan | 4 |
+| D1 | [Start a Workspace and confirm a Long Stock Plan](D01-start-a-workspace-and-confirm-a-long-stock-plan.md) | 4 |
 | D2 | Open a Long Stock position | 3 |
 | D3 | Manual Marks and ongoing risk/reward | 3 |
 | D4 | Daily Review | 4 |
@@ -85,6 +88,23 @@ These scenarios cover properties of the whole product. Every deliverable must re
 | D26 | Customize Journal prompts | 1 |
 | D27 | Journal Field report | 1 |
 | D28 | Install the app | 1 |
+
+## Layer-only exceptions
+
+Each exception below has its own recorded user approval, as the planning protocol requires. None is a deliverable or release boundary, and none advertises a capability.
+
+### RC — Release conformance across engines
+
+Approved by the user on 2026-10-11, during the D1 breakdown.
+
+- **Why it is not tasks inside a vertical deliverable:** at the user's direction, the real-state readiness and delivery matrix in Chromium, Firefox, and WebKit stays out of routine test runs (decision 19). It is a reusable pre-publish procedure, not part of building any one capability.
+- **Why no smaller vertical slice is available:** it adds no trader-visible behavior; its only output is evidence.
+- **Advertised capability:** none. The Installed Capability Manifest and navigation are unchanged.
+- **How it is verified:** it runs in all three engines with real browser state and no faults build: each readiness check failing alone and two failing together; Integrity Blocked; offline cold restart and kill-after-commit restart; update with the synthetic second release, the corrupt release, and offline retention; tab launch with an unknown user agent; and the capacity measurement in Firefox and WebKit. Each run records exact engine and OS versions. Any failure blocks publishing.
+- **Consumer and blocking edges:** D1 → RC, because RC needs D1's service worker, readiness gate, and update flow. RC → every Cloudflare publish. Deliverables that change delivery behavior add cases to RC; D8 adds backup and verification in `Recovery Only` and the after-Restore readiness boundary, and D28 adds installed launch.
+- **When it is built:** before the first Cloudflare publish (user's choice). Until it runs, every AC-DEL row's Firefox, WebKit, and real-state evidence is marked pending RC, and engine-specific defects may surface only then.
+- **Effect on facts or historical coverage:** none.
+- **Task breakdown:** its own file in `plan/`, written when it is scheduled.
 
 ---
 
