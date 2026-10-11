@@ -488,13 +488,154 @@ record is renumbered.
 
 ---
 
+## D9 — Stop and target condition model across the option arc
+
+**Status:** settled by user decision, 2026-10-11.
+
+### The gap
+
+`trade-analysis.md:51-57` fixes the Plan Baseline *policy* but never the shape of the inputs, and
+`glossary.md:159` names two condition kinds without defining either:
+
+> **Underlying-price and structure-value Stops or Targets are independent OR conditions.** Every
+> condition remains visible. The headline distance uses the nearest monetary boundary, becomes zero
+> when any condition is crossed, and never changes the Position or Lifecycle State by itself.
+
+The requirement is incremental — stock stops and targets are underlying-price; option positions may
+also carry underlying-price conditions; multi-leg structures may carry several in both directions
+(the user's example: an Iron Condor with a downside and an upside underlying stop); and option
+positions additionally need conditions on the option's own value (the user's example: buy back a
+cash-secured put at 75% of the possible profit). The two kinds must be expressible from one model,
+built incrementally, without reshaping the frozen Plan record later.
+
+### Mapping
+
+"Stop or target on the price of the underlying" is an **underlying-price condition**. "Stop or target
+on the option's own price" is a **structure-value condition**. Both are required by `AC-CALC-003`
+("effective underlying-price and structure-value Stops/Targets with one crossed Stop and one reached
+Target"), and `trade-analysis.md:77,81` require per-condition status under independent OR semantics
+with every condition remaining independently visible.
+
+### The condition type
+
+```text
+ConditionId = stable identity of one condition across Management Revisions
+
+PlanCondition =
+    UnderlyingPriceCondition
+  | StructureValueCondition
+
+ConditionRole = Stop | Target
+
+ConditionBasis {
+  rationale:          the trader's stated reason for this condition
+  protects:           the Planned Leg(s) or structure this condition measures
+  direction:          BreachWhenAtOrBelow | BreachWhenAtOrAbove
+  measurementPolicy:  nearest nonnegative monetary boundary under independent
+                      OR with every other condition of the same role
+}
+
+UnderlyingPriceCondition {
+  conditionId:      ConditionId
+  kind:             UnderlyingPrice
+  role:             ConditionRole
+  boundaryPrice:    Price     -- exact decimal
+  monetaryBoundary: Money     -- exact decimal, frozen at confirmation
+  basis:            ConditionBasis
+}
+
+StructureValueCondition {
+  conditionId:   ConditionId
+  kind:          StructureValue
+  role:          ConditionRole
+  scope:         StructureScope
+  boundaryValue: Money        -- exact decimal
+  basis:         ConditionBasis
+  resolvedFrom:  ExplicitBoundary
+               | FractionOfFrozenStructuralMaximum(fraction, frozenMaximum)
+}
+
+StructureScope =
+    SingleContract(InstrumentKey)
+  | CoExpiringStructure(ordered participating leg identities, one expiration anchor)
+
+OriginalConditionSet {
+  conditions: ordered PlanCondition[]   -- the frozen original management
+  frozenAt:   confirmation Economic Time
+}
+
+EffectiveConditionSet =
+  OriginalConditionSet prospectively adjusted by effective Management Revisions
+  (add, replace, retire), per `glossary.md:60`
+```
+
+Policy carried with the type:
+
+- Every underlying-price condition observes the Plan's single common Underlying; the shape vocabulary
+  grants one common Underlying (`reference-catalog.md:80`), so no condition carries its own.
+- Every condition is an independent OR alternative: any crossed Stop is breached and any reached
+  Target is reached regardless of the others, and every condition stays visible.
+- Headline risk uses the nearest unbreached Stop boundary; headline reward uses the nearest unreached
+  Target boundary; the headline distance becomes zero when any Stop is crossed (`glossary.md:150-152`,
+  `glossary.md:159`).
+- A crossed condition never changes Position or Lifecycle State by itself (`glossary.md:159`).
+- `trade-analysis.md:57` requires the frozen Plan Baseline to use *the same* independent-OR,
+  nearest-nonnegative-monetary-boundary policy as current headlines, so the policy is computed over a
+  set from the first deliverable rather than being singular at D2 and plural later.
+- A `StructureValueCondition` whose scope spans more than one expiration is `Unavailable`, matching
+  `trade-analysis.md:89`.
+
+### Decisions taken
+
+**(a) `monetaryBoundary` is required on *every* underlying-price condition, Stop and Target alike.**
+For a Stop this is exactly the "frozen monetary loss boundary for measurement" that
+`trade-analysis.md:57` requires without allowing it to be mislabeled as a structure-value trigger. For
+a Target the specification does not state the requirement, but `glossary.md:152` defines Incremental
+Reward to Target as *the current monetary distance* from marked P&L to the nearest unreached Target
+boundary, and for an option position that distance cannot be computed from a price boundary alone: the
+shape carries no delta and the product performs no theoretical pricing. Requiring it uniformly keeps
+one shape across stock and options and avoids a migration at D8. For stock it is derivable (price
+distance times quantity) and is nonetheless frozen, for uniformity.
+*Rejected alternative:* require it only for Stops, per the letter of `trade-analysis.md:57`. Cheaper at
+D2, but it makes the D2 and D8 condition shapes differ.
+
+**(b) A percentage-of-maximum target freezes the resolved boundary, not the fraction.**
+The form may offer "75% of max profit" as an input convenience, but the Plan stores the resolved
+`boundaryValue` and retains `resolvedFrom` as disclosure, including the structural maximum at
+confirmation. *Rejected alternative:* store the fraction and re-resolve it. That would let a later
+Management Revision move a target the frozen Plan Baseline is supposed to fix (`trade-analysis.md:54`,
+`trade-analysis.md:109`).
+
+### Incremental build
+
+| Deliverable | Underlying-price conditions | Structure-value conditions |
+|---|---|---|
+| D2 | Constructible; modelled as an ordered set even though a stock Plan typically has one Stop and one Target | Reserved in the type, **not installed**: absent rather than a fake `Unavailable` (`overview.md:19`, `specs/README.md:98`) |
+| D4 | Evaluated as an OR set with per-condition status, nearest-boundary headline, and Overrun | Not constructible |
+| D8 | Constructible; the monetary boundary is now entered and frozen because options cannot derive it | Introduced for one exact contract |
+| D9 | Constructible; headline risk may be `Unbounded` | Introduced for premium-based exits |
+| D11/D12 | Several in both directions become the norm | On the whole co-expiring structure |
+| D14/D15 | Revisions and corrections operate on the set | Same |
+
+The durable frozen Plan record carries the `kind` discriminator from D2, so adding the
+`StructureValueCondition` variant at D8 is additive rather than a reshape.
+
+### Not changed
+
+`specs/` remains untouched. This is a branch-local reading and shape decision consistent with
+`trade-analysis.md` and `glossary.md`; it defines no new condition kind and adds no capability ahead
+of its deliverable.
+
+---
+
 ## Still open
 
 Specification gaps from intake remain limited to D1 and D2. D3 records the approved stack, D4 affirms
 the frozen offline-delivery requirement, D5–D6 record interpretations that avoid reopening frozen
-definitions, and D8 records the `Given`-setup mutation rules, including its three tiers and the
-prohibition on using authoritative-fact mutation to establish ordinary behaviour. The D3 verification
-items must be resolved inside the plan.
+definitions, D8 records the `Given`-setup mutation rules, including its three tiers and the
+prohibition on using authoritative-fact mutation to establish ordinary behaviour, and D9 records the
+stop and target condition model across the option arc. The D3 verification items must be resolved
+inside the plan.
 
 The vertical deliverable list is recorded in [vertical-deliverables.md](vertical-deliverables.md).
 The task-level breakdowns for D1–D7 are drafted under

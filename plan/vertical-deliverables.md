@@ -499,6 +499,34 @@ Stop Discipline arrives in D4 because Daily Review reconciles it atomically with
 Action. Planned-Leg Terms, Entry Size, and Unplanned Exposure arrive in D11/D12, where
 multi-leg conformance becomes meaningful.
 
+### Stop and target conditions
+
+The two condition kinds are **underlying-price** and **structure-value** Stops and Targets. Both are
+independent OR alternatives, every condition stays visible, the headline distance uses the nearest
+nonnegative monetary boundary and becomes zero when any Stop is crossed, and crossing never changes
+Position or Lifecycle State (`glossary.md:159`, `trade-analysis.md:77-81`). The model in full, including
+the type, is recorded as decision **D9** in
+[planning-decisions-2026-10-10.md](planning-decisions-2026-10-10.md).
+
+The condition set is **plural from D2**, because `trade-analysis.md:57` requires the frozen Plan Baseline
+to use *the same* independent-OR, nearest-nonnegative-monetary-boundary policy as current headlines. A
+singular baseline policy would diverge from D4's and put `AC-CALC-001`'s "1R remains $500" guarantee at
+risk. `StructureValueCondition` is reserved in the type from D2 and **not installed** until D8, so it is
+absent rather than a fabricated `Unavailable`.
+
+Each deliverable picks up the following, and a later breakdown must not re-derive or reshape the model:
+
+| Deliverable | Must carry |
+|---|---|
+| D2 | The `kind` discriminator in the durable frozen Plan record; an ordered condition set; baseline per-condition basis and nearest-boundary headline computed over the set; a confirmation form that can add conditions |
+| D4 | `evaluate` per-condition status and Overrun over the OR set with the nearest-boundary headline; `replay` Stop-Discipline episode fingerprints keyed per condition, so a multi-Stop Plan can hold concurrent episodes |
+| D8 | The `StructureValueCondition` variant; option instruments entering `derive`'s exact observation requirements; the monetary boundary entered and frozen, because options cannot derive it |
+| D9 | `Unbounded` headline risk alongside structure-value conditions |
+| D11/D12 | Several same-kind conditions in both directions; structure-value conditions over the whole co-expiring structure; a percentage-of-maximum target resolving to a frozen boundary at confirmation |
+| D14 | `reviseManagement` adding, replacing and retiring conditions in the effective set |
+| D15 | `assessChange` recomputing per-condition basis over the set |
+| D18/D19 | Per-condition status surfaced in views and reports |
+
 ### Parallelism
 
 Shared resources force serialization and need a single owner at a time: the IndexedDB
