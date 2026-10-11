@@ -77,15 +77,25 @@ These are decisions the frozen contracts do not settle. Each is a branch-local p
 consistent with `specs/`, not an amendment to `specs/`. They are listed in the order the brief gives
 them, with the consequence of getting each wrong.
 
-1. **`assessPlan`'s input shape for a long stock Plan.** `trade-analysis.md:51-57` fixes the baseline
-   *policy* but never the inputs. D2 decides the input is
-   `PlanAssessmentInput { strategyShape: immutable Strategy shape; intendedEntry: Price; plannedLegs:
-   ordered PlannedLeg[] with Instrument, quantity, side; originalManagement: ManagementCondition[]
-   where each condition is an independent OR alternative with an explicit basis; originalConditions
-   that name an underlying-price Stop also carry a frozen monetary loss boundary; exactContracts or
-   objective criteria per leg; economicTime }`. Consequences: this is the single most load-bearing
-   shape in D2 because D3, D4, D11, D12 and D14 all consume the same frozen Plan facts. It must be
-   agreed before T5 is implemented. §8 records it as a named under-specification.
+1. **`assessPlan`'s input shape for a long stock Plan — settled by decision D9.** `trade-analysis.md:51-57`
+   fixes the baseline *policy* but never the inputs. The input is
+   `PlanAssessmentInput { strategyShape; intendedEntry: Price; plannedLegs: ordered PlannedLeg[] with
+   Instrument, signed quantity and either an exact contract or complete objective criteria;
+   originalManagement: ordered PlanCondition[]; economicTime }`. The condition type is fixed in full by
+   decision **D9** in `plan/planning-decisions-2026-10-10.md`: a discriminated union on `kind` —
+   `UnderlyingPriceCondition` carrying an exact `boundaryPrice` plus a frozen `monetaryBoundary`, and
+   `StructureValueCondition` carrying a `scope` and a resolved `boundaryValue` — with every condition
+   carrying a `conditionId`, a `role` of Stop or Target, and a `ConditionBasis` whose `comment` is the
+   trader's optional view-only text. Conditions are independent OR alternatives, and the set is plural
+   from D2 because `trade-analysis.md:57` requires the frozen baseline to use the same
+   nearest-nonnegative-monetary-boundary policy as current headlines; a singular baseline policy would
+   diverge from D4's and put `AC-CALC-001`'s "1R remains $500" guarantee at risk. A `monetaryBoundary`
+   is required on every underlying-price condition, Target as well as Stop, because without it neither
+   the planned reward/risk ratio nor Ongoing Risk and Incremental Reward are computable as dollar
+   values (`trade-analysis.md:57`, `glossary.md:150-152`). D2 constructs only `UnderlyingPriceCondition`;
+   `StructureValueCondition` is reserved in the type and **not installed** until D8, so it is absent
+   rather than a fabricated `Unavailable` (`overview.md:19`). Consequences: this is the most
+   load-bearing shape in D2 because D3, D4, D11, D12 and D14 all consume the same frozen Plan facts.
 2. **Plan Baseline and 1R.** The Plan Baseline is computed at confirmation time from intended entry
    against every original Stop and Target under the independent-OR, nearest-nonnegative-monetary-
    boundary policy (`trade-analysis.md:57`). Original Planned Risk must be positive and *is* 1R.
@@ -365,8 +375,9 @@ Implement the Long Stock member of `TradeAnalysis.assessPlan` (`trade-analysis.m
 operation over the T1 representation's Plan shape and the decision-1 input struct. It validates leg
 coherence (one long Stock role with a positive relative quantity, `reference-catalog.md:80-83`),
 exact contracts or complete objective criteria, management coverage (at least one original Stop or
-Target whose basis is explicit, and a frozen monetary loss boundary when a Stop names underlying
-price), and the availability of a calculable numeric baseline. Acceptance returns normalized Plan
+Target, each with an explicit basis), the D9 condition union, and the availability of a calculable
+numeric baseline. At D2 the union is narrowed to `UnderlyingPriceCondition`: a `StructureValueCondition`
+is a typed not-installed rejection rather than a silently accepted or fabricated state. Acceptance returns normalized Plan
 semantics, the positive dollar value of 1R, the independently available Planned Expiration Payoff,
 and retained conformance-evidence requirements. Rejection is typed and identifies *every* missing or
 incoherent field, and writes nothing (`trade-analysis.md:55`). A Plan can be complete before any entry
@@ -380,6 +391,10 @@ describe("TradeAnalysis.assessPlan for the Long Stock shape, at the public asses
   it should reject with one typed issue per missing field and return no normalized semantics when the Plan omits the intended entry, omits every management condition and omits both the exact contract and the objective criteria
   it should reject a long stock Plan with a typed issue when the supplied leg's Instrument is not a Stock instrument, so that an option leg cannot be assessed under the Long Stock shape
   it should reject with a typed issue naming the Stop when the Stop names underlying price but carries no frozen monetary loss boundary, because measurement would be impossible without being mislabeled as a structure-value trigger
+  it should accept an ordered set of two underlying-price conditions, one direction at-or-below and one at-or-above, and return normalized semantics with both conditions retained and each condition's basis preserved, so that a multi-condition Plan is expressible before any option shape exists
+  it should reject with a typed not-installed issue naming the condition when a StructureValueCondition is supplied at D2, because that kind is reserved in the type and absent from the installed capability rather than a fabricated Unavailable
+  it should reject with a typed issue naming the condition when an underlying-price Stop sits at or above the intended entry of a long leg, so that a non-positive Original Planned Risk is named against the offending condition rather than reported as a generic incoherence
+  it should reject with a typed issue naming the condition when a condition omits its breach direction or the Planned Leg set it protects, because a condition's basis is required and only its comment is optional
   it should reject with a typed issue when the Plan has no management condition at all, so that a Plan without any Stop or Target never reaches a baseline
   it should return the Planned Expiration Payoff as an unavailable calculation state, not as a number, when a required input for that payoff is absent, while still returning valid normalized semantics and 1R
   it should return an identical normalized semantics value when the same Plan is assessed twice with the same Strategy shape, because the operation is pure and deterministic
@@ -585,7 +600,11 @@ basis. Original Planned Risk must be positive and *is* exactly 1R; "the frozen P
 1R" and there is no separate standing Accepted-Position baseline (`trade-analysis.md:109`). Each
 condition remains independently visible even when a headline nearest boundary exists. Defaults are
 forbidden: an unavailable or non-numeric baseline is a typed rejection of the Plan, not a coerced
-number (`trade-analysis.md:134`).
+number (`trade-analysis.md:134`). The arithmetic is computed over the ordered condition set rather
+than a single Stop and Target, because `trade-analysis.md:57` requires the baseline and current
+headlines to share one policy, and `AC-CALC-003` requires every effective condition to retain
+independent status. A D2 stock Plan typically carries one Stop and one Target; the set-shaped policy
+is what the multi-condition structures at D11/D12 need and what must not be retrofitted.
 
 **Unit test cases**
 
@@ -593,7 +612,8 @@ number (`trade-analysis.md:134`).
 describe("TradeAnalysis.assessPlan Plan Baseline computation, at the public assessPlan seam")
   it should return Original Planned Risk equal to the positive monetary distance from intended entry to the nearest nonnegative Stop boundary and expose that same value as 1R when the Plan has one Stop and one Target
   it should evaluate intended entry against every original Stop and Target independently and return per-condition basis for each when the Plan has several OR alternatives, so that the headline nearest boundary never hides a farther condition
-  it should select the nearest nonnegative monetary boundary as the headline when a structure-value condition and an underlying-price condition both apply, while both remain individually visible
+  it should select the nearest nonnegative monetary boundary as the headline Stop when two underlying-price Stops are OR alternatives at different distances, while the farther Stop remains individually visible with its own basis
+  it should keep a crossed Stop and an unreached Target independently visible in the returned per-condition basis rather than collapsing them into one headline number
   it should reject the Plan with a typed issue and return no 1R when every original condition yields a zero or negative monetary risk, because Original Planned Risk must be positive
   it should return the planned reward/risk ratio computed from the same frozen baseline values and re-derive an identical ratio when the Plan is assessed twice
   it should return an unavailable baseline rather than zero when a condition's basis cannot be computed from the supplied inputs
@@ -1033,9 +1053,11 @@ read operations during the success path only. No mock substitutes for any partic
 - **Consumed by:** T18.
 
 Build the production entry point: a confirmation form that renders the *exact* Plan Reflection
-definition revision it loaded, collects the Plan facts (Account, Long Stock Strategy, intended entry,
-Stop, Target, Planned Leg quantity and exact contract or objective criteria), and submits stable
-Prompt and Option identities. The UI renders the exact definition revision loaded for a form and
+definition revision it loaded, collects the Plan facts (Account, Long Stock Strategy, intended entry, an ordered
+list of underlying-price Stops and Targets with an optional view-only comment on each, Planned Leg
+quantity and exact contract or objective criteria), and submits stable Prompt and Option identities.
+The condition list is a list from D2 rather than a fixed Stop-and-Target pair, so the multi-condition
+structures at D11/D12 do not require the form to be rebuilt. The UI renders the exact definition revision loaded for a form and
 submits stable identities; a forward-only configuration revision never silently replaces an already
 rendered form (`ui-contract.md:75-76`). Opening, focusing, typing, selecting or abandoning a form is
 not saved evidence (`ui-contract.md:77`). A successful explicit Save is the persistence boundary and
@@ -1054,6 +1076,9 @@ describe("The Plan confirmation form, at its rendered-form and submit seams")
   it should leave the unsaved answer values intact when the viewport changes between narrow and wide while the form is open
   it should leave the unsaved answer values intact when the form is navigated away from and back within the active workflow, without writing any Entry, Debt, draft or version
   it should issue one confirmPlan call with the exact loaded definition revision and the complete Plan facts when Save is pressed on a complete form
+  it should submit an ordered condition set containing two underlying-price conditions, each with its role, direction, boundary price, frozen monetary boundary and optional comment, when the trader adds a second condition
+  it should submit the comment as view-only text attached to its condition and never as a boundary, a quantity or any other input to the baseline, when the trader writes "breaks below untouched demand zone" into a Stop's comment
+  it should keep each unsaved condition, including its comment, intact when the viewport changes or the form is navigated away from and back within the active workflow
   it should render the saved Plan, its 1R and the saved Entry from the returned post-commit state without issuing a follow-up read for the directly changed Trade and Entry, when Save succeeds
   it should return to the unsaved form with the entered values preserved and a plain explanation when the call returns a typed rejection or a conflict
 ```
@@ -1088,8 +1113,9 @@ Position Change, Execution, Position and Lot Match (`ui-contract.md:84`), and mu
 Lifecycle State, derived Terminal Disposition, optional Close/Abandonment Reason and any integrity
 disagreement as *separate* concepts, with independent calculation availability, exact observation
 dates and source, Stale context, correction indicators and View history (`ui-contract.md:86`). For
-D2 the only populated concepts are the frozen Plan, the frozen original management, 1R as the Plan
-Baseline, stored `Planned`, and the absence of a Terminal Disposition. The view must also render the
+D2 the only populated concepts are the frozen Plan, the frozen original management rendered as the
+ordered condition set with each condition's role, direction, boundary, frozen monetary boundary and
+comment, 1R as the Plan Baseline, stored `Planned`, and the absence of a Terminal Disposition. The view must also render the
 Loading, Ready, Empty and Error states distinguishably (`ui-contract.md:47-56`) and must never
 present a disagreement as agreement.
 
@@ -1103,6 +1129,8 @@ describe("The D2 Trade view, at its rendered read-model seams")
   it should render the Loading state before an authoritative result exists and the Error state with a retry action when the read cannot be assembled, rather than an Empty state in either case
   it should render the Empty state with an explanation and an appropriate next action when the account has no Trades at all
   it should render the Plan Reflection Entry's Thesis and Invalidation answers alongside the Plan values they supply when the confirmed Trade is read, so that a reader can see they are one entry and not two
+  it should render every frozen condition with its role, direction, exact boundary, frozen monetary boundary and comment, and render the comment as prose beside the value rather than as the value, so that no reader can mistake "breaks below untouched demand zone" for the boundary itself
+  it should render a condition with no comment without a placeholder, an empty bag or a fabricated Not Applicable state, because the comment is optional
   it should render 1R as the frozen baseline value and mark it immutable rather than presenting it as a current risk figure when the confirmed Trade is read
   it should render the D2-absent concepts as absent rather than as zero, an empty bag or a Not Applicable calculation when those concepts have no installed behavior, because uninstalled capability is absent and not a fabricated domain state
 ```
@@ -1404,11 +1432,15 @@ neither weakens nor re-owns them.
 
 ## 8. Open items and risks
 
-1. **The `assessPlan` input shape for a long stock Plan is genuinely under-specified.** The contract
-   fixes the baseline *policy* (`trade-analysis.md:57`) but never the inputs. §1 decision 1 proposes a
-   concrete struct and needs user alignment before T5 is implemented, because D3, D4, D11, D12 and
-   D14 all consume the frozen Plan facts this shape defines. A wrong choice here is a
-   migration-costly change, not a local refactor.
+1. **The `assessPlan` input shape is settled by decision D9.** The contract fixes the baseline
+   *policy* (`trade-analysis.md:57`) but never the inputs. §1 decision 1 records the concrete input and
+   points at D9 for the condition type, so T5 can be implemented without further alignment. The blast
+   radius is unchanged: D3, D4, D11, D12 and D14 all consume the frozen Plan facts this shape defines,
+   so a later change to the condition union is still migration-costly rather than a local refactor.
+   Three D9 residuals carry into this deliverable: a fraction-resolved boundary keeps `resolvedFrom` as
+   disclosure alongside the resolved value; `StructureValueCondition` is reserved in the type and not
+   installed before D8; and the condition `comment` is view-only, so it must never become a report
+   dimension (`AC-RPT-005` treats Text as Not Applicable).
 2. **Lot Matches are recorded *and* derived; D2 does not settle it but no longer leaves it open.**
    D2 creates no Lot Match. `trade-record.md:7` persists "active Lot-Match links" and
    `trade-analysis.md:63` reports disagreement against recorded links, so the recorded side is
@@ -1465,3 +1497,10 @@ neither weakens nor re-owns them.
     destructive Restore, which are D18's and D21's. T18's axe-core evidence is supporting evidence
     only: `ui-contract.md:125` makes the manual interaction record primary, so T20's critic report is
     what actually closes this row's D2 portion.
+
+11. **The condition representation is the prerequisite for `AC-CALC-003`, which D2 does not claim.**
+    `AC-CALC-003` requires "effective underlying-price and structure-value Stops/Targets" each
+    retaining "independent OR status/detail", and it belongs to D14's `AC:` line. D2 freezes the
+    condition set that makes it expressible but evaluates nothing, so §5 carries no row for it. The
+    risk worth watching is a later deliverable assuming a singular Stop-and-Target pair: the set-shaped
+    baseline arithmetic in T6 and the list-capable form in T16 exist to prevent exactly that.

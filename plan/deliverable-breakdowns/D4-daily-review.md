@@ -550,7 +550,14 @@ describe("TradeAnalysis.derive at the derivation seam")
 - **Blocking edges:** T10.
 - **Consumed by:** T12, T20, T23.
 
-`evaluate` accepts one `DerivedTradeState`, an exact observation frame, and any required historical condition evidence, and returns dated Mark-to-Market valuation with per-Instrument coverage; Ongoing Risk to each effective Stop, Worst-Case Ongoing Risk, Incremental Reward, and Plan-R conversions; per-condition Stop and Target status under independent OR semantics; Overrun when price or structure value has crossed a Stop without flattening the applicable Position; and Mark-dependent Deviation occurrences with the observation binding used (`trade-analysis.md:73-79`). Current calculations use only remaining open exposure, effective Management Revisions, and eligible exact-date Marks; a stale observation is context, not valuation evidence (`trade-analysis.md:81`). Realized-to-date P&L, each remaining Instrument component, the remaining-open total, Current Marked Trade P&L, and incurred fees are independently returned; a total is Unavailable if any required component lacks exact evidence while valid components and an explicitly labelled covered subtotal remain visible (`trade-analysis.md:83`, `overview.md:171`). Unavailable, Not Applicable, Value, and Unbounded stay distinct (`ui-contract.md:94`).
+`evaluate` accepts one `DerivedTradeState`, an exact observation frame, and any required historical condition evidence, and returns dated Mark-to-Market valuation with per-Instrument coverage; Ongoing Risk to each effective Stop, Worst-Case Ongoing Risk, Incremental Reward, and Plan-R conversions; per-condition Stop and Target status under independent OR semantics; Overrun when price or structure value has crossed a Stop without flattening the applicable Position; and Mark-dependent Deviation occurrences with the observation binding used (`trade-analysis.md:73-79`). Current calculations use only remaining open exposure, effective Management Revisions, and eligible
+exact-date Marks; a stale observation is context, not valuation evidence (`trade-analysis.md:81`).
+Conditions are evaluated as an ordered OR set under decision **D9** rather than as one Stop and one
+Target: every condition keeps its own status and basis, and the headline distance is the nearest
+nonnegative monetary boundary and becomes zero once any Stop is crossed. D4 constructs no
+`StructureValueCondition` — the kind is reserved in the type and not installed before D8 — so
+`evaluate` returns a typed unsupported-condition result for one instead of computing an
+underlying-price distance for it. Realized-to-date P&L, each remaining Instrument component, the remaining-open total, Current Marked Trade P&L, and incurred fees are independently returned; a total is Unavailable if any required component lacks exact evidence while valid components and an explicitly labelled covered subtotal remain visible (`trade-analysis.md:83`, `overview.md:171`). Unavailable, Not Applicable, Value, and Unbounded stay distinct (`ui-contract.md:94`).
 
 **Unit test cases**
 
@@ -560,6 +567,10 @@ describe("TradeAnalysis.evaluate at the valuation and risk seam")
   it should return the affected marked, risk, and reward results as Unavailable naming the exact Instrument and date while realized-to-date P&L remains a Value when one expected Mark is Missing (acceptance-contract.md:319-324)
   it should label a partial sum as a covered subtotal and never substitute fill cost, zero, or a Stale observation into it (overview.md:171)
   it should return Ongoing Risk to Stop from Monetary Ongoing Risk when it is a Value and from the evaluable Worst-Case Ongoing Risk otherwise, with the selected basis reported
+  it should return an independent status and basis for every condition in an OR set of two underlying-price Stops and one Target, so that the farther Stop stays visible when the headline reports the nearer one
+  it should return the headline risk as zero once any Stop in the set is crossed, while the uncrossed conditions remain visible with their own distances
+  it should attribute Overrun to the specific crossed Stop condition and leave an uncrossed second Stop without an Overrun when two underlying-price Stops are OR alternatives and only one has been crossed
+  it should return a typed unsupported-condition result naming the kind rather than an underlying-price distance when a StructureValueCondition reaches evaluate at D4, because that kind is reserved in the type and not installed before D8
   it should return Incremental Reward to Target with each underlying-price and structure-value condition keeping its own independent status
   it should return Overrun when price or structure value has crossed a Stop without flattening the applicable Position
   it should use only remaining open exposure, effective Management Revisions, and eligible exact-date Marks, so a retired condition does not contribute ongoing risk
@@ -585,7 +596,10 @@ describe("TradeAnalysis.evaluate at the valuation and risk seam")
 - **Blocking edges:** T11.
 - **Consumed by:** T19, T20, T23.
 
-Stop Discipline is derived as continuous episodes against the effective Stop revisions. An episode begins at the first exact observation demonstrating breach after activation or an observed unbreached state, and ends only with an exact unbreached observation or condition replacement/retirement; a preceding gap means "first observed", never a fabricated crossing date; stable episode fingerprints allow atomic create/retain/supersede/Void reconciliation without daily duplicates (`trade-analysis.md:95`). Stop Discipline is an occurrence/episode and not one duplicate fact per observed date (`trade-analysis.md:112`). `replay` accepts one corrected snapshot plus an ordered series of explicit Mark frames over a caller-specified lifetime, and it neither selects dates nor carries values through missing evidence (`trade-analysis.md:93`).
+Stop Discipline is derived as continuous episodes against the effective Stop revisions. An episode begins at the first exact observation demonstrating breach after activation or an observed unbreached state, and ends only with an exact unbreached observation or condition replacement/retirement; a preceding gap means "first observed", never a fabricated crossing date; stable episode fingerprints allow atomic create/retain/supersede/Void reconciliation without daily duplicates (`trade-analysis.md:95`). Stop Discipline is an occurrence/episode and not one duplicate fact per observed date
+(`trade-analysis.md:112`). Episode fingerprints are keyed per Stop condition and not only per Trade,
+because the effective condition set is plural under decision **D9**: two OR alternative Stops can be
+breached at once and must yield two concurrent episodes rather than one merged episode. `replay` accepts one corrected snapshot plus an ordered series of explicit Mark frames over a caller-specified lifetime, and it neither selects dates nor carries values through missing evidence (`trade-analysis.md:93`).
 
 **Unit test cases**
 
@@ -594,6 +608,9 @@ describe("TradeAnalysis.replay at the Stop-Discipline episode seam")
   it should return one episode with one stable fingerprint when exact observations demonstrate breach on consecutive marked dates
   it should begin the episode at the first observed exact breach and never at a fabricated crossing date when a gap precedes the first breaching observation
   it should end the episode at the first exact unbreached observation and not before
+  it should return one episode per breached Stop condition with distinct fingerprints when two underlying-price Stops are OR alternatives and the same observation breaches both
+  it should keep the second Stop's open episode open when one of two Stop conditions is replaced, rather than ending or superseding both
+  it should return no episode for the unbreached Stop of an OR set while the other Stop's episode is open
   it should retain a single episode when an unmarked date falls between two breaching exact observations, because a gap neither ends nor restarts the episode
   it should supersede the existing episode and begin a new one when the effective Stop condition is replaced, rather than extending the old episode across the replacement
   it should return byte-identical fingerprints for two replays over the same frames and the same effective Stop revisions, so reconciliation can never create a daily duplicate
@@ -1205,3 +1222,11 @@ Items 1, 3, 4, 5, 6, 7 and 9 are owned or explicitly deferred in D1's §7 mappin
 **10. The presentation seams for T22, T23, and T24 are pure models, not DOM tests.** D4's unit cases at those three tasks assert the presentation model — families, states, availability, order, layout, focus order, accessible name/role/state bindings — while rendered DOM behaviour is carried by the Playwright integration in T25 and the critic gate in T26. This is a deliberate division, not an omission, but it means a rendering defect alone would not be caught by a unit test; it must be caught by the browser suite or the critic, and then reproduced as a testing failure first (`planning-protocol.md:131`).
 
 **11. The brief pairs T8 with `D1:T7`, but D1's breakdown names `D1:T7` as the browser-host capability port, not a Pricing Provider port.** The id exists, so the task graph is valid, and T8 keeps the edge because the brief declares it. The capability D4 actually consumes through it is the typed capability-absence convention: a capability that was never delivered must be reported as a typed absent result rather than thrown, which is exactly what `market-data.md:135` requires of `recover` when no provider is installed. The Pricing Provider port itself is not installed by any deliverable before D8, which is consistent with D4's scope (provider recovery is out of scope here) but means the edge's rationale should be restated rather than assumed. This is reported rather than resolved: if `D1:T7` was intended to be the provider port, either the brief's edge or D1's task identity needs to change, and that is the coordinator's call.
+
+**12. The condition set is plural per decision D9, and structure-value conditions are absent.** D4
+evaluates an ordered OR set with per-condition status, a nearest-boundary headline and per-condition
+Overrun, and its Stop-Discipline fingerprints are keyed per condition so two OR alternative Stops yield
+two concurrent episodes. `StructureValueCondition` is reserved in the condition type and not installed
+before D8, so `evaluate` returns a typed unsupported-condition result rather than treating one as an
+underlying-price boundary; that absence is disclosed here instead of being presented as a fabricated
+`Not Applicable` calculation.

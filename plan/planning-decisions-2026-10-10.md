@@ -595,14 +595,17 @@ Policy carried with the type:
 ### Decisions taken
 
 **(a) `monetaryBoundary` is required on *every* underlying-price condition, Stop and Target alike.**
-For a Stop this is exactly the "frozen monetary loss boundary for measurement" that
-`trade-analysis.md:57` requires without allowing it to be mislabeled as a structure-value trigger. For
-a Target the specification does not state the requirement, but `glossary.md:152` defines Incremental
-Reward to Target as *the current monetary distance* from marked P&L to the nearest unreached Target
-boundary, and for an option position that distance cannot be computed from a price boundary alone: the
-shape carries no delta and the product performs no theoretical pricing. Requiring it uniformly keeps
-one shape across stock and options and avoids a migration at D8. For stock it is derivable (price
-distance times quantity) and is nonetheless frozen, for uniformity.
+The decisive reason is that the Plan Baseline must contain a *planned reward/risk ratio*
+(`trade-analysis.md:57`) and the headlines are defined as *monetary* distances — Ongoing Risk to Stop
+and Incremental Reward to Target are both "the current monetary distance" to a boundary
+(`glossary.md:150-152`). **Without a monetary boundary on a condition, neither the ratio nor the
+dollar-valued risk and reward can be computed at all**, for either role. For a Stop this is also
+exactly the "frozen monetary loss boundary for measurement" that `trade-analysis.md:57` requires
+without allowing it to be mislabeled as a structure-value trigger. For a Target the specification does
+not state the requirement, and for an option position the monetary measure cannot be derived from a
+price boundary alone: the shape carries no delta and the product performs no theoretical pricing.
+Requiring it uniformly keeps one shape across stock and options and avoids a migration at D8. For
+stock it is derivable (price distance times quantity) and is nonetheless frozen, for uniformity.
 *Rejected alternative:* require it only for Stops, per the letter of `trade-analysis.md:57`. Cheaper at
 D2, but it makes the D2 and D8 condition shapes differ.
 
