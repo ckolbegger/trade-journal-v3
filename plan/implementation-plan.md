@@ -1,0 +1,1078 @@
+# Implementation plan: vertical deliverables
+
+Status: **draft, under review**. Not frozen.
+Basis: the frozen `specs/` baseline and the approved stack in [technology-stack.md](technology-stack.md) (Profile A: React 19 + IndexedDB, hand-written service worker, Cloudflare Pages; Marketdata.app behind a replaceable Pricing Provider adapter). Branch `claude-opus-5.5`, `DEV_PORT=5175`.
+
+This document is the ordered list of vertical deliverables. It deliberately contains no task breakdowns, `describe`/`it should` cases, red/green procedures, or per-task evidence; those come later, per deliverable, once this list is agreed.
+
+## Recorded decisions
+
+| # | Decision | Effect on this plan |
+|---|---|---|
+| 1 | The early signature sequence is built on **Long Stock**. | The Strategy selector offers only Long Stock until D7. |
+| 2 | **Backup is not in D1.** | Until D8, `Recovery Only` offers reads and history but no backup export, and the not-protected warning offers the durability request but does not recommend a backup. |
+| 3 | The first Position Change Reflection offers **Complete and Decline only**. | Defer, Journal Debt, and Debt resolution arrive in D5, next to Daily Review. |
+| 4 | **Cloudflare project not yet available; loopback first.** | Deliverables complete on the secure loopback origin. Production HTTPS evidence for AC-DEL-003 stays *pending*, never passed, until the project exists. |
+| 5 | **The single-leg option happy path moves early (D7),** ahead of Backup and Restore. | The first backup format and Restore validation cover stock and single-leg option Trades. |
+| 6 | **Trade replay is a signature feature (D9).** | It comes right after single-leg options and Backup, before any correction or management-revision work. |
+| 7 | **Multi-leg options (D10) come right after replay, before Stop Discipline, voluntary journaling, Abandon, and Execution correction.** | Stop Discipline handles single- and multi-Instrument structures from the start, and Execution correction is leg-aware from the start, because choosing the leg to correct is part of that flow. |
+| 8 | **Revise management (D17) follows Execution correction (D15).** | Traders can fix entry errors before revising Stops and Targets. |
+| 9 | **D1 boundary accepted, without installation.** D1 keeps a minimal Web App Manifest for PWA identity (id, name, icons, start URL, scope) with `display: "browser"`, so no browser offers to install it. Installation is its own final deliverable (D28). | This narrows how the planning protocol's "PWA identity in the first mutating deliverable" requirement applies: identity, service worker, Offline Release Inventory, Runtime Readiness, and the write gate stay in D1. The `standalone` request, the install affordance, installed-mode testing, and installed-launch evidence move to D28. Until then, installation is neither offered nor supported. |
+| 10 | **Recording an assigned or exercised option waits for D20.** | From D7 to D20, an assigned Cash-Secured Put or exercised long option cannot be recorded. Its Settlement Due keeps that Review date Incomplete, and the app explains why. |
+| 11 | **Trade facts are stored as version chains from the start; only the representation is built early.** | From D1 (Plan facts), D2 (Executions), and D7 (settlements), each Trade fact is stored as a stable fact identity with a version list holding exactly one version. Lot Matches, Anchors, and Deviations reference fact identities. No version-history read, View history, Replace, Void, or effective-version selection beyond "the single version" is built before D15, which then adds those on the existing chains without a fact-shape migration. |
+| 12 | **No historical Stop Discipline backfill.** D12 records a Workspace-level Stop Discipline coverage start, the instant D12 first activates, kept in Workspace metadata and in backups. | Breach episodes are evaluated only from that instant: Trades open then are tracked forward, and an existing breach starts an episode at the first observation after activation, as after a gap. Earlier periods and already-closed Trades are "not evaluated". Expected and recorded occurrences therefore agree, Restore reproduces the same result instead of backfilling, and Daily Review, replay, Trade Detail, and the Scorecard disclose the boundary instead of implying no breaches. |
+| 13 | **Pricing Provider is D11, before Stop Discipline; the initial provider is Marketdata.app** (https://www.marketdata.app/). | Automatic closing prices and Daily Bars arrive when multi-leg Trades make manual Marks a daily chore, and Stop Discipline (D12) is built with Daily Bar high/low evidence from the start. |
+| 14 | **The provider sits behind a replaceable adapter.** | Marketdata.app is one adapter behind the spec's Pricing Provider port. Switching providers means building a new adapter and nothing else: no change to Market Data, Daily Review, Trade Analysis, the UI, storage, or backup. |
+| 15 | **D11 conditions accepted.** | Browser callability of Marketdata.app is verified before D11's task breakdown, with a stop-and-discuss if it fails; integration tests use a disclosed local HTTP emulator plus an optional live smoke test. |
+| 16 | **Current Exposure is D16, immediately before Revise management.** | It creates the reports area and `runReport` boundary, with no Report Period. Outcomes (D24) adds Report Periods; Scorecard, Journal Field, Customize prompts, and Install keep their order. |
+| 17 | **Customize Journal prompts (D26) precedes the Journal Field report (D27).** | The Journal Field report's Tag Select case needs a trader-configured Tag Select Prompt, which no initial definition has. |
+
+Review decisions accepted during the walkthrough are appended here.
+
+## Rules every deliverable follows
+
+- **Vertical and production-reachable.** Every deliverable is operated through the production UI, through the real application/domain code, against real IndexedDB persistence. No deliverable is layer-only, and none is planned as an exception.
+- **Selectors offer only deliverable values.** Strategies, Entry Types/definitions, Sources, reasons, Tag Types, Report Periods/families, Break Down By dimensions, and lifecycle filters appear only when the deliverable that can honor them lands.
+- **Seed additions are migrations.** Each deliverable that adds defaults bumps the Catalog or Journal seed-manifest version. Existing Workspaces receive the additions through the startup migration/seed path without overwriting trader changes.
+- **Durable-representation changes carry their migration.** A deliverable marked "schema change" bumps the schema version and includes the forward migration from every earlier supported version through the isolated candidate database and pointer flip. It also includes the migration-failure test. From D8 onward it also bumps the backup artifact version and the Restore migration that goes with it.
+- **Capability honesty.** Each deliverable adds exactly its completed operations and variants to the Installed Capability Manifest. Anything not yet delivered is absent from navigation and calls, never shown as a domain `Unavailable`.
+- **Gate.** Each deliverable ends with its cumulative unit and mock-free integration suites green, then a passing fresh browser critic, as required by the planning protocol.
+
+### Cumulative obligations
+
+These scenarios cover properties of the whole product. Every deliverable must re-prove them for the capabilities it adds. Each remains **partial** until the last deliverable, where it is marked full.
+
+| Scenario | What each deliverable re-proves |
+|---|---|
+| AC-RESP-001 | One-call post-commit results for each new mutation family, with no required read-back |
+| AC-CAP-001 | Manifest matches what is reachable; omitted behavior is absent |
+| AC-DEL-001 | Each new manual workflow works after a stopped, offline restart |
+| AC-DEL-004, AC-DEL-006 | Each new authoritative mutation returns `RuntimeNotWritable` outside `Writable`, at both the UI and persistence boundaries; readiness reruns at every boundary |
+| AC-UI-001, AC-UI-002 | Each new view has live narrow/wide resize with state kept, Loading/Ready/Empty/Error states, keyboard use, axe checks, and WCAG AA |
+| AC-REBUILD-001 | Each new index or projection rebuilds to observationally equivalent results |
+| AC-PERF-001 | Cold start and warm Open-list latency stay within budget at the dataset scale the deliverable supports (harness introduced in D2) |
+| AC-DEL-003 | Browser-tab launch and browser-neutral readiness each deliverable; installation and installed launch in D28 (decision 9); production HTTPS evidence **pending** until the Cloudflare project exists (decision 4) |
+
+## Deliverable summary
+
+| # | Deliverable | Stories |
+|---|---|---|
+| D1 | Start a Workspace and confirm a Long Stock Plan | 4 |
+| D2 | Open a Long Stock position | 3 |
+| D3 | Manual Marks and ongoing risk/reward | 3 |
+| D4 | Daily Review | 4 |
+| D5 | Deferred reflection and Journal Debt | 2 |
+| D6 | Close a Long Stock position | 3 |
+| D7 | Single-leg options: happy path | 3 |
+| D8 | Backup and Restore | 3 |
+| D9 | Trade replay | 1 |
+| D10 | Multi-leg option Strategies | 3 |
+| D11 | Automatic closing prices (Pricing Provider) | 3 |
+| D12 | Stop Discipline in Daily Review | 1 |
+| D13 | Voluntary journaling and Journal history | 3 |
+| D14 | Abandon a Plan | 1 |
+| D15 | Correct an Execution (Replace and Void) | 2 |
+| D16 | Current Exposure report | 1 |
+| D17 | Revise management | 1 |
+| D18 | Rebuild a Trade | 1 |
+| D19 | Mark history and change impact | 2 |
+| D20 | Assignment and Exercise | 2 |
+| D21 | Roll | 1 |
+| D22 | Tags, Idea Source, and Trade filters | 2 |
+| D23 | Manage references and Workspace settings | 2 |
+| D24 | Outcomes report | 2 |
+| D25 | Process Scorecard | 1 |
+| D26 | Customize Journal prompts | 1 |
+| D27 | Journal Field report | 1 |
+| D28 | Install the app | 1 |
+
+---
+
+## D1 — Start a Workspace and confirm a Long Stock Plan
+
+**Stories**
+
+1. As a trader, I would like the journal to verify that this browser can safely hold my data before I enter anything, so that I can trust that nothing I record is written somewhere that silently fails.
+2. As a trader, I would like to set up my Workspace with my brokerage Institution and Account, so that I can attribute every Trade to the account it was placed in.
+3. As a trader, I would like to confirm a Long Stock Plan with intended entry, Stop, Target, thesis, and invalidation before I enter, so that I can commit to a defined 1R before money is at stake.
+4. As a trader, I would like the app to reopen offline and to update only when I'm not in the middle of entering something, so that I can journal anywhere without losing unsaved work.
+
+**Capability set.** This is the PWA foundation plus the smallest real capability. It includes:
+
+- ordinary browser-tab use (installation is not offered until D28), with the full Runtime Readiness gate on every launch and the write gate in persistence;
+- `Unsupported`, `Recovery Only` (reads only), and Integrity Blocked views;
+- advisory storage-protection reporting with the durability request;
+- safe update notice and activation;
+- first-run initialization with time zone, then Institution and Account onboarding;
+- confirming a Long Stock Plan with its completed Plan Reflection;
+- a Planned Trade list and Trade Detail.
+
+**Introduces**
+
+- *Operations:*
+  - Workspace: `initialize` (fresh Workspace), `getStatus`, and `requestDurability`.
+  - Reference Catalog: `seedDefaults`, `save` (create Institution and create Account only), `query`, and `resolve` (`NewSelection` and `DisplayOnly`).
+  - Journal: `seedDefaults`, `getDefinitions`, and `prepareEffects`/`applyPreparedEffects` (Complete only).
+  - Journal: `query` (Trade narrative scope).
+  - Trade Analysis: `assessPlan` (Long Stock) and `derive` (Planned only).
+  - Trade Record: `prepareChange`/`applyPreparedChange` (ConfirmPlan), `getRecord`, and `queryRecords` (`CurrentState`, Summary and AnalysisInput).
+  - Trade Workflows: `confirmPlan`.
+  - Trade Views and Reporting: `browseTrades` (Planned) and `getTradeDetail` (Planned).
+- *Mechanisms:*
+  - A minimal Web App Manifest for identity (id, name, icons, start URL, scope) with `display: "browser"`.
+  - The versioned service worker with a digest-verified Offline Release Inventory, and the update-available notice with deferred activation.
+  - The four-check Runtime Readiness gate, with simultaneous failures reported together.
+  - The persistence-level write gate and `RuntimeNotWritable`.
+  - Root pointer database plus Workspace database; one-transaction semantic commit with the early-auto-commit guard; revision counters and `WorkspaceSnapshotBinding`.
+  - Installed Capability Manifest.
+  - BigInt rational values; injected clock and Temporal time-zone handling.
+  - Responsive navigation shell (narrow bottom bar, wide sidebar).
+  - The capacity requirement formula, which is recomputed whenever the schema grows.
+- *Seeds:*
+  - Catalog: the Long Stock Strategy only.
+  - Journal: the Plan Reflection Entry Type with its exact initial definition, and the Plan Confirmation Source.
+- *Durable representation:* the initial schema, holding Workspace metadata and settings (time zone), the Catalog, the Journal (Entry identities and versions, definitions), Trade documents (Plan, Planned Leg, original management, stored lifecycle and index), with each Trade fact held as a stable fact identity plus a single-version list (decision 11), and the diagnostics store.
+
+**Acceptance**
+
+- AC-PLAN-001 — partial. Declared scope: options are added in D7, and objective selection criteria complete it in D10.
+- AC-PLAN-002 — partial. Declared scope: incoherent multi-leg shape and objective-leg evidence are completed in D10.
+- AC-LIFE-001 — partial (Planned). Declared scope: Open is completed in D2, and Closed with Terminal Disposition in D6.
+- AC-JOUR-001 — partial (Plan form). Declared scope: Review forms are completed in D4.
+- AC-JOUR-007 — partial (Plan Reflection). Declared scope: all seven types are seeded by D17, and repeat seeding over trader revisions is proven in D26.
+- AC-REF-001 — partial (Long Stock). Declared scope: completed in D22.
+- AC-DEL-002 — full, proven with a synthetic second release.
+- AC-DEL-005 — partial. Declared scope: backup export and verification in `Recovery Only` are completed in D8.
+- AC-DEL-003 — partial (manifest identity, Offline Release Inventory, browser-tab launch, browser-neutral readiness on loopback). Declared scope: the `standalone` request, installation, and installed launch are completed in D28; production HTTPS evidence is pending.
+- Cumulative obligations begin here.
+
+**Parallelism.** Once the command and result shapes and the Trade List and Detail read models are fixed, the domain and persistence work (Catalog, Journal, Trade Record, Trade Analysis, Workflows) can proceed in parallel with the UI. The delivery and readiness track (manifest, service worker, inventory, gate) is independent of the domain track until the write gate joins them.
+
+---
+
+## D2 — Open a Long Stock position
+
+**Stories**
+
+1. As a trader, I would like to record the fills from one entry decision as a single Position Change against my Plan, so that I can see my open Position, Lots, and fees exactly as executed.
+2. As a trader, I would like to reflect on each entry decision when I record it, or explicitly decline, so that I can capture my state of mind while it's fresh.
+3. As a trader, I would like to see how my actual entry compared with my Plan, so that I can learn whether I execute my plans as written.
+
+**Capability set.** This covers opening and scale-in Position Changes for Long Stock, with one or more Executions per decision. The Trade moves from Planned to Open. The trader sees the Position, Open Lots, and opening fees; Entry Quality once the plan is fully entered; and an Entry Size deviation when the planned quantity is exceeded. There is a Position Change Reflection that can be completed or declined, an Open Trade list, and Open Trade Detail.
+
+**Introduces**
+
+- *Operations:*
+  - Trade Workflows: `recordPositionChange` (opening and increase only).
+  - Trade Analysis: `derive`, extended with replay of facts, Positions, Lots, fees, expected lifecycle, Entry Resolution Point, Entry Quality, and Entry Size excess.
+  - Trade Record: Position Change change variant; recorded Deviation occurrences.
+  - Journal: Decline outcome.
+  - Trade Views and Reporting: `browseTrades` and `getTradeDetail` for Open Trades.
+- *Mechanisms:*
+  - First schema migration through the isolated candidate and pointer flip.
+  - Lifecycle-index Open query with batched AnalysisInput.
+  - Deterministic benchmark data generation through domain commands in the browser, and the latency harness for cold start and Open list.
+- *Seeds:* Journal: the Position Change Reflection definition and the Position Change Source.
+- *Durable representation:* schema change adding Position Changes and Executions (each a fact identity with a single-version list, per decision 11) with their Planned-Leg intent, recorded Deviation occurrences, and Journal decline records.
+
+**Acceptance**
+
+- AC-POS-001 — partial (opening and scale-in). Declared scope: completed in D6.
+- AC-POS-005 — partial (partial fills, Entry Size excess). Declared scope: Not Entered is completed in D6; Not Verifiable, Planned-Leg Terms, and Unplanned Exposure in D10.
+- AC-LIFE-001 — partial (Open).
+- AC-CALC-001 — partial (Entry Quality). Declared scope: Management Revisions are completed in D17.
+- AC-LIFE-003 — partial (normal reads surface disagreement without repairing it). Declared scope: Restore-preparation repair is completed in D8.
+- AC-REST-004 — partial (a migration failure keeps prior data readable). Declared scope: "exportable" is completed in D8.
+
+**Parallelism.** Once `PositionChangeCommand`/`Result` and the Open read model are fixed, the Trade Analysis replay and opening-Lot work, the Trade Record and migration work, and the entry form/Detail UI can proceed in parallel.
+
+---
+
+## D3 — Manual Marks and ongoing risk/reward
+
+**Stories**
+
+1. As a trader, I would like to enter closing Marks for my open Instruments, so that I can value my positions on real closing prices.
+2. As a trader, I would like to see each open Trade's current P&L, risk to Stop, reward to Target, worst case, and their Plan-R equivalents, so that I can manage risk against the 1R I committed to.
+3. As a trader, I would like the app to show a missing or stale Mark plainly instead of a substitute number, so that I can trust every figure it does show.
+
+**Capability set.** Manual Mark entry and correction (with a reason), the Expected Mark Date from the U.S. session policy, and Mark resolution as Available, Missing, or Stale context. Each open Trade shows Mark-to-Market valuation, Ongoing Risk to Stop, Worst-Case Ongoing Risk, Incremental Reward to Target, Maximum Incremental Reward (Unbounded for Long Stock), Plan-R conversions, per-condition Stop and Target status, and Overrun. These appear on the Open list and on Trade Detail, each with independent availability.
+
+**Introduces**
+
+- *Operations:*
+  - Market Data: `save` (initial Manual Mark, and correction of a believed-wrong Mark) and `query` (`ResolveFrames`).
+  - Trade Analysis: `evaluate`.
+  - Trade Views and Reporting: current evaluation for the Open list and Detail.
+- *Mechanisms:* the rule-based NYSE session policy (holidays, one-off closures, early closes) with a versioned identity, and an explicit diagnostic for dates outside coverage; `MarketDataSnapshotId` with evidence digests.
+- *Seeds:* none.
+- *Durable representation:* schema change adding Market Data Mark revision chains and the session-policy compatibility metadata.
+
+**Acceptance**
+
+- AC-MARK-001 — full.
+- AC-CALC-002 — partial (single-Instrument Missing Mark). Declared scope: the multi-Instrument case is completed in D10.
+- AC-CALC-003 — partial (underlying-price conditions). Declared scope: structure-value conditions are added in D10, and the "revision is not a Deviation" case completes it in D17.
+
+**Parallelism.** The session policy and Market Data work, and the `evaluate` arithmetic, are independent until frames feed `evaluate`. The UI can build against fixed frame and evaluation read models.
+
+---
+
+## D4 — Daily Review
+
+**Stories**
+
+1. As a trader, I would like an after-close review that walks me through every Trade that was open in that session, ordered by what needs my attention, so that I can manage my book deliberately each day.
+2. As a trader, I would like to record an Action for each Trade (Hold with one Save, or Exit, Roll, or Adjust with my intent), so that I can hold myself to an explicit daily decision.
+3. As a trader, I would like to acknowledge when a closing price can't be obtained, so that I can complete the Review honestly without inventing a price.
+4. As a trader, I would like to resume an unfinished Review or catch up on a missed date, so that I can keep every session reviewed without starting over.
+
+**Capability set.** The Review opens on `LatestCompleted` or an exact completed date. Eligibility is "Open at the session cutoff" under corrected facts. Task families run in this order: current Missing Marks, then the attention-ranked Trade walk, using transparent attention bands and reasons. The Daily Trade Review Action form preselects Hold as unsaved view state. Exit, Roll, and Adjust require Intent and record intent only. The trader can acknowledge an unavailable Mark or withdraw that acknowledgment. Completion is derived as Complete, Complete with Unavailable Marks, or Incomplete, and resumes from facts.
+
+**Introduces**
+
+- *Operations:*
+  - Daily Review: `open`, `getTrade`, and `save` (`SaveTradeAction`).
+  - Trade Record: `queryRecords` (`StateAtEconomicCutoff`).
+  - Market Data: `save` (assert unavailable, withdraw acknowledgment).
+  - Journal: obligation keying for (Trade, Review Date) and edit-by-expected-revision for Action retries.
+- *Mechanisms:* Market Data `ExpectedSnapshot` checks at Save; the attention-band ordering; derived completion.
+- *Seeds:* Journal: the Daily Trade Review definition and the Daily Review Source.
+- *Durable representation:* schema change adding Unavailable Mark Acknowledgment history and the obligation-key index for Daily Trade Review Entries.
+
+**Acceptance**
+
+- AC-REV-003 — full.
+- AC-JOUR-001 — full.
+- AC-REV-001 — partial. Declared scope: restatement after correction is completed in D15.
+- AC-REV-002 — partial (Marks, then Trades). Declared scope: the Debt family is completed in D5, and the settlement family in D7.
+- AC-REV-005 — partial (Mark, acknowledgment, Trade fact, existing Action). Declared scope: correction is completed in D15, and changed Daily Bars in D11.
+- AC-REV-006 — partial. Declared scope: due Debt is completed in D5, settlement in D7, a Voided Action in D13, and fact correction in D15.
+- AC-MARK-003 — partial. Declared scope: "provider error never creates acknowledgment" is completed in D11.
+
+**Parallelism.** Once the Review overview and Action read models are fixed, the cutoff query and attention ranking (domain) and the Review walk UI can proceed in parallel. The acknowledgment save is independent of both.
+
+---
+
+## D5 — Deferred reflection and Journal Debt
+
+**Stories**
+
+1. As a trader, I would like to defer a Position Change Reflection when I record the fills, so that I can capture facts quickly and reflect when I have time.
+2. As a trader, I would like Daily Review to show my due reflections and let me answer or decline them there, so that I can keep my journal complete without hunting for what I owe.
+
+**Capability set.** Defer on Position Change Reflection creates Debt that snapshots the exact definition shown at the time. Daily Review gains a due-Debt task family after Marks: global, not limited to Open Trades. A due Debt can be answered against its original snapshot, which settles it, or explicitly declined. Debt status appears on Trade Detail.
+
+**Introduces**
+
+- *Operations:*
+  - Journal: Defer outcome; `save` (Journal-only Debt resolution: answer or decline); `query` (Debt, due-through).
+  - Daily Review: `getDebt` and `save` (`ResolveReviewDebt`).
+- *Mechanisms:* due-time semantics against the Review cutoff; the one-outcome-per-obligation-key invariant.
+- *Seeds:* none.
+- *Durable representation:* schema change adding Journal Debt with its version history and the settlement link.
+
+**Acceptance**
+
+- AC-JOUR-003 — full.
+- AC-JOUR-005 — partial. Declared scope: Void reopening Debt is completed in D13.
+- AC-REV-002 — partial (Marks, Debt, Trades).
+- AC-REV-006 — partial (due Debt).
+
+**Parallelism.** The Debt store and obligation invariant, and the Review Debt UI, proceed in parallel once the `getDebt`/`save` shapes are fixed.
+
+---
+
+## D6 — Close a Long Stock position
+
+**Stories**
+
+1. As a trader, I would like to record partial and final exits, so that I can see exactly realized P&L under FIFO with fees counted once.
+2. As a trader, I would like to give one Close Reason when I close a Trade by choice, so that I can later study why my trades end.
+3. As a trader, I would like to complete, defer, or decline a Close Review when a Trade closes, so that I can capture the lesson without blocking the close.
+
+**Capability set.** This adds exposure-reducing and closing Position Changes: FIFO Lot Matches, lot-aware fee allocation, and realized P&L, with Realized R shown where 1R exists. The first reduction cuts off the Entry Resolution Point, which resolves Entry Size shortfall and Not Entered. The Trade moves from Open to Closed. Terminal Disposition is shown and kept separate from Close Reason, which is required only with trader agency. Close Review can be completed, deferred, or declined. There is a Closed Trade list, and Daily Review's Exit Action links to recording the exit.
+
+**Introduces**
+
+- *Operations:*
+  - Trade Workflows: `recordPositionChange` (reduce and close), with Close Reason and Close Review dispositions.
+  - Trade Analysis: FIFO matching, disposal fee allocation, realized P&L, Terminal Disposition, Entry Size shortfall, and Not Entered.
+  - Trade Views and Reporting: Closed list and Detail.
+- *Mechanisms:* recorded active Lot-Match links kept in agreement with analysis.
+- *Seeds:*
+  - Catalog: Close Reasons Target Reached, Stop Triggered, Thesis Invalidated, and Time-Based Exit. Rolled waits for D21.
+  - Journal: the Close Review definition and the Trade Close Source.
+- *Durable representation:* schema change adding Lot-Match links, Close Reason facts, and the Close Review obligation key.
+
+**Acceptance**
+
+- AC-POS-001 — full.
+- AC-LIFE-001 — full.
+- AC-POS-004 — partial (trader-directed exit). Declared scope: non-agency settlement is completed in D7.
+- AC-POS-005 — partial (Not Entered).
+
+**Parallelism.** Once the close command and Closed Detail read model are fixed, FIFO and fee arithmetic, lifecycle and disposition derivation, and the exit/Close Review UI proceed in parallel.
+
+---
+
+## D7 — Single-leg options: happy path
+
+**Stories**
+
+1. As a trader, I would like to plan and trade Long Calls, Long Puts, and Cash-Secured Puts on exact contracts, recording whether I intend to exercise, so that I can journal my option trades with the same discipline as stock.
+2. As a trader, I would like to see planned and current expiration payoff, including breakevens and maximum profit and loss, so that I can understand what each option position can do by expiration.
+3. As a trader, I would like Daily Review to tell me when an option needs a settlement outcome and let me record its Expiration explicitly, so that I can close out expired contracts truthfully.
+
+**Capability set.** The happy path for single-leg options covers:
+
+- *Instruments and Plans:* option Instruments (Underlying, expiration, strike, right, multiplier) and exact-contract Planned Legs. An underlying-price Stop keeps its frozen monetary loss boundary. Exercise Intent is captured for long options now, because D20 needs it.
+- *Trading:* opening, scaling, and closing through Executions, reusing D2 and D6.
+- *Marks and risk:* option Manual Marks and ongoing risk/reward.
+- *Payoff:* independent Planned and Current Expiration Payoff, with exact zero sets, signed extrema, and attainment sets.
+- *Settlement:* the Settlement Due task family in Daily Review, and explicit Expiration as a no-agency settlement Position Change, with no Close Reason and Terminal Disposition of Expiration.
+- *Reporting fact:* Option Disposition Timing is derived and shown on Closed option Trades.
+
+**Introduces**
+
+- *Operations:*
+  - Trade Analysis: `assessPlan` for single-leg options; `expirationPayoff`; Option Disposition Timing.
+  - Trade Workflows: `recordPositionChange` with an Expiration settlement member.
+  - Daily Review: settlement task family.
+- *Mechanisms:* option `InstrumentKey`, and exact rational payoff arithmetic.
+- *Seeds:* Catalog: the Long Call, Long Put, and Cash-Secured Put Strategies.
+- *Durable representation:* schema change adding option Instruments, Exercise Intent, and Expiration settlement facts.
+
+**Acceptance**
+
+- AC-SET-003 — full.
+- AC-POS-004 — full.
+- AC-REV-002 — full.
+- AC-CALC-004 — partial (single-leg and stock-only Not Applicable). Declared scope: multiple expirations are completed in D10.
+- AC-PLAN-001 — partial (exact contracts). Declared scope: objective selection criteria are completed in D10.
+
+**Known limitation until D20 (accepted, decision 10).** An assigned Cash-Secured Put, or an exercised long option, can't be recorded until Assignment and Exercise land in D20. Settlement Due for that contract stays open, which keeps that Review date Incomplete, and the app says why.
+
+**Parallelism.** Payoff arithmetic, the option Plan form, and the Settlement Due task family can proceed in parallel once the option Plan facts and payoff read model are fixed.
+
+---
+
+## D8 — Backup and Restore
+
+**Stories**
+
+1. As a trader, I would like to download a backup and then verify the saved file, so that I can know I really have a good copy of my journal.
+2. As a trader, I would like to restore a backup on this or another device after seeing exactly what it will replace, so that I can recover from loss or move my journal deliberately.
+3. As a trader, I would like to keep reading and backing up my journal when the browser can no longer write safely, so that a storage problem never traps my data.
+
+**Capability set.**
+
+- *Backup:* full backup export of one snapshot as a file download (Downloaded, with no receipt), and read-back verification that issues a `CompletedBackupReceipt`.
+- *Restore preparation:* treats the artifact as untrusted and is nonmutating. It verifies digests and versions, validates every module section, rederives lifecycle, Lot-Match, and Deviation agreement, migrates supported older versions, and discloses repairs.
+- *Restore application:* a replace-only atomic apply with an exact-target safety receipt or an explicit decline, followed by rerunning readiness.
+- *Recovery Only:* gains backup export and verification.
+- *Warnings:* the not-protected warning now recommends a backup.
+- *Coverage:* backup and Restore cover everything delivered so far, including stock and single-leg option Trades.
+
+**Introduces**
+
+- *Operations:*
+  - Workspace: `exportBackup`, `confirmBackup`, `prepareRestore`, and `applyPreparedRestore`.
+  - Every fact module: `exportSnapshot`, `prepareRestore`, and `applyPreparedRestore`.
+- *Mechanisms:* the canonical-JSON artifact with section and full SHA-256 digests; `CompressionStream`; the Workspace Backup Manifest; `zod` parsing of untrusted input; reuse of the candidate-database Restore path; the benchmark dataset loaded through a real Restore.
+- *Seeds:* none.
+- *Durable representation:* backup artifact format v1. This is portable and stores nothing in the Workspace, so the Workspace schema does not change.
+
+**Acceptance**
+
+- AC-REST-001 — full.
+- AC-REST-002 — full.
+- AC-REST-003 — full.
+- AC-REST-004 — full.
+- AC-DEL-005 — full.
+- AC-LIFE-003 — full.
+- AC-BACK-001 — partial. Declared scope: secrets exclusion of the provider credential is completed in D11; everything else is full.
+
+**Parallelism.** Each module's section export and prepare can be built in parallel once the artifact envelope is fixed. The Restore preview and confirmation UI proceeds against the fixed preview model.
+
+---
+
+## D9 — Trade replay
+
+**Stories**
+
+1. As a trader, I would like to see a stock or option Trade's session-by-session history of marked P&L, Position, Stops, Targets, and events, with gaps shown as gaps, so that I can review how a Trade really unfolded.
+
+**Capability set.** The replay derives its own lifetime for a Trade: from first exposure to the current Expected Mark Date for Open Trades, or to the final session for Closed Trades. It shows Position Change and settlement markers, close-only Mark points, explicit gaps, and calculated tracks for realized and marked P&L and Stop and Target status. A textual or tabular equivalent accompanies the chart, and audit navigation is available. It accepts no user range, does no interpolation, and is kept separate from Expiration Payoff. Planned and Abandoned Trades are Not Applicable.
+
+**Introduces**
+
+- *Operations:*
+  - Trade Analysis: `replay` (Positions, results, and condition status per frame).
+  - Market Data: `query` (`ReadSeries`).
+  - Trade Views and Reporting: `replayTrade`.
+- *Mechanisms:* the accessible SVG replay chart.
+- *Seeds:* none.
+- *Durable representation:* none.
+
+**Acceptance**
+
+- AC-MARK-004 — partial (points and gaps). Declared scope: Daily Bar candles are completed in D11.
+
+**Parallelism.** The `replay` arithmetic, the series read assembly, and the chart UI proceed in parallel once `TradeReplayView` is fixed.
+
+---
+
+## D10 — Multi-leg option Strategies
+
+**Stories**
+
+1. As a trader, I would like to plan and trade verticals, iron condors, PMCCs, and covered calls as one Trade, recording each multi-leg order as one decision, so that I can journal spreads the way I actually trade them.
+2. As a trader, I would like structure-level risk, reward, and payoff, and an explanation when payoff isn't available, so that I can manage a spread as a whole.
+3. As a trader, I would like to plan legs by objective selection criteria or exact contract, and mark an Execution as an unplanned hedge, so that I can keep honest records of how my fills relate to the Plan.
+
+**Capability set.**
+
+- *Strategies:* multi-leg Strategy shapes with coherence validation; multi-member Position Changes across legs; the Covered Call combination of Stock and Call.
+- *Plans:* objective selection criteria with retained evidence, and Not Verifiable when evidence is absent.
+- *Valuation:* structure-value Stops and Targets; synchronized multi-Instrument Marks; Payoff Unavailable for mixed expirations such as PMCC.
+- *Deviations:* Planned-Leg Terms and Unplanned Exposure.
+- *Replay and Review:* both cover multi-leg structures.
+
+**Introduces**
+
+- *Operations:* Trade Analysis: shape validation, objective-criteria conformance, multi-leg Deviations, structure-value evaluation and replay tracks, and multi-expiration payoff Unavailable.
+- *Mechanisms:* none new.
+- *Seeds:* Catalog: the Vertical Call Debit Spread, Vertical Call Credit Spread, Vertical Put Debit Spread, Vertical Put Credit Spread, PMCC, Iron Condor, and Covered Call Strategies.
+- *Durable representation:* schema change adding Plan selection criteria and evidence, structure-value conditions, and the `ExplicitlyUnplanned` intent.
+
+**Acceptance**
+
+- AC-POS-002 — full.
+- AC-POS-005 — full.
+- AC-PLAN-001 — full.
+- AC-PLAN-002 — full.
+- AC-CALC-002 — full.
+- AC-CALC-004 — full.
+- AC-CALC-003 — partial. Declared scope: completed in D17.
+
+**Parallelism.** Shape validation and conformance, structure valuation, and the multi-leg entry UI proceed in parallel once the Plan and Position Change shapes are fixed.
+
+---
+
+## D11 — Automatic closing prices (Pricing Provider)
+
+**Stories**
+
+1. As a trader, I would like the app to fetch closing prices and daily ranges for my open stocks and options automatically when I open Daily Review, so that I can stop typing Marks by hand.
+2. As a trader, I would like my own Manual Marks always to win over fetched prices, and to see where each price came from, so that I can trust the data and override it when it's wrong.
+3. As a trader, I would like to connect, replace, or disable my market-data provider with my API key kept private, so that I can choose my data source without exposing credentials or losing history.
+
+**Capability set.**
+
+- *Provider configuration:* zero or one enabled provider, shown as Disabled, Enabled (with redacted credential status), or Needs Setup. The credential is write-only: it is never returned, exported, or written into diagnostics.
+- *Automatic recovery:* Daily Review's `open` runs recovery for the Instruments it needs. Market Data enumerates the completed sessions, finds the real gaps, and fetches them in bounded batches. Partial responses are fine, and failures remain transient diagnostics.
+- *Precedence:* Manual Marks stay sticky. An identical provider price creates no new revision; a changed one appends a refresh revision. On an empty key, a Daily Bar's close seeds the provider Mark. Acknowledged keys remain eligible for later recovery.
+- *Daily Bars:* stored as their own evidence. Replay shows candles for Bar dates, points for close-only dates, and gaps.
+- *Offline and Restore:* with no network, recovery reports a safe operational diagnostic and every Manual path still works. A restored configuration comes back as Needs Setup until the credential is entered again.
+- *Initial adapter:* Marketdata.app (decision 13).
+
+**Adapter boundary (decision 14).** All provider-specific code lives in one adapter. The adapter:
+
+- implements the port's single operation, `fetchClosingObservations`;
+- maps Instrument keys to and from the provider's symbols, including option contract symbols;
+- converts provider payloads into the port's observations and safe diagnostics;
+- declares a descriptor with a stable `ProviderId`, a display label, its credential fields, supported Instrument kinds, and request bounds.
+
+Adapters are discovered at build time from one adapters folder, so adding one changes nothing elsewhere in the app. The configuration UI is rendered from the descriptor. The Installed Capability Manifest lists the installed adapters. Historical `ProviderId` provenance on Marks and Bars survives a provider switch, and every adapter must pass one shared conformance suite.
+
+**Introduces**
+
+- *Operations:*
+  - Market Data: `recover`, `getProviderConfiguration`, `configureProvider`; Daily Bar handling in `query` (`ResolveFrames`, `ReadSeries`).
+  - Pricing Provider: `fetchClosingObservations`, implemented by the Marketdata.app adapter.
+  - Daily Review: `open` with automatic recovery.
+  - Trade Views and Reporting: `replayTrade` with candles.
+- *Mechanisms:* the adapter registry and descriptor; the adapter conformance suite; device-local credential storage outside every backup section.
+- *Seeds:* none.
+- *Durable representation:* schema change adding Daily Bar revision chains, provider-configuration revisions (no secrets), provider provenance on Marks, and the separate credential store. The backup artifact version bumps too, and its secrets-exclusion checks now cover the credential.
+
+**Acceptance**
+
+- AC-MARK-003 — full.
+- AC-MARK-004 — full.
+- AC-MARK-005 — full.
+- AC-BACK-001 — full.
+- AC-MARK-002 — partial (Manual stickiness against provider closes and Bars). Declared scope: Mark history inspection is completed in D19.
+- AC-REV-005 — partial (changed Daily Bars). Declared scope: correction is completed in D15.
+- AC-MARK-006 — partial (Daily Bar evidence available). Declared scope: completed in D12, where Stop Discipline uses it.
+
+**Accepted conditions (decision 15).**
+
+1. Before task breakdown, confirm that Marketdata.app supports direct browser calls (CORS) with its token authentication, and that it provides end-of-day option closes and stock Daily Bars. If browser calls are not supported, stop and discuss: a server-side proxy would be new infrastructure outside the spec.
+2. Mock-free integration tests use a disclosed local HTTP emulator of the Marketdata.app endpoints as behaviorally compatible test infrastructure, plus an optional live smoke test with a real key.
+
+**Parallelism.** Once the port types and the adapter descriptor are fixed, three tracks can run in parallel: the Marketdata.app adapter, Market Data recovery and precedence, and the provider configuration UI.
+
+---
+
+## D12 — Stop Discipline in Daily Review
+
+**Stories**
+
+1. As a trader, I would like Daily Review to detect when I held a Position through a breached Stop and record it once per breach episode, so that I can see my real Stop discipline without daily duplicates.
+
+**Capability set.** `replay` is extended to find continuous breach episodes against the original Stops, from the Stop Discipline coverage start onward (decision 12), using "first observed" after a gap or at the coverage start. Long single-Instrument conditions use the same-date Daily Bar high and short ones the low, falling back to the exact Mark; multi-Instrument structures use synchronized same-date exact Marks; a gap proves nothing. Stable fingerprints identify each episode. Saving a Review Action atomically creates, retains, supersedes, or Voids the episode record. Completion is Incomplete while a deterministic Deviation awaits reconciliation. Episodes appear on Trade Detail and as replay markers.
+
+**Introduces**
+
+- *Operations:*
+  - Trade Analysis: `replay` episodes.
+  - Trade Record: the Deviation-reconciliation change.
+  - Daily Review: `save` with reconciliation.
+- *Mechanisms:* episode fingerprints.
+- *Seeds:* none.
+- *Durable representation:* schema change adding Stop Discipline occurrences with their evidence links, and the Stop Discipline coverage start in Workspace metadata, which is exported and restored with the Workspace.
+
+**Acceptance**
+
+- AC-REV-004 — full.
+- AC-MARK-006 — full.
+
+**Declared scope.** Stop revisions that end an episode by replacing its condition are completed in D17.
+
+**Coverage boundary (decision 12).** Periods before the coverage start are not evaluated for Stop Discipline. Review dates saved before D12 are unaffected, and Trade Detail and replay mark the boundary visibly.
+
+**Parallelism.** The episode work is domain-only until the reconciliation is wired into Review Save. The Detail and replay display is parallel with both.
+
+---
+
+## D13 — Voluntary journaling and Journal history
+
+**Stories**
+
+1. As a trader, I would like to write a Trader Reflection or Review Note at any time, about the market, a Trade, or one Execution, so that I can capture thoughts beyond the forms the workflows ask for.
+2. As a trader, I would like to browse my Journal timeline and each Trade's narrative, so that I can reread my reasoning in context.
+3. As a trader, I would like to edit, add to, or void an entry while its history stays visible, so that I can correct the record honestly.
+
+**Capability set.** This adds direct creation of Review Notes and Trader Reflections with a Standalone, Trade, or Execution Anchor. It adds a Journal timeline with its own navigation destination, filters, and the Trade narrative (deduplicated). The trader can Edit, add an Addendum, or Void an entry, with View history. Voiding the only Entry that settled a Debt reopens that Debt, and a Daily Trade Review Action can be Voided.
+
+**Introduces**
+
+- *Operations:*
+  - Journal: `save` (Create, Edit, Addendum, Void) and `query` (Timeline, Full History, filters).
+  - Trade Record: `resolveAnchors`.
+- *Mechanisms:* none new.
+- *Seeds:* Journal: the Review Note and Trader Reflection definitions, and the Trade Detail and Journal Sources.
+- *Durable representation:* schema change adding Addendum parent links and Void versions.
+
+**Acceptance**
+
+- AC-JOUR-002 — full.
+- AC-JOUR-005 — full.
+- AC-REV-006 — partial (Voided Action).
+
+**Parallelism.** The Journal mutation and query work and the timeline/composer UI proceed in parallel once the read models are fixed.
+
+---
+
+## D14 — Abandon a Plan
+
+**Stories**
+
+1. As a trader, I would like to abandon a Plan I never entered, with a reason, so that I can keep my Planned list honest and later study why I pass on ideas.
+
+**Capability set.** This delivers Abandonment of a confirmed Plan with no effective real position-changing fact. It requires one active Abandonment Reason and retires applicable Plan-related Debt. It produces no Close Reason and no Terminal Disposition, and adds an Abandoned list.
+
+**Introduces**
+
+- *Operations:*
+  - Trade Workflows: `abandonPlan`.
+  - Trade Record: the Abandon change.
+  - Trade Analysis: expected `Abandoned` lifecycle.
+- *Mechanisms:* none new.
+- *Seeds:* Catalog: the five Abandonment Reasons.
+- *Durable representation:* schema change adding the Abandonment fact.
+
+**Acceptance**
+
+- AC-LIFE-002 — partial. Declared scope: "Void the Execution first, then abandon" is completed in D15.
+
+**Parallelism.** Small; serial.
+
+---
+
+## D15 — Correct an Execution (Replace and Void)
+
+**Stories**
+
+1. As a trader, I would like to choose the Execution or leg that was recorded wrongly and fix it, or void one that never happened, after seeing what the correction changes, so that my records are right while the original stays visible.
+2. As a trader, I would like corrections to restate everything affected (lifecycle, Lots, P&L, Deviations, replay, and Review eligibility) at the original date, so that I can trust one consistent history.
+
+**Capability set.**
+
+- *Selection:* leg-aware selection of the fact to correct, within a multi-member Position Change.
+- *Preview:* the Correction Footprint for Replace and Void of single-Trade facts (Executions and Expiration).
+- *Commit:* an atomic commit of the corrected history and its reconciliation, with an impact acknowledgment where the change is material.
+- *History:* fact version chains with View history.
+- *Downstream effects:* Anchors stay attached; Debt retires when an underlying fact is Voided; Daily Review eligibility and completion are restated; replay reflects the corrected history.
+
+**Introduces**
+
+- *Operations:*
+  - Trade Workflows: `previewCorrection` and `commitCorrection` (Replace and Void).
+  - Trade Analysis: `assessChange`.
+  - Trade Record: `history` and the Correction change.
+- *Mechanisms:* Correction Footprint.
+- *Seeds:* none.
+- *Durable representation:* schema change adding Replace and Void version kinds, correction reasons, and the history index on the version chains that have existed since D1 (decision 11). Existing facts are not reshaped.
+
+**Acceptance**
+
+- AC-CORR-001 — full.
+- AC-CORR-002 — full.
+- AC-LIFE-002 — full.
+- AC-REV-001 — full.
+- AC-REV-006 — full.
+- AC-CORR-005 — partial (fact corrections). Declared scope: Mark corrections are completed in D19.
+- AC-REV-005 — full.
+
+**Parallelism.** `assessChange` and the footprint (domain) and the preview/commit UI proceed in parallel once the `CorrectionPreview` shape is fixed.
+
+---
+
+## D16 — Current Exposure report
+
+**Stories**
+
+1. As a trader, I would like one view of my aggregate open risk, reward, and P&L across all open Trades, with honest coverage, so that I can see my total exposure at a glance.
+2. As a trader, I would like to filter that view and break it down by one dimension, such as Strategy, Underlying, or Account, so that I can see where my risk is concentrated.
+
+**Capability set.** This creates the reports area with its first family, Current Exposure. It has no Report Period.
+
+- *Scope:* the Open Trades whose stored and expected lifecycle agree, all valued at one common valuation lens (the Expected Mark Date).
+- *P&L:* realized-to-date, remaining-open marked, and combined, each available independently.
+- *Risk and reward:* aggregate Plan Risk, Ongoing Risk to Stop, Worst-Case Ongoing Risk, and Incremental Reward.
+- *Conditions:* Stop and Target counts that count each Trade once; Overrun as each Trade's largest simultaneous overrun; Plan-R distributions.
+- *Coverage:* finite covered subtotals, Unbounded contributors named (for example short calls from D10), and Missing and Acknowledged Unavailable cohorts kept separate.
+- *Ratio:* an optional portfolio reward/risk ratio, only over an exactly like-covered finite set. Per-Trade ratios are never averaged.
+- *Filters and breakdown:* filters on Lifecycle, Account, Institution, Strategy, and Underlying (AND across dimensions, OR within one), with one Break Down By on Strategy, Underlying, Account, or Institution. Overall is always visible, and every figure navigates to its contributing Trades. Requesting a Lifecycle filter that excludes Open makes Current Exposure Not Applicable, never a zero portfolio.
+- *Shared report mechanism:* this filter and breakdown mechanism belongs to the reports area, not to Exposure. Every later report family (D24, D25, D27) uses it, and dimensions added later apply to every installed family where the spec allows them: Tag and Idea Source in D22; Option Disposition Timing and Entry/Exit Scaling in D24. Each filter offers only values the installed deliverables can honor. There are no custom Boolean filters, custom date ranges, or nested grouping.
+
+**Introduces**
+
+- *Operations:*
+  - Performance Analysis: `exposure`.
+  - Trade Views and Reporting: `runReport` (Exposure).
+- *Mechanisms:* the reports area and its navigation entry; `EvaluationSetBinding`; a population binding with page-exhaustion proof; the one-dimensional breakdown and contributor navigation shared by later report families.
+- *Seeds:* none.
+- *Durable representation:* none.
+
+**Acceptance**
+
+- AC-RPT-003 — full.
+- AC-RPT-006 — partial (Exposure filters and breakdown). Declared scope: completed in D27.
+- AC-RPT-001 — partial (Exposure offers no Report Period). Declared scope: the dated presets are completed in D24.
+
+**Parallelism.** The pure `exposure` fold and the reports-area UI proceed in parallel once the report view model is fixed.
+
+---
+
+## D17 — Revise management
+
+**Stories**
+
+1. As a trader, I would like to move my Stop or Target, including structure-value conditions, with a written rationale, so that my current risk numbers reflect how I'm managing the Trade while my original 1R stays frozen.
+
+**Capability set.** This delivers Management Revision of Stops and Targets from an Economic Time, with the required Revision Rationale and an optional revised thesis/invalidation pair. It saves one immutable Management Revision Entry. Ongoing risk and reward use the effective management, and the Plan Baseline never changes. Stop Discipline episodes end or restart on condition replacement. Management history appears on Trade Detail and as replay markers. A revision is never a Deviation.
+
+**Introduces**
+
+- *Operations:*
+  - Trade Workflows: `reviseManagement`.
+  - Trade Record: Management Revision change.
+  - Trade Analysis: `evaluate` and `replay`, using the effective management.
+- *Mechanisms:* none new.
+- *Seeds:* Journal: the Management Revision definition and Source. All seven Entry Types now exist.
+- *Durable representation:* schema change adding Management Revision facts.
+
+**Acceptance**
+
+- AC-CALC-001 — full.
+- AC-CALC-003 — full.
+
+**Parallelism.** The revision workflow and the revision UI proceed in parallel once the command and result are fixed.
+
+---
+
+## D18 — Rebuild a Trade
+
+**Stories**
+
+1. As a trader, I would like to reconstruct a Trade's Executions when the record is badly wrong, keeping my journal entries attached to the original history, so that I can repair the record without losing what I wrote.
+
+**Capability set.** Rebuild keeps the Trade's identity. Reconstructed facts receive new identities in an explicit order, and superseded facts remain addressable. Old Execution Anchors resolve as Superseded or Voided and are never redirected.
+
+**Introduces**
+
+- *Operations:* Trade Workflows: `previewCorrection` and `commitCorrection` (Rebuild).
+- *Mechanisms:* none new.
+- *Seeds:* none.
+- *Durable representation:* schema change adding Rebuild lineage and the superseded-fact markers.
+
+**Acceptance**
+
+- AC-CORR-003 — full.
+
+**Parallelism.** Small; serial.
+
+---
+
+## D19 — Mark history and change impact
+
+**Stories**
+
+1. As a trader, I would like to see which Trades, calculations, and recorded Deviations a Mark correction would affect before I save it, so that I can correct prices without surprises.
+2. As a trader, I would like to inspect a Mark's full history, including Manual saves, corrections, and acknowledgments, so that I can audit where every price came from.
+
+**Capability set.** This adds Mark change preview across every affected Trade, and a Mark correction committed against the exact Save precondition. Observation history becomes inspectable.
+
+**Introduces**
+
+- *Operations:*
+  - Trade Views and Reporting: `previewMarkChange`.
+  - Market Data: `query` (`InspectObservations`, Candidate Manual Mark frames).
+- *Mechanisms:* none new.
+- *Seeds:* none.
+- *Durable representation:* none.
+
+**Acceptance**
+
+- AC-CORR-005 — full.
+- AC-MARK-002 — full (Manual history and correction meaning here; Manual stickiness against provider data since D11).
+
+**Parallelism.** Small; the preview domain work and the UI can split once `MarkChangeImpactView` is fixed.
+
+---
+
+## D20 — Assignment and Exercise
+
+**Stories**
+
+1. As a trader, I would like to record an Assignment or Exercise and allocate the resulting shares to an existing stock Trade or a new one, so that my stock basis and option premium are accounted for exactly once.
+2. As a trader, I would like to be required to set management for stock I received through settlement, so that I can't carry unplanned exposure without Stops and Targets.
+
+**Capability set.**
+
+- *Settlement:* physical and cash Assignment and Exercise with a Settlement Price kept separate from adjusted basis or proceeds.
+- *Allocation:* explicit allocation, with Needs Resolution when ambiguous; a residual successor Stock Trade with settlement-origin Plan context; typed Exercise lineage; Exercise Intent (captured since D7) honored.
+- *Management:* Management Debt that only a Management Revision or exposure removal can resolve; workflow-routed Debt in Daily Review.
+- *Corrections:* linked multi-Trade correction for settlements.
+
+**Introduces**
+
+- *Operations:*
+  - Trade Workflows: `recordPositionChange` with Assignment, Exercise, and cash-settlement members.
+  - Trade Workflows: the linked `previewCorrection`/`commitCorrection`.
+  - Journal: Management Debt; `NeedsTradeWorkflow` routing.
+- *Mechanisms:* none new.
+- *Seeds:* none.
+- *Durable representation:* schema change adding settlement allocation, lineage, settlement-origin Plan context, and Management Debt routes.
+
+**Acceptance**
+
+- AC-SET-001 — full.
+- AC-SET-002 — full.
+- AC-SET-004 — full.
+- AC-JOUR-006 — full.
+- AC-CORR-004 — partial (settlement-linked). Declared scope: Roll-linked correction is completed in D21.
+
+**Parallelism.** The allocation and basis arithmetic and the settlement UI proceed in parallel once the settlement command shape is fixed.
+
+---
+
+## D21 — Roll
+
+**Stories**
+
+1. As a trader, I would like to roll part or all of a position into a newly planned Trade in one step, so that I can keep predecessor and successor linked without double-entering anything.
+
+**Capability set.** One Roll Position Change closes the selected predecessor quantity, confirms the successor Plan with its Plan Reflection, assigns the new Executions only to the successor, writes typed lineage, and takes Close Reason Rolled when the predecessor closes. Daily Review's Roll Action links here.
+
+**Introduces**
+
+- *Operations:* Trade Workflows: `recordPositionChange` (Roll variant), and linked Roll correction.
+- *Mechanisms:* none new.
+- *Seeds:* Catalog: the Rolled Close Reason.
+- *Durable representation:* schema change adding Roll lineage.
+
+**Acceptance**
+
+- AC-POS-003 — full.
+- AC-CORR-004 — full.
+
+**Parallelism.** Small; serial.
+
+---
+
+## D22 — Tags, Idea Source, and Trade filters
+
+**Stories**
+
+1. As a trader, I would like to tag my Trades and record where each idea came from, so that I can organize my journal and later analyze by them.
+2. As a trader, I would like to filter my Trades by Account, Institution, Strategy, Underlying, tag, and Idea Source, so that I can find the Trades I'm looking for.
+
+**Capability set.** This adds trader-defined Tag Types and Values, plus the fixed IdeaSource Tag Type with trader-created Values. Typed Trade tags and a Plan Idea Source can be set at confirmation. `browseTrades` gains filters (AND across dimensions, OR within) with Institution expansion. Tag and Idea Source become filters and Break Down By dimensions for every report family through the shared report mechanism (D16): Current Exposure now, and each later family as it lands. Tag grouping is disclosed as non-additive multi-membership.
+
+**Introduces**
+
+- *Operations:*
+  - Reference Catalog: `save` (Tag Types and Values).
+  - Trade Views and Reporting: `browseTrades` filters.
+  - Trade Record: `queryRecords` dimensions.
+- *Mechanisms:* none new.
+- *Seeds:* Catalog: the IdeaSource Tag Type, with no Values. All Catalog seeds now exist.
+- *Durable representation:* schema change adding Tag Type and Tag Value records, Trade tag references, and Plan IdeaSource.
+
+**Acceptance**
+
+- AC-REF-001 — full.
+- AC-RPT-006 — partial (filters). Declared scope: report grouping is completed in D27.
+
+**Note.** Plans confirmed before D22 have no Idea Source. Reports show them under `Unspecified`, which is honest because Idea Source is optional, so no history is lost.
+
+**Parallelism.** The tag management UI and the browse-filter work proceed in parallel.
+
+---
+
+## D23 — Manage references and Workspace settings
+
+**Stories**
+
+1. As a trader, I would like to rename, archive, retire, or reactivate my Accounts, Institutions, Strategies, Tags, and reasons, and define a custom Strategy shape, so that I can keep my reference lists current without rewriting history.
+2. As a trader, I would like to change my Workspace time zone after being told what it affects, so that I can keep review and report dates right if I move.
+
+**Capability set.** This adds catalog administration with revision history: rename, archive/retire, and reactivation. It also adds the policies that keep seeded values selectable and block archiving an Institution that still has active Accounts, plus typed custom Strategy shapes. Historical records keep both their label at the time and the current label, and new selections of inactive values are blocked. Time-zone settings get an explanation before Save.
+
+**Introduces**
+
+- *Operations:*
+  - Reference Catalog: `save` (rename, archive/retire, reactivate, custom shape) and `resolve` (`RetainedReference` and `HistoricalSnapshot`).
+  - Workspace: `saveSettings`.
+- *Mechanisms:* none new.
+- *Seeds:* none.
+- *Durable representation:* schema change adding Catalog availability and label revisions and the settings revision.
+
+**Acceptance**
+
+- AC-REF-002 — full.
+
+**Parallelism.** Catalog administration and time-zone settings are independent.
+
+---
+
+## D24 — Outcomes report
+
+**Stories**
+
+1. As a trader, I would like to see my closed-trade outcomes (P&L, win rate, R distribution, Profit Factor, and cumulative curves) for a named period, so that I can measure results honestly.
+2. As a trader, I would like to break those outcomes down by one dimension such as Strategy or Account, so that I can compare where my results come from.
+
+**Capability set.** This adds Report Period presets (All Time, Year to Date, Quarter to Date, Month to Date, This Week, Last Week) to the reports area created in D16, with the exact resolved dates echoed. It adds the Outcomes family, using the shared filters, breakdown, Coverage, and contributor navigation from D16, plus correction sensitivity. Option Disposition Timing and Entry/Exit Scaling become both filters and Break Down By dimensions, through the shared mechanism. They apply only to Closed Trades (Option Disposition Timing to Closed option Trades); inapplicable or insufficient-evidence Trades are disclosed in breakdown coverage while Overall keeps its full population.
+
+**Introduces**
+
+- *Operations:*
+  - Performance Analysis: `outcomes`.
+  - Trade Views and Reporting: `runReport` (Outcomes).
+  - Trade Analysis: Entry/Exit Scaling.
+- *Mechanisms:* Report Period resolution in the Workspace time zone.
+- *Seeds:* none.
+- *Durable representation:* none.
+
+**Acceptance**
+
+- AC-RPT-002 — full.
+- AC-RPT-001 — full, including Current Exposure continuing to offer no period.
+- AC-RPT-006 — partial (Outcomes with every filter and breakdown dimension). Declared scope: completed in D27.
+
+**Parallelism.** The pure `outcomes` fold and the period controls proceed in parallel once the period request shape is fixed.
+
+---
+
+## D25 — Process Scorecard
+
+**Stories**
+
+1. As a trader, I would like a descriptive scorecard of my process (Plans entered or abandoned, Entry Quality, Deviations, management, Stop and Target behavior, reflection follow-through, and option disposition), so that I can see how faithfully I follow my own process without a made-up grade.
+
+**Capability set.** This delivers every Scorecard family with its fixed natural dates, denominators, opportunity populations, and Coverage, with no composite score. It uses the shared report filters and one Break Down By (D16), with every dimension installed by then. Stop behavior before the Stop Discipline coverage start is disclosed as not evaluable, never counted as compliant (decision 12).
+
+**Introduces**
+
+- *Operations:*
+  - Performance Analysis: `scorecard`.
+  - Trade Views and Reporting: `runReport` (Scorecard).
+- *Mechanisms:* none new.
+- *Seeds:* none.
+- *Durable representation:* none.
+
+**Acceptance**
+
+- AC-RPT-004 — full.
+
+---
+
+## D26 — Customize Journal prompts
+
+**Stories**
+
+1. As a trader, I would like to reword, reorder, add, or retire prompts and options for future entries, so that I can evolve my journal without altering what I already wrote or owe.
+
+**Capability set.** This adds forward-only Entry Definition revisions with stable Prompt and Option identities. Workflow-critical roles are protected. Outstanding Debt and earlier Entries keep their original snapshots, and an open form is never silently replaced.
+
+**Introduces**
+
+- *Operations:* Journal: `reviseDefinition`.
+- *Mechanisms:* none new.
+- *Seeds:* none.
+- *Durable representation:* none, because definitions were revisioned from D1.
+
+**Acceptance**
+
+- AC-JOUR-004 — full.
+- AC-JOUR-007 — full.
+
+---
+
+## D27 — Journal Field report
+
+**Stories**
+
+1. As a trader, I would like to see how one categorical journal answer (such as Primary emotion or Conviction) is distributed over a period, so that I can notice patterns in my state of mind.
+
+**Capability set.** One Entry Type and one categorical Prompt are grouped by stable value. Each current effective Entry counts once. Outcome states are reported distinctly, and Text, Number, and Date Prompts return Not Applicable. It uses the shared report filters (D16). Any Trade filter excludes Standalone Entries, which have no Trade dimensions; with no Trade filter, an applicable Standalone Entry participates without a related Trade. Journal Field has no second breakdown, and a later Journal Idea Source answer never rewrites the Plan Idea Source dimension.
+
+**Introduces**
+
+- *Operations:*
+  - Performance Analysis: `journalField`.
+  - Trade Views and Reporting: `runReport` (Journal Field).
+  - Journal: `query` (Analysis projection).
+- *Mechanisms:* none new.
+- *Seeds:* none.
+- *Durable representation:* none.
+
+**Acceptance**
+
+- AC-RPT-005 — full.
+- AC-RPT-006 — full.
+
+---
+
+## D28 — Install the app
+
+**Stories**
+
+1. As a trader, I would like to install the journal as an app on my phone and laptop where my browser supports it, and launch it like any other app, so that I can open my journal in one tap, offline, without a browser tab.
+
+**Capability set.**
+
+- *Manifest:* switches to `display: "standalone"`.
+- *Install affordance:* offers installation where the host exposes it, or clear platform-appropriate instructions otherwise. It never infers support from browser or operating-system identity, and never requires installation when a tab is `Writable`.
+- *Installed launch:* runs the same Runtime Readiness gate, update safety, and offline restart as a tab.
+- *Separate storage:* where installation creates storage separate from the browser (for example an iPhone home-screen app), the app says plainly that this is a new, empty Workspace and that a verified backup plus Restore moves the journal in. It never implies that installation transferred data.
+
+**Introduces**
+
+- *Operations:* none new.
+- *Mechanisms:* manifest `standalone` request; install affordance and instructions; installed-mode test runs in the engines that expose installation.
+- *Seeds:* none.
+- *Durable representation:* none.
+
+**Acceptance**
+
+- AC-DEL-003 — full, except production HTTPS evidence, which remains pending until the Cloudflare project exists.
+- Cumulative obligations close here, re-proven in installed mode as well as in a browser tab: AC-RESP-001, AC-CAP-001, AC-DEL-001, AC-DEL-004, AC-DEL-006, AC-UI-001, AC-UI-002, AC-REBUILD-001, and AC-PERF-001 are marked full.
+
+---
+
+## Parallelism
+
+**Shared resources that need a single owner at a time:**
+
+1. The IndexedDB schema version and the migration chain, including the Trade Record document format and, from D8, the backup artifact version.
+2. The Catalog and Journal seed manifests.
+3. The Installed Capability Manifest.
+4. The release pipeline: Offline Release Inventory, service-worker version, and Web App Manifest.
+5. The navigation shell and route map.
+6. Shared Trade Analysis operations and the `DerivedTradeState` shape (`derive`, `evaluate`, `replay`, `assessChange`, `expirationPayoff`).
+7. The U.S. session policy.
+8. The shared Trade List and Trade Detail read models.
+9. The Pricing Provider port types and adapter descriptor. Adapters themselves are independent of each other.
+
+Every deliverable touches the capability manifest and the release pipeline. Even a safe pair can be developed in parallel only up to its release step, which a single owner applies in deliverable order.
+
+**Safe cross-deliverable pairs**, which avoid schema, seed, analysis-shape, and navigation-shell changes in at least one member:
+
+- **D8 ∥ D9.** Backup and Restore changes no Workspace schema, seeds, or analysis shapes, and adds its own navigation entry. Replay adds `replay` and lives inside Trade Detail. The one coordination point is that Restore verification calls `derive` but not `replay`.
+- **D9 ∥ D13**, and **D9 ∥ D14**. Replay is read-only, has no schema or seeds, and does not touch the navigation shell. D13 and D14 change schema and seeds, but not `replay`.
+- **D25 ∥ D26**, after D24 adds Report Periods. The Scorecard is a read-only report; Customize Journal prompts revises Journal definitions, which already carry revisions, so neither changes the schema or seeds. They share only the release step.
+- **D23 ∥ D24.** Catalog administration and settings against a read-only report. This is safe provided D23's schema change lands before D24 releases.
+
+All other adjacent pairs share the schema, a seed manifest, or a Trade Analysis operation and are serialized. In particular, D9 → D10 → D11 → D12 → D17 all extend `replay` or its series and must stay in order.
+
+## Acceptance coverage index
+
+The deliverable listed is the one where each scenario becomes **full**. 
+
+| Scenario | Full in | | Scenario | Full in |
+|---|---|---|---|---|
+| AC-RESP-001 | D28 (cumulative) | | AC-REV-001 | D15 |
+| AC-PLAN-001 | D10 | | AC-REV-002 | D7 |
+| AC-PLAN-002 | D10 | | AC-REV-003 | D4 |
+| AC-LIFE-001 | D6 | | AC-REV-004 | D12 |
+| AC-LIFE-002 | D15 | | AC-REV-005 | D15 |
+| AC-LIFE-003 | D8 | | AC-REV-006 | D15 |
+| AC-POS-001 | D6 | | AC-MARK-001 | D3 |
+| AC-POS-002 | D10 | | AC-MARK-002 | D19 |
+| AC-POS-003 | D21 | | AC-MARK-003 | D11 |
+| AC-POS-004 | D7 | | AC-MARK-004 | D11 |
+| AC-POS-005 | D10 | | AC-MARK-005 | D11 |
+| AC-SET-001 | D20 | | AC-MARK-006 | D12 |
+| AC-SET-002 | D20 | | AC-CALC-001 | D17 |
+| AC-SET-003 | D7 | | AC-CALC-002 | D10 |
+| AC-SET-004 | D20 | | AC-CALC-003 | D17 |
+| AC-CORR-001 | D15 | | AC-CALC-004 | D10 |
+| AC-CORR-002 | D15 | | AC-RPT-001 | D24 |
+| AC-CORR-003 | D18 | | AC-RPT-002 | D24 |
+| AC-CORR-004 | D21 | | AC-RPT-003 | D16 |
+| AC-CORR-005 | D19 | | AC-RPT-004 | D25 |
+| AC-JOUR-001 | D4 | | AC-RPT-005 | D27 |
+| AC-JOUR-002 | D13 | | AC-RPT-006 | D27 |
+| AC-JOUR-003 | D5 | | AC-REF-001 | D22 |
+| AC-JOUR-004 | D26 | | AC-REF-002 | D23 |
+| AC-JOUR-005 | D13 | | AC-BACK-001 | D11 |
+| AC-JOUR-006 | D20 | | AC-REST-001, AC-REST-002, AC-REST-003, AC-REST-004 | D8 |
+| AC-JOUR-007 | D26 | | AC-REBUILD-001 | D28 (cumulative) |
+| AC-DEL-001 | D28 (cumulative) | | AC-UI-001, AC-UI-002 | D28 (cumulative) |
+| AC-DEL-002 | D1 | | AC-PERF-001 | D28 (cumulative) |
+| AC-DEL-003 | D28 + Cloudflare | | AC-CAP-001 | D28 (cumulative) |
+| AC-DEL-004 | D28 (cumulative) | | AC-DEL-005 | D8 |
+| AC-DEL-006 | D28 (cumulative) | | | |
+
+## Review queue
+
+All queued decisions have been resolved and recorded above. New questions raised in later review are added here.
+
+### Deferred to task breakdown: clause-level acceptance check
+
+At the user's direction (2026-10-11), the clause-by-clause check of each acceptance scenario against its deliverables is done during each deliverable's task breakdown. A mechanical pass confirmed that every one of the 67 scenarios is marked full in exactly the deliverable the coverage index names. A partial clause-level read found these candidate gaps, to be resolved in the named deliverables' breakdowns:
+
+1. ~~**AC-RPT-005 needs a Tag Select Prompt.**~~ Resolved by decision 17: Customize Journal prompts (D26) now precedes the Journal Field report (D27).
+2. **AC-REF-001 (D22) includes retire and protection policy behavior.** Retirement arrives in D23, so the scenario may only become full there.
+3. **AC-BACK-001 (D11) and AC-REST-001 (D8) presume corrections, Voids, and every data kind.** Those arrive through D23. They may need to become cumulative obligations, re-proven by each data-adding deliverable.
+4. **AC-LIFE-003 (D8) covers each kind of agreed record.** Planned-Leg Terms and Unplanned Exposure (D10) and Stop Discipline (D12) add new recorded Deviation kinds after D8. Its "mutation is prepared" branch also needs an explicit owner, likely D2.
+5. **AC-SET-003 (D7) requires Settlement Due on Trade Detail as well as in Daily Review.**
+6. **AC-MARK-002 (D11 and D19) needs Market Data's "deliberate Manual valuation override" save intention.** D11 does not yet list it.
+7. **AC-MARK-004 says historical gaps are visible and nonblocking in Daily Review.** D4 does not yet state this.

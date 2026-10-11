@@ -20,7 +20,7 @@ Profile A: a TypeScript, React, and IndexedDB static PWA hosted on Cloudflare Pa
 | Untrusted input parsing | `zod` 4 for backup/Restore artifacts |
 | Testing | Vitest 4.1 (unit and Node integration with disclosed `fake-indexeddb`); Playwright with Chromium, Firefox, and WebKit against the built app on the secure loopback origin; `@axe-core/playwright` |
 | Hosting | Cloudflare Pages, a dedicated `*.pages.dev` HTTPS origin for this implementation |
-| Pricing Provider | Deferred; see below |
+| Pricing Provider | Marketdata.app as the initial adapter behind the Pricing Provider port; adapters are discovered at build time so another provider needs only a new adapter |
 
 ## How the stack meets the frozen contracts
 
@@ -78,5 +78,5 @@ Cloudflare Pages gives this implementation its own HTTPS origin, so its storage 
 
 ## Deferred decisions
 
-- **Pricing Provider.** The user will choose a provider and decide when to add it while the implementation plan is built out. Until then, no provider adapter appears in the Installed Capability Manifest, and Missing Marks are resolved through Manual Mark tasks.
+- **Pricing Provider details.** Marketdata.app was chosen on 2026-10-11 and is delivered in D11 of the implementation plan. Its browser callability (CORS with token authentication), end-of-day option closes, and integration-test arrangement are confirmed before D11's task breakdown.
 - **Exact package versions** are pinned when the plan is frozen.
