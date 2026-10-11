@@ -518,12 +518,12 @@ Each deliverable picks up the following, and a later breakdown must not re-deriv
 
 | Deliverable | Must carry |
 |---|---|
-| D2 | The `kind` discriminator in the durable frozen Plan record; an ordered condition set; baseline per-condition basis and nearest-boundary headline computed over the set; a confirmation form that can add conditions |
-| D4 | `evaluate` per-condition status and Overrun over the OR set with the nearest-boundary headline; `replay` Stop-Discipline episode fingerprints keyed per condition, so a multi-Stop Plan can hold concurrent episodes |
+| D2 | The `kind` discriminator in the durable frozen Plan record; an ordered condition set; baseline per-condition basis and nearest-boundary headline computed over the set; a confirmation form that can add conditions and record each condition's optional view-only comment |
+| D4 | `evaluate` per-condition status and Overrun over the OR set with the nearest-boundary headline, rendering each condition's comment as prose beside its value; `replay` Stop-Discipline episode fingerprints keyed per condition, so a multi-Stop Plan can hold concurrent episodes |
 | D8 | The `StructureValueCondition` variant; option instruments entering `derive`'s exact observation requirements; the monetary boundary entered and frozen, because options cannot derive it |
 | D9 | `Unbounded` headline risk alongside structure-value conditions |
 | D11/D12 | Several same-kind conditions in both directions; structure-value conditions over the whole co-expiring structure; a percentage-of-maximum target resolving to a frozen boundary at confirmation |
-| D14 | `reviseManagement` adding, replacing and retiring conditions in the effective set |
+| D14 | `reviseManagement` adding, replacing and retiring conditions in the effective set, including their comments prospectively |
 | D15 | `assessChange` recomputing per-condition basis over the set |
 | D18/D19 | Per-condition status surfaced in views and reports |
 

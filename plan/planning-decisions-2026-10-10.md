@@ -528,7 +528,9 @@ PlanCondition =
 ConditionRole = Stop | Target
 
 ConditionBasis {
-  rationale:          the trader's stated reason for this condition
+  comment:            trader-authored free text; view-only and never parsed
+                      (the trader's reason, e.g. "breaks below untouched demand
+                      zone" or "75% of max profit")
   protects:           the Planned Leg(s) or structure this condition measures
   direction:          BreachWhenAtOrBelow | BreachWhenAtOrAbove
   measurementPolicy:  nearest nonnegative monetary boundary under independent
@@ -584,6 +586,11 @@ Policy carried with the type:
   set from the first deliverable rather than being singular at D2 and plural later.
 - A `StructureValueCondition` whose scope spans more than one expiration is `Unavailable`, matching
   `trade-analysis.md:89`.
+- The condition `comment` is trader-authored free text and is view-only: never parsed, never matched,
+  never an input to the Plan Baseline, `evaluate`, `replay` or any report. `trade-analysis.md:113`
+  fixes that "display prose is not a branching contract". It is frozen with its condition and changed
+  prospectively only by a Management Revision, and the resolved boundary is always rendered as its own
+  value so the comment is never the sole record of what the trader meant.
 
 ### Decisions taken
 
@@ -606,11 +613,24 @@ confirmation. *Rejected alternative:* store the fraction and re-resolve it. That
 Management Revision move a target the frozen Plan Baseline is supposed to fix (`trade-analysis.md:54`,
 `trade-analysis.md:109`).
 
+**(c) Every condition carries an optional trader-authored comment, view-only and non-behavioural.**
+The trader records their reason in their own words: "breaks below untouched demand zone" on a pure
+underlying-price stop, or "75% of max profit" on a structure-value boundary resolved from a fraction.
+The field is display-only — never parsed, never matched, never used to derive a boundary — because
+`trade-analysis.md:113` fixes that display prose is not a branching contract. It is frozen with its
+condition, is changeable only prospectively through a Management Revision, and appears on Stops and
+Targets alike, since the percentage buy-back above is a profit Target while the demand-zone example is
+a Stop. It is also the trader-facing half of the per-condition basis that `trade-analysis.md:57`
+requires the Plan Baseline to contain, which is why it belongs on the condition rather than in a
+Journal Entry: the Journal records reflection, and this records why the boundary sits where it does.
+Because the comment may carry a fraction's intent, the resolved boundary is always shown as its own
+value so the comment is never the only record of the trader's meaning.
+
 ### Incremental build
 
 | Deliverable | Underlying-price conditions | Structure-value conditions |
 |---|---|---|
-| D2 | Constructible; modelled as an ordered set even though a stock Plan typically has one Stop and one Target | Reserved in the type, **not installed**: absent rather than a fake `Unavailable` (`overview.md:19`, `specs/README.md:98`) |
+| D2 | Constructible; modelled as an ordered set with an optional view-only comment, even though a stock Plan typically has one Stop and one Target | Reserved in the type, **not installed**: absent rather than a fake `Unavailable` (`overview.md:19`, `specs/README.md:98`) |
 | D4 | Evaluated as an OR set with per-condition status, nearest-boundary headline, and Overrun | Not constructible |
 | D8 | Constructible; the monetary boundary is now entered and frozen because options cannot derive it | Introduced for one exact contract |
 | D9 | Constructible; headline risk may be `Unbounded` | Introduced for premium-based exits |
