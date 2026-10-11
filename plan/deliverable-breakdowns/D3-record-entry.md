@@ -114,23 +114,38 @@ remainder are implementation decisions this breakdown makes and records.
   matched Quantity, policy = FIFO}` and never a price, basis, fee or P&L value.
 - *Status.* Flagged in §8 as a named under-specification needing user alignment before freeze.
 
-**2. Fee allocation is lot-aware, exactly once, and settles cents deterministically.**
+**2. Fee allocation is lot-aware, exactly once, and settles cents by largest-remainder apportionment.**
 
 - *Question.* `trade-analysis.md:105` fixes the rule (an opening fact's actual fee is proportional
   across the Lot quantities it creates; its unconsumed portion stays with the Open Lot; a disposing
-  fact's fee is proportional across its Lot Matches; realized P&L includes both attributable
-  portions) but not the rounding or residual-settlement policy a cent-exact audit needs.
-- *Decision.* Every allocation is computed in exact `decimal.js` arithmetic at full precision, each
-  share is rounded half-up to the cent, and the residual (the actual fee minus the sum of the rounded
-  shares) is added to the share with the largest exact unrounded amount, ties broken by the earliest
-  `FactOrder` of the lot's creating fact (opening side) or of the matched opening Lot (disposal side).
-  The sum of an allocation ALWAYS equals the recorded actual fee exactly.
+  fact's fee is proportional across its Lot Matches; realized P&L includes both attributable portions)
+  but not the rounding or residual-settlement policy a cent-exact audit needs. A residual policy is
+  forced rather than optional: `decimal.js` cannot represent a repeating proportion such as one third,
+  and the specification requires the fee to be applied exactly once, so the rounded shares must sum to
+  the actual fee.
+- *Decision.* Apportionment is to the cent, because an actual fee is itself a cent amount. Each exact
+  share is computed at full `decimal.js` precision; every share then takes its **floor** in cents; the
+  leftover cents are distributed one cent each to the largest fractional remainders, ties broken
+  deterministically by the earliest `FactOrder` of the lot's creating fact (opening side) or of the
+  matched opening Lot (disposal side). Because the shares sum exactly to a cent amount, the sum of the
+  floors can never exceed it, so only this distribution branch is reachable while fees are
+  cent-aligned; there is nothing to remove from any share. The sum of an allocation ALWAYS equals the
+  recorded actual fee exactly. Allocations are **recomputed from effective facts on every derivation**
+  and never accumulated incrementally, so rounding cannot drift across successive partial disposals.
 - *Consequence.* T6's tables carry cent-exact expectations and every allocation asserts
-  `sum(shares) = actual fee`. Rejected alternatives: storing unrounded rationals (defined outputs are
-  inert exact decimals, `trade-analysis.md:7`), and rounding each share independently without a
-  residual rule (the parts would not reconstruct the real fee, defeating "exactly once").
-- *Status.* This breakdown's decision; the residual rule becomes load-bearing at D10/D11 when one
-  settlement fact can create several Lots.
+  `sum(shares) = actual fee` as an invariant. Largest-remainder keeps every share within one cent of
+  its exact proportional value; rounding each share and settling the whole residual on one share does
+  not. With six equal shares of 1.667 cents and a 0.10 fee, largest-remainder gives four shares of
+  0.02 and two of 0.01, whereas rounding each share up and removing both excess cents from one share
+  leaves that share at 0.00 against an exact 0.01667. Rejected alternatives: storing unrounded
+  rationals (defined outputs are inert exact decimals, `trade-analysis.md:7`, and the approved stack
+  names no fraction type); rounding each share independently with no residual rule (the parts would
+  not reconstruct the real fee, defeating "exactly once"); and rounding each share then settling the
+  whole residual on one share, for the deviation reason above.
+- *Status.* Settled by user decision, 2026-10-11. The branch is reachable at D3 rather than being a
+  policy-only fixture: a disposing fact's fee is allocated across that disposal's Lot Matches, and a
+  non-terminal reduction can consume more than one Lot. Multi-Lot settlement at D10/D11 broadens the
+  same branch rather than introducing it.
 
 **3. `RecordedSequence` is assigned at commit for same-Economic-Time ties, and correction keeps it.**
 
@@ -619,7 +634,9 @@ substitute; the identical assertion is repeated against the browser engine in T2
 (`trade-analysis.md:105`). An opening fact's actual fee is proportional across the Lot quantities it
 creates; its unconsumed portion stays with the Open Lot; a disposing fact's fee is proportional
 across its Lot Matches; realized P&L includes both attributable portions. The cent-residual rule is
-decision 2 of §1.
+decision 2 of §1: apportion to the cent by largest-remainder — every share takes its floor, then the
+leftover cents go one each to the largest fractional remainders, ties by earliest `FactOrder` — with
+allocations recomputed from effective facts on every derivation rather than accumulated.
 
 **Unit test cases**
 
@@ -630,7 +647,10 @@ describe("TradeAnalysis.derive lot-aware fee allocation through allocateFeeExact
   it should allocate the consumed opening fee as 1.20 for the first match and 0.20 for the second, leaving 0.60 unconsumed on the Open Lot, when EX-3 consumes 60.00 of EX-1's Lot and 10.00 of EX-2's Lot
   it should allocate 0.50, 0.25 and 0.25 across created Lots of 2.00, 1.00 and 1.00 shares, when one actual fee of 1.00 is split proportionally
   it should allocate 0.34, 0.33 and 0.33 and settle the one-cent residual on the earliest-FactOrder Lot, when one actual fee of 1.00 is split across three equal 1.00-share Lots
+  it should allocate four shares of 0.02 and two shares of 0.01, each within one cent of the exact 0.01666, when an actual fee of 0.10 is split across six equal one-share Lots, because largest-remainder apportions the four leftover cents to the largest remainders instead of rounding every share up and removing both excess cents from a single share
+  it should allocate the identical total consumed opening fee after three successive partial disposals as after one disposal of the same total quantity, because the consumed portion is recomputed from effective facts rather than incremented, so rounding cannot drift between disposals
   it should assert that the allocation shares sum exactly to the recorded actual fee, when any allocation is returned for either an opening or a disposing fact
+  it should return cent totals identical for the same effective facts across two derivations and across a restart, so no residual is ever re-settled differently
   it should exclude every allocated fee from being subtracted twice, when realized P&L is computed from allocated portions rather than from a separately displayed incurred-fee total
   it should return a typed rejection for a nil-or-negative fee and attribute an opening fee only to its owning Trade, when fee validity or Trade ownership is violated
 ```
@@ -640,10 +660,12 @@ Trade back, then asserts the allocation table: opening allocations of 1.20 and 0
 opening portions of 1.20 and 0.20; unconsumed opening fee 0.60 on the open remainder Lot; disposal
 allocation of 0.60 and 0.10 summing to 0.70. It then re-reads the same Trade after a restart and
 asserts the identical table, proving fees are derived from durable facts rather than cached. The
-three-equal-Lot residual fixture is a pure policy fixture: under strict FIFO one stock opening
-Execution creates exactly one Open Lot, so the residual branch is unreachable through the D3 UI and
-becomes load-bearing when one settlement fact can create several Lots at D10/D11. That limitation is
-disclosed rather than hidden.
+three-equal-Lot and six-Lot residual fixtures are exercised as real cases, not as a policy-only
+fixture. It is true that one opening Execution creates exactly one Open Lot under strict FIFO, but a
+**disposing** fact's fee is allocated across that disposal's Lot Matches, and D3 accepts non-terminal
+reductions that can consume more than one Lot — so the residual branch is reachable through the D3 UI
+whenever a disposal matches several Lots and its fee does not divide evenly. Multi-Lot settlement at
+D10/D11 broadens the same branch rather than introducing it.
 
 **Red/green evidence**
 
@@ -1555,12 +1577,16 @@ non-authoritative derived state may be mutated for validation/error scenarios, t
 persistence seam, disclosed with the expected derivation, and never to establish ordinary behaviour.
 The D3 row is Partial because the "authorized preparation" half is Restore's and completes at D21.
 
-**3. The fee rounding and residual policy is decided here and needs review.** Decision 2 of §1 fixes
-half-up rounding plus a largest-share residual assigned by earliest `FactOrder`. No fixture in the
-trader-visible D3 scenario exercises the residual branch, because strict FIFO means one stock opening
-Execution creates exactly one Open Lot; the branch is proven with a pure policy fixture and becomes
-load-bearing when one settlement fact can create several Lots at D10/D11. A reviewer who prefers a
-different residual rule changes T6's and T7's expectations, though not the `F1` values.
+**3. The fee apportionment rule is settled and is reachable at D3.** Decision 2 of §1 fixes
+largest-remainder apportionment to the cent — every exact share takes its floor, the leftover cents go
+one each to the largest fractional remainders, ties by earliest `FactOrder` — with allocations
+recomputed from facts on every derivation rather than accumulated. An earlier draft of this breakdown
+claimed the residual branch was unreachable through the D3 UI because one opening Execution creates
+exactly one Open Lot; that reasoning covered only opening fees. A disposing fact's fee is allocated
+across that disposal's Lot Matches, and a non-terminal reduction may consume more than one Lot, so the
+branch is reachable in D3's own scenario and T6 tests it directly with three-equal-Lot and six-Lot
+cases rather than through a policy-only fixture. A reviewer who prefers a different apportionment rule
+changes T6's and T7's expectations, though not the `F1` values.
 
 **4. The D3 presentation read is a narrow subset of a later operation.** Decision 8 of §1 ships a
 partial `getTradeDetail` at D3 that D18 extends. The Installed Capability Manifest must advertise only
