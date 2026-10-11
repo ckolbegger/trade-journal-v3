@@ -15,6 +15,13 @@ set for D1–D3 was deliberately deleted so the whole set can be produced consis
 This file lives in `plan/` so it travels with the branch. It supersedes the previous session's
 handoff, which lived in the OS temp directory and has been deleted.
 
+> **Update, 2026-10-11.** The work this handoff commissions is done: all seven breakdowns exist and
+> both validators report zero failures and zero warnings. The session that wrote them also settled
+> four alignment items and recorded them as decisions D8–D10. **The current state and the remaining
+> alignment work are tracked in [alignment-agenda-2026-10-11.md](alignment-agenda-2026-10-11.md);
+> read that first.** The sections below remain accurate as a description of the frozen inputs and the
+> constraints that still bind.
+
 ---
 
 ## 0. Work in this directory — nowhere else
@@ -51,7 +58,7 @@ off-limits: `claude`, `claude-opus-5.5`, `codex`, `codex-gpt-6.1-sol`, `glm`, `q
 |---|---|
 | 1 — comprehension check | complete |
 | 2 — stack | complete; recorded as decision **D3** in `plan/planning-decisions-2026-10-10.md` |
-| 3 — vertical deliverables + task breakdowns | **in progress** — the ordered list is agreed and settled; **all seven breakdowns (D1–D7) are to be written** |
+| 3 — vertical deliverables + task breakdowns | **complete for D1–D7** — the ordered list is agreed and settled, and all seven breakdowns are written and validated. The remaining alignment items are tracked in [alignment-agenda-2026-10-11.md](alignment-agenda-2026-10-11.md) |
 | 4 — acceptance-to-evidence matrix | not started; 43 of 67 acceptance scenarios are owned by no deliverable |
 | 5 — interactive review | started in practice (the user has reviewed and amended the deliverable list several times) |
 | 6 — freeze | not started |
@@ -321,7 +328,9 @@ advertise partial scope honestly rather than shipping the whole seed set up fron
 
 ## 8. Open items
 
-- **All seven breakdowns (D1–D7)** — the next session's work. The directory is empty by design.
+- **All seven breakdowns (D1–D7)** — done, and superseded as the leading open item by the alignment
+  agenda in [alignment-agenda-2026-10-11.md](alignment-agenda-2026-10-11.md), which lists items 4–13,
+  the two questions decision D8 raised, and the five standing deferrals to confirm.
 - **Scale ownership** — deliberately deferred by user decision; `AC-PERF-001` has no owning
   deliverable. See §5 for the boundedness condition this places on the breakdowns.
 - **D14's per-leg vs. structure-level management question** — deferred to D14's breakdown.

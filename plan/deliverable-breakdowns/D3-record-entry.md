@@ -147,16 +147,38 @@ remainder are implementation decisions this breakdown makes and records.
   non-terminal reduction can consume more than one Lot. Multi-Lot settlement at D10/D11 broadens the
   same branch rather than introducing it.
 
-**3. `RecordedSequence` is assigned at commit for same-Economic-Time ties, and correction keeps it.**
+**3. `RecordedSequence` comes from one per-Workspace counter assigned at commit, in the candidate's
+declared member order.**
 
-- *Decision.* When a Position Change commits, each of its facts receives the next `RecordedSequence`
-  within its Trade, assigned in the order the command submits its members; facts in different Trades
-  are sequenced independently. A later `Replace` keeps the original sequence even if it changes
-  Economic Time; a Rebuild assigns new sequences in the explicitly supplied reconstruction order.
+- *Decision.* A single monotonic counter per Workspace supplies `RecordedSequence`. It is incremented
+  inside the same transaction that commits the facts, so a rolled-back commit consumes no sequence and
+  a recovery cannot leave a gap that reorders anything. When a Position Change commits, its members
+  receive consecutive values **in the order the candidate declares**, not in any incidental collection
+  order. A later `Replace` keeps the original sequence even if it changes Economic Time; a Rebuild
+  assigns new sequences in the explicitly supplied reconstruction order (`glossary.md:39`,
+  `trade-record.md:36-38`).
+- *Why one counter rather than one per Trade.* A per-Trade counter leaves the relative order of a
+  Position Change that spans several Trades — a Roll or a settlement allocation — undefined, so a
+  second rule would be needed for exactly the cases `AC-POS-002` calls "one decision identity and
+  stable order". One Workspace counter gives a total order over the fact stream, which replay, history
+  and cross-Trade presentation can all rely on without qualification. The cost is a single contended
+  sequence, which the commit-time transaction already serialises.
+- *The declared order is load-bearing, because no sequence exists during preparation.* Candidates
+  reserve no durable identity (`trade-record.md:40`), so a prepared command cannot know its own
+  sequence numbers. Yet `derive` must already compute FIFO over the candidate to produce the
+  `DerivedTradeReconciliation` that `applyPreparedChange` requires (`trade-record.md:66`). Therefore
+  **the candidate carries an explicit declared member order**, `derive` breaks same-Economic-Time ties
+  with it, and the committed sequence must agree with it. An implementation that derives FIFO from
+  array position during preparation and then assigns sequences in the same pass would make storage
+  order authoritative, which `trade-record.md:38` forbids.
 - *Consequence.* `FactOrder = EconomicTime then RecordedSequence` (`trade-analysis.md:30`,
-  `trade-record.md:29`) is stable across saves, collection order and lexical identity
-  (`trade-record.md:38`). T2 tests the tie-break; T15 tests that a resubmitted command cannot
-  re-sequence an existing fact.
+  `trade-record.md:29`) is stable across saves and lexical identity, and incidental collection order,
+  array position and wall-clock arrival never break a same-time tie (`trade-record.md:38`). Two
+  commands that declare the same members in different orders are two different commands and produce
+  different sequences; the same declared order reached through differently ordered incidental
+  collections produces one identical result. T2 tests the declared-order tie-break, its commit-time
+  agreement and the prohibition; T15 tests that a resubmitted command cannot re-sequence an existing
+  fact.
 
 **4. `Defer` snapshots the definition at trigger time and creates Debt, never a placeholder Entry.**
 
@@ -461,12 +483,15 @@ and reserves no durable identity (`trade-record.md:40`, `trade-record.md:62`).
 describe("Position Change and Execution candidate facts through TradeRecord.prepareChange")
   it should return before and candidate AnalysisInput records plus a canonical digest, and write nothing, when a stock-open Position Change with one Execution is prepared
   it should assign no durable TradeFactId or Position Change identity in the returned candidate, when the same change is prepared twice
-  it should order two Executions that share one EconomicTime by the RecordedSequence assigned at commit, when both are members of the same prepared change
+  it should carry the command's declared member order in the returned candidate and order two Executions that share one EconomicTime by that declared order, when no RecordedSequence exists yet because candidates reserve no durable identity
+  it should commit consecutive RecordedSequence values from the single per-Workspace counter in the declared order, and reproduce the same FactOrder from the durable sequence alone on a later derivation, when the prepared change commits
+  it should return identical FactOrder for the same declared members however the incidental collection is ordered, and a different order when the declared order itself differs, when the same members are supplied through a reversed storage row set
+  it should consume no RecordedSequence value and leave the counter unchanged, when the commit aborts after the facts were staged
   it should keep EconomicTime as the ordering key and Save Time out of FactOrder, when a later revision is saved with an earlier EconomicTime
   it should group several Executions under one shared Position Change identity with explicit membership, when the command submits them as one decision
   it should reject a change with a non-positive quantity, a negative fee, or zero members, returning one typed issue per offending member and no candidate identities
   it should reject a change that assigns one Execution identity to two Trades, returning a typed duplicate-ownership result and no candidate
-  it should produce the same canonical digest for the same logical facts regardless of the order in which members are supplied in the collection
+  it should produce the same canonical digest for the same declared member order reached through differently ordered incidental collections, and a different digest when the declared order itself differs, because the declared order is part of the logical facts while the collection order is not
 ```
 
 **Integration case.** Through the real stack — the production codec over the migrated v3 database,
@@ -483,12 +508,12 @@ touches the fact store; and after a full page-equivalent restart the store dump 
 |---|---|---|
 | P1 | `pnpm vitest run tests/unit/trade-record/position-change-facts.test.ts -t "write nothing"` — fails because `prepareChange` does not yet exist and the seam throws un-implemented | Same command — passes; the returned candidate has no durable identity and the store dump is unchanged |
 | P2 | `… -t "no durable identity"` — fails because candidate references are currently filled with reserved durable ids | Same command — passes; two preparations of the same change return equal candidate references and equal digests |
-| P3 | `… -t "RecordedSequence"` — fails because both same-time Executions currently sort as equal | Same command — passes; `FactOrder` yields `EX-1` then `EX-2` |
+| P3 | `… -t "declared member order"` — fails because the candidate carries no declared order and both same-time Executions sort as equal | Same command — passes; `FactOrder` yields `EX-1` then `EX-2` from the declared order alone |
 | P4 | `… -t "EconomicTime is not Save Time"` — fails because ordering currently uses insertion order | Same command — passes; the earlier-EconomicTime revision sorts first despite being saved later |
 | P5 | `… -t "one Position Change identity"` — fails because members currently receive independent change identities | Same command — passes; both Executions project the same Position Change identity and membership |
 | P6 | `… -t "non-positive quantity"` — fails because invalid quantities are currently accepted | Same command — passes; one typed issue per offending member and no candidate |
 | P7 | `… -t "duplicate ownership"` — fails because one Execution can currently be placed in two Trades | Same command — passes; the typed duplicate-ownership result names both Trades |
-| P8 | `… -t "canonical digest"` — fails because the digest currently depends on collection order | Same command — passes; both orders return the identical digest |
+| P8 | `… -t "canonical digest"` — fails because the digest currently depends on incidental collection order | Same command — passes; the same declared order returns one digest through either collection order, and a different declared order returns a different one |
 
 ### Phase L2 — candidate command and replay core
 
