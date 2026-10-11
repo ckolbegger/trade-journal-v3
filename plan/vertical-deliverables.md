@@ -320,8 +320,9 @@ Management Revision Entry Type, Management Revision Source. Navigation from the 
 
 ## D15 — Fix a mistake and see the audit
 
-1. As a trader, I would like to correct a price, quantity, or time I got wrong, so that
-   my economics are right at the date they happened.
+1. As a trader, I would like to correct a price, quantity, or time I got wrong, saying
+   which leg of a multi-leg structure I am correcting, so that my economics are right at
+   the date they happened and I fix only the one I got wrong.
 2. As a trader, I would like to correct or override a price I recorded, so that the
    record shows what I decided and why.
 3. As a trader, I would like to void a fact that never happened while still seeing it,
@@ -329,11 +330,12 @@ Management Revision Entry Type, Management Revision Source. Navigation from the 
 4. As a trader, I would like to see the full history of every change with its reason,
    so that the audit is visible without a technical log.
 
-`Covers:` `previewCorrection`/`commitCorrection` (Replace and Void); Market Data save
-intents for deliberate override and correct-with-reason plus correction metadata;
-`TradeAnalysis.assessChange`; Correction Footprint; material-impact acknowledgment
-threshold; all-or-nothing linked corrections; `TradeRecord.history`; View history;
-anchor survival across correction.
+`Covers:` `previewCorrection`/`commitCorrection` (Replace and Void) targeting the
+specific fact or leg named, within multi-leg structures; Market Data save intents for
+deliberate override and correct-with-reason plus correction metadata;
+`TradeAnalysis.assessChange`; Correction Footprint spanning every affected Trade even
+when one leg is named; material-impact acknowledgment threshold; all-or-nothing linked
+corrections; `TradeRecord.history`; View history; anchor survival across correction.
 
 `AC:` AC-CORR-001, AC-CORR-002, AC-CORR-004, AC-CORR-005.
 
