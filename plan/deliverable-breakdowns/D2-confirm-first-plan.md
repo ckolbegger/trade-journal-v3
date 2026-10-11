@@ -1314,7 +1314,7 @@ deliberately deferred behavior, or a documented false positive:
 
 - The Strategy selector offering only Long Stock. The other ten canonical seeds arrive at D8, D9, D11
   and D12; D2's selector scope is deliberate and is recorded in §1 decision 7.
-- No position entry, no Execution, no Position, no Lot Match, no realized P&L and no fee allocation.
+- No position entry, no Execution, no Position, no Lot Match, no realized P&L and no fee application.
   D3 owns all of them, and a confirmed unentered Plan cannot exhibit them.
 - No Daily Review, no Mark entry, no Expected Mark Status and no Stop-Discipline episode. D4 owns them.
 - No correction, no Void, no Rebuild, no Correction Footprint and no View history entry, because no

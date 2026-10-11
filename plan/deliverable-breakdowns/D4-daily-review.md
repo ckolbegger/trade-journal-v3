@@ -557,7 +557,7 @@ Target: every condition keeps its own status and basis, and the headline distanc
 nonnegative monetary boundary and becomes zero once any Stop is crossed. D4 constructs no
 `StructureValueCondition` — the kind is reserved in the type and not installed before D8 — so
 `evaluate` returns a typed unsupported-condition result for one instead of computing an
-underlying-price distance for it. Realized-to-date P&L, each remaining Instrument component, the remaining-open total, Current Marked Trade P&L, and incurred fees are independently returned; a total is Unavailable if any required component lacks exact evidence while valid components and an explicitly labelled covered subtotal remain visible (`trade-analysis.md:83`, `overview.md:171`). Unavailable, Not Applicable, Value, and Unbounded stay distinct (`ui-contract.md:94`).
+underlying-price distance for it. Realized-to-date P&L, each remaining Instrument component, the remaining-open total, and Current Marked Trade P&L are independently returned, each carrying no fee: decision D10 captures each Execution's actual fee as a fact and excludes it from every calculation, so `evaluate` returns no incurred-fee component and no fee-adjusted figure; a total is Unavailable if any required component lacks exact evidence while valid components and an explicitly labelled covered subtotal remain visible (`trade-analysis.md:83`, `overview.md:171`). Unavailable, Not Applicable, Value, and Unbounded stay distinct (`ui-contract.md:94`).
 
 **Unit test cases**
 
@@ -574,7 +574,8 @@ describe("TradeAnalysis.evaluate at the valuation and risk seam")
   it should return Incremental Reward to Target with each underlying-price and structure-value condition keeping its own independent status
   it should return Overrun when price or structure value has crossed a Stop without flattening the applicable Position
   it should use only remaining open exposure, effective Management Revisions, and eligible exact-date Marks, so a retired condition does not contribute ongoing risk
-  it should return each remaining Instrument component, the remaining-open total, Current Marked Trade P&L, and incurred fees independently, with a total Unavailable whenever one required component lacks exact evidence and a valid dollar result left visible when only its Plan-R conversion is unavailable
+  it should return each remaining Instrument component, the remaining-open total, and Current Marked Trade P&L independently, with a total Unavailable whenever one required component lacks exact evidence and a valid dollar result left visible when only its Plan-R conversion is unavailable
+  it should return an identical marked P&L for two otherwise identical Trades whose Executions carry different recorded fees, because decision D10 captures the fee fact and excludes it from every calculation
 ```
 
 **Integration case.** Through the production path, derive one eligible Trade, resolve its frame with an exact Mark for one Instrument and a Missing expected slot for another, evaluate, and assert the result tree: realized-to-date Value, marked total Unavailable with the exact Instrument and date, the covered subtotal labelled, and no fill cost or zero anywhere in the marked figures. Disclosed substitution: `fake-indexeddb` for fact and observation reads.

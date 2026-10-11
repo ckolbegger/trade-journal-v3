@@ -527,6 +527,32 @@ Each deliverable picks up the following, and a later breakdown must not re-deriv
 | D15 | `assessChange` recomputing per-condition basis over the set |
 | D18/D19 | Per-condition status surfaced in views and reports |
 
+### Fees
+
+Every Execution records its actual fee as a required fact, and **no fee enters any calculation**
+(decision **D10** in [planning-decisions-2026-10-10.md](planning-decisions-2026-10-10.md)). Lot-aware
+allocation, the consumed/unconsumed opening-fee split, fee-adjusted P&L, Entry Quality's allocated-fee
+component, and settlement cost adjustments to basis and proceeds are all not installed. The fee field
+must stay and must default to an explicit zero, so that "no fee" is an affirmative fact rather than an
+absent field, and so that fee application stays installable later with no historical coverage loss
+(`overview.md:264`, `delivery-contract.md:79`).
+
+Each deliverable picks up the following:
+
+| Deliverable | Must carry |
+|---|---|
+| D1 | The Money value layer without a fee-apportionment helper; exact decimals remain required for every other amount |
+| D3 | Fee capture and exclusion rather than allocation: the fee is recorded, defaults to explicit zero, and provably never enters any derived value |
+| D4 | `evaluate` without the incurred-fee component |
+| D10–D12 | Settlement applies premium and costs exactly once for the facts themselves, but no fee-adjusted basis or proceeds |
+| D15 | Corrections do not recompute fee allocations |
+| D19 | Outcomes and scorecard report no fee-inclusive figures |
+
+AC-POS-001, AC-CALC-001 and AC-RPT-002 carry Partial claims with their fee clauses explicitly
+unclaimed, and no deliverable may claim AC-POS-001 complete. A recorded zero fee yields genuinely net
+figures and needs no caveat; a single conditional disclosure at the fee field and in the Installed
+Capability Manifest covers a recorded non-zero fee that is not applied.
+
 ### Parallelism
 
 Shared resources force serialization and need a single owner at a time: the IndexedDB

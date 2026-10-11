@@ -307,7 +307,7 @@ describe("U.S. session calendar resolves exactly one trading date per instant un
 - **Blocking edges:** T1.
 - **Consumed by:** T11, T19.
 
-Builds the exact value layer every authoritative amount, price and quantity passes through: `Money` (amount plus currency), `Price`, `Quantity`, a position-value operation, and a pro-rata allocator. No authoritative amount is ever a JS `number` (`planning-decisions-2026-10-10.md:166`), and the layer is pure — no storage, no clock, no module calls. Fees allocated here are allocated exactly once, which is the arithmetic D3's FIFO work will consume.
+Builds the exact value layer every authoritative amount, price and quantity passes through: `Money` (amount plus currency), `Price`, `Quantity`, and a position-value operation. No authoritative amount is ever a JS `number` (`planning-decisions-2026-10-10.md:166`), and the layer is pure — no storage, no clock, no module calls. It deliberately builds **no fee allocator**: decision D10 captures each Execution's actual fee as a fact and excludes it from every calculation, so no pro-rata or residual-settlement helper belongs here.
 
 **Unit test cases**
 
@@ -316,7 +316,6 @@ describe("Money, Price and Quantity arithmetic is exact and typed at the value-l
   it should add two Money values of the same currency exactly, with the decimal string unchanged, when the sum exceeds the range a JS number represents without loss
   it should reject an operation mixing two currencies with a typed CurrencyMismatch and produce no result value
   it should compute a position value from Quantity and Price at the declared scale with no implicit rounding when the price carries more decimal places than the display scale
-  it should allocate a fee across weighted lots so the parts sum exactly to the whole, carrying the residual on the final lot, when the split is a recurring decimal
   it should classify a cancelling difference as exactly zero and never as negative zero, so equality against a constructed zero Money is stable
   it should reject a Quantity carrying more scale than the instrument class allows with a typed ScaleExceeded naming the class and the offending string
   it should round-trip a Money, Price and Quantity through the persistence codec with the exact decimal string preserved and no numeric coercion
@@ -331,7 +330,6 @@ describe("Money, Price and Quantity arithmetic is exact and typed at the value-l
 |---|---|---|
 | Wide addition | `pnpm vitest run tests/values/money-add.test.ts` — fails because the first implementation stores amounts as `number`, losing the low-order digits | `pnpm vitest run tests/values/money-add.test.ts` — passes with the exact decimal string |
 | Currency mismatch | `pnpm vitest run tests/values/currency.test.ts` — fails because the first implementation coerces both operands to the left operand's currency | `pnpm vitest run tests/values/currency.test.ts` — passes with `CurrencyMismatch` |
-| Fee allocation | `pnpm vitest run tests/values/allocate.test.ts` — fails because naive per-lot rounding leaves the parts one unit short of the whole | `pnpm vitest run tests/values/allocate.test.ts` — passes with the residual on the final lot |
 | Persistence round-trip | `pnpm vitest run tests/values/codec-round-trip.test.ts` — fails because the codec serializes through `Number()` and the read-back string differs | `pnpm vitest run tests/values/codec-round-trip.test.ts` — passes with byte-identical decimal strings |
 
 #### T7 — `S` Browser-host capability port: readiness, protection, download, file read

@@ -7,7 +7,7 @@ Status: draft for user review. Not frozen. Phase 3 artifact for `planning-protoc
 ### Advertised outcome
 
 A trader who confirmed a Long Stock Plan in D2 can record the fills that open the planned position and
-then see the exact Position, the open Lots, the allocated fees and the realized P&L. The stored
+then see the exact Position, the open Lots and the realized P&L. The stored
 lifecycle moves `Planned` to `Open` with its current-state index membership in the same commit, and
 the single Position Change Reflection for each recorded Position Change can be completed, explicitly
 declined, or **deferred** — with `Defer` creating Journal Debt, so that recording facts is never
@@ -28,8 +28,8 @@ a pass.
 | The stock-open variant of the mutating workflow, including its expected-revision and ownership validation | `TradeWorkflows.recordPositionChange` | `trade-workflows.md:84-92` |
 | Effective-fact replay to signed Instrument Positions and open Lots | `TradeAnalysis.derive` | `trade-analysis.md:59-63`, `trade-analysis.md:103` |
 | FIFO Lot Matches linking closing quantity to opening Lots, with no price or P&L on the link | `TradeAnalysis.derive` | `trade-analysis.md:104`, `glossary.md:59` |
-| Lot-aware fee allocation, exactly once, across created and matched Lot quantities | `TradeAnalysis.derive` | `trade-analysis.md:105` |
-| Realized P&L for the matched quantities, including both attributable fee portions | `TradeAnalysis.derive` | `trade-analysis.md:105` |
+| Fee capture on every Execution, and the proof that no fee enters any derived value | `TradeAnalysis.derive` | `trade-analysis.md:105`, decision D10 |
+| Realized P&L for the matched quantities, with no fee portion applied | `TradeAnalysis.derive` | `trade-analysis.md:105`, decision D10 |
 | Expected lifecycle, Entry window and Entry Resolution Point, Planned Leg fulfillment, and lifecycle agreement status | `TradeAnalysis.derive` | `trade-analysis.md:65-67`, `glossary.md:62-63` |
 | Recorded active Lot-Match links, stored lifecycle and index membership staged in one transaction | `TradeRecord.applyPreparedChange` behind the Persistence/Transaction seam | `trade-record.md:7`, `trade-record.md:66-68`, `overview.md:127` |
 | Recorded-versus-derived Lot-Match agreement, reported and never repaired | `TradeAnalysis.derive` integrity findings | `trade-analysis.md:63`, `overview.md:144` |
@@ -37,7 +37,7 @@ a pass.
 | Position Change Reflection outcome: complete, decline, defer, with its own obligation key | `Journal.prepareEffects` / `applyPreparedEffects` | `journal.md:54-61`, `journal.md:135-141` |
 | Manifest v3 seed growth: Position Change Reflection Entry Type and Position Change Source | `Journal.seedDefaults` | `journal.md:25-37`, `journal.md:194`, `vertical-deliverables.md:477-481` |
 | Post-commit projection sufficient to render the saved outcome with no follow-up read | `PositionChangeResult.postCommit` | `trade-workflows.md:31-45`, `overview.md:194` |
-| The fill form, the reflection choice, the Position/Lots/fees/realized-P&L presentation, and their responsive and accessible behaviour | Production UI (fill surface, reflection surface, Trade view) | `ui-contract.md:26-36`, `ui-contract.md:70-88`, `ui-contract.md:123-125` |
+| The fill form including its fee input, which is captured, the reflection choice, the Position/Lots/realized-P&L presentation, and their responsive and accessible behaviour | Production UI (fill surface, reflection surface, Trade view) | `ui-contract.md:26-36`, `ui-contract.md:70-88`, `ui-contract.md:123-125` |
 | Durable schema version 3 and its migration from the D2 baseline | `Persistence/Transaction` migration runner | `trade-record.md:143-149`, `overview.md:131`, `overview.md:133` |
 | The write gate on the new mutation path | cross-cutting `RuntimeNotWritable` branch | `overview.md:177-186`, `planning-protocol.md:83` |
 
@@ -63,8 +63,8 @@ manifest v3 (`journal.md:194`).
   the narrow command boundary, and its `derive` still computes the expected `Closed` state for a
   candidate snapshot, so D6 adds persistence and reason rules without reinterpreting any arithmetic
   D3 produced.
-- **Scaling presentation beyond what this scenario needs** (D18/D19). D3 shows Position, open Lots,
-  allocated fees and realized P&L for one Trade. Browse, replay, Outcomes, Exposure, Scorecard and
+- **Scaling presentation beyond what this scenario needs** (D18/D19). D3 shows Position, open Lots
+  and realized P&L for one Trade. Browse, replay, Outcomes, Exposure, Scorecard and
   Journal-field reporting are not installed and are not faked.
 - **Roll** (D13). D3 writes no predecessor/successor lineage and confirms no successor Plan
   (`trade-workflows.md:114`).
@@ -196,11 +196,13 @@ Source.**
 `DerivedTradeState`.**
 
 - *Decision.* D3's `derive` returns the effective ordered facts, Instrument Positions and open Lots,
-  expected FIFO Lot Matches, allocated fees and remaining opening fees, realized result, expected
+  expected FIFO Lot Matches, realized result, expected
   lifecycle with agreement status, Entry window/Entry Resolution Point, Planned Leg fulfillment, and
   exact observation requirements (empty for the stock variant, since no Mark is needed). It returns
   no valuation, risk, payoff, Deviation or Terminal Disposition result, and it never reads storage,
-  another module, a clock or a calendar (`trade-analysis.md:7`).
+  another module, a clock or a calendar (`trade-analysis.md:7`). It applies no fee: decision D10
+  captures each Execution's actual fee as a fact and excludes it from every calculation, so no
+  allocated-fee, remaining-opening-fee or fee-adjusted result appears in the D3 output.
 - *Consequence.* D4, D11 and D12 extend the same operation rather than adding a parallel one
   (`vertical-deliverables.md:516-521`), and the pure `derive` is the single formula authority behind
   every D3 assertion.
@@ -208,7 +210,7 @@ Source.**
 **8. The D3 Trade view reads through a narrow `getTradeDetail` subset, not through Trade Record
 directly.**
 
-- *Decision.* Position, open Lots, allocated fees, realized P&L, stored lifecycle and agreement are
+- *Decision.* Position, open Lots, realized P&L, stored lifecycle and agreement are
   presented from a narrow `TradeViewsAndReporting.getTradeDetail` result — one coherent snapshot that
   calls `TradeRecord.getRecord(AnalysisInput)` and `TradeAnalysis.derive`
   (`trade-views-and-reporting.md:37-39`). The UI never calls `getRecord` plus `derive` itself and
@@ -230,8 +232,8 @@ directly.**
 
 **10. Presentation logic is framework-free and tested with the pinned tools only.**
 
-- *Decision.* View models (fill form model, reflection choice model, Position/Lots/fees/P&L
-  formatting model, responsive mode model) are plain TypeScript with no React import, unit-tested
+- *Decision.* View models (fill form model including its fee input, reflection choice model,
+  Position/Lots/P&L formatting model, responsive mode model) are plain TypeScript with no React import, unit-tested
   with Vitest; DOM structure, responsive behaviour, keyboard completion and accessible names/roles
   are verified with Playwright plus axe-core, the only browser tooling the approved stack names
   (`planning-decisions-2026-10-10.md:170`). No component-testing library is invented.
@@ -354,7 +356,7 @@ for a single engineer:
 |---|---|---|
 | L1 — durable schema and fact foundations | T1, T2 | cross-deliverable edges only |
 | L2 — candidate command and replay core | T3, T4 | L1 |
-| L3 — FIFO, fees, realized P&L, lifecycle derivation | T5, T6, T7, T8 | L1–L2 |
+| L3 — FIFO, realized P&L, lifecycle derivation | T5, T6, T7, T8 | L1–L2 |
 | L4 — agreement records, persistence and index movement | T9, T10, T11 | L2–L3 |
 | L5 — reflection obligation and seed | T12, T13, T14 | L1–L3 |
 | L6 — orchestration and the atomic boundary | T15, T16, T17 | L3–L5 |
@@ -395,7 +397,10 @@ Original Planned Risk = 100.00 = 1R and Original Planned Reward = 200.00. `EX-1`
 sells 70.00 XYZ at 11.00 with fee 0.70. Fixture `F2` is the pure candidate snapshot that adds `EX-4`,
 a sale of the remaining 30.00 XYZ at 9.00 with fee 0.30, which flattens the Position. All money,
 price and quantity expectations in this document are exact decimals, never floating point
-(`planning-decisions-2026-10-10.md:166`).
+(`planning-decisions-2026-10-10.md:166`). The fixtures deliberately keep a non-zero fee on every
+Execution. Decision D10 captures each fee as a required fact and excludes it from every calculation,
+so the derived expectations below are computed **without** the fees: asserting those exact numbers is
+precisely what proves the fees do not enter them. A fee of zero would prove nothing.
 
 ### Phase L1 — durable schema and fact foundations
 
@@ -416,7 +421,7 @@ existing store name, key path or index that D2 already wrote:
    obligation-key lookup for the Debt record kind (`trade-record.md:98-103`, `journal.md:135`).
 3. Journal record kinds: the Position Change Reflection Debt record with its obligation key, and the
    seed-manifest revision record that T13 advances to v3.
-4. No Position row, no P&L row and no derived-value cache: Position, Lots, fees and realized P&L stay
+4. No Position row, no P&L row and no derived-value cache: Position, Lots and realized P&L stay
    derived (`glossary.md:56`, `overview.md:142`), and the only authoritative stored/indexed exception
    remains Lifecycle State (`trade-record.md:5`).
 
@@ -548,10 +553,10 @@ and all outputs are inert (`trade-analysis.md:7`).
 ```text
 describe("TradeAnalysis.derive effective-fact replay into Instrument Positions and open Lots")
   it should return one Instrument Position of +100.00 XYZ, when the snapshot's effective facts are EX-1 buying 60.00 and EX-2 buying 40.00
-  it should return two open Lots in FactOrder with exact basis 10.00 and 10.50 and unconsumed opening fees 1.20 and 0.80, when both opening facts are effective
+  it should return two open Lots in FactOrder with exact basis 10.00 and 10.50 and no fee field populated, even though EX-1 and EX-2 each carry a recorded fee, because decision D10 captures the fee fact and excludes it from every derived value
   it should order the two open Lots as EX-1 then EX-2 even when the snapshot supplies them in the opposite collection order, when both facts share one EconomicTime
   it should exclude a Voided version from replay and recompute the Position as +60.00 with one open Lot, when EX-2's effective version is a Void
-  it should return a Position of +30.00 XYZ and a single remainder Lot of 30.00 at 10.50 with unconsumed opening fee 0.60, when EX-3 sells 70.00 against the two open Lots
+  it should return a Position of +30.00 XYZ and a single remainder Lot of 30.00 at 10.50 with no fee field populated, when EX-3 sells 70.00 against the two open Lots
   it should omit a fully consumed Lot entirely rather than returning it with quantity zero, when a disposing fact exactly exhausts that Lot
   it should return deeply equal DerivationResult values across repeated calls and touch no store, when the same snapshot and cutoff are passed twice
   it should return an empty Instrument Position set with expected lifecycle Planned, when the snapshot has no effective position-changing fact
@@ -561,8 +566,8 @@ describe("TradeAnalysis.derive effective-fact replay into Instrument Positions a
 the T9/T2 candidate for `EX-1` and `EX-2` in a real transaction, then calls `derive` on
 `TradeRecord.getRecord(AnalysisInput)` at the explicit cutoff after `EX-3`. It asserts the durable
 round trip: the facts read back equal the committed facts, `derive` returns Position +30.00 XYZ with
-one remaining Lot of 30.00 at 10.50 and unconsumed opening fee 0.60, and the derivation performs no
-write and no Market Data call (the D3 variant requires no Mark, so no observation evidence is
+one remaining Lot of 30.00 at 10.50 and no fee field populated while the Execution facts still carry
+their recorded fees, and the derivation performs no write and no Market Data call (the D3 variant requires no Mark, so no observation evidence is
 requested).
 
 **Red/green evidence**
@@ -570,15 +575,15 @@ requested).
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
 | D1 | `pnpm vitest run tests/unit/trade-analysis/derive-position.test.ts -t "+100.00 XYZ"` — fails because `derive` returns no Instrument Positions | Same command — passes; one Position of +100.00 XYZ |
-| D2 | `… -t "two open Lots in FactOrder"` — fails because Lots are not derived | Same command — passes; exact basis and unconsumed fees for both Lots |
+| D2 | `… -t "two open Lots in FactOrder"` — fails because Lots are not derived | Same command — passes; exact basis and no fee field on either Lot |
 | D3 | `… -t "collection order"` — fails because ordering currently follows input order | Same command — passes; EX-1 precedes EX-2 in both orders |
 | D4 | `… -t "Voided version"` — fails because Voided versions are currently replayed as effective | Same command — passes; Position +60.00 with one Lot |
-| D5 | `… -t "EX-3 sells 70.00"` — fails because a disposal does not yet reduce the Position | Same command — passes; remainder Lot 30.00 at 10.50 with unconsumed fee 0.60 |
+| D5 | `… -t "EX-3 sells 70.00"` — fails because a disposal does not yet reduce the Position | Same command — passes; remainder Lot 30.00 at 10.50 with no fee field |
 | D6 | `… -t "omit a fully consumed Lot"` — fails because exhausted Lots are returned with zero quantity | Same command — passes; the Lot is absent from the open-Lot set |
 | D7 | `… -t "repeated calls"` — fails because replay currently caches mutable state between calls | Same command — passes; deep-equal results and no store access |
 | D8 | `… -t "no effective position-changing fact"` — fails because replay currently throws on an empty fact set | Same command — passes; empty Positions with expected lifecycle Planned |
 
-### Phase L3 — FIFO, fees, realized P&L, and lifecycle derivation
+### Phase L3 — FIFO, realized P&L, and lifecycle derivation
 
 #### T5 — `B` `derive`: FIFO Lot Matches
 
@@ -624,89 +629,85 @@ substitute; the identical assertion is repeated against the browser engine in T2
 | F7 | `… -t "same-EconomicTime disposing facts"` — fails because same-time disposals currently emit in arbitrary order | Same command — passes; RecordedSequence orders emission and the total is unchanged |
 | F8 | `… -t "remainder of 0.00"` — fails because the matched-quantity total is not yet asserted | Same command — passes; matched total equals the disposed quantity exactly |
 
-#### T6 — `B` `derive`: lot-aware fee allocation exactly once
+#### T6 — `B` `derive`: fee capture and exclusion
 
 - **Blocking edges:** T5.
 - **Consumed by:** T7, T9, T19.
 
-**Seam.** The pure allocation function behind `derive().allocatedFees` — call it
-`allocateFeeExactlyOnce(actualFee, shares)` — plus its use at both ends of the rule
-(`trade-analysis.md:105`). An opening fact's actual fee is proportional across the Lot quantities it
-creates; its unconsumed portion stays with the Open Lot; a disposing fact's fee is proportional
-across its Lot Matches; realized P&L includes both attributable portions. The cent-residual rule is
-decision 2 of §1: apportion to the cent by largest-remainder — every share takes its floor, then the
-leftover cents go one each to the largest fractional remainders, ties by earliest `FactOrder` — with
-allocations recomputed from effective facts on every derivation rather than accumulated.
+**Seam.** The Execution fee field as it flows from the committed fact into `derive`
+(`trade-analysis.md:105`, decision D10). Every Execution records its actual fee as a required fact,
+defaulting to an explicit `0` so that "no fee" is an affirmative value rather than an absent field,
+and **no fee enters any calculation**: there is no allocation, no consumed/unconsumed split, no
+fee-adjusted realized or marked P&L, and no `remainingOpeningFees` output. The fixtures carry
+non-zero fees precisely so that the derived numbers prove the exclusion; a zero-fee fixture would
+prove nothing.
 
 **Unit test cases**
 
 ```text
-describe("TradeAnalysis.derive lot-aware fee allocation through allocateFeeExactlyOnce")
-  it should allocate the whole actual fee 1.20 to its single created Lot, when EX-1 opens 60.00 shares and is the only position-increasing fact for that Lot
-  it should allocate the disposal fee 0.70 as 0.60 and 0.10 across the 60.00 and 10.00 matches, when EX-3's disposal fee is proportional to matched quantity
-  it should allocate the consumed opening fee as 1.20 for the first match and 0.20 for the second, leaving 0.60 unconsumed on the Open Lot, when EX-3 consumes 60.00 of EX-1's Lot and 10.00 of EX-2's Lot
-  it should allocate 0.50, 0.25 and 0.25 across created Lots of 2.00, 1.00 and 1.00 shares, when one actual fee of 1.00 is split proportionally
-  it should allocate 0.34, 0.33 and 0.33 and settle the one-cent residual on the earliest-FactOrder Lot, when one actual fee of 1.00 is split across three equal 1.00-share Lots
-  it should allocate four shares of 0.02 and two shares of 0.01, each within one cent of the exact 0.01666, when an actual fee of 0.10 is split across six equal one-share Lots, because largest-remainder apportions the four leftover cents to the largest remainders instead of rounding every share up and removing both excess cents from a single share
-  it should allocate the identical total consumed opening fee after three successive partial disposals as after one disposal of the same total quantity, because the consumed portion is recomputed from effective facts rather than incremented, so rounding cannot drift between disposals
-  it should assert that the allocation shares sum exactly to the recorded actual fee, when any allocation is returned for either an opening or a disposing fact
-  it should return cent totals identical for the same effective facts across two derivations and across a restart, so no residual is ever re-settled differently
-  it should exclude every allocated fee from being subtracted twice, when realized P&L is computed from allocated portions rather than from a separately displayed incurred-fee total
-  it should return a typed rejection for a nil-or-negative fee and attribute an opening fee only to its owning Trade, when fee validity or Trade ownership is violated
+describe("TradeAnalysis.derive captures each Execution fee and excludes it from every derived value")
+  it should read the recorded fees 1.20 on EX-1 and 0.80 on EX-2 back unchanged as facts, when the committed Trade is re-read
+  it should return identical Position, open Lots, Lot Matches, realized P&L and expected lifecycle for two otherwise identical Trades whose Executions carry fees of 0.00 and 2.70, because no fee enters the arithmetic
+  it should return realized P&L Value(65.00) for TR-1 with the fixtures' non-zero fees recorded, which is the same value that would be derived if every recorded fee were zero
+  it should expose no allocated-fee, consumed-fee, remainingOpeningFees or fee-adjusted component anywhere in the DerivationResult, when the output is inspected field by field
+  it should default a newly recorded Execution's fee to an explicit 0.00 and reject a blank, so that "no fee" is an affirmative fact rather than an absent field
+  it should return a typed rejection for a negative fee, when fee validity is violated
+  it should attribute an opening Execution's fee to its owning Trade and never to another, when Trade ownership is inspected
+  it should leave every derived value unchanged after a restart, when the fees are durable but unused
 ```
 
-**Integration case.** Through the real stack the case commits `EX-1`, `EX-2` and `EX-3` and reads the
-Trade back, then asserts the allocation table: opening allocations of 1.20 and 0.80 in full; consumed
-opening portions of 1.20 and 0.20; unconsumed opening fee 0.60 on the open remainder Lot; disposal
-allocation of 0.60 and 0.10 summing to 0.70. It then re-reads the same Trade after a restart and
-asserts the identical table, proving fees are derived from durable facts rather than cached. The
-three-equal-Lot and six-Lot residual fixtures are exercised as real cases, not as a policy-only
-fixture. It is true that one opening Execution creates exactly one Open Lot under strict FIFO, but a
-**disposing** fact's fee is allocated across that disposal's Lot Matches, and D3 accepts non-terminal
-reductions that can consume more than one Lot — so the residual branch is reachable through the D3 UI
-whenever a disposal matches several Lots and its fee does not divide evenly. Multi-Lot settlement at
-D10/D11 broadens the same branch rather than introducing it.
+**Integration case.** Through the real stack the case commits `EX-1`, `EX-2` and `EX-3` with their
+recorded fees, reads the Trade back, and asserts two things together: the Execution facts still carry
+1.20, 0.80 and 0.70 exactly, **and** every derived figure equals the value computed with all fees at
+zero — Position +30.00, one remainder Lot of 30.00 at 10.50 carrying no fee field, and realized P&L
+65.00. It then re-reads after a restart and asserts the identical result. The equality of the two
+readings is not sufficient on its own, because it would still hold if both the recorded fee and the
+derived figure were wrong; the absolute expected values are what pin the exclusion down.
 
 **Red/green evidence**
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| G1 | `pnpm vitest run tests/unit/trade-analysis/derive-fees.test.ts -t "whole actual fee 1.20"` — fails because no fee is attached to a Lot | Same command — passes; 1.20 on the single created Lot |
-| G2 | `… -t "0.60 and 0.10"` — fails because disposal fees are currently charged in full to the first match | Same command — passes; proportional split by matched quantity |
-| G3 | `… -t "leaving 0.60 unconsumed"` — fails because the unconsumed remainder is not tracked | Same command — passes; 1.20 and 0.20 consumed, 0.60 remains on the Lot |
-| G4 | `… -t "0.50, 0.25 and 0.25"` — fails because the allocation seam does not exist | Same command — passes; exact proportional shares |
-| G5 | `… -t "0.34, 0.33 and 0.33"` — fails because the residual is currently dropped, leaving 0.99 | Same command — passes; residual settled on the earliest-FactOrder Lot, sum 1.00 |
-| G6 | `… -t "sum exactly to the recorded actual fee"` — fails because allocation totals are currently unasserted | Same command — passes; every allocation sums to its actual fee |
-| G7 | `… -t "subtracted twice"` — fails because the incurred-fee total is currently subtracted again in realized P&L | Same command — passes; each fee enters the arithmetic exactly once |
-| G8 | `… -t "nil-or-negative fee"` — fails because a negative fee is currently accepted | Same command — passes; typed rejection, and the owning-Trade restriction holds |
+| G1 | `pnpm vitest run tests/unit/trade-analysis/derive-fee-exclusion.test.ts -t "read the recorded fees"` — fails because the fee is not captured on the Execution fact | Same command — passes; 1.20 and 0.80 read back exactly |
+| G2 | `… -t "fees of 0.00 and 2.70"` — fails because fees are currently folded into derived figures | Same command — passes; identical derived values |
+| G3 | `… -t "Value(65.00) with the fixtures' non-zero fees"` — fails because no realized figure is produced | Same command — passes; 65.00, fees excluded |
+| G4 | `… -t "no allocated-fee, consumed-fee, remainingOpeningFees"` — fails because an allocated-fee output currently exists | Same command — passes; no fee component anywhere in the output |
+| G5 | `… -t "explicit 0.00 and reject a blank"` — fails because a blank fee is currently accepted as absent | Same command — passes; explicit zero, blank rejected |
+| G6 | `… -t "negative fee"` — fails because a negative fee is currently accepted | Same command — passes; typed rejection |
+| G7 | `… -t "owning Trade"` — fails because the fee is currently attributed across participating Trades | Same command — passes; owning Trade only |
+| G8 | `… -t "unchanged after a restart"` — fails because the fee is not durable on the fact | Same command — passes; durable and unused |
 
 #### T7 — `B` `derive`: realized P&L
 
 - **Blocking edges:** T6.
 - **Consumed by:** T8, T17, T19.
 
-**Seam.** `derive().realizedToDate` and its per-match components, plus `derive().remainingOpeningFees`
-(`trade-analysis.md:37`, `trade-analysis.md:105`). Realized P&L covers only matched quantities and
-includes both attributable fee portions; it is exact decimal money and never a JavaScript `number`.
+**Seam.** `derive().realizedToDate` and its per-match components (`trade-analysis.md:37`,
+`trade-analysis.md:105`). Realized P&L covers only matched quantities and is exact decimal money,
+never a JavaScript `number`. No fee is applied: decision D10 captures each Execution's actual fee as
+a fact and excludes it from every calculation, so there is no allocated-fee component and no
+`remainingOpeningFees` output at all.
 
 **Unit test cases**
 
 ```text
-describe("TradeAnalysis.derive realized P&L from matched quantities and allocated fees")
-  it should return Value(62.90) as realizedToDate for TR-1, when EX-1 and EX-2 are open Lots and EX-3 sells 70.00 at 11.00 with fee 0.70
-  it should report proceeds 660.00, basis 600.00, gross 60.00, opening fee 1.20, disposal fee 0.60 and net 58.20 for the 60.00-share match, when EX-3 consumes EX-1 fully
-  it should report proceeds 110.00, basis 105.00, gross 5.00, opening fee 0.20, disposal fee 0.10 and net 4.70 for the 10.00-share match, when EX-3 consumes 10.00 of EX-2's Lot
-  it should return Value(17.00) cumulatively with a net of minus 45.90 for the final match, when candidate fixture F2 adds EX-4 selling 30.00 at 9.00 with fee 0.30
-  it should report 0.60 as remainingOpeningFees outside realizedToDate and exclude it from the realized sum, when EX-2's Lot retains an unconsumed opening fee
-  it should include no projected future closing fee in any component, when the Trade still holds 30.00 shares after EX-3
+describe("TradeAnalysis.derive realized P&L from matched quantities, with no fee applied")
+  it should return Value(65.00) as realizedToDate for TR-1, when EX-1 and EX-2 are open Lots and EX-3 sells 70.00 at 11.00 with a recorded fee of 0.70, because decision D10 excludes the recorded fees 1.20, 0.80 and 0.70 from the arithmetic
+  it should report proceeds 660.00 and basis 600.00 giving realized 60.00 for the 60.00-share match, with no opening-fee, disposal-fee or net component, when EX-3 consumes EX-1 fully
+  it should report proceeds 110.00 and basis 105.00 giving realized 5.00 for the 10.00-share match, with no fee component of any kind, when EX-3 consumes 10.00 of EX-2's Lot
+  it should return Value(20.00) cumulatively with minus 45.00 for the final match, when candidate fixture F2 adds EX-4 selling 30.00 at 9.00 with a recorded fee of 0.30 that the arithmetic excludes
+  it should expose no remainingOpeningFees value at all, when EX-2's Lot retains unmatched quantity, because decision D10 installs no unconsumed-opening-fee concept for that remainder to carry
+  it should apply no fee to any component, projected or actual, when the Trade still holds 30.00 shares after EX-3 and every one of its Executions carries a recorded fee
   it should leave the expected lifecycle Open and exclude the unrealized 30.00 shares from realizedToDate, when only part of the Position has been disposed
   it should return NotApplicable with a stable reason rather than Value(0.00), when the Trade has never had an effective exposure-reducing fact
 ```
 
 **Integration case.** Through the real stack the case records the two opens and the 70.00-share
 partial reduction, then asserts the durable round trip: after restart, `derive` on the re-read
-`AnalysisInput` returns exactly `Value(62.90)`, the 58.20 and 4.70 components, and
-`remainingOpeningFees` of 0.60; the stored Lot Match links still carry no monetary field; and the
+`AnalysisInput` returns exactly `Value(65.00)` and the 60.00 and 5.00 components, with no
+`remainingOpeningFees` output and no fee component anywhere; the Execution facts read back still
+carry their recorded fees, which is exactly what proves the exclusion; the stored Lot Match links
+still carry no monetary field; and the
 integers in the assertion suite are cent-exact decimals parsed from the same `decimal.js` value layer
 D1:T6 defines. Candidate fixture F2 is exercised only as a pure snapshot, because the final flat
 disposal is D6's persisted command.
@@ -715,12 +716,12 @@ disposal is D6's persisted command.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| H1 | `pnpm vitest run tests/unit/trade-analysis/derive-realized-pnl.test.ts -t "Value(62.90)"` — fails because realized P&L is not derived | Same command — passes; exact 62.90 |
-| H2 | `… -t "net 58.20"` — fails because per-match components are absent | Same command — passes; all six components exact |
-| H3 | `… -t "net 4.70"` — fails because the second match's opening-fee share is not allocated | Same command — passes; all six components exact |
-| H4 | `… -t "Value(17.00)"` — fails because a losing final disposal is not yet accumulated | Same command — passes; cumulative 17.00 and match net minus 45.90 |
-| H5 | `… -t "remainingOpeningFees"` — fails because the unconsumed fee is currently folded into realized P&L | Same command — passes; 0.60 reported separately and excluded |
-| H6 | `… -t "no projected future closing fee"` — fails because the remainder currently accrues an estimated disposal fee | Same command — passes; no projected fee in any component |
+| H1 | `pnpm vitest run tests/unit/trade-analysis/derive-realized-pnl.test.ts -t "Value(65.00)"` — fails because realized P&L is not derived | Same command — passes; exact 65.00, fees excluded |
+| H2 | `… -t "realized 60.00"` — fails because per-match components are absent | Same command — passes; proceeds, basis and realized exact, with no fee component |
+| H3 | `… -t "realized 5.00"` — fails because the second match is not broken out | Same command — passes; no fee component of any kind |
+| H4 | `… -t "Value(20.00)"` — fails because a losing final disposal is not yet accumulated | Same command — passes; cumulative 20.00 and match minus 45.00 |
+| H5 | `… -t "no remainingOpeningFees value"` — fails because an unconsumed-fee remainder is currently reported | Same command — passes; no such output exists |
+| H6 | `… -t "apply no fee to any component"` — fails because the remainder currently accrues an estimated disposal fee | Same command — passes; no fee applied anywhere |
 | H7 | `… -t "exclude the unrealized 30.00 shares"` — fails because unrealized exposure is currently marked into the realized sum | Same command — passes; realized covers only matched quantity and lifecycle stays Open |
 | H8 | `… -t "NotApplicable"` — fails because an untouched Trade currently returns Value(0.00) | Same command — passes; NotApplicable with the stable reason |
 
@@ -782,7 +783,7 @@ unresolved resolution point instead of a fabricated one. Candidate fixture F2 as
 **Seam.** `TradeRecord.applyPreparedChange(command)` running inside the coordinator-owned semantic
 transaction (`trade-record.md:64-70`, `overview.md:127`). It stages the fact versions, the active
 recorded Lot-Match links, the stored Lifecycle State and its current-state index membership together
-and returns the durable-identity mapping plus the exact staged projections. Position, Lots, fees and
+and returns the durable-identity mapping plus the exact staged projections. Position, Lots and
 P&L are **not** persisted; the only stored exception remains Lifecycle State (`trade-record.md:5`),
 so "Persist Positions" means persisting the agreement records that keep analysis and stored links
 synchronized, never a derived number.
@@ -797,7 +798,7 @@ describe("TradeRecord.applyPreparedChange staging facts, recorded Lot Matches an
   it should leave both the lifecycle value and its justifying facts at their pre-command values, when the transaction aborts after staging
   it should stage no Trade effect at all, when the Journal participant in the same semantic transaction fails
   it should reserve no durable identity and expose no placeholder, when the candidate is prepared but not yet applied
-  it should write no Position, Lot, fee or P&L value, when the committed store diff is inspected
+  it should write no Position, Lot, allocated-fee or P&L value, when the committed store diff is inspected
   it should write a recorded link set exactly equal to the derived expected link set, and conflict instead of duplicating links, when the same command is applied twice
 ```
 
@@ -819,7 +820,7 @@ the Journal participant) each leave the pre-command dump byte-identical with no 
 | K4 | `… -t "pre-command values"` — fails because the lifecycle value currently survives an abort | Same command — passes; both lifecycle and facts revert |
 | K5 | `… -t "Journal participant fails"` — fails because Journal failure currently leaves Trade effects staged | Same command — passes; no Trade effect persists |
 | K6 | `… -t "no placeholder"` — fails because candidates are currently readable before commit | Same command — passes; NotFound before commit, durable identity only after |
-| K7 | `… -t "no Position, Lot, fee or P&L value"` — fails because a derived position row is currently written | Same command — passes; the store diff has facts, links, lifecycle and index only |
+| K7 | `… -t "no Position, Lot, allocated-fee or P&L value"` — fails because a derived position row is currently written | Same command — passes; the store diff has facts, links, lifecycle and index only |
 | K8 | `… -t "applied twice"` — fails because a repeated apply currently appends duplicate links | Same command — passes; identical link set and a typed conflict on the retry |
 
 #### T10 — `B` Recorded Lot-Match agreement against derived links
@@ -1162,7 +1163,8 @@ describe("PositionChangeResult bound to committed revisions with the post-commit
 **Integration case.** Through the real stack the case records one opening fill, then renders the saved
 outcome exclusively from the returned `PositionChangeResult` while a seam-level instrument counts zero
 `getRecord`, `queryRecords` and Journal query calls. It asserts the projection's Position +60.00 XYZ,
-one open Lot 60.00 at 10.00 with fee 1.20, expected lifecycle `Open` with agreement `Agree`, and the
+one open Lot 60.00 at 10.00 carrying no fee field while the Execution fact still records 1.20,
+expected lifecycle `Open` with agreement `Agree`, and the
 created Entry — all bound to the same `FactRevision` the store now serves. The case then re-runs with
 a stale revision and asserts the conflict payload carries the current revision and changed domains
 with no projection bodies.
@@ -1204,6 +1206,8 @@ describe("fill form model submitting the stock-open recordPositionChange command
   it should preserve every entered value and name the review required, when the command returns a conflict carrying a newer Trade revision
   it should submit no command and store nothing, when the trader cancels or navigates away without Save
   it should re-initialize the remaining planned quantity from the post-commit projection and issue no read-back, when the first fill has just committed
+  it should submit an entered fee of 1.20 as a captured fact and apply it to no derived figure, when the trader records the fill, because decision D10 captures the fee and excludes it from every calculation
+  it should pre-fill the fee field with an explicit 0.00 rather than leaving it blank, so that a zero-fee fill is an affirmative fact
 ```
 
 **Integration case.** Through the real stack the case drives the fill surface against the
@@ -1227,7 +1231,7 @@ untouched.
 | T7 | `… -t "cancels or navigates away"` — fails because cancel currently submits a draft command | Same command — passes; nothing submitted or stored |
 | T8 | `… -t "re-initialize the remaining planned quantity"` — fails because the model currently re-reads the Trade | Same command — passes; remaining 40.00 from the projection, zero reads |
 
-#### T19 — `B` Open lots, allocated fees, and realized P&L presentation
+#### T19 — `B` Open lots and realized P&L presentation
 
 - **Blocking edges:** T4, T5, T6, T7, T10, T16, T17.
 - **Consumed by:** T21.
@@ -1240,10 +1244,10 @@ recalculates (`trade-views-and-reporting.md:37-39`, `trade-views-and-reporting.m
 **Unit test cases**
 
 ```text
-describe("trade detail subset presenting Position, open Lots, allocated fees and realized P&L")
-  it should present Position +100.00 XYZ with two open Lots of 60.00 at 10.00 and 40.00 at 10.50 and their unconsumed fees 1.20 and 0.80, when the two opening fills are committed
-  it should present one remainder Lot of 30.00 at 10.50 with unconsumed fee 0.60 and realized P&L Value(62.90), when the 70.00-share partial reduction is committed
-  it should break realized P&L into the two matches with gross, both fee portions and net 58.20 and 4.70, when the realized breakdown is expanded
+describe("trade detail subset presenting Position, open Lots and realized P&L")
+  it should present Position +100.00 XYZ with two open Lots of 60.00 at 10.00 and 40.00 at 10.50 and no fee field on either, when the two opening fills are committed
+  it should present one remainder Lot of 30.00 at 10.50 and realized P&L Value(65.00), when the 70.00-share partial reduction is committed
+  it should break realized P&L into the two matches with 60.00 and 5.00, when the realized breakdown is expanded
   it should render Position rows and Lot Match rows as distinct concepts that are never merged, when the detail is presented
   it should render Value, Unbounded, Unavailable and Not Applicable distinctly and never substitute 0.00 for NotApplicable realized P&L, when each calculation state is supplied
   it should retain unrounded values internally while displaying 2-decimal money with explicit sign and tabular numerals, when the formatting model renders any value
@@ -1261,9 +1265,9 @@ view model output.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| U1 | `pnpm vitest run tests/unit/presentation/position-lots-view-model.test.ts -t "two open Lots"` — fails because no detail subset exists | Same command — passes; both Lots with exact fees |
-| U2 | `… -t "remainder Lot of 30.00"` — fails because the reduction is not reflected | Same command — passes; remainder and Value(62.90) |
-| U3 | `… -t "two matches with gross"` — fails because the breakdown is absent | Same command — passes; both matches with all components |
+| U1 | `pnpm vitest run tests/unit/presentation/position-lots-view-model.test.ts -t "two open Lots"` — fails because no detail subset exists | Same command — passes; both Lots with exact basis and no fee field |
+| U2 | `… -t "remainder Lot of 30.00"` — fails because the reduction is not reflected | Same command — passes; remainder and Value(65.00) |
+| U3 | `… -t "two matches with 60.00 and 5.00"` — fails because the breakdown is absent | Same command — passes; both matches, no fee component |
 | U4 | `… -t "never merged"` — fails because Lot Match rows currently render as Position rows | Same command — passes; two distinct row kinds |
 | U5 | `… -t "never substitute 0.00"` — fails because NotApplicable currently renders as 0.00 | Same command — passes; four states rendered distinctly |
 | U6 | `… -t "unrounded values internally"` — fails because formatting currently rounds the stored value | Same command — passes; exact value retained, display rounded only |
@@ -1374,12 +1378,12 @@ only permitted substitution is the disclosed `fakeIndexedDB` implementation in N
 
 ```text
 describe("cumulative D3 integration suite over the real application stack")
-  it should record two opening fills and a partial reduction through recordPositionChange and assert Position, open Lots, allocated fees, realized Value(62.90), stored Open lifecycle, index membership and one Journal outcome per Position Change
+  it should record two opening fills and a partial reduction through recordPositionChange and assert Position, open Lots, realized Value(65.00), stored Open lifecycle, index membership, one Journal outcome per Position Change, and that every Execution's recorded fee is captured while no fee enters any derived figure
   it should leave the factual Position Change durable with exactly one Outstanding Debt and no Entry, when the reflection is deferred
   it should store exactly one decline and no Entry, when the reflection is declined
   it should restore every store to its pre-command dump after aborts injected at four participant boundaries, and read back consistently after restart
-  it should return identical exact decimals for Position, Lots, fees and realized P&L after a restart, when nothing is cached in memory
-  it should pass the durability-critical recorded-link, lifecycle-index and fee assertions against the real browser engine, with every fakeIndexedDB fidelity gap disclosed in the suite output
+  it should return identical exact decimals for Position, Lots and realized P&L after a restart, when nothing is cached in memory
+  it should pass the durability-critical recorded-link, lifecycle-index and fee-capture assertions against the real browser engine, with every fakeIndexedDB fidelity gap disclosed in the suite output
   it should leave the D1 and D2 cumulative suites green, when the full suite runs after D3
   it should construct no stub, mock or canned response for Trade Record, Journal, Trade Analysis, Reference Catalog, Market Data or the persistence seam, when the test module graph is inspected
 ```
@@ -1422,7 +1426,7 @@ production change, and after a fix a further fresh critic repeats the complete D
 | V23.1 | Start the runtime from the worktree root with the workspace dev script, which reads `DEV_PORT` from the gitignored `.env.local` (5177) rather than a hardcoded port | The production UI is reachable at `http://127.0.0.1:5177` and Runtime Readiness reports `Writable`; the exact script name is the one D1:T1 pins at Phase 6 |
 | V23.2 | `pnpm playwright test tests/browser/d3-critic-flows.spec.ts --project=chromium` | All nine §4 flows pass at both the narrow and the wide viewport; the structured report is written under `test-results/d3-critic/` with one entry per flow and viewport |
 | V23.3 | `pnpm playwright test tests/browser/d3-axe.spec.ts --project=chromium` | Zero axe-core violations on the fill, reflection and trade detail surfaces at both widths |
-| V23.4 | Restart the runtime, re-open the Trade recorded in flow 4, and reload the page | Position, open Lots, allocated fees, realized P&L, stored lifecycle `Open`, the index entry and the Journal outcome are identical to the pre-restart values, and no placeholder Entry appears for the deferred flow |
+| V23.4 | Restart the runtime, re-open the Trade recorded in flow 4, and reload the page | Position, open Lots, realized P&L, stored lifecycle `Open`, the index entry and the Journal outcome are identical to the pre-restart values, each Execution still carries its recorded fee, and no placeholder Entry appears for the deferred flow |
 | V23.5 | Re-run V23.2 and V23.3 after any critic-found fix, with a newly spawned critic agent | A fresh critic reports every D3 flow passing; the fix was preceded by a failing automated test through the most specific seam |
 | V23.6 | `pnpm playwright test tests/browser --project=chromium` | The cumulative D1–D3 browser flows pass together; the automated suites, not the critic, carry regression responsibility for earlier deliverables |
 
@@ -1442,9 +1446,9 @@ D1 and D2 flows — the automated suites do (`planning-protocol.md:126`).
 | # | Flow | Steps | Expected observable result (at both viewports) |
 |---|---|---|---|
 | 1 | Open the Trade view for a confirmed planned Trade | Start the runtime; open the Trade confirmed in D2 | The view shows stored lifecycle `Planned`, the frozen Plan and Planned Leg, one positive 1R, and an entry action; no Position, Lot, fee or realized P&L value is displayed as if it existed, and no `Open` index membership is claimed |
-| 2 | Record a single opening fill | Open the fill surface from flow 1; enter 60.00 shares at 10.00 with fee 1.20, Economic Time 2026-01-05T10:00; choose Complete for the reflection; Save | One confirmation; the Trade view shows Position +60.00 XYZ, one open Lot of 60.00 at 10.00 with allocated fee 1.20, expected and stored lifecycle `Open`, and one Position Change Reflection Entry with Source Position Change; no follow-up read is required to render it |
-| 3 | Record a second opening fill at a different price and fee | Repeat the fill with 40.00 shares at 10.50 and fee 0.80 at the same Economic Time; Save | Position +100.00 XYZ with two open Lots ordered by `FactOrder` — 60.00 at 10.00 with fee 1.20 and 40.00 at 10.50 with fee 0.80 — and a second reflection outcome for the second Position Change; realized P&L is absent, not 0.00 |
-| 4 | Record a partial closing fill | Record a sale of 70.00 XYZ at 11.00 with fee 0.70; Save | FIFO Lot Matches show 60.00 against the first Lot and 10.00 against the second; realized P&L reads 62.90 with the two fee portions broken out; the open remainder is 30.00 at 10.50 with unconsumed fee 0.60; the Trade remains `Open` and the lifecycle index still reports it as `Open` |
+| 2 | Record a single opening fill | Open the fill surface from flow 1; enter 60.00 shares at 10.00 with fee 1.20, Economic Time 2026-01-05T10:00; choose Complete for the reflection; Save | One confirmation; the Trade view shows Position +60.00 XYZ, one open Lot of 60.00 at 10.00 carrying no fee field while the Execution records its fee of 1.20, expected and stored lifecycle `Open`, and one Position Change Reflection Entry with Source Position Change; no follow-up read is required to render it |
+| 3 | Record a second opening fill at a different price and fee | Repeat the fill with 40.00 shares at 10.50 and fee 0.80 at the same Economic Time; Save | Position +100.00 XYZ with two open Lots ordered by `FactOrder` — 60.00 at 10.00 and 40.00 at 10.50, neither carrying a fee field while both Executions record their fees — and a second reflection outcome for the second Position Change; realized P&L is absent, not 0.00 |
+| 4 | Record a partial closing fill | Record a sale of 70.00 XYZ at 11.00 with fee 0.70; Save | FIFO Lot Matches show 60.00 against the first Lot and 10.00 against the second; realized P&L reads 65.00 with the two matches broken out as 60.00 and 5.00 and no fee portion applied; the open remainder is 30.00 at 10.50 carrying no fee field; the Trade remains `Open` and the lifecycle index still reports it as `Open` |
 | 5 | Complete a reflection | Record a fill and choose Complete with all three required prompts answered | Exactly one Entry is saved for that Position Change with the exact definition snapshot, Source Position Change and the Trade Anchor; the fill's success is rendered from the command result with no Journal query |
 | 6 | Explicitly decline a reflection | Record a fill, choose Decline with an optional reason, Save | One visible decline for that obligation, no Entry and no Debt; the Trade facts are unchanged by the decline |
 | 7 | Defer a reflection | Record a partial reduction, choose Defer, Save | The factual Position Change is durable, stored lifecycle stays `Open`, exactly one Outstanding Debt exists carrying the trigger-time definition snapshot and the Position Change origin, and no placeholder or blank Entry is visible anywhere in the Journal |
@@ -1482,11 +1486,12 @@ owns Debt resolution, D6 owns the disposing facts that reach `Closed` and the Cl
 completes the remaining Entry Types and Sources, D18 owns chart gaps, and D21 owns AC-LIFE-003's authorized-preparation half and destructive
 Restore. No row here is a bare `Covered` claim: a scenario whose whole Then clause needs a later
 capability is Partial, and AC-POS-001 is Partial because its disposing-Execution command path and
-final flat closure arrive at D6, which is the row that carries the scenario complete.
+final flat closure arrive at D6 **and** its fee-allocation clause is not demonstrated by any
+deliverable (decision D10), so D6's row is Partial as well and nothing carries the scenario complete.
 
 | Scenario | Status | Tasks and evidence |
 |---|---|---|
-| AC-POS-001 | Partial — the opening path through the command and the whole derivation of Positions, open Lots, FIFO Lot Matches, lot-aware fee allocation and realized P&L proven at the pure `derive` seam; the disposing-Execution command path, partial realization leaving the Trade `Open`, and the final flat exposure reaching `Closed` land at D6. | Each fill owned by one Trade, Position and open Lots exact, FIFO Lot Matches linking exact quantities, opening and disposal fees allocated exactly once, and no price or P&L copied onto a Lot Match; the disposing command path and the closure transition are D6's, whose cumulative suite carries the complete scenario: T4, T5, T6, T7, T9, T10, T11, T16, T17, T19, T22, T23. |
+| AC-POS-001 | Partial — the opening path through the command and the whole derivation of Positions, open Lots, FIFO Lot Matches and realized P&L proven at the pure `derive` seam; the disposing-Execution command path, partial realization leaving the Trade `Open`, and the final flat exposure reaching `Closed` land at D6, and the scenario's "opening/disposal fees are allocated exactly once" clause is demonstrated by no deliverable because decision D10 excludes fees from every calculation. | Each fill owned by one Trade, Position and open Lots exact, FIFO Lot Matches linking exact quantities, and no price or P&L copied onto a Lot Match; the disposing command path and the closure transition are D6's, and the fee-allocation clause is explicitly unclaimed: T4, T5, T6, T7, T9, T10, T11, T16, T17, T19, T22, T23. |
 | AC-LIFE-001 | Partial — the `Open` step, its index membership, and the position facts that justify it; the `Planned` step is D2's and the disposing facts that reach `Closed` land at D6. | T9, T11, T18, T22. |
 | AC-LIFE-003 | Partial — the lot/deviation half: a controlled integrity fixture makes a recorded Lot-Match link disagree with the derived FIFO links, the read surfaces the structured disagreement, and no read repairs it; the authorized-preparation half, which derives a disclosed repair or rejects incoherent facts, completes at D21. | Recorded-and-derived links compared against fresh derivation with the disagreement named rather than repaired; test-only mutation of non-authoritative derived state under decision D8 tier 1, written through the real persistence seam and disclosed with the expected derivation: T9, T10, T19, T22. |
 | AC-JOUR-003 | Partial — the factual Position Change succeeds with exactly one Outstanding Debt carrying its trigger-time form snapshot and no placeholder Entry; the due-Debt blocker and the resolution paths land at D4 and D5. | T12, T13, T14, T20, T22. |
@@ -1508,7 +1513,7 @@ integration case it is `pnpm vitest run tests/integration/<area>/<file>.test.ts 
 for a real-engine case it is `pnpm playwright test tests/browser/<file>.spec.ts`. Green is the same
 command passing, together with every already-green case in that task's `describe` group, with no other
 command changing in between. Valid red also requires the failing assertion to name the seam — for
-example a `Value(62.90)` mismatch from `derive().realizedToDate` or a missing recorded-link finding
+example a `Value(65.00)` mismatch from `derive().realizedToDate` or a missing recorded-link finding
 from `derive().lotMatchAgreement`. Every no-write expectation compares authoritative before/after
 dumps rather than asserting the absence of a call (`acceptance-contract.md:21`).
 
@@ -1577,20 +1582,22 @@ non-authoritative derived state may be mutated for validation/error scenarios, t
 persistence seam, disclosed with the expected derivation, and never to establish ordinary behaviour.
 The D3 row is Partial because the "authorized preparation" half is Restore's and completes at D21.
 
-**3. The fee apportionment rule is settled and is reachable at D3.** Decision 2 of §1 fixes
-largest-remainder apportionment to the cent — every exact share takes its floor, the leftover cents go
-one each to the largest fractional remainders, ties by earliest `FactOrder` — with allocations
-recomputed from facts on every derivation rather than accumulated. An earlier draft of this breakdown
-claimed the residual branch was unreachable through the D3 UI because one opening Execution creates
-exactly one Open Lot; that reasoning covered only opening fees. A disposing fact's fee is allocated
-across that disposal's Lot Matches, and a non-terminal reduction may consume more than one Lot, so the
-branch is reachable in D3's own scenario and T6 tests it directly with three-equal-Lot and six-Lot
-cases rather than through a policy-only fixture. A reviewer who prefers a different apportionment rule
-changes T6's and T7's expectations, though not the `F1` values.
+**3. Fees are captured and excluded, and no deliverable can claim AC-POS-001 complete.** Decision D10
+records that every Execution keeps its actual fee as a required fact, defaulting to an explicit zero,
+while **no fee enters any calculation**: no lot-aware allocation, no consumed/unconsumed opening-fee
+split, no fee-adjusted realized or marked P&L, and no `remainingOpeningFees` output. The cent
+apportionment rule that an earlier draft of this breakdown settled at decision 2 of §1 is
+**withdrawn rather than solved**. D3's fixtures therefore keep non-zero fees on every Execution and
+assert derived figures computed without them, because a zero-fee fixture would prove nothing about the
+exclusion. A recorded zero fee yields genuinely net figures and needs no caveat; a single conditional
+disclosure at the fee field and in the Installed Capability Manifest covers a recorded non-zero fee
+that is not applied. The cost is disclosed rather than hidden: results are not comparable with the
+other seven branches on any fee-inclusive scenario, and recording the exclusion as a scope change to
+`specs/` remains a product decision that has not been taken.
 
 **4. The D3 presentation read is a narrow subset of a later operation.** Decision 8 of §1 ships a
 partial `getTradeDetail` at D3 that D18 extends. The Installed Capability Manifest must advertise only
-the subset D3 actually assembles (Position, open Lots, allocated fees, realized P&L, stored lifecycle,
+the subset D3 actually assembles (Position, open Lots, realized P&L, stored lifecycle,
 agreement), never valuation, risk, payoff or replay. D3's view model must not depend on field names
 D18 may extend; the seam between the two is the read coordinator's result shape.
 
@@ -1609,27 +1616,30 @@ cannot be executed end to end until that profile exists.
 integration cases substitute `fake-indexeddb` for the browser-owned IndexedDB instance
 (`planning-decisions-2026-10-10.md:170`, `planning-protocol.md:118-122`). The gap is not a licence to
 weaken assertions: T22 repeats every durability-critical proof — recorded Lot-Match links, lifecycle
-index membership, fee allocation persistence and abort rollback — against the real browser engine
+index membership, fee-capture persistence and abort rollback — against the real browser engine
 through Playwright, and T23 exercises it through the production UI. The gaps that must be disclosed in
 the suite output are at minimum: transaction scheduling and auto-commit timing differences;
 `structuredClone` behaviour for `decimal.js` value objects crossing the store boundary; abort and
 error event shapes; and index key ordering for equal keys. Any assertion that depends on one of those
 behaviours is marked as a fake-indexeddb-only assertion and paired with its real-engine counterpart.
 
-**8. The D3 command boundary makes AC-POS-001 Partial, and D6 completes it.** D3 rejects a terminal
+**8. The D3 command boundary makes AC-POS-001 Partial, and no deliverable completes it.** D3 rejects a terminal
 exit as a typed validation result, so D3's durable assertions stop at `Open` and no disposing-Execution
-command path exists here. Positions, open Lots, FIFO Lot Matches, lot-aware fee allocation and
-realized P&L are proven at the pure `derive` seam against constructed disposal facts — real evidence,
-but not the scenario: *partial realization leaves the Trade `Open`* and *final flat exposure closes
-it* cannot both be exercised through the production UI until D6 delivers the closing variant. §5
-therefore records AC-POS-001 as Partial, and D6 carries it as the complete row. **A Partial row is
-not a pass**, and neither is a Covered row whose last step is a later deliverable's without that
-deliverable's evidence — which is exactly why this row is Partial rather than a completing claim.
+command path exists here. Positions, open Lots, FIFO Lot Matches and realized P&L
+are proven at the pure `derive` seam against constructed disposal facts — real evidence, but not the
+scenario: *partial realization leaves the Trade `Open`* and *final flat exposure closes it* cannot
+both be exercised through the production UI until D6 delivers the closing variant. **In addition**,
+the scenario's "opening/disposal fees are allocated exactly once" clause is demonstrated by no
+deliverable, because decision D10 excludes fees from every calculation. §5 therefore records
+AC-POS-001 as Partial and D6's row is Partial for the same fee reason, so **nothing carries this
+scenario complete**. **A Partial row is not a pass**, and neither is a Covered row whose last step or
+whose fee clause is a later deliverable's without that deliverable's evidence.
 
 **9. Coverage this deliverable cannot demonstrate yet** is exactly the content of the Partial rows in
 §5: the `Planned` step and the `Open`-index-seeded reads D2 owns; the due-Debt blocker and Debt
 resolution at D4/D5; the update member of AC-RESP-001 at D4; chart-gap and destructive-Restore states
-at D18/D21; and the remaining Entry Types and Sources at D17.
+at D18/D21; the remaining Entry Types and Sources at D17; and AC-POS-001's fee-allocation clause,
+which no deliverable demonstrates (decision D10).
 
 **10. No performance claim is made, and boundedness is asserted instead.** The acceptance contract's
 performance scenario is owned by no deliverable and no deliverable's `AC:` line names it, so the gap
@@ -1642,5 +1652,7 @@ this document.
 migration-costly change, which is why its verification compares dumps rather than inspecting names.
 The `NotEntered` and `NotVerifiable` fulfillment values and the `Closed` lifecycle expectation are
 exercised only against candidate snapshots at D3; if D11/D12 change the fulfillment vocabulary's
-meaning, the D3 forward-guard cases must be revisited. The three-equal-Lot fee fixture is a policy
-fixture that must not be mistaken for a reachable D3 flow.
+meaning, the D3 forward-guard cases must be revisited. The fee-exclusion proof is only as strong
+as the values it asserts: a comparison between two runs would still pass if both the recorded fee and
+the derived figure were wrong, so T7 pins absolute expected values (65.00, 60.00, 5.00) rather than
+only asserting stability.

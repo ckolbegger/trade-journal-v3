@@ -651,14 +651,82 @@ of its deliverable.
 
 ---
 
+## D10 — Fees are captured as facts and excluded from calculations
+
+**Status:** settled by user decision, 2026-10-11.
+
+### Context
+
+Fees are normative throughout the frozen baseline: `glossary.md:49` puts an actual fee on every
+Execution, `glossary.md:58` puts an unconsumed opening fee on every Open Lot, `glossary.md:156` makes
+Entry Quality a comparison "including allocated fees", `trade-analysis.md:105` fixes the lot-aware
+allocation rule, `trade-analysis.md:83` has `evaluate` return incurred fees, `trade-analysis.md:87`
+has the payoff's Current view include unconsumed opening fees, `trade-analysis.md:107` has settlement
+costs adjust basis and proceeds exactly once, and AC-POS-001, AC-CALC-001 and AC-RPT-002 all require
+fee-inclusive evidence. The user's judgement is that a trader still gets the learnings the product
+exists to provide without fee arithmetic, and that the calculations become materially simpler.
+
+### Decision
+
+1. **Capture.** Every Execution continues to record its actual fee as a required fact.
+   `overview.md:264` and `delivery-contract.md:79` require facts needed by a later capability to be
+   captured before the behaviour occurs, or the later capability must disclose historical coverage
+   loss. Capturing it now keeps fee application installable later with no loss. The fee defaults to an
+   explicit `0`, so "no fee" is an affirmative fact rather than an absent field, and a blank cannot be
+   confused with a zero.
+2. **Exclusion.** No fee enters any calculation. Not installed: lot-aware allocation; the
+   consumed/unconsumed opening-fee split; fee-adjusted realized and marked P&L; `remainingOpeningFees`;
+   the incurred-fee component of `evaluate`; the unconsumed-opening-fee term in the payoff's Current
+   view; Entry Quality's "including allocated fees" component; settlement cost adjustments to basis and
+   proceeds; and fee reconciliation. The Open Lot's unconsumed-opening-fee field is not populated.
+3. **Honesty.** The Installed Capability Manifest declares fee application and allocation not
+   installed, and the capability is absent rather than represented as a zero fee or a fabricated
+   `Not Available`. Where a recorded fee is zero the derived P&L **is** the true net P&L and no caveat
+   appears; a single conditional disclosure at the fee field and in the manifest states that fees are
+   recorded but not applied. It is a no-op for a zero-fee trader and never appears as a per-number
+   "before fees" caveat.
+4. **Withdrawn.** Decision 2 of D3's §1, which settled cent apportionment of fees by largest-remainder
+   apportionment with a recompute-never-accumulate rule, is **withdrawn rather than solved**. The
+   apportionment, residual and telescoping rules it fixed are not implemented.
+5. **Coverage.** AC-POS-001's "opening/disposal fees are allocated exactly once", AC-CALC-001's Entry
+   Quality comparison "including allocated fees", and AC-RPT-002's fee-inclusive outcomes are not
+   demonstrated by any deliverable. They are recorded as Partial with those clauses explicitly
+   unclaimed, and no deliverable may claim AC-POS-001 complete.
+
+### Correction recorded
+
+An earlier draft of this decision required every P&L figure to be labelled as excluding fees. That was
+wrong. Many platforms charge nothing for stock and simple option transactions, so a recorded zero fee
+yields a genuinely net figure that needs no qualification; a blanket caveat would imply an exclusion
+that does not exist. The requirement is therefore conditional on a recorded non-zero fee.
+
+### Consequences
+
+- D3's fee-allocation task is rescoped to fee capture and exclusion. Its derived fixtures keep
+  non-zero fees precisely so that the numbers prove the fees do **not** enter them.
+- Partial realization, FIFO, basis, Entry Resolution, risk/reward and payoff arithmetic are unchanged;
+  only the fee components are removed. The saving is concentrated in the apportionment rule, not spread
+  across the calculus.
+- **Comparability.** Results are not comparable with the other seven branches on any fee-inclusive
+  scenario. Recording this as an explicit scope change to `specs/`, which is the route
+  `acceptance-contract.md:518` requires for a waived scenario, remains a product decision and has not
+  been taken; `specs/` is untouched.
+
+### Not changed
+
+No operation, fact identity or lifecycle semantic changes. The Execution's fee field remains; only its
+effect on derived values is removed.
+
+---
+
 ## Still open
 
 Specification gaps from intake remain limited to D1 and D2. D3 records the approved stack, D4 affirms
 the frozen offline-delivery requirement, D5–D6 record interpretations that avoid reopening frozen
 definitions, D8 records the `Given`-setup mutation rules, including its three tiers and the
-prohibition on using authoritative-fact mutation to establish ordinary behaviour, and D9 records the
-stop and target condition model across the option arc. The D3 verification items must be resolved
-inside the plan.
+prohibition on using authoritative-fact mutation to establish ordinary behaviour, D9 records the stop
+and target condition model across the option arc, and D10 records that fees are captured as facts and
+excluded from every calculation. The D3 verification items must be resolved inside the plan.
 
 The vertical deliverable list is recorded in [vertical-deliverables.md](vertical-deliverables.md).
 The task-level breakdowns for D1–D7 are drafted under
