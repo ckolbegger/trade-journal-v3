@@ -2,7 +2,7 @@
 
 Definition: [implementation plan, D4](implementation-plan.md#d4--daily-review). The definition (stories, capability set, introductions, acceptance claims) stays there and is not repeated here. On 2026-10-11 the former D3 (Manual Marks and ongoing risk/reward) was merged into D4, so that Marks are entered as part of the Daily Review (plan decision 24). D4 builds on D2's task identities, schema-2 layout (D2 A28), migration engine (D2 A30), benchmark generator (D2 section 1.3, T2.20–T2.21), and harnesses ([D2 breakdown](D02-open-a-long-stock-position.md)), which in turn build on [D1's](D01-start-a-workspace-and-confirm-a-long-stock-plan.md).
 
-Status: **draft, under review.** Decisions P8–P13 and P15 were agreed on 2026-10-11 (first section). **P14 is open** and must be settled before the plan freezes. Everything else is written against those decisions and the working assumptions listed below.
+Status: **breakdown agreed by the user on 2026-10-11** (the plan as a whole is still a draft). Decisions P8–P13 and P15 were agreed on 2026-10-11 (first section). **P14 is open** and must be settled before the plan freezes. Everything else is written against those decisions and the working assumptions listed below.
 
 ---
 

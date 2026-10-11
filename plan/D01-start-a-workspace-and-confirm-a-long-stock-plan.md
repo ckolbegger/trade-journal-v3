@@ -2,7 +2,7 @@
 
 Definition: [implementation plan, D1](implementation-plan.md#d1--start-a-workspace-and-confirm-a-long-stock-plan). The definition (stories, capability set, introductions, acceptance claims) stays there and is not repeated here.
 
-Status: **draft, under review.** Decisions P1–P3 were agreed on 2026-10-11 (first section). Everything else is written against them and the working assumptions listed below. Amended on 2026-10-11 during the D2 breakdown: T1.7 and T1.20 gained `versionchange` handling so a tab running this release cannot write to its database while a later release migrates it ([D2, section 1.1](D02-open-a-long-stock-position.md#11-decisions-for-this-breakdown)).
+Status: **draft, under review.** Decisions P1–P3 were agreed on 2026-10-11 (first section). Everything else is written against them and the working assumptions listed below. Amended on 2026-10-11 during the D2 breakdown: T1.7 and T1.20 gained `versionchange` handling so a tab running this release cannot write to its database while a later release migrates it ([D2, section 1.1](D02-open-a-long-stock-position.md#11-decisions-for-this-breakdown)). References to D3 were changed to D4 on 2026-10-11, after D3 was merged into D4 (plan decision 24).
 
 ---
 
@@ -54,7 +54,7 @@ The profile is shared by the capacity formula (D1) and the benchmark generator (
 | Close Review outcomes | 24,700 | allowance until D6 |
 | Daily Trade Review Actions (about 100 Open × 1,260 sessions) | 126,000 | allowance until D4 |
 | Review Notes and Trader Reflections | 5,000 | allowance until D13 |
-| Marks / Daily Bars (about 150 Instruments × 1,260 sessions) | 190,000 each | allowance until D3 / D11 |
+| Marks / Daily Bars (about 150 Instruments × 1,260 sessions) | 190,000 each | allowance until D4 / D11 |
 | Correction versions (2% of facts) | 4,000 | allowance until D15 |
 | Catalog records | about 60 | measured |
 
