@@ -38,11 +38,17 @@ Both must report zero failures **and zero warnings**. Warnings do not fail the e
 | 2 | `assessPlan`'s input shape | Condition model fixed: discriminated union on `kind`, `conditionId`, `role`, `monetaryBoundary` on every underlying-price condition, view-only `comment`; plural OR set from D2; `StructureValueCondition` reserved, not installed before D8 | decision **D9**; applied to D2 and D4 |
 | 3 | Fee handling | **Superseded.** Fees are captured as a fact and excluded from every calculation; the cent-apportionment rule is **withdrawn, not solved** | decision **D10** |
 | 4 | `RecordedSequence` | One per-Workspace monotonic counter, assigned at commit in the candidate's **declared member order**; the candidate carries that order and `derive` tie-breaks with it because no sequence exists during preparation | D3 §1 decision 3, T2 |
+| 6 | Terminal Disposition's exact structured shape | Result union `Applicable(members) \| NotApplicable(stableReason, structuredDetails)`; members `{ mechanism, sourceFactIdentity, instrument, disposedQuantity }`; exact positive magnitude; `FactOrder` member order; `Mixed` derived rather than carried; one shared five-kind `MechanismKind` | decision **D11**; D6 §1 decision 2, T4/T16, §8 item 9 |
 
 Earlier corrections in the same session, worth knowing before re-deriving anything: the
 `vertical-deliverables.md` Open-items paragraph and its "decision D7" reference were stale and are
 fixed; the D2/D3/D4/D6 dependency-layer counts were wrong and are now the graph's true height; two of
 1,084 spec citations were out of range and are fixed.
+
+One defect found while settling item 6 is deliberately **not** fixed yet: D6 §8 item 1 and its §5
+closing note still say `AC-POS-004` is "marked Covered", while the row itself is `Partial` with D10
+named as the completing owner. Item 6 left both sentences for the Phase 4 matrix, where that row is
+the subject.
 
 ---
 

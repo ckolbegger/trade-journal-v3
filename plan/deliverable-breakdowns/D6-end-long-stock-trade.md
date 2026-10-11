@@ -132,6 +132,27 @@ value, require reconciliation on every correction, and let the stored summary dr
 facts it summarizes. *Consequence:* `TerminalDisposition` is applicable only to `Closed`; an
 `Abandoned` Trade returns `NotApplicable` with a stable reason (`glossary.md:80`).
 
+**Settled shape.** `TerminalDisposition` is a result union, not a bare set:
+`Applicable(members: TerminalDispositionMember[]) | NotApplicable(stableReason, structuredDetails)`,
+following the convention `trade-analysis.md:28` already uses for other calculations, because
+`glossary.md:80` requires `NotApplicable` for an Abandoned Trade. A member is
+`{ mechanism, sourceFactIdentity, instrument, disposedQuantity }`. `mechanism` is drawn from
+`MechanismKind`, the closed five-kind vocabulary `Execution | Expiration | Assignment | Exercise |
+CashSettlement` taken from `adr/0003-authoritative-lifecycle-and-derived-disposition.md:7`,
+declared once by Trade Analysis and named as shared with Option Disposition Timing (`glossary.md:67`)
+and the D19 report field (`performance-analysis.md:99`), so the same idea never acquires a second
+vocabulary. `instrument` is per member because Assignment changes it; `sourceFactIdentity` names the
+disposing fact, so a later correction or Void can be pointed at it; `disposedQuantity` is an exact
+positive magnitude, because the frozen text says "quantities" and direction is already carried by
+mechanism and instrument — a long closed by selling 100 and a short closed by buying 100 both
+dispose of 100. Members are ordered by `FactOrder` (`trade-analysis.md:30`), so the value is a
+deterministic function of the effective facts rather than of the order in which facts were supplied.
+`Mixed` is **not** a carried member: it is the predicate `members.length > 1`, for the same reason
+the rejected alternative above fails. A Roll's closing leg therefore derives mechanism `Execution`
+while its Close Reason is `Rolled`; the two concepts legitimately differ there, which is the
+separation the frozen text requires. The shape is a derivation output only and is never stored, so a
+later deliverable extending it changes consumers and tests rather than requiring a migration.
+
 **3. `abandonPlan` eligibility is re-derived from effective facts on every attempt.** The rule is
 "does any effective real position-changing fact exist right now", evaluated inside the same
 prepared change that would abandon. A data-entry-only false Execution that has been visibly
@@ -452,9 +473,13 @@ specifically the `Terminal Disposition when terminal` member of `DerivedTradeSta
 (`trade-analysis.md:41`, `trade-analysis.md:5`). The derived value names the complete set of
 mechanisms and quantities by which exposure ended, preserves mixed mechanisms, is applicable only
 to a `Closed` Trade, and is returned independently of the trader's Close Reason and of the stored
-Lifecycle State (`glossary.md:65`, `glossary.md:80`, `trade-analysis.md:108`). This task must not
-read the Close Reason association and must not read stored lifecycle to decide applicability; it
-derives from the effective facts it was given.
+Lifecycle State (`glossary.md:65`, `glossary.md:80`, `trade-analysis.md:108`). It is the
+`Applicable(members) | NotApplicable(stableReason, structuredDetails)` union of §1 decision 2, whose
+members are `{ mechanism, sourceFactIdentity, instrument, disposedQuantity }` ordered by `FactOrder`
+with `mechanism` drawn from the shared `MechanismKind` vocabulary, and whose `Mixed` form is the
+derived predicate `members.length > 1` rather than a carried member. This task must not read the
+Close Reason association and must not read stored lifecycle to decide applicability; it derives from
+the effective facts it was given.
 
 **Unit test cases**
 
@@ -468,6 +493,8 @@ describe("TradeAnalysis.derive Terminal Disposition for a closed long stock Trad
   it should produce an identical Terminal Disposition when the same effective facts are supplied with a deliberately disagreeing stored Lifecycle State, and report the stored-lifecycle disagreement as a structured integrity finding
   it should ignore a Voided disposing fact version and derive the disposition from the remaining effective versions only
   it should report the mechanism set as mixed whenever more than one mechanism kind disposed of quantity, and never collapse it to a single headline mechanism
+  it should name the disposing fact identity on every member, so a later correction or Void can be pointed at the exact fact
+  it should order the members by economic time and then Recorded Sequence, producing the same member order when the same facts are supplied in a different order
 ```
 
 **Integration case.** A mock-free integration test builds a Long Stock Trade whose exposure was
@@ -492,6 +519,8 @@ directly.
 | Reason independence | `pnpm vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "different Close Reason"` — fails because there is no derived value to compare across runs | Same command — byte-identical disposition across the two runs |
 | Stored-lifecycle disagreement | `pnpm vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "disagreeing stored lifecycle"` — fails because the structured integrity finding is not returned | Same command — identical disposition plus a named integrity finding |
 | Voided disposing fact | `pnpm vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "Voided disposing fact"` — fails because effective-version selection is not applied to disposing facts here | Same command — the Voided version contributes nothing |
+| Source fact identity | `pnpm vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "source fact identity"` — fails because members carry no reference to the disposing fact | Same command — every member names its disposing fact |
+| Member order | `pnpm vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "member order"` — fails because member order follows construction rather than `FactOrder` | Same command — identical member order across both supply orders |
 
 #### T7 — `B` Close Review with its distinct obligation key
 
@@ -1013,7 +1042,10 @@ a real engine.
 Lifecycle State, derived Terminal Disposition, and the optional Close or Abandonment Reason are
 separate concepts, with any integrity disagreement also separate. Color never carries meaning
 alone (`ui-contract.md:22`), and `Unavailable`/`Not Applicable` remain distinct from each other
-and from a value (`ui-contract.md:94`).
+and from a value (`ui-contract.md:94`). The disposition region renders the member set of
+§1 decision 2 — each member's mechanism name from the shared `MechanismKind` vocabulary, its
+instrument and its quantity — and presents `Mixed` as the derived predicate over that set, never as
+a distinct kind of outcome.
 
 **Unit test cases**
 
@@ -1460,14 +1492,16 @@ The reading is defensible, but it does mean the abandonment flow is not single-p
 made a data-entry mistake, and that the Void-restoration path cannot be exercised at all until D15.
 Recorded as an open item rather than resolved silently.
 
-**9. Terminal Disposition's exact structured shape is not frozen by D6.** The specification
+**9. Terminal Disposition's structured shape is settled by decision D11.** The specification
 requires that the derived value names "the complete set of mechanisms and quantities by which a
 Closed Trade's exposure ended" (`glossary.md:65`) and that it may mix mechanisms
-(`trade-analysis.md:108`). D6 fixes the member set it needs for a one-Instrument stock close
-(mechanism kind, mechanism identity, disposed quantity per member, instrument identity) and
-asserts mixed mechanism preservation, but the wider shape across option structures is D10's and
-D13's to extend. A later deliverable that needs a richer member must extend the derivation without
-changing the stored shape, because D6 stores no disposition summary (decision 2).
+(`trade-analysis.md:108`). D11 fixes the result union and the four-member shape, the positive
+magnitude, the `FactOrder` member order, the derived `Mixed` predicate and the shared five-kind
+`MechanismKind` vocabulary; D6 §1 decision 2 and T4/T16 carry it. What remains open is only its
+**extension**: the wider shape across option structures is D10's and D13's to extend, and D13 must
+carry the case that a Roll's closing leg derives mechanism `Execution` while its Close Reason is
+`Rolled`. Because the shape is a derivation output and D6 stores no disposition summary
+(decision 2), an extension changes consumers and tests rather than requiring a migration.
 
 **10. A Partial row is not a pass.** This is restated in §5 and repeated here because it is the
 single easiest thing for a reader to misread: `AC-REF-001`, `AC-RESP-001`, and `AC-UI-002` each

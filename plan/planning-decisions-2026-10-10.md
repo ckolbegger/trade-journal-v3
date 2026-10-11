@@ -719,6 +719,55 @@ effect on derived values is removed.
 
 ---
 
+## D11 — Terminal Disposition's structured shape and the shared mechanism vocabulary
+
+**Status:** settled by user decision, 2026-10-11. **Branch-local**, not promoted into `specs/`.
+
+### The gap
+
+`glossary.md:65` requires the derived value to name "the complete set of mechanisms and quantities by
+which a Closed Trade's exposure ended", `glossary.md:80` requires `NotApplicable` for an Abandoned
+Trade, and `trade-analysis.md:108` allows mixed mechanisms. Nothing fixes the member set, whether a
+quantity is signed, whether a summary is carried, how members are ordered, or what the mechanism
+vocabulary is. `acceptance-contract.md:5` deliberately does not prescribe internal types, so this is
+a planning decision rather than a reading of existing text, and D6 §8 item 9 disclosed it as open.
+
+### Decision
+
+`TerminalDisposition` is the result union
+`Applicable(members: TerminalDispositionMember[]) | NotApplicable(stableReason, structuredDetails)` —
+the convention `trade-analysis.md:28` already uses — so that an Abandoned or still-open Trade stays
+distinguishable from a zero-member disposition. A member is
+`{ mechanism, sourceFactIdentity, instrument, disposedQuantity }`, and:
+
+1. `MechanismKind` is the closed five-kind vocabulary `Execution | Expiration | Assignment |
+   Exercise | CashSettlement`, taken from
+   `adr/0003-authoritative-lifecycle-and-derived-disposition.md:7`, declared once by Trade Analysis
+   and shared with Option Disposition Timing (`glossary.md:67`) and the D19 report field
+   (`performance-analysis.md:99`).
+2. `disposedQuantity` is an exact positive magnitude. Direction is carried by the mechanism and the
+   instrument, and the frozen text says "quantities".
+3. `instrument` is per member, because Assignment changes it.
+4. `sourceFactIdentity` names the disposing fact, so a correction or Void can be pointed at it.
+5. Members are ordered by `FactOrder` — economic time, then `RecordedSequence`
+   (`trade-analysis.md:30`) — so the value is a deterministic function of the effective facts.
+6. `Mixed` is not carried: it is the predicate `members.length > 1` over the member set.
+
+### Consequences
+
+- A Roll's closing leg derives mechanism `Execution` while its Close Reason is `Rolled`. Disposition
+  and reason legitimately differ there, and that is a test D13 must carry.
+- The shape is a derivation output, never stored, so the extension at D10 and D13 changes consumers
+  and tests rather than requiring a migration.
+- `NotApplicable` stays distinct from `Unavailable` and from a zero-member set.
+
+### Not changed
+
+No operation, fact identity, stored field or lifecycle semantic changes, and `specs/` is untouched.
+D6 §1 decision 2, T4 and T16 record the shape; D6 §8 item 9 now discloses only the extension.
+
+---
+
 ## Still open
 
 Specification gaps from intake remain limited to D1 and D2. D3 records the approved stack, D4 affirms
@@ -726,7 +775,8 @@ the frozen offline-delivery requirement, D5–D6 record interpretations that avo
 definitions, D8 records the `Given`-setup mutation rules, including its three tiers and the
 prohibition on using authoritative-fact mutation to establish ordinary behaviour, D9 records the stop
 and target condition model across the option arc, and D10 records that fees are captured as facts and
-excluded from every calculation. The D3 verification items must be resolved inside the plan.
+excluded from every calculation, and D11 fixes the Terminal Disposition shape and the shared
+mechanism vocabulary. The D3 verification items must be resolved inside the plan.
 
 The vertical deliverable list is recorded in [vertical-deliverables.md](vertical-deliverables.md).
 The task-level breakdowns for D1–D7 are drafted under
