@@ -529,7 +529,7 @@ participate in Workspace-owned flows).
   and AC-REF-001 is untouched.
   A **true equal-strike synthetic is not supported** as a validated shape: the frozen vocabulary grants
   strike *order* but not *equality*, so the shape could not enforce the property that defines a
-  synthetic. See decision D7 in
+  synthetic. See decision D6 in
   [planning-decisions-2026-10-10.md](planning-decisions-2026-10-10.md).
   Adding this will renumber the deliverables after its insertion point; the current 22-deliverable
   sequence stands until then.

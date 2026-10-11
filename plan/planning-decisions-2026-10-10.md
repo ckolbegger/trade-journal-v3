@@ -403,14 +403,119 @@ equality constraint is added, so a true synthetic cannot be validated as a shape
 
 ---
 
+## D8 — `Given`-setup mutation of derived state and authoritative facts
+
+**Status:** settled by user decision, 2026-10-11.
+
+### The gap
+
+`acceptance-contract.md:7` restricts how a `Given` may be established:
+
+> “Given” fixtures use authoritative domain commands or a validated restored Workspace. Test-only
+> mutation of private projections may be used solely in scenarios that explicitly exercise
+> reconstruction.
+
+Three cases cannot be tested under a literal reading of that rule, and one of them is required by the
+same contract:
+
+1. `AC-LIFE-003` says the disagreement is introduced "in a controlled integrity fixture" and names
+   "**stored Lifecycle State**" as one of the things that may differ from effective facts. Stored
+   Lifecycle State is authoritative derived state — `overview.md:18` carves it out as the one thing
+   that is not rebuildable, and `overview.md:31` calls it "the one stored/indexed derived-state
+   exception" — so the scenario requires a `Given` that sentence 1 of line 7 forbids.
+2. Recorded Lot-Match links and recorded Deviation occurrences are derived state that is persisted,
+   checked and backed up, but `trade-record.md:143` contrasts "Lot-Match/Deviation history" with the
+   "Private indexes/projections" that are excluded from the backup. The "private projections"
+   carve-out therefore does not clearly reach them.
+3. **Incoherent authoritative facts** are contemplated by the specification and must be rejected, not
+   repaired (`trade-record.md:145`, `workspace.md:165`, `trade-analysis.md:134`, `AC-REST-001`). No
+   domain command produces them, and the Restore path validates incoherence away, so the class is
+   unreachable from either sanctioned fixture source. A release that wrote a fact incorrectly — for
+   example an Execution closing more shares than were held — is exactly this class.
+
+### Decision
+
+`Given` setup may use test-only mutation at three tiers:
+
+| Tier | What may be mutated | Permitted for |
+|---|---|---|
+| 1 | Non-authoritative derived state, private or not: recorded Lot-Match links, recorded Deviation occurrences, lifecycle/agreement mirrors, indexes, projections | Validation and error-handling scenarios |
+| 2 | Authoritative derived state: stored Lifecycle State | Validation and error-handling scenarios |
+| 3 | Authoritative facts: Executions, settlements, Plan and Planned Legs, Management Revisions, Journal Entries and versions, Marks, Bars, acknowledgments, catalog records | Simulating error conditions only |
+
+Authoritative facts remain off-limits as a way to *establish* ordinary behaviour. A tier-3 mutation
+may only reach a state that no correct command can produce, and the scenario under test must be the
+product's response to that state. It must never create a happy-path fixture, and it must never
+evidence a scenario whose Then is about the product producing correct facts.
+
+### Conditions on every use
+
+1. It names the invariant under test.
+2. It states why no authoritative domain command can produce the state.
+3. The mutation is disclosed in the retained evidence, naming exactly what was altered, and is
+   accompanied by the correct derivation, so a reviewer can see the product detected the condition
+   rather than tolerated it.
+4. It writes through the **real persistence seam**, not by stubbing or replacing a module, so the real
+   pipeline is what handles the state (`planning-protocol.md:115-122`).
+5. It never manufactures evidence of a capability. The capability must be installed and real; only the
+   state is synthetic.
+6. For stored Lifecycle State, the test must also show the disagreement is detected and not silently
+   accepted as Ready (`trade-record.md:156`, `overview.md:139`).
+
+### Consequences
+
+- `AC-LIFE-003` becomes claimable: Partial in D2 (the stored-lifecycle half) and D3 (the
+  lot/deviation half), **completed at D21**, which owns "the authorized preparation either derives a
+  disclosed repair for coherent facts or rejects incoherent facts" (`workspace.md:163-167`,
+  `trade-record.md:145`).
+- `AC-REBUILD-001`'s "deliberate removal of rebuildable private indexes/projections" now reaches
+  recorded Lot-Match links and the lifecycle mirror, so rebuild equivalence is testable by deletion
+  as well as by Restore.
+- Two consequences of the tier-3 case are recorded as open in **Still open** rather than resolved
+  here.
+
+### Not changed
+
+`specs/` remains untouched. This is a branch-local interpretation that deliberately diverges from a
+literal reading of `acceptance-contract.md:7`. Promoting it to `specs/adr/` would bind every branch
+and change cross-branch comparability; that has not been done.
+
+### Numbering note
+
+D7 is unassigned. `vertical-deliverables.md:532` referred to "decision D7" for the content recorded
+above as **D6**; that reference is corrected, and this decision takes D8 so that no already-reviewed
+record is renumbered.
+
+---
+
 ## Still open
 
-No specification gaps remain from intake; D1 and D2 were the only two identified. D3 records the
-approved stack, D4 affirms the frozen offline-delivery requirement, and D5–D6 record interpretations
-that avoid reopening frozen definitions. The D3 verification items must be resolved inside the plan.
-The vertical deliverable list is recorded in [vertical-deliverables.md](vertical-deliverables.md);
-detailed task-level breakdowns per deliverable and the acceptance-to-evidence matrix are not yet
-drafted.
+Specification gaps from intake remain limited to D1 and D2. D3 records the approved stack, D4 affirms
+the frozen offline-delivery requirement, D5–D6 record interpretations that avoid reopening frozen
+definitions, and D8 records the `Given`-setup mutation rules, including its three tiers and the
+prohibition on using authoritative-fact mutation to establish ordinary behaviour. The D3 verification
+items must be resolved inside the plan.
+
+The vertical deliverable list is recorded in [vertical-deliverables.md](vertical-deliverables.md).
+The task-level breakdowns for D1–D7 are drafted under
+[deliverable-breakdowns/](deliverable-breakdowns/) (155 tasks), and both
+`scripts/check-deliverable-breakdown.mjs` and `scripts/audit-breakdown-coverage.mjs` report zero
+failures and zero warnings across them. The acceptance-to-evidence matrix (planning-protocol Phase 4)
+is not yet drafted.
+
+### Open questions raised by D8
+
+- **Can a correction be committed against a Trade whose base state is already incoherent?**
+  `trade-record.md:62` says `prepareChange` "validates structural coherence" without stating whether
+  it validates the base state or the candidate. If it validates the base, a fact written wrongly by a
+  buggy release cannot be repaired through the corrections workflow and the trader has no route out;
+  if it validates the candidate as a whole (`trade-analysis.md:99`), the recovery path is open. This
+  decides whether the tier-3 class above has any recovery route at all, and it must be settled when
+  D15 (corrections) is planned.
+- **Can a Workspace holding an incoherent authoritative fact produce a usable backup?** Its export
+  fails Restore validation on the way back in (`trade-record.md:145`), so the product must disclose
+  that the copy will not restore rather than presenting it as a completed backup. This affects D7's
+  presentation and D20's verification wording.
 
 ---
 

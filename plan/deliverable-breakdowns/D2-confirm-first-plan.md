@@ -1317,7 +1317,7 @@ deliberately deferred behavior, or a documented false positive:
 A **Partial** row below is **not a pass**. It records that D2 installs a dependency-closed step of
 the scenario and that the remaining steps are owned elsewhere: AC-LIFE-001 completes at D6, after D3
 supplies the opening facts; AC-RESP-001's update member lands at D4 and its bounded multi-subject
-member at D3; AC-JOUR-007 completes at D17; AC-JOUR-001's direct-Journal-save member is installed at
+member at D3; AC-LIFE-003's stored-lifecycle half is claimed here and completes at D21, which owns the authorized-preparation half; AC-JOUR-007 completes at D17; AC-JOUR-001's direct-Journal-save member is installed at
 D5; and AC-UI-002's chart-gap and destructive-Restore states land at D18 and D21. A reviewer must read
 a Partial row as "the named tasks are nonetheless fully implemented and verified for the step they
 claim", not as coverage of the whole scenario.
@@ -1327,6 +1327,7 @@ claim", not as coverage of the whole scenario.
 | AC-PLAN-001 | Covered | One atomic commit creating the Trade, the frozen Plan and Planned Legs, frozen original management, stored `Planned` lifecycle, positive 1R equal to the Plan Baseline, and one immutable completed Plan Reflection sharing its Thesis/Invalidation values with the Plan: T3, T4, T6, T9, T10, T13, T14, T15, T19, T20. Post-restart query evidence. |
 | AC-PLAN-002 | Covered | Each typed rejection path, with the returned issues and unchanged Trade Record, Journal and Catalog revisions, and no Trade, candidate identity, Entry, Debt or index membership: T5, T13, T14, T19. |
 | AC-LIFE-001 | Partial — the `Planned` step and its index membership only; the opening facts that reach `Open` land at D3 and the disposing facts that reach `Closed` at D6. | T3, T4, T7, T19. |
+| AC-LIFE-003 | Partial — the read-side half for stored Lifecycle State: a controlled integrity fixture makes stored lifecycle disagree with the effective facts, normal reads surface or block on the structured disagreement, and no read repairs it; the authorized-preparation half, which derives a disclosed repair for coherent facts or rejects incoherent facts, is Restore's and completes at D21. | Test-only mutation of authoritative derived state under decision D8 tier 2, written through the real persistence seam and recorded alongside the correct derivation so the finding is shown to be detected rather than tolerated; read result and absence of a read-time write: T3, T7, T17, T19. |
 | AC-RESP-001 | Partial — `confirmPlan` supplies the creation member of the contract, returning the committed Trade projection, the completed Entry and the derivation the command had to establish; the update and bounded multi-subject members land at D4 and D3. | T15, T19. |
 | AC-JOUR-007 | Partial — the Plan Reflection Entry Type and the Plan Confirmation Source are seeded with their exact initial definition and workflow-critical roles, and repeat seeding is idempotent; the remaining types and Sources arrive at D17. | T8, T11, T19. |
 | AC-JOUR-001 | Partial — the confirmation form stores nothing until Save and a cancelled or abandoned form leaves no Entry, version, Debt or draft; direct Journal save is not installed until D5. | T16, T19. |
@@ -1408,18 +1409,22 @@ neither weakens nor re-owns them.
    concrete struct and needs user alignment before T5 is implemented, because D3, D4, D11, D12 and
    D14 all consume the frozen Plan facts this shape defines. A wrong choice here is a
    migration-costly change, not a local refactor.
-2. **Whether Lot Matches are recorded *and* derived, or derived only, is not settled by D2.** D2
-   creates no Lot Match, so it cannot settle it, and it does not claim to. It is raised again at D3,
-   where the first opening Execution would create or not create one, and it interacts with
-   `trade-record.md:7` (recorded Lot-Match links are persisted) and `trade-analysis.md:104-105`
-   (FIFO links are derived). The D2 obligation is only to leave the representation able to hold
-   recorded links without a second migration.
-3. **Whether inducing a stored-lifecycle disagreement qualifies under `acceptance-contract.md:7`
-   remains open.** That line allows "test-only mutation of private projections" solely in scenarios
-   that explicitly exercise reconstruction. T7's integration case and T17's disagreement flow need
-   such an induced disagreement, and D2 uses a test-only private write for it. This is a reading of an
-   allowance, not a settled point, so it is disclosed rather than assumed. `AC-LIFE-003` itself is
-   deliberately **not claimed** here, and §5 contains no row for it.
+2. **Lot Matches are recorded *and* derived; D2 does not settle it but no longer leaves it open.**
+   D2 creates no Lot Match. `trade-record.md:7` persists "active Lot-Match links" and
+   `trade-analysis.md:63` reports disagreement against recorded links, so the recorded side is
+   required; `overview.md:18` and `delivery-contract.md:87-99` make the same records rebuildable, so
+   they are durable but non-authoritative. D3 decides the representation, and decision **D8** governs
+   the test-only fixture that induces a disagreement. D2's obligation is only to leave the
+   representation able to hold recorded links without a second migration.
+3. **Inducing a stored-lifecycle disagreement is settled by decision D8.** T7's integration case and
+   T17's disagreement flow need an induced disagreement between stored Lifecycle State and the
+   effective facts, which no domain command can produce. `acceptance-contract.md:7` as literally
+   written permits test-only mutation only of private projections in reconstruction scenarios, which
+   would have made `AC-LIFE-003` untestable despite the scenario requiring exactly this fixture.
+   Decision **D8** (tier 2) settles it: authoritative derived state may be mutated for
+   validation/error scenarios, through the real persistence seam, disclosed with the correct
+   derivation, and never to establish ordinary behaviour. `AC-LIFE-003` is now claimed as Partial in
+   §5 and completes at D21.
 4. **The deferred pinned version profile.** Exact TypeScript, Vite, React, `decimal.js`, IndexedDB
    wrapper, Vitest, `fake-indexeddb`, Playwright and axe-core versions are Phase 6 decisions
    (`planning-decisions-2026-10-10.md:152-153`, `planning-protocol.md:191-202`). Nothing in this
@@ -1444,8 +1449,8 @@ neither weakens nor re-owns them.
    is instead that manifest v2 carries only Long Stock until D8, then D2's AC-REF-001 exposure is
    narrower and the manifest revision must say so explicitly; either way the selector must not
    fabricate a domain `Unavailable` for the absent seeds (`overview.md:19`).
-8. **Partial coverage is not a pass.** §5 carries four Partial rows (AC-LIFE-001, AC-RESP-001,
-   AC-JOUR-007, AC-JOUR-001) and one further Partial row (AC-UI-002). None of them may be counted as
+8. **Partial coverage is not a pass.** §5 carries six Partial rows (AC-LIFE-001, AC-LIFE-003,
+   AC-RESP-001, AC-JOUR-007, AC-JOUR-001, AC-UI-002). None of them may be counted as
    satisfying its scenario, and D2's Installed Capability Manifest must therefore describe D2's
    capability as confirmation only, not as Plan lifecycle, response contract, Journal defaults or UI
    state coverage. This is a release-honesty condition, not a documentation preference

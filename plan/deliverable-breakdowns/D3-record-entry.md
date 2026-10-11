@@ -1457,7 +1457,7 @@ The table below carries one row per scenario this deliverable claims. **A Partia
 It records the bounded slice D3 can demonstrate today and names the deliverable that completes the
 rest: D2 owns the `Planned` step, D4 owns the due-Debt blocker and the review-side update member, D5
 owns Debt resolution, D6 owns the disposing facts that reach `Closed` and the Close Review key, D17
-completes the remaining Entry Types and Sources, D18 owns chart gaps, and D21 owns destructive
+completes the remaining Entry Types and Sources, D18 owns chart gaps, and D21 owns AC-LIFE-003's authorized-preparation half and destructive
 Restore. No row here is a bare `Covered` claim: a scenario whose whole Then clause needs a later
 capability is Partial, and AC-POS-001 is Partial because its disposing-Execution command path and
 final flat closure arrive at D6, which is the row that carries the scenario complete.
@@ -1466,6 +1466,7 @@ final flat closure arrive at D6, which is the row that carries the scenario comp
 |---|---|---|
 | AC-POS-001 | Partial — the opening path through the command and the whole derivation of Positions, open Lots, FIFO Lot Matches, lot-aware fee allocation and realized P&L proven at the pure `derive` seam; the disposing-Execution command path, partial realization leaving the Trade `Open`, and the final flat exposure reaching `Closed` land at D6. | Each fill owned by one Trade, Position and open Lots exact, FIFO Lot Matches linking exact quantities, opening and disposal fees allocated exactly once, and no price or P&L copied onto a Lot Match; the disposing command path and the closure transition are D6's, whose cumulative suite carries the complete scenario: T4, T5, T6, T7, T9, T10, T11, T16, T17, T19, T22, T23. |
 | AC-LIFE-001 | Partial — the `Open` step, its index membership, and the position facts that justify it; the `Planned` step is D2's and the disposing facts that reach `Closed` land at D6. | T9, T11, T18, T22. |
+| AC-LIFE-003 | Partial — the lot/deviation half: a controlled integrity fixture makes a recorded Lot-Match link disagree with the derived FIFO links, the read surfaces the structured disagreement, and no read repairs it; the authorized-preparation half, which derives a disclosed repair or rejects incoherent facts, completes at D21. | Recorded-and-derived links compared against fresh derivation with the disagreement named rather than repaired; test-only mutation of non-authoritative derived state under decision D8 tier 1, written through the real persistence seam and disclosed with the expected derivation: T9, T10, T19, T22. |
 | AC-JOUR-003 | Partial — the factual Position Change succeeds with exactly one Outstanding Debt carrying its trigger-time form snapshot and no placeholder Entry; the due-Debt blocker and the resolution paths land at D4 and D5. | T12, T13, T14, T20, T22. |
 | AC-RESP-001 | Partial — `recordPositionChange` supplies the bounded multi-subject member of the contract, returning every affected Trade's post-commit projection and the created Journal outcome with no follow-up read; the update member lands at D4. | T16, T17, T22. |
 | AC-JOUR-001 | Partial — the reflection form stores nothing unless the trader explicitly completes, declines or defers, and abandoning it creates no Debt and no draft. | T20, T22. |
@@ -1531,21 +1532,28 @@ owned by D2; this deliverable re-exercises them without claiming new ownership.
 
 ## 8. Open items and risks
 
-**1. Whether Lot Matches are recorded *and* derived, or derived only — needs alignment.** This is
-decision 1 of §1 and the brief's named under-specification. D3 commits to recorded-and-derived
-because `trade-record.md:7` persists "active Lot-Match links" and `trade-analysis.md:63` reports
-disagreement against recorded links, but `acceptance-contract.md:5` leaves storage layouts
-unprescribed, so the derived-only reading remains textually available. The decision is user-visible:
-under recorded-and-derived the Trade view can disclose an integrity disagreement; under derived-only
-the disagreement path has nothing to compare and T9's link staging plus T10's comparison disappear.
-The decision must be confirmed before freeze because it changes the task graph, not just the prose.
+**1. Lot Matches are recorded *and* derived — settled, no longer needing alignment.** D3 commits to
+recorded-and-derived because `trade-record.md:7` persists "active Lot-Match links",
+`trade-record.md:44` puts "active recorded Lot Matches" in the snapshot, `trade-record.md:66` stages
+"Lot Match" effects, `trade-record.md:143` emits "Lot-Match/Deviation history" in the backup,
+`trade-analysis.md:7` makes Trade Record authoritative for recorded Lot Matches while analysis derives
+their expected values, `trade-analysis.md:63` reports disagreement against "recorded lot links", and
+`overview.md:143` puts recorded links on the authoritative side of the authority map.
+`acceptance-contract.md:5` leaves storage layouts unprescribed, but that does not make the derived-only
+reading available: it would leave nothing to compare and would delete T9's link staging and T10's
+comparison outright. The records are durable but non-authoritative — persisted, checked, backed up,
+and rebuildable (`overview.md:18`, `delivery-contract.md:87-99`, `AC-REBUILD-001`) — and the
+representation D3 stores is the full per-match row, so an integrity finding can name which match
+disagrees rather than only that the Trade disagrees.
 
-**2. Whether inducing a stored-lifecycle disagreement qualifies under `acceptance-contract.md:7`
-remains open, and AC-LIFE-003 is deliberately not claimed by this deliverable.** T10's controlled
-integrity fixture removes one recorded link through the test-only mutation of a private projection
-that `acceptance-contract.md:7` permits only for scenarios that explicitly exercise reconstruction;
-that use is disclosed here. Whether the same technique may induce a stored-lifecycle disagreement for
-a future AC-LIFE-003 fixture is unresolved, and this breakdown does not answer it.
+**2. Inducing a recorded-link disagreement is governed by decision D8, and AC-LIFE-003 is claimed as
+Partial.** T10's controlled integrity fixture removes one recorded link so the derivation disagrees
+with the stored set. `acceptance-contract.md:7` as literally written permits test-only mutation of
+private projections only in reconstruction scenarios, which would have made `AC-LIFE-003` untestable
+while the scenario itself demands a controlled integrity fixture. Decision **D8** (tier 1) settles it:
+non-authoritative derived state may be mutated for validation/error scenarios, through the real
+persistence seam, disclosed with the expected derivation, and never to establish ordinary behaviour.
+The D3 row is Partial because the "authorized preparation" half is Restore's and completes at D21.
 
 **3. The fee rounding and residual policy is decided here and needs review.** Decision 2 of §1 fixes
 half-up rounding plus a largest-share residual assigned by earliest `FactOrder`. No fixture in the
