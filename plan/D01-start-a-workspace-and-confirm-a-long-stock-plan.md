@@ -2,7 +2,7 @@
 
 Definition: [implementation plan, D1](implementation-plan.md#d1--start-a-workspace-and-confirm-a-long-stock-plan). The definition (stories, capability set, introductions, acceptance claims) stays there and is not repeated here.
 
-Status: **draft, under review.** Decisions P1–P3 were agreed on 2026-10-11 (first section). Everything else is written against them and the working assumptions listed below.
+Status: **draft, under review.** Decisions P1–P3 were agreed on 2026-10-11 (first section). Everything else is written against them and the working assumptions listed below. Amended on 2026-10-11 during the D2 breakdown: T1.7 and T1.20 gained `versionchange` handling so a tab running this release cannot write to its database while a later release migrates it ([D2, section 1.1](D02-open-a-long-stock-position.md#11-decisions-for-this-breakdown)).
 
 ---
 
@@ -198,6 +198,10 @@ describe("semantic commit")
 
 describe("snapshot reads")
   it should read several stores in one readonly transaction and report the single content revision observed, even when a commit races with the read
+
+describe("versionchange (amendment agreed during the D2 breakdown, 2026-10-11)")
+  it should close its Workspace connection and mark the session superseded when another connection requests a version change of the Workspace database
+  it should return RuntimeNotWritable from the next commit after supersession, with readiness rerun and no write attempted
 ```
 
 ### T1.8 Service worker
@@ -467,6 +471,7 @@ describe("readiness gate presentation")
   it should render Recovery Only with one clear reason, the failed checks, read-only navigation (Trades, Accounts, About), no New Plan or Add Account control, and the separate-storage explanation (A13)
   it should render Integrity Blocked with a warning that journal data may exist, Retry as the only action, and no initialization or data navigation
   it should switch to Recovery Only when a mutation returns RuntimeNotWritable, keeping the open form's entered values on screen
+  it should show "Updated in another tab: reload when ready", keeping the open form's entered values on screen, when the session is superseded by a version change (amendment agreed during the D2 breakdown)
 
 describe("storage-protection warning")
   it should keep a warning that the browser may clear data visible while protection is BestEffort or Unavailable, with every control enabled
@@ -715,7 +720,7 @@ Each clause of each scenario D1 claims was checked against the tasks and tests a
 | | entered state not silently lost | T1.21, B1.10 | covered |
 | | update creates no data synchronization | B1.10 store dump | covered |
 | | failed staging leaves the prior version | B1.11 | covered |
-| | failed **readiness** leaves the prior compatible version available | B1.6 (failure after activation → Recovery Only, data intact) | **Interpretation confirmed by the user on 2026-10-11.** A failed post-activation readiness cannot hand control back to the old service worker. D1 reads this clause together with the delivery contract's "leaves the prior compatible installed release and Workspace uncorrupted and does not report the new release Ready": data stays intact and the app reports Recovery Only, never Ready. |
+| | failed **readiness** leaves the prior compatible version available | B1.6 (failure after activation → Recovery Only, data intact) | **Interpretation confirmed by the user on 2026-10-11.** A failed post-activation readiness cannot hand control back to the old service worker. D1 reads this clause together with the delivery contract's "leaves the prior compatible installed release and Workspace uncorrupted and does not report the new release Ready": data stays intact and the app reports Recovery Only, never Ready. **Narrowed by D2's P6 (plan decision 22):** on the first launch of a release that changes the schema, a readiness failure leaves the data intact but unreadable by that release until migration succeeds. |
 | | offline device retains its version | B1.12 | covered |
 | AC-DEL-005 | each readable case → Recovery Only with reads and history | B1.6 | covered (history UI arrives with D15; D1 has no history to show) |
 | | backup export and verification available | — | D8 (decision 2) |

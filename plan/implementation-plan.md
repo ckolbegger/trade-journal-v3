@@ -29,6 +29,9 @@ This document is the ordered list of vertical deliverables. It deliberately cont
 | 18 | **Capacity requirement uses a mature projection** (D1 breakdown, 2026-10-11). The readiness capacity check requires `quota ≥ 3 × M`, where `M` is the projected on-disk size of a Workspace at the mature dataset profile defined in the D1 breakdown. | D1 measures the record kinds it has and uses stated allowances for the rest. Every schema-changing deliverable replaces its allowances with measurements and recomputes the basis; a build check fails if the schema version changes without a recomputed basis. D8 checks the projection against the benchmark dataset loaded through a real Restore. The benchmark generator (D2 onward) uses the same profile. |
 | 19 | **Two test tiers; three-engine real-state evidence in RC** (D1 breakdown, 2026-10-11). | Routine browser suites run in Chromium only, and every readiness failure in them is produced by a disclosed fault-injection build. The real-state readiness and delivery matrix in Chromium, Firefox, and WebKit is RC, an approved layer-only checkpoint (see "Layer-only exceptions"). Each deliverable's AC-DEL rows cite Chromium evidence, with Firefox, WebKit, and real-state evidence marked pending RC until RC runs. |
 | 20 | **Plan confirmation Economic Time is trader-entered** (D1 breakdown, 2026-10-11). | It defaults to "now" in the Workspace time zone and may not be in the future. Opening Executions (D2 onward) must be at or after it, so a Plan recorded after the close still precedes its entry. |
+| 21 | **Position Changes may be recorded out of Economic Time order** (D2 breakdown, 2026-10-11). | Any Economic Time from the Plan's up to now is accepted. Every Trade commit rederives the Trade and reconciles recorded Deviation occurrences by fingerprint (create, retain, new version, supersede) in the same transaction, disclosing in the receipt when the entry window or Entry Quality moved. D6, D10, D12, and D15 extend this one mechanism. |
+| 22 | **A failed or not-yet-possible migration leaves data intact but unreadable by the new release** (D2 breakdown, 2026-10-11). | Migration Blocked keeps the old database's stores unchanged, is never Ready, and offers Retry. If readiness fails on the first launch of a schema-changing release, the Workspace is reported Integrity Blocked (`AwaitingMigration`) rather than Recovery Only with reads; this narrows D1's confirmed AC-DEL-002 reading for that launch only. Each release reads only its own schema. D8 adds export of a blocked older database, which completes AC-REST-004's "exportable". |
+| 23 | **Coherent agreement disagreements are repaired and disclosed; incoherent facts reject** (D2 breakdown, 2026-10-11). | A Trade mutation whose before-state disagrees with coherent facts commits, writes the expected lifecycle, Deviation (and from D6, Lot-Match) records, and lists each repair in its receipt. Incoherent facts return a no-write `IntegrityDisagreement`. Migration (D2) and Restore (D8) apply the same rule. Normal reads never repair. |
 
 Review decisions accepted during the walkthrough are appended here.
 
@@ -61,7 +64,7 @@ These scenarios cover properties of the whole product. Every deliverable must re
 | # | Deliverable | Stories |
 |---|---|---|
 | D1 | [Start a Workspace and confirm a Long Stock Plan](D01-start-a-workspace-and-confirm-a-long-stock-plan.md) | 4 |
-| D2 | Open a Long Stock position | 3 |
+| D2 | [Open a Long Stock position](D02-open-a-long-stock-position.md) | 3 |
 | D3 | Manual Marks and ongoing risk/reward | 3 |
 | D4 | Daily Review | 4 |
 | D5 | Deferred reflection and Journal Debt | 2 |
@@ -201,8 +204,11 @@ Approved by the user on 2026-10-11, during the D1 breakdown.
 - AC-POS-005 — partial (partial fills, Entry Size excess). Declared scope: Not Entered is completed in D6; Not Verifiable, Planned-Leg Terms, and Unplanned Exposure in D10.
 - AC-LIFE-001 — partial (Open).
 - AC-CALC-001 — partial (Entry Quality). Declared scope: Management Revisions are completed in D17.
-- AC-LIFE-003 — partial (normal reads surface disagreement without repairing it). Declared scope: Restore-preparation repair is completed in D8.
-- AC-REST-004 — partial (a migration failure keeps prior data readable). Declared scope: "exportable" is completed in D8.
+- AC-LIFE-003 — partial (normal reads surface disagreement without repairing it; mutation preparation repairs coherent disagreement with disclosure or rejects incoherent facts, decision 23). Declared scope: Restore-preparation repair is completed in D8.
+- AC-REST-004 — partial (a migration failure keeps prior data intact, is never Ready, and a retry activates atomically; decision 22). Declared scope: "exportable" is completed in D8.
+- AC-JOUR-001 — partial (entry form).
+- AC-JOUR-005 — partial (Complete and Decline retries keep one outcome per obligation key).
+- AC-JOUR-007 — partial (Position Change Reflection and its Source).
 
 **Parallelism.** Once `PositionChangeCommand`/`Result` and the Open read model are fixed, the Trade Analysis replay and opening-Lot work, the Trade Record and migration work, and the entry form/Detail UI can proceed in parallel.
 
@@ -231,6 +237,7 @@ Approved by the user on 2026-10-11, during the D1 breakdown.
 **Acceptance**
 
 - AC-MARK-001 — full.
+- AC-CALC-001 — partial (current risk uses the remaining Position and effective management). Found in the D2 clause-level check.
 - AC-CALC-002 — partial (single-Instrument Missing Mark). Declared scope: the multi-Instrument case is completed in D10.
 - AC-CALC-003 — partial (underlying-price conditions). Declared scope: structure-value conditions are added in D10, and the "revision is not a Deviation" case completes it in D17.
 
@@ -1092,7 +1099,7 @@ At the user's direction (2026-10-11), the clause-by-clause check of each accepta
 1. ~~**AC-RPT-005 needs a Tag Select Prompt.**~~ Resolved by decision 17: Customize Journal prompts (D26) now precedes the Journal Field report (D27).
 2. **AC-REF-001 (D22) includes retire and protection policy behavior.** Retirement arrives in D23, so the scenario may only become full there.
 3. **AC-BACK-001 (D11) and AC-REST-001 (D8) presume corrections, Voids, and every data kind.** Those arrive through D23. They may need to become cumulative obligations, re-proven by each data-adding deliverable.
-4. **AC-LIFE-003 (D8) covers each kind of agreed record.** Planned-Leg Terms and Unplanned Exposure (D10) and Stop Discipline (D12) add new recorded Deviation kinds after D8. Its "mutation is prepared" branch also needs an explicit owner, likely D2.
+4. **AC-LIFE-003 (D8) covers each kind of agreed record.** Planned-Leg Terms and Unplanned Exposure (D10) and Stop Discipline (D12) add new recorded Deviation kinds after D8. ~~Its "mutation is prepared" branch also needs an explicit owner, likely D2.~~ Resolved: D2 owns it (decision 23); D6 adds the Lot-Match fixture case.
 5. **AC-SET-003 (D7) requires Settlement Due on Trade Detail as well as in Daily Review.**
 6. **AC-MARK-002 (D11 and D19) needs Market Data's "deliberate Manual valuation override" save intention.** D11 does not yet list it.
 7. **AC-MARK-004 says historical gaps are visible and nonblocking in Daily Review.** D4 does not yet state this.
