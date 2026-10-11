@@ -165,20 +165,7 @@ exclusion; `Downloaded` result producing no receipt; available in `Recovery Only
 Note: the artifact format must be designed for all four sections now, even where a
 section is thin, because it is a durable format.
 
-## D7 — Manage a position: move my stop or target
-
-1. As a trader, I would like to move my stop or target with a reason, so that managing
-   the trade is recorded rather than remembered.
-2. As a trader, I would like to see my current risk and reward update from the revised
-   management, so that I can judge whether the trade still pays.
-
-`Covers:` `TradeWorkflows.reviseManagement`; `TradeAnalysis.evaluate` against effective
-management; frozen Plan Baseline untouched; a revision is not a Deviation. Seed growth:
-Management Revision Entry Type, Management Revision Source. Navigation from the review.
-
-`AC:` AC-CALC-001, AC-CALC-003.
-
-## D8 — End a long stock trade
+## D7 — End a long stock trade
 
 1. As a trader, I would like to close my position and give a reason, so that my
    decisions are explained rather than just numbered.
@@ -196,7 +183,7 @@ Reasons, 5 Abandonment Reasons, Close Review Entry Type, Trade Close Source.
 
 `AC:` AC-POS-004, AC-LIFE-001 (Closed), AC-LIFE-002, AC-REF-001 (reason seeds).
 
-## D9 — Trade a long option, with prices fetched for me
+## D8 — Trade a long option, with prices fetched for me
 
 1. As a trader, I would like to plan, open, and close a long call or long put, so that
    I can trade options and not just stock.
@@ -220,7 +207,7 @@ facts.
 Manual-only with the `NotConfigured` path, or a real adapter. The deliverable is shaped
 so either choice fits without reshaping earlier work.
 
-## D10 — Sell options: cash-secured put and covered call
+## D9 — Sell options: cash-secured put and covered call
 
 1. As a trader, I would like to sell a cash-secured put, so that I can collect premium
    at a level I am willing to own.
@@ -239,7 +226,7 @@ results rather than a fabricated number.
 Terminology: the canonical name is **Cash-Secured Put**. The product does not claim to
 prove cash coverage.
 
-## D11 — Settle an option position
+## D10 — Settle an option position
 
 1. As a trader, I would like to record expiration, assignment, exercise, or cash
    settlement explicitly, so that the calendar never decides my outcome.
@@ -255,7 +242,7 @@ workflow-routed Management Debt; option premium applied exactly once.
 
 `AC:` AC-SET-001, AC-SET-002, AC-SET-003, AC-SET-004.
 
-## D12 — Vertical, time, and calendar spreads
+## D11 — Vertical, time, and calendar spreads
 
 1. As a trader, I would like to plan and record a vertical spread, so that defined-risk
    structures are first-class rather than two separate trades.
@@ -276,7 +263,7 @@ unavailable/unbounded cohorts. Seed growth: Vertical Call/Put Debit/Credit, PMCC
 Cross-cutting: this and D13 also introduce the **Planned-Leg Terms, Entry Size, and
 Unplanned Exposure** Deviation categories, completing the four-type taxonomy.
 
-## D13 — Complex spreads: butterflies, condors, iron condors, broken wings
+## D12 — Complex spreads: butterflies, condors, iron condors, broken wings
 
 1. As a trader, I would like to start a butterfly or a condor from a ready template, so
    that I can build a four-leg structure without hand-ordering every leg myself.
@@ -305,7 +292,7 @@ vocabulary embeds no wing-width defaults (`reference-catalog.md:80`), and Iron C
 already establishes that wing widths may differ. See decision D5 in
 [planning-decisions-2026-10-10.md](planning-decisions-2026-10-10.md).
 
-## D14 — Roll a position into a new plan
+## D13 — Roll a position into a new plan
 
 1. As a trader, I would like to roll part of a position into a successor plan, so that
    I can extend a thesis without pretending it is a new trade.
@@ -317,6 +304,19 @@ transaction; typed predecessor/successor lineage; `Rolled` close reason; partial
 leaving untouched holdings in place; one originating-Trade reflection.
 
 `AC:` AC-POS-003, AC-POS-004.
+
+## D14 — Manage a position: move my stop or target
+
+1. As a trader, I would like to move my stop or target with a reason, so that managing
+   the trade is recorded rather than remembered.
+2. As a trader, I would like to see my current risk and reward update from the revised
+   management, so that I can judge whether the trade still pays.
+
+`Covers:` `TradeWorkflows.reviseManagement`; `TradeAnalysis.evaluate` against effective
+management; frozen Plan Baseline untouched; a revision is not a Deviation. Seed growth:
+Management Revision Entry Type, Management Revision Source. Navigation from the review.
+
+`AC:` AC-CALC-001, AC-CALC-003.
 
 ## D15 — Fix a mistake and see the audit
 
@@ -470,12 +470,12 @@ Un-seeded values are absent, never present-but-broken.
 | D3 | Position Change Reflection Entry Type; Position Change Source |
 | D4 | Daily Trade Review Entry Type; Daily Review Source |
 | D5 | Review Note and Trader Reflection Entry Types |
-| D7 | Management Revision Entry Type; Management Revision Source |
-| D8 | 5 Close Reasons; 5 Abandonment Reasons; Close Review Entry Type; Trade Close Source |
-| D9 | Long Call; Long Put |
-| D10 | Cash-Secured Put; Covered Call |
-| D12 | Vertical Call/Put Debit/Credit; PMCC |
-| D13 | Iron Condor seed — **the canonical eleven complete here**. Butterfly, Broken-Wing Butterfly, and Condor arrive as shape templates producing trader-owned typed shapes, not seeds |
+| D7 | 5 Close Reasons; 5 Abandonment Reasons; Close Review Entry Type; Trade Close Source |
+| D8 | Long Call; Long Put |
+| D9 | Cash-Secured Put; Covered Call |
+| D11 | Vertical Call/Put Debit/Credit; PMCC |
+| D12 | Iron Condor seed — **the canonical eleven complete here**. Butterfly, Broken-Wing Butterfly, and Condor arrive as shape templates producing trader-owned typed shapes, not seeds |
+| D14 | Management Revision Entry Type; Management Revision Source |
 | D17 | Any remaining Sources/definitions — **AC-JOUR-007 completes** |
 
 ### Migration
@@ -489,25 +489,25 @@ migration paths.
 
 The former "observe prices honestly" scope is distributed: manual Mark entry, Expected
 Mark Status, and acknowledgment in D4/D5; Mark override and correct-with-reason in D15;
-Daily Bars, series, and gaps in D18; provider recovery and configuration in D9.
+Daily Bars, series, and gaps in D18; provider recovery and configuration in D8.
 
 ### Deviations
 
 Stop Discipline arrives in D4 because Daily Review reconciles it atomically with the
-Action. Planned-Leg Terms, Entry Size, and Unplanned Exposure arrive in D12/D13, where
+Action. Planned-Leg Terms, Entry Size, and Unplanned Exposure arrive in D11/D12, where
 multi-leg conformance becomes meaningful.
 
 ### Parallelism
 
 Shared resources force serialization and need a single owner at a time: the IndexedDB
 schema and Persistence/Transaction seam; the seed manifest; the Installed Capability
-Manifest; the UI shell and navigation; and `TradeAnalysis.derive`, which D3, D4, D12,
-and D13 all extend.
+Manifest; the UI shell and navigation; and `TradeAnalysis.derive`, which D3, D4, D11,
+and D12 all extend.
 
 Best available parallelism is *within* a deliverable — domain/persistence work and UI
 work are independent once that deliverable's interface is fixed. Across deliverables,
 only pairs that avoid the schema, seed manifest, and navigation can run concurrently;
-D9–D14, which all grow the strategy set and the position-aggregation logic, are the
+D8–D13, which all grow the strategy set and the position-aggregation logic, are the
 worst candidates for parallel work.
 
 ## Coverage
