@@ -38,7 +38,7 @@ Trade and see exactly what they committed to.
 - **Any entry, exit, or settlement.** No Position Change, no Execution, no Open lifecycle, no
   Position, no lot, no P&L. That is D3 and later. D2's Trade stays `Planned` forever unless
   later deliverables act on it.
-- **Correction, Roll, Abandonment, Management Revision** — D15/D16, D13, D7, D14.
+- **Correction, Roll, Abandonment, Management Revision** — D15/D16, D13, D6, D14.
 - **`reviseDefinition`** (changing the Plan Reflection wording) → D17. D2 only *reads* the
   definition revision it renders and submits against.
 - **Marks, Daily Review, reports, backup, Restore** — later deliverables. So the Trade view in
@@ -48,7 +48,7 @@ Trade and see exactly what they committed to.
 ### What D2 does *not* demonstrate, stated honestly
 
 `AC-LIFE-001` covers `Planned → Open → Open → Closed`. D2 proves **only** the `Planned` step and
-the index membership that goes with it; the later steps arrive at D3 (Open) and D7 (Closed).
+the index membership that goes with it; the later steps arrive at D3 (Open) and D6 (Closed).
 `AC-JOUR-007` completes at D17; D2 covers the Plan Reflection definition and its Source only.
 
 ---
@@ -689,7 +689,7 @@ Run in **narrow** and **wide** viewports, on a Workspace that has completed D1's
 
 **Intentional non-defects the critic must not report:** no entry/exit controls; no Marks or
 Daily Review; no reports; no backup or Restore; installation affordance absent (D22);
-`AC-LIFE-001`'s Open and Closed steps absent (D3/D7); no Position or P&L (D3).
+`AC-LIFE-001`'s Open and Closed steps absent (D3/D6); no Position or P&L (D3).
 
 ---
 
@@ -699,7 +699,7 @@ Daily Review; no reports; no backup or Restore; installation affordance absent (
 |---|---|---|
 | AC-PLAN-001 | Planned, fully | T37–T41, T44–T49, T53, F9, F10 |
 | AC-PLAN-002 | Planned, fully | T40, T41, T44, T47, T53, F3–F6 |
-| AC-LIFE-001 | **Partial** — the `Planned` step and index membership only | T38, T39, T42, F9, F15; Open at D3, Closed at D7 |
+| AC-LIFE-001 | **Partial** — the `Planned` step and index membership only | T38, T39, T42, F9, F15; Open at D3, Closed at D6 |
 | AC-LIFE-003 | **Partial** — the Planned agreement case and no read-time repair | T42, T51, F15 |
 | AC-RESP-001 | **Partial** — the confirm-plan mutation family only | T49, T53, F9 |
 | AC-JOUR-007 | **Partial** — Plan Reflection Entry Type, its definition, and the Plan Confirmation Source | T43, T44, T46; completes at D17 |

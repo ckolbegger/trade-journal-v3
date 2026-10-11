@@ -146,7 +146,25 @@ Types as needed by in-review writing.
 
 `AC:` AC-JOUR-001, AC-JOUR-003, AC-JOUR-005, AC-REV-002, AC-REV-006.
 
-## D6 — Back up my journal
+## D6 — End a long stock trade
+
+1. As a trader, I would like to close my position and give a reason, so that my
+   decisions are explained rather than just numbered.
+2. As a trader, I would like to see how the trade actually ended separately from my
+   reason, so that settlement and my judgment are never confused.
+3. As a trader, I would like to reflect on the close or defer it, so that closing never
+   waits on writing.
+4. As a trader, I would like to abandon a plan that never filled, so that dead plans do
+   not pollute my record.
+
+`Covers:` `recordPositionChange` closing variant; exactly one Close Reason when trader
+agency is present; derived Terminal Disposition; Close Review with its distinct
+obligation key; `abandonPlan`; `Planned`→`Closed`/`Abandoned`. Seed growth: 5 Close
+Reasons, 5 Abandonment Reasons, Close Review Entry Type, Trade Close Source.
+
+`AC:` AC-POS-004, AC-LIFE-001 (Closed), AC-LIFE-002, AC-REF-001 (reason seeds).
+
+## D7 — Back up my journal
 
 *Deferred until plan, trade entry, mark entry, and journal entry all exist.*
 
@@ -164,24 +182,6 @@ exclusion; `Downloaded` result producing no receipt; available in `Recovery Only
 
 Note: the artifact format must be designed for all four sections now, even where a
 section is thin, because it is a durable format.
-
-## D7 — End a long stock trade
-
-1. As a trader, I would like to close my position and give a reason, so that my
-   decisions are explained rather than just numbered.
-2. As a trader, I would like to see how the trade actually ended separately from my
-   reason, so that settlement and my judgment are never confused.
-3. As a trader, I would like to reflect on the close or defer it, so that closing never
-   waits on writing.
-4. As a trader, I would like to abandon a plan that never filled, so that dead plans do
-   not pollute my record.
-
-`Covers:` `recordPositionChange` closing variant; exactly one Close Reason when trader
-agency is present; derived Terminal Disposition; Close Review with its distinct
-obligation key; `abandonPlan`; `Planned`→`Closed`/`Abandoned`. Seed growth: 5 Close
-Reasons, 5 Abandonment Reasons, Close Review Entry Type, Trade Close Source.
-
-`AC:` AC-POS-004, AC-LIFE-001 (Closed), AC-LIFE-002, AC-REF-001 (reason seeds).
 
 ## D8 — Trade a long option, with prices fetched for me
 
@@ -472,7 +472,7 @@ Un-seeded values are absent, never present-but-broken.
 | D3 | Position Change Reflection Entry Type; Position Change Source |
 | D4 | Daily Trade Review Entry Type; Daily Review Source |
 | D5 | Review Note and Trader Reflection Entry Types |
-| D7 | 5 Close Reasons; 5 Abandonment Reasons; Close Review Entry Type; Trade Close Source |
+| D6 | 5 Close Reasons; 5 Abandonment Reasons; Close Review Entry Type; Trade Close Source |
 | D8 | Long Call; Long Put |
 | D9 | Cash-Secured Put; Covered Call |
 | D11 | Vertical Call/Put Debit/Credit; PMCC |
@@ -517,7 +517,7 @@ worst candidates for parallel work.
 All 67 operations across the ten public interfaces are placed above, together with the
 single-operation Pricing Provider port and the internal, non-UI-callable
 Persistence/Transaction seam (`exportSnapshot`, `prepareRestore`, and
-`applyPreparedRestore` for each fact module group into D6 and D21 because they
+`applyPreparedRestore` for each fact module group into D7 and D21 because they
 participate in Workspace-owned flows).
 
 ## Recorded future intent (not scheduled)
@@ -529,7 +529,7 @@ participate in Workspace-owned flows).
   and AC-REF-001 is untouched.
   A **true equal-strike synthetic is not supported** as a validated shape: the frozen vocabulary grants
   strike *order* but not *equality*, so the shape could not enforce the property that defines a
-  synthetic. See decision D6 in
+  synthetic. See decision D7 in
   [planning-decisions-2026-10-10.md](planning-decisions-2026-10-10.md).
   Adding this will renumber the deliverables after its insertion point; the current 22-deliverable
   sequence stands until then.

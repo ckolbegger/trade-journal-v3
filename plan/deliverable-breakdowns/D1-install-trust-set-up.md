@@ -45,7 +45,7 @@ they trade, and the app is ready to plan.
 - **Trade, Trade Record, Trade Analysis, Trade Workflows, Market Data, Daily Review,
   Performance Analysis, Trade Views** — no such capability is advertised, reachable, or
   callable in D1 (`specs/README.md:98`).
-- **`exportBackup`/`confirmBackup`/`prepareRestore`/`applyPreparedRestore`/`saveSettings`** → D6,
+- **`exportBackup`/`confirmBackup`/`prepareRestore`/`applyPreparedRestore`/`saveSettings`** → D7,
   D20, D21, and the settings surface respectively. The *gate* they will obey is built here;
   the operations are not.
 - **Every Seed manifest value except Long Stock, the Plan Reflection Entry Type, and the Plan
@@ -597,7 +597,7 @@ green. Case 2 fails when a commit lands between two reads; fix by reading inside
 deterministically through a seam hook, not by racing.
 
 **Blocking edges:** T11, T13.
-**Consumed by:** T11, T14, D6's backup export, and T34.
+**Consumed by:** T11, T14, D7's backup export, and T34.
 
 ---
 
@@ -1270,7 +1270,7 @@ Headline scenarios from `vertical-deliverables.md:64`, plus the foundational one
 | AC-DEL-002 | **Intentionally not advertised** (D22) | — |
 | AC-DEL-003 | **Partial** — manifest identity, inventory binding, browser-tab Writable | T16, T18, T20, T34; install capture at D22 |
 | AC-DEL-004 | Planned, fully | T12, T17–T21, T34 |
-| AC-DEL-005 | Requires backup export and verification, which arrive at D6/D20. D1 covers the Recovery Only and Integrity Blocked halves and the write prohibition | T20, T21, T26, T27, T30, F3, F4, F7, F8 |
+| AC-DEL-005 | Requires backup export and verification, which arrive at D7/D20. D1 covers the Recovery Only and Integrity Blocked halves and the write prohibition | T20, T21, T26, T27, T30, F3, F4, F7, F8 |
 | AC-DEL-006 | **Partial** — launch and running-session halves | T21, T34; update/Restore halves at D22/D21 |
 | AC-CAP-001 | Planned | T29, T33, T34 |
 | AC-UI-001 | Planned | T33, F18 |
@@ -1322,7 +1322,7 @@ written first and satisfied afterwards; each check is added with its case.
 | 1 — Restore/migration replacement at target scale | Not D1; the migration runner's candidate/rollback shape is installed in T10 | Later (D21), with the mechanism proven here at small scale |
 | 2 — both latency targets at mature scale | Not D1; capacity headroom derivation is T19 | Later deliverable with real data |
 | 5 — multi-store rollback proving a Journal-participant failure rolls back staged Trade effects | Mechanism installed in T11; the Journal-participant case needs D2's Trade staging | Partially here, completed at D2/D3 |
-| 7 — download plus read-back verification yielding a `CompletedBackupReceipt`, secrets excluded | Not D1; the export/verification operations are D6 and D20 | Later (D6/D20) |
+| 7 — download plus read-back verification yielding a `CompletedBackupReceipt`, secrets excluded | Not D1; the export/verification operations are D7 and D20 | Later (D7/D20) |
 | 8 — keyboard-only completion plus axe-core | T33, F19 | **Resolved for D1 scope** |
 
 ---
@@ -1346,7 +1346,7 @@ written first and satisfied afterwards; each check is added with its case.
 5. **The lifecycle-index test fixture** (T15) is a disclosed stand-in that disappears at D2. It
    must not be reachable from the production graph, and T3's boundary lint should prove that.
 6. **`AC-DEL-005` cannot pass in D1** and must be recorded as partial, not waived. Its remaining
-   half needs D6/D20.
+   half needs D7/D20.
 
 ---
 

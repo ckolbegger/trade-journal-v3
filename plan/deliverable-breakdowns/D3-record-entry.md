@@ -37,7 +37,7 @@ creates Journal Debt rather than a blank entry.
 ### Explicitly out of scope, and why it is safe
 
 - **Closing, scaling out, and any exposure reduction.** D3 records *opening* fills only. A
-  closing Execution is D7's terminal case; partial realization is also D7. The lifecycle therefore
+  closing Execution is D6's terminal case; partial realization is also D6. The lifecycle therefore
   only ever moves `Planned`→`Open` here, never to `Closed`.
 - **Options, spreads, Rolls, settlement** — D8–D13. D3's Planned Leg conformance is the Long
   Stock case only, so only the **Entry Size** Deviation is reachable (`AC-POS-005` completes at
@@ -47,13 +47,13 @@ creates Journal Debt rather than a blank entry.
 - **Marks and current valuation.** D3 shows realized P&L from facts only. There is no Mark, so no
   risk-to-stop, no current valuation, and no `evaluate` call. Anything that would need a price
   must render as absent, not as zero.
-- **`abandonPlan`** (D7) and **`reviseManagement`** (D14).
+- **`abandonPlan`** (D6) and **`reviseManagement`** (D14).
 
 ### What D3 does *not* demonstrate, stated honestly
 
 - `AC-POS-001` requires scaling opens, partial closes, and a final flat close. **D3 proves the
   opening half only** — two opening Executions at different prices and fees — and the close half
-  completes at D7. The scenario cannot be claimed as passing here.
+  completes at D6. The scenario cannot be claimed as passing here.
 - `AC-LIFE-001`'s `Planned` step completes at D2; D3 proves the first `Open` step only.
 - `AC-JOUR-003` (Debt is not an incomplete Entry) is D3's to prove for the Position Change
   Reflection deferral, and it is provable here in full.
@@ -343,7 +343,7 @@ consumed Lot closed.
 
 **Scope note.** D3 exercises FIFO only with opening facts plus, in the integration suite, a test
 fixture that provides a disposing quantity to prove the matching rule. Closing a Trade through the
-UI is D7; `AC-POS-001` completes there.
+UI is D6; `AC-POS-001` completes there.
 
 ---
 
@@ -633,7 +633,7 @@ or an extra settlement-specific type.
 
 **Red → green.** Case 1 fails because no command exists. Implement; green. Case 5 fails because
 recording entry recomputes and overwrites the baseline. Case 7's red is accepting an entry against
-an already-Open Trade, which D3 must refuse because scaling arrives at D7.
+an already-Open Trade, which D3 must refuse because scaling arrives at D6.
 
 **Valid red evidence:** a modified Plan Baseline, a Position Change accepted on a non-Planned
 Trade, or an omitted reflection disposition silently defaulted.
@@ -869,8 +869,8 @@ estimate in this suite.
 **Coverage limits D3 must state, not bury:**
 
 - `AC-POS-001` — **partial**: opening, FIFO matching, and fee allocation proven; partial and final
-  closing complete at D7.
-- `AC-LIFE-001` — **partial**: the first `Open` step; `Closed` completes at D7.
+  closing complete at D6.
+- `AC-LIFE-001` — **partial**: the first `Open` step; `Closed` completes at D6.
 - `AC-JOUR-007` — **partial**: the Position Change Reflection Entry Type and the Position Change
   Source.
 - `AC-POS-005` — **partial**: Entry Size only; the other three Deviation categories are D11/D12.
@@ -932,7 +932,7 @@ Run in **narrow** and **wide** viewports, on a Workspace with a Trade confirmed 
 | F22 | Reload durability | Reload after F1 | Executions, Lot Matches, lifecycle, index membership, and the reflection outcome all preserved |
 | F23 | Installed capability honesty | Inspect the Installed Capability Manifest and navigation | Recording an entry is advertised; closing, scaling out, settlement, options, marks, review, reporting, backup, Restore, correction, and Roll are absent — not present as unavailable |
 
-**Intentional non-defects the critic must not report:** no close or scale-out control (D7); no
+**Intentional non-defects the critic must not report:** no close or scale-out control (D6); no
 options or spreads (D8–D13); no Roll (D13); no correction or Void (D15); no Manage stop/target
 (D14); no Marks, Daily Review, or reports; installation affordance absent (D22).
 
@@ -942,8 +942,8 @@ options or spreads (D8–D13); no Roll (D13); no correction or Void (D15); no Ma
 
 | Scenario | D3 status | Covered by |
 |---|---|---|
-| AC-POS-001 | **Partial** — opening fills, positions, open Lots, FIFO matching, fee allocation exactly once | T55, T58–T61, T63, T64, T74, T78, F1, F2, F7, F8; closing completes at D7 |
-| AC-LIFE-001 | **Partial** — the `Planned`→`Open` step and index movement | T62, T63, T65, T78, F19; `Closed` at D7 |
+| AC-POS-001 | **Partial** — opening fills, positions, open Lots, FIFO matching, fee allocation exactly once | T55, T58–T61, T63, T64, T74, T78, F1, F2, F7, F8; closing completes at D6 |
+| AC-LIFE-001 | **Partial** — the `Planned`→`Open` step and index movement | T62, T63, T65, T78, F19; `Closed` at D6 |
 | AC-JOUR-003 | Planned, fully | T66, T67, T76, T78, F13, F14, F15 |
 | AC-JOUR-005 | **Partial** — one outcome per obligation key for the Position Change Reflection | T66, T76, F16; Void-reopen at D17 |
 | AC-JOUR-007 | **Partial** — the Position Change Reflection Entry Type and the Position Change Source | T69, T76; completes at D17 |
