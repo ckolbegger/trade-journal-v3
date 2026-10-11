@@ -1,0 +1,73 @@
+You are drafting an implementation plan as an ordered set of incremental vertical
+deliverables, each expressed as user stories.
+
+Before starting:
+- Read the repo instructions, the specification tree, and the evaluation/planning
+  protocol in that order.
+- Confirm that Phase 1 (specification comprehension) and Phase 2 (technology choice)
+  are complete. If either is not, do that first and stop — do not draft deliverables
+  on an unapproved stack. If they are complete, state the approved stack and the plan
+  location in one line so we agree on the basis.
+- Then ask me any questions you have before starting the list of deliverables.
+
+What a vertical deliverable is here:
+- A dependency-closed set of capabilities that a person can see and operate through the
+  production UI, traversing the real application/domain behaviour and the
+  persistence/infrastructure those capabilities require. It is runnable and testable
+  end to end.
+- Layer-only work is forbidden without a specifically recorded, separately approved
+  exception. Enabling or foundational work belongs inside the first vertical slice that
+  uses it, never as a slice of its own.
+
+The output I want:
+1. An ordered, numbered list of deliverables.
+2. Each deliverable carries 1–4 user stories, in the classic form:
+   "As a _________, I would like _________, so that I can _________."
+   Keep the count proportional to the size of the stories.
+3. Each deliverable also carries:
+   - a high-level description of the capability set it delivers;
+   - the operations, mechanisms, seed/default additions, and durable-representation
+     changes it introduces;
+   - the acceptance scenarios it must satisfy, marked honestly as full or partial.
+4. A "declared scope" line wherever a deliverable deliberately covers only part of a
+   scenario, saying which later deliverable completes it.
+
+Scope discipline:
+- Be very selective about what goes into the foundation deliverable: the minimum needed
+  to support the first real capability and nothing more.
+- Add functionality to a foundational element only when the story being built requires
+  it. Concretely: a selector offers only the values the current deliverable can actually
+  deliver, and a later deliverable adds its own values when it needs them.
+- Make each deliverable a small set of incremental functionality.
+- Defer work to the deliverable that first needs it, rather than front-loading.
+
+Ordering:
+- Sequence by trader capability, not by module or layer.
+- Place cross-cutting concerns as obligations inside the deliverable that touches them,
+  not as deliverables. Migration is the model case: a durable-representation change is a
+  task inside the deliverable that makes it.
+- Put the product's signature capabilities as early as they can genuinely be built.
+  Do not let a signature feature sit late merely because it is large. For this product,
+  Daily Review and the ongoing risk/reward calculations are the cases I care about: they
+  should follow plan creation and opening execution, and precede closing a position.
+- Prefer manual/deferred approaches early where they are simpler for the trader, and
+  introduce the harder automated machinery in the deliverable where it first becomes
+  worth it.
+
+Parallelism:
+- Within a deliverable, note where domain/persistence work and UI work can proceed in
+  parallel once that deliverable's interface is fixed.
+- Across deliverables, note only genuinely safe pairs — those avoiding the shared
+  resources that force serialization (schema, seed/default manifest, capability
+  manifest, navigation shell, and any shared analysis operation).
+- Name the shared resources that require a single owner at a time.
+
+Not in this document:
+- Task-level breakdowns. No describe/it-should cases, no test lists, no red→green
+  procedures, no per-task evidence. We agree on this list first; I will then ask you for
+  a detailed task breakdown for one or more deliverables.
+- No scaffolding and no implementation code.
+
+When the draft exists: present it for review one consequential decision at a time, lead
+with a recommendation and the tradeoff, and record what we accept. Update the document
+in place rather than restating it.
