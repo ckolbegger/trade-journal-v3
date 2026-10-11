@@ -32,6 +32,10 @@ This document is the ordered list of vertical deliverables. It deliberately cont
 | 21 | **Position Changes may be recorded out of Economic Time order** (D2 breakdown, 2026-10-11). | Any Economic Time from the Plan's up to now is accepted. Every Trade commit rederives the Trade and reconciles recorded Deviation occurrences by fingerprint (create, retain, new version, supersede) in the same transaction, disclosing in the receipt when the entry window or Entry Quality moved. D6, D10, D12, and D15 extend this one mechanism. |
 | 22 | **A failed or not-yet-possible migration leaves data intact but unreadable by the new release** (D2 breakdown, 2026-10-11). | Migration Blocked keeps the old database's stores unchanged, is never Ready, and offers Retry. If readiness fails on the first launch of a schema-changing release, the Workspace is reported Integrity Blocked (`AwaitingMigration`) rather than Recovery Only with reads; this narrows D1's confirmed AC-DEL-002 reading for that launch only. Each release reads only its own schema. D8 adds export of a blocked older database, which completes AC-REST-004's "exportable". |
 | 23 | **Coherent agreement disagreements are repaired and disclosed; incoherent facts reject** (D2 breakdown, 2026-10-11). | A Trade mutation whose before-state disagrees with coherent facts commits, writes the expected lifecycle, Deviation (and from D6, Lot-Match) records, and lists each repair in its receipt. Incoherent facts return a no-write `IntegrityDisagreement`. Migration (D2) and Restore (D8) apply the same rule. Normal reads never repair. |
+| 24 | **Marks are entered in the Daily Review; D3 is merged into D4** (D3 breakdown, 2026-10-11). | There is no separate Marks page. D4 delivers Manual Marks, the session policy, `evaluate`, current figures on the Open list and Trade Detail, and the Daily Review together. D11's provider fills Marks when the Review opens. D3's number is retired so later numbers stay stable. |
+| 25 | **NYSE session policy: covered 2000 through the last published year (expected 2028); a session completes 30 minutes after its close** (D3/D4 breakdown, 2026-10-11). | Regular holidays come from rules; one-off closures and early closes come from a cited, versioned table. Outside coverage the app gives a diagnostic, never a guessed session. The close (16:00, or 13:00) stays the Review Cutoff for eligibility. The session becomes the Expected Mark Date and the latest Review Date at 16:30 (or 13:30). |
+| 26 | **Missing or later evidence is shown as Missing, with a dated last-close line and an at-entry line** (D3/D4 breakdown, 2026-10-11). | Current figures never use an earlier Mark or fill cost. When the current Mark is missing, or shares were bought after its close, a separately labelled line values the Position held at the latest earlier close with that session's own Mark. Shares bought after that close show risk and reward from their execution prices, labelled "at entry", never as P&L. D10's multi-Instrument and D7's option Trades extend the same lines. |
+| 27 | **No Reviews of missed sessions** (D4 breakdown, 2026-10-11). | Daily Review opens on the latest completed session only. Its Marks task also lists skipped sessions without Marks, which can be filled but do not block completion (AC-MARK-004). Opening an exact past date arrives in D15, because AC-REV-001 requires it. |
 
 Review decisions accepted during the walkthrough are appended here.
 
@@ -65,8 +69,8 @@ These scenarios cover properties of the whole product. Every deliverable must re
 |---|---|---|
 | D1 | [Start a Workspace and confirm a Long Stock Plan](D01-start-a-workspace-and-confirm-a-long-stock-plan.md) | 4 |
 | D2 | [Open a Long Stock position](D02-open-a-long-stock-position.md) | 3 |
-| D3 | Manual Marks and ongoing risk/reward | 3 |
-| D4 | Daily Review | 4 |
+| ~~D3~~ | Manual Marks and ongoing risk/reward: **merged into D4** (decision 24) | — |
+| D4 | [Daily Review, with Manual Marks and ongoing risk/reward](D04-daily-review.md) | 7 |
 | D5 | Deferred reflection and Journal Debt | 2 |
 | D6 | Close a Long Stock position | 3 |
 | D7 | Single-leg options: happy path | 3 |
@@ -214,70 +218,69 @@ Approved by the user on 2026-10-11, during the D1 breakdown.
 
 ---
 
-## D3 — Manual Marks and ongoing risk/reward
+## D3 — Manual Marks and ongoing risk/reward (merged into D4)
 
-**Stories**
-
-1. As a trader, I would like to enter closing Marks for my open Instruments, so that I can value my positions on real closing prices.
-2. As a trader, I would like to see each open Trade's current P&L, risk to Stop, reward to Target, worst case, and their Plan-R equivalents, so that I can manage risk against the 1R I committed to.
-3. As a trader, I would like the app to show a missing or stale Mark plainly instead of a substitute number, so that I can trust every figure it does show.
-
-**Capability set.** Manual Mark entry and correction (with a reason), the Expected Mark Date from the U.S. session policy, and Mark resolution as Available, Missing, or Stale context. Each open Trade shows Mark-to-Market valuation, Ongoing Risk to Stop, Worst-Case Ongoing Risk, Incremental Reward to Target, Maximum Incremental Reward (Unbounded for Long Stock), Plan-R conversions, per-condition Stop and Target status, and Overrun. These appear on the Open list and on Trade Detail, each with independent availability.
-
-**Introduces**
-
-- *Operations:*
-  - Market Data: `save` (initial Manual Mark, and correction of a believed-wrong Mark) and `query` (`ResolveFrames`).
-  - Trade Analysis: `evaluate`.
-  - Trade Views and Reporting: current evaluation for the Open list and Detail.
-- *Mechanisms:* the rule-based NYSE session policy (holidays, one-off closures, early closes) with a versioned identity, and an explicit diagnostic for dates outside coverage; `MarketDataSnapshotId` with evidence digests.
-- *Seeds:* none.
-- *Durable representation:* schema change adding Market Data Mark revision chains and the session-policy compatibility metadata.
-
-**Acceptance**
-
-- AC-MARK-001 — full.
-- AC-CALC-001 — partial (current risk uses the remaining Position and effective management). Found in the D2 clause-level check.
-- AC-CALC-002 — partial (single-Instrument Missing Mark). Declared scope: the multi-Instrument case is completed in D10.
-- AC-CALC-003 — partial (underlying-price conditions). Declared scope: structure-value conditions are added in D10, and the "revision is not a Deviation" case completes it in D17.
-
-**Parallelism.** The session policy and Market Data work, and the `evaluate` arithmetic, are independent until frames feed `evaluate`. The UI can build against fixed frame and evaluation read models.
+Merged into D4 on 2026-10-11 so that Marks are entered as part of the Daily Review (decision 24). The number is retired so that later deliverable numbers and references stay stable.
 
 ---
 
 ## D4 — Daily Review
 
+Includes the former D3, Manual Marks and ongoing risk/reward (decision 24).
+
 **Stories**
 
 1. As a trader, I would like an after-close review that walks me through every Trade that was open in that session, ordered by what needs my attention, so that I can manage my book deliberately each day.
 2. As a trader, I would like to record an Action for each Trade (Hold with one Save, or Exit, Roll, or Adjust with my intent), so that I can hold myself to an explicit daily decision.
-3. As a trader, I would like to acknowledge when a closing price can't be obtained, so that I can complete the Review honestly without inventing a price.
-4. As a trader, I would like to resume an unfinished Review or catch up on a missed date, so that I can keep every session reviewed without starting over.
+3. As a trader, I would like to enter closing Marks for my open Instruments as part of the Review, including sessions I skipped, so that I can value my positions on real closing prices.
+4. As a trader, I would like to see each open Trade's current P&L, risk to Stop, reward to Target, worst case, and their Plan-R equivalents, so that I can manage risk against the 1R I committed to.
+5. As a trader, I would like the app to show a missing or stale Mark plainly instead of a substitute number, so that I can trust every figure it does show.
+6. As a trader, I would like to acknowledge when a closing price can't be obtained, so that I can complete the Review honestly without inventing a price.
+7. As a trader, I would like to resume an unfinished Review, so that I can keep every session reviewed without starting over.
 
-**Capability set.** The Review opens on `LatestCompleted` or an exact completed date. Eligibility is "Open at the session cutoff" under corrected facts. Task families run in this order: current Missing Marks, then the attention-ranked Trade walk, using transparent attention bands and reasons. The Daily Trade Review Action form preselects Hold as unsaved view state. Exit, Roll, and Adjust require Intent and record intent only. The trader can acknowledge an unavailable Mark or withdraw that acknowledgment. Completion is derived as Complete, Complete with Unavailable Marks, or Incomplete, and resumes from facts.
+**Capability set.**
+
+- *Session policy and Marks:* the U.S. session policy sets the Expected Mark Date and the latest Review Date (decision 25). Manual Marks are entered in the Review's Marks task: initial entry, correction with a reason, acknowledging an unavailable Mark, and withdrawing that acknowledgment. Mark resolution is Available, Missing (with optional Stale context), or Acknowledged Unavailable.
+- *Current figures:* each open Trade shows Mark-to-Market valuation, Ongoing Risk to Stop, Worst-Case Ongoing Risk, Incremental Reward to Target, Maximum Incremental Reward (Unbounded for Long Stock), Plan-R conversions, per-condition Stop and Target status, and Overrun. Each has its own availability. When evidence is missing or later than the Mark, a dated last-close line and an at-entry line appear instead of a substitute (decision 26). These figures appear on the Open list, on Trade Detail, and in the Review.
+- *The Review:* it opens on `LatestCompleted` only (decision 27). Eligibility is "Open at the session cutoff" under current facts. Task families run in this order: the Review Date's Missing Marks (with skipped sessions listed as optional, nonblocking gaps), then the attention-ranked Trade walk, using transparent attention bands and reasons. The Daily Trade Review Action form preselects Hold as unsaved view state. Exit, Roll, and Adjust require Intent and record intent only. Completion is derived as Complete, Complete with Unavailable Marks, or Incomplete, and resumes from facts.
 
 **Introduces**
 
 - *Operations:*
-  - Daily Review: `open`, `getTrade`, and `save` (`SaveTradeAction`).
+  - Market Data: `save` (initial Manual Mark, correction of a believed-wrong Mark, assert unavailable, withdraw acknowledgment), `query` (`ResolveFrames`, `ExpectedSnapshot`), and `recover` without a provider adapter.
+  - Trade Analysis: `derive` at an economic cutoff; `evaluate`.
   - Trade Record: `queryRecords` (`StateAtEconomicCutoff`).
-  - Market Data: `save` (assert unavailable, withdraw acknowledgment).
   - Journal: obligation keying for (Trade, Review Date) and edit-by-expected-revision for Action retries.
-- *Mechanisms:* Market Data `ExpectedSnapshot` checks at Save; the attention-band ordering; derived completion.
+  - Daily Review: `open` (`LatestCompleted`), `getTrade`, and `save` (`SaveTradeAction`).
+  - Trade Views and Reporting: current evaluation for the Open list and Detail.
+- *Mechanisms:*
+  - The rule-based NYSE session policy (holidays, one-off closures, early closes) with a versioned identity, a 30-minute completion buffer, and an explicit diagnostic for dates outside coverage.
+  - `MarketDataSnapshotId` with evidence digests, and `ExpectedSnapshot` checks at Save.
+  - The attention-band ordering (the boundary between quantified pressure and routine is open; see the review queue).
+  - Derived completion.
 - *Seeds:* Journal: the Daily Trade Review definition and the Daily Review Source.
-- *Durable representation:* schema change adding Unavailable Mark Acknowledgment history and the obligation-key index for Daily Trade Review Entries.
+- *Durable representation:* schema change adding Market Data observation records (Mark revision chains and Unavailable Mark Acknowledgment history), the session-policy compatibility metadata, each Trade's exposure start, and Daily Trade Review obligation keys.
 
 **Acceptance**
 
+- AC-MARK-001 — full.
 - AC-REV-003 — full.
 - AC-JOUR-001 — full.
-- AC-REV-001 — partial. Declared scope: restatement after correction is completed in D15.
+- AC-REV-001 — partial (Open-at-cutoff eligibility for the latest session). Declared scope: exact-date open, Trades closed after the cutoff, and restatement after correction are completed in D15.
 - AC-REV-002 — partial (Marks, then Trades). Declared scope: the Debt family is completed in D5, and the settlement family in D7.
 - AC-REV-005 — partial (Mark, acknowledgment, Trade fact, existing Action). Declared scope: correction is completed in D15, and changed Daily Bars in D11.
 - AC-REV-006 — partial. Declared scope: due Debt is completed in D5, settlement in D7, a Voided Action in D13, and fact correction in D15.
 - AC-MARK-003 — partial. Declared scope: "provider error never creates acknowledgment" is completed in D11.
+- AC-MARK-004 — partial (historical gaps visible and nonblocking in the Review). Declared scope: series and replay in D9, Daily Bars in D11.
+- AC-MARK-005 — partial (recovery without a provider). Declared scope: provider behavior is completed in D11.
+- AC-CALC-001 — partial (current risk uses the remaining Position and effective management). Found in the D2 clause-level check.
+- AC-CALC-002 — partial (single-Instrument Missing Mark). Declared scope: the multi-Instrument case is completed in D10.
+- AC-CALC-003 — partial (underlying-price conditions). Declared scope: structure-value conditions are added in D10, and the "revision is not a Deviation" case completes it in D17.
+- AC-JOUR-005 — partial (Daily Trade Review retries keep one Entry identity).
+- AC-JOUR-007 — partial (Daily Trade Review and its Source).
+- AC-REST-004 — partial (re-proven for the schema-3 migration).
 
-**Parallelism.** Once the Review overview and Action read models are fixed, the cutoff query and attention ranking (domain) and the Review walk UI can proceed in parallel. The acknowledgment save is independent of both.
+**Parallelism.** The session policy and Market Data work, the `evaluate` arithmetic, and the Trade Record and Journal work are independent until Daily Review and Trade Views join them. The UI can build against fixed frame, evaluation, Review, and Action read models.
 
 ---
 
@@ -1061,7 +1064,7 @@ The deliverable listed is the one where each scenario becomes **full**.
 | AC-LIFE-001 | D6 | | AC-REV-004 | D12 |
 | AC-LIFE-002 | D15 | | AC-REV-005 | D15 |
 | AC-LIFE-003 | D8 | | AC-REV-006 | D15 |
-| AC-POS-001 | D6 | | AC-MARK-001 | D3 |
+| AC-POS-001 | D6 | | AC-MARK-001 | D4 |
 | AC-POS-002 | D10 | | AC-MARK-002 | D19 |
 | AC-POS-003 | D21 | | AC-MARK-003 | D11 |
 | AC-POS-004 | D7 | | AC-MARK-004 | D11 |
@@ -1102,4 +1105,17 @@ At the user's direction (2026-10-11), the clause-by-clause check of each accepta
 4. **AC-LIFE-003 (D8) covers each kind of agreed record.** Planned-Leg Terms and Unplanned Exposure (D10) and Stop Discipline (D12) add new recorded Deviation kinds after D8. ~~Its "mutation is prepared" branch also needs an explicit owner, likely D2.~~ Resolved: D2 owns it (decision 23); D6 adds the Lot-Match fixture case.
 5. **AC-SET-003 (D7) requires Settlement Due on Trade Detail as well as in Daily Review.**
 6. **AC-MARK-002 (D11 and D19) needs Market Data's "deliberate Manual valuation override" save intention.** D11 does not yet list it.
-7. **AC-MARK-004 says historical gaps are visible and nonblocking in Daily Review.** D4 does not yet state this.
+7. ~~**AC-MARK-004 says historical gaps are visible and nonblocking in Daily Review.**~~ Resolved: D4 lists skipped sessions as optional gaps that do not block completion (decision 27), and claims AC-MARK-004 as partial.
+
+### Open decision blocking freeze
+
+- **D4 P14: the boundary between the "quantified pressure" and "routine" attention bands.** The user deferred it on 2026-10-11, to be settled before D4's implementation starts. It changes public behavior, so the plan cannot freeze while it is open. See [D4, section 1.1](D04-daily-review.md#11-decisions-for-this-breakdown).
+
+### Raised by the D4 breakdown, for later breakdowns
+
+1. **D6:** extend `StateAtEconomicCutoff` to include Trades closed after the cutoff, because D6 first produces them (D4 A55).
+2. **D7:** AC-REV-002's "missed Review … the same exact date reopens" is read as reopening an unfinished Review while it is still the latest session, because missed sessions are not reviewed (decision 27). Confirm that reading when D7 marks the scenario full.
+3. **D10:** AC-CALC-002's fixture needs a partial exit so that realized-to-date is nonzero. AC-CALC-003's "one crossed Stop and one reached Target" at once needs structure-value conditions, since one Long Stock Trade cannot cross both.
+4. **D11:** `MarketData.recover` without a provider is installed in D4. D11 adds the Marketdata.app adapter inside it and the provider-configuration operations, rather than introducing `recover`.
+5. **D12:** `DailyReview.save` gains its Stop-Discipline Deviation reconciliation (D4 has none, A44).
+6. **D15:** add `DailyReview.open` with `ExactCompleted`, which AC-REV-001 requires (decision 27).
