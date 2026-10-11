@@ -539,19 +539,32 @@ participate in Workspace-owned flows).
 ## Open items
 
 - Detailed task breakdowns per deliverable, with `describe` / `it should` unit tests, are written
-  separately on request. **Drafted so far, awaiting review:** D1 in
-  [deliverable-breakdowns/D1-install-trust-set-up.md](deliverable-breakdowns/D1-install-trust-set-up.md)
-  (35 tasks), D2 in
+  separately on request. **All seven of D1–D7 are drafted, awaiting review:** D1 in
+  [deliverable-breakdowns/D1-install-trust-and-set-up.md](deliverable-breakdowns/D1-install-trust-and-set-up.md)
+  (34 tasks), D2 in
   [deliverable-breakdowns/D2-confirm-first-plan.md](deliverable-breakdowns/D2-confirm-first-plan.md)
-  (18 tasks), and D3 in
-  [deliverable-breakdowns/D3-record-entry.md](deliverable-breakdowns/D3-record-entry.md) (26 tasks).
-  Their declared task graphs are validated by
+  (20 tasks), D3 in
+  [deliverable-breakdowns/D3-record-entry.md](deliverable-breakdowns/D3-record-entry.md) (23 tasks),
+  D4 in
+  [deliverable-breakdowns/D4-daily-review.md](deliverable-breakdowns/D4-daily-review.md) (26 tasks),
+  D5 in
+  [deliverable-breakdowns/D5-complete-review-debt.md](deliverable-breakdowns/D5-complete-review-debt.md)
+  (18 tasks), D6 in
+  [deliverable-breakdowns/D6-end-long-stock-trade.md](deliverable-breakdowns/D6-end-long-stock-trade.md)
+  (20 tasks), and D7 in
+  [deliverable-breakdowns/D7-back-up-journal.md](deliverable-breakdowns/D7-back-up-journal.md)
+  (14 tasks) — 155 tasks in total. Their declared task graphs are validated by
   `scripts/check-deliverable-breakdown.mjs`, which checks blocking edges, cycles, diagram
-  agreement by transitive reduction, and structural-task verifications. The three drafts carry
-  open questions of their own; each has an "Open items and risks" section.
+  agreement by transitive reduction, and structural-task verifications, and their cross-document
+  claims by `scripts/audit-breakdown-coverage.mjs`; both report zero failures and zero warnings
+  over the seven files. Each carries open questions of its own in an "Open items and risks"
+  section, and D1–D7 record scenarios owned by later deliverables as Partial rather than counting
+  them as passing.
 - The acceptance-to-evidence matrix (planning-protocol Phase 4) is not yet drafted.
 - The nine verification items recorded under D3 in
   [planning-decisions-2026-10-10.md](planning-decisions-2026-10-10.md) must be resolved
-  inside the plan before it is frozen. D1 resolves items 3, 4, 6, and 9; D2 gives item 5 its
-  first honest proof; the rest need the deliverables that own them (see each breakdown's
-  mapping section).
+  inside the plan before it is frozen. D1 owns items 3, 4, 6 and 9; D2 owns item 5; item 8 is
+  owned and re-verified by each of D1–D7; items 1 and 7 are explicitly deferred to the Restore
+  and backup-verification deliverables respectively; and item 2 is deferred because no scheduled
+  deliverable owns mature-scale measurement. Each breakdown's mapping table records which rows are
+  owned and which are deferrals.
