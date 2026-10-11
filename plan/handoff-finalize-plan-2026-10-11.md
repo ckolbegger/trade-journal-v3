@@ -7,8 +7,8 @@ breakdowns are written either, unless a settled item requires editing one that e
 
 | | |
 |---|---|
-| Branch | `deepseek-v41-flash` — **8 commits ahead** of `origin/deepseek-v41-flash` (`418b825`) |
-| HEAD | `df0e3fb` |
+| Branch | `deepseek-v41-flash`, ahead of `origin/deepseek-v41-flash` (`418b825`). This handoff is itself one of those commits, so do not expect an exact count — the table below lists the substantive ones |
+| Working tree | clean, nothing uncommitted |
 | Worktree | `/Users/ckolbegger/src/trade-journal-v3/worktrees/deepseek-v41-flash` |
 | Baseline | `main` at `700a953` |
 | Repo | https://github.com/ckolbegger/trade-journal-v3 |
@@ -34,12 +34,15 @@ any commit:
 
 ```sh
 cd /Users/ckolbegger/src/trade-journal-v3/worktrees/deepseek-v41-flash
-git rev-parse --abbrev-ref HEAD    # must print: deepseek-v41-flash
-git status --short --branch        # must show: ahead 8, working tree clean
+git rev-parse --abbrev-ref HEAD    # must print exactly: deepseek-v41-flash
+git status --short --branch        # must print: deepseek-v41-flash...origin/deepseek-v41-flash [ahead N]
+                                   # with no modified or untracked files listed
 ```
 
-If either does not hold, **stop and report it** rather than continuing. A wrong directory here is the
-single most expensive mistake available in this session.
+The ahead-count `N` grows as work is committed and is **not** a check — only the branch name and a
+clean working tree are. If the branch name is wrong, or if there are modified or untracked files you
+did not create, **stop and report it** rather than continuing. A wrong directory here is the single
+most expensive mistake available in this session.
 
 **Why this matters.**
 
@@ -51,7 +54,7 @@ single most expensive mistake available in this session.
 - Seven sibling worktrees under `worktrees/` belong to **other implementations** and are off-limits:
   `claude`, `claude-opus-5.5`, `codex`, `codex-gpt-6.1-sol`, `glm`, `qwen3.8-27B`, `zcode-glm-5.3`.
   The repository is shared; only `worktrees/deepseek-v41-flash` is yours.
-- The 8 local commits are **not pushed**. Do not push unless the user asks.
+- The local commits are **not pushed**. Do not push unless the user asks.
 
 ---
 
@@ -68,7 +71,8 @@ single most expensive mistake available in this session.
 | Phase 4 matrix | not drafted — 35 scenarios unowned by any deliverable yet |
 | Phase 6 freeze | not started |
 
-The 8 commits, oldest first:
+The substantive commits of the session that preceded this handoff, oldest first (the current tip is
+newer than this list, since the handoff itself is a commit):
 
 ```
 6269085  draft the task-level breakdowns for D1-D7
@@ -79,6 +83,7 @@ fa10ac6  add the per-condition view-only comment to D9
 08a0d34  settle D3 fee apportionment by largest-remainder   (later withdrawn by D10)
 5a059a1  exclude fees from calculations (decision D10)
 df0e3fb  settle RecordedSequence and record the remaining agenda
+2c704d9  add the handoff for finalizing the plan
 ```
 
 ---
