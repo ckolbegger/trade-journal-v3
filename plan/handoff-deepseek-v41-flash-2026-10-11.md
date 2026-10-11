@@ -1,14 +1,14 @@
 # Handoff — Trade Journal V3 · branch `deepseek-v41-flash`
 
-**Purpose of the next session:** write the detailed task-level breakdowns for **D1 through D7**,
-following the evidence rules in the evaluation planning protocol. D1, D2, and D3 are already
-drafted; D4, D5, D6, and D7 are not.
+**Purpose of the next session:** write the detailed task-level breakdowns for **D1 through D7** —
+**all seven**. The directory `plan/deliverable-breakdowns/` is currently **empty**; an earlier draft
+set for D1–D3 was deliberately deleted so the whole set can be produced consistently (see §3).
 
 | | |
 |---|---|
-| Branch | `deepseek-v41-flash` — **in sync with `origin/deepseek-v41-flash` at `73c83d3`** |
+| Branch | `deepseek-v41-flash` — in sync with `origin/deepseek-v41-flash` at `c4848b4` |
 | Worktree | `/Users/ckolbegger/src/trade-journal-v3/worktrees/deepseek-v41-flash` |
-| Baseline | `main` at `700a953` (moved during this session; see §6) |
+| Baseline | `main` at `700a953` (moved during the prior session; see §6) |
 | Repo | https://github.com/ckolbegger/trade-journal-v3 |
 | Date | 2026-10-11 |
 
@@ -51,9 +51,9 @@ off-limits: `claude`, `claude-opus-5.5`, `codex`, `codex-gpt-6.1-sol`, `glm`, `q
 |---|---|
 | 1 — comprehension check | complete |
 | 2 — stack | complete; recorded as decision **D3** in `plan/planning-decisions-2026-10-10.md` |
-| 3 — vertical deliverables + task breakdowns | **in progress** — the ordered list is agreed and frozen-ish; D1–D3 breakdowns drafted; **D4–D7 outstanding** |
-| 4 — acceptance-to-evidence matrix | not started; 43 of 67 acceptance scenarios are currently owned by no deliverable |
-| 5 — interactive review | started in practice (user has reviewed and amended the deliverable list) |
+| 3 — vertical deliverables + task breakdowns | **in progress** — the ordered list is agreed and settled; **all seven breakdowns (D1–D7) are to be written** |
+| 4 — acceptance-to-evidence matrix | not started; 43 of 67 acceptance scenarios are owned by no deliverable |
+| 5 — interactive review | started in practice (the user has reviewed and amended the deliverable list several times) |
 | 6 — freeze | not started |
 
 **No application code exists on this branch.** There is no `package.json`, `src/`, or
@@ -68,44 +68,89 @@ approval. This session writes breakdowns, not code.
 2. `specs/README.md` — specification index, authority order, conformance rules.
 3. `specs/glossary.md` — normative domain language; use these terms exactly.
 4. `specs/design/overview.md` — module partition, dependency rules, shared value/result conventions.
-5. `specs/evaluation/planning-protocol.md` — **the process to follow**; Phase 3's "Required task and
-   deliverable evidence" is the operative part.
+5. `specs/evaluation/planning-protocol.md` — **the process to follow.** §3 "produce a vertical-deliverable
+   plan and task graph" (`:61`) and its "Required task and deliverable evidence" (`:100`) are the
+   operative parts; the completion checklist is at `:205`.
 6. `plan/vertical-deliverables.md` — the agreed 22-deliverable sequence with user stories, plus the
-   cross-cutting threads.
+   cross-cutting threads. **This is the authority for deliverable numbering.**
 7. `plan/planning-decisions-2026-10-10.md` — decisions **D1–D6**. All binding on this branch.
-8. `plan/deliverable-breakdowns/D1-install-trust-set-up.md` — **read this as the worked example.**
-   D2 and D3 follow the same structure.
-9. Per deliverable as needed: the owning module contract under `specs/design/`, plus
+8. Per deliverable as needed: the owning module contract under `specs/design/`, plus
    `specs/design/ui-contract.md`, `specs/design/delivery-contract.md`, and the relevant scenarios in
    `specs/acceptance/acceptance-contract.md`.
 
 **Not authority** (they predate ADRs 0009/0010): `trade-journal-v3-spec-consolidation-handoff-2026-08-26.md`
 and `spec-handoff-2026-09-11.md`, both in the worktree root and both tracked on the shared baseline.
 
+**Naming caution:** "D1–D6" in item 7 means the *planning decisions* in that file. "D1–D7" everywhere
+else means *deliverables*. They are unrelated numbering schemes; do not conflate them.
+
 ---
 
 ## 3. The breakdown format, and the two validators
 
-Each deliverable gets **its own file** in `plan/deliverable-breakdowns/`, named
-`D<n>-<slug>.md`. D1–D3 exist; D4–D7 are to be written.
+Each deliverable gets **its own file** in `plan/deliverable-breakdowns/`, named `D<n>-<slug>.md`.
+Write **all seven**, one at a time, aligning with the user before moving to the next.
 
-A breakdown contains, in this order:
+### Why the directory is empty
 
-1. **Scope** — advertised outcome, in-scope table, explicit out-of-scope list with reasons, and what
-   the deliverable does *not* demonstrate.
-2. **Task graph** — a mermaid flowchart plus prose declaring, per task, its `Blocking edges:` and
-   `Consumed by:`. Cross-deliverable edges are written `D<n>:T<m>`.
-3. **Task detail** — one `#### T<n> — `S`|`B` title` heading per task, where `S` = structural (exact
-   verification, no invented unit tests) and `B` = behaviour-bearing (TDD required). Each behaviour
-   task carries `describe`/`it should` cases naming the seam, conditions, and observable outcome,
-   plus a red→green procedure and explicit **valid vs. invalid red evidence**.
-4. **Browser-critic flow list** — a numbered flow table run in both narrow and wide viewports.
+An earlier set covered D1–D3 only (`7bd9e45`, `8b605ce`, `b84b34b`). It was deleted in `c4848b4` so
+that all seven can be produced as one consistent set, rather than extending a partial set written
+before the deliverable list was resequenced twice. Those revisions remain recoverable from history
+(`git checkout f6cd8ae -- plan/deliverable-breakdowns/`) but **should not be reused**: parts of them
+cite deliverable numbers that changed after they were written. Treat the new set as authoritative.
+
+Because the worked example is gone, this section carries the format.
+
+### Required sections, in order
+
+1. **Scope** — advertised outcome; an in-scope table; an explicit out-of-scope list *with reasons*;
+   and what the deliverable deliberately does **not** demonstrate.
+2. **Task graph** — a mermaid flowchart, plus prose declaring per task its `Blocking edges:` and
+   `Consumed by:`. Cross-deliverable dependencies are written `D<n>:T<m>`.
+3. **Task detail** — one `#### T<n> — S|B Title` heading per task.
+4. **Browser-critic flow list** — a numbered flow table, each flow run in **both narrow and wide**
+   viewports, with steps and expected observable result, plus the intentional non-defects a critic
+   must not report.
 5. **Acceptance coverage** — one row per claimed scenario, honestly marked full or partial.
-6. **Valid red evidence** — D1's §6 rules apply verbatim to every later deliverable.
+6. **Valid red evidence** — what counts and what does *not* count as red, restated per deliverable.
 7. **Open items and risks.**
-8. For deliverables that resolve one: a `planning-decisions` D3 verification-item mapping table.
+8. Where applicable, a `planning-decisions` D3 verification-item mapping table.
 
-**Run both validators before committing.** They are the reason the graphs can be trusted:
+### Structural vs behaviour-bearing tasks
+
+- **`S` = structural** (build config, test-environment setup, a mechanical migration step): no
+  invented unit tests. State the **exact automated or reproducible verification, the expected
+  result, and the deliverable behaviour that depends on it** (`planning-protocol.md:113`).
+- **`B` = behaviour-bearing**: TDD is mandatory (`:102`). Each carries concrete
+  `describe("<behaviour>")` groups with `it should …` statements that name the seam under test, its
+  conditions, and the **observable outcome** — not a test name and not an implementation detail.
+
+### Red → green, per `planning-protocol.md:104-109`
+
+1. **Red** — before writing production behaviour, add one test through the identified seam, run it,
+   confirm it fails because the planned behaviour is absent or incorrect. A test that passes
+   immediately, or fails for syntax/configuration/fixture/unrelated reasons, is **not** valid red.
+2. **Green** — smallest production change that satisfies it; rerun; confirm it passes without
+   breaking the task's already-green tests.
+3. One case at a time. Do not write all tests then all implementation.
+4. Refactoring after green is a separate review step; affected tests stay green.
+
+No non-structural task is complete without recorded red **and** green commands and outcomes for every
+planned `it should` case (`:111`).
+
+### Integration tests and the critic gate
+
+- Every deliverable defines **mock-free** integration tests through the real stack: no mocks, stubs,
+  or canned responses for application dependencies; production code paths and every layer traversed;
+  real persistence; durable state proven, not only the visible result (`:115-122`).
+  Behaviourally-compatible substitutes are allowed (`fakeIndexedDB` rather than browser IndexedDB)
+  but **every replacement must be disclosed** and must not bypass a layer.
+- Each deliverable ends with the **independent browser-critic gate** (`:124-135`): a fresh critic
+  starts the runtime itself and exercises every planned flow. Every defect it finds is **also a
+  testing failure** — add or strengthen a test, confirm it fails for the reported defect, then fix.
+  A deliverable is not complete without a passing fresh-critic report.
+
+### The two validators — run both before committing
 
 ```sh
 node scripts/check-deliverable-breakdown.mjs plan/deliverable-breakdowns/*.md
@@ -120,35 +165,59 @@ node scripts/audit-breakdown-coverage.mjs
   complete, no row both disowns and claims coverage, and each of the nine D3 verification items has
   an owner or an explicit deferral.
 
-Both were negative-tested against injected faults. Both must report `0 failure(s), 0 warning(s)`.
-**Task numbering is continuous across deliverables** — D1 uses T1–T35, D2 T36–T53, D3 T54–T79, so
-D4 starts at **T80**.
+Both were negative-tested against injected faults: a cycle, an undefined edge endpoint, a missing
+verification, an invented scenario ID, a row stripped of its tasks, a bare cross-deliverable
+citation, a wrong task count, and a row both claiming and disowning coverage.
+
+Both must report `0 failure(s), 0 warning(s)`. With no breakdown files present they exit `2` with a
+"no breakdown files found" message — that is expected until the first file exists, not a fault to fix.
+
+**Task numbering:** within one deliverable, number from `T1`. The validator only requires IDs unique
+*within a file* and cross-references to resolve, so a fresh per-file `T1…` sequence is fine; if a
+cross-deliverable `D<n>:T<m>` citation is used, the target must exist in that file.
+
+### Skeleton
+
+```markdown
+# D<n> — <title>: task-level breakdown
+
+Status: draft for user review. Not frozen. Phase 3 artifact for `planning-protocol.md:61-135`.
+
+## 0. Scope, boundary, and what this deliverable deliberately does not do
+## 1. Decisions this breakdown introduces (needing alignment)
+## 2. Task graph            (mermaid + declared Blocking edges / Consumed by)
+## 3. Task detail            (#### T<n> — `S`|`B` Title, with cases or exact verification)
+## 4. Browser-critic flow list   (narrow and wide, plus intentional non-defects)
+## 5. Acceptance coverage    (one row per claimed scenario, full or partial)
+## 6. What counts as valid red evidence
+## 7. Open items and risks
+```
 
 ---
 
 ## 4. What the next session must produce
 
-Breakdowns for the four deliverables below. D1–D3 already exist and should be treated as done
-unless the user asks for changes.
+**All seven.** Work one at a time; align with the user before starting the next. Do not batch.
 
 | # | Deliverable | Stories | Notes that matter |
 |---|---|---|---|
-| D1 | Install, trust, and set up | 3 | ✅ drafted (T1–T35) |
-| D2 | Confirm my first plan (long stock) | 3 | ✅ drafted (T36–T53) |
-| D3 | Record my entry (long stock) | 3 | ✅ drafted (T54–T79) |
-| **D4** | **Do my daily review** | **4** | **to write.** The signature ritual. Introduces Manual Mark entry, Expected Mark Date/Status, attention ordering, Stop-Discipline reconciliation, `Hold` as unsaved view state, and `CompleteWithUnavailableMarks` |
-| **D5** | **Complete what my review owes** | **3** | **to write.** `DailyReview.getDebt`/`save`, Journal writing from the review, debt answer vs. explicit decline, one outcome per obligation key |
-| **D6** | **End a long stock trade** | **4** | **to write.** `recordPositionChange` closing variant, exactly one Close Reason when trader agency exists, derived Terminal Disposition, Close Review, `abandonPlan`, 5 Close + 5 Abandonment Reasons |
-| **D7** | **Back up my journal** | **2** | **to write.** `Workspace.exportBackup`, `exportSnapshot` for all four sections from one read snapshot, Workspace Backup Manifest, secrets exclusion, `Downloaded` produces **no** receipt |
+| D1 | Install, trust, and set up | 3 | The foundation, deliberately minimal. Carries the Web App Manifest, a complete digest-valid Offline Release Inventory, the four-check Runtime Readiness gate, the persistence-level write gate, the IndexedDB schema + migration runner + transaction seam + lifecycle index, `Workspace.initialize`/`getStatus`, and `ReferenceCatalog`/`Journal` seeding. Seed manifest v1: Long Stock, Plan Reflection Entry Type, Plan Confirmation Source |
+| D2 | Confirm my first plan (long stock) | 3 | `TradeWorkflows.confirmPlan`; `TradeAnalysis.assessPlan` for the Long Stock shape, Plan Baseline and positive 1R; `TradeRecord.prepareChange`/`applyPreparedChange`; `Journal.getDefinitions`, `prepareEffects`/`applyPreparedEffects`. Strategy selector offers Long Stock only |
+| D3 | Record my entry (long stock) | 3 | `recordPositionChange` stock-open variant; `TradeAnalysis.derive` — positions, FIFO Lot Matches, fees allocated exactly once, realized P&L; stored lifecycle `Planned`→`Open` with its index; Position Change Reflection with `Defer` creating Journal Debt. Seed: Position Change Reflection Entry Type, Position Change Source |
+| D4 | Do my daily review | 4 | The signature ritual, and the spine the rest hangs from. `DailyReview.open`/`getTrade`/`save`; Manual Mark entry and Expected Mark Date/Status; attention bands returning reasons not scores; `Hold` preselected as **unsaved** view state with an explicit Save; Intent required for Exit/Roll/Adjust and never executing a trade; atomic Stop-Discipline reconciliation; `CompleteWithUnavailableMarks`; `recover` honestly returning `NotConfigured`. Seed: Daily Trade Review Entry Type, Daily Review Source |
+| D5 | Complete what my review owes | 3 | `DailyReview.getDebt`/`save` (`ResolveReviewDebt`); `Journal.save` from the review; debt answer vs. explicit decline; one outcome per obligation key; Journal query for outcomes and Debt. Seed: Review Note and Trader Reflection Entry Types |
+| D6 | End a long stock trade | 4 | `recordPositionChange` closing variant; **exactly one Close Reason** when trader agency is present; derived Terminal Disposition; Close Review with its distinct obligation key; `abandonPlan`; `Planned`→`Closed`/`Abandoned`. Seed: 5 Close Reasons, 5 Abandonment Reasons, Close Review Entry Type, Trade Close Source |
+| D7 | Back up my journal | 2 | `Workspace.exportBackup`; `exportSnapshot` for all four authoritative sections from one coherent read snapshot; Workspace Backup Manifest (versions, capability footprint, counts, exclusions, section digests, full digest); secrets exclusion; `Downloaded` produces **no** `CompletedBackupReceipt`; available in `Recovery Only`. The artifact format must be designed for all four sections now, even where a section is thin, because it is durable |
 
-Work **one deliverable at a time and align with the user before starting the next.** The user has
-been reviewing and amending as we go; do not batch all four without checking in.
+For each, take the exact scope from `plan/vertical-deliverables.md`, which also records the `AC:`
+line per deliverable. **A partial coverage claim must never be counted as passing** — every coverage
+table must say so explicitly.
 
 ---
 
 ## 5. Constraints that are not obvious
 
-These are the traps this session found. Re-deriving them costs time.
+These are the traps earlier sessions found. Re-deriving them costs time.
 
 - **`specs/` is frozen and read-only.** Product decisions reopen only on explicit user instruction.
   Report a contradiction rather than picking an interpretation.
@@ -156,52 +225,54 @@ These are the traps this session found. Re-deriving them costs time.
   them into `specs/adr/` without asking — the other seven branches read the same `specs/`.
 - **Branch-local decisions stay branch-local.**
 - **1–4 user stories per deliverable.** Verified for all 22; keep it that way.
-- **No layer-only deliverables** without a specifically recorded, user-approved exception.
+- **No layer-only deliverables** without a specifically recorded, user-approved exception
+  (`planning-protocol.md:87`).
 - **The first mutating deliverable must carry PWA identity, the complete Offline Release Inventory,
   Runtime Readiness, and the persistence-level write gate.** `planning-protocol.md:83` and
-  `specs/README.md` forbid deferring them; decision **D4** records why. D1 already carries them.
+  `specs/README.md` forbid deferring them; decision **D4** records why. D1 carries them.
 - **Migration is cross-cutting** — a task inside each deliverable that changes a durable
   representation, never a deliverable of its own.
 - **Honest Installed Capability Manifest:** absent capabilities are absent from navigation and
   ordinary calls, never disguised as domain `Unavailable`.
-- **A partial coverage claim must never be counted as passing.** Every breakdown says so explicitly;
-  keep doing that.
+- **Do not write application code.** No scaffolding, no `package.json`, no `src/`.
 
-### Ordering constraints discovered this session
+### Ordering constraints discovered in earlier sessions
 
-- **D6 precedes D7, and the backup deliverable's own deferral note now holds by construction.**
-  The user asked for backup to follow long stock closure. D4 brings marks and Daily Trade Review on
-  board, D5 the in-review journal writing, D6 closure — so D7's "deferred until plan, trade entry,
-  mark entry, and journal entry all exist" is satisfied when it runs.
-- **Later numbers changed this session.** Management revision moved from D7 to **D14** (after the
-  multi-leg option work); Roll is **D13**; correction is **D15** and now names **which leg** of a
-  multi-leg structure is being corrected. If you cite a deliverable number above D7, take it from
-  `plan/vertical-deliverables.md`, not from memory or from the previous handoff.
-- **A real ordering constraint binds the option arc:** physical settlement (D10) can atomically
-  create **workflow-routed Management Debt**, and `trade-workflows.md:150` says that Debt is resolved
-  *only* by a Management Revision. D14 is therefore the latest position that keeps that Debt
-  resolvable. Do not move it later without addressing this.
+- **D6 precedes D7, and D7's own deferral note holds by construction.** The user asked for backup to
+  follow long stock closure. D4 brings marks and Daily Trade Review on board, D5 the in-review journal
+  writing, D6 closure — so D7's "deferred until plan, trade entry, mark entry, and journal entry all
+  exist" is satisfied when it runs.
+- **Deliverable numbers above D7 changed recently.** Management revision moved from D7 to **D14**
+  (after the multi-leg option work); Roll is **D13**; correction is **D15** and now names **which leg**
+  of a multi-leg structure is being corrected. **Always take deliverable numbers from
+  `plan/vertical-deliverables.md`**, never from memory or from an older handoff.
+- **A real ordering constraint binds the option arc:** physical settlement (D10) can atomically create
+  **workflow-routed Management Debt**, and `trade-workflows.md:150` says that Debt is resolved *only*
+  by a Management Revision. D14 is therefore the latest position that keeps that Debt resolvable. Do
+  not move it later without addressing this.
 - **Deferred, by user decision:** whether a Management Revision targets per-leg or structure-level
-  stops/targets. `glossary.md:159` reads structure-level; `glossary.md:60` mentions "structure" but
-  is silent on per-leg. **This is a question for the D14 task breakdown, not D4–D7.**
+  stops/targets. `glossary.md:159` reads structure-level; `glossary.md:60` mentions "structure" but is
+  silent on per-leg. **This is a question for the D14 task breakdown, not D1–D7.**
 
-### Scale is deliberately deferred
+### Scale is deliberately deferred — but boundedness is not
 
-The user has decided to write D1–D7 breakdowns **before** addressing scale. This is sound, but it
-carries one condition: the breakdowns must assert **boundedness** explicitly, because D1 designs the
-IndexedDB schema and indexes and a wrong index set is a migration-costly change.
+The user has decided to write the D1–D7 breakdowns **before** addressing scale. That is sound,
+because these breakdowns need to *not preclude* scale rather than to *measure* it. It carries one
+condition: they must assert **boundedness** explicitly. D1 designs the IndexedDB schema and indexes,
+and a wrong index set is a migration-costly change.
 
 - `overview.md:273` / `delivery-contract.md:122`: normal startup and Open selection **must not replay
   every historical Trade or issue one storage query per Trade**.
-- **`AC-PERF-001` is currently owned by no deliverable**, and no deliverable's `AC:` line names it.
-  D3's coverage table marks it partial with "no timing evidence". Do not claim a latency figure in
-  any breakdown. `AC-PERF-001` was already marked Partial before this session; the gap is disclosed,
-  not hidden.
+- **`AC-PERF-001` is owned by no deliverable**, and no deliverable's `AC:` line names it. **Do not
+  claim a latency figure in any breakdown.** The gap is disclosed, not hidden.
 - **D4 is where boundedness genuinely bites** — Daily Review's "Open at cutoff" query must be
-  index-bounded, not a replay. D1's breakdown already models this (lifecycle index, bounded queries
-  at T13/T15, capacity derivation at T19). Follow that example.
-- D1's T19 computes a minimum from a "mature-Workspace estimate"; if the scale answer ever changes
-  that estimate, T19 is the one D1 task whose numbers move.
+  index-bounded, not a replay. Model it the way D1's schema/index work is described in §3 of this
+  handoff: index membership, bounded queries, and a capacity/headroom derivation whose minimum is
+  disclosed rather than a magic constant.
+- The working scale targets are **25,000 Trades / ~200,000 facts**, with both latency targets at
+  `overview.md:266-271`.
+- A future scale-owning deliverable will need a deterministic generator for that dataset; worth
+  sizing even though it is built later.
 
 ---
 
@@ -213,9 +284,9 @@ IndexedDB schema and indexes and a wrong index set is a migration-costly change.
   Persistence/Transaction seam, `decimal.js` for Money/Price/Quantity, an injected `Clock` plus a
   versioned US session calendar, Workbox-assisted service worker, Vitest + `fake-indexeddb` (Node)
   and Playwright (browser). **Exact versions are pinned at freeze, not yet.**
-- **`main` moved during this session**, from `92c2565` to `700a953`. The change was purely additive:
-  a reusable planning prompt at `key-prompts/vertical-deliverable-plan.prompt`. `specs/` is untouched
-  and the frozen baseline is unchanged in substance.
+- **`main` moved** from `92c2565` to `700a953`. The change was purely additive: a reusable planning
+  prompt at `key-prompts/vertical-deliverable-plan.prompt`. `specs/` is untouched and the frozen
+  baseline is unchanged in substance.
 - The acceptance contract holds **67 scenarios**; the acceptance-to-evidence matrix (Phase 4) is not
   drafted.
 
@@ -250,13 +321,15 @@ advertise partial scope honestly rather than shipping the whole seed set up fron
 
 ## 8. Open items
 
-- **D4–D7 breakdowns** — the next session's work.
-- **Scale ownership** — deliberately deferred by user decision. `AC-PERF-001` has no owning
-  deliverable. See §5.
+- **All seven breakdowns (D1–D7)** — the next session's work. The directory is empty by design.
+- **Scale ownership** — deliberately deferred by user decision; `AC-PERF-001` has no owning
+  deliverable. See §5 for the boundedness condition this places on the breakdowns.
 - **D14's per-leg vs. structure-level management question** — deferred to D14's breakdown.
-- **D2 and D3 open questions** — each breakdown's own section. The substantive ones: D2 §7.1
-  (`assessPlan`'s input shape), D3 §7.1 (recorded *and* derived Lot Matches) and §7.3 (the
-  `AC-LIFE-003` disagreement fixture).
+- **Genuine under-specifications worth surfacing when reached:** `assessPlan`'s input shape for a
+  long stock Plan (the contract fixes the baseline *policy* but not the inputs); whether Lot Matches
+  are recorded *and* derived or derived only; and whether inducing a stored-lifecycle disagreement
+  for `AC-LIFE-003` qualifies under `acceptance-contract.md:7`. These were raised against the deleted
+  drafts and remain open — re-raise them in D2/D3's own §7 rather than assuming an answer.
 - **Phase 4 matrix** — not drafted; 43 of 67 scenarios unowned.
 
 ---
