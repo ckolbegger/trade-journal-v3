@@ -120,6 +120,7 @@ Kind: **B** = behavioral (TDD, red→green per case), **S** = structural (exact 
 | T1.28 | Node mock-free integration suite | test | S | T1.18 | `test:integration` |
 | T1.29 | Browser integration suite (Chromium) | test | S | T1.19–T1.27 | `test:e2e` |
 | T1.30 | Independent browser-critic gate | test | S | all | fresh critic report |
+| T1.31 | Freeze the schema-v1 Workspace fixture | test | S | T1.18 | `fixtures:freeze`, `verify:fixtures` |
 
 **Parallel tracks** (from the plan's parallelism note): once T1.7 lands and the command and result shapes are fixed in T1.18's type module, T1.11–T1.17 run in parallel with T1.20–T1.25 (against the facade test double). The delivery track (T1.3, T1.8, T1.9, T1.21, T1.26) is independent of the domain track until T1.10 joins them.
 
@@ -574,6 +575,7 @@ describe("About this release")
 | T1.28 Node integration suite | `npm run test:integration` | Every case in section 6.1 passes. | Cumulative regression. |
 | T1.29 Browser integration suite | `npm run test:e2e` (Chromium) | Every case in section 6.2 passes. | Cumulative regression. |
 | T1.30 Browser critic | Fresh critic agent per section 7 | A structured report with every flow passing. | Deliverable gate. |
+| T1.31 Schema-v1 fixture | `npm run fixtures:freeze -- --schema 1`, then `npm run verify:fixtures` | `fixtures:freeze` builds a Workspace in Node through the facade only: initialize, two Institutions and three Accounts, and five confirmed Plans with a fixed clock and seeded identities. It then writes a raw JSON dump of every store in `tj-root` and the Workspace database, with schema version and generator version, to `tests/fixtures/workspace-v1/`. `verify:fixtures` reloads each committed dump into `fake-indexeddb`, opens it with the current release, and checks that `getStatus` is Ready (or, after a later schema change, that migration succeeds) and that the normalized Planned list and Details equal the expected snapshot committed with the dump. The fixture is committed and never regenerated after the deliverable completes. | Forward-migration tests from every earlier supported version (D2 onward), as the plan's schema-change rule requires. |
 
 ---
 
@@ -713,7 +715,7 @@ Each clause of each scenario D1 claims was checked against the tasks and tests a
 | | entered state not silently lost | T1.21, B1.10 | covered |
 | | update creates no data synchronization | B1.10 store dump | covered |
 | | failed staging leaves the prior version | B1.11 | covered |
-| | failed **readiness** leaves the prior compatible version available | B1.6 (failure after activation → Recovery Only, data intact) | **Interpretation recorded.** A failed post-activation readiness cannot hand control back to the old service worker. D1 reads this clause together with the delivery contract's "leaves the prior compatible installed release and Workspace uncorrupted and does not report the new release Ready": data stays intact and the app reports Recovery Only, never Ready. Flagged for you to confirm or correct. |
+| | failed **readiness** leaves the prior compatible version available | B1.6 (failure after activation → Recovery Only, data intact) | **Interpretation confirmed by the user on 2026-10-11.** A failed post-activation readiness cannot hand control back to the old service worker. D1 reads this clause together with the delivery contract's "leaves the prior compatible installed release and Workspace uncorrupted and does not report the new release Ready": data stays intact and the app reports Recovery Only, never Ready. |
 | | offline device retains its version | B1.12 | covered |
 | AC-DEL-005 | each readable case → Recovery Only with reads and history | B1.6 | covered (history UI arrives with D15; D1 has no history to show) |
 | | backup export and verification available | — | D8 (decision 2) |
