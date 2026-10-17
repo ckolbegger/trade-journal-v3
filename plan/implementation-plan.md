@@ -38,6 +38,7 @@ This document is the ordered list of vertical deliverables. It deliberately cont
 | 27 | **No Reviews of missed sessions** (D4 breakdown, 2026-10-11). | Daily Review opens on the latest completed session only. Its Marks task also lists skipped sessions without Marks, which can be filled but do not block completion (AC-MARK-004). Opening an exact past date arrives in D15, because AC-REV-001 requires it. |
 | 28 | **A deferred reflection is due one session after the session it belongs to** (D5 breakdown, P16, 2026-10-11). | A Position Change belongs to the first session whose close is at or after its Economic Time, and its deferred reflection is due at the next session's close. The Debt stores its anchor and the rule; Daily Review and Trade Views classify it against session closes from Market Data, so Journal and Trade Workflows need no calendar. A deferral from the current session never reopens a completed Review. D6's Close Review Defer uses the same rule. |
 | 29 | **Spec reopened: owed reflections appear inside each Trade's card in the Daily Review, not as a separate task family** (D5 breakdown, P17, 2026-10-11, at the user's explicit direction). | Reopened passages: Daily Review, "Date, eligibility, and ordering" (task family 2, due Journal Debt) and `getDebt`'s global paging; the overview's "Open and save Daily Review"; AC-REV-002's "Mark, Debt, settlement, Trade order". The order becomes Marks, settlement (D7), then the Trade walk, and each Trade's card shows its Outstanding reflections, due ones blocking completion. Due Debt still blocks completion (glossary; ADR 0005). `getDebt` is not installed while every Trade with Debt is walked; D6 decides where Debt for a Trade outside the walk appears. Owed reflections can also be answered on Trade Detail through `Journal.save`, recording Source Trade Detail. The `specs/` files are unchanged here, because they are the shared baseline for every implementation; the user decides whether to amend them on `main`. |
+| 30 | **Spec reopened: Lot Matches are derived, never stored** (D6 breakdown, P23, 2026-10-17, at the user's explicit direction). | Matching order changes no Closed Trade's totals; it only splits a partly closed Trade's P&L between realized-to-date and open, and times the realization increments of the Outcomes curve. Trade Analysis still derives FIFO matches, lot-aware fees, and realized P&L from the effective Executions whenever needed, identified by (opening Execution, disposing Execution, FIFO); Trade Record stores no Lot-Match record, and an earlier-dated exit simply changes the derived result, disclosed in the receipt. Reopened passages: Trade Record's "Contract", "Record content", "Change protocol", and "Backup and Restore" (stored and backed-up Lot-Match links); the overview's authority-map row "Lot matching" and load-bearing rule 5; ADR 0002's "Lot Match set"; Restore's Lot-Match agreement check in Workspace and Trade Analysis; the delivery contract's rebuild item "active FIFO Lot Matches" (now a derived result); and AC-LIFE-003's Lot-Match case. The `specs/` files are unchanged here. |
 
 Review decisions accepted during the walkthrough are appended here.
 
@@ -74,7 +75,7 @@ These scenarios cover properties of the whole product. Every deliverable must re
 | ~~D3~~ | Manual Marks and ongoing risk/reward: **merged into D4** (decision 24) | — |
 | D4 | [Daily Review, with Manual Marks and ongoing risk/reward](D04-daily-review.md) | 7 |
 | D5 | [Deferred reflection and Journal Debt](D05-deferred-reflection-and-journal-debt.md) | 2 |
-| D6 | Close a Long Stock position | 3 |
+| D6 | [Close a Long Stock position](D06-close-a-long-stock-position.md) | 3 |
 | D7 | Single-leg options: happy path | 3 |
 | D8 | Backup and Restore | 3 |
 | D9 | Trade replay | 1 |
@@ -207,7 +208,7 @@ Approved by the user on 2026-10-11, during the D1 breakdown.
 **Acceptance**
 
 - AC-POS-001 — partial (opening and scale-in). Declared scope: completed in D6.
-- AC-POS-005 — partial (partial fills, Entry Size excess). Declared scope: Not Entered is completed in D6; Not Verifiable, Planned-Leg Terms, and Unplanned Exposure in D10.
+- AC-POS-005 — partial (partial fills, Entry Size excess). Declared scope: Entry Size shortfall is added in D6; Not Entered, Not Verifiable, Planned-Leg Terms, and Unplanned Exposure in D10 (Not Entered needs an untouched second leg; D6 breakdown, section 1.2).
 - AC-LIFE-001 — partial (Open).
 - AC-CALC-001 — partial (Entry Quality). Declared scope: Management Revisions are completed in D17.
 - AC-LIFE-003 — partial (normal reads surface disagreement without repairing it; mutation preparation repairs coherent disagreement with disclosure or rejects incoherent facts, decision 23). Declared scope: Restore-preparation repair is completed in D8.
@@ -268,7 +269,7 @@ Includes the former D3, Manual Marks and ongoing risk/reward (decision 24).
 - AC-MARK-001 — full.
 - AC-REV-003 — full.
 - AC-JOUR-001 — full.
-- AC-REV-001 — partial (Open-at-cutoff eligibility for the latest session). Declared scope: exact-date open, Trades closed after the cutoff, and restatement after correction are completed in D15.
+- AC-REV-001 — partial (Open-at-cutoff eligibility for the latest session). Declared scope: Trades closed after the cutoff are added in D6; exact-date open and restatement after correction are completed in D15.
 - AC-REV-002 — partial (Marks, then Trades). Declared scope: due reflections in each Trade's card are added in D5 (decision 29), and the settlement family in D7.
 - AC-REV-005 — partial (Mark, acknowledgment, Trade fact, existing Action). Declared scope: correction is completed in D15, and changed Daily Bars in D11.
 - AC-REV-006 — partial. Declared scope: due Debt is completed in D5, settlement in D7, a Voided Action in D13, and fact correction in D15.
@@ -327,26 +328,36 @@ Includes the former D3, Manual Marks and ongoing risk/reward (decision 24).
 2. As a trader, I would like to give one Close Reason when I close a Trade by choice, so that I can later study why my trades end.
 3. As a trader, I would like to complete, defer, or decline a Close Review when a Trade closes, so that I can capture the lesson without blocking the close.
 
-**Capability set.** This adds exposure-reducing and closing Position Changes: FIFO Lot Matches, lot-aware fee allocation, and realized P&L, with Realized R shown where 1R exists. The first reduction cuts off the Entry Resolution Point, which resolves Entry Size shortfall and Not Entered. The Trade moves from Open to Closed. Terminal Disposition is shown and kept separate from Close Reason, which is required only with trader agency. Close Review can be completed, deferred, or declined. There is a Closed Trade list, and Daily Review's Exit Action links to recording the exit.
+**Capability set.** This adds exposure-reducing and closing Position Changes: FIFO Lot Matches, lot-aware fee allocation, and realized P&L, with Realized R shown where 1R exists. The first reduction cuts off the Entry Resolution Point, which resolves Entry Size shortfall. Lot Matches are derived, never stored (decision 30). A Sell may not exceed the open quantity at its time, leave the Position flat before later fills, or be recorded on a Closed Trade. The Trade moves from Open to Closed. Terminal Disposition is shown and kept separate from Close Reason, which is required only with trader agency. Close Review can be completed, deferred, or declined, with Reflect now preselected for it and for the exit's own reflection. There is a Closed Trade list. In Daily Review, a Trade closed after the cutoff stays in the walk, every Trade outside the walk with an owed reflection gets a card after it (due or not yet due), and the Exit Action links to recording the exit.
 
 **Introduces**
 
 - *Operations:*
   - Trade Workflows: `recordPositionChange` (reduce and close), with Close Reason and Close Review dispositions.
-  - Trade Analysis: FIFO matching, disposal fee allocation, realized P&L, Terminal Disposition, Entry Size shortfall, and Not Entered.
+  - Trade Analysis: derived FIFO matching, disposal fee allocation, realized P&L, Realized R, Terminal Disposition, Entry Size shortfall; `evaluate` with realized-to-date.
+  - Trade Record: Close Reason facts, Closed lifecycle index, `queryRecords` (`CurrentState` Closed; `StateAtEconomicCutoff` including Trades closed after the cutoff).
+  - Reference Catalog: `query` and `resolve` for Close Reasons.
+  - Journal: Close Review (Complete, Decline, Defer) and resolution of Close Review Debt.
+  - Daily Review: the owed-reflection group after the walk (`getDebt` stays uninstalled).
   - Trade Views and Reporting: Closed list and Detail.
-- *Mechanisms:* recorded active Lot-Match links kept in agreement with analysis.
+- *Mechanisms:* derived Lot Matches (decision 30); the Closed index by Terminal Time.
 - *Seeds:*
-  - Catalog: Close Reasons Target Reached, Stop Triggered, Thesis Invalidated, and Time-Based Exit. Rolled waits for D21.
-  - Journal: the Close Review definition and the Trade Close Source.
-- *Durable representation:* schema change adding Lot-Match links, Close Reason facts, and the Close Review obligation key.
+  - Catalog (seed manifest v2): Close Reasons Target Reached, Stop Triggered, Thesis Invalidated, and Time-Based Exit. Rolled waits for D21.
+  - Journal (seed manifest v5): the Close Review definition and the Trade Close Source.
+- *Durable representation:* schema change (version 5) adding Close Reason facts, each Trade's terminal time with its index, and the Close Review obligation key. No Lot-Match record (decision 30).
 
 **Acceptance**
 
 - AC-POS-001 — full.
 - AC-LIFE-001 — full.
 - AC-POS-004 — partial (trader-directed exit). Declared scope: non-agency settlement is completed in D7.
-- AC-POS-005 — partial (Not Entered).
+- AC-POS-005 — partial (Entry Size shortfall). Declared scope: Not Entered is completed in D10.
+- AC-REV-001 — partial (a Trade closed after the cutoff stays eligible, for the latest session).
+- AC-REV-006 — partial (due Close Review on a Trade outside the walk).
+- AC-CALC-002 — partial (realized-to-date stays a Value beside a Missing Mark).
+- AC-LIFE-003 — partial (Closed lifecycle agreement; the Lot-Match case is reopened by decision 30).
+- AC-JOUR-005, AC-JOUR-007, AC-REF-001 — partial (Close Review key and definition, Trade Close Source, four Close Reasons).
+- AC-REST-004 — partial (re-proven for the schema-5 migration).
 
 **Parallelism.** Once the close command and Closed Detail read model are fixed, FIFO and fee arithmetic, lifecycle and disposition derivation, and the exit/Close Review UI proceed in parallel.
 
@@ -404,7 +415,7 @@ Includes the former D3, Manual Marks and ongoing risk/reward (decision 24).
 **Capability set.**
 
 - *Backup:* full backup export of one snapshot as a file download (Downloaded, with no receipt), and read-back verification that issues a `CompletedBackupReceipt`.
-- *Restore preparation:* treats the artifact as untrusted and is nonmutating. It verifies digests and versions, validates every module section, rederives lifecycle, Lot-Match, and Deviation agreement, migrates supported older versions, and discloses repairs.
+- *Restore preparation:* treats the artifact as untrusted and is nonmutating. It verifies digests and versions, validates every module section, rederives lifecycle and Deviation agreement (Lot Matches are derived, decision 30), migrates supported older versions, and discloses repairs.
 - *Restore application:* a replace-only atomic apply with an exact-target safety receipt or an explicit decline, followed by rerunning readiness.
 - *Recovery Only:* gains backup export and verification.
 - *Warnings:* the not-protected warning now recommends a backup.
@@ -1108,7 +1119,7 @@ At the user's direction (2026-10-11), the clause-by-clause check of each accepta
 1. ~~**AC-RPT-005 needs a Tag Select Prompt.**~~ Resolved by decision 17: Customize Journal prompts (D26) now precedes the Journal Field report (D27).
 2. **AC-REF-001 (D22) includes retire and protection policy behavior.** Retirement arrives in D23, so the scenario may only become full there.
 3. **AC-BACK-001 (D11) and AC-REST-001 (D8) presume corrections, Voids, and every data kind.** Those arrive through D23. They may need to become cumulative obligations, re-proven by each data-adding deliverable.
-4. **AC-LIFE-003 (D8) covers each kind of agreed record.** Planned-Leg Terms and Unplanned Exposure (D10) and Stop Discipline (D12) add new recorded Deviation kinds after D8. ~~Its "mutation is prepared" branch also needs an explicit owner, likely D2.~~ Resolved: D2 owns it (decision 23); D6 adds the Lot-Match fixture case.
+4. **AC-LIFE-003 (D8) covers each kind of agreed record.** Planned-Leg Terms and Unplanned Exposure (D10) and Stop Discipline (D12) add new recorded Deviation kinds after D8. ~~Its "mutation is prepared" branch also needs an explicit owner, likely D2.~~ Resolved: D2 owns it (decision 23). The Lot-Match case is reopened by decision 30, because no Lot Match is stored; D6 adds Closed lifecycle agreement.
 5. **AC-SET-003 (D7) requires Settlement Due on Trade Detail as well as in Daily Review.**
 6. **AC-MARK-002 (D11 and D19) needs Market Data's "deliberate Manual valuation override" save intention.** D11 does not yet list it.
 7. ~~**AC-MARK-004 says historical gaps are visible and nonblocking in Daily Review.**~~ Resolved: D4 lists skipped sessions as optional gaps that do not block completion (decision 27), and claims AC-MARK-004 as partial.
@@ -1119,7 +1130,7 @@ At the user's direction (2026-10-11), the clause-by-clause check of each accepta
 
 ### Raised by the D4 breakdown, for later breakdowns
 
-1. **D6:** extend `StateAtEconomicCutoff` to include Trades closed after the cutoff, because D6 first produces them (D4 A55).
+1. ~~**D6:** extend `StateAtEconomicCutoff` to include Trades closed after the cutoff, because D6 first produces them (D4 A55).~~ Resolved in D6 (A88).
 2. **D7:** AC-REV-002's "missed Review … the same exact date reopens" is read as reopening an unfinished Review while it is still the latest session, because missed sessions are not reviewed (decision 27). Confirm that reading when D7 marks the scenario full.
 3. **D10:** AC-CALC-002's fixture needs a partial exit so that realized-to-date is nonzero. AC-CALC-003's "one crossed Stop and one reached Target" at once needs structure-value conditions, since one Long Stock Trade cannot cross both.
 4. **D11:** `MarketData.recover` without a provider is installed in D4. D11 adds the Marketdata.app adapter inside it and the provider-configuration operations, rather than introducing `recover`.
@@ -1128,7 +1139,15 @@ At the user's direction (2026-10-11), the clause-by-clause check of each accepta
 
 ### Raised by the D5 breakdown, for later breakdowns
 
-1. **D6:** decide where a Debt whose Trade is not walked appears under decision 29 (a card for that Trade, or a residual list through `getDebt`), with its integration case. Also settle the user's direction that the Review covers positions closed that day: the spec makes only Trades Open at the session's close eligible (Daily Review, "Date, eligibility, and ordering"; AC-REV-001), so a Trade closed during the session is not walked unless that rule is reopened too. Close Review's Defer reuses D5's Debt record, due rule (decision 28), and resolution paths.
+1. ~~**D6:** decide where a Debt whose Trade is not walked appears under decision 29 (a card for that Trade, or a residual list through `getDebt`), with its integration case. Also settle the user's direction that the Review covers positions closed that day: the spec makes only Trades Open at the session's close eligible (Daily Review, "Date, eligibility, and ordering"; AC-REV-001), so a Trade closed during the session is not walked unless that rule is reopened too. Close Review's Defer reuses D5's Debt record, due rule (decision 28), and resolution paths.~~ Resolved in D6 (P19, P20): eligibility is unchanged, and every Trade outside the walk with an owed reflection, due or not, gets a card after the walk.
 2. **D7:** mark AC-REV-002 full against the ordering reopened by decision 29: Marks, then settlement, then Trades with reflections in their cards.
 3. **D13:** Voiding the sole settling Entry reopens the Debt; the Journal section validator gains that transition.
 4. **D20:** Management Debt needs its place in the Trade card under decision 29 (the spec ranks it ahead of Journal-only Debt), plus `NeedsTradeWorkflow` from `Journal.save` and `ResolveReviewDebt`.
+
+### Raised by the D6 breakdown, for later breakdowns
+
+1. **D7:** AC-REV-002's order becomes Marks, settlement, the Trade walk, then the owed-reflection group (D6 P20). An Expiration that closes a Trade still creates a Close Review obligation, with no Close Reason. D6's position-path rules (P22) and derived FIFO (decision 30) apply to option Lots.
+2. **D8:** Restore verifies lifecycle and Deviation agreement only (decision 30), and is the first path that can repair a Closed Trade's lifecycle disagreement, because no Position Change is accepted on flat facts (D6 P22, A96).
+3. **D10:** Not Entered, which needs an untouched second Planned Leg (D6 section 1.2).
+4. **D15:** correcting or Voiding an exit can reopen a Closed Trade; decide how its Close Reason and Close Review outcome are retired, since D6 rejects new Position Changes on Closed Trades (P22).
+5. **D24:** the cumulative realized-dollar curve reads derived Lot-Match realization increments, and its tie order uses the derived identity (opening Execution, disposing Execution), not a stored Lot Match identity (decision 30).
