@@ -9,7 +9,7 @@ silently amend `specs/`.
 
 ---
 
-## D1 — Journal Anchor resolution statuses at `save`
+## PD1 — Journal Anchor resolution statuses at `save`
 
 **Status:** settled by user decision, 2026-10-10.
 
@@ -79,7 +79,7 @@ done.
 
 ---
 
-## D2 — Review staleness results: `ReviewChanged` vs `Conflict`
+## PD2 — Review staleness results: `ReviewChanged` vs `Conflict`
 
 **Status:** settled by user decision, 2026-10-10.
 
@@ -147,7 +147,7 @@ the one-outcome-per-obligation-key rule, and no acceptance scenario change.
 
 ---
 
-## D3 — Approved implementation stack
+## PD3 — Approved implementation stack
 
 **Status:** settled by user decision, 2026-10-10 (planning-protocol Phase 2). Exact versions are pinned
 later, in the plan (Phase 6 requires the selected stack/version profile).
@@ -227,7 +227,7 @@ asserts nothing about atomicity, durability, or migration safety that items 1–
 
 ---
 
-## D4 — Offline delivery: service worker mechanisms stay in the foundation
+## PD4 — Offline delivery: service worker mechanisms stay in the foundation
 
 **Status:** settled by user decision, 2026-10-10. Affirms [ADR 0008](../specs/adr/0008-pwa-delivery-and-runtime-readiness.md) unamended.
 
@@ -305,7 +305,7 @@ requirement, not a revision of it.
 
 ---
 
-## D5 — Non-canonical option structures use shape templates, not seeds
+## PD5 — Non-canonical option structures use shape templates, not seeds
 
 **Status:** settled by user decision, 2026-10-10.
 
@@ -323,7 +323,7 @@ seeds … no Account, Institution, generic Custom, Other, or settlement-as-reaso
 Butterfly, Broken-Wing Butterfly, and Condor are supported as **shape templates** offered in the
 shape-creation flow. A template produces the trader's own typed Strategy through
 `ReferenceCatalog.save`. The canonical seed set remains exactly eleven, with Iron Condor as the last
-seed. D13 covers the three templates, asymmetric wings, the Iron Condor seed, and four-leg
+seed. D12 covers the three templates, asymmetric wings, the Iron Condor seed, and four-leg
 risk/reward.
 
 ### Rationale
@@ -351,7 +351,7 @@ so the cost is not justified.
 
 ---
 
-## D6 — Different-strike option combos are supported by strike order; true synthetics are not
+## PD6 — Different-strike option combos are supported by strike order; true synthetics are not
 
 **Status:** recorded future intent, 2026-10-10. Not scheduled in the current 22-deliverable sequence.
 
@@ -403,7 +403,7 @@ equality constraint is added, so a true synthetic cannot be validated as a shape
 
 ---
 
-## D8 — `Given`-setup mutation of derived state and authoritative facts
+## PD8 — `Given`-setup mutation of derived state and authoritative facts
 
 **Status:** settled by user decision, 2026-10-11.
 
@@ -482,13 +482,14 @@ and change cross-branch comparability; that has not been done.
 
 ### Numbering note
 
-D7 is unassigned. `vertical-deliverables.md:532` referred to "decision D7" for the content recorded
-above as **D6**; that reference is corrected, and this decision takes D8 so that no already-reviewed
-record is renumbered.
+Planning decisions were renumbered with a `PD` prefix on 2026-10-11 so that a planning decision can
+never be mistaken for a deliverable; PD7 is unassigned. `vertical-deliverables.md` referred to
+"decision D7" for the content recorded above as **PD6**; that reference is corrected, and this
+decision took D8 — now **PD8** — so that no already-reviewed record would be renumbered.
 
 ---
 
-## D9 — Stop and target condition model across the option arc
+## PD9 — Stop and target condition model across the option arc
 
 **Status:** settled by user decision, 2026-10-11.
 
@@ -651,7 +652,7 @@ of its deliverable.
 
 ---
 
-## D10 — Fees are captured as facts and excluded from calculations
+## PD10 — Fees are captured as facts and excluded from calculations
 
 **Status:** settled by user decision, 2026-10-11.
 
@@ -719,7 +720,7 @@ effect on derived values is removed.
 
 ---
 
-## D11 — Terminal Disposition's structured shape and the shared mechanism vocabulary
+## PD11 — Terminal Disposition's structured shape and the shared mechanism vocabulary
 
 **Status:** settled by user decision, 2026-10-11. **Branch-local**, not promoted into `specs/`.
 
@@ -768,7 +769,7 @@ D6 §1 decision 2, T4 and T16 record the shape; D6 §8 item 9 now discloses only
 
 ---
 
-## D12 — The `Rolled` Close Reason is selectable before any Roll workflow exists
+## PD12 — The `Rolled` Close Reason is selectable before any Roll workflow exists
 
 **Status:** settled by user decision, 2026-10-11. **Branch-local**, not promoted into `specs/`.
 
@@ -823,7 +824,7 @@ Close Reason, which D6 T4 asserts with a reason-independence case.
 
 ---
 
-## D13 — A reopened Debt keeps its identity and its original due time
+## PD13 — A reopened Debt keeps its identity and its original due time
 
 **Status:** settled by user decision, 2026-10-11. **Branch-local**, not promoted into `specs/`.
 
@@ -870,7 +871,7 @@ unchanged. D5 §1 decision 2 already chose this shape and now cites this decisio
 
 ---
 
-## D14 — Attention ordering follows boundary proximity, not pressure descending
+## PD14 — Attention ordering follows boundary proximity, not pressure descending
 
 **Status:** settled by user decision, 2026-10-11. **Branch-local deviation** from a frozen product
 sentence, disclosed rather than promoted.
@@ -916,7 +917,7 @@ boundary is near the top.
   Stop/Target management (`acceptance-contract.md:36`), so the ordinary case has a monetary Target and
   a finite span. A Trade with no evaluable monetary Target cannot form the span, so it is Not
   Comparable with the missing boundary named; `StructureValueCondition` could produce that case, is
-  reserved by decision D9, and is not installed before D8. That edge is disclosed rather than
+  reserved by decision PD9, and is not installed before D8. That edge is disclosed rather than
   resolved.
 
 ### Not changed
@@ -928,15 +929,15 @@ No operation, no stored state, no band name and no task-family order changes. D4
 
 ## Still open
 
-Specification gaps from intake remain limited to D1 and D2. D3 records the approved stack, D4 affirms
-the frozen offline-delivery requirement, D5–D6 record interpretations that avoid reopening frozen
-definitions, D8 records the `Given`-setup mutation rules, including its three tiers and the
-prohibition on using authoritative-fact mutation to establish ordinary behaviour, D9 records the stop
-and target condition model across the option arc, and D10 records that fees are captured as facts and
-excluded from every calculation. D11 fixes the Terminal Disposition shape and the shared mechanism
-vocabulary, D12 records that the `Rolled` Close Reason is selectable by policy before any Roll
-workflow exists, D13 records that a reopened Debt keeps its identity and its original due time, and
-D14 orders the attention walk by boundary proximity instead of pressure descending. The D3
+Specification gaps from intake remain limited to PD1 and PD2. PD3 records the approved stack, PD4
+affirms the frozen offline-delivery requirement, PD5–PD6 record interpretations that avoid reopening
+frozen definitions, PD8 records the `Given`-setup mutation rules, including its three tiers and the
+prohibition on using authoritative-fact mutation to establish ordinary behaviour, PD9 records the stop
+and target condition model across the option arc, and PD10 records that fees are captured as facts and
+excluded from every calculation. PD11 fixes the Terminal Disposition shape and the shared mechanism
+vocabulary, PD12 records that the `Rolled` Close Reason is selectable by policy before any Roll
+workflow exists, PD13 records that a reopened Debt keeps its identity and its original due time, and
+PD14 orders the attention walk by boundary proximity instead of pressure descending. The PD3
 verification items must be resolved inside the plan.
 
 The vertical deliverable list is recorded in [vertical-deliverables.md](vertical-deliverables.md).
@@ -946,7 +947,7 @@ The task-level breakdowns for D1–D7 are drafted under
 failures and zero warnings across them. The acceptance-to-evidence matrix (planning-protocol Phase 4)
 is not yet drafted.
 
-### Open questions raised by D8
+### Open questions raised by PD8
 
 - **Can a correction be committed against a Trade whose base state is already incoherent?**
   `trade-record.md:62` says `prepareChange` "validates structural coherence" without stating whether

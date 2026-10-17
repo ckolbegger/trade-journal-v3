@@ -289,7 +289,7 @@ Broken-Wing Butterfly, and Condor are first-class in use but arrive as templates
 create the trader's own typed Strategy, so the seeded count stays exactly eleven and
 AC-REF-001 is not reinterpreted. Asymmetric wings need no special mechanism: the shape
 vocabulary embeds no wing-width defaults (`reference-catalog.md:80`), and Iron Condor
-already establishes that wing widths may differ. See decision D5 in
+already establishes that wing widths may differ. See decision PD5 in
 [planning-decisions-2026-10-10.md](planning-decisions-2026-10-10.md).
 
 ## D13 — Roll a position into a new plan
@@ -505,7 +505,7 @@ The two condition kinds are **underlying-price** and **structure-value** Stops a
 independent OR alternatives, every condition stays visible, the headline distance uses the nearest
 nonnegative monetary boundary and becomes zero when any Stop is crossed, and crossing never changes
 Position or Lifecycle State (`glossary.md:159`, `trade-analysis.md:77-81`). The model in full, including
-the type, is recorded as decision **D9** in
+the type, is recorded as decision **PD9** in
 [planning-decisions-2026-10-10.md](planning-decisions-2026-10-10.md).
 
 The condition set is **plural from D2**, because `trade-analysis.md:57` requires the frozen Plan Baseline
@@ -530,7 +530,7 @@ Each deliverable picks up the following, and a later breakdown must not re-deriv
 ### Fees
 
 Every Execution records its actual fee as a required fact, and **no fee enters any calculation**
-(decision **D10** in [planning-decisions-2026-10-10.md](planning-decisions-2026-10-10.md)). Lot-aware
+(decision **PD10** in [planning-decisions-2026-10-10.md](planning-decisions-2026-10-10.md)). Lot-aware
 allocation, the consumed/unconsumed opening-fee split, fee-adjusted P&L, Entry Quality's allocated-fee
 component, and settlement cost adjustments to basis and proceeds are all not installed. The fee field
 must stay and must default to an explicit zero, so that "no fee" is an affirmative fact rather than an
@@ -583,7 +583,7 @@ participate in Workspace-owned flows).
   and AC-REF-001 is untouched.
   A **true equal-strike synthetic is not supported** as a validated shape: the frozen vocabulary grants
   strike *order* but not *equality*, so the shape could not enforce the property that defines a
-  synthetic. See decision D6 in
+  synthetic. See decision PD6 in
   [planning-decisions-2026-10-10.md](planning-decisions-2026-10-10.md).
   Adding this will renumber the deliverables after its insertion point; the current 22-deliverable
   sequence stands until then.

@@ -77,12 +77,12 @@ These are decisions the frozen contracts do not settle. Each is a branch-local p
 consistent with `specs/`, not an amendment to `specs/`. They are listed in the order the brief gives
 them, with the consequence of getting each wrong.
 
-1. **`assessPlan`'s input shape for a long stock Plan — settled by decision D9.** `trade-analysis.md:51-57`
+1. **`assessPlan`'s input shape for a long stock Plan — settled by decision PD9.** `trade-analysis.md:51-57`
    fixes the baseline *policy* but never the inputs. The input is
    `PlanAssessmentInput { strategyShape; intendedEntry: Price; plannedLegs: ordered PlannedLeg[] with
    Instrument, signed quantity and either an exact contract or complete objective criteria;
    originalManagement: ordered PlanCondition[]; economicTime }`. The condition type is fixed in full by
-   decision **D9** in `plan/planning-decisions-2026-10-10.md`: a discriminated union on `kind` —
+   decision **PD9** in `plan/planning-decisions-2026-10-10.md`: a discriminated union on `kind` —
    `UnderlyingPriceCondition` carrying an exact `boundaryPrice` plus a frozen `monetaryBoundary`, and
    `StructureValueCondition` carrying a `scope` and a resolved `boundaryValue` — with every condition
    carrying a `conditionId`, a `role` of Stop or Target, and a `ConditionBasis` whose `comment` is the
@@ -1355,7 +1355,7 @@ claim", not as coverage of the whole scenario.
 | AC-PLAN-001 | Covered | One atomic commit creating the Trade, the frozen Plan and Planned Legs, frozen original management, stored `Planned` lifecycle, positive 1R equal to the Plan Baseline, and one immutable completed Plan Reflection sharing its Thesis/Invalidation values with the Plan: T3, T4, T6, T9, T10, T13, T14, T15, T19, T20. Post-restart query evidence. |
 | AC-PLAN-002 | Covered | Each typed rejection path, with the returned issues and unchanged Trade Record, Journal and Catalog revisions, and no Trade, candidate identity, Entry, Debt or index membership: T5, T13, T14, T19. |
 | AC-LIFE-001 | Partial — the `Planned` step and its index membership only; the opening facts that reach `Open` land at D3 and the disposing facts that reach `Closed` at D6. | T3, T4, T7, T19. |
-| AC-LIFE-003 | Partial — the read-side half for stored Lifecycle State: a controlled integrity fixture makes stored lifecycle disagree with the effective facts, normal reads surface or block on the structured disagreement, and no read repairs it; the authorized-preparation half, which derives a disclosed repair for coherent facts or rejects incoherent facts, is Restore's and completes at D21. | Test-only mutation of authoritative derived state under decision D8 tier 2, written through the real persistence seam and recorded alongside the correct derivation so the finding is shown to be detected rather than tolerated; read result and absence of a read-time write: T3, T7, T17, T19. |
+| AC-LIFE-003 | Partial — the read-side half for stored Lifecycle State: a controlled integrity fixture makes stored lifecycle disagree with the effective facts, normal reads surface or block on the structured disagreement, and no read repairs it; the authorized-preparation half, which derives a disclosed repair for coherent facts or rejects incoherent facts, is Restore's and completes at D21. | Test-only mutation of authoritative derived state under decision PD8 tier 2, written through the real persistence seam and recorded alongside the correct derivation so the finding is shown to be detected rather than tolerated; read result and absence of a read-time write: T3, T7, T17, T19. |
 | AC-RESP-001 | Partial — `confirmPlan` supplies the creation member of the contract, returning the committed Trade projection, the completed Entry and the derivation the command had to establish; the update and bounded multi-subject members land at D4 and D3. | T15, T19. |
 | AC-JOUR-007 | Partial — the Plan Reflection Entry Type and the Plan Confirmation Source are seeded with their exact initial definition and workflow-critical roles, and repeat seeding is idempotent; the remaining types and Sources arrive at D17. | T8, T11, T19. |
 | AC-JOUR-001 | Partial — the confirmation form stores nothing until Save and a cancelled or abandoned form leaves no Entry, version, Debt or draft; direct Journal save is not installed until D5. | T16, T19. |
@@ -1407,7 +1407,7 @@ rerun the complete cumulative unit and integration suites and repeat the gate wi
 (`planning-protocol.md:131-132`). A defect fixed without a failing test first is not a closed defect
 for this deliverable.
 
-## 7. planning-decisions D3 verification items inside this deliverable
+## 7. planning-decisions PD3 verification items inside this deliverable
 
 The three items below are the parts of the approved-stack verification list
 (`planning-decisions-2026-10-10.md:198-214`) that D2 is the first deliverable able to prove. Each is
@@ -1432,7 +1432,7 @@ neither weakens nor re-owns them.
 
 ## 8. Open items and risks
 
-1. **The `assessPlan` input shape is settled by decision D9.** The contract fixes the baseline
+1. **The `assessPlan` input shape is settled by decision PD9.** The contract fixes the baseline
    *policy* (`trade-analysis.md:57`) but never the inputs. §1 decision 1 records the concrete input and
    points at D9 for the condition type, so T5 can be implemented without further alignment. The blast
    radius is unchanged: D3, D4, D11, D12 and D14 all consume the frozen Plan facts this shape defines,
@@ -1445,15 +1445,15 @@ neither weakens nor re-owns them.
    D2 creates no Lot Match. `trade-record.md:7` persists "active Lot-Match links" and
    `trade-analysis.md:63` reports disagreement against recorded links, so the recorded side is
    required; `overview.md:18` and `delivery-contract.md:87-99` make the same records rebuildable, so
-   they are durable but non-authoritative. D3 decides the representation, and decision **D8** governs
+   they are durable but non-authoritative. D3 decides the representation, and decision **PD8** governs
    the test-only fixture that induces a disagreement. D2's obligation is only to leave the
    representation able to hold recorded links without a second migration.
-3. **Inducing a stored-lifecycle disagreement is settled by decision D8.** T7's integration case and
+3. **Inducing a stored-lifecycle disagreement is settled by decision PD8.** T7's integration case and
    T17's disagreement flow need an induced disagreement between stored Lifecycle State and the
    effective facts, which no domain command can produce. `acceptance-contract.md:7` as literally
    written permits test-only mutation only of private projections in reconstruction scenarios, which
    would have made `AC-LIFE-003` untestable despite the scenario requiring exactly this fixture.
-   Decision **D8** (tier 2) settles it: authoritative derived state may be mutated for
+   Decision **PD8** (tier 2) settles it: authoritative derived state may be mutated for
    validation/error scenarios, through the real persistence seam, disclosed with the correct
    derivation, and never to establish ordinary behaviour. `AC-LIFE-003` is now claimed as Partial in
    §5 and completes at D21.

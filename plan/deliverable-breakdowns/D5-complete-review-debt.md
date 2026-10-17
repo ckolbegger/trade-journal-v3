@@ -88,7 +88,7 @@ The three user stories this deliverable closes (`plan/vertical-deliverables.md:1
    (`journal.md:129`, `journal.md:135`). Tradeoff: reopen restores the *same* Debt identity with its
    original trigger-time snapshot rather than creating a fresh obligation, which keeps one-key-one-
    outcome true but means a reopened Debt's due time is its original due time, not a new one.
-   **Settled by decision D13.** `Defer` creates the Debt with its trigger-time due semantics and
+   **Settled by decision PD13.** `Defer` creates the Debt with its trigger-time due semantics and
    `journal.md:137` states that later definition changes do not alter what is owed, so reopen restores
    those semantics instead of assigning a new due time. The visible consequence — a Debt reopened
    after its due time is immediately due at the next Review cutoff and keeps Review completion
@@ -98,7 +98,7 @@ The three user stories this deliverable closes (`plan/vertical-deliverables.md:1
    Review) passes through prepared effects and never direct `save` (`journal.md:163`,
    `journal.md:188`). Tradeoff: the direct `save` seam must reject a workflow-required type with a
    typed no-write result rather than trusting the UI to not offer it.
-4. **The anchor-resolution reading from decision D1** (`planning-decisions-2026-10-10.md:12-78`):
+4. **The anchor-resolution reading from decision PD1** (`planning-decisions-2026-10-10.md:12-78`):
    `Effective`, `Superseded` and `Voided` anchors all attach and carry their resolution status in
    the accepted result's projection; only `Unknown` is a typed no-write rejection naming the
    unresolved anchor. Edit and Addendum are never blocked because an anchor has since become
@@ -757,7 +757,7 @@ three outcomes of this member: resolving Journal-only Debt creates an Entry and 
 together, records an allowed explicit decline, or returns `NeedsTradeWorkflow` with no write.
 `daily-review.md:86` fixes the accepted result: the saved outcome, the revised progress and
 completion result, and the next step under the same post-commit facts, so the caller continues
-without calling `open` again. Decision D2 in `planning-decisions-2026-10-10.md:82-146` fixes the
+without calling `open` again. Decision PD2 in `planning-decisions-2026-10-10.md:82-146` fixes the
 staleness mapping this command follows: `ReviewChanged` is review-scope, `Conflict` is subject-scope,
 every stale binding is reported rather than the first, and there is no third result name.
 
@@ -779,7 +779,7 @@ describe("DailyReview.save refuses workflow-routed Debt with the exact route")
   it should write no Entry, no decline, no settlement and no Debt transition when that routing result is returned, and report every affected revision unchanged
   it should not accept prose in place of the required workflow even when the prose would satisfy every Prompt of the stored form
 
-describe("DailyReview.save reports every stale binding under the decision D2 mapping")
+describe("DailyReview.save reports every stale binding under the decision PD2 mapping")
   it should return ReviewChanged carrying the refreshed review binding and which items changed when the assembled review view itself lost coherence
   it should return Conflict enumerating every stale subject binding, not only the first, when the obligation key, the rendered form revision and the expected Debt revision are all stale
   it should return Conflict carrying the refreshed frames and the new market data snapshot identity when only the evidence binding is stale
@@ -1219,7 +1219,7 @@ before the production behaviour exists (`planning-protocol.md:104-111`). For thi
   confirmed to fail for the reported defect; only then is the fix implemented and the complete
   cumulative unit and integration suites rerun (`planning-protocol.md:131`).
 
-## 7. planning-decisions D3 verification items inside this deliverable
+## 7. planning-decisions PD3 verification items inside this deliverable
 
 | Item | Where it is resolved | Status |
 |---|---|---|
@@ -1240,13 +1240,13 @@ is owned by D2; this deliverable re-exercises them without claiming new ownershi
 - **`AC-REV-002` and `AC-REV-006` remain Partial.** AC-REV-002's Mark family is D4's, and AC-REV-006's
   reversal by correcting facts arrives with D15. A Partial row is not a pass, and neither scenario is
   presented as complete after this deliverable.
-- **The Delete/reopen interaction depends on decision D1's anchor-status reading.** That reading is
+- **The Delete/reopen interaction depends on decision PD1's anchor-status reading.** That reading is
   recorded in `plan/planning-decisions-2026-10-10.md:12-78` and is **branch-local**: it is a
   behavioural interpretation of `journal.md:173-179` and is not a `specs/` amendment. Reopen-on-Void
   inherits the same dependence, because the Void that reopens a Debt is the same visible-version
   mechanism whose anchor status the decision fixes. If the reading is to bind every implementation
   branch, it must become a `specs/adr/` amendment, which has not been done.
-- **`fake-indexeddb` fidelity gap.** Decision D3 records the substitution (`planning-decisions-2026-10-10.md:170`)
+- **`fake-indexeddb` fidelity gap.** Decision PD3 records the substitution (`planning-decisions-2026-10-10.md:170`)
   and D1's harness discloses it. The specific gaps the Debt, decline and reopen assertions rely on
   are: transaction abort and rollback timing after an injected failure; whether an aborted
   multi-store transaction leaves no partial obligation-key or decline write; index ordering stability
@@ -1254,7 +1254,7 @@ is owned by D2; this deliverable re-exercises them without claiming new ownershi
   transition across a simulated restart. `T17` repeats the durability-critical reopen case against a
   real browser engine, and `T16` runs entirely in a real engine, so the gap is narrowed rather than
   papered over.
-- **The deferred pinned version profile.** The stack set is fixed by decision D3
+- **The deferred pinned version profile.** The stack set is fixed by decision PD3
   (`planning-decisions-2026-10-10.md:150-171`) but the exact version numbers are pinned at Phase 6
   and are not invented here. Every command in section 3 assumes only the fixed set: TypeScript strict,
   Vite, React, Vitest, `fake-indexeddb`, and Playwright against `pnpm dev` reading `DEV_PORT`.
@@ -1267,7 +1267,7 @@ is owned by D2; this deliverable re-exercises them without claiming new ownershi
   contracts require, and rejects unsupported dimensions as typed no-read results. The remainder is
   needed by D17 and D19 and is not claimed here.
 - **A reopened Debt keeps its original due time, and is therefore immediately due.** `journal.md:129`
-  reopens "that same Debt" without stating whether a new due time is assigned; decision D13 settles it
+  reopens "that same Debt" without stating whether a new due time is assigned; decision PD13 settles it
   as the original one, because `Defer` creates the Debt with its trigger-time due semantics and
   `journal.md:137` forbids later changes from altering what is owed, so reopen restores a frozen fact
   rather than creating a new due source. The consequence is deliberate and visible: a Debt reopened

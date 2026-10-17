@@ -93,9 +93,9 @@ df0e3fb  settle RecordedSequence and record the remaining agenda
 1. `AGENTS.md` (worktree root) — behavioural guidelines.
 2. `plan/alignment-agenda-2026-10-11.md` — **the worklist.** Items 5–13 each state the question, what
    the frozen text fixes, the options and a recommendation. Sections 4 and 5 hold the two questions
-   decision D8 raised and the five standing deferrals.
-3. `plan/planning-decisions-2026-10-10.md` — decisions D1–D6 and **D8–D10**. All binding on this
-   branch. Read **D8** (given-setup mutation), **D9** (stop and target conditions) and **D10** (fees)
+   decision PD8 raised and the five standing deferrals.
+3. `plan/planning-decisions-2026-10-10.md` — decisions PD1–PD6 and **PD8–PD10**. All binding on this
+   branch. Read **PD8** (given-setup mutation), **PD9** (stop and target conditions) and **PD10** (fees)
    before touching anything they cover.
 4. `plan/vertical-deliverables.md` — the authority for deliverable numbering, the `AC:` line per
    deliverable, and the cross-cutting threads (see the new **Fees** and **Stop and target
@@ -109,9 +109,11 @@ df0e3fb  settle RecordedSequence and record the remaining agenda
 **Not authority** (they predate ADRs 0009/0010): `trade-journal-v3-spec-consolidation-handoff-2026-08-26.md`
 and `spec-handoff-2026-09-11.md`, both in the worktree root.
 
-**Naming caution:** "D1–D6" in the planning-decisions file means *planning decisions*. "D1–D22"
-everywhere else means *deliverables*. D8, D9 and D10 happen to be planning decisions; there is no
-collision yet, but read the context.
+**Naming:** planning decisions carry a `PD` prefix (PD1–PD14) and deliverables are `D1–D22`. The
+planning decisions were renumbered from a bare `D` on 2026-10-11, because the two series had begun to
+collide: planning decision D11 and deliverable D11 both existed. The commit subjects quoted in §1 keep
+their original wording, so `D8`, `D9` and `D10` inside that code block are the pre-rename names of
+PD8, PD9 and PD10.
 
 ---
 
@@ -129,8 +131,8 @@ text, the options and a recommendation are written out.
 | 5 | A reopened Debt: same identity and due time, or a new one? | D5 §1 decision 2, D4 due-ordering |
 | 6 | Terminal Disposition's exact structured shape | D6 §1 decision 2, T4/T16; extended by D8–D13, rendered by D18, reported by D19 |
 | 7 | Attention-band thresholds and the pressure/reward edges | D4 §1 decision 2, T13 |
-| 8 | `ReviewChanged` vs `Conflict`: keep branch-local, or promote to `specs/adr/`? | decision D2 in `planning-decisions`; affects D4 |
-| 9 | Anchor resolution at `save`: the same promote-or-not question | decision D1 in `planning-decisions`; affects D5 |
+| 8 | `ReviewChanged` vs `Conflict`: keep branch-local, or promote to `specs/adr/`? | decision PD2 in `planning-decisions`; affects D4 |
+| 9 | Anchor resolution at `save`: the same promote-or-not question | decision PD1 in `planning-decisions`; affects D5 |
 | 10 | Seed scope vs selector scope, including IdeaSource in manifest v1 | D1 §1 and T23; D2 §1 decision 7 |
 | 11 | The `Rolled` Close Reason existing before any Roll workflow | D6 §1 decision 6, T11/T15; D13 flips it on |
 | 12 | Architecture batch — five internal choices worth one sign-off | D1 capacity, D3 read path, D4 cutoff index, D5 `Journal.query`, the D4:T8 edge |
@@ -181,7 +183,7 @@ commit per settled item keeps the review diffable; that is how items 1–4 were 
   query count. The gap is disclosed, not hidden.
 - **A Partial coverage row is never a pass.** Partial rows are the mechanism for honesty here; do not
   let one be read as satisfying its scenario.
-- **Fees are captured and excluded** (decision D10). Do not reintroduce allocation, a consumed-fee
+- **Fees are captured and excluded** (decision PD10). Do not reintroduce allocation, a consumed-fee
   split, or fee-adjusted P&L without reopening the decision.
 
 ### Known coverage facts, so they are not re-derived as defects
@@ -264,7 +266,7 @@ Traps that will bite if you edit a breakdown:
 
 - `DEV_PORT=5177` in the gitignored `.env.local`. Nothing consumes it yet; when an app exists, both
   `vite.config.ts` and Playwright must read it rather than hardcoding `5173`.
-- Approved stack (decision D3): TypeScript strict + Vite + React, **IndexedDB** behind the
+- Approved stack (decision PD3): TypeScript strict + Vite + React, **IndexedDB** behind the
   Persistence/Transaction seam, `decimal.js` for Money/Price/Quantity, an injected `Clock` plus a
   versioned US session calendar, Workbox-assisted service worker, Vitest + `fake-indexeddb` (Node) and
   Playwright (browser), axe-core for accessibility. **Exact versions are pinned at freeze, not yet** —

@@ -943,7 +943,7 @@ that test is run and confirmed red for the reported defect, then the fix is impl
 complete cumulative unit and integration suites are rerun (`planning-protocol.md:131`). No
 implementation change happens before that reproducing test exists.
 
-## 7. planning-decisions D3 verification items inside this deliverable
+## 7. planning-decisions PD3 verification items inside this deliverable
 
 `planning-decisions-2026-10-10.md:198-214` lists the items that must be verified before the plan is
 frozen. D7 owns parts of two of them and re-exercises, without claiming ownership of, the rest.
@@ -985,7 +985,7 @@ owned by D2; this deliverable re-exercises them without claiming ownership.
    real engine's behavior precisely, which weakens the T8 concurrency proof. The real-engine
    counterpart is therefore mandatory, not optional: T8 and T13 run the concurrent-mutation isolation
    flow in Playwright against a real engine and a real IndexedDB, and the run note must disclose which
-   leg produced each result. Item 9 of the D3 verification list
+   leg produced each result. Item 9 of the PD3 verification list
    (`planning-decisions-2026-10-10.md:214`) requires exactly this.
 6. **The deferred pinned version profile.** The concrete `package.json` scripts, test-runner version,
    Playwright version, digest library, and the artifact media type/extension are pinned at the Phase 6

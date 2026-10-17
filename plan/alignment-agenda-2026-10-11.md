@@ -17,7 +17,7 @@ Worktree: `/Users/ckolbegger/src/trade-journal-v3/worktrees/deepseek-v41-flash`
 | `audit-breakdown-coverage.mjs` | 0 failure(s), 0 warning(s) |
 | Spec citations | 1,174 checked, none out of range |
 | Acceptance scenarios | 32 of 67 claimed by D1–D7; 35 belong to D8–D22 |
-| D3 verification items | D1 owns 3, 4, 6, 9; D2 owns 5; item 8 owned and re-verified by all seven; items 1 and 7 deferred (D21, D20); item 2 deferred, no scale owner |
+| PD3 verification items | D1 owns 3, 4, 6, 9; D2 owns 5; item 8 owned and re-verified by all seven; items 1 and 7 deferred (D21, D20); item 2 deferred, no scale owner |
 
 Commands, run from the worktree root:
 
@@ -34,19 +34,19 @@ Both must report zero failures **and zero warnings**. Warnings do not fail the e
 
 | # | Item | Outcome | Recorded in |
 |---|---|---|---|
-| 1 | Lot-Match / Deviation records, and whether `AC-LIFE-003`'s controlled integrity fixture is legal under `acceptance-contract.md:7` | Records are durable but non-authoritative; `Given`-setup mutation is permitted at three tiers under six conditions; `AC-LIFE-003` is Partial at D2/D3 with **D21** as the completing owner | decision **D8** |
-| 2 | `assessPlan`'s input shape | Condition model fixed: discriminated union on `kind`, `conditionId`, `role`, `monetaryBoundary` on every underlying-price condition, view-only `comment`; plural OR set from D2; `StructureValueCondition` reserved, not installed before D8 | decision **D9**; applied to D2 and D4 |
-| 3 | Fee handling | **Superseded.** Fees are captured as a fact and excluded from every calculation; the cent-apportionment rule is **withdrawn, not solved** | decision **D10** |
+| 1 | Lot-Match / Deviation records, and whether `AC-LIFE-003`'s controlled integrity fixture is legal under `acceptance-contract.md:7` | Records are durable but non-authoritative; `Given`-setup mutation is permitted at three tiers under six conditions; `AC-LIFE-003` is Partial at D2/D3 with **D21** as the completing owner | decision **PD8** |
+| 2 | `assessPlan`'s input shape | Condition model fixed: discriminated union on `kind`, `conditionId`, `role`, `monetaryBoundary` on every underlying-price condition, view-only `comment`; plural OR set from D2; `StructureValueCondition` reserved, not installed before D8 | decision **PD9**; applied to D2 and D4 |
+| 3 | Fee handling | **Superseded.** Fees are captured as a fact and excluded from every calculation; the cent-apportionment rule is **withdrawn, not solved** | decision **PD10** |
 | 4 | `RecordedSequence` | One per-Workspace monotonic counter, assigned at commit in the candidate's **declared member order**; the candidate carries that order and `derive` tie-breaks with it because no sequence exists during preparation | D3 §1 decision 3, T2 |
-| 5 | A reopened Debt: same identity and due time, or a new one | Same identity **and** original due time. Reopen is a state transition of the obligation key, not a second `Defer`, so it restores the trigger-time due semantics that `journal.md:137` freezes; a reopened Debt is therefore immediately due and keeps Review completion Incomplete until answered again. (c) would need unnamed retirement evidence; (b) a second due source or a mutation of a frozen fact. | decision **D13**; D5 §1 decision 2, T7, T10, §8 |
-| 6 | Terminal Disposition's exact structured shape | Result union `Applicable(members) \| NotApplicable(stableReason, structuredDetails)`; members `{ mechanism, sourceFactIdentity, instrument, disposedQuantity }`; exact positive magnitude; `FactOrder` member order; `Mixed` derived rather than carried; one shared five-kind `MechanismKind` | decision **D11**; D6 §1 decision 2, T4/T16, §8 item 9 |
-| 7 | Attention-band thresholds and the pressure/reward edges | **Reverses the spec's within-band sort.** Band 4 = comparable and within `nearBoundaryFraction` (default 0.25) of the `Target − Stop` span from either selected boundary; band 5 = mid-span; within a band, nearest boundary first, then Last Activity, then identity. `daily-review.md:32`'s pressure-descending sort is one-sided — risk plus reward is the constant span, so it is nearest-Target-first and sorts a near-Stop Trade last — so this is a **branch-local deviation**, disclosed; AC-REV-002 is unaffected. **This reverses the recommendation in §3.7.** | decision **D14**; D4 §1 decision 2, T13, §8 item 2 |
-| 11 | The `Rolled` Close Reason exists before any Roll workflow | Selectable at D6. `reference-catalog.md:29` makes an inactive reason a Retired one, `:39` forbids retiring seeded taxonomy values, and AC-REF-001:390 files `Rolled` under that policy, so "while Roll is supported" scopes selectability in time rather than conditioning it. A `Rolled` close with no lineage is inert: the relation is one-directional and no derived value reads the reason. **This reverses the recommendation in §3.11.** | decision **D12**; D6 T3, §8 item 6 |
+| 5 | A reopened Debt: same identity and due time, or a new one | Same identity **and** original due time. Reopen is a state transition of the obligation key, not a second `Defer`, so it restores the trigger-time due semantics that `journal.md:137` freezes; a reopened Debt is therefore immediately due and keeps Review completion Incomplete until answered again. (c) would need unnamed retirement evidence; (b) a second due source or a mutation of a frozen fact. | decision **PD13**; PD5 §1 decision 2, T7, T10, §8 |
+| 6 | Terminal Disposition's exact structured shape | Result union `Applicable(members) \| NotApplicable(stableReason, structuredDetails)`; members `{ mechanism, sourceFactIdentity, instrument, disposedQuantity }`; exact positive magnitude; `FactOrder` member order; `Mixed` derived rather than carried; one shared five-kind `MechanismKind` | decision **PD11**; PD6 §1 decision 2, T4/T16, §8 item 9 |
+| 7 | Attention-band thresholds and the pressure/reward edges | **Reverses the spec's within-band sort.** Band 4 = comparable and within `nearBoundaryFraction` (default 0.25) of the `Target − Stop` span from either selected boundary; band 5 = mid-span; within a band, nearest boundary first, then Last Activity, then identity. `daily-review.md:32`'s pressure-descending sort is one-sided — risk plus reward is the constant span, so it is nearest-Target-first and sorts a near-Stop Trade last — so this is a **branch-local deviation**, disclosed; AC-REV-002 is unaffected. **This reverses the recommendation in §3.7.** | decision **PD14**; PD4 §1 decision 2, T13, §8 item 2 |
+| 11 | The `Rolled` Close Reason exists before any Roll workflow | Selectable at D6. `reference-catalog.md:29` makes an inactive reason a Retired one, `:39` forbids retiring seeded taxonomy values, and AC-REF-001:390 files `Rolled` under that policy, so "while Roll is supported" scopes selectability in time rather than conditioning it. A `Rolled` close with no lineage is inert: the relation is one-directional and no derived value reads the reason. **This reverses the recommendation in §3.11.** | decision **PD12**; PD6 T3, §8 item 6 |
 
 Earlier corrections in the same session, worth knowing before re-deriving anything: the
-`vertical-deliverables.md` Open-items paragraph and its "decision D7" reference were stale and are
-fixed; the D2/D3/D4/D6 dependency-layer counts were wrong and are now the graph's true height; two of
-1,084 spec citations were out of range and are fixed.
+`vertical-deliverables.md` Open-items paragraph and its "decision D7" reference — the content is
+PD6 — were stale and are fixed; the D2/D3/D4/D6 dependency-layer counts were wrong and are now the
+graph's true height; two of 1,084 spec citations were out of range and are fixed.
 
 One defect found while settling item 6 is deliberately **not** fixed yet: D6 §8 item 1 and its §5
 closing note still say `AC-POS-004` is "marked Covered", while the row itself is `Partial` with D10
@@ -63,7 +63,7 @@ decision plus a disclosed reading.
 
 ### 5. A reopened Debt: same identity and due time, or a new one?
 
-> **Settled 2026-10-11 — decision D13: same identity and original due time.** The text is kept for the
+> **Settled 2026-10-11 — decision PD13: same identity and original due time.** The text is kept for the
 > reasoning, not as an instruction.
 
 **Question.** When Voiding the sole Entry that settled a Debt reopens it, does the reopened Debt keep
@@ -112,7 +112,7 @@ decision 2 and T4/T16.
 
 ### 7. Attention-band thresholds and the pressure/reward edges
 
-> **Settled 2026-10-11 — decision D14: order by boundary proximity, symmetrically.** The
+> **Settled 2026-10-11 — decision PD14: order by boundary proximity, symmetrically.** The
 > recommendation below is superseded; it assumed a one-sided threshold on the spec's pressure
 > quantity. The text is kept for the reasoning, not as an instruction.
 
@@ -138,7 +138,7 @@ decision 2 and T13.
 
 ### 8. `ReviewChanged` vs `Conflict`: keep branch-local, or promote to `specs/adr/`?
 
-**Question.** Decision D2 in `planning-decisions-2026-10-10.md` reads `daily-review.md:110`'s five
+**Question.** Decision PD2 in `planning-decisions-2026-10-10.md` reads `daily-review.md:110`'s five
 trigger kinds and two result names into a review-scope / subject-scope mapping. Should that reading
 stay branch-local or bind every branch?
 
@@ -153,11 +153,11 @@ handoff is explicit that this needs asking, not assuming. The reason to prefer (
 exactly the kind of ambiguity that will diverge silently between implementations. **Same question and
 same recommendation for item 9.**
 
-### 9. Anchor resolution at `save` (decision D1) — the same promote-or-not question
+### 9. Anchor resolution at `save` (decision PD1) — the same promote-or-not question
 
 **Fixed by the spec.** `journal.md:173-179` shows `save` receiving a four-valued anchor status and
 appending unconditionally; `journal.md:163` requires "one committed Anchor" without saying which
-statuses qualify. Decision D1 resolves it: `Effective`, `Superseded` and `Voided` all attach and carry
+statuses qualify. Decision PD1 resolves it: `Effective`, `Superseded` and `Voided` all attach and carry
 their status; only `Unknown` is a typed no-write rejection.
 
 **Recommendation: identical to item 8.** The reading is behaviourally committed in D5 and blocks
@@ -189,7 +189,7 @@ be read as an AC-REF-001 cardinality claim. Neither variant may claim AC-REF-001
 
 ### 11. The `Rolled` Close Reason exists before any Roll workflow
 
-> **Settled 2026-10-11 — decision D12: `Rolled` stays selectable.** The recommendation below was
+> **Settled 2026-10-11 — decision PD12: `Rolled` stays selectable.** The recommendation below was
 > reversed after reading the policy chain at `reference-catalog.md:29`, `:39` and
 > `acceptance-contract.md:390`. The text is kept for the reasoning, not as an instruction.
 
@@ -258,11 +258,11 @@ when the owning deliverable is planned.
 
 | Deferral | Where it stands |
 |---|---|
-| Pinned version profile | The *set* is fixed by decision D3; exact versions are pinned at Phase 6. No breakdown names a version. |
+| Pinned version profile | The *set* is fixed by decision PD3; exact versions are pinned at Phase 6. No breakdown names a version. |
 | `fake-indexeddb` fidelity gap | Disclosed in every relevant breakdown; item 9 requires durability-critical proofs repeated against a real engine. D4 and D7 defer item 9 to D1's mapping table. |
 | `AC-PERF-001` | Owned by no deliverable, named by no `AC:` line, and **no latency figure appears anywhere**. Boundedness is asserted as index membership plus an asserted query count. |
-| Workbox precache as the digest-valid inventory check | Decision D3 records this as unverified and assumes custom instrumentation; that is verification item 3, owned by D1. |
-| Temporal API | Not depended on; an explicit date library plus the versioned session calendar is used (decision D3). |
+| Workbox precache as the digest-valid inventory check | Decision PD3 records this as unverified and assumes custom instrumentation; that is verification item 3, owned by D1. |
+| Temporal API | Not depended on; an explicit date library plus the versioned session calendar is used (decision PD3). |
 
 ---
 
@@ -278,5 +278,5 @@ when the owning deliverable is planned.
 - Never claim `AC-PERF-001`, and never state a millisecond figure.
 - A Partial row is never a pass, and at most one deliverable may carry a bare `Covered` status for a
   given scenario.
-- Read decisions **D8, D9 and D10** before touching anything to do with integrity fixtures, stop and
+- Read decisions **PD8, PD9 and PD10** before touching anything to do with integrity fixtures, stop and
   target conditions, or fees.

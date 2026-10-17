@@ -17,7 +17,7 @@ handoff, which lived in the OS temp directory and has been deleted.
 
 > **Update, 2026-10-11 — this handoff is superseded.** The work it commissions is done: all seven
 > breakdowns exist and both validators report zero failures and zero warnings. The session that wrote
-> them also settled four alignment items and recorded them as decisions D8–D10.
+> them also settled four alignment items and recorded them as decisions PD8–PD10.
 >
 > **For a new session, start at
 > [handoff-finalize-plan-2026-10-11.md](handoff-finalize-plan-2026-10-11.md)**, which states the
@@ -61,7 +61,7 @@ off-limits: `claude`, `claude-opus-5.5`, `codex`, `codex-gpt-6.1-sol`, `glm`, `q
 | Phase | State |
 |---|---|
 | 1 — comprehension check | complete |
-| 2 — stack | complete; recorded as decision **D3** in `plan/planning-decisions-2026-10-10.md` |
+| 2 — stack | complete; recorded as decision **PD3** in `plan/planning-decisions-2026-10-10.md` |
 | 3 — vertical deliverables + task breakdowns | **complete for D1–D7** — the ordered list is agreed and settled, and all seven breakdowns are written and validated. The remaining alignment items are tracked in [alignment-agenda-2026-10-11.md](alignment-agenda-2026-10-11.md) |
 | 4 — acceptance-to-evidence matrix | not started; 43 of 67 acceptance scenarios are owned by no deliverable |
 | 5 — interactive review | started in practice (the user has reviewed and amended the deliverable list several times) |
@@ -84,7 +84,7 @@ approval. This session writes breakdowns, not code.
    operative parts; the completion checklist is at `:205`.
 6. `plan/vertical-deliverables.md` — the agreed 22-deliverable sequence with user stories, plus the
    cross-cutting threads. **This is the authority for deliverable numbering.**
-7. `plan/planning-decisions-2026-10-10.md` — decisions **D1–D6**. All binding on this branch.
+7. `plan/planning-decisions-2026-10-10.md` — decisions **PD1–PD6**. All binding on this branch.
 8. Per deliverable as needed: the owning module contract under `specs/design/`, plus
    `specs/design/ui-contract.md`, `specs/design/delivery-contract.md`, and the relevant scenarios in
    `specs/acceptance/acceptance-contract.md`.
@@ -125,7 +125,7 @@ Because the worked example is gone, this section carries the format.
 5. **Acceptance coverage** — one row per claimed scenario, honestly marked full or partial.
 6. **Valid red evidence** — what counts and what does *not* count as red, restated per deliverable.
 7. **Open items and risks.**
-8. Where applicable, a `planning-decisions` D3 verification-item mapping table.
+8. Where applicable, a `planning-decisions` PD3 verification-item mapping table.
 
 ### Structural vs behaviour-bearing tasks
 
@@ -173,7 +173,7 @@ node scripts/audit-breakdown-coverage.mjs
   and `D<n>:T<m>` cross-references resolved against the sibling files.
 - `audit-breakdown-coverage.mjs` validates the cross-document claims: every claimed scenario exists
   in the acceptance contract, every claim names tasks that exist, no row calls partial coverage
-  complete, no row both disowns and claims coverage, and each of the nine D3 verification items has
+  complete, no row both disowns and claims coverage, and each of the nine PD3 verification items has
   an owner or an explicit deferral.
 
 Both were negative-tested against injected faults: a cycle, an undefined edge endpoint, a missing
@@ -240,7 +240,7 @@ These are the traps earlier sessions found. Re-deriving them costs time.
   (`planning-protocol.md:87`).
 - **The first mutating deliverable must carry PWA identity, the complete Offline Release Inventory,
   Runtime Readiness, and the persistence-level write gate.** `planning-protocol.md:83` and
-  `specs/README.md` forbid deferring them; decision **D4** records why. D1 carries them.
+  `specs/README.md` forbid deferring them; decision **PD4** records why. D1 carries them.
 - **Migration is cross-cutting** — a task inside each deliverable that changes a durable
   representation, never a deliverable of its own.
 - **Honest Installed Capability Manifest:** absent capabilities are absent from navigation and
@@ -291,7 +291,7 @@ and a wrong index set is a migration-costly change.
 
 - `DEV_PORT=5177` in the gitignored `.env.local`. Nothing consumes it yet; when an app exists, both
   `vite.config.ts` and Playwright must read it rather than hardcoding `5173`.
-- Approved stack (**decision D3**): TypeScript strict + Vite + React, **IndexedDB** behind the
+- Approved stack (**decision PD3**): TypeScript strict + Vite + React, **IndexedDB** behind the
   Persistence/Transaction seam, `decimal.js` for Money/Price/Quantity, an injected `Clock` plus a
   versioned US session calendar, Workbox-assisted service worker, Vitest + `fake-indexeddb` (Node)
   and Playwright (browser). **Exact versions are pinned at freeze, not yet.**
@@ -334,7 +334,7 @@ advertise partial scope honestly rather than shipping the whole seed set up fron
 
 - **All seven breakdowns (D1–D7)** — done, and superseded as the leading open item by the alignment
   agenda in [alignment-agenda-2026-10-11.md](alignment-agenda-2026-10-11.md), which lists items 4–13,
-  the two questions decision D8 raised, and the five standing deferrals to confirm.
+  the two questions decision PD8 raised, and the five standing deferrals to confirm.
 - **Scale ownership** — deliberately deferred by user decision; `AC-PERF-001` has no owning
   deliverable. See §5 for the boundedness condition this places on the breakdowns.
 - **D14's per-leg vs. structure-level management question** — deferred to D14's breakdown.
