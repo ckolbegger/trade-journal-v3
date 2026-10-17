@@ -427,7 +427,7 @@ the public `recordPositionChange` result rather than any private validator
 (`trade-workflows.md:90`, `trade-record.md:158`). The rule has three observable halves: presence of
 agency requires exactly one active reason; absence of agency forbids a supplied reason and
 manufactures none; and a reason that is not currently selectable for a new selection is rejected
-(`reference-catalog.md:46`, `reference-catalog.md:39`).
+(`reference-catalog.md:47`, `reference-catalog.md:39`).
 
 **Unit test cases**
 
@@ -440,7 +440,7 @@ describe("terminal Close Reason cardinality under trader agency")
   it should return a typed no-write rejection naming the inactive reference when the submitted Close Reason is not a reason identity at all, for example a settlement mechanism name or a Strategy identity
   it should record a terminal non-agency settlement member with no Close Reason and manufacture none, so the stored Trade has no Close Reason association
   it should return a typed no-write rejection naming the unexpected reason when a non-agency terminal command nevertheless supplies one, so agency is never inferred either way
-  it should allow the seeded Rolled reason to be selected only because it is selectable, while requiring no Roll lineage for a long stock exit that uses it
+  it should accept the seeded Rolled reason on a long stock exit because the protection policy keeps every seeded taxonomy value selectable, while requiring no Roll lineage for that exit
 ```
 
 **Integration case.** A mock-free integration test submits three terminal commands against three
@@ -462,6 +462,7 @@ selectable catalog value at this revision and not a Roll workflow. Disclosed sub
 | Retired reason | `pnpm vitest run tests/workflows/close-reason-cardinality.spec.ts -t "retired reason"` — fails because new-selection eligibility is not resolved for the reason reference | Same command — typed rejection naming the inactive reference |
 | Non-agency path | `pnpm vitest run tests/workflows/close-reason-cardinality.spec.ts -t "non-agency"` — fails because the agency member is not yet consumed, so a settlement member is treated as an ordinary disposal | Same command — no Close Reason association exists and none is manufactured |
 | Unexpected reason on non-agency | `pnpm vitest run tests/workflows/close-reason-cardinality.spec.ts -t "unexpected reason"` — fails because the command currently tolerates a stray reason | Same command — typed rejection and no write |
+| Rolled without a Roll | `pnpm vitest run tests/workflows/close-reason-cardinality.spec.ts -t "Rolled without a Roll"` — fails because the reason reference is not resolved against the protected-taxonomy policy | Same command — the close commits with `Rolled` and no lineage is required or created |
 
 #### T4 — `B` Terminal Disposition derived from effective disposing facts
 
@@ -1466,15 +1467,23 @@ until the repository has a package manifest and the pinned profile, and second, 
 accessibility-rule severity or IndexedDB behaviour that differs across the eventual versions must
 be recorded alongside the evidence rather than assumed stable.
 
-**6. The `Rolled` Close Reason exists before any Roll workflow.** D6 seeds all five canonical Close
-Reasons, including `Rolled`, because the taxonomy is exactly five and the seed is atomic
-(`reference-catalog.md:102-108`). No Roll workflow, predecessor/successor lineage, partial Roll, or
-successor Plan exists until D13. The deliberate consequence is that `Rolled` is selectable for a
-long stock exit in D6 and nothing prevents its use. The alternatives were both worse: withholding
-`Rolled` would make the seeded taxonomy wrong and would require a taxonomy revision to add a sixth
-value later, and adding a Roll workflow here would put D13's scope inside D6. The ordering choice
-is disclosed rather than hidden, and the §4 non-defect list tells the critic not to report the
-missing Roll workflow as a D6 defect.
+**6. The `Rolled` Close Reason is selectable before any Roll workflow exists, by policy rather than
+by oversight.** D6 seeds all five canonical Close Reasons, including `Rolled`, because the taxonomy is
+exactly five and the seed is atomic (`reference-catalog.md:102-108`). No Roll workflow,
+predecessor/successor lineage, partial Roll, or successor Plan exists until D13. `Rolled` is
+nevertheless selectable for a long stock exit at D6, and that is the frozen policy rather than a side
+effect: `reference-catalog.md:39` says seeded taxonomy values "cannot be retired" and that "Rolled
+additionally remains selectable while Roll is supported", `reference-catalog.md:29` makes an inactive
+reason a Retired one, and AC-REF-001 files "protected taxonomy values/`Rolled`" under that policy
+(`acceptance-contract.md:390`). Making `Rolled` non-selectable would therefore retire a protected
+seeded value. The consequence is that a D6 close can record `Rolled` with no Roll lineage. That is
+inert: the frozen relation is one-directional (`trade-workflows.md:146` requires `Rolled` when a Roll
+closes the predecessor, and nothing requires a Roll because `Rolled` was recorded), and no derived
+value reads the reason, which T4's reason-independence case asserts. The guard that keeps it inert is
+recorded rather than assumed: **D13 and D19 must not infer a Roll from the presence of the `Rolled`
+Close Reason**, because Roll semantics come from typed lineage and the reason is an acknowledgment,
+not evidence of a workflow. The §4 non-defect list tells the critic not to report the missing Roll
+workflow as a D6 defect.
 
 **7. AC-REF-001 remains Partial and the temptation to over-claim it is real.** D6 seeds reasons and
 two Journal definitions; the Strategy cardinality is untouched. A reader who sees "five reasons

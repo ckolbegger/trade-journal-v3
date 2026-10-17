@@ -768,6 +768,61 @@ D6 §1 decision 2, T4 and T16 record the shape; D6 §8 item 9 now discloses only
 
 ---
 
+## D12 — The `Rolled` Close Reason is selectable before any Roll workflow exists
+
+**Status:** settled by user decision, 2026-10-11. **Branch-local**, not promoted into `specs/`.
+
+### The gap
+
+`reference-catalog.md:102-108` fixes exactly five Close Reasons, the fifth being `Rolled`, and
+`reference-catalog.md:26` makes it "the unique workflow-semantic Close Reason role". D6 seeds all
+five, but no Roll workflow exists until D13, so the question is whether `Rolled` may be selected on a
+D6 close. `reference-catalog.md:39` says "Rolled additionally remains selectable while Roll is
+supported", which reads either as a **temporal scope** over an asserted selectability or as a
+**condition** that withholds it until Roll exists.
+
+### Decision
+
+It is a temporal scope, and `Rolled` is selectable at D6. The policy chain forces this reading:
+`reference-catalog.md:29` makes an inactive reason a Retired one, `reference-catalog.md:39` forbids
+retiring seeded taxonomy values, and AC-REF-001 files "protected taxonomy values/`Rolled`" under that
+policy (`acceptance-contract.md:390`). Withholding `Rolled` would therefore retire a protected seeded
+value. A restriction sentence would read "selectable only while Roll is supported"; the frozen
+sentence asserts that it "remains selectable".
+
+The consequence is that a D6 close may record `Rolled` with no Roll lineage. That is inert: the
+frozen relation is one-directional — `trade-workflows.md:146` requires `Rolled` when a Roll closes the
+predecessor and says nothing about a `Rolled` reason without a Roll — and no derived value reads the
+Close Reason, which D6 T4 asserts with a reason-independence case.
+
+### Rejected alternatives
+
+- **Making `Rolled` non-selectable until Roll is installed.** Implementing it through the catalog's
+  availability state retires a protected seeded value (`reference-catalog.md:29`, `:39`), and the
+  existing `NewSelection` resolution would refuse it (`reference-catalog.md:47`). Implementing it as a
+  separate capability gate would instead add a typed rejection no acceptance scenario requires, for
+  exactly one value, and would deny a truthful `Rolled` label to a trader who rolled outside the
+  application until D13.
+- **Deferring the `Rolled` seed to D13.** AC-REF-001 requires exactly five Close Reasons with stable
+  identities and D6 records that seed; deferring one leaves four.
+
+### Consequences
+
+- **Forward guard.** D13 and D19 must not infer a Roll from the presence of the `Rolled` Close
+  Reason. Roll semantics come from typed lineage; the reason is a trader acknowledgment, not evidence
+  that a workflow ran. This is recorded because it is the one real risk the rejected gate would have
+  covered.
+- D13's Roll requirement is unchanged: a Roll that closes a predecessor must record `Rolled`
+  (`trade-workflows.md:146`).
+- No stored state, operation or selectability behaviour changes at D6.
+
+### Not changed
+
+`specs/` is untouched; the taxonomy stays exactly five and every seeded reason stays selectable. D6
+§1 decision 6 records the seed, T3 records the selection rule, and §8 item 6 records this reading.
+
+---
+
 ## Still open
 
 Specification gaps from intake remain limited to D1 and D2. D3 records the approved stack, D4 affirms
@@ -775,8 +830,9 @@ the frozen offline-delivery requirement, D5–D6 record interpretations that avo
 definitions, D8 records the `Given`-setup mutation rules, including its three tiers and the
 prohibition on using authoritative-fact mutation to establish ordinary behaviour, D9 records the stop
 and target condition model across the option arc, and D10 records that fees are captured as facts and
-excluded from every calculation, and D11 fixes the Terminal Disposition shape and the shared
-mechanism vocabulary. The D3 verification items must be resolved inside the plan.
+excluded from every calculation. D11 fixes the Terminal Disposition shape and the shared mechanism
+vocabulary, and D12 records that the `Rolled` Close Reason is selectable by policy before any Roll
+workflow exists. The D3 verification items must be resolved inside the plan.
 
 The vertical deliverable list is recorded in [vertical-deliverables.md](vertical-deliverables.md).
 The task-level breakdowns for D1–D7 are drafted under

@@ -39,6 +39,7 @@ Both must report zero failures **and zero warnings**. Warnings do not fail the e
 | 3 | Fee handling | **Superseded.** Fees are captured as a fact and excluded from every calculation; the cent-apportionment rule is **withdrawn, not solved** | decision **D10** |
 | 4 | `RecordedSequence` | One per-Workspace monotonic counter, assigned at commit in the candidate's **declared member order**; the candidate carries that order and `derive` tie-breaks with it because no sequence exists during preparation | D3 §1 decision 3, T2 |
 | 6 | Terminal Disposition's exact structured shape | Result union `Applicable(members) \| NotApplicable(stableReason, structuredDetails)`; members `{ mechanism, sourceFactIdentity, instrument, disposedQuantity }`; exact positive magnitude; `FactOrder` member order; `Mixed` derived rather than carried; one shared five-kind `MechanismKind` | decision **D11**; D6 §1 decision 2, T4/T16, §8 item 9 |
+| 11 | The `Rolled` Close Reason exists before any Roll workflow | Selectable at D6. `reference-catalog.md:29` makes an inactive reason a Retired one, `:39` forbids retiring seeded taxonomy values, and AC-REF-001:390 files `Rolled` under that policy, so "while Roll is supported" scopes selectability in time rather than conditioning it. A `Rolled` close with no lineage is inert: the relation is one-directional and no derived value reads the reason. **This reverses the recommendation in §3.11.** | decision **D12**; D6 T3, §8 item 6 |
 
 Earlier corrections in the same session, worth knowing before re-deriving anything: the
 `vertical-deliverables.md` Open-items paragraph and its "decision D7" reference were stale and are
@@ -174,12 +175,17 @@ be read as an AC-REF-001 cardinality claim. Neither variant may claim AC-REF-001
 
 ### 11. The `Rolled` Close Reason exists before any Roll workflow
 
+> **Settled 2026-10-11 — decision D12: `Rolled` stays selectable.** The recommendation below was
+> reversed after reading the policy chain at `reference-catalog.md:29`, `:39` and
+> `acceptance-contract.md:390`. The text is kept for the reasoning, not as an instruction.
+
 **Question.** D6 seeds all five Close Reasons, including `Rolled`, but no Roll workflow exists until
 D13. Should `Rolled` be selectable on a D6 close?
 
-**Fixed by the spec.** `reference-catalog.md:102-108` fixes the five reasons and says `Rolled` is "the
-unique workflow-semantic Close Reason role" and "additionally remains selectable **while Roll is
-supported**". `trade-workflows.md:146` says a Roll's required Close Reason is that role value.
+**Fixed by the spec.** `reference-catalog.md:102-108` fixes the five reasons; `reference-catalog.md:26`
+makes `Rolled` "the unique workflow-semantic Close Reason role"; and `reference-catalog.md:39` says
+`Rolled` "additionally remains selectable **while Roll is supported**". `trade-workflows.md:146` says
+a Roll's required Close Reason is that role value.
 
 **Options.**
 - **(a) Seed all five and keep `Rolled` selectable** — the current state; a trader could record
