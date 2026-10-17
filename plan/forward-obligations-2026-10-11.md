@@ -26,7 +26,7 @@ decision in [planning-decisions-2026-10-10.md](planning-decisions-2026-10-10.md)
 | 10 | **D17**, **D19** | Extend `Journal.query` beyond D5's implemented subset. Unsupported dimensions are typed no-read results today | The spec lists the full vocabulary (`journal.md:213`); D17 and D19 need the remainder | PD16 item 4; D5 §8 |
 | 11 | **D18** | Extend the same `getTradeDetail` operation rather than adding a second Trade read path | `overview.md:14` forbids the UI becoming a domain coordinator | PD16 item 1 |
 | 12 | **D20** | Consider strengthening the exclusion proof beyond "no key present" — a cryptographic statement — and only if it does not weaken the four-stage failure vocabulary | PD17 settles the proof's fail-closed boundary but leaves its strength open | PD17 |
-| 13 | **Phase 4** (this plan, not a deliverable) | Fix the stale `AC-POS-004` sentences: D6 §8 item 1 and its §5 closing note still say the row is "marked Covered" while the row is `Partial` | Coverage honesty; the matrix is built from those rows | item 6 disclosure |
+| 13 | **Phase 4** (this plan, not a deliverable) | Fix the stale `AC-POS-004` sentences in D6 (§8 item 1, its §5 closing note, its §4 non-defect list) that said the row was "marked Covered" while it is `Partial` — **discharged in Phase 4**; see [acceptance-evidence-matrix §7](acceptance-evidence-matrix-2026-10-11.md) | Coverage honesty; the matrix is built from those rows | item 6 disclosure |
 
 ## Check at the Phase 6 freeze
 

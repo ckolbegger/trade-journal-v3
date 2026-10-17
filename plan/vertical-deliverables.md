@@ -435,7 +435,8 @@ coherent-but-stale agreement; safety-backup choice requiring an exact-target rec
 an explicit decline; atomic all-section replacement with rollback; integrity recovery
 for an unreadable root; readiness re-established before further mutation.
 
-`AC:` AC-REST-001…004, AC-BACK-001 (read-back), AC-REBUILD-001 (post-Restore).
+`AC:` AC-REST-001…004, AC-BACK-001 (read-back), AC-REBUILD-001 (post-Restore), AC-LIFE-003
+(authorized-preparation half).
 
 ## D22 — Install and update the app
 
