@@ -87,7 +87,7 @@ manifest v6 seed, and it is a task inside this deliverable rather than a migrati
   terminal non-agency settlement. The non-agency settlement requires explicit settlement facts
   that arrive at D10. D6 fully covers the trader-directed half and the "none is manufactured"
   half only as a validation property of the terminal command path; it does not demonstrate a
-  real settlement-driven closure. The word `Covered` on that row in §5 does not hide this: §8
+  real settlement-driven closure. The `Partial` status on that row in §5 does not hide this: §8
   restates it in plain language and names D10.
 - **AC-LIFE-003.** Disagreement-cannot-pass-as-Ready is an open under-specification in this
   branch's plan; D6 neither claims it nor constructs an integrity fixture for it. It is raised in
@@ -1327,13 +1327,13 @@ than one of several partial claimants.
 | AC-RESP-001 | Covered | With the creation family installed at D2, the update family at D4, the bounded multi-subject family at D3 and the terminal and abandonment members here, every mutation family installed through D6 returns its committed revisions, generated identities, the post-commit representation of each directly changed subject and its related outcomes, and no operation-required follow-up read remains: T13, T14, T19. |
 | AC-UI-002 | Partial — Loading, Ready, Empty, Error, validation and conflict states for the close and abandonment surfaces, with stored lifecycle, derived Terminal Disposition and the optional Close or Abandonment Reason presented as three separate concepts and color never the sole meaning; chart-gap and destructive-Restore states land at D18 and D21. | T15, T16, T17, T18, T19. |
 
-A note on the three Partial rows: each cites tasks that produce real, verifiable evidence for the
+A note on the Partial rows: each cites tasks that produce real, verifiable evidence for the
 part it claims. None of them asserts the full scenario, none of them is counted as a pass, and
-each names the deliverable that completes the remainder. `AC-POS-004` is marked Covered because
-D6 is the only deliverable that both requires the terminal trader-directed reason and derives
-Terminal Disposition from actual mechanisms, but the acceptance of that row depends on the
-disclosure in §8 that the non-agency settlement half cannot be demonstrated until explicit
-settlement facts exist at D10.
+each names the deliverable that completes the remainder. `AC-POS-004` is marked Partial rather
+than Covered: D6 is the only deliverable that both requires the terminal trader-directed reason
+and derives Terminal Disposition from actual mechanisms, but the non-agency settlement half
+cannot be demonstrated until explicit settlement facts exist at D10, so the row names D10 as the
+completing owner and §8 item 1 discloses the split.
 
 ## 6. What counts as valid red evidence
 
@@ -1410,15 +1410,14 @@ durability-critical cases against a real engine and lists every gap in §8.
 
 ## 8. Open items and risks
 
-**1. `AC-POS-004`'s non-agency half is not demonstrated here.** The row is marked Covered in §5
-because D6 completes the trader-directed half and the "none is manufactured" validation property,
-and because Terminal Disposition derivation is mechanism-agnostic and therefore already shared
-with the settlement path. It does **not** demonstrate a real terminal non-agency settlement: that
-requires explicit Assignment, Exercise, Expiration, or cash-settlement facts, which arrive at D10.
-The word `Covered` must not be read as hiding that. If the coordinator requires the acceptance
-matrix to show the split explicitly, the honest form is a Partial row for `AC-POS-004` with D10
-named as the completing owner, and the brief's verbatim row would then need a coordinator-level
-change rather than a local one.
+**1. `AC-POS-004`'s non-agency half is not demonstrated here.** The row is marked **Partial** in §5:
+D6 completes the trader-directed half and the "none is manufactured" validation property, and
+Terminal Disposition derivation is mechanism-agnostic and therefore already shared with the
+settlement path. It does **not** demonstrate a real terminal non-agency settlement: that requires
+explicit Assignment, Exercise, Expiration, or cash-settlement facts, which arrive at D10. `D10` is
+therefore named in the row as the completing owner, and the word `Partial` must not be read as a
+pass. The acceptance-to-evidence matrix records the same split
+(`plan/acceptance-evidence-matrix-2026-10-11.md`).
 
 **2. `AC-LIFE-003` is not claimed and not constructed.** Disagreement-cannot-pass-as-Ready is an
 open under-specification for this branch: the specification requires that normal reads surface or
