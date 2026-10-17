@@ -39,6 +39,8 @@ This document is the ordered list of vertical deliverables. It deliberately cont
 | 28 | **A deferred reflection is due one session after the session it belongs to** (D5 breakdown, P16, 2026-10-11). | A Position Change belongs to the first session whose close is at or after its Economic Time, and its deferred reflection is due at the next session's close. The Debt stores its anchor and the rule; Daily Review and Trade Views classify it against session closes from Market Data, so Journal and Trade Workflows need no calendar. A deferral from the current session never reopens a completed Review. D6's Close Review Defer uses the same rule. |
 | 29 | **Spec reopened: owed reflections appear inside each Trade's card in the Daily Review, not as a separate task family** (D5 breakdown, P17, 2026-10-11, at the user's explicit direction). | Reopened passages: Daily Review, "Date, eligibility, and ordering" (task family 2, due Journal Debt) and `getDebt`'s global paging; the overview's "Open and save Daily Review"; AC-REV-002's "Mark, Debt, settlement, Trade order". The order becomes Marks, settlement (D7), then the Trade walk, and each Trade's card shows its Outstanding reflections, due ones blocking completion. Due Debt still blocks completion (glossary; ADR 0005). `getDebt` is not installed while every Trade with Debt is walked; D6 decides where Debt for a Trade outside the walk appears. Owed reflections can also be answered on Trade Detail through `Journal.save`, recording Source Trade Detail. The `specs/` files are unchanged here, because they are the shared baseline for every implementation; the user decides whether to amend them on `main`. |
 | 30 | **Spec reopened: Lot Matches are derived, never stored** (D6 breakdown, P23, 2026-10-17, at the user's explicit direction). | Matching order changes no Closed Trade's totals; it only splits a partly closed Trade's P&L between realized-to-date and open, and times the realization increments of the Outcomes curve. Trade Analysis still derives FIFO matches, lot-aware fees, and realized P&L from the effective Executions whenever needed, identified by (opening Execution, disposing Execution, FIFO); Trade Record stores no Lot-Match record, and an earlier-dated exit simply changes the derived result, disclosed in the receipt. Reopened passages: Trade Record's "Contract", "Record content", "Change protocol", and "Backup and Restore" (stored and backed-up Lot-Match links); the overview's authority-map row "Lot matching" and load-bearing rule 5; ADR 0002's "Lot Match set"; Restore's Lot-Match agreement check in Workspace and Trade Analysis; the delivery contract's rebuild item "active FIFO Lot Matches" (now a derived result); and AC-LIFE-003's Lot-Match case. The `specs/` files are unchanged here. |
+| 31 | **An underlying-price option Stop or Target is measured by the contract's value at expiration at its trigger price** (D7 breakdown, P24, 2026-10-17, at the user's direction). | The trader enters only the Underlying trigger. Its measurement value is the contract's intrinsic value at that price, a point on the Planned Expiration Payoff, frozen because the trigger and contract are frozen; 1R, Original Planned Reward, Ongoing Risk to Stop, Reward to Target, Overrun, Entry Quality, and the at-entry line all use it. No option pricing model is used. Trade Detail and the Review also show the position's value at expiration at the Underlying's exact latest close, labelled as an expiration value and kept apart from Mark-to-Market figures. An option Trade with underlying-price conditions needs both the contract's and the Underlying's Marks. Accepted tradeoff: expiration values ignore time value left at an early exit, so a long option's Stop on the worthless side of its strike makes 1R the whole premium. D10 must extend this to multi-leg structures, including those with two expirations. |
+| 32 | **A Mark may be exactly 0 for any Instrument, never negative** (D7 breakdown, P27, 2026-10-17, at the user's direction). | An option or a stock that closed with no value is recorded honestly as 0 rather than 0.01. Execution and intended entry prices stay positive. Amends D4 A37, T4.13, I4.8, and C4.12. |
 
 Review decisions accepted during the walkthrough are appended here.
 
@@ -76,7 +78,7 @@ These scenarios cover properties of the whole product. Every deliverable must re
 | D4 | [Daily Review, with Manual Marks and ongoing risk/reward](D04-daily-review.md) | 7 |
 | D5 | [Deferred reflection and Journal Debt](D05-deferred-reflection-and-journal-debt.md) | 2 |
 | D6 | [Close a Long Stock position](D06-close-a-long-stock-position.md) | 3 |
-| D7 | Single-leg options: happy path | 3 |
+| D7 | [Single-leg options: happy path](D07-single-leg-options-happy-path.md) | 3 |
 | D8 | Backup and Restore | 3 |
 | D9 | Trade replay | 1 |
 | D10 | Multi-leg option Strategies | 3 |
@@ -373,11 +375,11 @@ Includes the former D3, Manual Marks and ongoing risk/reward (decision 24).
 
 **Capability set.** The happy path for single-leg options covers:
 
-- *Instruments and Plans:* option Instruments (Underlying, expiration, strike, right, multiplier) and exact-contract Planned Legs. An underlying-price Stop keeps its frozen monetary loss boundary. Exercise Intent is captured for long options now, because D20 needs it.
+- *Instruments and Plans:* option Instruments (Underlying, expiration, strike, right, multiplier 100) and exact-contract Planned Legs. An underlying-price Stop and Target are measured by the contract's value at expiration at their trigger prices, which freezes the Stop's monetary loss boundary (decision 31). Exercise Intent is captured for long options now, because D20 needs it.
 - *Trading:* opening, scaling, and closing through Executions, reusing D2 and D6.
-- *Marks and risk:* option Manual Marks and ongoing risk/reward.
-- *Payoff:* independent Planned and Current Expiration Payoff, with exact zero sets, signed extrema, and attainment sets.
-- *Settlement:* the Settlement Due task family in Daily Review, and explicit Expiration as a no-agency settlement Position Change, with no Close Reason and Terminal Disposition of Expiration.
+- *Marks and risk:* option Manual Marks (a Mark may be 0, decision 32) and ongoing risk/reward, with condition status from the Underlying's Mark.
+- *Payoff:* independent Planned and Current Expiration Payoff, with exact zero sets, signed extrema, and attainment sets, and the position's value at expiration at the Underlying's latest close (decision 31).
+- *Settlement:* Settlement Due from the expiration date's session, in Daily Review (between Marks and the Trade walk) and on Trade Detail, and explicit Expiration as a no-agency settlement Position Change at the expiration session's close, with no Close Reason and Terminal Disposition of Expiration. An Expiration that closes the Trade still creates a Close Review obligation.
 - *Reporting fact:* Option Disposition Timing is derived and shown on Closed option Trades.
 
 **Introduces**
@@ -397,6 +399,10 @@ Includes the former D3, Manual Marks and ongoing risk/reward (decision 24).
 - AC-REV-002 — full.
 - AC-CALC-004 — partial (single-leg and stock-only Not Applicable). Declared scope: multiple expirations are completed in D10.
 - AC-PLAN-001 — partial (exact contracts). Declared scope: objective selection criteria are completed in D10.
+- AC-CALC-003 — partial (underlying-price conditions on options, measured by decision 31).
+- AC-CALC-002 — partial (an option Trade whose Underlying Mark is Missing keeps its valuation).
+- AC-REF-001 — partial (the Long Call, Long Put, and Cash-Secured Put seeds).
+- AC-REST-004 — partial (re-proven for the schema-6 migration).
 
 **Known limitation until D20 (accepted, decision 10).** An assigned Cash-Secured Put, or an exercised long option, can't be recorded until Assignment and Exercise land in D20. Settlement Due for that contract stays open, which keeps that Review date Incomplete, and the app says why.
 
@@ -1120,7 +1126,7 @@ At the user's direction (2026-10-11), the clause-by-clause check of each accepta
 2. **AC-REF-001 (D22) includes retire and protection policy behavior.** Retirement arrives in D23, so the scenario may only become full there.
 3. **AC-BACK-001 (D11) and AC-REST-001 (D8) presume corrections, Voids, and every data kind.** Those arrive through D23. They may need to become cumulative obligations, re-proven by each data-adding deliverable.
 4. **AC-LIFE-003 (D8) covers each kind of agreed record.** Planned-Leg Terms and Unplanned Exposure (D10) and Stop Discipline (D12) add new recorded Deviation kinds after D8. ~~Its "mutation is prepared" branch also needs an explicit owner, likely D2.~~ Resolved: D2 owns it (decision 23). The Lot-Match case is reopened by decision 30, because no Lot Match is stored; D6 adds Closed lifecycle agreement.
-5. **AC-SET-003 (D7) requires Settlement Due on Trade Detail as well as in Daily Review.**
+5. ~~**AC-SET-003 (D7) requires Settlement Due on Trade Detail as well as in Daily Review.**~~ Resolved in D7 (T7.16, I7.6).
 6. **AC-MARK-002 (D11 and D19) needs Market Data's "deliberate Manual valuation override" save intention.** D11 does not yet list it.
 7. ~~**AC-MARK-004 says historical gaps are visible and nonblocking in Daily Review.**~~ Resolved: D4 lists skipped sessions as optional gaps that do not block completion (decision 27), and claims AC-MARK-004 as partial.
 
@@ -1131,7 +1137,7 @@ At the user's direction (2026-10-11), the clause-by-clause check of each accepta
 ### Raised by the D4 breakdown, for later breakdowns
 
 1. ~~**D6:** extend `StateAtEconomicCutoff` to include Trades closed after the cutoff, because D6 first produces them (D4 A55).~~ Resolved in D6 (A88).
-2. **D7:** AC-REV-002's "missed Review … the same exact date reopens" is read as reopening an unfinished Review while it is still the latest session, because missed sessions are not reviewed (decision 27). Confirm that reading when D7 marks the scenario full.
+2. ~~**D7:** AC-REV-002's "missed Review … the same exact date reopens" is read as reopening an unfinished Review while it is still the latest session, because missed sessions are not reviewed (decision 27). Confirm that reading when D7 marks the scenario full.~~ Resolved in D7 (P28).
 3. **D10:** AC-CALC-002's fixture needs a partial exit so that realized-to-date is nonzero. AC-CALC-003's "one crossed Stop and one reached Target" at once needs structure-value conditions, since one Long Stock Trade cannot cross both.
 4. **D11:** `MarketData.recover` without a provider is installed in D4. D11 adds the Marketdata.app adapter inside it and the provider-configuration operations, rather than introducing `recover`.
 5. **D12:** `DailyReview.save` gains its Stop-Discipline Deviation reconciliation (D4 has none, A44).
@@ -1140,14 +1146,23 @@ At the user's direction (2026-10-11), the clause-by-clause check of each accepta
 ### Raised by the D5 breakdown, for later breakdowns
 
 1. ~~**D6:** decide where a Debt whose Trade is not walked appears under decision 29 (a card for that Trade, or a residual list through `getDebt`), with its integration case. Also settle the user's direction that the Review covers positions closed that day: the spec makes only Trades Open at the session's close eligible (Daily Review, "Date, eligibility, and ordering"; AC-REV-001), so a Trade closed during the session is not walked unless that rule is reopened too. Close Review's Defer reuses D5's Debt record, due rule (decision 28), and resolution paths.~~ Resolved in D6 (P19, P20): eligibility is unchanged, and every Trade outside the walk with an owed reflection, due or not, gets a card after the walk.
-2. **D7:** mark AC-REV-002 full against the ordering reopened by decision 29: Marks, then settlement, then Trades with reflections in their cards.
+2. ~~**D7:** mark AC-REV-002 full against the ordering reopened by decision 29: Marks, then settlement, then Trades with reflections in their cards.~~ Resolved in D7 (T7.14, I7.7).
 3. **D13:** Voiding the sole settling Entry reopens the Debt; the Journal section validator gains that transition.
 4. **D20:** Management Debt needs its place in the Trade card under decision 29 (the spec ranks it ahead of Journal-only Debt), plus `NeedsTradeWorkflow` from `Journal.save` and `ResolveReviewDebt`.
 
 ### Raised by the D6 breakdown, for later breakdowns
 
-1. **D7:** AC-REV-002's order becomes Marks, settlement, the Trade walk, then the owed-reflection group (D6 P20). An Expiration that closes a Trade still creates a Close Review obligation, with no Close Reason. D6's position-path rules (P22) and derived FIFO (decision 30) apply to option Lots.
+1. ~~**D7:** AC-REV-002's order becomes Marks, settlement, the Trade walk, then the owed-reflection group (D6 P20). An Expiration that closes a Trade still creates a Close Review obligation, with no Close Reason. D6's position-path rules (P22) and derived FIFO (decision 30) apply to option Lots.~~ Resolved in D7 (A103, A104, A107, T7.14, I7.5, I7.7).
 2. **D8:** Restore verifies lifecycle and Deviation agreement only (decision 30), and is the first path that can repair a Closed Trade's lifecycle disagreement, because no Position Change is accepted on flat facts (D6 P22, A96).
 3. **D10:** Not Entered, which needs an untouched second Planned Leg (D6 section 1.2).
 4. **D15:** correcting or Voiding an exit can reopen a Closed Trade; decide how its Close Reason and Close Review outcome are retired, since D6 rejects new Position Changes on Closed Trades (P22).
 5. **D24:** the cumulative realized-dollar curve reads derived Lot-Match realization increments, and its tie order uses the derived identity (opening Execution, disposing Execution), not a stored Lot Match identity (decision 30).
+
+### Raised by the D7 breakdown, for later breakdowns
+
+1. **D8:** backup and Restore cover option Plan facts, Exercise Intent, option Executions, Expiration settlement facts, and schema 6.
+2. **D10:** extend decision 31 to multi-leg structures. A structure with two expirations, such as the PMCC, has no single payoff to read a trigger's value from, so it needs its own rule. D10 also adds option-price (structure-value) Stops and Targets and returns multiple-expiration payoff as Unavailable.
+3. **D11:** the provider must supply both contract closes and Underlying closes, map option Instrument keys (`OPT:<symbol>:<expiration>:<C|P>:<strike>`) to its contract symbols, and pass a 0 close through as 0 (decision 32).
+4. **D12:** Stop Discipline on an option's underlying-price Stop uses the Underlying's Daily Bars and Marks as its evidence.
+5. **D15:** correcting or Voiding an Expiration reopens the Trade; its Close Review outcome raises the same question as D6 item 4.
+6. **D20:** Assignment or Exercise may share a Position Change with a partial Expiration, lifting D7's rule that an Expiration settles all open contracts (D7 A106). D20 also clears Settlement Due on assigned or exercised contracts (decision 10) and uses the Exercise Intent captured in D7.
