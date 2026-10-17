@@ -290,7 +290,7 @@ Red notes: the decline and Defer cases are red because D2's decline and D5's Def
 
 ### T6.9 Section validators: Trade Record and Catalog
 
-Seam: `validateSection(snapshot)` exported by Trade Record and Reference Catalog, returning `{ issues, repairs }`. D8's `prepareRestore` reuses them.
+Seam: `validateSection(snapshot)` exported by Trade Record and Reference Catalog, returning `{ issues, repairs }`, over a batched record source (D2 T2.9 as amended by D8 A140). D8's `prepareRestore` reuses them.
 
 ```text
 describe("Trade Record section, closing")

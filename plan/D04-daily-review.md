@@ -206,11 +206,12 @@ describe("schema v3 layout")
   it should create a fresh Workspace at schema version 3 with the observations store keyed by [tradingDate, instrumentKey], its byInstrumentDate index, and meta fields sessionPolicy and marketDataRevision 0
 
 describe("v2 → v3 transform")
-  it should copy every v2 store, add exposureStart to each Trade document from its first opening Execution, create an empty observations store, and record the release's session-policy identity in meta
+  it should copy every v2 store, create an empty observations store, and record the release's session-policy identity in meta
   it should migrate a v1 Workspace through v1→v2 and v2→v3 inside one candidate
 
 describe("rebuild")
   it should rebuild byInstrumentDate from observations with identical contents
+  it should compute exposureStart for each Trade document from its first opening Execution during the private rebuild that follows the chain (moved from the v2 → v3 transform during the D8 breakdown, 2026-10-17, D8 A139, because transforms read only authoritative fields)
 ```
 
 ### T4.4 Market Data: Manual Mark save
@@ -403,7 +404,7 @@ describe("query")
 
 ### T4.13 Section validators
 
-Seam: `validateSection(snapshot)` exported by Market Data and Journal, returning `{ issues, repairs }`. D8's `prepareRestore` reuses them.
+Seam: `validateSection(snapshot)` exported by Market Data and Journal, returning `{ issues, repairs }`, over a batched record source (D2 T2.9 as amended by D8 A140). D8's `prepareRestore` reuses them.
 
 ```text
 describe("Market Data section")

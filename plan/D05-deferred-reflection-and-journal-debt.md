@@ -202,7 +202,7 @@ describe("query: Trade narrative (A69)")
 
 ### T5.5 Journal: section validator for Debt; seed manifest v4
 
-Seam: `validateSection(snapshot)` exported by Journal (D8's `prepareRestore` reuses it) and `Journal.seedDefaults`.
+Seam: `validateSection(snapshot)` exported by Journal, over a batched record source (D2 T2.9 as amended by D8 A140; D8's `prepareRestore` reuses it) and `Journal.seedDefaults`.
 
 ```text
 describe("Journal section, Debt")

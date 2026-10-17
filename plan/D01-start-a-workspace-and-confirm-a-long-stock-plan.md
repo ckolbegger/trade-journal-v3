@@ -34,7 +34,7 @@ These are implementation-level choices that do not reopen product semantics. The
 | A10 | **Storage layout:** a root database `tj-root` (stores `pointer` and `diagnostics`) plus one Workspace database `tj-ws-<uuid>` (stores `meta`, `catalog`, `journalTypes`, `journalDefinitions`, `journalEntries`, `trades`). The readiness probe uses `tj-root.diagnostics`, so it works before any Workspace exists. |
 | A11 | **Identities:** `crypto.randomUUID()` behind an injected generator, deterministic in tests. Identities are assigned only inside apply, never in prepare. |
 | A12 | **Concurrent first-run initialization** is resolved by writing the pointer with IndexedDB `add` inside the root transaction. The loser sees the existing Workspace and opens it. Web Locks wait for D2's migration. |
-| A13 | **Recovery Only copy before D8:** "Another browser has its own separate storage and would start an empty journal. Moving a journal between browsers needs a verified backup and Restore, which this release does not offer yet." |
+| A13 | **Recovery Only copy before D8:** "Another browser has its own separate storage and would start an empty journal. Moving a journal between browsers needs a verified backup and Restore, which this release does not offer yet." **Replaced from D8** by D8 A143, which points to the Backup page (amendment agreed during the D8 breakdown, 2026-10-17). |
 | A14 | **UI unit tests** use Vitest with `jsdom`, `@testing-library/react`, and `@testing-library/user-event`. This is a small addition to the approved testing stack; versions are pinned at plan freeze. |
 | A15 | **Release harness server:** an in-process Node static server used only by tests and the critic. It serves one of several built release folders on port 5175 with Cloudflare-Pages-like caching headers (`sw.js` and `inventory.json` are `no-cache`; hashed assets are immutable). Switching release is a function call in Playwright and a keypress for the critic. |
 | A16 | **Planned list "entry readiness"** reads "Awaiting entry" in D1, because recording an entry arrives in D2. |
@@ -471,7 +471,7 @@ describe("readiness gate presentation")
   it should render Recovery Only with one clear reason, the failed checks, read-only navigation (Trades, Accounts, About), no New Plan or Add Account control, and the separate-storage explanation (A13)
   it should render Integrity Blocked with a warning that journal data may exist, Retry as the only action, and no initialization or data navigation
   it should switch to Recovery Only when a mutation returns RuntimeNotWritable, keeping the open form's entered values on screen
-  it should show "Updated in another tab: reload when ready", keeping the open form's entered values on screen, when the session is superseded by a version change (amendment agreed during the D2 breakdown)
+  it should show "Updated in another tab: reload when ready", keeping the open form's entered values on screen, when the session is superseded by a version change (amendment agreed during the D2 breakdown), and "This journal was replaced by a Restore in another tab. Reload to continue." when the reason is a Restore (amendment agreed during the D8 breakdown, A136)
 
 describe("storage-protection warning")
   it should keep a warning that the browser may clear data visible while protection is BestEffort or Unavailable, with every control enabled

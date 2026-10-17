@@ -10,7 +10,7 @@ This document is the ordered list of vertical deliverables. It deliberately cont
 | # | Decision | Effect on this plan |
 |---|---|---|
 | 1 | The early signature sequence is built on **Long Stock**. | The Strategy selector offers only Long Stock until D7. |
-| 2 | **Backup is not in D1.** | Until D8, `Recovery Only` offers reads and history but no backup export, and the not-protected warning offers the durability request but does not recommend a backup. |
+| 2 | **Backup is not in D1.** | Until D8, `Recovery Only` offers reads and history but no backup export, and the not-protected warning offers the durability request but does not recommend a backup. **Ended by D8:** `Recovery Only` offers backup export and verification, and the not-protected warning recommends a backup. |
 | 3 | The first Position Change Reflection offers **Complete and Decline only**. | Defer, Journal Debt, and Debt resolution arrive in D5, next to Daily Review. |
 | 4 | **Cloudflare project not yet available; loopback first.** | Deliverables complete on the secure loopback origin. Production HTTPS evidence for AC-DEL-003 stays *pending*, never passed, until the project exists. |
 | 5 | **The single-leg option happy path moves early (D7),** ahead of Backup and Restore. | The first backup format and Restore validation cover stock and single-leg option Trades. |
@@ -30,7 +30,7 @@ This document is the ordered list of vertical deliverables. It deliberately cont
 | 19 | **Two test tiers; three-engine real-state evidence in RC** (D1 breakdown, 2026-10-11). | Routine browser suites run in Chromium only, and every readiness failure in them is produced by a disclosed fault-injection build. The real-state readiness and delivery matrix in Chromium, Firefox, and WebKit is RC, an approved layer-only checkpoint (see "Layer-only exceptions"). Each deliverable's AC-DEL rows cite Chromium evidence, with Firefox, WebKit, and real-state evidence marked pending RC until RC runs. |
 | 20 | **Plan confirmation Economic Time is trader-entered** (D1 breakdown, 2026-10-11). | It defaults to "now" in the Workspace time zone and may not be in the future. Opening Executions (D2 onward) must be at or after it, so a Plan recorded after the close still precedes its entry. |
 | 21 | **Position Changes may be recorded out of Economic Time order** (D2 breakdown, 2026-10-11). | Any Economic Time from the Plan's up to now is accepted. Every Trade commit rederives the Trade and reconciles recorded Deviation occurrences by fingerprint (create, retain, new version, supersede) in the same transaction, disclosing in the receipt when the entry window or Entry Quality moved. D6, D10, D12, and D15 extend this one mechanism. |
-| 22 | **A failed or not-yet-possible migration leaves data intact but unreadable by the new release** (D2 breakdown, 2026-10-11). | Migration Blocked keeps the old database's stores unchanged, is never Ready, and offers Retry. If readiness fails on the first launch of a schema-changing release, the Workspace is reported Integrity Blocked (`AwaitingMigration`) rather than Recovery Only with reads; this narrows D1's confirmed AC-DEL-002 reading for that launch only. Each release reads only its own schema. D8 adds export of a blocked older database, which completes AC-REST-004's "exportable". |
+| 22 | **A failed or not-yet-possible migration leaves data intact but unreadable by the new release** (D2 breakdown, 2026-10-11). | Migration Blocked keeps the old database's stores unchanged, is never Ready, and offers Retry. If readiness fails on the first launch of a schema-changing release, the Workspace is reported Integrity Blocked (`AwaitingMigration`) rather than Recovery Only with reads; this narrows D1's confirmed AC-DEL-002 reading for that launch only. Each release reads only its own schema. D8 adds export of a blocked older database, which completes AC-REST-004's "exportable" (decision 36). |
 | 23 | **Coherent agreement disagreements are repaired and disclosed; incoherent facts reject** (D2 breakdown, 2026-10-11). | A Trade mutation whose before-state disagrees with coherent facts commits, writes the expected lifecycle, Deviation (and from D6, Lot-Match) records, and lists each repair in its receipt. Incoherent facts return a no-write `IntegrityDisagreement`. Migration (D2) and Restore (D8) apply the same rule. Normal reads never repair. |
 | 24 | **Marks are entered in the Daily Review; D3 is merged into D4** (D3 breakdown, 2026-10-11). | There is no separate Marks page. D4 delivers Manual Marks, the session policy, `evaluate`, current figures on the Open list and Trade Detail, and the Daily Review together. D11's provider fills Marks when the Review opens. D3's number is retired so later numbers stay stable. |
 | 25 | **NYSE session policy: covered 2000 through the last published year (expected 2028); a session completes 30 minutes after its close** (D3/D4 breakdown, 2026-10-11). | Regular holidays come from rules; one-off closures and early closes come from a cited, versioned table. Outside coverage the app gives a diagnostic, never a guessed session. The close (16:00, or 13:00) stays the Review Cutoff for eligibility. The session becomes the Expected Mark Date and the latest Review Date at 16:30 (or 13:30). |
@@ -41,6 +41,13 @@ This document is the ordered list of vertical deliverables. It deliberately cont
 | 30 | **Spec reopened: Lot Matches are derived, never stored** (D6 breakdown, P23, 2026-10-17, at the user's explicit direction). | Matching order changes no Closed Trade's totals; it only splits a partly closed Trade's P&L between realized-to-date and open, and times the realization increments of the Outcomes curve. Trade Analysis still derives FIFO matches, lot-aware fees, and realized P&L from the effective Executions whenever needed, identified by (opening Execution, disposing Execution, FIFO); Trade Record stores no Lot-Match record, and an earlier-dated exit simply changes the derived result, disclosed in the receipt. Reopened passages: Trade Record's "Contract", "Record content", "Change protocol", and "Backup and Restore" (stored and backed-up Lot-Match links); the overview's authority-map row "Lot matching" and load-bearing rule 5; ADR 0002's "Lot Match set"; Restore's Lot-Match agreement check in Workspace and Trade Analysis; the delivery contract's rebuild item "active FIFO Lot Matches" (now a derived result); and AC-LIFE-003's Lot-Match case. The `specs/` files are unchanged here. |
 | 31 | **An underlying-price option Stop or Target is measured by the contract's value at expiration at its trigger price** (D7 breakdown, P24, 2026-10-17, at the user's direction). | The trader enters only the Underlying trigger. Its measurement value is the contract's intrinsic value at that price, a point on the Planned Expiration Payoff, frozen because the trigger and contract are frozen; 1R, Original Planned Reward, Ongoing Risk to Stop, Reward to Target, Overrun, Entry Quality, and the at-entry line all use it. No option pricing model is used. Trade Detail and the Review also show the position's value at expiration at the Underlying's exact latest close, labelled as an expiration value and kept apart from Mark-to-Market figures. An option Trade with underlying-price conditions needs both the contract's and the Underlying's Marks. Accepted tradeoff: expiration values ignore time value left at an early exit, so a long option's Stop on the worthless side of its strike makes 1R the whole premium. D10 must extend this to multi-leg structures, including those with two expirations. |
 | 32 | **A Mark may be exactly 0 for any Instrument, never negative** (D7 breakdown, P27, 2026-10-17, at the user's direction). | An option or a stock that closed with no value is recorded honestly as 0 rather than 0.01. Execution and intended entry prices stay positive. Amends D4 A37, T4.13, I4.8, and C4.12. |
+| 33 | **A backup is streamed, never built in memory** (D8 breakdown, P29, 2026-10-17). | The artifact is gzip-compressed canonical JSON, one value per line: a header, record lines by section, a closing line per section, and a final manifest with counts, exclusions, and digests. Export runs in a worker inside one read-only IndexedDB transaction, hashing with `@noble/hashes` and compressing with `fflate` synchronously, so a concurrent save commits after the snapshot and is wholly outside it. Verification and Restore stream the file through `DecompressionStream`. Saves wait while a backup runs, and the backup screen says so. |
+| 34 | **Restore preparation builds the complete candidate database; apply rechecks and flips the pointer** (D8 breakdown, P30, 2026-10-17). | Preparation stages, migrates, validates, repairs, and rebuilds inside an unreferenced candidate, so live data is untouched and apply is one atomic root transaction. Because it writes a database, preparation needs `Writable` readiness and otherwise returns `RuntimeNotWritable`; `Recovery Only` explains that Restore needs a browser that can save safely. |
+| 35 | **A backup's content version is the schema version it was read from** (D8 breakdown, P31, 2026-10-17). | The header carries `formatVersion` (line layout) and `schemaVersion`. Restore accepts every schema the release can migrate from (1 through the current one) through the same per-record transforms as startup migration, then validates against the current schema with `zod`. Transforms read only authoritative fields; private fields come only from the private rebuild. A schema change freezes a backup fixture at its version and proves Restore from every earlier one. |
+| 36 | **A blocked older database is exported at its own schema version** (D8 breakdown, P32, 2026-10-17). | Migration Blocked offers Download a copy and Verify; `IntegrityBlocked(AwaitingMigration)` offers Download a copy only, so it never claims a backup (glossary, Integrity Blocked); an unreadable root offers neither. Restore stays unavailable while blocked. |
+| 37 | **Restore is offered on the Backup page and at first run; a safety backup is required only when user data exists** (D8 breakdown, P33, 2026-10-17). | User data is any Trade, Journal outcome, observation, Institution, or Account. The confirmation's safety choice is Back up this journal first (download and verify inline, bound to the preview's target) or Replace without a backup (with its own warning acknowledgment). Apply accepts only a receipt issued in the same application instance and bound to the live binding. Provider credentials stay out of every backup, as the spec requires; the user declined reopening it for an encrypted credential section. |
+| 38 | **Backup round trip is a cumulative obligation** (D8 breakdown, P34, 2026-10-17). | AC-BACK-001 and AC-REST-001 are cumulative (full at D28); D11 adds the credential exclusion and provider non-contact. AC-LIFE-003 becomes full in D12, after D10 and D12 add their agreed record kinds. |
+| 39 | **The benchmark dataset is written as a backup artifact and loaded through the production Restore** (D8 breakdown, P35, 2026-10-17). | `bench:setup` restores it at first run, requiring zero issues and repairs. `verify:capacity` fails if the restored Workspace's usage exceeds the projection by more than 10%, and peak usage during a second Restore over it must stay within `3 × M`. |
 
 Review decisions accepted during the walkthrough are appended here.
 
@@ -49,7 +56,7 @@ Review decisions accepted during the walkthrough are appended here.
 - **Vertical and production-reachable.** Every deliverable is operated through the production UI, through the real application/domain code, against real IndexedDB persistence. No deliverable is layer-only. The one approved layer-only checkpoint, RC, is not a deliverable and advertises no capability (see "Layer-only exceptions").
 - **Selectors offer only deliverable values.** Strategies, Entry Types/definitions, Sources, reasons, Tag Types, Report Periods/families, Break Down By dimensions, and lifecycle filters appear only when the deliverable that can honor them lands.
 - **Seed additions are migrations.** Each deliverable that adds defaults bumps the Catalog or Journal seed-manifest version. Existing Workspaces receive the additions through the startup migration/seed path without overwriting trader changes.
-- **Durable-representation changes carry their migration.** A deliverable marked "schema change" bumps the schema version and includes the forward migration from every earlier supported version through the isolated candidate database and pointer flip. It also includes the migration-failure test. It freezes a raw fixture of its new schema version, produced by its own commands (as D1's T1.31 does for version 1), so every later migration is tested from every earlier version. From D8 onward it also bumps the backup artifact version and the Restore migration that goes with it.
+- **Durable-representation changes carry their migration.** A deliverable marked "schema change" bumps the schema version and includes the forward migration from every earlier supported version through the isolated candidate database and pointer flip. It also includes the migration-failure test. It freezes a raw fixture of its new schema version, produced by its own commands (as D1's T1.31 does for version 1), so every later migration is tested from every earlier version. From D8 onward, the new schema version is also the backup content version (decision 35): the deliverable freezes a backup fixture at that version, produced by its own `exportBackup`, and proves Restore from every earlier backup fixture through the same per-record transforms.
 - **Capability honesty.** Each deliverable adds exactly its completed operations and variants to the Installed Capability Manifest. Anything not yet delivered is absent from navigation and calls, never shown as a domain `Unavailable`.
 - **Gate.** Each deliverable ends with its cumulative unit and mock-free integration suites green, then a passing fresh browser critic, as required by the planning protocol. The browser part of those suites runs in Chromium with the faults build (decision 19). RC runs before every Cloudflare publish.
 
@@ -65,6 +72,7 @@ These scenarios cover properties of the whole product. Every deliverable must re
 | AC-DEL-004, AC-DEL-006 | Each new authoritative mutation returns `RuntimeNotWritable` outside `Writable`, at both the UI and persistence boundaries; readiness reruns at every boundary |
 | AC-UI-001, AC-UI-002 | Each new view has live narrow/wide resize with state kept, Loading/Ready/Empty/Error states, keyboard use, axe checks, and WCAG AA |
 | AC-REBUILD-001 | Each new index or projection rebuilds to observationally equivalent results |
+| AC-BACK-001, AC-REST-001 | Backup round trip (decision 38): each deliverable that adds or changes stored data extends the round-trip case (export, verify, Restore into an empty origin, equal views and identities) to its new record kinds; each schema change freezes a backup fixture and restores every earlier one (decision 35) |
 | AC-PERF-001 | Cold start and warm Open-list latency stay within budget at the dataset scale the deliverable supports (harness introduced in D2) |
 | AC-DEL-003 | Browser-tab launch and browser-neutral readiness each deliverable (Chromium; Firefox and WebKit through RC, decision 19); installation and installed launch in D28 (decision 9); production HTTPS evidence **pending** until the Cloudflare project exists (decision 4) |
 
@@ -79,7 +87,7 @@ These scenarios cover properties of the whole product. Every deliverable must re
 | D5 | [Deferred reflection and Journal Debt](D05-deferred-reflection-and-journal-debt.md) | 2 |
 | D6 | [Close a Long Stock position](D06-close-a-long-stock-position.md) | 3 |
 | D7 | [Single-leg options: happy path](D07-single-leg-options-happy-path.md) | 3 |
-| D8 | Backup and Restore | 3 |
+| D8 | [Backup and Restore](D08-backup-and-restore.md) | 3 |
 | D9 | Trade replay | 1 |
 | D10 | Multi-leg option Strategies | 3 |
 | D11 | Automatic closing prices (Pricing Provider) | 3 |
@@ -113,7 +121,7 @@ Approved by the user on 2026-10-11, during the D1 breakdown.
 - **Why no smaller vertical slice is available:** it adds no trader-visible behavior; its only output is evidence.
 - **Advertised capability:** none. The Installed Capability Manifest and navigation are unchanged.
 - **How it is verified:** it runs in all three engines with real browser state and no faults build: each readiness check failing alone and two failing together; Integrity Blocked; offline cold restart and kill-after-commit restart; update with the synthetic second release, the corrupt release, and offline retention; tab launch with an unknown user agent; and the capacity measurement in Firefox and WebKit. Each run records exact engine and OS versions. Any failure blocks publishing.
-- **Consumer and blocking edges:** D1 → RC, because RC needs D1's service worker, readiness gate, and update flow. RC → every Cloudflare publish. Deliverables that change delivery behavior add cases to RC; D8 adds backup and verification in `Recovery Only` and the after-Restore readiness boundary, and D28 adds installed launch.
+- **Consumer and blocking edges:** D1 → RC, because RC needs D1's service worker, readiness gate, and update flow. RC → every Cloudflare publish. Deliverables that change delivery behavior add cases to RC; D8 adds backup and verification in `Recovery Only`, the after-Restore readiness boundary, and real downloads and file selection of `.tjbackup` files (D8 B8.1, B8.3, B8.8, B8.10), and D28 adds installed launch.
 - **When it is built:** before the first Cloudflare publish (user's choice). Until it runs, every AC-DEL row's Firefox, WebKit, and real-state evidence is marked pending RC, and engine-specific defects may surface only then.
 - **Effect on facts or historical coverage:** none.
 - **Task breakdown:** its own file in `plan/`, written when it is scheduled.
@@ -422,7 +430,8 @@ Includes the former D3, Manual Marks and ongoing risk/reward (decision 24).
 
 - *Backup:* full backup export of one snapshot as a file download (Downloaded, with no receipt), and read-back verification that issues a `CompletedBackupReceipt`.
 - *Restore preparation:* treats the artifact as untrusted and is nonmutating. It verifies digests and versions, validates every module section, rederives lifecycle and Deviation agreement (Lot Matches are derived, decision 30), migrates supported older versions, and discloses repairs.
-- *Restore application:* a replace-only atomic apply with an exact-target safety receipt or an explicit decline, followed by rerunning readiness.
+- *Restore application:* a replace-only atomic apply with an exact-target safety receipt or an explicit decline, followed by rerunning readiness. Preparation builds the complete candidate and needs `Writable` readiness (decision 34). Restore is offered on the Backup page and on the first-run screen; a safety choice is required only when user data exists (decision 37).
+- *Blocked databases:* a Migration Blocked or `AwaitingMigration` journal can be downloaded as a copy at its own schema version; only Migration Blocked can verify it (decision 36).
 - *Recovery Only:* gains backup export and verification.
 - *Warnings:* the not-protected warning now recommends a backup.
 - *Coverage:* backup and Restore cover everything delivered so far, including stock and single-leg option Trades.
@@ -432,19 +441,20 @@ Includes the former D3, Manual Marks and ongoing risk/reward (decision 24).
 - *Operations:*
   - Workspace: `exportBackup`, `confirmBackup`, `prepareRestore`, and `applyPreparedRestore`.
   - Every fact module: `exportSnapshot`, `prepareRestore`, and `applyPreparedRestore`.
-- *Mechanisms:* the canonical-JSON artifact with section and full SHA-256 digests; `CompressionStream`; the Workspace Backup Manifest; `zod` parsing of untrusted input; reuse of the candidate-database Restore path; the benchmark dataset loaded through a real Restore.
+- *Mechanisms:* the streamed canonical-JSON-lines artifact with section and full SHA-256 digests, built in a worker inside one read-only transaction (decision 33); content version equal to the schema version (decision 35); the Workspace Backup Manifest; `zod` parsing of untrusted input; reuse of the candidate-database Restore path; the benchmark dataset loaded through a real Restore.
 - *Seeds:* none.
 - *Durable representation:* backup artifact format v1. This is portable and stores nothing in the Workspace, so the Workspace schema does not change.
 
 **Acceptance**
 
-- AC-REST-001 — full.
+- AC-REST-001 — partial (cumulative, decision 38). Declared scope: provider non-contact is re-proven in D11, and each data-adding deliverable extends the round trip.
 - AC-REST-002 — full.
 - AC-REST-003 — full.
 - AC-REST-004 — full.
 - AC-DEL-005 — full.
-- AC-LIFE-003 — full.
-- AC-BACK-001 — partial. Declared scope: secrets exclusion of the provider credential is completed in D11; everything else is full.
+- AC-LIFE-003 — partial (Restore branch for lifecycle, including Closed Trades, and Entry Size). Declared scope: D10 and D12 add their agreed record kinds; full in D12 (decision 38).
+- AC-BACK-001 — partial (cumulative, decision 38). Declared scope: the provider credential exclusion arrives in D11, and corrections, Voids, Daily Bars, revised definitions, and reference changes in their deliverables.
+- AC-DEL-006, AC-REBUILD-001 — cumulative (the after-Restore readiness boundary; Restore as the reconstruction path).
 
 **Parallelism.** Each module's section export and prepare can be built in parallel once the artifact envelope is fixed. The Restore preview and confirmation UI proceeds against the fixed preview model.
 
@@ -1054,7 +1064,7 @@ Adapters are discovered at build time from one adapters folder, so adding one ch
 
 **Shared resources that need a single owner at a time:**
 
-1. The IndexedDB schema version and the migration chain, including the Trade Record document format and, from D8, the backup artifact version.
+1. The IndexedDB schema version and the migration chain, including the Trade Record document format and, from D8, the backup content version, which is the schema version (decision 35).
 2. The Catalog and Journal seed manifests.
 3. The Installed Capability Manifest.
 4. The release pipeline: Offline Release Inventory, service-worker version, and Web App Manifest.
@@ -1086,7 +1096,7 @@ The deliverable listed is the one where each scenario becomes **full**.
 | AC-PLAN-002 | D10 | | AC-REV-003 | D4 |
 | AC-LIFE-001 | D6 | | AC-REV-004 | D12 |
 | AC-LIFE-002 | D15 | | AC-REV-005 | D15 |
-| AC-LIFE-003 | D8 | | AC-REV-006 | D15 |
+| AC-LIFE-003 | D12 | | AC-REV-006 | D15 |
 | AC-POS-001 | D6 | | AC-MARK-001 | D4 |
 | AC-POS-002 | D10 | | AC-MARK-002 | D19 |
 | AC-POS-003 | D21 | | AC-MARK-003 | D11 |
@@ -1105,8 +1115,9 @@ The deliverable listed is the one where each scenario becomes **full**.
 | AC-JOUR-002 | D13 | | AC-RPT-006 | D27 |
 | AC-JOUR-003 | D5 | | AC-REF-001 | D22 |
 | AC-JOUR-004 | D26 | | AC-REF-002 | D23 |
-| AC-JOUR-005 | D13 | | AC-BACK-001 | D11 |
-| AC-JOUR-006 | D20 | | AC-REST-001, AC-REST-002, AC-REST-003, AC-REST-004 | D8 |
+| AC-JOUR-005 | D13 | | AC-BACK-001 | D28 (cumulative) |
+| AC-JOUR-006 | D20 | | AC-REST-001 | D28 (cumulative) |
+| | | | AC-REST-002, AC-REST-003, AC-REST-004 | D8 |
 | AC-JOUR-007 | D26 | | AC-REBUILD-001 | D28 (cumulative) |
 | AC-DEL-001 | D28 (cumulative) | | AC-UI-001, AC-UI-002 | D28 (cumulative) |
 | AC-DEL-002 | D1 | | AC-PERF-001 | D28 (cumulative) |
@@ -1124,8 +1135,8 @@ At the user's direction (2026-10-11), the clause-by-clause check of each accepta
 
 1. ~~**AC-RPT-005 needs a Tag Select Prompt.**~~ Resolved by decision 17: Customize Journal prompts (D26) now precedes the Journal Field report (D27).
 2. **AC-REF-001 (D22) includes retire and protection policy behavior.** Retirement arrives in D23, so the scenario may only become full there.
-3. **AC-BACK-001 (D11) and AC-REST-001 (D8) presume corrections, Voids, and every data kind.** Those arrive through D23. They may need to become cumulative obligations, re-proven by each data-adding deliverable.
-4. **AC-LIFE-003 (D8) covers each kind of agreed record.** Planned-Leg Terms and Unplanned Exposure (D10) and Stop Discipline (D12) add new recorded Deviation kinds after D8. ~~Its "mutation is prepared" branch also needs an explicit owner, likely D2.~~ Resolved: D2 owns it (decision 23). The Lot-Match case is reopened by decision 30, because no Lot Match is stored; D6 adds Closed lifecycle agreement.
+3. ~~**AC-BACK-001 (D11) and AC-REST-001 (D8) presume corrections, Voids, and every data kind.** Those arrive through D23. They may need to become cumulative obligations, re-proven by each data-adding deliverable.~~ Resolved by decision 38: both are cumulative.
+4. ~~**AC-LIFE-003 (D8) covers each kind of agreed record.**~~ Resolved by decision 38: full in D12, with D10 and D12 adding their kinds. Planned-Leg Terms and Unplanned Exposure (D10) and Stop Discipline (D12) add new recorded Deviation kinds after D8. ~~Its "mutation is prepared" branch also needs an explicit owner, likely D2.~~ Resolved: D2 owns it (decision 23). The Lot-Match case is reopened by decision 30, because no Lot Match is stored; D6 adds Closed lifecycle agreement.
 5. ~~**AC-SET-003 (D7) requires Settlement Due on Trade Detail as well as in Daily Review.**~~ Resolved in D7 (T7.16, I7.6).
 6. **AC-MARK-002 (D11 and D19) needs Market Data's "deliberate Manual valuation override" save intention.** D11 does not yet list it.
 7. ~~**AC-MARK-004 says historical gaps are visible and nonblocking in Daily Review.**~~ Resolved: D4 lists skipped sessions as optional gaps that do not block completion (decision 27), and claims AC-MARK-004 as partial.
@@ -1153,16 +1164,25 @@ At the user's direction (2026-10-11), the clause-by-clause check of each accepta
 ### Raised by the D6 breakdown, for later breakdowns
 
 1. ~~**D7:** AC-REV-002's order becomes Marks, settlement, the Trade walk, then the owed-reflection group (D6 P20). An Expiration that closes a Trade still creates a Close Review obligation, with no Close Reason. D6's position-path rules (P22) and derived FIFO (decision 30) apply to option Lots.~~ Resolved in D7 (A103, A104, A107, T7.14, I7.5, I7.7).
-2. **D8:** Restore verifies lifecycle and Deviation agreement only (decision 30), and is the first path that can repair a Closed Trade's lifecycle disagreement, because no Position Change is accepted on flat facts (D6 P22, A96).
+2. ~~**D8:** Restore verifies lifecycle and Deviation agreement only (decision 30), and is the first path that can repair a Closed Trade's lifecycle disagreement, because no Position Change is accepted on flat facts (D6 P22, A96).~~ Resolved in D8 (A132, T8.8, I8.7).
 3. **D10:** Not Entered, which needs an untouched second Planned Leg (D6 section 1.2).
 4. **D15:** correcting or Voiding an exit can reopen a Closed Trade; decide how its Close Reason and Close Review outcome are retired, since D6 rejects new Position Changes on Closed Trades (P22).
 5. **D24:** the cumulative realized-dollar curve reads derived Lot-Match realization increments, and its tie order uses the derived identity (opening Execution, disposing Execution), not a stored Lot Match identity (decision 30).
 
 ### Raised by the D7 breakdown, for later breakdowns
 
-1. **D8:** backup and Restore cover option Plan facts, Exercise Intent, option Executions, Expiration settlement facts, and schema 6.
+1. ~~**D8:** backup and Restore cover option Plan facts, Exercise Intent, option Executions, Expiration settlement facts, and schema 6.~~ Resolved in D8 (T8.2, I8.1).
 2. **D10:** extend decision 31 to multi-leg structures. A structure with two expirations, such as the PMCC, has no single payoff to read a trigger's value from, so it needs its own rule. D10 also adds option-price (structure-value) Stops and Targets and returns multiple-expiration payoff as Unavailable.
 3. **D11:** the provider must supply both contract closes and Underlying closes, map option Instrument keys (`OPT:<symbol>:<expiration>:<C|P>:<strike>`) to its contract symbols, and pass a 0 close through as 0 (decision 32).
 4. **D12:** Stop Discipline on an option's underlying-price Stop uses the Underlying's Daily Bars and Marks as its evidence.
 5. **D15:** correcting or Voiding an Expiration reopens the Trade; its Close Review outcome raises the same question as D6 item 4.
 6. **D20:** Assignment or Exercise may share a Position Change with a partial Expiration, lifting D7's rule that an Expiration settles all open contracts (D7 A106). D20 also clears Settlement Due on assigned or exercised contracts (decision 10) and uses the Exercise Intent captured in D7.
+
+### Raised by the D8 breakdown, for later breakdowns
+
+1. **Every deliverable that adds or changes stored data:** extend the backup round-trip case to the new record kinds (decision 38). A schema change also adds its stores and private fields to the per-schema layout table (D8 A149), extends the current-schema `zod` record schemas, freezes `tests/fixtures/backup-v<N>/`, and restores every earlier backup fixture (decision 35).
+2. **D10:** add AC-LIFE-003 (partial) to D10's acceptance list, with a disagreement fixture for Planned-Leg Terms and Unplanned Exposure through normal reads, mutation preparation, and Restore preparation.
+3. **D11:** keep provider credentials out of the backup (decision 37): the backup keeps the nonsecret provider settings, the Restore preview lists "needs its API key again", and the restored provider shows Needs Setup with an "Enter your API key" action. Extend D8's I8.3 with a credential canary saved through `configureProvider`, prove that Restore preparation contacts no provider with one configured (AC-REST-001), and change D11's AC-BACK-001 claim from full to partial (cumulative, decision 38). Daily Bars join the `marketData` section.
+4. **D12:** mark AC-LIFE-003 full, adding Stop Discipline to its disagreement fixtures. Its Mark-evidence checks during Restore read the candidate's observations (decision 34), and the Stop Discipline coverage start (decision 12) joins the `workspace` section.
+5. **D13 and D15:** Void and Replace versions, Debt reopening, and corrected facts join the round trip and the section validators; their Restore repairs follow decision 23.
+

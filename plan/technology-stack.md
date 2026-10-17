@@ -18,6 +18,7 @@ Profile A: a TypeScript, React, and IndexedDB static PWA hosted on Cloudflare Pa
 | Exact arithmetic | Small in-house BigInt rational type; finite-decimal inputs stored as strings |
 | Time and calendar | Temporal through `temporal-polyfill`; explicit injected clock; rule-based NYSE session policy |
 | Untrusted input parsing | `zod` 4 for backup/Restore artifacts |
+| Backup digests and compression | `@noble/hashes` (incremental SHA-256) and `fflate` (streaming gzip) for export; native `DecompressionStream` for reading (added 2026-10-17, decision 33) |
 | Testing | Vitest 4.1 (unit and Node integration with disclosed `fake-indexeddb`); Playwright with Chromium, Firefox, and WebKit against the built app on the secure loopback origin; `@axe-core/playwright` |
 | Hosting | Cloudflare Pages, a dedicated `*.pages.dev` HTTPS origin for this implementation |
 | Pricing Provider | Marketdata.app as the initial adapter behind the Pricing Provider port; adapters are discovered at build time so another provider needs only a new adapter |
@@ -57,7 +58,7 @@ Workspace time zone and exchange-session arithmetic use Temporal (`temporal-poly
 
 ### Backup, verification, and migration
 
-A backup is canonical JSON with section and full-artifact SHA-256 digests, compressed with `CompressionStream` and offered as an ordinary download. Verification reads back the trader-selected file through standard file selection, then compares its full digest and source binding before issuing a `CompletedBackupReceipt`. Secrets and private projections are excluded. Schema versions migrate forward through the isolated candidate database described above.
+A backup is gzip-compressed canonical JSON, one value per line, with section and full-artifact SHA-256 digests, offered as an ordinary download. Export runs in a worker inside one read-only IndexedDB transaction, so it digests with `@noble/hashes` (incremental SHA-256) and compresses with `fflate`, both synchronous; verification and Restore stream the file through the native `DecompressionStream` (implementation plan, decision 33). Verification reads back the trader-selected file through standard file selection, then compares its full digest and source binding before issuing a `CompletedBackupReceipt`. Secrets and private projections are excluded. Schema versions migrate forward through the isolated candidate database described above.
 
 ### Scale and latency
 

@@ -327,7 +327,7 @@ Folded: option Executions add no Trade Record behavior beyond the Instrument val
 
 ### T7.11 Section validators
 
-Seam: `validateSection(snapshot)` exported by Trade Record, Reference Catalog, and Market Data.
+Seam: `validateSection(snapshot)` exported by Trade Record, Reference Catalog, and Market Data, over a batched record source (D2 T2.9 as amended by D8 A140).
 
 ```text
 describe("Trade Record section, options")
