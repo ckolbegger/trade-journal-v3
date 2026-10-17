@@ -88,6 +88,11 @@ The three user stories this deliverable closes (`plan/vertical-deliverables.md:1
    (`journal.md:129`, `journal.md:135`). Tradeoff: reopen restores the *same* Debt identity with its
    original trigger-time snapshot rather than creating a fresh obligation, which keeps one-key-one-
    outcome true but means a reopened Debt's due time is its original due time, not a new one.
+   **Settled by decision D13.** `Defer` creates the Debt with its trigger-time due semantics and
+   `journal.md:137` states that later definition changes do not alter what is owed, so reopen restores
+   those semantics instead of assigning a new due time. The visible consequence — a Debt reopened
+   after its due time is immediately due at the next Review cutoff and keeps Review completion
+   Incomplete until it is answered again — is disclosed in §8 and asserted by T7 and T10.
 3. **Direct Journal creation is limited to Review Note and Trader Reflection.** Every
    workflow-required outcome (Plan Reflection, Position Change Reflection, Close Review, Daily Trade
    Review) passes through prepared effects and never direct `save` (`journal.md:163`,
@@ -557,6 +562,7 @@ describe("A retry updates the same identity under expected revision")
 describe("Voiding the sole settlement Entry reopens that same Debt atomically")
   it should return the key to OutstandingDebt with the Debt's original trigger-time definition snapshot when the only settlement Entry is Voided
   it should restore the same Debt identity, not create a fresh obligation, when the reopen happens
+  it should keep the reopened Debt's original due time and never recompute it at the Void moment, so the due time is the one the Defer established
   it should return the reopen transition inside the accepted Void result so the caller renders it without a query
   it should leave the key Retired and write nothing when the sole settlement Entry is Voided after ownership evidence already retired the Debt
 
@@ -580,6 +586,7 @@ underlying Trade facts never changed. Only the IndexedDB instance is substituted
 | Second outcome conflicts | `pnpm vitest run src/journal/obligation-key.spec.ts -t "conflicts rather than duplicating"` — the implementation appends a second outcome, so the key returns two and the case fails on cardinality | `pnpm vitest run src/journal/obligation-key.spec.ts -t "conflicts rather than duplicating"` — passes |
 | Retry same identity | `pnpm vitest run src/journal/obligation-key.spec.ts -t "retry updates the same identity"` — the retry takes the create path, so the case observes two settlement identities | `pnpm vitest run src/journal/obligation-key.spec.ts -t "retry updates the same identity"` — passes |
 | Reopen on Void | `pnpm vitest run src/journal/obligation-key.spec.ts -t "reopens that same Debt atomically"` — the Void path does not touch the obligation key, so the key stays Completed and the case fails | `pnpm vitest run src/journal/obligation-key.spec.ts -t "reopens that same Debt atomically"` — passes |
+| Reopen keeps due time | `pnpm vitest run src/journal/obligation-key.spec.ts -t "keeps its original due time"` — the Void path re-stamps the due time from the reopen moment, so the case observes a later due time | `pnpm vitest run src/journal/obligation-key.spec.ts -t "keeps its original due time"` — passes |
 | Concurrent submissions | `pnpm vitest run src/journal/obligation-key.spec.ts -t "cannot both commit"` — the expected-revision guard is missing on the settle path, so both submissions commit | `pnpm vitest run src/journal/obligation-key.spec.ts -t "cannot both commit"` — passes |
 
 #### T8 — `B` `Journal.save` Debt resolution validated against the Debt's original snapshot
@@ -706,6 +713,7 @@ describe("DailyReview.getDebt pages due Debt at or before the Review cutoff")
   it should return debt whose due time precedes the cutoff and omit debt due after it when the request pages one exact Review Date
   it should include Debt whose originating Trade is no longer Open when that Debt is still Outstanding, because the page is global rather than restricted to Open Trades
   it should return a bounded page with a continuation cursor when more due Debt exists than the requested bound
+  it should treat a Debt reopened after its original due time as due at the next Review cutoff, ordered by that original due time rather than by the reopen moment
 
 describe("DailyReview.getDebt orders workflow-bound management Debt first")
   it should return management Debt before Journal-only Debt even when the Journal-only Debt is older when both are due
@@ -732,6 +740,7 @@ Debt was manufactured for a Trade with no Action. Only the IndexedDB instance is
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
 | Due-through paging | `pnpm vitest run src/daily-review/get-debt.spec.ts -t "at or before the Review cutoff"` — `getDebt` is unimplemented, so the call resolves nothing and the case fails on an empty page | `pnpm vitest run src/daily-review/get-debt.spec.ts -t "at or before the Review cutoff"` — passes |
+| Reopened Debt is due | `pnpm vitest run src/daily-review/get-debt.spec.ts -t "reopened after its due time"` — the implementation orders by the last transition time, so the reopened Debt falls outside the due page | `pnpm vitest run src/daily-review/get-debt.spec.ts -t "reopened after its due time"` — passes |
 | Management Debt first | `pnpm vitest run src/daily-review/get-debt.spec.ts -t "orders workflow-bound management Debt first"` — the implementation sorts only by due time, so the older Journal-only Debt comes first | `pnpm vitest run src/daily-review/get-debt.spec.ts -t "orders workflow-bound management Debt first"` — passes |
 | Exact stored form | `pnpm vitest run src/daily-review/get-debt.spec.ts -t "one exact stored form"` — the form is re-rendered from the current definition, so the historical labels are missing | `pnpm vitest run src/daily-review/get-debt.spec.ts -t "one exact stored form"` — passes |
 | Missing Action is not Debt | `pnpm vitest run src/daily-review/get-debt.spec.ts -t "absence, not Debt"` — the implementation materialises a Debt for the missing Action, so the case observes an Outstanding Debt | `pnpm vitest run src/daily-review/get-debt.spec.ts -t "absence, not Debt"` — passes |
@@ -1257,11 +1266,15 @@ is owned by D2; this deliverable re-exercises them without claiming new ownershi
   implements the dimensions and projections its own surfaces read plus the ones the Debt and outcome
   contracts require, and rejects unsupported dimensions as typed no-read results. The remainder is
   needed by D17 and D19 and is not claimed here.
-- **A reopened Debt keeps its original due time.** Decision 2's reading makes reopen restore the same
-  Debt identity with its original trigger-time snapshot; `journal.md:129` says the Debt is reopened
-  but does not state whether a new due time is assigned. This breakdown chooses the same identity and
-  therefore the same due time, and flags it as needing alignment because the alternative would give
-  one key two Debt identities.
+- **A reopened Debt keeps its original due time, and is therefore immediately due.** `journal.md:129`
+  reopens "that same Debt" without stating whether a new due time is assigned; decision D13 settles it
+  as the original one, because `Defer` creates the Debt with its trigger-time due semantics and
+  `journal.md:137` forbids later changes from altering what is owed, so reopen restores a frozen fact
+  rather than creating a new due source. The consequence is deliberate and visible: a Debt reopened
+  after the cutoff is due at the next Review cutoff (`daily-review.md:74`) and keeps Review completion
+  Incomplete (`journal.md:141`) until it is answered again, which is the honest state of an obligation
+  that was never answered. `T7` asserts the due time is unchanged, `T10` asserts the reopened Debt is
+  due at the next cutoff, and `T12`'s existing due-Debt case covers the completion effect.
 - **A criterion no deliverable can demonstrate yet.** The Timeline and Analysis projections at full
   scope, definition revision, corrections and reports are all outside this deliverable; §0 and the
   section 4 intentional non-defects state that rather than hiding it.

@@ -823,6 +823,53 @@ Close Reason, which D6 T4 asserts with a reason-independence case.
 
 ---
 
+## D13 — A reopened Debt keeps its identity and its original due time
+
+**Status:** settled by user decision, 2026-10-11. **Branch-local**, not promoted into `specs/`.
+
+### The gap
+
+`journal.md:129` says Voiding the only Entry that settled Debt "atomically reopens **that same Debt**",
+which fixes identity, but no sentence states whether the reopened Debt receives a new due time.
+`daily-review.md:74` makes due-ness a comparison of due time against the Review cutoff, so the answer
+is observable in what the next morning's Review shows.
+
+### Decision
+
+The reopened Debt keeps its identity and its original due time. `journal.md:137` says `Defer` creates
+Debt with its trigger-time definition snapshot, Anchor, origin, due semantics and settlement route,
+and that later definition changes do not alter what is owed. Reopen is a state transition of the
+obligation key, not a second `Defer`, so it restores those frozen semantics rather than assigning a
+new due time.
+
+The consequence is deliberate: a Debt reopened after its cutoff is immediately due at the next Review
+cutoff (`daily-review.md:74`), and due Debt keeps Review completion Incomplete (`journal.md:141`) until
+it is answered again. That is the honest state of an obligation that was never answered.
+
+### Rejected alternatives
+
+- **Reset the due time at reopen.** Rejected: it needs a second due-time source with no creating event,
+  or a mutation of the trigger-time fact that `journal.md:137` freezes. It would also grant a fresh
+  window for an obligation that was already owed.
+- **Create a new Debt identity.** Rejected: `glossary.md:197` constrains the *current* outcome, so this
+  is representable only by retiring the old Debt, and the retirement evidence `journal.md:137` and
+  `:139` name concerns the Debt's origin or underlying facts, not its answer being Voided. It would
+  also churn identity for an obligation whose content never changed.
+
+### Consequences
+
+- No new stored field: the due time is carried by the `Defer` fact, so reopen needs no due-time
+  override and no migration.
+- `T7` asserts the due time is unchanged, `T10` asserts a reopened Debt is due at the next cutoff, and
+  `T12`'s existing due-Debt case covers completion. D5 §8 records the visible consequence.
+
+### Not changed
+
+`specs/` is untouched; the obligation-key invariant, the reopen rule and the retirement evidence are
+unchanged. D5 §1 decision 2 already chose this shape and now cites this decision.
+
+---
+
 ## Still open
 
 Specification gaps from intake remain limited to D1 and D2. D3 records the approved stack, D4 affirms
@@ -831,8 +878,9 @@ definitions, D8 records the `Given`-setup mutation rules, including its three ti
 prohibition on using authoritative-fact mutation to establish ordinary behaviour, D9 records the stop
 and target condition model across the option arc, and D10 records that fees are captured as facts and
 excluded from every calculation. D11 fixes the Terminal Disposition shape and the shared mechanism
-vocabulary, and D12 records that the `Rolled` Close Reason is selectable by policy before any Roll
-workflow exists. The D3 verification items must be resolved inside the plan.
+vocabulary, D12 records that the `Rolled` Close Reason is selectable by policy before any Roll
+workflow exists, and D13 records that a reopened Debt keeps its identity and its original due time.
+The D3 verification items must be resolved inside the plan.
 
 The vertical deliverable list is recorded in [vertical-deliverables.md](vertical-deliverables.md).
 The task-level breakdowns for D1–D7 are drafted under

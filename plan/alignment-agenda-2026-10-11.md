@@ -38,6 +38,7 @@ Both must report zero failures **and zero warnings**. Warnings do not fail the e
 | 2 | `assessPlan`'s input shape | Condition model fixed: discriminated union on `kind`, `conditionId`, `role`, `monetaryBoundary` on every underlying-price condition, view-only `comment`; plural OR set from D2; `StructureValueCondition` reserved, not installed before D8 | decision **D9**; applied to D2 and D4 |
 | 3 | Fee handling | **Superseded.** Fees are captured as a fact and excluded from every calculation; the cent-apportionment rule is **withdrawn, not solved** | decision **D10** |
 | 4 | `RecordedSequence` | One per-Workspace monotonic counter, assigned at commit in the candidate's **declared member order**; the candidate carries that order and `derive` tie-breaks with it because no sequence exists during preparation | D3 §1 decision 3, T2 |
+| 5 | A reopened Debt: same identity and due time, or a new one | Same identity **and** original due time. Reopen is a state transition of the obligation key, not a second `Defer`, so it restores the trigger-time due semantics that `journal.md:137` freezes; a reopened Debt is therefore immediately due and keeps Review completion Incomplete until answered again. (c) would need unnamed retirement evidence; (b) a second due source or a mutation of a frozen fact. | decision **D13**; D5 §1 decision 2, T7, T10, §8 |
 | 6 | Terminal Disposition's exact structured shape | Result union `Applicable(members) \| NotApplicable(stableReason, structuredDetails)`; members `{ mechanism, sourceFactIdentity, instrument, disposedQuantity }`; exact positive magnitude; `FactOrder` member order; `Mixed` derived rather than carried; one shared five-kind `MechanismKind` | decision **D11**; D6 §1 decision 2, T4/T16, §8 item 9 |
 | 11 | The `Rolled` Close Reason exists before any Roll workflow | Selectable at D6. `reference-catalog.md:29` makes an inactive reason a Retired one, `:39` forbids retiring seeded taxonomy values, and AC-REF-001:390 files `Rolled` under that policy, so "while Roll is supported" scopes selectability in time rather than conditioning it. A `Rolled` close with no lineage is inert: the relation is one-directional and no derived value reads the reason. **This reverses the recommendation in §3.11.** | decision **D12**; D6 T3, §8 item 6 |
 
@@ -61,23 +62,31 @@ decision plus a disclosed reading.
 
 ### 5. A reopened Debt: same identity and due time, or a new one?
 
+> **Settled 2026-10-11 — decision D13: same identity and original due time.** The text is kept for the
+> reasoning, not as an instruction.
+
 **Question.** When Voiding the sole Entry that settled a Debt reopens it, does the reopened Debt keep
 its original identity **and** its original due time, get a new due time, or become a new Debt?
 
 **Fixed by the spec.** `journal.md:129` says Voiding the only such Entry "atomically reopens **that
 same Debt**", which reads identity-preserving. `glossary.md:197` requires one obligation key to have
-exactly one current outcome. The spec never says whether a new due time is assigned.
+exactly one current outcome, and `journal.md:137` fixes that `Defer` creates the Debt with its
+trigger-time due semantics and that later changes do not alter what is owed. The spec never says
+whether a new due time is assigned.
 
 **Options.**
 - **(a) Same identity, original due time** — what D5 currently decides.
 - **(b) Same identity, due time reset to the reopening moment or the next Review cutoff.**
 - **(c) New Debt identity.**
 
-**Recommendation: (a).** (c) would give one obligation key two Debts and break `glossary.md:197`.
-Between (a) and (b), (a) follows "that same Debt" most directly. **Consequence to disclose either
-way:** a Debt reopened today with yesterday's due time is immediately overdue, which is defensible —
-it was never answered — but it changes what the daily review shows the next morning, so it should be a
-stated choice rather than an accident. Land in D5 §1 decision 2 and §8, and in D4's due-ordering test.
+**Recommendation: (a).** (c) is representable only by retiring the old Debt, and the retirement
+evidence named at `journal.md:137` and `:139` concerns the Debt's origin or underlying facts rather than
+its answer being Voided, so (c) would churn identity for an unchanged obligation. Between (a) and (b),
+(a) follows both "that same Debt" and the frozen trigger-time due semantics. **Consequence to disclose
+either way:** a Debt reopened today with yesterday's due time is immediately overdue, which is
+defensible — it was never answered — but it changes what the daily review shows the next morning, so it
+should be a stated choice rather than an accident. Lands in D5 §1 decision 2, T7, T10 and §8; the
+due-ordering tests are D5:T10, which D4 only consumes.
 
 ### 6. Terminal Disposition's exact structured shape
 
