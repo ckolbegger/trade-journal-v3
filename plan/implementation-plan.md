@@ -1,9 +1,9 @@
 # Implementation plan: vertical deliverables
 
-Status: **draft, under review**. Not frozen.
+Status: **frozen, revision 1, approved by the user on 2026-10-17** (see "Freeze record"). Planning continues as a rolling wave (decision 40): each later deliverable's task breakdown is an approved revision of this frozen plan.
 Basis: the frozen `specs/` baseline and the approved stack in [technology-stack.md](technology-stack.md) (Profile A: React 19 + IndexedDB, hand-written service worker, Cloudflare Pages; Marketdata.app behind a replaceable Pricing Provider adapter). Branch `claude-opus-5.5`, `DEV_PORT=5175`.
 
-This document is the ordered list of vertical deliverables. It deliberately contains no task breakdowns, `describe`/`it should` cases, red/green procedures, or per-task evidence; those come later, per deliverable, once this list is agreed.
+This document is the ordered list of vertical deliverables and the decisions that govern them. Task breakdowns (`describe`/`it should` cases, red/green procedures, per-task evidence) live in one file per deliverable, linked from the summary table; D1–D8 have them, and D9–D28 receive theirs one at a time before implementation (decision 40). The [acceptance matrix](acceptance-matrix.md) has one row per scenario.
 
 ## Recorded decisions
 
@@ -48,8 +48,41 @@ This document is the ordered list of vertical deliverables. It deliberately cont
 | 37 | **Restore is offered on the Backup page and at first run; a safety backup is required only when user data exists** (D8 breakdown, P33, 2026-10-17). | User data is any Trade, Journal outcome, observation, Institution, or Account. The confirmation's safety choice is Back up this journal first (download and verify inline, bound to the preview's target) or Replace without a backup (with its own warning acknowledgment). Apply accepts only a receipt issued in the same application instance and bound to the live binding. Provider credentials stay out of every backup, as the spec requires; the user declined reopening it for an encrypted credential section. |
 | 38 | **Backup round trip is a cumulative obligation** (D8 breakdown, P34, 2026-10-17). | AC-BACK-001 and AC-REST-001 are cumulative (full at D28); D11 adds the credential exclusion and provider non-contact. AC-LIFE-003 becomes full in D12, after D10 and D12 add their agreed record kinds. |
 | 39 | **The benchmark dataset is written as a backup artifact and loaded through the production Restore** (D8 breakdown, P35, 2026-10-17). | `bench:setup` restores it at first run, requiring zero issues and repairs. `verify:capacity` fails if the restored Workspace's usage exceeds the projection by more than 10%, and peak usage during a second Restore over it must stay within `3 × M`. |
+| 40 | **Rolling-wave freeze** (plan freeze, 2026-10-17, at the user's direction). | The plan freezes with task-level breakdowns for D1–D8, and with D9–D28 at the deliverable level (stories, capabilities, acceptance claims, and blocking order). The user judged that breaking down all 27 deliverables before any code exists would rest on assumptions implementation is certain to overturn. **This departs from the planning protocol**, whose Phase 6 freezes a "complete task graph" with "per-task TDD red/green or structural evidence" for every deliverable. The departure is recorded here, not made silently. Before any deliverable without a breakdown is implemented, its breakdown is written and approved as a revision of the frozen plan under the protocol's own clause ("a required deviation pauses work, identifies affected acceptance scenarios and durable compatibility, and obtains approval before the frozen plan is revised"). Each revision gets the next revision number and a tag, names any amendment to an earlier (possibly implemented) deliverable together with its migration and fixture consequences, and updates the acceptance matrix rows it touches. |
+| 41 | **D4's P14 is settled before D4's first task, not before the freeze** (plan freeze, 2026-10-17, at the user's direction). | P14, the boundary between the "quantified pressure" and "routine" attention bands, changes public behavior only in D4's Review. D1 and D2 do not touch it. It no longer blocks the freeze; it blocks the start of D4's implementation, and its answer is recorded as a revision. |
+| 42 | **Package versions pinned** (plan freeze, 2026-10-17). | Each package is the newest stable release on or before 2026-10-03 within the approved majors, listed in [technology-stack.md, "Pinned versions"](technology-stack.md#pinned-versions) with the browser and OS provenance. TypeScript is 6.0.3, the stack's planned fallback, because `typescript-eslint` does not support 7.0. React Router stays on 7 and Vitest on 4.1, as approved, although newer majors exist. Node.js is 24.21.0 LTS. |
 
 Review decisions accepted during the walkthrough are appended here.
+
+## Freeze record
+
+Protocol Phase 6, adapted by decision 40.
+
+| Item | Record |
+|---|---|
+| Repository path | `plan/implementation-plan.md` on branch `claude-opus-5.5` of `ckolbegger/trade-journal-v3`, worktree `worktrees/claude-opus-5.5` |
+| Immutable revision | **Revision 1**: the commit tagged `claude-opus-5.5-plan-r1`. Later revisions are tagged `claude-opus-5.5-plan-r<n>`. |
+| Stack and versions | [technology-stack.md](technology-stack.md), Profile A, with ["Pinned versions"](technology-stack.md#pinned-versions) (decision 42) |
+| Browser and OS provenance | Chromium 153.0.8010.12, Firefox 155.0, and WebKit 26.6 as bundled with Playwright 1.63.0, on macOS 26.6.2 (25G83) arm64. This is provenance, not a support allowlist. |
+| Task graph and boundaries | The 27 ordered deliverables in the summary table. Task graphs for D1, D2, and D4–D8 are in their breakdown files; D9–D28 get theirs by revision (decision 40). |
+| Layer-only exceptions | RC (approved 2026-10-11); its breakdown file is written before the first Cloudflare publish. |
+| Acceptance matrix | [acceptance-matrix.md](acceptance-matrix.md): 67 rows. 14 are fully planned at task level, 30 partly at task level and completed later, and 23 at deliverable level. |
+| Per-task and per-deliverable evidence | Sections 4–7 and 10 of each breakdown: red/green per case, structural verifications, mock-free integration suites with disclosed substitutes, and the fresh browser-critic gate |
+| Kickoff prompt | [kickoff.md](kickoff.md), instantiated with this path and revision |
+| Approval | **Approved by the user on 2026-10-17**, after reviewing decisions 40–42, the acceptance matrix, the pinned versions, the freeze record, and the kickoff prompt. |
+
+**Explicit assumptions and remaining non-product implementation risks**
+
+1. **Rolling-wave planning (decision 40).** A later breakdown may amend an already implemented deliverable. Each revision must name the affected scenarios and the durable compatibility (migration, fixtures, backup content version) before work resumes.
+2. **D4's P14 is open** (decision 41) and blocks D4's first task.
+3. **Engine coverage.** Routine evidence is Chromium-only, so Firefox and WebKit defects, including WebKit's handling of `durability: 'strict'`, IndexedDB in workers, and `.tjbackup` downloads, can surface only when RC runs before the first publish (decision 19).
+4. **Production HTTPS evidence** is pending until the Cloudflare project exists (decision 4).
+5. **Marketdata.app's browser callability** (CORS with token authentication) is unverified until D11's breakdown (decision 15). A failure would reshape D11.
+6. **TypeScript 6.0 instead of 7.0** (decision 42): slower type checking, with a later upgrade when typed linting supports 7.
+7. **The capacity basis** stays partly estimated until D8 measures it through a real Restore (decisions 18 and 39). A large miss would change the readiness threshold.
+8. **`fake-indexeddb` fidelity.** Node integration cases rely on its transaction scheduling (for example D8's I8.2, where a concurrent save waits behind the export snapshot) and on its upgrade and versionchange behavior. The Chromium suites repeat the decisive cases.
+9. **Mature-scale backup on phones** (decision 33): export and preparation times and memory are measured only on the development machine. Phone behavior is unmeasured until RC or real use.
+10. **Node.js.** The development machine runs 26.0.0, and the toolchain is pinned to 24.21.0 LTS, which must be installed before T1.1.
 
 ## Rules every deliverable follows
 
@@ -1141,9 +1174,9 @@ At the user's direction (2026-10-11), the clause-by-clause check of each accepta
 6. **AC-MARK-002 (D11 and D19) needs Market Data's "deliberate Manual valuation override" save intention.** D11 does not yet list it.
 7. ~~**AC-MARK-004 says historical gaps are visible and nonblocking in Daily Review.**~~ Resolved: D4 lists skipped sessions as optional gaps that do not block completion (decision 27), and claims AC-MARK-004 as partial.
 
-### Open decision blocking freeze
+### Open decision blocking D4's implementation
 
-- **D4 P14: the boundary between the "quantified pressure" and "routine" attention bands.** The user deferred it on 2026-10-11, to be settled before D4's implementation starts. It changes public behavior, so the plan cannot freeze while it is open. See [D4, section 1.1](D04-daily-review.md#11-decisions-for-this-breakdown).
+- **D4 P14: the boundary between the "quantified pressure" and "routine" attention bands.** The user deferred it on 2026-10-11, to be settled before D4's implementation starts. It changes public behavior in D4's Review, so D4's first task cannot start while it is open; it no longer blocks the freeze (decision 41). See [D4, section 1.1](D04-daily-review.md#11-decisions-for-this-breakdown).
 
 ### Raised by the D4 breakdown, for later breakdowns
 
