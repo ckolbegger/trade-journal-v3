@@ -46,6 +46,7 @@ Both must report zero failures **and zero warnings**. Warnings do not fail the e
 | 10 | Seed scope vs selector scope, including IdeaSource in manifest v1 | Need-driven seeding. v2 adds no Catalog identity, so the single-option selector is a consequence rather than a filter; the five reasons arrive at D6, the ten Strategies at D8/D9/D11/D12, and **D12 seeds the empty IdeaSource Tag Type** because AC-REF-001 completes there. Not in v1, not at D2, not at D17. | decision **PD15**; D1 T23, D2 §1 decision 7, T12, §8 item 7 |
 | 11 | The `Rolled` Close Reason exists before any Roll workflow | Selectable at D6. `reference-catalog.md:29` makes an inactive reason a Retired one, `:39` forbids retiring seeded taxonomy values, and AC-REF-001:390 files `Rolled` under that policy, so "while Roll is supported" scopes selectability in time rather than conditioning it. A `Rolled` close with no lineage is inert: the relation is one-directional and no derived value reads the reason. **This reverses the recommendation in §3.11.** | decision **PD12**; PD6 T3, §8 item 6 |
 | 12 | Architecture batch — five internal choices worth one sign-off | All five confirmed: the narrow D3 read path; the half-open D4 cutoff index (the migration-costly one); the disclosed D1 capacity formula with no fixed number; the narrower `Journal.query` with typed no-read results; and the `D4:T8` edge read as the capability-absence convention. | decision **PD16** |
+| 13 | D7 artifact format — three open questions | All three answered as recorded: the exclusion proof fails closed, the manifest carries per-section totals and per-kind counts, and the failure vocabulary is the fixed four stages snapshot, section, digest, exclusion. The cryptographic-proof half of D7 §1 decision 4 stays open for D20. | decision **PD17**; D7 §1 decisions 3 and 6, T6, T9 |
 
 Earlier corrections in the same session, worth knowing before re-deriving anything: the
 `vertical-deliverables.md` Open-items paragraph and its "decision D7" reference — the content is
@@ -244,6 +245,9 @@ breakdown; the ask is to confirm or redirect, not to re-derive.
 | `D4:T8` blocking edge | D4's `recover`-with-no-provider task blocks on `D1:T7` (browser-host capability port), restated as the typed capability-absence convention | The id resolves and the graph is valid, but no Pricing Provider port exists before D8. **Recommend keeping the edge** and relying on D4 §8 item 11's disclosure; the alternative is to drop the edge, which would leave T8 as a root. |
 
 ### 13. D7 artifact format — three open questions
+
+> **Settled 2026-10-11 — decision PD17: all three answered as recorded.** The table below is the
+> record of the answers, not a pending ask.
 
 | Question | Options | Recommendation |
 |---|---|---|

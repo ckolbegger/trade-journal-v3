@@ -1029,6 +1029,40 @@ choices rather than product semantics, and none is promoted into `specs/`.
 
 ---
 
+## PD17 — The backup artifact format questions are answered as recorded
+
+**Status:** confirmed by user decision, 2026-10-11. **Branch-local**, not promoted into `specs/`.
+
+### Decision
+
+1. **The exclusion proof fails closed.** A packaged value that matches an exclusion category makes the
+   export return `Not Completed` at the exclusion stage with no artifact offered. Warning and
+   continuing is rejected: a leaked credential is unrecoverable, while a false positive costs one
+   retry.
+2. **The manifest records per-section totals and per-kind counts.** A bare total cannot distinguish
+   "zero Marks" from "zero Marks because Market Data was skipped".
+3. **The failure-stage vocabulary is a fixed four-stage enumeration** — snapshot, section, digest,
+   exclusion — fixed once by D7 T9 and reused by T1's manifest schema and T11's presentation, so the
+   same failure names the same stage in the result and in the UI.
+
+### Still open in this area
+
+D7 §1 decision 4 also asks whether proving absence means "no key present" or a stronger cryptographic
+statement. That is not settled here; D20's read-back work may strengthen it. D7 plans the weaker proof
+and discloses it in §8.
+
+### Consequences
+
+- D7 §1 decisions 3 and 6 no longer carry "Alignment needed" text; they cite this decision.
+- No task, edge or acceptance claim changes.
+
+### Not changed
+
+`specs/` is untouched; the export result union, the manifest section list and the four section payloads
+are unchanged.
+
+---
+
 ## Still open
 
 Specification gaps from intake remain limited to PD1 and PD2. PD3 records the approved stack, PD4
@@ -1039,7 +1073,7 @@ and target condition model across the option arc, and PD10 records that fees are
 excluded from every calculation. PD11 fixes the Terminal Disposition shape and the shared mechanism
 vocabulary, PD12 records that the `Rolled` Close Reason is selectable by policy before any Roll
 workflow exists, PD13 records that a reopened Debt keeps its identity and its original due time, and
-PD14 orders the attention walk by boundary proximity instead of pressure descending, and PD15 makes the seed scope need-driven and assigns the IdeaSource Tag Type to D12, and PD16 confirms the five architecture choices as recorded. The PD3
+PD14 orders the attention walk by boundary proximity instead of pressure descending, and PD15 makes the seed scope need-driven and assigns the IdeaSource Tag Type to D12, and PD16 confirms the five architecture choices as recorded, and PD17 answers the three backup artifact-format questions. The PD3
 verification items must be resolved inside the plan.
 
 The vertical deliverable list is recorded in [vertical-deliverables.md](vertical-deliverables.md).

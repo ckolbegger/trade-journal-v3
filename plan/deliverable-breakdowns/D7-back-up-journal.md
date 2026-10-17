@@ -104,9 +104,9 @@ must bring its own migration task with it; D7 does not make that decision.
    change and keeps one atomic boundary (`planning-decisions-2026-10-10.md:176-178`).
 3. **`exportBackup` returns `Downloaded`, `Conflict` with the current binding, or `Not Completed`**
    with the failed stage, reason and unchanged-Workspace evidence — and `Downloaded` is not a
-   completed backup (`workspace.md:110`, `adr/0010:7`). Alignment needed: the exact failure-stage
-   vocabulary (§3 T9 proposes a fixed four-stage enumeration and names it in the manifest schema task
-   T1 so it is not invented twice).
+   completed backup (`workspace.md:110`, `adr/0010:7`). Settled by decision PD17: the failure-stage
+   vocabulary is a fixed four-stage enumeration — snapshot, section, digest, exclusion — fixed by T9
+   and named in the manifest schema task T1 so it is not invented twice.
 4. **The exclusion allowlist is explicit, and nonpresence is proven rather than asserted**: an
    exclusion set that is checked against the artifact's actual bytes and against the read set the
    export opened, not merely documented in prose. The categories are credentials, unsaved forms, raw
@@ -120,10 +120,9 @@ must bring its own migration task with it; D7 does not make that decision.
    Alignment needed: none expected; this is recorded so the gate is not "helpfully" tightened around
    export by a later implementer.
 6. **The Workspace Backup Manifest records counts and exclusions explicitly** so a reader can audit
-   completeness without opening the payloads (`workspace.md:116`). Alignment needed: whether counts are
-   top-level record counts only or per-record-kind; D7 plans per-section totals plus the per-kind
-   counts each section already knows, because a bare total cannot distinguish "0 Marks" from "0 Marks
-   because Market Data was skipped".
+   completeness without opening the payloads (`workspace.md:116`). Settled by decision PD17:
+   per-section totals plus the per-kind counts each section already knows, because a bare total cannot
+   distinguish "0 Marks" from "0 Marks because Market Data was skipped".
 
 ## 2. Task graph
 
