@@ -43,6 +43,8 @@ Both must report zero failures **and zero warnings**. Warnings do not fail the e
 | 7 | Attention-band thresholds and the pressure/reward edges | **Reverses the spec's within-band sort.** Band 4 = comparable and within `nearBoundaryFraction` (default 0.25) of the `Target − Stop` span from either selected boundary; band 5 = mid-span; within a band, nearest boundary first, then Last Activity, then identity. `daily-review.md:32`'s pressure-descending sort is one-sided — risk plus reward is the constant span, so it is nearest-Target-first and sorts a near-Stop Trade last — so this is a **branch-local deviation**, disclosed; AC-REV-002 is unaffected. **This reverses the recommendation in §3.7.** | decision **PD14**; PD4 §1 decision 2, T13, §8 item 2 |
 | 11 | The `Rolled` Close Reason exists before any Roll workflow | Selectable at D6. `reference-catalog.md:29` makes an inactive reason a Retired one, `:39` forbids retiring seeded taxonomy values, and AC-REF-001:390 files `Rolled` under that policy, so "while Roll is supported" scopes selectability in time rather than conditioning it. A `Rolled` close with no lineage is inert: the relation is one-directional and no derived value reads the reason. **This reverses the recommendation in §3.11.** | decision **PD12**; PD6 T3, §8 item 6 |
 
+| 10 | Seed scope vs selector scope, including IdeaSource in manifest v1 | Need-driven seeding. v2 adds no Catalog identity, so the single-option selector is a consequence rather than a filter; the five reasons arrive at D6, the ten Strategies at D8/D9/D11/D12, and **D12 seeds the empty IdeaSource Tag Type** because AC-REF-001 completes there. Not in v1, not at D2, not at D17. | decision **PD15**; D1 T23, D2 §1 decision 7, T12, §8 item 7 |
+
 Earlier corrections in the same session, worth knowing before re-deriving anything: the
 `vertical-deliverables.md` Open-items paragraph and its "decision D7" reference — the content is
 PD6 — were stale and are fixed; the D2/D3/D4/D6 dependency-layer counts were wrong and are now the
@@ -166,6 +168,10 @@ inherits this dependence, so promoting it would cover both.
 
 ### 10. Seed scope vs selector scope, including whether IdeaSource belongs in manifest v1
 
+> **Settled 2026-10-11 — decision PD15: need-driven seeding, and D12 owns the IdeaSource Tag Type.**
+> The recommendation below was correct, but its premise was not: D2 §1 decision 7 actually proposed
+> the full canonical set, so "the current approach" was not (a). The text is kept for the reasoning.
+
 **Question.** Should D1's seed manifest v1 create only what D1's stories need, or the full canonical
 set?
 
@@ -182,10 +188,10 @@ Reasons, five Abandonment Reasons and one empty IdeaSource Tag Type — and **co
   values.
 
 **Recommendation: (a).** Absent is the correct state for an uninstalled capability
-(`overview.md:19`), and (b) would front-load capability no D1 story reaches. The related open point is
-D2 §1 decision 7: manifest v2 carries the full canonical seed state while the **selector** offers Long
-Stock only. That is a presentation scoping choice and should be confirmed as such, because it must not
-be read as an AC-REF-001 cardinality claim. Neither variant may claim AC-REF-001 before D12.
+(`overview.md:19`), and (b) would front-load capability no D1 story reaches. The related point, as
+settled by decision PD15, is that manifest v2 carries Long Stock only, so the single-option selector is
+a consequence of the seed scope rather than a filter over a fuller catalog; nothing at v2 may be read
+as an AC-REF-001 cardinality claim, and no deliverable may claim AC-REF-001 before D12.
 
 ### 11. The `Rolled` Close Reason exists before any Roll workflow
 

@@ -35,7 +35,7 @@ Confirmation Source only). §5 records exactly how much of each of those is clai
 | 7 | Expected Lifecycle State derivation and its agreement with stored `Planned`. | Trade Analysis + Trade Record |
 | 8 | `Journal.getDefinitions` returning the exact Plan Reflection revision, and `Journal.prepareEffects`/`applyPreparedEffects` for a completed Plan Reflection with its workflow-critical Thesis and Invalidation roles. | Journal |
 | 9 | The Journal definition revision that carries the complete initial Plan Reflection definition (prompts, order, requiredness, scale bounds, single-select options, workflow-critical roles) and the Catalog manifest v2 seed state. | Journal + Reference Catalog |
-| 10 | The Strategy selector offering Long Stock only, while the Catalog holds the full canonical seed set. | Reference Catalog + Presentation |
+| 10 | The Strategy selector offering only Long Stock, because Long Stock is the only seeded Strategy; no Catalog identity beyond it exists at v2. | Reference Catalog + Presentation |
 | 11 | `TradeWorkflows.confirmPlan` orchestration across Catalog, Journal, Trade Analysis and Trade Record inside one semantic transaction. | Trade Workflows |
 | 12 | Atomic rollback across Trade and Journal effects when any participant rejects. | Trade Workflows + Persistence/Transaction |
 | 13 | `ConfirmPlanResult` as the creation member of the mutation-result contract: committed Trade projection, completed Entry projection, and the derivation the command had to establish. | Trade Workflows |
@@ -125,13 +125,14 @@ them, with the consequence of getting each wrong.
    must never reach storage, no Debt may be created by an abandoned confirmation, and no draft may
    exist. Consequence: AC-JOUR-001's confirmation-form member is verifiable by comparing Journal
    revisions before and after abandonment.
-7. **Selector scope versus seed scope.** Manifest v2 carries the full canonical seed state, and the
-   *selector* offers Long Stock only. D2 decides this is a presentation scoping decision with no
-   domain "not supported" result, because rule 9 of `overview.md:19` forbids disguising absent
-   capability as a fabricated domain `Unavailable`. Consequence: if the manifest does not yet hold
-   the other ten seeds at D2, the honest alternative is to expose only Long Stock and disclose the
-   manifest revision as incomplete; the breakdown proposes seeding the canonical set so that AC-REF-001
-   is not chipped away by D2 and D12.
+7. **Selector scope versus seed scope, settled by decision PD15.** Manifest v2 carries Long Stock
+   only: the Catalog side adds no identity that manifest v1 did not already seed, and the version
+   advances because the Journal side adds the exact Plan Reflection definition. The selector therefore
+   offers exactly one Strategy because exactly one exists, not because a fuller catalog is filtered, so
+   no presentation scoping rule is needed. Seeding is need-driven: the five reasons arrive at D6, the
+   remaining ten Strategies at D8, D9, D11 and D12, and D12 also seeds the empty IdeaSource Tag Type
+   because AC-REF-001 completes there. Seeding the canonical set early would make AC-REF-001 pass at
+   D2 while the plan records it completing at D12, and D2 claims nothing of that scenario.
 8. **Test and tooling seam names.** The stack is approved (`planning-decisions-2026-10-10.md:150-171`)
    but exact versions are pinned at freeze. D2 decides the *names* only: Vitest projects `unit` and
    `integration`, `fake-indexeddb` for the Node projects, Playwright plus axe-core for the browser
@@ -494,8 +495,9 @@ trader rename (`reference-catalog.md:120-136`). D2 resolves the Account and Stra
 `NewSelection` semantics (`reference-catalog.md:44-51`), so an Archived Account or Retired Strategy
 is a typed rejection at confirmation rather than a silent fallback, and a concurrent retirement
 between resolve and commit is a snapshot conflict with no writes (`reference-catalog.md:53-65`).
-The selector offers Long Stock only; the absence of the other ten seeds from the *selector* is
-presentation scope, not a fabricated domain `Unavailable` (`overview.md:19` rule 9).
+The selector offers Long Stock only because Long Stock is the only seeded Strategy; the other ten are
+not seeded until D8, D9, D11 and D12 (decision PD15), and their absence is never presented as a domain
+`Unavailable` (`overview.md:19` rule 9).
 
 **Unit test cases**
 
@@ -506,6 +508,7 @@ describe("ReferenceCatalog.resolve and seedDefaults at manifest v2, at the publi
   it should reject with a typed NewSelection issue naming the Strategy when the Long Stock Strategy has been retired
   it should return a snapshot conflict and no bindings when the expected Catalog snapshot is stale because the Strategy was retired between resolve and the caller's next step
   it should seed only the missing v2 additions and return the resulting snapshot plus the exact additions when the Workspace already holds a compatible v1 seed
+  it should create no Strategy beyond Long Stock and no Close Reason, Abandonment Reason or Tag Type when manifest v2 is applied to a v1 Workspace, asserting those absences rather than reporting them as uninstalled capability
   it should return an idempotent unchanged result with no rewrite when the v2 manifest is applied twice
   it should return a typed SeedConflict and write nothing when an existing stable product key carries an incompatible shape
   it should return the Long Stock shape's one long Stock role with its positive relative quantity and no embedded days-to-expiration, delta, price, Stop, Target or quantity default when the shape is read
@@ -515,9 +518,9 @@ describe("ReferenceCatalog.resolve and seedDefaults at manifest v2, at the publi
 `seedDefaults` with manifest v2 twice, then `resolve` for a real Account created through the
 production `save` path and for Long Stock as `NewSelection`; assert the second seed changed no
 revision, then archive the Account and assert `resolve` rejects with no stored change. Then assert
-through the real selector's data feed that exactly Long Stock is offered while the Catalog itself
-still holds the canonical seed set. No mock substitutes for the Catalog; `fake-indexeddb` is the only
-disclosed substitution.
+through the real selector's data feed that exactly Long Stock is offered and that the Catalog holds no
+Strategy beyond it, no Close or Abandonment Reason and no Tag Type. No mock substitutes for the
+Catalog; `fake-indexeddb` is the only disclosed substitution.
 
 **Red/green evidence**
 
@@ -528,6 +531,7 @@ disclosed substitution.
 | Retired Strategy rejected | `... -t "Strategy has been retired"` — fails because a retired Strategy still resolves | same command — passes with a typed issue |
 | Stale snapshot conflicts | `... -t "snapshot conflict"` — fails because resolution ignores the expected snapshot | same command — passes with a conflict and no writes |
 | v1 to v2 additions only | `... -t "only the missing v2 additions"` — fails because the seed rewrites existing identities | same command — passes with an additions list and preserved revisions |
+| No extra identities in v2 | `... -t "no Strategy beyond Long Stock"` — fails because the v2 seed adds a placeholder Strategy or a Tag Type | same command — passes with Long Stock only and every absence asserted |
 | Repeat seed idempotent | `... -t "idempotent unchanged result"` — fails because the second seed appends new revisions | same command — passes with unchanged revisions |
 | Incompatible key conflicts | `... -t "typed SeedConflict"` — fails because an incompatible shape is overwritten | same command — passes with no writes |
 | Shape has no embedded defaults | `... -t "no embedded"` — fails because the v2 shape carries a default Stop or quantity | same command — passes with the bare role and quantity |
@@ -1476,11 +1480,12 @@ neither weakens nor re-owns them.
    participant boundary so that it cannot bypass an application layer, and it must be disclosed in the
    evidence. If it cannot be injected without either mocking a participant or faking the transaction,
    T14's rollback claim must be re-designed rather than weakened.
-7. **Selector scope versus seed scope needs confirmation.** §1 decision 7 proposes that manifest v2
-   carries the full canonical seed state while the D2 selector offers Long Stock only. If the intent
-   is instead that manifest v2 carries only Long Stock until D8, then D2's AC-REF-001 exposure is
-   narrower and the manifest revision must say so explicitly; either way the selector must not
-   fabricate a domain `Unavailable` for the absent seeds (`overview.md:19`).
+7. **Selector scope versus seed scope is settled by decision PD15.** Manifest v2 carries Long Stock
+   only; the other ten Strategies arrive at D8, D9, D11 and D12, and D12 also seeds the empty
+   IdeaSource Tag Type so AC-REF-001 can complete there. The single-option selector is a consequence of
+   the seed scope rather than a presentation filter, and the absent Strategies are never presented as a
+   domain `Unavailable` (`overview.md:19`). D2 claims nothing of AC-REF-001, so the narrowing costs no
+   coverage, and T12 asserts the absences.
 8. **Partial coverage is not a pass.** §5 carries six Partial rows (AC-LIFE-001, AC-LIFE-003,
    AC-RESP-001, AC-JOUR-007, AC-JOUR-001, AC-UI-002). None of them may be counted as
    satisfying its scenario, and D2's Installed Capability Manifest must therefore describe D2's

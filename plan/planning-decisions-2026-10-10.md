@@ -927,6 +927,58 @@ No operation, no stored state, no band name and no task-family order changes. D4
 
 ---
 
+## PD15 — Seed scope is need-driven, and D12 owns the IdeaSource Tag Type
+
+**Status:** settled by user decision, 2026-10-11. **Branch-local**, not promoted into `specs/`.
+
+### The gap
+
+Manifest v1 is fixed as Long Stock, the Plan Reflection Entry Type and the Plan Confirmation Source
+(`vertical-deliverables.md:62`), but nothing states what later manifest versions add, when the fixed
+IdeaSource Tag Type (`reference-catalog.md:24`, `:118`) is seeded, or whether the single-option D2
+selector is a filter over a fuller catalog. D2 §1 decision 7 proposed that manifest v2 carry the full
+canonical seed state, which contradicted its own §0 and §4 and would have completed AC-REF-001's
+Strategy cardinality at D2 while the plan records the scenario completing at D12.
+
+### Decision
+
+1. **Seeding is need-driven.** Each manifest version adds only what its own deliverable needs: v1 Long
+   Stock; v6 the five Close Reasons and five Abandonment Reasons; the remaining ten Strategies at D8,
+   D9, D11 and D12. No deliverable seeds an identity its own stories cannot reach.
+2. **D12 owns the IdeaSource Tag Type.** AC-REF-001 requires one empty IdeaSource Tag Type and
+   completes at D12, and `reference-catalog.md:133` groups the eleven Strategies, the IdeaSource type
+   and the reasons as one canonical seed, so D12 seeds the type alongside the Iron Condor. Nothing
+   before D12 needs it: the frozen Plan Reflection definition contains no Tag Select
+   (`journal.md:45-52`) and `confirmPlan` requires no IdeaSource (`trade-workflows.md:53`).
+3. **Manifest v2 adds no Catalog identity**, so the D2 selector offers exactly one Strategy because
+   exactly one exists. There is no presentation scoping rule to state, and the absent Strategies are
+   never presented as a domain `Unavailable` (`overview.md:19`).
+
+### Rejected alternatives
+
+- **Seed the full canonical set at D1 or D2.** It would make AC-REF-001 pass at D2 while the plan
+  records the completion at D12, front-load capability no early story reaches, and contradict D2's own
+  scope statements. D2 claims nothing of AC-REF-001, so it would gain nothing.
+- **Seed the IdeaSource Tag Type at D1.** Defensible as taxonomy-only, but D1 would seed an identity no
+  D1 story reaches, and its absence assertions would change for no coverage gain.
+- **Leave the Tag Type to D17**, where the Journal first offers an IdeaSource Tag prompt. That would
+  push AC-REF-001's completion past D12, which the plan does not intend.
+
+### Consequences
+
+- **Forward obligation.** D12 has no breakdown yet. When it is planned it must seed the Iron Condor and
+  the empty IdeaSource Tag Type atomically, with no seeded IdeaSource Values
+  (`reference-catalog.md:118`), or AC-REF-001 cannot complete as recorded.
+- D1 T23 and D2 T12 now assert the absences: no Tag Type at v1, and no Strategy beyond Long Stock, no
+  reason and no Tag Type at v2.
+- No stored identity, operation or acceptance claim changes at D1 or D2.
+
+### Not changed
+
+`specs/` is untouched. AC-REF-001 still completes at D12, and no earlier deliverable claims it.
+
+---
+
 ## Still open
 
 Specification gaps from intake remain limited to PD1 and PD2. PD3 records the approved stack, PD4
@@ -937,7 +989,7 @@ and target condition model across the option arc, and PD10 records that fees are
 excluded from every calculation. PD11 fixes the Terminal Disposition shape and the shared mechanism
 vocabulary, PD12 records that the `Rolled` Close Reason is selectable by policy before any Roll
 workflow exists, PD13 records that a reopened Debt keeps its identity and its original due time, and
-PD14 orders the attention walk by boundary proximity instead of pressure descending. The PD3
+PD14 orders the attention walk by boundary proximity instead of pressure descending, and PD15 makes the seed scope need-driven and assigns the IdeaSource Tag Type to D12. The PD3
 verification items must be resolved inside the plan.
 
 The vertical deliverable list is recorded in [vertical-deliverables.md](vertical-deliverables.md).

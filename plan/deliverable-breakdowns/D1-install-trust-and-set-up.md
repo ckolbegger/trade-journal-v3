@@ -789,14 +789,14 @@ describe("Journal.seedDefaults creates only the manifest's declared fixed identi
 - **Blocking edges:** T8, T10.
 - **Consumed by:** T24, T25.
 
-Implements `reference-catalog.md:120-137` for seed manifest v1, which declares the Long Stock Strategy only (`vertical-deliverables.md:62`). Seeding matches stable product keys, creates only genuinely missing additions, is idempotent, never matches by mutable label, never overwrites a trader rename, never reactivates a legitimately retireable seed and never assigns default origin to ordinary UI-created data. An accepted result returns the resulting Catalog snapshot, the exact additions and the selectable-Account summary Workspace needs for onboarding, without a follow-up query. The absence assertions matter as much as the additions: no Institution, no Account, no reason taxonomy, no generic Custom or Other strategy, and no settlement-as-reason value may be seeded here (`reference-catalog.md:118`).
+Implements `reference-catalog.md:120-137` for seed manifest v1, which declares the Long Stock Strategy only (`vertical-deliverables.md:62`). Seeding matches stable product keys, creates only genuinely missing additions, is idempotent, never matches by mutable label, never overwrites a trader rename, never reactivates a legitimately retireable seed and never assigns default origin to ordinary UI-created data. An accepted result returns the resulting Catalog snapshot, the exact additions and the selectable-Account summary Workspace needs for onboarding, without a follow-up query. The absence assertions matter as much as the additions: no Institution, no Account, no reason taxonomy, no generic Custom or Other strategy, no settlement-as-reason value and no Tag Type may be seeded here (`reference-catalog.md:118`; decision PD15).
 
 **Unit test cases**
 
 ```text
 describe("ReferenceCatalog.seedDefaults seeds exactly manifest v1's declared identities and reports the catalog state")
   it should create exactly the Long Stock Strategy under its stable product key with one long Stock role and the contract's shape vocabulary, and no other Strategy
-  it should create no seeded Institution, no seeded Account, no Close Reason, no Abandonment Reason, no generic Custom or Other Strategy and no settlement-derived reason value
+  it should create no seeded Institution, no seeded Account, no Close Reason, no Abandonment Reason, no generic Custom or Other Strategy, no settlement-derived reason value and no Tag Type
   it should be idempotent and stable-keyed: a second seed with the same manifest adds nothing, and a reworded label never causes a duplicate identity
   it should return a typed SeedConflict and write nothing when a known stable product key already exists with an incompatible shape
   it should retain a trader rename and not reactivate a legitimately retired seed, returning the retained current label and availability
