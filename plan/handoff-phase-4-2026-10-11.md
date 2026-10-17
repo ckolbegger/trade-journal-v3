@@ -317,6 +317,11 @@ Do not pick these silently. Each is a real choice that changes the matrix.
 ## 8. Environment facts
 
 - `DEV_PORT=5177` in the gitignored `.env.local`; nothing consumes it yet.
+- **There is one stash in the shared repository: `stash@{0}`, "On zcode-glm-5.3: in-flight T2.11 work
+  at rollback (bookmarked)". It belongs to another implementation's worktree and is visible here only
+  because the eight worktrees share one object store. Do not apply, pop, drop or restore it.** It
+  contains `src/` and `tests/e2e/` files that do not exist on this branch, and applying it would put
+  another branch's application code into this worktree.
 - Approved stack (PD3): TypeScript strict + Vite + React, IndexedDB behind the Persistence/Transaction
   seam, `decimal.js`, an injected `Clock` plus a versioned US session calendar, Workbox-assisted service
   worker, Vitest + `fake-indexeddb` (Node), Playwright (browser), axe-core. **Exact versions are pinned
