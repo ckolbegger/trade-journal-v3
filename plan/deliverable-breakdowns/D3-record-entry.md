@@ -258,7 +258,7 @@ directly.**
   Position/Lots/P&L formatting model, responsive mode model) are plain TypeScript with no React import, unit-tested
   with Vitest; DOM structure, responsive behaviour, keyboard completion and accessible names/roles
   are verified with Playwright plus axe-core, the only browser tooling the approved stack names
-  (`planning-decisions-2026-10-10.md:170`). No component-testing library is invented.
+  (`planning-decisions-2026-10-10.md:184`). No component-testing library is invented.
 - *Consequence.* Every `it should` case in a presentation task names a view-model or formatting seam
   as its public seam, and the corresponding browser behaviour is carried by T21's Playwright
   verification and T23's critic flows.
@@ -419,7 +419,7 @@ Original Planned Risk = 100.00 = 1R and Original Planned Reward = 200.00. `EX-1`
 sells 70.00 XYZ at 11.00 with fee 0.70. Fixture `F2` is the pure candidate snapshot that adds `EX-4`,
 a sale of the remaining 30.00 XYZ at 9.00 with fee 0.30, which flattens the Position. All money,
 price and quantity expectations in this document are exact decimals, never floating point
-(`planning-decisions-2026-10-10.md:166`). The fixtures deliberately keep a non-zero fee on every
+(`planning-decisions-2026-10-10.md:180`). The fixtures deliberately keep a non-zero fee on every
 Execution. Decision PD10 captures each fee as a required fact and excludes it from every calculation,
 so the derived expectations below are computed **without** the fees: asserting those exact numbers is
 precisely what proves the fees do not enter them. A fee of zero would prove nothing.
@@ -459,7 +459,7 @@ existing store name, key path or index that D2 already wrote:
 | V1.6 | `pnpm vitest run tests/integration/persistence/schema-v3-migration.test.ts -t "seed revision record"` | After migration the seed-manifest revision record reads `2`; before T13 runs, no v3 seed identity exists. |
 
 The exact package versions behind `pnpm vitest`, `pnpm typecheck` and the browser tooling are
-deliberately deferred to the Phase 6 version profile (`planning-decisions-2026-10-10.md:152-171`), so
+deliberately deferred to the Phase 6 version profile (`planning-decisions-2026-10-10.md:166-185`), so
 these commands name scripts, not versions; the script names are the ones D1:T1 pins once.
 
 **Depends on it:** nothing durable in D3 can be written or read back without it — T2 cannot encode a
@@ -1527,7 +1527,7 @@ deliverable (decision PD10), so D6's row is Partial as well and nothing carries 
 ## 6. What counts as valid red evidence
 
 This restates `planning-protocol.md:104-111` for this deliverable, and the exact commands belong to
-the stack approved as planning decision PD3 (`planning-decisions-2026-10-10.md:170`; exact versions are
+the stack approved as planning decision PD3 (`planning-decisions-2026-10-10.md:184`; exact versions are
 pinned at Phase 6).
 
 **Valid red.** One test at a time, added through the identified public seam of the task, run before
@@ -1571,7 +1571,7 @@ separately with `node scripts/check-deliverable-breakdown.mjs` and
 ## 7. planning-decisions PD3 verification items inside this deliverable
 
 The nine verification items recorded under decision PD3 in
-`plan/planning-decisions-2026-10-10.md:198-214` are resolved across the breakdown set. D3 claims the
+`plan/planning-decisions-2026-10-10.md:212-228` are resolved across the breakdown set. D3 claims the
 two below; the others are owned or explicitly deferred elsewhere, as the closing line states.
 
 | Item | Where it is resolved | Status |
@@ -1632,14 +1632,14 @@ identity, the revision binding has to be added by a later migration; that is a m
 change, so the requirement is recorded here explicitly.
 
 **6. The pinned version profile is deferred.** Decision PD3 fixes the stack but not the versions
-(`planning-decisions-2026-10-10.md:152`). Every command in this document names a script
+(`planning-decisions-2026-10-10.md:166`). Every command in this document names a script
 (`pnpm vitest`, `pnpm playwright`, `pnpm typecheck`) and never a version; the script names and the dev
 server port come from D1's pinned toolchain task and `.env.local` (`DEV_PORT=5177`). This breakdown
 cannot be executed end to end until that profile exists.
 
 **7. The `fake-indexeddb` fidelity gap is disclosed, and its real-engine counterpart is named.** Node
 integration cases substitute `fake-indexeddb` for the browser-owned IndexedDB instance
-(`planning-decisions-2026-10-10.md:170`, `planning-protocol.md:118-122`). The gap is not a licence to
+(`planning-decisions-2026-10-10.md:184`, `planning-protocol.md:118-122`). The gap is not a licence to
 weaken assertions: T22 repeats every durability-critical proof — recorded Lot-Match links, lifecycle
 index membership, fee-capture persistence and abort rollback — against the real browser engine
 through Playwright, and T23 exercises it through the production UI. The gaps that must be disclosed in

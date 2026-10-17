@@ -48,7 +48,7 @@ manifest v6 seed, and it is a task inside this deliverable rather than a migrati
 | Close Review | Its own `JournalObligationKey`; Complete, Decline, or Defer; Defer creates Debt with the trigger-time definition snapshot and never a blank Entry | `journal.md:79`, `journal.md:135-137`, `journal.md:188` |
 | Abandonment | `abandonPlan` command, active Abandonment Reason requirement, Plan Debt retirement, eligibility re-derivation over effective facts | `trade-workflows.md:82`, `acceptance-contract.md:55-60` |
 | Manifest v6 seed | Five Close Reasons, five Abandonment Reasons, the Close Review Entry Type, the Trade Close Source; stable product keys; idempotent repeat seeding | `reference-catalog.md:102-118`, `journal.md:25-35`, `journal.md:194` |
-| Atomic commit | One IndexedDB multi-store transaction covering facts, lifecycle/index, Lot Match, Deviation, lineage, and Journal outcomes, behind the persistence-level write gate | `trade-record.md:64-68`, `planning-decisions-2026-10-10.md:163` |
+| Atomic commit | One IndexedDB multi-store transaction covering facts, lifecycle/index, Lot Match, Deviation, lineage, and Journal outcomes, behind the persistence-level write gate | `trade-record.md:64-68`, `planning-decisions-2026-10-10.md:177` |
 | Result and projection | `PositionChangeResult` / `AbandonPlanResult` carrying the post-commit Trade projection, the derived disposition, and the Journal outcome with no follow-up read | `trade-workflows.md:31-45`, `overview.md:26` |
 | Surfaces | Close position form, Abandon plan flow, Trade Detail's three separate concepts, responsive and accessible behavior | `ui-contract.md:22`, `ui-contract.md:28-35`, `ui-contract.md:86` |
 | Verification | A mock-free integration suite over the real stack and an independent browser-critic gate | `planning-protocol.md:115-135` |
@@ -94,8 +94,8 @@ manifest v6 seed, and it is a task inside this deliverable rather than a migrati
   §8.
 - **AC-PERF-001.** Not claimed by this or any deliverable; disclosed in §8.
 - **Any claim about the pinned version profile.** Vitest, `fake-indexeddb`, Playwright, and
-  axe-core are the approved tools (`planning-decisions-2026-10-10.md:170`), but the exact pinned
-  versions are deferred to Phase 6 (`planning-decisions-2026-10-10.md:152`). Every command in this
+  axe-core are the approved tools (`planning-decisions-2026-10-10.md:184`), but the exact pinned
+  versions are deferred to Phase 6 (`planning-decisions-2026-10-10.md:166`). Every command in this
   file is written against the approved tool names and repo-relative paths, with version-dependent
   behaviour called out where it matters rather than invented.
 
@@ -401,7 +401,7 @@ asserts durable state after the call: the Position Change fact with its disposin
 Close Reason association, the new stored Lifecycle State, the new `FactRevision`, and the Journal
 outcome all exist and are bound to that revision; and a restart of the persistence instance reads
 the same rows. The only disclosed infrastructure substitution is `fake-indexeddb` in place of a
-browser-owned IndexedDB instance (`planning-decisions-2026-10-10.md:170`); the test traverses
+browser-owned IndexedDB instance (`planning-decisions-2026-10-10.md:184`); the test traverses
 every layer and asserts durable rows rather than only the returned object. T19 repeats the same
 proof against a real browser engine.
 
@@ -902,7 +902,7 @@ restoration case is D15's.
 
 **Public seam under test.** The coordinator-owned semantic transaction spanning Trade Record,
 Trade Analysis reconciliation, and Journal, reached through the public closing and abandonment
-commands (`trade-record.md:64-68`, `trade-workflows.md:193`, `planning-decisions-2026-10-10.md:163`).
+commands (`trade-record.md:64-68`, `trade-workflows.md:193`, `planning-decisions-2026-10-10.md:177`).
 The rule: a mutating workflow writes all required related effects or none; a Journal-participant
 failure rolls back the staged Trade effects; and the persistence-level write gate rejects the
 whole transaction when the session is not `Writable`.
@@ -1357,7 +1357,7 @@ the case must be re-derived before the production change is written.
 **Exact commands for this stack.** The approved tool chain is Vitest with the behaviorally
 compatible in-Node IndexedDB substitute for unit and integration tests, and Playwright with
 axe-core for the browser integration, accessibility, and critic-gate runs
-(`planning-decisions-2026-10-10.md:170`). D6 uses these exact forms:
+(`planning-decisions-2026-10-10.md:184`). D6 uses these exact forms:
 
 - red and green for one case: `pnpm vitest run <spec path> -t "<case name>"`, run immediately
   before and immediately after the smallest production change that satisfies that one case;
@@ -1366,7 +1366,7 @@ axe-core for the browser integration, accessibility, and critic-gate runs
 - the cumulative suite before the critic gate: `pnpm vitest run && pnpm playwright test`.
 
 The exact pinned versions of Vitest, `fake-indexeddb`, Playwright, and axe-core are deferred to
-Phase 6 (`planning-decisions-2026-10-10.md:152`). Where a pinned version could change an
+Phase 6 (`planning-decisions-2026-10-10.md:166`). Where a pinned version could change an
 observable result (for example an accessibility-rule severity), the evidence record must name the
 pinned version alongside the command rather than assuming it. No command in this breakdown depends
 on an unapproved tool, and none of them invents a version number.
@@ -1435,11 +1435,11 @@ same commit rather than forcing a scan, the terminal query returns a bounded bat
 closing command issues no per-record storage read (asserted in T19). Those are shapes that cannot
 regress under scale; they are not measurements, and no millisecond value appears anywhere in this
 breakdown. The measurement gap belongs to the benchmark work named in
-`planning-decisions-2026-10-10.md:198-214`.
+`planning-decisions-2026-10-10.md:212-228`.
 
 **4. `fake-indexeddb` fidelity gap, and its real-engine counterpart.** Every Node-layer unit and
 integration test in D6 substitutes `fake-indexeddb` for the browser-owned IndexedDB instance
-(`planning-decisions-2026-10-10.md:170`). The gaps that matter to this deliverable are:
+(`planning-decisions-2026-10-10.md:184`). The gaps that matter to this deliverable are:
 
 - **Abort semantics.** The substitute implements transaction abort, but its durability window and
   its ordering of abort versus a competing read are not guaranteed to match an engine. T13's
@@ -1460,7 +1460,7 @@ integration test in D6 substitutes `fake-indexeddb` for the browser-owned Indexe
 
 **5. Deferred pinned version profile.** The exact versions of TypeScript, Vite, React, Vitest,
 `fake-indexeddb`, Playwright, axe-core, `decimal.js`, and the service-worker tooling are deferred
-to Phase 6 (`planning-decisions-2026-10-10.md:152`). Every command in this breakdown is written
+to Phase 6 (`planning-decisions-2026-10-10.md:166`). Every command in this breakdown is written
 against the approved tool names and repo-relative paths so the commands do not change when the pin
 lands, but two consequences are recorded honestly: first, no command here can be run to the letter
 until the repository has a package manifest and the pinned profile, and second, any

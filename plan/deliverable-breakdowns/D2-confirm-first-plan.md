@@ -118,7 +118,7 @@ them, with the consequence of getting each wrong.
    and lifecycle records plus the Journal definition revision and the Catalog manifest v2 state in
    one isolated candidate created against D1's schema and migration runner. Consequence: a failed
    D2 migration leaves the D1 Workspace usable, matching the isolated-candidate requirement in
-   `overview.md:131` and `planning-decisions-2026-10-10.md:167`.
+   `overview.md:131` and `planning-decisions-2026-10-10.md:179`.
 6. **Unsaved form state is not evidence.** Cancel and navigation record nothing
    (`journal.md:7`, `journal.md:182`, `ui-contract.md:45`). D2 decides that the confirmation form may
    preserve entered values across a live resize (`ui-contract.md:34`) and that this preserved state
@@ -133,7 +133,7 @@ them, with the consequence of getting each wrong.
    remaining ten Strategies at D8, D9, D11 and D12, and D12 also seeds the empty IdeaSource Tag Type
    because AC-REF-001 completes there. Seeding the canonical set early would make AC-REF-001 pass at
    D2 while the plan records it completing at D12, and D2 claims nothing of that scenario.
-8. **Test and tooling seam names.** The stack is approved (`planning-decisions-2026-10-10.md:150-171`)
+8. **Test and tooling seam names.** The stack is approved (`planning-decisions-2026-10-10.md:164-185`)
    but exact versions are pinned at freeze. D2 decides the *names* only: Vitest projects `unit` and
    `integration`, `fake-indexeddb` for the Node projects, Playwright plus axe-core for the browser
    gate, and the scripts `test:unit`, `test:integration`, `test:browser`, `typecheck`. Consequence:
@@ -1414,7 +1414,7 @@ for this deliverable.
 ## 7. planning-decisions PD3 verification items inside this deliverable
 
 The three items below are the parts of the approved-stack verification list
-(`planning-decisions-2026-10-10.md:198-214`) that D2 is the first deliverable able to prove. Each is
+(`planning-decisions-2026-10-10.md:212-228`) that D2 is the first deliverable able to prove. Each is
 claimed here, with the tasks that carry it.
 
 | Item | Where it is resolved | Status |
@@ -1463,7 +1463,7 @@ neither weakens nor re-owns them.
    §5 and completes at D21.
 4. **The deferred pinned version profile.** Exact TypeScript, Vite, React, `decimal.js`, IndexedDB
    wrapper, Vitest, `fake-indexeddb`, Playwright and axe-core versions are Phase 6 decisions
-   (`planning-decisions-2026-10-10.md:152-153`, `planning-protocol.md:191-202`). Nothing in this
+   (`planning-decisions-2026-10-10.md:166-167`, `planning-protocol.md:191-202`). Nothing in this
    breakdown asserts a version, and no `it should` case or exact-verification row depends on one. The
    IndexedDB database version for the D2 migration is referenced only through the D1 version constant
    module (T1), never as a literal.

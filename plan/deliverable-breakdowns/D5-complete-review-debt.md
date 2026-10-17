@@ -98,7 +98,7 @@ The three user stories this deliverable closes (`plan/vertical-deliverables.md:1
    Review) passes through prepared effects and never direct `save` (`journal.md:163`,
    `journal.md:188`). Tradeoff: the direct `save` seam must reject a workflow-required type with a
    typed no-write result rather than trusting the UI to not offer it.
-4. **The anchor-resolution reading from decision PD1** (`planning-decisions-2026-10-10.md:12-78`):
+4. **The anchor-resolution reading from decision PD1** (`planning-decisions-2026-10-10.md:12-83`):
    `Effective`, `Superseded` and `Voided` anchors all attach and carry their resolution status in
    the accepted result's projection; only `Unknown` is a typed no-write rejection naming the
    unresolved anchor. Edit and Addendum are never blocked because an anchor has since become
@@ -757,7 +757,7 @@ three outcomes of this member: resolving Journal-only Debt creates an Entry and 
 together, records an allowed explicit decline, or returns `NeedsTradeWorkflow` with no write.
 `daily-review.md:86` fixes the accepted result: the saved outcome, the revised progress and
 completion result, and the next step under the same post-commit facts, so the caller continues
-without calling `open` again. Decision PD2 in `planning-decisions-2026-10-10.md:82-146` fixes the
+without calling `open` again. Decision PD2 in `planning-decisions-2026-10-10.md:87-160` fixes the
 staleness mapping this command follows: `ReviewChanged` is review-scope, `Conflict` is subject-scope,
 every stale binding is reported rather than the first, and there is no third result name.
 
@@ -1028,7 +1028,7 @@ the real stack, complete one writing flow and one Debt-resolution flow with keyb
 resize live with an unsaved form open. Assert the entered answers and selected Debt survived the
 resize, that focus order after validation is logical, and that the automated semantic and contrast
 checks pass for the exercised states. This case uses the real browser engine; `fake-indexeddb` plays
-no part in it, which is one reason it is required (`planning-decisions-2026-10-10.md:214`).
+no part in it, which is one reason it is required (`planning-decisions-2026-10-10.md:228`).
 
 **Red/green evidence**
 
@@ -1241,12 +1241,12 @@ is owned by D2; this deliverable re-exercises them without claiming new ownershi
   reversal by correcting facts arrives with D15. A Partial row is not a pass, and neither scenario is
   presented as complete after this deliverable.
 - **The Delete/reopen interaction depends on decision PD1's anchor-status reading.** That reading is
-  recorded in `plan/planning-decisions-2026-10-10.md:12-78` and is **branch-local**: it is a
+  recorded in `plan/planning-decisions-2026-10-10.md:12-83` and is **branch-local**: it is a
   behavioural interpretation of `journal.md:173-179` and is not a `specs/` amendment. Reopen-on-Void
   inherits the same dependence, because the Void that reopens a Debt is the same visible-version
-  mechanism whose anchor status the decision fixes. If the reading is to bind every implementation
-  branch, it must become a `specs/adr/` amendment, which has not been done.
-- **`fake-indexeddb` fidelity gap.** Decision PD3 records the substitution (`planning-decisions-2026-10-10.md:170`)
+  mechanism whose anchor status the decision fixes. Promotion to the shared baseline was considered and
+  declined on 2026-10-11 (agenda item 9; PD1's promotion status), so the reading stays branch-local.
+- **`fake-indexeddb` fidelity gap.** Decision PD3 records the substitution (`planning-decisions-2026-10-10.md:184`)
   and D1's harness discloses it. The specific gaps the Debt, decline and reopen assertions rely on
   are: transaction abort and rollback timing after an injected failure; whether an aborted
   multi-store transaction leaves no partial obligation-key or decline write; index ordering stability
@@ -1255,7 +1255,7 @@ is owned by D2; this deliverable re-exercises them without claiming new ownershi
   real browser engine, and `T16` runs entirely in a real engine, so the gap is narrowed rather than
   papered over.
 - **The deferred pinned version profile.** The stack set is fixed by decision PD3
-  (`planning-decisions-2026-10-10.md:150-171`) but the exact version numbers are pinned at Phase 6
+  (`planning-decisions-2026-10-10.md:164-185`) but the exact version numbers are pinned at Phase 6
   and are not invented here. Every command in section 3 assumes only the fixed set: TypeScript strict,
   Vite, React, Vitest, `fake-indexeddb`, and Playwright against `pnpm dev` reading `DEV_PORT`.
 - **The schema-version number is deliberately not written down.** D1 owns the baseline and D2 through

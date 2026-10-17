@@ -41,9 +41,10 @@ Both must report zero failures **and zero warnings**. Warnings do not fail the e
 | 5 | A reopened Debt: same identity and due time, or a new one | Same identity **and** original due time. Reopen is a state transition of the obligation key, not a second `Defer`, so it restores the trigger-time due semantics that `journal.md:137` freezes; a reopened Debt is therefore immediately due and keeps Review completion Incomplete until answered again. (c) would need unnamed retirement evidence; (b) a second due source or a mutation of a frozen fact. | decision **PD13**; PD5 §1 decision 2, T7, T10, §8 |
 | 6 | Terminal Disposition's exact structured shape | Result union `Applicable(members) \| NotApplicable(stableReason, structuredDetails)`; members `{ mechanism, sourceFactIdentity, instrument, disposedQuantity }`; exact positive magnitude; `FactOrder` member order; `Mixed` derived rather than carried; one shared five-kind `MechanismKind` | decision **PD11**; PD6 §1 decision 2, T4/T16, §8 item 9 |
 | 7 | Attention-band thresholds and the pressure/reward edges | **Reverses the spec's within-band sort.** Band 4 = comparable and within `nearBoundaryFraction` (default 0.25) of the `Target − Stop` span from either selected boundary; band 5 = mid-span; within a band, nearest boundary first, then Last Activity, then identity. `daily-review.md:32`'s pressure-descending sort is one-sided — risk plus reward is the constant span, so it is nearest-Target-first and sorts a near-Stop Trade last — so this is a **branch-local deviation**, disclosed; AC-REV-002 is unaffected. **This reverses the recommendation in §3.7.** | decision **PD14**; PD4 §1 decision 2, T13, §8 item 2 |
-| 11 | The `Rolled` Close Reason exists before any Roll workflow | Selectable at D6. `reference-catalog.md:29` makes an inactive reason a Retired one, `:39` forbids retiring seeded taxonomy values, and AC-REF-001:390 files `Rolled` under that policy, so "while Roll is supported" scopes selectability in time rather than conditioning it. A `Rolled` close with no lineage is inert: the relation is one-directional and no derived value reads the reason. **This reverses the recommendation in §3.11.** | decision **PD12**; PD6 T3, §8 item 6 |
-
+| 8 | `ReviewChanged` vs `Conflict`: keep branch-local, or promote to `specs/adr/`? | **Branch-local, deliberately.** Promotion needs a `specs/adr/` amendment on `main` that binds the seven sibling worktrees and reopens a frozen decision; the reading is behaviourally committed in D4 and AC-REV-005 is label-agnostic. Cost disclosed: result naming is not comparable with the other seven branches. | PD2 promotion status; D4 §8 item 1 |
+| 9 | Anchor resolution at `save`: the same promote-or-not question | **Branch-local, deliberately.** Same reasoning; `save` attaches `Effective`, `Superseded` and `Voided` and rejects only `Unknown`. Cost disclosed: anchor behaviour is not comparable with the other seven branches. | PD1 promotion status; D5 §8 item 3 |
 | 10 | Seed scope vs selector scope, including IdeaSource in manifest v1 | Need-driven seeding. v2 adds no Catalog identity, so the single-option selector is a consequence rather than a filter; the five reasons arrive at D6, the ten Strategies at D8/D9/D11/D12, and **D12 seeds the empty IdeaSource Tag Type** because AC-REF-001 completes there. Not in v1, not at D2, not at D17. | decision **PD15**; D1 T23, D2 §1 decision 7, T12, §8 item 7 |
+| 11 | The `Rolled` Close Reason exists before any Roll workflow | Selectable at D6. `reference-catalog.md:29` makes an inactive reason a Retired one, `:39` forbids retiring seeded taxonomy values, and AC-REF-001:390 files `Rolled` under that policy, so "while Roll is supported" scopes selectability in time rather than conditioning it. A `Rolled` close with no lineage is inert: the relation is one-directional and no derived value reads the reason. **This reverses the recommendation in §3.11.** | decision **PD12**; PD6 T3, §8 item 6 |
 
 Earlier corrections in the same session, worth knowing before re-deriving anything: the
 `vertical-deliverables.md` Open-items paragraph and its "decision D7" reference — the content is
@@ -140,6 +141,9 @@ decision 2 and T13.
 
 ### 8. `ReviewChanged` vs `Conflict`: keep branch-local, or promote to `specs/adr/`?
 
+> **Settled 2026-10-11 — promotion declined; the mapping stays branch-local.** See PD2's promotion
+> status. The recommendation below matches the outcome; the text is kept for the reasoning.
+
 **Question.** Decision PD2 in `planning-decisions-2026-10-10.md` reads `daily-review.md:110`'s five
 trigger kinds and two result names into a review-scope / subject-scope mapping. Should that reading
 stay branch-local or bind every branch?
@@ -156,6 +160,9 @@ exactly the kind of ambiguity that will diverge silently between implementations
 same recommendation for item 9.**
 
 ### 9. Anchor resolution at `save` (decision PD1) — the same promote-or-not question
+
+> **Settled 2026-10-11 — promotion declined; the reading stays branch-local.** See PD1's promotion
+> status. The recommendation below matches the outcome.
 
 **Fixed by the spec.** `journal.md:173-179` shows `save` receiving a four-valued anchor status and
 appending unconditionally; `journal.md:163` requires "one committed Anchor" without saying which

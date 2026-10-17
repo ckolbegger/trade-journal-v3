@@ -71,11 +71,16 @@ Additionally:
 No new operation, no new field on `JournalAnchor`, and no change to the four-status union. This is a
 behavioral reading of an existing contract, not a schema change.
 
-### Open follow-up
+### Promotion status
 
-If this reading is to bind **all** implementation branches rather than this one, it should become a
-`specs/adr/` amendment to the shared baseline. That changes what every branch reads and has not been
-done.
+Considered and **declined** on 2026-10-11 (agenda item 9). Binding every implementation branch would
+require a `specs/adr/` amendment to the shared baseline — a change on `main`, propagated to the seven
+sibling worktrees, not a worktree edit. That reopens a frozen product decision (`specs/README.md:102`)
+and makes every branch's outcome depend on this one, for a reading this branch's own code can hold:
+`save` attaches `Effective`, `Superseded` and `Voided` anchors and rejects only `Unknown`. The cost is
+disclosed rather than hidden: this branch's anchor behaviour is **not comparable** with the other seven
+implementations on this point, and the plan must say so wherever it is compared. The option remains
+open for a later baseline change if the implementations are found to diverge.
 
 ---
 
@@ -144,6 +149,15 @@ Supplementary rules:
 
 No new operations (`DailyReview` remains 4), no new stored state, no change to the five bindings or to
 the one-outcome-per-obligation-key rule, and no acceptance scenario change.
+
+### Promotion status
+
+Considered and **declined** on 2026-10-11 (agenda item 8). The mapping is a reading of an
+under-specified sentence, and promoting it would need a `specs/adr/` amendment on `main` that binds the
+seven sibling worktrees and reopens a frozen product decision (`specs/README.md:102`). It is not
+promoted. `AC-REV-005` is label-agnostic (`acceptance-contract.md:252-257`), so no acceptance outcome
+turns on the two names; what the trader is told to do next does. The cost is disclosed: this branch's
+result naming is **not comparable** with the other seven implementations on this point.
 
 ---
 

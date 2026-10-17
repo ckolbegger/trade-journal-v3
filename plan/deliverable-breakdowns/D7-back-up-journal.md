@@ -101,7 +101,7 @@ must bring its own migration task with it; D7 does not make that decision.
    is wholly outside the artifact rather than torn across sections (`workspace.md:110`,
    `workspace.md:157`). Alignment needed: whether the snapshot seam is D1's transaction seam reused
    verbatim (`D1:T14`) or a dedicated read-snapshot wrapper; D7 assumes reuse, which is the smaller
-   change and keeps one atomic boundary (`planning-decisions-2026-10-10.md:162-164`).
+   change and keeps one atomic boundary (`planning-decisions-2026-10-10.md:176-178`).
 3. **`exportBackup` returns `Downloaded`, `Conflict` with the current binding, or `Not Completed`**
    with the failed stage, reason and unchanged-Workspace evidence — and `Downloaded` is not a
    completed backup (`workspace.md:110`, `adr/0010:7`). Alignment needed: the exact failure-stage
@@ -116,7 +116,7 @@ must bring its own migration task with it; D7 does not make that decision.
    D20's read-back work may strengthen it.
 5. **Export stays possible in `Recovery Only`** because it is not an authoritative mutation, while the
    write gate still governs every mutation at the transaction seam
-   (`workspace.md:114`, `delivery-contract.md:32`, `planning-decisions-2026-10-10.md:206`).
+   (`workspace.md:114`, `delivery-contract.md:32`, `planning-decisions-2026-10-10.md:220`).
    Alignment needed: none expected; this is recorded so the gate is not "helpfully" tightened around
    export by a later implementer.
 6. **The Workspace Backup Manifest records counts and exclusions explicitly** so a reader can audit
@@ -262,7 +262,7 @@ snapshot, resolving the expected-binding comparison, invoking the four section p
 snapshot, assembling the envelope, and returning the result union. Unit tests may substitute the four
 section producers; the snapshot seam is D1's transaction seam (`D1:T14`), reused rather than
 re-implemented, so one atomic boundary still spans the whole export
-(`planning-decisions-2026-10-10.md:162-164`).
+(`planning-decisions-2026-10-10.md:176-178`).
 
 **Unit test cases**
 
@@ -284,7 +284,7 @@ persistence. Assert the durable result: the Workspace binding returned in the `D
 equals the binding recorded inside the produced artifact's manifest, the authoritative store rows are
 unchanged, and the four section payloads correspond to the store contents at that snapshot. The only
 disclosed substitution is `fake-indexeddb` standing in for browser IndexedDB in the Node run
-(`planning-decisions-2026-10-10.md:170`, `planning-protocol.md:120`); the same case reruns against a
+(`planning-decisions-2026-10-10.md:184`, `planning-protocol.md:120`); the same case reruns against a
 real engine in the T13 Playwright leg.
 
 **Red/green evidence**
@@ -629,7 +629,7 @@ did not damage it.
 `delivery-contract.md:32` allows ordinary reads and backup export there; `glossary.md:14` states the
 same, and the readiness outcome is owned by `D1:T26`. This task makes export pass the gate *because it
 is a read*, while the write gate continues to refuse every mutation at the transaction seam
-(`planning-decisions-2026-10-10.md:206`) — decision 5 in §1 exists so nobody later "tightens" export
+(`planning-decisions-2026-10-10.md:220`) — decision 5 in §1 exists so nobody later "tightens" export
 into refusal.
 
 **Unit test cases**
@@ -918,7 +918,7 @@ this deliverable specifically:
   reported passing.
 - Integration: `pnpm test:integration -t "<case title fragment>"`, which runs the mock-free suite
   through the real application stack, with the `fake-indexeddb` substitution disclosed
-  (`planning-decisions-2026-10-10.md:170`).
+  (`planning-decisions-2026-10-10.md:184`).
 - Browser: `pnpm playwright test <path/to/spec.ts>` for the flows that must run against a real engine
   and a real IndexedDB.
 
@@ -945,7 +945,7 @@ implementation change happens before that reproducing test exists.
 
 ## 7. planning-decisions PD3 verification items inside this deliverable
 
-`planning-decisions-2026-10-10.md:198-214` lists the items that must be verified before the plan is
+`planning-decisions-2026-10-10.md:212-228` lists the items that must be verified before the plan is
 frozen. D7 owns parts of two of them and re-exercises, without claiming ownership of, the rest.
 
 | Item | Where it is resolved | Status |
@@ -980,16 +980,16 @@ owned by D2; this deliverable re-exercises them without claiming ownership.
    safety choice that consumes a receipt is D21's (`workspace.md:171`). D7 must not claim any of them,
    and no D7 surface may present `Downloaded` as a completed backup.
 5. **`fake-indexeddb` fidelity gap.** The Node leg substitutes `fake-indexeddb` for browser IndexedDB
-   (`planning-decisions-2026-10-10.md:170`, `planning-protocol.md:120`). Its known gap for D7 is
+   (`planning-decisions-2026-10-10.md:184`, `planning-protocol.md:120`). Its known gap for D7 is
    transaction/concurrency fidelity: its snapshot isolation and abort scheduling do not reproduce a
    real engine's behavior precisely, which weakens the T8 concurrency proof. The real-engine
    counterpart is therefore mandatory, not optional: T8 and T13 run the concurrent-mutation isolation
    flow in Playwright against a real engine and a real IndexedDB, and the run note must disclose which
    leg produced each result. Item 9 of the PD3 verification list
-   (`planning-decisions-2026-10-10.md:214`) requires exactly this.
+   (`planning-decisions-2026-10-10.md:228`) requires exactly this.
 6. **The deferred pinned version profile.** The concrete `package.json` scripts, test-runner version,
    Playwright version, digest library, and the artifact media type/extension are pinned at the Phase 6
-   freeze, not here (`planning-decisions-2026-10-10.md:153`, `plan/handoff-deepseek-v41-flash-2026-10-11.md`).
+   freeze, not here (`planning-decisions-2026-10-10.md:167`, `plan/handoff-deepseek-v41-flash-2026-10-11.md`).
    Every command in this file is stated at the level of a named script (`pnpm vitest run`,
    `pnpm playwright test`, `pnpm test:integration`, `pnpm tsc --noEmit`) plus a planned test file path;
    no version number is invented. Where a command depends on a pin, this document says so instead of
