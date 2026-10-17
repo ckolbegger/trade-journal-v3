@@ -594,7 +594,9 @@ participate in Workspace-owned flows).
 ## Open items
 
 - Detailed task breakdowns per deliverable, with `describe` / `it should` unit tests, are written
-  separately on request. **All seven of D1–D7 are drafted, awaiting review:** D1 in
+  separately on request. **All seven of D1–D7 are drafted and frozen as of 2026-10-17** — D1
+  outright, D2–D7 provisionally (see
+  [freeze-2026-10-17.md](freeze-2026-10-17.md)): D1 in
   [deliverable-breakdowns/D1-install-trust-and-set-up.md](deliverable-breakdowns/D1-install-trust-and-set-up.md)
   (34 tasks), D2 in
   [deliverable-breakdowns/D2-confirm-first-plan.md](deliverable-breakdowns/D2-confirm-first-plan.md)
@@ -615,10 +617,13 @@ participate in Workspace-owned flows).
   over the seven files. Each carries open questions of its own in an "Open items and risks"
   section, and D1–D7 record scenarios owned by later deliverables as Partial rather than counting
   them as passing.
-- The acceptance-to-evidence matrix (planning-protocol Phase 4) is not yet drafted.
+- The acceptance-to-evidence matrix (planning-protocol Phase 4) is drafted in
+  [acceptance-evidence-matrix-2026-10-11.md](acceptance-evidence-matrix-2026-10-11.md): 67 rows,
+  16 covered, 51 planned, 2 unowned gaps.
 - The nine verification items recorded under D3 in
   [planning-decisions-2026-10-10.md](planning-decisions-2026-10-10.md) must be resolved
-  inside the plan before it is frozen. D1 owns items 3, 4, 6 and 9; D2 owns item 5; item 8 is
+  inside the plan before the plan is frozen. The 2026-10-17 wave-1 freeze records item 2 as still
+  unowned and blocking no frozen deliverable. D1 owns items 3, 4, 6 and 9; D2 owns item 5; item 8 is
   owned and re-verified by each of D1–D7; items 1 and 7 are explicitly deferred to the Restore
   and backup-verification deliverables respectively; and item 2 is deferred because no scheduled
   deliverable owns mature-scale measurement. Each breakdown's mapping table records which rows are
