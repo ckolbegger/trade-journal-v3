@@ -993,6 +993,42 @@ Strategy cardinality at D2 while the plan records the scenario completing at D12
 
 ---
 
+## PD16 — The architecture batch is confirmed as recorded
+
+**Status:** confirmed by user decision, 2026-10-11. **Branch-local**; these are implementation-shaping
+choices rather than product semantics, and none is promoted into `specs/`.
+
+### Decision
+
+1. **D3 read path.** Trade presentation reads a narrow `TradeViewsAndReporting.getTradeDetail` subset
+   rather than Trade Record plus `derive`, because `overview.md:14` forbids the UI becoming a domain
+   coordinator; D18 extends the same operation.
+2. **D4 cutoff index.** Half-open intervals keyed on `(storedLifecycle, effectiveFrom)` with
+   `effectiveTo`; membership is inclusive at `effectiveFrom` and exclusive at `effectiveTo`, and the
+   bound is asserted as a query count. This is the one migration-costly choice in the batch. The
+   rejected alternative is an append-only lifecycle-membership log that grows with every lifecycle
+   change at 25,000 Trades.
+3. **D1 capacity minimum.** A disclosed formula over named per-record terms plus migration and backup
+   headroom, published as readiness evidence; a host that cannot report an estimate fails the check. No
+   number is fixed in the plan, and the coefficients are validated at T19.
+4. **`Journal.query` scope.** Implemented narrower than `journal.md:213`, with unsupported dimensions
+   as typed no-read results and no client-side filter composition. D17 and D19 extend the seam.
+5. **`D4:T8` edge.** D4's recover-with-no-provider blocks on `D1:T7` and is read as the typed
+   capability-absence convention. No Pricing Provider port exists before D8, which D4 §8 item 11
+   discloses.
+
+### Consequences
+
+- No breakdown changes: every choice is already recorded in the deliverable that implements it.
+- This is a sign-off, not a re-derivation. A later delivery needing a different shape must reopen that
+  specific item rather than the batch.
+
+### Not changed
+
+`specs/` is untouched, no acceptance claim moves, and no task or edge changes.
+
+---
+
 ## Still open
 
 Specification gaps from intake remain limited to PD1 and PD2. PD3 records the approved stack, PD4
@@ -1003,7 +1039,7 @@ and target condition model across the option arc, and PD10 records that fees are
 excluded from every calculation. PD11 fixes the Terminal Disposition shape and the shared mechanism
 vocabulary, PD12 records that the `Rolled` Close Reason is selectable by policy before any Roll
 workflow exists, PD13 records that a reopened Debt keeps its identity and its original due time, and
-PD14 orders the attention walk by boundary proximity instead of pressure descending, and PD15 makes the seed scope need-driven and assigns the IdeaSource Tag Type to D12. The PD3
+PD14 orders the attention walk by boundary proximity instead of pressure descending, and PD15 makes the seed scope need-driven and assigns the IdeaSource Tag Type to D12, and PD16 confirms the five architecture choices as recorded. The PD3
 verification items must be resolved inside the plan.
 
 The vertical deliverable list is recorded in [vertical-deliverables.md](vertical-deliverables.md).

@@ -45,6 +45,7 @@ Both must report zero failures **and zero warnings**. Warnings do not fail the e
 | 9 | Anchor resolution at `save`: the same promote-or-not question | **Branch-local, deliberately.** Same reasoning; `save` attaches `Effective`, `Superseded` and `Voided` and rejects only `Unknown`. Cost disclosed: anchor behaviour is not comparable with the other seven branches. | PD1 promotion status; D5 §8 item 3 |
 | 10 | Seed scope vs selector scope, including IdeaSource in manifest v1 | Need-driven seeding. v2 adds no Catalog identity, so the single-option selector is a consequence rather than a filter; the five reasons arrive at D6, the ten Strategies at D8/D9/D11/D12, and **D12 seeds the empty IdeaSource Tag Type** because AC-REF-001 completes there. Not in v1, not at D2, not at D17. | decision **PD15**; D1 T23, D2 §1 decision 7, T12, §8 item 7 |
 | 11 | The `Rolled` Close Reason exists before any Roll workflow | Selectable at D6. `reference-catalog.md:29` makes an inactive reason a Retired one, `:39` forbids retiring seeded taxonomy values, and AC-REF-001:390 files `Rolled` under that policy, so "while Roll is supported" scopes selectability in time rather than conditioning it. A `Rolled` close with no lineage is inert: the relation is one-directional and no derived value reads the reason. **This reverses the recommendation in §3.11.** | decision **PD12**; PD6 T3, §8 item 6 |
+| 12 | Architecture batch — five internal choices worth one sign-off | All five confirmed: the narrow D3 read path; the half-open D4 cutoff index (the migration-costly one); the disclosed D1 capacity formula with no fixed number; the narrower `Journal.query` with typed no-read results; and the `D4:T8` edge read as the capability-absence convention. | decision **PD16** |
 
 Earlier corrections in the same session, worth knowing before re-deriving anything: the
 `vertical-deliverables.md` Open-items paragraph and its "decision D7" reference — the content is
@@ -227,6 +228,9 @@ as a close reason with no lineage. D13 flips selectability on when it installs R
 decision 6 and T11/T15.
 
 ### 12. Architecture batch — internal, but worth one sign-off
+
+> **Settled 2026-10-11 — decision PD16: all five confirmed as recorded.** The table below is now the
+> record of what was confirmed rather than a pending ask.
 
 These are implementation-shaping rather than product decisions. Each is currently chosen in a
 breakdown; the ask is to confirm or redirect, not to re-derive.
