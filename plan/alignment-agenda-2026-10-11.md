@@ -40,6 +40,7 @@ Both must report zero failures **and zero warnings**. Warnings do not fail the e
 | 4 | `RecordedSequence` | One per-Workspace monotonic counter, assigned at commit in the candidate's **declared member order**; the candidate carries that order and `derive` tie-breaks with it because no sequence exists during preparation | D3 §1 decision 3, T2 |
 | 5 | A reopened Debt: same identity and due time, or a new one | Same identity **and** original due time. Reopen is a state transition of the obligation key, not a second `Defer`, so it restores the trigger-time due semantics that `journal.md:137` freezes; a reopened Debt is therefore immediately due and keeps Review completion Incomplete until answered again. (c) would need unnamed retirement evidence; (b) a second due source or a mutation of a frozen fact. | decision **D13**; D5 §1 decision 2, T7, T10, §8 |
 | 6 | Terminal Disposition's exact structured shape | Result union `Applicable(members) \| NotApplicable(stableReason, structuredDetails)`; members `{ mechanism, sourceFactIdentity, instrument, disposedQuantity }`; exact positive magnitude; `FactOrder` member order; `Mixed` derived rather than carried; one shared five-kind `MechanismKind` | decision **D11**; D6 §1 decision 2, T4/T16, §8 item 9 |
+| 7 | Attention-band thresholds and the pressure/reward edges | **Reverses the spec's within-band sort.** Band 4 = comparable and within `nearBoundaryFraction` (default 0.25) of the `Target − Stop` span from either selected boundary; band 5 = mid-span; within a band, nearest boundary first, then Last Activity, then identity. `daily-review.md:32`'s pressure-descending sort is one-sided — risk plus reward is the constant span, so it is nearest-Target-first and sorts a near-Stop Trade last — so this is a **branch-local deviation**, disclosed; AC-REV-002 is unaffected. **This reverses the recommendation in §3.7.** | decision **D14**; D4 §1 decision 2, T13, §8 item 2 |
 | 11 | The `Rolled` Close Reason exists before any Roll workflow | Selectable at D6. `reference-catalog.md:29` makes an inactive reason a Retired one, `:39` forbids retiring seeded taxonomy values, and AC-REF-001:390 files `Rolled` under that policy, so "while Roll is supported" scopes selectability in time rather than conditioning it. A `Rolled` close with no lineage is inert: the relation is one-directional and no derived value reads the reason. **This reverses the recommendation in §3.11.** | decision **D12**; D6 T3, §8 item 6 |
 
 Earlier corrections in the same session, worth knowing before re-deriving anything: the
@@ -110,6 +111,10 @@ renders it and D19 reports on it, so fixing it in D6 avoids reshaping it later. 
 decision 2 and T4/T16.
 
 ### 7. Attention-band thresholds and the pressure/reward edges
+
+> **Settled 2026-10-11 — decision D14: order by boundary proximity, symmetrically.** The
+> recommendation below is superseded; it assumed a one-sided threshold on the spec's pressure
+> quantity. The text is kept for the reasoning, not as an instruction.
 
 **Question.** What separates "quantified pressure" from "routine", and "evidence limited" from the
 others?

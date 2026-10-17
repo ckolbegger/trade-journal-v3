@@ -870,6 +870,62 @@ unchanged. D5 §1 decision 2 already chose this shape and now cites this decisio
 
 ---
 
+## D14 — Attention ordering follows boundary proximity, not pressure descending
+
+**Status:** settled by user decision, 2026-10-11. **Branch-local deviation** from a frozen product
+sentence, disclosed rather than promoted.
+
+### The gap
+
+`daily-review.md:30` fixes five attention bands and their order; `daily-review.md:32` fixes the
+comparison rules and the within-band sort, "comparable pressure sorts descending, then Last Activity
+descending, then stable Trade identity". Nothing fixes what separates the last two bands. The product
+intent is that review need rises as a Trade approaches **either** of its boundaries, symmetrically,
+and is highest once a boundary is reached.
+
+### Decision
+
+1. **Band 4 versus band 5.** A comparable Trade is in quantified pressure when its distance to either
+   selected monetary boundary is at most `nearBoundaryFraction` of the `Target − Stop` span, and in
+   routine when it lies in the middle of that span. `nearBoundaryFraction` is a named, disclosed input
+   with a default of `0.25`; it is never a stored per-Trade score, a severity, or a band.
+2. **Within a band.** Order by distance to the nearest boundary ascending, then Last Activity
+   descending, then stable Trade identity.
+3. **Unchanged.** The five bands and their order, the task-family order, the comparability rule, the
+   Highest and Zero clamps, and boundary-reached retention. A factual or management blocker still
+   outranks a reached boundary, because the numbers cannot be trusted until the record is sound.
+
+### Why this deviates
+
+For a fixed boundary pair, risk to Stop plus reward to Target is constant: it equals `Target − Stop`.
+Sorting by pressure descending is therefore identical to sorting by reward ascending, which is
+nearest-Target-first. A Trade one step from its Stop has the smallest risk to Stop and sorts **last**
+in its band — the opposite of the intent, under which either boundary raises review need and a reached
+boundary is near the top.
+
+### Consequences
+
+- This branch's Trade ordering is **not comparable** with the other seven implementations. The
+  deviation is to `daily-review.md:32` only and must be disclosed wherever the plan is compared.
+- `AC-REV-002` is unaffected: it fixes only the task-family order (Mark, Debt, settlement, Trade) at
+  `acceptance-contract.md:235`, not the within-family Trade order.
+- `specs/` is untouched. If this ordering is wanted for every branch, it is a baseline change on
+  `main`, not a worktree edit.
+- The Highest clamp (positive risk with zero or nonpositive reward) coincides with a reached Target,
+  which remains band 2. The Zero clamp needs an uncapped structural maximum; a confirmed Plan carries
+  Stop/Target management (`acceptance-contract.md:36`), so the ordinary case has a monetary Target and
+  a finite span. A Trade with no evaluable monetary Target cannot form the span, so it is Not
+  Comparable with the missing boundary named; `StructureValueCondition` could produce that case, is
+  reserved by decision D9, and is not installed before D8. That edge is disclosed rather than
+  resolved.
+
+### Not changed
+
+No operation, no stored state, no band name and no task-family order changes. D4 §1 decision 2, T13 and
+§8 item 2 record the deviation.
+
+---
+
 ## Still open
 
 Specification gaps from intake remain limited to D1 and D2. D3 records the approved stack, D4 affirms
@@ -879,8 +935,9 @@ prohibition on using authoritative-fact mutation to establish ordinary behaviour
 and target condition model across the option arc, and D10 records that fees are captured as facts and
 excluded from every calculation. D11 fixes the Terminal Disposition shape and the shared mechanism
 vocabulary, D12 records that the `Rolled` Close Reason is selectable by policy before any Roll
-workflow exists, and D13 records that a reopened Debt keeps its identity and its original due time.
-The D3 verification items must be resolved inside the plan.
+workflow exists, D13 records that a reopened Debt keeps its identity and its original due time, and
+D14 orders the attention walk by boundary proximity instead of pressure descending. The D3
+verification items must be resolved inside the plan.
 
 The vertical deliverable list is recorded in [vertical-deliverables.md](vertical-deliverables.md).
 The task-level breakdowns for D1–D7 are drafted under
