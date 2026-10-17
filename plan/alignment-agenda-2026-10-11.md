@@ -262,6 +262,11 @@ breakdown; the ask is to confirm or redirect, not to re-derive.
 These fell out of the buggy-release case and are recorded rather than guessed. Both need an answer
 when the owning deliverable is planned.
 
+**Carried, not settled, as decided on 2026-10-11.** Both questions are now recorded with their owners
+in [forward-obligations-2026-10-11.md](forward-obligations-2026-10-11.md), rows 9 (D15) and 1 (D7,
+D20). That file is the durable home for obligations on deliverables that have no breakdown yet; a
+decision-record note alone would not reach the next planner.
+
 1. **Can a correction be committed against a Trade whose base state is already incoherent?**
    `trade-record.md:62` says `prepareChange` "validates structural coherence" without saying whether it
    validates the **base** state or the **candidate**. If the base, a fact written wrongly by a buggy
@@ -276,6 +281,9 @@ when the owning deliverable is planned.
 ---
 
 ## 5. Standing deferrals — confirm, not decide
+
+**Confirmed 2026-10-11: all five stand as recorded.** Nothing here is a new decision; the five are the
+things the plan deliberately does *not* settle yet, and each has a named owner or a recorded gap.
 
 | Deferral | Where it stands |
 |---|---|
