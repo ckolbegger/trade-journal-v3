@@ -6,18 +6,18 @@ Working file for VD1 of `plan/implementation-plan.md` @ `477c8cd` (branch `zcode
 
 ## Scope recap (authoritative source: plan §VD1)
 
-- **User-visible outcome:** first run to a confirmed Plan — installable app shell, Runtime Readiness gate with all outcome views, workspace initialization with time-zone selection, onboarding (create Institution + Account), plan composition (Long Stock only), Plan Reflection with required Thesis/Invalidation, frozen Plan Baseline and 1R at confirmation, planned-trade browsing and plan detail.
-- **Operations exercised:** `Workspace.initialize/getStatus/saveSettings/requestDurability`; `ReferenceCatalog.seedDefaults/save(create Institution, Account)/query/resolve`; `Journal.seedDefaults/getDefinitions/prepareEffects/applyPreparedEffects`; `TradeWorkflows.confirmPlan`; `TradeRecord.prepareChange/applyPreparedChange/getRecord/queryRecords`; `TradeAnalysis.assessPlan`; plus the minimal `TradeViewsAndReporting` browse/detail variants the capability set requires (see Flag F1).
+- **User-visible outcome:** first run to a confirmed Plan — installable app shell, Runtime Readiness gate with all outcome views, workspace initialization with time-zone selection, onboarding (create Institution + Account), plan composition (Long Stock only), Plan Reflection with required Thesis/Invalidation, frozen Plan Baseline and 1R at confirmation, and the confirmed plan presented from the post-commit result. Planned-trade browsing and plan detail were moved to VD2 (decision 14b).
+- **Operations exercised:** `Workspace.initialize/getStatus/saveSettings/requestDurability`; `ReferenceCatalog.seedDefaults/save(create Institution, Account)/query/resolve`; `Journal.seedDefaults/getDefinitions/prepareEffects/applyPreparedEffects`; `TradeWorkflows.confirmPlan`; `TradeRecord.prepareChange/applyPreparedChange/getRecord/queryRecords`; `TradeAnalysis.assessPlan`.
 - **Mechanisms:** Web App Manifest identity; versioned service worker with complete digest-verified Offline Release Inventory; the four readiness checks (isolated diagnostic transaction, capacity headroom, SW control, inventory) and persistence-level `RuntimeNotWritable` write gate; semantic transactions, optimistic revisions, immutable fact versions; canonical decimal money; advisory storage-protection warning + durability request; schema-version/migration framework; Installed Capability Manifest.
 - **Seeds (atomic at initialization):** 7 Entry Types with initial definitions, 7 Sources, 11 Strategies, 5 Close Reasons, 5 Abandonment Reasons, 1 empty IdeaSource Tag Type. The plan form's strategy selector offers **Long Stock only** (single-leg options VD4; two-leg VD9; IC/PMCC VD10).
 - **Durable representation:** schema v1 for Workspace metadata/settings, Journal, Reference Catalog, Trade Record (plans, facts, versions, lifecycle index), and an empty Market Data section; capability manifest; SW release inventory.
-- **Acceptance (plan markings):** Full: AC-PLAN-001, AC-PLAN-002, AC-DEL-001, AC-DEL-003, AC-DEL-004, AC-REF-001, AC-JOUR-007, AC-UI-001. Partial owned: AC-UI-002 (grows every VD), AC-RESP-001 (creation operations), AC-DEL-005 (Unsupported + Integrity Blocked halves), AC-DEL-006 (launch/update boundaries), AC-DEL-002 (deferral machinery).
+- **Acceptance (plan markings, updated by decision 14):** Full: AC-PLAN-001, AC-PLAN-002, AC-DEL-001, AC-DEL-004, AC-REF-001, AC-JOUR-007, AC-UI-001. Partial owned: AC-UI-002 (grows every VD), AC-RESP-001 (creation operations), AC-DEL-003 (loopback evidence; production-HTTPS half at first deployment per decision 14c), AC-DEL-005 (Unsupported + Integrity Blocked halves), AC-DEL-006 (launch/update boundaries), AC-DEL-002 (deferral machinery).
 
 ## Interface-freeze gate and parallel split
 
-- **T2 pins the shared command/result types** for every operation VD1 exercises (Workspace, Reference Catalog, Journal, Trade Record, Trade Workflows, Trade Analysis, Trade Views) exactly as the module contracts define them. After T2 the deliverable splits:
-  - **Track D (domain/persistence):** T3–T13.
-  - **Track U (UI/shell):** T14–T18, built against the frozen interfaces and wired to real modules as Track D lands.
+- **T2 pins the shared command/result types** for every operation VD1 exercises (Workspace, Reference Catalog, Journal, Trade Record, Trade Workflows, Trade Analysis) exactly as the module contracts define them. After T2 the deliverable splits:
+  - **Track D (domain/persistence):** T3–T11, T13.
+  - **Track U (UI/shell):** T14–T17, built against the frozen interfaces and wired to real modules as Track D lands.
 - Both tracks serialize at the VD1 gates: cumulative mock-free integration suite (T19) and fresh browser-critic run (T20).
 
 ## Tasks
@@ -196,15 +196,14 @@ describe("prepared Plan Reflection effects")
 ### T9 — TradeAnalysis.assessPlan (Long Stock)
 **Type:** behavior-bearing. **Depends:** T2.
 
-Pure plan assessment for the one selectable strategy: leg coherence (one long Stock role, underlying + positive quantity), management coverage, calculable baseline. Baseline = Original Planned Risk (intended entry → original effective Stop boundary, per-share × quantity), Original Planned Reward, planned reward/risk ratio, per-condition basis; Original Planned Risk positive and exactly 1R. **Assumption A1 (confirm at review):** a Long Stock plan without a Target yields `Unbounded` Original Planned Reward (ratio Unbounded) and is still acceptable; a Stop is required for positive 1R.
+Pure plan assessment for the one selectable strategy: leg coherence (one long Stock role, underlying + positive quantity), management coverage, calculable baseline. Baseline = Original Planned Risk (intended entry → original effective Stop boundary, per-share × quantity), Original Planned Reward (intended entry → original Target boundary), planned reward/risk ratio, per-condition basis; Original Planned Risk positive and exactly 1R. **Resolved (user, 2026-10-18 — decision 14a):** original Targets are required alongside Stops; a missing target is a typed rejection and Original Planned Reward is always finite at confirmation.
 
 **Seam:** `TradeAnalysis.assessPlan` (pure).
 
 ```
 describe("assessPlan acceptance for Long Stock")
 - it should accept AAPL 100 shares, intended entry 50.00, stop 45.00, target 60.00 and return normalized semantics with 1R = $500.00, Original Planned Reward = $1,000.00, and ratio 2.0
-- it should return Unbounded Original Planned Reward (and Unbounded ratio) when no target is set, while still accepting the plan with positive 1R   [A1]
-- it should reject with a typed result naming every missing field when underlying, quantity, intended entry, or stop is absent
+- it should reject with a typed result naming every missing field when underlying, quantity, intended entry, stop, or target is absent
 
 describe("assessPlan baseline correctness")
 - it should reject a stop at or above intended entry for a long position because Original Planned Risk is not positive, identifying the field and the nonpositive value
@@ -252,24 +251,12 @@ describe("confirmPlan durability")
 - it should leave the confirmed Trade and Entry queryable with identical identities and revisions after a simulated restart (fresh store connection)
 ```
 
-### T12 — Trade Views and Reporting: minimal browse + plan detail
-**Type:** behavior-bearing. **Depends:** T10. *(See Flag F1.)*
-
-Read-coordinator assembly the VD1 capability set requires: trade list (planned trades at VD1: lifecycle, account/strategy/underlying labels via Catalog, plan summary) and Trade Detail for a planned trade (frozen plan, legs, management, lifecycle, Plan Reflection narrative via Journal anchor resolution). Loading/Ready/Empty/Error observable.
-
-**Seam:** `TradeViewsAndReporting` browse/detail over the real store.
-
-```
-describe("planned-trade browse and detail")
-- it should return a Ready list of planned Trades with reference labels resolved from the Catalog snapshot and an honest Empty state when none exist
-- it should return one coherent plan detail including the frozen plan facts, baseline/1R, and the Trade-anchored Plan Reflection narrative in a single snapshot-bound result
-- it should return an Error state, not a false Empty, when the underlying read cannot be assembled
-```
+### T12 — *(removed 2026-10-18 — decision 14b: browse/detail read-coordinator surfaces deferred to VD2; see F1 resolution below)*
 
 ### T13 — Installed Capability Manifest v1
 **Type:** structural. **Depends:** T6.
 
-Manifest listing exactly VD1's complete operations/variants (Workspace 4 ops + export-adjacent none yet, Catalog subset, Journal subset, TradeWorkflows.confirmPlan, TradeRecord subset, TradeAnalysis.assessPlan, Trade Views browse/detail) with dependency closure; navigation gated by the manifest.
+Manifest listing exactly VD1's complete operations/variants (Workspace 4 ops + export-adjacent none yet, Catalog subset, Journal subset, TradeWorkflows.confirmPlan, TradeRecord subset, TradeAnalysis.assessPlan) with dependency closure; navigation gated by the manifest.
 
 **Verification:** manifest fixture diff against the expected capability list; a UI smoke test asserting navigation exposes only manifest-declared surfaces. AC-CAP-001's honest-delta rule depends on it.
 
@@ -339,18 +326,7 @@ describe("plan composition and confirm")  — seam: plan form + confirm action
 - it should record nothing when the form is abandoned or navigated away from unsaved
 ```
 
-### T18 — UI: planned-trade list and plan detail views
-**Type:** behavior-bearing. **Depends:** T12, T14.
-
-List + detail surfaces with distinguishable Loading/Ready/Empty/Error states; baseline/1R display with unrounded read-model values and presentation-only rounding.
-
-**Seam:** rendered browse/detail surfaces.
-
-```
-describe("planned-trade list and detail view states")  — seam: trade list/detail surfaces
-- it should show Loading (never a false Empty or stale-as-current) while the read is in flight, Ready with content, Empty with explanation and next action, and Error with recoverable context
-- it should render the plan detail's baseline and 1R from exact read-model values with rounding applied only at presentation
-```
+### T18 — *(removed 2026-10-18 — decision 14b: the planned-trade list/detail UI surfaces deferred to VD2; VD1's T17 confirmation view presents the confirmed plan from the post-commit result)*
 
 ### T19 — VD1 integration suite additions + cumulative gate
 **Type:** structural (suite assembly; the cases are specified in the Integration section below). **Depends:** all above.
@@ -362,12 +338,12 @@ describe("planned-trade list and detail view states")  — seam: trade list/deta
 
 Fresh critic agent runs every CRIT-VD1 flow against `http://127.0.0.1:5176`. Mandatory test-first repair loop per planning protocol on any finding.
 
-### T21 — Cloudflare Pages deployment evidence
+### T21 — Loopback delivery-evidence record (production deploy deferred)
 **Type:** structural. **Depends:** T5, T19.
 
-Deploy the release to Cloudflare Pages; capture HTTPS-origin manifest/inventory/readiness provenance for AC-DEL-003.
+Production Cloudflare Pages deployment is deferred until a useful MVP exists (user decision 2026-10-18 — decision 14c). VD1 records delivery evidence on the plan-approved loopback secure context (`http://127.0.0.1:5176`, a browser-recognized secure context): Web App Manifest identity, complete Offline Release Inventory with digests, readiness decisions with no identity allowlist, and exact browser/OS provenance. AC-DEL-003's production-HTTPS half completes at the first deployment deliverable.
 
-**Verification:** `curl https://<pages-host>/manifest.webmanifest` over HTTPS returns the manifest; recorded browser/OS versions for the evidence set; loopback evidence (127.0.0.1 secure context) recorded as automation supplement, not replacement.
+**Verification:** manifest and inventory verified over the loopback origin; evidence table records exact browser and OS versions used; the deferred production-HTTPS scope is disclosed in the VD1 coverage table (per the acceptance contract's conformance rule).
 
 ## Progress table
 
@@ -384,16 +360,16 @@ Deploy the release to Cloudflare Pages; capture HTTPS-origin manifest/inventory/
 | T9 assessPlan | planned | |
 | T10 TradeRecord | planned | |
 | T11 confirmPlan | planned | |
-| T12 Trade Views minimal | planned | |
+| T12 ~~Trade Views minimal~~ | removed (14b) | moved to VD2 |
 | T13 capability manifest | planned | |
 | T14 app shell | planned | |
 | T15 readiness UI | planned | |
 | T16 onboarding/settings UI | planned | |
 | T17 plan UI | planned | |
-| T18 browse/detail UI | planned | |
+| T18 ~~browse/detail UI~~ | removed (14b) | moved to VD2 |
 | T19 integration gate | planned | |
 | T20 critic gate | planned | |
-| T21 deployment evidence | planned | |
+| T21 loopback delivery evidence | planned | |
 
 ## Mock-free real-stack integration cases (join the cumulative suite)
 
@@ -418,7 +394,7 @@ Disclosed test infrastructure: `fake-indexeddb` in place of a browser-owned Inde
 | CRIT-VD1-01 | First launch → readiness pending → Writable shell | Startup verification visible; mutating actions disabled until Writable; then full shell |
 | CRIT-VD1-02 | PWA identity inspection | Manifest fetch shows stable identity fields; install affordance/instructions present where the host exposes installation; browser-tab use remains complete |
 | CRIT-VD1-03 | Initialize with time zone → onboarding → create Institution + Account | Seeded defaults visible (no fictional brokerage records); flow reaches Ready for Trade Planning |
-| CRIT-VD1-04 | Compose and confirm a Long Stock plan (AAPL 100 @ 50, stop 45, target 60, Thesis/Invalidation filled) | Success shows frozen baseline $500 1R / $1,000 reward from post-commit result; plan appears in list and detail |
+| CRIT-VD1-04 | Compose and confirm a Long Stock plan (AAPL 100 @ 50, stop 45, target 60, Thesis/Invalidation filled) | Success shows frozen baseline $500 1R / $1,000 reward from the post-commit confirmation view, with no visible refetch |
 | CRIT-VD1-05 | Incomplete plan submission | Typed rejections listed; nothing persisted; unsaved values retained for correction |
 | CRIT-VD1-06 | Live resize on the plan form (wide→narrow→wide) | Layout switches live; route/unsaved values intact; equivalent actions (AC-UI-001) |
 | CRIT-VD1-07 | Storage-protection surface | Not-protected warning visible and non-disabling; durability request action offered; accepted write still works |
@@ -435,20 +411,20 @@ Disclosed test infrastructure: `fake-indexeddb` in place of a browser-owned Inde
 | AC-PLAN-001 | Full | entire scenario | T9, T10, T11 | INT-VD1-05 | CRIT-VD1-04 |
 | AC-PLAN-002 | Full | entire scenario | T9, T11 | INT-VD1-06 | CRIT-VD1-05 |
 | AC-DEL-001 | Full | entire scenario | T5 | (Playwright offline) | CRIT-VD1-08 |
-| AC-DEL-003 | Full | entire scenario | T5, T21 | — | CRIT-VD1-02 + HTTPS provenance |
+| AC-DEL-003 | Partial (loopback) | loopback manifest/inventory/readiness evidence, no identity allowlist; production-HTTPS half completes at the first deployment deliverable (decision 14c) | T5, T21 | — | CRIT-VD1-02 + loopback provenance |
 | AC-DEL-004 | Full | entire scenario incl. simultaneous failures + both-boundary RuntimeNotWritable + capacity derivation disclosure | T3, T4, T15 | INT-VD1-03, INT-VD1-04 | CRIT-VD1-01/10/11 |
 | AC-REF-001 | Full | entire scenario | T7 | INT-VD1-01/02 | CRIT-VD1-03 |
 | AC-JOUR-007 | Full | entire scenario | T8 | INT-VD1-01/02 | CRIT-VD1-03 |
 | AC-UI-001 | Full | entire scenario | T14 | — | CRIT-VD1-06 |
-| AC-UI-002 | Partial (grows every VD) | VD1 surfaces' Loading/Ready/Empty/Error + keyboard/zoom slice | T15, T18 | — | CRIT-VD1-12 |
+| AC-UI-002 | Partial (grows every VD) | VD1 surfaces' Loading/Ready/Empty/Error + keyboard/zoom slice | T15, T17 | — | CRIT-VD1-12 |
 | AC-RESP-001 | Partial (creation operations) | confirmPlan as creation; post-commit result discipline | T11 | INT-VD1-05 | CRIT-VD1-04 |
 | AC-DEL-005 | Partial (Unsupported + Integrity Blocked halves) | Unsupported/Integrity-Blocked outcomes and no-write behavior; Recovery-Only export half completes VD5→VD6 era (per plan, Recovery-Only export at VD6; note: plan's declared scope names VD5 for the Recovery-Only export half — the export operation itself lands with VD6 backup; flagged as F4) | T4, T15 | INT-VD1-03/04 | CRIT-VD1-10/11 |
 | AC-DEL-006 | Partial (launch/update boundaries) | every-launch gate + post-update re-gate; post-Restore boundary completes VD18 | T4, T5 | INT-VD1-03 | CRIT-VD1-09 |
 | AC-DEL-002 | Partial (deferral machinery) | inventory-gated update notice + deferred activation; evidence accrues per release, completes VD18 | T5 | — | CRIT-VD1-09 |
 
-## Flagged for review (cited passages; no silent choice made)
+## Flag resolutions and open items
 
-- **F1 — Trade Views omitted from VD1's operations list.** Plan §VD1 capability set requires "planned-trade browsing and plan detail," but the §VD1 operations list names no `TradeViewsAndReporting` operation, and the dependency table (`specs/design/overview.md` "Who may call whom") forbids Presentation → Trade Record reads. T12 therefore includes the minimal browse/detail read-coordinator variants. Same pattern in VD2 ("open-trade browsing and detail" with no listed Trade Views op).
-- **F2 — Assumption A1 (target-optional Long Stock plan).** `specs/design/trade-analysis.md` §assessPlan requires positive Original Planned Risk (= 1R) but does not state that a Target is mandatory; T9 assumes a target-less plan yields `Unbounded` Original Planned Reward and is acceptable. Confirm or correct.
-- **F3 — Production HTTPS evidence cadence.** AC-DEL-003 needs production-origin provenance. T21 deploys to Cloudflare Pages at VD1 and the expectation is each later release re-deploys; confirm that cadence (vs. accumulating to a single later evidence pass).
-- **F4 — AC-DEL-005 "Recovery-Only export completes at VD5" vs backup landing at VD6.** Plan §VD1 partial line says the Recovery-Only export half of AC-DEL-005 completes at VD5, but `exportBackup` is a VD6 operation (plan §VD6; decision 13 moved backup to VD6). Proposed reading: the Recovery-Only *restricted view with backup navigation* is VD1 (T15) and the export behavior completes at VD6; confirm.
+- **F1 — RESOLVED (user, 2026-10-18 — decision 14b):** planned-trade browsing and plan detail are deferred to VD2, where the first browse/detail read-coordinator surfaces arrive. T12 and T18 are removed from this VD; the plan's §VD1/§VD2 capability sets and story lists record the move. VD1 presents the confirmed plan from the post-commit result (T17).
+- **F2/A1 — RESOLVED (user, 2026-10-18 — decision 14a):** original Targets are required alongside Stops. A missing target is a typed rejection; Original Planned Reward is finite at confirmation. T9's specs reflect this.
+- **F3 — RESOLVED (user, 2026-10-18 — decision 14c):** no Cloudflare deployment yet — everything runs locally on the plan-approved `127.0.0.1` loopback secure context until a useful MVP exists. T21 records loopback delivery evidence; AC-DEL-003's production-HTTPS half completes at the first deployment deliverable (a disclosed scope change per the acceptance contract's conformance rule — the plan's VD1 acceptance line now marks AC-DEL-003 Partial).
+- **F4 — open (low stakes):** the plan's VD1 partial line for AC-DEL-005 says the Recovery-Only export half completes at VD5, but `exportBackup` is a VD6 operation. Proposed reading stands (restricted view at VD1, export behavior at VD6). Adjudicate during final review before freeze.

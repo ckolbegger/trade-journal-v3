@@ -4,8 +4,8 @@ Working file for VD2 of `plan/implementation-plan.md` @ `477c8cd` (branch `zcode
 
 ## Scope recap (authoritative source: plan §VD2)
 
-- **User-visible outcome:** record an opening Position Change — one decision, multiple Executions serving planned legs, single Trade, single-leg stock — and see the open position, lots, and fees; complete, defer, or decline the after-trade reflection without blocking the factual record; browse open trades and detail (facts, lots, fulfillment, journal narrative); basic Debt list with resolve form.
-- **Operations exercised:** `TradeWorkflows.recordPositionChange` (opening variant); `TradeAnalysis.derive` (positions, lots, entry window, fulfillment, fact-only deviations); `Journal.save` (Debt resolution); `Journal.query` (debt, narrative); `TradeRecord` AnalysisInput projection; plus the open-browse/detail Trade Views widening (Flag F1 in the VD1 file).
+- **User-visible outcome:** record an opening Position Change — one decision, multiple Executions serving planned legs, single Trade, single-leg stock — and see the open position, lots, and fees; complete, defer, or decline the after-trade reflection without blocking the factual record; browse trades and detail (the planned-trade list and plan detail deferred from VD1 by decision 14b, plus open-trade facts, lots, fulfillment, journal narrative); basic Debt list with resolve form.
+- **Operations exercised:** `TradeWorkflows.recordPositionChange` (opening variant); `TradeAnalysis.derive` (positions, lots, entry window, fulfillment, fact-only deviations); `TradeViewsAndReporting` trade browse and Trade Detail (planned + open — the first read-coordinator surfaces, per decision 14b); `Journal.save` (Debt resolution); `Journal.query` (debt, narrative); `TradeRecord` AnalysisInput projection.
 - **Mechanisms:** FIFO opening-lot construction; Economic Time + Recorded Sequence ordering; obligation-key uniqueness; revision-bound post-commit results.
 - **Seeds:** none (selector widening only in later VDs).
 - **Durable representation:** Executions, Position Changes and membership, open lots, deviation occurrences, Debt/decline records, lifecycle index entries.
@@ -131,17 +131,22 @@ describe("atomicity across participants")
 - it should roll back every staged Trade fact, lot, deviation, and index effect when the Journal participant rejects the prepared reflection (fixture: invalid completed-form answer)
 ```
 
-### T7 — Trade Views: open-trade browse and detail widening
-**Type:** behavior-bearing. **Depends:** VD1-T12, T4, T5.
+### T7 — Trade Views: trade browse and detail (planned + open)
+**Type:** behavior-bearing. **Depends:** VD1-T10/T11, T4, T5.
 
-Open-trade list (stored lifecycle Open via the authoritative index, AnalysisInput batch — no per-Trade child loads) and Trade Detail extension: facts (Position Change + Executions), derived lots and fees, per-leg fulfillment, Deviation occurrences, journal narrative tab.
+The first read-coordinator surfaces, including those deferred from VD1 (decision 14b): planned-trade list (lifecycle, account/strategy/underlying labels via Catalog, plan summary with baseline/1R) and plan detail (frozen plan, legs, management, lifecycle, Plan Reflection narrative via Journal anchor resolution); plus the open-trade list (stored lifecycle Open via the authoritative index, AnalysisInput batch — no per-Trade child loads) and Trade Detail extension: facts (Position Change + Executions), derived lots and fees, per-leg fulfillment, Deviation occurrences, journal narrative tab.
 
 **Seam:** `TradeViewsAndReporting` browse/detail over the real store.
 
 ```
-describe("open-trade browse and detail")
+describe("trade browse (planned and open)")
+- it should return a Ready list of planned Trades with reference labels resolved from the Catalog snapshot, baseline/1R from exact read-model values, and an honest Empty state when none exist
 - it should list Open trades from the lifecycle index with fulfilled/batched analysis inputs and labels in one snapshot-bound result
-- it should render one Trade Detail containing facts, lots, fee treatment, fulfillment per leg, deviations with basis, and the journal narrative — distinguishable as separate concepts (Execution never conflated with Position Change)
+
+describe("trade detail (planned and open)")
+- it should return one coherent plan detail including the frozen plan facts, baseline/1R, and the Trade-anchored Plan Reflection narrative in a single snapshot-bound result
+- it should render one open-Trade Detail containing facts, lots, fee treatment, fulfillment per leg, deviations with basis, and the journal narrative — distinguishable as separate concepts (Execution never conflated with Position Change)
+- it should return an Error state, not a false Empty, when the underlying read cannot be assembled
 - it should expose Loading/Ready/Empty/Error distinctly on both surfaces
 ```
 
