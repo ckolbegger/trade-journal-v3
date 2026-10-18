@@ -143,7 +143,7 @@ These are blocking edges for task completion. UI work may start after the contra
 
 ### D1-T01 — Pin tools and production/test build contracts (structural)
 
-Prerequisites: approved stack and review of these task contracts. Single tooling/release owner. Future verification: `node --version`/`npm --version` equal selected pins; clean `npm ci` from exact lockfile without peer overrides; typecheck/build; built-worker/inventory asset completeness/digest checks, strict DEV_PORT and secure loopback observation. Configure the named scripts/test separation and real browser environment, not application mocks. Resolve the TypeScript 7/ESLint compatibility requirement below: pin a supported ESLint/typescript-eslint/TypeScript 6 API combination without peer overrides, keep the TypeScript 7 compiler separately aliased, verify executable/API version routing, and run both typed lint and strict TypeScript 7 checking. Record a temporary type-aware rule violation rejected by lint to prove the checker is active, then remove it. Verify error if port occupied. This enables all D1 behavior; no foundation-only release.
+Prerequisites: approved stack and review of these task contracts. Single tooling/release owner. Future verification: `node --version`/`npm --version` equal selected pins; clean `npm ci` from exact lockfile without peer overrides; typecheck/build; built-worker/inventory asset completeness/digest checks, strict DEV_PORT and secure loopback observation. Configure the named scripts/test separation and real browser environment, not application mocks. Implement the exact [lint-tooling pins and Microsoft alias recipe](#typescript-7-and-eslint-compatibility--pins-finalized-2026-10-18) below without peer overrides. Create its package/runtime/config files and lockfile in this task; verify compiler/API routing, all-file typed lint coverage and both temporary failure probes before recording clean lint/typecheck/build results. Verify error if port occupied. This enables all D1 behavior; no foundation-only release.
 
 ### D1-T02 — Validate Long Stock Plan and exact numeric semantics
 
@@ -387,11 +387,11 @@ Before these six breakdowns are complete for review: all six files exist; task I
 
 ## Research appendix — verified platform and library facts
 
-Research date: **2026-10-11**, with the trader-approved Node/npm/Node-types update verified **2026-10-18**. This appendix supplies planning evidence, not approval to implement or install. The selected stack is approved in [technology-stack.md](../technology-stack.md); the exact pins below are selected for these task breakdowns within that stack; final implementation-baseline approval and execution remain separate. Recommendations explicitly labelled proposed remain proposals, except the trader-accepted exact derived quotient representation, same-database staged-generation activation, 2021–2028 calendar coverage/horizon policy, measured capacity/headroom with a 25% margin, and incremental SHA-256 dependency reported during this planning session. No provider is selected.
+Research date: **2026-10-11**, with the trader-approved Node/npm/Node-types update and completed lint-tooling selection verified **2026-10-18**. This appendix supplies planning evidence, not approval to implement or install. The selected stack is approved in [technology-stack.md](../technology-stack.md); the exact pins below are selected for these task breakdowns within that stack; final implementation-baseline approval and execution remain separate. Recommendations explicitly labelled proposed remain proposals, except the trader-accepted exact derived quotient representation, same-database staged-generation activation, 2021–2028 calendar coverage/horizon policy, measured capacity/headroom with a 25% margin, and incremental SHA-256 dependency reported during this planning session. No provider is selected.
 
 ### Selected exact pins and provenance
 
-The table records releases present in official Node release metadata or the npm registry on the stated research date. The original dependency research is dated 2026-10-11; Node/npm and matching Node types were rechecked on 2026-10-18 after the trader selected the locally installed Homebrew runtime. Scheduled future releases are not treated as available. npm package metadata was fetched read-only from the primary registry, including `time`, `engines`, `peerDependencies`, and optional-peer metadata. Sources link to the full registry metadata so the publication date remains inspectable; exact version entries supply package manifests and distribution integrity.
+The table records releases present in official Node release metadata or the npm registry on the stated research date. The original dependency research is dated 2026-10-11; Node/npm and matching Node types were rechecked on 2026-10-18 after the trader selected the locally installed Homebrew runtime; lint pins and Microsoft compatibility aliases were verified on that date as well. Scheduled future releases are not treated as available. npm package metadata was fetched read-only from the primary registry, including `time`, `engines`, `peerDependencies`, and optional-peer metadata. Sources link to the full registry metadata so the publication date remains inspectable; exact version entries supply package manifests and distribution integrity.
 
 | Role / package | Selected exact pin | Published | Primary evidence |
 | --- | --- | --- | --- |
@@ -402,7 +402,13 @@ The table records releases present in official Node release metadata or the npm 
 | `@types/react` | `19.3.0` | 2026-09-09 | [registry](https://registry.npmjs.org/@types/react) |
 | `@types/react-dom` | `19.3.0` | 2026-09-09 | [registry](https://registry.npmjs.org/@types/react-dom) |
 | `@types/node` | `26.6.5` | 2026-10-09 | [registry](https://registry.npmjs.org/@types/node), latest stable 26.x type package observed on 2026-10-18 |
-| `typescript` | `7.0.2` | 2026-07-08 | [registry](https://registry.npmjs.org/typescript) |
+| TypeScript 7 compiler, installed as `@typescript/native` | `npm:typescript@7.0.2` | 2026-07-08 | [exact manifest](https://registry.npmjs.org/typescript/7.0.2); supplies `tsc` |
+| TypeScript 6 compatibility package, installed as `typescript` | `npm:@typescript/typescript6@6.0.2` | 2026-07-06 | [exact manifest](https://registry.npmjs.org/@typescript%2Ftypescript6/6.0.2); supplies `tsc6` and the legacy API forwarding entry |
+| Underlying TypeScript 6 API, transitive `@typescript/old` | `6.0.3` in the future lockfile; no additional direct dependency | 2026-04-16 | [exact manifest](https://registry.npmjs.org/typescript/6.0.3); compatibility package forwards here |
+| `eslint` | `10.13.0` | 2026-10-16 | [exact manifest](https://registry.npmjs.org/eslint/10.13.0) |
+| `@eslint/js` | `10.0.1` | 2026-02-06 | [exact manifest](https://registry.npmjs.org/@eslint%2Fjs/10.0.1) |
+| `typescript-eslint` | `8.71.2` | 2026-10-12 | [exact manifest](https://registry.npmjs.org/typescript-eslint/8.71.2); brings matching parser/plugin/estree packages |
+| `globals` | `17.13.0` | 2026-10-01 | [exact manifest](https://registry.npmjs.org/globals/17.13.0) |
 | `vite` | `8.3.4` | 2026-10-08 | [registry](https://registry.npmjs.org/vite) |
 | `@vitejs/plugin-react` | `6.1.2` | 2026-10-05 | [registry](https://registry.npmjs.org/@vitejs/plugin-react) |
 | `dexie` | `4.4.6` | 2026-09-10 | [registry](https://registry.npmjs.org/dexie) |
@@ -434,26 +440,125 @@ Compatibility observations, not application installation evidence:
 - The axe Playwright adapter depends on `axe-core ~4.13.0`. Although core 4.14.0 exists, pinning the adapter and core to 4.13.0 avoids two incompatible rule inventories. Playwright's exact package brings matching `playwright`/`playwright-core`; the adapter accepts that core.
 - Use exact direct versions and a committed npm lockfile when implementation is authorized. D1 must then verify clean dependency resolution without peer overrides, strict typecheck, production build including the custom worker, and actual installed browser bundles. Research does not claim that resolution, bundling, native TypeScript binaries, browser installation, or execution has happened.
 
-### TypeScript 7 and ESLint compatibility — identified 2026-10-18
+### TypeScript 7 and ESLint compatibility — pins finalized 2026-10-18
 
-The original version profile omitted ESLint and did not establish lint compatibility.
-TypeScript 7.0 does not expose the legacy compiler API required by typescript-eslint;
-a direct `typescript: 7.0.2` peer is not a verified lint configuration. The upstream
-[TypeScript 7.0.2 support report](https://github.com/typescript-eslint/typescript-eslint/issues/12518)
-records peer-resolution and parser failures; this gap prevents treating the tooling
-profile as fully reviewed for kickoff.
+The original dependency profile omitted linting. TypeScript 7 cannot serve as the
+legacy API peer for typescript-eslint. Apply [Microsoft's official side-by-side
+recipe](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/), using
+exact versions rather than the ranges in its example. Primary registry manifests
+and the compatibility wrapper's forwarding source were inspected read-only on
+2026-10-18. [Supporting source/peer-resolution research](../research/typescript-eslint-compatibility-2026-10-18.md)
+records the evidence and limits. Selection is complete; installation and real
+lockfile/lint/typecheck proof are D1-T01 work, not completed evidence.
 
-Use the [TypeScript team's side-by-side setup](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/)
-as the D1 tooling requirement: the dependency named `typescript` aliases the
-`@typescript/typescript6` compatibility package for tools needing the TypeScript 6
-API, while `@typescript/native` aliases `typescript@7.0.2` for the TypeScript 7 `tsc`
-executable. Pin exact compatible versions for the API package, ESLint and
-`typescript-eslint` before the tooling profile is approved; the existing `7.0.2`
-table entry denotes the selected compiler version, not a supported ESLint API peer.
-Do not bypass peer checks or silently disable typed rules. D1-T01 must verify actual
-API/compiler routing, clean resolution, `npm run lint` and `npm run typecheck`.
-No workaround is installed or empirically verified yet: this worktree has no
-application package manifest, ESLint configuration or application dependencies.
+**D1-T01 package/runtime files.** Create `package.json` with the following tooling
+fragment merged with the other selected dependencies and scripts; there must be
+no separate direct `typescript: "7.0.2"` entry. Set `.node-version` to `26.12.0`.
+The `typescript` alias supplies the API for tools; `@typescript/native` supplies the
+TypeScript 7 compiler. Keep any directly declared `@typescript-eslint/*` package
+at `8.71.2`; the umbrella package already brings the required parser/plugin.
+
+```json
+{
+  "packageManager": "npm@11.20.0",
+  "engines": { "node": "26.12.0", "npm": "11.20.0" },
+  "scripts": {
+    "lint": "eslint . --max-warnings 0",
+    "typecheck": "node node_modules/@typescript/native/bin/tsc -b"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@typescript/native": "npm:typescript@7.0.2",
+    "eslint": "10.13.0",
+    "globals": "17.13.0",
+    "typescript": "npm:@typescript/typescript6@6.0.2",
+    "typescript-eslint": "8.71.2"
+  }
+}
+```
+
+The wrapper `6.0.2` forwards its API to its dependency `@typescript/old`, whose
+manifest range is `npm:typescript@^6`. The selected actual API is `6.0.3`; require
+that exact resolution in the committed `package-lock.json` and verify it below.
+Do not add another direct `@typescript/old` alias or manually patch dependencies.
+The wrapper version and API version are deliberately different. A changed or
+unresolvable expected API requires review, not an unrecorded substitution.
+The explicit compiler path in `typecheck` prevents an accidental legacy `tsc`
+binary from becoming the production type-checker.
+
+**D1-T01 lint/project configuration.** Create `eslint.config.mjs` using ESLint flat
+configuration from `eslint/config`; the JavaScript config needs no `jiti` loader.
+Use `@eslint/js` recommended rules and `typescript-eslint`'s
+`recommendedTypeChecked` preset for every owned `.ts`/`.tsx`/`.mts`/`.cts` file,
+with `parserOptions.projectService: true` and a root derived from
+`import.meta.dirname`. Cover source, the application-owned worker, tests and
+TypeScript tool/config files. Give each a real TSConfig project discoverable
+through `tsconfig.json` and its references; use compatible explicit compiler
+options for the API and native compiler. `tsc -b` must check all these projects.
+Do not rely on an undiscovered `tsconfig.eslint.json`, broad `allowDefaultProject`,
+or disabling typed rules to conceal project-service errors. Give owned JavaScript
+configuration files a separate non-type-checked recommended block. Use `globals`
+for browser, worker and Node environments only in their corresponding scopes;
+keep application DOM and worker/compiler project environments appropriate.
+Ignore generated build/coverage/browser-report outputs and dependency directories,
+not owned application or test sources. Confirm representative `.ts`, `.tsx`,
+worker, test and tooling files using `eslint --print-config` and full lint output.
+See [typed linting](https://typescript-eslint.io/getting-started/typed-linting/)
+and [project-service scope](https://typescript-eslint.io/troubleshooting/typed-linting/).
+
+**D1-T01 reproducible verification, after implementation is authorized.**
+
+1. Check `node --version` is `v26.12.0` and `npm --version` is `11.20.0`.
+   Create the exact manifest above, then run `npm install --strict-peer-deps`
+   once to generate `package-lock.json`. Run `npm ci --strict-peer-deps` from
+   that lockfile and `npm ls --all`; both must exit zero with no invalid peers.
+   No `--force`, `--legacy-peer-deps`, peer overrides or manual lockfile edits.
+2. Verify `./node_modules/.bin/eslint --version` is `v10.13.0`,
+   `./node_modules/.bin/tsc --version` is `Version 7.0.2`, and
+   `./node_modules/.bin/tsc6 --version` is `Version 6.0.3`.
+   Run the API-routing check below; it must exit zero. Preserve its output,
+   dependency tree and lockfile digest with the task evidence.
+3. Create a temporary included TypeScript probe containing
+   `export function lintRoutingProbe(): void { Promise.resolve(1); }`.
+   `npm run lint` must fail specifically with
+   `@typescript-eslint/no-floating-promises`. Remove the probe and require lint
+   to pass. Separately use `export const typecheckRoutingProbe: string = 1;` in
+   a temporary included source file: `npm run typecheck` must fail with the
+   assignment diagnostic. Remove it and require typecheck to pass. These are
+   structural tool-verification probes, not application TDD cases.
+4. Run `npm run lint`, `npm run typecheck` and `npm run build` successfully;
+   record exact commands/results and commit the actual runtime/config/manifest/
+   lockfiles with D1 implementation. Restore both temporary probes completely.
+   These commands and files are instructions only during planning.
+
+Run this exact API-routing probe from the worktree root after D1 installation:
+
+```sh
+node --input-type=commonjs <<'NODE'
+const assert = require('node:assert/strict');
+const { createRequire } = require('node:module');
+const ts = require('typescript');
+const wrapperRequire = createRequire(require.resolve('typescript'));
+const lintRequire = createRequire(require.resolve('typescript-eslint'));
+const parserRequire = createRequire(lintRequire.resolve('@typescript-eslint/typescript-estree'));
+assert.equal(require('typescript/package.json').version, '6.0.2');
+assert.equal(require('@typescript/native/package.json').version, '7.0.2');
+assert.equal(require('typescript-eslint/package.json').version, '8.71.2');
+assert.equal(wrapperRequire('@typescript/old').version, '6.0.3');
+assert.equal(ts.version, '6.0.3');
+assert.equal(typeof ts.createProgram, 'function');
+assert.equal(ts.Extension.Cjs, '.cjs');
+assert.equal(parserRequire('typescript'), ts);
+console.log('PASS: ESLint API 6.0.3; compatibility wrapper 6.0.2; compiler 7.0.2');
+NODE
+```
+
+Manifest compatibility: `typescript-eslint 8.71.2` and its matching parser/plugin
+accept ESLint `^8.57.0 || ^9.0.0 || ^10.0.0` and TypeScript
+`>=4.8.4 <6.1.0`; wrapper `6.0.2` and actual API `6.0.3` satisfy that range.
+`@eslint/js 10.0.1` accepts ESLint `^10.0.0`. Node `26.12.0` satisfies all
+selected lint-tool engines. No installation, binary execution, lint run or
+successful dependency-resolution claim is made by this metadata/source review.
 
 ### Dexie transaction and migration constraints
 

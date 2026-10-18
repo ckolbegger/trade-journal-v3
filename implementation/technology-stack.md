@@ -20,7 +20,7 @@ has been reviewed and frozen.
 
 | Concern | Selection |
 |---|---|
-| Language | TypeScript with strict checking |
+| Language | TypeScript `7.0.2` with strict checking; Microsoft TypeScript 6 compatibility alias for ESLint API access |
 | Presentation | React, semantic HTML, CSS Modules, shared design tokens; accessible primitives where needed |
 | Build and tooling | Vite, Node.js `26.12.0` from Homebrew, npm `11.20.0` with a committed lockfile |
 | Architecture | The ten canonical module boundaries and plain asynchronous request/response contracts |
@@ -41,9 +41,7 @@ checks confirmed `/opt/homebrew/bin/node` reports `v26.12.0` and
 LTS-only tooling choice; the [official release index](https://nodejs.org/dist/index.json)
 currently classifies this exact Node release as Current (`lts: false`).
 
-The D1 dependency profile records the matching Node type definitions. D1 tooling
-verification must check these exact runtime/package-manager versions and produce
-the lockfile and successful build/test evidence. No packages or application
+The [D1 dependency profile](plan/d01-long-stock-plan.md#typescript-7-and-eslint-compatibility--pins-finalized-2026-10-18) records matching Node types, exact lint pins and Microsoft's compiler/API aliases. D1-T01 creates their actual pin/config files, verifies compiler/API routing, and produces the lockfile and successful lint/typecheck/build evidence under these exact runtime/package-manager versions. No packages or application
 scaffolding are introduced by this decision.
 
 ## Architectural application
