@@ -11,7 +11,7 @@ Profile A: a TypeScript, React, and IndexedDB static PWA hosted on Cloudflare Pa
 
 | Concern | Choice |
 |---|---|
-| Language and build | TypeScript 6.0 (the planned fallback from 7.0, because typed linting does not support 7.0; see "Pinned versions"); Vite 8 static build with `strictPort` on `DEV_PORT` for dev and preview |
+| Language and build | TypeScript 7.0 for type checking (`tsc`), with the TypeScript 6.0 API kept for typed linting through Microsoft's `@typescript/typescript6` compatibility package (decision 44; see "Pinned versions"); Vite 8 static build with `strictPort` on `DEV_PORT` for dev and preview |
 | UI | React 19; React Aria Components for accessible controls; React Router 7 in library mode; hand-drawn SVG charts with textual equivalents |
 | Authoritative storage | Native IndexedDB through the thin `idb` 8 wrapper |
 | Service worker | Hand-written, versioned service worker; no Workbox or `vite-plugin-pwa` |
@@ -109,7 +109,9 @@ Pinned 2026-10-17 at the plan freeze (implementation plan, decision 42) and amen
 
 | Package | Version | Published |
 |---|---|---|
-| `typescript` | 6.0.3 | 2026-04-16 |
+| `typescript`, as the alias `npm:@typescript/typescript6@6.0.2` | 6.0.2 | 2026-07-06 |
+| `@typescript/old` (override of the compatibility package's dependency), as `npm:typescript@6.0.3` | 6.0.3 | 2026-04-16 |
+| `@typescript/native`, as the alias `npm:typescript@7.0.2` | 7.0.2 | 2026-07-08 |
 | `vite` | 8.3.2 | 2026-10-01 |
 | `@vitejs/plugin-react` | 6.1.1 | 2026-08-28 |
 | `vitest` | 4.1.11 | 2026-08-18 |
@@ -131,7 +133,7 @@ Pinned 2026-10-17 at the plan freeze (implementation plan, decision 42) and amen
 
 **Choices made while pinning**
 
-- **TypeScript 6.0.3, not 7.0.2.** `typescript-eslint` 8.71.0 supports TypeScript `>=4.8.4 <6.1.0`, so typed linting cannot run on 7.0. The stack's planned fallback applies. Revisit when `typescript-eslint` supports 7.
+- **TypeScript 7.0.2 and 6.0.3 side by side (decision 44).** `typescript-eslint` 8.71.0 supports TypeScript `>=4.8.4 <6.1.0`, and TypeScript 7.0 has no programmatic API, so typed linting cannot run on 7.0. Following Microsoft's TypeScript 7.0 announcement, `package.json` aliases `typescript` to `@typescript/typescript6`, a thin wrapper that re-exports its `@typescript/old` dependency (`npm:typescript@^6`) and provides `tsc6`, and aliases `@typescript/native` to `typescript@7.0.2`, which provides `tsc`. An `overrides` entry pins `@typescript/old` to `npm:typescript@6.0.3`, so every tool that imports `typescript` (typed linting) runs on exactly 6.0.3, while `npm run typecheck` runs the 7.0 native compiler. Revisit, and move to one version, when `typescript-eslint` supports TypeScript 7's API.
 - **React Router 7.18.4 and Vitest 4.1.11, not React Router 8.4.0 and Vitest 5.0.3.** The approved stack names React Router 7 and Vitest 4.1. Both newer majors appeared after approval, and adopting them would reopen the stack choice for no planned benefit.
 - **`@testing-library/dom`** is added because `@testing-library/react` 16 requires it as a peer dependency.
 - **`eslint`, `@eslint/js`, `typescript-eslint`, and `eslint-plugin-react-hooks`** serve D1 T1.1's `npm run lint`, which the stack implied but did not name.

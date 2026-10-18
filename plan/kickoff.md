@@ -8,7 +8,7 @@ Work in the Trade Journal V3 repository and obey its AGENTS.md.
 Read the frozen product baseline at specs/README.md, all documents it indexes, and the complete implementation-stack-neutral acceptance contract at specs/acceptance/acceptance-contract.md.
 
 Read the separately approved frozen implementation plan at:
-plan/implementation-plan.md on branch claude-opus-5.5, at the commit tagged claude-opus-5.5-plan-r3 (revision 3), or at the latest approved revision tag claude-opus-5.5-plan-r<n> when one exists. The plan's linked files are part of it: the technology stack with its pinned versions, the acceptance matrix, and the per-deliverable breakdowns.
+plan/implementation-plan.md on branch claude-opus-5.5, at the commit tagged claude-opus-5.5-plan-r4 (revision 4), or at the latest approved revision tag claude-opus-5.5-plan-r<n> when one exists. The plan's linked files are part of it: the technology stack with its pinned versions, the acceptance matrix, and the per-deliverable breakdowns.
 
 Implement the approved vertical deliverables in dependency order. Treat specs/ and the approved plan as read-only baselines. Standards-based PWA delivery and browser-neutral Runtime Readiness are frozen product requirements, not stack choices. Do not reopen settled product semantics, broaden scope, advertise incomplete capabilities, or promote a layer-specific task into a release boundary. Perform a layer-only checkpoint only when the frozen plan records its specific manual approval.
 
