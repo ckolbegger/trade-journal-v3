@@ -5,8 +5,13 @@ frozen plan. No planning work is needed: the plan is frozen, the version profile
 change-control procedure is recorded. **Do not plan D8–D22, do not start D2–D7, and do not touch
 `specs/`.**
 
-This file is an operational briefing, not authority. Where it and the freeze record disagree, **the
-freeze record wins**; where it and `specs/` disagree, `specs/` wins.
+This session runs the project's implementation kickoff prompt
+([specs/evaluation/kickoff-prompt.md](specs/evaluation/kickoff-prompt.md)) instantiated for wave 1 at
+[plan/kickoff-prompt-d1-2026-10-17.md](plan/kickoff-prompt-d1-2026-10-17.md).
+
+This file is an operational briefing, not authority. Where it and the kickoff prompt disagree, **the
+kickoff prompt wins**; where it and the freeze record disagree, **the freeze record wins**; where either
+and `specs/` disagree, `specs/` wins.
 
 | | |
 |---|---|
@@ -54,8 +59,12 @@ rollback (bookmarked)". It belongs to another worktree. **Never apply, pop, drop
 ## 1. Read these first, in this order
 
 1. `AGENTS.md` (worktree root) — behavioural rules. Short, and they bind.
-2. [plan/kickoff-prompt-d1-2026-10-17.md](plan/kickoff-prompt-d1-2026-10-17.md) — the instantiated
-   kickoff prompt: scope, TDD discipline, integration and critic gates, and the deviation rule.
+2. [specs/evaluation/kickoff-prompt.md](specs/evaluation/kickoff-prompt.md) — the kickoff prompt itself,
+   and then its instantiation at
+   [plan/kickoff-prompt-d1-2026-10-17.md](plan/kickoff-prompt-d1-2026-10-17.md). The instance's prompt
+   text is a **verbatim** copy of the `specs/` file with only the plan placeholder filled in and four
+   branch notes appended, so read the `specs/` file as the authority and the instance as the filled-in
+   copy. It carries scope, TDD discipline, the integration and critic gates, and the deviation rule.
 3. [plan/freeze-2026-10-17.md](plan/freeze-2026-10-17.md) — **the approved plan revision.** §2 is the
    version profile, §7 the 15 interface seams D2–D7 depend on, §8 the change control, §12 the wave-2
    confirmation procedure, §13 what the next freeze needs.
@@ -115,6 +124,28 @@ these are the entire cumulative set — there is nothing earlier to regress. The
   fresh critic.
 - The freeze manifest still verifies, or every change to a manifested file is recorded as an erratum.
 - You report the fifteen §7 seams as landed-or-moved — that report is the input to wave 2.
+
+### Kickoff rules the task list does not restate
+
+These come from the kickoff prompt and are easy to lose between 34 task bodies:
+
+- **The four delivery mechanisms are D1 work, not later hardening.** The Web App Manifest, the complete
+  versioned Offline Release Inventory, the every-launch and post-update/Restore Runtime Readiness gate,
+  and the persistence-level `RuntimeNotWritable` rejection belong to D1 (T12, T16–T21, T25, T29, T33).
+  The prompt forbids deferring them as a later layer-only step.
+- **Exercise every readiness state,** not the happy path: all checks passing; each check failing
+  independently; at least two failing at once; unconfirmed storage protection with an accepted write and
+  the warning kept visible; an unreadable existing store; and `Recovery Only`. Support is decided by
+  those functional checks alone — never by a browser name, family, OS or user-agent allowlist.
+- **Advertise only complete capability.** The Installed Capability Manifest (T28) declares what this
+  release can do end to end, and capability owned by a later deliverable is *absent*, never a fabricated
+  `Unavailable`.
+- **No layer-only release boundary.** Every D1 task sits inside the vertical deliverable. A checkpoint
+  that advertises no capability requires the plan's specific recorded approval, and freeze §5 records
+  **none** — so there is nothing to invoke.
+- **Stop rather than self-certify.** If a fresh critic, the runtime, or a browser cannot be provided, or
+  a finding exposes a genuine ambiguity, stop and request direction. Do not mark the deliverable complete
+  on your own evidence, and do not encode an ambiguity as expected behaviour and then test it.
 
 ---
 
@@ -301,7 +332,11 @@ none cites `D1:T12`. It is applied at wave-2 confirmation, not during D1.
   substitutes for production HTTPS evidence.
 - **The critic is a fresh agent that starts the runtime itself** and returns structured actions,
   observations and status per flow. It does not edit implementation, and a defect it finds is a test
-  failure first.
+  failure first. It must **not** report planned future capability as a defect — D1 §4 carries the
+  explicit "Intentional non-defects" list (installation not advertised, the update notice deferred to
+  D22, no Trade/Plan/Journal/Position/Mark/report navigation, no provider recovery, no backup download,
+  verification or Restore, Long Stock only, no calculations, chart or replay), and a finding against that
+  list is a misreading rather than a bug.
 - **Red evidence must be recorded per case**, not per task and not per suite.
 
 ---
