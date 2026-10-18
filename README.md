@@ -9,12 +9,13 @@ can implement the same spec independently and be compared side by side.
 | Branch       | Location                  |
 | ------------ | ------------------------- |
 | `claude`     | `worktrees/claude`        |
+| `claude-opus-5.5` | `worktrees/claude-opus-5.5` |
 | `codex`      | `worktrees/codex`         |
+| `codex-gpt-6.1-sol` | `worktrees/codex-gpt-6.1-sol` |
+| `deepseek-v41-flash` | `worktrees/deepseek-v41-flash` |
 | `glm`        | `worktrees/glm`           |
-| `antigravity`| `worktrees/antigravity`   |
-| `minimax`    | `worktrees/minimax`       |
-| `kimi`       | `worktrees/kimi`          |
 | `qwen3.8-27B`| `worktrees/qwen3.8-27B`   |
+| `zcode-glm-5.3` | `worktrees/zcode-glm-5.3` |
 
 Each worktree is an isolated checkout of its branch. Work in a worktree does not
 affect the others.
@@ -27,19 +28,21 @@ the shared instructions. Those relative links only resolve when a worktree sits
 exactly two levels below the repo root, at `worktrees/<branch>` — keep that
 layout.
 
-To set up a worktree (creating the branch from `main` first if needed):
+`main` tracks the whole harness — `.agents/`, the `.claude/skills/*` symlinks,
+`AGENTS.md`, and `CLAUDE.md` — so a worktree cut from a current `main` needs no
+extra wiring. To set up a worktree (creating the branch from `main` first if
+needed):
 
 ```sh
 scripts/setup-worktree.sh <branch>
 ```
 
-The script adds the worktree at `worktrees/<branch>` and creates the
-worktree-local symlinks `main` doesn't track: `.agents -> ../../.agents`
-(which makes the tracked `.claude/skills` links resolve) and
-`AGENTS.md -> CLAUDE.md` for agents that read `AGENTS.md`. For branches
-predating the shared harness it also links `CLAUDE.md` and `.claude/skills`
-back to the repo root. The created symlinks are left uncommitted; commit them
-on the branch if you want them in its history.
+The script adds the worktree at `worktrees/<branch>` and, for branches that
+predate the tracked harness, links the missing pieces back to the repo root:
+`.agents -> ../../.agents` (which makes the `.claude/skills` links resolve),
+`AGENTS.md -> CLAUDE.md` for agents that read `AGENTS.md`, and `CLAUDE.md` /
+`.claude/skills` themselves. Any symlinks it creates are left uncommitted;
+commit them on the branch if you want them in its history.
 
 ## Dev server ports
 
