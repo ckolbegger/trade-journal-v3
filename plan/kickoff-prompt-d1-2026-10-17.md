@@ -25,10 +25,12 @@ freeze record; where they conflict with the prompt, the prompt governs.
    names: the deliverable map, the planning decisions PD1–PD17, the acceptance-to-evidence matrix, the
    forward obligations, and the D1–D7 breakdowns. The freeze record's §7 is the interface contract D1
    must not silently break.
-3. **Runtime is pinned, not discovered.** Node 24.21.0 and pnpm 11.7.0 from the paths in the freeze
-   record §2, with the `pnpm` shim created before the first red run. Do not install or use system
-   Node 26. Do not substitute a different test runner, browser engine or clock library: any such change
-   is a §8 adjustment at minimum.
+3. **Runtime is pinned, not discovered.** Homebrew **Node 26.12.0** (`/opt/homebrew/bin/node`) with
+   **pnpm 11.7.0** installed for that runtime, per the freeze record §2 and erratum E-002. Prove the pair
+   before the first red run with `pnpm --version` (11.7.0) and `pnpm exec node --version` (v26.12.0).
+   The DSH runtime's Node 24.21.0 must not be executed, and system Node is no longer excluded because it
+   *is* the chosen runtime. Do not substitute a different test runner, browser engine or clock library:
+   any such change is a §8 adjustment at minimum.
 4. **Every change to a manifested file is a plan revision.** Errata, adjustments and deviations are
    recorded in [freeze-errata-2026-10-17.md](freeze-errata-2026-10-17.md) with the required verification
    tail. Do not edit a manifested file and continue as if nothing happened.
