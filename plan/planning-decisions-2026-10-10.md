@@ -1063,6 +1063,78 @@ are unchanged.
 
 ---
 
+## PD18 — A linter is part of the toolchain, installed through the TypeScript 7 side-by-side layout
+
+**Status:** settled by user decision, 2026-10-18. **Branch-local**, not promoted into `specs/`.
+
+### The gap
+
+PD3 fixes the stack *set* and names no linter, and D1:T2 mechanises only the repository-boundary rule as
+a repo-local script (`pnpm lint:layers`). General code linting was therefore undefined: neither approved
+nor excluded. It cannot be settled late either, because ESLint cannot run against the approved compiler
+at all — TypeScript 7.0.x is the Go port and ships **no programmatic API** (planned for 7.1), while
+`typescript-eslint@8.71.2` declares `typescript >=4.8.4 <6.1.0` and aborts at startup with
+"typescript-eslint does not support TS 7.0". Leaving that to D1:T1 would have meant the build-scaffold
+task inventing both a dependency set and a compiler layout under time pressure, with the manifest
+already frozen.
+
+### Decision
+
+1. **A linter is in scope and deferred to D1:T1**, the build-scaffold task. It is part of the toolchain
+   that task produces, not a later hardening step and not something this plan forgoes.
+2. **The linter is ESLint `10.13.0` with `typescript-eslint@8.71.2`**, `@eslint/js@10.0.1` and
+   `globals@17.13.0`.
+3. **It is installed through Microsoft's sanctioned side-by-side layout**, which the 7.0 announcement
+   describes under "running side by side with TypeScript 6.0": `@typescript/native` aliases
+   `typescript@7.0.2` and remains the only source of the `tsc` binary; the name `typescript` resolves to
+   `@typescript/typescript6@6.0.2`, which ships only `tsc6` and re-exports the 6.0 API. The 6.0 API is
+   what satisfies typescript-eslint's peer range, so the linter runs without giving up the 7.0 compiler.
+4. **The configuration is syntactic, not type-aware.** It composes `@eslint/js`'s recommended set with
+   typescript-eslint's syntactic `recommended`, and sets no `projectService` and no `project`. A
+   type-aware rule would analyse through the 6.0 API while `pnpm typecheck` gates on 7.0, so a
+   disagreement between them would be invisible behind a green gate. Type-aware linting is a separate,
+   later decision.
+5. **`pnpm lint` is a declared script and part of the evidence gates.** It is not on the `pnpm build`
+   path: that role stays with `pnpm lint:layers` (D1:T2), which enforces the dependency-direction rules
+   as a correctness gate rather than a style gate.
+
+### Rejected alternatives
+
+- **No linter at all.** Rejected: the earlier deferral was a scheduling choice, not a decision to forgo
+  linting. A plan with 155 TDD'd tasks and no general lint pass would rely on review alone.
+- **ESLint without the compatibility layout.** Impossible: typescript-eslint aborts on TS 7.0 before it
+  parses a single file.
+- **Downgrade the compiler to TypeScript 6 so ESLint works.** Rejected: it trades the native compiler for
+  a parser's peer range, and PD3 freezes TypeScript 7 as the compiler.
+- **A linter that never touches the TypeScript API** (for example `oxlint`, whose type-aware mode runs on
+  typescript-go). It genuinely sidesteps the problem, but it is not ESLint and replaces the rule
+  vocabulary and configuration surface the ecosystem documents. Recorded as the fallback if
+  typescript-eslint support regresses.
+- **Type-aware linting now.** Rejected for the divergence reason in decision 4.
+
+### Consequences
+
+- **The package named `typescript` is not the compiler that typechecks.** `pnpm typecheck` runs `tsc`
+  7.0.2; `tsc6` exists for comparison and must never gate anything. D1:T1's V1.8 asserts the triple
+  (`tsc` 7.0.2, `tsc6` 6.0.x, `eslint` 10.13.0), and V1.9 proves a seeded violation is actually caught
+  rather than matched by a config that silently ignores everything.
+- **Application code, `scripts/` and D1:T2's boundary checker must not import `typescript` as an API.**
+  The linter and its parser are the only permitted API consumers, through the 6.0 compatibility package.
+- The version profile gains four packages and the plan revision was re-stamped accordingly.
+- **This is reversible in one entry.** When typescript-eslint supports the 7.1 API, the alias pair is
+  retired by an erratum that returns `typescript` to 7.x; nothing in the task graph depends on the split
+  except T1's V1.8 and the note above.
+- The freeze record §2 carries the same decision, and `plan/freeze-errata-2026-10-17.md` E-006 and E-007
+  record its application.
+
+### Not changed
+
+`specs/` is untouched. No product semantics, public behaviour, durable format or acceptance-scenario
+status changes: this is a toolchain decision, and the boundary checker and its build-path gate are
+unchanged.
+
+---
+
 ## Still open
 
 Specification gaps from intake remain limited to PD1 and PD2. PD3 records the approved stack, PD4
@@ -1073,15 +1145,18 @@ and target condition model across the option arc, and PD10 records that fees are
 excluded from every calculation. PD11 fixes the Terminal Disposition shape and the shared mechanism
 vocabulary, PD12 records that the `Rolled` Close Reason is selectable by policy before any Roll
 workflow exists, PD13 records that a reopened Debt keeps its identity and its original due time, and
-PD14 orders the attention walk by boundary proximity instead of pressure descending, and PD15 makes the seed scope need-driven and assigns the IdeaSource Tag Type to D12, and PD16 confirms the five architecture choices as recorded, and PD17 answers the three backup artifact-format questions. The PD3
+PD14 orders the attention walk by boundary proximity instead of pressure descending, and PD15 makes the seed scope need-driven and assigns the IdeaSource Tag Type to D12, and PD16 confirms the five architecture choices as recorded, and PD17 answers the three backup artifact-format questions, and PD18 records that a linter is part of the toolchain, installed through the TypeScript 7 side-by-side layout. The PD3
 verification items must be resolved inside the plan.
 
 The vertical deliverable list is recorded in [vertical-deliverables.md](vertical-deliverables.md).
 The task-level breakdowns for D1–D7 are drafted under
 [deliverable-breakdowns/](deliverable-breakdowns/) (155 tasks), and both
 `scripts/check-deliverable-breakdown.mjs` and `scripts/audit-breakdown-coverage.mjs` report zero
-failures and zero warnings across them. The acceptance-to-evidence matrix (planning-protocol Phase 4)
-is not yet drafted.
+failures and zero warnings across them. D1–D7 are frozen in wave 1 by
+[freeze-2026-10-17.md](freeze-2026-10-17.md) — D1 outright, D2–D7 provisionally. The
+acceptance-to-evidence matrix (planning-protocol Phase 4) is drafted in
+[acceptance-evidence-matrix-2026-10-11.md](acceptance-evidence-matrix-2026-10-11.md): 67 rows, 16
+covered, 51 planned.
 
 ### Open questions raised by PD8
 
