@@ -20,13 +20,38 @@ No Executions/current valuation/general Journal composer/Review/exit/report/Rest
 | Exact nonterminating derived quotients | Trader accepted 2026-10-11: numerator/denominator decimal strings, decimal.js arithmetic, display-only rounding. Extra internal value type preserves fee conservation/signs; no Fraction.js |
 | Same-database staged generations and atomic active-root switch | Trader accepted 2026-10-11: larger temporary storage for preserved prior data, explicit stale-tab generation rejection |
 | Calendar coverage 2021–2028 | Trader accepted 2026-10-11: bundled verified NYSE regular sessions, early closes and exceptional closures; explicit coverage-limit results until reviewed extension; Trade fact times remain unrestricted |
-| Exact dependency profile | Selected for these D1–D6 breakdowns from verified primary metadata, within the approved stack; exact pins in research appendix. Declared engines/peers align; actual lockfile/build/browser bundles remain implementation gates. Overall implementation-baseline approval is still separate |
+| Exact dependency profile | Trader selected installed Homebrew Node `26.12.0` on 2026-10-18; local npm is `11.20.0`, matching Node types are `26.6.5`. This supersedes the earlier Node 24 LTS selection. Other exact pins remain in the research appendix; actual lockfile/build/browser bundles remain implementation gates. Overall implementation-baseline approval is still separate |
 | Resource budget/readiness recipe | Trader accepted 2026-10-11: measured mature-Workspace growth, one complete migration candidate and release-cache headroom, plus 25%; backup memory measured separately in D6. Actual byte thresholds are implementation evidence, not invented planning measurements |
 | Incremental backup hashing | Trader accepted 2026-10-11: `@noble/hashes 2.4.0` in D6, preserving SHA-256 while avoiding whole-buffer hashing. Export memory remains a separate measured gate; no package installed |
 | Local/browser evidence | Built production assets on secure loopback `http://localhost:5174`, strict port. Actual `isSecureContext`/worker/control/storage evidence required. Chromium/Firefox/WebKit Playwright bundles; actual install-capable and ordinary-tab host sessions with exact OS/browser provenance; not support allowlists |
 | Production delivery | Approved Cloudflare Pages static HTTPS; eventual preview deployment evidence is a release gate, not deployment authorization now |
 
-Proposed seams listed in tasks are for review. No test is written at an unconfirmed seam. Existing canonical public interfaces provide the agreed architectural boundaries; task seam selection/fixtures are part of approval of these breakdowns. These files do not freeze the entire 28-deliverable plan or start Phase 6/kickoff.
+Proposed seams listed in tasks are for review. No test is written at an unconfirmed seam. Existing canonical public interfaces provide the agreed architectural boundaries; task seam selection/fixtures are part of approval of these breakdowns. Under the [trader-approved planning approach, 2026-10-17](../delivery-plan.md#accepted-planning-approach--2026-10-17), D1 is the next baseline candidate; D2–D6 are provisional and D7–D28 need no task-level planning before D1. D1 approval and its revision-bound kickoff remain separate.
+
+## Focused D1 review — 2026-10-17
+
+Reviewed the user-visible boundary, relevant frozen module/delivery/UI contracts,
+applicable acceptance evidence and future fact retention under the approved
+per-deliverable planning approach. The Long Stock confirmation slice remains the
+implementation candidate; this review does not approve kickoff.
+
+The review corrected three plan gaps: Planned-only analysis/reconciliation is needed
+in D1 rather than first in D2; confirmation evidence must explicitly retain distinct
+economic/save times, stable fact/version identities and exact Journal provenance;
+and D1 benchmarks must exercise installed Planned browsing rather than fabricate
+Open Trades. T02/T06, I02/I06 and I05 carry those corrections. Optional Plan Reflection
+answer validation/snapshots are explicit as part of the same saved-evidence check.
+
+Retain atomic commit/receipts, histories, generation/version safety, reference identity,
+PWA/readiness/offline/update and current-scope accessibility/scale evidence. Implement
+only current consumers: session-calendar execution D3, actual-entry/fee arithmetic
+D2, backup hashing D6, and Restore D17 remain later work. These mechanisms preserve
+future compatibility without claiming future operations have been implemented.
+
+Before D1 kickoff, record approval and an immutable D1 baseline. T01 verifies the
+selected exact toolchain/lockfile; unresolved dependency conflicts require review
+rather than silent substitutions. Implementation must resolve any failing evidence
+before D1 is accepted. No package installation or application tests ran in this review.
 
 ## Shared architectural and persistence mechanisms for D1–D6
 
@@ -36,7 +61,7 @@ These are proposed source locations, not files created by planning. Presentation
 
 | Boundary / proposed location | Operations and first consuming slice |
 |---|---|
-| `src/domain/trade-analysis/` | assessPlan D1; derive/assessChange opening D2, evaluate D3; pure replay for Stop episodes D3–D4, visible lifetime replay D14; expirationPayoff D7 (Stock-only result not advertised in D1–D6) |
+| `src/domain/trade-analysis/` | assessPlan and Planned-only derive/reconciliation D1; derive extends to opening/assessChange D2, evaluate D3; pure replay for Stop episodes D3–D4, visible lifetime replay D14; expirationPayoff D7 (Stock-only result not advertised in D1–D6) |
 | `src/application/trade-workflows/` | confirmPlan D1, recordPositionChange opening D2/full disposal D5; abandonPlan D9; reviseManagement D16; previewCorrection/commitCorrection D18 |
 | `src/domain/trade-record/` | prepareChange/applyPreparedChange/getRecord/queryRecords/history D1; resolveAnchors Trade D1/Execution D2; exportSnapshot D6; prepareRestore/applyPreparedRestore D17 (internal migration validation restricted to introduced types occurs earlier) |
 | `src/domain/journal/` | getDefinitions/prepareEffects/applyPreparedEffects/seedDefaults/query D1; save Journal-only Debt D2/direct CreateEntry D4/Edit/Addendum/Void D19; exportSnapshot D6; prepareRestore/applyPreparedRestore D17; reviseDefinition D23 |
@@ -62,6 +87,8 @@ Migration builds a generation-qualified candidate from one bound source, validat
 ### Decimal, ordering and calendar policy
 
 All Money/Price/Quantity/fee inputs are finite decimal strings; normalize sign/zero without native-number conversion. USD fees nonnegative, Stock price nonnegative, quantities positive magnitudes with explicit action. Do not impose arbitrary trader-facing digit/quantity limits merely to fit a hard-coded precision. Use a dedicated decimal.js constructor: finite additions/products choose sufficient precision from operand digit lengths plus result carry/aggregation bounds; exact quotient operations cross-multiply/reduce without rounded division, using the same sufficient-precision rule. A fixed 80-digit context may be a fast path only when proved sufficient, never a fallback that changes sign. Normalize a finite decimal to integer coefficient and decimal scale when building a quotient; components remain decimal strings. A quotient has positive denominator, common-factor reduction and canonical zero. Exact reduction/comparison uses sufficient-precision integer operations rather than rounded division; if resource/library limits prevent exact work, fail the command/calculation explicitly and preserve prior facts. Divide by zero returns typed reason, not Infinity. Decimal ratios, weighted averages and fee portions remain exact quotient values as needed. Rounding (ROUND_HALF_EVEN, money 2 display decimals; price/quantity retain meaningful digits; ratios ordinarily 2 display decimals) occurs only when rendering, with exact value accessible and never re-entering calculation. Negative display zero must not classify a loss as breakeven. Tests use literal worked values and adversarial repeating/tiny-sign cases.
+
+D1 implements only the numeric operations consumed by Plan assessment and its exact ratio; fee allocation and weighted actual-entry arithmetic arrive with D2. Rules-based Workspace time and explicit instants are needed in D1; exchange-session extraction/resolution and its calendar test matrix first arrive in D3. D6 backup serialization/hashing and D17 Restore remain future work.
 
 Fixed Plan fixture P: exact Long Stock Instrument, 100 shares intended at 50, Stop 45, Target 60, no actual fees at planning. Original risk/1R 500, original reward 1,000, ratio 2. Intended Stop must produce positive numeric risk; intended Target must provide calculable coherent forward reward. Retain independent per-condition basis for later OR variants rather than storing one ambiguous stop/target number. Actual fill fees first apply in D2; no future closing fee is projected.
 
@@ -91,7 +118,7 @@ Unit tests use public canonical seams; boundary clock/host fault controls may is
 
 No-write/failure proof compares normalized authoritative histories, effective heads/lifecycle/index membership and participant/Workspace bindings before, after and after reopened storage. A read-back in an integration assertion is an independent durability observation, not a caller read required to present Save. Trace the initiating UI request/response separately to demonstrate it renders returned exact state. Durable success must survive stop/reopen; interrupted write must be wholly before or after, never mixed. Candidate migration: valid/invalid/unknown-newer, abort after participant staging, interruption before/after root switch, stale source/tab and successful retry; preserve prior history and distinguish private rebuild from authoritative repair.
 
-Benchmark/equivalence at each consuming slice: deterministic command-created installed workload plus disclosed future byte reserves only for capacity. Installed Stock correctness workload reaches 25,000 Trades, 200 Open and, once scope permits, 200,000 grouped Execution facts, representative actual Journal/Marks/history; full mixed corrected/provider/report fixture remains D28. Delete only documented private projections, reconstruct under identical facts/clock/evidence, compare stable IDs, exact values/order/classifications/coverage/navigation/agreement and installed Review outcomes (opaque cache tokens excluded). No all-history replay on ordinary startup/Open list, no one-query-per-Trade, and no omitted rows to meet latency. Run at least 50 cold and 50 warm trials offline on a disclosed common local device; cold is stopped-browser/app fresh launch with installed caches/DB retained, warm is complete Open-list navigation in a running app, measured to interactive required screen/all rows in requested page. p95 is nearest-rank sorted sample at ceil(0.95×n). Preserve every raw timing, query trace, hardware/OS/browser/build/power conditions and before/after correctness; target cold ≤2,500 ms, warm ≤1,500 ms. Slow/failing evidence blocks the current release, not deferred hardening.
+Benchmark/equivalence at each consuming slice: deterministic command-created installed workload plus disclosed future byte reserves only for capacity. D1 uses 25,000 Planned Trades and Planned-list navigation as specified in I05; it neither creates Open Trades nor claims mature Open-list evidence. From D2, installed Stock correctness workload reaches 25,000 Trades, 200 Open and, once scope permits, 200,000 grouped Execution facts, representative actual Journal/Marks/history; full mixed corrected/provider/report fixture remains D28. Delete only documented private projections, reconstruct under identical facts/clock/evidence, compare stable IDs, exact values/order/classifications/coverage/navigation/agreement and installed Review outcomes (opaque cache tokens excluded). No all-history replay on ordinary startup/Open list, no one-query-per-Trade, and no omitted rows to meet latency. Run at least 50 cold and 50 warm trials offline on a disclosed common local device; cold is stopped-browser/app fresh launch with installed caches/DB retained, warm is complete Open-list navigation in a running app, measured to interactive required screen/all rows in requested page. p95 is nearest-rank sorted sample at ceil(0.95×n). Preserve every raw timing, query trace, hardware/OS/browser/build/power conditions and before/after correctness; target cold ≤2,500 ms, warm ≤1,500 ms. Slow/failing evidence blocks the current release, not deferred hardening.
 
 Every deliverable ends with the mandatory **fresh independent browser critic**, after cumulative unit/integration success. It receives complete specs, six plans/current scope/future boundaries; starts the built runtime itself, exercises every B flow, makes no edits and reports actions/observed/expected/pass-fail plus screenshots/console/server evidence. Any implementation defect first becomes a failing regression, then minimal fix and cumulative rerun; a different fresh critic repeats all current flows. Repeat until fresh all-pass. Genuine ambiguity pauses for manual clarification, not invented tests. No fresh agent/runtime/browser means blocked execution and no self-certification. These are future gates; no critic or implementation agents are launched by planning.
 
@@ -120,7 +147,7 @@ Prerequisites: approved stack and review of these task contracts. Single tooling
 
 ### D1-T02 — Validate Long Stock Plan and exact numeric semantics
 
-Blocked by D1-T01's tool contract; independent of persistence. Owner: Trade Analysis; seam `assessPlan`.
+Blocked by D1-T01's tool contract; independent of persistence. Owner: Trade Analysis; seams `assessPlan` and the Planned-only `derive` variant. The latter supplies the candidate-bound `DerivedTradeReconciliation` required by Trade Record; neither the workflow nor persistence independently sets lifecycle.
 
 `describe("frozen Long Stock Plan assessment")`
 
@@ -128,6 +155,10 @@ Blocked by D1-T01's tool contract; independent of persistence. Owner: Trade Anal
 - it should report all incoherent/missing Stock leg, positive quantity, required semantic answer and zero/nonpositive risk issues without an accepted baseline.
 - it should treat Stock-only expiration method as Not Applicable internally without advertising an undelivered payoff operation/UI.
 - it should retain risk 0.000000000000000001 for 100 shares intended at 50 with Stop 49.99999999999999999999; separately, 1 share intended at 50, Stop 47 and Target 51 retains its 1/3 reward/risk ratio exactly. A displayed 0.00 risk cannot reject the positive exact baseline or change sign.
+
+`describe("Planned-only lifecycle reconciliation")`
+
+- it should derive expected Planned lifecycle, frozen baseline and entry readiness from an accepted confirmed Plan candidate with no exposure facts, bind reconciliation to that exact candidate/revision, and return no Position, Lot Match, Deviation or Terminal Disposition; an incoherent candidate returns typed integrity findings rather than an independently assigned lifecycle.
 
 ### D1-T03 — Establish browser-neutral readiness and storage gate
 
@@ -176,6 +207,10 @@ Blocked by D1-T02/D1-T04/D1-T05. Owner: Trade Workflows/Transaction; seam `confi
 - it should reject missing/invalid reflection, incoherent baseline/leg or stale definition/Catalog/generation binding with all issues and no Trade/Entry/Debt/index/candidate identity.
 - it should rollback Plan/lifecycle/index/Journal/sequence/Workspace revision on injected Journal apply or storage abort, and return RuntimeNotWritable for a late gate failure.
 
+- it should reject a reconciliation bound to another candidate/digest or revision before any Trade/Journal/index write, rather than accepting a workflow-supplied Planned lifecycle alone.
+- it should retain an explicit confirmation Economic Time distinct from the injected Save Time, stable Plan fact identity distinct from its version identity, stable Planned Leg/management identities, and Recorded Sequence; preserve these plus the Journal's exact Plan origin, Trade Anchor, Source, moment/first-authored times and definition revision after reopening. Two confirmations at the same Economic Time keep their committed Recorded Sequence order, independent of lexical IDs or save-clock order.
+- it should save valid optional Conviction/Primary emotion answers by stable Prompt/Option identities, retain explicit Unanswered when omitted, and reject out-of-range or unknown answers without a Trade or Journal outcome; Thesis/Invalidation remain entered once and frozen in both owners.
+
 ### D1-T07 — Browse retained Plans and transparent history
 
 Blocked by D1-T06. Owner: Trade Record/Trade Views and Reporting; seams `browseTrades/getTradeDetail/history` and Journal query.
@@ -218,10 +253,11 @@ Blocked by D1-T01–D1-T09. Verify all I/B cases below, target-scale installed c
 | Real-stack case | Reproducible procedure / authoritative proof |
 |---|---|
 | D1-I01 | Real initialize → Catalog Institution/Account → confirm fixture P → list/detail/history. Reopen same database and compare every receipt identity/revision/value/Entry snapshot/lifecycle membership; no operation-required read in caller trace. |
-| D1-I02 | Missing reflection/zero risk/missing exact Stock; simultaneous Catalog/definition conflict; abort after Trade staging before Journal. Compare full normalized before/after/restart participant state. No partial facts/sequences/Workspace content binding. |
+| D1-I02 | Missing reflection/zero risk/missing exact Stock; simultaneous Catalog/definition conflict; wrong-candidate/revision analytical reconciliation; invalid optional reflection answers; abort after Trade staging before Journal. Compare full normalized before/after/restart participant state. No partial facts/sequences/Workspace content binding. |
 | D1-I03 | Native browser readiness pass/fail matrix: four independent failures, two together, BestEffort accepted write, readable RecoveryOnly, unreadable known root, late invalidation/next-write rejection. Probe leaves no authoritative fact. Repeat launches, explicit durability denial and safe retry. |
 | D1-I04 | Stopped-browser offline restart, install-capable host vs ordinary Writable tab, digest-invalid/omitted asset, active-form safe update/failed staging. Observe actual worker/asset IDs and production HTTPS separately; no browser/OS allowlist. |
-| D1-I05 | 25,000 command-created installed Plans/Journal/reference history with stated capacity reserves; rebuild documented private projections and compare stable lists/detail/history/coverage under fixed clock. Run disclosed p95 startup/bounded list trials and inspect batch/index traces. D2–D5 add actual Open/Execution/closure workloads; D28 completes mixed future fixtures. |
+| D1-I05 | 25,000 command-created installed Plans/Journal/reference history with stated capacity reserves; rebuild documented private projections and compare stable lists/detail/history/coverage under fixed clock. For D1, run the shared 50 cold/50 warm trials against the complete interactive initial screen and bounded Planned-list navigation, using the 2,500/1,500 ms p95 gates and inspecting batch/index traces. D1 has zero Open Trades; this is installed-scope evidence, not the mature Open-list benchmark. D2–D5 add actual Open/Execution/closure workloads; D28 completes mixed future fixtures. |
+| D1-I06 | confirm two complete Plans through `confirmPlan` at the same explicit Economic Time with a distinct injected Save Time and identity order different from Recorded Sequence. Inspect candidate-bound reconciliation, receipt and reopened Trade/Journal histories; compare all Plan/leg/management/fact/version identities, times, sequence, exact definition/optional-answer snapshots, Plan origin, Anchor and Source. Omitted optional answers remain Unanswered. No execution, correction, clock inferred from ID, or direct fact injection is used. |
 
 - **D1-B01:** First secure load/readiness, explicit time zone and real Institution/Account, fixture P confirm, returned Planned Detail/list/history; stop browser, disconnect network, reopen and find retained Plan.
 - **D1-B02:** Invalid Plan/reflection, corrected input, Cancel typed form, stale Catalog/revision and aborted save; compare no-write and preserved input. No execution/valuation/report/backup controls.
@@ -237,8 +273,8 @@ All rows status **planned**. Later full assignments follow the approved delivery
 
 | Scenario | Scope / later full assignment | Tasks; concrete evidence |
 |---|---|---|
-| AC-PLAN-001–002 | Partial exact Long Stock/fixed management; option/criteria/typed shape full D28 | T02/T06; I01/I02; B01/B02 |
-| AC-LIFE-003 | Partial Planned lifecycle/no read repair; lot/deviation full D2 | T07; I02/I05; B02 |
+| AC-PLAN-001–002 | Partial exact Long Stock/fixed management; option/criteria/typed shape full D28 | T02/T06; I01/I02/I06; B01/B02 |
+| AC-LIFE-003 | Partial candidate-bound Planned reconciliation and no read repair; lot/deviation full D2 | T02/T06/T07; I02/I05/I06; B02 |
 | AC-JOUR-007, AC-REF-001 | Partial only needed stable seeds; fixed Journal D15/customized reseed full D23, complete Catalog D27 | T04/T05; I01/I02; B01 |
 | AC-RESP-001 | Partial globally; complete for every installed mutation, bounded multi-Trade full D15 | T04–T08; I01/I02; B01 one-call trace |
 | AC-DEL-001–004, AC-CAP-001, AC-UI-001 | Full for installed release under accepted D6/D17 timing exception | T01/T03/T08–T10; I01–I05; B01–B05 |
@@ -346,26 +382,26 @@ All consequential choices raised for this D1–D6 breakdown session have been an
 
 After fixed contracts in T01, T02 pure Plan assessment can run alongside T03 readiness. T04 waits for readiness, T05 for initialized defaults, T06 joins T02/T04/T05, T07 follows real commit. UI T08 can prepare from fixed types but cannot finish against canned results. T09 PWA may overlap under exclusive release/worker ownership; T10 waits for all. Single owners serialize durable schema/root migration, seed/capability/release manifests, shell/shared selectors, numeric/Analysis policy and transactions. No blanket cross-deliverable parallel work. Planning's research delegation is read-only research; it does not authorize background implementation.
 
-Before these six breakdowns are complete for review: all six files exist; task IDs/edges and seams/evidence are explicit; all 67 scenarios have an honest disposition with future completion points; source links resolve; no spec/stack/overview/user configuration changes; consequential open choices are recorded and reviewed one at a time. Before any implementation, the remaining D7–D28 task planning, full approval and Phase 6 immutable baseline/kickoff are still required. Do not confuse complete D1–D6 planning with an approved whole-product implementation baseline.
+Before these six breakdowns are complete for review: all six files exist; task IDs/edges and seams/evidence are explicit; all 67 scenarios have an honest disposition with future completion points; source links resolve; no spec/stack/overview/user configuration changes; consequential open choices are recorded and reviewed one at a time. The trader-approved process change on 2026-10-17 replaces the whole-product planning prerequisite: before D1 implementation, review and approve D1 and record its immutable baseline/kickoff. D2–D6 remain provisional; expand later deliverables near implementation. Completed D1–D6 planning is not implementation authorization.
 
 
 ## Research appendix — verified platform and library facts
 
-Research date: **2026-10-11**. This appendix supplies planning evidence, not approval to implement or install. The selected stack is approved in [technology-stack.md](../technology-stack.md); the exact pins below are selected for these task breakdowns within that stack; final implementation-baseline approval and execution remain separate. Recommendations explicitly labelled proposed remain proposals, except the trader-accepted exact derived quotient representation, same-database staged-generation activation, 2021–2028 calendar coverage/horizon policy, measured capacity/headroom with a 25% margin, and incremental SHA-256 dependency reported during this planning session. No provider is selected.
+Research date: **2026-10-11**, with the trader-approved Node/npm/Node-types update verified **2026-10-18**. This appendix supplies planning evidence, not approval to implement or install. The selected stack is approved in [technology-stack.md](../technology-stack.md); the exact pins below are selected for these task breakdowns within that stack; final implementation-baseline approval and execution remain separate. Recommendations explicitly labelled proposed remain proposals, except the trader-accepted exact derived quotient representation, same-database staged-generation activation, 2021–2028 calendar coverage/horizon policy, measured capacity/headroom with a 25% margin, and incremental SHA-256 dependency reported during this planning session. No provider is selected.
 
 ### Selected exact pins and provenance
 
-The table records stable releases actually present in official Node release metadata or the npm registry on the research date. Published dates precede or equal 2026-10-11; scheduled future releases are not treated as available. npm package metadata was fetched read-only from the primary registry, including `time`, `engines`, `peerDependencies`, and optional-peer metadata. Sources link to the full registry metadata so the publication date remains inspectable; exact version entries supply package manifests and distribution integrity.
+The table records releases present in official Node release metadata or the npm registry on the stated research date. The original dependency research is dated 2026-10-11; Node/npm and matching Node types were rechecked on 2026-10-18 after the trader selected the locally installed Homebrew runtime. Scheduled future releases are not treated as available. npm package metadata was fetched read-only from the primary registry, including `time`, `engines`, `peerDependencies`, and optional-peer metadata. Sources link to the full registry metadata so the publication date remains inspectable; exact version entries supply package manifests and distribution integrity.
 
 | Role / package | Selected exact pin | Published | Primary evidence |
 | --- | --- | --- | --- |
-| Node.js runtime | `24.21.0` | 2026-09-07 | [Node release index](https://nodejs.org/dist/index.json), entry marked LTS `Krypton`; [release support policy](https://nodejs.org/en/about/previous-releases) |
-| npm | `11.19.0` | bundled with above Node release | [Node release index](https://nodejs.org/dist/index.json) |
+| Node.js runtime | `26.12.0` | 2026-10-14 | Trader-selected Homebrew installation, locally verified `v26.12.0` on 2026-10-18; [Node release index](https://nodejs.org/dist/index.json) reports Current (`lts: false`) |
+| npm | `11.20.0` | bundled with above Node release | Locally verified on 2026-10-18; matches the [Node release index](https://nodejs.org/dist/index.json) |
 | `react` | `19.3.0` | 2026-09-09 | [registry](https://registry.npmjs.org/react) |
 | `react-dom` | `19.3.0` | 2026-09-09 | [registry](https://registry.npmjs.org/react-dom) |
 | `@types/react` | `19.3.0` | 2026-09-09 | [registry](https://registry.npmjs.org/@types/react) |
 | `@types/react-dom` | `19.3.0` | 2026-09-09 | [registry](https://registry.npmjs.org/@types/react-dom) |
-| `@types/node` | `24.19.2` | 2026-10-09 | [registry](https://registry.npmjs.org/@types/node), latest stable 24.x type package observed |
+| `@types/node` | `26.6.5` | 2026-10-09 | [registry](https://registry.npmjs.org/@types/node), latest stable 26.x type package observed on 2026-10-18 |
 | `typescript` | `7.0.2` | 2026-07-08 | [registry](https://registry.npmjs.org/typescript) |
 | `vite` | `8.3.4` | 2026-10-08 | [registry](https://registry.npmjs.org/vite) |
 | `@vitejs/plugin-react` | `6.1.2` | 2026-10-05 | [registry](https://registry.npmjs.org/@vitejs/plugin-react) |
@@ -388,9 +424,11 @@ The table records stable releases actually present in official Node release meta
 | `@axe-core/playwright` | `4.13.0` | 2026-08-11 | [registry](https://registry.npmjs.org/@axe-core/playwright) |
 | `axe-core` | `4.13.0` | 2026-08-05 | [registry](https://registry.npmjs.org/axe-core) |
 
-Compatibility observations, not installation evidence:
+Compatibility observations, not application installation evidence:
 
-- Node 24.21.0 satisfies Vite/plugin React (`^20.19.0 || >=22.12.0`), PWA (`>=20.19.0`), Workbox (`>=20.0.0`), Vitest (`^22.12.0 || ^24.0.0 || >=26.0.0`), jsdom (`^22.22.2 || ^24.15.0 || >=26.0.0`), Playwright (`>=20`), and the other declared minimum engines.
+- The trader-selected runtime supersedes Node `24.21.0`/npm `11.19.0`. Local read-only checks on 2026-10-18 verified the Homebrew executables and versions. Exact Vite `8.3.4`, Vitest `5.0.3` and jsdom `30.1.2` engine ranges below were rechecked against primary npm metadata; Node `26.12.0` satisfies them. The Node `26.6.5` type-package publication was also verified from registry metadata. No system runtime upgrade, dependency installation or application build was performed.
+
+- Node 26.12.0 satisfies Vite/plugin React (`^20.19.0 || >=22.12.0`), PWA (`>=20.19.0`), Workbox (`>=20.0.0`), Vitest (`^22.12.0 || ^24.0.0 || >=26.0.0`), jsdom (`^22.22.2 || ^24.15.0 || >=26.0.0`), Playwright (`>=20`), and the other declared minimum engines.
 - React DOM requires React `^19.3.0`; its proposed exact pin matches. React DOM types require React types `^19.3.0`; those also match. Testing Library React accepts React/DOM/types 18 or 19 and DOM Testing Library `^10.0.0`.
 - Plugin React accepts Vite `^8.0.0`; PWA accepts Vite 3–8 and Workbox `^7.4.1`; Vitest accepts Vite 6.4, 7, or 8. Plugin React's compiler/Babel/OXC peers are optional; do not introduce them without a concrete requirement.
 - The axe Playwright adapter depends on `axe-core ~4.13.0`. Although core 4.14.0 exists, pinning the adapter and core to 4.13.0 avoids two incompatible rule inventories. Playwright's exact package brings matching `playwright`/`playwright-core`; the adapter accepts that core.
@@ -426,7 +464,7 @@ Web Crypto exposes asynchronous `subtle.digest` for SHA-256 over bytes, yielding
 
 #### Incremental SHA-256 for D6 — trader accepted 2026-10-11
 
-**Trader-accepted additional package, 2026-10-11:** `@noble/hashes` **2.4.0**, published **2026-08-27T13:02:42.588Z**, verified from primary registry metadata on **2026-10-11**. It is ESM-only, declares Node `>=20.19.0` (satisfied by selected Node 24.21.0), has no runtime dependencies, and exports `./sha2.js`. [Exact package manifest](https://registry.npmjs.org/@noble/hashes/2.4.0), [publication metadata](https://registry.npmjs.org/@noble/hashes).
+**Trader-accepted additional package, 2026-10-11:** `@noble/hashes` **2.4.0**, published **2026-08-27T13:02:42.588Z**, verified from primary registry metadata on **2026-10-11**. It is ESM-only, declares Node `>=20.19.0` (satisfied by selected Node 26.12.0), has no runtime dependencies, and exports `./sha2.js`. [Exact package manifest](https://registry.npmjs.org/@noble/hashes/2.4.0), [publication metadata](https://registry.npmjs.org/@noble/hashes).
 
 Exact-version package source was read from its registry tarball in memory, without saving, installing, or executing it. Public API: import `sha256` from `@noble/hashes/sha2.js`; construct `sha256.create()`; call `update(chunk: Uint8Array)` for each ordered byte chunk; call `digest()` once for the 32-byte result. `clone()` produces an independent state suitable for a prefix digest; finalizing the clone does not finalize the original. `digest()` finalizes/destroys its own state, so reuse after finalization is invalid. The input is bytes, not a string. [Tagged SHA-256 implementation](https://github.com/paulmillr/noble-hashes/blob/2.4.0/src/sha2.ts), [tagged incremental state and clone implementation](https://github.com/paulmillr/noble-hashes/blob/2.4.0/src/_md.ts), [project API guidance](https://github.com/paulmillr/noble-hashes#implementations).
 

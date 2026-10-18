@@ -1,6 +1,6 @@
 # Incremental delivery plan
 
-Status: draft for interactive review; not an approved implementation baseline.
+Status: roadmap under per-deliverable review; not an approved implementation baseline.
 
 Phase 1 specification comprehension and Phase 2 technology selection are complete.
 The approved stack is React, strict TypeScript, Vite, Dexie/IndexedDB, decimal.js,
@@ -13,6 +13,30 @@ dependency/version pinning, evidence procedures, and the detailed acceptance mat
 come after this review under the [planning protocol](../specs/evaluation/planning-protocol.md).
 It contains no implementation authorization, scaffolding, or task-level test plan.
 The [specification](../specs/README.md) remains the product authority.
+
+## Accepted planning approach — 2026-10-17
+
+The trader approved per-deliverable planning and approval in place of the requirement
+to detail all 28 deliverables before implementation. This explicitly supersedes the
+whole-product planning prerequisite in the planning protocol's Phases 3–6 and the
+previous D1–D6 completion boundary. Frozen product semantics, public module contracts,
+and acceptance requirements remain authoritative; `specs/` is unchanged.
+
+D1 is the next implementation candidate. Review its scope, interfaces, durable-data
+compatibility and acceptance evidence, then record explicit approval and its exact
+baseline revision in a D1-only kickoff. Approval of this planning approach does not
+itself authorize application implementation or deployment.
+
+D2–D6 breakdowns are provisional working plans; D7–D28 remain the capability roadmap.
+Review and detail each deliverable near implementation, using evidence from completed
+work. Check current durable facts against known future correction, replay, multi-leg,
+backup and Restore requirements without prebuilding future operations. Material
+changes to an approved current baseline require review; provisional future task
+choices may evolve without reopening settled product semantics.
+
+Retain per-case TDD, structural verification, cumulative real-stack integration,
+applicable browser/offline/accessibility/performance evidence and the fresh independent
+browser-critic gate for every deliverable. After D1, reassess the design and prepare D2.
 
 ## Decisions recorded
 

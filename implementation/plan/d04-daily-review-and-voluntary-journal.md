@@ -1,6 +1,6 @@
 # D4 — Daily Review and voluntary Journal: detailed task breakdown
 
-Status: planning draft, not implementation authorization or completed evidence.
+Status: planning draft, not implementation authorization or completed evidence. Provisional under the [trader-approved per-deliverable planning approach, 2026-10-17](../delivery-plan.md#accepted-planning-approach--2026-10-17); review before this deliverable is implemented.
 Authority: [D4 in the delivery plan](../delivery-plan.md#4-conduct-the-manual-daily-review-and-add-voluntary-journal-entries), [Daily Review](../../specs/design/daily-review.md), [Journal](../../specs/design/journal.md), and [D1 shared policy](d01-long-stock-plan.md). Requires completed D3. All proposed test seams/cases await plan review before execution.
 
 ## Outcome, stories and installed boundaries

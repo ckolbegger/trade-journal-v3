@@ -22,7 +22,7 @@ has been reviewed and frozen.
 |---|---|
 | Language | TypeScript with strict checking |
 | Presentation | React, semantic HTML, CSS Modules, shared design tokens; accessible primitives where needed |
-| Build and tooling | Vite, a supported Node.js LTS release, npm with a committed lockfile |
+| Build and tooling | Vite, Node.js `26.12.0` from Homebrew, npm `11.20.0` with a committed lockfile |
 | Architecture | The ten canonical module boundaries and plain asynchronous request/response contracts |
 | Persistence | One device-local IndexedDB database accessed through Dexie |
 | Financial arithmetic | decimal.js for Money, Price, Quantity, fees, P&L, and financial aggregates |
@@ -34,9 +34,17 @@ has been reviewed and frozen.
 | Browser and accessibility testing | Playwright and axe, supplemented by actual-browser installation/offline evidence and independent browser critics |
 | Hosting | Cloudflare Pages for static HTTPS application delivery |
 
-Exact dependency and runtime versions will be verified and pinned in the reviewed
-implementation plan before it is frozen. No packages or application scaffolding
-are introduced by this decision.
+On 2026-10-18, the trader selected their existing Homebrew Node.js `26.12.0`
+installation instead of the planned Node.js `24.21.0` LTS runtime. Read-only local
+checks confirmed `/opt/homebrew/bin/node` reports `v26.12.0` and
+`/opt/homebrew/bin/npm` reports `11.20.0`. This explicitly replaces the earlier
+LTS-only tooling choice; the [official release index](https://nodejs.org/dist/index.json)
+currently classifies this exact Node release as Current (`lts: false`).
+
+The D1 dependency profile records the matching Node type definitions. D1 tooling
+verification must check these exact runtime/package-manager versions and produce
+the lockfile and successful build/test evidence. No packages or application
+scaffolding are introduced by this decision.
 
 ## Architectural application
 

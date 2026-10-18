@@ -1,6 +1,6 @@
 # D5 — Full Stock closure: detailed task breakdown
 
-Status: planning draft; implementation and claimed passing evidence are not authorized.
+Status: planning draft; implementation and claimed passing evidence are not authorized. Provisional under the [trader-approved per-deliverable planning approach, 2026-10-17](../delivery-plan.md#accepted-planning-approach--2026-10-17); review before this deliverable is implemented.
 Authority: [D5 in the delivery plan](../delivery-plan.md#5-close-a-long-stock-trade), [Trade Workflows](../../specs/design/trade-workflows.md), [Trade Analysis](../../specs/design/trade-analysis.md) and [D1 shared rules](d01-long-stock-plan.md). Prerequisite: completed D4. Test seams/cases are proposed for review.
 
 ## Outcome, stories and boundaries

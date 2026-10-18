@@ -1,6 +1,6 @@
 # D2 — Initial Stock entry: detailed task breakdown
 
-Status: planning draft; no implementation authorization or completed evidence.
+Status: planning draft; no implementation authorization or completed evidence. Provisional under the [trader-approved per-deliverable planning approach, 2026-10-17](../delivery-plan.md#accepted-planning-approach--2026-10-17); review before this deliverable is implemented.
 Authority: [D2 in the delivery plan](../delivery-plan.md#2-record-opening-fills-and-the-entry-decision), [approved stack](../technology-stack.md), and frozen [contracts](../../specs/README.md). Depends on the accepted D1 release, including its readiness, transaction, numeric and evidence rules in [D1](d01-long-stock-plan.md). These task seams are proposed for review, not tests already written.
 
 ## Outcome, stories and boundaries

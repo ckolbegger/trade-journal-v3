@@ -1,6 +1,6 @@
 # D6 — Backup and verification: detailed task breakdown
 
-Status: planning draft; no implementation, download, verification or passing tests have occurred.
+Status: planning draft; no implementation, download, verification or passing tests have occurred. Provisional under the [trader-approved per-deliverable planning approach, 2026-10-17](../delivery-plan.md#accepted-planning-approach--2026-10-17); review before this deliverable is implemented.
 Authority: [D6 in the delivery plan](../delivery-plan.md#6-back-up-and-verify-the-populated-trading-workspace), [Workspace](../../specs/design/workspace.md#full-backup), [backup ADR](../../specs/adr/0010-backup-download-verified-by-read-back.md) and [D1 shared policies](d01-long-stock-plan.md). Prerequisite: completed D5, including its full closing/Close Review facts. Proposed public test seams require review before execution.
 
 ## Outcome, story and explicit boundaries

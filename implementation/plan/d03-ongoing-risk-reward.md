@@ -1,6 +1,6 @@
 # D3 — Ongoing Stock risk/reward: detailed task breakdown
 
-Status: planning draft; no implementation authorization or completed evidence.
+Status: planning draft; no implementation authorization or completed evidence. Provisional under the [trader-approved per-deliverable planning approach, 2026-10-17](../delivery-plan.md#accepted-planning-approach--2026-10-17); review before this deliverable is implemented.
 Authority: [D3 in the delivery plan](../delivery-plan.md#3-value-the-open-position-and-see-ongoing-riskreward), [Market Data](../../specs/design/market-data.md), [Trade Analysis](../../specs/design/trade-analysis.md), and [D1 shared mechanisms/evidence](d01-long-stock-plan.md). Prerequisite: completed D2 release. Proposed test seams require plan review before execution.
 
 ## Outcome, stories and boundaries

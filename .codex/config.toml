@@ -1,3 +1,5 @@
+model = "gpt-6.1-sol"
+
 [[skills.config]]
 path = "/home/ckolbegger/.agents/skills/superpowers/brainstorming/SKILL.md"
 enabled = false
