@@ -108,11 +108,11 @@ Let M be max(measured mature IndexedDB+indexes, budget-derived mature footprint)
 
 ## Shared evidence procedure and future commands
 
-The future implementation will provide package scripts `typecheck`, `build`, `test:unit`, `test:integration`, `test:browser`, `test:benchmark`, and `preview`. None exists or runs as application evidence during planning. Exact package pins are researched below; npm lockfile is created only when implementation is authorized.
+The future implementation will provide package scripts `lint`, `typecheck`, `build`, `test:unit`, `test:integration`, `test:browser`, `test:benchmark`, and `preview`. None exists or runs as application evidence during planning. Exact package pins are researched below; npm lockfile is created only when implementation is authorized.
 
 For **every planned it should case**: add only that test at its approved seam; run `npm run test:unit -- <test-file> -t '<case>'` and retain a meaningful failing Red (not syntax/config/fixture failure); make minimal production change; rerun same case plus already-green task cases for Green; repeat next case. Retain case ID/text, actual command, output/exit, source revision, inputs and returned bindings. Separate refactor review only after green, rerun affected cases. No bulk-test-first/bulk-implementation shortcut. Structural task records its exact commands/procedure and expected output; no invented unit case for a file existing.
 
-Cumulative gate: `npm run typecheck`, `npm run build`, `npm run test:unit`, `npm run test:integration`, then `npm run test:browser -- --grep D<n>` and applicable benchmark. Planned integration files `tests/integration/d01…d06.*.test.ts`; browser files `tests/browser/d01…d06.*.spec.ts`; names must retain I/B IDs from these files. Runtime uses worktree-local DEV_PORT=5174 for dev, preview and Playwright baseURL/webServer with strictPort. Never print or load credentials/other-worktree environment. Capture actual installed browser/OS/Node/npm/lockfile/release/inventory/manifest identities and exact clock/calendar/time-zone inputs. Production HTTPS/install-capable host evidence supplements secure-loopback tests; an automatic browser bundle's version is provenance, not a support policy.
+Cumulative gate: `npm run lint`, `npm run typecheck`, `npm run build`, `npm run test:unit`, `npm run test:integration`, then `npm run test:browser -- --grep D<n>` and applicable benchmark. Planned integration files `tests/integration/d01…d06.*.test.ts`; browser files `tests/browser/d01…d06.*.spec.ts`; names must retain I/B IDs from these files. Runtime uses worktree-local DEV_PORT=5174 for dev, preview and Playwright baseURL/webServer with strictPort. Never print or load credentials/other-worktree environment. Capture actual installed browser/OS/Node/npm/lockfile/release/inventory/manifest identities and exact clock/calendar/time-zone inputs. Production HTTPS/install-capable host evidence supplements secure-loopback tests; an automatic browser bundle's version is provenance, not a support policy.
 
 Unit tests use public canonical seams; boundary clock/host fault controls may isolate a behavior, disclosed per case. Integration uses real application/domain/persistence code, no application mocks/stubs/canned responses. Fast tests may use fake-indexeddb as disclosed infrastructure and explicit clock/identity inputs; they cannot certify host readiness/offline/quota/disk durability. Browser-owned IndexedDB plus real worker/cache/host APIs supply that evidence. Infrastructure abort/failure injection is allowed at the host/storage boundary, with normal production application paths intact; never supply a fabricated accepted application result. Fixtures originate from installed authoritative commands (or validated Restore once D17 exists). Controlled integrity/reconstruction fixtures disclose exactly which private/agreement bytes changed; never use direct storage injection to fake normal capability facts.
 
@@ -143,7 +143,7 @@ These are blocking edges for task completion. UI work may start after the contra
 
 ### D1-T01 — Pin tools and production/test build contracts (structural)
 
-Prerequisites: approved stack and review of these task contracts. Single tooling/release owner. Future verification: `node --version`/`npm --version` equal selected pins; clean `npm ci` from exact lockfile without peer overrides; typecheck/build; built-worker/inventory asset completeness/digest checks, strict DEV_PORT and secure loopback observation. Configure the named scripts/test separation and real browser environment, not application mocks. Verify error if port occupied. This enables all D1 behavior; no foundation-only release.
+Prerequisites: approved stack and review of these task contracts. Single tooling/release owner. Future verification: `node --version`/`npm --version` equal selected pins; clean `npm ci` from exact lockfile without peer overrides; typecheck/build; built-worker/inventory asset completeness/digest checks, strict DEV_PORT and secure loopback observation. Configure the named scripts/test separation and real browser environment, not application mocks. Resolve the TypeScript 7/ESLint compatibility requirement below: pin a supported ESLint/typescript-eslint/TypeScript 6 API combination without peer overrides, keep the TypeScript 7 compiler separately aliased, verify executable/API version routing, and run both typed lint and strict TypeScript 7 checking. Record a temporary type-aware rule violation rejected by lint to prove the checker is active, then remove it. Verify error if port occupied. This enables all D1 behavior; no foundation-only release.
 
 ### D1-T02 — Validate Long Stock Plan and exact numeric semantics
 
@@ -433,6 +433,27 @@ Compatibility observations, not application installation evidence:
 - Plugin React accepts Vite `^8.0.0`; PWA accepts Vite 3–8 and Workbox `^7.4.1`; Vitest accepts Vite 6.4, 7, or 8. Plugin React's compiler/Babel/OXC peers are optional; do not introduce them without a concrete requirement.
 - The axe Playwright adapter depends on `axe-core ~4.13.0`. Although core 4.14.0 exists, pinning the adapter and core to 4.13.0 avoids two incompatible rule inventories. Playwright's exact package brings matching `playwright`/`playwright-core`; the adapter accepts that core.
 - Use exact direct versions and a committed npm lockfile when implementation is authorized. D1 must then verify clean dependency resolution without peer overrides, strict typecheck, production build including the custom worker, and actual installed browser bundles. Research does not claim that resolution, bundling, native TypeScript binaries, browser installation, or execution has happened.
+
+### TypeScript 7 and ESLint compatibility — identified 2026-10-18
+
+The original version profile omitted ESLint and did not establish lint compatibility.
+TypeScript 7.0 does not expose the legacy compiler API required by typescript-eslint;
+a direct `typescript: 7.0.2` peer is not a verified lint configuration. The upstream
+[TypeScript 7.0.2 support report](https://github.com/typescript-eslint/typescript-eslint/issues/12518)
+records peer-resolution and parser failures; this gap prevents treating the tooling
+profile as fully reviewed for kickoff.
+
+Use the [TypeScript team's side-by-side setup](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/)
+as the D1 tooling requirement: the dependency named `typescript` aliases the
+`@typescript/typescript6` compatibility package for tools needing the TypeScript 6
+API, while `@typescript/native` aliases `typescript@7.0.2` for the TypeScript 7 `tsc`
+executable. Pin exact compatible versions for the API package, ESLint and
+`typescript-eslint` before the tooling profile is approved; the existing `7.0.2`
+table entry denotes the selected compiler version, not a supported ESLint API peer.
+Do not bypass peer checks or silently disable typed rules. D1-T01 must verify actual
+API/compiler routing, clean resolution, `npm run lint` and `npm run typecheck`.
+No workaround is installed or empirically verified yet: this worktree has no
+application package manifest, ESLint configuration or application dependencies.
 
 ### Dexie transaction and migration constraints
 
