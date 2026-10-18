@@ -8,7 +8,7 @@ Work in the Trade Journal V3 repository and obey its AGENTS.md.
 Read the frozen product baseline at specs/README.md, all documents it indexes, and the complete implementation-stack-neutral acceptance contract at specs/acceptance/acceptance-contract.md.
 
 Read the separately approved frozen implementation plan at:
-plan/implementation-plan.md on branch claude-opus-5.5, at the commit tagged claude-opus-5.5-plan-r2 (revision 2), or at the latest approved revision tag claude-opus-5.5-plan-r<n> when one exists. The plan's linked files are part of it: the technology stack with its pinned versions, the acceptance matrix, and the per-deliverable breakdowns.
+plan/implementation-plan.md on branch claude-opus-5.5, at the commit tagged claude-opus-5.5-plan-r3 (revision 3), or at the latest approved revision tag claude-opus-5.5-plan-r<n> when one exists. The plan's linked files are part of it: the technology stack with its pinned versions, the acceptance matrix, and the per-deliverable breakdowns.
 
 Implement the approved vertical deliverables in dependency order. Treat specs/ and the approved plan as read-only baselines. Standards-based PWA delivery and browser-neutral Runtime Readiness are frozen product requirements, not stack choices. Do not reopen settled product semantics, broaden scope, advertise incomplete capabilities, or promote a layer-specific task into a release boundary. Perform a layer-only checkpoint only when the frozen plan records its specific manual approval.
 
@@ -29,6 +29,6 @@ Plan-specific conditions (implementation plan, decisions 40–43):
 - Work only in the worktree /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5 on branch claude-opus-5.5, with DEV_PORT=5175 from .env.local. Never inspect another worktree or implementation branch.
 - Implement only deliverables whose task breakdown is part of the approved plan revision. Before starting a deliverable without one, stop and request its breakdown; it becomes the next approved revision. If a breakdown amends an already implemented deliverable, stop, name the affected acceptance scenarios and the durable compatibility (migration, fixtures, backup content version), and obtain approval first.
 - Do not start D4's first task until the user has settled D4's P14 and it is recorded as a revision.
-- Use exactly the pinned versions in technology-stack.md, "Pinned versions", including Node.js 26.12.0. Changing a pin is a plan revision.
+- Use exactly the pinned versions in technology-stack.md, "Pinned versions", including Node.js 26.x at 26.12.0 or later (enforced by engines and engine-strict). Changing a pin, or moving Node to another major, is a plan revision.
 - When a deliverable's gate passes, create the local tag claude-opus-5.5-d<n> on that commit (D2 A34). Commit each finished task or deliverable locally; push only when the user asks.
 ```

@@ -84,13 +84,13 @@ Cloudflare Pages gives this implementation its own HTTPS origin, so its storage 
 
 ## Pinned versions
 
-Pinned 2026-10-17 at the plan freeze (implementation plan, decision 42) and amended 2026-10-18 in revision 2 (decision 43). Each package is the newest stable release published on or before **2026-10-03**, two weeks before the freeze, within the major version the approved stack names. Node.js is the one exception (decision 43). Versions come from the npm registry's publish times. `package.json` uses exact versions with no ranges, and `package-lock.json` is committed. Changing a pin after the freeze is a plan revision.
+Pinned 2026-10-17 at the plan freeze (implementation plan, decision 42) and amended 2026-10-18 in revisions 2 and 3 (decision 43). Each package is the newest stable release published on or before **2026-10-03**, two weeks before the freeze, within the major version the approved stack names. Node.js is the one exception (decision 43). Versions come from the npm registry's publish times. `package.json` uses exact versions with no ranges, and `package-lock.json` is committed. Changing a pin after the freeze is a plan revision.
 
 **Runtime and toolchain**
 
 | Item | Version | Published | Note |
 |---|---|---|---|
-| Node.js | 26.12.0 | 2026-10-14 | **Exception to the two-week rule** (decision 43): the Homebrew release, chosen by the user because Node runs only the tooling, never the product. Node 26 enters LTS in late October 2026. Homebrew's `node` formula is pinned (`brew pin node`), so a later `brew upgrade` cannot move it. |
+| Node.js | 26.x, at least 26.12.0 | 26.12.0: 2026-10-14 | **A range, not an exact pin** (decision 43): Homebrew's release, chosen by the user because Node runs only the tooling, never the product; 26.12.0 is an accepted exception to the two-week rule. T1.1 sets `"engines": { "node": ">=26.12.0 <27" }` in `package.json` and `engine-strict=true` in `.npmrc`, so npm refuses any other version. Homebrew minor and patch upgrades within 26.x need no plan revision; a new major does. Every evidence run records the exact version in `provenance.md`. |
 
 **Application dependencies**
 
