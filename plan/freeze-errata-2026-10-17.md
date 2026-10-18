@@ -20,6 +20,8 @@ deviation until classified.
 
 | E-005 | 2026-10-18 | errata | user, in session | `freeze-2026-10-17.md` §2 | **Applied.** Records the user's decision on the TypeScript 7 / ESLint question: **no linter is added.** The repo-local boundary check stays, and Microsoft's side-by-side layout stays as a recorded, verified recipe rather than an installed dependency set. Written into §2 so a later session treats "no ESLint" as decided rather than as something to fix. No manifested file changes. |
 
+| E-006 | 2026-10-18 | adjustment (user-directed) | user, in session | `freeze-2026-10-17.md` §2, §7, §12; `D1-install-trust-and-set-up.md` T1 and §6; manifest re-stamped | **Applied. Supersedes E-005, which mis-recorded the decision.** The user did not forgo a linter; the linter is deferred to D1:T1, the build-scaffold task. Added to the profile: `eslint@10.13.0`, `typescript-eslint@8.71.2`, `@eslint/js@10.0.1`, `globals@17.13.0`, installed through Microsoft's side-by-side layout (`@typescript/native` → `typescript@7.0.2` for the `tsc` CLI; `typescript` → `@typescript/typescript6@6.0.2` for the API that typescript-eslint's peer range requires). T1 now declares `pnpm lint`, a flat config composing `@eslint/js` recommended with typescript-eslint's syntactic recommended and **no** `projectService`/`project`, and two structural verifications: V1.8 proves the version triple (`tsc` 7.0.2, `tsc6` 6.0.x, `eslint` 10.13.0) and V1.9 proves a seeded violation is actually caught. `pnpm lint` joins §6's recorded command forms and §12's gate list. E-005 is left in place as history and must be read as withdrawn. |
+
 No other entries.
 
 ## Verification tail (required for every entry)
