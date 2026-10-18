@@ -100,12 +100,13 @@ working-tree digest. A test that passes immediately, or fails for a harness reas
 tests — `planning-protocol.md:113` exempts them.
 
 **Before presenting D1:** `npm run test:unit`, `npm run test:integration`, `npm run typecheck`,
-`npm run lint`, `npm run lint:layers`, `npm run build`, each exiting 0, plus the cumulative suites for
-nothing earlier (D1 is first). Then the T34 critic.
+`npm run lint`, `npm run lint:layers`, `npm run build`, each exiting 0. D1 is the first deliverable, so
+these are the entire cumulative set — there is nothing earlier to regress. Then the T34 critic.
 
 **Definition of done for D1:**
 
-- All 34 tasks have their evidence; the six `covered` scenarios have it end to end.
+- All 34 tasks have their evidence; the five `covered` scenarios have it end to end, and the five
+  `planned` rows still name their later completing owner.
 - T33's integration suite is green through the real stack with the `fake-indexeddb` substitution
   disclosed in `tests/substitutions.md`.
 - A fresh critic, given the frozen specs and plan, starts the runtime itself and passes every §4 flow at
