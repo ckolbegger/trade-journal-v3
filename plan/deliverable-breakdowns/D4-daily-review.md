@@ -197,7 +197,7 @@ Cross-deliverable edges resolve against the sibling files in `plan/deliverable-b
 
 Task bodies are ordered by the nine phase groups of §2. Each body starts with the two declarations the task-graph validator reads: `**Blocking edges:**` (its prerequisites) and `**Consumed by:**` (tasks that list it as a prerequisite). Behaviour-bearing tasks then give their TDD cases, the mock-free integration case they contribute, and per-case red/green evidence. Structural tasks give exact verification instead (`planning-protocol.md:113`).
 
-Command form. Tests are Vitest under `pnpm exec vitest run <file> -t "<case>"`; browser verification is Playwright under `pnpm exec playwright test <spec> --project=narrow|wide`. The stack is fixed by decision PD3 (`planning-decisions-2026-10-10.md:164-185`): TypeScript strict, Vite, React, IndexedDB behind the Persistence/Transaction seam, decimal.js for Money/Price/Quantity, an injected Clock plus a versioned U.S. session calendar, Vitest with `fake-indexeddb` for Node tests, Playwright for browser tests. **Exact versions and the package-manager pin are deliberately not invented here** — decision PD3 defers them to the Phase 6 version profile (`planning-decisions-2026-10-10.md:166-167`), and §8 discloses that. Test file paths below are the plan's proposed module-to-path mapping; if D1's breakdown fixes a different directory name, the mapping is mechanical and the commands are otherwise unchanged. Every command in this file is written for the pinned profile once it exists; none of them invents a tool the stack decision has not already fixed.
+Command form. Tests are Vitest under `npx vitest run <file> -t "<case>"`; browser verification is Playwright under `npx playwright test <spec> --project=narrow|wide`. The stack is fixed by decision PD3 (`planning-decisions-2026-10-10.md:164-185`): TypeScript strict, Vite, React, IndexedDB behind the Persistence/Transaction seam, decimal.js for Money/Price/Quantity, an injected Clock plus a versioned U.S. session calendar, Vitest with `fake-indexeddb` for Node tests, Playwright for browser tests. **Exact versions and the package-manager pin are deliberately not invented here** — decision PD3 defers them to the Phase 6 version profile (`planning-decisions-2026-10-10.md:166-167`), and §8 discloses that. Test file paths below are the plan's proposed module-to-path mapping; if D1's breakdown fixes a different directory name, the mapping is mechanical and the commands are otherwise unchanged. Every command in this file is written for the pinned profile once it exists; none of them invents a tool the stack decision has not already fixed.
 
 ### Phase P1 — durable schema and the cutoff index
 
@@ -216,12 +216,12 @@ This task writes no trader-visible behaviour. It is schema, migration, and the m
 
 | # | Command | Expected result |
 |---|---|---|
-| V1.1 | `pnpm exec vitest run src/persistence/schema/d4-schema.test.ts` | Creating the database from empty produces the per-key Mark, Daily Bar, and acknowledgment revision chains inside the `marketData` store plus the cutoff-eligibility index on `lifecycleIndex`, with exactly the store names, key paths, and index keys the schema module declares; the test fails before the D4 schema exists. |
-| V1.2 | `pnpm exec vitest run src/persistence/migration/d4-migration.test.ts` | Migrating a database at D3's persisted version preserves every existing record, adds the D4 stores empty, and a second migration run at the new version is a no-op that rewrites nothing. |
-| V1.3 | `pnpm exec vitest run src/persistence/indexes/cutoff-index.test.ts` | The cutoff index returns exactly the Trades whose recorded `Open` interval covers the cutoff, including the boundary pair: a cutoff equal to `effectiveFrom` is a member and a cutoff equal to `effectiveTo` is not. |
-| V1.4 | `pnpm exec vitest run src/market-data/storage/observation-stores.test.ts` | One key holds independent Mark, Bar, and acknowledgment chains inside the `marketData` store; appending a revision leaves earlier revisions readable and moves only that chain's effective head; an exact Mark and an acknowledgment coexist with effective Mark status Available (`market-data.md:42-47`). |
-| V1.5 | `pnpm exec vitest run src/persistence/indexes/cutoff-index.rebuild.test.ts` | Rebuilding the cutoff index from persisted facts reproduces it exactly for a fixed set of cutoffs, which is the invalidation/rebuild obligation of `overview.md:133`. |
-| V1.6 | `pnpm exec vite build --mode production` | The production bundle builds with the migration registered on the runtime open path; the build fails if the migration is not registered, so an offline release cannot ship a schema the application cannot open. |
+| V1.1 | `npx vitest run src/persistence/schema/d4-schema.test.ts` | Creating the database from empty produces the per-key Mark, Daily Bar, and acknowledgment revision chains inside the `marketData` store plus the cutoff-eligibility index on `lifecycleIndex`, with exactly the store names, key paths, and index keys the schema module declares; the test fails before the D4 schema exists. |
+| V1.2 | `npx vitest run src/persistence/migration/d4-migration.test.ts` | Migrating a database at D3's persisted version preserves every existing record, adds the D4 stores empty, and a second migration run at the new version is a no-op that rewrites nothing. |
+| V1.3 | `npx vitest run src/persistence/indexes/cutoff-index.test.ts` | The cutoff index returns exactly the Trades whose recorded `Open` interval covers the cutoff, including the boundary pair: a cutoff equal to `effectiveFrom` is a member and a cutoff equal to `effectiveTo` is not. |
+| V1.4 | `npx vitest run src/market-data/storage/observation-stores.test.ts` | One key holds independent Mark, Bar, and acknowledgment chains inside the `marketData` store; appending a revision leaves earlier revisions readable and moves only that chain's effective head; an exact Mark and an acknowledgment coexist with effective Mark status Available (`market-data.md:42-47`). |
+| V1.5 | `npx vitest run src/persistence/indexes/cutoff-index.rebuild.test.ts` | Rebuilding the cutoff index from persisted facts reproduces it exactly for a fixed set of cutoffs, which is the invalidation/rebuild obligation of `overview.md:133`. |
+| V1.6 | `npx vite build --mode production` | The production bundle builds with the migration registered on the runtime open path; the build fails if the migration is not registered, so an offline release cannot ship a schema the application cannot open. |
 
 **Depends on it:** every durable D4 seam — the Manual Mark, classification, and acknowledgment writes (T2, T3, T4), Expected Mark Date/Status and frames (T5, T6, T7), the cutoff-eligible `AnalysisInput` batch (T9), and the seed (T21) — has no store or index to read or write without it. The migration also protects D2's and D3's persisted data, which the trader already relies on.
 
@@ -254,10 +254,10 @@ describe("MarketData.save at the observation-store seam: initial and overriding 
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Initial Manual Mark | `pnpm exec vitest run src/market-data/save/manual-mark.test.ts -t "no prior observation"` — fails because `save` has no Manual intention, so no `MarketDataSaveResult` can carry Available | same command — passes with Available, revision 1, classification initial Manual Mark |
-| Override a provider Mark | `pnpm exec vitest run src/market-data/save/manual-mark.test.ts -t "overrides a provider-sourced Mark"` — fails because the override intention is unimplemented and the provider revision is not retained | same command — passes with the Manual revision effective and the provider revision still readable |
-| Stale expected revision | `pnpm exec vitest run src/market-data/save/manual-mark.test.ts -t "expected resolution revision is stale"` — fails because revision checking is absent, so the write silently succeeds | same command — passes with a typed no-write result and an unchanged chain |
-| Manual is sticky | `pnpm exec vitest run src/market-data/save/manual-mark.test.ts -t "after the Manual Mark"` — fails because provider refresh logic does not consult Manual precedence | same command — passes with the Manual revision still effective and no hidden Mark revision appended |
+| Initial Manual Mark | `npx vitest run src/market-data/save/manual-mark.test.ts -t "no prior observation"` — fails because `save` has no Manual intention, so no `MarketDataSaveResult` can carry Available | same command — passes with Available, revision 1, classification initial Manual Mark |
+| Override a provider Mark | `npx vitest run src/market-data/save/manual-mark.test.ts -t "overrides a provider-sourced Mark"` — fails because the override intention is unimplemented and the provider revision is not retained | same command — passes with the Manual revision effective and the provider revision still readable |
+| Stale expected revision | `npx vitest run src/market-data/save/manual-mark.test.ts -t "expected resolution revision is stale"` — fails because revision checking is absent, so the write silently succeeds | same command — passes with a typed no-write result and an unchanged chain |
+| Manual is sticky | `npx vitest run src/market-data/save/manual-mark.test.ts -t "after the Manual Mark"` — fails because provider refresh logic does not consult Manual precedence | same command — passes with the Manual revision still effective and no hidden Mark revision appended |
 
 **Depends on it:** T3 classifies the two writes this task makes, T4 asserts and withdraws acknowledgments against the same revision protocol, T6 resolves status from the chain, and T22 renders the Manual Mark form and its post-save resolution.
 
@@ -286,10 +286,10 @@ describe("MarketData.save classification at the audit-history seam: override ver
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Override carries no error mark | `pnpm exec vitest run src/market-data/save/classification.test.ts -t "deliberate valuation override"` — fails because classification is not part of the save result | same command — passes with the override classification and no correction metadata |
-| Correction carries metadata | `pnpm exec vitest run src/market-data/save/classification.test.ts -t "correction"` — fails because no correction intention exists and no metadata is written | same command — passes with correction classification, reason, and footprint |
-| Blank reason rejected | `pnpm exec vitest run src/market-data/save/classification.test.ts -t "blank reason"` — fails because the reason is not validated, so an unexplained correction is accepted | same command — passes with a typed rejection and an unchanged chain |
-| Same price, different meaning | `pnpm exec vitest run src/market-data/save/classification.test.ts -t "same price"` — fails because classification does not exist to distinguish the two writes | same command — passes with two distinguishable classifications in history |
+| Override carries no error mark | `npx vitest run src/market-data/save/classification.test.ts -t "deliberate valuation override"` — fails because classification is not part of the save result | same command — passes with the override classification and no correction metadata |
+| Correction carries metadata | `npx vitest run src/market-data/save/classification.test.ts -t "correction"` — fails because no correction intention exists and no metadata is written | same command — passes with correction classification, reason, and footprint |
+| Blank reason rejected | `npx vitest run src/market-data/save/classification.test.ts -t "blank reason"` — fails because the reason is not validated, so an unexplained correction is accepted | same command — passes with a typed rejection and an unchanged chain |
+| Same price, different meaning | `npx vitest run src/market-data/save/classification.test.ts -t "same price"` — fails because classification does not exist to distinguish the two writes | same command — passes with two distinguishable classifications in history |
 
 **Depends on it:** T6 resolves status without treating a correction as a resolution change, and T22 labels the two writes differently in the Mark history it presents, which is what stops an override from reading as a mistake.
 
@@ -319,10 +319,10 @@ describe("MarketData.save at the acknowledgment seam: assert and withdraw unavai
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Assert on an empty key | `pnpm exec vitest run src/market-data/save/acknowledgment.test.ts -t "no exact Mark"` — fails because the assertion intention does not exist | same command — passes with AcknowledgedUnavailable and a new revision |
-| Assert refused when a Mark exists | `pnpm exec vitest run src/market-data/save/acknowledgment.test.ts -t "already has an exact Mark"` — fails because the precedence guard is absent and the acknowledgment is accepted | same command — passes with a typed no-write rejection |
-| Acknowledgment is not a price | `pnpm exec vitest run src/market-data/save/acknowledgment.test.ts -t "only exact-date evidence"` — fails because nothing resolves acknowledgment status yet | same command — passes with status AcknowledgedUnavailable and dependent results Unavailable |
-| Withdrawal is visible | `pnpm exec vitest run src/market-data/save/acknowledgment.test.ts -t "withdrawn"` — fails because withdrawal has no representation | same command — passes with status Missing and the withdrawal visible in history |
+| Assert on an empty key | `npx vitest run src/market-data/save/acknowledgment.test.ts -t "no exact Mark"` — fails because the assertion intention does not exist | same command — passes with AcknowledgedUnavailable and a new revision |
+| Assert refused when a Mark exists | `npx vitest run src/market-data/save/acknowledgment.test.ts -t "already has an exact Mark"` — fails because the precedence guard is absent and the acknowledgment is accepted | same command — passes with a typed no-write rejection |
+| Acknowledgment is not a price | `npx vitest run src/market-data/save/acknowledgment.test.ts -t "only exact-date evidence"` — fails because nothing resolves acknowledgment status yet | same command — passes with status AcknowledgedUnavailable and dependent results Unavailable |
+| Withdrawal is visible | `npx vitest run src/market-data/save/acknowledgment.test.ts -t "withdrawn"` — fails because withdrawal has no representation | same command — passes with status Missing and the withdrawal visible in history |
 
 **Depends on it:** T6 resolves the acknowledgment branch of Expected-Mark Status, T20 must produce `CompleteWithUnavailableMarks` from exactly this evidence, and T22 renders the acknowledgment as an acknowledgment rather than a price.
 
@@ -352,10 +352,10 @@ describe("Expected Mark Date at the session-calendar seam")
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Tuesday after Monday | `pnpm exec vitest run src/market-data/expected/expected-mark-date.test.ts -t "noon Tuesday"` — fails because no Expected Mark Date resolution exists | same command — passes with Monday |
-| Before the close | `pnpm exec vitest run src/market-data/expected/expected-mark-date.test.ts -t "before the current session"` — fails because the resolution does not consult session completion | same command — passes with the prior completed session |
-| Holiday | `pnpm exec vitest run src/market-data/expected/expected-mark-date.test.ts -t "scheduled holiday"` — fails because the calendar's absence of a session is not consulted | same command — passes with the prior completed session |
-| No completed session | `pnpm exec vitest run src/market-data/expected/expected-mark-date.test.ts -t "no completed session"` — fails because the resolver has no typed no-context result | same command — passes with a typed no-context result, no invented date |
+| Tuesday after Monday | `npx vitest run src/market-data/expected/expected-mark-date.test.ts -t "noon Tuesday"` — fails because no Expected Mark Date resolution exists | same command — passes with Monday |
+| Before the close | `npx vitest run src/market-data/expected/expected-mark-date.test.ts -t "before the current session"` — fails because the resolution does not consult session completion | same command — passes with the prior completed session |
+| Holiday | `npx vitest run src/market-data/expected/expected-mark-date.test.ts -t "scheduled holiday"` — fails because the calendar's absence of a session is not consulted | same command — passes with the prior completed session |
+| No completed session | `npx vitest run src/market-data/expected/expected-mark-date.test.ts -t "no completed session"` — fails because the resolver has no typed no-context result | same command — passes with a typed no-context result, no invented date |
 
 **Depends on it:** T6 resolves `Available` versus `Stale` only relative to the Expected Mark Date, T7 binds frames to the session-policy revision this task supplies, and T14 aggregates observation requirements by earliest relevant condition date against the same calendar.
 
@@ -388,11 +388,11 @@ describe("Expected-Mark Status at the resolution seam")
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Prior session is Available | `pnpm exec vitest run src/market-data/expected/expected-mark-status.test.ts -t "prior completed session"` — fails because no status resolution exists to return Available | same command — passes with Available and no Stale context |
-| Stale context only | `pnpm exec vitest run src/market-data/expected/expected-mark-status.test.ts -t "Stale context"` — fails because older evidence is not gathered as context | same command — passes with Missing plus the older Mark as Stale context |
-| Acknowledgment branch | `pnpm exec vitest run src/market-data/expected/expected-mark-status.test.ts -t "AcknowledgedUnavailable"` — fails because the acknowledgment is not considered | same command — passes with AcknowledgedUnavailable and optional Stale context |
-| Older Mark cannot complete | `pnpm exec vitest run src/market-data/expected/expected-mark-status.test.ts -t "older Mark"` — fails because nothing distinguishes an expected slot from any available evidence | same command — passes; the slot stays unsatisfied for completion purposes |
-| Bar is not valuation | `pnpm exec vitest run src/market-data/expected/expected-mark-status.test.ts -t "Daily Bar resolution"` — fails because Bar and Mark resolutions are not separated | same command — passes with Bar Available and Mark Missing |
+| Prior session is Available | `npx vitest run src/market-data/expected/expected-mark-status.test.ts -t "prior completed session"` — fails because no status resolution exists to return Available | same command — passes with Available and no Stale context |
+| Stale context only | `npx vitest run src/market-data/expected/expected-mark-status.test.ts -t "Stale context"` — fails because older evidence is not gathered as context | same command — passes with Missing plus the older Mark as Stale context |
+| Acknowledgment branch | `npx vitest run src/market-data/expected/expected-mark-status.test.ts -t "AcknowledgedUnavailable"` — fails because the acknowledgment is not considered | same command — passes with AcknowledgedUnavailable and optional Stale context |
+| Older Mark cannot complete | `npx vitest run src/market-data/expected/expected-mark-status.test.ts -t "older Mark"` — fails because nothing distinguishes an expected slot from any available evidence | same command — passes; the slot stays unsatisfied for completion purposes |
+| Bar is not valuation | `npx vitest run src/market-data/expected/expected-mark-status.test.ts -t "Daily Bar resolution"` — fails because Bar and Mark resolutions are not separated | same command — passes with Bar Available and Mark Missing |
 
 **Depends on it:** T7 binds frames to the statuses and stale-context revisions this task resolves, T14 attaches them to Trades in the walk, and T22 renders Missing, Stale, AcknowledgedUnavailable, and Unavailable as four distinct things (`ui-contract.md:56,94`).
 
@@ -427,11 +427,11 @@ describe("MarketData.query ResolveFrames at the snapshot-binding seam")
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Stable re-query | `pnpm exec vitest run src/market-data/query/resolve-frames.test.ts -t "ExpectedSnapshot"` — fails because no snapshot identity exists to compare | same command — passes with SnapshotUnchanged |
-| Mark change detected | `pnpm exec vitest run src/market-data/query/resolve-frames.test.ts -t "Mark for a requested key changed"` — fails because the digest does not cover selected revisions | same command — passes with SnapshotChanged and current frames |
-| Acknowledgment change detected | `pnpm exec vitest run src/market-data/query/resolve-frames.test.ts -t "acknowledgment was asserted or withdrawn"` — fails because acknowledgment revisions are not digested | same command — passes with SnapshotChanged |
-| Explicit gaps | `pnpm exec vitest run src/market-data/query/resolve-frames.test.ts -t "explicit gap"` — fails because ranges are not implemented and nothing marks absence | same command — passes with a gap and no interpolation |
-| Candidate frames hypothetical | `pnpm exec vitest run src/market-data/query/resolve-frames.test.ts -t "hypothetical"` — fails because Candidate Manual Mark frames are not distinguished | same command — passes with the candidate frame excluded from committed evidence |
+| Stable re-query | `npx vitest run src/market-data/query/resolve-frames.test.ts -t "ExpectedSnapshot"` — fails because no snapshot identity exists to compare | same command — passes with SnapshotUnchanged |
+| Mark change detected | `npx vitest run src/market-data/query/resolve-frames.test.ts -t "Mark for a requested key changed"` — fails because the digest does not cover selected revisions | same command — passes with SnapshotChanged and current frames |
+| Acknowledgment change detected | `npx vitest run src/market-data/query/resolve-frames.test.ts -t "acknowledgment was asserted or withdrawn"` — fails because acknowledgment revisions are not digested | same command — passes with SnapshotChanged |
+| Explicit gaps | `npx vitest run src/market-data/query/resolve-frames.test.ts -t "explicit gap"` — fails because ranges are not implemented and nothing marks absence | same command — passes with a gap and no interpolation |
+| Candidate frames hypothetical | `npx vitest run src/market-data/query/resolve-frames.test.ts -t "hypothetical"` — fails because Candidate Manual Mark frames are not distinguished | same command — passes with the candidate frame excluded from committed evidence |
 
 **Depends on it:** T8's recovery result must return the same snapshot-bound frames, T10's evaluation consumes one frame for all its Trades, T17's `Conflict` must carry the refreshed frames and the new `MarketDataSnapshotId`, and T24 renders gap-versus-point distinction for any D4 evidence graphic.
 
@@ -463,10 +463,10 @@ describe("MarketData.recover at the no-provider seam")
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Honest NotConfigured | `pnpm exec vitest run src/market-data/recovery/recover-no-provider.test.ts -t "no provider installed"` — fails because recovery is unimplemented and there is no result to carry diagnostics | same command — passes with NotConfigured context plus current resolutions |
-| Manual tasks for current Missing | `pnpm exec vitest run src/market-data/recovery/recover-no-provider.test.ts -t "Manual Mark task"` — fails because Missing keys are not classified into tasks | same command — passes with one task per current-date Missing key |
-| Historical gaps nonblocking | `pnpm exec vitest run src/market-data/recovery/recover-no-provider.test.ts -t "historical gaps"` — fails because gaps are not distinguished from current tasks | same command — passes with the historical gap visible and excluded from the current task list |
-| Nothing written | `pnpm exec vitest run src/market-data/recovery/recover-no-provider.test.ts -t "write nothing"` — fails because the store comparison has nothing to compare until recovery exists | same command — passes with identical store contents and no Journal entry |
+| Honest NotConfigured | `npx vitest run src/market-data/recovery/recover-no-provider.test.ts -t "no provider installed"` — fails because recovery is unimplemented and there is no result to carry diagnostics | same command — passes with NotConfigured context plus current resolutions |
+| Manual tasks for current Missing | `npx vitest run src/market-data/recovery/recover-no-provider.test.ts -t "Manual Mark task"` — fails because Missing keys are not classified into tasks | same command — passes with one task per current-date Missing key |
+| Historical gaps nonblocking | `npx vitest run src/market-data/recovery/recover-no-provider.test.ts -t "historical gaps"` — fails because gaps are not distinguished from current tasks | same command — passes with the historical gap visible and excluded from the current task list |
+| Nothing written | `npx vitest run src/market-data/recovery/recover-no-provider.test.ts -t "write nothing"` — fails because the store comparison has nothing to compare until recovery exists | same command — passes with identical store contents and no Journal entry |
 
 **Depends on it:** T13 places the Manual Mark family first in the normative task order, and T22 presents `NotConfigured` as an honest, safe condition with actionable Manual tasks rather than a broken view.
 
@@ -501,11 +501,11 @@ describe("TradeRecord.queryRecords at the StateAtEconomicCutoff(Open) seam")
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Inside an interval | `pnpm exec vitest run src/trade-record/query/state-at-cutoff.test.ts -t "covers the cutoff"` — fails because cutoff mode is not implemented | same command — passes with exactly the covering Trades |
-| Closed later, Open today | `pnpm exec vitest run src/trade-record/query/state-at-cutoff.test.ts -t "later Closed"` — fails because current membership is used instead of cutoff membership | same command — passes with the later-Closed Trade included and today's Open Trade excluded |
-| Boundary pair | `pnpm exec vitest run src/trade-record/query/state-at-cutoff.test.ts -t "effectiveTo"` — fails because the interval comparison is absent | same command — passes with the left boundary inclusive and the right boundary exclusive |
-| Correction restates membership | `pnpm exec vitest run src/trade-record/query/state-at-cutoff.test.ts -t "rewrites a past interval"` — fails because nothing rewrites index intervals from corrected facts | same command — passes with membership changed in both directions |
-| Query count on the ordinary path | `pnpm exec vitest run src/trade-record/query/state-at-cutoff.test.ts -t "exactly two storage reads"` — fails because the batch read is absent, so one read per result is issued and the counter is not two | same command — passes with a read count of exactly two at both page sizes and zero fact-store reads |
+| Inside an interval | `npx vitest run src/trade-record/query/state-at-cutoff.test.ts -t "covers the cutoff"` — fails because cutoff mode is not implemented | same command — passes with exactly the covering Trades |
+| Closed later, Open today | `npx vitest run src/trade-record/query/state-at-cutoff.test.ts -t "later Closed"` — fails because current membership is used instead of cutoff membership | same command — passes with the later-Closed Trade included and today's Open Trade excluded |
+| Boundary pair | `npx vitest run src/trade-record/query/state-at-cutoff.test.ts -t "effectiveTo"` — fails because the interval comparison is absent | same command — passes with the left boundary inclusive and the right boundary exclusive |
+| Correction restates membership | `npx vitest run src/trade-record/query/state-at-cutoff.test.ts -t "rewrites a past interval"` — fails because nothing rewrites index intervals from corrected facts | same command — passes with membership changed in both directions |
+| Query count on the ordinary path | `npx vitest run src/trade-record/query/state-at-cutoff.test.ts -t "exactly two storage reads"` — fails because the batch read is absent, so one read per result is issued and the counter is not two | same command — passes with a read count of exactly two at both page sizes and zero fact-store reads |
 
 **Depends on it:** T10 derives every returned Trade from one supplied batch, and T13 builds the eligible Trade walk from this set; if membership were current-state membership or the batch were per-Trade, `AC-REV-001` and the boundedness claim would both be false.
 
@@ -538,10 +538,10 @@ describe("TradeAnalysis.derive at the derivation seam")
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Observation requirements | `pnpm exec vitest run src/trade-analysis/derive/derive.test.ts -t "earliest relevant condition date"` — fails because `derive` does not report requirements | same command — passes with one requirement per Instrument at the earliest relevant date |
-| Original Economic Time | `pnpm exec vitest run src/trade-analysis/derive/derive.test.ts -t "original Economic Time"` — fails because facts are ordered by save time | same command — passes with corrected facts applied at their original time and ties by Recorded Sequence |
-| Integrity finding | `pnpm exec vitest run src/trade-analysis/derive/derive.test.ts -t "structured integrity finding"` — fails because disagreement is not detected | same command — passes with the finding reported and stored state unchanged |
-| Settlement is a fact | `pnpm exec vitest run src/trade-analysis/derive/derive.test.ts -t "zero-price Execution"` — fails because settlement members are unknown to the derivation | same command — passes with the settlement fact consumed as itself |
+| Observation requirements | `npx vitest run src/trade-analysis/derive/derive.test.ts -t "earliest relevant condition date"` — fails because `derive` does not report requirements | same command — passes with one requirement per Instrument at the earliest relevant date |
+| Original Economic Time | `npx vitest run src/trade-analysis/derive/derive.test.ts -t "original Economic Time"` — fails because facts are ordered by save time | same command — passes with corrected facts applied at their original time and ties by Recorded Sequence |
+| Integrity finding | `npx vitest run src/trade-analysis/derive/derive.test.ts -t "structured integrity finding"` — fails because disagreement is not detected | same command — passes with the finding reported and stored state unchanged |
+| Settlement is a fact | `npx vitest run src/trade-analysis/derive/derive.test.ts -t "zero-price Execution"` — fails because settlement members are unknown to the derivation | same command — passes with the settlement fact consumed as itself |
 
 **Depends on it:** T11 evaluates the returned state against a resolved frame, and T20 asks for progress and completion from the same derived facts, so a wrong requirement set would make both wrong regardless of how good the evidence is.
 
@@ -584,11 +584,11 @@ describe("TradeAnalysis.evaluate at the valuation and risk seam")
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Full-coverage valuation | `pnpm exec vitest run src/trade-analysis/evaluate/evaluate.test.ts -t "every required slot"` — fails because no valuation is produced | same command — passes with Value and per-Instrument coverage |
-| Independent availability | `pnpm exec vitest run src/trade-analysis/evaluate/evaluate.test.ts -t "one expected Mark is Missing"` — fails because the evaluation does not distinguish components | same command — passes with realized Value, marked Unavailable naming Instrument and date, covered subtotal labelled |
-| No substitution | `pnpm exec vitest run src/trade-analysis/evaluate/evaluate.test.ts -t "covered subtotal"` — fails because a missing component is silently treated as zero | same command — passes with no fill cost or zero in the covered subtotal |
-| Risk basis selection | `pnpm exec vitest run src/trade-analysis/evaluate/evaluate.test.ts -t "Monetary Ongoing Risk"` — fails because no risk result exists | same command — passes with the monetary basis and the selected basis reported |
-| Overrun | `pnpm exec vitest run src/trade-analysis/evaluate/evaluate.test.ts -t "crossed a Stop"` — fails because crossing is not detected | same command — passes with Overrun disclosed |
+| Full-coverage valuation | `npx vitest run src/trade-analysis/evaluate/evaluate.test.ts -t "every required slot"` — fails because no valuation is produced | same command — passes with Value and per-Instrument coverage |
+| Independent availability | `npx vitest run src/trade-analysis/evaluate/evaluate.test.ts -t "one expected Mark is Missing"` — fails because the evaluation does not distinguish components | same command — passes with realized Value, marked Unavailable naming Instrument and date, covered subtotal labelled |
+| No substitution | `npx vitest run src/trade-analysis/evaluate/evaluate.test.ts -t "covered subtotal"` — fails because a missing component is silently treated as zero | same command — passes with no fill cost or zero in the covered subtotal |
+| Risk basis selection | `npx vitest run src/trade-analysis/evaluate/evaluate.test.ts -t "Monetary Ongoing Risk"` — fails because no risk result exists | same command — passes with the monetary basis and the selected basis reported |
+| Overrun | `npx vitest run src/trade-analysis/evaluate/evaluate.test.ts -t "crossed a Stop"` — fails because crossing is not detected | same command — passes with Overrun disclosed |
 
 **Depends on it:** T12 replays the evaluated frames into Stop-Discipline episodes, T20 derives completion from coverage and availability, and T23 presents risk to stop and incremental reward with their availability states.
 
@@ -625,11 +625,11 @@ describe("TradeAnalysis.replay at the Stop-Discipline episode seam")
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| One continuous episode | `pnpm exec vitest run src/trade-analysis/replay/stop-discipline.test.ts -t "consecutive marked dates"` — fails because episode derivation does not exist | same command — passes with one episode and one fingerprint |
-| Gap means first observed | `pnpm exec vitest run src/trade-analysis/replay/stop-discipline.test.ts -t "fabricated crossing date"` — fails because nothing tracks the first observation after a gap | same command — passes with the episode starting at the first observed breach |
-| Gap does not end an episode | `pnpm exec vitest run src/trade-analysis/replay/stop-discipline.test.ts -t "unmarked date"` — fails because each observation is treated independently | same command — passes with a single retained episode |
-| Replacement supersedes | `pnpm exec vitest run src/trade-analysis/replay/stop-discipline.test.ts -t "Stop condition is replaced"` — fails because effective Stop revisions are not consulted | same command — passes with a superseded episode and a new one |
-| Fingerprint stability | `pnpm exec vitest run src/trade-analysis/replay/stop-discipline.test.ts -t "byte-identical fingerprints"` — fails because fingerprints are not stable across runs | same command — passes with identical sets across both replays |
+| One continuous episode | `npx vitest run src/trade-analysis/replay/stop-discipline.test.ts -t "consecutive marked dates"` — fails because episode derivation does not exist | same command — passes with one episode and one fingerprint |
+| Gap means first observed | `npx vitest run src/trade-analysis/replay/stop-discipline.test.ts -t "fabricated crossing date"` — fails because nothing tracks the first observation after a gap | same command — passes with the episode starting at the first observed breach |
+| Gap does not end an episode | `npx vitest run src/trade-analysis/replay/stop-discipline.test.ts -t "unmarked date"` — fails because each observation is treated independently | same command — passes with a single retained episode |
+| Replacement supersedes | `npx vitest run src/trade-analysis/replay/stop-discipline.test.ts -t "Stop condition is replaced"` — fails because effective Stop revisions are not consulted | same command — passes with a superseded episode and a new one |
+| Fingerprint stability | `npx vitest run src/trade-analysis/replay/stop-discipline.test.ts -t "byte-identical fingerprints"` — fails because fingerprints are not stable across runs | same command — passes with identical sets across both replays |
 
 **Depends on it:** T19 reconciles recorded occurrences against exactly these fingerprints, T20 treats an unreconciled deterministic occurrence as an incomplete obligation, and T23 shows the Stop breach the trader must act on.
 
@@ -666,14 +666,14 @@ describe("DailyReview.open at the task-family and attention-band seam")
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Normative family order | `pnpm exec vitest run src/daily-review/open/task-families.test.ts -t "normative"` — fails because `open` does not assemble families | same command — passes with Mark, Debt, settlement, Trade order |
-| Reasons, not scores | `pnpm exec vitest run src/daily-review/open/task-families.test.ts -t "reasons"` — fails because no band is computed and no reasons are carried | same command — passes with band plus reasons and inputs and no score field |
-| Comparison rules | `pnpm exec vitest run src/daily-review/open/task-families.test.ts -t "Not Comparable"` — fails because comparability is not evaluated | same command — passes with Highest, Zero, and Not Comparable as documented |
-| Boundary band retention | `pnpm exec vitest run src/daily-review/open/task-families.test.ts -t "risk distance has become zero"` — fails because bands are recomputed from distance alone | same command — passes with the Trade retained in its higher band |
-| Empty versus Ready | `pnpm exec vitest run src/daily-review/open/task-families.test.ts -t "Empty only when"` — fails because emptiness is not distinguished from a review with eligible Trades | same command — passes with Empty and Ready in their respective fixtures |
-| Proximity band cut | `pnpm exec vitest run src/daily-review/open/task-families.test.ts -t "configured fraction"` — fails because the band is not derived from boundary distance | same command — passes with near-boundary Trades in quantified pressure and mid-span Trades in routine |
-| Symmetric within-band order | `pnpm exec vitest run src/daily-review/open/task-families.test.ts -t "nearest boundary ascending"` — fails because the order still follows the frozen pressure-descending sort, so a near-Stop Trade sorts last | same command — passes with the near-Stop Trade above its mirror |
-| Band ladder with a blocker | `pnpm exec vitest run src/daily-review/open/task-families.test.ts -t "above every quantified-pressure Trade"` — fails because the ladder is not asserted for a Trade that is both | same command — passes with the blocker first and the reached boundary second |
+| Normative family order | `npx vitest run src/daily-review/open/task-families.test.ts -t "normative"` — fails because `open` does not assemble families | same command — passes with Mark, Debt, settlement, Trade order |
+| Reasons, not scores | `npx vitest run src/daily-review/open/task-families.test.ts -t "reasons"` — fails because no band is computed and no reasons are carried | same command — passes with band plus reasons and inputs and no score field |
+| Comparison rules | `npx vitest run src/daily-review/open/task-families.test.ts -t "Not Comparable"` — fails because comparability is not evaluated | same command — passes with Highest, Zero, and Not Comparable as documented |
+| Boundary band retention | `npx vitest run src/daily-review/open/task-families.test.ts -t "risk distance has become zero"` — fails because bands are recomputed from distance alone | same command — passes with the Trade retained in its higher band |
+| Empty versus Ready | `npx vitest run src/daily-review/open/task-families.test.ts -t "Empty only when"` — fails because emptiness is not distinguished from a review with eligible Trades | same command — passes with Empty and Ready in their respective fixtures |
+| Proximity band cut | `npx vitest run src/daily-review/open/task-families.test.ts -t "configured fraction"` — fails because the band is not derived from boundary distance | same command — passes with near-boundary Trades in quantified pressure and mid-span Trades in routine |
+| Symmetric within-band order | `npx vitest run src/daily-review/open/task-families.test.ts -t "nearest boundary ascending"` — fails because the order still follows the frozen pressure-descending sort, so a near-Stop Trade sorts last | same command — passes with the near-Stop Trade above its mirror |
+| Band ladder with a blocker | `npx vitest run src/daily-review/open/task-families.test.ts -t "above every quantified-pressure Trade"` — fails because the ladder is not asserted for a Trade that is both | same command — passes with the blocker first and the reached boundary second |
 
 **Depends on it:** T14 walks the ordered Trade set this task produces, T15 returns one bound Trade from it, and T22 renders the order and the reasons without inventing a score.
 
@@ -704,10 +704,10 @@ describe("DailyReview.open at the shared-evidence and Trade-walk seam")
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Shared Mark resolves once | `pnpm exec vitest run src/daily-review/open/shared-mark-walk.test.ts -t "share the resolved frame"` — fails because each Trade resolves its own evidence | same command — passes with one resolution for the shared Instrument |
-| Bounded recovery batches | `pnpm exec vitest run src/daily-review/open/shared-mark-walk.test.ts -t "one recovery call per bounded batch"` — fails because recovery is called per Trade | same command — passes with one call for the batch |
-| Acknowledged Trade retained | `pnpm exec vitest run src/daily-review/open/shared-mark-walk.test.ts -t "evidence-limited band"` — fails because acknowledged evidence is treated as unusable | same command — passes with the Trade retained and its context disclosed |
-| No Review Session | `pnpm exec vitest run src/daily-review/open/shared-mark-walk.test.ts -t "after a restart"` — fails because the assembled view has no restart-stable source | same command — passes with identical order and outcomes and no session record |
+| Shared Mark resolves once | `npx vitest run src/daily-review/open/shared-mark-walk.test.ts -t "share the resolved frame"` — fails because each Trade resolves its own evidence | same command — passes with one resolution for the shared Instrument |
+| Bounded recovery batches | `npx vitest run src/daily-review/open/shared-mark-walk.test.ts -t "one recovery call per bounded batch"` — fails because recovery is called per Trade | same command — passes with one call for the batch |
+| Acknowledged Trade retained | `npx vitest run src/daily-review/open/shared-mark-walk.test.ts -t "evidence-limited band"` — fails because acknowledged evidence is treated as unusable | same command — passes with the Trade retained and its context disclosed |
+| No Review Session | `npx vitest run src/daily-review/open/shared-mark-walk.test.ts -t "after a restart"` — fails because the assembled view has no restart-stable source | same command — passes with identical order and outcomes and no session record |
 
 **Depends on it:** T15 returns a bound Trade from this walk, T20 derives completion over the whole walk, and T22 renders it; a per-Trade resolution would also break the boundedness claim T9 makes for the read side.
 
@@ -738,10 +738,10 @@ describe("DailyReview.getTrade at the bound view-state seam")
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Bound view returned | `pnpm exec vitest run src/daily-review/get-trade/get-trade.test.ts -t "still eligible"` — fails because `getTrade` is unimplemented | same command — passes with the complete bound view |
-| Hold preselected | `pnpm exec vitest run src/daily-review/get-trade/get-trade.test.ts -t "preselected"` — fails because the form state has no selection | same command — passes with Hold in view state only |
-| Display records nothing | `pnpm exec vitest run src/daily-review/get-trade/get-trade.test.ts -t "navigated away"` — fails because the store comparison has no view to compare | same command — passes with unchanged Journal and Trade Record revisions |
-| Incoherent binding | `pnpm exec vitest run src/daily-review/get-trade/get-trade.test.ts -t "no longer coherent"` — fails because coherence is not checked | same command — passes with ReviewChanged and no hybrid fields |
+| Bound view returned | `npx vitest run src/daily-review/get-trade/get-trade.test.ts -t "still eligible"` — fails because `getTrade` is unimplemented | same command — passes with the complete bound view |
+| Hold preselected | `npx vitest run src/daily-review/get-trade/get-trade.test.ts -t "preselected"` — fails because the form state has no selection | same command — passes with Hold in view state only |
+| Display records nothing | `npx vitest run src/daily-review/get-trade/get-trade.test.ts -t "navigated away"` — fails because the store comparison has no view to compare | same command — passes with unchanged Journal and Trade Record revisions |
+| Incoherent binding | `npx vitest run src/daily-review/get-trade/get-trade.test.ts -t "no longer coherent"` — fails because coherence is not checked | same command — passes with ReviewChanged and no hybrid fields |
 
 **Depends on it:** T16 saves against exactly this binding, including the rendered form revision, and T23 renders the form and the one visible Save.
 
@@ -774,11 +774,11 @@ describe("DailyReview.save SaveTradeAction at the five-binding seam")
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| One dated Hold Entry | `pnpm exec vitest run src/daily-review/save/save-trade-action.test.ts -t "exactly one dated Action Entry"` — fails because `save` stages nothing | same command — passes with one Entry at the expected identities and times |
-| Retry edits the same Entry | `pnpm exec vitest run src/daily-review/save/save-trade-action.test.ts -t "same obligation key"` — fails because obligation-key uniqueness is not enforced | same command — passes with a new version under the same Entry identity |
-| Missing binding rejected | `pnpm exec vitest run src/daily-review/save/save-trade-action.test.ts -t "five required bindings"` — fails because bindings are not validated | same command — passes with Rejected and an unchanged store |
-| Post-commit continuation | `pnpm exec vitest run src/daily-review/save/save-trade-action.test.ts -t "without calling open or getTrade again"` — fails because the result does not carry progress and next step | same command — passes with the full post-commit result |
-| No trading fact | `pnpm exec vitest run src/daily-review/save/save-trade-action.test.ts -t "records intent only"` — fails because no save path exists to assert against | same command — passes with identical Trade Record revisions |
+| One dated Hold Entry | `npx vitest run src/daily-review/save/save-trade-action.test.ts -t "exactly one dated Action Entry"` — fails because `save` stages nothing | same command — passes with one Entry at the expected identities and times |
+| Retry edits the same Entry | `npx vitest run src/daily-review/save/save-trade-action.test.ts -t "same obligation key"` — fails because obligation-key uniqueness is not enforced | same command — passes with a new version under the same Entry identity |
+| Missing binding rejected | `npx vitest run src/daily-review/save/save-trade-action.test.ts -t "five required bindings"` — fails because bindings are not validated | same command — passes with Rejected and an unchanged store |
+| Post-commit continuation | `npx vitest run src/daily-review/save/save-trade-action.test.ts -t "without calling open or getTrade again"` — fails because the result does not carry progress and next step | same command — passes with the full post-commit result |
+| No trading fact | `npx vitest run src/daily-review/save/save-trade-action.test.ts -t "records intent only"` — fails because no save path exists to assert against | same command — passes with identical Trade Record revisions |
 
 **Depends on it:** T17 evaluates the same bindings for staleness, T18 constrains the Intent rule at this seam, T19 stages the Deviation reconciliation this task prepares, and T20 asks for revised completion from the post-commit facts.
 
@@ -809,11 +809,11 @@ describe("DailyReview.save staleness at the ReviewChanged and Conflict seam")
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Review-scope staleness | `pnpm exec vitest run src/daily-review/save/staleness.test.ts -t "ReviewChanged"` — fails because the result union has no review-scope member | same command — passes with ReviewChanged and the changed items |
-| Evidence staleness | `pnpm exec vitest run src/daily-review/save/staleness.test.ts -t "MarketDataSnapshotId"` — fails because the ExpectedSnapshot check is not wired into save | same command — passes with Conflict and refreshed frames |
-| Every binding reported | `pnpm exec vitest run src/daily-review/save/staleness.test.ts -t "every stale binding"` — fails because the first mismatch short-circuits | same command — passes with the full list in one payload |
-| Review scope dominates | `pnpm exec vitest run src/daily-review/save/staleness.test.ts -t "review-scope binding"` — fails because no result name is chosen when both scopes are stale | same command — passes with ReviewChanged and a complete payload |
-| No write on conflict | `pnpm exec vitest run src/daily-review/save/staleness.test.ts -t "byte-identical"` — fails because conflicts are not produced, so there is nothing to compare | same command — passes with unchanged histories |
+| Review-scope staleness | `npx vitest run src/daily-review/save/staleness.test.ts -t "ReviewChanged"` — fails because the result union has no review-scope member | same command — passes with ReviewChanged and the changed items |
+| Evidence staleness | `npx vitest run src/daily-review/save/staleness.test.ts -t "MarketDataSnapshotId"` — fails because the ExpectedSnapshot check is not wired into save | same command — passes with Conflict and refreshed frames |
+| Every binding reported | `npx vitest run src/daily-review/save/staleness.test.ts -t "every stale binding"` — fails because the first mismatch short-circuits | same command — passes with the full list in one payload |
+| Review scope dominates | `npx vitest run src/daily-review/save/staleness.test.ts -t "review-scope binding"` — fails because no result name is chosen when both scopes are stale | same command — passes with ReviewChanged and a complete payload |
+| No write on conflict | `npx vitest run src/daily-review/save/staleness.test.ts -t "byte-identical"` — fails because conflicts are not produced, so there is nothing to compare | same command — passes with unchanged histories |
 
 **Depends on it:** T20 rederives completion from post-commit facts and must not count a stale save as resolved, and T23 preserves safe user input and explains what must be reviewed again after a conflict (`ui-contract.md:45`).
 
@@ -844,10 +844,10 @@ describe("DailyReview.save Intent rules at the Action seam")
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Hold with blank Intent | `pnpm exec vitest run src/daily-review/save/intent.test.ts -t "Hold"` — fails because the Intent rule is not evaluated | same command — passes with the Entry saved |
-| Exit blank rejected | `pnpm exec vitest run src/daily-review/save/intent.test.ts -t "Exit is saved with blank Intent"` — fails because blank Intent is accepted | same command — passes with Rejected and no write |
-| Intent saved, no fact | `pnpm exec vitest run src/daily-review/save/intent.test.ts -t "intent text only"` — fails because intent is stored as a Trade fact or not stored at all | same command — passes with intent in the Entry and identical Trade revisions |
-| Option set | `pnpm exec vitest run src/daily-review/save/intent.test.ts -t "Watch Closely"` — fails because the option identities are not fixed | same command — passes with exactly four identities and Hold always present |
+| Hold with blank Intent | `npx vitest run src/daily-review/save/intent.test.ts -t "Hold"` — fails because the Intent rule is not evaluated | same command — passes with the Entry saved |
+| Exit blank rejected | `npx vitest run src/daily-review/save/intent.test.ts -t "Exit is saved with blank Intent"` — fails because blank Intent is accepted | same command — passes with Rejected and no write |
+| Intent saved, no fact | `npx vitest run src/daily-review/save/intent.test.ts -t "intent text only"` — fails because intent is stored as a Trade fact or not stored at all | same command — passes with intent in the Entry and identical Trade revisions |
+| Option set | `npx vitest run src/daily-review/save/intent.test.ts -t "Watch Closely"` — fails because the option identities are not fixed | same command — passes with exactly four identities and Hold always present |
 
 **Depends on it:** T23 renders requiredness from this rule and offers the Trade Workflow route without executing anything, which is what stops a one-tap UI from becoming a trade ticket.
 
@@ -878,11 +878,11 @@ describe("DailyReview Stop-Discipline reconciliation at the atomic commit seam")
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Create with the Action | `pnpm exec vitest run src/daily-review/save/stop-reconciliation.test.ts -t "one transaction"` — fails because no reconciliation is staged | same command — passes with both effects durable |
-| Retain, no duplicate | `pnpm exec vitest run src/daily-review/save/stop-reconciliation.test.ts -t "matches an occurrence already recorded"` — fails because fingerprints are not compared | same command — passes with one occurrence |
-| Supersede and Void | `pnpm exec vitest run src/daily-review/save/stop-reconciliation.test.ts -t "condition replacement"` — fails because supersession is not modelled | same command — passes with the prior occurrence superseded and addressable |
-| Rollback on Journal failure | `pnpm exec vitest run src/daily-review/save/stop-reconciliation.test.ts -t "Journal participant fails"` — fails because the staged effects are not rolled back together | same command — passes with neither effect present |
-| Reconciliation cannot change facts | `pnpm exec vitest run src/daily-review/save/stop-reconciliation.test.ts -t "economic fact or Lifecycle State"` — fails because the variant accepts any candidate | same command — passes with a typed rejection and unchanged facts |
+| Create with the Action | `npx vitest run src/daily-review/save/stop-reconciliation.test.ts -t "one transaction"` — fails because no reconciliation is staged | same command — passes with both effects durable |
+| Retain, no duplicate | `npx vitest run src/daily-review/save/stop-reconciliation.test.ts -t "matches an occurrence already recorded"` — fails because fingerprints are not compared | same command — passes with one occurrence |
+| Supersede and Void | `npx vitest run src/daily-review/save/stop-reconciliation.test.ts -t "condition replacement"` — fails because supersession is not modelled | same command — passes with the prior occurrence superseded and addressable |
+| Rollback on Journal failure | `npx vitest run src/daily-review/save/stop-reconciliation.test.ts -t "Journal participant fails"` — fails because the staged effects are not rolled back together | same command — passes with neither effect present |
+| Reconciliation cannot change facts | `npx vitest run src/daily-review/save/stop-reconciliation.test.ts -t "economic fact or Lifecycle State"` — fails because the variant accepts any candidate | same command — passes with a typed rejection and unchanged facts |
 
 **Depends on it:** T20 treats an unreconciled deterministic occurrence as an incomplete obligation, so an occurrence that is created twice or lost would make the completion state lie; T25 carries the atomic-commit and rollback proof into the cumulative integration suite.
 
@@ -915,11 +915,11 @@ describe("DailyReview completion derivation at the derived-state seam")
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Missing Action | `pnpm exec vitest run src/daily-review/completion/completion.test.ts -t "no saved Action"` — fails because completion is not derived | same command — passes with Incomplete naming the Trade |
-| Missing current Mark | `pnpm exec vitest run src/daily-review/completion/completion.test.ts -t "required current Mark is Missing"` — fails because Mark status is not consulted | same command — passes with Incomplete |
-| Acknowledged evidence | `pnpm exec vitest run src/daily-review/completion/completion.test.ts -t "CompleteWithUnavailableMarks"` — fails because the third state does not exist | same command — passes with the lists of Instruments, Trades, and calculation families |
-| Older Mark cannot complete | `pnpm exec vitest run src/daily-review/completion/completion.test.ts -t "older Mark"` — fails because any available evidence is treated as sufficient | same command — passes with Incomplete |
-| Restart stability | `pnpm exec vitest run src/daily-review/completion/completion.test.ts -t "after a process restart"` — fails because completion would be read from a record rather than derived | same command — passes with the same result and no completion record |
+| Missing Action | `npx vitest run src/daily-review/completion/completion.test.ts -t "no saved Action"` — fails because completion is not derived | same command — passes with Incomplete naming the Trade |
+| Missing current Mark | `npx vitest run src/daily-review/completion/completion.test.ts -t "required current Mark is Missing"` — fails because Mark status is not consulted | same command — passes with Incomplete |
+| Acknowledged evidence | `npx vitest run src/daily-review/completion/completion.test.ts -t "CompleteWithUnavailableMarks"` — fails because the third state does not exist | same command — passes with the lists of Instruments, Trades, and calculation families |
+| Older Mark cannot complete | `npx vitest run src/daily-review/completion/completion.test.ts -t "older Mark"` — fails because any available evidence is treated as sufficient | same command — passes with Incomplete |
+| Restart stability | `npx vitest run src/daily-review/completion/completion.test.ts -t "after a process restart"` — fails because completion would be read from a record rather than derived | same command — passes with the same result and no completion record |
 
 **Depends on it:** T22 presents the completion state, T23 shows the next step that makes it complete, T24 exposes the same state accessibly at both widths, and T25 asserts the whole derivation in the cumulative suite; `AC-REV-006` rests on every one of these cases.
 
@@ -953,10 +953,10 @@ describe("Journal.seedDefaults under the D4 manifest: Daily Trade Review Entry T
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Seed creates the Entry Type | `pnpm exec vitest run src/journal/seed/d4-seed.test.ts -t "creates exactly one Daily Trade Review Entry Type"` — fails because the manifest v4 seed rows do not exist, so no Definition is returned for the key | same command — passes with one Definition, five Prompts in order, stable Prompt identities |
-| Conditional Intent requiredness | `pnpm exec vitest run src/journal/seed/d4-seed.test.ts -t "RequireWhenOption"` — fails because the seeded Intent prompt carries no conditional rule | same command — passes; a Hold response set validates with blank Intent and an Exit response set does not |
-| Idempotent re-seed | `pnpm exec vitest run src/journal/seed/d4-seed.test.ts -t "second time"` — fails because the seed rows are absent, so the first run already differs from the expected single revision | same command — passes with the same definition revision before and after the second run and no writes observed |
-| Trader revision preserved | `pnpm exec vitest run src/journal/seed/d4-seed.test.ts -t "after reviseDefinition"` — fails because without the seed there is no definition to revise | same command — passes with the trader's revision still effective after re-seed |
+| Seed creates the Entry Type | `npx vitest run src/journal/seed/d4-seed.test.ts -t "creates exactly one Daily Trade Review Entry Type"` — fails because the manifest v4 seed rows do not exist, so no Definition is returned for the key | same command — passes with one Definition, five Prompts in order, stable Prompt identities |
+| Conditional Intent requiredness | `npx vitest run src/journal/seed/d4-seed.test.ts -t "RequireWhenOption"` — fails because the seeded Intent prompt carries no conditional rule | same command — passes; a Hold response set validates with blank Intent and an Exit response set does not |
+| Idempotent re-seed | `npx vitest run src/journal/seed/d4-seed.test.ts -t "second time"` — fails because the seed rows are absent, so the first run already differs from the expected single revision | same command — passes with the same definition revision before and after the second run and no writes observed |
+| Trader revision preserved | `npx vitest run src/journal/seed/d4-seed.test.ts -t "after reviseDefinition"` — fails because without the seed there is no definition to revise | same command — passes with the trader's revision still effective after re-seed |
 
 **Depends on it:** T22 presents the Action form, and T16 saves an Entry under the Daily Trade Review Entry Type; without the seed there is no definition revision to render or save against, and the Source would have to be invented at the call site, which `journal.md:35` forbids.
 
@@ -989,11 +989,11 @@ describe("Review overview presentation model built from a DailyReview.open resul
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Family order rendered | `pnpm exec vitest run src/daily-review/ui/overview-model.test.ts -t "normative order"` — fails because no overview model exists | same command — passes with four families in order |
-| Reasons, not a score | `pnpm exec vitest run src/daily-review/ui/overview-model.test.ts -t "reasons"` — fails because bands are not surfaced | same command — passes with reason text and inputs and no score field |
-| Four evidence presentations | `pnpm exec vitest run src/daily-review/ui/overview-model.test.ts -t "four separate presentations"` — fails because Missing and Stale render identically | same command — passes with four distinguishable presentations |
-| Honest NotConfigured | `pnpm exec vitest run src/daily-review/ui/overview-model.test.ts -t "Manual Mark task"` — fails because the diagnostic is rendered as an error | same command — passes with an actionable Manual Mark task |
-| Empty versus Ready | `pnpm exec vitest run src/daily-review/ui/overview-model.test.ts -t "Empty only"` — fails because empty is inferred from a zero-length Trade list | same command — passes with Empty and Ready distinguished by required tasks |
+| Family order rendered | `npx vitest run src/daily-review/ui/overview-model.test.ts -t "normative order"` — fails because no overview model exists | same command — passes with four families in order |
+| Reasons, not a score | `npx vitest run src/daily-review/ui/overview-model.test.ts -t "reasons"` — fails because bands are not surfaced | same command — passes with reason text and inputs and no score field |
+| Four evidence presentations | `npx vitest run src/daily-review/ui/overview-model.test.ts -t "four separate presentations"` — fails because Missing and Stale render identically | same command — passes with four distinguishable presentations |
+| Honest NotConfigured | `npx vitest run src/daily-review/ui/overview-model.test.ts -t "Manual Mark task"` — fails because the diagnostic is rendered as an error | same command — passes with an actionable Manual Mark task |
+| Empty versus Ready | `npx vitest run src/daily-review/ui/overview-model.test.ts -t "Empty only"` — fails because empty is inferred from a zero-length Trade list | same command — passes with Empty and Ready distinguished by required tasks |
 
 **Depends on it:** T24 lays these surfaces out responsively and accessibly, and T25 drives them end to end; a surface that conflated Missing with Stale would make `AC-UI-002` and `AC-MARK-001` unverifiable through the UI.
 
@@ -1023,11 +1023,11 @@ describe("Trade walk, Manual Mark entry, and Action form presentation model")
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Server order preserved | `pnpm exec vitest run src/daily-review/ui/trade-walk-model.test.ts -t "order the coordinator returned"` — fails because the walk has no model | same command — passes with the coordinator's order unchanged |
-| Availability shown | `pnpm exec vitest run src/daily-review/ui/trade-walk-model.test.ts -t "exact Instrument and date"` — fails because unavailable figures render as blanks | same command — passes with Unavailable naming Instrument and date |
-| Manual Mark renders returned resolution | `pnpm exec vitest run src/daily-review/ui/trade-walk-model.test.ts -t "without issuing a further query"` — fails because the form re-reads the key after save | same command — passes with the returned resolution rendered and no follow-up read |
-| Hold preselected, not recorded | `pnpm exec vitest run src/daily-review/ui/trade-walk-model.test.ts -t "unsaved form state"` — fails because the form has no selection state | same command — passes with Hold preselected and no Entry |
-| Intent required only for Exit/Roll/Adjust | `pnpm exec vitest run src/daily-review/ui/trade-walk-model.test.ts -t "Exit, Roll, or Adjust"` — fails because requiredness is static | same command — passes with conditional requiredness |
+| Server order preserved | `npx vitest run src/daily-review/ui/trade-walk-model.test.ts -t "order the coordinator returned"` — fails because the walk has no model | same command — passes with the coordinator's order unchanged |
+| Availability shown | `npx vitest run src/daily-review/ui/trade-walk-model.test.ts -t "exact Instrument and date"` — fails because unavailable figures render as blanks | same command — passes with Unavailable naming Instrument and date |
+| Manual Mark renders returned resolution | `npx vitest run src/daily-review/ui/trade-walk-model.test.ts -t "without issuing a further query"` — fails because the form re-reads the key after save | same command — passes with the returned resolution rendered and no follow-up read |
+| Hold preselected, not recorded | `npx vitest run src/daily-review/ui/trade-walk-model.test.ts -t "unsaved form state"` — fails because the form has no selection state | same command — passes with Hold preselected and no Entry |
+| Intent required only for Exit/Roll/Adjust | `npx vitest run src/daily-review/ui/trade-walk-model.test.ts -t "Exit, Roll, or Adjust"` — fails because requiredness is static | same command — passes with conditional requiredness |
 
 **Depends on it:** T24 makes the same surfaces work at both widths and under keyboard control, and T25 asserts the whole ritual through the real UI; without this model the one-tap Hold path could not be verified as unsaved-state-only.
 
@@ -1059,11 +1059,11 @@ describe("Responsive layout and accessibility resolution for D4 surfaces")
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Narrow and wide arrangements | `pnpm exec vitest run src/ui/responsive/d4-layout.test.ts -t "live viewport width"` — fails because layout does not consult width | same command — passes with the two documented arrangements |
-| Live resize preserves state | `pnpm exec vitest run src/ui/responsive/d4-layout.test.ts -t "entered-but-unsaved"` — fails because the resolver drops form state | same command — passes with route, selection, filter, and values preserved |
-| Focus after validation | `pnpm exec vitest run src/ui/responsive/d4-layout.test.ts -t "first invalid field"` — fails because no focus order is resolved | same command — passes with focus on the invalid field and values retained |
-| Accessible names for option chips | `pnpm exec vitest run src/ui/responsive/d4-layout.test.ts -t "radio-group semantics"` — fails because chips expose no role or state | same command — passes with radio semantics inside a labelled fieldset |
-| Keyboard-only ritual | `pnpm exec playwright test e2e/d4-accessibility.spec.ts --project=narrow` — fails because the flow needs a pointer | same command — passes with a complete keyboard pass and zero axe violations |
+| Narrow and wide arrangements | `npx vitest run src/ui/responsive/d4-layout.test.ts -t "live viewport width"` — fails because layout does not consult width | same command — passes with the two documented arrangements |
+| Live resize preserves state | `npx vitest run src/ui/responsive/d4-layout.test.ts -t "entered-but-unsaved"` — fails because the resolver drops form state | same command — passes with route, selection, filter, and values preserved |
+| Focus after validation | `npx vitest run src/ui/responsive/d4-layout.test.ts -t "first invalid field"` — fails because no focus order is resolved | same command — passes with focus on the invalid field and values retained |
+| Accessible names for option chips | `npx vitest run src/ui/responsive/d4-layout.test.ts -t "radio-group semantics"` — fails because chips expose no role or state | same command — passes with radio semantics inside a labelled fieldset |
+| Keyboard-only ritual | `npx playwright test e2e/d4-accessibility.spec.ts --project=narrow` — fails because the flow needs a pointer | same command — passes with a complete keyboard pass and zero axe violations |
 
 **Depends on it:** T25 runs the ritual in both projects, and T26's critic gate depends on keyboard-only completion and axe-core checks as the recorded evidence for PD3 verification item 8.
 
@@ -1089,17 +1089,17 @@ describe("D4 mock-free integration suite: the review ritual through the producti
   it should remain green alongside the cumulative suites for D1, D2, and D3 when the whole cumulative suite is run
 ```
 
-**Integration case.** The suite itself is the integration case: `pnpm exec vitest run tests/integration/d4-review-ritual.test.ts` drives the production coordinators against a real `fake-indexeddb` store, and the paired Playwright spec drives the production page in a real browser. Both prove durable state by reopening the store or reloading the page before asserting. Disclosed substitutions: `fake-indexeddb` for the browser's IndexedDB, and no other replacement; no application layer is bypassed and no production contract is weakened.
+**Integration case.** The suite itself is the integration case: `npx vitest run tests/integration/d4-review-ritual.test.ts` drives the production coordinators against a real `fake-indexeddb` store, and the paired Playwright spec drives the production page in a real browser. Both prove durable state by reopening the store or reloading the page before asserting. Disclosed substitutions: `fake-indexeddb` for the browser's IndexedDB, and no other replacement; no application layer is bypassed and no production contract is weakened.
 
 **Red/green evidence**
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Whole ritual | `pnpm exec vitest run tests/integration/d4-review-ritual.test.ts -t "whole ritual"` — fails because at least one coordinator path in the journey is unimplemented | same command — passes with one saved Action and a derived completion |
-| Restart resumption | `pnpm exec vitest run tests/integration/d4-review-ritual.test.ts -t "after a process restart"` — fails because the reopened view has no fact-derived source | same command — passes with identical outcomes and no session record |
-| Stale Save | `pnpm exec vitest run tests/integration/d4-review-ritual.test.ts -t "byte-identical"` — fails because the conflict path is not reachable end to end | same command — passes with refreshed evidence and unchanged histories |
-| Atomic reconciliation | `pnpm exec vitest run tests/integration/d4-review-ritual.test.ts -t "Journal participant fails"` — fails because the fault injection has no transaction to abort | same command — passes with neither effect durable |
-| Query count | `pnpm exec vitest run tests/integration/d4-review-ritual.test.ts -t "exactly two"` — fails because per-Trade reads are still issued somewhere on the path | same command — passes with two reads at both page sizes |
+| Whole ritual | `npx vitest run tests/integration/d4-review-ritual.test.ts -t "whole ritual"` — fails because at least one coordinator path in the journey is unimplemented | same command — passes with one saved Action and a derived completion |
+| Restart resumption | `npx vitest run tests/integration/d4-review-ritual.test.ts -t "after a process restart"` — fails because the reopened view has no fact-derived source | same command — passes with identical outcomes and no session record |
+| Stale Save | `npx vitest run tests/integration/d4-review-ritual.test.ts -t "byte-identical"` — fails because the conflict path is not reachable end to end | same command — passes with refreshed evidence and unchanged histories |
+| Atomic reconciliation | `npx vitest run tests/integration/d4-review-ritual.test.ts -t "Journal participant fails"` — fails because the fault injection has no transaction to abort | same command — passes with neither effect durable |
+| Query count | `npx vitest run tests/integration/d4-review-ritual.test.ts -t "exactly two"` — fails because per-Trade reads are still issued somewhere on the path | same command — passes with two reads at both page sizes |
 
 **Depends on it:** T26's critic gate runs only after this suite is green; a defect the critic finds is first reproduced here or in the most appropriate narrower suite (`planning-protocol.md:131`).
 
@@ -1117,12 +1117,12 @@ This task is structural: it produces a recorded verification outcome, not new pr
 | # | Command | Expected result |
 |---|---|---|
 | V26.1 | `node scripts/check-deliverable-breakdown.mjs plan/deliverable-breakdowns/D4-daily-review.md` | The task graph is valid: 26 task headers, declared types and blocking edges, no cycles, diagram and prose imposing the same order, and an exact verification in every `S` body. (The coordinator runs this over the whole set once every file exists; here it must report zero failures for D4.) |
-| V26.2 | `pnpm exec vitest run && pnpm exec playwright test` | The cumulative unit and integration suites, including D1's, D2's, and D3's, are green before the critic is spawned; a failure stops the gate rather than being handed to the critic. |
-| V26.3 | `DEV_PORT="$(grep -oE '[0-9]+' .env.local)" pnpm exec vite --host 127.0.0.1 --port "$DEV_PORT" --strictPort` | The production runtime serves the production build on this worktree's assigned port (5177 in this checkout) and reports Runtime Readiness `Writable`, with no network dependency. The critic starts this themselves; the implementer does not pre-start it. |
-| V26.4 | `pnpm exec playwright test e2e/d4-critic-flows.spec.ts --project=narrow` | Every flow F1–F14 in §4 executes in a narrow viewport, and each returns the expected observable result recorded in §4. |
-| V26.5 | `pnpm exec playwright test e2e/d4-critic-flows.spec.ts --project=wide` | Every flow F1–F14 executes in a wide viewport with the same expected results and equivalent visible content. |
-| V26.6 | `pnpm exec playwright test e2e/d4-accessibility.spec.ts --project=narrow --project=wide` | Keyboard-only completion of the whole ritual passes and axe-core reports zero violations of the configured severity on every D4 surface, which is the recorded evidence for PD3 verification item 8 (`planning-decisions-2026-10-10.md:227`). |
-| V26.7 | `pnpm exec playwright test --reporter=json > plan/evidence/D4/critic-flows.json` then inspect that report | The fresh critic's structured report lists every §4 flow with the browser actions performed, the observed result, and a pass/fail status, with no failures and no implementation modifications. The path is this plan's evidence convention; the exact evidence location is pinned in Phase 6, so the command is recorded here in that convention rather than as a fixed filename. |
+| V26.2 | `npx vitest run && npx playwright test` | The cumulative unit and integration suites, including D1's, D2's, and D3's, are green before the critic is spawned; a failure stops the gate rather than being handed to the critic. |
+| V26.3 | `DEV_PORT="$(grep -oE '[0-9]+' .env.local)" npx vite --host 127.0.0.1 --port "$DEV_PORT" --strictPort` | The production runtime serves the production build on this worktree's assigned port (5177 in this checkout) and reports Runtime Readiness `Writable`, with no network dependency. The critic starts this themselves; the implementer does not pre-start it. |
+| V26.4 | `npx playwright test e2e/d4-critic-flows.spec.ts --project=narrow` | Every flow F1–F14 in §4 executes in a narrow viewport, and each returns the expected observable result recorded in §4. |
+| V26.5 | `npx playwright test e2e/d4-critic-flows.spec.ts --project=wide` | Every flow F1–F14 executes in a wide viewport with the same expected results and equivalent visible content. |
+| V26.6 | `npx playwright test e2e/d4-accessibility.spec.ts --project=narrow --project=wide` | Keyboard-only completion of the whole ritual passes and axe-core reports zero violations of the configured severity on every D4 surface, which is the recorded evidence for PD3 verification item 8 (`planning-decisions-2026-10-10.md:227`). |
+| V26.7 | `npx playwright test --reporter=json > plan/evidence/D4/critic-flows.json` then inspect that report | The fresh critic's structured report lists every §4 flow with the browser actions performed, the observed result, and a pass/fail status, with no failures and no implementation modifications. The path is this plan's evidence convention; the exact evidence location is pinned in Phase 6, so the command is recorded here in that convention rather than as a fixed filename. |
 
 **Depends on it:** the deliverable's completion claim. Until a fresh critic reports every §4 flow passing, D4 is not complete, and any defect found must first become a failing automated test (`planning-protocol.md:131-132`). No later deliverable may treat D4 as accepted while this report is missing.
 
@@ -1190,7 +1190,7 @@ Red and green follow `planning-protocol.md:104-111` and are recorded per planned
 
 **Not valid red.** A test that passes immediately. A test that fails for syntax, configuration, fixture, import, or an unrelated defect. A test that asserts a private method call or an implementation detail rather than an observable outcome at the seam. A batch of tests written before any of them is run. A failure produced by disabling a production check in order to make the test meaningful.
 
-**Commands for this stack.** Node behaviour and integration cases run with `pnpm exec vitest run <file> -t "<case name>"`; browser cases run with `pnpm exec playwright test <spec> --project=narrow|wide`. Green is the smallest production change that satisfies the case, confirmed by re-running the identical command, which must then pass without breaking any already-green case in the same task. Refactoring after green is a separate review step and the affected cases are rerun and kept green (`planning-protocol.md:109-110`). The stack, including the `fake-indexeddb` replacement, is fixed by `planning-decisions-2026-10-10.md:164-185`; exact versions are pinned in Phase 6, so no version is asserted in a command here.
+**Commands for this stack.** Node behaviour and integration cases run with `npx vitest run <file> -t "<case name>"`; browser cases run with `npx playwright test <spec> --project=narrow|wide`. Green is the smallest production change that satisfies the case, confirmed by re-running the identical command, which must then pass without breaking any already-green case in the same task. Refactoring after green is a separate review step and the affected cases are rerun and kept green (`planning-protocol.md:109-110`). The stack, including the `fake-indexeddb` replacement, is fixed by `planning-decisions-2026-10-10.md:164-185`; exact versions are pinned in Phase 6, so no version is asserted in a command here.
 
 **Recorded outcome format.** For each case, the execution record carries: task id and case text; the seam; the red command and its observed failure; the green command and its observed pass; the exact pre/post authoritative revisions and stable identities; the exact Money, Quantity, Price, Economic Time, and Trading Date values where the case touches them; and restart/read-back evidence where durability or non-mutation is material (`acceptance-contract.md:11-19`). A no-write expectation records the relevant before and after authoritative state, not merely an absent visual change (`acceptance-contract.md:21`). Generated fixtures must be deterministic and disclosed.
 
@@ -1219,7 +1219,7 @@ Items 1, 3, 4, 5, 6, 7 and 9 are owned or explicitly deferred in D1's §7 mappin
 
 **5. The `fake-indexeddb` fidelity gap and its real-engine counterpart.** Almost every D4 integration case runs against `fake-indexeddb` rather than the browser-owned IndexedDB that ships. This is the disclosed, allowed substitution of `planning-protocol.md:120-121`; it must not bypass an application layer or weaken a production contract. Its known limits are transaction-abort timing, durability across a real process restart, and real index/scan behaviour under pressure. The counterpart is PD3 verification item 9 (`planning-decisions-2026-10-10.md:228`): durability-critical proofs must run against a real engine, and item 6 requires real-engine readiness on at least two engines. T19's rollback proof and T25's query-count assertion are the two cases most sensitive to that gap, and both must be repeated against a real engine before this deliverable's boundedness or atomicity claims are treated as established at scale.
 
-**6. The pinned version profile is deferred.** Decision PD3 fixes the stack but defers exact versions to Phase 6 (`planning-decisions-2026-10-10.md:166-167`), and the package manager is not selected anywhere in this plan's inputs. The commands in this file are written against the fixed tooling (`vitest`, `playwright`, `vite`) with `pnpm` as the runner; when Phase 6 pins versions and the package manager, the runner token may change and the test-file paths may follow D1's final module-to-path mapping. Neither change weakens a case or an expected result.
+**6. The pinned version profile is now fixed, and the package manager is npm.** Decision PD3 fixes the stack; the exact versions are pinned in the Phase 6 freeze (`plan/freeze-2026-10-17.md` §2), and PD19 selects npm as the package manager. The commands in this file therefore use `npm run <script>` and `npx <tool>`; the test-file paths may still follow D1's final module-to-path mapping, and that change weakens no case and no expected result.
 
 **7. The cutoff index shape is an implementation-shaping decision with migration cost.** The half-open interval keyed on `(storedLifecycle, effectiveFrom)` with `effectiveTo` and the binding `FactRevision` is this breakdown's choice, because the spec names the read (`trade-record.md:101-103`) without naming the index. It is the one D4 decision a later migration would be expensive to reverse, and a wrong index set is exactly the change `plan/handoff-deepseek-v41-flash-2026-10-11.md:259-268` warns is migration-costly at scale. It is listed here so it can be challenged now rather than after D4 ships.
 

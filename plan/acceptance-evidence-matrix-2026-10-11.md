@@ -139,17 +139,17 @@ versions (`planning-protocol.md:193`); until then the lockfile created by D1:T1 
 
 | Purpose | Recorded form |
 |---|---|
-| Unit case, one at a time | `pnpm exec vitest run --project unit <test-file> -t "<case phrase>"` |
-| Integration case | `pnpm exec vitest run --project integration <test-file> -t "<case phrase>"` |
-| Browser case | `pnpm exec playwright test <spec-file> -g "<case phrase>"` with `--project=chromium` (add `--project=webkit` where the task states both engines), or `--project=narrow\|wide` for the responsive flows |
-| Whole-task / whole-suite gates | `pnpm test:unit`, `pnpm test:integration`, `pnpm test:browser`, `pnpm typecheck`, `pnpm lint:layers`, `pnpm build` — each must exit 0 |
+| Unit case, one at a time | `npx vitest run --project unit <test-file> -t "<case phrase>"` |
+| Integration case | `npx vitest run --project integration <test-file> -t "<case phrase>"` |
+| Browser case | `npx playwright test <spec-file> -g "<case phrase>"` with `--project=chromium` (add `--project=webkit` where the task states both engines), or `--project=narrow\|wide` for the responsive flows |
+| Whole-task / whole-suite gates | `npm run test:unit`, `npm run test:integration`, `npm run test:browser`, `npm run typecheck`, `npm run lint:layers`, `npm run build` — each must exit 0 |
 | Artifact and manifest checks | `node -e "<script>"` over the built bytes, as D1:T16 and D1:T34 do |
 | Plan validators | `node scripts/check-deliverable-breakdown.mjs plan/deliverable-breakdowns/*.md` and `node scripts/audit-breakdown-coverage.mjs` — both must report 0 failure(s), 0 warning(s) |
 | This matrix's own data | `node scripts/derive-acceptance-ownership.mjs` |
 
-Two spellings appear in the breakdowns and are equivalent under pnpm: D1 writes `pnpm vitest run …`
-and D2–D7 write `pnpm exec vitest run …`. The recorded evidence names whichever spelling its breakdown
-states. Browser automation runs on the browser-recognised secure loopback origin from `DEV_PORT`
+One package manager, one spelling: `npm run <script>` for a declared script, `npx <tool>` for a binary,
+`npm ci` for a frozen-lockfile install. This was not always so — the breakdowns were first written with
+`pnpm` and PD19 moved the whole plan to npm, which is why no recorded command carries a `pnpm` token. Browser automation runs on the browser-recognised secure loopback origin from `DEV_PORT`
 (gitignored `.env.local`, currently `5177`); that origin is permitted *in addition to* production HTTPS
 evidence and never substitutes for it (`delivery-contract.md:132`).
 
@@ -176,7 +176,7 @@ Rows follow the acceptance contract's own grouping and order.
   with the D2-confirmed Plan and D3 fills as the fixture; D3:T22 counts `getRecord`, `queryRecords` and
   Journal query calls at the seam. Disclosed substitution: `fake-indexeddb` only.
 - **Browser-critic flow:** D2 flows 4 and 8; D3 flows 2, 5 and 7; D4 F8; D5 flow 7; D6 flow 1.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case phrase>"`, plus the critic's
+- **Command:** `npx vitest run --project integration <suite> -t "<case phrase>"`, plus the critic's
   own UI walk. See §5.
 - **Expected result and durable-state proof:** the returned projection equals a fresh real read field by
   field, exact decimals included, at the returned `FactRevision`; a seam counter proves no read-back was
@@ -198,7 +198,7 @@ Rows follow the acceptance contract's own grouping and order.
   production coordinators, a real-engine browser leg, and a restart leg. Fixture: a real Account and the
   seeded Long Stock shape read from the real catalog, never a hand-written literal.
 - **Browser-critic flow:** D2 flows 1, 2, 4, 8, 9, 10, 11.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`; `pnpm exec playwright
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`; `npx playwright
   test <spec> -g "<case>"`.
 - **Expected result and durable-state proof:** one atomic commit creating the Trade, the frozen Plan and
   Planned Legs, frozen original management, stored `Planned` lifecycle, positive 1R equal to the Plan
@@ -220,7 +220,7 @@ Rows follow the acceptance contract's own grouping and order.
 - **Mock-free integration case and fixture:** D2:T19 — each rejection path driven through the assembled
   runtime, with Trade Record, Journal and Catalog revisions captured before and after.
 - **Browser-critic flow:** D2 flows 3, 5, 6, 7, 12.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`.
 - **Expected result and durable-state proof:** all issues returned as typed rejections; no Trade, no
   candidate identity, no Entry, no Debt and no index membership; unchanged revisions across all three
   modules.
@@ -239,7 +239,7 @@ Rows follow the acceptance contract's own grouping and order.
   stock-open variant, a scaling add and the terminal variant, deriving after each with the persisted
   snapshot; the D3 suite adds the open step in isolation.
 - **Browser-critic flow:** D2 flow 8; D3 flows 1, 2, 4; D6 flow 5.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`.
 - **Expected result and durable-state proof:** stored lifecycle `Planned`, `Open`, `Open`, `Closed` at
   the four revisions with agreement holding each time; index membership changing in the same commit;
   disposition present only after effective disposing facts.
@@ -258,7 +258,7 @@ Rows follow the acceptance contract's own grouping and order.
 - **Mock-free integration case and fixture:** D6:T19 opens a real Trade, attempts `abandonPlan`, then
   closes the position fully and retries, asserting durable state at each step.
 - **Browser-critic flow:** D6 flows 10, 11, 12, 13.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`.
 - **Expected result and durable-state proof:** a never-filled Plan becomes `Abandoned` with an active
   reason and its applicable Plan Debt retired, with no Close Reason and no Terminal Disposition; a Plan
   with an effective Execution is rejected with unchanged state.
@@ -281,7 +281,7 @@ Rows follow the acceptance contract's own grouping and order.
   expected derivation, so a tolerated disagreement would be visible.
 - **Browser-critic flow:** D2 flow 8 and D6 flow 5 show stored and derived lifecycle as separate
   concepts; the disagreement state itself is not a driven critic flow.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`.
 - **Expected result and durable-state proof:** before-disagreement snapshot, read result naming the
   disagreement, preparation result, and no write caused by the read.
 - **Failure / nonmutation / restart evidence:** the absence of a read-time write is asserted by unchanged
@@ -306,7 +306,7 @@ Rows follow the acceptance contract's own grouping and order.
   `derive`, the Node stack, and the real browser engine — with two opening Executions at different
   prices and fees, then partial and final disposals; D6:T19 repeats the closing leg.
 - **Browser-critic flow:** D3 flows 2, 3, 4; D6 flow 1.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`.
 - **Expected result and durable-state proof:** each fill owned by exactly one Trade; Position and open
   Lots exact; FIFO links `{(EX-1, EX-3, 60.00, FIFO), (EX-2, EX-3, 10.00, FIFO)}` carrying no monetary
   field; partial realization leaves `Open`; final flat exposure reaches `Closed`.
@@ -426,7 +426,7 @@ Rows follow the acceptance contract's own grouping and order.
   reasons, exactly one — against otherwise identical open Trades and asserts unchanged state for the two
   rejections; D6:T4's case already mixes a trader-directed and an explicit settlement member.
 - **Browser-critic flow:** D6 flows 1, 2, 3, 5, 6.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`.
 - **Expected result and durable-state proof:** one reason required on the trader-directed exit, none on
   non-agency settlement; disposition derived from mechanisms on both; completion, decline or deferral of
   the Close Review never blocks the close.
@@ -577,7 +577,7 @@ Rows follow the acceptance contract's own grouping and order.
 - **Mock-free integration case and fixture:** D5:T17 drives open/type/leave through the production stack
   and asserts an unchanged Journal query; D2:T19 does the same for the confirmation form.
 - **Browser-critic flow:** D2 flow 12; D5 flow 9; D4 F9.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`; `pnpm exec playwright
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`; `npx playwright
   test <spec> -g "<case>"`.
 - **Expected result and durable-state proof:** entered view state may survive the active workflow, but
   the Journal query before and after (across a restart) is identical.
@@ -598,7 +598,7 @@ Rows follow the acceptance contract's own grouping and order.
 - **Mock-free integration case and fixture:** D5:T17 exercises create → edit → addendum → void through
   the real save seam and re-reads the version chain after restart.
 - **Browser-critic flow:** D5 flows 5 and 10; D17's flows do not exist.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"` for the D5 half.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"` for the D5 half.
 - **Expected result and durable-state proof:** identities, version chains, definition snapshots,
   parent/Anchor links, Sources and the Timeline projection exposing each transition.
 - **Failure / nonmutation / restart evidence:** the version chain and the Void reason are re-read after
@@ -616,7 +616,7 @@ Rows follow the acceptance contract's own grouping and order.
 - **Mock-free integration case and fixture:** D3:T22 records a Position Change with `Defer` in one
   semantic transaction and re-reads after restart; D5:T17 resolves, declines and reopens the same Debt.
 - **Browser-critic flow:** D3 flow 7; D4 F1; D5 flows 1, 7.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`.
 - **Expected result and durable-state proof:** the factual Position Change stands; exactly one
   Outstanding Debt carries the snapshotted definition revision and origin; no placeholder Entry exists;
   a later factual record still succeeds while the Debt is due.
@@ -634,7 +634,7 @@ Rows follow the acceptance contract's own grouping and order.
 - **Mock-free integration case and fixture:** D5:T17 seeds, revises, re-seeds and re-reads snapshots.
 - **Browser-critic flow:** D5 flow 3, which opens the exact stored form of a Debt and answers it against
   its original snapshot.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"` for the D5 half.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"` for the D5 half.
 - **Expected result and durable-state proof:** new forms use the new definition; existing Entries and
   Debts retain their labels, order and options; a Debt answer is validated and stored against its own
   revision; the fixed Entry Type identity never changes.
@@ -652,7 +652,7 @@ Rows follow the acceptance contract's own grouping and order.
 - **Mock-free integration case and fixture:** D5:T17 drives defer → resolve → void → re-read through the
   real stack, calling `Journal.query` by obligation key before, between and after.
 - **Browser-critic flow:** D5 flows 3, 4, 10.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`.
 - **Expected result and durable-state proof:** obligation-key query returns exactly one of the four
   outcomes at every step; the reopened Debt is the **same identity** with its **original due time**
   (PD13), so it is due at the next cutoff.
@@ -671,7 +671,7 @@ Rows follow the acceptance contract's own grouping and order.
 - **Mock-free integration case and fixture:** D5:T17 includes the refusal case; the completing workflow
   case needs D14's Management Revision.
 - **Browser-critic flow:** D5 flow 6 attempts direct resolution of a workflow-routed Debt.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"` for the refusal half.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"` for the refusal half.
 - **Expected result and durable-state proof:** the no-write result names the required workflow; completing
   that workflow commits management facts, the completed Entry and the Debt settlement/retirement
   atomically.
@@ -692,7 +692,7 @@ Rows follow the acceptance contract's own grouping and order.
   manifest before and after.
 - **Browser-critic flow:** D2 flow 2 shows the selector scope; D6 flow 4 shows the reason selector
   contents.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`.
 - **Expected result and durable-state proof:** the seven fixed Entry Types and seven Sources exist under
   stable product identities with their exact Prompts, options, order, requiredness/conditional rules,
   scale bounds and workflow roles; repeat seeding is idempotent and never overwrites a revision.
@@ -716,7 +716,7 @@ Rows follow the acceptance contract's own grouping and order.
   correction already in the store and captures the returned `AnalysisInput` batch plus counted storage
   requests; a Trade opened after the cutoff must not appear.
 - **Browser-critic flow:** D4 F2.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`.
 - **Expected result and durable-state proof:** cutoff queries before and after a correction restate
   membership and progress; the Review list and its bindings reflect the corrected facts.
 - **Failure / nonmutation / restart evidence:** the read performs no write; the corrected-membership
@@ -735,7 +735,7 @@ Rows follow the acceptance contract's own grouping and order.
   settlement-due Trade and four eligible Trades; D4:T14's case resolves the shared requirement and
   reopens the same exact date after a process restart.
 - **Browser-critic flow:** D4 F1, F3, F13.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`.
 - **Expected result and durable-state proof:** the four families appear in order; one shared Mark
   resolution updates every affected Trade; saved outcomes resume from facts after a stop and reopen; no
   Review Session, finish flag or placeholder exists in storage.
@@ -756,7 +756,7 @@ Rows follow the acceptance contract's own grouping and order.
 - **Mock-free integration case and fixture:** D4:T25 opens a new Action form, leaves it, then presses Save
   unchanged, and records the Entry and the unchanged Trade facts.
 - **Browser-critic flow:** D4 F8, F9, F10.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`.
 - **Expected result and durable-state proof:** leaving writes no Action and the Review stays incomplete;
   one Save creates exactly one Hold Entry; Exit/Roll/Adjust without Intent reject and with Intent save
   intent only, creating no Trade fact.
@@ -774,7 +774,7 @@ Rows follow the acceptance contract's own grouping and order.
   breach and asserts both the Entry and the Deviation occurrence are durable after a reopen; a
   fault-injection variant fails the Journal participant and asserts neither survives.
 - **Browser-critic flow:** D4 F11.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`.
 - **Expected result and durable-state proof:** one continuous episode only, with occurrence
   fingerprint/history, the dated Action, and no separate explanation Debt or Entry Type.
 - **Failure / nonmutation / restart evidence:** the injected Journal-participant failure leaves neither
@@ -793,7 +793,7 @@ Rows follow the acceptance contract's own grouping and order.
   asserts the conflict and the unchanged histories.
 - **Browser-critic flow:** D4 F11 (Save path) and the conflict view in F12's family; the stale case itself
   is not a driven critic flow.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`.
 - **Expected result and durable-state proof:** every stale binding is reported with refreshed evidence and
   both the Journal and Trade Record histories are byte-identical afterwards.
 - **Failure / nonmutation / restart evidence:** the byte-identical assertion is the evidence; the binding
@@ -811,7 +811,7 @@ Rows follow the acceptance contract's own grouping and order.
   `Incomplete` with the Debt named, resolves it, observes the honest completed state, then Voids the
   settlement Entry, restarts, and observes the date return to `Incomplete` with the reopened Debt.
 - **Browser-critic flow:** D4 F12; D5 flows 7 and 10.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`.
 - **Expected result and durable-state proof:** the completion structure and its named affected
   Instruments/Trades/calculations at each step; history is never erased by the reversal.
 - **Failure / nonmutation / restart evidence:** the restart between Void and final derivation proves the
@@ -830,7 +830,7 @@ Rows follow the acceptance contract's own grouping and order.
 - **Mock-free integration case and fixture:** D4:T25 seeds a normal Monday session with a Monday exact
   Mark and reads the frame at Tuesday noon; the calendar and clock are injected, never the host clock.
 - **Browser-critic flow:** D4 F4 (Manual Mark for an expected date) and F7.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`.
 - **Expected result and durable-state proof:** Expected Mark Date is Monday and the status is Available,
   not Stale; a Friday Mark is Stale context only when Monday evidence is absent.
 - **Failure / nonmutation / restart evidence:** no write occurs on this read path; the frame is re-read
@@ -849,7 +849,7 @@ Rows follow the acceptance contract's own grouping and order.
 - **Mock-free integration case and fixture:** D4:T25 asserts the override's durable head; a D8 case must
   add a provider close arriving afterwards for the same key.
 - **Browser-critic flow:** D4 F4; the provider-recovery surface does not exist.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"` for the D4 half.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"` for the D4 half.
 - **Expected result and durable-state proof:** Manual remains the effective Mark and no provider revision
   replaces it; the independent Daily Bar may refresh; Mark and Bar revision chains identify the
   override/correction meaning.
@@ -870,7 +870,7 @@ Rows follow the acceptance contract's own grouping and order.
 - **Mock-free integration case and fixture:** D4:T25 seeds one acknowledged key; the required
   "an exact Mark later arrives" leg cannot be exercised until a provider or a later Mark path exists.
 - **Browser-critic flow:** D4 F5 covers assert-withdraw and the not-a-price presentation.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"` for the D4 half only.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"` for the D4 half only.
 - **Expected result and durable-state proof:** status changes from Acknowledged Unavailable (with optional
   Stale context) to Available when an exact Mark arrives; calculations remain unavailable before it;
   acknowledgment history remains; a provider error alone never creates an acknowledgment.
@@ -948,7 +948,7 @@ Rows follow the acceptance contract's own grouping and order.
 - **Mock-free integration case and fixture:** D2:T19 and D3:T22 for the installed halves; D14's scaling
   and revision sequence has no case.
 - **Browser-critic flow:** D2 flow 9; the management-revision surface does not exist.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"` for the installed halves.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"` for the installed halves.
 - **Expected result and durable-state proof:** 1R remains the frozen baseline after scaling and after
   revisions; Entry Quality resolves once at its Entry Resolution Point against the frozen intended entry
   and is never rewritten; current risk uses the remaining Position and effective management.
@@ -969,7 +969,7 @@ Rows follow the acceptance contract's own grouping and order.
   and one Missing expected slot, evaluates, and asserts the result tree: realized-to-date `Value`, marked
   total `Unavailable` naming the Instrument and date, unaffected results still visible.
 - **Browser-critic flow:** D4 F7.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`.
 - **Expected result and durable-state proof:** an unavailable figure never suppresses a valid one; no
   fill-cost, zero or Stale substitution occurs anywhere in the tree or the view.
 - **Failure / nonmutation / restart evidence:** the result tree is re-derived after restart from the same
@@ -988,7 +988,7 @@ Rows follow the acceptance contract's own grouping and order.
 - **Mock-free integration case and fixture:** D4:T25 exercises the OR set over one Instrument; the
   structure-value conditions and the multi-leg directions have no case.
 - **Browser-critic flow:** D4 F6 and F7.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"` for the installed half.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"` for the installed half.
 - **Expected result and durable-state proof:** each condition keeps independent OR status and detail;
   Ongoing Risk, Worst-Case Ongoing Risk, Incremental Reward and the Plan-R conversion follow the
   remaining Position; a crossed Stop produces a disclosed Overrun; a Target revision is never classified
@@ -1148,7 +1148,7 @@ Rows follow the acceptance contract's own grouping and order.
   `Workspace.initialize` path and queries the catalog with a Selectable-only view, then renames a seeded
   reason and asserts the policy holds.
 - **Browser-critic flow:** D6 flow 4.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`.
 - **Expected result and durable-state proof:** exactly eleven Strategies, five Close Reasons, five
   Abandonment Reasons and one empty IdeaSource Tag Type exist with stable identities/shapes/policies; no
   Account, Institution, generic Custom, Other or settlement-as-reason seed exists; Iron Condor role order
@@ -1170,7 +1170,7 @@ Rows follow the acceptance contract's own grouping and order.
 - **Mock-free integration case and fixture:** D1:T33 creates an Account through the production save path,
   archives it, and asserts retained references still resolve while a new selection is rejected.
 - **Browser-critic flow:** D1 F12, F13.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`.
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`.
 - **Expected result and durable-state proof:** historical and retained references stay valid with both
   labels; a new selection is rejected; no old fact or Entry is rewritten; a concurrent retirement between
   resolve and commit conflicts.
@@ -1198,7 +1198,7 @@ Rows follow the acceptance contract's own grouping and order.
   acknowledgments, references, provider settings and rebuildable projections; the artifact bytes and the
   manifest are inspected, not a return value.
 - **Browser-critic flow:** D7 flows 1, 2, 3, 4, 5, 6, 7, 8, 9.
-- **Command:** `pnpm exec vitest run --project integration <suite> -t "<case>"`; `pnpm exec playwright
+- **Command:** `npx vitest run --project integration <suite> -t "<case>"`; `npx playwright
   test <spec> -g "<case>"`.
 - **Expected result and durable-state proof:** all four authoritative sections and Workspace metadata
   share one snapshot with every identity, revision and history included; the later mutation is wholly
@@ -1327,8 +1327,8 @@ Rows follow the acceptance contract's own grouping and order.
   successful load, stops the browser fully and reopens the URL; a second run deletes exactly one cached
   asset and asserts the gate refuses.
 - **Browser-critic flow:** D1 F2, F10, F12.
-- **Command:** `pnpm exec playwright test tests/browser/offline-restart.spec.ts --project=chromium`
-  (and the WebKit run where the task states both engines); `pnpm test:integration`.
+- **Command:** `npx playwright test tests/browser/offline-restart.spec.ts --project=chromium`
+  (and the WebKit run where the task states both engines); `npm run test:integration`.
 - **Expected result and durable-state proof:** `Writable` is re-established without a network, an
   interactive initial screen is reached, every installed Manual workflow/read/report/backup/local-Restore
   path works, provider recovery alone reports safe operational context, and stored data is intact.
@@ -1348,7 +1348,7 @@ Rows follow the acceptance contract's own grouping and order.
 - **Mock-free integration case and fixture:** D1:T33 controls two releases and a staging failure in a
   real browser.
 - **Browser-critic flow:** D1 F6, F7.
-- **Command:** `pnpm exec playwright test tests/browser/sw-two-releases.spec.ts --project=chromium`;
+- **Command:** `npx playwright test tests/browser/sw-two-releases.spec.ts --project=chromium`;
   `tests/browser/sw-staging-failure.spec.ts`.
 - **Expected result and durable-state proof:** the new inventory is complete and digest-valid before
   notice; the current version stays safe and in control; activation waits for a safe reload; entered
@@ -1370,7 +1370,7 @@ Rows follow the acceptance contract's own grouping and order.
 - **Mock-free integration case and fixture:** D1:T20 runs the gate on two real engines over the secure
   loopback origin, recording engine versions as provenance only; D1:T33 repeats on a real engine.
 - **Browser-critic flow:** D1 F2, F3.
-- **Command:** `pnpm exec playwright test tests/browser/readiness.spec.ts --project=chromium
+- **Command:** `npx playwright test tests/browser/readiness.spec.ts --project=chromium
   --project=webkit`.
 - **Expected result and durable-state proof:** the manifest has stable identity, name, icons, launch URL,
   scope and standalone request; the worker binds the complete current inventory; a browser tab can become
@@ -1394,8 +1394,8 @@ Rows follow the acceptance contract's own grouping and order.
   plus the unconfirmed-protection case with an accepted write and the durability action; D1:T20 runs the
   gate on two real engines; D1:T12 bypasses the UI to obtain `RuntimeNotWritable` from the seam itself.
 - **Browser-critic flow:** D1 F1–F9.
-- **Command:** `pnpm exec playwright test tests/browser/readiness.spec.ts --project=chromium`;
-  `pnpm exec vitest run --project integration tests/integration/rollback-matrix.test.ts -t "<case>"`.
+- **Command:** `npx playwright test tests/browser/readiness.spec.ts --project=chromium`;
+  `npx vitest run --project integration tests/integration/rollback-matrix.test.ts -t "<case>"`.
 - **Expected result and durable-state proof:** only all-pass cases become `Writable`; unconfirmed
   protection stays `Writable` with the warning visible and the durability action offered; each failed
   check produces `Unsupported` with all known reasons; every mutation and Restore application returns
@@ -1419,7 +1419,7 @@ Rows follow the acceptance contract's own grouping and order.
   over a readable Workspace, then corrupts or locks the root; D7:T13 exports in `Recovery Only` and
   attempts a representative mutation.
 - **Browser-critic flow:** D1 F10, F11; D7 flow 7.
-- **Command:** `pnpm exec playwright test tests/browser/startup-recovery.spec.ts --project=chromium`;
+- **Command:** `npx playwright test tests/browser/startup-recovery.spec.ts --project=chromium`;
   `tests/browser/startup-integrity.spec.ts`.
 - **Expected result and durable-state proof:** each readable case becomes `Recovery Only` with reads,
   history, export and verification available and every authoritative mutation returning
@@ -1442,8 +1442,8 @@ Rows follow the acceptance contract's own grouping and order.
   receipts, then deletes one cached release asset mid-session and asserts the next mutation is refused at
   the persistence boundary.
 - **Browser-critic flow:** D1 F2, F10.
-- **Command:** `pnpm exec playwright test tests/browser/startup-pending.spec.ts --project=chromium`;
-  `pnpm test:integration`.
+- **Command:** `npx playwright test tests/browser/startup-pending.spec.ts --project=chromium`;
+  `npm run test:integration`.
 - **Expected result and durable-state proof:** readiness is freshly established on every launch and after
   update activation and Restore before mutations are enabled; a later failure invalidates `Writable`
   immediately, prevents the next mutation at the persistence boundary, and enters `Recovery Only` when
@@ -1463,7 +1463,7 @@ Rows follow the acceptance contract's own grouping and order.
   clean at both widths.
 - **Browser-critic flow:** D1 F13; every later deliverable's resize flow repeats it for its own surfaces
   (D2 flow 11, D3 flow 9, D4 F14, D5 flow 11, D6 flow 14, D7 flow 8).
-- **Command:** `pnpm exec playwright test tests/browser/onboarding-resize.spec.ts --project=narrow`;
+- **Command:** `npx playwright test tests/browser/onboarding-resize.spec.ts --project=narrow`;
   `--project=wide`.
 - **Expected result and durable-state proof:** the layout switches between the wide sidebar and the
   narrow single-column bottom navigation; route, selected record, filters, unsaved fields, validation and
@@ -1485,7 +1485,7 @@ Rows follow the acceptance contract's own grouping and order.
   both projects with axe-core and a keyboard-only pass; the automated scan is recorded as supporting
   evidence beside the manual interaction record.
 - **Browser-critic flow:** D1 F1, F4, F8, F11; D4 F7, F12; D5 flows 9, 12; D6 flows 5, 16; D7 flow 9.
-- **Command:** `pnpm exec playwright test <spec> --project=narrow` / `--project=wide`; axe-core runs
+- **Command:** `npx playwright test <spec> --project=narrow` / `--project=wide`; axe-core runs
   inside those specs.
 - **Expected result and durable-state proof:** states are distinguishable; focus/order/names/roles are
   coherent; contrast meets WCAG AA; color is not the sole meaning; graphs have textual equivalents;
@@ -1531,7 +1531,7 @@ Rows follow the acceptance contract's own grouping and order.
   compares it with the built artifact and the production navigation.
 - **Browser-critic flow:** D1 F2, F13; each later deliverable's flows exercise its own declared
   capabilities.
-- **Command:** `node -e "<manifest check>"`; `pnpm test:integration`.
+- **Command:** `node -e "<manifest check>"`; `npm run test:integration`.
 - **Expected result and durable-state proof:** omitted behavior is absent, not a fake `Unavailable`;
   every declared compound capability is complete, dependency-closed, reachable through the production UI
   and functional through its required application/domain behavior and persistence; later additions

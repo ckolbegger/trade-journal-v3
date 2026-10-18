@@ -122,7 +122,7 @@ The three user stories this deliverable closes (`plan/vertical-deliverables.md:1
 8. **Test layout and seam naming.** Unit specifications live beside the module they exercise as
    `src/<module>/<subject>.spec.ts`; the mock-free integration suite is
    `tests/integration/<subject>.integration.spec.ts`; the browser flows of the critic gate are
-   `tests/e2e/<subject>.spec.ts` run by Playwright against `pnpm dev`, which reads `DEV_PORT`
+   `tests/e2e/<subject>.spec.ts` run by Playwright against `npm run dev`, which reads `DEV_PORT`
    from `.env.local` rather than hard-coding a port. Individual cases are selected with
    `vitest run <file> -t "<case name>"`, so every red and green command in section 3 is exactly
    reproducible without running the whole suite. Tradeoff: this fixes path and filter conventions
@@ -259,13 +259,13 @@ reopen and decline history, and the migration contains a rebuild path that prove
 
 | # | Command | Expected result |
 |---|---|---|
-| V1.1 | `pnpm vitest run src/persistence/migrations/d5-obligation-and-decline.spec.ts -t "D5 schema migration"` | The migration case list is reported, every case passes, and the suite name names D5 explicitly. |
-| V1.2 | `pnpm vitest run src/persistence/schema.spec.ts -t "D5 schema surface"` | The printed schema surface contains the obligation-key store, the decline store, and one index for each of obligation key, Anchor, Entry Type plus status, due time and moment time; the printed schema-version is exactly one above the version D4's migration leaves behind, and a second run reports no pending migration and no write. |
-| V1.3 | `pnpm vitest run src/journal/query.spec.ts -t "obligation key is unique"` | A second write of a different outcome under an already-present obligation key is refused as a typed write conflict, and reading the key returns the first outcome unchanged. |
-| V1.4 | `pnpm vitest run src/persistence/transaction.spec.ts -t "D5 migration atomicity"` | An injected failure part-way through the candidate migration leaves the live root byte-identical at the pre-migration schema version; the obligation-key store, the decline store and the new indexes are absent, and reads continue to work. |
-| V1.5 | `pnpm vitest run src/persistence/migrations/d5-obligation-and-decline.spec.ts -t "obligation outcome is rebuildable"` | Deleting the obligation-key store's contents and replaying Entry, settlement, reopen and decline history reconstructs the same current outcome for every key, proving the store is a rebuildable product and not a second authority. |
-| V1.6 | `pnpm vitest run src/journal/query.spec.ts -t "D5 indexes are populated by restore"` | After a D5 snapshot is restored into an empty candidate and the pointer flips, every index query named in V1.2 returns the same identities and order as the pre-export workspace. |
-| V1.7 | `pnpm vitest run src/persistence/migrations/d5-obligation-and-decline.spec.ts -t "D5 migration is idempotent"` | Running the migration twice in one session applies it once; the second run reports no pending work, writes nothing, and every index and store count is unchanged. |
+| V1.1 | `npx vitest run src/persistence/migrations/d5-obligation-and-decline.spec.ts -t "D5 schema migration"` | The migration case list is reported, every case passes, and the suite name names D5 explicitly. |
+| V1.2 | `npx vitest run src/persistence/schema.spec.ts -t "D5 schema surface"` | The printed schema surface contains the obligation-key store, the decline store, and one index for each of obligation key, Anchor, Entry Type plus status, due time and moment time; the printed schema-version is exactly one above the version D4's migration leaves behind, and a second run reports no pending migration and no write. |
+| V1.3 | `npx vitest run src/journal/query.spec.ts -t "obligation key is unique"` | A second write of a different outcome under an already-present obligation key is refused as a typed write conflict, and reading the key returns the first outcome unchanged. |
+| V1.4 | `npx vitest run src/persistence/transaction.spec.ts -t "D5 migration atomicity"` | An injected failure part-way through the candidate migration leaves the live root byte-identical at the pre-migration schema version; the obligation-key store, the decline store and the new indexes are absent, and reads continue to work. |
+| V1.5 | `npx vitest run src/persistence/migrations/d5-obligation-and-decline.spec.ts -t "obligation outcome is rebuildable"` | Deleting the obligation-key store's contents and replaying Entry, settlement, reopen and decline history reconstructs the same current outcome for every key, proving the store is a rebuildable product and not a second authority. |
+| V1.6 | `npx vitest run src/journal/query.spec.ts -t "D5 indexes are populated by restore"` | After a D5 snapshot is restored into an empty candidate and the pointer flips, every index query named in V1.2 returns the same identities and order as the pre-export workspace. |
+| V1.7 | `npx vitest run src/persistence/migrations/d5-obligation-and-decline.spec.ts -t "D5 migration is idempotent"` | Running the migration twice in one session applies it once; the second run reports no pending work, writes nothing, and every index and store count is unchanged. |
 
 **Depends on it:** every behavioural task in this deliverable writes through these stores and reads
 through these indexes; without the schema surface, `Journal.query`'s obligation-key projection (T2),
@@ -326,10 +326,10 @@ nothing else is substituted, and the disclosure of that gap is in §8.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Timeline effective version | `pnpm vitest run src/journal/query.spec.ts -t "effective Timeline projection"` — `Journal.query` does not exist yet, so the import fails to resolve and the case cannot even reach an assertion | `pnpm vitest run src/journal/query.spec.ts -t "effective Timeline projection"` — passes |
-| Obligation-key outcome | `pnpm vitest run src/journal/query.spec.ts -t "answers what one obligation key currently owes"` — the obligation-key filter is unimplemented, so the case reports an unsupported dimension | `pnpm vitest run src/journal/query.spec.ts -t "answers what one obligation key currently owes"` — passes |
-| AND/OR filter combination | `pnpm vitest run src/journal/query.spec.ts -t "AND across dimensions and OR within one"` — the filter reducer treats every dimension as OR, so the both-dimensions case returns a superset | `pnpm vitest run src/journal/query.spec.ts -t "AND across dimensions and OR within one"` — passes |
-| Due-Debt ordering | `pnpm vitest run src/journal/query.spec.ts -t "pages due Debt in the normative order"` — the due-time index from T1 is not consulted, so management Debt sorts by identity instead of first | `pnpm vitest run src/journal/query.spec.ts -t "pages due Debt in the normative order"` — passes |
+| Timeline effective version | `npx vitest run src/journal/query.spec.ts -t "effective Timeline projection"` — `Journal.query` does not exist yet, so the import fails to resolve and the case cannot even reach an assertion | `npx vitest run src/journal/query.spec.ts -t "effective Timeline projection"` — passes |
+| Obligation-key outcome | `npx vitest run src/journal/query.spec.ts -t "answers what one obligation key currently owes"` — the obligation-key filter is unimplemented, so the case reports an unsupported dimension | `npx vitest run src/journal/query.spec.ts -t "answers what one obligation key currently owes"` — passes |
+| AND/OR filter combination | `npx vitest run src/journal/query.spec.ts -t "AND across dimensions and OR within one"` — the filter reducer treats every dimension as OR, so the both-dimensions case returns a superset | `npx vitest run src/journal/query.spec.ts -t "AND across dimensions and OR within one"` — passes |
+| Due-Debt ordering | `npx vitest run src/journal/query.spec.ts -t "pages due Debt in the normative order"` — the due-time index from T1 is not consulted, so management Debt sorts by identity instead of first | `npx vitest run src/journal/query.spec.ts -t "pages due Debt in the normative order"` — passes |
 
 #### T3 — `B` `Journal.save` direct create for Review Note and Trader Reflection
 
@@ -382,10 +382,10 @@ IndexedDB instance is substituted.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Exact definition snapshot | `pnpm vitest run src/journal/save-create.spec.ts -t "exact rendered Entry Definition"` — direct create is unimplemented, so the appended snapshot is absent | `pnpm vitest run src/journal/save-create.spec.ts -t "exact rendered Entry Definition"` — passes |
-| Optional answers remain Unanswered | `pnpm vitest run src/journal/save-create.spec.ts -t "optional answers left Unanswered"` — the initial implementation coerces a missing optional answer into a decline, which the case observes as a decline outcome | `pnpm vitest run src/journal/save-create.spec.ts -t "optional answers left Unanswered"` — passes |
-| Refuses workflow-required types | `pnpm vitest run src/journal/save-create.spec.ts -t "outside the two voluntary Entry Types"` — the create path accepts any Entry Type identity, so the workflow-required save succeeds and the case fails on the missing rejection | `pnpm vitest run src/journal/save-create.spec.ts -t "outside the two voluntary Entry Types"` — passes |
-| Anchor resolution statuses | `pnpm vitest run src/journal/save-create.spec.ts -t "according to its resolution status"` — the result omits the resolution status, so the Superseded and Voided cases fail on the missing projection | `pnpm vitest run src/journal/save-create.spec.ts -t "according to its resolution status"` — passes |
+| Exact definition snapshot | `npx vitest run src/journal/save-create.spec.ts -t "exact rendered Entry Definition"` — direct create is unimplemented, so the appended snapshot is absent | `npx vitest run src/journal/save-create.spec.ts -t "exact rendered Entry Definition"` — passes |
+| Optional answers remain Unanswered | `npx vitest run src/journal/save-create.spec.ts -t "optional answers left Unanswered"` — the initial implementation coerces a missing optional answer into a decline, which the case observes as a decline outcome | `npx vitest run src/journal/save-create.spec.ts -t "optional answers left Unanswered"` — passes |
+| Refuses workflow-required types | `npx vitest run src/journal/save-create.spec.ts -t "outside the two voluntary Entry Types"` — the create path accepts any Entry Type identity, so the workflow-required save succeeds and the case fails on the missing rejection | `npx vitest run src/journal/save-create.spec.ts -t "outside the two voluntary Entry Types"` — passes |
+| Anchor resolution statuses | `npx vitest run src/journal/save-create.spec.ts -t "according to its resolution status"` — the result omits the resolution status, so the Superseded and Voided cases fail on the missing projection | `npx vitest run src/journal/save-create.spec.ts -t "according to its resolution status"` — passes |
 
 ### Phase P3 — Edit, Addendum and Void
 
@@ -430,10 +430,10 @@ IndexedDB instance is the disclosed substitution.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Same identity, new version | `pnpm vitest run src/journal/save-edit.spec.ts -t "same Journal Entry identity"` — Edit is unimplemented, so the second save creates a new identity and the case observes two identities | `pnpm vitest run src/journal/save-edit.spec.ts -t "same Journal Entry identity"` — passes |
-| Original snapshot wins | `pnpm vitest run src/journal/save-edit.spec.ts -t "original definition snapshot"` — the implementation validates against the latest revision, so the revised-definition case rejects a legal edit | `pnpm vitest run src/journal/save-edit.spec.ts -t "original definition snapshot"` — passes |
-| Immutable members | `pnpm vitest run src/journal/save-edit.spec.ts -t "refuses to change immutable Entry members"` — the update merges the command over the stored version, so an Entry Type change is accepted | `pnpm vitest run src/journal/save-edit.spec.ts -t "refuses to change immutable Entry members"` — passes |
-| Anchor correction rules | `pnpm vitest run src/journal/save-edit.spec.ts -t "erroneous Anchor or moment time"` — the implementation rejects every Anchor change, including the legal direct-author correction | `pnpm vitest run src/journal/save-edit.spec.ts -t "erroneous Anchor or moment time"` — passes |
+| Same identity, new version | `npx vitest run src/journal/save-edit.spec.ts -t "same Journal Entry identity"` — Edit is unimplemented, so the second save creates a new identity and the case observes two identities | `npx vitest run src/journal/save-edit.spec.ts -t "same Journal Entry identity"` — passes |
+| Original snapshot wins | `npx vitest run src/journal/save-edit.spec.ts -t "original definition snapshot"` — the implementation validates against the latest revision, so the revised-definition case rejects a legal edit | `npx vitest run src/journal/save-edit.spec.ts -t "original definition snapshot"` — passes |
+| Immutable members | `npx vitest run src/journal/save-edit.spec.ts -t "refuses to change immutable Entry members"` — the update merges the command over the stored version, so an Entry Type change is accepted | `npx vitest run src/journal/save-edit.spec.ts -t "refuses to change immutable Entry members"` — passes |
+| Anchor correction rules | `npx vitest run src/journal/save-edit.spec.ts -t "erroneous Anchor or moment time"` — the implementation rejects every Anchor change, including the legal direct-author correction | `npx vitest run src/journal/save-edit.spec.ts -t "erroneous Anchor or moment time"` — passes |
 
 #### T5 — `B` `Journal.save` Addendum: a new identity keeping the parent Anchor and link
 
@@ -474,10 +474,10 @@ relationship. Only the IndexedDB instance is substituted.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| New identity, preserved Anchor | `pnpm vitest run src/journal/save-addendum.spec.ts -t "keeps the parent Anchor"` — the addendum path is unimplemented, so the save is rejected as an unknown variant | `pnpm vitest run src/journal/save-addendum.spec.ts -t "keeps the parent Anchor"` — passes |
-| Current definition | `pnpm vitest run src/journal/save-addendum.spec.ts -t "current completed definition"` — the implementation reuses the parent's snapshot, so a Prompt the current definition added is missing from the Addendum | `pnpm vitest run src/journal/save-addendum.spec.ts -t "current completed definition"` — passes |
-| No inherited origin | `pnpm vitest run src/journal/save-addendum.spec.ts -t "does not inherit the parent's workflow origin"` — the implementation copies the whole parent association, so the Addendum carries an origin it never had | `pnpm vitest run src/journal/save-addendum.spec.ts -t "does not inherit the parent's workflow origin"` — passes |
-| Anchor status carried | `pnpm vitest run src/journal/save-addendum.spec.ts -t "resolution status"` — the result omits the status, so a Voided parent Anchor yields no status in the accepted projection | `pnpm vitest run src/journal/save-addendum.spec.ts -t "resolution status"` — passes |
+| New identity, preserved Anchor | `npx vitest run src/journal/save-addendum.spec.ts -t "keeps the parent Anchor"` — the addendum path is unimplemented, so the save is rejected as an unknown variant | `npx vitest run src/journal/save-addendum.spec.ts -t "keeps the parent Anchor"` — passes |
+| Current definition | `npx vitest run src/journal/save-addendum.spec.ts -t "current completed definition"` — the implementation reuses the parent's snapshot, so a Prompt the current definition added is missing from the Addendum | `npx vitest run src/journal/save-addendum.spec.ts -t "current completed definition"` — passes |
+| No inherited origin | `npx vitest run src/journal/save-addendum.spec.ts -t "does not inherit the parent's workflow origin"` — the implementation copies the whole parent association, so the Addendum carries an origin it never had | `npx vitest run src/journal/save-addendum.spec.ts -t "does not inherit the parent's workflow origin"` — passes |
+| Anchor status carried | `npx vitest run src/journal/save-addendum.spec.ts -t "resolution status"` — the result omits the status, so a Voided parent Anchor yields no status in the accepted projection | `npx vitest run src/journal/save-addendum.spec.ts -t "resolution status"` — passes |
 
 #### T6 — `B` `Journal.save` Void: visible reasoned version, nothing deleted
 
@@ -518,10 +518,10 @@ substituted.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Visible reasoned Void | `pnpm vitest run src/journal/save-void.spec.ts -t "visible reasoned version"` — the Void variant is unimplemented, so no version is appended and the case finds the Entry still effective | `pnpm vitest run src/journal/save-void.spec.ts -t "visible reasoned version"` — passes |
-| Nothing deleted | `pnpm vitest run src/journal/save-void.spec.ts -t "a version, not a deletion"` — the implementation removes the effective version from the chain, so the settlement version disappears from Full History | `pnpm vitest run src/journal/save-void.spec.ts -t "a version, not a deletion"` — passes |
-| Reason required | `pnpm vitest run src/journal/save-void.spec.ts -t "supplies no reason"` — the implementation defaults an empty reason, so the no-write case fails on a committed Void | `pnpm vitest run src/journal/save-void.spec.ts -t "supplies no reason"` — passes |
-| Scoped to one identity | `pnpm vitest run src/journal/save-void.spec.ts -t "without disturbing the rest of the history"` — the implementation voids by obligation key, so a sibling Entry is Voided too | `pnpm vitest run src/journal/save-void.spec.ts -t "without disturbing the rest of the history"` — passes |
+| Visible reasoned Void | `npx vitest run src/journal/save-void.spec.ts -t "visible reasoned version"` — the Void variant is unimplemented, so no version is appended and the case finds the Entry still effective | `npx vitest run src/journal/save-void.spec.ts -t "visible reasoned version"` — passes |
+| Nothing deleted | `npx vitest run src/journal/save-void.spec.ts -t "a version, not a deletion"` — the implementation removes the effective version from the chain, so the settlement version disappears from Full History | `npx vitest run src/journal/save-void.spec.ts -t "a version, not a deletion"` — passes |
+| Reason required | `npx vitest run src/journal/save-void.spec.ts -t "supplies no reason"` — the implementation defaults an empty reason, so the no-write case fails on a committed Void | `npx vitest run src/journal/save-void.spec.ts -t "supplies no reason"` — passes |
+| Scoped to one identity | `npx vitest run src/journal/save-void.spec.ts -t "without disturbing the rest of the history"` — the implementation voids by obligation key, so a sibling Entry is Voided too | `npx vitest run src/journal/save-void.spec.ts -t "without disturbing the rest of the history"` — passes |
 
 ### Phase P4 — obligation keys, snapshot-validated resolution and decline
 
@@ -582,12 +582,12 @@ underlying Trade facts never changed. Only the IndexedDB instance is substituted
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| One outcome per key | `pnpm vitest run src/journal/obligation-key.spec.ts -t "exactly one current outcome"` — the projection is not built, so the query returns zero outcome members for a completed key | `pnpm vitest run src/journal/obligation-key.spec.ts -t "exactly one current outcome"` — passes |
-| Second outcome conflicts | `pnpm vitest run src/journal/obligation-key.spec.ts -t "conflicts rather than duplicating"` — the implementation appends a second outcome, so the key returns two and the case fails on cardinality | `pnpm vitest run src/journal/obligation-key.spec.ts -t "conflicts rather than duplicating"` — passes |
-| Retry same identity | `pnpm vitest run src/journal/obligation-key.spec.ts -t "retry updates the same identity"` — the retry takes the create path, so the case observes two settlement identities | `pnpm vitest run src/journal/obligation-key.spec.ts -t "retry updates the same identity"` — passes |
-| Reopen on Void | `pnpm vitest run src/journal/obligation-key.spec.ts -t "reopens that same Debt atomically"` — the Void path does not touch the obligation key, so the key stays Completed and the case fails | `pnpm vitest run src/journal/obligation-key.spec.ts -t "reopens that same Debt atomically"` — passes |
-| Reopen keeps due time | `pnpm vitest run src/journal/obligation-key.spec.ts -t "keeps its original due time"` — the Void path re-stamps the due time from the reopen moment, so the case observes a later due time | `pnpm vitest run src/journal/obligation-key.spec.ts -t "keeps its original due time"` — passes |
-| Concurrent submissions | `pnpm vitest run src/journal/obligation-key.spec.ts -t "cannot both commit"` — the expected-revision guard is missing on the settle path, so both submissions commit | `pnpm vitest run src/journal/obligation-key.spec.ts -t "cannot both commit"` — passes |
+| One outcome per key | `npx vitest run src/journal/obligation-key.spec.ts -t "exactly one current outcome"` — the projection is not built, so the query returns zero outcome members for a completed key | `npx vitest run src/journal/obligation-key.spec.ts -t "exactly one current outcome"` — passes |
+| Second outcome conflicts | `npx vitest run src/journal/obligation-key.spec.ts -t "conflicts rather than duplicating"` — the implementation appends a second outcome, so the key returns two and the case fails on cardinality | `npx vitest run src/journal/obligation-key.spec.ts -t "conflicts rather than duplicating"` — passes |
+| Retry same identity | `npx vitest run src/journal/obligation-key.spec.ts -t "retry updates the same identity"` — the retry takes the create path, so the case observes two settlement identities | `npx vitest run src/journal/obligation-key.spec.ts -t "retry updates the same identity"` — passes |
+| Reopen on Void | `npx vitest run src/journal/obligation-key.spec.ts -t "reopens that same Debt atomically"` — the Void path does not touch the obligation key, so the key stays Completed and the case fails | `npx vitest run src/journal/obligation-key.spec.ts -t "reopens that same Debt atomically"` — passes |
+| Reopen keeps due time | `npx vitest run src/journal/obligation-key.spec.ts -t "keeps its original due time"` — the Void path re-stamps the due time from the reopen moment, so the case observes a later due time | `npx vitest run src/journal/obligation-key.spec.ts -t "keeps its original due time"` — passes |
+| Concurrent submissions | `npx vitest run src/journal/obligation-key.spec.ts -t "cannot both commit"` — the expected-revision guard is missing on the settle path, so both submissions commit | `npx vitest run src/journal/obligation-key.spec.ts -t "cannot both commit"` — passes |
 
 #### T8 — `B` `Journal.save` Debt resolution validated against the Debt's original snapshot
 
@@ -636,10 +636,10 @@ substituted.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Original snapshot validation | `pnpm vitest run src/journal/resolve-debt.spec.ts -t "original definition snapshot"` — the implementation validates against the current revision, so the old-form answer is rejected and the case fails | `pnpm vitest run src/journal/resolve-debt.spec.ts -t "original definition snapshot"` — passes |
-| Settle together, atomically | `pnpm vitest run src/journal/resolve-debt.spec.ts -t "one atomic step"` — settling and Entry creation are written in two separate transactions, so the injected failure case leaves a settled Debt with no Entry | `pnpm vitest run src/journal/resolve-debt.spec.ts -t "one atomic step"` — passes |
-| Workflow route refusal | `pnpm vitest run src/journal/resolve-debt.spec.ts -t "must also create a Trade fact"` — the implementation accepts prose and settles the Management Debt, so the case fails on the missing route | `pnpm vitest run src/journal/resolve-debt.spec.ts -t "must also create a Trade fact"` — passes |
-| Direct-resolution refusal | `pnpm vitest run src/journal/resolve-debt.spec.ts -t "workflow must complete"` — the variant dispatches on obligation key without checking the route, so a Daily Trade Review obligation is settled through the wrong seam | `pnpm vitest run src/journal/resolve-debt.spec.ts -t "workflow must complete"` — passes |
+| Original snapshot validation | `npx vitest run src/journal/resolve-debt.spec.ts -t "original definition snapshot"` — the implementation validates against the current revision, so the old-form answer is rejected and the case fails | `npx vitest run src/journal/resolve-debt.spec.ts -t "original definition snapshot"` — passes |
+| Settle together, atomically | `npx vitest run src/journal/resolve-debt.spec.ts -t "one atomic step"` — settling and Entry creation are written in two separate transactions, so the injected failure case leaves a settled Debt with no Entry | `npx vitest run src/journal/resolve-debt.spec.ts -t "one atomic step"` — passes |
+| Workflow route refusal | `npx vitest run src/journal/resolve-debt.spec.ts -t "must also create a Trade fact"` — the implementation accepts prose and settles the Management Debt, so the case fails on the missing route | `npx vitest run src/journal/resolve-debt.spec.ts -t "must also create a Trade fact"` — passes |
+| Direct-resolution refusal | `npx vitest run src/journal/resolve-debt.spec.ts -t "workflow must complete"` — the variant dispatches on obligation key without checking the route, so a Daily Trade Review obligation is settled through the wrong seam | `npx vitest run src/journal/resolve-debt.spec.ts -t "workflow must complete"` — passes |
 
 #### T9 — `B` Explicit Decline as a distinct durable outcome
 
@@ -689,10 +689,10 @@ substituted.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Decline as durable outcome | `pnpm vitest run src/journal/decline.spec.ts -t "its own durable outcome"` — the decline store from T1 is unused and the path settles nothing, so the key stays outstanding | `pnpm vitest run src/journal/decline.spec.ts -t "its own durable outcome"` — passes |
-| Decline is not a blank answer | `pnpm vitest run src/journal/decline.spec.ts -t "never a blank answer and never a Void"` — the implementation persists a decline for every unanswered Prompt, so the untouched-optional case reports a decline | `pnpm vitest run src/journal/decline.spec.ts -t "never a blank answer and never a Void"` — passes |
-| Policy limits | `pnpm vitest run src/journal/decline.spec.ts -t "where the workflow policy permits"` — the path accepts a decline for every Entry Type, so the Plan Reflection case commits | `pnpm vitest run src/journal/decline.spec.ts -t "where the workflow policy permits"` — passes |
-| Removes blocker, keeps history | `pnpm vitest run src/journal/decline.spec.ts -t "removes the blocker without erasing history"` — the decline is written but the obligation-key store is not updated, so the key remains outstanding | `pnpm vitest run src/journal/decline.spec.ts -t "removes the blocker without erasing history"` — passes |
+| Decline as durable outcome | `npx vitest run src/journal/decline.spec.ts -t "its own durable outcome"` — the decline store from T1 is unused and the path settles nothing, so the key stays outstanding | `npx vitest run src/journal/decline.spec.ts -t "its own durable outcome"` — passes |
+| Decline is not a blank answer | `npx vitest run src/journal/decline.spec.ts -t "never a blank answer and never a Void"` — the implementation persists a decline for every unanswered Prompt, so the untouched-optional case reports a decline | `npx vitest run src/journal/decline.spec.ts -t "never a blank answer and never a Void"` — passes |
+| Policy limits | `npx vitest run src/journal/decline.spec.ts -t "where the workflow policy permits"` — the path accepts a decline for every Entry Type, so the Plan Reflection case commits | `npx vitest run src/journal/decline.spec.ts -t "where the workflow policy permits"` — passes |
+| Removes blocker, keeps history | `npx vitest run src/journal/decline.spec.ts -t "removes the blocker without erasing history"` — the decline is written but the obligation-key store is not updated, so the key remains outstanding | `npx vitest run src/journal/decline.spec.ts -t "removes the blocker without erasing history"` — passes |
 
 #### T10 — `B` `DailyReview.getDebt`: due ordering and workflow-routed Debt
 
@@ -739,11 +739,11 @@ Debt was manufactured for a Trade with no Action. Only the IndexedDB instance is
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Due-through paging | `pnpm vitest run src/daily-review/get-debt.spec.ts -t "at or before the Review cutoff"` — `getDebt` is unimplemented, so the call resolves nothing and the case fails on an empty page | `pnpm vitest run src/daily-review/get-debt.spec.ts -t "at or before the Review cutoff"` — passes |
-| Reopened Debt is due | `pnpm vitest run src/daily-review/get-debt.spec.ts -t "reopened after its due time"` — the implementation orders by the last transition time, so the reopened Debt falls outside the due page | `pnpm vitest run src/daily-review/get-debt.spec.ts -t "reopened after its due time"` — passes |
-| Management Debt first | `pnpm vitest run src/daily-review/get-debt.spec.ts -t "orders workflow-bound management Debt first"` — the implementation sorts only by due time, so the older Journal-only Debt comes first | `pnpm vitest run src/daily-review/get-debt.spec.ts -t "orders workflow-bound management Debt first"` — passes |
-| Exact stored form | `pnpm vitest run src/daily-review/get-debt.spec.ts -t "one exact stored form"` — the form is re-rendered from the current definition, so the historical labels are missing | `pnpm vitest run src/daily-review/get-debt.spec.ts -t "one exact stored form"` — passes |
-| Missing Action is not Debt | `pnpm vitest run src/daily-review/get-debt.spec.ts -t "absence, not Debt"` — the implementation materialises a Debt for the missing Action, so the case observes an Outstanding Debt | `pnpm vitest run src/daily-review/get-debt.spec.ts -t "absence, not Debt"` — passes |
+| Due-through paging | `npx vitest run src/daily-review/get-debt.spec.ts -t "at or before the Review cutoff"` — `getDebt` is unimplemented, so the call resolves nothing and the case fails on an empty page | `npx vitest run src/daily-review/get-debt.spec.ts -t "at or before the Review cutoff"` — passes |
+| Reopened Debt is due | `npx vitest run src/daily-review/get-debt.spec.ts -t "reopened after its due time"` — the implementation orders by the last transition time, so the reopened Debt falls outside the due page | `npx vitest run src/daily-review/get-debt.spec.ts -t "reopened after its due time"` — passes |
+| Management Debt first | `npx vitest run src/daily-review/get-debt.spec.ts -t "orders workflow-bound management Debt first"` — the implementation sorts only by due time, so the older Journal-only Debt comes first | `npx vitest run src/daily-review/get-debt.spec.ts -t "orders workflow-bound management Debt first"` — passes |
+| Exact stored form | `npx vitest run src/daily-review/get-debt.spec.ts -t "one exact stored form"` — the form is re-rendered from the current definition, so the historical labels are missing | `npx vitest run src/daily-review/get-debt.spec.ts -t "one exact stored form"` — passes |
+| Missing Action is not Debt | `npx vitest run src/daily-review/get-debt.spec.ts -t "absence, not Debt"` — the implementation materialises a Debt for the missing Action, so the case observes an Outstanding Debt | `npx vitest run src/daily-review/get-debt.spec.ts -t "absence, not Debt"` — passes |
 
 ### Phase P5 — resolution route and review completion
 
@@ -797,10 +797,10 @@ of the three results. Only the IndexedDB instance is substituted.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Journal-only resolution | `pnpm vitest run src/daily-review/resolve-review-debt.spec.ts -t "resolves a Journal-only Debt"` — the command member is unimplemented, so the review refuses the call | `pnpm vitest run src/daily-review/resolve-review-debt.spec.ts -t "resolves a Journal-only Debt"` — passes |
-| Allowed decline | `pnpm vitest run src/daily-review/resolve-review-debt.spec.ts -t "records an allowed explicit decline"` — the implementation routes every Debt through settlement, so a permitted decline is rejected | `pnpm vitest run src/daily-review/resolve-review-debt.spec.ts -t "records an allowed explicit decline"` — passes |
-| Workflow routing | `pnpm vitest run src/daily-review/resolve-review-debt.spec.ts -t "refuses workflow-routed Debt"` — the implementation settles the Management Debt from prose, so the case fails on a committed write | `pnpm vitest run src/daily-review/resolve-review-debt.spec.ts -t "refuses workflow-routed Debt"` — passes |
-| Stale bindings | `pnpm vitest run src/daily-review/resolve-review-debt.spec.ts -t "reports every stale binding"` — the guard returns on the first stale binding and names the wrong scope, so the review-scope case returns `Conflict` | `pnpm vitest run src/daily-review/resolve-review-debt.spec.ts -t "reports every stale binding"` — passes |
+| Journal-only resolution | `npx vitest run src/daily-review/resolve-review-debt.spec.ts -t "resolves a Journal-only Debt"` — the command member is unimplemented, so the review refuses the call | `npx vitest run src/daily-review/resolve-review-debt.spec.ts -t "resolves a Journal-only Debt"` — passes |
+| Allowed decline | `npx vitest run src/daily-review/resolve-review-debt.spec.ts -t "records an allowed explicit decline"` — the implementation routes every Debt through settlement, so a permitted decline is rejected | `npx vitest run src/daily-review/resolve-review-debt.spec.ts -t "records an allowed explicit decline"` — passes |
+| Workflow routing | `npx vitest run src/daily-review/resolve-review-debt.spec.ts -t "refuses workflow-routed Debt"` — the implementation settles the Management Debt from prose, so the case fails on a committed write | `npx vitest run src/daily-review/resolve-review-debt.spec.ts -t "refuses workflow-routed Debt"` — passes |
+| Stale bindings | `npx vitest run src/daily-review/resolve-review-debt.spec.ts -t "reports every stale binding"` — the guard returns on the first stale binding and names the wrong scope, so the review-scope case returns `Conflict` | `npx vitest run src/daily-review/resolve-review-debt.spec.ts -t "reports every stale binding"` — passes |
 
 #### T12 — `B` Journal outcomes and Debt in the derived Review completion
 
@@ -841,10 +841,10 @@ facts rather than from session state. Only the IndexedDB instance is substituted
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Debt blocks completion | `pnpm vitest run src/daily-review/completion.spec.ts -t "counts due Debt as a blocker"` — the completion reducer ignores Journal obligations, so a date with due Debt reports Complete | `pnpm vitest run src/daily-review/completion.spec.ts -t "counts due Debt as a blocker"` — passes |
-| Resolution changes completion | `pnpm vitest run src/daily-review/completion.spec.ts -t "changes completion without erasing history"` — the reducer memoises the first derived state, so the settled case still reads Incomplete | `pnpm vitest run src/daily-review/completion.spec.ts -t "changes completion without erasing history"` — passes |
-| Reopen inverts completion | `pnpm vitest run src/daily-review/completion.spec.ts -t "already complete past date Incomplete again"` — the reopen transition from T7 is not consulted by the reducer, so the date stays complete | `pnpm vitest run src/daily-review/completion.spec.ts -t "already complete past date Incomplete again"` — passes |
-| Recording never blocked | `pnpm vitest run src/daily-review/completion.spec.ts -t "never block factual trade recording"` — the guard rejects a Position Change while any Journal obligation is due | `pnpm vitest run src/daily-review/completion.spec.ts -t "never block factual trade recording"` — passes |
+| Debt blocks completion | `npx vitest run src/daily-review/completion.spec.ts -t "counts due Debt as a blocker"` — the completion reducer ignores Journal obligations, so a date with due Debt reports Complete | `npx vitest run src/daily-review/completion.spec.ts -t "counts due Debt as a blocker"` — passes |
+| Resolution changes completion | `npx vitest run src/daily-review/completion.spec.ts -t "changes completion without erasing history"` — the reducer memoises the first derived state, so the settled case still reads Incomplete | `npx vitest run src/daily-review/completion.spec.ts -t "changes completion without erasing history"` — passes |
+| Reopen inverts completion | `npx vitest run src/daily-review/completion.spec.ts -t "already complete past date Incomplete again"` — the reopen transition from T7 is not consulted by the reducer, so the date stays complete | `npx vitest run src/daily-review/completion.spec.ts -t "already complete past date Incomplete again"` — passes |
+| Recording never blocked | `npx vitest run src/daily-review/completion.spec.ts -t "never block factual trade recording"` — the guard rejects a Position Change while any Journal obligation is due | `npx vitest run src/daily-review/completion.spec.ts -t "never block factual trade recording"` — passes |
 
 #### T13 — `B` Manifest v5 seed: Review Note and Trader Reflection Entry Types
 
@@ -887,9 +887,9 @@ substituted.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Review Note definition | `pnpm vitest run src/journal/seed-v5.spec.ts -t "Review Note Entry Type"` — the v5 seed is not wired into the manifest, so the Entry Type is absent after seeding | `pnpm vitest run src/journal/seed-v5.spec.ts -t "Review Note Entry Type"` — passes |
-| Trader Reflection definition | `pnpm vitest run src/journal/seed-v5.spec.ts -t "Trader Reflection Entry Type"` — the option list is seeded short, so the case fails on the missing canonical options | `pnpm vitest run src/journal/seed-v5.spec.ts -t "Trader Reflection Entry Type"` — passes |
-| Idempotence | `pnpm vitest run src/journal/seed-v5.spec.ts -t "idempotent and never rewrites trader revisions"` — the seed rewrites the definition on every run, so the trader-revised case observes a reset | `pnpm vitest run src/journal/seed-v5.spec.ts -t "idempotent and never rewrites trader revisions"` — passes |
+| Review Note definition | `npx vitest run src/journal/seed-v5.spec.ts -t "Review Note Entry Type"` — the v5 seed is not wired into the manifest, so the Entry Type is absent after seeding | `npx vitest run src/journal/seed-v5.spec.ts -t "Review Note Entry Type"` — passes |
+| Trader Reflection definition | `npx vitest run src/journal/seed-v5.spec.ts -t "Trader Reflection Entry Type"` — the option list is seeded short, so the case fails on the missing canonical options | `npx vitest run src/journal/seed-v5.spec.ts -t "Trader Reflection Entry Type"` — passes |
+| Idempotence | `npx vitest run src/journal/seed-v5.spec.ts -t "idempotent and never rewrites trader revisions"` — the seed rewrites the definition on every run, so the trader-revised case observes a reset | `npx vitest run src/journal/seed-v5.spec.ts -t "idempotent and never rewrites trader revisions"` — passes |
 
 ### Phase P6 — presentation and responsive behaviour
 
@@ -941,10 +941,10 @@ left the Journal query byte-identical. Only the IndexedDB instance is substitute
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Exact rendered revision | `pnpm vitest run src/ui/in-review-writing.spec.tsx -t "exact loaded Entry Definition revision"` — the component is absent, so the render finds no form | `pnpm vitest run src/ui/in-review-writing.spec.tsx -t "exact loaded Entry Definition revision"` — passes |
-| Radio-group semantics | `pnpm vitest run src/ui/in-review-writing.spec.tsx -t "radio-group semantics"` — Prompt chips are plain buttons with no fieldset or group role, so the role query fails | `pnpm vitest run src/ui/in-review-writing.spec.tsx -t "radio-group semantics"` — passes |
-| Nothing stored on leave | `pnpm vitest run src/ui/in-review-writing.spec.tsx -t "Leaving the form stores nothing"` — the form autosaves on blur, so the unchanged-query assertion fails | `pnpm vitest run src/ui/in-review-writing.spec.tsx -t "Leaving the form stores nothing"` — passes |
-| Outcome without a read | `pnpm vitest run src/ui/in-review-writing.spec.tsx -t "without a follow-up read"` — the component issues a query after save, so the case observes an extra read | `pnpm vitest run src/ui/in-review-writing.spec.tsx -t "without a follow-up read"` — passes |
+| Exact rendered revision | `npx vitest run src/ui/in-review-writing.spec.tsx -t "exact loaded Entry Definition revision"` — the component is absent, so the render finds no form | `npx vitest run src/ui/in-review-writing.spec.tsx -t "exact loaded Entry Definition revision"` — passes |
+| Radio-group semantics | `npx vitest run src/ui/in-review-writing.spec.tsx -t "radio-group semantics"` — Prompt chips are plain buttons with no fieldset or group role, so the role query fails | `npx vitest run src/ui/in-review-writing.spec.tsx -t "radio-group semantics"` — passes |
+| Nothing stored on leave | `npx vitest run src/ui/in-review-writing.spec.tsx -t "Leaving the form stores nothing"` — the form autosaves on blur, so the unchanged-query assertion fails | `npx vitest run src/ui/in-review-writing.spec.tsx -t "Leaving the form stores nothing"` — passes |
+| Outcome without a read | `npx vitest run src/ui/in-review-writing.spec.tsx -t "without a follow-up read"` — the component issues a query after save, so the case observes an extra read | `npx vitest run src/ui/in-review-writing.spec.tsx -t "without a follow-up read"` — passes |
 
 #### T15 — `B` Debt and Decline resolution presentation
 
@@ -989,9 +989,9 @@ the same accepted result. Only the IndexedDB instance is substituted.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Outstanding list shrinks | `pnpm vitest run src/ui/debt-resolution.spec.tsx -t "shrinks when it is resolved"` — the surface is absent, so no list renders | `pnpm vitest run src/ui/debt-resolution.spec.tsx -t "shrinks when it is resolved"` — passes |
-| Never rendered as each other | `pnpm vitest run src/ui/debt-resolution.spec.tsx -t "never rendered as each other"` — the surface maps every non-Entry obligation to the Debt badge, so a decline renders as Debt | `pnpm vitest run src/ui/debt-resolution.spec.tsx -t "never rendered as each other"` — passes |
-| View states | `pnpm vitest run src/ui/debt-resolution.spec.tsx -t "Loading, Ready, Empty, Error, validation and conflict"` — the surface renders Empty while loading, so the loading case observes a false Empty | `pnpm vitest run src/ui/debt-resolution.spec.tsx -t "Loading, Ready, Empty, Error, validation and conflict"` — passes |
+| Outstanding list shrinks | `npx vitest run src/ui/debt-resolution.spec.tsx -t "shrinks when it is resolved"` — the surface is absent, so no list renders | `npx vitest run src/ui/debt-resolution.spec.tsx -t "shrinks when it is resolved"` — passes |
+| Never rendered as each other | `npx vitest run src/ui/debt-resolution.spec.tsx -t "never rendered as each other"` — the surface maps every non-Entry obligation to the Debt badge, so a decline renders as Debt | `npx vitest run src/ui/debt-resolution.spec.tsx -t "never rendered as each other"` — passes |
+| View states | `npx vitest run src/ui/debt-resolution.spec.tsx -t "Loading, Ready, Empty, Error, validation and conflict"` — the surface renders Empty while loading, so the loading case observes a false Empty | `npx vitest run src/ui/debt-resolution.spec.tsx -t "Loading, Ready, Empty, Error, validation and conflict"` — passes |
 
 #### T16 — `B` Responsive layout and accessibility for D5's surfaces
 
@@ -1034,9 +1034,9 @@ no part in it, which is one reason it is required (`planning-decisions-2026-10-1
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Live resize preserves state | `pnpm vitest run src/ui/d5-responsive.spec.tsx -t "preserve state across a live viewport change"` — the layout remounts on width change, so the unsaved answers are lost | `pnpm vitest run src/ui/d5-responsive.spec.tsx -t "preserve state across a live viewport change"` — passes |
-| Keyboard completion | `pnpm vitest run src/ui/d5-accessibility.spec.tsx -t "keyboard alone"` — the Prompt chips are not focusable, so the keyboard flow cannot complete | `pnpm vitest run src/ui/d5-accessibility.spec.tsx -t "keyboard alone"` — passes |
-| Names, roles and cues | `pnpm vitest run src/ui/d5-accessibility.spec.tsx -t "accessible names, roles, states and non-colour cues"` — the Debt status is conveyed only by colour, so the text-alternative assertion fails | `pnpm vitest run src/ui/d5-accessibility.spec.tsx -t "accessible names, roles, states and non-colour cues"` — passes |
+| Live resize preserves state | `npx vitest run src/ui/d5-responsive.spec.tsx -t "preserve state across a live viewport change"` — the layout remounts on width change, so the unsaved answers are lost | `npx vitest run src/ui/d5-responsive.spec.tsx -t "preserve state across a live viewport change"` — passes |
+| Keyboard completion | `npx vitest run src/ui/d5-accessibility.spec.tsx -t "keyboard alone"` — the Prompt chips are not focusable, so the keyboard flow cannot complete | `npx vitest run src/ui/d5-accessibility.spec.tsx -t "keyboard alone"` — passes |
+| Names, roles and cues | `npx vitest run src/ui/d5-accessibility.spec.tsx -t "accessible names, roles, states and non-colour cues"` — the Debt status is conveyed only by colour, so the text-alternative assertion fails | `npx vitest run src/ui/d5-accessibility.spec.tsx -t "accessible names, roles, states and non-colour cues"` — passes |
 
 #### T17 — `B` Mock-free integration suite for D5
 
@@ -1082,9 +1082,9 @@ deliberately does not use.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Real-stack settlement | `pnpm vitest run tests/integration/d5-review-debt.integration.spec.ts -t "traverses the real stack end to end"` — the suite file does not exist yet and no D5 journey is wired, so nothing passes | `pnpm vitest run tests/integration/d5-review-debt.integration.spec.ts -t "traverses the real stack end to end"` — passes |
-| Cumulative regression | `pnpm vitest run tests/integration -t "cumulative regression"` — the cumulative runner is not joined, so it reports no result for D1 through D4 | `pnpm vitest run tests/integration -t "cumulative regression"` — passes with the earlier deliverables' cases present |
-| Substitution disclosure | `pnpm vitest run tests/integration/d5-review-debt.integration.spec.ts -t "names its substitutions"` — the suite prints no substitution record, so the disclosure assertion fails | `pnpm vitest run tests/integration/d5-review-debt.integration.spec.ts -t "names its substitutions"` — passes |
+| Real-stack settlement | `npx vitest run tests/integration/d5-review-debt.integration.spec.ts -t "traverses the real stack end to end"` — the suite file does not exist yet and no D5 journey is wired, so nothing passes | `npx vitest run tests/integration/d5-review-debt.integration.spec.ts -t "traverses the real stack end to end"` — passes |
+| Cumulative regression | `npx vitest run tests/integration -t "cumulative regression"` — the cumulative runner is not joined, so it reports no result for D1 through D4 | `npx vitest run tests/integration -t "cumulative regression"` — passes with the earlier deliverables' cases present |
+| Substitution disclosure | `npx vitest run tests/integration/d5-review-debt.integration.spec.ts -t "names its substitutions"` — the suite prints no substitution record, so the disclosure assertion fails | `npx vitest run tests/integration/d5-review-debt.integration.spec.ts -t "names its substitutions"` — passes |
 
 ### Phase P7 — the independent critic gate
 
@@ -1105,11 +1105,11 @@ and no task depends on it locally.
 
 | # | Command | Expected result |
 |---|---|---|
-| V18.1 | `pnpm test:unit` | The cumulative unit suite passes with 0 failures, including every D5 case in section 3. |
-| V18.2 | `pnpm test:integration` | The cumulative mock-free integration suite passes with 0 failures and prints its disclosed `fake-indexeddb` substitution record. |
-| V18.3 | `pnpm dev` in one terminal, then `pnpm exec playwright test tests/e2e/d5-critic-gate.spec.ts --project=narrow` | Every D5 flow in §4 that is runnable without manual judgement passes at the narrow viewport, and the run reports the flows it exercised. |
-| V18.4 | `pnpm exec playwright test tests/e2e/d5-critic-gate.spec.ts --project=wide` | The same flows pass at the wide viewport, including the live resize case that starts narrow and widens with an unsaved form open. |
-| V18.5 | `pnpm exec playwright test tests/e2e/accessibility.spec.ts --grep "D5"` | The axe-core checks over D5's writing and Debt surfaces report no violations at WCAG AA for the exercised states. |
+| V18.1 | `npm run test:unit` | The cumulative unit suite passes with 0 failures, including every D5 case in section 3. |
+| V18.2 | `npm run test:integration` | The cumulative mock-free integration suite passes with 0 failures and prints its disclosed `fake-indexeddb` substitution record. |
+| V18.3 | `npm run dev` in one terminal, then `npx playwright test tests/e2e/d5-critic-gate.spec.ts --project=narrow` | Every D5 flow in §4 that is runnable without manual judgement passes at the narrow viewport, and the run reports the flows it exercised. |
+| V18.4 | `npx playwright test tests/e2e/d5-critic-gate.spec.ts --project=wide` | The same flows pass at the wide viewport, including the live resize case that starts narrow and widens with an unsaved form open. |
+| V18.5 | `npx playwright test tests/e2e/accessibility.spec.ts --grep "D5"` | The axe-core checks over D5's writing and Debt surfaces report no violations at WCAG AA for the exercised states. |
 | V18.6 | `git status --short plan/deliverable-breakdowns/D5-complete-review-debt.md` and a manual comparison of the running build against this document's §4 flow list | The critic's structured report names every §4 flow with a pass or fail, and for each failure gives reproducible browser steps, expected versus actual behaviour and screenshot, console or server evidence. |
 | V18.7 | The critic's report re-read against §4's `Intentional non-defects` list | Every reported defect is either a genuine departure from a flow's expected result or is reclassified as an intentional non-defect; no finding is self-certified by the implementer. |
 | V18.8 | `node scripts/check-deliverable-breakdown.mjs plan/deliverable-breakdowns/*.md` and `node scripts/audit-breakdown-coverage.mjs` | Both validators report `0 failure(s), 0 warning(s)` once all seven breakdown files exist. |
@@ -1194,7 +1194,7 @@ rather than implying D5 alone satisfies it.
 For every behaviour-bearing task in this deliverable, red is recorded per case, one case at a time,
 before the production behaviour exists (`planning-protocol.md:104-111`). For this stack that means:
 
-- **Red command.** `pnpm vitest run <spec file> -t "<the case name>"`, or for the integration and
+- **Red command.** `npx vitest run <spec file> -t "<the case name>"`, or for the integration and
   gate tasks the commands named in T17 and T18. The case is added first and run alone.
 - **Red must fail because the planned behaviour is absent or incorrect.** A valid red failure reads
   as a missing operation, a missing projection member, an absent rejection, a wrong cardinality, a
@@ -1205,7 +1205,7 @@ before the production behaviour exists (`planning-protocol.md:104-111`). For thi
   an assertion on a private implementation detail. In particular, a case that fails merely because
   the spec file does not exist yet is not accepted as red for its behaviour: the harness task D1:T3
   must already be green, and the case must be added and observed to fail on its own assertion.
-- **Green.** `pnpm vitest run <spec file> -t "<the case name>"` after the smallest production change,
+- **Green.** `npx vitest run <spec file> -t "<the case name>"` after the smallest production change,
   expected to pass, and re-run together with the task's already-green cases so a fix cannot break an
   earlier case. Refactoring after green is a separate review step and reruns the affected cases.
 - **Recorded outcome format.** Each case keeps its red command, the observed red failure reason, its
@@ -1257,7 +1257,7 @@ is owned by D2; this deliverable re-exercises them without claiming new ownershi
 - **The deferred pinned version profile.** The stack set is fixed by decision PD3
   (`planning-decisions-2026-10-10.md:164-185`) but the exact version numbers are pinned at Phase 6
   and are not invented here. Every command in section 3 assumes only the fixed set: TypeScript strict,
-  Vite, React, Vitest, `fake-indexeddb`, and Playwright against `pnpm dev` reading `DEV_PORT`.
+  Vite, React, Vitest, `fake-indexeddb`, and Playwright against `npm run dev` reading `DEV_PORT`.
 - **The schema-version number is deliberately not written down.** D1 owns the baseline and D2 through
   D6 each raise it; `T1`'s verification therefore asserts the `N` to `N+1` transition and its
   idempotence rather than a literal version.

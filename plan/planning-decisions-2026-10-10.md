@@ -184,6 +184,10 @@ later, in the plan (Phase 6 requires the selected stack/version profile).
 | Tests | Vitest + `fake-indexeddb` (Node), Playwright (browser integration, critic gate, axe-core) |
 | Hosting | Static HTTPS; no backend |
 
+**Amended 2026-10-18 by PD18 and PD19:** a linter is part of the toolchain (PD18); the package manager is
+**npm**, not pnpm, and `vite-plugin-pwa` is **not** used — the manifest and the versioned service worker
+are hand-authored (PD19).
+
 ### Rationale
 
 IndexedDB carries the decision. It is the only baseline browser storage with real multi-store ACID
@@ -1070,7 +1074,7 @@ are unchanged.
 ### The gap
 
 PD3 fixes the stack *set* and names no linter, and D1:T2 mechanises only the repository-boundary rule as
-a repo-local script (`pnpm lint:layers`). General code linting was therefore undefined: neither approved
+a repo-local script (`npm run lint:layers`). General code linting was therefore undefined: neither approved
 nor excluded. It cannot be settled late either, because ESLint cannot run against the approved compiler
 at all — TypeScript 7.0.x is the Go port and ships **no programmatic API** (planned for 7.1), while
 `typescript-eslint@8.71.2` declares `typescript >=4.8.4 <6.1.0` and aborts at startup with
@@ -1091,11 +1095,11 @@ already frozen.
    what satisfies typescript-eslint's peer range, so the linter runs without giving up the 7.0 compiler.
 4. **The configuration is syntactic, not type-aware.** It composes `@eslint/js`'s recommended set with
    typescript-eslint's syntactic `recommended`, and sets no `projectService` and no `project`. A
-   type-aware rule would analyse through the 6.0 API while `pnpm typecheck` gates on 7.0, so a
+   type-aware rule would analyse through the 6.0 API while `npm run typecheck` gates on 7.0, so a
    disagreement between them would be invisible behind a green gate. Type-aware linting is a separate,
    later decision.
-5. **`pnpm lint` is a declared script and part of the evidence gates.** It is not on the `pnpm build`
-   path: that role stays with `pnpm lint:layers` (D1:T2), which enforces the dependency-direction rules
+5. **`npm run lint` is a declared script and part of the evidence gates.** It is not on the `npm run build`
+   path: that role stays with `npm run lint:layers` (D1:T2), which enforces the dependency-direction rules
    as a correctness gate rather than a style gate.
 
 ### Rejected alternatives
@@ -1114,7 +1118,7 @@ already frozen.
 
 ### Consequences
 
-- **The package named `typescript` is not the compiler that typechecks.** `pnpm typecheck` runs `tsc`
+- **The package named `typescript` is not the compiler that typechecks.** `npm run typecheck` runs `tsc`
   7.0.2; `tsc6` exists for comparison and must never gate anything. D1:T1's V1.8 asserts the triple
   (`tsc` 7.0.2, `tsc6` 6.0.x, `eslint` 10.13.0), and V1.9 proves a seeded violation is actually caught
   rather than matched by a config that silently ignores everything.
@@ -1133,6 +1137,57 @@ already frozen.
 status changes: this is a toolchain decision, and the boundary checker and its build-path gate are
 unchanged.
 
+## PD19 — npm is the package manager, and the service worker is hand-authored
+
+**Status:** settled by user decision, 2026-10-18. **Branch-local**, not promoted into `specs/`.
+
+### The gap
+
+PD3's stack table has no package-manager row, yet the breakdowns' command text had assumed `pnpm` since
+they were drafted. The Phase 6 freeze therefore pinned a package manager that no decision had chosen —
+and `pnpm` is not on the approved runtime at all: Homebrew Node 26.12 ships npm and npx but neither pnpm
+nor corepack, so pnpm needed a global install outside the repository, recreated after any machine
+rebuild, and recorded as an environment risk. Separately, PD3's PWA row offers `vite-plugin-pwa` /
+Workbox while D1:T16–T18 hand-author the Web App Manifest and the versioned service worker.
+
+### Decision
+
+1. **npm is the package manager**, at the version that ships with the Node pin — npm 11.20.0 with Node
+   26.12.0. It is not installed separately and is not pinned as its own moving part; `packageManager:
+   "npm@11.20.0"` documents the resolved value, and D1:T1 asserts `npm --version` and records it as
+   provenance.
+2. **Every recorded command uses `npm run <script>` for a declared script and `npx <tool>` for a
+   binary.** `npm ci` replaces the frozen-lockfile install, and the lockfile is `package-lock.json`.
+3. **`vite-plugin-pwa` is not used.** PD3's PWA row is read as "`vite-plugin-pwa` or Workbox"; this plan
+   takes Workbox as tooling only, hand-authors the manifest and the versioned worker (D1:T16–T18), and
+   asserts the Offline Release Inventory digests with its own artifact check.
+
+### Rejected alternatives
+
+- **pnpm**, which the breakdowns originally assumed. Its default strict isolation is the one argument
+  that genuinely mattered here: an undeclared import fails to resolve instead of silently picking up a
+  hoisted package, which is worth something in a 155-task plan written largely by agents. It lost on
+  environment cost — absent from the approved runtime, no corepack, a global install outside the
+  repository, and a rebuild-fragile dependency.
+- **Pinning npm at the registry's `latest`** (12.2.0). Rejected: npm is supplied by the Node keg, so a
+  pin that does not match the keg is a claim the environment cannot honour.
+
+### Consequences
+
+- npm's major follows the Node pin. A Homebrew upgrade can move it with no plan change, so T1 records
+  `npm --version` instead of trusting the `packageManager` field.
+- The protection pnpm would have given up front is partly recovered: `npm run typecheck` fails on an
+  import that does not resolve at all. It does **not** catch a package that resolves only because npm
+  hoisted it, so that remains a review responsibility. This is the cost of the decision, stated rather
+  than hidden.
+- 900 `pnpm` command occurrences across 12 plan files were rewritten; the plan manifest was re-stamped,
+  and D4 §8 item 6 no longer says the package manager is unselected.
+
+### Not changed
+
+`specs/` is untouched. No product semantics, acceptance-scenario status or durable format changes. D1:T2's
+boundary check and its build-path gate are unchanged, and remain about layers rather than about packages.
+
 ---
 
 ## Still open
@@ -1145,7 +1200,7 @@ and target condition model across the option arc, and PD10 records that fees are
 excluded from every calculation. PD11 fixes the Terminal Disposition shape and the shared mechanism
 vocabulary, PD12 records that the `Rolled` Close Reason is selectable by policy before any Roll
 workflow exists, PD13 records that a reopened Debt keeps its identity and its original due time, and
-PD14 orders the attention walk by boundary proximity instead of pressure descending, and PD15 makes the seed scope need-driven and assigns the IdeaSource Tag Type to D12, and PD16 confirms the five architecture choices as recorded, and PD17 answers the three backup artifact-format questions, and PD18 records that a linter is part of the toolchain, installed through the TypeScript 7 side-by-side layout. The PD3
+PD14 orders the attention walk by boundary proximity instead of pressure descending, and PD15 makes the seed scope need-driven and assigns the IdeaSource Tag Type to D12, and PD16 confirms the five architecture choices as recorded, and PD17 answers the three backup artifact-format questions, PD18 records that a linter is part of the toolchain, installed through the TypeScript 7 side-by-side layout, and PD19 selects npm as the package manager and records that the service worker is hand-authored rather than built through `vite-plugin-pwa`. The PD3
 verification items must be resolved inside the plan.
 
 The vertical deliverable list is recorded in [vertical-deliverables.md](vertical-deliverables.md).

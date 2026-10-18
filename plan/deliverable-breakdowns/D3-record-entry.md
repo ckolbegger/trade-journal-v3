@@ -451,14 +451,14 @@ existing store name, key path or index that D2 already wrote:
 
 | # | Command | Expected result |
 |---|---|---|
-| V1.1 | `pnpm vitest run tests/integration/persistence/schema-v3-migration.test.ts` | The migration report reads `fromVersion: 2`, `toVersion: 3`, lists exactly the record kinds and indexes of items 1–3 above, reports `recordsRewritten: 0`, and a second run over the same database reports `no-op`. |
-| V1.2 | `pnpm vitest run tests/integration/persistence/schema-v3-migration.test.ts -t "v2 dump is preserved"` | The v2 store/index dump taken before migration is byte-identical to the v2 content after migration for every pre-existing store; the only diff is the added v3 record kinds and indexes. |
-| V1.3 | `pnpm vitest run tests/integration/persistence/schema-v3-migration.test.ts -t "abort leaves v2 usable"` | With an abort injected after the candidate store is created, the live pointer still resolves the v2 database, `Workspace.getStatus` reports the v2 schema, and a D2 confirm-Plan integration case still passes unchanged. |
-| V1.4 | `pnpm vitest run tests/integration/d2/confirm-plan.integration.test.ts` | All D2 cases still pass against a migrated v3 database — no D2 behaviour regressed. |
-| V1.5 | `pnpm typecheck` | Zero errors; the schema registry exposes the v3 record kinds and index names as typed constants so T2, T9 and T12 compile against them rather than against string literals. |
-| V1.6 | `pnpm vitest run tests/integration/persistence/schema-v3-migration.test.ts -t "seed revision record"` | After migration the seed-manifest revision record reads `2`; before T13 runs, no v3 seed identity exists. |
+| V1.1 | `npx vitest run tests/integration/persistence/schema-v3-migration.test.ts` | The migration report reads `fromVersion: 2`, `toVersion: 3`, lists exactly the record kinds and indexes of items 1–3 above, reports `recordsRewritten: 0`, and a second run over the same database reports `no-op`. |
+| V1.2 | `npx vitest run tests/integration/persistence/schema-v3-migration.test.ts -t "v2 dump is preserved"` | The v2 store/index dump taken before migration is byte-identical to the v2 content after migration for every pre-existing store; the only diff is the added v3 record kinds and indexes. |
+| V1.3 | `npx vitest run tests/integration/persistence/schema-v3-migration.test.ts -t "abort leaves v2 usable"` | With an abort injected after the candidate store is created, the live pointer still resolves the v2 database, `Workspace.getStatus` reports the v2 schema, and a D2 confirm-Plan integration case still passes unchanged. |
+| V1.4 | `npx vitest run tests/integration/d2/confirm-plan.integration.test.ts` | All D2 cases still pass against a migrated v3 database — no D2 behaviour regressed. |
+| V1.5 | `npm run typecheck` | Zero errors; the schema registry exposes the v3 record kinds and index names as typed constants so T2, T9 and T12 compile against them rather than against string literals. |
+| V1.6 | `npx vitest run tests/integration/persistence/schema-v3-migration.test.ts -t "seed revision record"` | After migration the seed-manifest revision record reads `2`; before T13 runs, no v3 seed identity exists. |
 
-The exact package versions behind `pnpm vitest`, `pnpm typecheck` and the browser tooling are
+The exact package versions behind `npx vitest`, `npm run typecheck` and the browser tooling are
 deliberately deferred to the Phase 6 version profile (`planning-decisions-2026-10-10.md:166-185`), so
 these commands name scripts, not versions; the script names are the ones D1:T1 pins once.
 
@@ -506,7 +506,7 @@ touches the fact store; and after a full page-equivalent restart the store dump 
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| P1 | `pnpm vitest run tests/unit/trade-record/position-change-facts.test.ts -t "write nothing"` — fails because `prepareChange` does not yet exist and the seam throws un-implemented | Same command — passes; the returned candidate has no durable identity and the store dump is unchanged |
+| P1 | `npx vitest run tests/unit/trade-record/position-change-facts.test.ts -t "write nothing"` — fails because `prepareChange` does not yet exist and the seam throws un-implemented | Same command — passes; the returned candidate has no durable identity and the store dump is unchanged |
 | P2 | `… -t "no durable identity"` — fails because candidate references are currently filled with reserved durable ids | Same command — passes; two preparations of the same change return equal candidate references and equal digests |
 | P3 | `… -t "declared member order"` — fails because the candidate carries no declared order and both same-time Executions sort as equal | Same command — passes; `FactOrder` yields `EX-1` then `EX-2` from the declared order alone |
 | P4 | `… -t "EconomicTime is not Save Time"` — fails because ordering currently uses insertion order | Same command — passes; the earlier-EconomicTime revision sorts first despite being saved later |
@@ -554,7 +554,7 @@ attempts, proving the candidate stage is nonmutating.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| C1 | `pnpm vitest run tests/unit/trade-workflows/record-position-change-candidate.test.ts -t "single opening Execution"` — fails because the variant is not implemented | Same command — passes; one candidate Position Change, one Execution, canonical digest |
+| C1 | `npx vitest run tests/unit/trade-workflows/record-position-change-candidate.test.ts -t "single opening Execution"` — fails because the variant is not implemented | Same command — passes; one candidate Position Change, one Execution, canonical digest |
 | C2 | `… -t "names a Planned Leg"` — fails because a missing intent is currently accepted | Same command — passes; typed issue names the offending Execution |
 | C3 | `… -t "Unplanned intent is not installed"` — fails because the explicit-unplanned intent is currently treated as valid | Same command — passes; typed validation result, no candidate |
 | C4 | `… -t "would leave zero exposure"` — fails because a flattening change currently builds a candidate | Same command — passes; typed result names the closing variant |
@@ -599,7 +599,7 @@ requested).
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| D1 | `pnpm vitest run tests/unit/trade-analysis/derive-position.test.ts -t "+100.00 XYZ"` — fails because `derive` returns no Instrument Positions | Same command — passes; one Position of +100.00 XYZ |
+| D1 | `npx vitest run tests/unit/trade-analysis/derive-position.test.ts -t "+100.00 XYZ"` — fails because `derive` returns no Instrument Positions | Same command — passes; one Position of +100.00 XYZ |
 | D2 | `… -t "two open Lots in FactOrder"` — fails because Lots are not derived | Same command — passes; exact basis and no fee field on either Lot |
 | D3 | `… -t "collection order"` — fails because ordering currently follows input order | Same command — passes; EX-1 precedes EX-2 in both orders |
 | D4 | `… -t "Voided version"` — fails because Voided versions are currently replayed as effective | Same command — passes; Position +60.00 with one Lot |
@@ -645,7 +645,7 @@ substitute; the identical assertion is repeated against the browser engine in T2
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| F1 | `pnpm vitest run tests/unit/trade-analysis/derive-fifo-matches.test.ts -t "two links of 60.00 and 10.00"` — fails because no links are produced | Same command — passes; the exact two-link set |
+| F1 | `npx vitest run tests/unit/trade-analysis/derive-fifo-matches.test.ts -t "two links of 60.00 and 10.00"` — fails because no links are produced | Same command — passes; the exact two-link set |
 | F2 | `… -t "exactly the four fields"` — fails because links currently copy basis onto the record | Same command — passes; only opening fact, disposing fact, quantity and policy |
 | F3 | `… -t "consumes that Lot exactly"` — fails because an exactly consumed Lot leaves a zero-quantity link | Same command — passes; no zero-quantity link or remainder |
 | F4 | `… -t "exceeds the effective Position"` — fails because an over-disposal currently produces a negative Lot | Same command — passes; typed incoherent-facts rejection |
@@ -693,7 +693,7 @@ derived figure were wrong; the absolute expected values are what pin the exclusi
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| G1 | `pnpm vitest run tests/unit/trade-analysis/derive-fee-exclusion.test.ts -t "read the recorded fees"` — fails because the fee is not captured on the Execution fact | Same command — passes; 1.20 and 0.80 read back exactly |
+| G1 | `npx vitest run tests/unit/trade-analysis/derive-fee-exclusion.test.ts -t "read the recorded fees"` — fails because the fee is not captured on the Execution fact | Same command — passes; 1.20 and 0.80 read back exactly |
 | G2 | `… -t "fees of 0.00 and 2.70"` — fails because fees are currently folded into derived figures | Same command — passes; identical derived values |
 | G3 | `… -t "Value(65.00) with the fixtures' non-zero fees"` — fails because no realized figure is produced | Same command — passes; 65.00, fees excluded |
 | G4 | `… -t "no allocated-fee, consumed-fee, remainingOpeningFees"` — fails because an allocated-fee output currently exists | Same command — passes; no fee component anywhere in the output |
@@ -741,7 +741,7 @@ disposal is D6's persisted command.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| H1 | `pnpm vitest run tests/unit/trade-analysis/derive-realized-pnl.test.ts -t "Value(65.00)"` — fails because realized P&L is not derived | Same command — passes; exact 65.00, fees excluded |
+| H1 | `npx vitest run tests/unit/trade-analysis/derive-realized-pnl.test.ts -t "Value(65.00)"` — fails because realized P&L is not derived | Same command — passes; exact 65.00, fees excluded |
 | H2 | `… -t "realized 60.00"` — fails because per-match components are absent | Same command — passes; proceeds, basis and realized exact, with no fee component |
 | H3 | `… -t "realized 5.00"` — fails because the second match is not broken out | Same command — passes; no fee component of any kind |
 | H4 | `… -t "Value(20.00)"` — fails because a losing final disposal is not yet accumulated | Same command — passes; cumulative 20.00 and match minus 45.00 |
@@ -789,7 +789,7 @@ unresolved resolution point instead of a fabricated one. Candidate fixture F2 as
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| J1 | `pnpm vitest run tests/unit/trade-analysis/derive-lifecycle.test.ts -t "Open with agreement Agree"` — fails because expected lifecycle is not derived | Same command — passes; Open and Agree |
+| J1 | `npx vitest run tests/unit/trade-analysis/derive-lifecycle.test.ts -t "Open with agreement Agree"` — fails because expected lifecycle is not derived | Same command — passes; Open and Agree |
 | J2 | `… -t "expected lifecycle Planned"` — fails because an empty fact set currently yields Open | Same command — passes; Planned |
 | J3 | `… -t "candidate fixture F2"` — fails because flat exposure currently yields Open | Same command — passes; Closed |
 | J4 | `… -t "never repair it"` — fails because disagreement is currently thrown instead of reported | Same command — passes; structured disagreement with stored and expected values |
@@ -839,7 +839,7 @@ the Journal participant) each leave the pre-command dump byte-identical with no 
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| K1 | `pnpm vitest run tests/integration/trade-record/apply-position-change.test.ts -t "one readwrite transaction"` — fails because `applyPreparedChange` writes nothing | Same command — passes; all five effect families visible together |
+| K1 | `npx vitest run tests/integration/trade-record/apply-position-change.test.ts -t "one readwrite transaction"` — fails because `applyPreparedChange` writes nothing | Same command — passes; all five effect families visible together |
 | K2 | `… -t "does not cover the exact candidate set"` — fails because an incomplete reconciliation is currently applied | Same command — passes; typed no-write result |
 | K3 | `… -t "base Trade revision"` — fails because stale revisions are currently staged | Same command — passes; abort before staging with the current revision |
 | K4 | `… -t "pre-command values"` — fails because the lifecycle value currently survives an abort | Same command — passes; both lifecycle and facts revert |
@@ -883,7 +883,7 @@ fixtures is carried in §8.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| L1 | `pnpm vitest run tests/unit/trade-analysis/derive-lot-agreement.test.ts -t "Agree with no finding"` — fails because agreement is not computed | Same command — passes; Agree |
+| L1 | `npx vitest run tests/unit/trade-analysis/derive-lot-agreement.test.ts -t "Agree with no finding"` — fails because agreement is not computed | Same command — passes; Agree |
 | L2 | `… -t "missing link triple"` — fails because an absent recorded link currently passes silently | Same command — passes; one finding naming the triple |
 | L3 | `… -t "unexpected recorded link"` — fails because extra recorded links are currently ignored | Same command — passes; one finding naming the extra link |
 | L4 | `… -t "both quantities"` — fails because quantity mismatches are currently unreported | Same command — passes; recorded and derived quantities both present |
@@ -926,7 +926,7 @@ by one index query rather than one read per Trade, which is the boundedness prop
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| M1 | `pnpm vitest run tests/integration/trade-record/lifecycle-index.test.ts -t "within one commit"` — fails because the index is not yet moved | Same command — passes; Planned removed and Open added |
+| M1 | `npx vitest run tests/integration/trade-record/lifecycle-index.test.ts -t "within one commit"` — fails because the index is not yet moved | Same command — passes; Planned removed and Open added |
 | M2 | `… -t "CurrentState Open"` — fails because the Open partition is empty | Same command — passes; the Trade is returned |
 | M3 | `… -t "CurrentState Planned"` — fails because the stale Planned entry remains | Same command — passes; no Planned entry |
 | M4 | `… -t "pre-command dump"` — fails because abort currently leaves an orphan Open entry | Same command — passes; both partitions unchanged |
@@ -972,7 +972,7 @@ two.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| N1 | `pnpm vitest run tests/unit/journal/prepare-position-change-reflection.test.ts -t "one completed Entry"` — fails because `prepareEffects` has no Position Change variant | Same command — passes; Entry with Source, Anchor, origin and snapshot |
+| N1 | `npx vitest run tests/unit/journal/prepare-position-change-reflection.test.ts -t "one completed Entry"` — fails because `prepareEffects` has no Position Change variant | Same command — passes; Entry with Source, Anchor, origin and snapshot |
 | N2 | `… -t "one JournalDecline"` — fails because decline is not represented | Same command — passes; decline with optional reason and no Entry |
 | N3 | `… -t "no Entry, version or draft"` — fails because Defer currently prepares a blank Entry | Same command — passes; a Debt candidate only |
 | N4 | `… -t "not match the Close Review key"` — fails because keys are currently compared by Entry Type alone | Same command — passes; the two key shapes are distinct |
@@ -1014,7 +1014,7 @@ idempotent success, and the trader-revised Plan Reflection definition untouched.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| O1 | `pnpm vitest run tests/integration/journal/seed-v3.test.ts -t "exactly the Position Change Reflection"` — fails because the v3 seed step does not exist | Same command — passes; two identities added |
+| O1 | `npx vitest run tests/integration/journal/seed-v3.test.ts -t "exactly the Position Change Reflection"` — fails because the v3 seed step does not exist | Same command — passes; two identities added |
 | O2 | `… -t "exact prompt order"` — fails because the definition is not yet seeded | Same command — passes; field-for-field equality with the contract |
 | O3 | `… -t "rewrite no revision"` — fails because repeat seeding currently re-appends definitions | Same command — passes; idempotent success |
 | O4 | `… -t "preserve the Plan Reflection definition"` — fails because the seed currently resets earlier definitions | Same command — passes; D1/D2 and trader revisions intact |
@@ -1059,7 +1059,7 @@ is frozen.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| P1 | `pnpm vitest run tests/unit/journal/defer-debt.test.ts -t "exact trigger-time definition snapshot"` — fails because Defer currently writes nothing | Same command — passes; one Debt with the frozen snapshot and no Entry |
+| P1 | `npx vitest run tests/unit/journal/defer-debt.test.ts -t "exact trigger-time definition snapshot"` — fails because Defer currently writes nothing | Same command — passes; one Debt with the frozen snapshot and no Entry |
 | P2 | `… -t "due semantics and the settlement route"` — fails because the Debt lacks Anchor, origin and route fields | Same command — passes; all four fields present |
 | P3 | `… -t "later reviseDefinition"` — fails because the Debt currently re-reads the latest definition | Same command — passes; snapshot revision and labels unchanged |
 | P4 | `… -t "no incomplete Entry"` — fails because Defer currently leaves a blank Entry in the timeline | Same command — passes; Entry count unchanged |
@@ -1106,7 +1106,7 @@ Journal participant failing and asserts an unchanged dump.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Q1 | `pnpm vitest run tests/unit/trade-workflows/record-position-change.test.ts -t "writing nothing before the transaction"` — fails because orchestration is not implemented | Same command — passes; the ordered sequence and no early write |
+| Q1 | `npx vitest run tests/unit/trade-workflows/record-position-change.test.ts -t "writing nothing before the transaction"` — fails because orchestration is not implemented | Same command — passes; the ordered sequence and no early write |
 | Q2 | `… -t "exactly one Position Change Reflection outcome"` — fails because each Execution currently produces its own outcome | Same command — passes; one outcome for the decision |
 | Q3 | `… -t "stale participant"` — fails because stale revisions are currently applied | Same command — passes; typed no-write conflict |
 | Q4 | `… -t "RuntimeNotWritable"` — fails because the branch is not yet returned | Same command — passes; no write attempted |
@@ -1151,7 +1151,7 @@ assertions against the browser engine in T22 with the `fake-indexeddb` fidelity 
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| R1 | `pnpm vitest run tests/integration/workflows/atomic-commit.test.ts -t "only after oncomplete"` — fails because effects currently become visible during staging | Same command — passes; all-or-nothing visibility |
+| R1 | `npx vitest run tests/integration/workflows/atomic-commit.test.ts -t "only after oncomplete"` — fails because effects currently become visible during staging | Same command — passes; all-or-nothing visibility |
 | R2 | `… -t "pre-command dump"` — fails because an abort currently leaves staged rows | Same command — passes; dump byte-identical for four abort points |
 | R3 | `… -t "recheck every base revision"` — fails because apply currently trusts the prepared digest | Same command — passes; typed abort naming the changed participant |
 | R4 | `… -t "no durable identity or placeholder"` — fails because candidate identities are currently readable pre-commit | Same command — passes; NotFound before commit |
@@ -1198,7 +1198,7 @@ with no projection bodies.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| S1 | `pnpm vitest run tests/unit/workflows/position-change-result.test.ts -t "committed FactRevision"` — fails because the result is not yet revision-bound | Same command — passes; every projection bound to the new revision |
+| S1 | `npx vitest run tests/unit/workflows/position-change-result.test.ts -t "committed FactRevision"` — fails because the result is not yet revision-bound | Same command — passes; every projection bound to the new revision |
 | S2 | `… -t "durable-identity mapping"` — fails because candidate references are not translated | Same command — passes; each candidate maps to its durable identity |
 | S3 | `… -t "derivation the command had to establish"` — fails because the result carries no derivation | Same command — passes; Position, Lot, fee and lifecycle values present |
 | S4 | `… -t "Journal outcome projection"` — fails because the result omits the Entry | Same command — passes; the outcome projection is present |
@@ -1247,7 +1247,7 @@ untouched.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| T1 | `pnpm vitest run tests/unit/presentation/fill-form-model.test.ts -t "fixed Instrument"` — fails because the form model does not exist | Same command — passes; the leg Instrument is fixed and fields are decimal text |
+| T1 | `npx vitest run tests/unit/presentation/fill-form-model.test.ts -t "fixed Instrument"` — fails because the form model does not exist | Same command — passes; the leg Instrument is fixed and fields are decimal text |
 | T2 | `… -t "one Position Change, one Execution"` — fails because the model currently submits no command | Same command — passes; command carries intent and disposition |
 | T3 | `… -t "typed field errors"` — fails because invalid input currently submits | Same command — passes; errors returned and no command |
 | T4 | `… -t "expose no enabled Save action"` — fails because Save is currently enabled during Loading | Same command — passes; Loading with Save disabled |
@@ -1290,7 +1290,7 @@ view model output.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| U1 | `pnpm vitest run tests/unit/presentation/position-lots-view-model.test.ts -t "two open Lots"` — fails because no detail subset exists | Same command — passes; both Lots with exact basis and no fee field |
+| U1 | `npx vitest run tests/unit/presentation/position-lots-view-model.test.ts -t "two open Lots"` — fails because no detail subset exists | Same command — passes; both Lots with exact basis and no fee field |
 | U2 | `… -t "remainder Lot of 30.00"` — fails because the reduction is not reflected | Same command — passes; remainder and Value(65.00) |
 | U3 | `… -t "two matches with 60.00 and 5.00"` — fails because the breakdown is absent | Same command — passes; both matches, no fee component |
 | U4 | `… -t "never merged"` — fails because Lot Match rows currently render as Position rows | Same command — passes; two distinct row kinds |
@@ -1333,7 +1333,7 @@ durable and the stored lifecycle `Open`; and each outcome is the only current ou
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| V1 | `pnpm vitest run tests/unit/presentation/reflection-choice-model.test.ts -t "three explicit choices"` — fails because the model does not exist | Same command — passes; the chosen disposition is submitted |
+| V1 | `npx vitest run tests/unit/presentation/reflection-choice-model.test.ts -t "three explicit choices"` — fails because the model does not exist | Same command — passes; the chosen disposition is submitted |
 | V2 | `… -t "block Complete"` — fails because an unanswered required prompt currently completes | Same command — passes; each missing prompt named |
 | V3 | `… -t "optional reason"` — fails because decline is not represented | Same command — passes; decline with reason and no answers |
 | V4 | `… -t "leave the factual Trade recording to complete"` — fails because Defer currently blocks the Trade commit | Same command — passes; facts commit with the Debt |
@@ -1378,14 +1378,14 @@ approved stack fixes, so no component-testing library is introduced.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| W1 | `pnpm vitest run tests/unit/presentation/viewport-mode.test.ts -t "crosses it live"` — fails because the mode model does not exist | Same command — passes; both modes selected by width |
+| W1 | `npx vitest run tests/unit/presentation/viewport-mode.test.ts -t "crosses it live"` — fails because the mode model does not exist | Same command — passes; both modes selected by width |
 | W2 | `… -t "every unsaved fill-form value"` — fails because a mode switch currently drops form state | Same command — passes; all state preserved |
 | W3 | `… -t "accessible name and validation text"` — fails because names are not yet built | Same command — passes; every control named |
 | W4 | `… -t "radio-group semantics"` — fails because chips currently expose button semantics only | Same command — passes; correct roles for both chip kinds |
 | W5 | `… -t "sign and unit in the accessible text"` — fails because formatting omits units | Same command — passes; sign and unit present |
 | W6 | `… -t "focus on the first invalid field"` — fails because focus is not managed | Same command — passes; logical order and focus placement |
 | W7 | `… -t "equivalent fields, actions, validation"` — fails because narrow mode currently omits the fee field | Same command — passes; equivalence in both modes |
-| W8 | `pnpm playwright test tests/browser/d3-axe.spec.ts` — fails because the D3 surfaces are not yet audited | Same command — passes; zero axe-core violations at both widths |
+| W8 | `npx playwright test tests/browser/d3-axe.spec.ts` — fails because the D3 surfaces are not yet audited | Same command — passes; zero axe-core violations at both widths |
 
 ### Phase L8 — integration suite and critic gate
 
@@ -1424,13 +1424,13 @@ recorded in the suite's machine-readable summary, and neither bypasses an applic
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| X1 | `pnpm vitest run tests/integration/d3/record-entry.test.ts -t "two opening fills and a partial reduction"` — fails because the suite has no D3 case yet and the workflow does not exist | Same command — passes; the full durable outcome |
+| X1 | `npx vitest run tests/integration/d3/record-entry.test.ts -t "two opening fills and a partial reduction"` — fails because the suite has no D3 case yet and the workflow does not exist | Same command — passes; the full durable outcome |
 | X2 | `… -t "deferred"` — fails because Defer currently writes no Debt | Same command — passes; one Debt and no Entry |
 | X3 | `… -t "declined"` — fails because decline is not yet staged | Same command — passes; one decline and no Entry |
 | X4 | `… -t "aborts injected at four participant boundaries"` — fails because abort handling is absent | Same command — passes; byte-identical dumps and consistent restart |
 | X5 | `… -t "after a restart"` — fails because values are currently served from a cache | Same command — passes; identical exact decimals |
-| X6 | `pnpm playwright test tests/browser/d3-durability.spec.ts` — fails because the real-engine assertions do not exist | Same command — passes; recorded links, index and fees match the Node results |
-| X7 | `pnpm vitest run tests/integration/cumulative.test.ts` — fails because the D1/D2 suites do not yet run together with D3 | Same command — passes; all cumulative cases green |
+| X6 | `npx playwright test tests/browser/d3-durability.spec.ts` — fails because the real-engine assertions do not exist | Same command — passes; recorded links, index and fees match the Node results |
+| X7 | `npx vitest run tests/integration/cumulative.test.ts` — fails because the D1/D2 suites do not yet run together with D3 | Same command — passes; all cumulative cases green |
 | X8 | `… -t "no stub, mock or canned response"` — fails because the suite currently stubs Journal | Same command — passes; module-graph assertion finds no substitute |
 
 #### T23 — `S` Independent browser-critic gate for D3
@@ -1449,11 +1449,11 @@ production change, and after a fix a further fresh critic repeats the complete D
 | # | Command | Expected result |
 |---|---|---|
 | V23.1 | Start the runtime from the worktree root with the workspace dev script, which reads `DEV_PORT` from the gitignored `.env.local` (5177) rather than a hardcoded port | The production UI is reachable at `http://127.0.0.1:5177` and Runtime Readiness reports `Writable`; the exact script name is the one D1:T1 pins at Phase 6 |
-| V23.2 | `pnpm playwright test tests/browser/d3-critic-flows.spec.ts --project=chromium` | All nine §4 flows pass at both the narrow and the wide viewport; the structured report is written under `test-results/d3-critic/` with one entry per flow and viewport |
-| V23.3 | `pnpm playwright test tests/browser/d3-axe.spec.ts --project=chromium` | Zero axe-core violations on the fill, reflection and trade detail surfaces at both widths |
+| V23.2 | `npx playwright test tests/browser/d3-critic-flows.spec.ts --project=chromium` | All nine §4 flows pass at both the narrow and the wide viewport; the structured report is written under `test-results/d3-critic/` with one entry per flow and viewport |
+| V23.3 | `npx playwright test tests/browser/d3-axe.spec.ts --project=chromium` | Zero axe-core violations on the fill, reflection and trade detail surfaces at both widths |
 | V23.4 | Restart the runtime, re-open the Trade recorded in flow 4, and reload the page | Position, open Lots, realized P&L, stored lifecycle `Open`, the index entry and the Journal outcome are identical to the pre-restart values, each Execution still carries its recorded fee, and no placeholder Entry appears for the deferred flow |
 | V23.5 | Re-run V23.2 and V23.3 after any critic-found fix, with a newly spawned critic agent | A fresh critic reports every D3 flow passing; the fix was preceded by a failing automated test through the most specific seam |
-| V23.6 | `pnpm playwright test tests/browser --project=chromium` | The cumulative D1–D3 browser flows pass together; the automated suites, not the critic, carry regression responsibility for earlier deliverables |
+| V23.6 | `npx playwright test tests/browser --project=chromium` | The cumulative D1–D3 browser flows pass together; the automated suites, not the critic, carry regression responsibility for earlier deliverables |
 
 **Depends on it:** the deliverable is not complete without a passing fresh-critic report
 (`planning-protocol.md:131-135`). Flows 2–8 in §4 are the observable proof that the advertised
@@ -1533,9 +1533,9 @@ pinned at Phase 6).
 **Valid red.** One test at a time, added through the identified public seam of the task, run before
 the production behaviour exists, and observed to fail *because that behaviour is absent or
 incorrect*. The red command for a unit case is
-`pnpm vitest run tests/unit/<area>/<file>.test.ts -t "<case substring>"`; for a fake-indexeddb-backed
-integration case it is `pnpm vitest run tests/integration/<area>/<file>.test.ts -t "<case substring>"`;
-for a real-engine case it is `pnpm playwright test tests/browser/<file>.spec.ts`. Green is the same
+`npx vitest run tests/unit/<area>/<file>.test.ts -t "<case substring>"`; for a fake-indexeddb-backed
+integration case it is `npx vitest run tests/integration/<area>/<file>.test.ts -t "<case substring>"`;
+for a real-engine case it is `npx playwright test tests/browser/<file>.spec.ts`. Green is the same
 command passing, together with every already-green case in that task's `describe` group, with no other
 command changing in between. Valid red also requires the failing assertion to name the seam — for
 example a `Value(65.00)` mismatch from `derive().realizedToDate` or a missing recorded-link finding
@@ -1633,7 +1633,7 @@ change, so the requirement is recorded here explicitly.
 
 **6. The pinned version profile is deferred.** Decision PD3 fixes the stack but not the versions
 (`planning-decisions-2026-10-10.md:166`). Every command in this document names a script
-(`pnpm vitest`, `pnpm playwright`, `pnpm typecheck`) and never a version; the script names and the dev
+(`npx vitest`, `npx playwright`, `npm run typecheck`) and never a version; the script names and the dev
 server port come from D1's pinned toolchain task and `.env.local` (`DEV_PORT=5177`). This breakdown
 cannot be executed end to end until that profile exists.
 

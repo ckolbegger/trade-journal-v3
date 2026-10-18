@@ -197,21 +197,21 @@ Each line reads T*n* — Blocking edges: its prerequisites · Consumed by: the t
 
 Stands up the Vite + React + TypeScript-strict application shell, the composition root, and the pinned toolchain profile of decision PD3 (`planning-decisions-2026-10-10.md:171-185`). It fixes the *set* — TypeScript strict, Vite, React, IndexedDB behind the persistence seam, `decimal.js`, an injected `Clock`, a versioned U.S. session calendar, a Workbox-assisted service worker, Vitest, Playwright, and ESLint — and resolves it through one lockfile. Exact version numbers are pinned at Phase 6 (`planning-protocol.md:193`); this task is where they are frozen, not where they are guessed. It declares the canonical script names every later command in this breakdown uses, and the loopback secure-context origin from `DEV_PORT` in `.env.local`, which `vite.config.ts` and `playwright.config.ts` must both read. Startup performs no network request and installs no domain module.
 
-**The TypeScript 7 split is part of this task, not an accident.** The set above is installed through the side-by-side layout recorded in `plan/freeze-2026-10-17.md` §2, because TypeScript 7.0.x ships no programmatic API while `typescript-eslint@8.71.2` declares `typescript >=4.8.4 <6.1.0`. `@typescript/native` aliases `typescript@7.0.2` and is the only source of the `tsc` binary; the name `typescript` resolves to `@typescript/typescript6@6.0.2`, which ships only `tsc6` and re-exports the 6.0 API. So `pnpm typecheck` runs `tsc` 7.0.2, `tsc6` exists for comparison and must never gate anything, and application code, `scripts/` and T2's checker must not import `typescript` as an API. The ESLint config is flat, composes `@eslint/js`'s recommended set with `typescript-eslint`'s syntactic `recommended`, and sets no `projectService` and no `project`, so no rule depends on the 6.0 API's type information and the two compilers cannot disagree behind a green gate.
+**The TypeScript 7 split is part of this task, not an accident.** The set above is installed through the side-by-side layout recorded in `plan/freeze-2026-10-17.md` §2, because TypeScript 7.0.x ships no programmatic API while `typescript-eslint@8.71.2` declares `typescript >=4.8.4 <6.1.0`. `@typescript/native` aliases `typescript@7.0.2` and is the only source of the `tsc` binary; the name `typescript` resolves to `@typescript/typescript6@6.0.2`, which ships only `tsc6` and re-exports the 6.0 API. So `npm run typecheck` runs `tsc` 7.0.2, `tsc6` exists for comparison and must never gate anything, and application code, `scripts/` and T2's checker must not import `typescript` as an API. The ESLint config is flat, composes `@eslint/js`'s recommended set with `typescript-eslint`'s syntactic `recommended`, and sets no `projectService` and no `project`, so no rule depends on the 6.0 API's type information and the two compilers cannot disagree behind a green gate.
 
 **Exact verification**
 
 | # | Command | Expected result |
 |---|---|---|
-| V1.1 | `pnpm install --frozen-lockfile` | exits 0 and leaves the lockfile unchanged, proving the pinned profile resolves deterministically. |
-| V1.2 | `pnpm exec tsc --noEmit` | exits 0 with `strict` and `noUncheckedIndexedAccess` enabled in `tsconfig.json`; the program covers `src/`, `tests/` and `scripts/`. |
-| V1.3 | `pnpm build` | exits 0; `dist/index.html`, `dist/manifest.webmanifest` and the service-worker entry exist; stdout prints exactly one release identifier. |
-| V1.4 | `pnpm dev` with `DEV_PORT` set in `.env.local` | serves the shell at `http://127.0.0.1:5177`; `grep -n "DEV_PORT" vite.config.ts playwright.config.ts` prints two matches, so neither hardcodes a port. |
-| V1.5 | `pnpm vitest run --reporter=dot` | exits 0 on the shell smoke suite, proving the Node runner is wired through the same toolchain. |
-| V1.6 | `pnpm playwright test tests/browser/shell.spec.ts --project=chromium --project=webkit` | both projects load the shell; the recorded request log contains only the loopback origin, so startup has no network dependency. |
+| V1.1 | `npm ci` | exits 0 and leaves the lockfile unchanged, proving the pinned profile resolves deterministically. |
+| V1.2 | `npx tsc --noEmit` | exits 0 with `strict` and `noUncheckedIndexedAccess` enabled in `tsconfig.json`; the program covers `src/`, `tests/` and `scripts/`. |
+| V1.3 | `npm run build` | exits 0; `dist/index.html`, `dist/manifest.webmanifest` and the service-worker entry exist; stdout prints exactly one release identifier. |
+| V1.4 | `npm run dev` with `DEV_PORT` set in `.env.local` | serves the shell at `http://127.0.0.1:5177`; `grep -n "DEV_PORT" vite.config.ts playwright.config.ts` prints two matches, so neither hardcodes a port. |
+| V1.5 | `npx vitest run --reporter=dot` | exits 0 on the shell smoke suite, proving the Node runner is wired through the same toolchain. |
+| V1.6 | `npx playwright test tests/browser/shell.spec.ts --project=chromium --project=webkit` | both projects load the shell; the recorded request log contains only the loopback origin, so startup has no network dependency. |
 | V1.7 | `grep -rn "console.log" src --include=*.ts` | no output, so release identity is emitted by the build step and not by ad-hoc runtime logging. |
-| V1.8 | `pnpm exec tsc -v && pnpm exec tsc6 -v && pnpm exec eslint --version` | prints `Version 7.0.2`, then the 6.0 compatibility version, then `v10.13.0`: the CLI is 7, the API package is 6, and the linter is installed. |
-| V1.9 | `printf 'const probe: any = 1;\nexport { probe };\n' > src/lint-probe.ts; pnpm lint; rc=$?; rm src/lint-probe.ts; exit $rc` | exits non-zero and names `src/lint-probe.ts` against an enabled rule, proving the parser and the TypeScript rules actually run rather than a config that silently matches nothing. `pnpm lint` on the clean tree exits 0. |
+| V1.8 | `npx tsc -v && npx tsc6 -v && npx eslint --version` | prints `Version 7.0.2`, then the 6.0 compatibility version, then `v10.13.0`: the CLI is 7, the API package is 6, and the linter is installed. |
+| V1.9 | `printf 'const probe: any = 1;\nexport { probe };\n' > src/lint-probe.ts; npm run lint; rc=$?; rm src/lint-probe.ts; exit $rc` | exits non-zero and names `src/lint-probe.ts` against an enabled rule, proving the parser and the TypeScript rules actually run rather than a config that silently matches nothing. `npm run lint` on the clean tree exits 0. |
 
 **Depends on it:** every other D1 task. Without a compiling shell, a runnable runner and declared script names, no task in this breakdown has a reproducible command; T2, T3, T4, T6, T7 and T8 are the layer seams that only exist once the shell composes them.
 
@@ -220,18 +220,18 @@ Stands up the Vite + React + TypeScript-strict application shell, the compositio
 - **Blocking edges:** T1.
 - **Consumed by:** T3, T9.
 
-Mechanises `overview.md:114-121` so the dependency rules fail the build instead of being asserted in prose. One repo-local checker (`pnpm lint:layers`) parses every import under `src/` and `tests/` and fails on any violation of the call matrix (`overview.md:102-113`) or the additional prohibitions. The enforced rules are: a fact module never imports a coordinator; `trade-analysis` and `performance-analysis` import no storage, clock, calendar or other module; `performance-analysis` never reaches raw Executions; presentation never imports the persistence seam; `decimal.js` is imported only by the value layer; `indexedDB` appears only inside `src/persistence/indexeddb`; browser host APIs appear only inside the host-capability port. The rule set is data, so a new module must declare its layer and permitted edges or the checker fails with an undeclared-module error rather than silently allowing everything.
+Mechanises `overview.md:114-121` so the dependency rules fail the build instead of being asserted in prose. One repo-local checker (`npm run lint:layers`) parses every import under `src/` and `tests/` and fails on any violation of the call matrix (`overview.md:102-113`) or the additional prohibitions. The enforced rules are: a fact module never imports a coordinator; `trade-analysis` and `performance-analysis` import no storage, clock, calendar or other module; `performance-analysis` never reaches raw Executions; presentation never imports the persistence seam; `decimal.js` is imported only by the value layer; `indexedDB` appears only inside `src/persistence/indexeddb`; browser host APIs appear only inside the host-capability port. The rule set is data, so a new module must declare its layer and permitted edges or the checker fails with an undeclared-module error rather than silently allowing everything.
 
 **Exact verification**
 
 | # | Command | Expected result |
 |---|---|---|
-| V2.1 | `pnpm lint:layers` | exits 0 and prints `0 violations` over the current tree. |
-| V2.2 | `pnpm lint:layers --fixtures tests/lint-fixtures` | exits 0 only when every checked-in fixture — one forbidden import per rule — is reported; the summary prints one violation per fixture plus the fixture count. |
+| V2.1 | `npm run lint:layers` | exits 0 and prints `0 violations` over the current tree. |
+| V2.2 | `npm run lint:layers --fixtures tests/lint-fixtures` | exits 0 only when every checked-in fixture — one forbidden import per rule — is reported; the summary prints one violation per fixture plus the fixture count. |
 | V2.3 | `grep -rn "from \"decimal.js\"" src --include=*.ts \| grep -v "^src/values/"` | no output, so JS-number arithmetic cannot leak past the value layer. |
 | V2.4 | `grep -rn "indexedDB" src --include=*.ts \| grep -v "^src/persistence/indexeddb/"` | no output. |
 | V2.5 | `grep -rn "navigator\.\|serviceWorker\|showSaveFilePicker\|showOpenFilePicker" src --include=*.ts \| grep -v "^src/platform/host/"` | no output, so host APIs are reachable only through T7's port. |
-| V2.6 | `pnpm build` | exits 0 and runs `lint:layers` first; a fixture run with an injected violation makes the composed command exit non-zero, proving the lint is on the build path and not advisory. |
+| V2.6 | `npm run build` | exits 0 and runs `lint:layers` first; a fixture run with an injected violation makes the composed command exit non-zero, proving the lint is on the build path and not advisory. |
 
 **Depends on it:** T3's harness and T9's schema must be written inside the permitted dependency direction; without this task a presentation module could reach into the persistence seam or an analysis module could read storage, and neither `overview.md:116-120` nor rule 4 of `overview.md:14` would be checked by anything.
 
@@ -246,12 +246,12 @@ Wires the two runners the stack fixes: Vitest for Node and component-level tests
 
 | # | Command | Expected result |
 |---|---|---|
-| V3.1 | `pnpm vitest run --reporter=dot` | exits 0 and prints the harness bootstrap path, the substitution registry path, and the runner version resolved from the lockfile. |
-| V3.2 | `pnpm vitest run tests/harness/substitution-registry.test.ts` | exits 0 only when every registry entry has a non-empty `gap`, `substitutedComponent` and `realEngineCounterpart` field; a missing field fails with the entry name. |
-| V3.3 | `pnpm playwright test tests/browser/harness.spec.ts --project=chromium --project=webkit` | both projects pass against the loopback origin; the report records both engine versions as provenance only, in a field the readiness code never reads. |
+| V3.1 | `npx vitest run --reporter=dot` | exits 0 and prints the harness bootstrap path, the substitution registry path, and the runner version resolved from the lockfile. |
+| V3.2 | `npx vitest run tests/harness/substitution-registry.test.ts` | exits 0 only when every registry entry has a non-empty `gap`, `substitutedComponent` and `realEngineCounterpart` field; a missing field fails with the entry name. |
+| V3.3 | `npx playwright test tests/browser/harness.spec.ts --project=chromium --project=webkit` | both projects pass against the loopback origin; the report records both engine versions as provenance only, in a field the readiness code never reads. |
 | V3.4 | `grep -rn "fake-indexeddb" tests --include=*.ts \| grep -v "^tests/harness/bootstrap"` | no output, so exactly one bootstrap path installs the substitute. |
-| V3.5 | `pnpm vitest run tests/harness/mock-free.test.ts` | exits 0 on the current tree; it fails, naming the file and line, when a file under `tests/integration/` references `vi.mock`, `vi.spyOn`, `sinon` or a canned response fixture for an application dependency. |
-| V3.6 | `pnpm playwright test tests/browser/a11y-smoke.spec.ts` | axe-core runs against the shell and reports 0 violations, proving the accessibility runner is wired before T32 needs it. |
+| V3.5 | `npx vitest run tests/harness/mock-free.test.ts` | exits 0 on the current tree; it fails, naming the file and line, when a file under `tests/integration/` references `vi.mock`, `vi.spyOn`, `sinon` or a canned response fixture for an application dependency. |
+| V3.6 | `npx playwright test tests/browser/a11y-smoke.spec.ts` | axe-core runs against the shell and reports 0 violations, proving the accessibility runner is wired before T32 needs it. |
 
 **Depends on it:** T33's mock-free integration suite and T34's critic gate, and every B task's red/green evidence — without this task a red result cannot be distinguished from a fixture or configuration failure, and no substitution is disclosed (`planning-protocol.md:113,121`).
 
@@ -266,11 +266,11 @@ Installs the single time seam the stack fixes (`planning-decisions-2026-10-10.md
 
 | # | Command | Expected result |
 |---|---|---|
-| V4.1 | `pnpm exec tsc --noEmit` | exits 0; `Clock` and the fixed-instant implementation are exported from the composition root and nowhere else. |
+| V4.1 | `npx tsc --noEmit` | exits 0; `Clock` and the fixed-instant implementation are exported from the composition root and nowhere else. |
 | V4.2 | `grep -rn "Date.now()\|new Date(" src --include=*.ts \| grep -v "^src/platform/clock/"` | no output, proving the seam is the only time source. |
-| V4.3 | `pnpm vitest run tests/platform/clock-injection.test.ts` | the fixed clock returns the injected instant, and two modules composed from the same root observe the identical instant in one process, proving one seam rather than per-module clocks. |
-| V4.4 | `pnpm playwright test tests/browser/clock.spec.ts --project=chromium` | the shell's displayed opening instant equals the instant injected by the harness configuration, not wall-clock time. |
-| V4.5 | `pnpm build` | exits 0 with the production clock wired in the built bundle; `grep -n "platform/clock" dist/assets/*.js` prints at least one match. |
+| V4.3 | `npx vitest run tests/platform/clock-injection.test.ts` | the fixed clock returns the injected instant, and two modules composed from the same root observe the identical instant in one process, proving one seam rather than per-module clocks. |
+| V4.4 | `npx playwright test tests/browser/clock.spec.ts --project=chromium` | the shell's displayed opening instant equals the instant injected by the harness configuration, not wall-clock time. |
+| V4.5 | `npm run build` | exits 0 with the production clock wired in the built bundle; `grep -n "platform/clock" dist/assets/*.js` prints at least one match. |
 
 **Depends on it:** T5's calendar resolves a session from an injected instant; T26 accepts `getStatus(current observation instant)` from it. Without this task no date-dependent result in D1 is reproducible, and `AC-DEL-006`'s repeated-launch evidence could not be compared across runs.
 
@@ -301,10 +301,10 @@ describe("U.S. session calendar resolves exactly one trading date per instant un
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Regular-session date | `pnpm vitest run tests/calendar/session-date.test.ts` — fails because the resolver always returns the calendar date of the instant, so an instant in the holiday closure resolves to a closed date | `pnpm vitest run tests/calendar/session-date.test.ts` — passes with the previous trading date |
-| After-close rollover | `pnpm vitest run tests/calendar/after-close.test.ts` — fails because no close time is consulted, so an instant after the bell resolves to the next day | `pnpm vitest run tests/calendar/after-close.test.ts` — passes with the completed session's date |
-| DST and host time zone | `pnpm vitest run tests/calendar/timezone-invariance.test.ts` — fails under `TZ=Asia/Tokyo` because the first implementation uses the host offset | `pnpm vitest run tests/calendar/timezone-invariance.test.ts` — passes identically under `TZ=UTC` and `TZ=Asia/Tokyo` |
-| Out-of-range instant | `pnpm vitest run tests/calendar/revision-range.test.ts` — fails because the first implementation clamps to the last known date instead of returning `CalendarOutOfRange` | `pnpm vitest run tests/calendar/revision-range.test.ts` — passes with the typed result naming revision and interval |
+| Regular-session date | `npx vitest run tests/calendar/session-date.test.ts` — fails because the resolver always returns the calendar date of the instant, so an instant in the holiday closure resolves to a closed date | `npx vitest run tests/calendar/session-date.test.ts` — passes with the previous trading date |
+| After-close rollover | `npx vitest run tests/calendar/after-close.test.ts` — fails because no close time is consulted, so an instant after the bell resolves to the next day | `npx vitest run tests/calendar/after-close.test.ts` — passes with the completed session's date |
+| DST and host time zone | `npx vitest run tests/calendar/timezone-invariance.test.ts` — fails under `TZ=Asia/Tokyo` because the first implementation uses the host offset | `npx vitest run tests/calendar/timezone-invariance.test.ts` — passes identically under `TZ=UTC` and `TZ=Asia/Tokyo` |
+| Out-of-range instant | `npx vitest run tests/calendar/revision-range.test.ts` — fails because the first implementation clamps to the last known date instead of returning `CalendarOutOfRange` | `npx vitest run tests/calendar/revision-range.test.ts` — passes with the typed result naming revision and interval |
 
 #### T6 — `B` Money, Price, and Quantity value layer over `decimal.js`
 
@@ -332,9 +332,9 @@ describe("Money, Price and Quantity arithmetic is exact and typed at the value-l
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Wide addition | `pnpm vitest run tests/values/money-add.test.ts` — fails because the first implementation stores amounts as `number`, losing the low-order digits | `pnpm vitest run tests/values/money-add.test.ts` — passes with the exact decimal string |
-| Currency mismatch | `pnpm vitest run tests/values/currency.test.ts` — fails because the first implementation coerces both operands to the left operand's currency | `pnpm vitest run tests/values/currency.test.ts` — passes with `CurrencyMismatch` |
-| Persistence round-trip | `pnpm vitest run tests/values/codec-round-trip.test.ts` — fails because the codec serializes through `Number()` and the read-back string differs | `pnpm vitest run tests/values/codec-round-trip.test.ts` — passes with byte-identical decimal strings |
+| Wide addition | `npx vitest run tests/values/money-add.test.ts` — fails because the first implementation stores amounts as `number`, losing the low-order digits | `npx vitest run tests/values/money-add.test.ts` — passes with the exact decimal string |
+| Currency mismatch | `npx vitest run tests/values/currency.test.ts` — fails because the first implementation coerces both operands to the left operand's currency | `npx vitest run tests/values/currency.test.ts` — passes with `CurrencyMismatch` |
+| Persistence round-trip | `npx vitest run tests/values/codec-round-trip.test.ts` — fails because the codec serializes through `Number()` and the read-back string differs | `npx vitest run tests/values/codec-round-trip.test.ts` — passes with byte-identical decimal strings |
 
 #### T7 — `S` Browser-host capability port: readiness, protection, download, file read
 
@@ -347,11 +347,11 @@ Provides one narrow port for the browser-host delivery capabilities of `overview
 
 | # | Command | Expected result |
 |---|---|---|
-| V7.1 | `pnpm exec tsc --noEmit` | exits 0; the port's result types are the only host-derived types crossing the boundary, and no raw `StorageManager`, `Cache` or `FileSystemHandle` type appears outside the port. |
+| V7.1 | `npx tsc --noEmit` | exits 0; the port's result types are the only host-derived types crossing the boundary, and no raw `StorageManager`, `Cache` or `FileSystemHandle` type appears outside the port. |
 | V7.2 | `grep -rn "navigator\.\|caches\.\|registration\." src --include=*.ts \| grep -v "^src/platform/host/"` | no output. |
-| V7.3 | `pnpm vitest run tests/platform/host-port.test.ts` | with a capability absent from the test implementation the port returns typed `NotExposed`; with it present the port returns `Protected`, `BestEffort(reason)` or `Unavailable(reason)` exactly as reported, and never throws. |
-| V7.4 | `pnpm playwright test tests/browser/host-port.spec.ts --project=chromium` | the protection state read at launch is recorded into readiness evidence; a download call produces a file in Playwright's download directory; the file-read call reads a file chosen through an ordinary file input. |
-| V7.5 | `pnpm vitest run tests/platform/host-port-no-gate.test.ts` | the port exposes no operation that returns a readiness decision, proving the four checks are decided in T20 and not by the host adapter. |
+| V7.3 | `npx vitest run tests/platform/host-port.test.ts` | with a capability absent from the test implementation the port returns typed `NotExposed`; with it present the port returns `Protected`, `BestEffort(reason)` or `Unavailable(reason)` exactly as reported, and never throws. |
+| V7.4 | `npx playwright test tests/browser/host-port.spec.ts --project=chromium` | the protection state read at launch is recorded into readiness evidence; a download call produces a file in Playwright's download directory; the file-read call reads a file chosen through an ordinary file input. |
+| V7.5 | `npx vitest run tests/platform/host-port-no-gate.test.ts` | the port exposes no operation that returns a readiness decision, proving the four checks are decided in T20 and not by the host adapter. |
 
 **Depends on it:** T17 reads release assets through it, T18 checks service-worker control through it, T19 reads the capacity estimate through it, and T26 and T29 report protection and offer the durability action through it. Without this task, host APIs would be reached from presentation and readiness code and the dependency shape of `overview.md:120` would be unenforced.
 
@@ -382,9 +382,9 @@ describe("the shared RuntimeNotWritable branch and result conventions behave ide
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Simultaneous failures | `pnpm vitest run tests/results/runtime-not-writable.test.ts` — fails because the first constructor keeps only the first failed check | `pnpm vitest run tests/results/runtime-not-writable.test.ts` — passes with every failed check in input order |
-| Integrity Blocked status | `pnpm vitest run tests/results/integrity-blocked.test.ts` — fails because the first implementation always reports workspaceStatus None on the Unsupported path | `pnpm vitest run tests/results/integrity-blocked.test.ts` — passes with IntegrityBlocked carried through |
-| Boundary equality | `pnpm vitest run tests/results/boundary-equality.test.ts` — fails because the seam builds its own ad-hoc rejection shape | `pnpm vitest run tests/results/boundary-equality.test.ts` — passes with a deep-equal payload from both sites |
+| Simultaneous failures | `npx vitest run tests/results/runtime-not-writable.test.ts` — fails because the first constructor keeps only the first failed check | `npx vitest run tests/results/runtime-not-writable.test.ts` — passes with every failed check in input order |
+| Integrity Blocked status | `npx vitest run tests/results/integrity-blocked.test.ts` — fails because the first implementation always reports workspaceStatus None on the Unsupported path | `npx vitest run tests/results/integrity-blocked.test.ts` — passes with IntegrityBlocked carried through |
+| Boundary equality | `npx vitest run tests/results/boundary-equality.test.ts` — fails because the seam builds its own ad-hoc rejection shape | `npx vitest run tests/results/boundary-equality.test.ts` — passes with a deep-equal payload from both sites |
 
 ### Phase P2 — durable schema and release artifacts
 
@@ -399,12 +399,12 @@ Declares the schema of decision 1 in §1 and the internal obligations of `overvi
 
 | # | Command | Expected result |
 |---|---|---|
-| V9.1 | `pnpm vitest run tests/persistence/schema.test.ts` | every declared store exists with the manifest's keyPath; `db.version` equals the schema baseline constant; a missing or renamed index fails naming it. |
-| V9.2 | `pnpm vitest run tests/persistence/schema-manifest.test.ts` | each store declares residency (authoritative or rebuildable) and the projections declare their rebuild source; adding a store without declaring both fails. |
-| V9.3 | `pnpm vitest run tests/persistence/schema-boundedness.test.ts` | with 25,000 synthetic lifecycle rows and 200 open rows, the open query reads the 200 indexed rows plus one bounded batch and performs exactly one index cursor; the assertion is on the counted storage requests, not on elapsed time. |
-| V9.4 | `pnpm playwright test tests/browser/schema.spec.ts --project=chromium` | a real Chromium IndexedDB database is created at the declared name, `objectStoreNames` equals the manifest, and a full stop and restart reopens it at the same version with every row intact. |
+| V9.1 | `npx vitest run tests/persistence/schema.test.ts` | every declared store exists with the manifest's keyPath; `db.version` equals the schema baseline constant; a missing or renamed index fails naming it. |
+| V9.2 | `npx vitest run tests/persistence/schema-manifest.test.ts` | each store declares residency (authoritative or rebuildable) and the projections declare their rebuild source; adding a store without declaring both fails. |
+| V9.3 | `npx vitest run tests/persistence/schema-boundedness.test.ts` | with 25,000 synthetic lifecycle rows and 200 open rows, the open query reads the 200 indexed rows plus one bounded batch and performs exactly one index cursor; the assertion is on the counted storage requests, not on elapsed time. |
+| V9.4 | `npx playwright test tests/browser/schema.spec.ts --project=chromium` | a real Chromium IndexedDB database is created at the declared name, `objectStoreNames` equals the manifest, and a full stop and restart reopens it at the same version with every row intact. |
 | V9.5 | `grep -rn "createObjectStore\|createIndex\|deleteObjectStore" src --include=*.ts \| grep -v "^src/persistence/indexeddb/schema"` | no output, so schema definition is centralised and a second upgrade path cannot appear. |
-| V9.6 | `pnpm vitest run tests/persistence/schema-rebuild.test.ts` | deleting every rebuildable projection store and rebuilding from authoritative facts reproduces identical projection contents, proving rule 8 holds for the schema as declared. |
+| V9.6 | `npx vitest run tests/persistence/schema-rebuild.test.ts` | deleting every rebuildable projection store and rebuilding from authoritative facts reproduces identical projection contents, proving rule 8 holds for the schema as declared. |
 
 **Depends on it:** T10's candidate stores and version baseline, T11's named stores in the multi-store transaction, and T16's release artifact, which carries the schema version in its identity. A wrong index set here is the migration-costly change the brief flags, which is why the index list is asserted store by store.
 
@@ -419,11 +419,11 @@ Generates the two delivery artifacts of `delivery-contract.md:11-19`. The Web Ap
 
 | # | Command | Expected result |
 |---|---|---|
-| V16.1 | `pnpm build` | `dist/manifest.webmanifest` exists and contains a stable `id`, `name`, `start_url`, `scope`, `display: "standalone"`, and at least the declared icon sizes; the file parses as JSON. |
+| V16.1 | `npm run build` | `dist/manifest.webmanifest` exists and contains a stable `id`, `name`, `start_url`, `scope`, `display: "standalone"`, and at least the declared icon sizes; the file parses as JSON. |
 | V16.2 | `node -e "const i=require('./dist/release-inventory.json'); const bad=i.entries.filter(e=>!e.url\|\|!/^[0-9a-f]{64}$/.test(e.sha256)); console.log(i.releaseId, i.entries.length, bad.length); process.exit(bad.length?1:0)"` | prints the release identity and the entry count, then `0`; exits 0, so every entry carries a 64-hex digest. |
 | V16.3 | `node -e "const c=require('node:crypto'),f=require('node:fs'),i=require('./dist/release-inventory.json'); const bad=i.entries.filter(e=>c.createHash('sha256').update(f.readFileSync('dist/'+e.url)).digest('hex')!==e.sha256); console.log(bad.length); process.exit(bad.length?1:0)"` | prints `0` and exits 0, recomputing every digest from the built bytes. |
 | V16.4 | `node -e "const f=require('node:fs'),i=require('./dist/release-inventory.json'); const listed=new Set(i.entries.map(e=>e.url)); const need=['index.html','manifest.webmanifest']; const missing=need.filter(n=>!listed.has(n)); console.log(missing.length); process.exit(missing.length?1:0)"` | prints `0`; every startup-required asset is present in the inventory, and the declared exclusion list is the only reason a built file may be absent. |
-| V16.5 | `pnpm build && pnpm build` | two consecutive builds over identical inputs print the same release identity and the same inventory list digest; a one-line source change changes both, proving the identity is content-derived rather than time-derived. |
+| V16.5 | `npm run build && npm run build` | two consecutive builds over identical inputs print the same release identity and the same inventory list digest; a one-line source change changes both, proving the identity is content-derived rather than time-derived. |
 | V16.6 | `grep -c "release-inventory" dist/sw.js` | at least one match, so the service-worker entry references the inventory it must validate. |
 
 **Depends on it:** T17's runtime validation reads this artifact, and T18's service worker binds it as the release identity. Without it the third and fourth readiness checks have nothing to evaluate and no release can be `Writable`.
@@ -457,10 +457,10 @@ describe("migrationRunner moves a Workspace to the target schema through an isol
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Successful step | `pnpm vitest run tests/persistence/migration.test.ts` — fails because the first implementation upgrades in place, so the source-version database is gone after the run | `pnpm vitest run tests/persistence/migration.test.ts` — passes with the source version still openable |
-| Failed validation | `pnpm vitest run tests/persistence/migration-rollback.test.ts` — fails because the injected failure leaves the root half-upgraded | `pnpm vitest run tests/persistence/migration-rollback.test.ts` — passes with the root unchanged and the candidate discarded |
-| Newer version | `pnpm vitest run tests/persistence/migration-unsupported.test.ts` — fails because the first implementation attempts a best-effort upgrade | `pnpm vitest run tests/persistence/migration-unsupported.test.ts` — passes with `UnsupportedVersion` and no write |
-| Interrupted flip | `pnpm vitest run tests/persistence/migration-interrupted.test.ts` — fails because a stale candidate is treated as the active database | `pnpm vitest run tests/persistence/migration-interrupted.test.ts` — passes with the prior version in control |
+| Successful step | `npx vitest run tests/persistence/migration.test.ts` — fails because the first implementation upgrades in place, so the source-version database is gone after the run | `npx vitest run tests/persistence/migration.test.ts` — passes with the source version still openable |
+| Failed validation | `npx vitest run tests/persistence/migration-rollback.test.ts` — fails because the injected failure leaves the root half-upgraded | `npx vitest run tests/persistence/migration-rollback.test.ts` — passes with the root unchanged and the candidate discarded |
+| Newer version | `npx vitest run tests/persistence/migration-unsupported.test.ts` — fails because the first implementation attempts a best-effort upgrade | `npx vitest run tests/persistence/migration-unsupported.test.ts` — passes with `UnsupportedVersion` and no write |
+| Interrupted flip | `npx vitest run tests/persistence/migration-interrupted.test.ts` — fails because a stale candidate is treated as the active database | `npx vitest run tests/persistence/migration-interrupted.test.ts` — passes with the prior version in control |
 
 #### T11 — `S` Atomic multi-store transaction seam
 
@@ -473,12 +473,12 @@ Implements decision 2 of §1 and `overview.md:127`: exactly one commit/rollback 
 
 | # | Command | Expected result |
 |---|---|---|
-| V11.1 | `pnpm vitest run tests/persistence/transaction.test.ts` | one commit naming three stores writes all three participants, and the returned per-store revisions equal the persisted rows. |
-| V11.2 | `pnpm vitest run tests/persistence/transaction-rollback.test.ts` | when the third participant throws, `onabort` fires and the first two stores contain their pre-transaction rows; the assertion compares snapshots taken before and after. |
-| V11.3 | `pnpm vitest run tests/persistence/transaction-write-gate.test.ts` | with the gate non-`Writable`, `commit` rejects with `RuntimeNotWritable` and the seam's transaction counter is unchanged, proving no readwrite transaction was opened. |
-| V11.4 | `pnpm vitest run tests/persistence/transaction-snapshot.test.ts` | a snapshot opened before a concurrent commit continues to read pre-commit rows for its whole lifetime, proving the read path is snapshotted and not live. |
-| V11.5 | `pnpm vitest run tests/persistence/transaction-single.test.ts` | one semantic commit opens exactly one readwrite transaction spanning the named stores, with no nested transaction, asserted by the counted open transactions. |
-| V11.6 | `pnpm playwright test tests/browser/transaction.spec.ts --project=chromium --project=webkit` | aborting a multi-store transaction after a staged write leaves every store at its prior revision after a full browser restart, on both engines. |
+| V11.1 | `npx vitest run tests/persistence/transaction.test.ts` | one commit naming three stores writes all three participants, and the returned per-store revisions equal the persisted rows. |
+| V11.2 | `npx vitest run tests/persistence/transaction-rollback.test.ts` | when the third participant throws, `onabort` fires and the first two stores contain their pre-transaction rows; the assertion compares snapshots taken before and after. |
+| V11.3 | `npx vitest run tests/persistence/transaction-write-gate.test.ts` | with the gate non-`Writable`, `commit` rejects with `RuntimeNotWritable` and the seam's transaction counter is unchanged, proving no readwrite transaction was opened. |
+| V11.4 | `npx vitest run tests/persistence/transaction-snapshot.test.ts` | a snapshot opened before a concurrent commit continues to read pre-commit rows for its whole lifetime, proving the read path is snapshotted and not live. |
+| V11.5 | `npx vitest run tests/persistence/transaction-single.test.ts` | one semantic commit opens exactly one readwrite transaction spanning the named stores, with no nested transaction, asserted by the counted open transactions. |
+| V11.6 | `npx playwright test tests/browser/transaction.spec.ts --project=chromium --project=webkit` | aborting a multi-store transaction after a staged write leaves every store at its prior revision after a full browser restart, on both engines. |
 | V11.7 | `grep -rn "IDBDatabase\|IDBTransaction" src --include=*.ts \| grep -v "^src/persistence/indexeddb/"` | no output, so no module outside the persistence implementation can open or hold a transaction. |
 
 **Depends on it:** T13's revisions, T14's snapshots, T25's initialization, T26's status and T33's durability proofs. Without this task no D1 mutation is atomic and every rollback claim in `AC-DEL-004`, `AC-DEL-005` and the PD3 verification items would be unprovable.
@@ -510,10 +510,10 @@ describe("the persistence seam refuses every write outside a Writable session an
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Recovery Only rejection | `pnpm vitest run tests/persistence/write-gate.test.ts` — fails because the first implementation checks writability in the caller and the seam still writes | `pnpm vitest run tests/persistence/write-gate.test.ts` — passes with the seam rejecting and revisions unchanged |
-| Integrity Blocked | `pnpm vitest run tests/persistence/write-gate-integrity.test.ts` — fails because an unreadable root is treated as an empty store and the write proceeds | `pnpm vitest run tests/persistence/write-gate-integrity.test.ts` — passes with IntegrityBlocked carried and no initialization |
-| Mid-session invalidation | `pnpm vitest run tests/persistence/write-gate-recheck.test.ts` — fails because the gate caches the first `Writable` verdict | `pnpm vitest run tests/persistence/write-gate-recheck.test.ts` — passes with the second mutation rejected |
-| Durability exemption | `pnpm vitest run tests/persistence/write-gate-exemption.test.ts` — fails because the durability request is rejected by its own gate | `pnpm vitest run tests/persistence/write-gate-exemption.test.ts` — passes with the request reaching the host |
+| Recovery Only rejection | `npx vitest run tests/persistence/write-gate.test.ts` — fails because the first implementation checks writability in the caller and the seam still writes | `npx vitest run tests/persistence/write-gate.test.ts` — passes with the seam rejecting and revisions unchanged |
+| Integrity Blocked | `npx vitest run tests/persistence/write-gate-integrity.test.ts` — fails because an unreadable root is treated as an empty store and the write proceeds | `npx vitest run tests/persistence/write-gate-integrity.test.ts` — passes with IntegrityBlocked carried and no initialization |
+| Mid-session invalidation | `npx vitest run tests/persistence/write-gate-recheck.test.ts` — fails because the gate caches the first `Writable` verdict | `npx vitest run tests/persistence/write-gate-recheck.test.ts` — passes with the second mutation rejected |
+| Durability exemption | `npx vitest run tests/persistence/write-gate-exemption.test.ts` — fails because the durability request is rejected by its own gate | `npx vitest run tests/persistence/write-gate-exemption.test.ts` — passes with the request reaching the host |
 
 #### T17 — `B` Offline Release Inventory runtime validation
 
@@ -542,10 +542,10 @@ describe("Offline Release Inventory validation reports completeness and per-entr
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Complete inventory | `pnpm vitest run tests/release/inventory-valid.test.ts` — fails because the first implementation trusts the inventory file without hashing cached bytes | `pnpm vitest run tests/release/inventory-valid.test.ts` — passes with the recorded digest |
-| Missing asset | `pnpm vitest run tests/release/inventory-missing.test.ts` — fails because a missing entry is reported as an empty cache rather than named | `pnpm vitest run tests/release/inventory-missing.test.ts` — passes naming the entry |
-| Corrupt asset | `pnpm vitest run tests/release/inventory-corrupt.test.ts` — fails because only presence, not digest, is checked | `pnpm vitest run tests/release/inventory-corrupt.test.ts` — passes naming the corrupt entry |
-| Offline completion | `pnpm playwright test tests/browser/inventory-offline.spec.ts --project=chromium` — fails because validation fetches an asset over the network and the request is blocked | `pnpm playwright test tests/browser/inventory-offline.spec.ts --project=chromium` — passes with no non-loopback request |
+| Complete inventory | `npx vitest run tests/release/inventory-valid.test.ts` — fails because the first implementation trusts the inventory file without hashing cached bytes | `npx vitest run tests/release/inventory-valid.test.ts` — passes with the recorded digest |
+| Missing asset | `npx vitest run tests/release/inventory-missing.test.ts` — fails because a missing entry is reported as an empty cache rather than named | `npx vitest run tests/release/inventory-missing.test.ts` — passes naming the entry |
+| Corrupt asset | `npx vitest run tests/release/inventory-corrupt.test.ts` — fails because only presence, not digest, is checked | `npx vitest run tests/release/inventory-corrupt.test.ts` — passes naming the corrupt entry |
+| Offline completion | `npx playwright test tests/browser/inventory-offline.spec.ts --project=chromium` — fails because validation fetches an asset over the network and the request is blocked | `npx playwright test tests/browser/inventory-offline.spec.ts --project=chromium` — passes with no non-loopback request |
 
 #### T18 — `S` Versioned service worker with intended-release control
 
@@ -560,11 +560,11 @@ Emits the versioned service worker: one cache namespace per release identity, pr
 |---|---|---|
 | V18.1 | `grep -n "skipWaiting" dist/sw.js` | exactly one occurrence, inside the message-activated handler; no occurrence at module scope. |
 | V18.2 | `grep -n "releaseId\|CACHE_NAME" dist/sw.js` | the cache name embeds the release identity, so two releases cannot share a cache; the printed name contains the identity from `dist/release-inventory.json`. |
-| V18.3 | `pnpm playwright test tests/browser/sw-control.spec.ts --project=chromium --project=webkit` | after one load `navigator.serviceWorker.controller` is the intended release and the control check reports controlled. |
-| V18.4 | `pnpm playwright test tests/browser/sw-offline.spec.ts --project=chromium --project=webkit` | with the context stopped and the network disabled the URL reopens from cache and inventory validation passes with no network request. |
-| V18.5 | `pnpm playwright test tests/browser/sw-update.spec.ts --project=chromium` | with a staged newer worker the running worker is still in control, no reload occurs, and the newer worker is in `waiting`. |
-| V18.6 | `pnpm playwright test tests/browser/sw-staging-failure.spec.ts --project=chromium` | with one asset deliberately absent from the deployed build the new worker fails to install, the previous worker remains in control, and readiness stays `Writable` on the previous release. |
-| V18.7 | `pnpm playwright test tests/browser/sw-two-releases.spec.ts --project=chromium` | activating the waiting worker at an explicit reload leaves the previous release's cache untouched and the new inventory validated. |
+| V18.3 | `npx playwright test tests/browser/sw-control.spec.ts --project=chromium --project=webkit` | after one load `navigator.serviceWorker.controller` is the intended release and the control check reports controlled. |
+| V18.4 | `npx playwright test tests/browser/sw-offline.spec.ts --project=chromium --project=webkit` | with the context stopped and the network disabled the URL reopens from cache and inventory validation passes with no network request. |
+| V18.5 | `npx playwright test tests/browser/sw-update.spec.ts --project=chromium` | with a staged newer worker the running worker is still in control, no reload occurs, and the newer worker is in `waiting`. |
+| V18.6 | `npx playwright test tests/browser/sw-staging-failure.spec.ts --project=chromium` | with one asset deliberately absent from the deployed build the new worker fails to install, the previous worker remains in control, and readiness stays `Writable` on the previous release. |
+| V18.7 | `npx playwright test tests/browser/sw-two-releases.spec.ts --project=chromium` | activating the waiting worker at an explicit reload leaves the previous release's cache untouched and the new inventory validated. |
 
 **Depends on it:** T20's control check and T33's offline cold-restart proof. Without this task two of the four readiness checks can never pass and no Workspace can initialize (`planning-decisions-2026-10-10.md:270-274`).
 
@@ -595,10 +595,10 @@ describe("capacity derivation derives a minimum from the mature workload and jud
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Pass at the minimum | `pnpm vitest run tests/capacity/derive-minimum.test.ts` — fails because the first implementation returns a fixed constant with no terms | `pnpm vitest run tests/capacity/derive-minimum.test.ts` — passes with the named terms and their contributions |
-| Shortfall naming | `pnpm vitest run tests/capacity/shortfall.test.ts` — fails because the first implementation returns a bare boolean | `pnpm vitest run tests/capacity/shortfall.test.ts` — passes naming minimum, observed value and shortfall |
-| No estimate available | `pnpm vitest run tests/capacity/unavailable.test.ts` — fails because an absent estimate is treated as unlimited | `pnpm vitest run tests/capacity/unavailable.test.ts` — passes with the check failed and Unavailable evidence |
-| Workload scaling | `pnpm vitest run tests/capacity/scaling.test.ts` — fails because the constant does not move when the declared Trade count doubles | `pnpm vitest run tests/capacity/scaling.test.ts` — passes with the documented per-Trade increment |
+| Pass at the minimum | `npx vitest run tests/capacity/derive-minimum.test.ts` — fails because the first implementation returns a fixed constant with no terms | `npx vitest run tests/capacity/derive-minimum.test.ts` — passes with the named terms and their contributions |
+| Shortfall naming | `npx vitest run tests/capacity/shortfall.test.ts` — fails because the first implementation returns a bare boolean | `npx vitest run tests/capacity/shortfall.test.ts` — passes naming minimum, observed value and shortfall |
+| No estimate available | `npx vitest run tests/capacity/unavailable.test.ts` — fails because an absent estimate is treated as unlimited | `npx vitest run tests/capacity/unavailable.test.ts` — passes with the check failed and Unavailable evidence |
+| Workload scaling | `npx vitest run tests/capacity/scaling.test.ts` — fails because the constant does not move when the declared Trade count doubles | `npx vitest run tests/capacity/scaling.test.ts` — passes with the documented per-Trade increment |
 
 ### Phase P4 — revisions, reads, seeds, and the readiness gate
 
@@ -628,9 +628,9 @@ describe("optimistic revisions accept only the matching binding kind and return 
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Stale expectation | `pnpm vitest run tests/persistence/revision-conflict.test.ts` — fails because the first implementation overwrites regardless of the expected revision | `pnpm vitest run tests/persistence/revision-conflict.test.ts` — passes with `Conflict` and no write |
-| Binding kind | `pnpm vitest run tests/persistence/revision-kind.test.ts` — fails because a snapshot token is accepted as a revision | `pnpm vitest run tests/persistence/revision-kind.test.ts` — passes with `WrongBindingKind` |
-| Post-commit sufficiency | `pnpm vitest run tests/persistence/revision-postcommit.test.ts` — fails because the result carries only an identity and the test must re-query to render it | `pnpm vitest run tests/persistence/revision-postcommit.test.ts` — passes with the complete subject in the result |
+| Stale expectation | `npx vitest run tests/persistence/revision-conflict.test.ts` — fails because the first implementation overwrites regardless of the expected revision | `npx vitest run tests/persistence/revision-conflict.test.ts` — passes with `Conflict` and no write |
+| Binding kind | `npx vitest run tests/persistence/revision-kind.test.ts` — fails because a snapshot token is accepted as a revision | `npx vitest run tests/persistence/revision-kind.test.ts` — passes with `WrongBindingKind` |
+| Post-commit sufficiency | `npx vitest run tests/persistence/revision-postcommit.test.ts` — fails because the result carries only an identity and the test must re-query to render it | `npx vitest run tests/persistence/revision-postcommit.test.ts` — passes with the complete subject in the result |
 
 #### T14 — `B` Snapshot-consistent multi-module reads
 
@@ -657,9 +657,9 @@ describe("a multi-module read snapshot is coherent or explicitly reports changed
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Coherent read | `pnpm vitest run tests/persistence/snapshot-coherent.test.ts` — fails because the first implementation reads each module in its own transaction and returns mixed revisions | `pnpm vitest run tests/persistence/snapshot-coherent.test.ts` — passes with one revision set |
-| Torn read | `pnpm vitest run tests/persistence/snapshot-torn.test.ts` — fails because the mid-assembly commit is never detected | `pnpm vitest run tests/persistence/snapshot-torn.test.ts` — passes with `ChangedDuringAssembly` |
-| Read-only proof | `pnpm vitest run tests/persistence/snapshot-nonmutating.test.ts` — fails because the first implementation opens a readwrite transaction | `pnpm vitest run tests/persistence/snapshot-nonmutating.test.ts` — passes with read-only store digests |
+| Coherent read | `npx vitest run tests/persistence/snapshot-coherent.test.ts` — fails because the first implementation reads each module in its own transaction and returns mixed revisions | `npx vitest run tests/persistence/snapshot-coherent.test.ts` — passes with one revision set |
+| Torn read | `npx vitest run tests/persistence/snapshot-torn.test.ts` — fails because the mid-assembly commit is never detected | `npx vitest run tests/persistence/snapshot-torn.test.ts` — passes with `ChangedDuringAssembly` |
+| Read-only proof | `npx vitest run tests/persistence/snapshot-nonmutating.test.ts` — fails because the first implementation opens a readwrite transaction | `npx vitest run tests/persistence/snapshot-nonmutating.test.ts` — passes with read-only store digests |
 
 #### T15 — `B` Lifecycle index membership and bounded cutoff queries
 
@@ -687,10 +687,10 @@ describe("lifecycle index membership commits with its facts and answers cutoff q
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Membership atomicity | `pnpm vitest run tests/lifecycle/index-atomic.test.ts` — fails because membership is written after the facts in a second transaction | `pnpm vitest run tests/lifecycle/index-atomic.test.ts` — passes with both in one commit |
-| Cutoff query | `pnpm vitest run tests/lifecycle/cutoff.test.ts` — fails because the first implementation filters on current membership and drops the closed Trade | `pnpm vitest run tests/lifecycle/cutoff.test.ts` — passes with the Trade returned for the earlier date |
-| Query count | `pnpm vitest run tests/lifecycle/bounded-count.test.ts` — fails because the first implementation scans the Trade store | `pnpm vitest run tests/lifecycle/bounded-count.test.ts` — passes with the counted bound |
-| Disagreement surfaced | `pnpm vitest run tests/lifecycle/disagreement.test.ts` — fails because a read silently rewrites the membership row | `pnpm vitest run tests/lifecycle/disagreement.test.ts` — passes with the structured disagreement and no write |
+| Membership atomicity | `npx vitest run tests/lifecycle/index-atomic.test.ts` — fails because membership is written after the facts in a second transaction | `npx vitest run tests/lifecycle/index-atomic.test.ts` — passes with both in one commit |
+| Cutoff query | `npx vitest run tests/lifecycle/cutoff.test.ts` — fails because the first implementation filters on current membership and drops the closed Trade | `npx vitest run tests/lifecycle/cutoff.test.ts` — passes with the Trade returned for the earlier date |
+| Query count | `npx vitest run tests/lifecycle/bounded-count.test.ts` — fails because the first implementation scans the Trade store | `npx vitest run tests/lifecycle/bounded-count.test.ts` — passes with the counted bound |
+| Disagreement surfaced | `npx vitest run tests/lifecycle/disagreement.test.ts` — fails because a read silently rewrites the membership row | `npx vitest run tests/lifecycle/disagreement.test.ts` — passes with the structured disagreement and no write |
 
 #### T20 — `B` Runtime Readiness gate: four functional checks, browser-neutral
 
@@ -719,11 +719,11 @@ describe("the Runtime Readiness gate decides Writable from four functional check
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| All-pass | `pnpm vitest run tests/readiness/all-pass.test.ts` — fails because the first implementation returns Writable without running the inventory check | `pnpm vitest run tests/readiness/all-pass.test.ts` — passes with four recorded check results |
-| Simultaneous failure | `pnpm vitest run tests/readiness/simultaneous.test.ts` — fails because the first implementation short-circuits on the first failed check | `pnpm vitest run tests/readiness/simultaneous.test.ts` — passes listing every failed check |
-| No allowlist | `pnpm vitest run tests/readiness/no-allowlist.test.ts` — fails because the first implementation consults the user-agent string | `pnpm vitest run tests/readiness/no-allowlist.test.ts` — passes on functional results alone |
-| Protection advisory | `pnpm vitest run tests/readiness/protection-advisory.test.ts` — fails because BestEffort protection is treated as a failed check | `pnpm vitest run tests/readiness/protection-advisory.test.ts` — passes with `Writable` and the warning state set |
-| Real engines | `pnpm playwright test tests/browser/readiness.spec.ts --project=chromium --project=webkit` — fails because the gate is only implemented for one engine's cache behaviour | `pnpm playwright test tests/browser/readiness.spec.ts --project=chromium --project=webkit` — passes on both, with engine versions recorded as provenance |
+| All-pass | `npx vitest run tests/readiness/all-pass.test.ts` — fails because the first implementation returns Writable without running the inventory check | `npx vitest run tests/readiness/all-pass.test.ts` — passes with four recorded check results |
+| Simultaneous failure | `npx vitest run tests/readiness/simultaneous.test.ts` — fails because the first implementation short-circuits on the first failed check | `npx vitest run tests/readiness/simultaneous.test.ts` — passes listing every failed check |
+| No allowlist | `npx vitest run tests/readiness/no-allowlist.test.ts` — fails because the first implementation consults the user-agent string | `npx vitest run tests/readiness/no-allowlist.test.ts` — passes on functional results alone |
+| Protection advisory | `npx vitest run tests/readiness/protection-advisory.test.ts` — fails because BestEffort protection is treated as a failed check | `npx vitest run tests/readiness/protection-advisory.test.ts` — passes with `Writable` and the warning state set |
+| Real engines | `npx playwright test tests/browser/readiness.spec.ts --project=chromium --project=webkit` — fails because the gate is only implemented for one engine's cache behaviour | `npx playwright test tests/browser/readiness.spec.ts --project=chromium --project=webkit` — passes on both, with engine versions recorded as provenance |
 
 #### T21 — `B` Readiness re-establishment at every safety boundary
 
@@ -751,9 +751,9 @@ describe("readiness is re-established at every safety boundary and a later failu
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Fresh per launch | `pnpm vitest run tests/readiness/per-launch.test.ts` — fails because the first implementation caches the first verdict in a module-level constant | `pnpm vitest run tests/readiness/per-launch.test.ts` — passes with three distinct receipts |
-| Mid-session invalidation | `pnpm vitest run tests/readiness/invalidate.test.ts` — fails because a later failure leaves `Writable` in place | `pnpm vitest run tests/readiness/invalidate.test.ts` — passes with the next mutation rejected |
-| Boundary receipts | `pnpm vitest run tests/readiness/boundary-receipts.test.ts` — fails because all three boundaries overwrite one flag | `pnpm vitest run tests/readiness/boundary-receipts.test.ts` — passes with three separate records |
+| Fresh per launch | `npx vitest run tests/readiness/per-launch.test.ts` — fails because the first implementation caches the first verdict in a module-level constant | `npx vitest run tests/readiness/per-launch.test.ts` — passes with three distinct receipts |
+| Mid-session invalidation | `npx vitest run tests/readiness/invalidate.test.ts` — fails because a later failure leaves `Writable` in place | `npx vitest run tests/readiness/invalidate.test.ts` — passes with the next mutation rejected |
+| Boundary receipts | `npx vitest run tests/readiness/boundary-receipts.test.ts` — fails because all three boundaries overwrite one flag | `npx vitest run tests/readiness/boundary-receipts.test.ts` — passes with three separate records |
 
 #### T22 — `B` `Journal.seedDefaults` for the fixed identities
 
@@ -782,11 +782,11 @@ describe("Journal.seedDefaults creates only the manifest's declared fixed identi
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Exactly the manifest | `pnpm vitest run tests/journal/seed-manifest.test.ts` — fails because the first implementation seeds a hardcoded seven-type set regardless of the manifest | `pnpm vitest run tests/journal/seed-manifest.test.ts` — passes with only the declared identities |
-| Idempotence | `pnpm vitest run tests/journal/seed-idempotent.test.ts` — fails because the second seed appends a definition revision | `pnpm vitest run tests/journal/seed-idempotent.test.ts` — passes with an unchanged manifest |
-| Stable key, not label | `pnpm vitest run tests/journal/seed-stable-key.test.ts` — fails because renaming a prompt causes a duplicate to be created | `pnpm vitest run tests/journal/seed-stable-key.test.ts` — passes with one Entry Type |
-| Incompatible key | `pnpm vitest run tests/journal/seed-conflict.test.ts` — fails because an incompatible existing key is overwritten | `pnpm vitest run tests/journal/seed-conflict.test.ts` — passes with `SeedConflict` and no write |
-| Atomic seed | `pnpm vitest run tests/journal/seed-atomic.test.ts` — fails because a failure after the third type leaves four types committed | `pnpm vitest run tests/journal/seed-atomic.test.ts` — passes with zero types committed |
+| Exactly the manifest | `npx vitest run tests/journal/seed-manifest.test.ts` — fails because the first implementation seeds a hardcoded seven-type set regardless of the manifest | `npx vitest run tests/journal/seed-manifest.test.ts` — passes with only the declared identities |
+| Idempotence | `npx vitest run tests/journal/seed-idempotent.test.ts` — fails because the second seed appends a definition revision | `npx vitest run tests/journal/seed-idempotent.test.ts` — passes with an unchanged manifest |
+| Stable key, not label | `npx vitest run tests/journal/seed-stable-key.test.ts` — fails because renaming a prompt causes a duplicate to be created | `npx vitest run tests/journal/seed-stable-key.test.ts` — passes with one Entry Type |
+| Incompatible key | `npx vitest run tests/journal/seed-conflict.test.ts` — fails because an incompatible existing key is overwritten | `npx vitest run tests/journal/seed-conflict.test.ts` — passes with `SeedConflict` and no write |
+| Atomic seed | `npx vitest run tests/journal/seed-atomic.test.ts` — fails because a failure after the third type leaves four types committed | `npx vitest run tests/journal/seed-atomic.test.ts` — passes with zero types committed |
 
 #### T23 — `B` `ReferenceCatalog.seedDefaults` for manifest v1
 
@@ -814,10 +814,10 @@ describe("ReferenceCatalog.seedDefaults seeds exactly manifest v1's declared ide
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Exactly manifest v1 | `pnpm vitest run tests/catalog/seed-manifest.test.ts` — fails because the first implementation seeds the full eleven-Strategy set | `pnpm vitest run tests/catalog/seed-manifest.test.ts` — passes with Long Stock only |
-| Absence assertions | `pnpm vitest run tests/catalog/seed-absences.test.ts` — fails because a placeholder Institution and Account are created for convenience | `pnpm vitest run tests/catalog/seed-absences.test.ts` — passes with every absence asserted |
-| Rename retention | `pnpm vitest run tests/catalog/seed-rename.test.ts` — fails because the second seed rewrites the renamed label | `pnpm vitest run tests/catalog/seed-rename.test.ts` — passes with the trader label retained |
-| Shape conflict | `pnpm vitest run tests/catalog/seed-shape-conflict.test.ts` — fails because an incompatible Long Stock role count is silently replaced | `pnpm vitest run tests/catalog/seed-shape-conflict.test.ts` — passes with `SeedConflict` and no write |
+| Exactly manifest v1 | `npx vitest run tests/catalog/seed-manifest.test.ts` — fails because the first implementation seeds the full eleven-Strategy set | `npx vitest run tests/catalog/seed-manifest.test.ts` — passes with Long Stock only |
+| Absence assertions | `npx vitest run tests/catalog/seed-absences.test.ts` — fails because a placeholder Institution and Account are created for convenience | `npx vitest run tests/catalog/seed-absences.test.ts` — passes with every absence asserted |
+| Rename retention | `npx vitest run tests/catalog/seed-rename.test.ts` — fails because the second seed rewrites the renamed label | `npx vitest run tests/catalog/seed-rename.test.ts` — passes with the trader label retained |
+| Shape conflict | `npx vitest run tests/catalog/seed-shape-conflict.test.ts` — fails because an incompatible Long Stock role count is silently replaced | `npx vitest run tests/catalog/seed-shape-conflict.test.ts` — passes with `SeedConflict` and no write |
 
 ### Phase P5 — Workspace lifecycle
 
@@ -848,10 +848,10 @@ describe("ReferenceCatalog save and query handle Institution and Account identit
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Account parent | `pnpm vitest run tests/catalog/account-parent.test.ts` — fails because the first implementation allows an Account under an archived Institution | `pnpm vitest run tests/catalog/account-parent.test.ts` — passes with `Rejected` and no write |
-| Rename history | `pnpm vitest run tests/catalog/rename-history.test.ts` — fails because the first implementation edits the existing revision in place instead of appending | `pnpm vitest run tests/catalog/rename-history.test.ts` — passes with both labels available |
-| Retained versus new | `pnpm vitest run tests/catalog/resolution-modes.test.ts` — fails because one resolution mode serves both cases | `pnpm vitest run tests/catalog/resolution-modes.test.ts` — passes with RetainedReference valid and InactiveForRequestedUse for the new selection |
-| Snapshot conflict | `pnpm vitest run tests/catalog/save-conflict.test.ts` — fails because the first implementation ignores the expected snapshot | `pnpm vitest run tests/catalog/save-conflict.test.ts` — passes with `Conflict` and no write |
+| Account parent | `npx vitest run tests/catalog/account-parent.test.ts` — fails because the first implementation allows an Account under an archived Institution | `npx vitest run tests/catalog/account-parent.test.ts` — passes with `Rejected` and no write |
+| Rename history | `npx vitest run tests/catalog/rename-history.test.ts` — fails because the first implementation edits the existing revision in place instead of appending | `npx vitest run tests/catalog/rename-history.test.ts` — passes with both labels available |
+| Retained versus new | `npx vitest run tests/catalog/resolution-modes.test.ts` — fails because one resolution mode serves both cases | `npx vitest run tests/catalog/resolution-modes.test.ts` — passes with RetainedReference valid and InactiveForRequestedUse for the new selection |
+| Snapshot conflict | `npx vitest run tests/catalog/save-conflict.test.ts` — fails because the first implementation ignores the expected snapshot | `npx vitest run tests/catalog/save-conflict.test.ts` — passes with `Conflict` and no write |
 
 #### T25 — `B` `Workspace.initialize`
 
@@ -880,11 +880,11 @@ describe("Workspace.initialize creates one initialized Workspace or refuses with
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Fresh initialization | `pnpm vitest run tests/workspace/initialize-fresh.test.ts` — fails because the first implementation seeds Journal and Catalog in two transactions | `pnpm vitest run tests/workspace/initialize-fresh.test.ts` — passes with one commit and a complete receipt |
-| Refusal creates nothing | `pnpm vitest run tests/workspace/initialize-refused.test.ts` — fails because a workspace row is written before the readiness check finishes | `pnpm vitest run tests/workspace/initialize-refused.test.ts` — passes with zero rows and `RuntimeNotWritable` |
-| Unreadable root | `pnpm vitest run tests/workspace/initialize-integrity.test.ts` — fails because an unreadable root is treated as a fresh install | `pnpm vitest run tests/workspace/initialize-integrity.test.ts` — passes with Integrity Blocked and no initialization |
-| Idempotent reopen | `pnpm vitest run tests/workspace/initialize-existing.test.ts` — fails because the second call re-seeds and appends definition revisions | `pnpm vitest run tests/workspace/initialize-existing.test.ts` — passes with unchanged manifests |
-| Migration blocked | `pnpm vitest run tests/workspace/initialize-migration-blocked.test.ts` — fails because a failed candidate exposes partial readiness | `pnpm vitest run tests/workspace/initialize-migration-blocked.test.ts` — passes with `Migration Blocked` and prior data intact |
+| Fresh initialization | `npx vitest run tests/workspace/initialize-fresh.test.ts` — fails because the first implementation seeds Journal and Catalog in two transactions | `npx vitest run tests/workspace/initialize-fresh.test.ts` — passes with one commit and a complete receipt |
+| Refusal creates nothing | `npx vitest run tests/workspace/initialize-refused.test.ts` — fails because a workspace row is written before the readiness check finishes | `npx vitest run tests/workspace/initialize-refused.test.ts` — passes with zero rows and `RuntimeNotWritable` |
+| Unreadable root | `npx vitest run tests/workspace/initialize-integrity.test.ts` — fails because an unreadable root is treated as a fresh install | `npx vitest run tests/workspace/initialize-integrity.test.ts` — passes with Integrity Blocked and no initialization |
+| Idempotent reopen | `npx vitest run tests/workspace/initialize-existing.test.ts` — fails because the second call re-seeds and appends definition revisions | `npx vitest run tests/workspace/initialize-existing.test.ts` — passes with unchanged manifests |
+| Migration blocked | `npx vitest run tests/workspace/initialize-migration-blocked.test.ts` — fails because a failed candidate exposes partial readiness | `npx vitest run tests/workspace/initialize-migration-blocked.test.ts` — passes with `Migration Blocked` and prior data intact |
 
 #### T26 — `B` `Workspace.getStatus`
 
@@ -913,9 +913,9 @@ describe("Workspace.getStatus reports one honest lifecycle status from readiness
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Readable failure | `pnpm vitest run tests/workspace/status-recovery.test.ts` — fails because the first implementation reports Unsupported whenever readiness fails | `pnpm vitest run tests/workspace/status-recovery.test.ts` — passes with `Recovery Only` and backup actions |
-| Ambiguous read | `pnpm vitest run tests/workspace/status-integrity.test.ts` — fails because a thrown read is swallowed and reported as an empty store | `pnpm vitest run tests/workspace/status-integrity.test.ts` — passes with Integrity Blocked |
-| Non-mutating | `pnpm vitest run tests/workspace/status-nonmutating.test.ts` — fails because the first implementation repairs a stale receipt while reporting | `pnpm vitest run tests/workspace/status-nonmutating.test.ts` — passes with identical digests |
+| Readable failure | `npx vitest run tests/workspace/status-recovery.test.ts` — fails because the first implementation reports Unsupported whenever readiness fails | `npx vitest run tests/workspace/status-recovery.test.ts` — passes with `Recovery Only` and backup actions |
+| Ambiguous read | `npx vitest run tests/workspace/status-integrity.test.ts` — fails because a thrown read is swallowed and reported as an empty store | `npx vitest run tests/workspace/status-integrity.test.ts` — passes with Integrity Blocked |
+| Non-mutating | `npx vitest run tests/workspace/status-nonmutating.test.ts` — fails because the first implementation repairs a stale receipt while reporting | `npx vitest run tests/workspace/status-nonmutating.test.ts` — passes with identical digests |
 
 #### T27 — `B` `Workspace.requestDurability`
 
@@ -944,9 +944,9 @@ describe("Workspace.requestDurability reports the host's real answer and never f
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Denied request | `pnpm vitest run tests/workspace/durability-denied.test.ts` — fails because the first implementation returns Improved when the promise resolves with a falsy grant | `pnpm vitest run tests/workspace/durability-denied.test.ts` — passes with `NotImproved { BestEffort }` |
-| API absent | `pnpm vitest run tests/workspace/durability-absent.test.ts` — fails because an absent host capability throws instead of returning a typed result | `pnpm vitest run tests/workspace/durability-absent.test.ts` — passes with `NotImproved { Unavailable }` |
-| Advis-only | `pnpm vitest run tests/workspace/durability-advisory.test.ts` — fails because a denied request flips the session to Recovery Only | `pnpm vitest run tests/workspace/durability-advisory.test.ts` — passes with `Writable` retained and revisions unchanged |
+| Denied request | `npx vitest run tests/workspace/durability-denied.test.ts` — fails because the first implementation returns Improved when the promise resolves with a falsy grant | `npx vitest run tests/workspace/durability-denied.test.ts` — passes with `NotImproved { BestEffort }` |
+| API absent | `npx vitest run tests/workspace/durability-absent.test.ts` — fails because an absent host capability throws instead of returning a typed result | `npx vitest run tests/workspace/durability-absent.test.ts` — passes with `NotImproved { Unavailable }` |
+| Advis-only | `npx vitest run tests/workspace/durability-advisory.test.ts` — fails because a denied request flips the session to Recovery Only | `npx vitest run tests/workspace/durability-advisory.test.ts` — passes with `Writable` retained and revisions unchanged |
 
 #### T28 — `B` Installed Capability Manifest
 
@@ -975,9 +975,9 @@ describe("the Installed Capability Manifest declares only installed, dependency-
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Honest omission | `pnpm vitest run tests/capability/manifest-omission.test.ts` — fails because the first implementation lists every target capability with an Unavailable marker | `pnpm vitest run tests/capability/manifest-omission.test.ts` — passes with the capability absent |
-| Closure | `pnpm vitest run tests/capability/manifest-closure.test.ts` — fails because a declared operation depends on an undeclared one | `pnpm vitest run tests/capability/manifest-closure.test.ts` — passes with the dependency closure complete |
-| Reachability | `pnpm vitest run tests/capability/manifest-reachability.test.ts` — fails because the navigation offers a destination the manifest does not declare | `pnpm vitest run tests/capability/manifest-reachability.test.ts` — passes with the two sets equal |
+| Honest omission | `npx vitest run tests/capability/manifest-omission.test.ts` — fails because the first implementation lists every target capability with an Unavailable marker | `npx vitest run tests/capability/manifest-omission.test.ts` — passes with the capability absent |
+| Closure | `npx vitest run tests/capability/manifest-closure.test.ts` — fails because a declared operation depends on an undeclared one | `npx vitest run tests/capability/manifest-closure.test.ts` — passes with the dependency closure complete |
+| Reachability | `npx vitest run tests/capability/manifest-reachability.test.ts` — fails because the navigation offers a destination the manifest does not declare | `npx vitest run tests/capability/manifest-reachability.test.ts` — passes with the two sets equal |
 
 #### T29 — `B` Startup, readiness, and protection presentation
 
@@ -1006,10 +1006,10 @@ describe("startup presentation tells the trader the truth about write safety and
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Pending readiness | `pnpm playwright test tests/browser/startup-pending.spec.ts --project=chromium` — fails because the first implementation renders the empty journal shell before the gate resolves | `pnpm playwright test tests/browser/startup-pending.spec.ts --project=chromium` — passes with the verification state and no enabled mutation |
-| Recovery Only | `pnpm playwright test tests/browser/startup-recovery.spec.ts --project=chromium` — fails because mutation controls remain enabled | `pnpm playwright test tests/browser/startup-recovery.spec.ts --project=chromium` — passes with reads available and every mutation disabled |
-| Integrity Blocked | `pnpm playwright test tests/browser/startup-integrity.spec.ts --project=chromium` — fails because the view offers fresh initialization over an unreadable root | `pnpm playwright test tests/browser/startup-integrity.spec.ts --project=chromium` — passes with recovery actions only |
-| View-state discipline | `pnpm playwright test tests/browser/view-states.spec.ts --project=chromium` — fails because a failed request renders the Empty state | `pnpm playwright test tests/browser/view-states.spec.ts --project=chromium` — passes with four distinguishable states |
+| Pending readiness | `npx playwright test tests/browser/startup-pending.spec.ts --project=chromium` — fails because the first implementation renders the empty journal shell before the gate resolves | `npx playwright test tests/browser/startup-pending.spec.ts --project=chromium` — passes with the verification state and no enabled mutation |
+| Recovery Only | `npx playwright test tests/browser/startup-recovery.spec.ts --project=chromium` — fails because mutation controls remain enabled | `npx playwright test tests/browser/startup-recovery.spec.ts --project=chromium` — passes with reads available and every mutation disabled |
+| Integrity Blocked | `npx playwright test tests/browser/startup-integrity.spec.ts --project=chromium` — fails because the view offers fresh initialization over an unreadable root | `npx playwright test tests/browser/startup-integrity.spec.ts --project=chromium` — passes with recovery actions only |
+| View-state discipline | `npx playwright test tests/browser/view-states.spec.ts --project=chromium` — fails because a failed request renders the Empty state | `npx playwright test tests/browser/view-states.spec.ts --project=chromium` — passes with four distinguishable states |
 
 ### Phase P6 — onboarding
 
@@ -1040,9 +1040,9 @@ describe("Institution onboarding creates the trader's own Institution and never 
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| No fictional record | `pnpm playwright test tests/browser/onboarding-empty.spec.ts --project=chromium` — fails because the first implementation shows a placeholder brokerage row | `pnpm playwright test tests/browser/onboarding-empty.spec.ts --project=chromium` — passes with an explanatory empty state |
-| Required field | `pnpm vitest run tests/onboarding/institution-validation.test.ts` — fails because a whitespace-only name is accepted | `pnpm vitest run tests/onboarding/institution-validation.test.ts` — passes with a field-level message and no write |
-| Unsaved state across resize | `pnpm playwright test tests/browser/onboarding-resize.spec.ts --project=chromium` — fails because narrowing the viewport clears the field | `pnpm playwright test tests/browser/onboarding-resize.spec.ts --project=chromium` — passes with the text intact and nothing stored |
+| No fictional record | `npx playwright test tests/browser/onboarding-empty.spec.ts --project=chromium` — fails because the first implementation shows a placeholder brokerage row | `npx playwright test tests/browser/onboarding-empty.spec.ts --project=chromium` — passes with an explanatory empty state |
+| Required field | `npx vitest run tests/onboarding/institution-validation.test.ts` — fails because a whitespace-only name is accepted | `npx vitest run tests/onboarding/institution-validation.test.ts` — passes with a field-level message and no write |
+| Unsaved state across resize | `npx playwright test tests/browser/onboarding-resize.spec.ts --project=chromium` — fails because narrowing the viewport clears the field | `npx playwright test tests/browser/onboarding-resize.spec.ts --project=chromium` — passes with the text intact and nothing stored |
 
 #### T31 — `B` Account setup and readiness to plan
 
@@ -1071,9 +1071,9 @@ describe("Account setup completes onboarding and reports readiness to plan hones
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Ready only with both | `pnpm vitest run tests/onboarding/ready-state.test.ts` — fails because the first implementation reports readiness to plan once an Institution exists | `pnpm vitest run tests/onboarding/ready-state.test.ts` — passes only with both identities |
-| Archived parent race | `pnpm vitest run tests/onboarding/account-parent-conflict.test.ts` — fails because the parent is resolved once at render and never rechecked | `pnpm vitest run tests/onboarding/account-parent-conflict.test.ts` — passes with a typed conflict and no write |
-| Label versus identity | `pnpm vitest run tests/onboarding/account-label.test.ts` — fails because the displayed Institution label is stored on the Account and does not follow the rename | `pnpm vitest run tests/onboarding/account-label.test.ts` — passes with the parent identity unchanged and the label current |
+| Ready only with both | `npx vitest run tests/onboarding/ready-state.test.ts` — fails because the first implementation reports readiness to plan once an Institution exists | `npx vitest run tests/onboarding/ready-state.test.ts` — passes only with both identities |
+| Archived parent race | `npx vitest run tests/onboarding/account-parent-conflict.test.ts` — fails because the parent is resolved once at render and never rechecked | `npx vitest run tests/onboarding/account-parent-conflict.test.ts` — passes with a typed conflict and no write |
+| Label versus identity | `npx vitest run tests/onboarding/account-label.test.ts` — fails because the displayed Institution label is stored on the Account and does not follow the rename | `npx vitest run tests/onboarding/account-label.test.ts` — passes with the parent identity unchanged and the label current |
 
 ### Phase P7 — responsive and accessibility hardening
 
@@ -1104,9 +1104,9 @@ describe("viewport-driven layout switches live and preserves every action and va
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Live switch | `pnpm playwright test tests/browser/responsive-switch.spec.ts --project=chromium` — fails because the first implementation reloads on a width change | `pnpm playwright test tests/browser/responsive-switch.spec.ts --project=chromium` — passes with the layout switched and the page never reloaded |
-| State survival | `pnpm playwright test tests/browser/responsive-state.spec.ts --project=chromium` — fails because entering narrow layout discards the form values | `pnpm playwright test tests/browser/responsive-state.spec.ts --project=chromium` — passes with values and focus intact |
-| Accessibility | `pnpm playwright test tests/browser/a11y-d1.spec.ts --project=chromium` — fails because the warning relies on color alone and axe-core reports a violation | `pnpm playwright test tests/browser/a11y-d1.spec.ts --project=chromium` — passes with 0 violations at both widths |
+| Live switch | `npx playwright test tests/browser/responsive-switch.spec.ts --project=chromium` — fails because the first implementation reloads on a width change | `npx playwright test tests/browser/responsive-switch.spec.ts --project=chromium` — passes with the layout switched and the page never reloaded |
+| State survival | `npx playwright test tests/browser/responsive-state.spec.ts --project=chromium` — fails because entering narrow layout discards the form values | `npx playwright test tests/browser/responsive-state.spec.ts --project=chromium` — passes with values and focus intact |
+| Accessibility | `npx playwright test tests/browser/a11y-d1.spec.ts --project=chromium` — fails because the warning relies on color alone and axe-core reports a violation | `npx playwright test tests/browser/a11y-d1.spec.ts --project=chromium` — passes with 0 violations at both widths |
 
 ### Phase P8 — integration suite and critic gate
 
@@ -1131,16 +1131,16 @@ describe("the D1 integration suite proves the installed foundation end to end th
   it should fail, naming the file and line, when a file under tests/integration/ introduces a mock, stub or canned response for an application dependency
 ```
 
-**Integration case.** This task is the integration suite; its entry point is the composed `pnpm test:integration` command, which runs Vitest over `tests/integration/` in Node with the disclosed `fake-indexeddb` substitution and Playwright over `tests/browser/` against the loopback secure origin on two engines. No application dependency is mocked; the substitution registry entry for the store names the fidelity gap and points at the real-engine counterpart inside this same suite.
+**Integration case.** This task is the integration suite; its entry point is the composed `npm run test:integration` command, which runs Vitest over `tests/integration/` in Node with the disclosed `fake-indexeddb` substitution and Playwright over `tests/browser/` against the loopback secure origin on two engines. No application dependency is mocked; the substitution registry entry for the store names the fidelity gap and points at the real-engine counterpart inside this same suite.
 
 **Red/green evidence**
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Whole-deliverable path | `pnpm test:integration` — fails because the first composed run has no onboarding step, so the landing state never becomes Ready for Trade Planning | `pnpm test:integration` — passes with the durable after-state proven |
-| Offline restart | `pnpm playwright test tests/browser/offline-restart.spec.ts --project=chromium --project=webkit` — fails because the first run's release cache was never installed | `pnpm playwright test tests/browser/offline-restart.spec.ts --project=chromium --project=webkit` — passes with the network disabled |
-| Rollback matrix | `pnpm vitest run tests/integration/rollback-matrix.test.ts` — fails because the first suite asserts only the visible refusal, not the store revisions | `pnpm vitest run tests/integration/rollback-matrix.test.ts` — passes with before/after revision equality |
-| Real engine | `pnpm playwright test tests/browser/durability-real-engine.spec.ts --project=chromium --project=webkit` — fails because the case was written against `fake-indexeddb` semantics only | `pnpm playwright test tests/browser/durability-real-engine.spec.ts --project=chromium --project=webkit` — passes on both engines |
+| Whole-deliverable path | `npm run test:integration` — fails because the first composed run has no onboarding step, so the landing state never becomes Ready for Trade Planning | `npm run test:integration` — passes with the durable after-state proven |
+| Offline restart | `npx playwright test tests/browser/offline-restart.spec.ts --project=chromium --project=webkit` — fails because the first run's release cache was never installed | `npx playwright test tests/browser/offline-restart.spec.ts --project=chromium --project=webkit` — passes with the network disabled |
+| Rollback matrix | `npx vitest run tests/integration/rollback-matrix.test.ts` — fails because the first suite asserts only the visible refusal, not the store revisions | `npx vitest run tests/integration/rollback-matrix.test.ts` — passes with before/after revision equality |
+| Real engine | `npx playwright test tests/browser/durability-real-engine.spec.ts --project=chromium --project=webkit` — fails because the case was written against `fake-indexeddb` semantics only | `npx playwright test tests/browser/durability-real-engine.spec.ts --project=chromium --project=webkit` — passes on both engines |
 
 #### T34 — `S` Independent browser-critic gate for D1
 
@@ -1153,11 +1153,11 @@ Runs the fresh browser-critic gate of `planning-protocol.md:124-135`. The main a
 
 | # | Command | Expected result |
 |---|---|---|
-| V34.1 | `pnpm build && pnpm preview --port $DEV_PORT` | the production build is served on the loopback secure origin; the critic starts this itself and records the exact command and the resolved port. |
+| V34.1 | `npm run build && npx vite preview --port $DEV_PORT` | the production build is served on the loopback secure origin; the critic starts this itself and records the exact command and the resolved port. |
 | V34.2 | `node -e "const r=require('./artifacts/critic/D1-report.json'); const want=13*2; const have=r.flows.flatMap(f=>f.viewports).filter(v=>v.status).length; console.log(want, have); process.exit(have===want?0:1)"` | prints `26 26` and exits 0: one entry for each of the 13 flows at each of the two viewports, each with a status. |
 | V34.3 | `node -e "const r=require('./artifacts/critic/D1-report.json'); const bad=r.flows.flatMap(f=>f.viewports).filter(v=>v.status!=='pass'); console.log(bad.length); process.exit(bad.length?1:0)"` | prints `0` and exits 0; any failure entry carries reproducible steps, expected versus actual behaviour and the console or screenshot evidence path. |
 | V34.4 | `grep -rn "AC-\|flow" artifacts/critic/D1-report.json \| grep -c "AC-"` | every failed entry names the acceptance scenario it bears on, so a defect is never filed without a scenario. |
-| V34.5 | `pnpm vitest run && pnpm test:integration && pnpm playwright test` | after every fix the complete cumulative unit, integration and browser suites pass, and each fix was preceded by a test that failed for the reported defect. |
+| V34.5 | `npx vitest run && npm run test:integration && npx playwright test` | after every fix the complete cumulative unit, integration and browser suites pass, and each fix was preceded by a test that failed for the reported defect. |
 | V34.6 | `node -e "const r=require('./artifacts/critic/D1-report.json'); console.log(r.criticId, r.spawnedAfterFix, r.flows.length); process.exit(r.spawnedAfterFix?0:1)"` | the closing report identifies a critic spawned after the last fix, proving the deliverable was not self-certified. |
 
 **Depends on it:** the completeness claim of this deliverable. `AC-DEL-001`, `AC-DEL-004`, `AC-CAP-001` and the D3 items owned here are cited in §5 and §7 against T34 as the independent verification surface, and `planning-protocol.md:135` does not allow a deliverable to be complete without a passing fresh-critic report.
@@ -1207,7 +1207,7 @@ The statuses below are honest about what this deliverable proves. **A Partial ro
 
 The rule is `planning-protocol.md:104-111`, restated for this stack. **Red** means exactly one test was added through the identified public seam — the operation, port or module named in the task's `it should` statements — and the recorded command was run and observed to fail *because the planned behaviour is absent or incorrect*. Anything else is not valid red: a test that passes immediately proves nothing; a failure caused by a syntax error, an unresolved import, a misconfigured runner or project, a missing fixture, a wrong selector, or an unrelated flake is a harness defect, not evidence. Each task's `**Red/green evidence**` table states the red command and, in the same row, the reason that command must fail, so a reviewer can tell a real red from a broken run. **Green** means the smallest production change that satisfies that one test, rerun to pass without breaking the task's already-green cases. One case at a time: never all tests then all implementation. Refactoring after green is a separate review step and leaves the affected cases green. Every case in every `it should` list needs recorded red and green commands and outcomes (`planning-protocol.md:111`).
 
-For this stack the recorded commands are exactly these forms, run from the worktree root: `pnpm vitest run tests/<area>/<case>.test.ts` for a Node unit or integration case (the harness from T3 installs the single disclosed `fake-indexeddb` instance), `pnpm lint:layers` for the boundary check of T2, `pnpm lint` for the ESLint check of T1 and of every later deliverable's tree, `pnpm build` for build-artifact verification, `node -e "<script>"` for the artifact checks of T16 and the critic-report checks of T34, and `pnpm playwright test tests/browser/<case>.spec.ts --project=chromium` (adding `--project=webkit` where the task states both engines) for browser cases on the loopback secure origin from `DEV_PORT`. The recorded outcome format is one line per case: the task id and case name, the exact command, red observed with its failure reason, green observed, and the commit or working-tree digest the run used. The exact pinned package versions are fixed at Phase 6 (`planning-protocol.md:193`); until then the lockfile resolved by T1 is the version record, and no command here depends on a version number.
+For this stack the recorded commands are exactly these forms, run from the worktree root: `npx vitest run tests/<area>/<case>.test.ts` for a Node unit or integration case (the harness from T3 installs the single disclosed `fake-indexeddb` instance), `npm run lint:layers` for the boundary check of T2, `npm run lint` for the ESLint check of T1 and of every later deliverable's tree, `npm run build` for build-artifact verification, `node -e "<script>"` for the artifact checks of T16 and the critic-report checks of T34, and `npx playwright test tests/browser/<case>.spec.ts --project=chromium` (adding `--project=webkit` where the task states both engines) for browser cases on the loopback secure origin from `DEV_PORT`. The recorded outcome format is one line per case: the task id and case name, the exact command, red observed with its failure reason, green observed, and the commit or working-tree digest the run used. The exact pinned package versions are fixed at Phase 6 (`planning-protocol.md:193`); until then the lockfile resolved by T1 is the version record, and no command here depends on a version number.
 
 **Structural tasks have exact verification instead of red/green.** T1, T2, T3, T4, T7, T9, T11, T16, T18 and T34 are `S` tasks: they state an exact automated or reproducible verification with an expected result and the deliverable behaviour that depends on them (`planning-protocol.md:113`), and they do not invent unit tests. **Every defect a critic finds is a testing failure first** (`planning-protocol.md:131`): before any implementation change, the most appropriate unit, integration or automated browser test is added or strengthened and confirmed to fail for the reported defect, and only then is the fix made and the complete cumulative suites rerun. A critic finding that exposes a genuine ambiguity or contradiction is classified separately and pauses for manual clarification rather than being encoded as expected behaviour.
 

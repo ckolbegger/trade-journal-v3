@@ -304,12 +304,12 @@ forward-only within this branch; it is not a Restore path and must not be presen
 
 | # | Command | Expected result |
 |---|---|---|
-| V1.1 | `pnpm typecheck` | exits 0; the D2 schema module exports the store names, key paths, index declarations and the D2 version constant with no `any` and no unused export. |
-| V1.2 | `pnpm exec vitest run --project integration src/persistence/migrations` | all migration cases pass: a fresh D1 database upgrades to the D2 version in one transaction; every D2 store and declared index exists at the end; each store's `keyPath` and every index's `keyPath`/`multiEntry`/`unique` flag match the declaration. |
-| V1.3 | `pnpm exec vitest run --project integration src/persistence/migrations -t "isolated candidate"` | the interrupted-upgrade case passes: an error injected partway through the candidate leaves the D1 data readable at the D1 version constant, and no partially created D2 store is visible on the next open. |
-| V1.4 | `pnpm exec vitest run --project integration src/persistence/migrations -t "idempotent"` | re-running the migration against an already-upgraded database changes no record count and no store/index set, and returns an unchanged-version result rather than an error. |
-| V1.5 | `pnpm exec vitest run --project integration src/persistence/seam -t "write gate"` | with the session not `Writable`, the migration runner refuses to begin and returns `RuntimeNotWritable`; no D2 store is created. This is the D2 obligation of `overview.md:177` at the persistence boundary. |
-| V1.6 | `pnpm exec vitest run --project integration src/persistence/seam -t "one transaction"` | a commit touching Trade, Journal and Catalog stores either commits on all three or aborts on all three; the assertion compares each participant's revision before and after. |
+| V1.1 | `npm run typecheck` | exits 0; the D2 schema module exports the store names, key paths, index declarations and the D2 version constant with no `any` and no unused export. |
+| V1.2 | `npx vitest run --project integration src/persistence/migrations` | all migration cases pass: a fresh D1 database upgrades to the D2 version in one transaction; every D2 store and declared index exists at the end; each store's `keyPath` and every index's `keyPath`/`multiEntry`/`unique` flag match the declaration. |
+| V1.3 | `npx vitest run --project integration src/persistence/migrations -t "isolated candidate"` | the interrupted-upgrade case passes: an error injected partway through the candidate leaves the D1 data readable at the D1 version constant, and no partially created D2 store is visible on the next open. |
+| V1.4 | `npx vitest run --project integration src/persistence/migrations -t "idempotent"` | re-running the migration against an already-upgraded database changes no record count and no store/index set, and returns an unchanged-version result rather than an error. |
+| V1.5 | `npx vitest run --project integration src/persistence/seam -t "write gate"` | with the session not `Writable`, the migration runner refuses to begin and returns `RuntimeNotWritable`; no D2 store is created. This is the D2 obligation of `overview.md:177` at the persistence boundary. |
+| V1.6 | `npx vitest run --project integration src/persistence/seam -t "one transaction"` | a commit touching Trade, Journal and Catalog stores either commits on all three or aborts on all three; the assertion compares each participant's revision before and after. |
 
 **Depends on it:** T2, T3, T5, T8 and T12 all read or write the representation this task fixed, and every
 later acceptance claim in D2 compares revisions of these stores; without it there is no durable
@@ -358,7 +358,7 @@ durability pass.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Complete Plan prepares one candidate | `pnpm exec vitest run --project unit src/trade-record/prepare-change.confirm-plan.test.ts -t "one candidate AnalysisInput"` — fails because `prepareChange` has no Confirm Plan member, so the call returns an unsupported-change rejection instead of a candidate | same command — passes with one candidate record whose Plan, legs and conditions equal the command's values |
+| Complete Plan prepares one candidate | `npx vitest run --project unit src/trade-record/prepare-change.confirm-plan.test.ts -t "one candidate AnalysisInput"` — fails because `prepareChange` has no Confirm Plan member, so the call returns an unsupported-change rejection instead of a candidate | same command — passes with one candidate record whose Plan, legs and conditions equal the command's values |
 | No durable identity reserved | `... -t "reserve no durable"` — fails because an early implementation allocates a placeholder TradeId during preparation | same command — passes after the candidate identity type is made non-durable |
 | Digest stability | `... -t "canonical digest"` — fails because no digest is returned | same command — passes; two identical preparations agree and a one-unit leg change differs |
 | Before record present | `... -t "before AnalysisInput"` — fails because the result omits the before record | same command — passes with the stored revision represented |
@@ -414,7 +414,7 @@ disclosed substitution.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Complete Plan accepted | `pnpm exec vitest run --project unit src/trade-analysis/assess-plan.long-stock.test.ts -t "accept a complete long stock Plan"` — fails because `assessPlan` returns an unimplemented rejection for the Long Stock shape | same command — passes with normalized semantics, positive 1R and a payoff state |
+| Complete Plan accepted | `npx vitest run --project unit src/trade-analysis/assess-plan.long-stock.test.ts -t "accept a complete long stock Plan"` — fails because `assessPlan` returns an unimplemented rejection for the Long Stock shape | same command — passes with normalized semantics, positive 1R and a payoff state |
 | Missing fields rejected | `... -t "one typed issue per missing field"` — fails because the first missing field short-circuits and returns one generic issue | same command — passes with one issue per field and no semantics |
 | Non-Stock instrument rejected | `... -t "not a Stock instrument"` — fails because the shape check is absent | same command — passes with a typed issue |
 | Stop without monetary boundary | `... -t "no frozen monetary loss boundary"` — fails because an underlying-price Stop is accepted without a boundary | same command — passes with an issue naming the Stop |
@@ -474,7 +474,7 @@ stands in for Journal; `fake-indexeddb` is the only disclosed substitution.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Complete definition returned | `pnpm exec vitest run --project unit src/journal/get-definitions.plan-reflection.test.ts -t "complete exact initial"` — fails because D1's seed has no complete definition revision, so the read returns an incomplete prompt list | same command — passes with four ordered prompts |
+| Complete definition returned | `npx vitest run --project unit src/journal/get-definitions.plan-reflection.test.ts -t "complete exact initial"` — fails because D1's seed has no complete definition revision, so the read returns an incomplete prompt list | same command — passes with four ordered prompts |
 | Exact order and labels | `... -t "prompts in the frozen order"` — fails because the seeded prompts are label-sorted | same command — passes with the frozen order and stable identities |
 | Workflow-critical roles | `... -t "workflow-critical semantic roles"` — fails because roles are absent from the returned structure | same command — passes with exactly two role-bearing prompts |
 | Option set closed | `... -t "closed Primary emotion option set"` — fails because the option list includes a free-text Other or omits Other | same command — passes with the exact eight options |
@@ -526,7 +526,7 @@ Catalog; `fake-indexeddb` is the only disclosed substitution.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Both bindings resolved | `pnpm exec vitest run --project unit src/reference-catalog/resolve.new-selection.test.ts -t "bound NewSelection values"` — fails because v2 seeding is absent, so no Long Stock identity exists | same command — passes with an Account binding and the frozen shape |
+| Both bindings resolved | `npx vitest run --project unit src/reference-catalog/resolve.new-selection.test.ts -t "bound NewSelection values"` — fails because v2 seeding is absent, so no Long Stock identity exists | same command — passes with an Account binding and the frozen shape |
 | Archived Account rejected | `... -t "Account has been archived"` — fails because an inactive Account is treated as retained | same command — passes with a typed issue and no Strategy binding |
 | Retired Strategy rejected | `... -t "Strategy has been retired"` — fails because a retired Strategy still resolves | same command — passes with a typed issue |
 | Stale snapshot conflicts | `... -t "snapshot conflict"` — fails because resolution ignores the expected snapshot | same command — passes with a conflict and no writes |
@@ -582,7 +582,7 @@ against a real engine.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Identities assigned | `pnpm exec vitest run --project unit src/trade-record/apply-prepared-change.confirm-plan.test.ts -t "durable Trade, Plan"` — fails because `applyPreparedChange` rejects the Confirm Plan prepared change as unsupported | same command — passes with a complete identity mapping |
+| Identities assigned | `npx vitest run --project unit src/trade-record/apply-prepared-change.confirm-plan.test.ts -t "durable Trade, Plan"` — fails because `applyPreparedChange` rejects the Confirm Plan prepared change as unsupported | same command — passes with a complete identity mapping |
 | Stored Planned staged | `... -t "stored Lifecycle State as Planned"` — fails because no lifecycle record is staged | same command — passes with the lifecycle binding |
 | Unbound reconciliation rejected | `... -t "does not bind the exact candidate set"` — fails because any reconciliation is accepted | same command — passes with a typed rejection and no staging |
 | Stale base revision rejected | `... -t "base revision changed after preparation"` — fails because the recheck is missing | same command — passes with a typed rejection |
@@ -637,7 +637,7 @@ substitutes for Trade Analysis; `fake-indexeddb` is the only disclosed substitut
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Risk equals nearest boundary | `pnpm exec vitest run --project unit src/trade-analysis/plan-baseline.test.ts -t "equal to the positive monetary distance"` — fails because `assessPlan` returns no baseline | same command — passes with 1R equal to the computed distance |
+| Risk equals nearest boundary | `npx vitest run --project unit src/trade-analysis/plan-baseline.test.ts -t "equal to the positive monetary distance"` — fails because `assessPlan` returns no baseline | same command — passes with 1R equal to the computed distance |
 | Independent OR alternatives | `... -t "every original Stop and Target independently"` — fails because only the nearest condition is returned | same command — passes with per-condition basis |
 | Nearest nonnegative headline | `... -t "nearest nonnegative monetary boundary"` — fails because a structure-value condition hides the underlying-price condition | same command — passes with both visible and the nearest as headline |
 | Non-positive risk rejected | `... -t "zero or negative monetary risk"` — fails because a negative risk is returned as a signed number | same command — passes with a typed rejection and no 1R |
@@ -686,7 +686,7 @@ Invalidation equal the Plan values the Plan claim will publish. No mock stands i
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Prepared completed reflection | `pnpm exec vitest run --project unit src/journal/prepare-effects.plan-reflection.test.ts -t "one prepared completed Plan Reflection"` — fails because `prepareEffects` has no Plan Reflection obligation path | same command — passes with one prepared effect at the exact revision |
+| Prepared completed reflection | `npx vitest run --project unit src/journal/prepare-effects.plan-reflection.test.ts -t "one prepared completed Plan Reflection"` — fails because `prepareEffects` has no Plan Reflection obligation path | same command — passes with one prepared effect at the exact revision |
 | Answers bound by identity | `... -t "stable workflow-critical Prompt identities"` — fails because answers are keyed by label text | same command — passes with identity-keyed answers |
 | No identity reserved | `... -t "reserve no durable Entry identity"` — fails because a placeholder Entry id is allocated | same command — passes with an identity-free candidate |
 | Missing Thesis rejected | `... -t "omits the Thesis answer"` — fails because a one-answer form is accepted | same command — passes with an issue naming the prompt |
@@ -737,7 +737,7 @@ assertion against a real engine.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Planned page includes Trade | `pnpm exec vitest run --project integration src/trade-record/lifecycle-index.test.ts -t "Planned current-state page"` — fails because no lifecycle index entry is written by the apply path | same command — passes with one entry |
+| Planned page includes Trade | `npx vitest run --project integration src/trade-record/lifecycle-index.test.ts -t "Planned current-state page"` — fails because no lifecycle index entry is written by the apply path | same command — passes with one entry |
 | Open page excludes Trade | `... -t "exclude the Trade from a page filtered to Open"` — fails because selection is by derived state rather than index membership | same command — passes with an empty Open page |
 | No duplicate membership | `... -t "exactly one index entry"` — fails because a second apply appends a second entry | same command — passes with one entry |
 | Bounded batch | `... -t "complete bounded AnalysisInput batch"` — fails because one record is loaded per row | same command — passes with one bounded page query |
@@ -786,7 +786,7 @@ named and no read-time repair. No mock substitutes for Trade Analysis or Trade R
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Planned agrees | `pnpm exec vitest run --project unit src/trade-analysis/expected-lifecycle.test.ts -t "agreement status agreed"` — fails because `derive` returns no agreement status | same command — passes with Planned and agreed |
+| Planned agrees | `npx vitest run --project unit src/trade-analysis/expected-lifecycle.test.ts -t "agreement status agreed"` — fails because `derive` returns no agreement status | same command — passes with Planned and agreed |
 | Disagreement reported | `... -t "agreement status disagreement"` — fails because a mismatch is ignored | same command — passes with both values named |
 | Structured not thrown | `... -t "structured integrity finding rather than raising"` — fails because the mismatch throws | same command — passes with a finding object |
 | Purity | `... -t "not modify the supplied record"` — fails because derive writes the expected state into the record | same command — passes with an unchanged input |
@@ -835,7 +835,7 @@ real engine.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Identity and projection returned | `pnpm exec vitest run --project unit src/journal/apply-prepared-effects.plan-reflection.test.ts -t "assigned Entry identity"` — fails because `applyPreparedEffects` returns no boundary mapping | same command — passes with the identity and staged projection |
+| Identity and projection returned | `npx vitest run --project unit src/journal/apply-prepared-effects.plan-reflection.test.ts -t "assigned Entry identity"` — fails because `applyPreparedEffects` returns no boundary mapping | same command — passes with the identity and staged projection |
 | One Anchor staged | `... -t "exactly one Anchor of TradeAnchor kind"` — fails because the Anchor is left unbound | same command — passes with one Anchor |
 | Snapshot and times preserved | `... -t "moment time and first-authored time"` — fails because first-authored time is dropped | same command — passes with both times and the snapshot |
 | Mapping mismatch conflicts | `... -t "mapping does not contain the candidate"` — fails because the effect is applied to a guessed Trade | same command — passes with a conflict and no staging |
@@ -883,7 +883,7 @@ substitutes for Journal; `fake-indexeddb` is the only disclosed substitution.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Missing additions created | `pnpm exec vitest run --project integration src/journal/seed-defaults.manifest-v2.test.ts -t "both are missing"` — fails because manifest v2 is not applied at all | same command — passes with the definition and Source created |
+| Missing additions created | `npx vitest run --project integration src/journal/seed-defaults.manifest-v2.test.ts -t "both are missing"` — fails because manifest v2 is not applied at all | same command — passes with the definition and Source created |
 | Repeat idempotent | `... -t "idempotent unchanged result"` — fails because the second seed appends a revision | same command — passes with no new revision |
 | Incompatible conflict | `... -t "typed SeedConflict"` — fails because an incompatible definition is overwritten | same command — passes with no writes |
 | Trader revision preserved | `... -t "not rewrite a trader-revised"` — fails because seeding resets the form | same command — passes with the revised form intact |
@@ -938,9 +938,9 @@ participant; `fake-indexeddb` is the only disclosed substitution.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| One atomic success | `pnpm exec vitest run --project unit src/trade-workflows/confirm-plan.success.test.ts -t "exactly one Trade and exactly one completed"` — fails because `confirmPlan` returns an unimplemented rejection | same command — passes with one Trade and one Entry |
+| One atomic success | `npx vitest run --project unit src/trade-workflows/confirm-plan.success.test.ts -t "exactly one Trade and exactly one completed"` — fails because `confirmPlan` returns an unimplemented rejection | same command — passes with one Trade and one Entry |
 | Ordering before staging | `... -t "no Trade or Journal effect is staged before"` — fails because the first implementation stages the Trade before assessing the Plan | same command — passes with staging last |
-| No baseline writes nothing | `pnpm exec vitest run --project unit src/trade-workflows/confirm-plan.rejections.test.ts -t "no numeric baseline"` — fails because a baseline-less Plan is accepted | same command — passes with field-naming issues and unchanged revisions |
+| No baseline writes nothing | `npx vitest run --project unit src/trade-workflows/confirm-plan.rejections.test.ts -t "no numeric baseline"` — fails because a baseline-less Plan is accepted | same command — passes with field-naming issues and unchanged revisions |
 | Missing Invalidation | `... -t "Invalidation answer is missing"` — fails because a one-answer form is accepted | same command — passes with a prompt-naming issue |
 | Incoherent legs | `... -t "shape/leg mismatch"` — fails because any leg set is accepted | same command — passes with a typed rejection |
 | Retired Strategy | `... -t "Strategy was retired between resolution and commit"` — fails because the commit proceeds on a stale snapshot | same command — passes with a Strategy-naming rejection |
@@ -989,7 +989,7 @@ staging. The durability-critical half is repeated against a real engine in T19.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Journal rejection rolls back Trade | `pnpm exec vitest run --project integration src/trade-workflows/confirm-plan.atomicity.test.ts -t "Journal participant rejects"` — fails because the staged Trade survives the Journal failure | same command — passes with unchanged participant revisions |
+| Journal rejection rolls back Trade | `npx vitest run --project integration src/trade-workflows/confirm-plan.atomicity.test.ts -t "Journal participant rejects"` — fails because the staged Trade survives the Journal failure | same command — passes with unchanged participant revisions |
 | Trade rejection rolls back Journal | `... -t "Trade Record participant rejects"` — fails because the Entry survives | same command — passes with unchanged participant revisions |
 | Index and lifecycle roll back | `... -t "lifecycle index membership and the stored Lifecycle State unchanged"` — fails because the index entry survives | same command — passes with no membership |
 | All effects commit together | `... -t "commit every staged effect together"` — fails because one participant commits early | same command — passes with one result |
@@ -1040,7 +1040,7 @@ read operations during the success path only. No mock substitutes for any partic
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Committed projection present | `pnpm exec vitest run --project unit src/trade-workflows/confirm-plan.result.test.ts -t "committed Trade projection"` — fails because the result returns only identities | same command — passes with the projection |
+| Committed projection present | `npx vitest run --project unit src/trade-workflows/confirm-plan.result.test.ts -t "committed Trade projection"` — fails because the result returns only identities | same command — passes with the projection |
 | Entry projection present | `... -t "completed Plan Reflection Entry projection"` — fails because the Entry is represented only by an id | same command — passes with Anchor, Source and answers |
 | Derivation included | `... -t "derivation the command had to establish"` — fails because the baseline is dropped after assessment | same command — passes with baseline and 1R |
 | Identities and transition | `... -t "Lifecycle State transition to Planned"` — fails because the transition is not reported | same command — passes with identities and transition |
@@ -1098,7 +1098,7 @@ loopback origin used for local automation, which does not replace production HTT
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Exact revision rendered | `pnpm exec playwright test e2e/d2-confirm-plan-form.spec.ts -g "exact definition revision"` — fails because the form hardcodes prompt labels | same command — passes with the revision's prompts and options |
+| Exact revision rendered | `npx playwright test e2e/d2-confirm-plan-form.spec.ts -g "exact definition revision"` — fails because the form hardcodes prompt labels | same command — passes with the revision's prompts and options |
 | Stable identities submitted | `... -g "stable Prompt and Option identities"` — fails because labels are submitted | same command — passes with identities in the request payload |
 | Blank Invalidation validated | `... -g "Invalidation answer blank"` — fails because the form submits and gets a server rejection instead of an inline message | same command — passes with an inline typed message |
 | Resize preserves values | `... -g "viewport changes between narrow and wide"` — fails because the resize resets the form state | same command — passes with values intact |
@@ -1150,7 +1150,7 @@ substitutions are `fake-indexeddb` in the Node legs and the loopback origin for 
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Frozen Plan rendered | `pnpm exec playwright test e2e/d2-trade-view.spec.ts -g "frozen Plan"` — fails because the view is not built | same command — passes with Plan, legs, management, baseline and 1R |
+| Frozen Plan rendered | `npx playwright test e2e/d2-trade-view.spec.ts -g "frozen Plan"` — fails because the view is not built | same command — passes with Plan, legs, management, baseline and 1R |
 | Planned and no disposition | `... -g "no Terminal Disposition at all"` — fails because a placeholder disposition is rendered | same command — passes with Planned and no disposition |
 | Disagreement surfaced | `... -g "integrity disagreement banner"` — fails because a disagreement renders as agreed | same command — passes with both states named |
 | Loading and Error distinct | `... -g "Loading state before an authoritative result"` — fails because both render as Empty | same command — passes with distinct states |
@@ -1198,12 +1198,12 @@ interaction record is the primary evidence, per `ui-contract.md:125`.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Live layout switch | `pnpm exec playwright test e2e/d2-responsive.spec.ts -g "without a reload"` — fails because no responsive layout exists yet | same command — passes with both arrangements |
+| Live layout switch | `npx playwright test e2e/d2-responsive.spec.ts -g "without a reload"` — fails because no responsive layout exists yet | same command — passes with both arrangements |
 | State across breakpoint | `... -g "preserve the selected Account"` — fails because the resize remounts and resets state | same command — passes with state preserved |
 | Form exposed accessibly | `... -g "programmatic name and a coherent focus order"` — fails because inputs lack accessible names | same command — passes with names and order |
 | Keyboard-only completion | `... -g "without a pointer"` — fails because Save is unreachable by keyboard | same command — passes with a completed confirmation |
 | Radio-group semantics | `... -g "radio group member"` — fails because the chips expose button roles | same command — passes with group semantics |
-| WCAG AA contrast | `pnpm exec playwright test e2e/d2-accessibility.spec.ts -g "WCAG AA contrast"` — fails because a required-error color is below the ratio | same command — passes on both surfaces |
+| WCAG AA contrast | `npx playwright test e2e/d2-accessibility.spec.ts -g "WCAG AA contrast"` — fails because a required-error color is below the ratio | same command — passes on both surfaces |
 | Non-color cues | `... -g "non-color cue"` — fails because invalid and saved are distinguished only by color | same command — passes with text cues |
 | Focus after validation | `... -g "focus visible and logical after a validation failure"` — fails because focus is lost to the document body | same command — passes with focus on the first invalid field |
 
@@ -1247,14 +1247,14 @@ rather than only rendered output.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Durable creation | `pnpm exec vitest run --project integration src/integration/d2-confirm-plan.test.ts -t "durable Trade, Plan"` — fails because the assembled path is incomplete | same command — passes with all seven durable records |
+| Durable creation | `npx vitest run --project integration src/integration/d2-confirm-plan.test.ts -t "durable Trade, Plan"` — fails because the assembled path is incomplete | same command — passes with all seven durable records |
 | Rejections leave state | `... -t "byte-identical across Trade Record, Journal and Catalog"` — fails because a rejection leaves a candidate record | same command — passes with identical revisions |
 | Projection equals durable | `... -t "after a restart of the persistence connection"` — fails because the projection rounds a decimal | same command — passes with exact equality |
 | No mocks on the path | `... -t "no mock, stub or canned response"` — fails because a stub is registered for the Catalog | same command — passes with the real modules only |
 | Injected Journal failure | `... -t "inside the real transaction"` — fails because the partial state survives | same command — passes with no Trade |
-| Real-engine durability | `pnpm exec playwright test e2e/d2-durability.spec.ts -g "real engine"` — fails because the Node store's abort semantics are assumed rather than proven | same command — passes with disclosed fidelity gaps listed |
+| Real-engine durability | `npx playwright test e2e/d2-durability.spec.ts -g "real engine"` — fails because the Node store's abort semantics are assumed rather than proven | same command — passes with disclosed fidelity gaps listed |
 | Boundedness asserted | `... -g "no per-record storage read"` — fails because the page loads one record at a time | same command — passes with an asserted bounded query count |
-| D1 behavior still green | `pnpm exec vitest run --project integration src/integration/d1` — fails if a D2 change regressed the foundation | same command — passes unchanged |
+| D1 behavior still green | `npx vitest run --project integration src/integration/d1` — fails if a D2 change regressed the foundation | same command — passes unchanged |
 
 #### T20 — `S` Independent browser-critic gate for D2
 
@@ -1275,10 +1275,10 @@ D2 flows passing.
 
 | # | Command | Expected result |
 |---|---|---|
-| V20.1 | `pnpm dev` (managed background job; the runtime must be started by the critic itself, not inherited from the main agent) | the application serves the production UI on the loopback origin and reports `Writable` Runtime Readiness; the exact served URL and port are recorded in the critic report. |
-| V20.2 | `pnpm exec vitest run --project unit` | the cumulative unit suite passes with zero failures; this is the precondition that D2's implementation is complete enough to criticise. |
-| V20.3 | `pnpm exec vitest run --project integration` | the cumulative integration suite of T19 passes with zero failures, including the real-engine durability leg. |
-| V20.4 | `pnpm exec playwright test e2e/d2-*` | every D2 browser flow in §4 passes at both the narrow and the wide viewport and produces the artifacts the critic report cites. |
+| V20.1 | `npm run dev` (managed background job; the runtime must be started by the critic itself, not inherited from the main agent) | the application serves the production UI on the loopback origin and reports `Writable` Runtime Readiness; the exact served URL and port are recorded in the critic report. |
+| V20.2 | `npx vitest run --project unit` | the cumulative unit suite passes with zero failures; this is the precondition that D2's implementation is complete enough to criticise. |
+| V20.3 | `npx vitest run --project integration` | the cumulative integration suite of T19 passes with zero failures, including the real-engine durability leg. |
+| V20.4 | `npx playwright test e2e/d2-*` | every D2 browser flow in §4 passes at both the narrow and the wide viewport and produces the artifacts the critic report cites. |
 | V20.5 | critic flow report, one section per row of the §4 table, each recording narrow and wide observations | every flow reports pass; any fail names reproducible steps, expected versus actual behavior, and screenshot, console or server evidence. |
 | V20.6 | the reproduced-defect test for each reported defect, run before the fix | at least one automated test fails for the exact reported defect before any implementation change, so that the defect is a recorded testing failure and not only a critic observation. |
 | V20.7 | the same commands as V20.2 to V20.4 re-run after each fix, followed by a fresh critic attempt | the cumulative suites stay green and a fresh critic reports all D2 flows passing; the gate does not close on a stale report. |
@@ -1292,7 +1292,7 @@ deliverable; without it D2 could ship a form that only the automated suite belie
 
 Every flow below is run at **both** a narrow viewport and a wide viewport. The narrow pass uses the
 single-column bottom-navigation arrangement; the wide pass uses the left-sidebar arrangement. Flows
-are runnable against the production UI by a critic that starts the runtime itself with `pnpm dev`.
+are runnable against the production UI by a critic that starts the runtime itself with `npm run dev`.
 Earlier deliverables' flows are deliberately not listed here: a critic carries full regression
 responsibility for them, but this table is D2's own scope.
 
@@ -1385,13 +1385,13 @@ one case at a time in this sequence:
 The exact commands for this stack are:
 
 - Red and green for a unit case:
-  `pnpm exec vitest run --project unit <test-file> -t "<case phrase>"` — one case at a time through
+  `npx vitest run --project unit <test-file> -t "<case phrase>"` — one case at a time through
   the named seam.
 - Red and green for an integration case:
-  `pnpm exec vitest run --project integration <test-file> -t "<case phrase>"`.
-- Browser red and green: `pnpm exec playwright test <spec-file> -g "<case phrase>"`.
-- Whole-task and whole-suite gates: `pnpm test:unit`, `pnpm test:integration`, `pnpm test:browser`,
-  `pnpm typecheck`, each of which must exit 0.
+  `npx vitest run --project integration <test-file> -t "<case phrase>"`.
+- Browser red and green: `npx playwright test <spec-file> -g "<case phrase>"`.
+- Whole-task and whole-suite gates: `npm run test:unit`, `npm run test:integration`, `npm run test:browser`,
+  `npm run typecheck`, each of which must exit 0.
 
 The recorded outcome for each case is: the task id and case phrase; the exact command; the observed
 result before the production change, including the failure message that identifies the absent

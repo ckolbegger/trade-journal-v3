@@ -26,9 +26,9 @@ freeze record; where they conflict with the prompt, the prompt governs.
    forward obligations, and the D1–D7 breakdowns. The freeze record's §7 is the interface contract D1
    must not silently break.
 3. **Runtime is pinned, not discovered.** Homebrew **Node `^26.12.0`** — 26.12.0 or any later 26.x —
-   with **pnpm 11.7.0** installed for that runtime, per the freeze record §2 and errata E-002/E-003.
-   Prove the pair before the first red run: `pnpm --version` prints 11.7.0, and the range assertion in
-   §2 exits 0. Record the exact `process.versions.node` with the evidence; a 26.x upgrade needs no plan
+   with the **npm 11.20.0** that ships with it, per the freeze record §2 and erratum E-008. Nothing is
+   installed for the package manager. Prove the pair before the first red run: `npm --version` prints
+   11.20.0, and the range assertion in §2 exits 0. Record the exact `process.versions.node` with the evidence; a 26.x upgrade needs no plan
    change, a move to 27 or below 26.12.0 does. The DSH runtime's Node 24.21.0 must not be executed, and
    system Node is no longer excluded because it *is* the chosen runtime. Do not substitute a different
    test runner, browser engine or clock library: any such change is a §8 adjustment at minimum.

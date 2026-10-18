@@ -238,11 +238,11 @@ four sections now … because it is a durable format" (`plan/vertical-deliverabl
 
 | # | Command | Expected result |
 |---|---|---|
-| V1.1 | `pnpm tsc --noEmit` (once the Phase 6 pin exists; see §8) | Compiles with no error; the envelope, manifest, section and result types are exported from one module and imported by T2/T4/T5 without a second definition of any of them |
-| V1.2 | `pnpm vitest run test/unit/backup/artifact-format.test.ts` | The recorded fixture parses against the declared manifest schema; parsing rejects a fixture with a missing `marketData` slot and rejects one with an unknown fifth section, and both rejections name the offending key |
-| V1.3 | `pnpm vitest run test/unit/backup/artifact-format.test.ts -t "excluded top-level keys"` | The envelope's allowed-key set contains no key from the exclusion list of decision 4 in §1, asserted against the recorded allowed-key list rather than against a hand-written object |
-| V1.4 | `pnpm vitest run test/unit/backup/canonical-encoding.test.ts` | Recorded canonical-encoding vectors (map-key reordering, number formatting, nested empty sections, unicode labels) produce byte-identical output to their recorded expected bytes, and each vector's recorded SHA-256 hex matches |
-| V1.5 | `pnpm vitest run test/unit/backup/artifact-format.test.ts -t "format version"` | The declared format version and supported schema/capability range appear exactly once in the module; the manifest schema requires both, and a fixture missing either is rejected |
+| V1.1 | `npx tsc --noEmit` (once the Phase 6 pin exists; see §8) | Compiles with no error; the envelope, manifest, section and result types are exported from one module and imported by T2/T4/T5 without a second definition of any of them |
+| V1.2 | `npx vitest run test/unit/backup/artifact-format.test.ts` | The recorded fixture parses against the declared manifest schema; parsing rejects a fixture with a missing `marketData` slot and rejects one with an unknown fifth section, and both rejections name the offending key |
+| V1.3 | `npx vitest run test/unit/backup/artifact-format.test.ts -t "excluded top-level keys"` | The envelope's allowed-key set contains no key from the exclusion list of decision 4 in §1, asserted against the recorded allowed-key list rather than against a hand-written object |
+| V1.4 | `npx vitest run test/unit/backup/canonical-encoding.test.ts` | Recorded canonical-encoding vectors (map-key reordering, number formatting, nested empty sections, unicode labels) produce byte-identical output to their recorded expected bytes, and each vector's recorded SHA-256 hex matches |
+| V1.5 | `npx vitest run test/unit/backup/artifact-format.test.ts -t "format version"` | The declared format version and supported schema/capability range appear exactly once in the module; the manifest schema requires both, and a fixture missing either is rejected |
 
 **Depends on it:** T2 cannot open one coherent write of a shaped artifact, T4 cannot take a digest over
 an undefined byte encoding, and T5 cannot emit a manifest whose members are not fixed — and a later
@@ -290,11 +290,11 @@ real engine in the T13 Playwright leg.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| one snapshot identity for all four slots | `pnpm vitest run test/unit/workspace/export-backup.test.ts -t "one coherent read snapshot"` — fails because no `exportBackup` exists, so no result binding can equal an artifact source binding | same command — passes with one snapshot identity recorded for all four slots |
-| `Conflict` on a stale expected binding | `pnpm vitest run test/unit/workspace/export-backup.test.ts -t "Conflict carrying the current binding"` — fails because the operation returns no `Conflict` branch at all | same command — passes and the store revision set is unchanged |
-| `Downloaded` binding equals artifact source | `pnpm vitest run test/unit/workspace/export-backup.test.ts -t "Downloaded carrying that same snapshot identity"` — fails because there is no result binding to compare | same command — passes |
-| no partial artifact on a producer failure | `pnpm vitest run test/unit/workspace/export-backup.test.ts -t "assembling a partial artifact"` — fails because nothing suppresses a partial envelope yet | same command — passes and no artifact bytes are offered to the host |
-| export writes no row | `pnpm vitest run test/unit/workspace/export-backup.test.ts -t "write no row to any store"` — fails because the export path does not exist to be observed | same command — passes over the unchanged revision set |
+| one snapshot identity for all four slots | `npx vitest run test/unit/workspace/export-backup.test.ts -t "one coherent read snapshot"` — fails because no `exportBackup` exists, so no result binding can equal an artifact source binding | same command — passes with one snapshot identity recorded for all four slots |
+| `Conflict` on a stale expected binding | `npx vitest run test/unit/workspace/export-backup.test.ts -t "Conflict carrying the current binding"` — fails because the operation returns no `Conflict` branch at all | same command — passes and the store revision set is unchanged |
+| `Downloaded` binding equals artifact source | `npx vitest run test/unit/workspace/export-backup.test.ts -t "Downloaded carrying that same snapshot identity"` — fails because there is no result binding to compare | same command — passes |
+| no partial artifact on a producer failure | `npx vitest run test/unit/workspace/export-backup.test.ts -t "assembling a partial artifact"` — fails because nothing suppresses a partial envelope yet | same command — passes and no artifact bytes are offered to the host |
+| export writes no row | `npx vitest run test/unit/workspace/export-backup.test.ts -t "write no row to any store"` — fails because the export path does not exist to be observed | same command — passes over the unchanged revision set |
 
 #### T3 — `B` `exportSnapshot` across Trade Record, Journal, Market Data and Reference Catalog
 
@@ -336,12 +336,12 @@ real-engine counterpart reruns in T13.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Trade Record section content | `pnpm vitest run test/unit/backup/section-export.test.ts -t "Trade Record section"` — fails because no section producer is wired, so the section is absent | same command — passes against the recorded expected identity/revision set |
-| Journal section content | `pnpm vitest run test/unit/backup/section-export.test.ts -t "Journal section"` — fails because definition revisions and Debt history are not emitted | same command — passes |
-| empty Market Data slot is present and zeroed | `pnpm vitest run test/unit/backup/section-export.test.ts -t "no Mark, Bar or acknowledgment"` — fails because an empty section is currently skipped rather than emitted | same command — passes with `total: 0` and a section digest |
-| all four slots in one artifact | `pnpm vitest run test/unit/backup/section-export.test.ts -t "explicit zero rather than omitted"` — fails because the envelope is assembled from whichever sections returned rows | same command — passes |
-| reads come from the bound snapshot | `pnpm vitest run test/unit/backup/section-export.test.ts -t "mutation commits between two section exports"` — fails because each producer reads fresh | same command — passes with both sections at one snapshot |
-| private projections excluded | `pnpm vitest run test/unit/backup/section-export.test.ts -t "exclude private indexes and projections"` — fails because projection rows currently leak into a section payload | same command — passes |
+| Trade Record section content | `npx vitest run test/unit/backup/section-export.test.ts -t "Trade Record section"` — fails because no section producer is wired, so the section is absent | same command — passes against the recorded expected identity/revision set |
+| Journal section content | `npx vitest run test/unit/backup/section-export.test.ts -t "Journal section"` — fails because definition revisions and Debt history are not emitted | same command — passes |
+| empty Market Data slot is present and zeroed | `npx vitest run test/unit/backup/section-export.test.ts -t "no Mark, Bar or acknowledgment"` — fails because an empty section is currently skipped rather than emitted | same command — passes with `total: 0` and a section digest |
+| all four slots in one artifact | `npx vitest run test/unit/backup/section-export.test.ts -t "explicit zero rather than omitted"` — fails because the envelope is assembled from whichever sections returned rows | same command — passes |
+| reads come from the bound snapshot | `npx vitest run test/unit/backup/section-export.test.ts -t "mutation commits between two section exports"` — fails because each producer reads fresh | same command — passes with both sections at one snapshot |
+| private projections excluded | `npx vitest run test/unit/backup/section-export.test.ts -t "exclude private indexes and projections"` — fails because projection rows currently leak into a section payload | same command — passes |
 
 ### Phase P3 — digests, manifest and exclusion proof
 
@@ -381,11 +381,11 @@ digests are unchanged. This proves digest determinism and locality against real 
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| per-section digest over canonical bytes | `pnpm vitest run test/unit/backup/artifact-digest.test.ts -t "canonical encoding of that section"` — fails because no digest is computed for a section | same command — passes against recorded hex |
-| full digest over placeholder-normalized envelope | `pnpm vitest run test/unit/backup/artifact-digest.test.ts -t "fixed placeholder value"` — fails because the full digest is undefined or self-referentially hashed | same command — passes and two exports of one snapshot agree |
-| digest locality | `pnpm vitest run test/unit/backup/artifact-digest.test.ts -t "only the manifest's exclusion list"` — fails because the full digest is not recomputed on a manifest-only change | same command — passes |
-| four section digests plus one full digest | `pnpm vitest run test/unit/backup/artifact-digest.test.ts -t "four exactly"` — fails because the manifest records no digest map | same command — passes |
-| swapped-payload detection | `pnpm vitest run test/unit/backup/artifact-digest.test.ts -t "swapped for another section's payload"` — fails because nothing recomputes a stored digest | same command — passes with the mismatch identified by section name |
+| per-section digest over canonical bytes | `npx vitest run test/unit/backup/artifact-digest.test.ts -t "canonical encoding of that section"` — fails because no digest is computed for a section | same command — passes against recorded hex |
+| full digest over placeholder-normalized envelope | `npx vitest run test/unit/backup/artifact-digest.test.ts -t "fixed placeholder value"` — fails because the full digest is undefined or self-referentially hashed | same command — passes and two exports of one snapshot agree |
+| digest locality | `npx vitest run test/unit/backup/artifact-digest.test.ts -t "only the manifest's exclusion list"` — fails because the full digest is not recomputed on a manifest-only change | same command — passes |
+| four section digests plus one full digest | `npx vitest run test/unit/backup/artifact-digest.test.ts -t "four exactly"` — fails because the manifest records no digest map | same command — passes |
+| swapped-payload detection | `npx vitest run test/unit/backup/artifact-digest.test.ts -t "swapped for another section's payload"` — fails because nothing recomputes a stored digest | same command — passes with the mismatch identified by section name |
 
 #### T5 — `B` Workspace Backup Manifest: versions, capability footprint, counts, exclusions
 
@@ -425,11 +425,11 @@ value occurs anywhere in the manifest. Repeat for a Workspace with no Market Dat
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| versions and supported range | `pnpm vitest run test/unit/backup/manifest.test.ts -t "supported schema/capability range"` — fails because the manifest has no version or range members | same command — passes |
-| capability footprint equals installed manifest | `pnpm vitest run test/unit/backup/manifest.test.ts -t "Installed Capability Manifest"` — fails because the footprint is hardcoded or absent | same command — passes for a release declaring a subset |
-| four counts including explicit zeros | `pnpm vitest run test/unit/backup/manifest.test.ts -t "explicit zero total"` — fails because an empty section is dropped from the counts | same command — passes |
-| exclusion list with proof status | `pnpm vitest run test/unit/backup/manifest.test.ts -t "exclusion list naming every excluded category"` — fails because no exclusion list is emitted | same command — passes |
-| per-kind counts | `pnpm vitest run test/unit/backup/manifest.test.ts -t "per-kind counts"` — fails because only a bare section total exists, which cannot distinguish a skipped section from an empty one | same command — passes |
+| versions and supported range | `npx vitest run test/unit/backup/manifest.test.ts -t "supported schema/capability range"` — fails because the manifest has no version or range members | same command — passes |
+| capability footprint equals installed manifest | `npx vitest run test/unit/backup/manifest.test.ts -t "Installed Capability Manifest"` — fails because the footprint is hardcoded or absent | same command — passes for a release declaring a subset |
+| four counts including explicit zeros | `npx vitest run test/unit/backup/manifest.test.ts -t "explicit zero total"` — fails because an empty section is dropped from the counts | same command — passes |
+| exclusion list with proof status | `npx vitest run test/unit/backup/manifest.test.ts -t "exclusion list naming every excluded category"` — fails because no exclusion list is emitted | same command — passes |
+| per-kind counts | `npx vitest run test/unit/backup/manifest.test.ts -t "per-kind counts"` — fails because only a bare section total exists, which cannot distinguish a skipped section from an empty one | same command — passes |
 
 #### T6 — `B` Secrets exclusion and its nonpresence proof
 
@@ -475,12 +475,12 @@ empty slot rather than inventing a credential. `fake-indexeddb` is the disclosed
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| no credential value in artifact bytes | `pnpm vitest run test/unit/backup/exclusion-proof.test.ts -t "credential value"` — fails because no scan over artifact bytes exists | same command — passes with the empty credential slot explicitly asserted |
-| no raw provider payload | `pnpm vitest run test/unit/backup/exclusion-proof.test.ts -t "raw provider response payload"` — fails because raw payloads are not filtered from the section | same command — passes |
-| no diagnostics, reports, cursors or projections | `pnpm vitest run test/unit/backup/exclusion-proof.test.ts -t "rebuildable stores are populated"` — fails because those stores are not excluded yet | same command — passes |
-| manifest exclusions agree with bytes | `pnpm vitest run test/unit/backup/exclusion-proof.test.ts -t "manifest cannot claim an exclusion the bytes contradict"` — fails because the manifest list and the byte scan are unconnected | same command — passes |
-| read set excludes excluded stores | `pnpm vitest run test/unit/backup/exclusion-proof.test.ts -t "recorded at the transaction seam"` — fails because export currently reads a projection store | same command — passes |
-| fail rather than emit on a leak | `pnpm vitest run test/unit/backup/exclusion-proof.test.ts -t "Not Completed naming the exclusion stage"` — fails because a leak is currently emitted silently | same command — passes with no artifact offered |
+| no credential value in artifact bytes | `npx vitest run test/unit/backup/exclusion-proof.test.ts -t "credential value"` — fails because no scan over artifact bytes exists | same command — passes with the empty credential slot explicitly asserted |
+| no raw provider payload | `npx vitest run test/unit/backup/exclusion-proof.test.ts -t "raw provider response payload"` — fails because raw payloads are not filtered from the section | same command — passes |
+| no diagnostics, reports, cursors or projections | `npx vitest run test/unit/backup/exclusion-proof.test.ts -t "rebuildable stores are populated"` — fails because those stores are not excluded yet | same command — passes |
+| manifest exclusions agree with bytes | `npx vitest run test/unit/backup/exclusion-proof.test.ts -t "manifest cannot claim an exclusion the bytes contradict"` — fails because the manifest list and the byte scan are unconnected | same command — passes |
+| read set excludes excluded stores | `npx vitest run test/unit/backup/exclusion-proof.test.ts -t "recorded at the transaction seam"` — fails because export currently reads a projection store | same command — passes |
+| fail rather than emit on a leak | `npx vitest run test/unit/backup/exclusion-proof.test.ts -t "Not Completed naming the exclusion stage"` — fails because a leak is currently emitted silently | same command — passes with no artifact offered |
 
 ### Phase P4 — result semantics, concurrency, failure and readiness
 
@@ -521,11 +521,11 @@ the run evidence that the suggested file name is the only host-facing artifact i
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| `Downloaded` payload fields | `pnpm vitest run test/unit/workspace/export-result.test.ts -t "source binding, full artifact digest, manifest digest"` — fails because the result union has no such members | same command — passes |
-| no receipt on success | `pnpm vitest run test/unit/workspace/export-result.test.ts -t "no receipt-shaped field"` — fails because no assertion can be met while the receipt path is undefined | same command — passes, and the store contains no receipt row |
-| `Conflict` leaves the Workspace unchanged | `pnpm vitest run test/unit/workspace/export-result.test.ts -t "expected binding no longer matches"` — fails because no `Conflict` branch exists | same command — passes over an unchanged revision set |
-| `Not Completed` on a failed read | `pnpm vitest run test/unit/workspace/export-result.test.ts -t "section read is made to fail"` — fails because failure currently surfaces as an untyped error | same command — passes with stage and reason |
-| nothing pending is persisted | `pnpm vitest run test/unit/workspace/export-result.test.ts -t "leaves before verifying"` — fails because no comparison values are carried on the result | same command — passes, and no workspace row was added |
+| `Downloaded` payload fields | `npx vitest run test/unit/workspace/export-result.test.ts -t "source binding, full artifact digest, manifest digest"` — fails because the result union has no such members | same command — passes |
+| no receipt on success | `npx vitest run test/unit/workspace/export-result.test.ts -t "no receipt-shaped field"` — fails because no assertion can be met while the receipt path is undefined | same command — passes, and the store contains no receipt row |
+| `Conflict` leaves the Workspace unchanged | `npx vitest run test/unit/workspace/export-result.test.ts -t "expected binding no longer matches"` — fails because no `Conflict` branch exists | same command — passes over an unchanged revision set |
+| `Not Completed` on a failed read | `npx vitest run test/unit/workspace/export-result.test.ts -t "section read is made to fail"` — fails because failure currently surfaces as an untyped error | same command — passes with stage and reason |
+| nothing pending is persisted | `npx vitest run test/unit/workspace/export-result.test.ts -t "leaves before verifying"` — fails because no comparison values are carried on the result | same command — passes, and no workspace row was added |
 
 #### T8 — `B` Concurrent-mutation isolation: a later mutation lies outside the artifact
 
@@ -568,11 +568,11 @@ stated in the run note.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| artifact excludes a later commit | `pnpm vitest run test/unit/workspace/export-isolation.test.ts -t "mutation commits after the snapshot is opened"` — fails because sections currently read fresh, so the new record appears | same command — passes against the pre-mutation snapshot |
-| result and manifest name the pre-mutation snapshot | `pnpm vitest run test/unit/workspace/export-isolation.test.ts -t "pre-mutation snapshot identity"` — fails because no snapshot identity is bound | same command — passes |
-| concurrent commit is durable | `pnpm vitest run test/unit/workspace/export-isolation.test.ts -t "commit the concurrent mutation durably"` — fails because the mutation is not injected yet | same command — passes with the new revision present in the store |
-| no snapshot mixing across reads | `pnpm vitest run test/unit/workspace/export-isolation.test.ts -t "between the first section read and the last"` — fails because two reads can straddle the mutation | same command — passes |
-| real-engine counterpart | `pnpm playwright test e2e/backup-isolation.spec.ts` — fails because the concurrency injection does not exist | same command — passes over a real IndexedDB with the pre-mutation snapshot asserted |
+| artifact excludes a later commit | `npx vitest run test/unit/workspace/export-isolation.test.ts -t "mutation commits after the snapshot is opened"` — fails because sections currently read fresh, so the new record appears | same command — passes against the pre-mutation snapshot |
+| result and manifest name the pre-mutation snapshot | `npx vitest run test/unit/workspace/export-isolation.test.ts -t "pre-mutation snapshot identity"` — fails because no snapshot identity is bound | same command — passes |
+| concurrent commit is durable | `npx vitest run test/unit/workspace/export-isolation.test.ts -t "commit the concurrent mutation durably"` — fails because the mutation is not injected yet | same command — passes with the new revision present in the store |
+| no snapshot mixing across reads | `npx vitest run test/unit/workspace/export-isolation.test.ts -t "between the first section read and the last"` — fails because two reads can straddle the mutation | same command — passes |
+| real-engine counterpart | `npx playwright test e2e/backup-isolation.spec.ts` — fails because the concurrency injection does not exist | same command — passes over a real IndexedDB with the pre-mutation snapshot asserted |
 
 #### T9 — `B` Failed-stage export returns `Not Completed` with unchanged-Workspace evidence
 
@@ -611,12 +611,12 @@ did not damage it.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| snapshot-open failure stage | `pnpm vitest run test/unit/workspace/export-failure.test.ts -t "snapshot cannot be opened"` — fails because the failure has no typed result | same command — passes with the named stage |
-| section producer failure stage | `pnpm vitest run test/unit/workspace/export-failure.test.ts -t "one of the four section producers"` — fails because the error escapes as an exception | same command — passes |
-| exclusion rejection stage | `pnpm vitest run test/unit/workspace/export-failure.test.ts -t "exclusion proof rejects"` — fails because no stage is attributed | same command — passes |
-| unchanged-Workspace evidence | `pnpm vitest run test/unit/workspace/export-failure.test.ts -t "Workspace binding and revision set before and after"` — fails because no before/after evidence is returned | same command — passes with equal values |
-| no artifact offered, nothing written | `pnpm vitest run test/unit/workspace/export-failure.test.ts -t "write nothing and offer no file"` — fails because a partial artifact can still be handed to the host | same command — passes |
-| no receipt on failure | `pnpm vitest run test/unit/workspace/export-failure.test.ts -t "free of any completed-backup or receipt claim"` — fails because the failure path is untyped | same command — passes |
+| snapshot-open failure stage | `npx vitest run test/unit/workspace/export-failure.test.ts -t "snapshot cannot be opened"` — fails because the failure has no typed result | same command — passes with the named stage |
+| section producer failure stage | `npx vitest run test/unit/workspace/export-failure.test.ts -t "one of the four section producers"` — fails because the error escapes as an exception | same command — passes |
+| exclusion rejection stage | `npx vitest run test/unit/workspace/export-failure.test.ts -t "exclusion proof rejects"` — fails because no stage is attributed | same command — passes |
+| unchanged-Workspace evidence | `npx vitest run test/unit/workspace/export-failure.test.ts -t "Workspace binding and revision set before and after"` — fails because no before/after evidence is returned | same command — passes with equal values |
+| no artifact offered, nothing written | `npx vitest run test/unit/workspace/export-failure.test.ts -t "write nothing and offer no file"` — fails because a partial artifact can still be handed to the host | same command — passes |
+| no receipt on failure | `npx vitest run test/unit/workspace/export-failure.test.ts -t "free of any completed-backup or receipt claim"` — fails because the failure path is untyped | same command — passes |
 
 #### T10 — `B` Export available in `Recovery Only`
 
@@ -657,11 +657,11 @@ one D1's gate reports.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| export succeeds in `Recovery Only` | `pnpm vitest run test/unit/workspace/export-recovery-only.test.ts -t "Recovery Only and the existing Workspace is readable"` — fails because the read gate currently refuses export along with mutations | same command — passes |
-| manifest members equivalent across readiness | `pnpm vitest run test/unit/workspace/export-recovery-only.test.ts -t "same manifest members in Recovery Only as in Writable"` — fails because no artifact is produced | same command — passes |
-| mutation still refused | `pnpm vitest run test/unit/workspace/export-recovery-only.test.ts -t "RuntimeNotWritable"` — fails because the mutation path is not exercised in this configuration | same command — passes with unchanged revisions |
-| export is never `RuntimeNotWritable` | `pnpm vitest run test/unit/workspace/export-recovery-only.test.ts -t "never return RuntimeNotWritable for export itself"` — fails because export is currently gated as a mutation | same command — passes |
-| unreadable section is honest | `pnpm vitest run test/unit/workspace/export-recovery-only.test.ts -t "combined with an unreadable section"` — fails because the combination is untested and a partial artifact is returned | same command — passes with `Not Completed` |
+| export succeeds in `Recovery Only` | `npx vitest run test/unit/workspace/export-recovery-only.test.ts -t "Recovery Only and the existing Workspace is readable"` — fails because the read gate currently refuses export along with mutations | same command — passes |
+| manifest members equivalent across readiness | `npx vitest run test/unit/workspace/export-recovery-only.test.ts -t "same manifest members in Recovery Only as in Writable"` — fails because no artifact is produced | same command — passes |
+| mutation still refused | `npx vitest run test/unit/workspace/export-recovery-only.test.ts -t "RuntimeNotWritable"` — fails because the mutation path is not exercised in this configuration | same command — passes with unchanged revisions |
+| export is never `RuntimeNotWritable` | `npx vitest run test/unit/workspace/export-recovery-only.test.ts -t "never return RuntimeNotWritable for export itself"` — fails because export is currently gated as a mutation | same command — passes |
+| unreadable section is honest | `npx vitest run test/unit/workspace/export-recovery-only.test.ts -t "combined with an unreadable section"` — fails because the combination is untested and a partial artifact is returned | same command — passes with `Not Completed` |
 
 ### Phase P5 — presentation, accessibility, integration and the critic gate
 
@@ -705,11 +705,11 @@ an app-owned file write.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| ordinary download offered | `pnpm vitest run test/unit/ui/backup-presentation.test.ts -t "ordinary file download"` — fails because no backup surface exists | same command — passes with the suggested file name |
-| downloaded-but-not-verified state | `pnpm vitest run test/unit/ui/backup-presentation.test.ts -t "cannot see whether or where the browser saved the file"` — fails because the state is unimplemented | same command — passes |
-| no completed-backup label | `pnpm vitest run test/unit/ui/backup-presentation.test.ts -t "Backup Complete"` — fails because no surface suppresses the label yet | same command — passes for all three non-completed results |
-| failed-export state with retry | `pnpm vitest run test/unit/ui/backup-presentation.test.ts -t "Not Completed"` — fails because a failed export currently renders as an untyped error | same command — passes with stage name and retry |
-| verification is absent, not disabled | `pnpm vitest run test/unit/ui/backup-presentation.test.ts -t "remove the Verify affordance entirely"` — fails because an unimplemented Verify affordance is currently rendered | same command — passes |
+| ordinary download offered | `npx vitest run test/unit/ui/backup-presentation.test.ts -t "ordinary file download"` — fails because no backup surface exists | same command — passes with the suggested file name |
+| downloaded-but-not-verified state | `npx vitest run test/unit/ui/backup-presentation.test.ts -t "cannot see whether or where the browser saved the file"` — fails because the state is unimplemented | same command — passes |
+| no completed-backup label | `npx vitest run test/unit/ui/backup-presentation.test.ts -t "Backup Complete"` — fails because no surface suppresses the label yet | same command — passes for all three non-completed results |
+| failed-export state with retry | `npx vitest run test/unit/ui/backup-presentation.test.ts -t "Not Completed"` — fails because a failed export currently renders as an untyped error | same command — passes with stage name and retry |
+| verification is absent, not disabled | `npx vitest run test/unit/ui/backup-presentation.test.ts -t "remove the Verify affordance entirely"` — fails because an unimplemented Verify affordance is currently rendered | same command — passes |
 
 #### T12 — `B` Responsive layout and accessibility for D7's surfaces
 
@@ -747,11 +747,11 @@ verification (`ui-contract.md:125`).
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| keyboard-only completion | `pnpm playwright test e2e/backup-a11y.spec.ts -t "keyboard"` — fails because the backup surface is not keyboard-completable | same command — passes at both viewports |
-| focus after result | `pnpm playwright test e2e/backup-a11y.spec.ts -t "focus"` — fails because focus is not moved or announced | same command — passes |
-| live resize preserves state | `pnpm playwright test e2e/backup-a11y.spec.ts -t "resize"` — fails because state is lost on resize | same command — passes |
-| axe-core scan clean | `pnpm playwright test e2e/backup-a11y.spec.ts -t "axe"` — fails because the surface currently reports serious violations | same command — passes with zero serious or critical violations |
-| digest text alternative | `pnpm playwright test e2e/backup-a11y.spec.ts -t "assistive technology"` — fails because the digest is rendered as an unlabelled truncated element | same command — passes |
+| keyboard-only completion | `npx playwright test e2e/backup-a11y.spec.ts -t "keyboard"` — fails because the backup surface is not keyboard-completable | same command — passes at both viewports |
+| focus after result | `npx playwright test e2e/backup-a11y.spec.ts -t "focus"` — fails because focus is not moved or announced | same command — passes |
+| live resize preserves state | `npx playwright test e2e/backup-a11y.spec.ts -t "resize"` — fails because state is lost on resize | same command — passes |
+| axe-core scan clean | `npx playwright test e2e/backup-a11y.spec.ts -t "axe"` — fails because the surface currently reports serious violations | same command — passes with zero serious or critical violations |
+| digest text alternative | `npx playwright test e2e/backup-a11y.spec.ts -t "assistive technology"` — fails because the digest is rendered as an unlabelled truncated element | same command — passes |
 
 #### T13 — `B` Mock-free integration suite for D7
 
@@ -795,12 +795,12 @@ legs record the exact run provenance (`D1:T3`) and the capability footprint chec
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| full artifact for a populated Workspace | `pnpm test:integration -t "four-section artifact"` — fails because the suite file does not exist | same command — passes |
-| digests and exclusion verify from bytes | `pnpm test:integration -t "verify against a recomputation"` — fails because no recomputation path is exercised | same command — passes |
-| concurrency isolation through the stack | `pnpm test:integration -t "outside the artifact"` — fails because the concurrent injection is absent | same command — passes with the mutation durable in the store |
-| failure path with evidence | `pnpm test:integration -t "controlled source-read failure"` — fails because the failure injection is absent | same command — passes with unchanged-Workspace evidence |
-| browser leg at both viewports | `pnpm playwright test e2e/backup-integration.spec.ts` — fails because the browser leg does not exist | same command — passes at narrow and wide |
-| no completed-backup claim anywhere | `pnpm test:integration -t "never render a completed-backup claim"` — fails because the claim is not asserted yet | same command — passes |
+| full artifact for a populated Workspace | `npm run test:integration -t "four-section artifact"` — fails because the suite file does not exist | same command — passes |
+| digests and exclusion verify from bytes | `npm run test:integration -t "verify against a recomputation"` — fails because no recomputation path is exercised | same command — passes |
+| concurrency isolation through the stack | `npm run test:integration -t "outside the artifact"` — fails because the concurrent injection is absent | same command — passes with the mutation durable in the store |
+| failure path with evidence | `npm run test:integration -t "controlled source-read failure"` — fails because the failure injection is absent | same command — passes with unchanged-Workspace evidence |
+| browser leg at both viewports | `npx playwright test e2e/backup-integration.spec.ts` — fails because the browser leg does not exist | same command — passes at narrow and wide |
+| no completed-backup claim anywhere | `npm run test:integration -t "never render a completed-backup claim"` — fails because the claim is not asserted yet | same command — passes |
 
 #### T14 — `S` Independent browser-critic gate for D7
 
@@ -817,10 +817,10 @@ without a passing fresh-critic report. D7's flows are listed in §4. This task i
 
 | # | Command | Expected result |
 |---|---|---|
-| V14.1 | `pnpm dev:web` in one terminal, with `DEV_PORT` honoured from the environment, then a headless browser at a narrow viewport | The production UI starts on the configured port and the backup surface is reachable through ordinary production navigation, with installation or a browser tab both acceptable |
+| V14.1 | `npm run dev:web` in one terminal, with `DEV_PORT` honoured from the environment, then a headless browser at a narrow viewport | The production UI starts on the configured port and the backup surface is reachable through ordinary production navigation, with installation or a browser tab both acceptable |
 | V14.2 | For each flow in §4, a fresh critic run: start the runtime, run the flow, capture browser actions, observed result and pass/fail | Every §4 flow reports pass, in a report that names the viewport used and the exact recorded result for each step of the flow |
 | V14.3 | Critic reports console and network capture for each flow | No uncaught error, no failed request, and no request that would require a network while offline; the page never claims a completed backup |
-| V14.4 | Critic defect re-run: `pnpm test:integration -t "<defect>"` then `pnpm vitest run <affected test file> -t "<defect>"` | Every critic-found defect first reproduces as an automated test failure before any implementation change, then passes after the fix with the cumulative unit and integration suites green |
+| V14.4 | Critic defect re-run: `npm run test:integration -t "<defect>"` then `npx vitest run <affected test file> -t "<defect>"` | Every critic-found defect first reproduces as an automated test failure before any implementation change, then passes after the fix with the cumulative unit and integration suites green |
 | V14.5 | Critic re-verification after a fix: a *fresh* critic repeats V14.2 in full | All §4 flows pass; the loop repeats until a fresh critic reports every current-deliverable flow passing |
 | V14.6 | Critic classification check against §4's intentional non-defects | No report lists an absent future capability (Verify step, Restore, provider credentials) as a defect |
 
@@ -912,13 +912,13 @@ this deliverable specifically:
 
 **Exact red and green commands for this stack.** Per case, the identified seam and its test file:
 
-- Unit: `pnpm vitest run <path/to/file.test.ts> -t "<case title fragment>"` — red when it fails with
+- Unit: `npx vitest run <path/to/file.test.ts> -t "<case title fragment>"` — red when it fails with
   an assertion failure naming the missing behavior; green when the same command exits 0 with the case
   reported passing.
-- Integration: `pnpm test:integration -t "<case title fragment>"`, which runs the mock-free suite
+- Integration: `npm run test:integration -t "<case title fragment>"`, which runs the mock-free suite
   through the real application stack, with the `fake-indexeddb` substitution disclosed
   (`planning-decisions-2026-10-10.md:184`).
-- Browser: `pnpm playwright test <path/to/spec.ts>` for the flows that must run against a real engine
+- Browser: `npx playwright test <path/to/spec.ts>` for the flows that must run against a real engine
   and a real IndexedDB.
 
 The package scripts and the pinned versions behind them are fixed at the Phase 6 version profile, not
@@ -989,8 +989,8 @@ owned by D2; this deliverable re-exercises them without claiming ownership.
 6. **The deferred pinned version profile.** The concrete `package.json` scripts, test-runner version,
    Playwright version, digest library, and the artifact media type/extension are pinned at the Phase 6
    freeze, not here (`planning-decisions-2026-10-10.md:167`, `plan/handoff-deepseek-v41-flash-2026-10-11.md`).
-   Every command in this file is stated at the level of a named script (`pnpm vitest run`,
-   `pnpm playwright test`, `pnpm test:integration`, `pnpm tsc --noEmit`) plus a planned test file path;
+   Every command in this file is stated at the level of a named script (`npx vitest run`,
+   `npx playwright test`, `npm run test:integration`, `npx tsc --noEmit`) plus a planned test file path;
    no version number is invented. Where a command depends on a pin, this document says so instead of
    guessing one.
 7. **`AC-PERF-001` is owned by no deliverable and is not claimed here, and no latency figure appears

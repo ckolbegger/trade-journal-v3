@@ -351,12 +351,12 @@ one is refused rather than migrated (`workspace.md:110`).
 
 | # | Command | Expected result |
 |---|---|---|
-| V1.1 | `pnpm vitest run tests/persistence/migration-d6.spec.ts` | After `pnpm install` and the Phase 6 version pin, the new revision's migration suite passes: a v5 fixture Workspace gains the Close Reason store, the Abandonment Reason store, the extended Position Change member shape, the taxonomy protection fields, and the v6 seed-state row, and every pre-existing fact identity, Recorded Sequence, and lifecycle binding is byte-identical before and after. Once the pinned versions are recorded in the plan, the command names them in the evidence line; the command itself and the assertion set do not change with the pin. |
+| V1.1 | `npx vitest run tests/persistence/migration-d6.spec.ts` | After `npm install` and the Phase 6 version pin, the new revision's migration suite passes: a v5 fixture Workspace gains the Close Reason store, the Abandonment Reason store, the extended Position Change member shape, the taxonomy protection fields, and the v6 seed-state row, and every pre-existing fact identity, Recorded Sequence, and lifecycle binding is byte-identical before and after. Once the pinned versions are recorded in the plan, the command names them in the evidence line; the command itself and the assertion set do not change with the pin. |
 | V1.2 | `node scripts/check-deliverable-breakdown.mjs plan/deliverable-breakdowns/D6-end-long-stock-trade.md` | The T1 header is parsed as type `S`, its declared cross-deliverable edges `D1:T9`, `D1:T10` and `D3:T1` resolve against the sibling breakdown task sets, and the run reports `0 failure(s)` for this file with no missing-`Exact verification` failure. |
-| V1.3 | `pnpm vitest run tests/persistence/schema-shape.spec.ts -t "d6 revision"` | The declared store and index set for the D6 revision matches the migration's actual output: store names, key paths, and index key paths are equal as sets, with no extra store and no missing index. |
-| V1.4 | `pnpm vitest run tests/persistence/migration-idempotence.spec.ts -t "v6 seed state"` | Running the migration twice against the same fixture produces one v6 seed-state row and a second run that reports no change; no fact revision advances on the second run. |
-| V1.5 | `pnpm vitest run tests/persistence/migration-newer-revision.spec.ts` | A fixture whose stored revision is newer than the installed revision returns a typed refusal with no write, and the fixture's stores are unchanged after the attempt. |
-| V1.6 | `pnpm vitest run tests/persistence/migration-failure-atomicity.spec.ts` | With an injected failure partway through the migration, no partially migrated state becomes visible; the Workspace still opens at its prior revision, and the staged new stores hold no effective rows. |
+| V1.3 | `npx vitest run tests/persistence/schema-shape.spec.ts -t "d6 revision"` | The declared store and index set for the D6 revision matches the migration's actual output: store names, key paths, and index key paths are equal as sets, with no extra store and no missing index. |
+| V1.4 | `npx vitest run tests/persistence/migration-idempotence.spec.ts -t "v6 seed state"` | Running the migration twice against the same fixture produces one v6 seed-state row and a second run that reports no change; no fact revision advances on the second run. |
+| V1.5 | `npx vitest run tests/persistence/migration-newer-revision.spec.ts` | A fixture whose stored revision is newer than the installed revision returns a typed refusal with no write, and the fixture's stores are unchanged after the attempt. |
+| V1.6 | `npx vitest run tests/persistence/migration-failure-atomicity.spec.ts` | With an injected failure partway through the migration, no partially migrated state becomes visible; the Workspace still opens at its prior revision, and the staged new stores hold no effective rows. |
 
 **Depends on it:** every other D6 task. Without this revision there is no place to store a Close
 Reason or an Abandonment Reason, no agency member to validate cardinality against, and no seed
@@ -409,13 +409,13 @@ proof against a real browser engine.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Terminal decision with one reason | `pnpm vitest run tests/workflows/record-position-change-terminal.spec.ts -t "flat-out terminal"` — fails because the terminal branch is absent, so the submitted closing member is treated as an ordinary reduction and no `Closed` transition, no Close Reason row, and no terminal Journal outcome is produced | Same command — the test passes, and the returned receipt names the new `FactRevision` |
-| Partial reduction stays Open | `pnpm vitest run tests/workflows/record-position-change-terminal.spec.ts -t "still nonzero"` — fails because without the terminal branch nothing distinguishes terminal from non-terminal exposure, so a partial reduction is never classified and the lifecycle expectation is unassertable | Same command — the Trade is still `Open` and the result is typed non-terminal |
-| Stale revision | `pnpm vitest run tests/workflows/record-position-change-terminal.spec.ts -t "stale revision"` — fails because the expected-revision guard on the terminal variant does not exist, so the command writes | Same command — typed no-write rejection and a before/after durable-state comparison that is unchanged |
-| Missing economic time | `pnpm vitest run tests/workflows/record-position-change-terminal.spec.ts -t "explicit economic time"` — fails because nothing enforces the explicit-time rule on this path | Same command — typed rejection and no fact written |
-| Cross-Trade scope | `pnpm vitest run tests/workflows/record-position-change-terminal.spec.ts -t "single Trade scope"` — fails because the variant accepts the bounded set shape without narrowing it | Same command — typed unsupported-scope result and no write |
-| One reflection outcome | `pnpm vitest run tests/workflows/record-position-change-terminal.spec.ts -t "one reflection outcome"` — fails because the reflection obligation is not yet prepared on this path | Same command — exactly one outstanding obligation keyed to the originating Trade |
-| Wrong Instrument | `pnpm vitest run tests/workflows/record-position-change-terminal.spec.ts -t "planned leg instrument"` — fails because the Instrument check is not applied to the terminal variant | Same command — typed rejection and no write |
+| Terminal decision with one reason | `npx vitest run tests/workflows/record-position-change-terminal.spec.ts -t "flat-out terminal"` — fails because the terminal branch is absent, so the submitted closing member is treated as an ordinary reduction and no `Closed` transition, no Close Reason row, and no terminal Journal outcome is produced | Same command — the test passes, and the returned receipt names the new `FactRevision` |
+| Partial reduction stays Open | `npx vitest run tests/workflows/record-position-change-terminal.spec.ts -t "still nonzero"` — fails because without the terminal branch nothing distinguishes terminal from non-terminal exposure, so a partial reduction is never classified and the lifecycle expectation is unassertable | Same command — the Trade is still `Open` and the result is typed non-terminal |
+| Stale revision | `npx vitest run tests/workflows/record-position-change-terminal.spec.ts -t "stale revision"` — fails because the expected-revision guard on the terminal variant does not exist, so the command writes | Same command — typed no-write rejection and a before/after durable-state comparison that is unchanged |
+| Missing economic time | `npx vitest run tests/workflows/record-position-change-terminal.spec.ts -t "explicit economic time"` — fails because nothing enforces the explicit-time rule on this path | Same command — typed rejection and no fact written |
+| Cross-Trade scope | `npx vitest run tests/workflows/record-position-change-terminal.spec.ts -t "single Trade scope"` — fails because the variant accepts the bounded set shape without narrowing it | Same command — typed unsupported-scope result and no write |
+| One reflection outcome | `npx vitest run tests/workflows/record-position-change-terminal.spec.ts -t "one reflection outcome"` — fails because the reflection obligation is not yet prepared on this path | Same command — exactly one outstanding obligation keyed to the originating Trade |
+| Wrong Instrument | `npx vitest run tests/workflows/record-position-change-terminal.spec.ts -t "planned leg instrument"` — fails because the Instrument check is not applied to the terminal variant | Same command — typed rejection and no write |
 
 #### T3 — `B` Exactly one active Close Reason when trader agency is present
 
@@ -456,13 +456,13 @@ selectable catalog value at this revision and not a Roll workflow. Disclosed sub
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| No reason | `pnpm vitest run tests/workflows/close-reason-cardinality.spec.ts -t "no reason"` — fails because the cardinality check does not exist, so a trader-directed terminal command closes the Trade with no reason | Same command — typed rejection naming the cardinality, and the Trade is unchanged |
-| Two reasons | `pnpm vitest run tests/workflows/close-reason-cardinality.spec.ts -t "two reasons"` — fails because nothing counts the supplied reasons, so the second silently wins | Same command — typed rejection and no write |
-| Exactly one | `pnpm vitest run tests/workflows/close-reason-cardinality.spec.ts -t "exactly one active reason"` — fails because the association is not stored even when the command is well formed | Same command — the reason resolves from the stored fact |
-| Retired reason | `pnpm vitest run tests/workflows/close-reason-cardinality.spec.ts -t "retired reason"` — fails because new-selection eligibility is not resolved for the reason reference | Same command — typed rejection naming the inactive reference |
-| Non-agency path | `pnpm vitest run tests/workflows/close-reason-cardinality.spec.ts -t "non-agency"` — fails because the agency member is not yet consumed, so a settlement member is treated as an ordinary disposal | Same command — no Close Reason association exists and none is manufactured |
-| Unexpected reason on non-agency | `pnpm vitest run tests/workflows/close-reason-cardinality.spec.ts -t "unexpected reason"` — fails because the command currently tolerates a stray reason | Same command — typed rejection and no write |
-| Rolled without a Roll | `pnpm vitest run tests/workflows/close-reason-cardinality.spec.ts -t "Rolled without a Roll"` — fails because the reason reference is not resolved against the protected-taxonomy policy | Same command — the close commits with `Rolled` and no lineage is required or created |
+| No reason | `npx vitest run tests/workflows/close-reason-cardinality.spec.ts -t "no reason"` — fails because the cardinality check does not exist, so a trader-directed terminal command closes the Trade with no reason | Same command — typed rejection naming the cardinality, and the Trade is unchanged |
+| Two reasons | `npx vitest run tests/workflows/close-reason-cardinality.spec.ts -t "two reasons"` — fails because nothing counts the supplied reasons, so the second silently wins | Same command — typed rejection and no write |
+| Exactly one | `npx vitest run tests/workflows/close-reason-cardinality.spec.ts -t "exactly one active reason"` — fails because the association is not stored even when the command is well formed | Same command — the reason resolves from the stored fact |
+| Retired reason | `npx vitest run tests/workflows/close-reason-cardinality.spec.ts -t "retired reason"` — fails because new-selection eligibility is not resolved for the reason reference | Same command — typed rejection naming the inactive reference |
+| Non-agency path | `npx vitest run tests/workflows/close-reason-cardinality.spec.ts -t "non-agency"` — fails because the agency member is not yet consumed, so a settlement member is treated as an ordinary disposal | Same command — no Close Reason association exists and none is manufactured |
+| Unexpected reason on non-agency | `npx vitest run tests/workflows/close-reason-cardinality.spec.ts -t "unexpected reason"` — fails because the command currently tolerates a stray reason | Same command — typed rejection and no write |
+| Rolled without a Roll | `npx vitest run tests/workflows/close-reason-cardinality.spec.ts -t "Rolled without a Roll"` — fails because the reason reference is not resolved against the protected-taxonomy policy | Same command — the close commits with `Rolled` and no lineage is required or created |
 
 #### T4 — `B` Terminal Disposition derived from effective disposing facts
 
@@ -513,15 +513,15 @@ directly.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Single-mechanism close | `pnpm vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "full disposing quantity"` — fails because `DerivedTradeState` carries no Terminal Disposition member yet | Same command — the disposition names the Instrument and the full disposed quantity |
-| Mixed mechanisms | `pnpm vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "mixed mechanisms"` — fails because there is no mechanism set to fill | Same command — both members present with their quantities |
-| Abandoned Trade | `pnpm vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "Abandoned"` — fails because applicability rules are not implemented | Same command — `NotApplicable` with a stable reason |
-| Still nonzero | `pnpm vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "still open"` — fails because applicability is not tied to a flat Position | Same command — no applicable disposition |
-| Reason independence | `pnpm vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "different Close Reason"` — fails because there is no derived value to compare across runs | Same command — byte-identical disposition across the two runs |
-| Stored-lifecycle disagreement | `pnpm vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "disagreeing stored lifecycle"` — fails because the structured integrity finding is not returned | Same command — identical disposition plus a named integrity finding |
-| Voided disposing fact | `pnpm vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "Voided disposing fact"` — fails because effective-version selection is not applied to disposing facts here | Same command — the Voided version contributes nothing |
-| Source fact identity | `pnpm vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "source fact identity"` — fails because members carry no reference to the disposing fact | Same command — every member names its disposing fact |
-| Member order | `pnpm vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "member order"` — fails because member order follows construction rather than `FactOrder` | Same command — identical member order across both supply orders |
+| Single-mechanism close | `npx vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "full disposing quantity"` — fails because `DerivedTradeState` carries no Terminal Disposition member yet | Same command — the disposition names the Instrument and the full disposed quantity |
+| Mixed mechanisms | `npx vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "mixed mechanisms"` — fails because there is no mechanism set to fill | Same command — both members present with their quantities |
+| Abandoned Trade | `npx vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "Abandoned"` — fails because applicability rules are not implemented | Same command — `NotApplicable` with a stable reason |
+| Still nonzero | `npx vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "still open"` — fails because applicability is not tied to a flat Position | Same command — no applicable disposition |
+| Reason independence | `npx vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "different Close Reason"` — fails because there is no derived value to compare across runs | Same command — byte-identical disposition across the two runs |
+| Stored-lifecycle disagreement | `npx vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "disagreeing stored lifecycle"` — fails because the structured integrity finding is not returned | Same command — identical disposition plus a named integrity finding |
+| Voided disposing fact | `npx vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "Voided disposing fact"` — fails because effective-version selection is not applied to disposing facts here | Same command — the Voided version contributes nothing |
+| Source fact identity | `npx vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "source fact identity"` — fails because members carry no reference to the disposing fact | Same command — every member names its disposing fact |
+| Member order | `npx vitest run tests/analysis/derive-terminal-disposition.spec.ts -t "member order"` — fails because member order follows construction rather than `FactOrder` | Same command — identical member order across both supply orders |
 
 #### T7 — `B` Close Review with its distinct obligation key
 
@@ -560,14 +560,14 @@ asserted after a persistence restart. Disclosed substitution: `fake-indexeddb`.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Completed review | `pnpm vitest run tests/journal/close-review-obligation.spec.ts -t "completed review"` — fails because no Close Review obligation type exists, so the workflow cannot prepare one | Same command — one Entry with Source `Trade Close` and the exact definition revision |
-| Key distinctness | `pnpm vitest run tests/journal/close-review-obligation.spec.ts -t "distinct obligation key"` — fails because there is no second key to compare | Same command — the two keys differ and each outcome stands alone |
-| Option identity validation | `pnpm vitest run tests/journal/close-review-obligation.spec.ts -t "stable option identities"` — fails because the definition is not used to validate the submitted option | Same command — an option outside the rendered revision is rejected with no write |
-| Defer | `pnpm vitest run tests/journal/close-review-obligation.spec.ts -t "Defer creates Debt"` — fails because Defer is not wired for this obligation | Same command — one Outstanding Debt, snapshot present, no Entry |
-| Decline | `pnpm vitest run tests/journal/close-review-obligation.spec.ts -t "Decline"` — fails because decline is not produced for this key | Same command — one decline outcome and no Entry |
-| No Close Reason written | `pnpm vitest run tests/journal/close-review-obligation.spec.ts -t "writes no Close Reason"` — fails because the reason association does not exist yet on the facts T7 touches | Same command — the assertion holds and no reason row is created |
-| Duplicate submission | `pnpm vitest run tests/journal/close-review-obligation.spec.ts -t "one current outcome"` — fails because uniqueness of the obligation outcome is not enforced for this key | Same command — a typed conflict and no write |
-| Snapshot validation | `pnpm vitest run tests/journal/close-review-obligation.spec.ts -t "snapshotted definition"` — fails because answers are validated against the current definition instead of the snapshotted one | Same command — the later submission is accepted against the original snapshot |
+| Completed review | `npx vitest run tests/journal/close-review-obligation.spec.ts -t "completed review"` — fails because no Close Review obligation type exists, so the workflow cannot prepare one | Same command — one Entry with Source `Trade Close` and the exact definition revision |
+| Key distinctness | `npx vitest run tests/journal/close-review-obligation.spec.ts -t "distinct obligation key"` — fails because there is no second key to compare | Same command — the two keys differ and each outcome stands alone |
+| Option identity validation | `npx vitest run tests/journal/close-review-obligation.spec.ts -t "stable option identities"` — fails because the definition is not used to validate the submitted option | Same command — an option outside the rendered revision is rejected with no write |
+| Defer | `npx vitest run tests/journal/close-review-obligation.spec.ts -t "Defer creates Debt"` — fails because Defer is not wired for this obligation | Same command — one Outstanding Debt, snapshot present, no Entry |
+| Decline | `npx vitest run tests/journal/close-review-obligation.spec.ts -t "Decline"` — fails because decline is not produced for this key | Same command — one decline outcome and no Entry |
+| No Close Reason written | `npx vitest run tests/journal/close-review-obligation.spec.ts -t "writes no Close Reason"` — fails because the reason association does not exist yet on the facts T7 touches | Same command — the assertion holds and no reason row is created |
+| Duplicate submission | `npx vitest run tests/journal/close-review-obligation.spec.ts -t "one current outcome"` — fails because uniqueness of the obligation outcome is not enforced for this key | Same command — a typed conflict and no write |
+| Snapshot validation | `npx vitest run tests/journal/close-review-obligation.spec.ts -t "snapshotted definition"` — fails because answers are validated against the current definition instead of the snapshotted one | Same command — the later submission is accepted against the original snapshot |
 
 #### T9 — `B` `abandonPlan`: factual eligibility and effect
 
@@ -607,14 +607,14 @@ Disposition. A persistence restart re-reads the same rows. Disclosed substitutio
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Successful abandon | `pnpm vitest run tests/workflows/abandon-plan.spec.ts -t "never filled"` — fails because `abandonPlan` is not implemented, so no `Abandoned` binding exists | Same command — stored lifecycle `Abandoned` at a new revision |
-| Missing reason | `pnpm vitest run tests/workflows/abandon-plan.spec.ts -t "requires one reason"` — fails because the command does not exist to validate | Same command — typed rejection naming the cardinality |
-| Retired reason | `pnpm vitest run tests/workflows/abandon-plan.spec.ts -t "active reason"` — fails because the reference is not resolved for a new selection | Same command — typed rejection and no write |
-| Has effective Execution | `pnpm vitest run tests/workflows/abandon-plan.spec.ts -t "effective Execution"` — fails because eligibility is not derived from effective facts | Same command — typed rejection naming the Execution, lifecycle unchanged |
-| Plan Debt retirement | `pnpm vitest run tests/workflows/abandon-plan.spec.ts -t "retires Plan Debt"` — fails because the Journal participant is not invoked on this path | Same command — no outstanding Plan Debt remains |
-| No Close Reason, no disposition | `pnpm vitest run tests/workflows/abandon-plan.spec.ts -t "no Close Reason"` — fails because the negative assertions cannot be checked against a committed abandonment | Same command — both assertions hold |
-| Stale revision | `pnpm vitest run tests/workflows/abandon-plan.spec.ts -t "stale revision"` — fails because the expected-revision guard is absent | Same command — typed rejection with unchanged durable state |
-| Wrong stored lifecycle | `pnpm vitest run tests/workflows/abandon-plan.spec.ts -t "Open or Closed"` — fails because the lifecycle precondition is not enforced | Same command — typed rejection naming the lifecycle |
+| Successful abandon | `npx vitest run tests/workflows/abandon-plan.spec.ts -t "never filled"` — fails because `abandonPlan` is not implemented, so no `Abandoned` binding exists | Same command — stored lifecycle `Abandoned` at a new revision |
+| Missing reason | `npx vitest run tests/workflows/abandon-plan.spec.ts -t "requires one reason"` — fails because the command does not exist to validate | Same command — typed rejection naming the cardinality |
+| Retired reason | `npx vitest run tests/workflows/abandon-plan.spec.ts -t "active reason"` — fails because the reference is not resolved for a new selection | Same command — typed rejection and no write |
+| Has effective Execution | `npx vitest run tests/workflows/abandon-plan.spec.ts -t "effective Execution"` — fails because eligibility is not derived from effective facts | Same command — typed rejection naming the Execution, lifecycle unchanged |
+| Plan Debt retirement | `npx vitest run tests/workflows/abandon-plan.spec.ts -t "retires Plan Debt"` — fails because the Journal participant is not invoked on this path | Same command — no outstanding Plan Debt remains |
+| No Close Reason, no disposition | `npx vitest run tests/workflows/abandon-plan.spec.ts -t "no Close Reason"` — fails because the negative assertions cannot be checked against a committed abandonment | Same command — both assertions hold |
+| Stale revision | `npx vitest run tests/workflows/abandon-plan.spec.ts -t "stale revision"` — fails because the expected-revision guard is absent | Same command — typed rejection with unchanged durable state |
+| Wrong stored lifecycle | `npx vitest run tests/workflows/abandon-plan.spec.ts -t "Open or Closed"` — fails because the lifecycle precondition is not enforced | Same command — typed rejection naming the lifecycle |
 
 #### T11 — `B` Manifest v6 seed: five Close Reasons and five Abandonment Reasons
 
@@ -653,13 +653,13 @@ identity and its selectability are unchanged. Disclosed substitution: `fake-inde
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Close Reason taxonomy | `pnpm vitest run tests/catalog/seed-manifest-v6-reasons.spec.ts -t "five Close Reasons"` — fails because manifest v6 does not exist and neither taxonomoy seeds | Same command — the five seeded values are present with stable keys |
-| Abandonment Reason taxonomy | `pnpm vitest run tests/catalog/seed-manifest-v6-reasons.spec.ts -t "five Abandonment Reasons"` — fails for the same reason | Same command — the five seeded values are present in declared order |
-| No extra reasons | `pnpm vitest run tests/catalog/seed-manifest-v6-reasons.spec.ts -t "no Other reason"` — fails because there is no taxonomy to inspect | Same command — the counts are exactly five and five |
-| Rolled role | `pnpm vitest run tests/catalog/seed-manifest-v6-reasons.spec.ts -t "Rolled workflow-semantic role"` — fails because the role field is not seeded | Same command — the role is unique and the value is selectable |
-| Protection policy | `pnpm vitest run tests/catalog/seed-manifest-v6-reasons.spec.ts -t "rename keeps selectable"` — fails because the policy is not enforced on seeded values | Same command — rename succeeds and the value stays selectable |
-| Repeat seed idempotent | `pnpm vitest run tests/catalog/seed-manifest-v6-reasons.spec.ts -t "repeat seed"` — fails because there is no v6 seed to repeat | Same command — no addition and no rewrite on the second run |
-| Incompatible key | `pnpm vitest run tests/catalog/seed-manifest-v6-reasons.spec.ts -t "SeedConflict"` — fails because the conflict branch is unreachable | Same command — `SeedConflict` with no write |
+| Close Reason taxonomy | `npx vitest run tests/catalog/seed-manifest-v6-reasons.spec.ts -t "five Close Reasons"` — fails because manifest v6 does not exist and neither taxonomoy seeds | Same command — the five seeded values are present with stable keys |
+| Abandonment Reason taxonomy | `npx vitest run tests/catalog/seed-manifest-v6-reasons.spec.ts -t "five Abandonment Reasons"` — fails for the same reason | Same command — the five seeded values are present in declared order |
+| No extra reasons | `npx vitest run tests/catalog/seed-manifest-v6-reasons.spec.ts -t "no Other reason"` — fails because there is no taxonomy to inspect | Same command — the counts are exactly five and five |
+| Rolled role | `npx vitest run tests/catalog/seed-manifest-v6-reasons.spec.ts -t "Rolled workflow-semantic role"` — fails because the role field is not seeded | Same command — the role is unique and the value is selectable |
+| Protection policy | `npx vitest run tests/catalog/seed-manifest-v6-reasons.spec.ts -t "rename keeps selectable"` — fails because the policy is not enforced on seeded values | Same command — rename succeeds and the value stays selectable |
+| Repeat seed idempotent | `npx vitest run tests/catalog/seed-manifest-v6-reasons.spec.ts -t "repeat seed"` — fails because there is no v6 seed to repeat | Same command — no addition and no rewrite on the second run |
+| Incompatible key | `npx vitest run tests/catalog/seed-manifest-v6-reasons.spec.ts -t "SeedConflict"` — fails because the conflict branch is unreachable | Same command — `SeedConflict` with no write |
 
 #### T12 — `B` Manifest v6 seed: Close Review Entry Type and Trade Close Source
 
@@ -697,12 +697,12 @@ Disclosed substitution: `fake-indexeddb`.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Close Review definition | `pnpm vitest run tests/journal/seed-close-review.spec.ts -t "three initial Prompts"` — fails because the Close Review type is not seeded | Same command — the exact definition is returned |
-| Stable option identities | `pnpm vitest run tests/journal/seed-close-review.spec.ts -t "stable option identities"` — fails because there are no seeded options to resolve | Same command — four stable identities in declared order |
-| Trade Close Source | `pnpm vitest run tests/journal/seed-close-review.spec.ts -t "Trade Close Source"` — fails because the Source is not created | Same command — the Source exists under its fixed identity |
-| Seven types | `pnpm vitest run tests/journal/seed-close-review.spec.ts -t "exactly seven Entry Types"` — fails because the type set is incomplete | Same command — the count is seven |
-| Repeat seed | `pnpm vitest run tests/journal/seed-close-review.spec.ts -t "repeat seed idempotent"` — fails because the first seed does not exist | Same command — no addition on the second run |
-| Trader revision preserved | `pnpm vitest run tests/journal/seed-close-review.spec.ts -t "preserves trader definition"` — fails because there is no definition to preserve | Same command — the revised definition is unchanged by seeding |
+| Close Review definition | `npx vitest run tests/journal/seed-close-review.spec.ts -t "three initial Prompts"` — fails because the Close Review type is not seeded | Same command — the exact definition is returned |
+| Stable option identities | `npx vitest run tests/journal/seed-close-review.spec.ts -t "stable option identities"` — fails because there are no seeded options to resolve | Same command — four stable identities in declared order |
+| Trade Close Source | `npx vitest run tests/journal/seed-close-review.spec.ts -t "Trade Close Source"` — fails because the Source is not created | Same command — the Source exists under its fixed identity |
+| Seven types | `npx vitest run tests/journal/seed-close-review.spec.ts -t "exactly seven Entry Types"` — fails because the type set is incomplete | Same command — the count is seven |
+| Repeat seed | `npx vitest run tests/journal/seed-close-review.spec.ts -t "repeat seed idempotent"` — fails because the first seed does not exist | Same command — no addition on the second run |
+| Trader revision preserved | `npx vitest run tests/journal/seed-close-review.spec.ts -t "preserves trader definition"` — fails because there is no definition to preserve | Same command — the revised definition is unchanged by seeding |
 
 ### Phase L2 — cardinality, disposition, reflection policy and eligibility re-derivation
 
@@ -747,13 +747,13 @@ progression rests on.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Closed expected | `pnpm vitest run tests/analysis/derive-expected-lifecycle.spec.ts -t "expected Closed"` — fails because `derive` never returns `Closed`, so a flat Trade that had exposure is expected `Open` | Same command — expected `Closed` |
-| Agreement finding | `pnpm vitest run tests/analysis/derive-expected-lifecycle.spec.ts -t "stored Open disagreement"` — fails because no agreement comparison is returned | Same command — a structured finding naming both values |
-| Abandoned | `pnpm vitest run tests/analysis/derive-expected-lifecycle.spec.ts -t "explicitly abandoned"` — fails because abandonment is not part of expected-lifecycle derivation | Same command — expected `Abandoned`, disposition `NotApplicable` |
-| Planned | `pnpm vitest run tests/analysis/derive-expected-lifecycle.spec.ts -t "no effective exposure"` — fails because `Planned` is only reachable from the D2 path, not from a general rule | Same command — expected `Planned` |
-| Offsetting but nonzero | `pnpm vitest run tests/analysis/derive-expected-lifecycle.spec.ts -t "offsetting but nonzero"` — fails because the zero test is not applied to the remaining Position | Same command — expected `Open` |
-| Voided establishing fact | `pnpm vitest run tests/analysis/derive-expected-lifecycle.spec.ts -t "Voided establishing fact"` — fails because effective-version selection is not applied when deciding whether exposure existed | Same command — expected `Planned` |
-| Settlement-only close | `pnpm vitest run tests/analysis/derive-expected-lifecycle.spec.ts -t "settlement-only close"` — fails because settlement members are not distinguished from Executions here | Same command — expected `Closed` with a disposition |
+| Closed expected | `npx vitest run tests/analysis/derive-expected-lifecycle.spec.ts -t "expected Closed"` — fails because `derive` never returns `Closed`, so a flat Trade that had exposure is expected `Open` | Same command — expected `Closed` |
+| Agreement finding | `npx vitest run tests/analysis/derive-expected-lifecycle.spec.ts -t "stored Open disagreement"` — fails because no agreement comparison is returned | Same command — a structured finding naming both values |
+| Abandoned | `npx vitest run tests/analysis/derive-expected-lifecycle.spec.ts -t "explicitly abandoned"` — fails because abandonment is not part of expected-lifecycle derivation | Same command — expected `Abandoned`, disposition `NotApplicable` |
+| Planned | `npx vitest run tests/analysis/derive-expected-lifecycle.spec.ts -t "no effective exposure"` — fails because `Planned` is only reachable from the D2 path, not from a general rule | Same command — expected `Planned` |
+| Offsetting but nonzero | `npx vitest run tests/analysis/derive-expected-lifecycle.spec.ts -t "offsetting but nonzero"` — fails because the zero test is not applied to the remaining Position | Same command — expected `Open` |
+| Voided establishing fact | `npx vitest run tests/analysis/derive-expected-lifecycle.spec.ts -t "Voided establishing fact"` — fails because effective-version selection is not applied when deciding whether exposure existed | Same command — expected `Planned` |
+| Settlement-only close | `npx vitest run tests/analysis/derive-expected-lifecycle.spec.ts -t "settlement-only close"` — fails because settlement members are not distinguished from Executions here | Same command — expected `Closed` with a disposition |
 
 #### T8 — `B` Close Review completion, decline or Defer never blocking closure
 
@@ -791,12 +791,12 @@ substitution: `fake-indexeddb`.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Defer | `pnpm vitest run tests/workflows/close-review-policy.spec.ts -t "Defer commits closure"` — fails because the reflection outcome is not prepared on the closing path | Same command — `Closed` plus one Outstanding Debt |
-| Decline | `pnpm vitest run tests/workflows/close-review-policy.spec.ts -t "Decline commits closure"` — fails for the same reason | Same command — `Closed` plus one decline outcome |
-| Complete | `pnpm vitest run tests/workflows/close-review-policy.spec.ts -t "Complete commits closure"` — fails for the same reason | Same command — `Closed` plus one Entry |
-| Missing disposition | `pnpm vitest run tests/workflows/close-review-policy.spec.ts -t "explicit disposition"` — fails because the command does not validate an explicitly submitted disposition | Same command — typed rejection and no write |
-| No placeholder Entry | `pnpm vitest run tests/workflows/close-review-policy.spec.ts -t "no blank Entry"` — fails because there is no outcome to inspect | Same command — no incomplete Entry exists for the key |
-| Answering later | `pnpm vitest run tests/workflows/close-review-policy.spec.ts -t "answering deferred Debt"` — fails because the deferred Debt path is not exercised | Same command — Entry created, Debt settled, facts unchanged |
+| Defer | `npx vitest run tests/workflows/close-review-policy.spec.ts -t "Defer commits closure"` — fails because the reflection outcome is not prepared on the closing path | Same command — `Closed` plus one Outstanding Debt |
+| Decline | `npx vitest run tests/workflows/close-review-policy.spec.ts -t "Decline commits closure"` — fails for the same reason | Same command — `Closed` plus one decline outcome |
+| Complete | `npx vitest run tests/workflows/close-review-policy.spec.ts -t "Complete commits closure"` — fails for the same reason | Same command — `Closed` plus one Entry |
+| Missing disposition | `npx vitest run tests/workflows/close-review-policy.spec.ts -t "explicit disposition"` — fails because the command does not validate an explicitly submitted disposition | Same command — typed rejection and no write |
+| No placeholder Entry | `npx vitest run tests/workflows/close-review-policy.spec.ts -t "no blank Entry"` — fails because there is no outcome to inspect | Same command — no incomplete Entry exists for the key |
+| Answering later | `npx vitest run tests/workflows/close-review-policy.spec.ts -t "answering deferred Debt"` — fails because the deferred Debt path is not exercised | Same command — Entry created, Debt settled, facts unchanged |
 
 ### Phase L3 — expected and stored lifecycle
 
@@ -837,12 +837,12 @@ restart. Disclosed substitution: `fake-indexeddb`.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Stored Closed | `pnpm vitest run tests/record/lifecycle-closed-index.spec.ts -t "stores Closed"` — fails because the closing path never writes a `Closed` binding | Same command — `Closed` with the new revision binding |
-| Same-commit index movement | `pnpm vitest run tests/record/lifecycle-closed-index.spec.ts -t "same commit"` — fails because there is no terminal index membership to observe | Same command — Open page excludes it and terminal page includes it |
-| Query behavior | `pnpm vitest run tests/record/lifecycle-closed-index.spec.ts -t "CurrentState terminal"` — fails because the terminal dimension returns nothing | Same command — the record is returned with stored `Closed` |
-| Failed command leaves index intact | `pnpm vitest run tests/record/lifecycle-closed-index.spec.ts -t "failed command"` — fails because no index movement exists to be suppressed | Same command — identical before/after query results |
-| Lifecycle-only write rejected | `pnpm vitest run tests/record/lifecycle-closed-index.spec.ts -t "no independent lifecycle setter"` — fails because the guard is not implemented | Same command — typed rejection and no write |
-| Cutoff behavior | `pnpm vitest run tests/record/lifecycle-closed-index.spec.ts -t "cutoff query"` — fails because the terminal Economic Time binding is not used by the cutoff query | Same command — included at and after the terminal time, excluded before it |
+| Stored Closed | `npx vitest run tests/record/lifecycle-closed-index.spec.ts -t "stores Closed"` — fails because the closing path never writes a `Closed` binding | Same command — `Closed` with the new revision binding |
+| Same-commit index movement | `npx vitest run tests/record/lifecycle-closed-index.spec.ts -t "same commit"` — fails because there is no terminal index membership to observe | Same command — Open page excludes it and terminal page includes it |
+| Query behavior | `npx vitest run tests/record/lifecycle-closed-index.spec.ts -t "CurrentState terminal"` — fails because the terminal dimension returns nothing | Same command — the record is returned with stored `Closed` |
+| Failed command leaves index intact | `npx vitest run tests/record/lifecycle-closed-index.spec.ts -t "failed command"` — fails because no index movement exists to be suppressed | Same command — identical before/after query results |
+| Lifecycle-only write rejected | `npx vitest run tests/record/lifecycle-closed-index.spec.ts -t "no independent lifecycle setter"` — fails because the guard is not implemented | Same command — typed rejection and no write |
+| Cutoff behavior | `npx vitest run tests/record/lifecycle-closed-index.spec.ts -t "cutoff query"` — fails because the terminal Economic Time binding is not used by the cutoff query | Same command — included at and after the terminal time, excluded before it |
 
 ### Phase L4 — one atomic commit and one post-commit result
 
@@ -887,13 +887,13 @@ restoration case is D15's.
 
 | Case | Red command and the reason it must fail | Same command — expected green result |
 |---|---|---|
-| Eligible with no effective fact | `pnpm vitest run tests/workflows/abandon-eligibility.spec.ts -t "no effective position-changing fact"` | Same command — eligible |
-| Command agrees with read | `pnpm vitest run tests/workflows/abandon-eligibility.spec.ts -t "read and command agree"` | Same command — committed `Abandoned` |
-| Effective Execution rejects | `pnpm vitest run tests/workflows/abandon-eligibility.spec.ts -t "effective Execution rejected"` | Same command — ineligible naming that fact |
-| Offset does not restore | `pnpm vitest run tests/workflows/abandon-eligibility.spec.ts -t "offsetting close does not restore"` | Same command — ineligible |
-| No stored flag | `pnpm vitest run tests/workflows/abandon-eligibility.spec.ts -t "re-derived on every attempt"` | Same command — the second attempt returns the opposite result without any flag write |
-| Stable reason identity | `pnpm vitest run tests/workflows/abandon-eligibility.spec.ts -t "stable reason identity"` | Same command — identical stable reason identity across attempts |
-| Absence is not evidence | `pnpm vitest run tests/workflows/abandon-eligibility.spec.ts -t "no settlement fact is not eligibility"` | Same command — eligibility decided only from effective position-changing facts |
+| Eligible with no effective fact | `npx vitest run tests/workflows/abandon-eligibility.spec.ts -t "no effective position-changing fact"` | Same command — eligible |
+| Command agrees with read | `npx vitest run tests/workflows/abandon-eligibility.spec.ts -t "read and command agree"` | Same command — committed `Abandoned` |
+| Effective Execution rejects | `npx vitest run tests/workflows/abandon-eligibility.spec.ts -t "effective Execution rejected"` | Same command — ineligible naming that fact |
+| Offset does not restore | `npx vitest run tests/workflows/abandon-eligibility.spec.ts -t "offsetting close does not restore"` | Same command — ineligible |
+| No stored flag | `npx vitest run tests/workflows/abandon-eligibility.spec.ts -t "re-derived on every attempt"` | Same command — the second attempt returns the opposite result without any flag write |
+| Stable reason identity | `npx vitest run tests/workflows/abandon-eligibility.spec.ts -t "stable reason identity"` | Same command — identical stable reason identity across attempts |
+| Absence is not evidence | `npx vitest run tests/workflows/abandon-eligibility.spec.ts -t "no settlement fact is not eligibility"` | Same command — eligibility decided only from effective position-changing facts |
 
 #### T13 — `B` Atomic commit of closing facts, disposition, lifecycle and the Journal outcome
 
@@ -935,13 +935,13 @@ store could fake.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| All effects together | `pnpm vitest run tests/workflows/atomic-close-commit.spec.ts -t "all participants succeed"` — fails because the participants are staged in sequence, so the Journal outcome can land while the lifecycle does not | Same command — every effect present at one revision |
-| Journal participant failure | `pnpm vitest run tests/workflows/atomic-close-commit.spec.ts -t "Journal failure rolls back Trade"` — fails because there is no shared transaction to abort | Same command — prior revision intact and no Journal effect |
-| Trade participant failure | `pnpm vitest run tests/workflows/atomic-close-commit.spec.ts -t "Trade failure rolls back Journal"` — fails for the same reason in the other direction | Same command — no Debt, decline, or Entry |
-| Not Writable | `pnpm vitest run tests/workflows/atomic-close-commit.spec.ts -t "RuntimeNotWritable"` — fails because the write gate is not consulted at the transaction seam for this path | Same command — typed `RuntimeNotWritable` and no write |
-| Receipt completeness | `pnpm vitest run tests/workflows/atomic-close-commit.spec.ts -t "receipt carries identities"` — fails because the receipt is not assembled from the committed mapping | Same command — receipt names every affected identity and revision |
-| Abort leaves index intact | `pnpm vitest run tests/workflows/atomic-close-commit.spec.ts -t "no partial index movement"` — fails because index movement is a separate write | Same command — the Trade is still on the Open page |
-| Abandonment variant | `pnpm vitest run tests/workflows/atomic-close-commit.spec.ts -t "abandonment commits atomically"` — fails because abandonment joins the transaction later | Same command — lifecycle and Debt effects both present or both absent |
+| All effects together | `npx vitest run tests/workflows/atomic-close-commit.spec.ts -t "all participants succeed"` — fails because the participants are staged in sequence, so the Journal outcome can land while the lifecycle does not | Same command — every effect present at one revision |
+| Journal participant failure | `npx vitest run tests/workflows/atomic-close-commit.spec.ts -t "Journal failure rolls back Trade"` — fails because there is no shared transaction to abort | Same command — prior revision intact and no Journal effect |
+| Trade participant failure | `npx vitest run tests/workflows/atomic-close-commit.spec.ts -t "Trade failure rolls back Journal"` — fails for the same reason in the other direction | Same command — no Debt, decline, or Entry |
+| Not Writable | `npx vitest run tests/workflows/atomic-close-commit.spec.ts -t "RuntimeNotWritable"` — fails because the write gate is not consulted at the transaction seam for this path | Same command — typed `RuntimeNotWritable` and no write |
+| Receipt completeness | `npx vitest run tests/workflows/atomic-close-commit.spec.ts -t "receipt carries identities"` — fails because the receipt is not assembled from the committed mapping | Same command — receipt names every affected identity and revision |
+| Abort leaves index intact | `npx vitest run tests/workflows/atomic-close-commit.spec.ts -t "no partial index movement"` — fails because index movement is a separate write | Same command — the Trade is still on the Open page |
+| Abandonment variant | `npx vitest run tests/workflows/atomic-close-commit.spec.ts -t "abandonment commits atomically"` — fails because abandonment joins the transaction later | Same command — lifecycle and Debt effects both present or both absent |
 
 #### T14 — `B` Mutation result and post-commit projection for closing and abandonment
 
@@ -979,12 +979,12 @@ repeats for abandonment. Disclosed substitution: `fake-indexeddb`.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Projection equality | `pnpm vitest run tests/workflows/close-result-projection.spec.ts -t "post-commit projection"` — fails because the result carries no committed projection | Same command — projection equals the independent read at that revision |
-| Bound derivation | `pnpm vitest run tests/workflows/close-result-projection.spec.ts -t "bound disposition"` — fails because the disposition is not part of the result | Same command — disposition and agreement returned |
-| Journal outcome in result | `pnpm vitest run tests/workflows/close-result-projection.spec.ts -t "Journal outcome projection"` — fails because the Journal outcome is not projected | Same command — the Entry, decline, or Debt is present |
-| No follow-up read | `pnpm vitest run tests/workflows/close-result-projection.spec.ts -t "no read-back"` — fails because the command internally reads back to assemble the result | Same command — the read counter is zero |
-| Abandonment projection | `pnpm vitest run tests/workflows/close-result-projection.spec.ts -t "abandonment result"` — fails because `AbandonPlanResult` has no post-commit projection | Same command — `Abandoned` projection and retirement identity present |
-| Failure shape | `pnpm vitest run tests/workflows/close-result-projection.spec.ts -t "failure carries no projection"` — fails because failure and success share one loosely typed shape | Same command — typed failure with no projection fields |
+| Projection equality | `npx vitest run tests/workflows/close-result-projection.spec.ts -t "post-commit projection"` — fails because the result carries no committed projection | Same command — projection equals the independent read at that revision |
+| Bound derivation | `npx vitest run tests/workflows/close-result-projection.spec.ts -t "bound disposition"` — fails because the disposition is not part of the result | Same command — disposition and agreement returned |
+| Journal outcome in result | `npx vitest run tests/workflows/close-result-projection.spec.ts -t "Journal outcome projection"` — fails because the Journal outcome is not projected | Same command — the Entry, decline, or Debt is present |
+| No follow-up read | `npx vitest run tests/workflows/close-result-projection.spec.ts -t "no read-back"` — fails because the command internally reads back to assemble the result | Same command — the read counter is zero |
+| Abandonment projection | `npx vitest run tests/workflows/close-result-projection.spec.ts -t "abandonment result"` — fails because `AbandonPlanResult` has no post-commit projection | Same command — `Abandoned` projection and retirement identity present |
+| Failure shape | `npx vitest run tests/workflows/close-result-projection.spec.ts -t "failure carries no projection"` — fails because failure and success share one loosely typed shape | Same command — typed failure with no projection fields |
 
 ### Phase L5 — the trader-facing surfaces
 
@@ -1026,13 +1026,13 @@ a real engine.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Reason required | `pnpm vitest run tests/ui/close-form.spec.tsx -t "no reason"` — fails because the form submits an empty reason payload | Same command — visible validation and no write |
-| Single reason submitted | `pnpm vitest run tests/ui/close-form.spec.tsx -t "saves with one reason"` — fails because the selector is not wired to the terminal command | Same command — one `Closed` Trade at a new revision |
-| View states | `pnpm vitest run tests/ui/close-form.spec.tsx -t "distinct view states"` — fails because the form renders one undifferentiated state | Same command — each state is distinguishable in the accessibility tree |
-| Resize preserves values | `pnpm vitest run tests/ui/close-form.spec.tsx -t "resize preserves unsaved values"` — fails because the form unmounts on breakpoint change and clears state | Same command — values and selection survive |
-| Saved outcome | `pnpm vitest run tests/ui/close-form.spec.tsx -t "renders the returned projection"` — fails because the form re-reads the Trade instead of using the result | Same command — rendered values come from the result |
-| No invented reasons | `pnpm vitest run tests/ui/close-form.spec.tsx -t "only seeded reasons"` — fails because the selector is populated from a placeholder list | Same command — exactly the five seeded reasons |
-| No capture without Save | `pnpm vitest run tests/ui/close-form.spec.tsx -t "leave without Save"` — fails because opening the form resolves the definition and records something | Same command — unchanged Journal query after restart |
+| Reason required | `npx vitest run tests/ui/close-form.spec.tsx -t "no reason"` — fails because the form submits an empty reason payload | Same command — visible validation and no write |
+| Single reason submitted | `npx vitest run tests/ui/close-form.spec.tsx -t "saves with one reason"` — fails because the selector is not wired to the terminal command | Same command — one `Closed` Trade at a new revision |
+| View states | `npx vitest run tests/ui/close-form.spec.tsx -t "distinct view states"` — fails because the form renders one undifferentiated state | Same command — each state is distinguishable in the accessibility tree |
+| Resize preserves values | `npx vitest run tests/ui/close-form.spec.tsx -t "resize preserves unsaved values"` — fails because the form unmounts on breakpoint change and clears state | Same command — values and selection survive |
+| Saved outcome | `npx vitest run tests/ui/close-form.spec.tsx -t "renders the returned projection"` — fails because the form re-reads the Trade instead of using the result | Same command — rendered values come from the result |
+| No invented reasons | `npx vitest run tests/ui/close-form.spec.tsx -t "only seeded reasons"` — fails because the selector is populated from a placeholder list | Same command — exactly the five seeded reasons |
+| No capture without Save | `npx vitest run tests/ui/close-form.spec.tsx -t "leave without Save"` — fails because opening the form resolves the definition and records something | Same command — unchanged Journal query after restart |
 
 #### T16 — `B` Terminal Disposition, stored lifecycle and Close Reason as separate concepts
 
@@ -1072,12 +1072,12 @@ in the Node layer; the browser test at this task may share it, with the real-eng
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Three regions | `pnpm vitest run tests/ui/trade-detail-three-concepts.spec.tsx -t "three labelled regions"` — fails because the detail view renders one combined outcome block | Same command — three named regions with their own values |
-| Partial values | `pnpm vitest run tests/ui/trade-detail-three-concepts.spec.tsx -t "one region empty"` — fails because an absent value collapses the region | Same command — the absent concept is stated explicitly |
-| Abandoned Trade | `pnpm vitest run tests/ui/trade-detail-three-concepts.spec.tsx -t "Abandoned"` — fails because abandonment is not handled by the view | Same command — `Abandoned`, `NotApplicable`, Abandonment Reason |
-| Disagreement notice | `pnpm vitest run tests/ui/trade-detail-three-concepts.spec.tsx -t "integrity disagreement"` — fails because the notice is not rendered | Same command — both values named, neither replaced |
-| Mixed mechanisms | `pnpm vitest run tests/ui/trade-detail-three-concepts.spec.tsx -t "mixed mechanisms"` — fails because only a headline mechanism is rendered | Same command — each mechanism and quantity in text |
-| Label discipline | `pnpm vitest run tests/ui/trade-detail-three-concepts.spec.tsx -t "label discipline"` — fails because the derived value is labelled as a reason | Same command — the two labels do not cross |
+| Three regions | `npx vitest run tests/ui/trade-detail-three-concepts.spec.tsx -t "three labelled regions"` — fails because the detail view renders one combined outcome block | Same command — three named regions with their own values |
+| Partial values | `npx vitest run tests/ui/trade-detail-three-concepts.spec.tsx -t "one region empty"` — fails because an absent value collapses the region | Same command — the absent concept is stated explicitly |
+| Abandoned Trade | `npx vitest run tests/ui/trade-detail-three-concepts.spec.tsx -t "Abandoned"` — fails because abandonment is not handled by the view | Same command — `Abandoned`, `NotApplicable`, Abandonment Reason |
+| Disagreement notice | `npx vitest run tests/ui/trade-detail-three-concepts.spec.tsx -t "integrity disagreement"` — fails because the notice is not rendered | Same command — both values named, neither replaced |
+| Mixed mechanisms | `npx vitest run tests/ui/trade-detail-three-concepts.spec.tsx -t "mixed mechanisms"` — fails because only a headline mechanism is rendered | Same command — each mechanism and quantity in text |
+| Label discipline | `npx vitest run tests/ui/trade-detail-three-concepts.spec.tsx -t "label discipline"` — fails because the derived value is labelled as a reason | Same command — the two labels do not cross |
 
 #### T17 — `B` Abandon plan flow with an active Abandonment Reason
 
@@ -1112,11 +1112,11 @@ ineligible presentations with their factual reasons, abandons the first, and ass
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Reason required | `pnpm vitest run tests/ui/abandon-flow.spec.tsx -t "no reason chosen"` — fails because the flow submits an empty reason | Same command — visible rejection and no write |
-| Ineligible presentation | `pnpm vitest run tests/ui/abandon-flow.spec.tsx -t "effective Execution blocks"` — fails because the flow does not read eligibility from facts | Same command — the blocking fact is named and no control offers a workaround |
-| Successful abandon | `pnpm vitest run tests/ui/abandon-flow.spec.tsx -t "abandons with one reason"` — fails because there is no command wiring | Same command — `Abandoned` outcome rendered and Debt retired |
-| Stale eligibility | `pnpm vitest run tests/ui/abandon-flow.spec.tsx -t "facts changed before submit"` — fails because the flow caches the eligibility answer | Same command — typed conflict and no write |
-| No capture without Save | `pnpm vitest run tests/ui/abandon-flow.spec.tsx -t "leave without Save"` — fails because opening the flow writes | Same command — no Abandonment Reason and no Journal effect |
+| Reason required | `npx vitest run tests/ui/abandon-flow.spec.tsx -t "no reason chosen"` — fails because the flow submits an empty reason | Same command — visible rejection and no write |
+| Ineligible presentation | `npx vitest run tests/ui/abandon-flow.spec.tsx -t "effective Execution blocks"` — fails because the flow does not read eligibility from facts | Same command — the blocking fact is named and no control offers a workaround |
+| Successful abandon | `npx vitest run tests/ui/abandon-flow.spec.tsx -t "abandons with one reason"` — fails because there is no command wiring | Same command — `Abandoned` outcome rendered and Debt retired |
+| Stale eligibility | `npx vitest run tests/ui/abandon-flow.spec.tsx -t "facts changed before submit"` — fails because the flow caches the eligibility answer | Same command — typed conflict and no write |
+| No capture without Save | `npx vitest run tests/ui/abandon-flow.spec.tsx -t "leave without Save"` — fails because opening the flow writes | Same command — no Abandonment Reason and no Journal effect |
 
 #### T18 — `B` Responsive layout and accessibility for D6's surfaces
 
@@ -1153,12 +1153,12 @@ for durability, with the real-engine proof at T19.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Live resize preserves state | `pnpm playwright test tests/e2e/d6-responsive.spec.ts -t "resize preserves unsaved close form"` — fails because the unsaved form is discarded on breakpoint change | Same command — route, selected Trade, values, and validation survive |
-| Keyboard-only completion | `pnpm playwright test tests/e2e/d6-accessibility.spec.ts -t "keyboard-only close"` — fails because the reason chips are not reachable as a radio group by keyboard | Same command — the workflow completes with visible focus throughout |
-| Programmatic names and roles | `pnpm playwright test tests/e2e/d6-accessibility.spec.ts -t "names roles and states"` — fails because the three Trade Detail regions have no accessible names | Same command — every control and region is named with a role and state |
-| Non-color cues | `pnpm playwright test tests/e2e/d6-accessibility.spec.ts -t "validation has a text cue"` — fails because the validation cue is a border color only | Same command — a text cue accompanies the visual cue |
-| Automated accessibility checks | `pnpm playwright test tests/e2e/d6-accessibility.spec.ts -t "axe-core"` — fails because the reason chip group is not a labelled fieldset | Same command — zero serious or critical violations |
-| Equivalent narrow and wide actions | `pnpm playwright test tests/e2e/d6-responsive.spec.ts -t "equivalent actions"` — fails because the Abandon action is present only in the wide arrangement | Same command — identical actions and validation at both widths |
+| Live resize preserves state | `npx playwright test tests/e2e/d6-responsive.spec.ts -t "resize preserves unsaved close form"` — fails because the unsaved form is discarded on breakpoint change | Same command — route, selected Trade, values, and validation survive |
+| Keyboard-only completion | `npx playwright test tests/e2e/d6-accessibility.spec.ts -t "keyboard-only close"` — fails because the reason chips are not reachable as a radio group by keyboard | Same command — the workflow completes with visible focus throughout |
+| Programmatic names and roles | `npx playwright test tests/e2e/d6-accessibility.spec.ts -t "names roles and states"` — fails because the three Trade Detail regions have no accessible names | Same command — every control and region is named with a role and state |
+| Non-color cues | `npx playwright test tests/e2e/d6-accessibility.spec.ts -t "validation has a text cue"` — fails because the validation cue is a border color only | Same command — a text cue accompanies the visual cue |
+| Automated accessibility checks | `npx playwright test tests/e2e/d6-accessibility.spec.ts -t "axe-core"` — fails because the reason chip group is not a labelled fieldset | Same command — zero serious or critical violations |
+| Equivalent narrow and wide actions | `npx playwright test tests/e2e/d6-responsive.spec.ts -t "equivalent actions"` — fails because the Abandon action is present only in the wide arrangement | Same command — identical actions and validation at both widths |
 
 ### Phase L6 — mock-free integration and the critic gate
 
@@ -1200,14 +1200,14 @@ substitution.
 
 | Case | Red command and the reason it must fail | Green command and expected result |
 |---|---|---|
-| Full lifecycle sequence | `pnpm vitest run tests/integration/d6-end-long-stock.spec.ts -t "full sequence"` — fails because the terminal variant does not exist, so the sequence stops at `Open` | Same command — `Planned`, `Open`, `Open`, `Closed` with agreement |
-| Index movement in one commit | `pnpm vitest run tests/integration/d6-end-long-stock.spec.ts -t "index movement"` — fails because no terminal membership exists | Same command — membership and revision agree |
-| Disposition independence | `pnpm vitest run tests/integration/d6-end-long-stock.spec.ts -t "disposition independent of reason"` — fails because the disposition does not exist | Same command — identical dispositions with and without the reason |
-| Close Review lifecycle | `pnpm vitest run tests/integration/d6-end-long-stock.spec.ts -t "Close Review lifecycle"` — fails because the obligation key is not implemented | Same command — Defer, answer, and Decline each observed through `query` |
-| No-write cardinality | `pnpm vitest run tests/integration/d6-end-long-stock.spec.ts -t "cardinality no-write"` — fails because the accepted path writes regardless | Same command — identical before/after revisions across three modules |
-| Abandonment end to end | `pnpm vitest run tests/integration/d6-end-long-stock.spec.ts -t "abandonment"` — fails because `abandonPlan` is absent | Same command — four assertions hold |
-| Rollback and restart durability | `pnpm vitest run tests/integration/d6-real-engine.spec.ts -t "rollback and restart"` — fails because there is no transaction to abort | Same command — every participant revision unchanged on a real engine |
-| No per-record read, bounded batch | `pnpm vitest run tests/integration/d6-end-long-stock.spec.ts -t "bounded reads"` — fails because the close path assembles its result from read-backs | Same command — zero per-record reads and one bounded terminal batch |
+| Full lifecycle sequence | `npx vitest run tests/integration/d6-end-long-stock.spec.ts -t "full sequence"` — fails because the terminal variant does not exist, so the sequence stops at `Open` | Same command — `Planned`, `Open`, `Open`, `Closed` with agreement |
+| Index movement in one commit | `npx vitest run tests/integration/d6-end-long-stock.spec.ts -t "index movement"` — fails because no terminal membership exists | Same command — membership and revision agree |
+| Disposition independence | `npx vitest run tests/integration/d6-end-long-stock.spec.ts -t "disposition independent of reason"` — fails because the disposition does not exist | Same command — identical dispositions with and without the reason |
+| Close Review lifecycle | `npx vitest run tests/integration/d6-end-long-stock.spec.ts -t "Close Review lifecycle"` — fails because the obligation key is not implemented | Same command — Defer, answer, and Decline each observed through `query` |
+| No-write cardinality | `npx vitest run tests/integration/d6-end-long-stock.spec.ts -t "cardinality no-write"` — fails because the accepted path writes regardless | Same command — identical before/after revisions across three modules |
+| Abandonment end to end | `npx vitest run tests/integration/d6-end-long-stock.spec.ts -t "abandonment"` — fails because `abandonPlan` is absent | Same command — four assertions hold |
+| Rollback and restart durability | `npx vitest run tests/integration/d6-real-engine.spec.ts -t "rollback and restart"` — fails because there is no transaction to abort | Same command — every participant revision unchanged on a real engine |
+| No per-record read, bounded batch | `npx vitest run tests/integration/d6-end-long-stock.spec.ts -t "bounded reads"` — fails because the close path assembles its result from read-backs | Same command — zero per-record reads and one bounded terminal batch |
 
 #### T20 — `S` Independent browser-critic gate for D6
 
@@ -1231,9 +1231,9 @@ clarification rather than inventing expected behaviour.
 
 | # | Command | Expected result |
 |---|---|---|
-| V20.1 | `pnpm playwright test tests/e2e/d6-critic-flows.spec.ts` | Every flow in §4 that is expressible as an automated browser flow passes at both viewports, with the flow number in the test title and a captured screenshot per viewport. This is the regression net under the critic, not a substitute for it. |
+| V20.1 | `npx playwright test tests/e2e/d6-critic-flows.spec.ts` | Every flow in §4 that is expressible as an automated browser flow passes at both viewports, with the flow number in the test title and a captured screenshot per viewport. This is the regression net under the critic, not a substitute for it. |
 | V20.2 | Fresh critic agent session over the D6 flow list in §4 | A structured per-flow report where every flow is marked pass, with the critic's own browser actions, observed results, and screenshot evidence recorded for each flow at both viewports. |
-| V20.3 | `pnpm vitest run && pnpm playwright test` | The complete cumulative unit and integration suites are green before and after the critic attempt, so no earlier deliverable regressed while D6 was added. |
+| V20.3 | `npx vitest run && npx playwright test` | The complete cumulative unit and integration suites are green before and after the critic attempt, so no earlier deliverable regressed while D6 was added. |
 
 **Depends on it:** the deliverable's completeness claim. Without a passing fresh-critic report on
 this flow list there is no independent evidence that the close, review, abandonment, and Trade
@@ -1359,11 +1359,11 @@ compatible in-Node IndexedDB substitute for unit and integration tests, and Play
 axe-core for the browser integration, accessibility, and critic-gate runs
 (`planning-decisions-2026-10-10.md:184`). D6 uses these exact forms:
 
-- red and green for one case: `pnpm vitest run <spec path> -t "<case name>"`, run immediately
+- red and green for one case: `npx vitest run <spec path> -t "<case name>"`, run immediately
   before and immediately after the smallest production change that satisfies that one case;
-- the whole task: `pnpm vitest run <spec path>`;
-- browser flows: `pnpm playwright test <spec path> -t "<flow name>"`;
-- the cumulative suite before the critic gate: `pnpm vitest run && pnpm playwright test`.
+- the whole task: `npx vitest run <spec path>`;
+- browser flows: `npx playwright test <spec path> -t "<flow name>"`;
+- the cumulative suite before the critic gate: `npx vitest run && npx playwright test`.
 
 The exact pinned versions of Vitest, `fake-indexeddb`, Playwright, and axe-core are deferred to
 Phase 6 (`planning-decisions-2026-10-10.md:166`). Where a pinned version could change an
