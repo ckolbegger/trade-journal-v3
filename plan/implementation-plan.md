@@ -4,7 +4,7 @@
 
 **Basis:**
 - Frozen product baseline: `specs/` at commit `700a953` (index, glossary, ten ADRs, overview, all module contracts, UI/delivery contracts, acceptance contract).
-- Approved stack (Phase 2, Profile A): TypeScript 5.9.3, React 19.3.0, React Router 7.18.4, Vite 7.3.7, Tailwind 4.3.3, Zustand 5.0.9, decimal.js 10.6.0, Luxon 3.7.2, Vitest 5.0.3, fake-indexeddb 6.2.5, Playwright 1.64.0; IndexedDB behind a custom promise wrapper; Cloudflare Pages hosting; canonical-JSON SHA-256 backup artifacts; NYSE holidays 2010–2036; MarketData.app pricing provider (first delivered at VD4).
+- Approved stack (Phase 2, Profile A; versions re-pinned to current stable 2026-10-18 by user-approved version-currency check): TypeScript 7.0.2, React 19.3.1 (with `@types/react`/`@types/react-dom` 19.3.0), React Router 8.4.0, Vite 8.3.4, Tailwind 4.3.3, Zustand 5.0.15, decimal.js 10.6.0, Luxon 3.7.2, Vitest 5.0.5, fake-indexeddb 6.2.6, Playwright 1.64.1; IndexedDB behind a custom promise wrapper; Cloudflare Pages hosting; canonical-JSON SHA-256 backup artifacts; NYSE holidays 2010–2036; MarketData.app pricing provider (first delivered at VD4). Node ≥ 26 satisfies all engine ranges; if a genuine TypeScript 7 toolchain gap appears during the VD1 scaffold, the sanctioned fallback is TypeScript 6.0.3, decided with evidence at that task.
 - Process: `specs/evaluation/planning-protocol.md` (Phases 3–6). Detailed task breakdowns are NOT in this document; they live in one living working file per VD (`plan/VD<n>-<slug>.md`), written just-in-time and user-reviewed before that VD starts. This file becomes read-only after freeze.
 
 **Accepted sequencing decisions (chronological; VD numbers in 1–12 are as accepted at the time — see 13 for the current order):**

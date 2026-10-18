@@ -25,9 +25,9 @@ Working file for VD1 of `plan/implementation-plan.md` @ `477c8cd` (branch `zcode
 ### T1 — Project scaffold and build/test environment
 **Type:** structural. **Depends:** —.
 
-Vite 7.3.7 + TypeScript 5.9.3 + React 19.3.0 + React Router 7.18.4 + Tailwind 4.3.3 + Zustand 5.0.9 project; Vitest 5.0.3 (`globals: true`) with `fake-indexeddb` 6.2.5; Playwright 1.64.0 wired to `DEV_PORT`; decimal.js 10.6.0 and Luxon 3.7.2 installed; scripts `dev`/`build`/`preview`/`test`/`typecheck`.
+Vite 8.3.4 + TypeScript 7.0.2 + React 19.3.1 (with `@types/react`/`@types/react-dom` 19.3.0) + React Router 8.4.0 + Tailwind 4.3.3 + Zustand 5.0.15 project; Vitest 5.0.5 (`globals: true`) with `fake-indexeddb` 6.2.6; Playwright 1.64.1 wired to `DEV_PORT`; decimal.js 10.6.0 and Luxon 3.7.2 installed; scripts `dev`/`build`/`preview`/`test`/`typecheck`.
 
-**Verification:** `npm run dev` serves only at `http://127.0.0.1:5176` (strictPort rejects a second instance); `npm run test` passes a placeholder unit test; `npm run typecheck` exits 0; `npm run build && npm run preview` serves the production build on the same port/host. VD1's every runnable behavior depends on this.
+**Verification:** `npm run dev` serves only at `http://127.0.0.1:5176` (strictPort rejects a second instance); `npm run test` passes a placeholder unit test; `npm run typecheck` exits 0 (TS 7.0.2; sanctioned fallback 6.0.3 only for an evidenced toolchain gap, per the plan's stack note); `npm run build && npm run preview` serves the production build on the same port/host. Re-verify against Vite 8 the two Vite-7-era host quirks (preview sending `Vary: Origin`; strictPort/`127.0.0.1` binding behavior) rather than assuming they carry over. VD1's every runnable behavior depends on this.
 
 ### T2 — Shared domain value types (interface freeze)
 **Type:** behavior-bearing. **Depends:** T1.
