@@ -84,13 +84,13 @@ Cloudflare Pages gives this implementation its own HTTPS origin, so its storage 
 
 ## Pinned versions
 
-Pinned 2026-10-17 at the plan freeze (implementation plan, decision 42). Each package is the newest stable release published on or before **2026-10-03**, two weeks before the freeze, within the major version the approved stack names. Versions come from the npm registry's publish times. `package.json` uses exact versions with no ranges, and `package-lock.json` is committed. Changing a pin after the freeze is a plan revision.
+Pinned 2026-10-17 at the plan freeze (implementation plan, decision 42) and amended 2026-10-18 in revision 2 (decision 43). Each package is the newest stable release published on or before **2026-10-03**, two weeks before the freeze, within the major version the approved stack names. Node.js is the one exception (decision 43). Versions come from the npm registry's publish times. `package.json` uses exact versions with no ranges, and `package-lock.json` is committed. Changing a pin after the freeze is a plan revision.
 
 **Runtime and toolchain**
 
 | Item | Version | Published | Note |
 |---|---|---|---|
-| Node.js | 24.21.0 (LTS "Krypton") | 2026-09-07 | Node 26 is not LTS until late October 2026. The development machine currently has 26.0.0; T1.1 runs on the pinned 24.21.0. |
+| Node.js | 26.12.0 | 2026-10-14 | **Exception to the two-week rule** (decision 43): the Homebrew release, chosen by the user because Node runs only the tooling, never the product. Node 26 enters LTS in late October 2026. Homebrew's `node` formula is pinned (`brew pin node`), so a later `brew upgrade` cannot move it. |
 
 **Application dependencies**
 
@@ -126,7 +126,7 @@ Pinned 2026-10-17 at the plan freeze (implementation plan, decision 42). Each pa
 | `typescript-eslint` | 8.71.0 | 2026-09-28 |
 | `eslint-plugin-react-hooks` | 7.1.1 | 2026-04-17 |
 | `@types/react`, `@types/react-dom` | 19.3.0 | 2026-09-09 |
-| `@types/node` | 24.19.1 | 2026-10-01 |
+| `@types/node` | 26.6.4 | 2026-10-01 |
 | `wrangler` | 4.147.0 | 2026-10-02 |
 
 **Choices made while pinning**
