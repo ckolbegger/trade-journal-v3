@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createReferenceCatalog, D1_CATALOG_MANIFEST } from './index.ts';
-import { emptyWorkspace, sequentialIds } from './test-setup.ts';
+import { emptyWorkspace, sequentialIds } from '../../../tests/support/workspace.ts';
 
 async function catalog() {
   const { persistence } = await emptyWorkspace();

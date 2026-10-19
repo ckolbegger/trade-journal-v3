@@ -1,5 +1,5 @@
 import { IDBFactory } from 'fake-indexeddb';
-import { createPersistence, type Persistence } from '../../persistence/index.ts';
+import { createPersistence, type Persistence } from '../../src/persistence/index.ts';
 
 export function sequentialIds(prefix = 'id') {
   let n = 0;

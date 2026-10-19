@@ -17,3 +17,9 @@ export {
   type WriteSet,
 } from './persistence.ts';
 export type { WorkspaceStore } from './schema.ts';
+export {
+  beginSemanticTransaction,
+  NotInSemanticTransaction,
+  requireOpen,
+  type SemanticTransaction,
+} from './semantic-transaction.ts';

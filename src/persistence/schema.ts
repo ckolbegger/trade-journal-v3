@@ -28,8 +28,12 @@ export const WORKSPACE_VERSION = 1;
 
 export function upgradeWorkspace(db: IDBDatabase, oldVersion: number): void {
   if (oldVersion < 1) {
-    for (const [store, keyPath] of Object.entries(WORKSPACE_KEY_PATHS)) {
-      db.createObjectStore(store, { keyPath });
-    }
+    const stores = new Map(
+      Object.entries(WORKSPACE_KEY_PATHS).map(([store, keyPath]) => [store, db.createObjectStore(store, { keyPath })]),
+    );
+    const entries = stores.get('journalEntries')!;
+    // One current outcome per Journal obligation key (Journal, "Debt and obligation semantics").
+    entries.createIndex('byObligation', 'obligationKey', { unique: true });
+    entries.createIndex('byAnchorTrade', 'anchorTradeId');
   }
 }
