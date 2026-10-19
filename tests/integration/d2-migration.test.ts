@@ -7,10 +7,7 @@ import {
 import {
   CONTROL_DATABASE_NAME,
   migrate,
-  readActiveDatabaseName,
   readActiveVersion,
-  readPointer,
-  writePointer,
 } from "../../src/persistence/indexeddb/migration";
 import {
   CANDIDATE_DATABASE_PREFIX,
