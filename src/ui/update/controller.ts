@@ -40,6 +40,8 @@ export interface ReleaseUpdateController {
   dispose(): void;
   // The trader's explicit Reload: the waiting release takes control, then this tab reloads.
   applyUpdate(): void;
+  // Asks the host to look for a newer release; it installs and verifies itself before waiting.
+  checkForUpdates(): Promise<'NoUpdate' | 'UpdateWaiting'>;
 }
 
 export function createReleaseUpdateController(deps: ReleaseUpdateControllerDeps): ReleaseUpdateController {
@@ -83,6 +85,10 @@ export function createReleaseUpdateController(deps: ReleaseUpdateControllerDeps)
       if (unsaved === state.unsavedHere) return;
       set({ ...state, unsavedHere: unsaved });
       deps.channel.postMessage({ type: 'unsaved', tabId, unsaved } satisfies ChannelMessage);
+    },
+    async checkForUpdates() {
+      await deps.registration.update();
+      return deps.registration.waiting ? 'UpdateWaiting' : 'NoUpdate';
     },
     applyUpdate() {
       applying = true;
