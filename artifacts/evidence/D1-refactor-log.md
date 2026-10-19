@@ -39,3 +39,4 @@ are unchanged throughout; only file boundaries move.
 | 31 | `tests/browser/seams.spec.ts` | clock, harness, host-port, shell | `tsc` 0; `eslint` 0; `npx vitest run` 190 tests; `npx playwright test` 132 tests | see the commit table at the end |
 | 32 | `tests/browser/readiness.spec.ts` | readiness, inventory-offline | `tsc` 0; `eslint` 0; `npx vitest run` 190 tests; `npx playwright test` 132 tests | see the commit table at the end |
 | 33 | `tests/browser/persistence.spec.ts` | schema, transaction | `tsc` 0; `eslint` 0; `npx vitest run` 190 tests; `npx playwright test` 132 tests | see the commit table at the end |
+| 34 | `tests/browser/offline-durability.spec.ts` | offline-restart, durability-real-engine | `tsc` 0; `eslint` 0; `npx vitest run` 190 tests; `npx playwright test` 132 tests | see the commit table at the end |
