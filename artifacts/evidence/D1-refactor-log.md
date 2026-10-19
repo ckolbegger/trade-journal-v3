@@ -22,3 +22,4 @@ are unchanged throughout; only file boundaries move.
 | 14 | `tests/persistence/snapshot.test.ts` | snapshot-coherent, snapshot-nonmutating, snapshot-torn | `tsc` 0; `eslint` 0; `npx vitest run` 79 files / 190 tests passed | see the commit table at the end |
 | 15 | `tests/persistence/transaction.test.ts` | transaction-rollback, transaction-single, transaction-snapshot, transaction-write-gate, transaction | `tsc` 0; `eslint` 0; `npx vitest run` 75 files / 190 tests passed | see the commit table at the end |
 | 16 | `tests/persistence/write-gate.test.ts` | write-gate-exemption, write-gate-integrity, write-gate-no-root, write-gate-no-transaction, write-gate-recheck, write-gate-revisions, write-gate | `tsc` 0; `eslint` 0; `npx vitest run` 69 files / 190 tests passed | see the commit table at the end |
+| 17 | `tests/platform/clock.test.ts` | clock-injection | `tsc` 0; `eslint` 0; `npx vitest run` 69 files / 190 tests passed | see the commit table at the end |
