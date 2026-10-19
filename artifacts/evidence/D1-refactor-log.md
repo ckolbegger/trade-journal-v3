@@ -12,3 +12,4 @@ are unchanged throughout; only file boundaries move.
 | 4 | `tests/catalog/save-query.test.ts` | account-parent, archive-reactivation, create, query, rename-history, resolution-modes, save-conflict | `tsc` 0; `eslint` 0; `npx vitest run` 120 files / 190 tests passed | see the commit table at the end |
 | 5 | `tests/catalog/seed.test.ts` | seed-absences, seed-atomic, seed-idempotent, seed-manifest, seed-rename, seed-shape-conflict, seed-snapshot | `tsc` 0; `eslint` 0; `npx vitest run` 114 files / 190 tests passed | see the commit table at the end |
 | 6 | `tests/harness/disclosure.test.ts` | mock-free, substitution-registry | `tsc` 0; `eslint` 0; `npx vitest run` 113 files / 190 tests passed | see the commit table at the end |
+| 7 | `tests/journal/seed.test.ts` | seed-atomic, seed-conflict, seed-idempotent, seed-manifest, seed-retain, seed-seven, seed-stable-key | `tsc` 0; `eslint` 0; `npx vitest run` 107 files / 190 tests passed | see the commit table at the end |
