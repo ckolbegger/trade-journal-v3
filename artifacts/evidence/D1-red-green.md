@@ -340,3 +340,25 @@ before the red was accepted.
 binding, and returns the model only when the two agree; otherwise it retries a caller-configured bounded
 number of times and then returns `ChangedDuringAssembly`. It performs no write. The test's mid-assembly
 commit is injected by a read source, which is exactly a writer committing between two module reads.
+
+---
+
+## T15 — `B` Lifecycle index membership and bounded cutoff queries
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T15.1 | write the lifecycle index membership inside the same transaction as the lifecycle-changing facts | `npx vitest run tests/persistence/lifecycle-index-atomic.test.ts -t "same transaction"` — the membership was written in a second transaction: `readwriteTransactions` was 2 | same command — 1 passed; one transaction writes both the entry (with `factRevision: 3`) and the fact |
+| T15.2 | return only the currently Open Trades from the index rather than scanning the Trade store | `npx vitest run tests/persistence/lifecycle-bounded.test.ts -t "Open Trades from the index"` — under the store-scan defect the batch was empty: `expected [] to have a length of 200 but got +0` | same command — 1 passed; 200 Open rows, all `state: "Open"`, and the batch holds the same 200 |
+| T15.3 | return the Trades that were Open at a past completed-session cutoff, including one that has since closed | `npx vitest run tests/persistence/lifecycle-cutoff.test.ts` — the closed trade was still returned for the later cutoff | same command — 1 passed; `2026-10-15` returns both, `2026-10-21` returns only the still-open Trade |
+| T15.4 | rebuild membership from authoritative facts and prove recomputed membership equals the rebuilt index after the projection is deliberately deleted | No new red is claimed: the rebuild mechanism's red evidence is T9's V9.6 (projection emptied, contents reproduced). This case adds the `factRevision` membership evidence on top of that proven mechanism and was green on its first run, which is recorded rather than dressed as a red | `npx vitest run tests/persistence/lifecycle-rebuild.test.ts` — 1 passed; the second rebuild equals the first and every row carries a numeric `factRevision` |
+| T15.5 | fail the whole transaction when a required index membership write fails, leaving the facts unwritten | `npx vitest run tests/persistence/lifecycle-index-atomic.test.ts -t "whole transaction"` — the failed fact write left the membership committed (`[ { tradeId: 'trade-2', … } ]`) | same command — 1 passed; both stores empty after the abort |
+| T15.6 | stay bounded at 25,000 Trades … by counted storage requests, never elapsed time | `npx vitest run tests/persistence/lifecycle-bounded.test.ts -t "stay bounded"` — the Open selection scanned the store: `indexCursors: 0` instead of 1 | same command — 1 passed; one index cursor, 200 cursor steps, one bounded batch of 200 entries, no readwrite transaction |
+| T15.7 | surface a structured disagreement, and never repair it, when stored membership contradicts effective facts | `npx vitest run tests/persistence/lifecycle-disagreement.test.ts` — the disagreement was silently reported as agreement | same command — 1 passed with `{ storedState: "Open", derivedState: "Closed" }` and a byte-identical store fingerprint |
+
+`LifecycleEntry` carries the committed `factRevision` and the `openedOn`/`closedOn` membership interval, so
+a past-cutoff question is answered from membership facts rather than current state. `commitLifecycleChange`
+writes the entry and its facts in one commit. The disagreement check derives a D1-grade state from the
+effective Executions, reports the structured disagreement, and writes nothing. The rebuildable
+`lifecycleListProjection` carries the same membership evidence and is rebuilt from the authoritative
+index; the projection mapping preserves the earlier row shape for entries that do not carry the new
+fields.

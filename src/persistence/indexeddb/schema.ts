@@ -195,7 +195,10 @@ async function readProjectionSource(
     return rows.map((row) => ({
       tradeId: row.tradeId,
       state: row.state,
-      cutoffTradingDate: row.cutoffTradingDate ?? null,
+      ...(row.cutoffTradingDate === undefined ? {} : { cutoffTradingDate: row.cutoffTradingDate }),
+      ...(row.factRevision === undefined ? {} : { factRevision: row.factRevision }),
+      ...(row.openedOn === undefined ? {} : { openedOn: row.openedOn }),
+      ...(row.closedOn === undefined ? {} : { closedOn: row.closedOn }),
     }));
   }
   return rows;
