@@ -811,3 +811,41 @@ own pattern definition literally contained a forbidden token. The guard's patter
 shapes T3 does not already cover, and its comment no longer contains the token. This changed no
 implementation file; the critic's report still describes the shipped product, and the complete cumulative
 suites were rerun green afterwards. No product behaviour changed, so no second critic was required.
+
+---
+
+## Whole-suite verification runs
+
+The per-case rows above use the filtered forms the protocol requires (`-t "<case phrase>"` and
+`-g "<case phrase>"`), so their output legitimately reads "1 passed | N skipped": the skipped cases are
+the siblings in the same file, not the rest of the suite. This section records the whole-suite runs
+that were actually executed, so the log is self-contained about the regression gates as well as the
+per-case evidence.
+
+| When | Commit | Command | Observed result |
+|---|---|---|---|
+| T33 completion | `2e330ae` (working tree) | `npm run test:integration` | 5 integration tests and 132 browser tests pass (4 projects) |
+| T34 gate, V34.5 | `ea4fd85` (working tree) | `npx vitest run` | 139 files, 190 tests pass |
+| T34 gate, V34.5 | `ea4fd85` (working tree) | `npm run test:integration` | 5 integration tests and 132 browser tests pass |
+| T34 gate, V34.5 | `ea4fd85` (working tree) | `npx playwright test` | 132 browser tests pass |
+| Post-D1 lint fix | `7960c60` | `npx vitest run` | 139 files, 190 tests pass |
+| Post-D1 lint fix | `7960c60` | `npx playwright test` | 132 browser tests pass |
+
+Checkpoint totals from each task's final gate (`npx vitest run`, both projects) show the suite growing
+without a failing run at a committed state:
+
+| After | Commit | Files | Tests |
+|---|---|---|---|
+| T25 | `ecb05b1` | 111 | 148 |
+| T26 | `8007ac1` | 116 | 156 |
+| T27 | `0fbf04e` | 120 | 164 |
+| T28 | `3ff2196` | 126 | 173 |
+| T29 | `674b30d` | 126 | 173 |
+| T30/T31 | `74a42ee` | 134 | 185 |
+| T33 | `2e330ae` | 139 | 190 |
+
+The Playwright matrix is four projects (`chromium`, `webkit`, `narrow`, `wide`), so a whole-suite
+browser run executes every spec 33 times per project, 132 in total. The composed runs did catch real
+regressions rather than passing ceremonially: the stale T29 "Add institution is disabled" assertion
+(four failures) and the collision between the new integration mock guard and the T3 harness scanner
+(one failure) were both found by whole-suite runs and fixed before the green runs recorded above.
