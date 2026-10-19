@@ -67,8 +67,11 @@ I'm always open to ideas on better ways to do things. Please don't hesitate to s
 ## 6. Test-first, and the evidence is per case
 
 "TDD" means the case is written from the specification, run, and seen to fail before the production
-behaviour exists. Do not author a module and its test file in one pass, and do not write the
-implementation and then re-establish the red by stubbing.
+behaviour exists. Write the test against a minimal stub of the seam so the module resolves — a stub that
+returns the absent value, or one that deliberately throws "not implemented", are equally valid — then
+run it and confirm it fails because the behaviour is absent. A missing module, an unresolved import, a
+type or transform error, or a broken fixture is not valid red evidence; nor is a test that passes at
+once. Then make the smallest change that turns it green.
 
 Record one line per planned case: task id, case phrase, exact command, the red observation and why it
 failed, the green observation. A case whose red was genuinely unreachable says so and states why — and
