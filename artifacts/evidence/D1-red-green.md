@@ -277,3 +277,24 @@ by T8's single constructor, so the seam cannot drift from the UI-visible shape.
 **Integration case deferred to its first owners.** The production save path with readiness forced to fail
 needs the catalog module (T24) and the transaction seam (T11); the same case is driven by T11's write-gate
 evidence and by T33's integration suite, with the UI bypassed.
+
+---
+
+## T11 — `S` Atomic multi-store transaction seam
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| V11.1 | `npx vitest run tests/persistence/transaction.test.ts` | exit 0; one commit naming `tradeRecord`, `journal` and `referenceCatalog` writes all three and returns `{ tradeRecord: 1, journal: 1, referenceCatalog: 1 }`, which equals the persisted `workspaceMeta.revisions` row | pass |
+| V11.2 | `npx vitest run tests/persistence/transaction-rollback.test.ts` | exit 0; when the third participant's row cannot be written, the commit rejects, `onabort` fires, and the first two stores and the revision row are byte-identical to the pre-transaction snapshot | pass |
+| V11.3 | `npx vitest run tests/persistence/transaction-write-gate.test.ts` | exit 0; a non-`Writable` gate returns `RuntimeNotWritable`, the readwrite counter is 0, no rows and no revisions are written, and the payload is field-for-field equal to `runtimeNotWritable(...)` built directly (T8's boundary-equality row) | pass |
+| V11.4 | `npx vitest run tests/persistence/transaction-snapshot.test.ts` | exit 0; a snapshot opened before a concurrent commit still reads the pre-commit rows, while a fresh snapshot sees both | pass |
+| V11.5 | `npx vitest run tests/persistence/transaction-single.test.ts` | exit 0; exactly one `readwrite` transaction is opened and it spans the three named stores; the seam's counter is 1; no nested transaction | pass |
+| V11.6 | `npx playwright test tests/browser/transaction.spec.ts --project=chromium --project=webkit` | exit 0 on both engines; after the staged write is aborted the page is fully stopped and reopened, every store holds its prior rows and the revision row is unchanged | pass |
+| V11.7 | `grep -rn "IDBDatabase\|IDBTransaction" src --include=*.ts \| grep -v "^src/persistence/indexeddb/"` | no output (grep exit 1) | pass |
+
+The seam exposes one `commit(participants)` entry, evaluates T12's gate before opening anything, groups
+participants by store into one transaction, increments and persists the per-store revisions inside that
+same transaction, resolves on `oncomplete` and rejects on `onabort`, and offers a separate read-only
+`snapshot(stores)` path. The browser harness exposes the seam to the real-engine spec with a Writable
+gate; product code never uses that bridge. The Journal-participant rollback proof is deferred to D2 by
+PD3 item 5.
