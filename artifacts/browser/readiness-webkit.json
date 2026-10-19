@@ -12,12 +12,12 @@
     {
       "check": "capacity",
       "outcome": "Passed",
-      "detail": "free capacity 1048293407 meets the derived minimum 793088000"
+      "detail": "free capacity 1048289664 meets the derived minimum 793088000"
     },
     {
       "check": "service-worker-control",
       "outcome": "Passed",
-      "detail": "the intended release 1e998c51400020448f1713fac74ede6faa6c3e8c6b2f6d3cafab816066b3f1af controls this page"
+      "detail": "the intended release e9ded5127d72997d2cce4a829fff26987fc02dd6c4b8c2ef157e269da677acc8 controls this page"
     },
     {
       "check": "offline-release-inventory",

@@ -15,7 +15,8 @@ test("a Writable session enables data entry and the complete normal navigation",
   await page.getByRole("button", { name: "Set up" }).click();
   await expect(page.getByRole("heading", { name: "Set up your brokerage" })).toBeVisible();
   await expect(page.getByText("No institutions yet")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Add institution" })).toBeDisabled();
+  await page.getByRole("button", { name: "Add institution" }).click();
+  await expect(page.getByRole("alert")).toContainText("Enter the brokerage name.");
   await page.getByLabel("Institution name").fill("Fidelity");
   await expect(page.getByRole("button", { name: "Add institution" })).toBeEnabled();
 });

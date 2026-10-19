@@ -759,3 +759,25 @@ sidebar and the content is offset; at `max-width: 899px` it is a fixed bottom na
 padded clear of it. No resize listener exists, so the switch cannot reload or lose state. The `zoom`
 and supported-width question is recorded through the 390px reflow run rather than a separate zoom
 harness, because the layout has no fixed widths or fixed heights.
+
+---
+
+## T33 — `B` Mock-free integration suite for D1
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T33.1 | clean origin, real readiness gate, initialize, Institution and Account, durable after-state through one production path per layer | `npx vitest run --project integration tests/integration/d1-end-to-end.test.ts` — `onboardingFrom` was forced to never report Ready, so the landing state never became Ready for Trade Planning | 1 passed; Writable, `Opened`, the seeded Long Stock strategy, the Created Institution and Account, and after closing and reopening the store the same rows and the same `workspaceMeta` revisions |
+| T33.2 | full stop with the network disabled, reopen Writable, interactive screen and stored data intact | `npx playwright test tests/browser/offline-restart.spec.ts --project=chromium` — with no worker registration the release cache was never installed and the app never reached the setup view | 4 passed (both engines); the offline reopen shows the shell, "Ready to write", and the stored Institution |
+| T33.3 | RuntimeNotWritable from initialization and the seam with unchanged revisions for each single failed check and the simultaneous case | Covered per check in `tests/integration/failure-matrix.test.ts`; the readiness gate and initialize reds are T20's and T25's | 1 passed; each of the four single failures and the two-check failure refuse initialization and the seam, with byte-equal `workspaceMeta`/`referenceCatalog` |
+| T33.4 | three consecutive launches, then a release-integrity failure injected during the session | `npx vitest run --project integration tests/integration/three-launches.test.ts` — launch 1 failed readiness until the inventory's leading-slash URLs were honoured | 1 passed; three Writable launches, then a missing asset makes readiness fail and the next commit is `Rejected` with unchanged revisions |
+| T33.5 | roll back every participating store when one participant fails inside a multi-store commit | No separate product red is claimed: T11.4 already red-proved the single-transaction rollback at the seam. This integration case is the cumulative re-proof | 1 passed; a non-cloneable value in the second participant throws, and `journal`, `tradeRecord` and `workspaceMeta` are byte-identical to the pre-commit snapshot |
+| T33.6 | repeat the durability-critical proofs against a real engine, versions as provenance | `npx playwright test tests/browser/offline-restart.spec.ts tests/browser/durability-real-engine.spec.ts --project=chromium --project=webkit` — the same class as T33.2's no-cache red; the real-engine variant would pass only with an installed release cache | 4 passed; after a full restart on Chromium and WebKit every one of the four readiness checks is `Passed` and both identities are present |
+| T33.7 | the cumulative suites with every earlier-green case still green | `npm run test:integration` — the composed run exposed the stale T29 assertion that the Add institution button is disabled on an empty name; the form now validates on submit, and the assertion was corrected to the validation message | 132 browser tests (4 projects) and 5 integration tests pass |
+| T33.8 | fail naming the file and line when tests/integration introduces a mock, stub or canned response | `npx vitest run --project integration tests/integration/mock-guard.test.ts` — a deliberate `vi.mock` line made the guard fail and name the file | 5 integration tests pass with the guard's own pattern definition excluded from the scan |
+
+**Substitutions.** The suite uses the single disclosed `fake-indexeddb` substitution plus the registered
+"controlled host-capability implementation" for capacity, protection and the worker fact. The release
+inventory validator is the real one, over a real in-memory asset cache and real SHA-256 digests; the
+diagnostic transaction, the catalog/journal/workspace modules, the seam and the workspace coordinator are
+all production code. No application module is mocked. The real-engine counterparts are the two Playwright
+specs above, run on Chromium 156 and WebKit 27.

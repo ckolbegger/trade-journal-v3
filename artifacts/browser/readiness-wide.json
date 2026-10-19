@@ -1,0 +1,33 @@
+{
+  "kind": "readiness-provenance",
+  "decisionInput": false,
+  "project": "wide",
+  "browserVersion": "156.0.8078.4",
+  "checks": [
+    {
+      "check": "diagnostic-transaction",
+      "outcome": "Passed",
+      "detail": "the isolated diagnostic transaction committed"
+    },
+    {
+      "check": "capacity",
+      "outcome": "Passed",
+      "detail": "free capacity 10737418240 meets the derived minimum 793088000"
+    },
+    {
+      "check": "service-worker-control",
+      "outcome": "Passed",
+      "detail": "the intended release e9ded5127d72997d2cce4a829fff26987fc02dd6c4b8c2ef157e269da677acc8 controls this page"
+    },
+    {
+      "check": "offline-release-inventory",
+      "outcome": "Passed",
+      "detail": "all 7 inventory entries verified"
+    }
+  ],
+  "protection": {
+    "kind": "BestEffort",
+    "reason": "The host did not confirm persistent storage."
+  },
+  "notProtectedWarning": true
+}
