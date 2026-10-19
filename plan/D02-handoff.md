@@ -165,7 +165,7 @@ Update this section at the end of each task.
 
 | | |
 |---|---|
-| Tasks done | None yet. |
-| Next task | T2.1, Trade Analysis: replay, Positions, Open Lots, opening fees, expected lifecycle. |
-| Last commit | the revision 5 commit (tag `claude-opus-5.5-plan-r5`), followed by the commit that updated this note |
-| Open questions | Carried from D1: `npm audit` reports 3 high findings in `sharp` via the pinned `wrangler@4.147.0` (deploy-only), and fixing them needs a pin change, so a plan revision. `engine-strict`'s refusal was never exercised. `sw.js` is outside the inventory by design (T1.3), so a worker-only change keeps the release identity. |
+| Tasks done | T2.1 (`335e62d`), cumulative run green (`evidence/D02/structural.md`). |
+| Next task | T2.2, Trade Analysis: entry window, Entry Resolution Point, Entry Quality, Planned-Leg Fulfillment. `derive` now returns `DerivationResult` (`Derived` or `IncoherentFacts`); the D1 call sites narrow it with an `incoherent` throw that T2.6 and T2.7 replace. Test fixture: `src/domain/trade-analysis/reference-trade.ts`. |
+| Last commit | the T2.1 evidence and handoff commit after `335e62d` |
+| Open questions | **T2.1 first-run passes awaiting the user's decision** (logged as notes in `tdd-log.md`, recommended as regression guards): "keep exact values for fractional inputs" and "report agreement Agrees when the supplied stored lifecycle equals the expected one". Carried from D1: `npm audit` reports 3 high findings in `sharp` via the pinned `wrangler@4.147.0` (deploy-only), and fixing them needs a pin change, so a plan revision. `engine-strict`'s refusal was never exercised. `sw.js` is outside the inventory by design (T1.3), so a worker-only change keeps the release identity. |
