@@ -223,3 +223,30 @@ obligation key, Market Data key-and-date and reference kind-and-parent. The mani
 the test asserts both the logical counters and the instrumented physical calls. No latency figure is
 measured or claimed. The browser harness exposes the schema to `tests/browser/schema.spec.ts` through
 `window.__TRADE_JOURNAL_SCHEMA__`, the same documented harness seam as the clock and host port.
+
+---
+
+## T10 — `B` Migration runner with isolated candidate and atomic pointer flip
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T10.1 | build the candidate, validate every section, and flip the active pointer only after validation … one supported step behind | `npx vitest run tests/persistence/migration.test.ts` — absent, then `VersionError` when reopening the source at version 1: the first implementation upgraded in place and destroyed the source-version database | same command — 1 passed; the source stays openable at version 1 with its row, the pointer names `trade-journal-candidate-m1`, and `readActiveVersion()` is 2 |
+| T10.2 | leave the prior database readable and unchanged … when validation of one candidate section fails | `npx vitest run tests/persistence/migration-rollback.test.ts` — outcome was `Migrated`; the validator was ignored | same command — 1 passed with `MigrationBlocked / ValidationFailed / "journal: the journal section is incoherent"`, no pointer, source unchanged, candidate deleted |
+| T10.3 | add a new manifest default to the candidate without overwriting a trader rename | `npx vitest run tests/persistence/migration-seed-additions.test.ts` — the receipt listed `strategy.long-stock` and the trader label was replaced by the manifest label | same command — 1 passed; the rename is retained, only `strategy.long-call` is added, and the receipt names only that addition |
+| T10.4 | reject an unknown newer stored version with a typed UnsupportedVersion naming both versions and write nothing | `npx vitest run tests/persistence/migration-unsupported.test.ts` — with the guard removed the runner attempted a best-effort open and threw `VersionError`; the check was then re-established | same command — 1 passed with `{ outcome: "UnsupportedVersion", storedVersion: 3, targetVersion: 2 }`, no pointer |
+| T10.5 | reject a conversion that cannot preserve an authoritative identity/fact/audit revision/provenance … LossyMigrationRequired | `npx vitest run tests/persistence/migration-lossy.test.ts` — outcome was `Migrated`; the refusal was skipped | same command — 1 passed with `LossyMigrationRequired`, no pointer, source unchanged, candidate absent |
+| T10.6 | discard a stale candidate and leave the prior version in control when interrupted before the pointer flip | `npx vitest run tests/persistence/migration-interrupted.test.ts` — `trade-journal-candidate-stale` was still present after the run | same command — 1 passed; the stale candidate is gone, the pointer names the fresh candidate, the source is still at version 1 |
+| T10.7 | rebuild the private projections inside the candidate and prove recomputed index membership equals the stored membership before the flip | `npx vitest run tests/persistence/migration-projection.test.ts` — `privateRebuilds` was empty and the projection held no rows | same command — 1 passed; the candidate's `lifecycleListProjection` equals the authoritative lifecycle membership and the receipt names the rebuild |
+| T10.8 | return a migration receipt naming the schema transitions, the migrations applied, the seed versions and additions, and every private rebuild | `npx vitest run tests/persistence/migration-receipt.test.ts` — `schemaTransitions` was `[]` | same command — 1 passed with `{ from: 1, to: 3 }`, both migration ids, `seed-v3`, `["strategy.long-call"]` and `["lifecycleListProjection"]` |
+
+**Mechanism.** The active database is named by an atomic pointer record in the `trade-journal-control`
+database; the candidate is `trade-journal-candidate-<migrationId>`. A run reads the source at its stored
+version (never opening it at a lower version), transforms an in-memory snapshot through the plan's
+steps, applies only genuinely missing seed additions by stable key, writes and rebuilds the candidate,
+validates it, verifies projection membership, and only then writes the pointer. Any refusal or failed
+validation deletes the candidate and leaves the pointer and source untouched; stale candidates are
+discarded at the start of the next run.
+
+**Startup integration deferred to its first owner.** T10's integration case runs the production startup
+path (`Workspace.initialize`, T25) against an older-version database. T25 is later in the graph, so the
+`initialize` → `migrate` path and its restart assertion are recorded with T25 and repeated by T33.
