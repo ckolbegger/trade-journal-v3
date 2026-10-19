@@ -488,3 +488,26 @@ The gate runs every check unconditionally, derives its outcome only from the fou
 maps the host port's typed results into capacity and inventory inputs, and never reads a browser identity.
 Forced per-check failure payloads are asserted at the port-injection seam here; the same failures are
 driven through the production UI by T29's forced-condition flows and repeated by T33.
+
+---
+
+## T21 — `B` Readiness re-establishment at every safety boundary
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T21.1 | run all four checks on every launch and produce a fresh evidence record with a new evaluation instant from the injected Clock | `npx vitest run tests/readiness/per-launch.test.ts` — the first verdict was cached: the diagnostic port ran once for two launches | same command — 1 passed; two launches, two diagnostic runs, two distinct instants, four checks each |
+| T21.2 | re-establish readiness after application update activation and enable mutations only after the fresh evaluation passes | `npx vitest run tests/readiness/boundary-receipts.test.ts -t "update activation"` — the cached failing evaluation was reused, so the passing re-evaluation never happened | same command — 1 passed; a failing update evaluation rejects the write, a passing one commits |
+| T21.3 | re-establish readiness after a Restore application before the next mutation, exposing the boundary hook D21 will consume | Covered by the same `evaluate` path as T21.2 and T21.4; `npx vitest run tests/readiness/boundary-receipts.test.ts -t "Restore"` | 1 passed; `boundary: "restore"` is returned and the next decision is `Writable` |
+| T21.4 | invalidate Writable immediately when a release-integrity or storage failure is observed during a running session | `npx vitest run tests/readiness/invalidate.test.ts -t "invalidate the current Writable"` — the cached `Writable` receipt was returned instead of a fresh failing one | same command — 1 passed; the current receipt becomes `Unsupported` and names the inventory check |
+| T21.5 | enter Recovery Only rather than Unsupported when the existing Workspace remains readable | `npx vitest run tests/readiness/invalidate.test.ts -t "Recovery Only"` — a readable Workspace was reported as `Unsupported` | same command — 1 passed; `RecoveryOnly` with the failed capacity check |
+| T21.6 | never reuse a previous readiness decision to authorize a later mutation | `npx vitest run tests/readiness/invalidate.test.ts -t "never reuse"` — the first `Writable` decision was cached and the second mutation committed | same command — 1 passed; the second mutation is rejected with `runtimeReadiness: Unsupported` |
+| T21.7 | record each boundary evaluation as a separate evidence record rather than overwriting one mutable flag | `npx vitest run tests/readiness/boundary-receipts.test.ts -t "separate evidence record"` — only one receipt survived (`[restore]`) | same command — 1 passed; three receipts with three distinct instants |
+
+The ledger re-establishes the four checks and records a receipt per boundary (`launch`, `update-activation`,
+`restore`) with the injected Clock's instant; `invalidate()` re-runs every check immediately;
+`decision()` always produces a fresh decision for the persistence write gate and maps a readable root to
+`RecoveryOnly`, an absent root to `Unsupported`, and an unreadable root to the Integrity Blocked branch.
+
+**Integration half deferred.** The three-cold-start receipt sequence and the injected mid-session asset
+deletion need `Workspace.initialize` (T25) and the production startup path; those assertions are recorded
+with T25 and repeated by T33.
