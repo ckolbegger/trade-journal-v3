@@ -116,7 +116,7 @@ must bring its own migration task with it; D7 does not make that decision.
    D20's read-back work may strengthen it.
 5. **Export stays possible in `Recovery Only`** because it is not an authoritative mutation, while the
    write gate still governs every mutation at the transaction seam
-   (`workspace.md:114`, `delivery-contract.md:32`, `planning-decisions-2026-10-10.md:220`).
+   (`workspace.md:114`, `delivery-contract.md:32`, `planning-decisions-2026-10-10.md:220`, `D1:T12`).
    Alignment needed: none expected; this is recorded so the gate is not "helpfully" tightened around
    export by a later implementer.
 6. **The Workspace Backup Manifest records counts and exclusions explicitly** so a reader can audit
@@ -628,8 +628,8 @@ did not damage it.
 `delivery-contract.md:32` allows ordinary reads and backup export there; `glossary.md:14` states the
 same, and the readiness outcome is owned by `D1:T26`. This task makes export pass the gate *because it
 is a read*, while the write gate continues to refuse every mutation at the transaction seam
-(`planning-decisions-2026-10-10.md:220`) — decision 5 in §1 exists so nobody later "tightens" export
-into refusal.
+(`planning-decisions-2026-10-10.md:220`, `D1:T12`) — decision 5 in §1 exists so nobody later "tightens"
+export into refusal.
 
 **Unit test cases**
 

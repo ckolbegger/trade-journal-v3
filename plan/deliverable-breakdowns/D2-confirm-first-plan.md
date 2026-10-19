@@ -308,7 +308,7 @@ forward-only within this branch; it is not a Restore path and must not be presen
 | V1.2 | `npx vitest run --project integration src/persistence/migrations` | all migration cases pass: a fresh D1 database upgrades to the D2 version in one transaction; every D2 store and declared index exists at the end; each store's `keyPath` and every index's `keyPath`/`multiEntry`/`unique` flag match the declaration. |
 | V1.3 | `npx vitest run --project integration src/persistence/migrations -t "isolated candidate"` | the interrupted-upgrade case passes: an error injected partway through the candidate leaves the D1 data readable at the D1 version constant, and no partially created D2 store is visible on the next open. |
 | V1.4 | `npx vitest run --project integration src/persistence/migrations -t "idempotent"` | re-running the migration against an already-upgraded database changes no record count and no store/index set, and returns an unchanged-version result rather than an error. |
-| V1.5 | `npx vitest run --project integration src/persistence/seam -t "write gate"` | with the session not `Writable`, the migration runner refuses to begin and returns `RuntimeNotWritable`; no D2 store is created. This is the D2 obligation of `overview.md:177` at the persistence boundary. |
+| V1.5 | `npx vitest run --project integration src/persistence/seam -t "write gate"` | with the session not `Writable`, the migration runner refuses to begin and returns `RuntimeNotWritable`; no D2 store is created. This is the D2 obligation of `overview.md:177` at the persistence boundary, and the rejection itself is `D1:T12`'s persistence-level gate (`D1:T9` schema, `D1:T10` runner). |
 | V1.6 | `npx vitest run --project integration src/persistence/seam -t "one transaction"` | a commit touching Trade, Journal and Catalog stores either commits on all three or aborts on all three; the assertion compares each participant's revision before and after. |
 
 **Depends on it:** T2, T3, T5, T8 and T12 all read or write the representation this task fixed, and every
@@ -960,7 +960,7 @@ the UI. "A mutating workflow writes all required related effects or none" (`trad
 command" (`overview.md:127`); and "a Journal-participant failure rolls back the staged Trade effects"
 (`trade-record.md:68`). The task must prove the failure from both directions and prove that the
 Runtime Readiness write gate is enforced at the persistence boundary rather than only in the UI
-(`overview.md:177`, `delivery-contract.md:132`). Interrupted work recovers to its before or after
+(`overview.md:177`, `delivery-contract.md:132`, `D1:T12`). Interrupted work recovers to its before or after
 state and never to a cross-module mixture (`delivery-contract.md:112-114`).
 
 **Unit test cases**

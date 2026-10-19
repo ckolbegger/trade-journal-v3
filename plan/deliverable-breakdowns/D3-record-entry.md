@@ -39,7 +39,7 @@ a pass.
 | Post-commit projection sufficient to render the saved outcome with no follow-up read | `PositionChangeResult.postCommit` | `trade-workflows.md:31-45`, `overview.md:194` |
 | The fill form including its fee input, which is captured, the reflection choice, the Position/Lots/realized-P&L presentation, and their responsive and accessible behaviour | Production UI (fill surface, reflection surface, Trade view) | `ui-contract.md:26-36`, `ui-contract.md:70-88`, `ui-contract.md:123-125` |
 | Durable schema version 3 and its migration from the D2 baseline | `Persistence/Transaction` migration runner | `trade-record.md:143-149`, `overview.md:131`, `overview.md:133` |
-| The write gate on the new mutation path | cross-cutting `RuntimeNotWritable` branch | `overview.md:177-186`, `planning-protocol.md:83` |
+| The write gate on the new mutation path, enforced at the persistence boundary by `D1:T12` | cross-cutting `RuntimeNotWritable` branch | `overview.md:177-186`, `planning-protocol.md:83`, `D1:T12` |
 
 The Installed Capability Manifest is not extended with a new family name by this deliverable: the
 variant it advertises is "record my entry for a long stock Plan", which is the stock-open member of

@@ -48,7 +48,7 @@ manifest v6 seed, and it is a task inside this deliverable rather than a migrati
 | Close Review | Its own `JournalObligationKey`; Complete, Decline, or Defer; Defer creates Debt with the trigger-time definition snapshot and never a blank Entry | `journal.md:79`, `journal.md:135-137`, `journal.md:188` |
 | Abandonment | `abandonPlan` command, active Abandonment Reason requirement, Plan Debt retirement, eligibility re-derivation over effective facts | `trade-workflows.md:82`, `acceptance-contract.md:55-60` |
 | Manifest v6 seed | Five Close Reasons, five Abandonment Reasons, the Close Review Entry Type, the Trade Close Source; stable product keys; idempotent repeat seeding | `reference-catalog.md:102-118`, `journal.md:25-35`, `journal.md:194` |
-| Atomic commit | One IndexedDB multi-store transaction covering facts, lifecycle/index, Lot Match, Deviation, lineage, and Journal outcomes, behind the persistence-level write gate | `trade-record.md:64-68`, `planning-decisions-2026-10-10.md:177` |
+| Atomic commit | One IndexedDB multi-store transaction covering facts, lifecycle/index, Lot Match, Deviation, lineage, and Journal outcomes, behind the persistence-level write gate implemented by `D1:T12` | `trade-record.md:64-68`, `planning-decisions-2026-10-10.md:177`, `D1:T12` |
 | Result and projection | `PositionChangeResult` / `AbandonPlanResult` carrying the post-commit Trade projection, the derived disposition, and the Journal outcome with no follow-up read | `trade-workflows.md:31-45`, `overview.md:26` |
 | Surfaces | Close position form, Abandon plan flow, Trade Detail's three separate concepts, responsive and accessible behavior | `ui-contract.md:22`, `ui-contract.md:28-35`, `ui-contract.md:86` |
 | Verification | A mock-free integration suite over the real stack and an independent browser-critic gate | `planning-protocol.md:115-135` |
@@ -904,7 +904,7 @@ restoration case is D15's.
 Trade Analysis reconciliation, and Journal, reached through the public closing and abandonment
 commands (`trade-record.md:64-68`, `trade-workflows.md:193`, `planning-decisions-2026-10-10.md:177`).
 The rule: a mutating workflow writes all required related effects or none; a Journal-participant
-failure rolls back the staged Trade effects; and the persistence-level write gate rejects the
+failure rolls back the staged Trade effects; and the persistence-level write gate (`D1:T12`) rejects the
 whole transaction when the session is not `Writable`.
 
 **Unit test cases**
