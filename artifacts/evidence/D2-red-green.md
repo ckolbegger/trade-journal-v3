@@ -951,3 +951,50 @@ fails exactly that case.
 | R4 | `npm run lint:layers` | `123 files, 0 violations` | pass |
 | R5 | `npx eslint .` | exit 0 | pass |
 | R6 | mutation R1 (branch cutoff dropped) / R2 (branch reports agreed) | each fails exactly the new case | pass |
+
+---
+
+## Second mutation audit — T2, T6, T8, T11, T12
+
+Same method as the first pass (one deliberate defect, task suite re-run, failing set recorded, source
+reverted). These five were the remaining tasks whose case-level red had been unreachable and never
+re-established.
+
+| Task | Mutations | Detected | Result |
+|---|---|---|---|
+| T2 | 7 | 7 | every case kills its own behaviour: candidate contents, non-durable identity, Economic-Time/save-time separation, stale revision, non-positive quantity, shape coherence, before record |
+| T6 | 6 | 6 | after retargeting two of my own mutations (see below): nearest-boundary headline, per-condition set, crossed/unreached visibility, non-positive rejection, reward/risk ratio, reward independence |
+| T8 | 5 | 4 + 2 retries | one real gap found (G-4) and closed |
+| T11 | 3 | 3 | `SeedConflict` masked, installed-Source summary, absent-identity list |
+| T12 | 3 | 3 | archived Account, retired Strategy, stale snapshot |
+
+**Two of my own mutations were ineffective, not test gaps.** T6's first `risk` mutation only changed
+the branch taken when no Target exists, and two others introduced unused local variables that changed
+nothing — so they correctly produced no failures. Retargeted mutations (T6-1b, T6-5b, T6-3b) were all
+detected, and the behaviour originally probed by T6-6 turned out to be covered by T6-1's mutation. No
+T6 test gap exists.
+
+### G-4 — an unexercised scale default (closed)
+
+Mutating `scaleBounds`'s `scaleMax ?? 5` to `?? 99` broke nothing, because both the v1 and v2 seed
+manifests state `scaleMax: 5` explicitly. The `scaleMin ?? 1` fallback, by contrast, *was* already
+exercised — the `get-definitions` suite seeds **v1**, whose Conviction prompt omits `scaleMin`
+(T8-1b fails that existing case). So only the upper-bound default was uncovered.
+
+Closed by a case that installs a retained revision omitting **both** bounds through the real
+`reviseDefinition` operation and asserts the read still reports 1–5 — the upgrade path for a form
+written before the bounds were stated. Both defaults now bite: `?? 0` and `?? 9` each fail it.
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| R1 | `npx vitest run` | `Test Files 45 passed (45)`, `Tests 325 passed (325)` | pass |
+| R2 | `npx playwright test` | `164 passed (2.3m)` | pass |
+| R3 | `npx tsc --noEmit` | exit 0 | pass |
+| R4 | `npm run lint:layers` | `123 files, 0 violations` | pass |
+| R5 | `npx eslint .` | exit 0 | pass |
+
+**Cumulative audit position:** all ten `B` tasks with re-established or unreachable red evidence
+(T2, T3, T4, T6, T7, T8, T9, T10, T11, T12) have now been mutation-audited across 40 mutations, and
+four real gaps were found and closed (G-1 vacuous cutoff case, G-2 untested guard, G-3 unasserted
+staged time, G-4 unexercised scale default) plus one wholly uncovered `derive` branch. T1, T5 and
+T13–T20 were red-first or verified by other means.

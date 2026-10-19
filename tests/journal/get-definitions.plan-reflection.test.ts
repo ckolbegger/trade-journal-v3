@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { getDefinitions } from "../../src/journal/definitions";
 import { SEED_MANIFEST_V1, seedDefaults } from "../../src/journal";
+import { reviseDefinition } from "../../src/journal/reviseDefinition";
 import type { TransactionSeam } from "../../src/persistence/indexeddb/transaction";
 import { close, openD2Seam } from "../support/store";
 
@@ -118,6 +119,47 @@ describe("Journal.getDefinitions for the Plan Reflection Entry Type, at the publ
     expect(conviction?.scaleMin).toBe(1);
     expect(conviction?.scaleMax).toBe(5);
     expect(conviction?.required).toBe(false);
+  });
+
+  it("should still report 1 to 5 bounds when a retained definition revision omits them, because an older form must read as bounded rather than unbounded", async () => {
+    // A retained revision written before the bounds were stated explicitly. The two
+    // workflow-critical roles are kept, which is what `reviseDefinition` requires.
+    const revised = await reviseDefinition(seam, {
+      entryTypeStableKey: PLAN_REFLECTION,
+      expectedRevision: 1,
+      prompts: [
+        {
+          stableKey: "prompt.plan-reflection.thesis",
+          label: "Why this trade, why now?",
+          kind: "text",
+          required: true,
+          semanticRole: "thesis",
+        },
+        {
+          stableKey: "prompt.plan-reflection.invalidation",
+          label: "What would invalidate the thesis?",
+          kind: "text",
+          required: true,
+          semanticRole: "invalidation",
+        },
+        {
+          stableKey: "prompt.plan-reflection.conviction",
+          label: "Conviction",
+          kind: "scale",
+          required: false,
+        },
+      ],
+    });
+    expect(revised.outcome).toBe("Revised");
+
+    const result = await getDefinitions(seam, { entryTypeStableKey: PLAN_REFLECTION });
+    expect(result.outcome).toBe("Definitions");
+    if (result.outcome !== "Definitions") return;
+    const conviction = (result.entryTypes[0]?.prompts ?? []).find(
+      (prompt) => prompt.stableKey === "prompt.plan-reflection.conviction",
+    );
+    expect(conviction?.scaleMin).toBe(1);
+    expect(conviction?.scaleMax).toBe(5);
   });
 
   it("should return the identical definition again when the same revision is requested twice, because definitions are immutable revisions and not recomputed views", async () => {
