@@ -624,3 +624,25 @@ the immutable capability manifest, and never reads or writes beyond the ports it
 
 **Integration half deferred.** The fresh/seeded/deleted-asset origins with three resulting statuses and
 unchanged digests land with T29's production wiring and T33.
+
+---
+
+## T27 — `B` `Workspace.requestDurability`
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T27.1 | Improved with currentProtection Protected when the host grants | `npx vitest run tests/workspace/durability-improved.test.ts -t "Improved"` — a grant was reported as `NotImproved` | 1 passed; `Improved` after the host's grant is confirmed |
+| T27.2 | AlreadyProtected with Protected when protection was already granted | `npx vitest run tests/workspace/durability-improved.test.ts -t "AlreadyProtected"` — the already-protected host was asked again | 1 passed; `AlreadyProtected` and the host request was never made |
+| T27.3 | NotImproved with BestEffort and the host's reason when the host denies | `npx vitest run tests/workspace/durability-denied.test.ts` — `Improved` was returned for a denied request | 1 passed with `NotImproved` and the host's BestEffort reason |
+| T27.4 | NotImproved with Unavailable when the host does not expose the request | `npx vitest run tests/workspace/durability-absent.test.ts -t "does not expose the request"` — the absent capability threw | 1 passed with a typed `NotImproved` and the Unavailable reason |
+| T27.5 | leave Runtime Readiness unchanged after NotImproved while all four checks pass | `npx vitest run tests/workspace/durability-advisory.test.ts -t "Runtime Readiness unchanged"` — the denial flipped the returned readiness to `Unsupported` | 1 passed; `Writable` with `notProtectedWarning: true` before and after |
+| T27.6 | delete, export and mutate nothing, proven by identical authoritative revisions | No separate product red is claimed: the operation holds no write or export port. It is verified by fingerprinting `workspaceMeta`, `referenceCatalog` and `journal` around the call | 1 passed; byte-identical stores |
+| T27.7 | record the protection state in the readiness evidence at each launch regardless of the outcome | Covered by T20's protection evidence and the advisory case; `npx vitest run tests/workspace/durability-advisory.test.ts -t "record the protection state"` | 1 passed; the readiness evidence carries the BestEffort protection and the warning |
+| T27.8 | return a typed NotImproved rather than throwing when the host rejects with a security or permission error | `npx vitest run tests/workspace/durability-absent.test.ts -t "security or permission"` — the `SecurityError` propagated | 1 passed with a typed `NotImproved` and a non-Protected state |
+
+The operation reports exactly `Improved`, `AlreadyProtected` or `NotImproved` with the current protection,
+never fabricates success, catches a host rejection, and carries the unchanged readiness in each
+`NotImproved` result.
+
+**Integration half deferred.** The single production durability control, the visible warning and the
+real-engine assertion land with T29's presentation and are repeated by T33.
