@@ -383,3 +383,37 @@ digest of the sorted `(url, sha256)` list, so it is content-derived and stable a
 caches the inventory artifact itself. The Web App Manifest is hand-authored in `public/` and its declared
 192/512 PNG icons exist; T18 binds it to the release identity through the worker, and T28 declares the
 Installed Capability Manifest separately.
+
+---
+
+## T18 — `S` Versioned service worker with intended-release control
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| V18.1 | `grep -n "skipWaiting" dist/sw.js` | exactly one occurrence, inside the `ACTIVATE_UPDATE` message handler; none at module scope | pass |
+| V18.2 | `grep -n "releaseId\|CACHE_NAME" dist/sw.js`, plus the printed cache name versus `dist/release-inventory.json` | `CACHE_NAME` is the literal `trade-journal-release-<releaseId>` and the identity from the inventory appears in it, so two releases cannot share a cache | pass |
+| V18.3 | `npx playwright test tests/browser/sw-control.spec.ts --project=chromium --project=webkit` | after one load the page is controlled and the controller reports the inventory's release identity on both engines | pass |
+| V18.4 | `npx playwright test tests/browser/sw-offline.spec.ts --project=chromium --project=webkit` | the page is closed, the context goes offline, a fresh page reopens the URL from the release cache, every inventory entry is present, and every recorded request is loopback | pass |
+| V18.5 | `npx playwright test tests/browser/sw-update.spec.ts --project=chromium --project=webkit` | with release B deployed over release A, `registration.update()` leaves A in control, B in `waiting`, the page never reloads, and no reload marker changes | pass |
+| V18.6 | `npx playwright test tests/browser/sw-staging-failure.spec.ts --project=chromium --project=webkit` | release C is deployed with one inventory asset deleted; its install fails, no waiting worker appears, A stays in control, and A's cached inventory remains complete | pass |
+| V18.7 | `npx playwright test tests/browser/sw-two-releases.spec.ts --project=chromium --project=webkit` | activating the waiting worker at the explicit request leaves release A's cache present, release B in control, and B's inventory fully cached | pass |
+
+**Worker shape.** `src/delivery/sw-template.js` is built into `dist/sw.js` by `scripts/build-sw.mjs` with the
+release identity and the built inventory injected. The cache namespace is the release identity; install
+precaches the inventory artifact plus every listed asset and fails staging if any asset is absent;
+fetch serves this release's cache first and leaves older release caches untouched; control replies with
+the release identity; `skipWaiting()` appears once, only in the `ACTIVATE_UPDATE` handler. The page
+registers the worker on a production load.
+
+**Additive port extension.** T18 needs the worker's control/lifecycle state, so the host port gained
+`registerWorker`, `workerStatus`, `updateWorker` and `activateWaitingWorker`, and `workerControl` now also
+reports the controlling release identity; the reply is read on the service-worker container, which is
+where a worker's message arrives. That completes the service-worker-control capability T7 already
+declared rather than changing the seam's shape, and T7's V7.5 operation list was updated to match.
+
+**Defect found while proving V18.7.** Activation occasionally left the old worker in control because
+`clients.claim()` ran only in `activate`, after the waiting worker took over. The worker now claims
+immediately in the `ACTIVATE_UPDATE` handler; the two-release proof then passed repeatedly in isolation
+and inside the full 12-file browser suite. The very first full-suite run also exposed stale generated
+release directories from the pre-fix build, which is why `artifacts/sw-test/` is now ignored and the
+specs read each release's inventory at run time rather than at module load.

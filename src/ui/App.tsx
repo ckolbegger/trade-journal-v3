@@ -6,7 +6,7 @@ export function App({
   openingInstant: string;
 }) {
   return (
-    <main className="app-shell">
+    <main className="app-shell" data-build-variant={__BUILD_VARIANT__}>
       <header className="app-shell__header">
         <p className="app-shell__eyebrow">Device-local journal</p>
         <h1>{applicationName}</h1>

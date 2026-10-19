@@ -42,7 +42,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `npm run build && npx vite preview --port ${port} --strictPort`,
+    command: `npm run build && node scripts/sw-test-server.mjs`,
     url: origin,
     reuseExistingServer: true,
     timeout: 180_000,

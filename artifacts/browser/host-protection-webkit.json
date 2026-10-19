@@ -1,0 +1,9 @@
+{
+  "kind": "storage-protection-evidence",
+  "project": "webkit",
+  "browserVersion": "27.2",
+  "protection": {
+    "kind": "BestEffort",
+    "reason": "The host did not confirm persistent storage."
+  }
+}

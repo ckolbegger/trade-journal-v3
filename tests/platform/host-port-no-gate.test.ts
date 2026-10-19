@@ -4,17 +4,21 @@ import { describe, expect, it } from "vitest";
 import { createHostPort } from "../../src/platform/host";
 
 const operations = [
+  "activateWaitingWorker",
   "cachedAsset",
   "capacity",
   "download",
   "protection",
   "readSelectedFile",
+  "registerWorker",
   "requestDurability",
+  "updateWorker",
   "workerControl",
+  "workerStatus",
 ];
 
 describe("the host port reports host facts and decides nothing about readiness", () => {
-  it("should expose exactly the seven reported capabilities and no readiness decision", () => {
+  it("should expose exactly the reported capabilities and no readiness decision", () => {
     expect(Object.keys(createHostPort({})).sort()).toEqual(operations);
   });
 

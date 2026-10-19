@@ -3,6 +3,7 @@ import { defineConfig } from "vitest/config";
 const setupFiles = ["./tests/harness/bootstrap.ts"];
 
 export default defineConfig({
+  define: { __BUILD_VARIANT__: JSON.stringify("test") },
   test: {
     passWithNoTests: true,
     projects: [

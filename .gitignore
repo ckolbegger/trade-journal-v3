@@ -46,3 +46,6 @@ worktrees/
 test-results/
 playwright-report/
 blob-report/
+
+# Generated service-worker test releases
+artifacts/sw-test/

@@ -11,10 +11,27 @@ export interface StorageManagerLike {
 
 export interface WorkerLike {
   readonly scriptURL?: string;
+  postMessage?(message: unknown): void;
+  addEventListener?(type: "message", listener: (event: { data?: unknown }) => void): void;
+  removeEventListener?(type: "message", listener: (event: { data?: unknown }) => void): void;
+}
+
+export interface RegistrationLike {
+  readonly scope: string;
+  readonly active: WorkerLike | null;
+  readonly waiting: WorkerLike | null;
+  readonly installing: WorkerLike | null;
+  update(): Promise<unknown>;
 }
 
 export interface ServiceWorkerContainerLike {
   readonly controller: WorkerLike | null;
+  register?(scriptURL: string): Promise<RegistrationLike>;
+  getRegistration?(): Promise<RegistrationLike | undefined>;
+  readonly ready?: Promise<RegistrationLike>;
+  // Replies to a worker message arrive on the container, not on the controller object.
+  addEventListener?(type: "message", listener: (event: { data?: unknown }) => void): void;
+  removeEventListener?(type: "message", listener: (event: { data?: unknown }) => void): void;
 }
 
 export interface CachedResponseLike {
@@ -84,8 +101,33 @@ export type DurabilityRequest =
   | { readonly kind: "NotExposed" };
 
 export type WorkerControl =
-  | { readonly kind: "Controlled"; readonly scriptURL: string }
+  | { readonly kind: "Controlled"; readonly scriptURL: string; readonly releaseId?: string }
   | { readonly kind: "NotControlled"; readonly reason: string }
+  | { readonly kind: "NotExposed" };
+
+export type WorkerRegistrationResult =
+  | { readonly kind: "Registered"; readonly scope: string }
+  | { readonly kind: "Failed"; readonly reason: string }
+  | { readonly kind: "NotExposed" };
+
+export type WorkerStatusResult =
+  | {
+      readonly kind: "Reported";
+      readonly controllerReleaseId?: string;
+      readonly waitingReleaseId?: string;
+      readonly installing: boolean;
+    }
+  | { readonly kind: "NotExposed" };
+
+export type WorkerUpdateResult =
+  | { readonly kind: "Checked" }
+  | { readonly kind: "Failed"; readonly reason: string }
+  | { readonly kind: "NotExposed" };
+
+export type WorkerActivationResult =
+  | { readonly kind: "Requested" }
+  | { readonly kind: "NoWaitingWorker" }
+  | { readonly kind: "Failed"; readonly reason: string }
   | { readonly kind: "NotExposed" };
 
 export type CachedAsset =
@@ -113,10 +155,49 @@ export interface HostPort {
   cachedAsset(assetUrl: string): Promise<CachedAsset>;
   download(fileName: string, bytes: Uint8Array, mediaType: string): Promise<DownloadOutcome>;
   readSelectedFile(): Promise<SelectedFile>;
+  registerWorker(scriptUrl: string): Promise<WorkerRegistrationResult>;
+  workerStatus(): Promise<WorkerStatusResult>;
+  updateWorker(): Promise<WorkerUpdateResult>;
+  activateWaitingWorker(): Promise<WorkerActivationResult>;
 }
 
 function reasonOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+// A protocol guard for a worker that never answers, not a performance measurement.
+const RELEASE_REPLY_WINDOW_MS = 1500;
+
+function askRelease(
+  worker: WorkerLike | null,
+  container: ServiceWorkerContainerLike,
+): Promise<string | undefined> {
+  if (
+    worker === null ||
+    worker.postMessage === undefined ||
+    container.addEventListener === undefined
+  ) {
+    return Promise.resolve(undefined);
+  }
+  return new Promise<string | undefined>((resolve) => {
+    let settled = false;
+    const finish = (value?: string): void => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      container.removeEventListener?.("message", listener);
+      resolve(value);
+    };
+    const listener = (event: { data?: unknown }): void => {
+      const data = event.data as { type?: unknown; releaseId?: unknown } | undefined;
+      if (data?.type === "RELEASE_ID" && typeof data.releaseId === "string") {
+        finish(data.releaseId);
+      }
+    };
+    const timer = setTimeout(() => finish(undefined), RELEASE_REPLY_WINDOW_MS);
+    container.addEventListener?.("message", listener);
+    worker.postMessage?.({ type: "RELEASE_ID" });
+  });
 }
 
 export function createHostPort(environment: HostEnvironment): HostPort {
@@ -170,7 +251,75 @@ export function createHostPort(environment: HostEnvironment): HostPort {
     if (controller === null) {
       return { kind: "NotControlled", reason: "No service worker controls this page." };
     }
-    return { kind: "Controlled", scriptURL: controller.scriptURL ?? "" };
+    return {
+      kind: "Controlled",
+      scriptURL: controller.scriptURL ?? "",
+      releaseId: await askRelease(controller, container),
+    };
+  }
+
+  async function registration(): Promise<RegistrationLike | undefined> {
+    const container = environment.serviceWorker;
+    if (container === undefined) return undefined;
+    if (container.getRegistration !== undefined) return container.getRegistration();
+    if (container.ready !== undefined) return container.ready;
+    return undefined;
+  }
+
+  async function registerWorker(scriptUrl: string): Promise<WorkerRegistrationResult> {
+    const container = environment.serviceWorker;
+    if (container?.register === undefined) return { kind: "NotExposed" };
+    try {
+      const registered = await container.register(scriptUrl);
+      return { kind: "Registered", scope: registered.scope };
+    } catch (error) {
+      return { kind: "Failed", reason: reasonOf(error) };
+    }
+  }
+
+  async function workerStatus(): Promise<WorkerStatusResult> {
+    const container = environment.serviceWorker;
+    if (container === undefined) return { kind: "NotExposed" };
+    try {
+      const current = await registration();
+      if (current === undefined) {
+        return { kind: "Reported", installing: false };
+      }
+      return {
+        kind: "Reported",
+        controllerReleaseId: await askRelease(container.controller, container),
+        waitingReleaseId: await askRelease(current.waiting, container),
+        installing: current.installing !== null,
+      };
+    } catch {
+      return { kind: "NotExposed" };
+    }
+  }
+
+  async function updateWorker(): Promise<WorkerUpdateResult> {
+    if (environment.serviceWorker === undefined) return { kind: "NotExposed" };
+    try {
+      const current = await registration();
+      if (current === undefined) return { kind: "Failed", reason: "no registration" };
+      await current.update();
+      return { kind: "Checked" };
+    } catch (error) {
+      return { kind: "Failed", reason: reasonOf(error) };
+    }
+  }
+
+  async function activateWaitingWorker(): Promise<WorkerActivationResult> {
+    if (environment.serviceWorker === undefined) return { kind: "NotExposed" };
+    try {
+      const current = await registration();
+      if (current?.waiting === null || current?.waiting === undefined) {
+        return { kind: "NoWaitingWorker" };
+      }
+      current.waiting.postMessage?.({ type: "ACTIVATE_UPDATE" });
+      return { kind: "Requested" };
+    } catch (error) {
+      return { kind: "Failed", reason: reasonOf(error) };
+    }
   }
 
   async function cachedAsset(assetUrl: string): Promise<CachedAsset> {
@@ -238,6 +387,10 @@ export function createHostPort(environment: HostEnvironment): HostPort {
     cachedAsset,
     download,
     readSelectedFile,
+    registerWorker,
+    workerStatus,
+    updateWorker,
+    activateWaitingWorker,
   };
 }
 

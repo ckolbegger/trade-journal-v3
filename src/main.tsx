@@ -19,6 +19,10 @@ if (host === null) {
 
 const context = createApplicationContext({ fixedInstant: readHarnessInstant() });
 
+if (import.meta.env.PROD) {
+  void context.host.registerWorker("/sw.js");
+}
+
 declare global {
   interface Window {
     /** The browser harness may open and inspect the durable schema. */
