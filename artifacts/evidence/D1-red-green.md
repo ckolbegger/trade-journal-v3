@@ -646,3 +646,26 @@ never fabricates success, catches a host rejection, and carries the unchanged re
 
 **Integration half deferred.** The single production durability control, the visible warning and the
 real-engine assertion land with T29's presentation and are repeated by T33.
+
+---
+
+## T28 — `B` Installed Capability Manifest
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T28.1 | exactly the D1-installed operations with complete dependency closure, omitting every later capability | `npx vitest run tests/capability/manifest-omission.test.ts` — later capabilities (`trade.confirmPlan`, `reports.run`) were declared with an Unavailable marker | same command — 1 passed; only the eight installed operations, and none of the eight later ids appears anywhere in the manifest |
+| T28.2 | declare that install support is not claimed | `npx vitest run tests/capability/manifest-profile.test.ts -t "install support"` — the manifest claimed install support | same command — 1 passed with `installSupport: "not-claimed"` |
+| T28.3 | declare the installed backup/schema ranges and provider adapters actually installed | `npx vitest run tests/capability/manifest-profile.test.ts -t "backup/schema"` — covered by the same profile red | 1 passed; backup `not-installed`, schema 1–1, no provider adapters, no report families, fee application `not-installed` |
+| T28.4 | immutable and not trader data, with no toggle and no backup section | `npx vitest run tests/capability/manifest-immutable.test.ts` — the manifest was mutable | same command — 1 passed; the manifest and its operations are frozen, mutation throws, and the module exports no toggle/setter |
+| T28.5 | bound to the installed release identity so a stale manifest cannot be read after an update | `npx vitest run tests/capability/manifest-release.test.ts` — a stale manifest was accepted | same command — 1 passed; release A is rejected against release B and accepted against itself |
+| T28.6 | return absent rather than a domain-level Unavailable for an omitted operation | `npx vitest run tests/capability/manifest-omission.test.ts -t "domain-level Unavailable"` — an omitted operation was present | same command — 1 passed; absent lookups return `undefined` and the declared one resolves |
+| T28.7 | the reachable production navigation equal to the declared set | `npx vitest run tests/capability/manifest-reachability.test.ts -t "reachable production navigation"` — the manifest declared a navigation destination that is not reachable | same command — 1 passed; an undeclared reachable destination is reported as `navigation.reports` and the declared set is clean |
+| T28.8 | fail the runtime self-check, naming the capability, when a declared operation's entry point is missing | `npx vitest run tests/capability/manifest-reachability.test.ts -t "runtime self-check"` — the entry-point check was skipped | same command — 1 passed with `workspace.initialize` named and the missing `app.startup.initialize` entry point |
+
+The manifest declares the eight D1-installed operations with their dependencies and production entry
+points, the schema range, no report families, no provider adapters, no backup, and no install claim. It is
+deep-frozen, release-bound, and its self-check reports closure, entry-point and navigation problems by
+capability.
+
+**Integration half deferred.** Reading the manifest from the running release and comparing it with the
+built artifact and the production navigation lands with T29's presentation wiring and T33.
