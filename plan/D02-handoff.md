@@ -9,7 +9,7 @@ This session **implements D2, "Open a Long Stock position"**, under the frozen p
 - Every D1 acceptance row is marked covered.
 - It is tagged `claude-opus-5.5-d1` and pushed.
 
-D2's task breakdown is approved and part of the frozen plan. T2.1 is the first task.
+D2's task breakdown is approved and part of the frozen plan. T2.1 was the first task; section 7 names the next one.
 
 ## 1. Confirm the location before anything else
 
@@ -30,11 +30,11 @@ Run these checks. Each one must match:
 | `git rev-parse --show-toplevel` | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | `git branch --show-current` | `claude-opus-5.5` |
 | `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5`, either in sync or ahead only by the commits in the next row. The only untracked file is `handoff-claude-opus-5.5-2026-10-11.md`. |
-| `git log --oneline claude-opus-5.5-d1..HEAD` | only the commit that added this note (`docs(plan): add the D2 handoff`), the revision 5 commit (tagged `claude-opus-5.5-plan-r5`), and the follow-up that updated this note |
+| `git log --oneline claude-opus-5.5-d1..HEAD` | the commit that added this note (`docs(plan): add the D2 handoff`), the revision 5 commit (tagged `claude-opus-5.5-plan-r5`), its follow-up that updated this note, and then only D2 task commits and their evidence and handoff updates, ending with the commit section 7 names as the last commit |
 | `git tag --list 'claude-opus-5.5-*'` | includes `claude-opus-5.5-plan-r5` and `claude-opus-5.5-d1` |
 | `grep DEV_PORT .env.local` | `DEV_PORT=5175` |
 | `node --version` | `v26.x`, at or above `v26.12.0` (decision 43) |
-| `npm ci && npx vitest run` | `Test Files 30 passed (30)`, `Tests 226 passed (226)` (207 unit and 19 integration) |
+| `npm ci && npx vitest run` | every test file and test passes; after T2.1, `Test Files 31 passed (31)`, `Tests 237 passed (237)` (218 unit and 19 integration) |
 
 About Node: it comes from Homebrew and isn't pinned there, so a later 26.x is fine. Record the exact version in `evidence/D02/provenance.md`.
 
@@ -167,5 +167,5 @@ Update this section at the end of each task.
 |---|---|
 | Tasks done | T2.1 (`335e62d`), cumulative run green (`evidence/D02/structural.md`). |
 | Next task | T2.2, Trade Analysis: entry window, Entry Resolution Point, Entry Quality, Planned-Leg Fulfillment. `derive` now returns `DerivationResult` (`Derived` or `IncoherentFacts`); the D1 call sites narrow it with an `incoherent` throw that T2.6 and T2.7 replace. Test fixture: `src/domain/trade-analysis/reference-trade.ts`. |
-| Last commit | the T2.1 evidence and handoff commit after `335e62d` |
-| Open questions | **T2.1 first-run passes awaiting the user's decision** (logged as notes in `tdd-log.md`, recommended as regression guards): "keep exact values for fractional inputs" and "report agreement Agrees when the supplied stored lifecycle equals the expected one". Carried from D1: `npm audit` reports 3 high findings in `sharp` via the pinned `wrangler@4.147.0` (deploy-only), and fixing them needs a pin change, so a plan revision. `engine-strict`'s refusal was never exercised. `sw.js` is outside the inventory by design (T1.3), so a worker-only change keeps the release identity. |
+| Last commit | `docs(plan): settle T2.1's first-run passes and refresh the D2 location checks` |
+| Open questions | Settled 2026-10-19: T2.1's two first-run passes ("keep exact values for fractional inputs" and "report agreement Agrees when the supplied stored lifecycle equals the expected one") stay as regression guards (`tdd-log.md`). Carried from D1: `npm audit` reports 3 high findings in `sharp` via the pinned `wrangler@4.147.0` (deploy-only), and fixing them needs a pin change, so a plan revision. `engine-strict`'s refusal was never exercised. `sw.js` is outside the inventory by design (T1.3), so a worker-only change keeps the release identity. |
