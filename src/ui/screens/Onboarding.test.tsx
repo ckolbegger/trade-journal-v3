@@ -85,4 +85,21 @@ describe('Institution and Account onboarding', () => {
     expect(accountField.getAttribute('aria-describedby')).toBe(duplicate.id);
     expect(document.activeElement).toBe(accountField);
   });
+
+  it('should reuse an Institution an earlier attempt saved without an Account, instead of creating it again', async () => {
+    const facade = facadeDouble({ status: readyStatus({ onboarding: 'NeedsInstitutionAndAccount' }) });
+    const institution = { id: 'inst-1', kind: 'Institution', label: 'Fidelity', normalizedLabel: 'fidelity', active: true, origin: 'Trader', recordRevision: 1 };
+    const account = { id: 'acct-1', kind: 'Account', institutionId: 'inst-1', label: 'Roth IRA', normalizedLabel: 'roth ira', active: true, origin: 'Trader', recordRevision: 1 };
+    vi.mocked(facade.ReferenceCatalog.query).mockImplementation((request) =>
+      Promise.resolve({ kind: 'Page', items: request.family === 'Institution' ? [institution] : [], snapshot: { catalogRevision: 2 } } as never),
+    );
+    vi.mocked(facade.ReferenceCatalog.save).mockResolvedValueOnce({ kind: 'Saved', record: account, snapshot: { catalogRevision: 3 }, selectableAccountCount: 1 } as never);
+    renderShell(facade);
+    const user = userEvent.setup();
+    expect(await screen.findByDisplayValue('Fidelity')).toBe(screen.getByLabelText('Institution'));
+    await user.type(screen.getByLabelText('Account'), 'Roth IRA');
+    await user.click(screen.getByRole('button', { name: 'Save and continue' }));
+    expect(await screen.findByText('No Planned Trades yet.')).toBeTruthy();
+    expect(vi.mocked(facade.ReferenceCatalog.save).mock.calls).toEqual([[{ kind: 'CreateAccount', institutionId: 'inst-1', label: 'Roth IRA' }]]);
+  });
 });

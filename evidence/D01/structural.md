@@ -167,3 +167,16 @@ Recorded 2026-10-19 04:53 EDT at commit `0b90f10` (tag `claude-opus-5.5-d1`), cl
 | Static and verification checks | typecheck, `tsc6`, lint, `lint:deps`, build, `verify:release`, `verify:capabilities`, `verify:capacity`, `verify:no-fault-hooks`, `verify:fixtures`, `verify:releases` | every command exit 0 | `suite-runs/d1-gate-checks.txt` |
 
 Complete-suite runs were made throughout D1 but, until this record, were not written to the evidence: `tdd-log.md` holds only the single-case red and green runs. From now on each task ends by recording a complete cumulative run here.
+
+## Cumulative suite run after the critic-2 onboarding fixes
+
+Recorded 2026-10-19 on the working tree for the commit that follows `4dc81e3`. The fixes are two of critic-2's minor observations: the protection warning is now shown on first run and onboarding, and onboarding reuses an Institution saved without its Account. Both were reproduced red first (TDD log, "critic-2 fixes"). Full outputs are in `evidence/D01/suite-runs/critic-2-fixes-*.txt`.
+
+| Suite | Result |
+|---|---|
+| Unit (`npx vitest run src --reporter=verbose`) | `Test Files 24 passed (24)`, `Tests 207 passed (207)`, exit 0 |
+| Node integration (`npx vitest run tests/integration --reporter=verbose`) | `Test Files 6 passed (6)`, `Tests 19 passed (19)`, exit 0 |
+| Browser (`npm run test:e2e`, Chromium) | `27 passed (41.9s)`, exit 0 (adds `e2e/d1/onboarding.spec.ts`) |
+| Static and verification checks (11 commands) | 11 of 11 exit 0 |
+
+The first full run of this change failed `lint:deps`: the new AppShell case imported a coordinator, which UI code may not do. The case was rewritten, re-proved red and green, and the whole run repeated; the table shows the repeat.

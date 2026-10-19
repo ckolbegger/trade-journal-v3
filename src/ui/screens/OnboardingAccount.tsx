@@ -23,12 +23,22 @@ const MESSAGES: Record<Field, Record<string, string>> = {
 export function OnboardingAccount({ facade, onReady }: OnboardingAccountProps) {
   const [institution, setInstitution] = useState('');
   const [account, setAccount] = useState('');
-  // Kept once created, so a retry after an Account issue never creates the Institution twice.
-  const [institutionId, setInstitutionId] = useState<string | undefined>();
+  // An Institution saved without an Account, by this attempt or an earlier one. It is reused while
+  // the field still holds its name, so a retry never creates it twice or strands it.
+  const [kept, setKept] = useState<{ id: string; label: string } | undefined>();
   const [issue, setIssue] = useState<{ field: Field; message: string } | undefined>();
   const institutionRef = useRef<HTMLInputElement>(null);
   const accountRef = useRef<HTMLInputElement>(null);
   const refs = { institution: institutionRef, account: accountRef };
+
+  useEffect(() => {
+    void facade.ReferenceCatalog.query({ family: 'Institution', pageSize: 1 }).then((page) => {
+      const earlier = page.kind === 'Page' ? page.items[0] : undefined;
+      if (!earlier) return;
+      setKept({ id: earlier.id, label: earlier.label });
+      setInstitution((typed) => typed || earlier.label);
+    });
+  }, [facade]);
 
   // Focus moves to the field whose issue was just reported.
   useEffect(() => {
@@ -41,13 +51,13 @@ export function OnboardingAccount({ facade, onReady }: OnboardingAccountProps) {
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     setIssue(undefined);
-    let parent = institutionId;
+    let parent = kept && institution.trim() === kept.label ? kept.id : undefined;
     if (!parent) {
       const created = await facade.ReferenceCatalog.save({ kind: 'CreateInstitution', label: institution });
       if (created.kind === 'Rejected') return report('institution', created.issues.map((i) => i.code));
       if (created.kind !== 'Saved') return;
       parent = created.record.id;
-      setInstitutionId(parent);
+      setKept({ id: parent, label: created.record.label });
     }
     const saved = await facade.ReferenceCatalog.save({ kind: 'CreateAccount', institutionId: parent, label: account });
     if (saved.kind === 'Rejected') return report('account', saved.issues.map((i) => i.code));

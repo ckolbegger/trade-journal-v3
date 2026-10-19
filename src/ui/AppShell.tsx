@@ -100,11 +100,54 @@ export function AppShell({ facade, screens, notices, onRetry = () => window.loca
     );
   }
 
-  if (status.kind === 'InitializationRequired') return <FirstRun facade={facade} onOpened={setStatus} />;
+  // Shown wherever data can be saved, first run and onboarding included (ADR 0009).
+  const protectionWarning = (
+    <>
+      {durability && durability.kind !== 'NotImproved' && (
+        <p className="banner notice" role="status">
+          The browser will now keep your journal data unless you clear it.
+        </p>
+      )}
+      {status.protection !== 'Protected' && (!durability || durability.kind === 'NotImproved') && (
+        <section className="banner notice" aria-label="Storage protection">
+          <p>
+            This browser may clear your journal data, for example when the device is low on space. It has not
+            promised to keep it.
+          </p>
+          {durability?.kind === 'NotImproved' && (
+            <p role="status">
+              {durability.currentProtection.kind === 'BestEffort'
+                ? 'The browser declined to promise it will keep your data. You can keep using the journal.'
+                : 'This browser offers no way to ask it to keep data.'}
+            </p>
+          )}
+          {status.protection === 'BestEffort' && !durability && (
+            <button type="button" className="pill secondary" onClick={() => void facade.Workspace.requestDurability().then(setDurability)}>
+              Ask the browser to keep data
+            </button>
+          )}
+        </section>
+      )}
+    </>
+  );
+
+  if (status.kind === 'InitializationRequired') {
+    return (
+      <>
+        {protectionWarning}
+        <FirstRun facade={facade} onOpened={setStatus} />
+      </>
+    );
+  }
 
   // A selectable Account comes first: nothing else is offered until onboarding completes.
   if (status.kind === 'Ready' && status.onboarding === 'NeedsInstitutionAndAccount') {
-    return <OnboardingAccount facade={facade} onReady={() => setStatus({ ...status, onboarding: 'ReadyForTradePlanning' })} />;
+    return (
+      <>
+        {protectionWarning}
+        <OnboardingAccount facade={facade} onReady={() => setStatus({ ...status, onboarding: 'ReadyForTradePlanning' })} />
+      </>
+    );
   }
 
   const launchedWritable = status.kind === 'Ready';
@@ -145,31 +188,7 @@ export function AppShell({ facade, screens, notices, onRetry = () => window.loca
             <p>{SEPARATE_STORAGE}</p>
           </section>
         )}
-        {durability && durability.kind !== 'NotImproved' && (
-          <p className="banner notice" role="status">
-            The browser will now keep your journal data unless you clear it.
-          </p>
-        )}
-        {status.protection !== 'Protected' && (!durability || durability.kind === 'NotImproved') && (
-          <section className="banner notice" aria-label="Storage protection">
-            <p>
-              This browser may clear your journal data, for example when the device is low on space. It has not
-              promised to keep it.
-            </p>
-            {durability?.kind === 'NotImproved' && (
-              <p role="status">
-                {durability.currentProtection.kind === 'BestEffort'
-                  ? 'The browser declined to promise it will keep your data. You can keep using the journal.'
-                  : 'This browser offers no way to ask it to keep data.'}
-              </p>
-            )}
-            {status.protection === 'BestEffort' && !durability && (
-              <button type="button" className="pill secondary" onClick={() => void facade.Workspace.requestDurability().then(setDurability)}>
-                Ask the browser to keep data
-              </button>
-            )}
-          </section>
-        )}
+        {protectionWarning}
         <main className="content">
           <Routes>
             {routes.map((route) => {

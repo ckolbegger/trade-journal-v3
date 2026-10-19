@@ -196,6 +196,16 @@ describe('storage-protection warning', () => {
     expect(screen.queryByText(/this browser may clear your journal data/i)).toBeNull();
   });
 
+  it('should keep the warning and the durability action visible on the first-run and onboarding screens too', async () => {
+    const firstRun = readyStatus({ kind: 'InitializationRequired', protection: 'BestEffort' });
+    for (const status of [firstRun, readyStatus({ protection: 'BestEffort', onboarding: 'NeedsInstitutionAndAccount' })]) {
+      renderShell(facadeDouble({ status }));
+      expect(await screen.findByText(/this browser may clear your journal data/i), String(status.kind)).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Ask the browser to keep data' })).toBeTruthy();
+      cleanup();
+    }
+  });
+
   it('should offer "Ask the browser to keep data" only when the host supports storage.persist, and show the honest result after it is pressed', async () => {
     const facade = facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) });
     vi.mocked(facade.Workspace.requestDurability).mockResolvedValue({
