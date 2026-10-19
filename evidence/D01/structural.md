@@ -119,3 +119,15 @@ v2 differs from v1 only by `<meta name="tj-build-label" content="v2">` in `index
 `npm run build:faults && npm run verify:no-fault-hooks` (2026-10-19): `verify:no-fault-hooks OK: dist has no fault hooks`. Negative control: the same check over `dist-faults` fails on `assets/faults-*.js` (marker `tj-fault-hooks-v1` and `__tjFaults`), so the detector finds hooks where they exist. `dist-faults` passes `verify:release`.
 
 Faults act only in `src/delivery/faults.ts`, which wraps the real host port and is imported only when `import.meta.env.MODE === 'faults'`: `diagnostic` (every root open fails), `capacity` (quota equals usage), `control` (no controller), `inventory` (no release cache). Chromium smoke via `npm run preview:faults`: `?faults=diagnostic,capacity` showed Unsupported naming both checks; `?faults=control` and `?faults=inventory` each named their check; with no faults the app reached first run and `window.__tjFaults.set` was a function.
+
+## T1.19 Capacity basis
+
+`npm run measure:capacity` then `npm run verify:capacity` (2026-10-19, Chromium 153.0.8010.12):
+
+```
+chromium 153.0.8010.12: {"plans":500,"usageBefore":147456,"usageAfter":1613824,"bytesPerTradeWithReflection":2932.736,"jsonBytesPerTradeWithReflection":2344.634,"overheadRatio":1.2508289140224018,"jsonBytesPerCatalogRecord":237.33333333333334}
+measure:capacity OK: M 548701233 bytes, required quota 1646103699 bytes
+verify:capacity OK: required quota 1646103699 = 3 × 548701233, schema 1
+```
+
+The 500 deterministic Plans run through `createApplication` on the engine's real IndexedDB (`tools/capacity/measure-page.ts`, served by Vite); readiness inputs come from NodeTestHost because no service worker controls that page. M = 25,000 measured Trades with Plan Reflections + 60 Catalog records + the section 1.3 allowances (estimated JSON bytes per planned shape, `tools/capacity/profile.ts`) × the measured overhead ratio. M (0.55 GB) is below the plan's expected 0.6–0.8 GB because Chromium's measured overhead is 1.25 on-disk bytes per JSON byte; the allowances are disclosed estimates until their deliverables measure them. Guard check: setting the basis `schemaVersion` to 2 made `verify:capacity` fail ("basis measured at schema version 2, current is 1"). The production bundle embeds 1646103699.

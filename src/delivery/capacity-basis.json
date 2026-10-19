@@ -1,7 +1,91 @@
 {
-  "status": "provisional",
-  "note": "Replaced by T1.19's measurement (npm run measure:capacity).",
   "schemaVersion": 1,
-  "projectedWorkspaceBytes": 751619277,
-  "requiredQuotaBytes": 2254857830
+  "measuredAt": "2026-10-19T07:45:40.613Z",
+  "formula": "requiredQuotaBytes = 3 × projectedWorkspaceBytes (M); M = measured kinds + allowances × overheadRatio, largest engine",
+  "profile": {
+    "measured": {
+      "tradesWithPlanReflection": 25000,
+      "catalogRecords": 60
+    },
+    "allowances": [
+      {
+        "kind": "Position Changes",
+        "count": 100000,
+        "jsonBytes": 700,
+        "until": "D2",
+        "shape": "change header, quantity, price, Economic Time, Plan Basis"
+      },
+      {
+        "kind": "Executions and settlement facts",
+        "count": 200000,
+        "jsonBytes": 450,
+        "until": "D2 and D7",
+        "shape": "instrument, side, quantity, price, fees, time"
+      },
+      {
+        "kind": "Position Change Reflection outcomes",
+        "count": 100000,
+        "jsonBytes": 600,
+        "until": "D2 and D5",
+        "shape": "four short answers or a decline"
+      },
+      {
+        "kind": "Close Review outcomes",
+        "count": 24700,
+        "jsonBytes": 1200,
+        "until": "D6",
+        "shape": "review answers and grades"
+      },
+      {
+        "kind": "Daily Trade Review Actions",
+        "count": 126000,
+        "jsonBytes": 350,
+        "until": "D4",
+        "shape": "action kind, session, short note"
+      },
+      {
+        "kind": "Review Notes and Trader Reflections",
+        "count": 5000,
+        "jsonBytes": 1500,
+        "until": "D13",
+        "shape": "free text"
+      },
+      {
+        "kind": "Marks",
+        "count": 190000,
+        "jsonBytes": 180,
+        "until": "D4",
+        "shape": "instrument, session, price, source"
+      },
+      {
+        "kind": "Daily Bars",
+        "count": 190000,
+        "jsonBytes": 220,
+        "until": "D11",
+        "shape": "instrument, session, OHLC, volume"
+      },
+      {
+        "kind": "Correction versions",
+        "count": 4000,
+        "jsonBytes": 700,
+        "until": "D15",
+        "shape": "superseded fact copy and reason"
+      }
+    ]
+  },
+  "engines": [
+    {
+      "engine": "chromium",
+      "version": "153.0.8010.12",
+      "plans": 500,
+      "usageBefore": 147456,
+      "usageAfter": 1613824,
+      "bytesPerTradeWithReflection": 2932.736,
+      "jsonBytesPerTradeWithReflection": 2344.634,
+      "overheadRatio": 1.2508289140224018,
+      "jsonBytesPerCatalogRecord": 237.33333333333334
+    }
+  ],
+  "projectedWorkspaceBytes": 548701233,
+  "requiredQuotaBytes": 1646103699
 }

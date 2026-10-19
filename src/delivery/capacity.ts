@@ -1,4 +1,4 @@
-import basis from './capacity-basis.json';
+import basis from './capacity-basis.json' with { type: 'json' };
 import type { CapacityRequirement } from './readiness.ts';
 
 // The readiness capacity requirement: quota ≥ 3 × M for the mature projection M (decision 18).
