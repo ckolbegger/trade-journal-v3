@@ -362,3 +362,24 @@ effective Executions, reports the structured disagreement, and writes nothing. T
 `lifecycleListProjection` carries the same membership evidence and is rebuilt from the authoritative
 index; the projection mapping preserves the earlier row shape for entries that do not carry the new
 fields.
+
+---
+
+## T16 — `S` Web App Manifest and Offline Release Inventory artifact
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| V16.1 | `npm run build`, then a `node -e` check of `dist/manifest.webmanifest` | `id "/"`, name `Trade Journal`, `start_url "/"`, `scope "/"`, `display "standalone"`; declared icon sizes `192x192`, `512x512`, `any`; every icon `src` exists; parses as JSON | pass |
+| V16.2 | the task's `node -e` digest-shape check | prints `b9cb61956118283d72d14da584224efd35e15f8ca6d01634586987e011c62b5c 7 0`; every one of the 7 entries carries a url and a 64-hex `sha256` | pass |
+| V16.3 | the task's recomputation over `dist/<url>` | prints `0`; every recorded digest recomputes from the built bytes | pass |
+| V16.4 | the task's startup-required-asset check | prints `0`; `index.html` and `manifest.webmanifest` are both listed, and `sw.js` plus `release-inventory.json` are the declared exclusions | pass |
+| V16.5 | four builds, then a one-line CSS change, then revert | identical inputs print the same `release-id` and the same `inventory-list-digest`; the one-line change changes both (`c976ee7c…` / `72df06a7…` versus `b9cb6195…` / `bef9a29e…`); the revert restores the original | pass |
+| V16.6 | `grep -c "release-inventory" dist/sw.js` | `1`; the worker entry names the inventory it must validate | pass |
+
+**Artifacts.** `dist/release-inventory.json` is written by `scripts/release-inventory.mjs` from the built
+bytes: `{ releaseId, listDigest, exclusions, entries: [{ url, sha256 }] }`. The release identity is the
+digest of the sorted `(url, sha256)` list, so it is content-derived and stable across identical builds.
+`sw.js` and `release-inventory.json` are excluded because they embed the identity; T18's versioned worker
+caches the inventory artifact itself. The Web App Manifest is hand-authored in `public/` and its declared
+192/512 PNG icons exist; T18 binds it to the release identity through the worker, and T28 declares the
+Installed Capability Manifest separately.
