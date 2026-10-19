@@ -910,3 +910,29 @@ now-unused imports in `src/journal/effects.ts`.
 | R3 | `npx tsc --noEmit` | exit 0 | pass |
 | R4 | `npm run lint:layers` | `123 files, 0 violations` | pass |
 | R5 | `npx eslint .` | exit 0 | pass |
+
+### Follow-up guarantee recorded in the plan (erratum E-011)
+
+D2's mutation audit found that `derive` does not use the supplied `analysisCutoff` for anything, and
+that no planned case required it to. D2 cannot close that: a confirmed unentered Plan has no
+position-changing facts, so no cutoff can change the answer, and D2's own frozen case requires
+`Planned` even when the Plan's Economic Time is *after* the cutoff.
+
+The gap was in the plan, not only in D2, so it is now closed there:
+
+- **D3:T4** (the task that owns `derive`) gains the case *"it should exclude every fact whose Economic
+  Time is later than the supplied analysis cutoff and return the Position as of that cutoff, when one
+  opening fact precedes the cutoff and a second follows it"*, with red row **D9** ("fails because
+  replay currently consumes every supplied fact regardless of its Economic Time"). This becomes
+  observable as soon as D3 records the first Execution, which is exactly why it cannot be tested at
+  D2.
+- Recorded as **E-011** in the errata register with its class argument; manifest re-stamped
+  (`shasum -a 256 -c` → 11 × OK), both plan validators `0 failure(s), 0 warning(s)`, D3 still parses
+  as 23 tasks / 58 edges, and the scenario counts are unchanged at 32 claimed.
+- The reading is consistent with D2's frozen case: excluding the Plan fact still yields `Planned`,
+  because D3:T4's D8 case already fixes "no effective position-changing fact → empty Positions with
+  expected lifecycle Planned".
+
+The one residual from the audit that remains — the `derive` branch with no stored lifecycle does not
+assert its own cutoff — is a test-detail nicety, not a behaviour gap, and is recorded above rather
+than silently dropped.

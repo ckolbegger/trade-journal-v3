@@ -585,6 +585,7 @@ describe("TradeAnalysis.derive effective-fact replay into Instrument Positions a
   it should omit a fully consumed Lot entirely rather than returning it with quantity zero, when a disposing fact exactly exhausts that Lot
   it should return deeply equal DerivationResult values across repeated calls and touch no store, when the same snapshot and cutoff are passed twice
   it should return an empty Instrument Position set with expected lifecycle Planned, when the snapshot has no effective position-changing fact
+  it should exclude every fact whose Economic Time is later than the supplied analysis cutoff and return the Position as of that cutoff, when one opening fact precedes the cutoff and a second follows it
 ```
 
 **Integration case.** Through the real stack the case loads the D2-committed `Planned` Trade, applies
@@ -607,6 +608,7 @@ requested).
 | D6 | `… -t "omit a fully consumed Lot"` — fails because exhausted Lots are returned with zero quantity | Same command — passes; the Lot is absent from the open-Lot set |
 | D7 | `… -t "repeated calls"` — fails because replay currently caches mutable state between calls | Same command — passes; deep-equal results and no store access |
 | D8 | `… -t "no effective position-changing fact"` — fails because replay currently throws on an empty fact set | Same command — passes; empty Positions with expected lifecycle Planned |
+| D9 | `… -t "later than the supplied analysis cutoff"` — fails because replay currently consumes every supplied fact regardless of its Economic Time | Same command — passes; Position +60.00 from the one fact at or before the cutoff, with the later fact absent from Positions and open Lots |
 
 ### Phase L3 — FIFO, realized P&L, and lifecycle derivation
 
