@@ -250,3 +250,30 @@ discarded at the start of the next run.
 **Startup integration deferred to its first owner.** T10's integration case runs the production startup
 path (`Workspace.initialize`, T25) against an older-version database. T25 is later in the graph, so the
 `initialize` → `migrate` path and its restart assertion are recorded with T25 and repeated by T33.
+
+---
+
+## T12 — `B` Persistence-level write gate returning `RuntimeNotWritable`
+
+For each case the behaviour under test was temporarily reverted to exactly the defect the task's
+red/green table names, the case was run and observed failing for that reason, and the behaviour was then
+restored for the green run. Red is therefore an observation of the defect, not of a harness problem.
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T12.1 | reject with RuntimeNotWritable carrying the current readiness outcome and every failed check | `npx vitest run tests/persistence/write-gate.test.ts -t "every failed check"` — gate checked in the caller and the seam still wrote: result was `Committed` | same command — 1 passed; `Rejected` with `runtimeReadiness: RecoveryOnly`, every failed check, `workspaceStatus: RecoveryOnly` and the ordered actions; the write never ran |
+| T12.2 | reject before opening any readwrite transaction … zero count and identical revisions | `npx vitest run tests/persistence/write-gate-no-transaction.test.ts` — the seam opened the transaction and wrote: `Committed` with `readwriteTransactions` 1 | same command — 1 passed; 0 transactions and byte-identical revisions |
+| T12.3 | runtimeReadiness Unsupported and workspaceStatus None with safe retry actions when no readable root exists | `npx vitest run tests/persistence/write-gate-no-root.test.ts` — `workspaceStatus` was `RecoveryOnly` | same command — 1 passed; `None` with `retry` before `try-another-browser` |
+| T12.4 | workspaceStatus IntegrityBlocked … and must not fall through to initialization | `npx vitest run tests/persistence/write-gate-integrity.test.ts` — `workspaceStatus` fell back to `None`; the payload did not match | same command — 1 passed; `IntegrityBlocked` and no initialization callback |
+| T12.5 | allow the write and return the command-specific post-commit revisions when all four checks pass | `npx vitest run tests/persistence/write-gate.test.ts -t "post-commit revisions"` — the all-pass run was refused | same command — 1 passed; `Committed` with `{ revisions: { tradeRecord: 3 } }` |
+| T12.6 | reject the next mutation when Writable was invalidated after an earlier successful write | `npx vitest run tests/persistence/write-gate-recheck.test.ts` — the first `Writable` verdict was cached, so the second mutation committed | same command — 1 passed; the second mutation is rejected and its callback never runs |
+| T12.7 | exempt Workspace.requestDurability while still reporting protection honestly | `npx vitest run tests/persistence/write-gate-exemption.test.ts` — `Error: the gate refused the exempt path` | same command — 1 passed; `inspect()` returns the same `RecoveryOnly` state and the exempt operation reaches the host |
+| T12.8 | leave every authoritative revision unchanged for every rejection branch | `npx vitest run tests/persistence/write-gate-revisions.test.ts` — the rejection branch committed and incremented both revisions | same command — 1 passed for all three branches (`RecoveryOnly`, `Unsupported`, unreadable root) |
+
+The gate is evaluated before any transaction is opened and re-evaluates on every mutation; the exempt
+`requestDurability` path reads `inspect()` and never calls `beforeWrite()`. The rejection payload is built
+by T8's single constructor, so the seam cannot drift from the UI-visible shape.
+
+**Integration case deferred to its first owners.** The production save path with readiness forced to fail
+needs the catalog module (T24) and the transaction seam (T11); the same case is driven by T11's write-gate
+evidence and by T33's integration suite, with the UI bypassed.
