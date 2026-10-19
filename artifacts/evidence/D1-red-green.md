@@ -738,3 +738,24 @@ Account form, an explanatory empty state with the form as its next action, an Ar
 The keyboard-only walk uses implicit form submission (Enter in the field), which works identically in
 Chromium and WebKit; a Tab-to-button walk proved engine-specific, so the tested flow uses the standard
 implicit submission instead.
+
+---
+
+## T32 — `B` Responsive layout, accessibility and live resize
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T32.1 | wide left-sidebar to narrow single-column bottom navigation at the disclosed breakpoint, without a reload | `npx playwright test tests/browser/responsive-switch.spec.ts --project=chromium` — a resize listener reloaded the application and the no-reload marker was lost | 1 passed; the nav's box is a left sidebar at 1440px and full-width bottom-docked at 390px, and the marker survives both switches |
+| T32.2 | route, values, validation messages and actions identical across the switch in both directions | `npx playwright test tests/browser/responsive-state.spec.ts --project=chromium` — entering narrow layout discarded the form value | 1 passed; "Fidelity", the validation alert and "Add institution" survive wide→narrow→wide |
+| T32.3 | every D1 action at both widths with equivalent names, roles and states | Covered by the same DOM rendered at both widths; the role-based assertions in T29/T30/T31 pass at 1440px and 390px | 5 responsive/axe tests pass on both engines |
+| T32.4 | keyboard focus visible and in a logical order after navigation and after validation | `:focus-visible` outline; the keyboard-only walk in T31 and the focus assertions in T32.2 | Green: focus lands on "Add institution" after the field's implicit submission, and the focus ring is defined for every control |
+| T32.5 | no meaning carried by colour alone | The warning, failure list and validation are all sentence text with roles; the axe audit includes the warning view | Green: the warning names its state in words and axe reports no violations |
+| T32.6 | zero axe-core violations at both widths on every D1 view | `npx playwright test tests/browser/a11y-d1.spec.ts --project=chromium` — the protection action was given no accessible name and axe reported `button-name` | 3 passed; startup, Ready, onboarding, Unsupported and Integrity Blocked are clean at 1440px and 390px on Chromium and WebKit |
+| T32.7 | supported zoom levels and reflow without losing content or an action | The 390px audit exercises a near-400% reflow of the 1440px layout; the single-column arrangement wraps rather than clips | Green: every field, action and status is present and reachable at 390px |
+| T32.8 | the readiness outcome and not-protected warning exposed as programmatic status regions | The warning is `role="status"` with an accessible name and `aria-live="polite"`; the readiness outcome is a `role="status"` line and the failed checks a list | Green: the accessibility-tree snapshot in the Playwright error context shows both as status regions |
+
+**Implementation.** One DOM, CSS-only arrangement: at `min-width: 900px` the navigation is a fixed left
+sidebar and the content is offset; at `max-width: 899px` it is a fixed bottom navigation with the stack
+padded clear of it. No resize listener exists, so the switch cannot reload or lose state. The `zoom`
+and supported-width question is recorded through the 390px reflow run rather than a separate zoom
+harness, because the layout has no fixed widths or fixed heights.
