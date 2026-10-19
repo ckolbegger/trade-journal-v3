@@ -83,6 +83,11 @@ seams as planned.
      for any browser proof that depends on readiness; never bypass or weaken the gate to make dev mode
      pass. If a reviewer requires the literal `npm run dev`, treat it as a plan-text inconsistency to
      resolve with the user rather than something to fake.
+   - **Test layout.** D1's suite is consolidated one file per seam: `tests/<area>/<seam>.test.ts`
+     for Vitest and `tests/browser/<family>.spec.ts` for Playwright, with shared fixtures in
+     `tests/support/` (`store`, `domains`, `readiness`, `release`, `workspace`, `browser`). Follow the
+     same layout for D2: one file per D2 seam or flow family, one `it` per planned case with the exact
+     case phrase, and shared setup in `tests/support/` — never one file per case.
    - **Module layout.** D1 implements `src/<module>/index.ts` (for example `src/persistence/indexeddb`,
      `src/workspace`, `src/catalog`, `src/journal`, `src/readiness`, `src/capability`) with module layers
      and allowed edges declared in `scripts/layers.config.mjs`; `npm run lint:layers` is part of

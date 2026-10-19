@@ -22,7 +22,7 @@ recorded command changes. Shared fixtures consolidate into six modules under `te
 
 ## Target layout
 
-### Vitest — 139 → 30 files
+### Vitest — 139 → 29 files
 
 | Refactored file | Consolidates (old `.test.ts`) | Cases |
 |---|---|---|
@@ -40,8 +40,7 @@ recorded command changes. Shared fixtures consolidate into six modules under `te
 | `tests/persistence/lifecycle-index.test.ts` | lifecycle-bounded, lifecycle-cutoff, lifecycle-disagreement, lifecycle-index-atomic, lifecycle-rebuild | 7 |
 | `tests/persistence/migration.test.ts` | migration, migration-interrupted, migration-lossy, migration-projection, migration-receipt, migration-rollback, migration-seed-additions, migration-unsupported | 8 |
 | `tests/persistence/revisions.test.ts` | revision-committed, revision-conflict, revision-content, revision-kind, revision-postcommit, revision-unchanged, revision-versions | 7 |
-| `tests/persistence/schema.test.ts` | schema, schema-manifest, schema-rebuild | 7 |
-| `tests/persistence/open-selection.test.ts` | schema-boundedness | 1 |
+| `tests/persistence/schema.test.ts` | schema, schema-boundedness, schema-manifest, schema-rebuild | 8 |
 | `tests/persistence/snapshot.test.ts` | snapshot-coherent, snapshot-nonmutating, snapshot-torn | 6 |
 | `tests/persistence/transaction.test.ts` | transaction, transaction-rollback, transaction-single, transaction-snapshot, transaction-write-gate | 6 |
 | `tests/persistence/write-gate.test.ts` | write-gate, write-gate-exemption, write-gate-integrity, write-gate-no-root, write-gate-no-transaction, write-gate-recheck, write-gate-revisions | 9 |
@@ -70,7 +69,7 @@ recorded command changes. Shared fixtures consolidate into six modules under `te
 | `tests/browser/service-worker.spec.ts` | sw-control, sw-offline, sw-staging-failure, sw-two-releases, sw-update (serial, one shared variant build) |
 | `tests/browser/offline-durability.spec.ts` | offline-restart, durability-real-engine |
 
-### Shared fixtures — 11 modules → 6 (+ `bootstrap.ts`)
+### Shared fixtures — 10 per-directory modules → 6 (+ the integration adapter and `bootstrap.ts`)
 
 | Module | Consolidates | Purpose |
 |---|---|---|
@@ -82,7 +81,9 @@ recorded command changes. Shared fixtures consolidate into six modules under `te
 | `tests/support/browser.ts` | browser/startup-support, browser/worker-support | `startWith`, `initializeJournal`, worker probes |
 
 Kept as-is: `tests/lint-fixtures/` (12 intentional fixture files + `expected.json`),
-`tests/substitutions.md`, `tests/harness/bootstrap.ts`, `tests/integration/mock-guard.test.ts`.
+`tests/substitutions.md`, `tests/harness/bootstrap.ts`, `tests/integration/mock-guard.test.ts` and
+`tests/integration/support.ts` (the integration-specific adapter, which is not duplicated by the shared
+modules).
 
 ## Execution policy — incremental, per file
 
@@ -99,8 +100,11 @@ Kept as-is: `tests/lint-fixtures/` (12 intentional fixture files + `expected.jso
    removed, exact commands, counts, commit.
 4. **Commit per consolidated file** (one commit per step) once its run is green. A red run is fixed
    before the next step; it is never skipped or batched.
-5. **Evidence paths.** After the Vitest and browser phases, rewrite the recorded path in every affected
-   evidence command (the case phrases stay identical) and verify that every referenced path exists.
+5. **Evidence paths.** After the Vitest and browser phases, retarget the filtered commands (`-t`/`-g`)
+   to the consolidated file — the case phrase still selects exactly one case, so the recorded result
+   stays true — and append a full old→new mapping table. Commands without a filter stay as recorded:
+   the consolidated file now runs several cases, so rewriting them would make a "1 passed"
+   observation false. Every mapping target was verified to exist.
 6. **Final gate**: 190 Vitest tests and 132 browser tests, `tsc` 0, `eslint` 0,
    `lint:layers` 0 violations, the freeze manifest 11/11, and no `src/` diff. Record the numbers and
    commit the docs (plan, log, D2 kickoff note) as the last, docs-only step.
@@ -117,3 +121,22 @@ Kept as-is: `tests/lint-fixtures/` (12 intentional fixture files + `expected.jso
   one variant build so the active-release file cannot be mutated concurrently.
 - **Rollback**: every step is one commit; `git revert` of that commit restores the previous file
   layout without touching production code.
+
+## Result
+
+Executed incrementally: one consolidated file per step, each followed by `tsc`, `eslint` and the full
+Vitest suite; each browser step additionally ran the full Playwright suite (132 tests). The support
+modules were consolidated in one step after the file moves, with both suites rerun. The per-step record,
+including the exact commands and counts, is `artifacts/evidence/D1-refactor-log.md`.
+
+| Measure | Before | After |
+|---|---|---|
+| Vitest test files | 139 | 29 |
+| Playwright specs | 29 | 8 |
+| Total test files | 168 | 37 |
+| Shared fixture modules | 10 per-directory + integration adapter | 6 + integration adapter |
+| Vitest tests | 190 | 190 |
+| Browser tests (4 projects) | 132 | 132 |
+
+Case phrases are unchanged. `artifacts/evidence/D1-red-green.md` carries the old→new mapping and the
+retargeted filtered commands. No file under `src/` was modified.

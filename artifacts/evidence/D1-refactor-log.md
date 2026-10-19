@@ -42,3 +42,46 @@ are unchanged throughout; only file boundaries move.
 | 34 | `tests/browser/offline-durability.spec.ts` | offline-restart, durability-real-engine | `tsc` 0; `eslint` 0; `npx vitest run` 190 tests; `npx playwright test` 132 tests | see the commit table at the end |
 | 35 | `tests/browser/service-worker.spec.ts` | sw-control, sw-offline, sw-staging-failure, sw-two-releases, sw-update | `tsc` 0; `eslint` 0; `npx vitest run` 190 tests; `npx playwright test` 132 tests | see the commit table at the end |
 | 36 | `tests/support/{store,domains,readiness,release,workspace,browser}.ts` | revision-support, catalog/support, journal/support, values/support, readiness/support, release/support, workspace/support, workspace/status-support, browser/startup-support, browser/worker-support | `tsc` 0; `npm run lint` 0; `npx vitest run` 29 files / 190 tests passed; `npx playwright test` 132 tests passed | see the commit table at the end |
+
+## Commit table
+
+Each row is the commit that contains the consolidation step and its logged run.
+
+| Step | Commit |
+|---|---|
+| 1 | `548cbf8` |
+| 2 | `d4f4cef` |
+| 3 | `deaf646` |
+| 4 | `8984bbd` |
+| 5 | `7b68fb7` |
+| 6 | `8905f6f` |
+| 7 | `cd39be3` |
+| 8 | `f8f20cb` |
+| 9 | `e31fde2` |
+| 10 | `ea580e7` |
+| 11 | `105d620` |
+| 12 | `2f9ef21` |
+| 13 | `d1d790c` |
+| 14 | `9c3b2c2` |
+| 15 | `8ebe19f` |
+| 16 | `893b95e` |
+| 17 | `fcb821c` |
+| 18 | `9c8eda3` |
+| 19 | `5da375f` |
+| 20 | `b85b19d` |
+| 21 | `258e353` |
+| 22 | `88998f8` |
+| 23 | `fdf34b8` |
+| 24 | `b5ea608` |
+| 25 | `d28bcf8` |
+| 26 | `337dfe1` |
+| 27 | `3fd8fa8` |
+| 28 | `96ac4de` |
+| 29 | `9f413da` |
+| 30 | `8681d9e` |
+| 31 | `f32773b` |
+| 32 | `fc3c2c5` |
+| 33 | `1a9f357` |
+| 34 | `c820ee1` |
+| 35 | `3ccf833` |
+| 36 | `2e88cf0` |
