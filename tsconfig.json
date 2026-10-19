@@ -20,6 +20,8 @@
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
+    // Node runs tools by stripping types, so only erasable TypeScript syntax is allowed.
+    "erasableSyntaxOnly": true,
     "noEmit": true
   },
   "include": ["src", "e2e", "tests", "tools", "vite.config.ts", "playwright.config.ts"],

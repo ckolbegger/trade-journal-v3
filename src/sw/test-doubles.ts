@@ -13,8 +13,13 @@ export const ORIGIN = 'http://localhost:5175';
 
 export class MemoryCache {
   readonly entries = new Map<string, Response>();
+  private readonly log: string[];
+  private readonly name: string;
 
-  constructor(private readonly log: string[], private readonly name: string) {}
+  constructor(log: string[], name: string) {
+    this.log = log;
+    this.name = name;
+  }
 
   match(request: RequestInfo | URL): Promise<Response | undefined> {
     const response = this.entries.get(urlOf(request));
@@ -34,8 +39,11 @@ export class MemoryCache {
 
 export class MemoryCacheStorage {
   readonly caches = new Map<string, MemoryCache>();
+  private readonly log: string[];
 
-  constructor(private readonly log: string[] = []) {}
+  constructor(log: string[] = []) {
+    this.log = log;
+  }
 
   open(name: string): Promise<MemoryCache> {
     this.log.push(`open ${name}`);

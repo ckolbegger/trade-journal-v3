@@ -92,3 +92,13 @@ Run 2026-10-18. **Verification:** `npm run lint:deps`, then `npm run lint:deps -
 
 - `.dependency-cruiser.js` mirrors the overview's "who may call whom" table: the UI reaches only the facade; fact modules never call coordinators; Reference Catalog and Trade Record call no other fact module; Market Data knows no Trades; `src/domain/` imports nothing outside itself; persistence and the service worker stay internal; plus `no-circular` and `not-to-unresolvable`.
 - `eslint.deps.config.js` holds `domain-purity` (no `Date.now`, argument-less `new Date()`, `Math.random`, `Temporal.Now`, `randomUUID`, `indexedDB`, `localStorage`, `sessionStorage`, `caches`, `fetch`, or `navigator` in `src/domain/`) and `no-identity` (no `userAgent`, `userAgentData`, `platform`, or `vendor` member access anywhere in `src/`). The main `npm run lint` applies the same rules.
+
+## T1.18 Composition root and capability registry
+
+Run 2026-10-18. **Verification:** `npm run verify:capabilities`, which printed `verify:capabilities OK: 11 operations, 6 routes, release 8539…9b29` and exited 0.
+
+- `src/app/compose.ts` exports `createApplication({ indexedDB, host, clock, ids, releaseId, capacityRequirement })`, the single facade used by the UI and the Node integration suite. Its operation groups are named exactly as in the Installed Capability Manifest (`Workspace`, `ReferenceCatalog`, `Journal`, `TradeWorkflows`, `TradeViewsAndReporting`), and every authoritative mutation runs through the readiness guard (`ReferenceCatalog.save` is wrapped here; `TradeWorkflows.confirmPlan` and `Workspace.initialize` recheck readiness themselves; `Workspace.requestDurability` is exempt).
+- `src/app/routes.ts` lists every destination with the capabilities it requires.
+- `verify:capabilities` builds the real application on fake-indexeddb and NodeTestHost and checks that the manifest's operations equal the facade's, that no route requires an absent capability, and that every installed operation is reachable from a route.
+- **Negative check:** adding `DailyReview.open` to the Trades route made it fail with `FAIL route trades requires absent capability DailyReview.open` (exit 1); restoring the route passed again.
+- `tsconfig.json` gained `erasableSyntaxOnly`, because Node runs the tools by stripping types and rejects constructor parameter properties (found when the verifier first ran).

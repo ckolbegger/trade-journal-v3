@@ -14,7 +14,8 @@
     "lint": "eslint .",
     "test:unit": "vitest run",
     "verify:release": "node tools/verify-release.ts",
-    "lint:deps": "node tools/lint-deps.ts"
+    "lint:deps": "node tools/lint-deps.ts",
+    "verify:capabilities": "node tools/verify-capabilities.ts"
   },
   "dependencies": {
     "@noble/hashes": "2.4.0",
