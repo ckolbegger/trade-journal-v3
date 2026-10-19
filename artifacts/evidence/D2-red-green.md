@@ -343,3 +343,60 @@ absent.
 | R3 | `npx tsc --noEmit` | exit 0 | pass |
 | R4 | `npm run lint:layers` | `103 files, 0 violations` | pass |
 | R5 | `npx eslint .` | exit 0 | pass |
+
+---
+
+## T9 — `B` `prepareEffects` for a completed Plan Reflection
+
+## T10 — `B` `applyPreparedEffects` staged in the shared transaction
+
+Seams: `Journal.prepareEffects` and `Journal.applyPreparedEffects` in `src/journal/effects.ts`; one
+suite `tests/journal/prepare-effects.plan-reflection.test.ts` (8 + 8 cases).
+
+**Red, recorded honestly.** Both functions were authored with the task design before their cases in
+this pass, so the first run was green (`Tests 16 passed (16)`) and red was **unreachable** in that
+ordering. To establish that each case actually tests the behaviour, the two exported functions were
+then replaced with typed stubs (`prepareEffects` rejecting "no Plan Reflection obligation path",
+`applyPreparedEffects` returning an unimplemented conflict) and the suite was re-run against the
+absent behaviour:
+
+```text
+npx vitest run --project unit tests/journal/prepare-effects.plan-reflection.test.ts
+→ Tests 16 failed (16)
+  AssertionError: expected 'Rejected' to be 'Prepared'                 (the acceptance cases)
+  AssertionError: expected undefined to be 'prompt.plan-reflection.thesis'
+  AssertionError: expected undefined to be 'prompt.plan-reflection.primary-emotion'
+  AssertionError: expected false to be true                            (CompleteNow / decline guards)
+```
+
+The implementation was restored and the suite returned to `Tests 16 passed (16)`. This is a
+re-established red after test-after development in the same pass, not a test-first sequence; it is
+recorded that way rather than presented as red-first.
+
+**Contract notes.**
+
+- `prepareEffects` validates the completed form against the *exact* definition revision it was given,
+  binds answers by stable Prompt identities (so a reworded prompt cannot re-target the effect),
+  snapshots the definition it validated, rejects an unanswered required prompt by name, rejects a
+  foreign Single-Select option, and rejects `Defer`/`Decline` for Plan Reflection with
+  `CompleteNowRequired`/`DeclineNotPermitted` — preparing no Debt and no decline.
+- `applyPreparedEffects` writes nothing itself: it maps candidates through the coordinator's exact
+  durable Trade mapping and returns the participants for the one shared commit, so "complete batch or
+  none" is the transaction's atomicity. It returns `MappingMismatch`, `DuplicateObligation` (one
+  current outcome per obligation key) and `DefinitionRevisionMissing` conflicts with no participants,
+  and its staged projection carries the mapped Anchor, Source snapshot, both times, the definition
+  snapshot and the Thesis/Invalidation values, so no Journal query is needed after commit.
+- The abort case commits the staged participants together with a participant naming a store that does
+  not exist, which makes the real transaction throw and abort; the Journal store is then asserted
+  byte-identical.
+
+
+### Commit — T9 + T10 (Journal prepared effects)
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| R1 | `npx vitest run` | `Test Files 37 passed (37)`, `Tests 265 passed (265)` | pass |
+| R2 | `npx playwright test` | `132 passed (1.9m)` | pass |
+| R3 | `npx tsc --noEmit` | exit 0 | pass |
+| R4 | `npm run lint:layers` | `104 files, 0 violations` | pass |
+| R5 | `npx eslint .` | exit 0 | pass |

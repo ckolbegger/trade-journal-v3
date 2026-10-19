@@ -7,6 +7,8 @@ export type { JournalSeedManifest } from "./seedManifest";
 export { SEED_MANIFEST_FULL, SEED_MANIFEST_V1, SEED_MANIFEST_V2 } from "./seedManifest";
 export { getDefinitions } from "./definitions";
 export { reviseDefinition } from "./reviseDefinition";
+export { prepareEffects, applyPreparedEffects } from "./effects";
+export type { JournalEffectRequest, JournalObligation, PlanReflectionForm, PreparedPlanReflection } from "./effects";
 export type { EntryDefinitionSet, EntryTypeDefinition, EntryDefinitionPrompt } from "./definitions";
 export type { ReviseEntryDefinitionCommand, ReviseEntryDefinitionResult } from "./reviseDefinition";
 
