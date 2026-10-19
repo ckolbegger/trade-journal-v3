@@ -534,3 +534,24 @@ returns `SeedConflict` for an incompatible key, and commits all additions in one
 
 **Integration half deferred.** The `Workspace.initialize` seeding path, the close-and-reopen manifest
 comparison and the receipt's seed version land with T25; the durable half is repeated by T33.
+
+---
+
+## T23 — `B` `ReferenceCatalog.seedDefaults` for manifest v1
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T23.1 | exactly the Long Stock Strategy under its stable key with one long Stock role and the contract's shape vocabulary, and no other Strategy | `npx vitest run tests/catalog/seed-manifest.test.ts` — an extra Strategy was seeded regardless of the manifest | same command — 1 passed; one Strategy, one `long`/`stock` role, quantity `"1"`, the declared constraint |
+| T23.2 | no seeded Institution, Account, Close Reason, Abandonment Reason, generic Custom/Other Strategy, settlement-derived reason or Tag Type | `npx vitest run tests/catalog/seed-absences.test.ts` — a placeholder Institution and Account were created for convenience | same command — 1 passed; the only kind present is `strategy` and none of the forbidden labels exists |
+| T23.3 | idempotent and stable-keyed; a reworded label never causes a duplicate identity | `npx vitest run tests/catalog/seed-idempotent.test.ts` — the second seed appended a catalog revision | same command — 1 passed; both repeat seeds add nothing, one Strategy, the revision unchanged |
+| T23.4 | typed SeedConflict and write nothing when a known stable key exists with an incompatible shape | `npx vitest run tests/catalog/seed-shape-conflict.test.ts` — the incompatible Long Stock shape was silently replaced and the seed reported `Seeded` | same command — 1 passed with `SeedConflict` and a byte-identical store |
+| T23.5 | retain a trader rename and not reactivate a retired seed | `npx vitest run tests/catalog/seed-rename.test.ts` — the second seed rewrote the trader label | same command — 1 passed; `My Long Stock`, revision 2 and `retired: true` all retained |
+| T23.6 | return the Catalog snapshot, the exact additions and the selectable-Account summary without a follow-up query | `npx vitest run tests/catalog/seed-snapshot.test.ts` — the result carried no snapshot (`catalog` was undefined) | same command — 1 passed; the snapshot holds the seeded Strategy at revision 1 and an empty selectable-Account list |
+| T23.7 | commit every identity, immutable shape and seed-manifest state in one transaction | `npx vitest run tests/catalog/seed-atomic.test.ts` — one commit per identity left two Strategies committed after the injected failure | same command — 1 passed; the injected failure leaves the Catalog store empty |
+
+The manifest declares only Long Stock; the seeder matches by stable key, compares the immutable shape
+canonically, retains trader labels and retired availability, returns the resulting snapshot and the
+selectable-Account summary, and never seeds anything the manifest does not declare.
+
+**Integration half deferred.** Seeding the Catalog inside `Workspace.initialize`'s one transaction and
+reading the typed `CatalogQuery` afterwards land with T24 and T25.
