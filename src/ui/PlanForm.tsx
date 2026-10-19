@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import type { EntryDefinitionPrompt, EntryTypeDefinition } from "../journal/definitions";
-import type { BreachDirection, ConditionRole, PlanCondition, PlannedLeg } from "../plan";
-import type { ConfirmPlanSuccess } from "../trade-workflows";
+import type { BreachDirection, ConditionRole, PlannedLeg, TradePlanInput } from "../plan";
+import type {
+  ConfirmPlanSuccess,
+  PlanPreview,
+  PlanPreviewResult,
+  PreviewPlanCommand,
+  WorkflowIssue,
+} from "../trade-workflows";
 import type { ApplicationRuntime } from "../workspace/runtime";
 
 type LoadState =
@@ -19,7 +25,6 @@ interface ConditionDraft {
   role: ConditionRole;
   direction: BreachDirection;
   boundaryPrice: string;
-  monetaryBoundary: string;
   comment: string;
 }
 
@@ -27,15 +32,61 @@ interface AnswerState {
   readonly [promptStableKey: string]: string;
 }
 
+/** Exactly one Stop and one Target: the product decides that a Long Stock plan has no third (E-012). */
 const DEFAULT_CONDITIONS: readonly ConditionDraft[] = [
-  { key: "cond-1", role: "Stop", direction: "AtOrBelow", boundaryPrice: "", monetaryBoundary: "", comment: "" },
-  { key: "cond-2", role: "Target", direction: "AtOrAbove", boundaryPrice: "", monetaryBoundary: "", comment: "" },
+  { key: "cond-1", role: "Stop", direction: "AtOrBelow", boundaryPrice: "", comment: "" },
+  { key: "cond-2", role: "Target", direction: "AtOrAbove", boundaryPrice: "", comment: "" },
 ];
+
+/**
+ * The Journal obligation identity of one confirmation. A Workspace may confirm more than one Plan, so
+ * each plan session mints its own key; it stays stable across a retry of the same form, which is what
+ * keeps a double submit from becoming two Trades, because the Journal participant rejects an
+ * obligation key that already has a current outcome.
+ */
+function newObligationKey(): string {
+  return `plan-confirmation:${crypto.randomUUID()}`;
+}
+
+function moneyText(value: { readonly amount: string; readonly currency: string }): string {
+  return `${value.amount} ${value.currency}`;
+}
+
+/**
+ * The inline slot one typed issue belongs to, when it has a rendered control. Unmapped issues are
+ * listed once in the form's alert rather than hidden: the preview is the only rule set.
+ */
+function issueKey(
+  issue: WorkflowIssue,
+  conditions: readonly ConditionDraft[],
+): string | undefined {
+  if (issue.promptStableKey !== undefined) return issue.promptStableKey;
+  if (issue.field === "accountId") return "accountId";
+  if (issue.field === "strategyStableKey") return "strategyStableKey";
+  if (issue.field === "plan.intendedEntry") return "intendedEntry";
+  if (issue.field.startsWith("plan.plannedLegs")) {
+    return issue.field.endsWith(".quantity") ? "quantity" : "instrumentKey";
+  }
+  if (issue.field.startsWith("plan.originalManagement")) {
+    const index = /\[(\d+)\]/.exec(issue.field)?.[1];
+    const condition =
+      index === undefined
+        ? conditions.find((candidate) => candidate.key === issue.conditionId)
+        : conditions[Number(index)];
+    return condition === undefined ? undefined : `${condition.key}.boundaryPrice`;
+  }
+  return undefined;
+}
 
 /**
  * The Plan confirmation form. It renders the exact Plan Reflection definition revision it loaded and
  * submits stable Prompt and Option identities. Entered values are held in component state only: a
  * resize, a navigation within the workflow, or an abandoned form writes nothing.
+ *
+ * Before Save it shows the provisional reward-to-risk ratio and maximum loss the confirmation will
+ * freeze, from `previewPlan` (deviation D-001), and it collects only what the product cannot decide:
+ * one Stop and one Target with a boundary price each (E-012, E-013). Trade Analysis derives the
+ * monetary boundary; the form never computes it.
  */
 export function PlanForm({
   runtime,
@@ -52,7 +103,10 @@ export function PlanForm({
   const [quantity, setQuantity] = useState("");
   const [conditions, setConditions] = useState<readonly ConditionDraft[]>(DEFAULT_CONDITIONS);
   const [answers, setAnswers] = useState<AnswerState>({});
-  const [errors, setErrors] = useState<Readonly<Record<string, string>>>({});
+  const [obligationKey, setObligationKey] = useState(newObligationKey);
+  const [submitted, setSubmitted] = useState(false);
+  const [preview, setPreview] = useState<PlanPreview | undefined>(undefined);
+  const [previewIssues, setPreviewIssues] = useState<readonly WorkflowIssue[] | undefined>(undefined);
   const [serverIssues, setServerIssues] = useState<readonly string[]>([]);
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState<ConfirmPlanSuccess | undefined>(undefined);
@@ -93,83 +147,133 @@ export function PlanForm({
     void load();
   }, [load]);
 
-  function updateCondition(key: string, patch: Partial<ConditionDraft>): void {
-    setConditions((current) =>
-      current.map((condition) => (condition.key === key ? { ...condition, ...patch } : condition)),
-    );
+  function currentPlan(): TradePlanInput {
+    const plannedLeg: PlannedLeg = {
+      legId: "leg-1",
+      instrument: { instrumentKey, instrumentClass: "stock" },
+      side: "long",
+      quantity: { amount: quantity, instrumentClass: "stock" },
+      contract: { kind: "ExactContract" },
+    };
+    return {
+      intendedEntry: { amount: intendedEntry },
+      plannedLegs: [plannedLeg],
+      originalManagement: conditions.map((condition) => ({
+        conditionId: condition.key,
+        kind: "UnderlyingPrice" as const,
+        role: condition.role,
+        boundaryPrice: { amount: condition.boundaryPrice },
+        basis: {
+          protects: ["leg-1"],
+          direction: condition.direction,
+          measurementPolicy: "NearestNonnegativeMonetaryBoundary" as const,
+          ...(condition.comment.trim() === "" ? {} : { comment: condition.comment }),
+        },
+      })),
+    };
   }
 
-  function validate(definition: EntryTypeDefinition): Readonly<Record<string, string>> {
+  /**
+   * The identities the preview needs before it can say anything: the Account and Strategy it
+   * resolves, and the Instrument whose leg it measures. Until all three are present no preview is
+   * attempted, so an untouched form is not reported as invalid.
+   */
+  function identityErrors(): Readonly<Record<string, string>> {
     const found: Record<string, string> = {};
     if (accountId === "") found.accountId = "Choose the Account you trade.";
     if (strategyStableKey === "") found.strategyStableKey = "Choose the Strategy.";
-    if (intendedEntry.trim() === "") found.intendedEntry = "Enter the intended entry price.";
     if (instrumentKey.trim() === "") found.instrumentKey = "Enter the Instrument.";
-    if (quantity.trim() === "") found.quantity = "Enter the Planned Leg quantity.";
-    for (const condition of conditions) {
-      if (condition.boundaryPrice.trim() === "") {
-        found[`${condition.key}.boundaryPrice`] = `Enter the ${condition.role} boundary price.`;
-      }
-      if (condition.monetaryBoundary.trim() === "") {
-        found[`${condition.key}.monetaryBoundary`] = `Enter the ${condition.role} monetary boundary.`;
-      }
-    }
-    for (const prompt of definition.prompts) {
-      if (prompt.required && (answers[prompt.stableKey] ?? "").trim() === "") {
-        found[prompt.stableKey] = `Answer "${prompt.label}" before saving.`;
-      }
-    }
     return found;
   }
 
+  function previewCommand(definition: EntryTypeDefinition): PreviewPlanCommand {
+    return {
+      accountId,
+      strategyStableKey,
+      tags: [],
+      plan: currentPlan(),
+      reflection: {
+        entryTypeStableKey: definition.entryTypeStableKey,
+        definitionRevision: definition.revision,
+        answers: Object.entries(answers).map(([promptStableKey, value]) => ({
+          promptStableKey,
+          value,
+        })),
+      },
+      economicTime: new Date().toISOString(),
+      obligationKey,
+    };
+  }
+
+  const identitiesReady =
+    accountId !== "" && strategyStableKey !== "" && instrumentKey.trim() !== "";
+
+  // The provisional figures are re-derived from the same step confirmation runs, on every edit.
+  useEffect(() => {
+    if (state.kind !== "ready" || !identitiesReady) {
+      setPreview(undefined);
+      setPreviewIssues(undefined);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      const result: PlanPreviewResult = await runtime.previewPlan(previewCommand(state.definition));
+      if (cancelled) return;
+      if (result.outcome === "Previewed") {
+        setPreview(result.value);
+        setPreviewIssues(undefined);
+        return;
+      }
+      setPreview(undefined);
+      setPreviewIssues(result.outcome === "RuntimeNotWritable" ? [] : result.issues);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [runtime, state, identitiesReady, accountId, strategyStableKey, intendedEntry, instrumentKey, quantity, conditions, answers, obligationKey]);
+
+  const identityProblems = submitted ? identityErrors() : {};
+  const inlineIssues: Record<string, string> = {};
+  const unmapped: string[] = [];
+  if (submitted && previewIssues !== undefined) {
+    for (const issue of previewIssues) {
+      const key = issueKey(issue, conditions);
+      if (key === undefined) unmapped.push(issue.detail);
+      else inlineIssues[key] ??= issue.detail;
+    }
+  }
+  const errors: Readonly<Record<string, string>> = { ...identityProblems, ...inlineIssues };
+
   async function save(): Promise<void> {
     if (state.kind !== "ready") return;
-    const found = validate(state.definition);
-    setErrors(found);
+    setSubmitted(true);
     setServerIssues([]);
-    if (Object.keys(found).length > 0) {
-      const first = Object.keys(found)[0];
-      if (first !== undefined) document.getElementById(`field-${first}`)?.focus();
+    const identity = identityErrors();
+    const firstIdentity = Object.keys(identity)[0];
+    if (firstIdentity !== undefined) {
+      document.getElementById(`field-${firstIdentity}`)?.focus();
       return;
     }
 
     setBusy(true);
     try {
-      const plannedLeg: PlannedLeg = {
-        legId: "leg-1",
-        instrument: { instrumentKey, instrumentClass: "stock" },
-        side: "long",
-        quantity: { amount: quantity, instrumentClass: "stock" },
-        contract: { kind: "ExactContract" },
-      };
-      const management: PlanCondition[] = conditions.map((condition, index) => ({
-        conditionId: `cond-${index + 1}`,
-        kind: "UnderlyingPrice",
-        role: condition.role,
-        boundaryPrice: { amount: condition.boundaryPrice },
-        monetaryBoundary: { amount: condition.monetaryBoundary, currency: "USD" },
-        basis: {
-          protects: ["leg-1"],
-          direction: condition.direction,
-          measurementPolicy: "NearestNonnegativeMonetaryBoundary",
-          ...(condition.comment.trim() === "" ? {} : { comment: condition.comment }),
-        },
-      }));
+      const command = previewCommand(state.definition);
+      const previewed = await runtime.previewPlan(command);
+      if (previewed.outcome !== "Previewed") {
+        setPreview(undefined);
+        setPreviewIssues(previewed.outcome === "RuntimeNotWritable" ? [] : previewed.issues);
+        if (previewed.outcome === "RuntimeNotWritable") {
+          setServerIssues([`This browser cannot write right now (${previewed.runtimeReadiness}).`]);
+        }
+        return;
+      }
+      setPreview(previewed.value);
+      setPreviewIssues(undefined);
 
       const result = await runtime.confirmPlan({
-        accountId,
-        strategyStableKey,
-        tags: [],
-        plan: { intendedEntry: { amount: intendedEntry }, plannedLegs: [plannedLeg], originalManagement: management },
-        reflection: {
-          entryTypeStableKey: state.definition.entryTypeStableKey,
-          definitionRevision: state.definition.revision,
-          answers: Object.entries(answers).map(([promptStableKey, value]) => ({ promptStableKey, value })),
-        },
-        economicTime: new Date().toISOString(),
+        ...command,
         saveTime: new Date().toISOString(),
         firstAuthoredTime: new Date().toISOString(),
-        obligationKey: "plan-confirmation:1",
       });
 
       if (result.outcome === "Accepted") {
@@ -179,7 +283,7 @@ export function PlanForm({
         return;
       }
       if (result.outcome === "Rejected") {
-        setServerIssues(result.issues.map((issue) => issue.detail));
+        setPreviewIssues(result.issues);
       } else if (result.outcome === "Conflict") {
         setServerIssues(result.issues.map((issue) => issue.detail));
       } else {
@@ -218,6 +322,7 @@ export function PlanForm({
       state.strategies.find((strategy) => strategy.stableKey === trade?.strategyStableKey)?.label ??
       trade?.strategyStableKey ??
       "";
+    const frozen = saved.postCommit.derivation;
     return (
       <section className="card" aria-labelledby="plan-saved">
         <h2 id="plan-saved">Plan confirmed</h2>
@@ -238,8 +343,12 @@ export function PlanForm({
           <dd data-testid="saved-quantity">
             {trade?.plan.plannedLegs.map((leg) => `${leg.side} ${leg.quantity.amount}`).join(", ")}
           </dd>
+          <dt>Reward-to-risk (frozen)</dt>
+          <dd data-testid="saved-rr">{frozen.planBaseline.plannedRewardRiskRatio}</dd>
+          <dt>Maximum loss (frozen)</dt>
+          <dd data-testid="saved-max-loss">{moneyText(frozen.oneR)}</dd>
           <dt>1R (frozen at confirmation)</dt>
-          <dd data-testid="saved-one-r">{saved.postCommit.derivation.oneR.amount}</dd>
+          <dd data-testid="saved-one-r">{frozen.oneR.amount}</dd>
           <dt>Lifecycle</dt>
           <dd>{trade?.lifecycle}</dd>
           <dt>Why this trade</dt>
@@ -247,6 +356,10 @@ export function PlanForm({
           <dt>What would invalidate it</dt>
           <dd data-testid="saved-invalidation">{entry?.invalidation}</dd>
         </dl>
+        <p className="muted">
+          These are the frozen figures. They are the provisional ones you saw before Save: freezing
+          did not change them.
+        </p>
 
         <h3>Original management</h3>
         <ul aria-label="Saved original Stops and Targets">
@@ -271,21 +384,33 @@ export function PlanForm({
         <button type="button" onClick={() => onSaved(trade?.tradeId ?? "")}>
           Open the Trade
         </button>
-        <button type="button" onClick={() => setSaved(undefined)}>
+        <button
+          type="button"
+          onClick={() => {
+            // A new plan session is a new Journal obligation, never a second outcome for the old one.
+            setObligationKey(newObligationKey());
+            setPreview(undefined);
+            setPreviewIssues(undefined);
+            setSubmitted(false);
+            setSaved(undefined);
+          }}
+        >
           Start another plan
         </button>
       </section>
     );
   }
 
+  const alertIssues = [...serverIssues, ...unmapped];
+
   return (
     <section className="card plan-form" aria-labelledby="plan-title">
       <h2 id="plan-title">Confirm a plan</h2>
-      {serverIssues.length > 0 && (
+      {alertIssues.length > 0 && (
         <div role="alert" className="error">
           <p>The Plan was not saved. Your entries are still here.</p>
           <ul>
-            {serverIssues.map((issue) => (
+            {alertIssues.map((issue) => (
               <li key={issue}>{issue}</li>
             ))}
           </ul>
@@ -391,66 +516,76 @@ export function PlanForm({
 
       <fieldset>
         <legend>Stops and Targets</legend>
-        {conditions.map((condition, index) => (
-          <div key={condition.key} className="condition">
-            <p className="muted">
-              Condition {index + 1}: {condition.role}
-            </p>
-            <label htmlFor={`field-${condition.key}.boundaryPrice`}>Boundary price</label>
-            <input
-              id={`field-${condition.key}.boundaryPrice`}
-              value={condition.boundaryPrice}
-              onChange={(event) => updateCondition(condition.key, { boundaryPrice: event.target.value })}
-              inputMode="decimal"
-            />
-            {errors[`${condition.key}.boundaryPrice`] !== undefined && (
-              <p role="alert" className="error">
-                {errors[`${condition.key}.boundaryPrice`]}
+        {conditions.map((condition, index) => {
+          const derived = preview?.perConditionBasis.find(
+            (basis) => basis.conditionId === condition.key,
+          )?.monetaryBoundary;
+          return (
+            <div key={condition.key} className="condition">
+              <p className="muted">
+                Condition {index + 1}: {condition.role}
               </p>
-            )}
-            <label htmlFor={`field-${condition.key}.monetaryBoundary`}>Monetary boundary (USD)</label>
-            <input
-              id={`field-${condition.key}.monetaryBoundary`}
-              value={condition.monetaryBoundary}
-              onChange={(event) =>
-                updateCondition(condition.key, { monetaryBoundary: event.target.value })
-              }
-              inputMode="decimal"
-            />
-            {errors[`${condition.key}.monetaryBoundary`] !== undefined && (
-              <p role="alert" className="error">
-                {errors[`${condition.key}.monetaryBoundary`]}
+              <label htmlFor={`field-${condition.key}.boundaryPrice`}>Boundary price</label>
+              <input
+                id={`field-${condition.key}.boundaryPrice`}
+                value={condition.boundaryPrice}
+                onChange={(event) =>
+                  setConditions((current) =>
+                    current.map((candidate) =>
+                      candidate.key === condition.key
+                        ? { ...candidate, boundaryPrice: event.target.value }
+                        : candidate,
+                    ),
+                  )
+                }
+                inputMode="decimal"
+              />
+              {errors[`${condition.key}.boundaryPrice`] !== undefined && (
+                <p role="alert" className="error">
+                  {errors[`${condition.key}.boundaryPrice`]}
+                </p>
+              )}
+              <p className="muted" data-testid={`derived-boundary-${condition.key}`}>
+                Monetary boundary (derived): {derived === undefined ? "not yet available" : moneyText(derived)}
               </p>
-            )}
-            <label htmlFor={`field-${condition.key}.comment`}>
-              Why this {condition.role.toLowerCase()} (optional)
-            </label>
-            <input
-              id={`field-${condition.key}.comment`}
-              value={condition.comment}
-              onChange={(event) => updateCondition(condition.key, { comment: event.target.value })}
-            />
-          </div>
-        ))}
-        <button
-          type="button"
-          onClick={() =>
-            setConditions((current) => [
-              ...current,
-              {
-                key: `cond-${current.length + 1}`,
-                role: "Stop",
-                direction: "AtOrBelow",
-                boundaryPrice: "",
-                monetaryBoundary: "",
-                comment: "",
-              },
-            ])
-          }
-        >
-          Add another condition
-        </button>
+              <label htmlFor={`field-${condition.key}.comment`}>
+                Why this {condition.role.toLowerCase()} (optional)
+              </label>
+              <input
+                id={`field-${condition.key}.comment`}
+                value={condition.comment}
+                onChange={(event) =>
+                  setConditions((current) =>
+                    current.map((candidate) =>
+                      candidate.key === condition.key
+                        ? { ...candidate, comment: event.target.value }
+                        : candidate,
+                    ),
+                  )
+                }
+              />
+            </div>
+          );
+        })}
       </fieldset>
+
+      {preview !== undefined || previewIssues !== undefined ? (
+        <section className="plan-form__preview" aria-labelledby="plan-preview-title">
+          <h3 id="plan-preview-title">Before you save (provisional)</h3>
+          {preview === undefined ? (
+            <p className="muted">
+              Reward-to-risk and maximum loss appear here once the Plan can be assessed.
+            </p>
+          ) : (
+            <dl className="facts">
+              <dt>Reward-to-risk (provisional)</dt>
+              <dd data-testid="preview-rr">{preview.planBaseline.plannedRewardRiskRatio}</dd>
+              <dt>Maximum loss (provisional)</dt>
+              <dd data-testid="preview-max-loss">{moneyText(preview.oneR)}</dd>
+            </dl>
+          )}
+        </section>
+      ) : null}
 
       <fieldset>
         <legend>Plan Reflection</legend>

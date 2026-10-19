@@ -107,6 +107,32 @@ export interface TradePlan {
   readonly originalManagement: readonly PlanCondition[];
 }
 
+/**
+ * An underlying-price condition as a command supplies it (erratum E-013). The frozen fact still
+ * requires `monetaryBoundary`; the input does not, because Trade Analysis derives it from
+ * `|boundaryPrice - intendedEntry| x quantity` for a derivable condition. Derivability is decided in
+ * analysis, never in presentation.
+ */
+export interface UnderlyingPriceConditionInput {
+  readonly conditionId: ConditionId;
+  readonly kind: "UnderlyingPrice";
+  readonly role: ConditionRole;
+  readonly boundaryPrice: Price;
+  /** Supplied wins; absent is derived when derivable, and otherwise a typed rejection. */
+  readonly monetaryBoundary?: Money;
+  readonly basis: ConditionBasis;
+}
+
+/** A structure-value condition supplies its own boundary: it is never derivable. */
+export type PlanConditionInput = UnderlyingPriceConditionInput | StructureValueCondition;
+
+/** The Plan as the trader's command or form supplies it, before analysis completes it. */
+export interface TradePlanInput {
+  readonly intendedEntry: Price;
+  readonly plannedLegs: readonly PlannedLeg[];
+  readonly originalManagement: readonly PlanConditionInput[];
+}
+
 /** A Strategy role: positive *relative* quantity, never a Plan quantity or a price default. */
 export interface StrategyRole {
   readonly side: LegSide;

@@ -1,18 +1,13 @@
-import { assessPlan, derive, frozenBaseline } from "../analysis/trade";
-import { resolve, type CatalogBindingIssue } from "../catalog";
-import {
-  applyPreparedEffects,
-  prepareEffects,
-  type JournalEffectRequest,
-  type JournalIssue,
-  type PlanReflectionForm,
-  type PreparedPlanReflection,
-  type StagedJournalOutcome,
+import type {
+  PlanReflectionForm,
+  PreparedPlanReflection,
+  StagedJournalOutcome,
 } from "../journal/effects";
-import type { LifecycleStateName, PlanBaseline, TradePlan } from "../plan";
+import type { LifecycleStateName, PlanBaseline, TradePlanInput } from "../plan";
 import type { TransactionSeam } from "../persistence/indexeddb/transaction";
 import type { Money } from "../values";
 import type { RuntimeNotWritable } from "../results";
+import { derive } from "../analysis/trade";
 import {
   applyPreparedChange,
   prepareChange,
@@ -20,6 +15,14 @@ import {
   type TradeRecordApplyResult,
   type TradeIdentityMapping,
 } from "../trade-record";
+import {
+  assessDraft,
+  REAL_PARTICIPANTS,
+  type ConfirmPlanConflict,
+  type ConfirmPlanParticipants,
+  type ConfirmPlanRejection,
+  type WorkflowIssue,
+} from "./assessDraft";
 
 /**
  * Trade Workflows is the only ordinary public interface for trader-initiated Trade changes. D2
@@ -28,12 +31,16 @@ import {
  * form displayed, has Trade Analysis accept the Plan and produce a positive numeric 1R, prepares the
  * Trade candidate, requires the derivation bound to that exact candidate, and commits every Trade and
  * Journal effect in one semantic transaction.
+ *
+ * The resolve -> complete -> assess -> derive step is not repeated here: `assessDraft` performs it,
+ * `previewPlan` returns its figures and `confirmPlan` re-runs it at commit time, so a preview can
+ * never be used as a stale binding and the two can never drift.
  */
 export interface ConfirmPlanCommand {
   readonly accountId: string;
   readonly strategyStableKey: string;
   readonly tags: readonly string[];
-  readonly plan: TradePlan;
+  readonly plan: TradePlanInput;
   /** The exact definition revision the trader saw, with stable Prompt identities. */
   readonly reflection: PlanReflectionForm;
   /** The one explicit Economic Time of this command. */
@@ -45,15 +52,6 @@ export interface ConfirmPlanCommand {
   readonly expectedCatalogSnapshotRevision?: number;
   readonly cutoffTradingDate?: string;
   readonly obligationKey: string;
-}
-
-export interface WorkflowIssue {
-  readonly field: string;
-  readonly detail: string;
-  readonly code: string;
-  readonly promptStableKey?: string;
-  readonly conditionId?: string;
-  readonly identity?: string;
 }
 
 export interface ConfirmPlanReceipt {
@@ -93,54 +91,18 @@ export interface ConfirmPlanSuccess {
   };
 }
 
-export interface ConfirmPlanRejection {
-  readonly outcome: "Rejected";
-  readonly reason: string;
-  readonly issues: readonly WorkflowIssue[];
-}
-
-export interface ConfirmPlanConflict {
-  readonly outcome: "Conflict";
-  readonly currentCatalogSnapshotRevision?: number;
-  readonly currentTradeFactRevision?: number;
-  readonly issues: readonly WorkflowIssue[];
-}
-
 export type ConfirmPlanResult =
   | { readonly outcome: "Accepted"; readonly value: ConfirmPlanSuccess }
   | ConfirmPlanRejection
   | ConfirmPlanConflict
   | RuntimeNotWritable;
 
-/**
- * The Journal participant as a port, so T14's rollback proof can inject a controlled failure at the
- * participant boundary without mocking any application layer. Production always uses the real
- * operations; the default is not a mock.
- */
-export interface ConfirmPlanParticipants {
-  readonly prepareEffects: typeof prepareEffects;
-  readonly applyPreparedEffects: typeof applyPreparedEffects;
-}
-
-const REAL_PARTICIPANTS: ConfirmPlanParticipants = { prepareEffects, applyPreparedEffects };
-
-function catalogIssues(issues: readonly CatalogBindingIssue[]): WorkflowIssue[] {
-  return issues.map((issue) => ({
-    code: issue.code,
-    field: issue.code.startsWith("Account") ? "accountId" : "strategyStableKey",
-    detail: issue.detail,
-    identity: issue.identity,
-  }));
-}
-
-function journalIssues(issues: readonly JournalIssue[]): WorkflowIssue[] {
-  return issues.map((issue) => ({
-    code: issue.code,
-    field: issue.field,
-    detail: issue.detail,
-    ...(issue.promptStableKey === undefined ? {} : { promptStableKey: issue.promptStableKey }),
-  }));
-}
+export type {
+  ConfirmPlanConflict,
+  ConfirmPlanParticipants,
+  ConfirmPlanRejection,
+  WorkflowIssue,
+};
 
 /**
  * `confirmPlan`. Validation failures and stale bindings return typed no-write results; infrastructure
@@ -153,97 +115,31 @@ export async function confirmPlan(
   command: ConfirmPlanCommand,
   participants: ConfirmPlanParticipants = REAL_PARTICIPANTS,
 ): Promise<ConfirmPlanResult> {
-  // 1. Catalog resolution under one snapshot. Nothing is staged before this.
-  const resolved = await resolve(seam, {
-    accountId: command.accountId,
-    strategyStableKey: command.strategyStableKey,
-    mode: "NewSelection",
-    ...(command.expectedCatalogSnapshotRevision === undefined
-      ? {}
-      : { expectedSnapshotRevision: command.expectedCatalogSnapshotRevision }),
-  });
-  if (resolved.outcome === "SnapshotConflict") {
-    return {
-      outcome: "Conflict",
-      currentCatalogSnapshotRevision: resolved.current,
-      issues: [
-        {
-          code: "CatalogSnapshotConflict",
-          field: "strategyStableKey",
-          detail: `the Catalog moved to revision ${resolved.current} after the form was loaded at ${resolved.expected}`,
-        },
-      ],
-    };
-  }
-  if (resolved.outcome === "Rejected") {
-    return {
-      outcome: "Rejected",
-      reason: "the Account or Strategy is not selectable",
-      issues: catalogIssues(resolved.issues),
-    };
-  }
-
-  // 2. Plan assessment: the Plan must be accepted and produce a positive numeric 1R.
-  const assessment = await assessPlan({
-    strategyShape: resolved.strategy.shape,
-    plan: command.plan,
-    economicTime: command.economicTime,
-  });
-  if (assessment.outcome === "Rejected") {
-    return {
-      outcome: "Rejected",
-      reason: "the Plan is incomplete or incoherent",
-      issues: assessment.issues.map((issue) => ({
-        code: issue.code,
-        field: issue.field,
-        detail: issue.detail,
-        ...(issue.conditionId === undefined ? {} : { conditionId: issue.conditionId }),
-      })),
-    };
-  }
-  const baseline = frozenBaseline(assessment);
-  if (baseline === undefined) {
-    return {
-      outcome: "Rejected",
-      reason: "the Plan has no positive numeric Plan Baseline and 1R",
-      issues: [
-        {
-          code: "NoPositiveNumericBaseline",
-          field: "plan.originalManagement",
-          detail:
-            "Original Planned Risk must be a positive number; an unavailable baseline is not a confirmable Plan",
-        },
-      ],
-    };
-  }
-
-  // 3. The completed reflection against the exact definition revision the form displayed.
-  const effectRequest: JournalEffectRequest = {
-    obligations: [
-      { obligationKey: command.obligationKey, disposition: { kind: "Complete", form: command.reflection } },
-    ],
-    anchor: { kind: "TradeAnchor", tradeId: "candidate:pending" },
-    origin: { kind: "Plan" },
-    momentTime: command.economicTime,
+  // 1. Catalog resolution, Plan completion (E-013), Plan assessment, the frozen baseline and the
+  //    completed reflection: the same step a preview runs, re-run here at commit time. Nothing is
+  //    staged before this.
+  const assessed = await assessDraft(seam, command, {
+    participants,
     firstAuthoredTime: command.firstAuthoredTime,
-  };
-  const preparedJournal = await participants.prepareEffects(seam, effectRequest);
-  if (preparedJournal.outcome === "Rejected") {
-    return {
-      outcome: "Rejected",
-      reason: "the Plan Reflection is incomplete",
-      issues: journalIssues(preparedJournal.issues),
-    };
-  }
+  });
+  if (assessed.outcome !== "Assessed") return assessed;
+  const {
+    accountId,
+    strategyStableKey,
+    strategyShape,
+    plan,
+    planBaseline: baseline,
+    preparedJournal,
+  } = assessed.value;
 
-  // 4. The Trade candidate. Still nothing is staged.
+  // 2. The Trade candidate. Still nothing is staged.
   const preparation = await prepareChange(seam, {
     kind: "ConfirmPlan",
-    accountId: resolved.account.id,
-    strategyStableKey: resolved.strategy.stableKey,
-    strategyShape: resolved.strategy.shape,
+    accountId,
+    strategyStableKey,
+    strategyShape,
     tags: command.tags,
-    plan: command.plan,
+    plan,
     economicTime: command.economicTime,
     saveTime: command.saveTime,
   });
@@ -262,13 +158,13 @@ export async function confirmPlan(
     };
   }
 
-  // 5. Expected Lifecycle State derived from the candidate facts, and the reconciliation bound to it.
+  // 3. Expected Lifecycle State derived from the candidate facts, and the reconciliation bound to it.
   const derived = derive({
     tradeId: preparation.candidate.tradeId,
     sourceFactRevision: preparation.candidate.factRevision,
     economicTime: preparation.candidate.economicTime,
     analysisCutoff: command.economicTime,
-    facts: [{ kind: "trade" }, { kind: "plan" }, ...command.plan.plannedLegs.map(() => ({ kind: "planned-leg" }))],
+    facts: [{ kind: "trade" }, { kind: "plan" }, ...plan.plannedLegs.map(() => ({ kind: "planned-leg" }))],
   });
   if (derived.expectedLifecycle.outcome !== "Value") {
     return {
@@ -313,8 +209,8 @@ export async function confirmPlan(
         };
   }
 
-  // 6. Journal effects mapped through the exact durable Trade mapping, then one commit.
-  const anchoring = await reanchor(preparedJournal.effects, applied.identityMapping);
+  // 4. Journal effects mapped through the exact durable Trade mapping, then one commit.
+  const anchoring = await reanchor(preparedJournal, applied.identityMapping);
   if (anchoring === undefined) {
     return {
       outcome: "Rejected",
@@ -367,8 +263,8 @@ export async function confirmPlan(
         journal: appliedJournal.staged,
       },
       affected: {
-        accountId: resolved.account.id,
-        strategyStableKey: resolved.strategy.stableKey,
+        accountId,
+        strategyStableKey,
         tradeIds: trade === undefined ? [] : [trade.tradeId],
       },
     },

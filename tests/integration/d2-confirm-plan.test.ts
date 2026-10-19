@@ -7,7 +7,7 @@ import { createTransactionSeam, type TransactionSeam } from "../../src/persisten
 import { createWriteGate } from "../../src/persistence/indexeddb/writeGate";
 import { queryRecords } from "../../src/trade-record";
 import { derive } from "../../src/analysis/trade";
-import { confirmPlan, type ConfirmPlanCommand } from "../../src/trade-workflows";
+import { confirmPlan, previewPlan, type ConfirmPlanCommand } from "../../src/trade-workflows";
 import { loadSubstitutions } from "../harness/bootstrap";
 import { close, openD2Seam, writable } from "../support/store";
 import { PLAN_ECONOMIC_TIME, PLAN_SAVE_TIME, longStockPlan, underlyingTarget } from "../support/plans";
@@ -139,6 +139,59 @@ describe("The D2 mock-free integration path, from the production command to dura
     });
     expect(page.rows).toHaveLength(1);
     expect(page.batch[0]?.plan.originalManagement).toHaveLength(2);
+  });
+
+  it("should return an identical Plan Baseline, 1R and per-condition basis from the preview and from the confirmation that follows it, and the preview alone must write nothing, when both run over real persistence", async () => {
+    // Boundary prices only: Trade Analysis derives every monetary boundary, so the preview and the
+    // confirmation must derive the same one and freeze it.
+    const supplied = longStockPlan();
+    const draft = {
+      ...supplied,
+      originalManagement: supplied.originalManagement.map((condition) =>
+        condition.kind === "UnderlyingPrice"
+          ? {
+              conditionId: condition.conditionId,
+              kind: "UnderlyingPrice" as const,
+              role: condition.role,
+              boundaryPrice: condition.boundaryPrice,
+              basis: condition.basis,
+            }
+          : condition,
+      ),
+    };
+
+    const before = await rawStores(seam);
+    const revisionsBefore = await participantRevisions(seam);
+
+    const preview = await previewPlan(seam, {
+      accountId,
+      strategyStableKey: "strategy.long-stock",
+      tags: [],
+      plan: draft,
+      reflection: REFLECTION,
+      economicTime: PLAN_ECONOMIC_TIME,
+      obligationKey: "plan-confirmation:1",
+    });
+    expect(preview.outcome).toBe("Previewed");
+    if (preview.outcome !== "Previewed") return;
+
+    // The preview wrote nothing: every store and every participant revision is unchanged.
+    expect(await rawStores(seam)).toEqual(before);
+    expect(await participantRevisions(seam)).toEqual(revisionsBefore);
+
+    const confirmed = await confirmPlan(seam, command({ plan: draft }));
+    expect(confirmed.outcome).toBe("Accepted");
+    if (confirmed.outcome !== "Accepted") return;
+    expect(confirmed.value.postCommit.derivation.planBaseline).toEqual(preview.value.planBaseline);
+    expect(confirmed.value.postCommit.derivation.oneR).toEqual(preview.value.oneR);
+    expect(confirmed.value.postCommit.derivation.planBaseline.perConditionBasis).toEqual(
+      preview.value.perConditionBasis,
+    );
+    // The derived boundary is what the stored Plan fact carries.
+    const storedPlan = (await rawStores(seam)).tradeRecord.find((row) => row.kind === "plan");
+    expect(
+      (storedPlan?.baseline as { perConditionBasis: unknown }).perConditionBasis,
+    ).toEqual(preview.value.perConditionBasis);
   });
 
   it("should leave the durable state byte-identical across Trade Record, Journal and Catalog when each typed rejection payload is submitted", async () => {

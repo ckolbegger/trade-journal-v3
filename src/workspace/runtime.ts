@@ -1,6 +1,11 @@
 import type { CatalogQueryResult, CatalogSaveResult } from "../catalog/save";
 import type { EntryDefinitionSet } from "../journal/definitions";
-import type { ConfirmPlanCommand, ConfirmPlanResult } from "../trade-workflows";
+import type {
+  ConfirmPlanCommand,
+  ConfirmPlanResult,
+  PlanPreviewResult,
+  PreviewPlanCommand,
+} from "../trade-workflows";
 import type { TradeReadModel } from "./tradeView";
 import type { InstalledCapabilityManifest } from "../capability/manifest";
 import type { StorageProtection, WorkerControl } from "../platform/host";
@@ -49,6 +54,8 @@ export interface ApplicationRuntime {
   planDefinition(): Promise<EntryDefinitionSet>;
   /** The one confirmation command. */
   confirmPlan(command: ConfirmPlanCommand): Promise<ConfirmPlanResult>;
+  /** The same assess-and-derive step, exposed before Save so a figure can be previewed. Writes nothing. */
+  previewPlan(command: PreviewPlanCommand): Promise<PlanPreviewResult>;
   /** The Trades this Workspace holds, as an honest bounded page. */
   streamTrades(): Promise<readonly TradeReadModel[]>;
   /** One committed Trade with its frozen Plan, stored lifecycle and derived agreement. */

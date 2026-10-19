@@ -72,6 +72,19 @@ const OPERATIONS: readonly InstalledOperation[] = [
     ],
     entryPoint: "app.plan.confirm",
   },
+  {
+    // The same confirmation capability, previewable before Save (deviation D-001). It advertises the
+    // confirmation's assess-and-derive step only: not Plan lifecycle, not the response contract, not
+    // Journal defaults, and `previewPlan` writes nothing.
+    id: "trade.previewPlan",
+    dependencies: [
+      "runtime.readiness",
+      "workspace.getStatus",
+      "referenceCatalog.query",
+      "journal.getDefinitions",
+    ],
+    entryPoint: "app.plan.preview",
+  },
 ];
 
 /** The capabilities D1 actually installs end to end; every later capability is absent. */

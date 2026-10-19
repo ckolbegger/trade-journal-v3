@@ -22,7 +22,7 @@ import { initialize, type OnboardingState } from "../workspace";
 import { requestDurability } from "../workspace/durability";
 import { getDefinitions } from "../journal/definitions";
 import { derive } from "../analysis/trade";
-import { confirmPlan as runConfirmPlan } from "../trade-workflows";
+import { confirmPlan as runConfirmPlan, previewPlan as runPreviewPlan } from "../trade-workflows";
 import { queryRecords } from "../trade-record";
 import type { TradeReadModel } from "../workspace/tradeView";
 import type {
@@ -369,6 +369,11 @@ export function createApplicationRuntime(
     confirmPlan: async (command) => {
       const current = await seam();
       return runConfirmPlan(current, command);
+    },
+
+    previewPlan: async (command) => {
+      const current = await seam();
+      return runPreviewPlan(current, command);
     },
 
     streamTrades: async () => {

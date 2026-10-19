@@ -32,10 +32,7 @@ async function fillPlan(page: Page, options: FillOptions = {}): Promise<void> {
   await page.getByLabel("Planned Leg quantity").fill("100");
   const boundaryPrices = page.getByLabel("Boundary price");
   await boundaryPrices.nth(0).fill("175");
-  const monetary = page.getByLabel("Monetary boundary (USD)");
-  await monetary.nth(0).fill("500");
   await boundaryPrices.nth(1).fill("190");
-  await monetary.nth(1).fill("1000");
   await page.getByLabel("Why this trade, why now? (required)").fill("Breakout above the base");
   if (options.leaveInvalidationBlank !== true) {
     await page
@@ -197,9 +194,7 @@ test.describe("d2-confirm-plan", () => {
     await page.getByLabel("Instrument", { exact: true }).fill("AAPL");
     await page.getByLabel("Planned Leg quantity").fill("100");
     await page.getByLabel("Boundary price").nth(0).fill("175");
-    await page.getByLabel("Monetary boundary (USD)").nth(0).fill("500");
     await page.getByLabel("Boundary price").nth(1).fill("190");
-    await page.getByLabel("Monetary boundary (USD)").nth(1).fill("1000");
     await page.getByLabel("Why this trade, why now? (required)").fill("Breakout above the base");
     await page
       .getByLabel("What would invalidate the thesis? (required)")

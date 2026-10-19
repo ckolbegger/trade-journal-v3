@@ -10,3 +10,5 @@ export type {
   ConfirmPlanSuccess,
   WorkflowIssue,
 } from "./confirmPlan";
+export { previewPlan } from "./previewPlan";
+export type { PlanPreview, PlanPreviewResult, PreviewPlanCommand } from "./previewPlan";

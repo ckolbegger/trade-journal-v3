@@ -499,57 +499,34 @@ Economic Time, not save time, and the result binds the exact source `FactRevisio
 
 ---
 
-## Status at the end of this session — D2 is **not** complete
+## Status at the checkpoint after T12 — **superseded, corrected here**
 
-This section is a precise handoff, not a completion claim. Twelve of D2's twenty tasks are implemented,
-tested and committed; eight are not started. D2's definition of done (§2 of the handoff) is **not**
-met: there is no confirmation orchestration, no browser surface, no mock-free integration suite and no
-critic gate, so no capability may be advertised yet.
+*This section was stale and is corrected as the D2 remediation handoff (§7) requires. It described the
+state after T12 and was left in place after the deliverable closed, so it contradicted the rest of this
+file. The contradiction is removed rather than carried forward.*
 
-### Implemented and verified (12 of 20)
+**What was true at this checkpoint.** Twelve of D2's twenty tasks (T1–T12) were implemented, tested and
+committed; T13–T20 had not started. The checkpoint's cumulative suites were **289 Vitest tests in 40
+files** and **132 Playwright tests** across `chromium`, `webkit`, `narrow` and `wide`; `npx tsc
+--noEmit`, `npm run lint:layers` and `npx eslint .` all exited 0, and D1's accepted behaviour was green
+in the same runs.
 
-| Task | Status | Evidence |
-|---|---|---|
-| T1 | done | V1.1–V1.7 above |
-| T2 | done | 8 cases; one case's red was unreachable (recorded) |
-| T3 | done | 8 cases; re-established red (recorded) |
-| T4 | done | 8 cases; re-established red (recorded) |
-| T5 | done | 12/12 genuine red-first |
-| T6 | done | 9 cases; 3 valid red, 6 red-unreachable (recorded) |
-| T7 | done | 8 cases; 6 valid red, 2 red-unreachable (recorded) |
-| T8 | done | 8 cases; 7 valid red, 1 red-unreachable (recorded) |
-| T9 | done | 8 cases; re-established red (recorded) |
-| T10 | done | 8 cases; re-established red (recorded) |
-| T11 | done | 8 cases; 3 valid red, 5 red-unreachable (recorded) |
-| T12 | done | 9 cases; 4 valid red, 5 harness-then-green (recorded) |
+**What happened after it, in this same session.** T13–T20 landed (records below) and the deliverable
+was closed and tagged `deepseek-v41-flash-D2` (`b35a7b9`) and
+`deepseek-v41-flash-D2-tdd-behavior-enforcement` (`e748e55`). Those two tags mark the deliverable
+**before** the D2 remediation and are **not** its final state. Deviation D-001
+(`plan/freeze-2026-10-19.md`, freeze revision 2) then reopened D2 to add T21 and T22, whose record is
+the final section of this file. The former "Not started (8 of 20)" table and "What a successor must
+not do" warnings no longer described the delivered code — they are superseded by the T13–T20 and
+T21/T22 records below, so they are removed instead of being left to mislead a reader.
 
-Cumulative suites at the last commit: **289 Vitest tests in 40 files**, **132 Playwright tests** across
-`chromium`, `webkit`, `narrow` and `wide`; `npx tsc --noEmit`, `npm run lint:layers` and `npx eslint .`
-all exit 0. D1's accepted behaviour is still green in the same runs.
+Two statements from that handoff remain true and are repeated where they still apply:
 
-### Not started (8 of 20)
-
-| Task | What is missing | Consequence |
-|---|---|---|
-| T13 | `TradeWorkflows.confirmPlan` orchestration joining Catalog, Journal, Trade Analysis and Trade Record inside one semantic transaction | Nothing reaches the durable write path from a production command; `AC-PLAN-001`/`AC-PLAN-002` are not demonstrated |
-| T14 | Atomic rollback across Trade and Journal effects with an injected Journal-participant failure | The all-or-nothing claim is unproven end to end |
-| T15 | `ConfirmPlanResult` as the creation member of the mutation-result contract | No post-commit projection; the no-read-back claim is unproven |
-| T16 | Plan confirmation form | No production entry point; the capability is unreachable from the UI |
-| T17 | Trade view showing the frozen Plan, stored `Planned` and any integrity disagreement | No read surface |
-| T18 | Responsive layout and accessibility for both surfaces | `AC-UI-002`'s D2 portion unexercised |
-| T19 | Mock-free integration suite, real-engine durability leg, boundedness assertions | The durable after-state and typed rejections are proven only per module |
-| T20 | Fresh browser-critic gate, 24 report entries at both viewports | **D2 cannot close**; the critic report at `artifacts/critic/D2-report.json` does not exist |
-
-### What a successor must not do
-
-- Do not advertise D2's confirmation capability in the Installed Capability Manifest until T13–T20 are
-  green; the manifest still declares only D1's eight operations and navigation
-  `["startup", "onboarding"]`, which is honest for the code that exists.
-- Do not claim `AC-PLAN-001`, `AC-PLAN-002` or any other D2 row. They remain exactly as the matrix
-  records them.
-- Read the "red was unreachable" and "re-established red" notes above rather than assuming every case
-  had a red-first sequence. T5 is the only task in this session whose cases were all genuinely
-  red-first.
+- The manifest advertises only capability installed end to end. It now includes `trade.previewPlan`
+  because that operation is installed; it still does **not** advertise Plan lifecycle, the response
+  contract or Journal defaults (§"T21/T22" below).
+- A "red was unreachable" or "re-established red" note is not the same as a red-first case. T21's and
+  T22's twelve planned cases are recorded per case in the final section, as `AGENTS.md` §6 requires.
 
 ### Recorded defect fixed in D1's delivered code
 
@@ -1074,3 +1051,219 @@ passed **168/168**. Do not leave a preview on `DEV_PORT` while running the brows
 | R4 | `npx tsc --noEmit` | exit 0 | pass |
 | R5 | `npm run lint:layers` | `123 files, 0 violations` | pass |
 | R6 | `npx eslint .` | exit 0 | pass |
+## T21/T22 — D2 remediation for deviation D-001 (pre-commit Plan disclosure)
+
+**Why this section exists.** Deviation D-001 reopened D2 after it had been tagged: the trader could not
+see the Plan's reward-to-risk ratio or maximum loss before the Plan was frozen. The plan was amended
+first — freeze revision 2 (`plan/freeze-2026-10-19.md`), errata **E-012** (no add-condition control),
+**E-013** (derived monetary boundary) and **E-014** (the deviation entry) — and two tasks were added:
+T21 (`previewPlan` plus the shared assess-and-derive step) and T22 (the form's provisional disclosure,
+its single Stop/Target pair, and the derived boundary). This session implements them; **no plan file
+changed**, so the freeze manifest was not re-stamped and both plan validators were only re-run.
+
+### What landed
+
+| Piece | Where |
+|---|---|
+| `assessDraft` — the one resolve → complete → assess → frozen-baseline → prepared-reflection step, with two callers | `src/trade-workflows/assessDraft.ts` (new) |
+| `previewPlan` — returns `{ planBaseline, oneR, perConditionBasis }` and any typed issues; writes nothing | `src/trade-workflows/previewPlan.ts` (new), exported from `src/trade-workflows/index.ts` |
+| `confirmPlan` — re-runs `assessDraft` at commit time and commits the **completed** Plan | `src/trade-workflows/confirmPlan.ts` (same observable behaviour; its 16 existing cases stayed green) |
+| E-013 derivation in Trade Analysis — `completePlan` fills `monetaryBoundary` for a derivable condition and rejects a non-derivable one with the precise missing prerequisite | `src/analysis/trade/index.ts` |
+| The input shape E-013 needs — `TradePlanInput` / `UnderlyingPriceConditionInput` with an optional `monetaryBoundary`. The frozen `TradePlan` is unchanged and still requires it on every underlying-price condition (PD9) | `src/plan/index.ts` |
+| Runtime wiring — `previewPlan(command): Promise<PlanPreviewResult>` against the same `seam()`, and `trade.previewPlan` in the manifest: dependencies `runtime.readiness`, `workspace.getStatus`, `referenceCatalog.query`, `journal.getDefinitions`; entry point `app.plan.preview` | `src/workspace/runtime.ts`, `src/composition/application.ts`, `src/capability/manifest.ts`, `tests/capability/manifest.test.ts` |
+| The form — provisional reward-to-risk and maximum loss, exactly one Stop and one Target, the derived boundary displayed read-only, the preview's typed issues in place of the form's duplicated rules, frozen figures labelled after Save, and one Journal obligation identity per plan session so "Start another plan" is not a dead end | `src/ui/PlanForm.tsx`; the two specs that typed a monetary boundary were updated for E-013 (`tests/browser/plan-confirmation.spec.ts`, `tests/browser/d2-durability.spec.ts`) |
+
+**Judgement recorded (which rules stayed in the form).** The form keeps exactly three rules of its
+own — Account, Strategy and Instrument must be present — because `previewPlan` cannot resolve a
+Catalog binding without the first two, and Trade Analysis does not validate the Instrument at all;
+requirement 5 gates the preview on precisely these three. Every other required-field rule (intended
+entry, each boundary price, the leg quantity, both required prompts) now comes from the preview's typed
+issues, which is what the T22 case "in place of a duplicated client-side rule set" checks.
+
+**Recording note (paths).** The breakdown's illustrative red/green commands name
+`src/trade-workflows/preview-plan.test.ts` and `e2e/d2-confirm-plan-form.spec.ts`. This repository's
+actual layout is `tests/trade-workflows/*.test.ts` and `tests/browser/*.spec.ts`, so the cases were
+recorded at `tests/trade-workflows/preview-plan.test.ts` and
+`tests/browser/plan-form-disclosure.spec.ts` and the commands below are the ones actually run. The
+**case phrases are verbatim** from the task bodies.
+
+### Evidence, one line per planned case
+
+**T21 — `previewPlan` and the shared assess-and-derive step**
+
+The red stub was a real seam, not a missing module: `previewPlan` existed and returned
+`{ outcome: "Rejected", reason: "previewPlan is not implemented", issues: [] }`, so every case failed
+on a behaviour assertion, with no transform error and no broken fixture.
+
+| # | Case phrase (verbatim) | Exact command | Red observation, and why it failed | Green observation |
+|---|---|---|---|---|
+| 1 | should return the accepted Plan Baseline, the positive 1R and the per-condition basis for a complete draft, when the Account and Strategy resolve and the Plan is complete | `npx vitest run --project unit tests/trade-workflows/preview-plan.test.ts -t "accepted Plan Baseline"` | `AssertionError: expected 'Rejected' to be 'Previewed'` (1 failed, 6 skipped). The operation resolved but the stub produced no baseline, so the claimed figures were absent. | 1 passed: risk `500 USD`, reward `1000 USD`, ratio `"2"`, 1R `500 USD`, and the per-condition basis carried **derived** boundaries `[500 USD, 1000 USD]` although the draft supplied none. |
+| 2 | should return the typed issues the confirmation would return and write nothing, when the draft omits the intended entry, every management condition and the leg evidence | `npx vitest run --project unit tests/trade-workflows/preview-plan.test.ts -t "typed issues the confirmation would return"` | `AssertionError: expected [] to include 'MissingIntendedEntry'` (1 failed, 6 skipped). The stub returned a rejection with an empty issue list, so the typed issue set the confirmation would return was absent. | 1 passed: issues include `MissingIntendedEntry`, `NoManagementCoverage` and `MissingContractEvidence`; every store and participant revision equal to the before-snapshot. |
+| 3 | should return a Catalog snapshot conflict rather than a preview, when the expected snapshot moved after the form was loaded | `npx vitest run --project unit tests/trade-workflows/preview-plan.test.ts -t "Catalog snapshot conflict"` | `AssertionError: expected 'Rejected' to be 'Conflict'` (1 failed, 6 skipped). The stub never resolved the Catalog, so a stale expected snapshot was invisible. | 1 passed: `Conflict` with `CatalogSnapshotConflict`, `currentCatalogSnapshotRevision` greater than the loaded revision. |
+| 4 | should return a baseline identical to the one the confirmation freezes for the same draft and the same inputs, so a previewed figure can never differ from the stored one | `npx vitest run --project unit tests/trade-workflows/preview-plan.test.ts -t "identical to the one the confirmation freezes"` | `AssertionError: expected 'Rejected' to be 'Previewed'` (1 failed, 6 skipped). No figure was produced to compare with the frozen one. | 1 passed: `postCommit.derivation.planBaseline` deep-equals the preview's `planBaseline`, including `oneR` and `perConditionBasis`. |
+| 5 | should leave every store and every participant revision unchanged, when a preview is taken | `npx vitest run --project unit tests/trade-workflows/preview-plan.test.ts -t "leave every store"` | `AssertionError: expected 'Rejected' to be 'Previewed'` (1 failed, 6 skipped). **Recorded honestly:** the case first has to establish that a preview happened, and the stub produced none; a stub also writes nothing, so absence alone cannot make the write claim fail. Its discrimination is established by mutation M21-5 (the preview commits a marker row), which fails exactly this case. | 1 passed: a store-by-store snapshot of all nine `D2_SCHEMA_MANIFEST` stores and the workspace participant revisions is unchanged. |
+| 6 | should name the required Plan Reflection prompt from the exact definition revision supplied, when the draft's reflection is incomplete | `npx vitest run --project unit tests/trade-workflows/preview-plan.test.ts -t "required Plan Reflection prompt"` | `AssertionError: expected false to be true` (1 failed, 6 skipped). The stub returned no issues, so no prompt was named. | 1 passed: the issue names `prompt.plan-reflection.invalidation`, resolved from the supplied definition revision. |
+
+**T21 guard case found by this session's own audit** (not one of the six; recorded because the fix is
+source code): *should name the Planned Leg quantity and write nothing, when a boundary price is
+supplied but the leg quantity is blank, so a preview of a half-typed form never throws* —
+`npx vitest run --project unit tests/trade-workflows/preview-plan.test.ts -t "leg quantity is blank"`.
+**Red:** removing the blank-quantity guard makes the case fail (`1 failed`, the derivation reaches
+`positionValue` with an empty quantity and the Decimal constructor throws, so the preview rejects
+instead of returning a typed issue), recorded as mutation M21-7. **Green:** 1 passed, the rejection
+names `plan.plannedLegs[0].quantity` with `NonPositiveQuantity`, and nothing was written.
+
+**T22 — the form's pre-commit disclosure and reduced input set**
+
+The red was taken against the **pre-change form**: `src/ui/PlanForm.tsx` was restored from `HEAD`
+(the T21 seam already existed), the new spec was run against it, and the implementation was re-applied
+afterwards. The build is the production build Playwright starts itself (`npm run build` then
+`scripts/sw-test-server.mjs`); no preview server was listening on 5177.
+
+| # | Case phrase (verbatim) | Exact command | Red observation, and why it failed | Green observation |
+|---|---|---|---|---|
+| 1 | should show the provisional reward-to-risk ratio and the maximum loss before Save, from previewPlan, when a complete plan has been entered | `npx playwright test tests/browser/plan-form-disclosure.spec.ts --project=chromium -g "before Save"` | `Error: expect(locator).toHaveText(expected) failed / Locator: getByTestId('preview-rr') / Error: element(s) not found` (1 failed). The form displayed no figure before Save at all. | 1 passed: `preview-rr` = `2`, `preview-max-loss` = `500 USD`, both labelled provisional, and both hold after a live resize to 375 and back to 1440. |
+| 2 | should not offer any control that adds a third condition, when the Long Stock form is rendered | `npx playwright test tests/browser/plan-form-disclosure.spec.ts --project=chromium -g "adds a third condition"` | `Error: expect(locator).toHaveCount(expected) failed / Locator: getByRole('button', { name: 'Add another condition' }) / Expected: 0 / Received: 1` (1 failed). The control existed. | 1 passed: no add-condition control, exactly two boundary-price inputs, and the two blocks are "Condition 1: Stop" and "Condition 2: Target". |
+| 3 | should not ask for a monetary boundary and should display the amount the preview derives, when a condition carries a boundary price | `npx playwright test tests/browser/plan-form-disclosure.spec.ts --project=chromium -g "monetary boundary"` | `Error: expect(locator).toHaveCount(expected) failed / Locator: getByLabel('Monetary boundary (USD)') / Expected: 0 / Received: 2` (1 failed). The form required a typed monetary boundary. | 1 passed: no monetary-boundary input exists, and the derived amounts `500 USD` (Stop) and `1000 USD` (Target) are displayed read-only. |
+| 4 | should show the preview's typed issues in place of a duplicated client-side rule set, when the draft is incomplete | `npx playwright test tests/browser/plan-form-disclosure.spec.ts --project=chromium -g "duplicated client-side rule set"` | `Error: expect(locator).toHaveCount(expected) failed / Locator: getByRole('alert') / Expected: 1 / Received: 3` (1 failed). The form's own rules produced three inline messages — one per blank monetary boundary plus the prompt — instead of the preview's single typed issue. | 1 passed: exactly one alert, carrying the preview's detail `"What would invalidate the thesis?" is required and was not answered`; the form's own copy (`Answer "…" before saving.`) is absent. |
+| 5 | should show the frozen figures from the confirmation result and label them as frozen after Save, when the Plan is saved | `npx playwright test tests/browser/plan-form-disclosure.spec.ts --project=chromium -g "label them as frozen"` | `Error: element(s) not found` reading the provisional figure (`preview-rr`) before Save — there was nothing to compare, and the saved screen carried no frozen label (1 failed). | 1 passed: `saved-rr` and `saved-max-loss` equal the provisional values exactly, are labelled "(frozen)", and the screen states that they are the provisional ones seen before Save. |
+| 6 | should not call previewPlan while a required identity field is still blank, so an empty form is not reported as invalid | `npx playwright test tests/browser/plan-form-disclosure.spec.ts --project=chromium -g "required identity field is still blank"` | `Error: expect(locator).toHaveText(expected) failed / Locator: getByTestId('preview-rr') / Error: element(s) not found` (1 failed). The form could not preview at all, so the gate's effect was unreachable. | 1 passed: with Account, Strategy and Instrument blank there is no provisional region and no figure, Save reports only the three identity messages (nothing about the Plan), and presenting the identities makes `2` and `500 USD` appear with no further edit. |
+
+**T19 — the added equivalence case** (in `tests/integration/d2-confirm-plan.test.ts`):
+
+| Case phrase | Exact command | Red | Green |
+|---|---|---|---|
+| should return an identical Plan Baseline, 1R and per-condition basis from the preview and from the confirmation that follows it, and the preview alone must write nothing, when both run over real persistence | `npx vitest run --project integration tests/integration/d2-confirm-plan.test.ts -t "identical Plan Baseline"` | **Mutation-established, and recorded as such:** the case landed in the same commit as `previewPlan`, so an absence red was not reachable. Mutation **M19-1** (the preview commits a marker row) fails exactly this case (`1 failed`, 8 skipped). | 1 passed (9 in the file): the preview wrote nothing (store-by-store plus participant revisions), the confirmed baseline/1R/per-condition basis equal the preview's, and the **stored** Plan fact's `perConditionBasis` equals the preview's, i.e. the derived boundary was frozen. |
+
+### Mutation audit
+
+One deliberate defect per planned case; the named suite re-run; the failure recorded; the source
+reverted. Every mutation was detected — no vacuous case was found this time.
+
+| # | Task | Mutation | Intended case | Detected |
+|---|---|---|---|---|
+| M21-1 | T21 | the derivation drops the quantity (`\|boundary − entry\|` used as the amount) | 1 | yes — 1 failed |
+| M21-2 | T21 | a rejected draft loses its typed issues (`issues: []`) | 2 | yes — 1 failed |
+| M21-3 | T21 | the expected Catalog snapshot revision is no longer passed to `resolve` | 3 | yes — 1 failed |
+| M21-4 | T21 | the preview re-derives its own ratio (`"9"`) instead of returning the assessed one | 4 | yes — 1 failed |
+| M21-5 | T21 | the preview commits a marker row to `workspaceMeta` | 5 | yes — 1 failed |
+| M21-6 | T21 | the shared step skips `prepareEffects`, so an incomplete reflection is accepted | 6 | yes — 1 failed |
+| M21-7 | T21 | the blank-quantity guard is removed (Decimal throws) | guard case | yes — 1 failed |
+| M22-1 | T22 | the provisional figures are never rendered | 1 | yes — 1 failed |
+| M22-2 | T22 | an "Add another condition" control is rendered again | 2 | yes — 1 failed |
+| M22-3 | T22 | the derived amount is not displayed | 3 | yes — 1 failed |
+| M22-4 | T22 | the form validates the reflection prompts itself again | 4 | yes — 1 failed |
+| M22-5 | T22 | the frozen figures are not labelled frozen | 5 | yes — 1 failed |
+| M22-6 | T22 | the preview runs with identities blank (the gate is removed) | 6 | yes — 1 failed |
+| M19-1 | T19 | the preview commits a marker row | integration equivalence | yes — 1 failed |
+| D2-C1 | T22 (critic defect) | the form's obligation key is fixed again at `plan-confirmation:1` | second-Plan case | yes — 1 failed |
+
+**What the audit changed.** M21-7 exposed a real defect in my own derivation: it ran **before**
+assessment and therefore could reach `positionValue` with a blank quantity, where `new Decimal("")`
+throws. A trader typing a Stop price before a quantity would have got an unhandled rejection instead
+of a typed issue. Fixed in `completePlan` by naming the missing prerequisite
+(`NonPositiveQuantity` on `plan.plannedLegs[i].quantity`) and covered by the guard case above.
+
+### The Installed Capability Manifest
+
+`trade.previewPlan` was added as installed, with the exact dependencies and entry point the task
+requires, and the manifest's exact-list test was extended **before** the manifest entry so the
+contract failed first (red: `expected [ …(8) ] to deeply equal [ …(9) ]`, missing
+`trade.previewPlan`). `closureProblems` is empty and `selfCheck(manifest, entryPoints, navigation)` is
+`[]` in the existing cases. The honesty rule holds: the manifest advertises confirmation, now
+previewable; it advertises neither Plan lifecycle, nor the response contract, nor Journal defaults.
+
+### Definition of done — the commands
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| R1 | `npx vitest run` | `Test Files 45 passed (45)`, `Tests 333 passed (333)` | pass |
+| R2 | `npx playwright test` | `196 passed (2.5m)` across the four projects | pass |
+| R3 | `npx tsc --noEmit` | exit 0 | pass |
+| R4 | `npm run lint:layers` | `127 files, 0 violations` | pass |
+| R5 | `npx eslint .` | exit 0 | pass |
+| R6 | `shasum -a 256 -c plan/freeze-manifest-2026-10-17.sha256` | 11 × `OK` | pass |
+| R7 | `node scripts/check-deliverable-breakdown.mjs plan/deliverable-breakdowns/*.md` | `0 failure(s), 0 warning(s) across 7 file(s)` | pass |
+| R8 | `node scripts/audit-breakdown-coverage.mjs` | `0 failure(s), 0 warning(s)` | pass |
+| R9 | `node scripts/derive-acceptance-ownership.mjs` | `67 scenarios: 32 claimed by D1–D7, 35 unclaimed, 2 with no owning deliverable.` | pass |
+
+### The independent critic gate — round 1, and the defect it found
+
+A critic that **did not write this code** started the runtime itself (built the tree at 14:56 and
+served it with `npx vite preview --port 5177`), completed D1 onboarding afresh in each viewport's
+persistent browser profile, and ran the breakdown's **13 flows** at **375×812** and **1440×900** —
+**26 entries**.
+
+| | |
+|---|---|
+| Critic | `critic-d2-1792436565-6325cf` |
+| Did it write implementation? | `false` |
+| Spawned after the implementation? | `true` |
+| Commit tested | `d13df8e10dcf44efc888b1c389bb254e5f0b5848`, working tree dirty with exactly the T21/T22 changes recorded here |
+| Served | `http://127.0.0.1:5177`, release `4b341772…4e1`, identical to `dist/release-inventory.json` |
+| Report | `artifacts/critic/D2-report.json` — 26 entries |
+| Totals | 13 flows × 2 viewports = **26 entries, 24 passed, 2 failed** |
+
+Flows 1–12 passed at both viewports, including the new flow 13's **pre-Save** half: provisional
+reward-to-risk `2`, maximum loss `500 USD`, both read-only derived boundaries (`500 USD` Stop,
+`1000 USD` Target), and no monetary-boundary input. Flows 13 failed at Save at both viewports.
+
+**The defect: a Workspace could never confirm a second Plan.** The gate runs the flows in one
+Workspace per viewport (flow 9 re-reads the Trade confirmed by flow 4), so flow 13's Save is the
+second confirmation. `src/ui/PlanForm.tsx` hardcoded `plan-confirmation:1` as the Journal obligation
+key, and the Journal participant rejects an obligation key that already has a current outcome, so the
+second Save was refused with:
+
+```
+The Plan was not saved. Your entries are still here.
+obligation plan-confirmation:1 already has a current outcome
+```
+
+That made the saved screen's own **"Start another plan"** control a dead end. The coordinator was
+already able to confirm repeatedly — `tests/integration/d2-confirm-plan.test.ts` proves two Trades in
+one Workspace with `plan-confirmation:1` and `plan-confirmation:2` — so the fault was the form's key,
+not the workflow. The plan is silent on the key's value: no plan file was changed and no register
+entry is needed.
+
+**Reproduced by an automated test before the fix.** New browser case *"should confirm a second Plan in
+the same Workspace when the trader starts another plan, so the saved screen's own control is not a dead
+end"*, `npx playwright test tests/browser/plan-form-disclosure.spec.ts --project=chromium -g "second
+Plan"`:
+
+- **Red (before the fix):** `Error: expect(locator).toBeVisible() failed / Locator:
+  getByRole('heading', { name: 'Plan confirmed' }) / Error: element(s) not found` (1 failed); the
+  failure context shows the alert `obligation plan-confirmation:1 already has a current outcome`.
+- **Green (after the fix):** 1 passed; the second Save reaches "Plan confirmed", and
+  `list[aria-label="Confirmed Trades"]` holds **2** buttons.
+
+**Fix, and why it is shaped this way.** The form mints its own obligation identity per plan session:
+`plan-confirmation:${crypto.randomUUID()}` in component state, renewed when the trader presses "Start
+another plan" (which also clears the stale provisional/issue state). It is deliberately *not* minted
+per Save: a double submit of the same form must keep the same key so the Journal's duplicate guard
+still turns it into one Trade. No type, store, index, schema version, operation or dependency changed.
+
+**Mutation audit of the fix (D2-C1):** restoring the fixed key `plan-confirmation:1` fails exactly the
+new case (`DETECTED, 1 failed`).
+
+**Two observations the critic recorded and did not count as failures:**
+
+1. Flow 5's zero-risk message described the boundary as "neither supplied … nor derivable" instead of
+   naming non-positive risk. **Already changed by the time of this record:** a zero derived boundary
+   now completes and is rejected by assessment as a non-positive monetary boundary, which names the
+   Stop and the amount. The critic's build (14:56) predated that change.
+2. The wide fixed sidebar starts 16px below the top edge (`margin-top: 1rem` on the base `.nav`),
+   leaving a cosmetic strip of background. **Not changed:** it predates this session, is outside
+   T21/T22 and the recorded flows' assertions, and touching it would be an unrelated layout change.
+   Recorded here so it is not lost.
+
+### D2's seams for D3 — what D3 can rely on, and what moved
+### D2's seams for D3 — what D3 can rely on, and what moved
+
+| Seam | State at the end of this session |
+|---|---|
+| **Frozen Plan fact shape** | **Unchanged.** `TradePlan` still requires `monetaryBoundary` on every `UnderlyingPriceCondition` (PD9), and `StructureValueCondition` stays reserved and uninstalled. What changed is the *input*: commands now take `TradePlanInput`, whose `UnderlyingPriceConditionInput` makes `monetaryBoundary` optional because Trade Analysis derives it (E-013, class: adjustment). D3 code that builds a Plan for `assessPlan`/`confirmPlan` may omit the boundary for a derivable condition; it must not omit it for an option leg's underlying boundary or a `StructureValueCondition`. |
+| **`Planned` index entry** | **Unchanged.** No store, key path, index name, unique constraint or schema version moved; `lifecycleIndex` still records `{ tradeId, state, factRevision, … }` and `Planned` is still D2's only state. `previewPlan` writes nothing, so it adds no index membership and no revision. |
+| **Journal definition revision** | **Unchanged.** The Plan Reflection Entry Type is still revision 1 and the Plan Confirmation Source is unchanged. `previewPlan` resolves the exact revision the form displayed through `prepareEffects` and discards the prepared effect; confirmation prepares it again from the same function with the real authored time. |
+| **Manifest v2 state** | **Grown by one operation, not re-versioned.** `schema` is still `{ minSchemaVersion: 1, maxSchemaVersion: 2 }`; `navigation` is still `["startup","onboarding","plan","trades"]`; `reportFamilies`, `providerAdapters`, `backup`, `installSupport` and `feeApplication` are unchanged. There are now **ten** operations, the new one being `trade.previewPlan` → `app.plan.preview`, dependency-closed on `runtime.readiness`, `workspace.getStatus`, `referenceCatalog.query`, `journal.getDefinitions`. |
+| **`ConfirmPlanResult`** | **Unchanged in shape.** `{outcome:"Accepted", value}` / `Rejected` / `Conflict` / `RuntimeNotWritable`; `ConfirmPlanSuccess` still carries `receipt`, `postCommit.{trades,derivation,journal}` and `affected`. `WorkflowIssue`, `ConfirmPlanRejection`, `ConfirmPlanConflict` and `ConfirmPlanParticipants` moved into `assessDraft.ts` and are re-exported from `confirmPlan.ts` and `src/trade-workflows/index.ts`, so the public import path is unchanged. The only shape change is `ConfirmPlanCommand.plan: TradePlanInput` (E-013). |
+| **`previewPlan` — the new shape D4 should reuse** | `previewPlan(seam, command: PreviewPlanCommand): Promise<PlanPreviewResult>` at the coordinator, and `previewPlan(command: PreviewPlanCommand): Promise<PlanPreviewResult>` on `ApplicationRuntime`. `PreviewPlanCommand = Omit<ConfirmPlanCommand, "saveTime" \| "firstAuthoredTime" \| "cutoffTradingDate">`. `PlanPreviewResult = { outcome: "Previewed"; value: PlanPreview } \| ConfirmPlanRejection \| ConfirmPlanConflict \| RuntimeNotWritable`. `PlanPreview = { planBaseline: PlanBaseline; oneR: Money; perConditionBasis: readonly PerConditionBasis[] }`. **D4's review surface should call `runtime.previewPlan` rather than build a second preview**: it is the same `assessDraft` step that confirmation re-runs at commit time, which is what makes "the previewed figure cannot differ from the frozen one" true by construction. A second derivation would break that guarantee. |

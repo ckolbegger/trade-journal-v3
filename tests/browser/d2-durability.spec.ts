@@ -31,9 +31,7 @@ test.describe("d2-durability", () => {
     await page.getByLabel("Instrument", { exact: true }).fill("AAPL");
     await page.getByLabel("Planned Leg quantity").fill("100");
     await page.getByLabel("Boundary price").nth(0).fill("175");
-    await page.getByLabel("Monetary boundary (USD)").nth(0).fill("500");
     await page.getByLabel("Boundary price").nth(1).fill("190");
-    await page.getByLabel("Monetary boundary (USD)").nth(1).fill("1000");
     await page.getByLabel("Why this trade, why now? (required)").fill("Breakout above the base");
     await page
       .getByLabel("What would invalidate the thesis? (required)")

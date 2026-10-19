@@ -7,7 +7,9 @@ import type {
   StrategyRole,
   StrategyShape,
   TradePlan,
+  TradePlanInput,
   UnderlyingPriceCondition,
+  UnderlyingPriceConditionInput,
 } from "../../plan";
 import {
   addMoney,
@@ -172,6 +174,132 @@ function normalizedLeg(leg: PlannedLeg): PlannedLeg {
           },
         }),
   };
+}
+
+/**
+ * The dollar distance from the intended entry to one condition's boundary, over the legs it
+ * protects, when the trader supplies a boundary price and no monetary boundary (erratum E-013).
+ * `undefined` when no exact amount can be derived, so the caller reports a typed rejection rather
+ * than inventing a boundary.
+ */
+type BoundaryDerivation =
+  | { readonly kind: "Derived"; readonly value: Money }
+  | { readonly kind: "NoPositiveLegQuantity"; readonly legId: string }
+  | { readonly kind: "NoBoundaryPrice" }
+  | { readonly kind: "NoProtectedLeg" }
+  | { readonly kind: "NotComputable" };
+
+function derivedMonetaryBoundary(
+  condition: UnderlyingPriceConditionInput,
+  plan: TradePlanInput,
+): BoundaryDerivation {
+  const basis = condition.basis;
+  if (basis === undefined || basis.protects.length === 0) return { kind: "NoProtectedLeg" };
+  const entry = price({ amount: plan.intendedEntry.amount });
+  const boundary = price({ amount: condition.boundaryPrice.amount });
+  if (!entry.ok || !boundary.ok) return { kind: "NoBoundaryPrice" };
+  const difference = subtractPrice(boundary.value, entry.value);
+  if (!difference.ok) return { kind: "NoBoundaryPrice" };
+  const magnitude: Price = difference.value.amount.startsWith("-")
+    ? { amount: difference.value.amount.slice(1) }
+    : difference.value;
+  const protectedLegs = plan.plannedLegs.filter((leg) => basis.protects.includes(leg.legId));
+  if (protectedLegs.length === 0) return { kind: "NoProtectedLeg" };
+  const currency = condition.monetaryBoundary?.currency ?? DEFAULT_CURRENCY;
+  let running: Money | undefined;
+  for (const leg of protectedLegs) {
+    // Derivation runs before assessment, so it cannot assume the leg was accepted: a blank or
+    // non-numeric quantity must be a typed rejection naming the leg, never a thrown Decimal error.
+    if (!positiveDecimal(leg.quantity.amount)) {
+      return { kind: "NoPositiveLegQuantity", legId: leg.legId };
+    }
+    const valued = positionValue(leg.quantity, magnitude, currency);
+    if (!valued.ok) return { kind: "NotComputable" };
+    if (running === undefined) {
+      running = valued.value;
+      continue;
+    }
+    const summed = addMoney(running, valued.value);
+    if (!summed.ok) return { kind: "NotComputable" };
+    running = summed.value;
+  }
+  // A zero boundary is a legitimate derivation result; the assessment rejects it as a non-positive
+  // monetary boundary, which says exactly what is wrong with it. Only an incommensurable sum is
+  // "not computable".
+  if (running === undefined) return { kind: "NotComputable" };
+  return { kind: "Derived", value: running };
+}
+
+export type CompletePlanResult =
+  | { readonly outcome: "Completed"; readonly plan: TradePlan }
+  | { readonly outcome: "Rejected"; readonly issues: readonly PlanIssue[] };
+
+/**
+ * Complete a supplied Plan for assessment. A supplied monetary boundary is kept as the trader wrote
+ * it; a derivable underlying-price condition with none gets `|boundary - intendedEntry| x quantity`
+ * over the legs it protects. Derivability is decided here, never in presentation (E-013). A
+ * condition that is neither supplied nor derivable is a typed rejection, and the frozen fact shape
+ * still requires `monetaryBoundary` on every underlying-price condition (PD9).
+ */
+export function completePlan(plan: TradePlanInput): CompletePlanResult {
+  const issues: PlanIssue[] = [];
+  const entryIsPrice = (() => {
+    const entry = price({ amount: plan.intendedEntry.amount });
+    return entry.ok && Number(entry.value.amount) > 0;
+  })();
+  let missingEntryReported = false;
+  const completed: PlanCondition[] = [];
+
+  plan.originalManagement.forEach((condition, index) => {
+    if (condition.kind !== "UnderlyingPrice") {
+      completed.push(condition);
+      return;
+    }
+    if (condition.monetaryBoundary !== undefined && condition.monetaryBoundary.amount !== "") {
+      completed.push({ ...condition, monetaryBoundary: condition.monetaryBoundary });
+      return;
+    }
+    if (!entryIsPrice) {
+      if (!missingEntryReported) {
+        missingEntryReported = true;
+        issues.push({
+          code: "MissingIntendedEntry",
+          field: "plan.intendedEntry",
+          detail:
+            "a completed Plan needs an intended entry before a monetary boundary can be derived",
+        });
+      }
+      return;
+    }
+    const derived = derivedMonetaryBoundary(condition, plan);
+    if (derived.kind !== "Derived") {
+      if (derived.kind === "NoPositiveLegQuantity") {
+        const legIndex = plan.plannedLegs.findIndex((leg) => leg.legId === derived.legId);
+        issues.push({
+          code: "NonPositiveQuantity",
+          field: legIndex === -1 ? "plan.plannedLegs" : `plan.plannedLegs[${legIndex}].quantity`,
+          detail:
+            "a Planned Leg needs a positive quantity before this condition's monetary boundary can be derived",
+          legId: derived.legId,
+        });
+        return;
+      }
+      issues.push({
+        code: "MissingMonetaryBoundary",
+        field: `plan.originalManagement[${index}].monetaryBoundary`,
+        detail:
+          derived.kind === "NoBoundaryPrice"
+            ? `this ${condition.role} needs a boundary price before its monetary boundary can be derived`
+            : `this ${condition.role} is neither supplied with a monetary boundary nor derivable from its boundary price and the Planned Legs it protects`,
+        conditionId: condition.conditionId,
+      });
+      return;
+    }
+    completed.push({ ...condition, monetaryBoundary: derived.value });
+  });
+
+  if (issues.length > 0) return { outcome: "Rejected", issues };
+  return { outcome: "Completed", plan: { ...plan, originalManagement: completed } };
 }
 
 function normalizedCondition(condition: PlanCondition): PlanCondition {

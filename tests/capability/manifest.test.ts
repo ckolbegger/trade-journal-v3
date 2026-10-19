@@ -56,6 +56,7 @@ describe("the Installed Capability Manifest declares only installed, dependency-
         "release.inventoryValidation",
         "runtime.readiness",
         "trade.confirmPlan",
+        "trade.previewPlan",
         "workspace.getStatus",
         "workspace.initialize",
         "workspace.requestDurability",

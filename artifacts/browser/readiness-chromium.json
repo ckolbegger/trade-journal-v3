@@ -17,7 +17,7 @@
     {
       "check": "service-worker-control",
       "outcome": "Passed",
-      "detail": "the intended release a14f707c75ef99c02778d4c7b64bcac20855736f35b322bf24165fce9e0c9a8e controls this page"
+      "detail": "the intended release 21a8f75ad51b985efac972b9707b09dd28f526014904a9f2e129f8a5da459225 controls this page"
     },
     {
       "check": "offline-release-inventory",
