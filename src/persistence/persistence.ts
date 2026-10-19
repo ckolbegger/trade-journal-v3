@@ -185,7 +185,11 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
     },
 
     async commit(writeSet) {
-      if (superseded) return (await deps.writeGate.recheck()) ?? SUPERSEDED;
+      if (superseded) {
+        // A superseded session never writes, and its refusal always says why.
+        const refusal = (await deps.writeGate.recheck()) ?? SUPERSEDED;
+        return refusal === SUPERSEDED ? refusal : { ...refusal, failedChecks: [...refusal.failedChecks, ...SUPERSEDED.failedChecks] };
+      }
       // Outside Writable, refuse before any write transaction is opened.
       const refusal = deps.writeGate.current();
       if (refusal) return refusal;

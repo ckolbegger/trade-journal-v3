@@ -88,3 +88,6 @@ export const FACADE_GROUPS = ['Workspace', 'ReferenceCatalog', 'Journal', 'Trade
 export function facadeOperations(app: Application): string[] {
   return FACADE_GROUPS.flatMap((group) => Object.keys(app[group]).map((op) => `${group}.${op}`)).sort();
 }
+
+// What the UI may call: the public operation groups and the capability manifest only.
+export type UiFacade = Pick<Application, (typeof FACADE_GROUPS)[number] | 'capabilities'>;

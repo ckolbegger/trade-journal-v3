@@ -11,7 +11,7 @@ export interface RouteDefinition {
   readonly readOnly: boolean;
 }
 
-export const ROUTES: readonly RouteDefinition[] = [
+export const ROUTES = [
   {
     id: 'trades',
     path: '/',
@@ -66,4 +66,4 @@ export const ROUTES: readonly RouteDefinition[] = [
     navigation: false,
     readOnly: false,
   },
-];
+] as const satisfies readonly RouteDefinition[];

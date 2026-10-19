@@ -32,7 +32,7 @@ for (const route of ROUTES) {
     if (!manifest.includes(op)) problems.push(`route ${route.id} requires absent capability ${op}`);
   }
 }
-const reachable = new Set(ROUTES.flatMap((r) => r.requires));
+const reachable = new Set<string>(ROUTES.flatMap((r) => r.requires));
 for (const op of manifest) if (!reachable.has(op)) problems.push(`installed ${op} is not reachable from any route`);
 
 if (problems.length > 0) {

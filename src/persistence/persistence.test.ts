@@ -375,9 +375,29 @@ describe('versionchange (amendment agreed during the D2 breakdown, 2026-10-11)',
     const transactions = vi.spyOn(FakeIDBDatabase.prototype, 'transaction');
     const result = await p.commit({ checks: [], writes: [{ op: 'put', store: 'trades', value: { tradeId: 'trade-1' } }] });
 
-    expect(result).toEqual(refusal);
+    expect(result).toEqual({ ...refusal, failedChecks: [...refusal.failedChecks, { check: 'control', reason: 'SessionSuperseded' }] });
     expect(recheck).toHaveBeenCalledTimes(1);
     expect(transactions.mock.calls.filter(([, mode]) => mode === 'readwrite')).toHaveLength(0);
     expect(await rawGet(created.databaseName, 'trades', 'trade-1')).toBeUndefined();
+  });
+
+  it('should name the supersession among the failed checks of that RuntimeNotWritable, so the shell can explain it', async () => {
+    const reran: RuntimeNotWritable = {
+      kind: 'RuntimeNotWritable',
+      runtimeReadiness: 'RecoveryOnly',
+      failedChecks: [{ check: 'control', reason: 'DifferentRelease' }],
+      workspaceStatus: 'RecoveryOnly',
+      safeActions: [],
+    };
+    const p = persistence({ current: () => null, recheck: () => Promise.resolve(reran) });
+    const created = await p.createWorkspace([]);
+    if (created.kind !== 'Created') throw new Error('workspace not created');
+    await p.commit({ checks: [], writes: [] });
+    (await openAtVersion(created.databaseName, 2)).close();
+    const result = await p.commit({ checks: [], writes: [] });
+    expect(result.kind === 'RuntimeNotWritable' && result.failedChecks).toEqual([
+      { check: 'control', reason: 'DifferentRelease' },
+      { check: 'control', reason: 'SessionSuperseded' },
+    ]);
   });
 });
