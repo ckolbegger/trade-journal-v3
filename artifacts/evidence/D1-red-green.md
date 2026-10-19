@@ -134,3 +134,25 @@ Workspace and asserts the resolved trading date and revision in the persisted in
 `Workspace.initialize` is T25, which depends on T11/T20/T21/T22/T23 and cannot exist at T5. The
 assertion lands with T25's receipt (which already records readiness and seed evidence), and T33 repeats
 it through the real stack. This is a scheduling consequence of the frozen graph, not a scope change.
+
+---
+
+## T6 — `B` Money, Price, and Quantity value layer over `decimal.js`
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T6.1 | add two Money values exactly … when the sum exceeds the range a JS number represents without loss | `npx vitest run tests/values/money-add.test.ts -t "add two Money"` — amount `9007199254740992`; the first implementation stored amounts as a `number` and lost the low-order digit (expected `…994`) | same command — 1 passed with `9007199254740994` after the layer moved to `decimal.js` |
+| T6.2 | reject an operation mixing two currencies with a typed CurrencyMismatch | `npx vitest run tests/values/currency.test.ts` — `{ ok: true, value: { amount: "3", currency: "USD" } }`; both operands were coerced to the left operand's currency | same command — 1 passed with `CurrencyMismatch { left: "USD", right: "EUR" }` from both `addMoney` and `subtractMoney` |
+| T6.3 | compute a position value … with no implicit rounding when the price carries more decimal places than the display scale | `npx vitest run tests/values/money-add.test.ts -t "position value"` — absent, then `30.38`; the first implementation rounded to the 2-decimal display scale | same command — 1 passed with `30.375` |
+| T6.4 | classify a cancelling difference as exactly zero and never as negative zero | `npx vitest run tests/values/zero.test.ts` — no module: the value layer was absent | same command — 1 passed; `5 − 5` canonicalises to `"0"` and equals a constructed zero Money |
+| T6.5 | reject a Quantity carrying more scale than the instrument class allows with a typed ScaleExceeded | `npx vitest run tests/values/scale.test.ts` — `{ ok: true, … }`; every scale was accepted | same command — 1 passed with `ScaleExceeded { instrumentClass, offending, allowedScale }` for stock scale 5 and option scale 1 |
+| T6.6 | round-trip a Money, Price and Quantity through the persistence codec … no numeric coercion | `npx vitest run tests/values/codec-round-trip.test.ts` — absent, then `1234567890.1234567`; the codec serialized through `Number()` | same command — 1 passed with `1234567890.123456789012345678` and every encoded amount a JSON string |
+| T6.7 | reject construction of an authoritative Money from a JS number literal with a typed NonExactInput | `npx vitest run tests/values/non-exact-input.test.ts` — `{ ok: true, … }`; a number literal was accepted | same command — 1 passed with `NonExactInput { field: "money.amount" }` |
+
+The layer is pure, imports `decimal.js` and nothing else, and deliberately has **no** fee-apportionment
+helper (PD10). Quantity carries its instrument class so the codec can revalidate scale on decode.
+
+**Durable integration half.** The store round-trip ("written through the production persistence codec,
+read back from the real store, asserted on durable bytes") needs the schema and seam, so it runs from T9
+and joins the cumulative suite at T11, exactly as the task text allows. The codec itself is proven here;
+the durable bytes assertion is recorded with T9/T11.
