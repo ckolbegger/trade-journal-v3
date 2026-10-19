@@ -1,5 +1,5 @@
-import { CATALOG_SEED_MANIFEST_V1, type CatalogSnapshot } from "../catalog";
-import { query as catalogQuery, save as catalogSave, type CatalogQueryResult, type CatalogSaveResult } from "../catalog/save";
+import { CATALOG_SEED_MANIFEST_V1 } from "../catalog";
+import { query as catalogQuery, save as catalogSave } from "../catalog/save";
 import { installedCapabilities, type InstalledCapabilityManifest } from "../capability/manifest";
 import { runDiagnosticTransaction } from "../persistence/indexeddb/diagnostic";
 import type { MigrationOutcome } from "../persistence/indexeddb/migration";
@@ -7,13 +7,13 @@ import { openDatabase } from "../persistence/indexeddb/schema";
 import { createTransactionSeam, type TransactionSeam } from "../persistence/indexeddb/transaction";
 import { createWriteGate, type ReadinessDecision } from "../persistence/indexeddb/writeGate";
 import type { Clock, Instant } from "../platform/clock";
-import type { HostPort, StorageProtection, WorkerControl } from "../platform/host";
+import type { HostPort } from "../platform/host";
 import type { ReadinessPorts, ReadinessResult } from "../readiness";
 import { establishReadiness } from "../readiness";
 import { createReadinessLedger, type ReadinessBoundary, type ReadinessReceipt } from "../readiness/lifecycle";
 import type { RootObservation } from "../readiness/decision";
-import { validateReleaseInventory, type InventoryFailure } from "../release/inventory";
-import { initialize, type OnboardingState, type WorkspaceInitializationResult } from "../workspace";
+import { validateReleaseInventory } from "../release/inventory";
+import { initialize, type OnboardingState } from "../workspace";
 import { requestDurability } from "../workspace/durability";
 import type {
   ApplicationRuntime,
@@ -43,12 +43,6 @@ function delay(milliseconds: number | undefined): Promise<void> {
   return milliseconds === undefined || milliseconds <= 0
     ? Promise.resolve()
     : new Promise((resolve) => setTimeout(resolve, milliseconds));
-}
-
-function onboardingOf(snapshot: CatalogSnapshot): OnboardingState {
-  return snapshot.institutions.length > 0 && snapshot.accounts.length > 0
-    ? "Ready for Trade Planning"
-    : "Needs Institution and Account";
 }
 
 export function createApplicationRuntime(

@@ -1,7 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { openDatabase } from "../../src/persistence/indexeddb/schema";
-import { createTransactionSeam } from "../../src/persistence/indexeddb/transaction";
-import { createWriteGate } from "../../src/persistence/indexeddb/writeGate";
 import { establishReadiness } from "../../src/readiness";
 import { buildRelease, closeAll, openStore, readinessPorts } from "./support";
 
