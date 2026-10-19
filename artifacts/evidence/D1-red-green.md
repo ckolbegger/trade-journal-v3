@@ -48,3 +48,25 @@ durable format, or scenario status changes.
 `scripts/check-deliverable-breakdown.mjs` and `scripts/audit-breakdown-coverage.mjs`. They were removed
 (the smallest change that makes the declared gate exit 0); both plan validators still report
 `0 failure(s), 0 warning(s)` and no plan file changed.
+
+---
+
+## T2 — `S` Layer-boundary lint
+
+Structural task: exact verification instead of invented unit tests. The rule set is data in
+`scripts/layers.config.mjs`; the checker is `scripts/check-layers.mjs`.
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| V2.1 | `npm run lint:layers` | exit 0; `6 files, 0 violations` over the current tree | pass |
+| V2.2 | `npm run lint:layers --fixtures tests/lint-fixtures` | exit 0; one line per fixture naming its rule; `11 fixtures, 11 violations, 0 missed` | pass |
+| V2.3 | `grep -rn "from \"decimal.js\"" src --include=*.ts \| grep -v "^src/values/"` | no output (grep exit 1) | pass |
+| V2.4 | `grep -rn "indexedDB" src --include=*.ts \| grep -v "^src/persistence/indexeddb/"` | no output (grep exit 1) | pass |
+| V2.5 | `grep -rn "navigator\.\|serviceWorker\|showSaveFilePicker\|showOpenFilePicker" src --include=*.ts \| grep -v "^src/platform/host/"` | no output (grep exit 1) | pass |
+| V2.6 | `npm run build`; then an injected `src/ui/__violation.ts` importing `../persistence/index`, `npm run build`, remove the file | clean build exit 0 with `lint:layers` first; injected build exit 1 at `lint:layers`, printing `presentation-imports-persistence — ui (presentation) imports persistence (persistence)`, before Vite runs | pass |
+
+The fixture set carries one forbidden import or protected global per enforced rule: fact→coordinator,
+analysis→storage, analysis→clock, analysis→calendar, analysis→another module, analysis→raw `Execution`,
+presentation→persistence, `decimal.js` outside values, `indexedDB` outside `src/persistence/indexeddb`,
+a host identifier outside `src/platform/host`, and an undeclared module path. `tests/lint-fixtures` is
+excluded from `tsconfig.json` because the fixtures are deliberately invalid inputs parsed as text.

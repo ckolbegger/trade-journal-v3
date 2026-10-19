@@ -1,0 +1,13 @@
+[
+  { "file": "fact-imports-coordinator.ts", "virtualPath": "src/journal/__fixture__.ts", "rule": "fact-imports-coordinator" },
+  { "file": "analysis-imports-storage.ts", "virtualPath": "src/capacity/__fixture__.ts", "rule": "analysis-imports-storage" },
+  { "file": "analysis-imports-clock.ts", "virtualPath": "src/capacity/__fixture__.ts", "rule": "analysis-imports-clock" },
+  { "file": "analysis-imports-calendar.ts", "virtualPath": "src/capacity/__fixture__.ts", "rule": "analysis-imports-calendar" },
+  { "file": "analysis-imports-module.ts", "virtualPath": "src/capacity/__fixture__.ts", "rule": "analysis-imports-module" },
+  { "file": "analysis-imports-execution.ts", "virtualPath": "src/analysis/performance/__fixture__.ts", "rule": "analysis-imports-execution" },
+  { "file": "presentation-imports-persistence.ts", "virtualPath": "src/ui/__fixture__.ts", "rule": "presentation-imports-persistence" },
+  { "file": "decimal-outside-values.ts", "virtualPath": "src/journal/__fixture__.ts", "rule": "decimal-outside-values" },
+  { "file": "indexeddb-outside-persistence.ts", "virtualPath": "src/persistence/seam/__fixture__.ts", "rule": "indexeddb-outside-persistence" },
+  { "file": "host-api-outside-host-port.ts", "virtualPath": "src/ui/__fixture__.ts", "rule": "host-api-outside-host-port" },
+  { "file": "undeclared-module.ts", "virtualPath": "src/unknown/__fixture__.ts", "rule": "undeclared-module" }
+]
