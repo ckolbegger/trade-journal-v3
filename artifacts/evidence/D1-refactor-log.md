@@ -25,3 +25,4 @@ are unchanged throughout; only file boundaries move.
 | 17 | `tests/platform/clock.test.ts` | clock-injection | `tsc` 0; `eslint` 0; `npx vitest run` 69 files / 190 tests passed | see the commit table at the end |
 | 18 | `tests/platform/host-port.test.ts` | host-port, host-port-no-gate | `tsc` 0; `eslint` 0; `npx vitest run` 68 files / 190 tests passed | see the commit table at the end |
 | 19 | `tests/readiness/gate.test.ts` | all-pass, diagnostic-nonmutating, failed-check-details, no-allowlist, protection-advisory, simultaneous | `tsc` 0; `eslint` 0; `npx vitest run` 63 files / 190 tests passed | see the commit table at the end |
+| 20 | `tests/readiness/lifecycle.test.ts` | boundary-receipts, invalidate, per-launch | `tsc` 0; `eslint` 0; `npx vitest run` 61 files / 190 tests passed | see the commit table at the end |
