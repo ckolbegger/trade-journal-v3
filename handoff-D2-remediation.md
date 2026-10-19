@@ -112,7 +112,7 @@ In `src/ui/PlanForm.tsx` (and `src/ui/styles.css` only if needed):
 6. After Save, show the **frozen** figures from `ConfirmPlanResult` and label them as frozen. They
    will equal the provisional ones — say so rather than letting the trader guess.
 
-Six planned bèhaviour cases are in T22's body. Six existing browser cases in
+Six planned behaviour cases are in T22's body. Six existing browser cases in
 `tests/browser/plan-confirmation.spec.ts` must keep passing, including the `d2-form-layout` case and
 the axe case.
 
