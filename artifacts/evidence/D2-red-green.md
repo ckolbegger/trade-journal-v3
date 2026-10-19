@@ -473,3 +473,62 @@ Economic Time, not save time, and the result binds the exact source `FactRevisio
 | R3 | `npx tsc --noEmit` | exit 0 | pass |
 | R4 | `npm run lint:layers` | `112 files, 0 violations` | pass |
 | R5 | `npx eslint .` | exit 0 | pass |
+
+---
+
+## Status at the end of this session — D2 is **not** complete
+
+This section is a precise handoff, not a completion claim. Twelve of D2's twenty tasks are implemented,
+tested and committed; eight are not started. D2's definition of done (§2 of the handoff) is **not**
+met: there is no confirmation orchestration, no browser surface, no mock-free integration suite and no
+critic gate, so no capability may be advertised yet.
+
+### Implemented and verified (12 of 20)
+
+| Task | Status | Evidence |
+|---|---|---|
+| T1 | done | V1.1–V1.7 above |
+| T2 | done | 8 cases; one case's red was unreachable (recorded) |
+| T3 | done | 8 cases; re-established red (recorded) |
+| T4 | done | 8 cases; re-established red (recorded) |
+| T5 | done | 12/12 genuine red-first |
+| T6 | done | 9 cases; 3 valid red, 6 red-unreachable (recorded) |
+| T7 | done | 8 cases; 6 valid red, 2 red-unreachable (recorded) |
+| T8 | done | 8 cases; 7 valid red, 1 red-unreachable (recorded) |
+| T9 | done | 8 cases; re-established red (recorded) |
+| T10 | done | 8 cases; re-established red (recorded) |
+| T11 | done | 8 cases; 3 valid red, 5 red-unreachable (recorded) |
+| T12 | done | 9 cases; 4 valid red, 5 harness-then-green (recorded) |
+
+Cumulative suites at the last commit: **289 Vitest tests in 40 files**, **132 Playwright tests** across
+`chromium`, `webkit`, `narrow` and `wide`; `npx tsc --noEmit`, `npm run lint:layers` and `npx eslint .`
+all exit 0. D1's accepted behaviour is still green in the same runs.
+
+### Not started (8 of 20)
+
+| Task | What is missing | Consequence |
+|---|---|---|
+| T13 | `TradeWorkflows.confirmPlan` orchestration joining Catalog, Journal, Trade Analysis and Trade Record inside one semantic transaction | Nothing reaches the durable write path from a production command; `AC-PLAN-001`/`AC-PLAN-002` are not demonstrated |
+| T14 | Atomic rollback across Trade and Journal effects with an injected Journal-participant failure | The all-or-nothing claim is unproven end to end |
+| T15 | `ConfirmPlanResult` as the creation member of the mutation-result contract | No post-commit projection; the no-read-back claim is unproven |
+| T16 | Plan confirmation form | No production entry point; the capability is unreachable from the UI |
+| T17 | Trade view showing the frozen Plan, stored `Planned` and any integrity disagreement | No read surface |
+| T18 | Responsive layout and accessibility for both surfaces | `AC-UI-002`'s D2 portion unexercised |
+| T19 | Mock-free integration suite, real-engine durability leg, boundedness assertions | The durable after-state and typed rejections are proven only per module |
+| T20 | Fresh browser-critic gate, 24 report entries at both viewports | **D2 cannot close**; the critic report at `artifacts/critic/D2-report.json` does not exist |
+
+### What a successor must not do
+
+- Do not advertise D2's confirmation capability in the Installed Capability Manifest until T13–T20 are
+  green; the manifest still declares only D1's eight operations and navigation
+  `["startup", "onboarding"]`, which is honest for the code that exists.
+- Do not claim `AC-PLAN-001`, `AC-PLAN-002` or any other D2 row. They remain exactly as the matrix
+  records them.
+- Read the "red was unreachable" and "re-established red" notes above rather than assuming every case
+  had a red-first sequence. T5 is the only task in this session whose cases were all genuinely
+  red-first.
+
+### Recorded defect fixed in D1's delivered code
+
+`migrate` swept candidate-prefixed databases before checking whether it was already at the target, so a
+second migration run deleted the live Workspace. Fixed in T1; the D1 suite still passes.
