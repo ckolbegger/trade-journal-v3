@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "typecheck": "tsc",
     "lint": "eslint .",
-    "test:unit": "vitest run"
+    "test:unit": "vitest run",
+    "verify:release": "node tools/verify-release.ts"
   },
   "dependencies": {
     "@noble/hashes": "2.4.0",

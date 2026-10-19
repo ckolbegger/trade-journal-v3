@@ -64,3 +64,15 @@ The spec serves a probe page and a caching service worker from an in-process ser
 | SIGKILL of the browser process | true | a committed strict write survived `SIGKILL` of the browser process (1 process matched the profile) and a relaunch |
 
 **Gate:** no capability is false, so work continues to T1.8 without a stop.
+
+## T1.3 Release build: Web App Manifest, Offline Release Inventory, release identity
+
+Run 2026-10-18. **Verification:** `npm run build && npm run verify:release`, which printed `OK …/dist: release d70e3d6d…530d, 5 assets` and exited 0.
+
+- `dist/manifest.webmanifest` has `id` `/`, `name`, `short_name`, 192×192 and 512×512 PNG icons (both built), `start_url` `/`, `scope` `/`, and `display: "browser"` (decision 9).
+- `dist/inventory.json` lists every file in `dist/` except `sw.js` and `inventory.json` itself (it cannot hold its own digest): the app bundle, both icons, `index.html`, and the manifest. `verify:release` recomputes every digest and size and checks that nothing is missing or extra.
+- The release identity equals the SHA-256 of the sorted `path digest` list, and the same value is embedded in `sw.js` and in the app's entry bundle; no unreplaced token remains anywhere in `dist/`.
+- **Negative check:** appending one byte to `dist/icons/icon-192.png` made `verify:release` fail with `digest mismatch` and `size mismatch` for that file. A clean rebuild passed again.
+- `npm run typecheck`, `npx tsc6 --noEmit`, and `npm run lint` exit 0.
+
+**Disclosed detail: the self-reference.** The breakdown asks for an identity that is the hash of every asset's digest and is also embedded in the app bundle, which is itself an asset. A literal reading is circular, so the build places a fixed token (`@@TJ_RELEASE_ID@@`) where the identity goes, takes each digest over the token-bearing bytes, derives the identity, and then substitutes it. Every consumer (`verify:release`, the service worker in T1.8, and the readiness inventory check in T1.9) digests an asset with the identity replaced by that token (`assetDigest` in `src/delivery/inventory.ts`). Any other byte change still changes the digest. No specification passage, acceptance scenario, or durable data is affected.
