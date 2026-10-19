@@ -180,3 +180,7 @@ Recorded 2026-10-19 on the working tree for the commit that follows `4dc81e3`. T
 | Static and verification checks (11 commands) | 11 of 11 exit 0 |
 
 The first full run of this change failed `lint:deps`: the new AppShell case imported a coordinator, which UI code may not do. The case was rewritten, re-proved red and green, and the whole run repeated; the table shows the repeat.
+
+## D1 tag moved after the critic-2 fixes
+
+On 2026-10-19 the user approved moving the local tag `claude-opus-5.5-d1` from the gate commit `0b90f10` (passed by critic-2) to the commit that records this note, which includes the critic-2 onboarding fixes (`5a61a8b`), **without a fresh critic run**. The fixes are covered by the complete cumulative run recorded above, not by a browser critic.
