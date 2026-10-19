@@ -154,3 +154,16 @@ verify:fixtures OK: workspace-v1 open Ready at schema 1 with views equal to thei
 ```
 
 Built in Node through the facade only (initialize; Fidelity and Charles Schwab; three Accounts; five confirmed Plans) with the fixed clock 2026-10-16T21:00:00Z and seeded identities `fx-NNNN`. `dump.json` records schema version 1, generator version 1, the as-of instant, and every database in `tj-root` and the Workspace with its version, object stores (key path, auto-increment), indexes (key path, unique, multi-entry), and records, so a later release rebuilds this exact structure without its own schema code. `expected-views.json` holds the normalized Planned list (5 items) and the 5 Details. Checks: a second freeze is refused ("committed fixtures are never regenerated"); altering the snapshot, or one stored Thesis in the dump, each made `verify:fixtures` fail.
+
+## Cumulative suite run at the D1 gate
+
+Recorded 2026-10-19 04:53 EDT at commit `0b90f10` (tag `claude-opus-5.5-d1`), clean tree; Node v26.12.0, Chromium 153.0.8010.12, macOS 26.6.2. Complete outputs are in `evidence/D01/suite-runs/`.
+
+| Suite | Command | Result | Full output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 24 passed (24)`, `Tests 205 passed (205)`, exit 0 | `suite-runs/d1-gate-unit.txt` |
+| Node integration (I1.1–I1.11) | `npx vitest run tests/integration --reporter=verbose` | `Test Files 6 passed (6)`, `Tests 19 passed (19)`, exit 0 | `suite-runs/d1-gate-integration.txt` |
+| Browser (B1.1–B1.15, Chromium) | `npm run test:e2e` | `26 passed (40.1s)`, exit 0 | `suite-runs/d1-gate-browser.txt` |
+| Static and verification checks | typecheck, `tsc6`, lint, `lint:deps`, build, `verify:release`, `verify:capabilities`, `verify:capacity`, `verify:no-fault-hooks`, `verify:fixtures`, `verify:releases` | every command exit 0 | `suite-runs/d1-gate-checks.txt` |
+
+Complete-suite runs were made throughout D1 but, until this record, were not written to the evidence: `tdd-log.md` holds only the single-case red and green runs. From now on each task ends by recording a complete cumulative run here.

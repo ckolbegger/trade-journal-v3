@@ -1,0 +1,33 @@
+$ npm run typecheck
+EXIT 0
+$ npx tsc6 --noEmit
+EXIT 0
+$ npm run lint
+EXIT 0
+$ npm run lint:deps
+✔ no dependency violations found (117 modules, 338 dependencies cruised)
+lint:deps OK (src)
+EXIT 0
+$ npm run build
+dist/assets/index-DCQ3XogC.css    3.54 kB │ gzip:   1.31 kB
+dist/assets/index-BfYHTmCN.js   392.19 kB │ gzip: 124.32 kB
+✓ built in 81ms
+EXIT 0
+$ npm run verify:release
+OK /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/dist: release c53a577b4c058aab431ab5c08498af1797125a38b1908c4c2479a9a868356ab0, 6 assets
+EXIT 0
+$ npm run verify:capabilities
+verify:capabilities OK: 11 operations, 6 routes, release 853915999821e451dab53a036014cc8b75c550437222e52b40765fad954a9b29
+EXIT 0
+$ npm run verify:capacity
+verify:capacity OK: required quota 1646103699 = 3 × 548701233, schema 1
+EXIT 0
+$ npm run verify:no-fault-hooks
+verify:no-fault-hooks OK: /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/dist has no fault hooks
+EXIT 0
+$ npm run verify:fixtures
+verify:fixtures OK: workspace-v1 open Ready at schema 1 with views equal to their snapshots
+EXIT 0
+$ npm run verify:releases
+verify:releases OK: v1 9c0d08c035637047346189d929f267f73e9560dc3c73ab1106165555cdde31b4, v2 c48c84ace39039fda6e34f4efa6b6be69e6793e6884291a06326ec7ec7392e81, v2-corrupt fails only on /assets/index-DCQ3XogC.css
+EXIT 0
