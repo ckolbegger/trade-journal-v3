@@ -180,3 +180,122 @@ describe('save: create Account', () => {
     );
   });
 });
+
+describe('query', () => {
+  it('should list selectable Institutions, Accounts, and Strategies ordered by normalized label then identity, in pages bound to the Catalog snapshot', async () => {
+    const { catalog: c } = await catalog();
+    await c.seedDefaults(D1_CATALOG_MANIFEST);
+    const labels = ['schwab', 'Fidelity', 'E*TRADE'];
+    const ids: string[] = [];
+    for (const label of labels) {
+      const saved = await c.save({ kind: 'CreateInstitution', label });
+      if (saved.kind === 'Saved') ids.push(saved.record.id);
+    }
+    await c.save({ kind: 'CreateAccount', institutionId: ids[1]!, label: 'Roth' });
+
+    const first = await c.query({ family: 'Institution', pageSize: 2 });
+    expect(first).toEqual({
+      kind: 'Page',
+      items: [expect.objectContaining({ label: 'E*TRADE' }), expect.objectContaining({ label: 'Fidelity' })],
+      snapshot: { catalogRevision: 5 },
+      nextCursor: expect.any(String) as string,
+    });
+    if (first.kind !== 'Page' || !first.nextCursor) throw new Error('expected a next page');
+    const second = await c.query({ family: 'Institution', pageSize: 2, cursor: first.nextCursor });
+    expect(second).toEqual({
+      kind: 'Page',
+      items: [expect.objectContaining({ label: 'schwab' })],
+      snapshot: { catalogRevision: 5 },
+    });
+    const accounts = await c.query({ family: 'Account' });
+    expect(accounts.kind === 'Page' && accounts.items.map((a) => a.label)).toEqual(['Roth']);
+    const strategies = await c.query({ family: 'Strategy' });
+    expect(strategies.kind === 'Page' && strategies.items.map((a) => a.label)).toEqual(['Long Stock']);
+  });
+
+  it('should reject a cursor with CursorExpired after any Catalog change', async () => {
+    const { catalog: c } = await catalog();
+    for (const label of ['A', 'B', 'C']) await c.save({ kind: 'CreateInstitution', label });
+    const first = await c.query({ family: 'Institution', pageSize: 2 });
+    if (first.kind !== 'Page' || !first.nextCursor) throw new Error('expected a next page');
+    await c.save({ kind: 'CreateInstitution', label: 'D' });
+    expect(await c.query({ family: 'Institution', pageSize: 2, cursor: first.nextCursor })).toEqual({
+      kind: 'CursorExpired',
+      snapshot: { catalogRevision: 4 },
+    });
+  });
+});
+
+describe('resolve', () => {
+  async function seededWithAccount() {
+    const setup = await catalog();
+    await setup.catalog.seedDefaults(D1_CATALOG_MANIFEST);
+    const institution = await setup.catalog.save({ kind: 'CreateInstitution', label: 'Fidelity' });
+    if (institution.kind !== 'Saved') throw new Error('institution not saved');
+    const account = await setup.catalog.save({ kind: 'CreateAccount', institutionId: institution.record.id, label: 'Roth' });
+    if (account.kind !== 'Saved') throw new Error('account not saved');
+    const strategies = await setup.catalog.query({ family: 'Strategy' });
+    if (strategies.kind !== 'Page') throw new Error('no strategies');
+    return { ...setup, institution: institution.record, account: account.record, strategy: strategies.items[0]! };
+  }
+
+  it('should resolve a selectable Account and Strategy as NewSelection with record revisions and the Account\'s Institution', async () => {
+    const { catalog: c, institution, account, strategy } = await seededWithAccount();
+    expect(
+      await c.resolve([
+        { name: 'account', kind: 'Account', id: account.id, mode: 'NewSelection' },
+        { name: 'strategy', kind: 'Strategy', id: strategy.id, mode: 'NewSelection' },
+      ]),
+    ).toEqual({
+      kind: 'Resolved',
+      snapshot: { catalogRevision: 3 },
+      resolved: {
+        account: {
+          id: account.id,
+          kind: 'Account',
+          label: 'Roth',
+          recordRevision: 1,
+          selectable: true,
+          institution: { id: institution.id, label: 'Fidelity', recordRevision: 1 },
+        },
+        strategy: {
+          id: strategy.id,
+          kind: 'Strategy',
+          label: 'Long Stock',
+          recordRevision: 1,
+          selectable: true,
+          shape: { roles: [{ side: 'Long', instrument: 'Stock', ratio: 1 }] },
+        },
+      },
+    });
+  });
+
+  it('should return every issue at once when an identity is unknown or of the wrong kind', async () => {
+    const { catalog: c, institution } = await seededWithAccount();
+    expect(
+      await c.resolve([
+        { name: 'account', kind: 'Account', id: institution.id, mode: 'NewSelection' },
+        { name: 'strategy', kind: 'Strategy', id: 'missing', mode: 'NewSelection' },
+      ]),
+    ).toEqual({
+      kind: 'Unresolved',
+      snapshot: { catalogRevision: 3 },
+      issues: [
+        { name: 'account', code: 'WrongKind' },
+        { name: 'strategy', code: 'UnknownReference' },
+      ],
+    });
+  });
+
+  it('should resolve DisplayOnly to the current label without granting selection eligibility', async () => {
+    const { catalog: c, institution } = await seededWithAccount();
+    const result = await c.resolve([{ name: 'shown', kind: 'Institution', id: institution.id, mode: 'DisplayOnly' }]);
+    expect(result).toEqual({
+      kind: 'Resolved',
+      snapshot: { catalogRevision: 3 },
+      resolved: {
+        shown: { id: institution.id, kind: 'Institution', label: 'Fidelity', recordRevision: 1, selectable: false },
+      },
+    });
+  });
+});

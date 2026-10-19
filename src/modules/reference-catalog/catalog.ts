@@ -1,4 +1,5 @@
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
+import type { StrategyShape } from '../../domain/strategy.ts';
 import type { BindingCheck, IdGenerator, Persistence, StoreRecord } from '../../persistence/index.ts';
 import type { CatalogSeedManifest } from './manifest.ts';
 import {
@@ -6,6 +7,7 @@ import {
   type CatalogRecord,
   type CatalogSnapshot,
   type AccountRecord,
+  type CatalogKind,
   type InstitutionRecord,
   type StrategyRecord,
 } from './records.ts';
@@ -54,9 +56,64 @@ export type CatalogSaveResult =
     }
   | RuntimeNotWritable;
 
+export interface CatalogQuery {
+  readonly family: CatalogKind;
+  readonly pageSize?: number;
+  readonly cursor?: string;
+}
+
+export type CatalogQueryResult =
+  | {
+      readonly kind: 'Page';
+      readonly items: readonly CatalogRecord[];
+      readonly snapshot: CatalogSnapshot;
+      readonly nextCursor?: string;
+    }
+  // A cursor is bound to its normalized query and Catalog snapshot.
+  | { readonly kind: 'CursorExpired'; readonly snapshot: CatalogSnapshot };
+
+interface CursorState {
+  readonly catalogRevision: number;
+  readonly family: CatalogKind;
+  readonly offset: number;
+}
+
+export interface CatalogRequirement {
+  readonly name: string;
+  readonly kind: CatalogKind;
+  readonly id: string;
+  readonly mode: 'NewSelection' | 'DisplayOnly';
+}
+
+export interface ResolvedReference {
+  readonly id: string;
+  readonly kind: CatalogKind;
+  readonly label: string;
+  readonly recordRevision: number;
+  readonly selectable: boolean;
+  readonly institution?: { readonly id: string; readonly label: string; readonly recordRevision: number };
+  readonly shape?: StrategyShape;
+}
+
+export type CatalogResolution =
+  | {
+      readonly kind: 'Resolved';
+      readonly snapshot: CatalogSnapshot;
+      readonly resolved: Readonly<Record<string, ResolvedReference>>;
+    }
+  | {
+      readonly kind: 'Unresolved';
+      readonly snapshot: CatalogSnapshot;
+      readonly issues: readonly { readonly name: string; readonly code: 'UnknownReference' | 'WrongKind' }[];
+    };
+
 export interface ReferenceCatalog {
   seedDefaults(manifest: CatalogSeedManifest): Promise<SeedCatalogResult>;
   save(command: CatalogSaveCommand): Promise<CatalogSaveResult>;
+  // Selectable records of one family, by normalized label then identity, in snapshot-bound pages.
+  query(request: CatalogQuery): Promise<CatalogQueryResult>;
+  // Validates bounded typed requirements under one Catalog snapshot.
+  resolve(requirements: readonly CatalogRequirement[]): Promise<CatalogResolution>;
 }
 
 function selectableAccountCount(records: readonly CatalogRecord[]): number {
@@ -113,7 +170,66 @@ export function createReferenceCatalog(deps: ReferenceCatalogDeps): ReferenceCat
     return { catalogRevision: value.meta?.catalogRevision ?? 0, records: value.records };
   }
 
+  function selectable(records: readonly CatalogRecord[]): CatalogRecord[] {
+    const activeInstitutions = new Set(records.filter((r) => r.kind === 'Institution' && r.active).map((r) => r.id));
+    return records.filter((r) => r.active && (r.kind !== 'Account' || activeInstitutions.has(r.institutionId)));
+  }
+
   return {
+    async resolve(requirements) {
+      const current = await readCatalog();
+      const byId = new Map(current.records.map((r) => [r.id, r]));
+      const resolved: Record<string, ResolvedReference> = {};
+      const issues: { name: string; code: 'UnknownReference' | 'WrongKind' }[] = [];
+      for (const requirement of requirements) {
+        const record = byId.get(requirement.id);
+        if (!record) {
+          issues.push({ name: requirement.name, code: 'UnknownReference' });
+          continue;
+        }
+        if (record.kind !== requirement.kind) {
+          issues.push({ name: requirement.name, code: 'WrongKind' });
+          continue;
+        }
+        const parent = record.kind === 'Account' ? byId.get(record.institutionId) : undefined;
+        resolved[requirement.name] = {
+          id: record.id,
+          kind: record.kind,
+          label: record.label,
+          recordRevision: record.recordRevision,
+          // Only a NewSelection grants eligibility; DisplayOnly is a label lens.
+          selectable: requirement.mode === 'NewSelection',
+          ...(parent ? { institution: { id: parent.id, label: parent.label, recordRevision: parent.recordRevision } } : {}),
+          ...(record.kind === 'Strategy' ? { shape: record.shape } : {}),
+        };
+      }
+      const snapshot = { catalogRevision: current.catalogRevision };
+      // Every issue is reported together, never only the first.
+      if (issues.length > 0) return { kind: 'Unresolved', snapshot, issues };
+      return { kind: 'Resolved', snapshot, resolved };
+    },
+
+    async query(request) {
+      const current = await readCatalog();
+      const cursor = request.cursor ? (JSON.parse(request.cursor) as CursorState) : undefined;
+      if (cursor && (cursor.catalogRevision !== current.catalogRevision || cursor.family !== request.family)) {
+        return { kind: 'CursorExpired', snapshot: { catalogRevision: current.catalogRevision } };
+      }
+      const start = cursor?.offset ?? 0;
+      const pageSize = request.pageSize ?? 50;
+      const items = selectable(current.records)
+        .filter((r) => r.kind === request.family)
+        .sort((a, b) =>
+          a.normalizedLabel !== b.normalizedLabel ? (a.normalizedLabel < b.normalizedLabel ? -1 : 1) : a.id < b.id ? -1 : 1,
+        );
+      const page = items.slice(start, start + pageSize);
+      const snapshot = { catalogRevision: current.catalogRevision };
+      const end = start + page.length;
+      if (end >= items.length) return { kind: 'Page', items: page, snapshot };
+      const next: CursorState = { catalogRevision: current.catalogRevision, family: request.family, offset: end };
+      return { kind: 'Page', items: page, snapshot, nextCursor: JSON.stringify(next) };
+    },
+
     async save(command) {
       if (normalizeLabel(command.label) === '') {
         return { kind: 'Rejected', issues: [{ field: 'label', code: 'LabelRequired' }] };
