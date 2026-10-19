@@ -40,10 +40,24 @@ export interface AccountSummary {
   readonly institutionId: string;
 }
 
+export interface InstitutionRecord {
+  readonly id: string;
+  readonly label: string;
+  readonly archived: boolean;
+  readonly revision: number;
+}
+
 export interface CatalogSnapshot {
   readonly revision: number;
   readonly strategies: readonly StrategyRecord[];
+  readonly institutions: readonly InstitutionRecord[];
   readonly accounts: readonly AccountSummary[];
+}
+
+export interface CatalogHistoryEntry {
+  readonly revision: number;
+  readonly label: string;
+  readonly inactive: boolean;
 }
 
 export type CatalogSeedResult =
@@ -79,7 +93,19 @@ async function catalogRevision(seam: TransactionSeam): Promise<number> {
   return value?.[CATALOG_STORE] ?? 0;
 }
 
-function snapshotOf(rows: readonly CatalogRecord[], revision: number): CatalogSnapshot {
+export function snapshotOf(
+  rows: readonly CatalogRecord[],
+  revision: number,
+): CatalogSnapshot {
+  const institutions = rows
+    .filter((row) => row.kind === "institution")
+    .map((row) => ({
+      id: row.id,
+      label: row.label,
+      archived: row.retired === true,
+      revision: row.revision,
+    }))
+    .sort((left, right) => left.id.localeCompare(right.id));
   const strategies = rows
     .filter((row) => row.kind === "strategy")
     .map((row) => ({
@@ -92,7 +118,7 @@ function snapshotOf(rows: readonly CatalogRecord[], revision: number): CatalogSn
   const accounts = rows
     .filter((row) => row.kind === "account")
     .map((row) => ({ id: row.id, label: row.label, institutionId: row.parentId ?? "" }));
-  return { revision, strategies, accounts };
+  return { revision, strategies, institutions, accounts };
 }
 
 /**

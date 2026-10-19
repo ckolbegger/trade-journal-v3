@@ -555,3 +555,26 @@ selectable-Account summary, and never seeds anything the manifest does not decla
 
 **Integration half deferred.** Seeding the Catalog inside `Workspace.initialize`'s one transaction and
 reading the typed `CatalogQuery` afterwards land with T24 and T25.
+
+---
+
+## T24 — `B` `save`/`query` for Institution and Account
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T24.1 | create an Institution and return identity, complete record, history head and the new snapshot without a query | `npx vitest run tests/catalog/create.test.ts -t "generated stable identity"` — the result omitted the history head | same command — 1 passed; `institution:fidelity`, the full record, history head 1 and the snapshot at revision 2 |
+| T24.2 | create an Account under a selectable Institution and bind its parent immutably | `npx vitest run tests/catalog/create.test.ts -t "bind its Institution parent"` — a rename replaced the Account's parent identity with a label | same command — 1 passed; the parent remains `institution:fidelity` after the Institution is renamed |
+| T24.3 | reject Account creation naming the parent when the Institution is archived or unknown, with no write | `npx vitest run tests/catalog/account-parent.test.ts` — an Account was created under an archived Institution | same command — 1 passed; both rejections name the parent identity and the store is byte-identical |
+| T24.4 | refuse to archive an Institution with selectable Accounts; refuse reactivation whose meaning changed | `npx vitest run tests/catalog/archive-reactivation.test.ts` — the Institution was archived while it still had a selectable Account | same command — 1 passed; both refusals are typed and write nothing, and a same-meaning reactivation succeeds |
+| T24.5 | append a rename revision under the same identity and return historical and current labels | `npx vitest run tests/catalog/rename-history.test.ts` — the existing revision was edited in place | same command — 1 passed; revision 2 appended, both history entries retained, retained-reference resolution returns both labels |
+| T24.6 | reject a new selection of an archived Institution or retired Account while a retained reference resolves | `npx vitest run tests/catalog/resolution-modes.test.ts` — one resolution mode served both cases | same command — 1 passed; `InactiveForRequestedUse` for new selection and `Resolved { active: false }` for retention |
+| T24.7 | typed Conflict with the current snapshot and no write when the expected snapshot is stale | `npx vitest run tests/catalog/save-conflict.test.ts` — the expected snapshot was ignored and the stale save was accepted | same command — 1 passed with `Conflict` at snapshot revision 2 and a byte-identical store |
+| T24.8 | list one family in deterministic label-and-identity order with snapshot pagination and Include-inactive, and complete history for one identity | `npx vitest run tests/catalog/query.test.ts` — ordering by identity alone returned `Zeta Prime, Gamma` where the label order is `Gamma, Zeta Prime` | same command — 1 passed; label-then-identity order, selectable/include-inactive views, a paginated page with a cursor and the two-revision history |
+
+Saves append one administrative revision under the stable identity and return the complete post-commit
+record, its history head and the new Catalog snapshot. Every command is bound to the expected snapshot;
+a stale binding conflicts without writing. Resolution separates a new selection from a retained reference,
+and an Account's Institution parent is immutable while the displayed label follows the Institution.
+
+**Integration half deferred.** Creating the Institution and Account through the production form and
+proving the durable after-state after a browser restart lands with T30, T31 and T33.
