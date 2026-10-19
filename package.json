@@ -18,7 +18,10 @@
     "verify:capabilities": "node tools/verify-capabilities.ts",
     "build:releases": "node tools/build-releases.ts",
     "verify:releases": "node tools/verify-releases.ts",
-    "serve:releases": "node tools/release-server.ts"
+    "serve:releases": "node tools/release-server.ts",
+    "build:faults": "vite build --mode faults --outDir dist-faults",
+    "verify:no-fault-hooks": "node tools/verify-no-fault-hooks.ts",
+    "preview:faults": "vite preview --outDir dist-faults"
   },
   "dependencies": {
     "@noble/hashes": "2.4.0",

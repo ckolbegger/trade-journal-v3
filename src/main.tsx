@@ -37,9 +37,11 @@ async function start(container: HTMLElement) {
     });
   });
 
+  // Only the faults build (T1.27) reaches the fault hooks; production builds drop this branch.
+  const host = import.meta.env.MODE === 'faults' ? (await import('./delivery/faults.ts')).faultyHost(browserHost()) : browserHost();
   const app = await createApplication({
     indexedDB: window.indexedDB,
-    host: browserHost(),
+    host,
     clock: systemClock,
     ids: randomIds,
     releaseId: RELEASE_ID,

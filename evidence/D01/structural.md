@@ -113,3 +113,9 @@ verify:releases OK: v1 4ce03a7d2df623d499c0a5dabba23a5078e3225d162bda1b7ac5438ac
 ```
 
 v2 differs from v1 only by `<meta name="tj-build-label" content="v2">` in `index.html`; production `dist/index.html` has no label. The harness server (`tools/release-server.ts`, port 5175) answered: `/` and SPA paths `text/html`, `public, max-age=0, must-revalidate`; `/sw.js` and `/inventory.json` `no-cache`; `/assets/*` `public, max-age=31536000, immutable`; and serves ETags with 304 revalidation. In Chromium, the v1 worker controlled the page after first load.
+
+## T1.27 Fault-injection build
+
+`npm run build:faults && npm run verify:no-fault-hooks` (2026-10-19): `verify:no-fault-hooks OK: dist has no fault hooks`. Negative control: the same check over `dist-faults` fails on `assets/faults-*.js` (marker `tj-fault-hooks-v1` and `__tjFaults`), so the detector finds hooks where they exist. `dist-faults` passes `verify:release`.
+
+Faults act only in `src/delivery/faults.ts`, which wraps the real host port and is imported only when `import.meta.env.MODE === 'faults'`: `diagnostic` (every root open fails), `capacity` (quota equals usage), `control` (no controller), `inventory` (no release cache). Chromium smoke via `npm run preview:faults`: `?faults=diagnostic,capacity` showed Unsupported naming both checks; `?faults=control` and `?faults=inventory` each named their check; with no faults the app reached first run and `window.__tjFaults.set` was a function.
