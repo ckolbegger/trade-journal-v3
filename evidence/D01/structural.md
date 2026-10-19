@@ -76,3 +76,17 @@ Run 2026-10-18. **Verification:** `npm run build && npm run verify:release`, whi
 - `npm run typecheck`, `npx tsc6 --noEmit`, and `npm run lint` exit 0.
 
 **Disclosed detail: the self-reference.** The breakdown asks for an identity that is the hash of every asset's digest and is also embedded in the app bundle, which is itself an asset. A literal reading is circular, so the build places a fixed token (`@@TJ_RELEASE_ID@@`) where the identity goes, takes each digest over the token-bearing bytes, derives the identity, and then substitutes it. Every consumer (`verify:release`, the service worker in T1.8, and the readiness inventory check in T1.9) digests an asset with the identity replaced by that token (`assetDigest` in `src/delivery/inventory.ts`). Any other byte change still changes the digest. No specification passage, acceptance scenario, or durable data is affected.
+
+## T1.4 Dependency-direction, purity, and no-identity rules
+
+Run 2026-10-18. **Verification:** `npm run lint:deps`, then `npm run lint:deps -- tools/dep-fixtures/<fixture>` for each committed violation fixture.
+
+| Target | Exit | Output |
+|---|---|---|
+| project (`src/`) | 0 | `no dependency violations found`; `lint:deps OK (src)` |
+| `ui-imports-module` | 1 | `error ui-only-through-facade: …/src/ui/view.ts → …/src/modules/journal/journal.ts` |
+| `domain-uses-date-now` | 1 | `…/src/domain/time/now.ts:2:34 domain-purity: read time from an injected clock, never Date.now.` |
+| `reads-user-agent` | 1 | `…/src/delivery/sniff.ts:2:40 no-identity: support is decided by functional checks, never browser or OS identity.` |
+
+- `.dependency-cruiser.js` mirrors the overview's "who may call whom" table: the UI reaches only the facade; fact modules never call coordinators; Reference Catalog and Trade Record call no other fact module; Market Data knows no Trades; `src/domain/` imports nothing outside itself; persistence and the service worker stay internal; plus `no-circular` and `not-to-unresolvable`.
+- `eslint.deps.config.js` holds `domain-purity` (no `Date.now`, argument-less `new Date()`, `Math.random`, `Temporal.Now`, `randomUUID`, `indexedDB`, `localStorage`, `sessionStorage`, `caches`, `fetch`, or `navigator` in `src/domain/`) and `no-identity` (no `userAgent`, `userAgentData`, `platform`, or `vendor` member access anywhere in `src/`). The main `npm run lint` applies the same rules.

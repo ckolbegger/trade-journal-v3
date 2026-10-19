@@ -13,7 +13,8 @@
     "typecheck": "tsc",
     "lint": "eslint .",
     "test:unit": "vitest run",
-    "verify:release": "node tools/verify-release.ts"
+    "verify:release": "node tools/verify-release.ts",
+    "lint:deps": "node tools/lint-deps.ts"
   },
   "dependencies": {
     "@noble/hashes": "2.4.0",
