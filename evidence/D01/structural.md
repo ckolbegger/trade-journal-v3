@@ -102,3 +102,14 @@ Run 2026-10-18. **Verification:** `npm run verify:capabilities`, which printed `
 - `verify:capabilities` builds the real application on fake-indexeddb and NodeTestHost and checks that the manifest's operations equal the facade's, that no route requires an absent capability, and that every installed operation is reachable from a route.
 - **Negative check:** adding `DailyReview.open` to the Trades route made it fail with `FAIL route trades requires absent capability DailyReview.open` (exit 1); restoring the route passed again.
 - `tsconfig.json` gained `erasableSyntaxOnly`, because Node runs the tools by stripping types and rejects constructor parameter properties (found when the verifier first ran).
+
+## T1.26 Release harness
+
+`npm run build:releases && npm run verify:releases` (2026-10-19):
+
+```
+build:releases OK: v1, v2, v2-corrupt in dist-releases; v2-corrupt alters /assets/index-daqKebuB.css
+verify:releases OK: v1 4ce03a7d2df623d499c0a5dabba23a5078e3225d162bda1b7ac5438ac724c981, v2 7beba257e8b19b4f28e104d2ff2b815fb264a061e3467630fe32c282a96a9e29, v2-corrupt fails only on /assets/index-daqKebuB.css
+```
+
+v2 differs from v1 only by `<meta name="tj-build-label" content="v2">` in `index.html`; production `dist/index.html` has no label. The harness server (`tools/release-server.ts`, port 5175) answered: `/` and SPA paths `text/html`, `public, max-age=0, must-revalidate`; `/sw.js` and `/inventory.json` `no-cache`; `/assets/*` `public, max-age=31536000, immutable`; and serves ETags with 304 revalidation. In Chromium, the v1 worker controlled the page after first load.

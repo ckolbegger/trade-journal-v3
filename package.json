@@ -15,7 +15,10 @@
     "test:unit": "vitest run",
     "verify:release": "node tools/verify-release.ts",
     "lint:deps": "node tools/lint-deps.ts",
-    "verify:capabilities": "node tools/verify-capabilities.ts"
+    "verify:capabilities": "node tools/verify-capabilities.ts",
+    "build:releases": "node tools/build-releases.ts",
+    "verify:releases": "node tools/verify-releases.ts",
+    "serve:releases": "node tools/release-server.ts"
   },
   "dependencies": {
     "@noble/hashes": "2.4.0",
