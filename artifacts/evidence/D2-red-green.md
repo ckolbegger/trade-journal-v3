@@ -667,3 +667,45 @@ verify.
 | R3 | `npx tsc --noEmit` | exit 0 | pass |
 | R4 | `npm run lint:layers` | `121 files, 0 violations` | pass |
 | R5 | `npx eslint .` | exit 0 | pass |
+
+---
+
+## T19 — `B` Mock-free integration suite for D2
+
+Seams: the whole stacked path. Node suite `tests/integration/d2-confirm-plan.test.ts` (7 cases) plus
+the real-engine leg `tests/browser/d2-durability.spec.ts` (2 cases).
+
+**Red, recorded honestly.** Authored alongside T13–T18, so red was unreachable in that ordering; the
+first run of the Node suite aborted on a malformed rejection payload (a harness/authoring fault, not
+valid red evidence), and the first run of the durability leg passed. What the suite *does* prove is
+recorded below; it is not presented as red-first.
+
+**Green.** `Tests 7 passed (7)` and `2 passed` on the real engine, in the same run as the whole
+cumulative suite.
+
+| Case | What it proves |
+|---|---|
+| Durable creation | one real `confirmPlan` produces the `trade`, `plan`, two `management-condition`, one `planned-leg` fact, the `tradeLifecycle` record, the `tradeVersion` row, the `lifecycleIndex` membership and the Journal Entry — all read back by raw store walk |
+| Rejections leave state | five distinct rejection payloads each leave all six stores and every participant revision byte-identical |
+| Projection equals durable | the connection is closed and reopened; the projection matches the durable facts field by field, including `oneR = "500"` and `intendedEntry = "180.00"`, with no floating-point drift |
+| No mocks on the path | the production participants produce the result; the disclosed-substitution registry is read and every entry names a real-engine counterpart. The directory-wide `mock-guard` scan already forbids mockery shapes here |
+| Injected Journal failure | the injected failure at the Journal participant boundary inside the real transaction leaves all stores and revisions unchanged and the Planned page empty |
+| Boundedness | one index cursor, one bounded batch read, **zero** per-record reads, and a bounded page of one row although two Trades exist — no all-history replay, and no latency figure is claimed anywhere |
+| D1 still green | the same run includes D1's foundation and unit suites; this case asserts the D1 Catalog, Journal and Workspace state still answer through the same schema |
+| Real-engine leg | on Chromium and WebKit the confirming commit is atomic across all four D2 stores at `FactRevision 1`, index membership survives a full page stop with byte-identical state, and an aborted D2 commit leaves all four stores empty |
+
+**Disclosure added.** `tests/substitutions.md` gains the D2 row naming exactly what the Node store
+cannot reproduce (contention scheduling, quota accounting, eviction, across-*process* durability — a
+page close is a new page, not a new browser process) and pointing at this real-engine leg as its
+counterpart.
+
+
+### Commit — T19 (mock-free integration suite and real-engine durability leg)
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| R1 | `npx vitest run` | `Test Files 44 passed (44)`, `Tests 320 passed (320)` | pass |
+| R2 | `npx playwright test` | `164 passed (2.3m)` across the four projects | pass |
+| R3 | `npx tsc --noEmit` | exit 0 | pass |
+| R4 | `npm run lint:layers` | `123 files, 0 violations` | pass |
+| R5 | `npx eslint .` | exit 0 | pass |
