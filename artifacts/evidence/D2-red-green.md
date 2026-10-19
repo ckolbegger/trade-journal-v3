@@ -1304,7 +1304,6 @@ component, type or behaviour changed.
 **Mutation audit of the fix (D2-C2):** removing that block fails exactly the new case (1 failed).
 
 ### D2's seams for D3 — what D3 can rely on, and what moved
-### D2's seams for D3 — what D3 can rely on, and what moved
 
 | Seam | State at the end of this session |
 |---|---|
@@ -1314,3 +1313,48 @@ component, type or behaviour changed.
 | **Manifest v2 state** | **Grown by one operation, not re-versioned.** `schema` is still `{ minSchemaVersion: 1, maxSchemaVersion: 2 }`; `navigation` is still `["startup","onboarding","plan","trades"]`; `reportFamilies`, `providerAdapters`, `backup`, `installSupport` and `feeApplication` are unchanged. There are now **ten** operations, the new one being `trade.previewPlan` → `app.plan.preview`, dependency-closed on `runtime.readiness`, `workspace.getStatus`, `referenceCatalog.query`, `journal.getDefinitions`. |
 | **`ConfirmPlanResult`** | **Unchanged in shape.** `{outcome:"Accepted", value}` / `Rejected` / `Conflict` / `RuntimeNotWritable`; `ConfirmPlanSuccess` still carries `receipt`, `postCommit.{trades,derivation,journal}` and `affected`. `WorkflowIssue`, `ConfirmPlanRejection`, `ConfirmPlanConflict` and `ConfirmPlanParticipants` moved into `assessDraft.ts` and are re-exported from `confirmPlan.ts` and `src/trade-workflows/index.ts`, so the public import path is unchanged. The only shape change is `ConfirmPlanCommand.plan: TradePlanInput` (E-013). |
 | **`previewPlan` — the new shape D4 should reuse** | `previewPlan(seam, command: PreviewPlanCommand): Promise<PlanPreviewResult>` at the coordinator, and `previewPlan(command: PreviewPlanCommand): Promise<PlanPreviewResult>` on `ApplicationRuntime`. `PreviewPlanCommand = Omit<ConfirmPlanCommand, "saveTime" \| "firstAuthoredTime" \| "cutoffTradingDate">`. `PlanPreviewResult = { outcome: "Previewed"; value: PlanPreview } \| ConfirmPlanRejection \| ConfirmPlanConflict \| RuntimeNotWritable`. `PlanPreview = { planBaseline: PlanBaseline; oneR: Money; perConditionBasis: readonly PerConditionBasis[] }`. **D4's review surface should call `runtime.previewPlan` rather than build a second preview**: it is the same `assessDraft` step that confirmation re-runs at commit time, which is what makes "the previewed figure cannot differ from the frozen one" true by construction. A second derivation would break that guarantee. |
+
+### Full runs, per source-changing commit
+
+`AGENTS.md` §6 requires a recorded full run for every commit that changes source or tests. Both
+source-changing commits of this remediation carry one, run immediately before the commit.
+
+| Commit | What it changed | `npx vitest run` | `npx playwright test` | `npx tsc --noEmit` / `npm run lint:layers` / `npx eslint .` |
+|---|---|---|---|---|
+| `8c5518c` | T21, T22, the obligation-key defect fix and the T19 integration case | 45 files, **333 tests passed** | **196 passed** (2.5m) | 0 / `127 files, 0 violations` / 0 |
+| `c111f25` | the narrow facts-list fix and its browser case | 45 files, **333 tests passed** | **200 passed** (2.6m) | 0 / `127 files, 0 violations` / 0 |
+| the commit that adds this record and the round-3 report | `artifacts/**` only | no source or test change; `c111f25`'s run is the run for this code state | same | same |
+
+### The independent critic gate — round 3, after both fixes
+
+The critic was replaced again: a **third and separate** fresh session, which did not write this code,
+did not see either fix being made, and built the clean committed tree itself.
+
+| | |
+|---|---|
+| Critic | `critic-d2-1792438774-bf9b61` |
+| Did it write implementation? | `false` |
+| Spawned after the fix? | `true` |
+| Commit tested | `c111f25b236e3419f88d49689be791d740208a1f` (working tree verified clean before the build) |
+| Served | `http://127.0.0.1:5177`, `npm run build` then `npx vite preview`; served release id `365b0e88…86d`, equal to `dist/release-inventory.json` |
+| Report | `artifacts/critic/D2-report.json` — **26** entries |
+| Totals | 13 flows × 2 viewports = **26 entries, 26 passed, 0 failed** |
+
+**Verdict: no substantive defects found.** Both viewports completed D1 onboarding and the canonical
+Long Stock plan; Save froze entry 180 / AAPL / long 100, Stop 175 (500 USD), Target 190 (1000 USD),
+reward-to-risk `2`, maximum loss `500 USD`, 1R `500` and both reflection answers in one confirmation.
+All three rejection flows produced typed messages naming the Stop condition, the Stop/entry
+incoherence and the missing prompt while writing nothing; the Trade view showed the frozen Plan, 1R,
+stored and expected `Planned`, no disagreement and no Terminal Disposition; a full context
+close/relaunch re-read identical values; zero edit controls existed on the frozen facts; unsaved values
+survived live 375↔1440 crossings with unchanged store counts; an abandoned form left no Trade, Entry
+or draft; the pre-Save provisional `2` / `500 USD` equalled the frozen figures and the screen said so;
+and the second confirmed plan is the Workspace's second Trade. The critic also **re-verified the round-2
+narrow defect specifically**: at 375 every value on the saved screen, the Trade view and the
+provisional block measures **277px on one line**, with no one-character column.
+
+**D2 is complete.** The gate is closed at 26 entries, the deliverable's tasks are T1–T22 with T21 and
+T22 implemented here, and every command in the handoff's §6 exits 0 (R1–R9 and the per-commit table
+above). The `deepseek-v41-flash-D2` and `deepseek-v41-flash-D2-tdd-behavior-enforcement` tags still
+mark the deliverable *before* this remediation; the remediation's tip is the commit that carries this
+record.
