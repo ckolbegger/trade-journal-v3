@@ -7,10 +7,12 @@ Status: draft for user review. Not frozen. Phase 3 artifact for `planning-protoc
 ### Advertised outcome
 
 A trader can select the Account they trade and the Long Stock Strategy, write why they are taking the
-trade and what would invalidate it, record intended entry, Stop and Target, and confirm once. After
-that one confirmation the Plan, its intended Planned Legs, its original management, one positive 1R
-and the completed Plan Reflection are frozen atomically against one risk figure that a later edit
-cannot rewrite. An incomplete confirmation writes nothing.
+trade and what would invalidate it, record intended entry, Stop and Target, and confirm once. Before that
+confirmation the trader sees the planned reward-to-risk ratio and the maximum loss the Plan would
+freeze, computed by Trade Analysis and labelled provisional. After the one confirmation the Plan, its
+intended Planned Legs, its original management, one positive 1R and the completed Plan Reflection are
+frozen atomically against that one risk figure, which a later edit cannot rewrite. An incomplete
+confirmation writes nothing.
 
 Concretely, D2 installs `TradeWorkflows.confirmPlan` (`trade-workflows.md:51-78`) end to end: the
 command resolves Account and Strategy as new selections under one Catalog snapshot
@@ -156,7 +158,7 @@ them, with the consequence of getting each wrong.
 
 ## 2. Task graph
 
-This breakdown declares **20 tasks in 11 dependency layers** (grouped into 7 implementation phases in §3). The layers are a *named projection* of
+This breakdown declares **22 tasks in 12 dependency layers** (grouped into 8 implementation phases in §3). The layers are a *named projection* of
 the edge set for planning and review; the authoritative ordering is the edge list below.
 
 | Layer | Name | Tasks | Why they share a layer |
@@ -168,10 +170,11 @@ the edge set for planning and review; the authoritative ordering is the edge lis
 | L5 | Orchestration | T13 | The join of every L2–L4 producer into one semantic command. |
 | L6 | Transaction safety and result contract | T14, T15 | Rollback and the post-commit result are the two cross-cutting obligations of the orchestration. |
 | L7 | Production surfaces, verification, and the critic gate | T16, T17, T18, T19, T20 | The form, the Trade view, responsive/accessible behavior, the mock-free integration suite, and the independent browser-critic gate. |
+| L8 | Pre-commit Plan disclosure (reopened under deviation D-001) | T21, T22 | The preview operation, and the form that renders it. Both must land before the gate re-runs, because the flows now assert the disclosure. |
 
-In longest-path ordinal terms the same graph resolves to eleven levels — L1; {T2, T5, T8, T12};
-{T3, T6, T9}; {T4, T7, T10, T11}; T13; T14; T15; {T16, T17}; T18; T19; T20 — which is why the seven
-named layers are the review unit and the ordinal levels are only a sanity check.
+In longest-path ordinal terms the same graph resolves to twelve levels — L1; {T2, T5, T8, T12};
+{T3, T6, T9}; {T4, T7, T10, T11}; T13; {T14, T21}; T15; {T16, T22}; T17; T18; T19; T20 — which is why
+the eight named layers are the review unit and the ordinal levels are only a sanity check.
 
 ### Declared blocking edges
 
@@ -197,8 +200,10 @@ Each task's `**Blocking edges:**` line in §3 is authoritative. The edge list as
 | T16 | T8, T11, T12, T13, T15. | T18 |
 | T17 | T4, T5, T6, T7, T15. | T18, T19 |
 | T18 | T16, T17. | T19 |
-| T19 | T3, T4, T6, T7, T10, T12, T14, T15, T17, T18. | T20 |
-| T20 | T19. | none (cross-deliverable only). |
+| T19 | T3, T4, T6, T7, T10, T12, T14, T15, T17, T18, T21, T22. | T20 |
+| T20 | T19, T21, T22. | none (cross-deliverable only). |
+| T21 | T13. | T19, T20, T22 |
+| T22 | T16, T21. | T19, T20 |
 
 **Cross-deliverable blocking edges are declared in the task bodies and deliberately not drawn.**
 Three task bodies in §3 name edges into D1: T1 is blocked by D1:T9 and D1:T10 (the persistence and
@@ -266,6 +271,13 @@ flowchart TD
     T17 --> T19
     T18 --> T19
     T19 --> T20
+    T13 --> T21
+    T16 --> T22
+    T21 --> T19
+    T21 --> T20
+    T21 --> T22
+    T22 --> T19
+    T22 --> T20
 ```
 
 ### Verifying the graph itself
@@ -1223,7 +1235,7 @@ interaction record is the primary evidence, per `ui-contract.md:125`.
 
 #### T19 — `B` Mock-free integration suite for D2
 
-- **Blocking edges:** T3, T4, T6, T7, T10, T12, T14, T15, T17, T18, D1:T3, D1:T11, D1:T25.
+- **Blocking edges:** T3, T4, T6, T7, T10, T12, T14, T15, T17, T18, T21, T22, D1:T3, D1:T11, D1:T25.
 - **Consumed by:** T20.
 
 Assemble D2's cumulative mock-free integration suite: no mocks, stubs or canned responses for
@@ -1272,7 +1284,7 @@ rather than only rendered output.
 
 #### T20 — `S` Independent browser-critic gate for D2
 
-- **Blocking edges:** T19.
+- **Blocking edges:** T19, T21, T22.
 - **Consumed by:** none (cross-deliverable only).
 
 Run the independent browser-critic gate (`planning-protocol.md:124-135`). A fresh critic agent
@@ -1293,7 +1305,7 @@ D2 flows passing.
 | V20.2 | `npx vitest run --project unit` | the cumulative unit suite passes with zero failures; this is the precondition that D2's implementation is complete enough to criticise. |
 | V20.3 | `npx vitest run --project integration` | the cumulative integration suite of T19 passes with zero failures, including the real-engine durability leg. |
 | V20.4 | `npx playwright test e2e/d2-*` | every D2 browser flow in §4 passes at both the narrow and the wide viewport and produces the artifacts the critic report cites. |
-| V20.5 | critic flow report, one section per row of the §4 table, each recording narrow and wide observations | every flow reports pass; any fail names reproducible steps, expected versus actual behavior, and screenshot, console or server evidence. |
+| V20.5 | critic flow report, one section per row of the §4 table — **13 flows × 2 viewports = 26 entries** after deviation D-001 added flow 13 — each recording narrow and wide observations | every flow reports pass; any fail names reproducible steps, expected versus actual behavior, and screenshot, console or server evidence. |
 | V20.6 | the reproduced-defect test for each reported defect, run before the fix | at least one automated test fails for the exact reported defect before any implementation change, so that the defect is a recorded testing failure and not only a critic observation. |
 | V20.7 | the same commands as V20.2 to V20.4 re-run after each fix, followed by a fresh critic attempt | the cumulative suites stay green and a fresh critic reports all D2 flows passing; the gate does not close on a stale report. |
 | V20.8 | a reuse check over the critic report | the report is produced by a critic that did not write the implementation, and it states the D2 and future capability boundaries it was given. |
@@ -1301,6 +1313,88 @@ D2 flows passing.
 **Depends on it:** every advertised D2 capability is unverified without this task, because
 `planning-protocol.md:135` makes a passing fresh-critic report a completion condition for the
 deliverable; without it D2 could ship a form that only the automated suite believes works.
+
+### Phase P8 — pre-commit Plan disclosure (reopened under deviation D-001)
+
+#### T21 — `B` `previewPlan` and the shared assess-and-derive step
+
+- **Blocking edges:** T13.
+- **Consumed by:** T19, T20, T22.
+
+The trader must see the Plan Baseline, its 1R and the resulting maximum loss **before** the Plan is
+frozen, and the figures shown must be the ones that will be frozen. `trade-workflows.md` has no
+preview operation for a Plan, so the orchestration's resolve → assess → derive steps are extracted
+into one function with two callers: `previewPlan` returns them and writes nothing, and `confirmPlan`
+reuses the same function at commit time, so a previewed figure cannot drift from the stored one. This
+adds a UI-reachable operation, which is a capability-scope change recorded as deviation **D-001** in
+`plan/freeze-2026-10-19.md`.
+
+**Unit test cases**
+
+```text
+describe("TradeWorkflows.previewPlan and the shared assess-and-derive step, at the public previewPlan seam")
+  it should return the accepted Plan Baseline, the positive 1R and the per-condition basis for a complete draft, when the Account and Strategy resolve and the Plan is complete
+  it should return the typed issues the confirmation would return and write nothing, when the draft omits the intended entry, every management condition and the leg evidence
+  it should return a Catalog snapshot conflict rather than a preview, when the expected snapshot moved after the form was loaded
+  it should return a baseline identical to the one the confirmation freezes for the same draft and the same inputs, so a previewed figure can never differ from the stored one
+  it should leave every store and every participant revision unchanged, when a preview is taken
+  it should name the required Plan Reflection prompt from the exact definition revision supplied, when the draft's reflection is incomplete
+```
+
+**Integration case.** Through the real assembled runtime over the real migrated database, take a
+preview, then confirm the same draft, and assert the previewed baseline, 1R and per-condition basis
+equal the frozen ones field by field while the preview wrote nothing (a store-by-store and
+participant-revision comparison taken before and after it).
+
+**Red/green evidence**
+
+| Case | Red command and the reason it must fail | Green command and expected result |
+|---|---|---|
+| Baseline previewed | `npx vitest run --project unit src/trade-workflows/preview-plan.test.ts -t "accepted Plan Baseline"` — fails because `previewPlan` is not implemented | same command — passes with the baseline, 1R and per-condition basis |
+| Issues before Save | `... -t "typed issues the confirmation would return"` — fails because the preview returns a candidate instead of issues | same command — passes with the same issues and no write |
+| Snapshot conflict | `... -t "Catalog snapshot conflict"` — fails because the preview ignores the expected snapshot | same command — passes with a typed conflict and no preview |
+| Identical to the frozen figure | `... -t "identical to the one the confirmation freezes"` — fails because the preview re-derives with its own defaults | same command — passes with equal figures from one shared function |
+| Writes nothing | `... -t "leave every store"` — fails because the preview stages effects | same command — passes with byte-identical stores and revisions |
+| Prompt named | `... -t "required Plan Reflection prompt"` — fails because an incomplete reflection is accepted | same command — passes with an issue naming the prompt |
+
+#### T22 — `B` Plan form: pre-Save reward-to-risk and maximum loss, one Stop and one Target, derived monetary boundary
+
+- **Blocking edges:** T16, T21.
+- **Consumed by:** T19, T20.
+
+The form discloses the provisional reward-to-risk ratio and maximum loss before Save, from
+`previewPlan`, and stops collecting what the product can decide: it offers exactly one Stop and one
+Target (E-012) and asks for a boundary price only, displaying the monetary amount Trade Analysis
+derives (E-013). It renders the preview's typed issues instead of maintaining its own duplicated rule
+set, and it labels which figures are provisional and which are frozen.
+
+**Unit test cases**
+
+```text
+describe("The D2 plan form's pre-commit disclosure and reduced input set, at its rendered-form and submit seams")
+  it should show the provisional reward-to-risk ratio and the maximum loss before Save, from previewPlan, when a complete plan has been entered
+  it should not offer any control that adds a third condition, when the Long Stock form is rendered
+  it should not ask for a monetary boundary and should display the amount the preview derives, when a condition carries a boundary price
+  it should show the preview's typed issues in place of a duplicated client-side rule set, when the draft is incomplete
+  it should show the frozen figures from the confirmation result and label them as frozen after Save, when the Plan is saved
+  it should not call previewPlan while a required identity field is still blank, so an empty form is not reported as invalid
+```
+
+**Integration case.** Through the real browser against the production UI: enter a complete plan,
+read the reward-to-risk and maximum loss before Save, save once, and assert the frozen figures are
+identical to the provisional ones and labelled differently; then resize and confirm the answers above
+still hold at both viewports.
+
+**Red/green evidence**
+
+| Case | Red command and the reason it must fail | Green command and expected result |
+|---|---|---|
+| Figures before Save | `npx playwright test e2e/d2-confirm-plan-form.spec.ts -g "before Save"` — fails because the form shows no figures until after Save | same command — passes with the provisional ratio and maximum loss |
+| No third condition | `... -g "adds a third condition"` — fails because the form offers an add-condition control | same command — passes with exactly one Stop and one Target |
+| No monetary boundary input | `... -g "monetary boundary"` — fails because the form requires a typed monetary boundary | same command — passes with the derived amount displayed read-only |
+| Preview issues inline | `... -g "duplicated client-side rule set"` — fails because the form validates with its own rules | same command — passes with the preview's typed issues |
+| Frozen and labelled | `... -g "label them as frozen"` — fails because the saved figures are indistinguishable from the provisional ones | same command — passes with identical values and distinct labelling |
+| No preview on an empty form | `... -g "required identity field is still blank"` — fails because every keystroke triggers a preview | same command — passes with no preview until the identities are present |
 
 ## 4. Browser-critic flow list for D2
 
@@ -1324,6 +1418,7 @@ responsibility for them, but this table is D2's own scope.
 | 10 | An attempted edit of the frozen Plan cannot rewrite it | Open the Trade view; attempt every available edit affordance on the Plan, intended entry, Stop, Target and 1R; confirm whatever the UI offers; then re-read. | Narrow: either no edit affordance exists for frozen Plan facts, or the offered affordance cannot change them and explains why; after the attempt the frozen values and 1R are identical. Wide: identical behavior and identical values. |
 | 11 | Live narrow/wide resize with unsaved form values intact | Open the form, enter Account, intended entry, Stop, Target and a partial reflection answer, then resize the viewport across the breakpoint in both directions without reloading. | Narrow to wide and back: the layout changes live, and the selected Account, entered Plan values, partial reflection answer, inline validation state and focus remain intact; no Entry, draft or Debt is written by the resizing. |
 | 12 | Abandoned confirmation leaves nothing | Open the form, fill it completely, then navigate away without Save and reload the application. | Narrow: no Trade exists for that Account and no Journal Entry, version, Debt or draft exists. Wide: identical. |
+| 13 | Reward-to-risk and maximum loss are visible **before** Save | Complete every field without saving; read the displayed reward-to-risk ratio and maximum loss; then Save and compare them with the frozen figures on the confirmed screen. | Narrow: both figures are shown before Save, labelled provisional, and the frozen figures after Save are identical to them. Wide: identical figures and identical labelling. |
 
 ### Intentional non-defects
 
@@ -1370,14 +1465,14 @@ claim", not as coverage of the whole scenario.
 
 | Scenario | Status | Tasks and evidence |
 |---|---|---|
-| AC-PLAN-001 | Covered | One atomic commit creating the Trade, the frozen Plan and Planned Legs, frozen original management, stored `Planned` lifecycle, positive 1R equal to the Plan Baseline, and one immutable completed Plan Reflection sharing its Thesis/Invalidation values with the Plan: T3, T4, T6, T9, T10, T13, T14, T15, T19, T20. Post-restart query evidence. |
-| AC-PLAN-002 | Covered | Each typed rejection path, with the returned issues and unchanged Trade Record, Journal and Catalog revisions, and no Trade, candidate identity, Entry, Debt or index membership: T5, T13, T14, T19. |
+| AC-PLAN-001 | Covered | One atomic commit creating the Trade, the frozen Plan and Planned Legs, frozen original management, stored `Planned` lifecycle, positive 1R equal to the Plan Baseline, and one immutable completed Plan Reflection sharing its Thesis/Invalidation values with the Plan: T3, T4, T6, T9, T10, T13, T14, T15, T19, T20, T21, T22. Post-restart query evidence. |
+| AC-PLAN-002 | Covered | Each typed rejection path, with the returned issues and unchanged Trade Record, Journal and Catalog revisions, and no Trade, candidate identity, Entry, Debt or index membership: T5, T13, T14, T19, T21, T22. |
 | AC-LIFE-001 | Partial — the `Planned` step and its index membership only; the opening facts that reach `Open` land at D3 and the disposing facts that reach `Closed` at D6. | T3, T4, T7, T19. |
 | AC-LIFE-003 | Partial — the read-side half for stored Lifecycle State: a controlled integrity fixture makes stored lifecycle disagree with the effective facts, normal reads surface or block on the structured disagreement, and no read repairs it; the authorized-preparation half, which derives a disclosed repair for coherent facts or rejects incoherent facts, is Restore's and completes at D21. | Test-only mutation of authoritative derived state under decision PD8 tier 2, written through the real persistence seam and recorded alongside the correct derivation so the finding is shown to be detected rather than tolerated; read result and absence of a read-time write: T3, T7, T17, T19. |
 | AC-RESP-001 | Partial — `confirmPlan` supplies the creation member of the contract, returning the committed Trade projection, the completed Entry and the derivation the command had to establish; the update and bounded multi-subject members land at D4 and D3. | T15, T19. |
 | AC-JOUR-007 | Partial — the Plan Reflection Entry Type and the Plan Confirmation Source are seeded with their exact initial definition and workflow-critical roles, and repeat seeding is idempotent; the remaining types and Sources arrive at D17. | T8, T11, T19. |
 | AC-JOUR-001 | Partial — the confirmation form stores nothing until Save and a cancelled or abandoned form leaves no Entry, version, Debt or draft; direct Journal save is not installed until D5. | T16, T19. |
-| AC-UI-002 | Partial — Loading, Ready, Empty, Error, validation and conflict states for the confirmation form and the Trade view; chart-gap and destructive-Restore states land at D18 and D21. | T16, T17, T18, T19. |
+| AC-UI-002 | Partial — Loading, Ready, Empty, Error, validation and conflict states for the confirmation form and the Trade view; chart-gap and destructive-Restore states land at D18 and D21. | T16, T17, T18, T19, T21, T22. |
 
 ## 6. What counts as valid red evidence
 
