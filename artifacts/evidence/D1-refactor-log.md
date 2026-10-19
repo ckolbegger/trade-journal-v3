@@ -14,3 +14,4 @@ are unchanged throughout; only file boundaries move.
 | 6 | `tests/harness/disclosure.test.ts` | mock-free, substitution-registry | `tsc` 0; `eslint` 0; `npx vitest run` 113 files / 190 tests passed | see the commit table at the end |
 | 7 | `tests/journal/seed.test.ts` | seed-atomic, seed-conflict, seed-idempotent, seed-manifest, seed-retain, seed-seven, seed-stable-key | `tsc` 0; `eslint` 0; `npx vitest run` 107 files / 190 tests passed | see the commit table at the end |
 | 8 | `tests/onboarding/institution.test.ts` | archived-view, institution-onboarding, institution-validation | `tsc` 0; `eslint` 0; `npx vitest run` 105 files / 190 tests passed | see the commit table at the end |
+| 9 | `tests/onboarding/account.test.ts` | account-label, account-parent-conflict, account-selectable-query, account-validation, ready-state | `tsc` 0; `eslint` 0; `npx vitest run` 101 files / 190 tests passed | see the commit table at the end |
