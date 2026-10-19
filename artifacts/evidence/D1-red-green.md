@@ -70,3 +70,20 @@ analysis→storage, analysis→clock, analysis→calendar, analysis→another mo
 presentation→persistence, `decimal.js` outside values, `indexedDB` outside `src/persistence/indexeddb`,
 a host identifier outside `src/platform/host`, and an undeclared module path. `tests/lint-fixtures` is
 excluded from `tsconfig.json` because the fixtures are deliberately invalid inputs parsed as text.
+
+---
+
+## T3 — `S` Unit and integration test harness with disclosed substitutions
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| V3.1 | `npx vitest run --reporter=dot` | exit 0; prints `harness bootstrap: tests/harness/bootstrap.ts`, `substitution registry: tests/substitutions.md`, `vitest: 5.0.5 (resolved from package-lock.json)`; 3 files / 4 tests pass | pass |
+| V3.2 | `npx vitest run tests/harness/substitution-registry.test.ts` | exit 0. Negative check: blanking `realEngineCounterpart` on the `fake-indexeddb` row fails with `"fake-indexeddb: realEngineCounterpart"`, then the file is restored | pass |
+| V3.3 | `npx playwright test tests/browser/harness.spec.ts --project=chromium --project=webkit` | exit 0; both pass; `artifacts/browser/provenance-chromium.json` records `156.0.8078.4` and `provenance-webkit.json` records `27.2`, each `"decisionInput": false`; no `src` file reads `userAgent`/`platform` | pass |
+| V3.4 | `grep -rn "fake-indexeddb" tests --include=*.ts \| grep -v "^tests/harness/bootstrap"` | no output (grep exit 1): only the bootstrap installs the substitute, through Vitest `setupFiles` | pass |
+| V3.5 | `npx vitest run tests/harness/mock-free.test.ts` | exit 0 on the current tree. Negative check: an injected `tests/integration/__probe.test.ts` with `vi.mock` fails the guard with `tests/integration/__probe.test.ts:2 uses vi.mock`, then the probe is removed | pass |
+| V3.6 | `npx playwright test tests/browser/a11y-smoke.spec.ts` | exit 0; axe-core reports no violations on the shell in all four projects | pass |
+
+Playwright projects are `chromium`, `webkit`, `narrow` (375×812) and `wide` (1440×900); the browser
+specs run against the loopback secure origin from `DEV_PORT`. The substitution registry discloses
+`fake-indexeddb`, the loopback origin, and the controlled host-capability implementation.

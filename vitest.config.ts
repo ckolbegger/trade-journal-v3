@@ -1,5 +1,7 @@
 import { defineConfig } from "vitest/config";
 
+const setupFiles = ["./tests/harness/bootstrap.ts"];
+
 export default defineConfig({
   test: {
     passWithNoTests: true,
@@ -10,6 +12,7 @@ export default defineConfig({
           environment: "node",
           include: ["tests/**/*.test.{ts,tsx}"],
           exclude: ["tests/integration/**", "tests/browser/**"],
+          setupFiles,
         },
       },
       {
@@ -17,6 +20,7 @@ export default defineConfig({
           name: "integration",
           environment: "node",
           include: ["tests/integration/**/*.test.ts"],
+          setupFiles,
           passWithNoTests: true,
         },
       },
