@@ -34,18 +34,20 @@ async function fileAt(dir: string, pathname: string): Promise<string | undefined
   return info?.isFile() ? file : undefined;
 }
 
+// A release is a built folder under the root: a harness release (v1, v2, v2-corrupt) by default,
+// or another build such as dist-faults with the project folder as root.
 export interface ReleaseServer {
   readonly url: string;
-  current(): ReleaseName;
-  use(release: ReleaseName): void;
+  current(): string;
+  use(release: ReleaseName | (string & {})): void;
   close(): Promise<void>;
 }
 
 export async function startReleaseServer(
-  options: { release?: ReleaseName; port?: number; root?: string } = {},
+  options: { release?: string; port?: number; root?: string } = {},
 ): Promise<ReleaseServer> {
   const root = options.root ?? RELEASES_DIR;
-  let release: ReleaseName = options.release ?? 'v1';
+  let release = options.release ?? 'v1';
   const server = createServer((request, response) => {
     void (async () => {
       const dir = path.join(root, release);
@@ -79,6 +81,7 @@ export async function startReleaseServer(
     use: (next) => {
       release = next;
     },
+    // Safe to call again once closed.
     close: () =>
       new Promise((resolve) => {
         server.closeAllConnections();

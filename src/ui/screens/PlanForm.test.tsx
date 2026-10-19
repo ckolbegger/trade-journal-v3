@@ -20,9 +20,13 @@ function DetailFromState() {
   );
 }
 
-function renderForm(facade: UiFacade = planFormFacade(), onDirtyChange: (dirty: boolean) => void = () => undefined) {
+function renderForm(
+  facade: UiFacade = planFormFacade(),
+  onDirtyChange: (dirty: boolean) => void = () => undefined,
+  report: (result: { readonly kind: string }) => void = () => undefined,
+) {
   render(
-    <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
+    <RuntimeContext.Provider value={{ writable: true, report }}>
       <MemoryRouter initialEntries={['/plans/new']}>
         <Routes>
           <Route
@@ -187,6 +191,24 @@ describe('submission', () => {
     await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
     expect(await screen.findByText('Detail trade-9 for Taxable: Breakout above the 50-day.')).toBeTruthy();
     expect(facade.TradeViewsAndReporting.getTradeDetail).not.toHaveBeenCalled();
+  });
+
+  it('should report a RuntimeNotWritable result to the shell and keep every entered value on screen', async () => {
+    const report = vi.fn();
+    const facade = renderForm(planFormFacade(), () => undefined, report);
+    const refusal = {
+      kind: 'RuntimeNotWritable',
+      runtimeReadiness: 'RecoveryOnly',
+      failedChecks: [{ check: 'inventory', reason: 'InventoryMissing' }],
+      workspaceStatus: 'RecoveryOnly',
+      safeActions: [],
+    };
+    vi.mocked(facade.TradeWorkflows.confirmPlan).mockResolvedValue(refusal as never);
+    const user = await fillPlan();
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    await vi.waitFor(() => expect(report).toHaveBeenCalledWith(refusal));
+    expect(screen.getByLabelText<HTMLInputElement>('Symbol').value).toBe('xyz');
+    expect(screen.queryByText('Trades route')).toBeNull();
   });
 
   it('should make no call when the form is cancelled or left', async () => {

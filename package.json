@@ -24,7 +24,8 @@
     "preview:faults": "vite preview --outDir dist-faults",
     "measure:capacity": "node tools/measure-capacity.ts",
     "verify:capacity": "node tools/verify-capacity.ts",
-    "test:integration": "vitest run tests/integration"
+    "test:integration": "vitest run tests/integration",
+    "test:e2e": "npm run build:faults && npm run build:releases && playwright test e2e/d1"
   },
   "dependencies": {
     "@noble/hashes": "2.4.0",

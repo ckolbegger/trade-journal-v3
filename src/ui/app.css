@@ -26,7 +26,12 @@ body {
   background: var(--ground);
 }
 
-:focus-visible {
+:focus-visible,
+/* Form controls always show focus. A date-time input moves focus through inner parts, its
+   picker button among them, so it is matched by :focus-within rather than :focus. */
+input:focus-within,
+select:focus,
+textarea:focus {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
 }

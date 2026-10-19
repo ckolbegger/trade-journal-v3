@@ -48,7 +48,7 @@ interface Fields {
 // The Long Stock Plan: one long Stock leg, one Stop, one Target (D1 A1), and the completed
 // Plan Reflection. Nothing typed here is stored until Confirm Plan succeeds.
 export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps) {
-  const { writable } = useRuntime();
+  const { writable, report } = useRuntime();
   const navigate = useNavigate();
   const [accounts, setAccounts] = useState<readonly Option[] | undefined>();
   const [strategies, setStrategies] = useState<readonly Option[]>([]);
@@ -134,6 +134,8 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
       },
       reflection: { definitionId: definition.id, answers },
     });
+    // A refusal switches the whole shell to Recovery Only; the form keeps its values.
+    report(result);
     if (result.kind === 'Rejected') setIssues(describeIssues(result.issues, definition));
     if (result.kind === 'Confirmed') {
       const confirmed = confirmedDetail(result, definition, {
