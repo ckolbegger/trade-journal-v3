@@ -41,3 +41,30 @@ describe('activation', () => {
     expect(reload).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('critic-1 findings (C1.8)', () => {
+  it('should learn of unsaved work that another tab announced before this tab opened', () => {
+    const network = new ChannelNetwork();
+    const editing = tab(network);
+    editing.controller.setUnsaved(true);
+    const opened = tab(network);
+    expect(opened.controller.state().unsavedElsewhere).toBe(true);
+  });
+
+  it('should report UpdateWaiting when the check finds a release still installing, once it is installed and waiting', async () => {
+    const { controller, registration } = tab();
+    const installing = Object.assign(new EventTarget(), { state: 'installing' });
+    registration.update = () => {
+      registration.updates++;
+      Object.assign(registration, { installing });
+      setTimeout(() => {
+        installing.state = 'installed';
+        Object.assign(registration, { installing: null });
+        registration.releaseWaiting();
+        installing.dispatchEvent(new Event('statechange'));
+      }, 0);
+      return Promise.resolve();
+    };
+    expect(await controller.checkForUpdates()).toBe('UpdateWaiting');
+  });
+});

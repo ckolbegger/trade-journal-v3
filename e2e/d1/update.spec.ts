@@ -128,3 +128,24 @@ test.describe('B1.13 two tabs, one unsaved', () => {
     await context.close();
   });
 });
+
+test.describe('B1.13 two tabs, the clean one opened after the form became unsaved (critic-1)', () => {
+  test('should defer Reload and explain in a tab opened later, where "Check for updates" reports the waiting update once', async ({ server, profile }) => {
+    server.use('dist-releases/v1');
+    const context = await profile.launch();
+    const editing = await onboardedPage(context);
+    await openNewPlan(editing);
+    await fillPlan(editing);
+
+    const about = await context.newPage();
+    await about.goto('/about');
+    await expect(about.locator('.identity')).toHaveText(identity('v1'), READY);
+    server.use('dist-releases/v2');
+    await about.getByRole('button', { name: 'Check for updates' }).click();
+    await expect(notice(about)).toHaveCount(1, READY);
+    await expect(notice(about)).toContainText('The update waits because another tab has unsaved work.');
+    await expect(notice(about).getByRole('button', { name: 'Reload' })).toBeDisabled();
+    await expect(about.getByText('No update')).toHaveCount(0);
+    await context.close();
+  });
+});

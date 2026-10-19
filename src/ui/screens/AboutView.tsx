@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import type { UiFacade } from '../../app/compose.ts';
 import { APP_NAME, MANIFEST_ID } from '../../app/identity.ts';
 import type { ReleaseUpdateController } from '../update/controller.ts';
-import { UpdateNotice } from '../update/UpdateNotice.tsx';
 
 type Status = Awaited<ReturnType<UiFacade['Workspace']['getStatus']>>;
 
@@ -67,7 +66,8 @@ export function AboutView({ facade, updates }: AboutViewProps) {
           Check for updates
         </button>
         {checked === 'NoUpdate' && <p role="status">No update</p>}
-        <UpdateNotice controller={updates} />
+        {/* The shell's update notice, shown on every screen, carries the Reload action. */}
+        {checked === 'UpdateWaiting' && <p role="status">An update was found. Use Reload in the update notice.</p>}
       </section>
       <section className="card" aria-labelledby="readiness-heading">
         <h2 id="readiness-heading">Runtime Readiness</h2>

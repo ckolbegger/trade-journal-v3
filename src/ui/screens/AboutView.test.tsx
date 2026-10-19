@@ -73,6 +73,6 @@ describe('About this release', () => {
     render(<AboutView facade={facadeDouble({ status })} updates={controller(newer)} />);
     await user.click(await screen.findByRole('button', { name: 'Check for updates' }));
     expect(newer.updates).toBe(1);
-    expect(await screen.findByText('An update is ready')).toBeTruthy();
+    expect(await screen.findByText('An update was found. Use Reload in the update notice.')).toBeTruthy();
   });
 });

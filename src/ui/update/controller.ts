@@ -21,7 +21,10 @@ export interface UpdateState {
   readonly superseded: boolean;
 }
 
-type ChannelMessage = { readonly type: 'unsaved'; readonly tabId: string; readonly unsaved: boolean };
+type ChannelMessage =
+  | { readonly type: 'unsaved'; readonly tabId: string; readonly unsaved: boolean }
+  // A newly opened tab asks the others to repeat any unsaved state they announced earlier.
+  | { readonly type: 'query'; readonly tabId: string };
 
 export interface ReleaseUpdateControllerDeps {
   readonly registration: RegistrationPort;
@@ -68,10 +71,15 @@ export function createReleaseUpdateController(deps: ReleaseUpdateControllerDeps)
   };
   deps.channel.addEventListener('message', (event) => {
     const message = (event as MessageEvent<ChannelMessage>).data;
-    if (message.type !== 'unsaved' || message.tabId === tabId) return;
+    if (message.tabId === tabId) return;
+    if (message.type === 'query') {
+      if (state.unsavedHere) deps.channel.postMessage({ type: 'unsaved', tabId, unsaved: true } satisfies ChannelMessage);
+      return;
+    }
     elsewhere.set(message.tabId, message.unsaved);
     set({ ...state, unsavedElsewhere: [...elsewhere.values()].some(Boolean) });
   });
+  deps.channel.postMessage({ type: 'query', tabId } satisfies ChannelMessage);
   deps.registration.addEventListener('updatefound', () => {
     if (deps.registration.waiting) set({ ...state, notice: 'Ready' });
   });
@@ -88,6 +96,19 @@ export function createReleaseUpdateController(deps: ReleaseUpdateControllerDeps)
     },
     async checkForUpdates() {
       await deps.registration.update();
+      // A release found by the check may still be installing and verifying; wait for it to
+      // finish (waiting) or be discarded (redundant) before answering.
+      const installing = deps.registration.installing;
+      if (installing) {
+        await new Promise<void>((resolve) => {
+          const settle = () => {
+            if (installing.state === 'installing') return;
+            installing.removeEventListener('statechange', settle);
+            resolve();
+          };
+          installing.addEventListener('statechange', settle);
+        });
+      }
       return deps.registration.waiting ? 'UpdateWaiting' : 'NoUpdate';
     },
     applyUpdate() {
