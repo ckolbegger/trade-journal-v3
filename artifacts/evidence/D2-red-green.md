@@ -86,9 +86,79 @@ frozen revision verifies. D2 may start.**
 
 ## T1 — `S` D2 durable schema and migration
 
-Structural task: exact verification instead of invented unit tests.
+Structural task: exact verification instead of invented unit tests. The breakdown's illustrative
+paths `src/persistence/migrations` and `src/persistence/seam` are read as the delivered harness
+(`tests/integration/**`), per the kickoff's branch-local note 5.
 
-_(recorded below as the task is executed)_
+**What landed.** `src/plan/index.ts` fixes the frozen Plan-fact shapes (the PD9 condition union with
+`StructureValueCondition` reserved and not installed, Planned Legs, Strategy shape, Plan Baseline).
+`src/persistence/indexeddb/schema.ts` adds `D2_SCHEMA_VERSION = SCHEMA_VERSION + 1` (never a literal),
+`D2_STORES` (`tradeLifecycle` for the stored Lifecycle State record, `tradeVersion` for FactRevision
+and RecordedSequence metadata) and `D2_SCHEMA_MANIFEST`, plus a manifest-aware
+`openDatabaseWithStores`. `src/persistence/indexeddb/migration.ts` gains an optional `stores` plan
+field. `src/persistence/indexeddb/d2Migration.ts` is the forward-only D2 migration and its gated
+entry point `migrateD2`. The Journal definition revision lives in the existing `journal` store and
+the Catalog manifest v2 marker in `workspaceMeta`, so neither needs a new store.
+
+**One real defect found and fixed.** D1's `migrate` ran `discardStaleCandidates()` before checking
+whether it was already at the target, and that sweep deleted every candidate-prefixed database —
+including the *active* one. A second migration run therefore destroyed the live Workspace. Fixed by
+returning the unchanged-version result before the sweep and by making the sweep skip the active
+database. This is a defect in D1's delivered implementation surfaced by D2's verification, not a
+seam-shape change.
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| V1.1 | `npx tsc --noEmit` | exit 0; the D2 schema module exports the store names, key paths, index declarations and the D2 version constant with no `any` and no unused export | pass |
+| V1.2 | `npx vitest run --project integration tests/integration/d2-migration.test.ts -t "upgrade a fresh D1 database"` | pass; the receipt names exactly one transition `{from: 1, to: 2}`, the active database is the isolated candidate, and every D2 store's `keyPath` and every index's `keyPath`/`multiEntry`/`unique` match the declaration | pass |
+| V1.3 | `... -t "candidate is rejected partway through"` | pass; `MigrationBlocked / ValidationFailed`, no candidate database remains, and the D1 database is still readable at `SCHEMA_VERSION = 1` with no `tradeLifecycle`/`tradeVersion` store | pass |
+| V1.4 | `... -t "already-upgraded database"` | pass; `schemaTransitions: []`, `migrationsApplied: []`, identical store name set, unchanged record count | pass |
+| V1.5 | `... -t "not Writable at the persistence boundary"` | pass; `RuntimeNotWritable` with `runtimeReadiness: "RecoveryOnly"`, no candidate created, no D2 store created. This is D1:T12's gate at the persistence boundary (`overview.md:177`) | pass |
+| V1.6 | `... -t "spans the Trade, Journal and Catalog stores"` | pass; the commit increments `tradeRecord`, `journal` and `referenceCatalog` revisions together, and a gate-rejected commit leaves every participant revision exactly equal | pass |
+| V1.7 | `npm run lint:layers` | `91 files, 0 violations`; the new `plan` module is declared with layer `contract` and the one widened edge `plan: ["value"]` | pass |
+
+**Interpretation recorded (not a plan change).** `migrateD2` composes D1's unchanged `migrate` with
+a write-gate check that runs before any candidate is opened, so V1.5's "refuses to begin" is enforced
+without widening D1's `MigrationOutcome` union or touching D1's migration seam.
+
+---
+
+## T2 — `B` `prepareChange` for the Confirm Plan candidate
+
+Seam: `TradeRecord.prepareChange` in `src/trade-record/index.ts`. Suite:
+`tests/trade-record/prepare-change.confirm-plan.test.ts` (8 cases). Every case runs against the real
+D2-migrated `fake-indexeddb` database through the real transaction seam; nothing is mocked.
+
+**Red evidence, recorded honestly.** The module was drafted with T2's design before its cases were
+written, so the first suite run split:
+
+| Case | First-run observation |
+|---|---|
+| Complete Plan prepares one candidate | green from its first run — red was **unreachable** in this pass |
+| No durable identity reserved | green from its first run — red was **unreachable** in this pass |
+| Digest stability | green from its first run — red was **unreachable** in this pass |
+| Before record present | red, but for a **harness** reason (`NotFoundError: No objectStore named tradeLifecycle`), which is not valid red evidence |
+| Stale revision rejected | red, but for the same **harness** reason — not valid red evidence |
+| Incoherent legs rejected | **valid red**: `expected [ 'ShapeRoleCount' ] to include 'DuplicateRole'` — the duplicate-role issue was genuinely absent |
+| Economic Time preserved | green from its first run — red was **unreachable** in this pass |
+| Shape coherence | red, but for the **harness** reason above — not valid red evidence |
+
+The harness gap was repaired first (`tests/support/store.ts` gained `openD2Seam`, which opens the
+real D1 database, runs the real `migrateD2`, and opens the active candidate), then the missing
+duplicate-role issue was implemented. From T5 onward every case is written and run before its
+production behaviour, so its red is genuine (see T5 below).
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| G1 | `npx vitest run --project unit tests/trade-record/prepare-change.confirm-plan.test.ts` | `Tests 8 passed (8)` after the fixture repair and the duplicate-role fix | pass |
+| G2 | `npx tsc --noEmit` | exit 0 | pass |
+| G3 | `npm run lint:layers` | `94 files, 0 violations` | pass |
+
+**Contract notes.** `prepareChange` performs no write, checks the expected FactRevision against the
+stored `tradeLifecycle` row, validates structural coherence against the supplied Strategy shape, and
+returns a before/candidate `AnalysisInput` pair plus a SHA-256 canonical digest over the semantic
+change. Save time and the expected revision are excluded from the digest. A candidate identity is
+`candidate:<digest prefix>` and reserves no durable `TradeId`, `TradeFactId` or `FactVersionId`.
 
 ---
 
@@ -98,3 +168,12 @@ Standing rule: every commit that changes source or tests carries its own full `n
 `npx playwright test` record. Docs-only commits cite the most recent full run for the same code state.
 
 _(appended per commit)_
+
+### Commit — T1 + T2 (D2 durable schema and migration; `prepareChange`)
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| R1 | `npx vitest run` | `Test Files 31 passed (31)`, `Tests 203 passed (203)` | pass |
+| R2 | `npx playwright test` | `132 passed (1.9m)` | pass |
+| R3 | `npx tsc --noEmit` | exit 0 | pass |
+| R4 | `npm run lint:layers` | `94 files, 0 violations` | pass |

@@ -10,6 +10,10 @@ export const modules = [
   { name: "ui", dir: "src/ui", layer: "presentation" },
 
   { name: "values", dir: "src/values", layer: "value" },
+  // The frozen Plan-fact shapes shared by Trade Record (which persists them) and Trade Analysis
+  // (which assesses them). A contract module, so both layers that need it may import it without
+  // either depending on the other.
+  { name: "plan", dir: "src/plan", layer: "contract" },
   { name: "clock", dir: "src/platform/clock", layer: "platform" },
   { name: "host", dir: "src/platform/host", layer: "platform" },
   { name: "results", dir: "src/results", layer: "contract" },
@@ -71,6 +75,8 @@ export const layerEdges = {
 // clock's pure instant conversion while still reading no storage and consulting no host clock.
 export const moduleEdges = {
   calendar: ["value", "contract", "platform"],
+  // The Plan-fact shapes carry the value layer's exact `Money`/`Price`/`Quantity`.
+  plan: ["value"],
 };
 
 // Analysis must not obtain raw Executions and repeat Trade Analysis arithmetic.

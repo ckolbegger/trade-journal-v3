@@ -84,6 +84,41 @@ export const PROJECTION_STORES = SCHEMA_MANIFEST.filter(
   (store) => store.residency === "rebuildable",
 );
 
+/**
+ * The D2 durable representation, added on top of D1's schema inside one isolated migration
+ * candidate. `tradeLifecycle` holds the stored Lifecycle State record — state, its effective-fact
+ * digest and the causing fact — and `lifecycleIndex` remains the authoritative current-state index
+ * written in the same commit. `tradeVersion` holds the per-commit FactRevision and RecordedSequence
+ * metadata that later correction and ordering require.
+ *
+ * The version is derived from D1's constant, never written as a literal.
+ */
+export const D2_SCHEMA_VERSION = SCHEMA_VERSION + 1;
+
+export const D2_STORES: readonly StoreDefinition[] = [
+  {
+    name: "tradeLifecycle",
+    keyPath: "tradeId",
+    residency: "authoritative",
+    indexes: [
+      { name: "state", keyPath: "state" },
+      { name: "stateAndCutoff", keyPath: ["state", "cutoffTradingDate"] },
+    ],
+  },
+  {
+    name: "tradeVersion",
+    keyPath: "id",
+    residency: "authoritative",
+    indexes: [
+      { name: "tradeAndRevision", keyPath: ["tradeId", "factRevision"], unique: true },
+      { name: "recordedSequence", keyPath: "recordedSequence" },
+    ],
+  },
+];
+
+export const D2_SCHEMA_MANIFEST: readonly StoreDefinition[] = [...SCHEMA_MANIFEST, ...D2_STORES];
+
+
 export function validateManifest(stores: readonly StoreDefinition[] = SCHEMA_MANIFEST): string[] {
   const problems: string[] = [];
   const authoritative = new Set(
@@ -112,7 +147,16 @@ export function openDatabase(
   name: string = DATABASE_NAME,
   version: number = SCHEMA_VERSION,
 ): Promise<IDBDatabase> {
-  const problems = validateManifest();
+  return openDatabaseWithStores(SCHEMA_MANIFEST, name, version);
+}
+
+/** Open (and, on upgrade, create) exactly the stores of the supplied manifest. */
+export function openDatabaseWithStores(
+  stores: readonly StoreDefinition[],
+  name: string = DATABASE_NAME,
+  version: number = SCHEMA_VERSION,
+): Promise<IDBDatabase> {
+  const problems = validateManifest(stores);
   if (problems.length > 0) {
     return Promise.reject(new Error(`invalid schema manifest: ${problems.join("; ")}`));
   }
@@ -122,7 +166,7 @@ export function openDatabase(
     request.onupgradeneeded = () => {
       const database = request.result;
       const upgrade = request.transaction;
-      for (const store of SCHEMA_MANIFEST) {
+      for (const store of stores) {
         const objectStore = database.objectStoreNames.contains(store.name)
           ? upgrade?.objectStore(store.name)
           : database.createObjectStore(store.name, { keyPath: store.keyPath });

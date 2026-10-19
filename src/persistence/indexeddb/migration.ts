@@ -2,10 +2,12 @@ import {
   CANDIDATE_DATABASE_PREFIX,
   DATABASE_NAME,
   PROJECTION_STORES,
+  SCHEMA_MANIFEST,
   deleteDatabase,
-  openDatabase,
+  openDatabaseWithStores,
   rebuildProjections,
   transactionDone,
+  type StoreDefinition,
 } from "./schema";
 
 export const CONTROL_DATABASE_NAME = "trade-journal-control";
@@ -53,6 +55,8 @@ export interface MigrationPlan {
   readonly steps: readonly MigrationStep[];
   readonly seedVersion: string;
   readonly seedAdditions: readonly SeedAddition[];
+  /** The stores the candidate must have at `targetVersion`. Defaults to D1's manifest. */
+  readonly stores?: readonly StoreDefinition[];
   readonly validate?: (snapshot: DatabaseSnapshot) => SectionProblem | undefined;
 }
 
@@ -235,9 +239,10 @@ function blocked(
   return { outcome: "MigrationBlocked", reason, detail, activeDatabaseName };
 }
 
-async function discardStaleCandidates(): Promise<void> {
+async function discardStaleCandidates(activeDatabaseName: string): Promise<void> {
   const databases = await indexedDB.databases();
   for (const database of databases) {
+    if (database.name === activeDatabaseName) continue;
     if (database.name?.startsWith(CANDIDATE_DATABASE_PREFIX) === true) {
       await deleteDatabase(database.name);
     }
@@ -248,8 +253,6 @@ export async function migrate(plan: MigrationPlan): Promise<MigrationOutcome> {
   const activeName = await readActiveDatabaseName();
   const storedVersion = await readActiveVersion();
 
-  await discardStaleCandidates();
-
   if (storedVersion > plan.targetVersion) {
     return {
       outcome: "UnsupportedVersion",
@@ -258,6 +261,26 @@ export async function migrate(plan: MigrationPlan): Promise<MigrationOutcome> {
       activeDatabaseName: activeName,
     };
   }
+
+  // Already at the target: report no transition rather than rebuilding an identical candidate.
+  // This must precede stale-candidate cleanup, because the active database is itself one of the
+  // candidate-named databases.
+  if (storedVersion === plan.targetVersion) {
+    return {
+      outcome: "Migrated",
+      activeDatabaseName: activeName,
+      receipt: {
+        migrationId: plan.migrationId,
+        schemaTransitions: [],
+        migrationsApplied: [],
+        seedVersion: plan.seedVersion,
+        seedAdditions: [],
+        privateRebuilds: [],
+      },
+    };
+  }
+
+  await discardStaleCandidates(activeName);
 
 
   const source = await openExistingDatabase(activeName);
@@ -278,7 +301,11 @@ export async function migrate(plan: MigrationPlan): Promise<MigrationOutcome> {
   current = seeded.snapshot;
 
   const candidateName = `${CANDIDATE_DATABASE_PREFIX}${plan.migrationId}`;
-  const candidate = await openDatabase(candidateName, plan.targetVersion);
+  const candidate = await openDatabaseWithStores(
+    plan.stores ?? SCHEMA_MANIFEST,
+    candidateName,
+    plan.targetVersion,
+  );
   await writeSnapshot(candidate, current);
   await rebuildProjections(candidate);
   const candidateSnapshot = await snapshotOf(candidate);
