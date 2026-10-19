@@ -184,3 +184,15 @@ The first full run of this change failed `lint:deps`: the new AppShell case impo
 ## D1 tag moved after the critic-2 fixes
 
 On 2026-10-19 the user approved moving the local tag `claude-opus-5.5-d1` from the gate commit `0b90f10` (passed by critic-2) to the commit that records this note, which includes the critic-2 onboarding fixes (`5a61a8b`), **without a fresh critic run**. The fixes are covered by the complete cumulative run recorded above, not by a browser critic.
+
+## Acceptance statuses, T1.17 decision, and integration filters
+
+2026-10-19, at the user's direction:
+
+- **T1.17 case 2** ("should return a Ready page with no items") is accepted by the user as a regression guard; the decision is recorded in `tdd-log.md`.
+- **D1 acceptance rows** in `plan/D01-start-a-workspace-and-confirm-a-long-stock-plan.md`, section 8, moved from `planned` to `covered` (AC-DEL rows: covered in Chromium, with Firefox, WebKit, and real-state readiness evidence pending RC; AC-DEL-003 keeps its production-HTTPS and installation notes; AC-PERF-001 stays not advertised). In the shared `plan/acceptance-matrix.md` only AC-DEL-002, the one scenario that is full in D1, changed; every other scenario there is partial in D1 and stays `planned` until its later deliverables cover it.
+- **Integration filters fixed.** The matrix cites commands such as `npm run test:integration -- d1/rebuild`, but the script passed its folder as a filter of its own, so every such command ran all 19 cases. Vitest now has `unit` and `integration` projects (`vite.config.ts`); `test:unit` and `test:integration` select their project, and each cited filter now selects only its files (`d1/rebuild` 1 test, `d1/responses` 1, `d1/initialize` 2, `d1/confirm-plan-rejected` 1, `d1/confirm-plan` 4 across both confirm-plan files).
+
+Complete cumulative run after these changes (full outputs in `suite-runs/matrix-update-*.txt`): unit `Test Files 24 passed (24)`, `Tests 207 passed (207)`; integration `Test Files 6 passed (6)`, `Tests 19 passed (19)`; browser `27 passed (42.1s)`; static and verification checks 11 of 11 exit 0.
+
+At the user's direction the tag `claude-opus-5.5-d1` moved again, from `8dcefd3` to the commit that records this section, so the tag includes the covered statuses and the T1.17 decision. Still no fresh critic run; the code is unchanged apart from the Vitest project split.

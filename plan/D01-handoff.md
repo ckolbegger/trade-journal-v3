@@ -142,7 +142,7 @@ Update this section at the end of each task.
 
 | | |
 |---|---|
-| Tasks done | D1 complete: T1.1–T1.31. Gate T1.30 passed on 2026-10-19 by critic-2 (critic-1 found two C1.8 defects, fixed test-first in `bb283dd`). Tagged `claude-opus-5.5-d1`. Evidence in `evidence/D01/`. Open for the user: the T1.17 case 2 first-run pass, and critic-2's minor observations. |
+| Tasks done | D1 complete: T1.1–T1.31. Gate T1.30 passed on 2026-10-19 by critic-2 (critic-1 found two C1.8 defects, fixed test-first in `bb283dd`). Tagged `claude-opus-5.5-d1`. Evidence in `evidence/D01/`. T1.17 case 2 accepted by the user as a regression guard; D1 acceptance rows marked covered (2026-10-19). Remaining critic-2 minor observations are optional polish. |
 | Next task | D2, when the user says so. TDD helper: `scratchpad/tdd.sh` (recreate if missing). |
-| Last commit | `8dcefd3`, tagged `claude-opus-5.5-d1` (tag moved from the gate commit `0b90f10` by the user's approval, without a fresh critic run, to include the critic-2 onboarding fixes `5a61a8b`) |
+| Last commit | the commit that marks the D1 acceptance rows covered, tagged `claude-opus-5.5-d1` (tag moved by the user's approval, without a fresh critic run: from the gate commit `0b90f10` to `8dcefd3` for the critic-2 onboarding fixes, then to this commit for the covered statuses) |
 | Open questions | `npm audit`: 3 high findings in `sharp` via the pinned `wrangler@4.147.0` (deploy-only); fixing needs a pin change, so a plan revision. Not blocking D1. |

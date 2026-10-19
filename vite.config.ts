@@ -13,8 +13,12 @@ export default defineConfig(({ mode }) => {
     server: { port, strictPort: true },
     preview: { port, strictPort: true },
     test: {
-      include: ['src/**/*.test.{ts,tsx}', 'tests/integration/**/*.test.ts'],
       setupFiles: ['tests/setup/idb-globals.ts'],
+      // Named projects, so `test:integration -- d1/rebuild` selects within the integration suite.
+      projects: [
+        { extends: true, test: { name: 'unit', include: ['src/**/*.test.{ts,tsx}'] } },
+        { extends: true, test: { name: 'integration', include: ['tests/integration/**/*.test.ts'] } },
+      ],
     },
   };
 });
