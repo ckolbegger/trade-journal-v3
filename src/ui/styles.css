@@ -244,6 +244,20 @@ select {
   overflow-wrap: anywhere;
 }
 
+/* Below the wide breakpoint a two-column definition list hands the label column the card's width and
+   crushes each value into a one-character column (a dd also carries the UA's 40px start margin). The
+   pairs stack instead, so a frozen figure stays readable at 375px. */
+@media (max-width: 899px) {
+  .facts {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+  }
+
+  .facts dd {
+    margin: 0 0 0.6rem;
+  }
+}
+
 @media (max-width: 899px) {
   .app-shell {
     overflow-x: hidden;

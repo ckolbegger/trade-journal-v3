@@ -179,6 +179,53 @@ test.describe("d2-plan-form-disclosure", () => {
     ).toHaveCount(2);
   });
 
+  test("should keep every value readable in the provisional, saved and Trade facts lists at the narrow viewport, so a value is never crushed into a one-character column", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await startWith(page);
+    await initializeJournal(page);
+    await onboard(page);
+    await openPlanForm(page);
+    await fillPlan(page);
+
+    // Every definition list on every D2 surface gives its value at least half the list's width.
+    const measureFacts = () =>
+      page.evaluate(() =>
+        Array.from(document.querySelectorAll("dl.facts")).map((list) => {
+          const values = Array.from(list.querySelectorAll("dd"));
+          return {
+            listWidth: Math.round(list.getBoundingClientRect().width),
+            narrowestValue: Math.round(
+              Math.min(...values.map((value) => value.getBoundingClientRect().width)),
+            ),
+          };
+        }),
+      );
+
+    const provisional = await measureFacts();
+    expect(provisional.length).toBeGreaterThan(0);
+    for (const list of provisional) {
+      expect(list.narrowestValue).toBeGreaterThanOrEqual(list.listWidth / 2);
+    }
+
+    await page.getByRole("button", { name: "Save the plan" }).click();
+    await expect(page.getByRole("heading", { name: "Plan confirmed" })).toBeVisible();
+    const confirmed = await measureFacts();
+    expect(confirmed.length).toBeGreaterThan(0);
+    for (const list of confirmed) {
+      expect(list.narrowestValue).toBeGreaterThanOrEqual(list.listWidth / 2);
+    }
+
+    await page.getByRole("button", { name: "Open the Trade" }).click();
+    await expect(page.getByTestId("trade-detail")).toBeVisible();
+    const trade = await measureFacts();
+    expect(trade.length).toBeGreaterThan(0);
+    for (const list of trade) {
+      expect(list.narrowestValue).toBeGreaterThanOrEqual(list.listWidth / 2);
+    }
+  });
+
   test("should not call previewPlan while a required identity field is still blank, so an empty form is not reported as invalid", async ({
     page,
   }) => {

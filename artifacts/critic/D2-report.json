@@ -1,5 +1,5 @@
 {
-  "criticId": "critic-d2-1792436565-6325cf",
+  "criticId": "critic-d2-1792437948-23a6f2",
   "didWriteImplementation": false,
   "spawnedAfterFix": true,
   "servedUrl": "http://127.0.0.1:5177",
@@ -7,28 +7,29 @@
   "browserEngines": [
     "chromium"
   ],
-  "commitTested": "d13df8e10dcf44efc888b1c389bb254e5f0b5848",
+  "commitTested": "8c5518c14a379afedff88faddec1e93602c36206",
+  "workingTreeClean": true,
   "boundariesGiven": {
     "deliverableScope": "D2 confirmation only",
     "futureCapabilities": [
-      "Every Strategy other than Long Stock, and the remaining ten canonical Strategy seeds (D8, D9, D11, D12).",
-      "Position recording, Executions, Positions, Lots, FIFO Lot Matches, fees, realized P&L, and Planned becoming Open (D3).",
-      "Daily Review, Mark entry, Expected Mark Status, and Stop-Discipline deviation reconciliation (D4).",
-      "Corrections: Replace, Void, Rebuild, Correction Footprint, View history and audit history UI (D15, D16).",
-      "Close Reason, Abandonment Reason, Close Review and abandonPlan; no close or abandonment at D2 (D6).",
-      "Management revisions: D2 freezes original management only and offers no revision (D14).",
-      "Terminal Disposition, valuation, marked P&L, Overrun and Expiration Payoff: no Marks or disposing facts exist at D2.",
-      "The remaining five of seven Journal Entry Types and five of seven Sources, and the full seedDefaults manifest (D17).",
-      "Backup, Restore, migration of older Workspaces, installation and update (D7, D20, D21, D22).",
-      "Any latency claim; D2 asserts boundedness only and no timing statement (AC-PERF-001 is unowned)."
+      "D3 position entry, Execution, Lot match, realized P&L and fees",
+      "D4 Daily Review, Mark and Overrun",
+      "D6 Close and Abandon",
+      "D7 backup, Restore and installation",
+      "D8/D9/D11/D12 the remaining Strategies (the selector offers Long Stock only)",
+      "D14 management revision",
+      "D15/D16 correction, Void, Rebuild and audit history",
+      "D17 the other five Journal Entry Types and five Sources",
+      "D20-D22 installation-level capabilities",
+      "Terminal Disposition, Expiration Payoff, valuation and marked P&L while no Marks exist"
     ]
   },
   "totals": {
     "flows": 13,
     "viewports": 2,
     "entries": 26,
-    "passed": 24,
-    "failed": 2
+    "passed": 23,
+    "failed": 3
   },
   "entries": [
     {
@@ -41,13 +42,13 @@
       },
       "acceptanceId": "AC-UI-002",
       "actions": [
-        "Ran `npm run build` (release 4b3417728eed325a5bbe9e191e5ec1dc8e8e0c291b391afddc2ac0fd91df64e1) and served dist with `npx vite preview --port 5177 --strictPort`.",
-        "Launched chromium.launchPersistentContext('/tmp/d2-critic-narrow', {headless:true, viewport:{width:375,height:812}}) against an empty profile directory, armed the harness init script (__TRADE_JOURNAL_HARNESS__ = true, __TRADE_JOURNAL_STARTUP_OVERRIDE__ = {}) and navigated to http://127.0.0.1:5177/.",
-        "The startup screen showed h2 \"Create this journal\"; selected Time zone America/New_York and pressed \"Create this journal\".",
-        "Completed D1 onboarding: nav Set up -> Institution name \"Fidelity\" -> \"Add institution\"; Institution = Fidelity, Account name \"Brokerage One\" -> \"Add account\".",
-        "Returned to Status and read the Onboarding line, then pressed the \"Plan\" button in navigation[name=\"Primary\"] and waited for h2 \"Confirm a plan\"; measured the navigation and form geometry."
+        "Launched fresh persistent profile, set window.__TRADE_JOURNAL_HARNESS__=true and __TRADE_JOURNAL_STARTUP_OVERRIDE__={}, opened http://127.0.0.1:5177/",
+        "Selected Time zone \"New York\" and pressed \"Create this journal\"",
+        "Opened \"Set up\", typed Institution name \"Fidelity\", pressed \"Add institution\"",
+        "Selected the Institution, typed Account name \"Main Brokerage\", pressed \"Add account\"",
+        "Pressed the \"Plan\" button in navigation[name=\"Primary\"]"
       ],
-      "observation": "Fresh profile: startup showed h2 \"Create this journal\" with a 6-option Time zone select; pressing Create this journal produced navigation[name=\"Primary\"] with exactly 4 buttons [Status, Set up, Plan, Trades]. Status read Onboarding \"Needs Institution and Account\" before onboarding and \"Ready for Trade Planning\" after adding Institution \"Fidelity\" and Account \"Brokerage One\"; \"Installed capabilities 10 operations\"; Release 4b3417728eed325a5bbe9e191e5ec1dc8e8e0c291b391afddc2ac0fd91df64e1, byte-identical to dist/release-inventory.json and to GET /release-inventory.json; readiness evidence 4/4 Passed (Authoritative storage, Storage capacity, Application release worker, Offline release inventory). The Plan button is button 3 of 4 in the bottom bar and opened the form at h2 \"Confirm a plan\": \"Set up an Account first\" 0, \"Loading the plan form\" 0, \"The plan form could not be loaded\" 0, i.e. Ready, not Loading/Empty/Error. Geometry at 375x812: nav box x=0 y=751 w=375 h=61, position=fixed, flex-direction=row (bottom navigation, flush to the bottom edge); plan form x=24 w=327, centre 188 = viewport centre 188; document.scrollWidth 375 (no horizontal scroll). The form rendered 20 controls with ids field-accountId, field-strategyStableKey, field-intendedEntry, field-instrumentKey, field-quantity, field-cond-1.boundaryPrice, field-cond-1.comment, field-cond-2.boundaryPrice, field-cond-2.comment, field-prompt.plan-reflection.thesis, field-prompt.plan-reflection.invalidation, field-prompt.plan-reflection.conviction and the 8 emotion radios.",
+      "observation": "Startup heading \"Create this journal\" with Time zone options [\"Choose a time zone\",\"New York\",\"Chicago\",\"Denver\",\"Los Angeles\",\"UTC\"]; onboarding reports \"Onboarding: Ready for Trade Planning\" and Status says \"Ready to write.\" (1 match). nav[aria-label=\"Primary\"] buttons [\"Status\",\"Set up\",\"Plan*\",\"Trades\"], active \"Plan\"; nav bounding box x=0, y=751, w=375, h=61 at viewport 375x812 => anchored to the bottom edge. Plan form \"Confirm a plan\" rendered at x=24, w=327; content column (.stack) 24..351, left gap 0px vs right gap 0px => centred within the content column; grid-template-columns \"277px\" (single column at narrow, two at wide). No Loading/Empty/Error state: none of \"Loading the plan form\"/\"No Trades yet\"/\"could not be loaded\"/\"Set up an Account first\" appears. Horizontal overflow 0px. Fields (20): [\"field-accountId\",\"field-strategyStableKey\",\"field-intendedEntry\",\"field-instrumentKey\",\"field-quantity\",\"field-cond-1.boundaryPrice\",\"field-cond-1.comment\",\"field-cond-2.boundaryPrice\",\"field-cond-2.comment\",\"field-prompt.plan-reflection.thesis\",\"field-prompt.plan-reflection.invalidation\",\"field-prompt.plan-reflection.conviction\",\"field-prompt.plan-reflection.primary-emotion-option.emotion.calm\",\"field-prompt.plan-reflection.primary-emotion-option.emotion.eager\",\"field-prompt.plan-reflection.primary-emotion-option.emotion.anxious\",\"field-prompt.plan-reflection.primary-emotion-option.emotion.fomo\",\"field-prompt.plan-reflection.primary-emotion-option.emotion.revenge\",\"field-prompt.plan-reflection.primary-emotion-option.emotion.relieved\",\"field-prompt.plan-reflection.primary-emotion-option.emotion.frustrated\",\"field-prompt.plan-reflection.primary-emotion-option.emotion.other\"]; labels: [\"Account\",\"Strategy\",\"Intended entry\",\"Instrument\",\"Planned Leg quantity\",\"Boundary price\",\"Why this stop (optional)\",\"Boundary price\",\"Why this target (optional)\",\"Why this trade, why now? (required)\",\"What would invalidate the thesis? (required)\",\"Conviction (optional)\",\"Calm\",\"Eager\",\"Anxious\",\"FOMO\",\"Revenge\",\"Relieved\",\"Frustrated\",\"Other\"].",
       "status": "pass"
     },
     {
@@ -60,11 +61,13 @@
       },
       "acceptanceId": "AC-UI-002",
       "actions": [
-        "Ran the same build/preview and launched a second empty persistent profile at 1440x900 (chromium, headless, harness init script), then navigated to http://127.0.0.1:5177/.",
-        "Selected Time zone America/New_York, pressed \"Create this journal\", completed Set up (Institution \"Fidelity\", Account \"Brokerage One\") and pressed the \"Plan\" button in navigation[name=\"Primary\"].",
-        "Measured the navigation and content geometry and captured the form's control ids and label texts for comparison with the narrow run."
+        "Launched fresh persistent profile, set window.__TRADE_JOURNAL_HARNESS__=true and __TRADE_JOURNAL_STARTUP_OVERRIDE__={}, opened http://127.0.0.1:5177/",
+        "Selected Time zone \"New York\" and pressed \"Create this journal\"",
+        "Opened \"Set up\", typed Institution name \"Fidelity\", pressed \"Add institution\"",
+        "Selected the Institution, typed Account name \"Main Brokerage\", pressed \"Add account\"",
+        "Pressed the \"Plan\" button in navigation[name=\"Primary\"]"
       ],
-      "observation": "Wide: navigation[name=\"Primary\"] is the left sidebar - box x=0 y=16 w=208 h=884, position=fixed, flex-direction=column, buttons [Status, Set up, Plan, Trades]; it begins 16px below the top edge because the base `.nav { margin-top: 1rem }` still applies to the fixed sidebar, leaving a 16px strip of page ground above it (cosmetic only; the entry point is fully reachable). Status read Onboarding \"Ready for Trade Planning\", Release 4b3417728eed325a5bbe9e191e5ec1dc8e8e0c291b391afddc2ac0fd91df64e1, readiness 4/4 Passed. Plan opened h2 \"Confirm a plan\" with \"Set up an Account first\" 0. The content column is x=392 w=880 and the form is 704 wide at x=480, centre 832 = content-column centre 832 exactly (viewport centre is 720 because the 224px sidebar offset is deliberate); document.scrollWidth 1440. The 20 control ids and 20 label texts were identical to the narrow run, so the two arrangements are one DOM with the same fields.",
+      "observation": "Startup heading \"Create this journal\" with Time zone options [\"Choose a time zone\",\"New York\",\"Chicago\",\"Denver\",\"Los Angeles\",\"UTC\"]; onboarding reports \"Onboarding: Ready for Trade Planning\" and Status says \"Ready to write.\" (1 match). nav[aria-label=\"Primary\"] buttons [\"Status\",\"Set up\",\"Plan*\",\"Trades\"], active \"Plan\"; nav bounding box x=0, y=16, w=208, h=884 at viewport 1440x900 => anchored to the left edge (full height). Plan form \"Confirm a plan\" rendered at x=480, w=704; content column (.stack) 392..1272, left gap 88px vs right gap 88px => centred within the content column; grid-template-columns \"315px 315px\" (single column at narrow, two at wide). No Loading/Empty/Error state: none of \"Loading the plan form\"/\"No Trades yet\"/\"could not be loaded\"/\"Set up an Account first\" appears. Horizontal overflow 0px. Fields (20): [\"field-accountId\",\"field-strategyStableKey\",\"field-intendedEntry\",\"field-instrumentKey\",\"field-quantity\",\"field-cond-1.boundaryPrice\",\"field-cond-1.comment\",\"field-cond-2.boundaryPrice\",\"field-cond-2.comment\",\"field-prompt.plan-reflection.thesis\",\"field-prompt.plan-reflection.invalidation\",\"field-prompt.plan-reflection.conviction\",\"field-prompt.plan-reflection.primary-emotion-option.emotion.calm\",\"field-prompt.plan-reflection.primary-emotion-option.emotion.eager\",\"field-prompt.plan-reflection.primary-emotion-option.emotion.anxious\",\"field-prompt.plan-reflection.primary-emotion-option.emotion.fomo\",\"field-prompt.plan-reflection.primary-emotion-option.emotion.revenge\",\"field-prompt.plan-reflection.primary-emotion-option.emotion.relieved\",\"field-prompt.plan-reflection.primary-emotion-option.emotion.frustrated\",\"field-prompt.plan-reflection.primary-emotion-option.emotion.other\"]; labels: [\"Account\",\"Strategy\",\"Intended entry\",\"Instrument\",\"Planned Leg quantity\",\"Boundary price\",\"Why this stop (optional)\",\"Boundary price\",\"Why this target (optional)\",\"Why this trade, why now? (required)\",\"What would invalidate the thesis? (required)\",\"Conviction (optional)\",\"Calm\",\"Eager\",\"Anxious\",\"FOMO\",\"Revenge\",\"Relieved\",\"Frustrated\",\"Other\"].",
       "status": "pass"
     },
     {
@@ -77,11 +80,11 @@
       },
       "acceptanceId": "AC-PLAN-001",
       "actions": [
-        "Read every option of the Account select (#field-accountId), selected \"Brokerage One\".",
-        "Injected window.__NO_RELOAD_SENTINEL__, clicked the Strategy select to open it, read its options and selected \"Long Stock\".",
-        "Re-read the sentinel, the selected labels and the page URL to prove no reload happened, then re-read the form values."
+        "Marked window.__d2NoReload, then chose Account \"Main Brokerage\" in the Account select",
+        "Opened the Strategy selector and read every option",
+        "Chose the single Strategy \"Long Stock\""
       ],
-      "observation": "Account options were exactly [\"Choose an Account\", \"Brokerage One\"]. The Strategy selector held exactly 2 options, [\"Choose a Strategy\", \"Long Stock\"] - one real Strategy plus the placeholder. Selecting Account = Brokerage One (#field-accountId = account:institution:fidelity:brokerage-one, label \"Brokerage One\") then Strategy = Long Stock (strategy.long-stock) left the page at the same URL with the injected window sentinel still present, i.e. the selection populated the form without a reload; the controls read back \"Brokerage One\" / \"Long Stock\" and the heading stayed \"Confirm a plan\".",
+      "observation": "Account select options [\"Choose an Account\",\"Main Brokerage\"]; chose \"Main Brokerage\" (value account:institution:fidelity:main-brokerage). Strategy options [\"|Choose a Strategy\",\"strategy.long-stock|Long Stock\"] => exactly 1 real Strategy (strategy.long-stock|Long Stock). After choosing it, selected value \"strategy.long-stock\" / label \"Long Stock\", heading \"Confirm a plan\" still rendered, 20 form controls, preview section present=false, page marker survived=true (no reload). Sections: [\"STOPS AND TARGETS\",\"PLAN REFLECTION\",\"PRIMARY EMOTION (OPTIONAL)\"].",
       "status": "pass"
     },
     {
@@ -94,10 +97,11 @@
       },
       "acceptanceId": "AC-PLAN-001",
       "actions": [
-        "Read the Account and Strategy option lists at 1440x900, selected Account \"Brokerage One\", then opened the Strategy selector and selected \"Long Stock\".",
-        "Re-read the sentinel, URL and selected values."
+        "Marked window.__d2NoReload, then chose Account \"Main Brokerage\" in the Account select",
+        "Opened the Strategy selector and read every option",
+        "Chose the single Strategy \"Long Stock\""
       ],
-      "observation": "Identical to narrow: Account options [\"Choose an Account\", \"Brokerage One\"], Strategy options exactly [\"Choose a Strategy\", \"Long Stock\"] (2 options, one Strategy). Choosing Account = Brokerage One and Strategy = Long Stock kept the no-reload sentinel alive and the controls read \"Brokerage One\" / \"Long Stock\"; no navigation occurred (URL unchanged) and the form stayed at h2 \"Confirm a plan\".",
+      "observation": "Account select options [\"Choose an Account\",\"Main Brokerage\"]; chose \"Main Brokerage\" (value account:institution:fidelity:main-brokerage). Strategy options [\"|Choose a Strategy\",\"strategy.long-stock|Long Stock\"] => exactly 1 real Strategy (strategy.long-stock|Long Stock). After choosing it, selected value \"strategy.long-stock\" / label \"Long Stock\", heading \"Confirm a plan\" still rendered, 20 form controls, preview section present=false, page marker survived=true (no reload). Sections: [\"STOPS AND TARGETS\",\"PLAN REFLECTION\",\"PRIMARY EMOTION (OPTIONAL)\"].",
       "status": "pass"
     },
     {
@@ -110,11 +114,11 @@
       },
       "acceptanceId": "AC-PLAN-002",
       "actions": [
-        "Filled the Plan facts only: Account Brokerage One, Strategy Long Stock, intended entry 180, Instrument AAPL, Planned Leg quantity 100, Stop boundary price 175, Target boundary price 190, Thesis \"Breakout above the base\", leaving Invalidation blank.",
-        "Read the durable record counts, pressed \"Save the plan\" once, then read the inline alerts, the saved-screen count and the entered values.",
-        "Re-read the durable record counts, reloaded the application and opened Trades."
+        "Filled entry 180, instrument AAPL, quantity 100, Stop 175, Target 190, Thesis \"Breakout above the base\"; left Invalidation blank",
+        "Pressed \"Save the plan\" once",
+        "Reloaded the page and opened \"Trades\" to check no Trade was written"
       ],
-      "observation": "One press of \"Save the plan\" produced exactly one inline typed message, `\"What would invalidate the thesis?\" is required and was not answered`, rendered under the Invalidation prompt; the page never showed h2 \"Plan confirmed\" (count 0). All entered values were preserved in the same form: entry \"180\", Stop \"175\", Target \"190\", Thesis \"Breakout above the base\", Invalidation \"\". Durable record counts were identical before and after the attempt (journal 2, tradeRecord 0, lifecycleIndex 0, lifecycleListProjection 0, tradeLifecycle 0, tradeVersion 0, referenceCatalog 3, marketData 0, workspaceMeta 2; localStorage and sessionStorage empty), so no Trade, Entry, index row or draft was written. After a reload the Trades destination showed h2 \"No Trades yet\" with 0 entries in ul[aria-label=\"Confirmed Trades\"].",
+      "observation": "Inline error under the Invalidation textarea: <p id=\"error-prompt.plan-reflection.invalidation\" role=\"alert\"> \"\"What would invalidate the thesis?\" is required and was not answered\" (P role=alert); saved screen present=0. Entered values preserved: entry=180, stop=175, target=190, thesis=\"Breakout above the base\", invalidation=\"\". After reload: Trades shows \"No Trades yet\"=true, confirmed Trade list items=0, IDB stores tradeRecord=0 (trade facts 0), journal rows=2, journal Entries=0, tradeLifecycle=0.",
       "status": "pass"
     },
     {
@@ -127,11 +131,11 @@
       },
       "acceptanceId": "AC-PLAN-002",
       "actions": [
-        "Same steps at 1440x900: filled entry 180 / AAPL / 100 / Stop 175 / Target 190 and the Thesis, left Invalidation blank.",
-        "Read the durable counts, pressed \"Save the plan\" once, read the inline message and the saved-screen count and the preserved values.",
-        "Re-read the durable counts, reloaded and opened Trades."
+        "Filled entry 180, instrument AAPL, quantity 100, Stop 175, Target 190, Thesis \"Breakout above the base\"; left Invalidation blank",
+        "Pressed \"Save the plan\" once",
+        "Reloaded the page and opened \"Trades\" to check no Trade was written"
       ],
-      "observation": "Identical to narrow: the single inline message read `\"What would invalidate the thesis?\" is required and was not answered`, \"Plan confirmed\" count 0, entered values preserved (entry 180, Stop 175, Target 190, Thesis filled, Invalidation blank). Durable record counts unchanged (journal 2, tradeRecord 0, lifecycleIndex 0, tradeLifecycle 0, tradeVersion 0, referenceCatalog 3); after reload Trades showed \"No Trades yet\" with 0 confirmed Trades.",
+      "observation": "Inline error under the Invalidation textarea: <p id=\"error-prompt.plan-reflection.invalidation\" role=\"alert\"> \"\"What would invalidate the thesis?\" is required and was not answered\" (P role=alert); saved screen present=0. Entered values preserved: entry=180, stop=175, target=190, thesis=\"Breakout above the base\", invalidation=\"\". After reload: Trades shows \"No Trades yet\"=true, confirmed Trade list items=0, IDB stores tradeRecord=0 (trade facts 0), journal rows=2, journal Entries=0, tradeLifecycle=0.",
       "status": "pass"
     },
     {
@@ -144,12 +148,11 @@
       },
       "acceptanceId": "AC-RESP-001",
       "actions": [
-        "Reloaded, reopened Plan, filled every field (entry 180, AAPL, 100, Stop 175, Target 190, Thesis \"Breakout above the base\", Invalidation \"Closes back inside the base\").",
-        "Read the provisional figures, then pressed \"Save the plan\" exactly once.",
-        "Read the confirmation screen: every frozen fact, both conditions, 1R, lifecycle and the Plan Reflection."
+        "Returned to \"Plan\" and filled the canonical Plan: entry 180, AAPL, 100, Stop 175, Target 190, Thesis \"Breakout above the base\", Invalidation \"Closes back inside the base\"",
+        "Pressed \"Save the plan\" exactly once"
       ],
-      "observation": "One Save produced h2 \"Plan confirmed\" with the status \"One Trade, one frozen Plan, its original management and one completed Plan Reflection were saved together.\" and the frozen Plan in the same screen: Strategy \"Long Stock\", Instrument \"AAPL\", intended entry \"180\", Planned Leg \"long 100\", original management \"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\" and \"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\", reward-to-risk (frozen) \"2\", maximum loss (frozen) \"500 USD\", 1R (frozen at confirmation) \"500\" (positive), Lifecycle \"Planned\", \"Why this trade\" \"Breakout above the base\", \"What would invalidate it\" \"Closes back inside the base\". The card also stated \"These are the frozen figures. They are the provisional ones you saw before Save: freezing did not change them.\" For comparison the provisional figures shown before the Save were reward-to-risk \"2\" and maximum loss \"500 USD\".",
-      "status": "pass"
+      "observation": "Provisional figures before Save: reward-to-risk=2, maximum loss=500 USD. Saved screen heading \"Plan confirmed\"; status \"One Trade, one frozen Plan, its original management and one completed Plan Reflection were saved together.\"; Strategy Long Stock, Instrument AAPL, Intended entry 180, Planned Leg quantity \"long 100\", Reward-to-risk (frozen) 2, Maximum loss (frozen) 500 USD, 1R (frozen) 500, Lifecycle Planned; original management [\"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\",\"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\"]; Thesis \"Breakout above the base\"; Invalidation \"Closes back inside the base\". IDB: tradeRecord=5 (trade facts 1), journal Entries=1, tradeLifecycle states [\"Planned\"]. NARROW LAYOUT DEFECT (observed, not inferred): the saved screen's frozen-Plan list is a CSS grid `grid-template-columns: max-content 1fr` whose label column takes 192.6px of the 277px list, leaving 28.4px for values, and `overflow-wrap: anywhere` then breaks every value mid-token. Measured at 375x812: Strategy \"Long Stock\" is drawn on 3 lines (\"Lon/g/Sto/ck\"), \"Maximum loss (frozen) 500 USD\" on 4 lines (72px tall), Lifecycle \"Planned\" on 3 lines (54px), Thesis \"Breakout above the base\" on 8 lines (144px) and Invalidation on 9 lines (162px). The text content is present and correct, but the frozen Plan and the completed Plan Reflection are not legibly shown on the confirmed screen at the required narrow width. Reproduction: fresh 375x812 profile -> create journal -> Set up (Fidelity / Main Brokerage) -> Plan -> entry 180, AAPL, 100, Stop 175, Target 190, Thesis \"Breakout above the base\", Invalidation \"Closes back inside the base\" -> Save -> inspect the Plan confirmed definition list. Q: What is `dd` width? A: 28.4px. Fix direction: stack dt/dd into one column below 900px (or give the value column `min-width: 0` plus a sane minmax).",
+      "status": "fail"
     },
     {
       "flow": 4,
@@ -161,10 +164,10 @@
       },
       "acceptanceId": "AC-RESP-001",
       "actions": [
-        "Same steps at 1440x900: filled the same complete Plan and pressed \"Save the plan\" once.",
-        "Read every value on the confirmation screen."
+        "Returned to \"Plan\" and filled the canonical Plan: entry 180, AAPL, 100, Stop 175, Target 190, Thesis \"Breakout above the base\", Invalidation \"Closes back inside the base\"",
+        "Pressed \"Save the plan\" exactly once"
       ],
-      "observation": "Identical values to narrow: entry \"180\", Planned Leg \"long 100\", \"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\", \"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\", reward-to-risk (frozen) \"2\", maximum loss (frozen) \"500 USD\", 1R \"500\", Lifecycle \"Planned\", Thesis and Invalidation present, plus the same frozen-equals-provisional sentence.",
+      "observation": "Provisional figures before Save: reward-to-risk=2, maximum loss=500 USD. Saved screen heading \"Plan confirmed\"; status \"One Trade, one frozen Plan, its original management and one completed Plan Reflection were saved together.\"; Strategy Long Stock, Instrument AAPL, Intended entry 180, Planned Leg quantity \"long 100\", Reward-to-risk (frozen) 2, Maximum loss (frozen) 500 USD, 1R (frozen) 500, Lifecycle Planned; original management [\"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\",\"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\"]; Thesis \"Breakout above the base\"; Invalidation \"Closes back inside the base\". IDB: tradeRecord=5 (trade facts 1), journal Entries=1, tradeLifecycle states [\"Planned\"].",
       "status": "pass"
     },
     {
@@ -177,11 +180,10 @@
       },
       "acceptanceId": "AC-PLAN-002",
       "actions": [
-        "Opened Plan again (\"Start another plan\"), filled Account/Strategy/entry 180/AAPL/100 with Stop boundary price 180 - equal to the intended entry, so a long has no positive monetary risk - Target 190, and both reflection answers.",
-        "Read the durable counts, pressed \"Save the plan\" once, then read every inline alert, its DOM position, the saved-screen count and the preserved values.",
-        "Re-read the durable counts and the Trades list."
+        "Pressed \"Start another plan\"",
+        "Set Stop boundary price to 180 (equal to entry 180) so the monetary Stop boundary is 0, then pressed \"Save the plan\""
       ],
-      "observation": "The confirmation was rejected with exactly one typed inline message, \"this Stop is neither supplied with a monetary boundary nor derivable from its boundary price and the Planned Legs it protects\", rendered inside the \"Condition 1: Stop\" block immediately after #field-cond-1.boundaryPrice; \"Plan confirmed\" count 0 and the values were preserved (Stop \"180\"). Durable counts were identical before and after (journal 3, tradeRecord 5, lifecycleIndex 1, tradeLifecycle 1, tradeVersion 1, referenceCatalog 3, workspaceMeta 2) and the Trades destination still listed exactly 1 Trade, so nothing was saved. It names the offending condition (the Stop) and places the message at its field. One wording nit, not a failed criterion: for Stop == entry the derived boundary is 0 rather than underivable, so the text describes non-derivability instead of saying the risk is not positive - a trader reading it learns which condition is wrong but not why zero risk is refused.",
+      "observation": "After Save with Stop == entry (180), the form stays at \"Confirm a plan\"=true, saved screen=0, role=alert texts [\"the frozen monetary boundary of this Stop must be a positive number; it is \\\"0\\\"\"], inline field errors []. IDB unchanged: tradeRecord=5 (trade facts 1), journal Entries=1.",
       "status": "pass"
     },
     {
@@ -194,10 +196,10 @@
       },
       "acceptanceId": "AC-PLAN-002",
       "actions": [
-        "Same steps at 1440x900: Stop boundary price 180 with intended entry 180, Target 190, both answers filled.",
-        "Read the durable counts, pressed Save once, read the inline message and its position, then the durable counts again."
+        "Pressed \"Start another plan\"",
+        "Set Stop boundary price to 180 (equal to entry 180) so the monetary Stop boundary is 0, then pressed \"Save the plan\""
       ],
-      "observation": "Identical to narrow: one inline message \"this Stop is neither supplied with a monetary boundary nor derivable from its boundary price and the Planned Legs it protects\" inside \"Condition 1: Stop\" after #field-cond-1.boundaryPrice, \"Plan confirmed\" count 0, Stop value preserved, durable counts unchanged (journal 3, tradeRecord 5, lifecycleIndex 1, tradeLifecycle 1, tradeVersion 1) and Trades still 1.",
+      "observation": "After Save with Stop == entry (180), the form stays at \"Confirm a plan\"=true, saved screen=0, role=alert texts [\"the frozen monetary boundary of this Stop must be a positive number; it is \\\"0\\\"\"], inline field errors []. IDB unchanged: tradeRecord=5 (trade facts 1), journal Entries=1.",
       "status": "pass"
     },
     {
@@ -210,11 +212,10 @@
       },
       "acceptanceId": "AC-PLAN-002",
       "actions": [
-        "Changed only the Stop boundary price to 185 while the intended entry stayed 180 (Stop on the wrong side for a long), kept Target 190 and both answers.",
-        "Read the durable counts, pressed \"Save the plan\" once, then read the inline alert, its DOM position and the saved-screen count.",
-        "Re-read the durable counts and the Trades list."
+        "Left the flow-5 rejected form open at \"Confirm a plan\" (Plan values and reflection answers still populated, no reload)",
+        "Set Stop boundary price to 185 (above the 180 intended entry) and pressed \"Save the plan\""
       ],
-      "observation": "Rejected with exactly one inline typed message: \"every original Stop is at or beyond the intended entry, so Original Planned Risk is not positive\". It explains the incoherence (Stop at or above the intended entry) and is placed inside the \"Condition 1: Stop\" block directly after #field-cond-1.boundaryPrice, identifying the offending field. \"Plan confirmed\" count 0; durable counts unchanged before/after (journal 3, tradeRecord 5, lifecycleIndex 1, tradeLifecycle 1, tradeVersion 1); the Trades destination still showed exactly 1 confirmed Trade, so no Trade appeared.",
+      "observation": "After Save with Stop 185 > entry 180 for a long, the form stays at \"Confirm a plan\", saved screen=0, role=alert texts [\"every original Stop is at or beyond the intended entry, so Original Planned Risk is not positive\"], inline field errors []. IDB unchanged: tradeRecord=5 (trade facts 1), journal Entries=1.",
       "status": "pass"
     },
     {
@@ -227,10 +228,10 @@
       },
       "acceptanceId": "AC-PLAN-002",
       "actions": [
-        "Same steps at 1440x900: Stop boundary price 185 against intended entry 180, Target 190.",
-        "Read the durable counts, pressed Save once, read the inline message, its position and the saved-screen count, then the durable counts again."
+        "Left the flow-5 rejected form open at \"Confirm a plan\" (Plan values and reflection answers still populated, no reload)",
+        "Set Stop boundary price to 185 (above the 180 intended entry) and pressed \"Save the plan\""
       ],
-      "observation": "Identical to narrow: \"every original Stop is at or beyond the intended entry, so Original Planned Risk is not positive\" placed inside \"Condition 1: Stop\" after #field-cond-1.boundaryPrice, \"Plan confirmed\" count 0, durable counts unchanged, Trades still 1.",
+      "observation": "After Save with Stop 185 > entry 180 for a long, the form stays at \"Confirm a plan\", saved screen=0, role=alert texts [\"every original Stop is at or beyond the intended entry, so Original Planned Risk is not positive\"], inline field errors []. IDB unchanged: tradeRecord=5 (trade facts 1), journal Entries=1.",
       "status": "pass"
     },
     {
@@ -243,11 +244,10 @@
       },
       "acceptanceId": "AC-PLAN-002",
       "actions": [
-        "Restored the Stop to 175, cleared the Thesis textarea and kept Invalidation \"Closes back inside the base\", leaving one required reflection answer missing.",
-        "Read the durable counts, pressed \"Save the plan\" once, then read the inline alert and the saved-screen count.",
-        "Re-read the durable counts and opened Trades."
+        "Left the flow-6 rejected form open at \"Confirm a plan\" (same page, no reload)",
+        "Restored Stop to 175 (positive baseline), cleared the required Thesis, pressed \"Save the plan\""
       ],
-      "observation": "Rejected with exactly one inline typed message naming the missing prompt: `\"Why this trade, why now?\" is required and was not answered`, rendered under the Thesis textarea; \"Plan confirmed\" count 0. Durable counts were unchanged before and after (journal 3, tradeRecord 5, lifecycleIndex 1, tradeLifecycle 1, tradeVersion 1, referenceCatalog 3), and the Trades destination listed exactly 1 Trade (1R \"500 USD\", stored \"Planned\") - no new Trade.",
+      "observation": "After Save with the positive baseline Stop=175, Target=190 and the Thesis blank, saved screen=0, inline <p id=\"error-prompt.plan-reflection.thesis\" role=\"alert\"> \"\"Why this trade, why now?\" is required and was not answered\", all role=alert texts [\"\\\"Why this trade, why now?\\\" is required and was not answered\"]. IDB unchanged: tradeRecord=5 (trade facts 1), journal Entries=1.",
       "status": "pass"
     },
     {
@@ -260,10 +260,10 @@
       },
       "acceptanceId": "AC-PLAN-002",
       "actions": [
-        "Same steps at 1440x900: Thesis cleared, Invalidation filled, Stop 175.",
-        "Read the durable counts, pressed Save once, read the inline message and saved-screen count, then the durable counts again."
+        "Left the flow-6 rejected form open at \"Confirm a plan\" (same page, no reload)",
+        "Restored Stop to 175 (positive baseline), cleared the required Thesis, pressed \"Save the plan\""
       ],
-      "observation": "Identical to narrow: `\"Why this trade, why now?\" is required and was not answered`, \"Plan confirmed\" count 0, durable counts unchanged and exactly 1 Trade afterwards.",
+      "observation": "After Save with the positive baseline Stop=175, Target=190 and the Thesis blank, saved screen=0, inline <p id=\"error-prompt.plan-reflection.thesis\" role=\"alert\"> \"\"Why this trade, why now?\" is required and was not answered\", all role=alert texts [\"\\\"Why this trade, why now?\\\" is required and was not answered\"]. IDB unchanged: tradeRecord=5 (trade facts 1), journal Entries=1.",
       "status": "pass"
     },
     {
@@ -276,11 +276,11 @@
       },
       "acceptanceId": "AC-LIFE-001",
       "actions": [
-        "From the \"Plan confirmed\" screen pressed \"Open the Trade\".",
-        "Read the Trade view: Plan facts, Planned Legs, original management, 1R, stored and expected lifecycle, the Plan Reflection, and searched the page text for Terminal Disposition and Close Reason."
+        "From the still-open form used for the flows 5-7 rejections, navigated to Trades in navigation[name=\"Primary\"]",
+        "Opened \"Trades\" from navigation[name=\"Primary\"] and selected the confirmed Trade"
       ],
-      "observation": "The Trade view opened with the frozen Plan: Account \"Brokerage One\", Strategy \"Long Stock\", Intended entry \"180\", Planned Legs \"long 100 AAPL\", 1R (frozen, immutable) \"500 USD\" on a [data-immutable=\"true\"] node, Stored Lifecycle State \"Planned\", Expected Lifecycle State \"Planned\". Original management listed \"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\" and \"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\" with boundary testids reading 175 and 190. Plan Reflection (Plan Confirmation) showed \"Why this trade\" \"Breakout above the base\" and \"What would invalidate it\" \"Closes back inside the base\". No lifecycle-disagreement banner, and the whole body text contained neither \"terminal disposition\" nor \"close reason\".",
-      "status": "pass"
+      "observation": "Trades list holds 1 item(s) [\"Main Brokerage: Long Stock at 180\"]. Confirmed Plan reads: Intended entry 180; Planned Legs \"long 100 AAPL\"; 1R (frozen, immutable) 500 USD; Stored Lifecycle State Planned; Expected Lifecycle State Planned; original management [\"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\",\"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\"]; Plan Reflection Thesis \"Breakout above the base\", Invalidation \"Closes back inside the base\". \"Terminal Disposition\" present anywhere in the Trade view=false; Expected Lifecycle State row present=true. NARROW LAYOUT DEFECT (observed, not inferred): the Trade view's facts list is the same `max-content 1fr` grid; at 375x812 the label column is 178.9px and the value column 42.1px, so frozen facts break mid-word: Account \"Main Brokerage\" 3 lines (54px), Planned Legs \"long 100 AAPL\" 3 lines, \"1R (frozen, immutable) 500 USD\" 2 lines, Stored Lifecycle State \"Planned\" rendered as \"Plann/ed\" (2 lines, 36px). All required items are present in the DOM and no Terminal Disposition appears, but the frozen Plan is not legibly displayed at the required narrow width. Reproduction: fresh 375x812 profile -> confirm the canonical Plan -> Trades -> Confirmed Plan -> inspect the definition list (grid columns 178.9px 42.1px within a 277px list).",
+      "status": "fail"
     },
     {
       "flow": 8,
@@ -292,10 +292,10 @@
       },
       "acceptanceId": "AC-LIFE-001",
       "actions": [
-        "Same steps at 1440x900: pressed \"Open the Trade\" on the confirmation and read the Trade view.",
-        "Read every frozen fact plus the lifecycle pair and searched the page text for Terminal Disposition / Close Reason."
+        "From the still-open form used for the flows 5-7 rejections, navigated to Trades in navigation[name=\"Primary\"]",
+        "Opened \"Trades\" from navigation[name=\"Primary\"] and selected the confirmed Trade"
       ],
-      "observation": "Identical to narrow: entry \"180\", Planned Legs \"long 100 AAPL\", 1R \"500 USD\" immutable, Stored Lifecycle State \"Planned\", Expected Lifecycle State \"Planned\", both conditions with frozen monetary boundaries 500 USD / 1000 USD, both reflection answers, no disagreement banner and no \"terminal disposition\" or \"close reason\" text.",
+      "observation": "Trades list holds 1 item(s) [\"Main Brokerage: Long Stock at 180\"]. Confirmed Plan reads: Intended entry 180; Planned Legs \"long 100 AAPL\"; 1R (frozen, immutable) 500 USD; Stored Lifecycle State Planned; Expected Lifecycle State Planned; original management [\"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\",\"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\"]; Plan Reflection Thesis \"Breakout above the base\", Invalidation \"Closes back inside the base\". \"Terminal Disposition\" present anywhere in the Trade view=false; Expected Lifecycle State row present=true.",
       "status": "pass"
     },
     {
@@ -308,11 +308,10 @@
       },
       "acceptanceId": "AC-PLAN-001",
       "actions": [
-        "Captured every frozen value from the Trade view, then closed the browser context completely (context.close(), which disposes the page).",
-        "Relaunched chromium.launchPersistentContext against the same profile directory /tmp/d2-critic-narrow, re-armed the harness init script, navigated to / again, pressed Trades and reopened the Trade.",
-        "Diffed the frozen values and the condition lines captured before the restart against the ones read after it."
+        "Closed the browser context completely (persistent profile retained), relaunched Chromium against the same profile, re-opened the app",
+        "Opened \"Trades\" and re-read the same Trade"
       ],
-      "observation": "After a full context close and relaunch the Status panel still reported Release 4b3417728eed325a5bbe9e191e5ec1dc8e8e0c291b391afddc2ac0fd91df64e1 and 1 confirmed Trade. Every frozen value was identical string-for-string: Intended entry \"180\", 1R \"500 USD\", Stored Lifecycle State \"Planned\", Expected Lifecycle State \"Planned\", Stop boundary \"175\", Target boundary \"190\", Thesis \"Breakout above the base\", Invalidation \"Closes back inside the base\", and both management lines \"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\" / \"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\". 1R was unchanged at 500 USD and no decimal changed.",
+      "observation": "After a full context close/relaunch on the same profile the Trades list still holds 1 item(s) and reads entry 180, 1R 500 USD, Stored Lifecycle Planned, Expected Lifecycle Planned, management [\"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\",\"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\"], Thesis \"Breakout above the base\", Invalidation \"Closes back inside the base\". Exact-value comparison against the pre-restart read: no difference.",
       "status": "pass"
     },
     {
@@ -325,9 +324,10 @@
       },
       "acceptanceId": "AC-PLAN-001",
       "actions": [
-        "Same steps at 1440x900: captured the Trade view, closed the context completely, relaunched against /tmp/d2-critic-wide, reopened Trades and the Trade, and diffed the values."
+        "Closed the browser context completely (persistent profile retained), relaunched Chromium against the same profile, re-opened the app",
+        "Opened \"Trades\" and re-read the same Trade"
       ],
-      "observation": "Identical to narrow: after the full restart every frozen value matched exactly (entry \"180\", 1R \"500 USD\", Stored \"Planned\", Expected \"Planned\", boundaries 175 and 190, both frozen monetary boundaries 500 USD and 1000 USD, both reflection answers); 1R unchanged.",
+      "observation": "After a full context close/relaunch on the same profile the Trades list still holds 1 item(s) and reads entry 180, 1R 500 USD, Stored Lifecycle Planned, Expected Lifecycle Planned, management [\"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\",\"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\"], Thesis \"Breakout above the base\", Invalidation \"Closes back inside the base\". Exact-value comparison against the pre-restart read: no difference.",
       "status": "pass"
     },
     {
@@ -340,11 +340,10 @@
       },
       "acceptanceId": "AC-PLAN-001",
       "actions": [
-        "On the Trade view enumerated every editable affordance inside [data-testid=\"trade-detail\"] and inside the Trades card: input, select, textarea, button, [contenteditable], [role=\"textbox\"] and any data-testid matching edit/change/update.",
-        "Attempted edits: double-clicked the frozen 1R value and typed \"999\", pressed Enter and Escape, clicked the frozen Intended entry and typed \"1\" then Tab.",
-        "Re-read the Trade view, then reloaded the application and re-read it again to prove nothing changed durably."
+        "Enumerated every interactive element inside the confirmed Trade view and any control whose accessible name mentions edit/change/modify",
+        "Attempted the available edit affordances: double-clicked the Intended entry value and the 1R value (a browser-level \"edit in place\" attempt), then re-read"
       ],
-      "observation": "No edit affordance exists for frozen Plan facts: inside [data-testid=\"trade-detail\"] there were 0 inputs, 0 selects, 0 textareas, 0 contenteditable nodes, 0 buttons and 0 testids matching edit/change/update; the only interactive element in the Trades card is the trade selector button labelled \"Brokerage One: Long Stock at 180\". The edit attempts changed nothing - immediately after them, and again after a reload, the Trade view still read Intended entry \"180\", 1R \"500 USD\", Stored Lifecycle State \"Planned\" and the same two conditions. The absence of an edit control matches the intended freeze; nothing rewrote the frozen facts.",
+      "observation": "Inside [data-testid=\"trade-detail\"] there are 0 interactive element(s) []; buttons named edit/change/modify/revise=[], links=[]; the frozen 1R carries data-immutable=\"true\". After double-clicking the entry and 1R values, editable controls present=0. Re-read values: entry 180, 1R 500 USD, Stored Lifecycle Planned, management [\"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\",\"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\"] => identical to the flow-8 read.",
       "status": "pass"
     },
     {
@@ -357,9 +356,10 @@
       },
       "acceptanceId": "AC-PLAN-001",
       "actions": [
-        "Same steps at 1440x900: enumerated all edit affordances in the Trade detail and the Trades card, attempted double-click/typing on the 1R and entry, re-read and reloaded."
+        "Enumerated every interactive element inside the confirmed Trade view and any control whose accessible name mentions edit/change/modify",
+        "Attempted the available edit affordances: double-clicked the Intended entry value and the 1R value (a browser-level \"edit in place\" attempt), then re-read"
       ],
-      "observation": "Identical to narrow: 0 inputs, 0 selects, 0 textareas, 0 contenteditable nodes, 0 buttons and 0 edit testids inside the Trade detail; only the trade selector button exists in the card. After the edit attempts and after a reload the frozen values were unchanged (entry \"180\", 1R \"500 USD\", Stored \"Planned\").",
+      "observation": "Inside [data-testid=\"trade-detail\"] there are 0 interactive element(s) []; buttons named edit/change/modify/revise=[], links=[]; the frozen 1R carries data-immutable=\"true\". After double-clicking the entry and 1R values, editable controls present=0. Re-read values: entry 180, 1R 500 USD, Stored Lifecycle Planned, management [\"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\",\"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\"] => identical to the flow-8 read.",
       "status": "pass"
     },
     {
@@ -372,11 +372,10 @@
       },
       "acceptanceId": "AC-UI-002",
       "actions": [
-        "Opened Plan, selected Account Brokerage One and Strategy Long Stock, entered intended entry 180, Stop 175, Target 190 and the partial Thesis \"Half-written thesis\", leaving Invalidation blank.",
-        "Pressed \"Save the plan\" once so an inline validation message was on screen, recorded the values, the alert and the geometry.",
-        "Resized the live page 375x812 -> 1440x900 -> 375x812 with page.setViewportSize (no reload), reading values, alerts and geometry at each size, and compared durable record counts before and after."
+        "Opened \"Plan\" and entered Account \"Main Brokerage\", entry 180, Stop 175, Target 190, plus the partial reflection answer Thesis \"Breakout above\" (Invalidation deliberately left blank)",
+        "Pressed \"Save the plan\" once to put the form into a typed inline-validation state (nothing saved), then resized across the 900px breakpoint with page.setViewportSize, no reload"
       ],
-      "observation": "The layout switched live. At 375x812 the nav box was x=0 y=751 w=375 h=61, position=fixed, flex-direction=row and the form was 327 wide (x=24); at 1440x900 the same page became nav x=0 y=16 w=208 h=884, flex-direction=column with the form 704 wide (x=480); back at 375x812 it was again a 375x61 bottom bar with a 327-wide form. Through both crossings the selected Account stayed \"Brokerage One\", values stayed entry \"180\", Stop \"175\", Target \"190\", Thesis \"Half-written thesis\", Invalidation \"\", and the same inline validation message (`\"What would invalidate the thesis?\" is required and was not answered`) was still present - at the intermediate width it was present with the same text. Durable record counts were identical before and after the resizing (journal 3, tradeRecord 5, lifecycleIndex 1, tradeLifecycle 1, tradeVersion 1), so resizing wrote no draft and no Trade, and no \"Plan confirmed\" screen appeared.",
+      "observation": "Initial narrow layout 375x812: grid 1 track(s), nav {\"x\":0,\"y\":751,\"width\":375,\"height\":61}. Live resize sequence: grid tracks [\"375: 1 track(s) [277px]\",\"1440: 2 track(s) [315px 315px]\",\"375: 1 track(s) [277px]\"]; nav [\"375: bottom bar (x=0, y=751, w=375, h=61)\",\"1440: left sidebar (x=0, y=16, w=208, h=884)\",\"375: bottom bar (x=0, y=751, w=375, h=61)\"]. Held across every step: Account value \"account:institution:fidelity:main-brokerage\" (Main Brokerage), entry 180, Stop 175, Target 190, partial Thesis \"Breakout above\", Invalidation \"\", inline validation \"\"What would invalidate the thesis?\" is required and was not answered\" (count 1) => all intact; saved screen present in any step=false. IDB after resizing: tradeRecord=5 (trade facts 1), journal Entries=1; stores [\"journal\",\"lifecycleIndex\",\"lifecycleListProjection\",\"marketData\",\"referenceCatalog\",\"tradeLifecycle\",\"tradeRecord\",\"tradeVersion\",\"workspaceMeta\"]; draft stores [].",
       "status": "pass"
     },
     {
@@ -389,9 +388,10 @@
       },
       "acceptanceId": "AC-UI-002",
       "actions": [
-        "Same steps starting from 1440x900: filled Account, entry 180, Stop 175, Target 190 and the partial Thesis \"Half-written thesis\", pressed Save once to raise the inline validation, then resized 1440x900 -> 375x812 -> 1440x900 without reloading."
+        "Opened \"Plan\" and entered Account \"Main Brokerage\", entry 180, Stop 175, Target 190, plus the partial reflection answer Thesis \"Breakout above\" (Invalidation deliberately left blank)",
+        "Pressed \"Save the plan\" once to put the form into a typed inline-validation state (nothing saved), then resized across the 900px breakpoint with page.setViewportSize, no reload"
       ],
-      "observation": "Live layout switch in both directions: at 1440x900 nav x=0 y=16 w=208 h=884 flex-direction=column, form 704 wide; at 375x812 nav x=0 y=751 w=375 h=61 flex-direction=row, form 327 wide; back at 1440x900 the sidebar and 704-wide form returned. Account stayed \"Brokerage One\", entry \"180\", Stop \"175\", Target \"190\", Thesis \"Half-written thesis\", Invalidation \"\", and the same inline validation message remained visible at every size. Durable record counts were unchanged (journal 3, tradeRecord 5, lifecycleIndex 1, tradeLifecycle 1, tradeVersion 1); resizing wrote nothing.",
+      "observation": "Initial wide layout 1440x900: grid 2 track(s), nav {\"x\":0,\"y\":16,\"width\":208,\"height\":884}. Live resize sequence: grid tracks [\"1440: 2 track(s) [315px 315px]\",\"375: 1 track(s) [277px]\",\"1440: 2 track(s) [315px 315px]\"]; nav [\"1440: left sidebar (x=0, y=16, w=208, h=884)\",\"375: bottom bar (x=0, y=751, w=375, h=61)\",\"1440: left sidebar (x=0, y=16, w=208, h=884)\"]. Held across every step: Account value \"account:institution:fidelity:main-brokerage\" (Main Brokerage), entry 180, Stop 175, Target 190, partial Thesis \"Breakout above\", Invalidation \"\", inline validation \"\"What would invalidate the thesis?\" is required and was not answered\" (count 1) => all intact; saved screen present in any step=false. IDB after resizing: tradeRecord=5 (trade facts 1), journal Entries=1; stores [\"journal\",\"lifecycleIndex\",\"lifecycleListProjection\",\"marketData\",\"referenceCatalog\",\"tradeLifecycle\",\"tradeRecord\",\"tradeVersion\",\"workspaceMeta\"]; draft stores [].",
       "status": "pass"
     },
     {
@@ -404,11 +404,10 @@
       },
       "acceptanceId": "AC-JOUR-001",
       "actions": [
-        "Completed the Invalidation in the still-open form (making the whole form complete) and navigated away to Trades without pressing Save.",
-        "Confirmed no confirmation screen appeared, then reloaded the application with page.goto and reopened Trades and Plan.",
-        "Compared durable record counts before the abandon and after the reload, the confirmed-Trade list, and the reloaded form state."
+        "The Plan form still held the flow-11 entries (Account Main Brokerage, entry 180, Stop 175, Target 190, partial Thesis) with the inline Invalidation error showing",
+        "Completed the form (typed Invalidation \"Closes back inside the base\"), then navigated to \"Trades\" without pressing Save, then reloaded the page"
       ],
-      "observation": "Abandoning wrote nothing. Immediately after navigating away no \"Plan confirmed\" screen existed; after the reload the Trades destination still listed exactly 1 confirmed Trade with unchanged values (entry \"180\", 1R \"500 USD\", Stored \"Planned\"), and every durable record count was identical to the pre-abandon snapshot (journal 3, tradeRecord 5, lifecycleIndex 1, lifecycleListProjection 0, tradeLifecycle 1, tradeVersion 1, referenceCatalog 3, workspaceMeta 2) with localStorage and sessionStorage still empty. The reloaded Plan form was empty (Account placeholder, entry \"\", both answers \"\", preview section count 0), so no draft survived. The clean-state version of the same proof is flow 3: with 0 Trades, a reload of the identical complete form left \"No Trades yet\" and 0 confirmed Trades.",
+      "observation": "Before reload: Trades list 1 item(s), IDB tradeRecord=5 (trade facts 1), journal Entries=1 [\"entry:plan-confirmation:44312dd9-d832-4773-bbbd-d9c0b22ccd83\"]. After navigating away and reloading: Trades list 1 item(s), IDB tradeRecord=5 (trade facts 1), journal Entries=1 [\"entry:plan-confirmation:44312dd9-d832-4773-bbbd-d9c0b22ccd83\"]; draft stores in schema=[] (store list [\"journal\",\"lifecycleIndex\",\"lifecycleListProjection\",\"marketData\",\"referenceCatalog\",\"tradeLifecycle\",\"tradeRecord\",\"tradeVersion\",\"workspaceMeta\"]); the reopened Plan form is blank=true (form state {\"planTitle\":\"Confirm a plan\",\"planSaved\":null,\"planLoading\":null,\"planError\":null,\"intendedEntry\":\"\",\"thesis\":\"\",\"invalidation\":\"\",\"prompts\":[\"field-prompt.plan-reflection.thesis\",\"field-prompt.plan-reflection.invalidation\"],\"body\":\"DEVICE-LOCAL JOURNAL\\n\\nTrade Journal\\n\\nOpening instant: 2026-10-19T19:22:13.778Z\\n\\nStatus\\nSet up\\nPlan\\nTrades\\nThis browser may clear your journal data\\n\\nOrigin storage protection is Best effort. Recommend exporting a backup; the warning never disables writing.\\n\\nKeep this data on this device\\nConfirm a plan\\nAccount\\nChoose an Account\\nMain Brokerage\\nStrategy\\nChoose a Strategy\\nLong Stock\\nIntended entry\\nInstrument\\nPlanned Leg quantity\\nSTOPS AND TARGETS\\n\\nCondition 1: Stop\\n\\nBoundary price\\n\\nMonetary boundary (derived): not yet available\\n\\nWhy this stop (optional)\\n\\nCondition 2: Target\\n\\nBoundary price\\n\\nMonetary boundary (derived): not yet available\\n\\nWhy this target (optional)\\nPLAN REFLECTION\\nWhy this trade, \"}).",
       "status": "pass"
     },
     {
@@ -421,9 +420,10 @@
       },
       "acceptanceId": "AC-JOUR-001",
       "actions": [
-        "Same steps at 1440x900: completed the form, clicked Trades without Save, reloaded, reopened Trades and Plan, compared counts and form state."
+        "The Plan form still held the flow-11 entries (Account Main Brokerage, entry 180, Stop 175, Target 190, partial Thesis) with the inline Invalidation error showing",
+        "Completed the form (typed Invalidation \"Closes back inside the base\"), then navigated to \"Trades\" without pressing Save, then reloaded the page"
       ],
-      "observation": "Identical to narrow: no confirmation appeared, the reloaded Trades list held exactly 1 Trade with unchanged values, all durable record counts were identical before and after (journal 3, tradeRecord 5, lifecycleIndex 1, tradeLifecycle 1, tradeVersion 1, referenceCatalog 3), and the reloaded Plan form was empty with no preview section.",
+      "observation": "Before reload: Trades list 1 item(s), IDB tradeRecord=5 (trade facts 1), journal Entries=1 [\"entry:plan-confirmation:1621a5f4-8efe-43b4-acc4-e49aa8f19f9c\"]. After navigating away and reloading: Trades list 1 item(s), IDB tradeRecord=5 (trade facts 1), journal Entries=1 [\"entry:plan-confirmation:1621a5f4-8efe-43b4-acc4-e49aa8f19f9c\"]; draft stores in schema=[] (store list [\"journal\",\"lifecycleIndex\",\"lifecycleListProjection\",\"marketData\",\"referenceCatalog\",\"tradeLifecycle\",\"tradeRecord\",\"tradeVersion\",\"workspaceMeta\"]); the reopened Plan form is blank=true (form state {\"planTitle\":\"Confirm a plan\",\"planSaved\":null,\"planLoading\":null,\"planError\":null,\"intendedEntry\":\"\",\"thesis\":\"\",\"invalidation\":\"\",\"prompts\":[\"field-prompt.plan-reflection.thesis\",\"field-prompt.plan-reflection.invalidation\"],\"body\":\"DEVICE-LOCAL JOURNAL\\n\\nTrade Journal\\n\\nOpening instant: 2026-10-19T19:22:50.716Z\\n\\nStatus\\nSet up\\nPlan\\nTrades\\nThis browser may clear your journal data\\n\\nOrigin storage protection is Best effort. Recommend exporting a backup; the warning never disables writing.\\n\\nKeep this data on this device\\nConfirm a plan\\nAccount\\nChoose an Account\\nMain Brokerage\\nStrategy\\nChoose a Strategy\\nLong Stock\\nIntended entry\\nInstrument\\nPlanned Leg quantity\\nSTOPS AND TARGETS\\n\\nCondition 1: Stop\\n\\nBoundary price\\n\\nMonetary boundary (derived): not yet available\\n\\nWhy this stop (optional)\\n\\nCondition 2: Target\\n\\nBoundary price\\n\\nMonetary boundary (derived): not yet available\\n\\nWhy this target (optional)\\nPLAN REFLECTION\\nWhy this trade, \"}).",
       "status": "pass"
     },
     {
@@ -436,11 +436,10 @@
       },
       "acceptanceId": "AC-UI-002",
       "actions": [
-        "Opened Plan and filled every field (Account, Strategy, entry 180, AAPL, 100, Stop 175, Target 190, both reflection answers) without saving.",
-        "Read the pre-Save disclosure: the provisional reward-to-risk and maximum loss, their labels, the section heading, and both per-condition derived monetary boundaries.",
-        "Pressed \"Save the plan\" exactly once and tried to read the frozen figures to compare, then recorded the alert, the durable counts and the Trades list."
+        "With the form blank after the flow-12 reload, completed every field again: Account \"Main Brokerage\", Strategy \"Long Stock\", entry 180, AAPL, 100, Stop 175, Target 190, Thesis \"Breakout above the base\", Invalidation \"Closes back inside the base\" - without saving",
+        "Then pressed \"Save the plan\" once and compared the frozen figures with the provisional ones"
       ],
-      "observation": "FAIL at the Save step. All pre-Save disclosure was present and correct: heading \"Before you save (provisional)\", dt \"Reward-to-risk (provisional)\" = \"2\", dt \"Maximum loss (provisional)\" = \"500 USD\", and the per-condition derivations rendered read-only as <p> text (no input, 0 labels containing \"monetary\") reading \"Monetary boundary (derived): 500 USD\" for the Stop and \"Monetary boundary (derived): 1000 USD\" for the Target - exactly 2 and 500 USD, and 500 / 1000 USD. But the single Save was rejected with \"The Plan was not saved. Your entries are still here. / obligation plan-confirmation:1 already has a current outcome\": \"Plan confirmed\" count 0, so no frozen figures appeared and the required comparison could not be made. Nothing was written (durable counts identical before/after: journal 3, tradeRecord 5, lifecycleIndex 1, tradeLifecycle 1, tradeVersion 1) and Trades still listed 1. Reproduction: fresh profile -> onboard -> confirm the canonical Plan once -> on \"Plan confirmed\" press \"Start another plan\" -> fill the same Plan -> Save -> the alert above. Root cause is visible in the same source tree: src/ui/PlanForm.tsx:41 hardcodes OBLIGATION_KEY = \"plan-confirmation:1\" and src/journal/effects.ts:327 rejects a journal obligation key that already has a current outcome, while the project's own integration case tests/integration/d2-confirm-plan.test.ts:311-317 confirms two Trades using \"plan-confirmation:1\" and \"plan-confirmation:2\" - so a second Plan confirmation in one Workspace can never succeed. Control run isolating the disclosure from the conflict: the identical steps in a fresh profile /tmp/d2-critic-f13-narrow did confirm and showed frozen reward-to-risk \"2\", maximum loss (frozen) \"500 USD\", 1R \"500\" and \"These are the frozen figures. They are the provisional ones you saw before Save: freezing did not change them.\" - identical to the provisional figures, so the pre-Save disclosure requirement itself is met; the failure is that the Save cannot complete once one Trade exists.",
+      "observation": "Before Save the form showed heading \"Before you save (provisional)\" with Reward-to-risk (provisional) 2 and Maximum loss (provisional) 500 USD; derived read-only boundaries were \"Monetary boundary (derived): 500 USD\" (Stop) and \"Monetary boundary (derived): 1000 USD\" (Target), rendered as [\"P:no-control\",\"P:no-control\"]. Trade facts before Save=1. After one Save the frozen screen shows Reward-to-risk 2, Maximum loss 500 USD, 1R 500, entry 180, original management [\"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\",\"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\"]; the screen states the frozen ones are the provisional ones=\"These are the frozen figures. They are the provisional ones you saw before Save: freezing did not change them.\" (matches=true). Frozen == provisional: rr true, maxLoss true. IDB now tradeRecord=10 (trade facts 2), journal Entries=2. NARROW LAYOUT DEFECT (observed, not inferred): before Save the provisional values sit in the same `max-content 1fr` grid; at 375x812 the label column is 202.4px and the value column 18.6px, so \"Maximum loss (provisional) 500 USD\" is drawn one character per line on 6 lines (108px tall) while \"Reward-to-risk (provisional) 2\" fits. The DOM text is exactly 2 and \"500 USD\" and the categories are labelled provisional, but the maximum-loss figure is not legibly visible before Save at the required narrow width, so the criterion that both figures are shown before Save is not met visually. Reproduction: fresh 375x812 profile -> Plan -> fill every field of the canonical Plan -> read the \"Before you save (provisional)\" list (grid columns 202.4px 18.6px within a 277px list).",
       "status": "fail"
     },
     {
@@ -453,11 +452,11 @@
       },
       "acceptanceId": "AC-UI-002",
       "actions": [
-        "Same steps at 1440x900: filled the complete Plan without saving, read the provisional figures, labels and both derived boundaries, then pressed Save once and recorded the outcome.",
-        "Repeated the same steps in a fresh profile /tmp/d2-critic-f13-wide as a control to separate the disclosure from the Save rejection."
+        "With the form blank after the flow-12 reload, completed every field again: Account \"Main Brokerage\", Strategy \"Long Stock\", entry 180, AAPL, 100, Stop 175, Target 190, Thesis \"Breakout above the base\", Invalidation \"Closes back inside the base\" - without saving",
+        "Then pressed \"Save the plan\" once and compared the frozen figures with the provisional ones"
       ],
-      "observation": "FAIL at the Save step, identical to narrow. Pre-Save disclosure was correct: \"Before you save (provisional)\" with \"Reward-to-risk (provisional)\" = \"2\" and \"Maximum loss (provisional)\" = \"500 USD\", and read-only derivations \"Monetary boundary (derived): 500 USD\" (Stop) and \"Monetary boundary (derived): 1000 USD\" (Target). The single Save was rejected with \"The Plan was not saved. Your entries are still here. / obligation plan-confirmation:1 already has a current outcome\"; no \"Plan confirmed\" screen appeared, so the frozen figures could not be compared; values and the provisional preview stayed on screen and nothing was written (durable counts identical, Trades still 1). Control run in a fresh profile: the same steps produced frozen reward-to-risk \"2\", maximum loss \"500 USD\", 1R \"500\" and the frozen-equals-provisional sentence, i.e. identical to the provisional figures - the disclosure is sound and the defect is the rejected second confirmation.",
-      "status": "fail"
+      "observation": "Before Save the form showed heading \"Before you save (provisional)\" with Reward-to-risk (provisional) 2 and Maximum loss (provisional) 500 USD; derived read-only boundaries were \"Monetary boundary (derived): 500 USD\" (Stop) and \"Monetary boundary (derived): 1000 USD\" (Target), rendered as [\"P:no-control\",\"P:no-control\"]. Trade facts before Save=1. After one Save the frozen screen shows Reward-to-risk 2, Maximum loss 500 USD, 1R 500, entry 180, original management [\"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\",\"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\"]; the screen states the frozen ones are the provisional ones=\"These are the frozen figures. They are the provisional ones you saw before Save: freezing did not change them.\" (matches=true). Frozen == provisional: rr true, maxLoss true. IDB now tradeRecord=10 (trade facts 2), journal Entries=2.",
+      "status": "pass"
     }
   ]
 }

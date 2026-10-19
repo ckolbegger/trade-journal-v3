@@ -1071,7 +1071,7 @@ changed**, so the freeze manifest was not re-stamped and both plan validators we
 | E-013 derivation in Trade Analysis — `completePlan` fills `monetaryBoundary` for a derivable condition and rejects a non-derivable one with the precise missing prerequisite | `src/analysis/trade/index.ts` |
 | The input shape E-013 needs — `TradePlanInput` / `UnderlyingPriceConditionInput` with an optional `monetaryBoundary`. The frozen `TradePlan` is unchanged and still requires it on every underlying-price condition (PD9) | `src/plan/index.ts` |
 | Runtime wiring — `previewPlan(command): Promise<PlanPreviewResult>` against the same `seam()`, and `trade.previewPlan` in the manifest: dependencies `runtime.readiness`, `workspace.getStatus`, `referenceCatalog.query`, `journal.getDefinitions`; entry point `app.plan.preview` | `src/workspace/runtime.ts`, `src/composition/application.ts`, `src/capability/manifest.ts`, `tests/capability/manifest.test.ts` |
-| The form — provisional reward-to-risk and maximum loss, exactly one Stop and one Target, the derived boundary displayed read-only, the preview's typed issues in place of the form's duplicated rules, frozen figures labelled after Save, and one Journal obligation identity per plan session so "Start another plan" is not a dead end | `src/ui/PlanForm.tsx`; the two specs that typed a monetary boundary were updated for E-013 (`tests/browser/plan-confirmation.spec.ts`, `tests/browser/d2-durability.spec.ts`) |
+| The form — provisional reward-to-risk and maximum loss, exactly one Stop and one Target, the derived boundary displayed read-only, the preview's typed issues in place of the form's duplicated rules, frozen figures labelled after Save, and one Journal obligation identity per plan session so "Start another plan" is not a dead end | `src/ui/PlanForm.tsx`; `src/ui/styles.css` (definition lists stack below the wide breakpoint, so a frozen figure is readable at 375px); the two specs that typed a monetary boundary were updated for E-013 (`tests/browser/plan-confirmation.spec.ts`, `tests/browser/d2-durability.spec.ts`) |
 
 **Judgement recorded (which rules stayed in the form).** The form keeps exactly three rules of its
 own — Account, Strategy and Instrument must be present — because `previewPlan` cannot resolve a
@@ -1138,7 +1138,10 @@ afterwards. The build is the production build Playwright starts itself (`npm run
 ### Mutation audit
 
 One deliberate defect per planned case; the named suite re-run; the failure recorded; the source
-reverted. Every mutation was detected — no vacuous case was found this time.
+reverted. Every mutation was detected — no vacuous case was found this time. The table records
+**sixteen** mutations (six T21 planned cases, the T21 guard case, six T22 planned cases, the T19
+integration case, and the two critic-defect fixes); the commit message's "13 mutations" undercounts by
+three, and this table is the authoritative record.
 
 | # | Task | Mutation | Intended case | Detected |
 |---|---|---|---|---|
@@ -1157,6 +1160,7 @@ reverted. Every mutation was detected — no vacuous case was found this time.
 | M22-6 | T22 | the preview runs with identities blank (the gate is removed) | 6 | yes — 1 failed |
 | M19-1 | T19 | the preview commits a marker row | integration equivalence | yes — 1 failed |
 | D2-C1 | T22 (critic defect) | the form's obligation key is fixed again at `plan-confirmation:1` | second-Plan case | yes — 1 failed |
+| D2-C2 | T22 (critic defect) | the narrow `.facts` stacking is removed | facts-readability case | yes — 1 failed |
 
 **What the audit changed.** M21-7 exposed a real defect in my own derivation: it ran **before**
 assessment and therefore could reach `positionValue` with a blank quantity, where `new Decimal("")`
@@ -1178,7 +1182,7 @@ previewable; it advertises neither Plan lifecycle, nor the response contract, no
 | # | Command | Observed | Result |
 |---|---|---|---|
 | R1 | `npx vitest run` | `Test Files 45 passed (45)`, `Tests 333 passed (333)` | pass |
-| R2 | `npx playwright test` | `196 passed (2.5m)` across the four projects | pass |
+| R2 | `npx playwright test` | `200 passed (2.6m)` across the four projects | pass |
 | R3 | `npx tsc --noEmit` | exit 0 | pass |
 | R4 | `npm run lint:layers` | `127 files, 0 violations` | pass |
 | R5 | `npx eslint .` | exit 0 | pass |
@@ -1255,6 +1259,49 @@ new case (`DETECTED, 1 failed`).
    leaving a cosmetic strip of background. **Not changed:** it predates this session, is outside
    T21/T22 and the recorded flows' assertions, and touching it would be an unrelated layout change.
    Recorded here so it is not lost.
+
+### The independent critic gate — round 2, and the second defect it found
+
+A **second and separate** fresh critic — a different session, which did not write this code — ran the
+same 13 flows, in order, in one Workspace per viewport, against the **committed** tree.
+
+| | |
+|---|---|
+| Critic | `critic-d2-1792437948-23a6f2` |
+| Did it write implementation? | `false` |
+| Spawned after the first fix? | `true` |
+| Commit tested | `8c5518c` (clean working tree at build time) |
+| Served | `http://127.0.0.1:5177`, `npm run build` then `npx vite preview`; release id equal to `dist/release-inventory.json` |
+| Report | `artifacts/critic/D2-report.json` — 26 entries (overwritten by round 3 below) |
+| Totals | 13 flows × 2 viewports = **26 entries, 23 passed, 3 failed** |
+
+**The defect: at 375×812 the definition lists crushed their values.** `dl.facts` used
+`grid-template-columns: max-content 1fr`, and a `dd` still carried the user agent's 40px start margin,
+so at 375px the label column consumed the card: the value cell was **19px of a 277px list** in the
+provisional block, 28.4px on the "Plan confirmed" screen and 42.1px in the Trade view. "Long Stock"
+rendered as "Lon/g/Sto/ck", a frozen maximum loss took four lines and the Invalidation nine. The
+1440px rendering was correct, so the failure was narrow-only and hit three acceptance checks: narrow
+flow 4 (AC-RESP-001), flow 8 (AC-LIFE-001) and flow 13 (AC-UI-002). *(Round 1 recorded the same
+surfaces as passing because it read `innerText`, which does not reveal wrapping; round 2 measured
+geometry. The defect predates T21 — it is the shared facts list — but T22's provisional block made it
+worst and flow 13 exercises it before Save.)*
+
+**Reproduced by an automated test before the fix.** New browser case *"should keep every value readable
+in the provisional, saved and Trade facts lists at the narrow viewport, so a value is never crushed
+into a one-character column"*,
+`npx playwright test tests/browser/plan-form-disclosure.spec.ts --project=chromium -g "facts lists"`:
+
+- **Red:** `expect(list.narrowestValue).toBeGreaterThanOrEqual(list.listWidth / 2)` — **Expected ≥
+  138.5, Received 19** (1 failed).
+- **Green:** 1 passed; every definition list on the provisional, confirmed and Trade surfaces gives
+  its value at least half the list's width at 375px.
+
+**Fix.** One `@media (max-width: 899px)` block in `src/ui/styles.css` stacks `.facts` to a single
+column and drops the user agent's `dd` start margin, so the pairs sit under one another below the wide
+breakpoint; the 1440px two-column layout, the form layout and the navigation are untouched. No
+component, type or behaviour changed.
+
+**Mutation audit of the fix (D2-C2):** removing that block fails exactly the new case (1 failed).
 
 ### D2's seams for D3 — what D3 can rely on, and what moved
 ### D2's seams for D3 — what D3 can rely on, and what moved
