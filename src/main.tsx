@@ -9,6 +9,7 @@ import {
 } from "./persistence/indexeddb/schema";
 import { createTransactionSeam } from "./persistence/indexeddb/transaction";
 import { createWriteGate } from "./persistence/indexeddb/writeGate";
+import { validateReleaseInventory } from "./release/inventory";
 import { App } from "./ui/App";
 import "./ui/styles.css";
 
@@ -36,6 +37,10 @@ declare global {
     __TRADE_JOURNAL_TX__?: {
       commit: (request: unknown) => Promise<unknown>;
     };
+    /** The browser harness may run the Offline Release Inventory validation. */
+    __TRADE_JOURNAL_INVENTORY__?: {
+      validate: (expectedReleaseId?: string) => Promise<unknown>;
+    };
   }
 }
 
@@ -46,6 +51,10 @@ if (harnessEnabled()) {
     delete: deleteDatabase,
     version: SCHEMA_VERSION,
     manifest: SCHEMA_MANIFEST,
+  };
+  window.__TRADE_JOURNAL_INVENTORY__ = {
+    validate: (expectedReleaseId?: string) =>
+      validateReleaseInventory(context.host, { expectedReleaseId }),
   };
   window.__TRADE_JOURNAL_TX__ = {
     commit: async (request) => {

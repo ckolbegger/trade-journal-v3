@@ -1,10 +1,14 @@
 import { expect, type Page } from "@playwright/test";
 
-export async function startHarness(page: Page): Promise<void> {
+export async function armHarness(page: Page): Promise<void> {
   await page.addInitScript(() => {
     (globalThis as unknown as { __TRADE_JOURNAL_HARNESS__?: boolean }).__TRADE_JOURNAL_HARNESS__ =
       true;
   });
+}
+
+export async function startHarness(page: Page): Promise<void> {
+  await armHarness(page);
   await page.goto("/");
 }
 

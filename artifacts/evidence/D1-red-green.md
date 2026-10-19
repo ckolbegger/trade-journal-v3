@@ -417,3 +417,29 @@ immediately in the `ACTIVATE_UPDATE` handler; the two-release proof then passed 
 and inside the full 12-file browser suite. The very first full-suite run also exposed stale generated
 release directories from the pre-fix build, which is why `artifacts/sw-test/` is now ignored and the
 specs read each release's inventory at run time rather than at module load.
+
+---
+
+## T17 — `B` Offline Release Inventory runtime validation
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T17.1 | report complete and digest-valid with the inventory identity and list digest when every listed asset is cached and every digest matches | `npx vitest run tests/release/inventory-valid.test.ts` — a complete inventory was forced to `Incomplete` | same command — 1 passed; `Complete` with the release identity, list digest and both entries verified |
+| T17.2 | fail naming the exact missing asset identities when one listed asset has no cached bytes | `npx vitest run tests/release/inventory-missing.test.ts` — the missing entry was reported as an unnamed empty cache (`Unreadable`) | same command — 1 passed with `{ kind: "Missing", assetUrl: "/assets/app.js" }` |
+| T17.3 | fail naming the corrupt entry when one cached asset's bytes hash differently from its recorded digest | `npx vitest run tests/release/inventory-corrupt.test.ts` — only presence was checked and the result was `Complete` | same command — 1 passed with `Corrupt`, the recorded digest and the differing observed digest |
+| T17.4 | fail when the inventory artifact itself is unreadable or its own digest does not match the release identity | `npx vitest run tests/release/inventory-artifact.test.ts -t "unreadable"` — an unreadable artifact was treated as `Complete` | same command — 1 passed for the unreadable artifact and for a tampered `listDigest` |
+| T17.5 | report every failed entry rather than the first one when several assets are missing or corrupt | `npx vitest run tests/release/inventory-multiple.test.ts` — the corrupt entry was not reported at all (`Missing, Missing` instead of `Corrupt, Missing, Missing`) | same command — 1 passed with all three entries named |
+| T17.6 | fail when the running release identity differs from the inventory's release identity, even if every listed asset is present | `npx vitest run tests/release/inventory-release-mismatch.test.ts` — the expected release identity was ignored and the result was `Complete` | same command — 1 passed with `ReleaseMismatch` and both identities |
+| T17.7 | expose the validated inventory identity and list digest as readiness evidence | `npx vitest run tests/release/inventory-evidence.test.ts` — `evidence` was `undefined` | same command — 1 passed with the inventory URL, release identity, list digest and entry count |
+| T17.8 | complete with no non-loopback network request when the network is disabled, asserted from the recorded request log | `npx playwright test tests/browser/inventory-offline.spec.ts --project=chromium -g "deleted cached asset"` — with a fetch-based validation the deleted asset was reported as `Unreadable` offline instead of `Missing` | `npx playwright test tests/browser/inventory-offline.spec.ts --project=chromium --project=webkit` — 4 passed; after a full stop with the network disabled the inventory validates `Complete`, and after a cached asset is deleted the failure names it; every recorded request origin is the loopback origin |
+
+**Validation shape.** The validator reads the inventory artifact and every listed asset through the
+host-capability port's cache, so it never needs the network. It recomputes the canonical list digest and
+the release identity from the inventory's own entries and compares them to the recorded values, reports
+every failing entry (`Missing`, `Corrupt`, `Unreadable`, `ReleaseMismatch`), and returns the validated
+identity and list digest as evidence for the readiness gate. The browser harness exposes it through
+`window.__TRADE_JOURNAL_INVENTORY__`.
+
+**Readiness half deferred.** The integration case also asserts "readiness becomes `Unsupported`" when an
+asset is missing. The readiness gate is T20, so that assertion is recorded with T20's per-check matrix and
+repeated by T33.
