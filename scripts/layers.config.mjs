@@ -64,6 +64,12 @@ export const layerEdges = {
   test: ["*"],
 };
 
+// A declared module may widen or narrow its layer's edges. The session calendar needs the
+// clock's pure instant conversion while still reading no storage and consulting no host clock.
+export const moduleEdges = {
+  calendar: ["value", "contract", "platform"],
+};
+
 // Analysis must not obtain raw Executions and repeat Trade Analysis arithmetic.
 export const forbiddenSymbols = {
   "performance-analysis": [{ symbol: "Execution", fromLayer: "fact" }],

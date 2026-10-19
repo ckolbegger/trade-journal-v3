@@ -11,6 +11,7 @@ import {
   forbiddenSymbols,
   hostIdentifiers,
   layerEdges,
+  moduleEdges,
   modules,
   protectedDirectories,
   valuePackage,
@@ -190,10 +191,9 @@ export function analyze(text, virtualPath) {
       continue;
     }
 
+    const permitted = moduleEdges[source.name] ?? layerEdges[source.layer] ?? [];
     const allowed =
-      target.name === source.name ||
-      (layerEdges[source.layer] ?? []).includes("*") ||
-      (layerEdges[source.layer] ?? []).includes(target.layer);
+      target.name === source.name || permitted.includes("*") || permitted.includes(target.layer);
     if (!allowed) {
       violations.push({
         rule: edgeRule(source, target),

@@ -104,3 +104,33 @@ The browser harness injects its fixed instant through `window.__TRADE_JOURNAL_CL
 `addInitScript`. That is the documented harness seam, validated as an ISO instant; it is not a stored
 setting and it cannot change a stored Economic Date. The port also exposes its `source` so evidence can
 name the seam, which is what puts `src/platform/clock` in the production bundle.
+
+---
+
+## T5 — `B` Versioned U.S. session calendar
+
+Cases were added one at a time, run red for the stated reason, then made green with the smallest
+production change. All runs used `HEAD c732fdf` with the T5 working tree uncommitted; the green state
+was then committed. `./src/calendar` did not exist before this task.
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T5.1 | an identical result for the same instant and revision across two calls … pure | `npx vitest run tests/calendar/session-date.test.ts -t "identical result"` — failed to resolve `../../src/calendar`: the resolver was absent | same command — 1 passed, the two calls are deeply equal with the system clock moved between them |
+| T5.2 | the completed session's U.S. Trading Date … inside the regular trading session | `npx vitest run tests/calendar/session-date.test.ts -t "inside the regular trading session"` — `tradingDate` was `2026-10-20`; the resolver returned the calendar date of the instant instead of `2026-10-19` | same command — 1 passed |
+| T5.3 | the prior session's trading date … after the close and before the next open | `npx vitest run tests/calendar/after-close.test.ts -t "prior session's trading date"` — `tradingDate` was `2026-10-19`; no close time was consulted | same command — 1 passed, `2026-10-20` |
+| T5.4 | skip the weekend and the observed Independence Day, Thanksgiving and Christmas closures … | `npx vitest run tests/calendar/session-date.test.ts -t "closed day"` — first `2026-10-17` (a Saturday treated as a session), then `2026-07-03` (the observed holiday treated as a session); expected `2026-10-16` and `2026-07-02` | same command — 1 passed with all four closed days resolving to their prior trading date |
+| T5.5 | the same trading date and revision when the process time zone is UTC and when it is Asia/Tokyo | `TZ=UTC npx vitest run tests/calendar/timezone-invariance.test.ts` and `TZ=Asia/Tokyo …` — both returned `2026-10-20`; the resolver read the instant's UTC date instead of the exchange session | both commands — 1 passed each, `2026-10-19`, after resolving through `Intl` with the revision's explicit `America/New_York` zone |
+| T5.6 | a revision-declared early-close half day as its own session boundary | `npx vitest run tests/calendar/after-close.test.ts -t "early-close half day"` — `2026-11-25`; the 13:00 half-day close was not consulted | same command — 1 passed, `2026-11-27` |
+| T5.7 | expose the trading date and the revision identity as separate fields … | `npx vitest run tests/calendar/session-date.test.ts -t "separate fields"` — returned `us-session-2026.1` for a 2025 instant; the pinned revision argument was ignored | same command — 1 passed with `us-session-2025.1` and `tradingDate: 2025-10-21` |
+| T5.8 | a typed CalendarOutOfRange naming the revision and its covered interval … | `npx vitest run tests/calendar/revision-range.test.ts` — outcome was `Resolved`; the resolver extrapolated a 2030 date | same command — 1 passed with `CalendarOutOfRange`, `us-session-2026.1`, and the interval `2026-01-01T00:00:00.000Z`–`2027-01-01T00:00:00.000Z` |
+
+**Calendar shape.** Two revisions are declared (`us-session-2025.1`, `us-session-2026.1`), each with an
+explicit instant interval, the exchange time zone, the regular close, the declared closures and the
+declared 13:00 half days. The resolver is pure integer civil-date arithmetic plus one `Intl` exchange
+reading; it reads no storage, no network and no host clock.
+
+**Integration case deferred to its first possible owner.** T5's integration case initializes a fresh
+Workspace and asserts the resolved trading date and revision in the persisted initialization receipt.
+`Workspace.initialize` is T25, which depends on T11/T20/T21/T22/T23 and cannot exist at T5. The
+assertion lands with T25's receipt (which already records readiness and seed evidence), and T33 repeats
+it through the real stack. This is a scheduling consequence of the frozen graph, not a scope change.
