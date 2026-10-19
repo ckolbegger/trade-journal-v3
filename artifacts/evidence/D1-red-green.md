@@ -87,3 +87,20 @@ excluded from `tsconfig.json` because the fixtures are deliberately invalid inpu
 Playwright projects are `chromium`, `webkit`, `narrow` (375×812) and `wide` (1440×900); the browser
 specs run against the loopback secure origin from `DEV_PORT`. The substitution registry discloses
 `fake-indexeddb`, the loopback origin, and the controlled host-capability implementation.
+
+---
+
+## T4 — `S` Injected `Clock` port
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| V4.1 | `npx tsc --noEmit` | exit 0; `Clock`, `FixedClock`, `SystemClock` are re-exported from `src/composition/root.ts`, and every consumer obtains time through the context | pass |
+| V4.2 | `grep -rn "Date.now()\|new Date(" src --include=*.ts \| grep -v "^src/platform/clock/"` | no output (grep exit 1): the clock implementation is the only time reader | pass |
+| V4.3 | `npx vitest run tests/platform/clock-injection.test.ts` | exit 0; 2 tests: the fixed clock returns the injected instant, and two modules composed from one root observe the identical instant | pass |
+| V4.4 | `npx playwright test tests/browser/clock.spec.ts --project=chromium` | exit 0; the shell renders `<time>2026-10-19T13:30:00.000Z</time>` from the harness `addInitScript`, not wall-clock time | pass |
+| V4.5 | `npm run build`; `grep -n "platform/clock" dist/assets/*.js` | build exit 0; grep prints the `src/platform/clock` provenance constant carried by the production clock instance, so the port is wired in the built bundle | pass |
+
+The browser harness injects its fixed instant through `window.__TRADE_JOURNAL_CLOCK__` in an
+`addInitScript`. That is the documented harness seam, validated as an ISO instant; it is not a stored
+setting and it cannot change a stored Economic Date. The port also exposes its `source` so evidence can
+name the seam, which is what puts `src/platform/clock` in the production bundle.

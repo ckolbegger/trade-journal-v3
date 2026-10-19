@@ -5,7 +5,7 @@ import { App } from "../../src/ui/App";
 
 describe("the application shell renders without a network or a domain module", () => {
   it("should render the application heading when the shell mounts", () => {
-    render(<App applicationName="Trade Journal" />);
+    render(<App applicationName="Trade Journal" openingInstant="2026-10-19T13:30:00.000Z" />);
 
     expect(screen.getByRole("heading", { level: 1, name: "Trade Journal" })).toBeTruthy();
   });

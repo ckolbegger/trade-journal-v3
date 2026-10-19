@@ -1,6 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { createApplicationContext } from "./composition/root";
+import { createApplicationContext, readHarnessInstant } from "./composition/root";
 import { App } from "./ui/App";
 import "./ui/styles.css";
 
@@ -9,10 +9,10 @@ if (host === null) {
   throw new Error("The application host element is missing");
 }
 
-const context = createApplicationContext();
+const context = createApplicationContext({ fixedInstant: readHarnessInstant() });
 
 createRoot(host).render(
   <StrictMode>
-    <App applicationName={context.applicationName} />
+    <App applicationName={context.applicationName} openingInstant={context.openingInstant} />
   </StrictMode>,
 );
