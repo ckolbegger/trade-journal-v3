@@ -107,7 +107,7 @@ describe("Workspace.getStatus reports one honest lifecycle status from readiness
         },
         readiness: { outcome: "Writable" },
         protection: { kind: "Protected" },
-        schemaVersion: 1,
+        schemaVersion: 2,
         latestReceipt: { seed: "journal-seed-v1" },
       });
       expect(status.safetyActions).toEqual([]);

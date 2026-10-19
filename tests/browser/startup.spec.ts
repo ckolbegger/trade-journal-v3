@@ -27,7 +27,7 @@ test.describe("startup-writable", () => {
     const destinations = await nav
       .locator("[data-destination]")
       .evaluateAll((nodes) => nodes.map((node) => node.getAttribute("data-destination")).sort());
-    expect(destinations).toEqual(["onboarding", "startup"]);
+    expect(destinations).toEqual(["onboarding", "plan", "startup", "trades"]);
 
     await page.getByRole("button", { name: "Set up" }).click();
     await expect(page.getByRole("heading", { name: "Set up your brokerage" })).toBeVisible();

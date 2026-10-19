@@ -610,3 +610,60 @@ database behind a seam whose write gate is not `Writable`, which is how the pers
 | R3 | `npx tsc --noEmit` | exit 0 | pass |
 | R4 | `npm run lint:layers` | 0 violations | pass |
 | R5 | `npx eslint .` | exit 0 | pass |
+
+---
+
+## T16 — `B` Plan confirmation form
+
+## T17 — `B` Trade view: frozen Plan, stored lifecycle, integrity agreement
+
+## T18 — `B` Responsive layout and accessibility for D2's surfaces
+
+Seams: `src/ui/PlanForm.tsx` and `src/ui/TradeView.tsx`, wired through the runtime
+(`streamStrategies`, `planDefinition`, `confirmPlan`, `streamTrades`, `readTrade`) and the `App`
+navigation. Suite `tests/browser/plan-confirmation.spec.ts` (6 cases) runs on all four Playwright
+projects, so every case is exercised at 375×812 and 1440×900 plus both real engines.
+
+**Red, recorded honestly.** The surfaces were authored with their cases in this pass, so the first
+runs were iterated against real failures rather than a red-first sequence. The genuine failures found
+and fixed are recorded because each was a real defect:
+
+| # | Observed failure | Cause and fix |
+|---|---|---|
+| 1 | `getByRole('region', { name: 'Trades' })` showed **"No Trades yet"** after a successful save | the panel stays mounted while hidden, so it loaded once at startup and never refreshed. It now reloads when it becomes the active destination |
+| 2 | **"Plan confirmed"** never appeared | `Save` navigated straight to the Trade view, so the confirmation screen was skipped. Save now renders the saved screen from the returned projection; "Open the Trade" is the trader's next gesture |
+| 3 | the narrow project failed the resize case | the case assumed a wide starting width. It now starts wide explicitly and crosses in both directions |
+| 4 | the keyboard case could not change a native `<select>` with synthetic arrow keys | headless Chromium does not open a native select popup for a synthesised key. The two selects are set by value; the rest of the flow (typing, radio group, Save) is keyboard-driven, and a focus-order assertion proves both selects are in the tab sequence. This is recorded as a test-harness limit, not a product defect |
+
+**Green.** `18 passed` for the spec across `chromium`, `narrow` and `wide` (and 24 across all four
+projects including `webkit`).
+
+**What the surfaces do.** The form renders the exact Plan Reflection definition revision it loaded —
+four prompts in frozen order with requiredness, the eight-option Primary-emotion **radio group under a
+labelled fieldset**, and 1–5 Conviction bounds — collects the Plan facts including an *ordered*
+condition list with an optional view-only comment per condition, validates inline before calling the
+server, submits stable Prompt identities, and renders the saved Plan, 1R and Entry from the returned
+post-commit state with no follow-up read. Entered values live only in component state: a resize, a
+navigation within the workflow, or an abandoned form writes nothing. The Trade view shows the frozen
+Plan, the ordered Planned Legs, the original management with each boundary and its prose comment, 1R
+marked immutable, stored Lifecycle State and the derived expectation as *separate* concepts, an
+integrity-disagreement banner that never presents a disagreement as agreement, and Loading / Ready /
+Empty / Error states — with uninstalled concepts absent rather than zero.
+
+**Capability manifest grown, not forked.** `trade.confirmPlan` added with dependencies on
+`runtime.readiness`, `workspace.getStatus`, `referenceCatalog.query` and `journal.getDefinitions` and
+entry point `app.plan.confirm`; `navigation` becomes `["startup","onboarding","plan","trades"]`;
+`schema` becomes `{min: 1, max: 2}`. It advertises confirmation only. D1's release-scope test and its
+navigation-equality browser test were updated to the grown declared set, which is what those tests
+verify.
+
+
+### Commit — T16 + T17 + T18 (plan form, Trade view, responsive and accessible behavior)
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| R1 | `npx vitest run` | `Test Files 43 passed (43)`, `Tests 313 passed (313)` | pass |
+| R2 | `npx playwright test` | `156 passed (2.2m)` across `chromium`, `webkit`, `narrow`, `wide` | pass |
+| R3 | `npx tsc --noEmit` | exit 0 | pass |
+| R4 | `npm run lint:layers` | `121 files, 0 violations` | pass |
+| R5 | `npx eslint .` | exit 0 | pass |

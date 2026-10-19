@@ -60,6 +60,18 @@ const OPERATIONS: readonly InstalledOperation[] = [
     entryPoint: "app.onboarding.institution",
   },
   { id: "journal.getDefinitions", dependencies: [], entryPoint: "app.journal.definitions" },
+  {
+    // D2's confirmation capability. It advertises confirmation only: not Plan lifecycle, not the
+    // response contract, not Journal defaults and not full UI-state coverage (`D2 §5`, `§8.8`).
+    id: "trade.confirmPlan",
+    dependencies: [
+      "runtime.readiness",
+      "workspace.getStatus",
+      "referenceCatalog.query",
+      "journal.getDefinitions",
+    ],
+    entryPoint: "app.plan.confirm",
+  },
 ];
 
 /** The capabilities D1 actually installs end to end; every later capability is absent. */
@@ -68,8 +80,8 @@ export const D1_CAPABILITY_MANIFEST: Omit<InstalledCapabilityManifest, "releaseI
   reportFamilies: [],
   providerAdapters: [],
   backup: "not-installed",
-  schema: { minSchemaVersion: 1, maxSchemaVersion: 1 },
-  navigation: ["startup", "onboarding"],
+  schema: { minSchemaVersion: 1, maxSchemaVersion: 2 },
+  navigation: ["startup", "onboarding", "plan", "trades"],
   installSupport: "not-claimed",
   feeApplication: "not-installed",
 };

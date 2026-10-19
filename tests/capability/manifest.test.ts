@@ -3,7 +3,7 @@ import * as capability from "../../src/capability/manifest";
 import { closureProblems, installedCapabilities, type InstalledOperation, installedOperation, selfCheck, assertManifestRelease } from "../../src/capability/manifest";
 
 const LATER_CAPABILITIES = [
-  "trade.confirmPlan",
+  "trade.abandonPlan",
   "trade.recordPositionChange",
   "journal.save",
   "marketData.saveMark",
@@ -55,6 +55,7 @@ describe("the Installed Capability Manifest declares only installed, dependency-
         "referenceCatalog.save",
         "release.inventoryValidation",
         "runtime.readiness",
+        "trade.confirmPlan",
         "workspace.getStatus",
         "workspace.initialize",
         "workspace.requestDurability",
@@ -69,7 +70,7 @@ describe("the Installed Capability Manifest declares only installed, dependency-
   it("should return absent rather than a domain-level Unavailable for an omitted operation, so a caller cannot mistake absence for a failed calculation", () => {
       const manifest = installedCapabilities("release-1");
 
-      expect(installedOperation(manifest, "trade.confirmPlan")).toBeUndefined();
+      expect(installedOperation(manifest, "trade.abandonPlan")).toBeUndefined();
       expect(installedOperation(manifest, "reports.run")).toBeUndefined();
       expect(installedOperation(manifest, "workspace.getStatus")).toMatchObject({
         id: "workspace.getStatus",
@@ -86,7 +87,7 @@ describe("the Installed Capability Manifest declares only installed, dependency-
       const manifest = installedCapabilities("release-1");
 
       expect(manifest.backup).toBe("not-installed");
-      expect(manifest.schema).toEqual({ minSchemaVersion: 1, maxSchemaVersion: 1 });
+      expect(manifest.schema).toEqual({ minSchemaVersion: 1, maxSchemaVersion: 2 });
       expect(manifest.providerAdapters).toEqual([]);
       expect(manifest.reportFamilies).toEqual([]);
       expect(manifest.feeApplication).toBe("not-installed");
@@ -98,7 +99,7 @@ describe("the Installed Capability Manifest declares only installed, dependency-
 
       expect(selfCheck(manifest, entryPoints, manifest.navigation)).toEqual([]);
       expect(
-        selfCheck(manifest, entryPoints, ["startup", "onboarding", "reports"]),
+        selfCheck(manifest, entryPoints, ["startup", "onboarding", "plan", "trades", "reports"]),
       ).toEqual([
         {
           capability: "navigation.reports",

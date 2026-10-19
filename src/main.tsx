@@ -3,10 +3,11 @@ import { createRoot } from "react-dom/client";
 import { createApplicationContext, harnessEnabled, readHarnessInstant } from "./composition/root";
 import { createApplicationRuntime, type StartupOverride } from "./composition/application";
 import {
-  SCHEMA_MANIFEST,
-  SCHEMA_VERSION,
+  DATABASE_NAME,
+  D2_SCHEMA_MANIFEST,
+  D2_SCHEMA_VERSION,
   deleteDatabase,
-  openDatabase,
+  openDatabaseWithStores,
 } from "./persistence/indexeddb/schema";
 import { createTransactionSeam } from "./persistence/indexeddb/transaction";
 import { createWriteGate } from "./persistence/indexeddb/writeGate";
@@ -34,10 +35,10 @@ declare global {
   interface Window {
     /** The browser harness may open and inspect the durable schema. */
     __TRADE_JOURNAL_SCHEMA__?: {
-      open: typeof openDatabase;
+      open: () => Promise<IDBDatabase>;
       delete: typeof deleteDatabase;
       version: number;
-      manifest: typeof SCHEMA_MANIFEST;
+      manifest: typeof D2_SCHEMA_MANIFEST;
     };
     /** The browser harness may drive the transaction seam with a Writable gate. */
     __TRADE_JOURNAL_TX__?: {
@@ -59,10 +60,10 @@ declare global {
 if (harnessEnabled()) {
   window.__TRADE_JOURNAL_HOST__ = context.host;
   window.__TRADE_JOURNAL_SCHEMA__ = {
-    open: openDatabase,
+    open: () => openDatabaseWithStores(D2_SCHEMA_MANIFEST, DATABASE_NAME, D2_SCHEMA_VERSION),
     delete: deleteDatabase,
-    version: SCHEMA_VERSION,
-    manifest: SCHEMA_MANIFEST,
+    version: D2_SCHEMA_VERSION,
+    manifest: D2_SCHEMA_MANIFEST,
   };
   window.__TRADE_JOURNAL_READINESS__ = {
     evaluate: () => establishApplicationReadiness(context.host),
@@ -73,7 +74,11 @@ if (harnessEnabled()) {
   };
   window.__TRADE_JOURNAL_TX__ = {
     commit: async (request) => {
-      const database = await openDatabase();
+      const database = await openDatabaseWithStores(
+        D2_SCHEMA_MANIFEST,
+        DATABASE_NAME,
+        D2_SCHEMA_VERSION,
+      );
       const seam = createTransactionSeam(
         database,
         createWriteGate({

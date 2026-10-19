@@ -5,6 +5,8 @@ import type { WorkspaceStatus } from "../workspace/status";
 import { Accounts } from "./Accounts";
 import { Institutions } from "./Institutions";
 import { ProtectionWarning } from "./ProtectionWarning";
+import { PlanForm } from "./PlanForm";
+import { TradeView } from "./TradeView";
 
 const CHECK_LABELS: Record<ReadinessCheckId, string> = {
   "diagnostic-transaction": "Authoritative storage",
@@ -18,7 +20,7 @@ type Phase =
   | { readonly kind: "failed"; readonly detail: string }
   | { readonly kind: "started"; readonly start: ApplicationStart };
 
-type Destination = "startup" | "onboarding";
+type Destination = "startup" | "onboarding" | "plan" | "trades";
 
 export function App({
   runtime,
@@ -31,6 +33,7 @@ export function App({
 }) {
   const [phase, setPhase] = useState<Phase>({ kind: "loading" });
   const [destination, setDestination] = useState<Destination>("startup");
+  const [selectedTradeId, setSelectedTradeId] = useState<string | undefined>(undefined);
 
   const load = useCallback(async () => {
     setPhase({ kind: "loading" });
@@ -66,6 +69,8 @@ export function App({
           runtime={runtime}
           destination={destination}
           setDestination={setDestination}
+          selectedTradeId={selectedTradeId}
+          setSelectedTradeId={setSelectedTradeId}
           onRefresh={() => void load()}
         />
       )}
@@ -102,12 +107,16 @@ function Started({
   runtime,
   destination,
   setDestination,
+  selectedTradeId,
+  setSelectedTradeId,
   onRefresh,
 }: {
   start: ApplicationStart;
   runtime: ApplicationRuntime;
   destination: Destination;
   setDestination: (destination: Destination) => void;
+  selectedTradeId: string | undefined;
+  setSelectedTradeId: (tradeId: string | undefined) => void;
   onRefresh: () => void;
 }) {
   return (
@@ -121,6 +130,8 @@ function Started({
           runtime={runtime}
           destination={destination}
           setDestination={setDestination}
+          selectedTradeId={selectedTradeId}
+          setSelectedTradeId={setSelectedTradeId}
           onRefresh={onRefresh}
         />
       )}
@@ -221,12 +232,16 @@ function ReadyShell({
   runtime,
   destination,
   setDestination,
+  selectedTradeId,
+  setSelectedTradeId,
   onRefresh,
 }: {
   status: WorkspaceStatus;
   runtime: ApplicationRuntime;
   destination: Destination;
   setDestination: (destination: Destination) => void;
+  selectedTradeId: string | undefined;
+  setSelectedTradeId: (tradeId: string | undefined) => void;
   onRefresh: () => void;
 }) {
   return (
@@ -248,6 +263,22 @@ function ReadyShell({
         >
           Set up
         </button>
+        <button
+          type="button"
+          data-destination="plan"
+          aria-current={destination === "plan" ? "page" : undefined}
+          onClick={() => setDestination("plan")}
+        >
+          Plan
+        </button>
+        <button
+          type="button"
+          data-destination="trades"
+          aria-current={destination === "trades" ? "page" : undefined}
+          onClick={() => setDestination("trades")}
+        >
+          Trades
+        </button>
       </nav>
 
       {status.readiness.notProtectedWarning && (
@@ -267,6 +298,34 @@ function ReadyShell({
           <Institutions runtime={runtime} onChanged={onRefresh} />
           <Accounts runtime={runtime} onChanged={onRefresh} />
         </section>
+      </div>
+      <div hidden={destination !== "plan"}>
+        {status.onboarding === "Ready for Trade Planning" ? (
+          <PlanForm
+            runtime={runtime}
+            onSaved={(tradeId) => {
+              if (tradeId === "") return;
+              setSelectedTradeId(tradeId);
+              setDestination("trades");
+            }}
+          />
+        ) : (
+          <section className="card" aria-labelledby="plan-blocked">
+            <h2 id="plan-blocked">Set up an Account first</h2>
+            <p>
+              A Plan needs one Account you trade and the Strategy it belongs to. Open{" "}
+              <strong>Set up</strong> to add an Institution and an Account.
+            </p>
+          </section>
+        )}
+      </div>
+      <div hidden={destination !== "trades"}>
+        <TradeView
+          runtime={runtime}
+          active={destination === "trades"}
+          selectedTradeId={selectedTradeId}
+          onSelect={(tradeId) => setSelectedTradeId(tradeId)}
+        />
       </div>
     </>
   );
