@@ -121,23 +121,26 @@ export function snapshotOf(
   return { revision, strategies, institutions, accounts };
 }
 
-/**
- * Workspace-supplied, stable-keyed, idempotent seeding of exactly the declared defaults. It never
- * seeds an Institution, Account, reason taxonomy, generic Strategy or Tag Type, never matches by
- * label, never overwrites a trader rename, and never reactivates a retired seed.
- */
-export async function seedDefaults(
-  seam: TransactionSeam,
+export type CatalogSeedPlan =
+  | {
+      readonly outcome: "Plan";
+      readonly additions: readonly Record<string, unknown>[];
+      readonly additionKeys: readonly string[];
+    }
+  | { readonly outcome: "SeedConflict"; readonly stableKey: string; readonly detail: string };
+
+/** The non-committing half of the seed, so Workspace can seed Journal and Catalog in one transaction. */
+export function planCatalogSeed(
+  rows: readonly Record<string, unknown>[],
   manifest: CatalogSeedManifest,
-): Promise<CatalogSeedResult> {
-  const snapshot = await seam.snapshot([CATALOG_STORE]);
-  const rows = snapshot.rows(CATALOG_STORE) as unknown as CatalogRecord[];
+): CatalogSeedPlan {
+  const typedRows = rows as unknown as readonly CatalogRecord[];
   const additions: Record<string, unknown>[] = [];
   const additionKeys: string[] = [];
 
   for (const strategy of manifest.strategies) {
     const id = `strategy:${strategy.stableKey}`;
-    const existing = rows.find((row) => row.id === id);
+    const existing = typedRows.find((row) => row.id === id);
     if (existing !== undefined) {
       if (existing.kind !== "strategy") {
         return {
@@ -167,10 +170,27 @@ export async function seedDefaults(
     additionKeys.push(strategy.stableKey);
   }
 
+  return { outcome: "Plan", additions, additionKeys };
+}
+
+/**
+ * Workspace-supplied, stable-keyed, idempotent seeding of exactly the declared defaults. It never
+ * seeds an Institution, Account, reason taxonomy, generic Strategy or Tag Type, never matches by
+ * label, never overwrites a trader rename, and never reactivates a retired seed.
+ */
+export async function seedDefaults(
+  seam: TransactionSeam,
+  manifest: CatalogSeedManifest,
+): Promise<CatalogSeedResult> {
+  const snapshot = await seam.snapshot([CATALOG_STORE]);
+  const rows = snapshot.rows(CATALOG_STORE) as unknown as CatalogRecord[];
+  const plan = planCatalogSeed(rows, manifest);
+  if (plan.outcome === "SeedConflict") return plan;
+
   let revision = await catalogRevision(seam);
-  if (additions.length > 0) {
+  if (plan.additions.length > 0) {
     const committed = await seam.commit({
-      participants: [{ store: CATALOG_STORE, put: additions }],
+      participants: [{ store: CATALOG_STORE, put: plan.additions }],
     });
     if (committed.kind === "Rejected") {
       return { outcome: "RuntimeNotWritable", payload: committed.payload };
@@ -179,7 +199,7 @@ export async function seedDefaults(
   }
 
   const byId = new Map(rows.map((row) => [row.id, row]));
-  for (const addition of additions) {
+  for (const addition of plan.additions) {
     byId.set(String(addition.id), addition as unknown as CatalogRecord);
   }
   const current = [...byId.values()];
@@ -187,7 +207,7 @@ export async function seedDefaults(
   return {
     outcome: "Seeded",
     seedVersion: manifest.version,
-    additions: additionKeys,
+    additions: plan.additionKeys,
     catalog,
     selectableAccounts: catalog.accounts,
   };

@@ -59,25 +59,28 @@ function incompatibleSource(row: JournalRow, seed: { stableKey: string; writingP
   return undefined;
 }
 
-/**
- * Workspace-only, stable-keyed, idempotent, atomic seeder for Journal's fixed product identities
- * (`journal.md:192-194`). It creates only what the supplied manifest declares, matches by stable
- * product key rather than label, never resets a trader revision, and commits everything in one
- * transaction.
- */
-export async function seedDefaults(
-  seam: TransactionSeam,
+export type JournalSeedPlan =
+  | {
+      readonly outcome: "Plan";
+      readonly additions: readonly Record<string, unknown>[];
+      readonly additionKeys: readonly string[];
+      readonly definitionRevision: number;
+    }
+  | { readonly outcome: "SeedConflict"; readonly stableKey: string; readonly detail: string };
+
+/** The non-committing half of the seed, so Workspace can seed Journal and Catalog in one transaction. */
+export function planJournalSeed(
+  rows: readonly Record<string, unknown>[],
   manifest: JournalSeedManifest,
-): Promise<JournalSeedResult> {
-  const snapshot = await seam.snapshot([JOURNAL_STORE]);
-  const rows = snapshot.rows(JOURNAL_STORE) as unknown as JournalRow[];
+): JournalSeedPlan {
+  const typedRows = rows as unknown as readonly JournalRow[];
   const additions: Record<string, unknown>[] = [];
   const additionKeys: string[] = [];
   let highestRevision = 0;
 
   for (const entryType of manifest.entryTypes) {
     const id = `entryType:${entryType.stableKey}`;
-    const existing = rows.find((row) => row.id === id);
+    const existing = typedRows.find((row) => row.id === id);
     if (existing !== undefined) {
       const problem = incompatibleEntryType(existing, entryType);
       if (problem !== undefined) {
@@ -100,7 +103,7 @@ export async function seedDefaults(
 
   for (const source of manifest.sources) {
     const id = `source:${source.stableKey}`;
-    const existing = rows.find((row) => row.id === id);
+    const existing = typedRows.find((row) => row.id === id);
     if (existing !== undefined) {
       const problem = incompatibleSource(existing, source);
       if (problem !== undefined) {
@@ -121,9 +124,32 @@ export async function seedDefaults(
     highestRevision = Math.max(highestRevision, 1);
   }
 
-  if (additions.length > 0) {
+  return {
+    outcome: "Plan",
+    additions,
+    additionKeys,
+    definitionRevision: highestRevision,
+  };
+}
+
+/**
+ * Workspace-only, stable-keyed, idempotent, atomic seeder for Journal's fixed product identities
+ * (`journal.md:192-194`). It creates only what the supplied manifest declares, matches by stable
+ * product key rather than label, never resets a trader revision, and commits everything in one
+ * transaction.
+ */
+export async function seedDefaults(
+  seam: TransactionSeam,
+  manifest: JournalSeedManifest,
+): Promise<JournalSeedResult> {
+  const snapshot = await seam.snapshot([JOURNAL_STORE]);
+  const rows = snapshot.rows(JOURNAL_STORE) as unknown as JournalRow[];
+  const plan = planJournalSeed(rows, manifest);
+  if (plan.outcome === "SeedConflict") return plan;
+
+  if (plan.additions.length > 0) {
     const committed = await seam.commit({
-      participants: [{ store: JOURNAL_STORE, put: additions }],
+      participants: [{ store: JOURNAL_STORE, put: plan.additions }],
     });
     if (committed.kind === "Rejected") {
       return { outcome: "RuntimeNotWritable", payload: committed.payload };
@@ -133,8 +159,8 @@ export async function seedDefaults(
   return {
     outcome: "Seeded",
     seedVersion: manifest.version,
-    definitionRevision: highestRevision,
-    additions: additionKeys,
+    definitionRevision: plan.definitionRevision,
+    additions: plan.additionKeys,
     entryTypes: manifest.entryTypes.length,
     sources: manifest.sources.length,
   };

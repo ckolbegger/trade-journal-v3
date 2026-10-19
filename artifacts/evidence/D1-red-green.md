@@ -578,3 +578,28 @@ and an Account's Institution parent is immutable while the displayed label follo
 
 **Integration half deferred.** Creating the Institution and Account through the production form and
 proving the durable after-state after a browser restart lands with T30, T31 and T33.
+
+---
+
+## T25 — `B` `Workspace.initialize`
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T25.1 | create Workspace metadata and atomically seed the declared Journal and Catalog defaults, returning Opened with a full receipt | `npx vitest run tests/workspace/initialize-fresh.test.ts` — Journal and Catalog were seeded in two transactions (`readwriteTransactions` 2) | same command — 1 passed; one transaction, one Journal type + one Source + Long Stock, a full receipt and the persisted Workspace row |
+| T25.2 | create no Workspace, defaults or imported facts when the readiness gate fails, returning RuntimeNotWritable | `npx vitest run tests/workspace/initialize-refused.test.ts` — a workspace row was written before readiness finished | same command — 1 passed; `RuntimeNotWritable`, every store empty, zero readwrite transactions |
+| T25.3 | Recovery Only with readable status and backup actions, versus Unsupported with retry actions | `npx vitest run tests/workspace/initialize-recovery.test.ts` — a readable Workspace was reported as `Unsupported` | same command — 1 passed; `RecoveryOnly` with `export-backup`, and `Unsupported` with `retry`/`try-another-browser` |
+| T25.4 | Integrity Blocked and never fall through to fresh initialization when the root cannot be read | `npx vitest run tests/workspace/initialize-integrity.test.ts -t "cannot be read"` — an unreadable root was treated as a fresh install and Opened | same command — 1 passed with `IntegrityBlocked` and both recovery actions |
+| T25.5 | Time Zone Selection Required when the first-run time zone is absent, never writing a guess | `npx vitest run tests/workspace/initialize-timezone.test.ts` — a guessed `UTC` time zone was written and the Workspace Opened | same command — 1 passed; the typed result and an empty store |
+| T25.6 | Migration Blocked with unchanged-data evidence, prior Workspace untouched | `npx vitest run tests/workspace/initialize-migration-blocked.test.ts` — the failed candidate was treated as migrated and initialization Opened | same command — 1 passed with `MigrationBlocked`, `priorDataUnchanged: true` and an empty store |
+| T25.7 | Integrity Blocked with recovery actions when readiness passed but stored contents fail validation | `npx vitest run tests/workspace/initialize-integrity.test.ts -t "stored contents"` — covered by the same IntegrityBlocked path as T25.4 | 1 passed; the validator's detail is carried and nothing is written |
+| T25.8 | open the existing Workspace rather than reseeding when called a second time | `npx vitest run tests/workspace/initialize-existing.test.ts` — the second call reseeded and reported `fresh: true` | same command — 1 passed; `fresh: false`, no additions, identical Journal and Catalog rows |
+
+Initialization re-establishes readiness, observes the root, refuses with the exact cross-cutting payload
+when readiness is not `Writable`, seeds Journal and Catalog in **one** transaction with the Workspace
+metadata (now including the resolved opening session date and revision), and re-opens an existing
+Workspace without reseeding. The opening session is resolved through T5's calendar from the injected
+instant, which closes T5's deferred integration assertion in the persisted receipt.
+
+**Production wiring.** The coordinator takes its readiness, seam, migration and root observation as
+ports; the composition root wires them for the browser in T29, and the durable after-restart assertion is
+repeated by T33.

@@ -56,6 +56,8 @@ export const layerEdges = {
     "fact",
     "analysis",
     "delivery",
+    // Coordinators compose other coordinators (Workspace drives readiness).
+    "coordinator",
   ],
   // Presentation may read a fact module directly (overview.md:102-113) but never the
   // persistence seam, and never joins authoritative records itself.
