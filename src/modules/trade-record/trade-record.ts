@@ -100,7 +100,8 @@ export function summaryOf(document: TradeDocument): TradeSummary {
 export interface TradeRecordQuery {
   // CurrentState membership from the authoritative lifecycle index.
   readonly lifecycle: LifecycleState;
-  readonly projection: 'Summary' | 'AnalysisInput';
+  // Browse returns each Trade's Summary with its AnalysisInput, for lists that need both.
+  readonly projection: 'Summary' | 'AnalysisInput' | 'Browse';
   readonly pageSize?: number;
   readonly cursor?: string;
 }
@@ -108,13 +109,18 @@ export interface TradeRecordQuery {
 export type TradeRecordPage =
   | {
       readonly kind: 'Page';
-      readonly items: readonly (TradeSummary | TradeAnalysisRecord)[];
+      readonly items: readonly (TradeSummary | TradeAnalysisRecord | BrowseRecord)[];
       // The single snapshot the whole page was read from.
       readonly binding: WorkspaceSnapshotBinding;
       readonly nextCursor?: string;
     }
   // A cursor is bound to its normalized query and snapshot; any commit expires it.
   | { readonly kind: 'CursorExpired' };
+
+export interface BrowseRecord {
+  readonly summary: TradeSummary;
+  readonly analysis: TradeAnalysisRecord;
+}
 
 interface TradeCursor {
   readonly databaseName: string;
@@ -158,7 +164,12 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
       const end = start + (query.pageSize ?? 50);
       // One batch from one snapshot: no per-Trade loads.
       const page = documents.slice(start, end);
-      const items = query.projection === 'Summary' ? page.map(summaryOf) : page.map(analysisInputOf);
+      const items =
+        query.projection === 'Summary'
+          ? page.map(summaryOf)
+          : query.projection === 'AnalysisInput'
+            ? page.map(analysisInputOf)
+            : page.map((d) => ({ summary: summaryOf(d), analysis: analysisInputOf(d) }));
       if (end >= documents.length) return { kind: 'Page', items, binding };
       const next: TradeCursor = { ...binding, lifecycle: query.lifecycle, offset: end };
       return { kind: 'Page', items, binding, nextCursor: JSON.stringify(next) };

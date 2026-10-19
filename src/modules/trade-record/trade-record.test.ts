@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { beginSemanticTransaction, NotInSemanticTransaction } from '../../persistence/index.ts';
 import { emptyWorkspace, sequentialIds } from '../../../tests/support/workspace.ts';
-import { createTradeRecord, type ConfirmPlanChange } from './index.ts';
+import { createTradeRecord, type ConfirmPlanChange, type TradeSummary } from './index.ts';
 
 const change: ConfirmPlanChange = {
   kind: 'ConfirmPlan',
@@ -203,7 +203,7 @@ describe('queryRecords: CurrentState', () => {
     const { record, early, lateA, lateB } = await three();
     const page = await record.queryRecords({ lifecycle: 'Planned', projection: 'Summary' });
     if (page.kind !== 'Page') throw new Error('expected a page');
-    expect(page.items.map((i) => i.tradeId)).toEqual([lateA, lateB, early]);
+    expect(page.items.map((i) => (i as TradeSummary).tradeId)).toEqual([lateA, lateB, early]);
   });
 
   it('should return AnalysisInput for a whole page from one read snapshot', async () => {
@@ -219,9 +219,9 @@ describe('queryRecords: CurrentState', () => {
     const { record, persistence, early, lateA, lateB } = await three();
     const first = await record.queryRecords({ lifecycle: 'Planned', projection: 'Summary', pageSize: 2 });
     if (first.kind !== 'Page' || !first.nextCursor) throw new Error('expected a next page');
-    expect(first.items.map((i) => i.tradeId)).toEqual([lateA, lateB]);
+    expect(first.items.map((i) => (i as TradeSummary).tradeId)).toEqual([lateA, lateB]);
     const second = await record.queryRecords({ lifecycle: 'Planned', projection: 'Summary', pageSize: 2, cursor: first.nextCursor });
-    expect(second.kind === 'Page' && second.items.map((i) => i.tradeId)).toEqual([early]);
+    expect(second.kind === 'Page' && second.items.map((i) => (i as TradeSummary).tradeId)).toEqual([early]);
 
     await confirmed(record, persistence, '2026-10-11T13:30:00Z');
     expect(await record.queryRecords({ lifecycle: 'Planned', projection: 'Summary', pageSize: 2, cursor: first.nextCursor })).toEqual({
