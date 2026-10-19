@@ -511,3 +511,26 @@ The ledger re-establishes the four checks and records a receipt per boundary (`l
 **Integration half deferred.** The three-cold-start receipt sequence and the injected mid-session asset
 deletion need `Workspace.initialize` (T25) and the production startup path; those assertions are recorded
 with T25 and repeated by T33.
+
+---
+
+## T22 — `B` `Journal.seedDefaults` for the fixed identities
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T22.1 | create exactly the identities declared by the manifest and no others, with Plan Reflection's four prompts matching the contract | `npx vitest run tests/journal/seed-manifest.test.ts` — a hardcoded seven-type set was seeded regardless of the manifest | same command — 1 passed; one Entry Type and one Source, the four prompts in order with the contract's kinds, requiredness, roles and emotion options |
+| T22.2 | create the Plan Confirmation Source bound to the Plan confirmation writing path | `npx vitest run tests/journal/seed-manifest.test.ts -t "Plan Confirmation Source"` — the Source was bound to an unknown path | same command — 1 passed with `writingPath: "plan-confirmation"` |
+| T22.3 | typed SeedConflict and write nothing when a known stable key exists with an incompatible meaning | `npx vitest run tests/journal/seed-conflict.test.ts` — the incompatible key was overwritten and the seed reported `Seeded` | same command — 1 passed with `SeedConflict` and a byte-identical store |
+| T22.4 | idempotent: the same manifest leaves the normalized manifest identical and adds no revision | `npx vitest run tests/journal/seed-idempotent.test.ts` — the second seed appended a definition revision | same command — 1 passed; `additions: []`, identical normalized manifest, every revision still 1 |
+| T22.5 | match by stable product key, never by label | `npx vitest run tests/journal/seed-stable-key.test.ts` — a reworded prompt label appended a fifth duplicate prompt | same command — 1 passed; one Entry Type, four prompts, the original label retained |
+| T22.6 | retain a trader-revised definition and return the retained revision | `npx vitest run tests/journal/seed-retain.test.ts` — the trader revision was reset to 1 and the manifest definition restored | same command — 1 passed; revision 2 and the trader's prompt label retained |
+| T22.7 | seven fixed Entry Type keys and seven Source keys, creating only the missing ones | `npx vitest run tests/journal/seed-seven.test.ts` — a hardcoded set ignored which identities were missing | same command — 1 passed; only `review-note`, `trader-reflection`, `trade-detail` and `journal` are added, giving 7 + 7 |
+| T22.8 | commit every identity, definition and Source in one transaction | `npx vitest run tests/journal/seed-atomic.test.ts` — one commit per identity left five identities committed after the injected failure | same command — 1 passed; the injected failure leaves the Journal store empty |
+
+The seeder is manifest-driven and stable-keyed: v1 declares only the Plan Reflection Entry Type (with the
+contract's four prompts) and the Plan Confirmation Source; a supplied full manifest adds the remaining
+fixed identities without reshaping the mechanism. It matches by stable key, retains trader revisions,
+returns `SeedConflict` for an incompatible key, and commits all additions in one transaction.
+
+**Integration half deferred.** The `Workspace.initialize` seeding path, the close-and-reopen manifest
+comparison and the receipt's seed version land with T25; the durable half is repeated by T33.
