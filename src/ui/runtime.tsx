@@ -4,6 +4,8 @@ import { createContext, useContext } from 'react';
 // and where to report a mutation result so a refusal changes the whole shell at once.
 export interface RuntimeState {
   readonly writable: boolean;
+  // The Workspace time zone, once a Workspace exists.
+  readonly timeZone?: string;
   readonly report: (result: { readonly kind: string }) => void;
 }
 

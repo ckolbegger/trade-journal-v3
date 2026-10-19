@@ -26,7 +26,8 @@ export async function stageRelease(env: ServiceWorkerEnv): Promise<void> {
   if ((await releaseIdentityOf(inventory.assets)) !== env.releaseId || inventory.releaseId !== env.releaseId) {
     throw new Error('Inventory does not match this worker\'s release identity');
   }
-  const files = new Map<string, Uint8Array>([[INVENTORY_PATH, inventoryBytes]]);
+  // Each file keeps the headers it was served with; a module script needs its Content-Type.
+  const files = new Map<string, { bytes: Uint8Array; headers: Headers }>([[INVENTORY_PATH, { bytes: inventoryBytes, headers: inventoryResponse.headers }]]);
   for (const asset of inventory.assets) {
     const response = await env.fetch(url(asset.path), { cache: 'reload' });
     if (!response.ok) throw new Error(`Release asset missing: ${asset.path} (${response.status})`);
@@ -34,11 +35,11 @@ export async function stageRelease(env: ServiceWorkerEnv): Promise<void> {
     if ((await assetDigest(bytes, env.releaseId)) !== asset.digest) {
       throw new Error(`Release asset digest differs: ${asset.path}`);
     }
-    files.set(asset.path, bytes);
+    files.set(asset.path, { bytes, headers: response.headers });
   }
   const cache = await env.caches.open(releaseCacheName(env.releaseId));
-  for (const [path, bytes] of files) {
-    await cache.put(url(path), new Response(bytes.slice()));
+  for (const [path, { bytes, headers }] of files) {
+    await cache.put(url(path), new Response(bytes.slice(), { headers }));
   }
 }
 

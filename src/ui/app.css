@@ -1,0 +1,288 @@
+/* Visual language from the UI contract: a quiet, data-dense light interface. Every text colour
+   below meets WCAG AA contrast on its background. */
+:root {
+  --ground: #f7f3ea;
+  --card: #ffffff;
+  --ink: #1c1b19;
+  --muted: #55524b;
+  --line: #d9d3c5;
+  --focus: #1f5fbf;
+  --warning-ground: #fff4dd;
+  --warning-line: #b26b00;
+  --error: #a3261b;
+  --radius: 14px;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--ink);
+  background: var(--ground);
+  line-height: 1.45;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--ground);
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0 0 0.75rem;
+}
+
+h2 {
+  font-size: 0.8rem;
+  font-variant: small-caps;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+}
+
+a {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+/* Layout: one tree; only the navigation's placement changes with the viewport. */
+.shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto auto 1fr auto;
+}
+
+.shell > .content {
+  padding: 1rem;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding-bottom: 5rem;
+}
+
+.shell > .nav {
+  position: fixed;
+  inset: auto 0 0 0;
+  display: flex;
+  justify-content: space-around;
+  background: var(--card);
+  border-top: 1px solid var(--line);
+  padding: 0.5rem;
+}
+
+.shell > .nav a {
+  padding: 0.6rem 0.8rem;
+  min-height: 44px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.shell[data-layout='wide'] {
+  grid-template-columns: 220px 1fr;
+}
+
+.shell[data-layout='wide'] > * {
+  grid-column: 2;
+}
+
+.shell[data-layout='wide'] > .nav {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  flex-direction: column;
+  justify-content: flex-start;
+  border-top: none;
+  border-right: 1px solid var(--line);
+  padding: 1.5rem 1rem;
+}
+
+.shell[data-layout='wide'] > .content {
+  padding-bottom: 2rem;
+}
+
+/* Cards, banners, and states. */
+.card,
+.banner,
+.gate,
+.startup,
+.first-run,
+.onboarding {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin: 1rem;
+}
+
+.startup,
+.gate,
+.first-run,
+.onboarding {
+  max-width: 640px;
+  margin: 2rem auto;
+}
+
+.banner.warning {
+  background: var(--warning-ground);
+  border-color: var(--warning-line);
+}
+
+.badge {
+  display: inline-block;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  padding: 0 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Actions and fields. */
+.pill {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 0.6rem 1.2rem;
+  min-height: 44px;
+  font: inherit;
+  font-weight: 600;
+  border: 2px solid var(--ink);
+  cursor: pointer;
+  text-decoration: none;
+  margin: 0.25rem 0.5rem 0.25rem 0;
+}
+
+.pill.primary {
+  background: var(--ink);
+  color: #ffffff;
+}
+
+.pill.secondary {
+  background: transparent;
+  color: var(--ink);
+}
+
+.pill:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+form label {
+  display: block;
+  font-weight: 600;
+  margin: 0.75rem 0 0.25rem;
+}
+
+input,
+select,
+textarea {
+  display: block;
+  width: 100%;
+  font: inherit;
+  padding: 0.55rem 0.7rem;
+  margin-top: 0.25rem;
+  border: 1px solid var(--muted);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--ink);
+  min-height: 44px;
+}
+
+textarea {
+  min-height: 5rem;
+}
+
+[aria-invalid='true'] {
+  border-color: var(--error);
+  border-width: 2px;
+}
+
+.field-error {
+  color: var(--error);
+  font-weight: 600;
+  margin: 0.25rem 0 0;
+}
+
+fieldset.choices {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin: 0.75rem 0;
+}
+
+fieldset.choices legend {
+  font-weight: 600;
+}
+
+label.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  margin: 0.25rem;
+  font-weight: 500;
+  min-height: 44px;
+}
+
+label.chip input {
+  width: auto;
+  min-height: 0;
+  margin: 0;
+}
+
+/* Numbers: right-aligned tabular figures. */
+.number {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+table.trades {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  border-radius: var(--radius);
+}
+
+table.trades caption {
+  text-align: left;
+  font-weight: 700;
+  padding: 0.5rem 0;
+}
+
+table.trades th,
+table.trades td {
+  padding: 0.6rem;
+  border-bottom: 1px solid var(--line);
+}
+
+dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem 1rem;
+  margin: 0;
+}
+
+dl > div {
+  display: contents;
+}
+
+dt {
+  color: var(--muted);
+}
+
+dd {
+  margin: 0;
+}
+
+.identity {
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, monospace;
+  font-size: 0.85rem;
+}

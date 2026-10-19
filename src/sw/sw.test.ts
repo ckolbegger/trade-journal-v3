@@ -90,6 +90,14 @@ describe('offline serving', () => {
     expect(calls).toEqual([]);
   });
 
+  it('should serve each cached asset with the Content-Type the network sent, so module scripts load', async () => {
+    const { env: e } = await staged('v1');
+    const script = await serveRequest(e, { url: `${ORIGIN}/assets/app.js`, mode: 'cors', method: 'GET' });
+    expect(script.headers.get('Content-Type')).toBe('text/javascript');
+    const page = await serveRequest(e, { url: `${ORIGIN}/`, mode: 'navigate', method: 'GET' });
+    expect(page.headers.get('Content-Type')).toBe('text/html');
+  });
+
   it('should not cache any response outside the inventory', async () => {
     const { env: e, caches, calls } = await staged('v1');
     const cache = caches.caches.get(`tj-release-${e.releaseId}`);

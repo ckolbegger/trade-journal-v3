@@ -1,4 +1,4 @@
-import { useEffect, useState, type ComponentType } from 'react';
+import { useEffect, useState, type ComponentType, type ReactNode } from 'react';
 import { Link, Route, Routes } from 'react-router';
 import type { UiFacade } from '../app/compose.ts';
 import type { ReadinessFailure, RuntimeNotWritable } from '../delivery/runtime-not-writable.ts';
@@ -16,6 +16,8 @@ export type Screens = Readonly<Record<RouteId, ComponentType>>;
 export interface AppShellProps {
   readonly facade: UiFacade;
   readonly screens: Screens;
+  // Shown above every screen, such as the update notice.
+  readonly notices?: ReactNode;
   // Retrying re-launches the app, which re-establishes Runtime Readiness.
   readonly onRetry?: () => void;
 }
@@ -40,7 +42,7 @@ function useWide(): boolean {
 }
 
 // The application shell: nothing is offered until Runtime Readiness has been established.
-export function AppShell({ facade, screens, onRetry = () => window.location.reload() }: AppShellProps) {
+export function AppShell({ facade, screens, notices, onRetry = () => window.location.reload() }: AppShellProps) {
   const [status, setStatus] = useState<Status | undefined>();
   const wide = useWide();
   // A refusal from a mutation during the session, which overrides the launch status.
@@ -119,8 +121,9 @@ export function AppShell({ facade, screens, onRetry = () => window.location.relo
   };
 
   return (
-    <RuntimeContext.Provider value={{ writable, report }}>
+    <RuntimeContext.Provider value={{ writable, report, timeZone: 'timeZone' in status ? status.timeZone : undefined }}>
       <div className="shell" data-layout={wide ? 'wide' : 'narrow'}>
+        {notices}
         {superseded && (
           <section className="banner warning" aria-labelledby="superseded-heading">
             <h2 id="superseded-heading">Updated in another tab: reload when ready</h2>

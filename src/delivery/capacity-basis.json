@@ -1,0 +1,7 @@
+{
+  "status": "provisional",
+  "note": "Replaced by T1.19's measurement (npm run measure:capacity).",
+  "schemaVersion": 1,
+  "projectedWorkspaceBytes": 751619277,
+  "requiredQuotaBytes": 2254857830
+}

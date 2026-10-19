@@ -108,14 +108,26 @@ export async function fakeRelease(label: string): Promise<FakeRelease> {
   return { releaseId, inventory, files };
 }
 
+// The Content-Type a static host sends for each fake release path.
+const TYPES: Readonly<Record<string, string>> = {
+  '.html': 'text/html',
+  '.js': 'text/javascript',
+  '.json': 'application/json',
+  '.webmanifest': 'application/manifest+json',
+};
+const typeOf = (path: string) => TYPES[path.slice(path.lastIndexOf('.'))] ?? 'application/octet-stream';
+
 export function fakeFetch(release: FakeRelease, log: string[]) {
   const calls: { url: string; cache: RequestCache | undefined }[] = [];
   const fetch = (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const url = urlOf(input);
     calls.push({ url, cache: init?.cache });
     log.push(`fetch ${new URL(url).pathname}`);
-    const body = release.files.get(new URL(url).pathname);
-    return Promise.resolve(body ? new Response(body.slice()) : new Response('not found', { status: 404 }));
+    const path = new URL(url).pathname;
+    const body = release.files.get(path);
+    return Promise.resolve(
+      body ? new Response(body.slice(), { headers: { 'Content-Type': typeOf(path) } }) : new Response('not found', { status: 404 }),
+    );
   };
   return { fetch, calls };
 }
