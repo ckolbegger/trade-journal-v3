@@ -112,10 +112,14 @@ seams as planned.
      with `criticId`, `spawnedAfterFix`, the served URL/port and per-flow actions/observation/status,
      plus an acceptance id on every flow.
    - `artifacts/sw-test/` and `dist/` stay gitignored.
+   - **Every commit that changes source or tests gets a full-suite run.** After the commit, run
+     `npx vitest run` and `npx playwright test` and append the commit, the commands and the totals to
+     `artifacts/evidence/D2-red-green.md`. A docs-only commit may cite the most recent full run for
+     the same code state. A commit without a recorded full run is not a finished step.
 
 8. **The completion bar.** D2 is done only when all of these hold:
    - T1–T20 implemented in dependency order, every non-structural case with recorded red and green
-     evidence;
+     evidence, and every source-changing commit carrying its own recorded full-suite run;
    - `npm run typecheck`, `npm run lint`, `npm run lint:layers`, `npm run test:unit`,
      `npm run test:integration` and `npm run test:browser` all exit 0, with D1's accepted behaviour
      still green in the same runs;

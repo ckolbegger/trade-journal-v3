@@ -830,6 +830,7 @@ per-case evidence.
 | T34 gate, V34.5 | `ea4fd85` (working tree) | `npx playwright test` | 132 browser tests pass |
 | Post-D1 lint fix | `7960c60` | `npx vitest run` | 139 files, 190 tests pass |
 | Post-D1 lint fix | `7960c60` | `npx playwright test` | 132 browser tests pass |
+| Post-D1 docs | `8b83d9e` | `npx vitest run` and `npx playwright test` | 190 Vitest and 132 browser tests pass; code unchanged since `7960c60` (docs-only commit) |
 
 Checkpoint totals from each task's final gate (`npx vitest run`, both projects) show the suite growing
 without a failing run at a committed state:
