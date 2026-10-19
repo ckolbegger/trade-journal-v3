@@ -29,8 +29,8 @@ Run these checks. Each one must match:
 |---|---|
 | `git rev-parse --show-toplevel` | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | `git branch --show-current` | `claude-opus-5.5` |
-| `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5`, either in sync or ahead only by the two commits in the next row. The only untracked file is `handoff-claude-opus-5.5-2026-10-11.md`. |
-| `git log --oneline claude-opus-5.5-d1..HEAD` | only the commit that added this note (`docs(plan): add the D2 handoff`) and the revision 5 commit, tagged `claude-opus-5.5-plan-r5` |
+| `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5`, either in sync or ahead only by the commits in the next row. The only untracked file is `handoff-claude-opus-5.5-2026-10-11.md`. |
+| `git log --oneline claude-opus-5.5-d1..HEAD` | only the commit that added this note (`docs(plan): add the D2 handoff`), the revision 5 commit (tagged `claude-opus-5.5-plan-r5`), and the follow-up that updated this note |
 | `git tag --list 'claude-opus-5.5-*'` | includes `claude-opus-5.5-plan-r5` and `claude-opus-5.5-d1` |
 | `grep DEV_PORT .env.local` | `DEV_PORT=5175` |
 | `node --version` | `v26.x`, at or above `v26.12.0` (decision 43) |
@@ -155,7 +155,7 @@ Avoid test names containing parentheses or quotes, which break `-t` filtering, a
   - About's "Offline assets" alignment;
   - the issue-summary order.
 - D4's P14, the boundary between the "quantified pressure" and "routine" attention bands (decision 41). It must be settled before D4's first task, but not now.
-- Breakdowns for D9–D28 and RC. D9's numbering will start at P36, A150 and decision 45.
+- Breakdowns for D9–D28 and RC. D9's numbering will start at P36, A150 and decision 46.
 - Editing `specs/`, or editing the frozen plan without an approved revision.
 - Cloudflare setup, which the user will do, and verifying Marketdata.app's CORS support (due before D11's breakdown, decision 15).
 
@@ -167,5 +167,5 @@ Update this section at the end of each task.
 |---|---|
 | Tasks done | None yet. |
 | Next task | T2.1, Trade Analysis: replay, Positions, Open Lots, opening fees, expected lifecycle. |
-| Last commit | the commit that added this note, one after `claude-opus-5.5-d1` |
+| Last commit | the revision 5 commit (tag `claude-opus-5.5-plan-r5`), followed by the commit that updated this note |
 | Open questions | Carried from D1: `npm audit` reports 3 high findings in `sharp` via the pinned `wrangler@4.147.0` (deploy-only), and fixing them needs a pin change, so a plan revision. `engine-strict`'s refusal was never exercised. `sw.js` is outside the inventory by design (T1.3), so a worker-only change keeps the release identity. |
