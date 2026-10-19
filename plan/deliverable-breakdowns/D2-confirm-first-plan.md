@@ -92,7 +92,21 @@ them, with the consequence of getting each wrong.
    diverge from D4's and put `AC-CALC-001`'s "1R remains $500" guarantee at risk. A `monetaryBoundary`
    is required on every underlying-price condition, Target as well as Stop, because without it neither
    the planned reward/risk ratio nor Ongoing Risk and Incremental Reward are computable as dollar
-   values (`trade-analysis.md:57`, `glossary.md:150-152`). D2 constructs only `UnderlyingPriceCondition`;
+   values (`trade-analysis.md:57`, `glossary.md:150-152`).
+
+   **The frozen fact requires a `monetaryBoundary`; the input does not.** For a *derivable*
+   underlying-price condition the trader supplies `boundaryPrice` and Trade Analysis derives the
+   monetary amount as `|boundary − intendedEntry| × quantity` — the arithmetic `measure` already
+   performs — and Trade Record freezes that derived value into the stored condition. A supplied value
+   on a derivable condition is not authoritative and can never contradict the derived one, which is
+   what removes the class of defect where a typed boundary disagreed with the computed risk. For a
+   *non-derivable* condition — an option leg's underlying-price boundary, or a
+   `StructureValueCondition` — the input must supply it, and absence is a typed rejection.
+   Derivability is decided inside Trade Analysis from the condition kind and the available inputs,
+   never in presentation: `scripts/layers.config.mjs` does not permit presentation to import
+   analysis, and no domain arithmetic may live in a form.
+
+   D2 constructs only `UnderlyingPriceCondition`;
    `StructureValueCondition` is reserved in the type and **not installed** until D8, so it is absent
    rather than a fabricated `Unavailable` (`overview.md:19`). Consequences: this is the most
    load-bearing shape in D2 because D3, D4, D11, D12 and D14 all consume the same frozen Plan facts.
@@ -391,7 +405,7 @@ describe("TradeAnalysis.assessPlan for the Long Stock shape, at the public asses
   it should accept a complete long stock Plan and return normalized semantics, a positive 1R and the Planned Expiration Payoff when the one long Stock leg has a positive quantity, an exact Instrument, intended entry, one Stop with a frozen monetary loss boundary and one Target
   it should reject with one typed issue per missing field and return no normalized semantics when the Plan omits the intended entry, omits every management condition and omits both the exact contract and the objective criteria
   it should reject a long stock Plan with a typed issue when the supplied leg's Instrument is not a Stock instrument, so that an option leg cannot be assessed under the Long Stock shape
-  it should reject with a typed issue naming the Stop when the Stop names underlying price but carries no frozen monetary loss boundary, because measurement would be impossible without being mislabeled as a structure-value trigger
+  it should reject with a typed issue naming the Stop when the Stop's monetary amount is neither supplied nor derivable from the intended entry, quantity and boundary price, because measurement would be impossible without being mislabeled as a structure-value trigger
   it should accept an ordered set of two underlying-price conditions, one direction at-or-below and one at-or-above, and return normalized semantics with both conditions retained and each condition's basis preserved, so that a multi-condition Plan is expressible before any option shape exists
   it should reject with a typed not-installed issue naming the condition when a StructureValueCondition is supplied at D2, because that kind is reserved in the type and absent from the installed capability rather than a fabricated Unavailable
   it should reject with a typed issue naming the condition when an underlying-price Stop sits at or above the intended entry of a long leg, so that a non-positive Original Planned Risk is named against the offending condition rather than reported as a generic incoherence
@@ -417,7 +431,7 @@ disclosed substitution.
 | Complete Plan accepted | `npx vitest run --project unit src/trade-analysis/assess-plan.long-stock.test.ts -t "accept a complete long stock Plan"` — fails because `assessPlan` returns an unimplemented rejection for the Long Stock shape | same command — passes with normalized semantics, positive 1R and a payoff state |
 | Missing fields rejected | `... -t "one typed issue per missing field"` — fails because the first missing field short-circuits and returns one generic issue | same command — passes with one issue per field and no semantics |
 | Non-Stock instrument rejected | `... -t "not a Stock instrument"` — fails because the shape check is absent | same command — passes with a typed issue |
-| Stop without monetary boundary | `... -t "no frozen monetary loss boundary"` — fails because an underlying-price Stop is accepted without a boundary | same command — passes with an issue naming the Stop |
+| Stop without a measurable monetary amount | `... -t "neither supplied nor derivable"` — fails because an underlying-price Stop with no derivable amount is accepted without one | same command — passes with an issue naming the Stop |
 | Management coverage required | `... -t "no management condition at all"` — fails because a Plan with no Stop or Target reaches a baseline | same command — passes with a coverage issue and no baseline |
 | Payoff unavailable independently | `... -t "unavailable calculation state"` — fails because the absent payoff input suppresses the whole assessment | same command — passes with semantics and 1R present and the payoff a typed unavailable state |
 | Purity and determinism | `... -t "assessed twice"` — fails on the first run because normalized semantics include a generated identity | same command — passes with byte-equal semantics |
@@ -1080,7 +1094,7 @@ describe("The Plan confirmation form, at its rendered-form and submit seams")
   it should leave the unsaved answer values intact when the viewport changes between narrow and wide while the form is open
   it should leave the unsaved answer values intact when the form is navigated away from and back within the active workflow, without writing any Entry, Debt, draft or version
   it should issue one confirmPlan call with the exact loaded definition revision and the complete Plan facts when Save is pressed on a complete form
-  it should submit an ordered condition set containing two underlying-price conditions, each with its role, direction, boundary price, frozen monetary boundary and optional comment, when the trader adds a second condition
+  it should submit exactly one Stop and one Target, each carrying its role, breach direction, boundary price and optional view-only comment, when the trader confirms a Long Stock plan, because the D2 form offers one Stop and one Target while the plural condition set remains a model capability exercised at the T6 seam and in T19
   it should submit the comment as view-only text attached to its condition and never as a boundary, a quantity or any other input to the baseline, when the trader writes "breaks below untouched demand zone" into a Stop's comment
   it should keep each unsaved condition, including its comment, intact when the viewport changes or the form is navigated away from and back within the active workflow
   it should render the saved Plan, its 1R and the saved Entry from the returned post-commit state without issuing a follow-up read for the directly changed Trade and Entry, when Save succeeds
