@@ -43,6 +43,8 @@ export type ReadinessOutcome =
 export type StorageProtection = 'Protected' | 'BestEffort' | 'Unavailable';
 
 export type ReadinessEvaluation = ReadinessOutcome & {
+  // The root inspection this evaluation classified, so callers act on the same one.
+  readonly rootInspection?: RootInspection;
   readonly failures: readonly ReadinessFailure[];
   // Advisory only (ADR 0009): reported on every launch, never part of the outcome.
   readonly protection: StorageProtection;
@@ -179,13 +181,13 @@ export async function evaluateReadiness(input: ReadinessInput): Promise<Readines
   for (const [check, result] of Object.entries(checks) as [ReadinessFailure['check'], CheckResult][]) {
     if (!result.passed) failures.push({ check, reason: result.reason });
   }
-  if (failures.length === 0) return { outcome: 'Writable', failures, protection, checks };
-  if (unreadable) return { outcome: 'Unsupported', workspaceStatus: 'IntegrityBlocked', failures, protection, checks };
+  if (failures.length === 0) return { outcome: 'Writable', failures, protection, checks, rootInspection: input.rootInspection };
+  if (unreadable) return { outcome: 'Unsupported', workspaceStatus: 'IntegrityBlocked', failures, protection, checks, rootInspection: input.rootInspection };
   // A readable existing Workspace stays readable: Recovery Only, never Unsupported.
   if (input.rootInspection.kind === 'KnownWorkspace') {
-    return { outcome: 'RecoveryOnly', workspaceStatus: 'RecoveryOnly', failures, protection, checks };
+    return { outcome: 'RecoveryOnly', workspaceStatus: 'RecoveryOnly', failures, protection, checks, rootInspection: input.rootInspection };
   }
-  return { outcome: 'Unsupported', workspaceStatus: 'None', failures, protection, checks };
+  return { outcome: 'Unsupported', workspaceStatus: 'None', failures, protection, checks, rootInspection: input.rootInspection };
 }
 
 // The current session's readiness. Re-evaluated on launch, before each authoritative mutation
