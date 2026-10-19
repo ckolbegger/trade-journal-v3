@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { ApplicationRuntime, ApplicationStart } from "../workspace/runtime";
 import type { ReadinessCheckId } from "../results";
 import type { WorkspaceStatus } from "../workspace/status";
+import { Accounts } from "./Accounts";
 import { Institutions } from "./Institutions";
 import { ProtectionWarning } from "./ProtectionWarning";
 
@@ -256,15 +257,17 @@ function ReadyShell({
         />
       )}
 
-      {destination === "startup" ? (
+      <div hidden={destination !== "startup"}>
         <StatusPanel status={status} />
-      ) : (
+      </div>
+      <div hidden={destination !== "onboarding"}>
         <section className="card" aria-labelledby="onboarding-title">
           <h2 id="onboarding-title">Set up your brokerage</h2>
           <p role="status">Onboarding: {status.onboarding}</p>
           <Institutions runtime={runtime} onChanged={onRefresh} />
+          <Accounts runtime={runtime} onChanged={onRefresh} />
         </section>
-      )}
+      </div>
     </>
   );
 }

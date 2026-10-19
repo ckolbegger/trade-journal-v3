@@ -38,6 +38,7 @@ export interface AccountSummary {
   readonly id: string;
   readonly label: string;
   readonly institutionId: string;
+  readonly retired: boolean;
 }
 
 export interface InstitutionRecord {
@@ -117,7 +118,12 @@ export function snapshotOf(
     .sort((left, right) => left.stableKey.localeCompare(right.stableKey));
   const accounts = rows
     .filter((row) => row.kind === "account")
-    .map((row) => ({ id: row.id, label: row.label, institutionId: row.parentId ?? "" }));
+    .map((row) => ({
+      id: row.id,
+      label: row.label,
+      institutionId: row.parentId ?? "",
+      retired: row.retired === true,
+    }));
   return { revision, strategies, institutions, accounts };
 }
 

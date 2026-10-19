@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { CatalogQueryResult } from "../catalog/save";
+import { validateInstitutionName } from "../onboarding";
 import type { ApplicationRuntime } from "../workspace/runtime";
 
 type LoadState =
@@ -41,7 +42,12 @@ export function Institutions({
 
   async function submit(event: React.FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
-    if (state.kind !== "ready" || label.trim() === "") return;
+    if (state.kind !== "ready") return;
+    const problem = validateInstitutionName(label);
+    if (problem !== undefined) {
+      setMessage(problem);
+      return;
+    }
     setBusy(true);
     setMessage(undefined);
     try {
@@ -96,7 +102,14 @@ export function Institutions({
           {state.result.records.map((record) => (
             <li key={record.id} data-record-id={record.id}>
               <span>{record.label}</span>
-              {record.retired === true && <span className="badge">Archived</span>}
+              <span>
+                {Array.isArray(record.history) && record.history.length > 1 && (
+                  <span className="muted">
+                    formerly {(record.history[0] as { label?: string }).label}
+                  </span>
+                )}
+                {record.retired === true && <span className="badge">Archived</span>}
+              </span>
             </li>
           ))}
         </ul>
@@ -112,7 +125,7 @@ export function Institutions({
             disabled={busy}
             autoComplete="organization"
           />
-          <button type="submit" disabled={busy || label.trim() === ""}>
+          <button type="submit" disabled={busy}>
             Add institution
           </button>
         </form>

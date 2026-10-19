@@ -236,6 +236,25 @@ export function createApplicationRuntime(
         limit: 50,
       });
     },
+    streamSelectableInstitutions: async () =>
+      catalogQuery(await seam(), {
+        kind: "institution",
+        view: "selectable",
+        limit: 50,
+      }),
+    streamAccounts: async () =>
+      catalogQuery(await seam(), { kind: "account", view: "selectable", limit: 50 }),
+    addAccount: async (
+      institutionId: string,
+      label: string,
+      expectedSnapshotRevision: number,
+    ) =>
+      catalogSave(await seam(), {
+        type: "createAccount",
+        institutionId,
+        label,
+        expectedSnapshotRevision,
+      }),
     addInstitution: async (label: string, expectedSnapshotRevision: number) =>
       catalogSave(await seam(), {
         type: "createInstitution",

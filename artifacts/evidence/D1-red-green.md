@@ -702,3 +702,39 @@ The presentation layer is a real state machine over `ApplicationRuntime`: verify
 (InitializationRequired), Ready, Recovery Only, Unsupported and Integrity Blocked, with the capability
 manifest's two navigation destinations, a single protection action, and Loading/Empty/Ready/Error states
 on the institution list.
+
+---
+
+## T30 — `B` Onboarding: Institution setup
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T30.1 | Needs Institution and Account on a fresh Workspace with no preselected or fictional brokerage record | `npx playwright test tests/browser/onboarding-empty.spec.ts --project=chromium` — a placeholder brokerage row was shown on the empty state | 1 passed; the explanatory empty state and the form, no institution list, no fictional row |
+| T30.2 | create through the production form and return identity, complete record and new onboarding state without a follow-up query | `npx vitest run tests/onboarding/institution-onboarding.test.ts -t "follow-up query"` — the created record's Catalog snapshot was omitted | 1 passed; `institution:fidelity`, the full record, `Needs Institution and Account` and the new snapshot at revision 2 |
+| T30.3 | reject an empty or whitespace-only required name with a field-level message and write nothing | `npx vitest run tests/onboarding/institution-validation.test.ts` — a whitespace-only name was accepted | 1 passed with `Enter the brokerage name.` and a byte-identical store |
+| T30.4 | present an inactive Institution as Archived and never offer it as a parent | `npx vitest run tests/onboarding/archived-view.test.ts` — the selectable view included the archived Institution (red established through the same query-view defect as T24's query red) | 1 passed; the selectable page is empty and the include-inactive page marks `retired: true`, which the UI renders as the Archived badge |
+| T30.5 | preserve entered-but-unsaved values across a live narrow-to-wide resize, recording nothing | `npx playwright test tests/browser/onboarding-resize.spec.ts --project=chromium` — a resize listener cleared the field | 1 passed; the value survives both resizes and the created record is unchanged |
+| T30.6 | keep a historical and a current label both available after a rename | `npx vitest run tests/onboarding/institution-onboarding.test.ts -t "historical and a current label"` — the record history was dropped | 1 passed; both revisions' labels are returned and the list renders "formerly …" |
+| T30.7 | typed conflict carrying the current snapshot, preserving input and explaining what to review | `npx vitest run tests/onboarding/institution-onboarding.test.ts -t "typed conflict"` — the expected snapshot was ignored (same defect class as T24's save-conflict red) | 1 passed; `Conflict` at revision 2, the input preserved by the caller and a byte-identical store |
+| T30.8 | the no-Institution-yet state is explanatory with a next action rather than an error | Covered by T30.1's empty-state spec; the state carries the form as its next action and no `role="alert"` | 1 passed |
+
+## T31 — `B` Account setup and readiness to plan
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T31.1 | create an Account under the chosen selectable Institution and reach Ready for Trade Planning only with both | `npx vitest run tests/onboarding/ready-state.test.ts` — Ready was reported on an Institution alone | 1 passed; `Needs` after the Institution, `Ready for Trade Planning` only after the Account |
+| T31.2 | reject an Account whose parent was archived between render and submit with a typed conflict, preserving input and writing nothing | `npx vitest run tests/onboarding/account-parent-conflict.test.ts` — the parent was resolved once and never rechecked | 1 passed with `ParentConflict`, the institution field and a byte-identical store |
+| T31.3 | reject a missing Institution choice with a field-level message and write nothing | `npx vitest run tests/onboarding/account-validation.test.ts` — an empty choice reached the save | 1 passed with the institution-field message and no write |
+| T31.4 | keep the Account's Institution parent identity immutable while the displayed label follows a rename | `npx vitest run tests/onboarding/account-label.test.ts` — the displayed label was stored as the parent identity | 1 passed; `parentId` stays `institution:fidelity` and the label is `Fidelity Investments` |
+| T31.5 | return the resulting catalog snapshot and onboarding state without a status re-read | Covered by T30.2's snapshot red; the Account `Created` result carries the same snapshot and onboarding | 1 passed |
+| T31.6 | preserve unsaved Account fields across a live resize and record nothing on navigation | `npx playwright test tests/browser/onboarding-resize.spec.ts` (institution field) plus the keyboard walk's navigation; a window resize no longer clears either form | 6 onboarding browser tests pass on both engines |
+| T31.7 | do not report readiness to plan while the only Account is retired or none exists | `npx vitest run tests/onboarding/ready-state.test.ts -t "retired"` — a retired Account still counted (same defect as T31.1) | 1 passed; the retired-only snapshot and the empty snapshot both report `Needs` |
+| T31.8 | return the Account under the Selectable-only default view in deterministic order | `npx vitest run tests/onboarding/account-selectable-query.test.ts` — ordering by identity alone produced `Zulu, Alpha` | 1 passed; `Alpha, Zulu` at snapshot revision 4 |
+
+**Production UI.** Onboarding is a real form flow over the catalog module: the Institution form and the
+Account form, an explanatory empty state with the form as its next action, an Archived badge and a
+"formerly …" historical label, field-level validation, preserved input on conflict, and a
+`Ready for Trade Planning` state that requires both a selectable Institution and a selectable Account.
+The keyboard-only walk uses implicit form submission (Enter in the field), which works identically in
+Chromium and WebKit; a Tab-to-button walk proved engine-specific, so the tested flow uses the standard
+implicit submission instead.

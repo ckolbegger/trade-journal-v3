@@ -32,7 +32,14 @@ export interface ApplicationRuntime {
   refresh(): Promise<ApplicationStart>;
   initialize(timeZone: string): Promise<WorkspaceInitializationResult>;
   streamInstitutions(): Promise<CatalogQueryResult>;
+  streamSelectableInstitutions(): Promise<CatalogQueryResult>;
+  streamAccounts(): Promise<CatalogQueryResult>;
   addInstitution(label: string, expectedSnapshotRevision: number): Promise<CatalogSaveResult>;
+  addAccount(
+    institutionId: string,
+    label: string,
+    expectedSnapshotRevision: number,
+  ): Promise<CatalogSaveResult>;
   requestDurability(): Promise<WorkspaceDurabilityResult>;
   setTimeZone(timeZone: string): void;
   capabilityManifest(): InstalledCapabilityManifest;
