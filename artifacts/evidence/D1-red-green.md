@@ -322,3 +322,21 @@ same identity, and requests the `workspaceContentRevision` counter once per comm
 it once inside the same transaction. The test harness's own first fingerprint was vacuous
 (`JSON.stringify` dropped the snapshot's `rows` function); it was corrected to serialize the actual rows
 before the red was accepted.
+
+---
+
+## T14 — `B` Snapshot-consistent multi-module reads
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T14.1 | one coherent view bound to the represented fact, observation, Journal and reference revisions when no writer commits | `npx vitest run tests/persistence/snapshot-coherent.test.ts` — a coherent read was reported as changed | same command — 1 passed; the model and `{ tradeRecord: 1, journal: 1, referenceCatalog: 1 }` in one attempt |
+| T14.2 | ChangedDuringAssembly naming the changed revisions, and never a mixed result, when a writer commits between two module reads | `npx vitest run tests/persistence/snapshot-torn.test.ts` — the mid-assembly commit was not detected and an `Assembled` model was returned | same command — 1 passed; `ChangedDuringAssembly { journal: { expected: 1, observed: 2 } }`, no `model` property |
+| T14.3 | stop after the configured bounded number of attempts rather than retrying without limit | `npx vitest run tests/persistence/snapshot-torn.test.ts -t "bounded number"` — the loop ran one attempt past the bound | same command — 1 passed; exactly 3 reads and `attempts: 3` |
+| T14.4 | bind every returned read model to the exact revision set it was assembled from | `npx vitest run tests/persistence/snapshot-coherent.test.ts -t "exact revision set"` — the assembled result carried an empty binding | same command — 1 passed; the binding equals the persisted revision row |
+| T14.5 | read the pre-commit rows for its whole lifetime when the snapshot begins before a concurrent commit | `npx vitest run tests/persistence/snapshot-nonmutating.test.ts -t "pre-commit rows"` — the snapshot returned both rows after the commit (a live read) | same command — 1 passed; the pre-commit snapshot returns only `trade-1` |
+| T14.6 | leave every store byte-identical after the read | `npx vitest run tests/persistence/snapshot-nonmutating.test.ts` — the read path committed and the store fingerprint changed | same command — 1 passed; the store, Journal and revision rows are byte-identical |
+
+`assembleRead` captures the revision binding, reads every named store through one snapshot, re-reads the
+binding, and returns the model only when the two agree; otherwise it retries a caller-configured bounded
+number of times and then returns `ChangedDuringAssembly`. It performs no write. The test's mid-assembly
+commit is injected by a read source, which is exactly a writer committing between two module reads.
