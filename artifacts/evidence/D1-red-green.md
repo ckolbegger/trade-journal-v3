@@ -197,3 +197,29 @@ write gate must construct its rejection with this one constructor, and the field
 against a directly built payload lands in T11's `transaction-write-gate` evidence and is repeated by
 T33's integration suite. The single-constructor guarantee is already enforced structurally: `results`
 exports the constructor and the codec decodes through it.
+
+---
+
+## T9 — `S` IndexedDB schema, object stores, and schema-version baseline
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| V9.1 | `npx vitest run tests/persistence/schema.test.ts` | exit 0; `db.version` equals `SCHEMA_VERSION` (1); `objectStoreNames` equals the manifest; every keyPath and index matches; `schemaMismatches` returns `[]`; a renamed `lifecycleIndex.state` index is reported as `lifecycleIndex: the index lifecycleState is missing` | pass |
+| V9.2 | `npx vitest run tests/persistence/schema-manifest.test.ts` | exit 0; the declared manifest validates; an added store with no residency, a rebuildable store with no rebuild source, and a rebuild source that is not authoritative each fail naming the store | pass |
+| V9.3 | `npx vitest run tests/persistence/schema-boundedness.test.ts` | exit 0 at 25,000 lifecycle rows with 200 Open; one index cursor, 200 cursor steps, one bounded batch of 200 member records, and the counters agree with prototypes instrumented for the test (`openCursor` 1, `get` 200); no elapsed-time assertion | pass |
+| V9.4 | `npx playwright test tests/browser/schema.spec.ts --project=chromium` | exit 0; a real Chromium IndexedDB database is created with `objectStoreNames` equal to the manifest, a row is written, the page is closed and a fresh page reopens the same version with the row intact | pass |
+| V9.5 | `grep -rn "createObjectStore\|createIndex\|deleteObjectStore" src --include=*.ts \| grep -v "^src/persistence/indexeddb/schema"` | no output (grep exit 1) | pass |
+| V9.6 | `npx vitest run tests/persistence/schema-rebuild.test.ts` | exit 0; after the rebuildable projection's contents are deliberately deleted, `rebuildProjections` reproduces identical contents from `lifecycleIndex` | pass |
+
+**Schema shape.** Authoritative stores `tradeRecord`, `journal`, `marketData`, `referenceCatalog`,
+`workspaceMeta`, `lifecycleIndex`; one rebuildable `lifecycleListProjection` rebuilt from
+`lifecycleIndex`; the candidate namespace is `trade-journal-candidate-*` (`CANDIDATE_DATABASE_PREFIX`)
+for T10. Indexes cover lifecycle state membership, fact Economic Time, Journal Anchor, Journal
+obligation key, Market Data key-and-date and reference kind-and-parent. The manifest validator runs in
+`openDatabase`, so an undeclared store or an unrebuildable projection cannot be opened.
+
+**Bounded-batch reading.** The batch is one logical participant read whose members are the at-most-
+`batchSize` Open identities the cursor collected; the physical `get` count equals the row count, and
+the test asserts both the logical counters and the instrumented physical calls. No latency figure is
+measured or claimed. The browser harness exposes the schema to `tests/browser/schema.spec.ts` through
+`window.__TRADE_JOURNAL_SCHEMA__`, the same documented harness seam as the clock and host port.
