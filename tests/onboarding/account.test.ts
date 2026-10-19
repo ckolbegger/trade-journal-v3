@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CATALOG_SEED_MANIFEST_V1, seedDefaults } from "../../src/catalog";
 import { query, save } from "../../src/catalog/save";
 import { createAccount, createInstitution, onboardingFrom } from "../../src/onboarding";
-import { closeCatalog, openCatalog, catalogRows } from "../catalog/support";
+import { closeCatalog, openCatalog, catalogRows } from "../support/domains";
 
 describe("Account setup completes onboarding and reports readiness to plan honestly", () => {
   it("should keep the Account's Institution parent identity immutable while the displayed label follows a rename of that Institution", async () => {

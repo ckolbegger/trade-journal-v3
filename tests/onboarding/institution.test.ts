@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CATALOG_SEED_MANIFEST_V1, seedDefaults } from "../../src/catalog";
 import { query, save } from "../../src/catalog/save";
 import { createInstitution, onboardingFrom } from "../../src/onboarding";
-import { closeCatalog, openCatalog, catalogRows } from "../catalog/support";
+import { closeCatalog, openCatalog, catalogRows } from "../support/domains";
 
 describe("Institution onboarding creates the trader's own Institution and never invents one", () => {
   it("should present an inactive Institution as Archived everywhere and never offer it as the parent for a new Account", async () => {

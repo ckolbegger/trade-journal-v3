@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { decodeValueRecord, encodeValueRecord } from "../../src/values/codec";
 import { money, price, quantity, addMoney, subtractMoney, positionValue } from "../../src/values";
-import { value } from "./support";
+import { value } from "../support/domains";
 
 describe("Money, Price and Quantity arithmetic is exact and typed at the value-layer seam", () => {
   const exactMoney = {

@@ -1,6 +1,6 @@
 import { describe, expect, it, afterEach } from "vitest";
 import { commitRevisioned, type RevisionedResult } from "../../src/persistence/indexeddb/revisions";
-import { close, openSeam, seed, recovery, writable } from "./revision-support";
+import { close, openSeam, seed, recovery, writable } from "../support/store";
 import { deleteDatabase } from "../../src/persistence/indexeddb/schema";
 import { createTransactionSeam } from "../../src/persistence/indexeddb/transaction";
 import { createWriteGate } from "../../src/persistence/indexeddb/writeGate";

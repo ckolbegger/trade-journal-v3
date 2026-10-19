@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, afterEach } from "vitest";
 import { deleteDatabase, openDatabase, transactionDone, rebuildProjections } from "../../src/persistence/indexeddb/schema";
 import { queryOpenLifecycle } from "../../src/persistence/indexeddb/lifecycleQuery";
 import { type TransactionSeam, createTransactionSeam } from "../../src/persistence/indexeddb/transaction";
-import { writable, close, openSeam, seed } from "./revision-support";
+import { writable, close, openSeam, seed } from "../support/store";
 import { createWriteGate } from "../../src/persistence/indexeddb/writeGate";
 import { queryOpenAtCutoff, readTradeAgreement, commitLifecycleChange } from "../../src/persistence/indexeddb/lifecycleIndex";
 

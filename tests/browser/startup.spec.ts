@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { startWith, initializeJournal } from "./startup-support";
+import { startWith, initializeJournal } from "../support/browser";
 
 test.describe("startup-pending", () => {
   test("while readiness is still being verified the startup state does not claim an empty workspace or enable a mutation", async ({

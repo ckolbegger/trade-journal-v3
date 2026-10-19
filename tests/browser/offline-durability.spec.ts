@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { initializeJournal, startWith } from "./startup-support";
+import { initializeJournal, startWith } from "../support/browser";
 
 test.describe("offline-restart", () => {
   test("a full stop with the network disabled reopens to Writable with stored data intact", async ({

@@ -1,10 +1,10 @@
 import { describe, expect, it, afterEach } from "vitest";
 import { getStatus } from "../../src/workspace/status";
-import { statusPorts } from "./status-support";
+import { statusPorts } from "../support/workspace";
 import { deleteDatabase } from "../../src/persistence/indexeddb/schema";
-import { close, openSeam, seed } from "../persistence/revision-support";
+import { close, openSeam, seed } from "../support/store";
 import { establishReadiness } from "../../src/readiness";
-import { passingPorts } from "../readiness/support";
+import { passingPorts } from "../support/readiness";
 
 describe("Workspace.getStatus reports one honest lifecycle status from readiness, root state and installed capability", () => {
   it("should return Initialization Required only when a writable store was opened successfully and proved that no Workspace exists", async () => {

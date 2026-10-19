@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { initializeJournal, startWith } from "./startup-support";
+import { initializeJournal, startWith } from "../support/browser";
 
 test.describe("onboarding-account", () => {
   test("a keyboard-only walk completes both onboarding steps and the landing state survives a full restart", async ({

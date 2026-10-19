@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { deleteDatabase } from "../../src/persistence/indexeddb/schema";
 import { assembleRead } from "../../src/persistence/indexeddb/snapshotRead";
-import { close, openSeam, seed } from "./revision-support";
+import { close, openSeam, seed } from "../support/store";
 
 describe("a multi-module read snapshot is coherent or explicitly reports changed-during-assembly", () => {
   afterEach(async () => {

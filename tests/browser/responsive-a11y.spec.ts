@@ -1,6 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import { initializeJournal, startWith } from "./startup-support";
+import { initializeJournal, startWith } from "../support/browser";
 
 test.describe("a11y-d1", () => {
   async function audit(page: Page): Promise<void> {

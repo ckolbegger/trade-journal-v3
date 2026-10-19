@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CATALOG_SEED_MANIFEST_V1, seedDefaults } from "../../src/catalog";
 import { save, query, resolveReference } from "../../src/catalog/save";
-import { catalogRows, closeCatalog, openCatalog } from "./support";
+import { catalogRows, closeCatalog, openCatalog } from "../support/domains";
 
 describe("ReferenceCatalog save and query handle Institution and Account identity, availability and history", () => {
   it("should reject Account creation with a typed Rejected naming the parent when the named Institution is archived or unknown, and write nothing", async () => {

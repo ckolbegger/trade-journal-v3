@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { SEED_MANIFEST_FULL, seedDefaults, SEED_MANIFEST_V1, type JournalSeedManifest, normalizedJournalManifest } from "../../src/journal";
 import { TransactionSeam } from "../../src/persistence/indexeddb/transaction";
-import { closeJournal, journalRows, openJournal } from "./support";
+import { closeJournal, journalRows, openJournal } from "../support/domains";
 
 describe("Journal.seedDefaults creates only the manifest's declared fixed identities, atomically and idempotently", () => {
   it("should commit every seeded identity, definition revision and Source in one transaction, so an interrupted seed leaves no partial Journal configuration", async () => {

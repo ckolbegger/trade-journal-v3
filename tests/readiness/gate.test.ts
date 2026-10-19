@@ -1,6 +1,6 @@
 import { describe, expect, it, afterEach, vi } from "vitest";
 import { establishReadiness, NOT_PROTECTED_WARNING } from "../../src/readiness";
-import { passingPorts } from "./support";
+import { passingPorts } from "../support/readiness";
 import { runDiagnosticTransaction } from "../../src/persistence/indexeddb/diagnostic";
 import { deleteDatabase, openDatabase, transactionDone } from "../../src/persistence/indexeddb/schema";
 import { MATURE_WORKLOAD, deriveMinimum } from "../../src/capacity";

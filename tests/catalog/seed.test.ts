@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CATALOG_SEED_MANIFEST_V1, seedDefaults, type CatalogSeedManifest } from "../../src/catalog";
-import { catalogRows, closeCatalog, openCatalog } from "./support";
+import { catalogRows, closeCatalog, openCatalog } from "../support/domains";
 import { TransactionSeam } from "../../src/persistence/indexeddb/transaction";
 
 const manifest: CatalogSeedManifest = {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { commitThroughGate, createWriteGate } from "../../src/persistence/indexeddb/writeGate";
 import { createReadinessLedger } from "../../src/readiness/lifecycle";
-import { mutablePorts, steppingClock } from "./support";
+import { mutablePorts, steppingClock } from "../support/readiness";
 
 describe("readiness is re-established at every safety boundary and a later failure invalidates the running session", () => {
   const instants = [

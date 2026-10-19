@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { startHarness, waitForControl, missingFromCache, missingReleaseEntries, workerStatus } from "./worker-support";
+import { startHarness, waitForControl, missingFromCache, missingReleaseEntries, workerStatus } from "../support/browser";
 import { execFileSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { validateReleaseInventory } from "../../src/release/inventory";
-import { inventoryFixture, replaceBytes, INVENTORY_URL, removeBytes } from "./support";
+import { inventoryFixture, replaceBytes, INVENTORY_URL, removeBytes } from "../support/release";
 
 describe("Offline Release Inventory validation reports completeness and per-entry digest truth without a network", () => {
   it("should fail when the inventory artifact itself is unreadable", async () => {

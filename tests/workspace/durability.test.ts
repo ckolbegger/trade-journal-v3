@@ -1,9 +1,9 @@
 import { describe, expect, it, afterEach } from "vitest";
 import { establishReadiness } from "../../src/readiness";
 import { requestDurability } from "../../src/workspace/durability";
-import { passingPorts } from "../readiness/support";
+import { passingPorts } from "../support/readiness";
 import { deleteDatabase } from "../../src/persistence/indexeddb/schema";
-import { close, openSeam, seed } from "../persistence/revision-support";
+import { close, openSeam, seed } from "../support/store";
 import type { StorageProtection } from "../../src/platform/host";
 
 describe("Workspace.requestDurability reports the host's real answer and never fabricates protection", () => {

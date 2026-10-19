@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { initialize } from "../../src/workspace";
-import { closeWorkspace, rowsOf, workspaceFixture } from "./support";
+import { closeWorkspace, rowsOf, workspaceFixture } from "../support/workspace";
 import { establishReadiness } from "../../src/readiness";
-import { passingPorts } from "../readiness/support";
+import { passingPorts } from "../support/readiness";
 
 describe("Workspace.initialize creates one initialized Workspace or refuses with a typed non-writable result", () => {
   it("should open the existing Workspace rather than reseeding or duplicating identities when called a second time against an initialized store", async () => {
