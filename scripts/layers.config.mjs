@@ -37,6 +37,7 @@ export const modules = [
   { name: "readiness", dir: "src/readiness", layer: "coordinator" },
   { name: "workspace", dir: "src/workspace", layer: "coordinator" },
   { name: "onboarding", dir: "src/onboarding", layer: "coordinator" },
+  { name: "trade-workflows", dir: "src/trade-workflows", layer: "coordinator" },
 
   { name: "tests", dir: "tests", layer: "test" },
 ];

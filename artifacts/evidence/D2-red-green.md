@@ -544,3 +544,69 @@ the preceding commit are the run for this code state.
 | # | Command | Observed | Result |
 |---|---|---|---|
 | — | (cites R1–R2 above) | `Tests 289 passed`, `132 passed` | pass |
+
+---
+
+## T13 — `B` `confirmPlan` orchestration
+
+## T14 — `B` Atomic rollback across Trade and Journal effects
+
+## T15 — `B` Mutation result and post-commit projection for `confirmPlan`
+
+Seams: `TradeWorkflows.confirmPlan` in `src/trade-workflows/confirmPlan.ts` (new `coordinator`-layer
+module), with suites `tests/trade-workflows/confirm-plan.test.ts` (8 cases, T13),
+`tests/trade-workflows/confirm-plan.result.test.ts` (8 cases, T15) and
+`tests/integration/d2-atomicity.test.ts` (8 cases, T14).
+
+**Red, recorded honestly.** The coordinator was authored with its cases in this pass, so red was
+**unreachable** in that ordering. `confirmPlan` was then replaced with an unimplemented rejection and
+the suites re-run against the absent behaviour:
+
+```text
+npx vitest run --project unit tests/trade-workflows
+→ Tests 14 failed | 2 passed
+  AssertionError: expected 'Rejected' to be 'Accepted'      (every acceptance and projection case)
+  AssertionError: expected false to be true                 (identity and derivation assertions)
+npx vitest run --project integration tests/integration/d2-atomicity.test.ts
+→ Tests 5 failed | 3 passed
+```
+
+The three T14 cases that passed against the stub are the ones whose assertion is "nothing was
+written", which an unimplemented rejection satisfies trivially; their red was unreachable for that
+stub shape. The implementation was restored and both suites returned to 16/16 and 8/8.
+
+**What the orchestration does, in the order the contract fixes.** Catalog resolution under one
+snapshot (a moved snapshot is `Conflict` with the current revision) → `assessPlan` and a required
+*frozen* baseline, so a Plan with no positive numeric 1R is `Rejected` with a field-naming issue →
+`prepareEffects` against the exact definition revision the form displayed → `prepareChange` for the
+Trade candidate → `derive` for the expected Lifecycle State and the reconciliation bound to that exact
+candidate → `applyPreparedChange` and `applyPreparedEffects` staging → **one** `seam.commit`.
+Nothing is durable before that commit, and no Trade or Journal identity is returned on any rejection.
+
+**Two defects found by writing the cases.**
+
+1. The reflection's Anchor was rebound to the *durable* Trade identity before the apply step, so the
+   apply's mapping lookup could not find it and every confirmation failed with `MappingMismatch`. The
+   prepared effect now keeps the **candidate** reference and the apply maps it through Trade Record's
+   exact durable mapping — which is also what "binds candidate Anchors without reserving identities"
+   requires.
+2. A repeated confirmation of the identical command returned `Staged` and rewrote `FactRevision 1`
+   before the creation-existence check was added in T3; it is now a typed `Conflict`.
+
+**T14 failure injection, disclosed.** The injected failure is test infrastructure at the Journal
+participant boundary: the test composes the real `prepareEffects`/`applyPreparedEffects` and appends a
+participant naming a store the real transaction cannot open, so the single real commit aborts. It
+bypasses no application layer and never mocks a participant. The gate case reuses the *same* real
+database behind a seam whose write gate is not `Writable`, which is how the persistence-boundary
+`RuntimeNotWritable` branch (`D1:T12`, `overview.md:177`) is exercised without a second connection.
+
+
+### Commit — T13 + T14 + T15 (orchestration, atomicity, result contract)
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| R1 | `npx vitest run` | `Test Files 43 passed (43)`, `Tests 313 passed (313)` | pass |
+| R2 | `npx playwright test` | `132 passed (2.0m)` | pass |
+| R3 | `npx tsc --noEmit` | exit 0 | pass |
+| R4 | `npm run lint:layers` | 0 violations | pass |
+| R5 | `npx eslint .` | exit 0 | pass |
