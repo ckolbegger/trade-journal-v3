@@ -175,3 +175,25 @@ cached asset bytes, a file download, and reading a trader-selected file. A brows
 documented seam style as the fixed clock; product code never reads the flag. The file chooser needs a
 user activation, so the spec clicks a harness-created button and the port's input click runs inside that
 activation.
+
+---
+
+## T8 — `B` Shared result-union and `RuntimeNotWritable` conventions
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T8.1 | runtimeReadiness Unsupported, every supplied failed check, workspaceStatus None and the ordered safe actions | `npx vitest run tests/results/runtime-not-writable.test.ts -t "every supplied failed check"` — the constructor kept only the first failed check | same command — 1 passed with all three failures in input order |
+| T8.2 | RecoveryOnly together with readable Workspace status and backup safe actions | `npx vitest run tests/results/runtime-not-writable.test.ts -t "RecoveryOnly"` — `workspaceStatus` was `None`; the constructor hardcoded the Unsupported default | same command — 1 passed with `RecoveryOnly` |
+| T8.3 | IntegrityBlocked and never None when a known or possible existing root could not be read | `npx vitest run tests/results/integrity-blocked.test.ts` — `workspaceStatus` was `None`; the `existingRootUnreadable` signal was ignored | same command — 1 passed with `IntegrityBlocked` |
+| T8.4 | reject construction with an empty failed-check list with a typed programming error | `npx vitest run tests/results/empty-failed-checks.test.ts` — no error thrown; an empty branch was representable | same command — 1 passed with `ResultConventionError { kind: "RuntimeNotWritableRequiresFailedCheck" }` |
+| T8.5 | a stable documented order for identical inputs across two constructions | `npx vitest run tests/results/runtime-not-writable.test.ts -t "stable documented order"` — input order leaked through (`try-another-browser` first) | same command — 1 passed; both constructions equal `retry, request-durability, export-backup, try-another-browser, recovery-guidance` |
+| T8.6 | the isRuntimeNotWritable discriminator … negatively for a typed trader rejection | `npx vitest run tests/results/discriminator.test.ts` — absent, then `true` for `{ outcome: "Rejected" }`; the first discriminator accepted any object | same command — 1 passed; safety true, trader rejection, `null` and a string false |
+| T8.7 | exactly one cross-cutting RuntimeNotWritable member alongside command-specific members | `npx vitest run tests/results/mutation-union.test.ts` — `MUTATION_OUTCOMES` and `assertNever` were absent | same command — 1 passed; exactly one of the four result branches is the safety branch, and the availability union is exhaustive through `assertNever` |
+| T8.8 | round-trip the payload through the persistence codec with workspaceStatus and safeActions preserved exactly | `npx vitest run tests/results/codec-round-trip.test.ts` — absent, then `safeActions` were dropped on decode | same command — 1 passed with a deep-equal payload |
+
+**Boundary-equality row deferred to its first possible owner.** The third row of the task's red/green
+table ("the seam builds its own ad-hoc rejection shape") needs the persistence seam, which is T11. T11's
+write gate must construct its rejection with this one constructor, and the field-for-field comparison
+against a directly built payload lands in T11's `transaction-write-gate` evidence and is repeated by
+T33's integration suite. The single-constructor guarantee is already enforced structurally: `results`
+exports the constructor and the codec decodes through it.
