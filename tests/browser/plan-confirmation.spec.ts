@@ -249,3 +249,62 @@ test.describe("d2-accessibility", () => {
     expect(tradeResults.violations.map((violation) => violation.id)).toEqual([]);
   });
 });
+
+test.describe("d2-form-layout", () => {
+  test("the plan form fits the viewport with no horizontal scrolling, keeps every section inside its card, and places every label above its own control, at both widths", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await startWith(page);
+    await initializeJournal(page);
+    await onboard(page);
+    await openPlanForm(page);
+
+    const measure = () =>
+      page.evaluate(() => {
+        const card = document.querySelector(".plan-form");
+        if (card === null) return { error: "no .plan-form card" };
+        const cardRect = card.getBoundingClientRect();
+        // A <fieldset> defaults to min-inline-size: min-content, which pushed every section past the
+        // card's right edge before this was fixed.
+        const overflowingSections = Array.from(card.querySelectorAll("fieldset"))
+          .filter((section) => section.getBoundingClientRect().right > cardRect.right + 0.5)
+          .map((section) => section.querySelector("legend")?.textContent ?? "(unnamed)");
+        const labelProblems: string[] = [];
+        for (const control of Array.from(card.querySelectorAll("input, select, textarea"))) {
+          const element = control as HTMLElement;
+          // A radio is nested inside its own label by design, so the boxes always intersect.
+          if (element instanceof HTMLInputElement && element.type === "radio") continue;
+          const label =
+            element.id === "" ? null : card.querySelector(`label[for="${element.id}"]`);
+          if (label === null) {
+            labelProblems.push(`${element.id || "(no id)"}: no associated label`);
+            continue;
+          }
+          if (element.getBoundingClientRect().top < label.getBoundingClientRect().bottom) {
+            labelProblems.push(`${element.id}: label is not above its control`);
+          }
+        }
+        return {
+          scrollWidth: document.documentElement.scrollWidth,
+          innerWidth: window.innerWidth,
+          overflowingSections,
+          labelProblems,
+        };
+      });
+
+    const wide = await measure();
+    if ("error" in wide) throw new Error(String(wide.error));
+    expect(wide.scrollWidth).toBeLessThanOrEqual(wide.innerWidth);
+    expect(wide.overflowingSections).toEqual([]);
+    expect(wide.labelProblems).toEqual([]);
+
+    await page.setViewportSize({ width: 375, height: 812 });
+    await expect.poll(async () => page.evaluate(() => window.innerWidth)).toBe(375);
+    const narrow = await measure();
+    if ("error" in narrow) throw new Error(String(narrow.error));
+    expect(narrow.scrollWidth).toBeLessThanOrEqual(narrow.innerWidth);
+    expect(narrow.overflowingSections).toEqual([]);
+    expect(narrow.labelProblems).toEqual([]);
+  });
+});

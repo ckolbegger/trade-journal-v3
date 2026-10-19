@@ -279,7 +279,7 @@ export function PlanForm({
   }
 
   return (
-    <section className="card" aria-labelledby="plan-title">
+    <section className="card plan-form" aria-labelledby="plan-title">
       <h2 id="plan-title">Confirm a plan</h2>
       {serverIssues.length > 0 && (
         <div role="alert" className="error">
@@ -293,7 +293,7 @@ export function PlanForm({
       )}
 
       <div className="plan-form__grid">
-        <div>
+        <div className="field">
   <label htmlFor="field-accountId">Account</label>
         <select
           id="field-accountId"
@@ -316,8 +316,8 @@ export function PlanForm({
   
         
         </div>
-        <div>
-  <label htmlFor="field-strategyStableKey">Strategy</label>
+        <div className="field">
+          <label htmlFor="field-strategyStableKey">Strategy</label>
         <select
           id="field-strategyStableKey"
           value={strategyStableKey}
@@ -339,8 +339,8 @@ export function PlanForm({
   
         
         </div>
-        <div>
-  <label htmlFor="field-intendedEntry">Intended entry</label>
+        <div className="field">
+          <label htmlFor="field-intendedEntry">Intended entry</label>
         <input
           id="field-intendedEntry"
           value={intendedEntry}
@@ -356,8 +356,8 @@ export function PlanForm({
   
         
         </div>
-        <div>
-  <label htmlFor="field-instrumentKey">Instrument</label>
+        <div className="field">
+          <label htmlFor="field-instrumentKey">Instrument</label>
         <input
           id="field-instrumentKey"
           value={instrumentKey}
@@ -372,8 +372,8 @@ export function PlanForm({
   
         
         </div>
-        <div>
-  <label htmlFor="field-quantity">Planned Leg quantity</label>
+        <div className="field">
+          <label htmlFor="field-quantity">Planned Leg quantity</label>
         <input
           id="field-quantity"
           value={quantity}
@@ -392,7 +392,7 @@ export function PlanForm({
       <fieldset>
         <legend>Stops and Targets</legend>
         {conditions.map((condition, index) => (
-          <div key={condition.key} className="stack">
+          <div key={condition.key} className="condition">
             <p className="muted">
               Condition {index + 1}: {condition.role}
             </p>
@@ -465,12 +465,14 @@ export function PlanForm({
         ))}
       </fieldset>
 
-      <button type="button" disabled={busy} onClick={() => void save()}>
-        Save the plan
-      </button>
-      <button type="button" disabled={busy} onClick={() => onSaved("")}>
-        Cancel
-      </button>
+      <div className="plan-form__actions">
+        <button type="button" className="primary" disabled={busy} onClick={() => void save()}>
+          Save the plan
+        </button>
+        <button type="button" disabled={busy} onClick={() => onSaved("")}>
+          Cancel
+        </button>
+      </div>
     </section>
   );
 }
@@ -495,19 +497,21 @@ function PromptField({
           {prompt.label}
           {prompt.required ? " (required)" : " (optional)"}
         </legend>
-        {(prompt.options ?? []).map((option) => (
-          <label key={option.stableKey} htmlFor={`${id}-${option.stableKey}`}>
-            <input
-              id={`${id}-${option.stableKey}`}
-              type="radio"
-              name={prompt.stableKey}
-              value={option.stableKey}
-              checked={value === option.stableKey}
-              onChange={() => onChange(option.stableKey)}
-            />
-            {option.label}
-          </label>
-        ))}
+        <div className="plan-form__radio-group">
+          {(prompt.options ?? []).map((option) => (
+            <label key={option.stableKey} htmlFor={`${id}-${option.stableKey}`}>
+              <input
+                id={`${id}-${option.stableKey}`}
+                type="radio"
+                name={prompt.stableKey}
+                value={option.stableKey}
+                checked={value === option.stableKey}
+                onChange={() => onChange(option.stableKey)}
+              />
+              {option.label}
+            </label>
+          ))}
+        </div>
         {error !== undefined && (
           <p id={`error-${prompt.stableKey}`} role="alert" className="error">
             {error}
@@ -518,7 +522,7 @@ function PromptField({
   }
   if (prompt.kind === "scale") {
     return (
-      <div className="stack">
+      <div className="field">
         <label htmlFor={id}>
           {prompt.label}
           {prompt.required ? " (required)" : " (optional)"}
@@ -541,7 +545,7 @@ function PromptField({
     );
   }
   return (
-    <div className="stack">
+    <div className="field">
       <label htmlFor={id}>
         {prompt.label}
         {prompt.required ? " (required)" : " (optional)"}

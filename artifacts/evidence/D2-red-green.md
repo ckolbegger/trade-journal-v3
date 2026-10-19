@@ -1021,3 +1021,56 @@ written before the bounds were stated. Both defaults now bite: `?? 0` and `?? 9`
 four real gaps were found and closed (G-1 vacuous cutoff case, G-2 untested guard, G-3 unasserted
 staged time, G-4 unexercised scale default) plus one wholly uncovered `derive` branch. T1, T5 and
 T13–T20 were red-first or verified by other means.
+
+---
+
+## Reported defect (user) — the plan form's layout
+
+**What was wrong.** The user reported a screenshot at 1440px: every section ran past the card's right
+edge, fields sat beside their labels instead of under them, there was no readable measure, textareas
+were unstyled, and the spacing was cramped.
+
+**Root cause, stated plainly.** I never opened `specs/reference/ui-screenshots/proto-new-plan-step2.png`
+or `proto-new-plan-step2-desktop.png`, although `ui-contract.md:37` cites that pair as the reference for
+equivalent form layout across widths. I wrote bare `<label>`/`<input>` markup and a thin
+`.plan-form__grid`, and three concrete mistakes followed: labels stack only under `.inline-form`, which
+the plan form never used; a `<fieldset>` defaults to `min-inline-size: min-content`, so all three
+sections refused to shrink inside the card; and there was no `max-width`, so the form took the full
+content width instead of the reference's centred column. The 375px horizontal overflow had been
+reported by the critic earlier and I fixed only that symptom, not the wide arrangement.
+
+**Red, in two steps, both valid.** The new browser case `d2-form-layout` first failed for a harness
+reason ("no `.plan-form` card"), which is not valid red evidence, so the class alone was added and the
+case re-run. It then failed on `overflowingSections` with **three** sections past the card's right edge
+— the real defect. After the first fix, a programmatic measurement of every label→control gap showed
+`4 of 5` grid children at **0px** with the control overlapping the label, because those wrappers had
+missed the `.field` class. The case was therefore widened from three sampled fields to **every
+labelled non-radio control** in the form, which is what makes it catch that class rather than an
+example of it.
+
+**Green.** The `d2-form-layout` case passes at 1440 and at 375; the D2 spec is 24 passed across the four
+projects. The reference's structure is now matched: a centred column (`max-width: 44rem`), labels
+stacked above their controls, small-caps section legends, a two-column grid only for the paired
+top-level facts, radio chips in one row, and a full-width primary Save.
+
+**Files.** `src/ui/PlanForm.tsx` (semantic classes replacing app-level `.stack`, a field wrapper per
+control, radio group, actions row), `src/ui/styles.css` (a `.plan-form` block: measure, fieldstacking,
+fieldset reset, legend, textarea, radio group, primary action), and the new case in
+`tests/browser/plan-confirmation.spec.ts`.
+
+### Trap recorded: a stray preview on `DEV_PORT` breaks the browser suite
+
+One full playwright run failed 8 service-worker specs. The cause was not the product: I had left a
+`vite preview` listening on **5177**, and `playwright.config.ts` sets `webServer.reuseExistingServer:
+true`, so Playwright reused my preview instead of starting `scripts/sw-test-server.mjs`, and the
+release-staging specs could not stage a second release. After killing the stray server the same suite
+passed **168/168**. Do not leave a preview on `DEV_PORT` while running the browser suite.
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| R1 | `npx playwright test tests/browser/plan-confirmation.spec.ts -g "d2-form-layout"` | red: 3 sections overflowed the card; then 4 wrappers with 0px label gaps | reproduced |
+| R2 | `npx vitest run` | `Test Files 45 passed (45)`, `Tests 325 passed (325)` | pass |
+| R3 | `npx playwright test` | `168 passed (2.3m)` across the four projects (164 before the new case) | pass |
+| R4 | `npx tsc --noEmit` | exit 0 | pass |
+| R5 | `npm run lint:layers` | `123 files, 0 violations` | pass |
+| R6 | `npx eslint .` | exit 0 | pass |

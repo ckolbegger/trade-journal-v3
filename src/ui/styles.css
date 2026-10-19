@@ -249,3 +249,105 @@ select {
     overflow-x: hidden;
   }
 }
+
+/* D2 plan form: a centred readable measure, fields stacked under their labels, and sections that
+   cannot widen the card. A <fieldset> defaults to `min-inline-size: min-content`, which pushed all
+   three sections past the card's right edge; resetting it is what keeps the form inside its card. */
+.plan-form {
+  max-width: 44rem;
+  margin-inline: auto;
+}
+
+.plan-form .field,
+.plan-form .condition {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+  margin: 0;
+}
+
+.plan-form .condition {
+  gap: 0.5rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border);
+}
+
+.plan-form .condition:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.plan-form fieldset {
+  min-inline-size: 0;
+  border: 0;
+  padding: 0;
+  margin: 1.75rem 0 0;
+}
+
+.plan-form fieldset:first-of-type {
+  margin-top: 1rem;
+}
+
+.plan-form legend {
+  padding: 0;
+  margin-bottom: 1rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted, #6b6b6b);
+}
+
+.plan-form label {
+  display: block;
+  margin: 0;
+}
+
+.plan-form input,
+.plan-form select,
+.plan-form textarea {
+  width: 100%;
+  min-width: 0;
+}
+
+.plan-form textarea {
+  font: inherit;
+  color: inherit;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  padding: 0.45rem 0.65rem;
+  min-height: 4.25rem;
+  resize: vertical;
+}
+
+.plan-form__radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+}
+
+.plan-form__radio-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.plan-form__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.75rem;
+}
+
+.plan-form__actions .primary {
+  background: var(--ink);
+  color: var(--card);
+  border-color: var(--ink);
+  padding-inline: 1.5rem;
+}
+
+@media (min-width: 900px) {
+  .plan-form__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem 1.5rem;
+  }
+}
