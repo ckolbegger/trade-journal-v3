@@ -58,19 +58,6 @@ function taskIdsOf(text) {
   return [...text.matchAll(/^#### (T\d+) /gm)].map((m) => m[1]);
 }
 
-/** Section 3 of a breakdown: heading -> body, for task lookups. */
-function taskBodies(text) {
-  const section3 = sectionsByHeading(text).get("3. Task detail") ?? "";
-  const found = [...section3.matchAll(/^#### (T\d+) /gm)];
-  const bodies = new Map();
-  found.forEach((m, i) => {
-    const start = m.index + m[0].length;
-    const end = i + 1 < found.length ? found[i + 1].index : section3.length;
-    bodies.set(m[1], section3.slice(start, end));
-  });
-  return bodies;
-}
-
 // ---------------------------------------------------------------- inputs
 
 const acceptance = read(acceptancePath);
@@ -110,7 +97,6 @@ for (const file of files) {
   const text = read(join(breakdownDir, file));
   const deliverable = file.match(/^D\d+/)[0];
   const ids = new Set(taskIdsOf(text));
-  const bodies = taskBodies(text);
 
   // 6 — the breakdown's own task-count claim in its "## 2. Task graph" prose.
   const graphSection = sectionsByHeading(text).get("2. Task graph") ?? "";

@@ -41,3 +41,8 @@ coverage/
 
 # Worktrees (each is its own checkout; not nested-tracked)
 worktrees/
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/

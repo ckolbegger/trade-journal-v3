@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "Trade Journal",
+  "short_name": "Journal",
+  "description": "An after-close trade journal for one trader.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f6f2ea",
+  "theme_color": "#1c1b18",
+  "icons": [
+    {
+      "src": "/icons/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

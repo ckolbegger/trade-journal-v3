@@ -68,7 +68,6 @@ function parseTasks(detail) {
     const body = detail.slice(bodyStart, bodyEnd);
 
     const edgesMatch = body.match(/\*\*Blocking edges:\*\*\s*([^\n]*)/);
-    const consumedMatch = body.match(/\*\*Consumed by:\*\*\s*([^\n]*)/);
 
     // "none (root)" is the documented no-dependency form. A declaration may mix local
     // tasks ("T37") with cross-deliverable tasks ("D1:T9"), so cross-references are pulled
@@ -79,11 +78,6 @@ function parseTasks(detail) {
       .map((m) => ({ deliverable: Number(m[1]), id: `T${m[2]}` }));
     const localText = edgeText.replace(/D\d+\s*:\s*T\d+/g, " ");
     const edges = isNone ? [] : [...localText.matchAll(/T\d+/g)].map((m) => m[0]);
-
-    const consumedText = consumedMatch ? consumedMatch[1] : "";
-    const consumers = /^\s*none\b/i.test(consumedText)
-      ? []
-      : [...consumedText.matchAll(/T\d+/g)].map((m) => m[0]);
 
     tasks.push({
       id: match[1],
@@ -395,7 +389,7 @@ if (!paths.length) {
 // on D1's transaction seam and D3 depend on D2's Trade Record without inventing local IDs.
 function loadDeliverableRegistry(directory) {
   const registry = new Map();
-  let names = [];
+  let names;
   try {
     names = readdirSync(directory);
   } catch {
