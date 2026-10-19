@@ -143,3 +143,14 @@ The 500 deterministic Plans run through `createApplication` on the engine's real
 - B1.1 identity (with and without an unknown user agent), B1.2 relaunch, B1.3 SIGKILL after the confirmation renders, B1.4 offline cold restart (server stopped and offline emulation), B1.5 six fault sets, B1.6 Recovery Only for all six sets with the probe unchanged, B1.7 (this run: `persisted()` false; the browser declined `persist()` and the page said so), B1.8 version-99 root created before launch and a deleted Workspace database, B1.9 inventory and diagnostic, B1.10–B1.13 update deferral, corrupt update, offline update check (server stopped), two tabs, B1.14 no draft or Web Storage trace, B1.15 960 px switch, axe (WCAG 2.1 A and AA tags) on first run, onboarding with errors, Trades empty and listed, Plan form with and without rejection, Trade Detail, Accounts, About (wide and narrow), Recovery Only, Unsupported, Integrity Blocked, and a keyboard-only onboarding and Plan with a focus ring checked at every Tab.
 - Defects found and fixed test-first (TDD log): the Plan form did not report `RuntimeNotWritable` to the shell (B1.9; `PlanForm` unit case added), and Plan time had no visible focus indicator (B1.15).
 - Offline emulation alone does not cover service-worker fetches in Chromium, so the offline cases also stop the origin's server.
+
+## T1.31 Schema-v1 fixture
+
+`npm run fixtures:freeze -- --schema 1`, then `npm run verify:fixtures` (2026-10-19):
+
+```
+fixtures:freeze OK: tests/fixtures/workspace-v1 (schema 1, 5 Plans, 3 Accounts)
+verify:fixtures OK: workspace-v1 open Ready at schema 1 with views equal to their snapshots
+```
+
+Built in Node through the facade only (initialize; Fidelity and Charles Schwab; three Accounts; five confirmed Plans) with the fixed clock 2026-10-16T21:00:00Z and seeded identities `fx-NNNN`. `dump.json` records schema version 1, generator version 1, the as-of instant, and every database in `tj-root` and the Workspace with its version, object stores (key path, auto-increment), indexes (key path, unique, multi-entry), and records, so a later release rebuilds this exact structure without its own schema code. `expected-views.json` holds the normalized Planned list (5 items) and the 5 Details. Checks: a second freeze is refused ("committed fixtures are never regenerated"); altering the snapshot, or one stored Thesis in the dump, each made `verify:fixtures` fail.

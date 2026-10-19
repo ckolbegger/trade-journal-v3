@@ -1,0 +1,931 @@
+{
+  "schemaVersion": 1,
+  "generatorVersion": 1,
+  "asOf": "2026-10-16T21:00:00Z",
+  "databases": {
+    "tj-root": {
+      "version": 1,
+      "stores": {
+        "diagnostics": {
+          "keyPath": "id",
+          "autoIncrement": false,
+          "indexes": [],
+          "records": []
+        },
+        "pointer": {
+          "keyPath": "key",
+          "autoIncrement": false,
+          "indexes": [],
+          "records": [
+            {
+              "key": "current",
+              "databaseName": "tj-ws-fx-0003"
+            }
+          ]
+        }
+      }
+    },
+    "tj-ws-fx-0003": {
+      "version": 1,
+      "stores": {
+        "catalog": {
+          "keyPath": "id",
+          "autoIncrement": false,
+          "indexes": [],
+          "records": [
+            {
+              "id": "fx-0001",
+              "kind": "Strategy",
+              "label": "Long Stock",
+              "normalizedLabel": "long stock",
+              "active": true,
+              "origin": "Seeded",
+              "recordRevision": 1,
+              "productKey": "strategy.long-stock",
+              "shape": {
+                "roles": [
+                  {
+                    "side": "Long",
+                    "instrument": "Stock",
+                    "ratio": 1
+                  }
+                ]
+              },
+              "revision": 1
+            },
+            {
+              "id": "fx-0004",
+              "label": "Fidelity",
+              "normalizedLabel": "fidelity",
+              "active": true,
+              "origin": "Trader",
+              "recordRevision": 1,
+              "kind": "Institution",
+              "revision": 2
+            },
+            {
+              "id": "fx-0005",
+              "label": "Charles Schwab",
+              "normalizedLabel": "charles schwab",
+              "active": true,
+              "origin": "Trader",
+              "recordRevision": 1,
+              "kind": "Institution",
+              "revision": 3
+            },
+            {
+              "id": "fx-0006",
+              "label": "Roth IRA",
+              "normalizedLabel": "roth ira",
+              "active": true,
+              "origin": "Trader",
+              "recordRevision": 1,
+              "kind": "Account",
+              "institutionId": "fx-0004",
+              "revision": 4
+            },
+            {
+              "id": "fx-0007",
+              "label": "Individual",
+              "normalizedLabel": "individual",
+              "active": true,
+              "origin": "Trader",
+              "recordRevision": 1,
+              "kind": "Account",
+              "institutionId": "fx-0004",
+              "revision": 5
+            },
+            {
+              "id": "fx-0008",
+              "label": "Brokerage",
+              "normalizedLabel": "brokerage",
+              "active": true,
+              "origin": "Trader",
+              "recordRevision": 1,
+              "kind": "Account",
+              "institutionId": "fx-0005",
+              "revision": 6
+            }
+          ]
+        },
+        "journalDefinitions": {
+          "keyPath": "id",
+          "autoIncrement": false,
+          "indexes": [],
+          "records": [
+            {
+              "id": "fx-0002",
+              "entryTypeKey": "entry-type.plan-reflection",
+              "revisionNumber": 1,
+              "prompts": [
+                {
+                  "id": "prompt.plan-reflection.thesis",
+                  "kind": "Text",
+                  "text": "Why this trade, why now?",
+                  "required": true,
+                  "role": "Thesis"
+                },
+                {
+                  "id": "prompt.plan-reflection.invalidation",
+                  "kind": "Text",
+                  "text": "What would invalidate the thesis?",
+                  "required": true,
+                  "role": "Invalidation"
+                },
+                {
+                  "id": "prompt.plan-reflection.conviction",
+                  "kind": "Scale",
+                  "text": "Conviction",
+                  "required": false,
+                  "min": 1,
+                  "max": 5
+                },
+                {
+                  "id": "prompt.plan-reflection.primary-emotion",
+                  "kind": "SingleSelect",
+                  "text": "Primary emotion",
+                  "required": false,
+                  "options": [
+                    {
+                      "id": "option.plan-reflection.primary-emotion.calm",
+                      "label": "Calm"
+                    },
+                    {
+                      "id": "option.plan-reflection.primary-emotion.eager",
+                      "label": "Eager"
+                    },
+                    {
+                      "id": "option.plan-reflection.primary-emotion.anxious",
+                      "label": "Anxious"
+                    },
+                    {
+                      "id": "option.plan-reflection.primary-emotion.fomo",
+                      "label": "FOMO"
+                    },
+                    {
+                      "id": "option.plan-reflection.primary-emotion.revenge",
+                      "label": "Revenge"
+                    },
+                    {
+                      "id": "option.plan-reflection.primary-emotion.relieved",
+                      "label": "Relieved"
+                    },
+                    {
+                      "id": "option.plan-reflection.primary-emotion.frustrated",
+                      "label": "Frustrated"
+                    },
+                    {
+                      "id": "option.plan-reflection.primary-emotion.other",
+                      "label": "Other"
+                    }
+                  ]
+                }
+              ],
+              "revision": 1
+            }
+          ]
+        },
+        "journalEntries": {
+          "keyPath": "id",
+          "autoIncrement": false,
+          "indexes": [
+            {
+              "name": "byAnchorTrade",
+              "keyPath": "anchorTradeId",
+              "unique": false,
+              "multiEntry": false
+            },
+            {
+              "name": "byObligation",
+              "keyPath": "obligationKey",
+              "unique": true,
+              "multiEntry": false
+            }
+          ],
+          "records": [
+            {
+              "id": "fx-0014",
+              "entryTypeKey": "entry-type.plan-reflection",
+              "sourceKey": "source.plan-confirmation",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0009"
+              },
+              "origin": {
+                "kind": "Plan",
+                "factId": "fx-0010"
+              },
+              "momentTime": "2026-10-12T14:00:00Z",
+              "authoredTime": "2026-10-16T21:00:00Z",
+              "obligationKey": "PlanReflection:fx-0009",
+              "anchorTradeId": "fx-0009",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0002",
+                  "responses": [
+                    {
+                      "promptId": "prompt.plan-reflection.thesis",
+                      "value": {
+                        "kind": "Text",
+                        "text": "AAPL: base breakout on rising volume."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.invalidation",
+                      "value": {
+                        "kind": "Text",
+                        "text": "A daily close below 221.00."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.conviction",
+                      "value": {
+                        "kind": "Scale",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.plan-reflection.primary-emotion.calm"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-16T21:00:00Z"
+                }
+              ],
+              "revision": 7
+            },
+            {
+              "id": "fx-0020",
+              "entryTypeKey": "entry-type.plan-reflection",
+              "sourceKey": "source.plan-confirmation",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0015"
+              },
+              "origin": {
+                "kind": "Plan",
+                "factId": "fx-0016"
+              },
+              "momentTime": "2026-10-13T15:30:00Z",
+              "authoredTime": "2026-10-16T21:00:00Z",
+              "obligationKey": "PlanReflection:fx-0015",
+              "anchorTradeId": "fx-0015",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0002",
+                  "responses": [
+                    {
+                      "promptId": "prompt.plan-reflection.thesis",
+                      "value": {
+                        "kind": "Text",
+                        "text": "MSFT: base breakout on rising volume."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.invalidation",
+                      "value": {
+                        "kind": "Text",
+                        "text": "A daily close below 402.50."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.conviction",
+                      "value": {
+                        "kind": "Scale",
+                        "value": 3
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.plan-reflection.primary-emotion.eager"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-16T21:00:00Z"
+                }
+              ],
+              "revision": 8
+            },
+            {
+              "id": "fx-0026",
+              "entryTypeKey": "entry-type.plan-reflection",
+              "sourceKey": "source.plan-confirmation",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0021"
+              },
+              "origin": {
+                "kind": "Plan",
+                "factId": "fx-0022"
+              },
+              "momentTime": "2026-10-14T13:45:00Z",
+              "authoredTime": "2026-10-16T21:00:00Z",
+              "obligationKey": "PlanReflection:fx-0021",
+              "anchorTradeId": "fx-0021",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0002",
+                  "responses": [
+                    {
+                      "promptId": "prompt.plan-reflection.thesis",
+                      "value": {
+                        "kind": "Text",
+                        "text": "NVDA: base breakout on rising volume."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.invalidation",
+                      "value": {
+                        "kind": "Text",
+                        "text": "A daily close below 124.80."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.conviction",
+                      "value": {
+                        "kind": "Scale",
+                        "value": 5
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.plan-reflection.primary-emotion.anxious"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-16T21:00:00Z"
+                }
+              ],
+              "revision": 9
+            },
+            {
+              "id": "fx-0032",
+              "entryTypeKey": "entry-type.plan-reflection",
+              "sourceKey": "source.plan-confirmation",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0027"
+              },
+              "origin": {
+                "kind": "Plan",
+                "factId": "fx-0028"
+              },
+              "momentTime": "2026-10-15T16:10:00Z",
+              "authoredTime": "2026-10-16T21:00:00Z",
+              "obligationKey": "PlanReflection:fx-0027",
+              "anchorTradeId": "fx-0027",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0002",
+                  "responses": [
+                    {
+                      "promptId": "prompt.plan-reflection.thesis",
+                      "value": {
+                        "kind": "Text",
+                        "text": "COST: base breakout on rising volume."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.invalidation",
+                      "value": {
+                        "kind": "Text",
+                        "text": "A daily close below 880.00."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.conviction",
+                      "value": {
+                        "kind": "Scale",
+                        "value": 2
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.plan-reflection.primary-emotion.calm"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-16T21:00:00Z"
+                }
+              ],
+              "revision": 10
+            },
+            {
+              "id": "fx-0038",
+              "entryTypeKey": "entry-type.plan-reflection",
+              "sourceKey": "source.plan-confirmation",
+              "anchor": {
+                "kind": "Trade",
+                "tradeId": "fx-0033"
+              },
+              "origin": {
+                "kind": "Plan",
+                "factId": "fx-0034"
+              },
+              "momentTime": "2026-10-16T19:20:00Z",
+              "authoredTime": "2026-10-16T21:00:00Z",
+              "obligationKey": "PlanReflection:fx-0033",
+              "anchorTradeId": "fx-0033",
+              "versions": [
+                {
+                  "versionNumber": 1,
+                  "definitionId": "fx-0002",
+                  "responses": [
+                    {
+                      "promptId": "prompt.plan-reflection.thesis",
+                      "value": {
+                        "kind": "Text",
+                        "text": "BRK.B: base breakout on rising volume."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.invalidation",
+                      "value": {
+                        "kind": "Text",
+                        "text": "A daily close below 451.00."
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.conviction",
+                      "value": {
+                        "kind": "Scale",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "promptId": "prompt.plan-reflection.primary-emotion",
+                      "value": {
+                        "kind": "Option",
+                        "optionId": "option.plan-reflection.primary-emotion.relieved"
+                      }
+                    }
+                  ],
+                  "savedAt": "2026-10-16T21:00:00Z"
+                }
+              ],
+              "revision": 11
+            }
+          ]
+        },
+        "journalTypes": {
+          "keyPath": "id",
+          "autoIncrement": false,
+          "indexes": [],
+          "records": [
+            {
+              "id": "entry-type.plan-reflection",
+              "kind": "EntryType",
+              "productKey": "entry-type.plan-reflection",
+              "label": "Plan Reflection",
+              "revision": 1
+            },
+            {
+              "id": "source.plan-confirmation",
+              "kind": "Source",
+              "productKey": "source.plan-confirmation",
+              "label": "Plan Confirmation",
+              "revision": 1
+            }
+          ]
+        },
+        "meta": {
+          "keyPath": "key",
+          "autoIncrement": false,
+          "indexes": [],
+          "records": [
+            {
+              "key": "catalog",
+              "catalogRevision": 6,
+              "revision": 6
+            },
+            {
+              "key": "content",
+              "contentRevision": 11
+            },
+            {
+              "key": "journal",
+              "journalRevision": 6,
+              "revision": 11
+            },
+            {
+              "key": "schema",
+              "schemaVersion": 1
+            },
+            {
+              "key": "settings",
+              "timeZone": "America/New_York",
+              "settingsRevision": 1,
+              "revision": 1
+            }
+          ]
+        },
+        "trades": {
+          "keyPath": "tradeId",
+          "autoIncrement": false,
+          "indexes": [
+            {
+              "name": "byLifecycle",
+              "keyPath": [
+                "lifecycle",
+                "planTime",
+                "tradeId"
+              ],
+              "unique": false,
+              "multiEntry": false
+            }
+          ],
+          "records": [
+            {
+              "tradeId": "fx-0009",
+              "accountId": "fx-0006",
+              "strategyId": "fx-0001",
+              "lifecycle": "Planned",
+              "planTime": "2026-10-12T14:00:00Z",
+              "underlying": "AAPL",
+              "factRevision": 1,
+              "facts": [
+                {
+                  "factId": "fx-0010",
+                  "kind": "Plan",
+                  "recordedSequence": 1,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "underlying": "AAPL",
+                        "economicTime": "2026-10-12T14:00:00Z",
+                        "thesis": "AAPL: base breakout on rising volume.",
+                        "invalidation": "A daily close below 221.00."
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0011",
+                  "kind": "PlannedLeg",
+                  "recordedSequence": 2,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "side": "Long",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "AAPL"
+                        },
+                        "quantity": "50",
+                        "intendedEntry": "228.4"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0012",
+                  "kind": "Stop",
+                  "recordedSequence": 3,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "221"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0013",
+                  "kind": "Target",
+                  "recordedSequence": 4,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "245"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "revision": 7
+            },
+            {
+              "tradeId": "fx-0015",
+              "accountId": "fx-0007",
+              "strategyId": "fx-0001",
+              "lifecycle": "Planned",
+              "planTime": "2026-10-13T15:30:00Z",
+              "underlying": "MSFT",
+              "factRevision": 1,
+              "facts": [
+                {
+                  "factId": "fx-0016",
+                  "kind": "Plan",
+                  "recordedSequence": 1,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "underlying": "MSFT",
+                        "economicTime": "2026-10-13T15:30:00Z",
+                        "thesis": "MSFT: base breakout on rising volume.",
+                        "invalidation": "A daily close below 402.50."
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0017",
+                  "kind": "PlannedLeg",
+                  "recordedSequence": 2,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "side": "Long",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "MSFT"
+                        },
+                        "quantity": "30",
+                        "intendedEntry": "415.1"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0018",
+                  "kind": "Stop",
+                  "recordedSequence": 3,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "402.5"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0019",
+                  "kind": "Target",
+                  "recordedSequence": 4,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "440"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "revision": 8
+            },
+            {
+              "tradeId": "fx-0021",
+              "accountId": "fx-0008",
+              "strategyId": "fx-0001",
+              "lifecycle": "Planned",
+              "planTime": "2026-10-14T13:45:00Z",
+              "underlying": "NVDA",
+              "factRevision": 1,
+              "facts": [
+                {
+                  "factId": "fx-0022",
+                  "kind": "Plan",
+                  "recordedSequence": 1,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "underlying": "NVDA",
+                        "economicTime": "2026-10-14T13:45:00Z",
+                        "thesis": "NVDA: base breakout on rising volume.",
+                        "invalidation": "A daily close below 124.80."
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0023",
+                  "kind": "PlannedLeg",
+                  "recordedSequence": 2,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "side": "Long",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "NVDA"
+                        },
+                        "quantity": "120",
+                        "intendedEntry": "131.25"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0024",
+                  "kind": "Stop",
+                  "recordedSequence": 3,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "124.8"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0025",
+                  "kind": "Target",
+                  "recordedSequence": 4,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "149.9"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "revision": 9
+            },
+            {
+              "tradeId": "fx-0027",
+              "accountId": "fx-0006",
+              "strategyId": "fx-0001",
+              "lifecycle": "Planned",
+              "planTime": "2026-10-15T16:10:00Z",
+              "underlying": "COST",
+              "factRevision": 1,
+              "facts": [
+                {
+                  "factId": "fx-0028",
+                  "kind": "Plan",
+                  "recordedSequence": 1,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "underlying": "COST",
+                        "economicTime": "2026-10-15T16:10:00Z",
+                        "thesis": "COST: base breakout on rising volume.",
+                        "invalidation": "A daily close below 880.00."
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0029",
+                  "kind": "PlannedLeg",
+                  "recordedSequence": 2,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "side": "Long",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "COST"
+                        },
+                        "quantity": "10",
+                        "intendedEntry": "905"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0030",
+                  "kind": "Stop",
+                  "recordedSequence": 3,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "880"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0031",
+                  "kind": "Target",
+                  "recordedSequence": 4,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "960"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "revision": 10
+            },
+            {
+              "tradeId": "fx-0033",
+              "accountId": "fx-0007",
+              "strategyId": "fx-0001",
+              "lifecycle": "Planned",
+              "planTime": "2026-10-16T19:20:00Z",
+              "underlying": "BRK.B",
+              "factRevision": 1,
+              "facts": [
+                {
+                  "factId": "fx-0034",
+                  "kind": "Plan",
+                  "recordedSequence": 1,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "underlying": "BRK.B",
+                        "economicTime": "2026-10-16T19:20:00Z",
+                        "thesis": "BRK.B: base breakout on rising volume.",
+                        "invalidation": "A daily close below 451.00."
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0035",
+                  "kind": "PlannedLeg",
+                  "recordedSequence": 2,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "side": "Long",
+                        "instrument": {
+                          "kind": "Stock",
+                          "symbol": "BRK.B"
+                        },
+                        "quantity": "25",
+                        "intendedEntry": "462.75"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0036",
+                  "kind": "Stop",
+                  "recordedSequence": 3,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "451"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "factId": "fx-0037",
+                  "kind": "Target",
+                  "recordedSequence": 4,
+                  "versions": [
+                    {
+                      "versionNumber": 1,
+                      "value": {
+                        "kind": "UnderlyingPrice",
+                        "price": "489.5"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "revision": 11
+            }
+          ]
+        }
+      }
+    }
+  }
+}
