@@ -258,3 +258,88 @@ shares the frozen baseline is `{amount: "500", currency: "USD"}` and reward/risk
 | R3 | `npx tsc --noEmit` | exit 0 | pass |
 | R4 | `npm run lint:layers` | `98 files, 0 violations` | pass |
 | R5 | `npx eslint .` | exit 0 | pass |
+
+---
+
+## T8 — `B` `getDefinitions`: the exact Plan Reflection revision
+
+Seam: `Journal.getDefinitions` in `src/journal/definitions.ts`; suite
+`tests/journal/get-definitions.plan-reflection.test.ts` (8 cases) over the real D2-migrated store.
+
+**Red.** With the seam created as a typed not-found stub, `Tests 7 failed | 1 passed`. The seven
+failures were `expected 'NotFound' to be 'Definitions'` — the behaviour was absent. The not-found
+case itself passed immediately, because the stub happened to satisfy it; its red was **unreachable**
+in this pass.
+
+**Green.** `Tests 8 passed (8)`. The returned structure carries the four prompts in frozen order with
+their exact labels, kinds, requiredness and stable Prompt identities; the two workflow-critical roles
+on Thesis and Invalidation only; the eight closed Primary-emotion options with stable Option
+identities; and explicit 1–5 Conviction bounds. `absentEntryTypes`/`absentSources` name the six
+uninstalled fixed types and six uninstalled Sources rather than creating empty definitions.
+
+**Decision recorded.** `journal.md:49` fixes a 1–5 Scale, but D1's `PromptDefinition` carried only
+`scaleMax`. `scaleMin` is added to the type and defaults to `1` when a retained definition omits it,
+so a definition seeded before the bound existed still reads as 1–5 rather than as an invented range.
+
+---
+
+## T12 — `B` Reference Catalog manifest v2: Long Stock only in the selector
+
+Seams: `ReferenceCatalog.resolve` and `seedDefaults` in `src/catalog`; suite
+`tests/catalog/resolve.new-selection.test.ts` (9 cases).
+
+**Red.** First run `Tests 9 failed (9)`: the two `resolve` binding cases were
+`expected 'Rejected' to be 'Resolved'`, the two issue cases `expected [] to include
+'AccountArchived'`/`'StrategyRetired'`, and the five seed cases threw
+`Cannot read properties of undefined (reading 'strategies')` — the v2 manifest was not yet exported.
+That last group is a **harness** failure, not valid red evidence; it was repaired by exporting
+`CATALOG_SEED_MANIFEST_V2` from `src/catalog/index.ts` before the production change.
+
+**Green.** `Tests 9 passed (9)`. Manifest v2 advances the declared version while adding no Catalog
+identity v1 did not already seed (decision PD15), so a v1 Workspace re-seeds to zero additions with
+an unchanged `referenceCatalog` revision. `resolve` binds the Account and the immutable Long Stock
+shape under one snapshot, rejects an archived Account or retired Strategy with a typed identity-naming
+issue, and reports `SnapshotConflict` with no bindings when the expected snapshot moved.
+
+---
+
+## T11 — `B` Journal manifest v2 seed detail for the Plan Reflection definition
+
+Seams: `Journal.seedDefaults`, `reviseDefinition` and `getDefinitions`; suite
+`tests/journal/seed-defaults.manifest-v2.test.ts` (8 cases).
+
+**Red.** First run `Tests 8 failed (8)` with `Cannot read properties of undefined (reading
+'entryTypes')` — a **harness** failure (the v2 manifest was not exported yet), not valid red. After
+exporting it: `Tests 5 passed | 3 failed` — `expected 'NotFound' to be 'Revised'` (`reviseDefinition`
+was a stub), and `installedSources`/`absentEntryTypes` were `undefined` on the seed result. Those
+three are the valid reds; the other five passed immediately because D1's seed already provided the
+behaviour, so their red was **unreachable** in this pass.
+
+**Green.** `Tests 8 passed (8)`.
+
+**Defects found by writing the cases.** Two:
+
+1. `reviseDefinition` had to reject a revision that drops a workflow-critical role
+   (`journal.md:106`). The first draft of the trader-revision case removed Invalidation, which is
+   *not* a legal revision; the case was corrected and the guard implemented, returning a typed
+   `Rejected` that names the lost role.
+2. `getDefinitions` had to find a retained exact revision, so `reviseDefinition` now keeps the
+   superseded form in `revisions` and `getDefinitions` searches it — a reworded definition stays
+   readable by its old revision number.
+
+**Manifest v2 content.** The Journal side pins the same two fixed identities as v1 with explicit
+Conviction bounds (`scaleMin: 1`, `scaleMax: 5`) and repeats the Plan Confirmation Source unchanged.
+It creates no Entry Type and no Source that v1 did not declare, so the seeded set stays a subset of
+the seven canonical identities and the six uninstalled types and six uninstalled Sources are reported
+absent.
+
+
+### Commit — T8 + T11 + T12 (definitions, Journal seed v2, Catalog v2)
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| R1 | `npx vitest run` | `Test Files 36 passed (36)`, `Tests 249 passed (249)` | pass |
+| R2 | `npx playwright test` | `132 passed (1.9m)` | pass |
+| R3 | `npx tsc --noEmit` | exit 0 | pass |
+| R4 | `npm run lint:layers` | `103 files, 0 violations` | pass |
+| R5 | `npx eslint .` | exit 0 | pass |

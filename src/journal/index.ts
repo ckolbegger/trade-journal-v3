@@ -1,9 +1,14 @@
 import type { RuntimeNotWritable } from "../results";
 import type { TransactionSeam } from "../persistence/indexeddb/transaction";
+import { FIXED_ENTRY_TYPE_KEYS, FIXED_SOURCE_KEYS } from "./definitions";
 import type { JournalSeedManifest } from "./seedManifest";
 
 export type { JournalSeedManifest } from "./seedManifest";
-export { SEED_MANIFEST_FULL, SEED_MANIFEST_V1 } from "./seedManifest";
+export { SEED_MANIFEST_FULL, SEED_MANIFEST_V1, SEED_MANIFEST_V2 } from "./seedManifest";
+export { getDefinitions } from "./definitions";
+export { reviseDefinition } from "./reviseDefinition";
+export type { EntryDefinitionSet, EntryTypeDefinition, EntryDefinitionPrompt } from "./definitions";
+export type { ReviseEntryDefinitionCommand, ReviseEntryDefinitionResult } from "./reviseDefinition";
 
 const JOURNAL_STORE = "journal";
 
@@ -15,6 +20,11 @@ export type JournalSeedResult =
       readonly additions: readonly string[];
       readonly entryTypes: number;
       readonly sources: number;
+      /** The Sources this seed actually installed, in stable-key order. */
+      readonly installedSources: readonly string[];
+      /** Fixed product identities this release has not installed, named rather than faked. */
+      readonly absentEntryTypes: readonly string[];
+      readonly absentSources: readonly string[];
     }
   | {
       readonly outcome: "SeedConflict";
@@ -156,6 +166,7 @@ export async function seedDefaults(
     }
   }
 
+  const installed = await installedIdentities(seam);
   return {
     outcome: "Seeded",
     seedVersion: manifest.version,
@@ -163,6 +174,9 @@ export async function seedDefaults(
     additions: plan.additionKeys,
     entryTypes: manifest.entryTypes.length,
     sources: manifest.sources.length,
+    installedSources: installed.sources,
+    absentEntryTypes: FIXED_ENTRY_TYPE_KEYS.filter((key) => !installed.entryTypes.includes(key)),
+    absentSources: FIXED_SOURCE_KEYS.filter((key) => !installed.sources.includes(key)),
   };
 }
 
@@ -181,4 +195,21 @@ export function normalizedJournalManifest(rows: readonly Record<string, unknown>
         : { writingPath: row.writingPath }),
     }))
     .sort((left, right) => String(left.id).localeCompare(String(right.id)));
+}
+
+async function installedIdentities(
+  seam: TransactionSeam,
+): Promise<{ entryTypes: string[]; sources: string[] }> {
+  const rows = await seam.snapshot([JOURNAL_STORE]);
+  const entryTypes = rows
+    .rows(JOURNAL_STORE)
+    .filter((row) => row.kind === "entryType")
+    .map((row) => String(row.stableKey))
+    .sort();
+  const sources = rows
+    .rows(JOURNAL_STORE)
+    .filter((row) => row.kind === "source")
+    .map((row) => String(row.stableKey))
+    .sort();
+  return { entryTypes, sources };
 }

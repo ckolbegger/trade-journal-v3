@@ -3,7 +3,10 @@ import type { RuntimeNotWritable } from "../results";
 import type { CatalogSeedManifest, StrategyShape } from "./seedManifest";
 
 export type { CatalogSeedManifest, StrategyShape } from "./seedManifest";
-export { CATALOG_SEED_MANIFEST_V1 } from "./seedManifest";
+export {
+  CATALOG_SEED_MANIFEST_V1,
+  CATALOG_SEED_MANIFEST_V2,
+} from "./seedManifest";
 
 const CATALOG_STORE = "referenceCatalog";
 
@@ -216,5 +219,132 @@ export async function seedDefaults(
     additions: plan.additionKeys,
     catalog,
     selectableAccounts: catalog.accounts,
+  };
+}
+
+/** The one selection mode D2 resolves: a new Account and Strategy under one Catalog snapshot. */
+export type CatalogSelectionMode = "NewSelection";
+
+export interface ResolveSelectionRequest {
+  readonly accountId: string;
+  readonly strategyStableKey: string;
+  readonly mode: CatalogSelectionMode;
+  /** When supplied, a snapshot that has moved since it was read is a conflict with no bindings. */
+  readonly expectedSnapshotRevision?: number;
+}
+
+export type CatalogBindingIssueCode =
+  | "AccountArchived"
+  | "AccountUnknown"
+  | "StrategyRetired"
+  | "StrategyUnknown";
+
+export interface CatalogBindingIssue {
+  readonly code: CatalogBindingIssueCode;
+  readonly identity: string;
+  readonly detail: string;
+}
+
+export interface BoundAccount {
+  readonly id: string;
+  readonly label: string;
+  readonly institutionId: string;
+}
+
+export interface BoundStrategy {
+  readonly stableKey: string;
+  readonly label: string;
+  readonly shape: StrategyShape;
+}
+
+export type ResolveSelectionResult =
+  | {
+      readonly outcome: "Resolved";
+      readonly snapshotRevision: number;
+      readonly account: BoundAccount;
+      readonly strategy: BoundStrategy;
+    }
+  | { readonly outcome: "Rejected"; readonly issues: readonly CatalogBindingIssue[] }
+  | {
+      readonly outcome: "SnapshotConflict";
+      readonly expected: number;
+      readonly current: number;
+    };
+
+/**
+ * Resolve an Account and a Strategy as bound new selections under one Catalog snapshot. An archived
+ * Account or retired Strategy is a typed rejection rather than a silent fallback, and a snapshot that
+ * moved since the caller read it is a conflict with no bindings.
+ */
+export async function resolve(
+  seam: TransactionSeam,
+  request: ResolveSelectionRequest,
+): Promise<ResolveSelectionResult> {
+  const snapshot = await seam.snapshot([CATALOG_STORE, "workspaceMeta"]);
+  const rows = snapshot.rows(CATALOG_STORE) as readonly CatalogRecord[];
+  const revisions =
+    (snapshot.rows("workspaceMeta").find((row) => row.key === "revisions")?.value as
+      | Record<string, number>
+      | undefined) ?? {};
+  const current = revisions[CATALOG_STORE] ?? 0;
+
+  if (
+    request.expectedSnapshotRevision !== undefined &&
+    request.expectedSnapshotRevision !== current
+  ) {
+    return { outcome: "SnapshotConflict", expected: request.expectedSnapshotRevision, current };
+  }
+
+  const issues: CatalogBindingIssue[] = [];
+
+  const account = rows.find((row) => row.kind === "account" && row.id === request.accountId);
+  if (account === undefined) {
+    issues.push({
+      code: "AccountUnknown",
+      identity: request.accountId,
+      detail: `no Account ${request.accountId} exists in this Catalog`,
+    });
+  } else if (account.retired === true) {
+    issues.push({
+      code: "AccountArchived",
+      identity: request.accountId,
+      detail: `the Account ${account.label} is archived and unavailable for a new selection`,
+    });
+  }
+
+  const strategy = rows.find(
+    (row) => row.kind === "strategy" && (row.stableKey ?? row.id) === request.strategyStableKey,
+  );
+  if (strategy === undefined) {
+    issues.push({
+      code: "StrategyUnknown",
+      identity: request.strategyStableKey,
+      detail: `no Strategy ${request.strategyStableKey} exists in this Catalog`,
+    });
+  } else if (strategy.retired === true) {
+    issues.push({
+      code: "StrategyRetired",
+      identity: request.strategyStableKey,
+      detail: `the Strategy ${strategy.label} is retired and unavailable for a new selection`,
+    });
+  }
+
+  if (issues.length > 0 || account === undefined || strategy === undefined) {
+    return { outcome: "Rejected", issues };
+  }
+
+  return {
+    outcome: "Resolved",
+    snapshotRevision: current,
+    account: {
+      id: account.id,
+      label: account.label,
+      institutionId: account.parentId ?? "",
+    },
+    strategy: {
+      stableKey: strategy.stableKey ?? strategy.id,
+      label: strategy.label,
+      shape: strategy.shape as StrategyShape,
+    },
   };
 }

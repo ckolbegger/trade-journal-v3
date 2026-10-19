@@ -12,6 +12,7 @@ export interface PromptDefinition {
   readonly required: boolean;
   readonly semanticRole?: "thesis" | "invalidation" | "revision-rationale";
   readonly options?: readonly PromptOption[];
+  readonly scaleMin?: number;
   readonly scaleMax?: number;
 }
 
@@ -114,4 +115,51 @@ export const SEED_MANIFEST_FULL: JournalSeedManifest = {
     { stableKey: "source.trade-detail", label: "Trade Detail", writingPath: "trade-detail" },
     { stableKey: "source.journal", label: "Journal", writingPath: "journal" },
   ],
+};
+
+/**
+ * Manifest v2 pins the exact initial Plan Reflection definition with its explicit 1–5 Conviction
+ * bounds and repeats the v1 fixed identities unchanged. It creates no Entry Type and no Source that
+ * v1 did not already declare; the other six fixed types and six Sources stay absent until D17.
+ */
+export const SEED_MANIFEST_V2: JournalSeedManifest = {
+  version: "journal-seed-v2",
+  entryTypes: [
+    {
+      stableKey: "entryType.plan-reflection",
+      label: "Plan Reflection",
+      prompts: [
+        {
+          stableKey: "prompt.plan-reflection.thesis",
+          label: "Why this trade, why now?",
+          kind: "text",
+          required: true,
+          semanticRole: "thesis",
+        },
+        {
+          stableKey: "prompt.plan-reflection.invalidation",
+          label: "What would invalidate the thesis?",
+          kind: "text",
+          required: true,
+          semanticRole: "invalidation",
+        },
+        {
+          stableKey: "prompt.plan-reflection.conviction",
+          label: "Conviction",
+          kind: "scale",
+          required: false,
+          scaleMin: 1,
+          scaleMax: 5,
+        },
+        {
+          stableKey: "prompt.plan-reflection.primary-emotion",
+          label: "Primary emotion",
+          kind: "singleSelect",
+          required: false,
+          options: EMOTIONS,
+        },
+      ],
+    },
+  ],
+  sources: SEED_MANIFEST_V1.sources,
 };

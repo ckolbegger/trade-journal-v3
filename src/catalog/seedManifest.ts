@@ -38,3 +38,14 @@ export const CATALOG_SEED_MANIFEST_V1: CatalogSeedManifest = {
     },
   ],
 };
+
+/**
+ * Manifest v2. The Catalog side adds no identity that v1 did not already seed (decision PD15); the
+ * version advances because the Journal side installs the exact Plan Reflection definition. The
+ * remaining ten Strategies, the reason taxonomies and the IdeaSource Tag Type are not seeded until
+ * D8, D9, D11 and D12, so their absence is never presented as a domain `Unavailable`.
+ */
+export const CATALOG_SEED_MANIFEST_V2: CatalogSeedManifest = {
+  version: "catalog-seed-v2",
+  strategies: CATALOG_SEED_MANIFEST_V1.strategies,
+};
