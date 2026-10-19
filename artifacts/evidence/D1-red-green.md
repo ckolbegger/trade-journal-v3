@@ -298,3 +298,27 @@ same transaction, resolves on `oncomplete` and rejects on `onabort`, and offers 
 `snapshot(stores)` path. The browser harness exposes the seam to the real-engine spec with a Writable
 gate; product code never uses that bridge. The Journal-participant rollback proof is deferred to D2 by
 PD3 item 5.
+
+---
+
+## T13 — `B` Optimistic revisions and typed conflict results
+
+Each red was observed against the named defect (temporarily applied, then restored) or against an absent
+module for a new file's first case.
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T13.1 | commit and return the new record revision when the expected revision equals the current one | `npx vitest run tests/persistence/revision-committed.test.ts` — a matching expectation was reported as stale: `Conflict` instead of `Committed` | same command — 1 passed; revision `trade-1@2` and the post-commit subject |
+| T13.2 | a typed Conflict carrying the current revision and the changed domains, and write nothing, when the expected revision is stale | `npx vitest run tests/persistence/revision-conflict.test.ts` — the stale command overwrote the record (`Committed` with `price: "99"`) | same command — 1 passed; `Conflict { current: trade-1@2, changedDomains: ["price","quantity"] }` and the record still at `price: "11"` |
+| T13.3 | reject a query snapshot token where a mutation revision is required with WrongBindingKind and no write | `npx vitest run tests/persistence/revision-kind.test.ts` — the token was accepted and produced a `Conflict` instead of a kind rejection | same command — 1 passed with `{ expected: "querySnapshot", required: "recordRevision" }` and no write |
+| T13.4 | preserve fact identity while appending exactly one immutable version when a retained reference is corrected | `npx vitest run tests/persistence/revision-versions.test.ts` — the correction replaced the version chain instead of appending | same command — 1 passed; the same `trade-1` identity carries `[{revision:1,…},{revision:2,…}]` |
+| T13.5 | increment the Workspace content revision exactly once per committed semantic command even when several stores participate | `npx vitest run tests/persistence/revision-content.test.ts` — the counter was incremented once per participant (3 for one command) | same command — 1 passed; the first command is content revision 1 and the second 2, with three stores participating |
+| T13.6 | leave every revision unchanged for each expected no-write result — Rejected, Conflict and RuntimeNotWritable | `npx vitest run tests/persistence/revision-unchanged.test.ts` — the Conflict branch wrote before returning, so the store fingerprint changed | same command — 1 passed for `Conflict`, `WrongBindingKind`, `Rejected` and `RuntimeNotWritable`; the store and revision rows are byte-identical |
+| T13.7 | return the canonical post-commit representation of every directly changed subject so the caller renders without a follow-up read | `npx vitest run tests/persistence/revision-postcommit.test.ts` — the result carried only `{ id }` | same command — 1 passed; `subject` deep-equals the persisted row and the revision and content revision are present |
+
+The revisioned layer distinguishes binding kinds, rejects a `querySnapshot` token as a mutation binding,
+reads the current revision through the seam's snapshot path, writes one version per correction under the
+same identity, and requests the `workspaceContentRevision` counter once per command so the seam increments
+it once inside the same transaction. The test harness's own first fingerprint was vacuous
+(`JSON.stringify` dropped the snapshot's `rows` function); it was corrected to serialize the actual rows
+before the red was accepted.

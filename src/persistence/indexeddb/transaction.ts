@@ -9,10 +9,16 @@ export interface ParticipantEffect {
 
 export interface CommitRequest {
   readonly participants: readonly ParticipantEffect[];
+  /** Named Workspace counters incremented exactly once per committed command. */
+  readonly counters?: readonly string[];
 }
 
 export type CommitResult =
-  | { readonly kind: "Committed"; readonly revisions: Readonly<Record<string, number>> }
+  | {
+      readonly kind: "Committed";
+      readonly revisions: Readonly<Record<string, number>>;
+      readonly counters?: Readonly<Record<string, number>>;
+    }
   | { readonly kind: "Rejected"; readonly payload: RuntimeNotWritable };
 
 export interface ReadSnapshot {
@@ -32,6 +38,7 @@ export interface TransactionSeam {
 }
 
 const REVISIONS_KEY = "revisions";
+const COUNTERS_KEY = "counters";
 const REVISIONS_STORE = "workspaceMeta";
 
 interface GroupedEffect {
@@ -76,30 +83,49 @@ export function createTransactionSeam(
       const transaction = database.transaction(names, "readwrite");
       counters.readwriteTransactions += 1;
       let committedRevisions: Record<string, number> | undefined;
+      let committedCounters: Record<string, number> | undefined;
+      const namedCounters = request.counters ?? [];
 
       transaction.oncomplete = () => {
         const revisions: Record<string, number> = {};
         for (const store of stores) revisions[store] = committedRevisions?.[store] ?? 0;
-        resolve({ kind: "Committed", revisions });
+        const result: CommitResult =
+          namedCounters.length === 0
+            ? { kind: "Committed", revisions }
+            : { kind: "Committed", revisions, counters: committedCounters ?? {} };
+        resolve(result);
       };
       transaction.onabort = () =>
         reject(transaction.error ?? new Error("the transaction aborted"));
 
       const meta = transaction.objectStore(REVISIONS_STORE);
       const revisionsRequest = meta.get(REVISIONS_KEY);
-      revisionsRequest.onerror = () => {
+      const countersRequest = meta.get(COUNTERS_KEY);
+      let pendingReads = 2;
+      let revisionsStored: Record<string, number> = {};
+      let countersStored: Record<string, number> = {};
+
+      const fail = (error: unknown): void => {
         try {
           transaction.abort();
         } catch {
-          reject(revisionsRequest.error ?? new Error("the revision read failed"));
+          // The transaction already aborted on its own.
         }
+        reject(error instanceof Error ? error : new Error(String(error)));
       };
-      revisionsRequest.onsuccess = () => {
-        const stored =
-          (revisionsRequest.result as { value?: Record<string, number> } | undefined)?.value ?? {};
-        const next: Record<string, number> = { ...stored };
+
+      const write = (): void => {
+        const next: Record<string, number> = { ...revisionsStored };
         for (const store of stores) next[store] = (next[store] ?? 0) + 1;
         meta.put({ key: REVISIONS_KEY, value: next });
+
+        const nextCounters: Record<string, number> = { ...countersStored };
+        for (const counter of namedCounters) {
+          nextCounters[counter] = (nextCounters[counter] ?? 0) + 1;
+        }
+        if (namedCounters.length > 0) {
+          meta.put({ key: COUNTERS_KEY, value: nextCounters });
+        }
 
         try {
           for (const [storeName, effect] of grouped) {
@@ -108,15 +134,29 @@ export function createTransactionSeam(
             for (const key of effect.remove) store.delete(key);
           }
         } catch (error) {
-          try {
-            transaction.abort();
-          } catch {
-            // The transaction already aborted on its own.
-          }
-          reject(error);
+          fail(error);
           return;
         }
         committedRevisions = next;
+        committedCounters = nextCounters;
+      };
+
+      const readDone = (): void => {
+        pendingReads -= 1;
+        if (pendingReads === 0) write();
+      };
+
+      revisionsRequest.onerror = () => fail(revisionsRequest.error);
+      revisionsRequest.onsuccess = () => {
+        revisionsStored =
+          (revisionsRequest.result as { value?: Record<string, number> } | undefined)?.value ?? {};
+        readDone();
+      };
+      countersRequest.onerror = () => fail(countersRequest.error);
+      countersRequest.onsuccess = () => {
+        countersStored =
+          (countersRequest.result as { value?: Record<string, number> } | undefined)?.value ?? {};
+        readDone();
       };
     });
   }
