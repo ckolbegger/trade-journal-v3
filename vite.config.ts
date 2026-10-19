@@ -14,7 +14,6 @@ export default defineConfig(({ mode }) => {
     preview: { port, strictPort: true },
     test: {
       include: ['src/**/*.test.{ts,tsx}'],
-      passWithNoTests: true,
     },
   };
 });
