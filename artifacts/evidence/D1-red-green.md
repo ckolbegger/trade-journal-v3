@@ -156,3 +156,22 @@ helper (PD10). Quantity carries its instrument class so the codec can revalidate
 read back from the real store, asserted on durable bytes") needs the schema and seam, so it runs from T9
 and joins the cumulative suite at T11, exactly as the task text allows. The codec itself is proven here;
 the durable bytes assertion is recorded with T9/T11.
+
+---
+
+## T7 — `S` Browser-host capability port
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| V7.1 | `npx tsc --noEmit`; `grep -rn "StorageManager\|CacheStorage\|FileSystemHandle\|\bCache\b" src --include=*.ts \| grep -v "^src/platform/host/"` | typecheck exits 0; the grep has no output, so no raw host type crosses the port boundary | pass |
+| V7.2 | `grep -rn "navigator\.\|caches\.\|registration\." src --include=*.ts \| grep -v "^src/platform/host/"` | no output (grep exit 1) | pass |
+| V7.3 | `npx vitest run tests/platform/host-port.test.ts` | exit 0; with a capability absent every operation returns typed `NotExposed`; with `persisted` present it reports `Protected` / `BestEffort(reason)` / `Unavailable(reason)` exactly; capacity, durability, control and cached bytes are asserted; nothing throws | pass |
+| V7.4 | `npx playwright test tests/browser/host-port.spec.ts --project=chromium` | exit 0; the launch protection state is recorded to `artifacts/browser/host-protection-chromium.json` (`BestEffort`, Chromium `156.0.8078.4`); a download call yields `evidence.txt` in Playwright's download directory; a file chosen through an ordinary file input is read back as `selected.txt` / `trade journal` | pass |
+| V7.5 | `npx vitest run tests/platform/host-port-no-gate.test.ts` | exit 0; the port exposes exactly the seven reported operations and its source names no readiness outcome (`Writable`, `RecoveryOnly`, `Unsupported`, `Initialization Required`) | pass |
+
+The port reports host facts only: protection, capacity, the durability request, service-worker control,
+cached asset bytes, a file download, and reading a trader-selected file. A browser harness flag
+(`window.__TRADE_JOURNAL_HARNESS__`) exposes the port to `tests/browser/host-port.spec.ts`, the same
+documented seam style as the fixed clock; product code never reads the flag. The file chooser needs a
+user activation, so the spec clicks a harness-created button and the port's input click runs inside that
+activation.
