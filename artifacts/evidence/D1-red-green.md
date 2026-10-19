@@ -781,3 +781,33 @@ inventory validator is the real one, over a real in-memory asset cache and real 
 diagnostic transaction, the catalog/journal/workspace modules, the seam and the workspace coordinator are
 all production code. No application module is mocked. The real-engine counterparts are the two Playwright
 specs above, run on Chromium 156 and WebKit 27.
+
+---
+
+## T34 — `S` Independent browser-critic gate for D1
+
+The gate used a fresh, independent critic (`d1-critic-1792376523540-fe5745be`) that did not write the
+implementation, started the production build itself, and exercised all 13 flows in §4 at 375×812 and
+1440×900. Its only repository write is `artifacts/critic/D1-report.json`.
+
+| # | Command | Observed result |
+|---|---|---|
+| V34.1 | `npm run build && npx vite preview --port $DEV_PORT` | The critic ran `npm run build && npx vite preview --port 5177` (`DEV_PORT=5177`), build `release-id e9ded512…`, served on `http://127.0.0.1:5177`, and stopped the server after the run |
+| V34.2 | `node -e "…console.log(want, have); process.exit(have===want?0:1)"` | `26 26`, exit 0 — 13 flows × 2 viewports, each with a status |
+| V34.3 | `node -e "…filter(v=>v.status!=='pass')…"` | `0`, exit 0 — no failing entry, so no defect evidence was required |
+| V34.4 | `grep -rn "AC-\|flow" artifacts/critic/D1-report.json \| grep -c "AC-"` | `23` — every flow names its acceptance scenario(s) |
+| V34.5 | `npx vitest run && npm run test:integration && npx playwright test` | `190` vitest tests pass, `132` browser tests pass on the composed run, `132` on the standalone Playwright run |
+| V34.6 | `node -e "…r.criticId, r.spawnedAfterFix, r.flows.length…"` | `d1-critic-1792376523540-fe5745be true 13`, exit 0 |
+
+All 13 flows passed at both widths: pending verification, all-pass Writable with the manifest's two
+destinations, the unconfirmed-protection warning and its one honest durability action, each single failed
+check, the simultaneous failure, Unsupported on a clean profile, Recovery Only with readable history and
+no write form, Integrity Blocked paired with Unsupported, onboarding to Ready for Trade Planning, and the
+Institution-then-Account flow with a live resize and a full restart.
+
+**Post-critic change, disclosed.** After the critic run, V34.5's full `npx vitest run` exposed a
+test-infrastructure false positive: the T3 harness scanner flagged the new `mock-guard.test.ts` because its
+own pattern definition literally contained a forbidden token. The guard's pattern was narrowed to the
+shapes T3 does not already cover, and its comment no longer contains the token. This changed no
+implementation file; the critic's report still describes the shipped product, and the complete cumulative
+suites were rerun green afterwards. No product behaviour changed, so no second critic was required.

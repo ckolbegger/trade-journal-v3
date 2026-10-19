@@ -1,0 +1,463 @@
+{
+  "deliverable": "D1",
+  "criticId": "d1-critic-1792376523540-fe5745be",
+  "spawnedAfterFix": true,
+  "startedAt": "2026-10-19T02:22:03.540Z",
+  "command": "npm run build && npx vite preview --port 5177",
+  "port": 5177,
+  "flows": [
+    {
+      "id": "F1",
+      "name": "Readiness pending",
+      "acceptance": [
+        "AC-DEL-004",
+        "AC-UI-002"
+      ],
+      "viewports": [
+        {
+          "viewport": "narrow",
+          "status": "pass",
+          "actions": [
+            "addInitScript(harness=true, override={\"delayMs\":2500})",
+            "goto http://127.0.0.1:5177/",
+            "observed heading \"Verifying this browser\" while delayMs=2500",
+            "asserted 0 buttons, 0 nav, no empty-journal copy while pending"
+          ],
+          "observed": "Startup verification state shown; zero buttons, zero navigation, no empty-journal or ready claim, no Workspace-creation control while the delayed readiness gate was still pending."
+        },
+        {
+          "viewport": "wide",
+          "status": "pass",
+          "actions": [
+            "addInitScript(harness=true, override={\"delayMs\":2500})",
+            "goto http://127.0.0.1:5177/",
+            "observed heading \"Verifying this browser\" while delayMs=2500",
+            "asserted 0 buttons, 0 nav, no empty-journal copy while pending"
+          ],
+          "observed": "Startup verification state shown; zero buttons, zero navigation, no empty-journal or ready claim, no Workspace-creation control while the delayed readiness gate was still pending."
+        }
+      ]
+    },
+    {
+      "id": "F2",
+      "name": "All-pass Writable",
+      "acceptance": [
+        "AC-CAP-001",
+        "AC-DEL-003"
+      ],
+      "viewports": [
+        {
+          "viewport": "narrow",
+          "status": "pass",
+          "actions": [
+            "goto http://127.0.0.1:5177/",
+            "select Time zone = \"America/New_York\"",
+            "click \"Create this journal\"",
+            "observed nav[aria-label=\"Primary\"]",
+            "asserted ready status and exactly two declared destinations"
+          ],
+          "observed": "Writable initial screen reached and interactive (\"Ready to write\"); nav[aria-label=\"Primary\"] present with exactly two destinations: [\"onboarding\",\"startup\"]; no undeclared destination anywhere in the document."
+        },
+        {
+          "viewport": "wide",
+          "status": "pass",
+          "actions": [
+            "goto http://127.0.0.1:5177/",
+            "select Time zone = \"America/New_York\"",
+            "click \"Create this journal\"",
+            "observed nav[aria-label=\"Primary\"]",
+            "asserted ready status and exactly two declared destinations"
+          ],
+          "observed": "Writable initial screen reached and interactive (\"Ready to write\"); nav[aria-label=\"Primary\"] present with exactly two destinations: [\"onboarding\",\"startup\"]; no undeclared destination anywhere in the document."
+        }
+      ]
+    },
+    {
+      "id": "F3",
+      "name": "Unconfirmed storage protection",
+      "acceptance": [
+        "AC-DEL-004"
+      ],
+      "viewports": [
+        {
+          "viewport": "narrow",
+          "status": "pass",
+          "actions": [
+            "addInitScript(harness=true, override={\"protection\":{\"kind\":\"BestEffort\",\"reason\":\"not granted\"}})",
+            "goto http://127.0.0.1:5177/",
+            "select Time zone = \"America/New_York\"",
+            "click \"Create this journal\"",
+            "observed nav[aria-label=\"Primary\"]",
+            "observed the not-protected warning",
+            "click \"Keep this data on this device\"",
+            "observed durability branch: NotImproved"
+          ],
+          "observed": "Warning \"This browser may clear your journal data\" visible with the backup recommendation; exactly one durability action (\"Keep this data on this device\") was offered and clicked; honest branch \"NotImproved\" was shown (no fabricated success); 0 disabled buttons before and after."
+        },
+        {
+          "viewport": "wide",
+          "status": "pass",
+          "actions": [
+            "addInitScript(harness=true, override={\"protection\":{\"kind\":\"BestEffort\",\"reason\":\"not granted\"}})",
+            "goto http://127.0.0.1:5177/",
+            "select Time zone = \"America/New_York\"",
+            "click \"Create this journal\"",
+            "observed nav[aria-label=\"Primary\"]",
+            "observed the not-protected warning",
+            "click \"Keep this data on this device\"",
+            "observed durability branch: NotImproved"
+          ],
+          "observed": "Warning \"This browser may clear your journal data\" visible with the backup recommendation; exactly one durability action (\"Keep this data on this device\") was offered and clicked; honest branch \"NotImproved\" was shown (no fabricated success); 0 disabled buttons before and after."
+        }
+      ]
+    },
+    {
+      "id": "F4",
+      "name": "Failed diagnostic transaction",
+      "acceptance": [
+        "AC-DEL-004",
+        "AC-DEL-005"
+      ],
+      "viewports": [
+        {
+          "viewport": "narrow",
+          "status": "pass",
+          "actions": [
+            "addInitScript(harness=true, override={\"diagnosticFailure\":\"injected diagnostic failure\"})",
+            "goto http://127.0.0.1:5177/",
+            "observed failed checks: [\"Authoritative storage: the isolated diagnostic transaction failed: injected diagnostic failure\"]"
+          ],
+          "observed": "Unsupported named \"Authoritative storage\" with detail \"injected diagnostic failure\"; Retry checks and another-browser guidance present; 0 creation controls."
+        },
+        {
+          "viewport": "wide",
+          "status": "pass",
+          "actions": [
+            "addInitScript(harness=true, override={\"diagnosticFailure\":\"injected diagnostic failure\"})",
+            "goto http://127.0.0.1:5177/",
+            "observed failed checks: [\"Authoritative storage: the isolated diagnostic transaction failed: injected diagnostic failure\"]"
+          ],
+          "observed": "Unsupported named \"Authoritative storage\" with detail \"injected diagnostic failure\"; Retry checks and another-browser guidance present; 0 creation controls."
+        }
+      ]
+    },
+    {
+      "id": "F5",
+      "name": "Insufficient capacity",
+      "acceptance": [
+        "AC-DEL-004",
+        "AC-DEL-005"
+      ],
+      "viewports": [
+        {
+          "viewport": "narrow",
+          "status": "pass",
+          "actions": [
+            "addInitScript(harness=true, override={\"capacityFreeBytes\":1})",
+            "goto http://127.0.0.1:5177/",
+            "observed failed checks: [\"Storage capacity: free capacity 1 is below the derived minimum 793088000 by 793087999 bytes\"]"
+          ],
+          "observed": "Unsupported named \"Storage capacity\"; detail \"Storage capacity: free capacity 1 is below the derived minimum 793088000 by 793087999 bytes\" states observed 1 byte, derived minimum 793088000 bytes and shortfall 793087999 bytes; 0 creation controls."
+        },
+        {
+          "viewport": "wide",
+          "status": "pass",
+          "actions": [
+            "addInitScript(harness=true, override={\"capacityFreeBytes\":1})",
+            "goto http://127.0.0.1:5177/",
+            "observed failed checks: [\"Storage capacity: free capacity 1 is below the derived minimum 793088000 by 793087999 bytes\"]"
+          ],
+          "observed": "Unsupported named \"Storage capacity\"; detail \"Storage capacity: free capacity 1 is below the derived minimum 793088000 by 793087999 bytes\" states observed 1 byte, derived minimum 793088000 bytes and shortfall 793087999 bytes; 0 creation controls."
+        }
+      ]
+    },
+    {
+      "id": "F6",
+      "name": "Missing service-worker control",
+      "acceptance": [
+        "AC-DEL-004",
+        "AC-DEL-005"
+      ],
+      "viewports": [
+        {
+          "viewport": "narrow",
+          "status": "pass",
+          "actions": [
+            "addInitScript(harness=true, override={\"workerControl\":{\"kind\":\"NotControlled\",\"reason\":\"injected\"}})",
+            "goto http://127.0.0.1:5177/",
+            "observed failed checks: [\"Application release worker: the intended release e9ded5127d72997d2cce4a829fff26987fc02dd6c4b8c2ef157e269da677acc8 does not control this page\"]"
+          ],
+          "observed": "Unsupported named \"Application release worker\"; detail \"Application release worker: the intended release e9ded5127d72997d2cce4a829fff26987fc02dd6c4b8c2ef157e269da677acc8 does not control this page\"; 0 creation controls."
+        },
+        {
+          "viewport": "wide",
+          "status": "pass",
+          "actions": [
+            "addInitScript(harness=true, override={\"workerControl\":{\"kind\":\"NotControlled\",\"reason\":\"injected\"}})",
+            "goto http://127.0.0.1:5177/",
+            "observed failed checks: [\"Application release worker: the intended release e9ded5127d72997d2cce4a829fff26987fc02dd6c4b8c2ef157e269da677acc8 does not control this page\"]"
+          ],
+          "observed": "Unsupported named \"Application release worker\"; detail \"Application release worker: the intended release e9ded5127d72997d2cce4a829fff26987fc02dd6c4b8c2ef157e269da677acc8 does not control this page\"; 0 creation controls."
+        }
+      ]
+    },
+    {
+      "id": "F7",
+      "name": "Incomplete release inventory",
+      "acceptance": [
+        "AC-DEL-004",
+        "AC-DEL-005"
+      ],
+      "viewports": [
+        {
+          "viewport": "narrow",
+          "status": "pass",
+          "actions": [
+            "addInitScript(harness=true, override={\"inventoryFailures\":[{\"kind\":\"Missing\",\"assetUrl\":\"/assets/app.js\"}]})",
+            "goto http://127.0.0.1:5177/",
+            "observed failed checks: [\"Offline release inventory: missing /assets/app.js\"]"
+          ],
+          "observed": "Unsupported named \"Offline release inventory\" and the missing entry \"/assets/app.js\"; 0 creation controls. Variant run: missing entry only; the optional corrupt-entry variant was not run."
+        },
+        {
+          "viewport": "wide",
+          "status": "pass",
+          "actions": [
+            "addInitScript(harness=true, override={\"inventoryFailures\":[{\"kind\":\"Missing\",\"assetUrl\":\"/assets/app.js\"}]})",
+            "goto http://127.0.0.1:5177/",
+            "observed failed checks: [\"Offline release inventory: missing /assets/app.js\"]"
+          ],
+          "observed": "Unsupported named \"Offline release inventory\" and the missing entry \"/assets/app.js\"; 0 creation controls. Variant run: missing entry only; the optional corrupt-entry variant was not run."
+        }
+      ]
+    },
+    {
+      "id": "F8",
+      "name": "Simultaneous failure",
+      "acceptance": [
+        "AC-DEL-004",
+        "AC-DEL-005"
+      ],
+      "viewports": [
+        {
+          "viewport": "narrow",
+          "status": "pass",
+          "actions": [
+            "addInitScript(harness=true, override={\"diagnosticFailure\":\"injected\",\"capacityFreeBytes\":1})",
+            "goto http://127.0.0.1:5177/",
+            "observed failed checks: [\"Authoritative storage: the isolated diagnostic transaction failed: injected\",\"Storage capacity: free capacity 1 is below the derived minimum 793088000 by 793087999 bytes\"]"
+          ],
+          "observed": "Unsupported listed both failed checks simultaneously: [\"Authoritative storage: the isolated diagnostic transaction failed: injected\",\"Storage capacity: free capacity 1 is below the derived minimum 793088000 by 793087999 bytes\"]; 0 creation controls and no empty-workspace/import claim."
+        },
+        {
+          "viewport": "wide",
+          "status": "pass",
+          "actions": [
+            "addInitScript(harness=true, override={\"diagnosticFailure\":\"injected\",\"capacityFreeBytes\":1})",
+            "goto http://127.0.0.1:5177/",
+            "observed failed checks: [\"Authoritative storage: the isolated diagnostic transaction failed: injected\",\"Storage capacity: free capacity 1 is below the derived minimum 793088000 by 793087999 bytes\"]"
+          ],
+          "observed": "Unsupported listed both failed checks simultaneously: [\"Authoritative storage: the isolated diagnostic transaction failed: injected\",\"Storage capacity: free capacity 1 is below the derived minimum 793088000 by 793087999 bytes\"]; 0 creation controls and no empty-workspace/import claim."
+        }
+      ]
+    },
+    {
+      "id": "F9",
+      "name": "Unsupported before any Workspace exists",
+      "acceptance": [
+        "AC-DEL-004",
+        "AC-DEL-005"
+      ],
+      "viewports": [
+        {
+          "viewport": "narrow",
+          "status": "pass",
+          "actions": [
+            "addInitScript(harness=true, override={\"capacityFreeBytes\":1})",
+            "goto http://127.0.0.1:5177/",
+            "observed failed checks: [\"Storage capacity: free capacity 1 is below the derived minimum 793088000 by 793087999 bytes\"]"
+          ],
+          "observed": "Clean-profile Unsupported showed only the failed-check reason [\"Storage capacity: free capacity 1 is below the derived minimum 793088000 by 793087999 bytes\"], \"Retry checks\" and another-browser guidance; no initialization, import or empty-workspace claim; 0 creation controls."
+        },
+        {
+          "viewport": "wide",
+          "status": "pass",
+          "actions": [
+            "addInitScript(harness=true, override={\"capacityFreeBytes\":1})",
+            "goto http://127.0.0.1:5177/",
+            "observed failed checks: [\"Storage capacity: free capacity 1 is below the derived minimum 793088000 by 793087999 bytes\"]"
+          ],
+          "observed": "Clean-profile Unsupported showed only the failed-check reason [\"Storage capacity: free capacity 1 is below the derived minimum 793088000 by 793087999 bytes\"], \"Retry checks\" and another-browser guidance; no initialization, import or empty-workspace claim; 0 creation controls."
+        }
+      ]
+    },
+    {
+      "id": "F10",
+      "name": "Recovery Only over a readable Workspace",
+      "acceptance": [
+        "AC-DEL-005"
+      ],
+      "viewports": [
+        {
+          "viewport": "narrow",
+          "status": "pass",
+          "actions": [
+            "goto http://127.0.0.1:5177/",
+            "select Time zone = \"America/New_York\"",
+            "click \"Create this journal\"",
+            "observed nav[aria-label=\"Primary\"]",
+            "click nav destination \"Set up\"",
+            "fill Institution name = \"Fidelity\"",
+            "click \"Add institution\"",
+            "addInitScript(harness=true, override={capacityFreeBytes:1}) on the reload",
+            "reload with capacityFreeBytes=1",
+            "asserted recovery reason, readable history, separate-storage statement, no write form"
+          ],
+          "observed": "Read-only recovery shown with \"Writes and Restore are disabled: …\", the readable history still lists \"Fidelity\", the separate-storage statement is present, and no write form or Add-institution control is offered."
+        },
+        {
+          "viewport": "wide",
+          "status": "pass",
+          "actions": [
+            "goto http://127.0.0.1:5177/",
+            "select Time zone = \"America/New_York\"",
+            "click \"Create this journal\"",
+            "observed nav[aria-label=\"Primary\"]",
+            "click nav destination \"Set up\"",
+            "fill Institution name = \"Fidelity\"",
+            "click \"Add institution\"",
+            "addInitScript(harness=true, override={capacityFreeBytes:1}) on the reload",
+            "reload with capacityFreeBytes=1",
+            "asserted recovery reason, readable history, separate-storage statement, no write form"
+          ],
+          "observed": "Read-only recovery shown with \"Writes and Restore are disabled: …\", the readable history still lists \"Fidelity\", the separate-storage statement is present, and no write form or Add-institution control is offered."
+        }
+      ]
+    },
+    {
+      "id": "F11",
+      "name": "Integrity Blocked over an unreadable root",
+      "acceptance": [
+        "AC-DEL-005"
+      ],
+      "viewports": [
+        {
+          "viewport": "narrow",
+          "status": "pass",
+          "actions": [
+            "addInitScript(harness=true, override={\"rootUnreadable\":true,\"capacityFreeBytes\":1})",
+            "goto http://127.0.0.1:5177/",
+            "observed buttons: [\"Retry checks\"]"
+          ],
+          "observed": "Integrity Blocked shown with \"Runtime Readiness: Unsupported\", the existing-data warning, the named failed check \"Storage capacity\", and exactly one action: \"Retry checks\"; no creation control."
+        },
+        {
+          "viewport": "wide",
+          "status": "pass",
+          "actions": [
+            "addInitScript(harness=true, override={\"rootUnreadable\":true,\"capacityFreeBytes\":1})",
+            "goto http://127.0.0.1:5177/",
+            "observed buttons: [\"Retry checks\"]"
+          ],
+          "observed": "Integrity Blocked shown with \"Runtime Readiness: Unsupported\", the existing-data warning, the named failed check \"Storage capacity\", and exactly one action: \"Retry checks\"; no creation control."
+        }
+      ]
+    },
+    {
+      "id": "F12",
+      "name": "Onboarding to Ready for Trade Planning",
+      "acceptance": [
+        "AC-REF-002",
+        "AC-CAP-001"
+      ],
+      "viewports": [
+        {
+          "viewport": "narrow",
+          "status": "pass",
+          "actions": [
+            "goto http://127.0.0.1:5177/",
+            "select Time zone = \"America/New_York\"",
+            "click \"Create this journal\"",
+            "observed nav[aria-label=\"Primary\"]",
+            "click nav destination \"Set up\"",
+            "fill Institution name = \"Fidelity\"",
+            "click \"Add institution\"",
+            "fill Account name = \"Brokerage One\"",
+            "click \"Add account\""
+          ],
+          "observed": "Landing state moved Needs Institution and Account → (still Needs after the Institution alone) → Ready for Trade Planning only after the Account existed; exactly the two entered records (Fidelity, Brokerage One) appeared, with no fictional brokerage row at any point."
+        },
+        {
+          "viewport": "wide",
+          "status": "pass",
+          "actions": [
+            "goto http://127.0.0.1:5177/",
+            "select Time zone = \"America/New_York\"",
+            "click \"Create this journal\"",
+            "observed nav[aria-label=\"Primary\"]",
+            "click nav destination \"Set up\"",
+            "fill Institution name = \"Fidelity\"",
+            "click \"Add institution\"",
+            "fill Account name = \"Brokerage One\"",
+            "click \"Add account\""
+          ],
+          "observed": "Landing state moved Needs Institution and Account → (still Needs after the Institution alone) → Ready for Trade Planning only after the Account existed; exactly the two entered records (Fidelity, Brokerage One) appeared, with no fictional brokerage row at any point."
+        }
+      ]
+    },
+    {
+      "id": "F13",
+      "name": "Institution then Account with live resize",
+      "acceptance": [
+        "AC-UI-001",
+        "AC-REF-002"
+      ],
+      "viewports": [
+        {
+          "viewport": "narrow",
+          "status": "pass",
+          "actions": [
+            "goto http://127.0.0.1:5177/",
+            "select Time zone = \"America/New_York\"",
+            "click \"Create this journal\"",
+            "observed nav[aria-label=\"Primary\"]",
+            "click nav destination \"Set up\"",
+            "focus \"Institution name\" and type \"Fidelity\"",
+            "setViewportSize 1440x900 (wide)",
+            "setViewportSize 375x812 (narrow)",
+            "fill Institution name = \"Fidelity\"",
+            "click \"Add institution\"",
+            "fill Account name = \"Brokerage One\"",
+            "click \"Add account\"",
+            "close the page and open a new page with no harness override",
+            "goto http://127.0.0.1:5177/ on the fresh page",
+            "click nav destination \"Set up\" after the restart"
+          ],
+          "observed": "Typed Institution value \"Fidelity\" and focus survived live resizes 375→1440→375 with nothing written by the resize; both identities were then created, and a fresh page with no override still showed Fidelity, Brokerage One and \"Ready for Trade Planning\"."
+        },
+        {
+          "viewport": "wide",
+          "status": "pass",
+          "actions": [
+            "goto http://127.0.0.1:5177/",
+            "select Time zone = \"America/New_York\"",
+            "click \"Create this journal\"",
+            "observed nav[aria-label=\"Primary\"]",
+            "click nav destination \"Set up\"",
+            "focus \"Institution name\" and type \"Fidelity\"",
+            "setViewportSize 375x812 (narrow)",
+            "setViewportSize 1440x900 (wide)",
+            "fill Institution name = \"Fidelity\"",
+            "click \"Add institution\"",
+            "fill Account name = \"Brokerage One\"",
+            "click \"Add account\"",
+            "close the page and open a new page with no harness override",
+            "goto http://127.0.0.1:5177/ on the fresh page",
+            "click nav destination \"Set up\" after the restart"
+          ],
+          "observed": "Typed Institution value \"Fidelity\" and focus survived live resizes 1440→375→1440 with nothing written by the resize; both identities were then created, and a fresh page with no override still showed Fidelity, Brokerage One and \"Ready for Trade Planning\"."
+        }
+      ]
+    }
+  ]
+}
