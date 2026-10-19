@@ -5,6 +5,8 @@ import type { ReadinessFailure, RuntimeNotWritable } from '../delivery/runtime-n
 import { ROUTES } from '../app/routes.ts';
 import { explainFailure } from './readiness-copy.ts';
 import { RuntimeContext } from './runtime.tsx';
+import { FirstRun } from './screens/FirstRun.tsx';
+import { OnboardingAccount } from './screens/OnboardingAccount.tsx';
 
 type Status = Awaited<ReturnType<UiFacade['Workspace']['getStatus']>>;
 
@@ -94,6 +96,13 @@ export function AppShell({ facade, screens, onRetry = () => window.location.relo
         </button>
       </main>
     );
+  }
+
+  if (status.kind === 'InitializationRequired') return <FirstRun facade={facade} onOpened={setStatus} />;
+
+  // A selectable Account comes first: nothing else is offered until onboarding completes.
+  if (status.kind === 'Ready' && status.onboarding === 'NeedsInstitutionAndAccount') {
+    return <OnboardingAccount facade={facade} onReady={() => setStatus({ ...status, onboarding: 'ReadyForTradePlanning' })} />;
   }
 
   const launchedWritable = status.kind === 'Ready';
