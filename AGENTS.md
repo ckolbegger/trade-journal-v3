@@ -63,3 +63,17 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ## 5. Surface Better Alternatives
 
 I'm always open to ideas on better ways to do things. Please don't hesitate to suggest a better way, or one that has long lasting impact over a tactical change.
+
+## 6. Test-first, and the evidence is per case
+
+"TDD" means the case is written from the specification, run, and seen to fail before the production
+behaviour exists. Do not author a module and its test file in one pass, and do not write the
+implementation and then re-establish the red by stubbing.
+
+Record one line per planned case: task id, case phrase, exact command, the red observation and why it
+failed, the green observation. A case whose red was genuinely unreachable says so and states why — and
+that is not a completed case until its task has been mutation-audited: break the behaviour it names,
+confirm that case fails, revert.
+
+Green totals and per-task prose are not evidence of per-case discrimination.
+

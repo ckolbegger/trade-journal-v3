@@ -28,6 +28,29 @@ That is an execution-environment accommodation only; no recorded command depends
 
 ---
 
+## Recorded format deviation — D2's evidence is per behaviour, not per case
+
+`D2-confirm-first-plan.md` §6 requires one record per planned case, naming the task id and the case
+phrase, the exact command, and both the red and the green observation. **D2's file does not meet that
+shape.** It records evidence per task and per behaviour, with case phrases paraphrased or summarised:
+0 of the 155 planned case phrases appear verbatim.
+
+This is a deviation in the *record*, not in the plan. The plan is unchanged, no seam or scenario moved,
+and no freeze revision is opened — nothing about the deliverable itself differs.
+
+**What it costs.** A reader cannot mechanically confirm that all 155 cases carry a red observation, and
+must take the per-task summaries on trust.
+
+**What mitigates it.** Every one of the ten tasks whose red was re-established or unreachable
+(T2, T3, T4, T6, T7, T8, T9, T10, T11, T12) was mutation-audited — 40 mutations, recorded below. That
+is a stronger discrimination check than the record would be: it proves each audited case fails when the
+behaviour it names is deliberately broken, and it found four real gaps plus one wholly uncovered
+branch. T1, T5 and T13–T20 were red-first or verified by the critic and integration layers.
+
+**From D3 onward** the per-case record format is required by `AGENTS.md` §6.
+
+---
+
 ## Wave-2 confirmation (before T1)
 
 Freeze record §12 requires the fifteen §7 seams to be compared against what they actually export,
