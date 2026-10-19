@@ -127,3 +127,35 @@ export function positionValue(
     currency,
   });
 }
+
+/** The exact signed distance between two prices. */
+export function subtractPrice(left: Price, right: Price): ValueResult<Price> {
+  const leftAmount = exact(left.amount, "price.amount");
+  if (!leftAmount.ok) return fail(leftAmount.error);
+  const rightAmount = exact(right.amount, "price.amount");
+  if (!rightAmount.ok) return fail(rightAmount.error);
+  return ok({ amount: new Decimal(leftAmount.value).minus(rightAmount.value).toFixed() });
+}
+
+/** Ordering over two same-currency amounts: -1, 0 or 1. */
+export function compareMoney(left: Money, right: Money): ValueResult<number> {
+  const currency = sameCurrency(left, right);
+  if (!currency.ok) return fail(currency.error);
+  return ok(new Decimal(left.amount).comparedTo(right.amount));
+}
+
+/** The exact ratio of two same-currency amounts, as a decimal string. */
+export function moneyRatio(numerator: Money, denominator: Money): ValueResult<string> {
+  const currency = sameCurrency(numerator, denominator);
+  if (!currency.ok) return fail(currency.error);
+  const divisor = new Decimal(denominator.amount);
+  if (divisor.isZero()) {
+    return fail({ kind: "InvalidDecimal", field: "money.ratio", offending: denominator.amount });
+  }
+  return ok(new Decimal(numerator.amount).dividedBy(divisor).toFixed());
+}
+
+/** The absolute value of an amount. */
+export function absMoney(value: Money): Money {
+  return { amount: new Decimal(value.amount).abs().toFixed(), currency: value.currency };
+}

@@ -177,3 +177,84 @@ _(appended per commit)_
 | R2 | `npx playwright test` | `132 passed (1.9m)` | pass |
 | R3 | `npx tsc --noEmit` | exit 0 | pass |
 | R4 | `npm run lint:layers` | `94 files, 0 violations` | pass |
+
+---
+
+## T5 — `B` `assessPlan`: Long Stock shape, leg coherence, management coverage
+
+Seam: `TradeAnalysis.assessPlan` in `src/analysis/trade/index.ts`; layer `analysis`, which may read
+only the value and contract layers — so the Plan-fact shapes live in the new contract module
+`src/plan` that both Trade Record and Trade Analysis import.
+
+**Red.** The seam was created with an unimplemented body returning a typed rejection, so every case
+failed for the planned reason — not for a missing import or a harness fault.
+
+```text
+npx vitest run --project unit tests/trade-analysis/assess-plan.long-stock.test.ts
+→ Tests 12 failed (12)
+  AssertionError: expected 'Rejected' to be 'Accepted'                (the acceptance cases)
+  AssertionError: expected [ 'plan' ] to include 'plan.intendedEntry' (one issue per field)
+  AssertionError: expected undefined to be 'cond-stop'                (issue did not name the condition)
+```
+
+**Green.** After the implementation: `Tests 12 passed (12)`.
+
+| Case | Red observation (reason) | Green observation |
+|---|---|---|
+| Complete long stock Plan accepted | `Rejected`, because `assessPlan` returned "not implemented for any Strategy shape" | normalized semantics, positive 1R, a typed `Unavailable` payoff state |
+| One typed issue per missing field | one generic issue naming `plan` | issues naming `plan.intendedEntry`, `plan.originalManagement` and `plan.plannedLegs` |
+| Non-Stock instrument rejected | no shape check, so the option leg was accepted | `ShapeRoleMismatch` naming `leg-1` |
+| Stop without monetary boundary | accepted without a boundary | `MissingMonetaryBoundary` naming `cond-stop` |
+| Multi-condition OR set accepted | rejected as unimplemented | both directions retained, basis and comment preserved |
+| `StructureValueCondition` not installed | accepted silently | `StructureValueNotInstalled` naming `cond-structure` |
+| Stop at or above entry | generic rejection | `NonPositiveOriginalPlannedRisk` naming `cond-stop` |
+| Incomplete condition basis | accepted | `IncompleteConditionBasis` for a missing direction and for a missing `protects` |
+| No management coverage | accepted | `NoManagementCoverage` |
+| Payoff unavailable independently | whole assessment suppressed | semantics and 1R present, payoff `Unavailable` |
+| Purity and determinism | (pattern-checked) | byte-equal `semantics` for two assessments |
+| Shape constraint reported | extra legs ignored | `ShapeRoleCount` naming `long`/`stock` |
+
+**Contract notes.** The value layer gained the exact helpers `subtractPrice`, `compareMoney`,
+`moneyRatio` and `absMoney`, because `decimal.js` may be imported only there. `StructureValueCondition`
+is reserved in the `src/plan` type and never constructed; supplying one is a typed not-installed
+rejection rather than a fabricated `Unavailable`.
+
+---
+
+## T6 — `B` Plan Baseline and positive 1R
+
+Seam: the same `assessPlan`; suite `tests/trade-analysis/plan-baseline.test.ts` (9 cases).
+
+**Red.** First run: `Tests 6 passed | 3 failed`. The baseline existed, but two things were genuinely
+wrong; the rest were already satisfied by T5's implementation, so their red was unreachable in this
+pass.
+
+| Case | First-run observation |
+|---|---|
+| Risk equals the nearest boundary | green from its first run — red was **unreachable**: T5's implementation already computed risk |
+| Independent OR alternatives | **valid red**: `TypeError: Cannot read properties of undefined (reading 'outcome')` — the assessed per-condition basis was not exposed on the baseline at all |
+| Nearest nonnegative headline | **valid red**: the farther Stop's `distance` was `undefined` for the same reason |
+| Crossed Stop and unreached Target visible | green from its first run — red was **unreachable** |
+| Non-positive risk rejected | green from its first run — red was **unreachable** |
+| Reward/risk ratio | green from its first run — red was **unreachable** |
+| Unavailable basis, not zero | **valid red**: `expected 'Rejected' to be 'Accepted'` — an unmeasurable Stop was conflated with a non-positive one instead of yielding an unavailable baseline |
+| Reward independent | green from its first run — red was **unreachable** |
+| Stable across calls | green from its first run — red was **unreachable** |
+
+**Green.** After exposing `ConditionBasisAssessment` (with `distance` and independent-OR `status`) on
+the assessed baseline, and splitting "unmeasurable" from "non-positive": `Tests 9 passed (9)`.
+
+The arithmetic is set-shaped, not a singular Stop/Target pair: the headline is the nearest *positive*
+monetary distance over the whole Stop set, every condition keeps its own basis, and a wholly
+computable but wholly non-positive Stop set is the only rejection. For entry 180 / Stop 175 / 100
+shares the frozen baseline is `{amount: "500", currency: "USD"}` and reward/risk is `"2"`.
+
+### Commit — T5 + T6 (`assessPlan` and the Plan Baseline)
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| R1 | `npx vitest run` | `Test Files 33 passed (33)`, `Tests 224 passed (224)` | pass |
+| R2 | `npx playwright test` | `132 passed (1.9m)` | pass |
+| R3 | `npx tsc --noEmit` | exit 0 | pass |
+| R4 | `npm run lint:layers` | `98 files, 0 violations` | pass |
+| R5 | `npx eslint .` | exit 0 | pass |
