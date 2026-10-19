@@ -36,6 +36,13 @@ export class Rational {
     );
   }
 
+  sub(other: Rational): Rational {
+    return new Rational(
+      this.numerator * other.denominator - other.numerator * this.denominator,
+      this.denominator * other.denominator,
+    );
+  }
+
   mul(other: Rational): Rational {
     return new Rational(this.numerator * other.numerator, this.denominator * other.denominator);
   }
