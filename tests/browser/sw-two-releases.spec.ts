@@ -51,6 +51,8 @@ test("activating the waiting worker at an explicit reload leaves the previous re
   });
   expect(activation).toEqual({ kind: "Requested" });
 
+  // The activation takes effect at the explicit reload, exactly as the D22 update flow will do.
+  await page.reload();
   await expect
     .poll(async () => (await workerStatus(page)).controllerReleaseId, { timeout: 20_000 })
     .toBe(releaseB.releaseId);

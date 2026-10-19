@@ -669,3 +669,36 @@ capability.
 
 **Integration half deferred.** Reading the manifest from the running release and comparing it with the
 built artifact and the production navigation lands with T29's presentation wiring and T33.
+
+---
+
+## T29 — `B` Startup, readiness, and storage-protection presentation
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T29.1 | the startup verification state while readiness is pending, with no empty-workspace claim, no enabled mutation and no navigation implying a ready Workspace | `npx playwright test tests/browser/startup-pending.spec.ts --project=chromium` — the ready shell (with an enabled-looking mutation and a "Ready to write" claim) was rendered before readiness resolved | 1 passed; the verifying heading and status only, zero buttons, zero navigation, no "No institutions yet", no "Ready to write" |
+| T29.2 | Writable enables data entry and the complete normal navigation | `npx playwright test tests/browser/startup-writable.spec.ts` — the pending defect's premature shell was the red for the same class; this case additionally asserts nav equality | 1 passed; the nav destinations are exactly `startup` and `onboarding` (the manifest's set) and the institution form enables on input |
+| T29.3 | the not-protected warning stays visible with exactly one durability action while every control stays enabled | `npx playwright test tests/browser/startup-protection.spec.ts` — the warning was hidden when protection was not Protected | 1 passed; one "Keep this data on this device" action, the backup recommendation, and no disabled control |
+| T29.4 | Unsupported names each failed check, safe retry, another-browser guidance, no initialization control | `npx playwright test tests/browser/startup-unsupported.spec.ts` — an initialization control was offered on the Unsupported view | 1 passed; the named capacity failure, "Retry checks", the another-browser sentence, and no "Create this journal" |
+| T29.5 | Recovery Only keeps readable history available and disables writes with one stated reason, plus the separate-storage statement | `npx playwright test tests/browser/startup-recovery.spec.ts` — one common error screen served every non-Writable outcome | 1 passed; the readable institution history is present, "Writes and Restore are disabled: …" states one reason, the separate-storage statement is visible and no write form is rendered |
+| T29.6 | Integrity Blocked presented with Unsupported, the warning that data may exist, only retry/recovery actions and no empty-workspace control | `npx playwright test tests/browser/startup-integrity.spec.ts` — initialization was offered over an unreadable root | 1 passed; `Runtime Readiness: Unsupported`, the "Existing data may already be in this storage" warning, a retry action and no initialization control |
+| T29.7 | a data-bearing view distinguishes Loading, Empty and Ready, and names a load failure with a retry | `npx playwright test tests/browser/startup-view-states.spec.ts` — Loading was collapsed into the Empty message | 1 passed; Loading, Empty, Ready-after-add and the named Error with a Retry button |
+| T29.8 | programmatic roles, names and states for the status, alert and warning regions | Verified by the role-based queries in every case above plus the axe-core smoke spec on both engines; no separate red is claimed for an accessibility role that axe and the role assertions already enforce | All startup specs pass on Chromium and WebKit; `a11y-smoke` reports zero axe violations |
+
+**Recorded inconsistency and its resolution.** T29 case 5's frozen wording asks for "backup export
+available" in `Recovery Only`, but D1 §5 and the acceptance-to-evidence matrix place backup export at
+D7/D20, and T28's Installed Capability Manifest declares `backup: "not-installed"`. I stopped and asked;
+the user chose to follow the matrix. D1's `Recovery Only` therefore presents readable history and the
+single stated write-disable reason, and offers **no** backup export action; the affordance arrives with
+the backup deliverable. No capability is advertised falsely.
+
+**Service-worker activation stabilization.** Wiring the real startup gate exposed an intermittent
+`sw-two-releases` failure: Chromium kept the previous controller on the page that posted
+`ACTIVATE_UPDATE`. The task's own wording is "activating the waiting worker at an explicit reload", so
+the spec now reloads after the activation request and then asserts the new controller and both release
+caches. Three consecutive full two-engine runs passed (46 tests each).
+
+The presentation layer is a real state machine over `ApplicationRuntime`: verifying, failure, setup
+(InitializationRequired), Ready, Recovery Only, Unsupported and Integrity Blocked, with the capability
+manifest's two navigation destinations, a single protection action, and Loading/Empty/Ready/Error states
+on the institution list.

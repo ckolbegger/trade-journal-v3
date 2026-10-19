@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createApplicationContext, harnessEnabled, readHarnessInstant } from "./composition/root";
+import { createApplicationRuntime, type StartupOverride } from "./composition/application";
 import {
   SCHEMA_MANIFEST,
   SCHEMA_VERSION,
@@ -20,6 +21,10 @@ if (host === null) {
 }
 
 const context = createApplicationContext({ fixedInstant: readHarnessInstant() });
+const startupOverride = harnessEnabled()
+  ? (globalThis as unknown as Window).__TRADE_JOURNAL_STARTUP_OVERRIDE__
+  : undefined;
+const runtime = createApplicationRuntime(context.host, context.clock, startupOverride ?? {});
 
 if (import.meta.env.PROD) {
   void context.host.registerWorker("/sw.js");
@@ -46,6 +51,8 @@ declare global {
     __TRADE_JOURNAL_READINESS__?: {
       evaluate: () => Promise<unknown>;
     };
+    /** A harness-only forcing seam for the startup view. */
+    __TRADE_JOURNAL_STARTUP_OVERRIDE__?: StartupOverride;
   }
 }
 
@@ -84,6 +91,10 @@ if (harnessEnabled()) {
 
 createRoot(host).render(
   <StrictMode>
-    <App applicationName={context.applicationName} openingInstant={context.openingInstant} />
+    <App
+      runtime={runtime}
+      applicationName={context.applicationName}
+      openingInstant={context.openingInstant}
+    />
   </StrictMode>,
 );

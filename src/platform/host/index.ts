@@ -30,8 +30,14 @@ export interface ServiceWorkerContainerLike {
   getRegistration?(): Promise<RegistrationLike | undefined>;
   readonly ready?: Promise<RegistrationLike>;
   // Replies to a worker message arrive on the container, not on the controller object.
-  addEventListener?(type: "message", listener: (event: { data?: unknown }) => void): void;
-  removeEventListener?(type: "message", listener: (event: { data?: unknown }) => void): void;
+  addEventListener?(
+    type: "message" | "controllerchange",
+    listener: (event: { data?: unknown }) => void,
+  ): void;
+  removeEventListener?(
+    type: "message" | "controllerchange",
+    listener: (event: { data?: unknown }) => void,
+  ): void;
 }
 
 export interface CachedResponseLike {
@@ -124,6 +130,11 @@ export type WorkerUpdateResult =
   | { readonly kind: "Failed"; readonly reason: string }
   | { readonly kind: "NotExposed" };
 
+export type WorkerReadyResult =
+  | { readonly kind: "Controlled" }
+  | { readonly kind: "Failed"; readonly reason: string }
+  | { readonly kind: "NotExposed" };
+
 export type WorkerActivationResult =
   | { readonly kind: "Requested" }
   | { readonly kind: "NoWaitingWorker" }
@@ -156,6 +167,8 @@ export interface HostPort {
   download(fileName: string, bytes: Uint8Array, mediaType: string): Promise<DownloadOutcome>;
   readSelectedFile(): Promise<SelectedFile>;
   registerWorker(scriptUrl: string): Promise<WorkerRegistrationResult>;
+  /** Wait for the installed worker of this scope to take control before the first readiness gate. */
+  awaitWorkerControl(): Promise<WorkerReadyResult>;
   workerStatus(): Promise<WorkerStatusResult>;
   updateWorker(): Promise<WorkerUpdateResult>;
   activateWaitingWorker(): Promise<WorkerActivationResult>;
@@ -277,6 +290,37 @@ export function createHostPort(environment: HostEnvironment): HostPort {
     }
   }
 
+  async function awaitWorkerControl(): Promise<WorkerReadyResult> {
+    const container = environment.serviceWorker;
+    if (container === undefined || container.ready === undefined) return { kind: "NotExposed" };
+    try {
+      await container.ready;
+      if (container.controller !== null) return { kind: "Controlled" };
+      if (container.addEventListener === undefined) {
+        return { kind: "Failed", reason: "no service worker took control" };
+      }
+      return await new Promise<WorkerReadyResult>((resolve) => {
+        let settled = false;
+        const finish = (value: WorkerReadyResult): void => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          container.removeEventListener?.("controllerchange", listener);
+          resolve(value);
+        };
+        const listener = (): void => finish({ kind: "Controlled" });
+        const timer = setTimeout(
+          () => finish({ kind: "Failed", reason: "the worker did not take control" }),
+          RELEASE_REPLY_WINDOW_MS,
+        );
+        container.addEventListener?.("controllerchange", listener);
+        if (container.controller !== null) finish({ kind: "Controlled" });
+      });
+    } catch (error) {
+      return { kind: "Failed", reason: reasonOf(error) };
+    }
+  }
+
   async function workerStatus(): Promise<WorkerStatusResult> {
     const container = environment.serviceWorker;
     if (container === undefined) return { kind: "NotExposed" };
@@ -388,6 +432,7 @@ export function createHostPort(environment: HostEnvironment): HostPort {
     download,
     readSelectedFile,
     registerWorker,
+    awaitWorkerControl,
     workerStatus,
     updateWorker,
     activateWaitingWorker,

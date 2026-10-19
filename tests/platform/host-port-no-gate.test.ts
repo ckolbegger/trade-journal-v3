@@ -5,6 +5,7 @@ import { createHostPort } from "../../src/platform/host";
 
 const operations = [
   "activateWaitingWorker",
+  "awaitWorkerControl",
   "cachedAsset",
   "capacity",
   "download",
