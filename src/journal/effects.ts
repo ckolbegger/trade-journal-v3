@@ -1,9 +1,4 @@
-import {
-  FIXED_ENTRY_TYPE_KEYS,
-  FIXED_SOURCE_KEYS,
-  getDefinitions,
-  type EntryTypeDefinition,
-} from "./definitions";
+import { getDefinitions, type EntryTypeDefinition } from "./definitions";
 import type { TransactionSeam, ParticipantEffect } from "../persistence/indexeddb/transaction";
 
 const JOURNAL_STORE = "journal";
@@ -397,7 +392,5 @@ export async function applyPreparedEffects(
     });
   }
 
-  void FIXED_ENTRY_TYPE_KEYS;
-  void FIXED_SOURCE_KEYS;
   return { outcome: "Applied", participants, mapping, staged };
 }

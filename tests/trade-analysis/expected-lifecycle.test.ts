@@ -65,6 +65,10 @@ describe("TradeAnalysis.derive expected Lifecycle State and agreement, at the pu
     );
 
     expect(result.expectedLifecycle).toEqual({ outcome: "Value", value: "Planned" });
+    // The cutoff is an input to the derivation, not decoration: the result must bind it. D2's
+    // confirmed unentered Plan has no competing facts, so no ordering is exercised yet; "not by save
+    // time" is a property of the signature (the input carries no save time) rather than a behaviour.
+    expect(result.analysisCutoff).toBe("2026-10-20T21:00:00.000Z");
   });
 
   it("should return the expected state as unavailable with a stable reason when the supplied facts are insufficient to decide an expected state, rather than guessing Planned", () => {

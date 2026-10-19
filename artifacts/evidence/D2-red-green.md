@@ -834,3 +834,79 @@ list) and the narrow shell does not scroll sideways; the measurement is now
 | R4 | `npm run lint:layers` | `123 files, 0 violations` | pass |
 | R5 | `npx eslint .` | exit 0 | pass |
 | R6 | narrow overflow measurement on the production build | `{"scrollWidth":375,"innerWidth":375}` | pass |
+
+---
+
+## Post-completion audit — mutation testing of T3, T4, T7, T9, T10
+
+T3/T4/T7/T9/T10 had their red evidence *re-established* after test-after development rather than
+observed red-first. To test whether those suites actually discriminate, each was mutation-audited:
+one deliberate defect at a time in the production seam, the task's suite re-run, the failing case set
+recorded, the source reverted with `git checkout`. Mutations were never committed. A full run was
+performed after the audit.
+
+**24 mutations, 21 detected exactly.** A control mutation with no semantic effect (M12) correctly
+produced no failures, so the harness is not manufacturing red.
+
+| Mutation | Behaviour broken | Cases that failed |
+|---|---|---|
+| M1 | missing reconciliation accepted | "no reconciliation at all" |
+| M2 | digest not rechecked | "digest … does not match" |
+| M3 | repeated creation accepted | "base revision changed after preparation" |
+| M4 | stored lifecycle hardcoded `Open` | "stored Lifecycle State as Planned" |
+| M5 | `lifecycleIndex` participant dropped | the four index-dependent cases (Planned page, one index entry, bounded batch, staged lifecycle) |
+| M6 | `perRecordReads` reported as 1 | "complete bounded AnalysisInput batch" |
+| M7 | page limit ignored | "complete bounded AnalysisInput batch" |
+| M8 | state filter removed | "exclude the Trade from a page filtered to Open" |
+| M9 | expected lifecycle always `Open` | agreed, disagreement, structured-finding and future-Economic-Time cases |
+| M10 | disagreement findings suppressed | "structured integrity finding rather than raising" |
+| M11 | `derive` mutates its input | the purity case plus the two disagreement cases |
+| M12 | **control:** no semantic change | none (correct) |
+| M14 | required-prompt check removed | "omits the Thesis answer" |
+| M15 | `Defer` permitted | "disposition is Defer" |
+| M16 | `Decline` permitted | "disposition is Decline" |
+| M17 | foreign option accepted | "does not belong to that prompt's closed option set" |
+| M18 | durable Entry identity allocated | "reserve no durable Entry identity" |
+| M19 | definition snapshot emptied | snapshot case and the times case |
+| M20 | duplicate obligation permitted | "retry applies the same obligation a second time" |
+| M22 | Anchor not mapped to the durable Trade | "exactly one Anchor of TradeAnchor kind" |
+| M23' | staged time replaced by moment time | "no Journal query is needed" (after the fix below) |
+| M13' | cutoff dropped from the result | "Economic Time in the future" (after the fix below) |
+| P1' | expected-candidate guard removed | "omits one of the candidates being applied" (after the fix below) |
+
+### Three genuine gaps the audit found, and what was done
+
+**G-1 — a vacuous case.** Replacing the returned `analysisCutoff` with `""` broke nothing, so T7's
+"Economic Time in the future relative to the supplied analysis cutoff, ordering by Economic Time and
+not by save time" case passed for a reason unrelated to its claim. Cause: `derive` never reads the
+cutoff, and D2's confirmed unentered Plan has no competing facts to order. *Fixed by* asserting that
+the result binds the supplied cutoff — the case now fails when it does not. *Recorded limit:* the
+"not by save time" half is a property of the signature (`TradeDerivationInput` carries no save time),
+not a behaviour, so it is an invariant rather than something a case can exercise. Real ordering
+arrives with D4's review facts. One branch (the no-stored-lifecycle branch) still does not assert its
+cutoff; left as a minor residual.
+
+**G-2 — an untested guard.** Removing `applyPreparedEffects`'s `expectedCandidateTradeIds` check broke
+nothing, because the Anchor check happened to cover the same scenario. *Fixed by* adding a case where
+the mapping covers the anchored candidate but omits one of the candidates being applied — which only
+the first guard catches, and which now fails if it is removed (P1').
+
+**G-3 — an unasserted projection field.** Replacing the staged outcome's `firstAuthoredTime` with the
+moment time broke nothing, because only the stored row's time was asserted. Since the staged
+projection is what the coordinator returns *in order to avoid a read-back* (`overview.md:196`), a
+wrong value there would be a real defect. *Fixed by* asserting the staged projection's `momentTime`
+and `firstAuthoredTime` and that they differ.
+
+### Dead code removed
+
+Found while auditing, not by any test: a no-op spread in `src/trade-record/apply.ts` (both branches
+empty) and two vestigial `void FIXED_ENTRY_TYPE_KEYS; void FIXED_SOURCE_KEYS;` statements plus their
+now-unused imports in `src/journal/effects.ts`.
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| R1 | `npx vitest run` | `Test Files 45 passed (45)`, `Tests 323 passed (323)` | pass |
+| R2 | `npx playwright test` | `164 passed (2.3m)` | pass |
+| R3 | `npx tsc --noEmit` | exit 0 | pass |
+| R4 | `npm run lint:layers` | `123 files, 0 violations` | pass |
+| R5 | `npx eslint .` | exit 0 | pass |

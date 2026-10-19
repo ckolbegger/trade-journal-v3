@@ -285,6 +285,18 @@ describe("Journal.applyPreparedEffects for the prepared Plan Reflection, at the 
     expect(Object.keys(applied)).not.toContain("participants");
   });
 
+  it("should return a typed no-write conflict and stage nothing when the mapping covers the anchored candidate but omits one of the candidates being applied", async () => {
+    const effects = await prepared();
+    const applied = await applyPreparedEffects(seam, {
+      effects,
+      mapping: [{ candidateTradeId: "candidate:trade", tradeId: "trade-1" }],
+      expectedCandidateTradeIds: ["candidate:trade", "candidate:not-mapped"],
+    });
+
+    expect(applied).toMatchObject({ outcome: "Conflict", code: "MappingMismatch" });
+    expect(Object.keys(applied)).not.toContain("participants");
+  });
+
   it("should return a typed no-write conflict and stage nothing when a retry applies the same obligation a second time, so that exactly one current outcome exists", async () => {
     const effects = await prepared();
     const first = await applyPreparedEffects(seam, {
@@ -360,5 +372,10 @@ describe("Journal.applyPreparedEffects for the prepared Plan Reflection, at the 
     expect(entry?.thesis).toBe(staged?.thesis);
     expect(entry?.invalidation).toBe(staged?.invalidation);
     expect(staged?.answers).toHaveLength(2);
+    // The staged projection is what the coordinator returns to render without a read-back, so its
+    // own times must be right and not merely the stored row's.
+    expect(staged?.momentTime).toBe("2026-10-19T20:30:00.000Z");
+    expect(staged?.firstAuthoredTime).toBe("2026-10-19T20:31:12.000Z");
+    expect(staged?.firstAuthoredTime).not.toBe(staged?.momentTime);
   });
 });

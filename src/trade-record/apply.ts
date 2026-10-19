@@ -263,9 +263,6 @@ export async function applyPreparedChange(
     effectiveFactDigest: digest,
     causingFactId,
     factRevision,
-    ...(candidate.plan.intendedEntry === undefined
-      ? {}
-      : {}),
     ...(command.cutoffTradingDate === undefined
       ? {}
       : { cutoffTradingDate: command.cutoffTradingDate }),
