@@ -214,15 +214,30 @@ export function PlanForm({
   if (saved !== undefined) {
     const trade = saved.postCommit.trades[0];
     const entry = saved.postCommit.journal[0];
+    const strategyLabel =
+      state.strategies.find((strategy) => strategy.stableKey === trade?.strategyStableKey)?.label ??
+      trade?.strategyStableKey ??
+      "";
     return (
       <section className="card" aria-labelledby="plan-saved">
         <h2 id="plan-saved">Plan confirmed</h2>
-        <p role="status">One Trade, one frozen Plan and one completed Plan Reflection were saved.</p>
+        <p role="status">
+          One Trade, one frozen Plan, its original management and one completed Plan Reflection were
+          saved together.
+        </p>
         <dl className="facts">
+          <dt>Strategy</dt>
+          <dd data-testid="saved-strategy">{strategyLabel}</dd>
+          <dt>Instrument</dt>
+          <dd data-testid="saved-instrument">
+            {trade?.plan.plannedLegs.map((leg) => leg.instrument.instrumentKey).join(", ")}
+          </dd>
           <dt>Intended entry</dt>
-          <dd>{trade?.plan.intendedEntry.amount}</dd>
+          <dd data-testid="saved-entry">{trade?.plan.intendedEntry.amount}</dd>
           <dt>Planned Leg quantity</dt>
-          <dd>{trade?.plan.plannedLegs[0]?.quantity.amount}</dd>
+          <dd data-testid="saved-quantity">
+            {trade?.plan.plannedLegs.map((leg) => `${leg.side} ${leg.quantity.amount}`).join(", ")}
+          </dd>
           <dt>1R (frozen at confirmation)</dt>
           <dd data-testid="saved-one-r">{saved.postCommit.derivation.oneR.amount}</dd>
           <dt>Lifecycle</dt>
@@ -232,8 +247,32 @@ export function PlanForm({
           <dt>What would invalidate it</dt>
           <dd data-testid="saved-invalidation">{entry?.invalidation}</dd>
         </dl>
+
+        <h3>Original management</h3>
+        <ul aria-label="Saved original Stops and Targets">
+          {(trade?.plan.originalManagement ?? []).map((condition) => (
+            <li key={condition.conditionId} data-testid={`saved-condition-${condition.conditionId}`}>
+              {condition.kind === "UnderlyingPrice" ? (
+                <>
+                  <strong>{condition.role}</strong> {condition.basis.direction}{" "}
+                  {condition.boundaryPrice.amount} (frozen monetary boundary{" "}
+                  {condition.monetaryBoundary.amount} {condition.monetaryBoundary.currency})
+                  {condition.basis.comment !== undefined && (
+                    <span className="muted"> — {condition.basis.comment}</span>
+                  )}
+                </>
+              ) : (
+                <span>{condition.role}: structure value</span>
+              )}
+            </li>
+          ))}
+        </ul>
+
         <button type="button" onClick={() => onSaved(trade?.tradeId ?? "")}>
           Open the Trade
+        </button>
+        <button type="button" onClick={() => setSaved(undefined)}>
+          Start another plan
         </button>
       </section>
     );
@@ -253,86 +292,102 @@ export function PlanForm({
         </div>
       )}
 
-      <label htmlFor="field-accountId">Account</label>
-      <select
-        id="field-accountId"
-        value={accountId}
-        onChange={(event) => setAccountId(event.target.value)}
-        aria-describedby={errors.accountId === undefined ? undefined : "error-accountId"}
-      >
-        <option value="">Choose an Account</option>
-        {state.accounts.map((account) => (
-          <option key={account.id} value={account.id}>
-            {account.label}
-          </option>
-        ))}
-      </select>
-      {errors.accountId !== undefined && (
-        <p id="error-accountId" role="alert" className="error">
-          {errors.accountId}
-        </p>
-      )}
-
-      <label htmlFor="field-strategyStableKey">Strategy</label>
-      <select
-        id="field-strategyStableKey"
-        value={strategyStableKey}
-        onChange={(event) => setStrategyStableKey(event.target.value)}
-        aria-describedby={errors.strategyStableKey === undefined ? undefined : "error-strategyStableKey"}
-      >
-        <option value="">Choose a Strategy</option>
-        {state.strategies.map((strategy) => (
-          <option key={strategy.stableKey} value={strategy.stableKey}>
-            {strategy.label}
-          </option>
-        ))}
-      </select>
-      {errors.strategyStableKey !== undefined && (
-        <p id="error-strategyStableKey" role="alert" className="error">
-          {errors.strategyStableKey}
-        </p>
-      )}
-
-      <label htmlFor="field-intendedEntry">Intended entry</label>
-      <input
-        id="field-intendedEntry"
-        value={intendedEntry}
-        onChange={(event) => setIntendedEntry(event.target.value)}
-        inputMode="decimal"
-        aria-describedby={errors.intendedEntry === undefined ? undefined : "error-intendedEntry"}
-      />
-      {errors.intendedEntry !== undefined && (
-        <p id="error-intendedEntry" role="alert" className="error">
-          {errors.intendedEntry}
-        </p>
-      )}
-
-      <label htmlFor="field-instrumentKey">Instrument</label>
-      <input
-        id="field-instrumentKey"
-        value={instrumentKey}
-        onChange={(event) => setInstrumentKey(event.target.value)}
-        aria-describedby={errors.instrumentKey === undefined ? undefined : "error-instrumentKey"}
-      />
-      {errors.instrumentKey !== undefined && (
-        <p id="error-instrumentKey" role="alert" className="error">
-          {errors.instrumentKey}
-        </p>
-      )}
-
-      <label htmlFor="field-quantity">Planned Leg quantity</label>
-      <input
-        id="field-quantity"
-        value={quantity}
-        onChange={(event) => setQuantity(event.target.value)}
-        inputMode="decimal"
-        aria-describedby={errors.quantity === undefined ? undefined : "error-quantity"}
-      />
-      {errors.quantity !== undefined && (
-        <p id="error-quantity" role="alert" className="error">
-          {errors.quantity}
-        </p>
-      )}
+      <div className="plan-form__grid">
+        <div>
+  <label htmlFor="field-accountId">Account</label>
+        <select
+          id="field-accountId"
+          value={accountId}
+          onChange={(event) => setAccountId(event.target.value)}
+          aria-describedby={errors.accountId === undefined ? undefined : "error-accountId"}
+        >
+          <option value="">Choose an Account</option>
+          {state.accounts.map((account) => (
+            <option key={account.id} value={account.id}>
+              {account.label}
+            </option>
+          ))}
+        </select>
+        {errors.accountId !== undefined && (
+          <p id="error-accountId" role="alert" className="error">
+            {errors.accountId}
+          </p>
+        )}
+  
+        
+        </div>
+        <div>
+  <label htmlFor="field-strategyStableKey">Strategy</label>
+        <select
+          id="field-strategyStableKey"
+          value={strategyStableKey}
+          onChange={(event) => setStrategyStableKey(event.target.value)}
+          aria-describedby={errors.strategyStableKey === undefined ? undefined : "error-strategyStableKey"}
+        >
+          <option value="">Choose a Strategy</option>
+          {state.strategies.map((strategy) => (
+            <option key={strategy.stableKey} value={strategy.stableKey}>
+              {strategy.label}
+            </option>
+          ))}
+        </select>
+        {errors.strategyStableKey !== undefined && (
+          <p id="error-strategyStableKey" role="alert" className="error">
+            {errors.strategyStableKey}
+          </p>
+        )}
+  
+        
+        </div>
+        <div>
+  <label htmlFor="field-intendedEntry">Intended entry</label>
+        <input
+          id="field-intendedEntry"
+          value={intendedEntry}
+          onChange={(event) => setIntendedEntry(event.target.value)}
+          inputMode="decimal"
+          aria-describedby={errors.intendedEntry === undefined ? undefined : "error-intendedEntry"}
+        />
+        {errors.intendedEntry !== undefined && (
+          <p id="error-intendedEntry" role="alert" className="error">
+            {errors.intendedEntry}
+          </p>
+        )}
+  
+        
+        </div>
+        <div>
+  <label htmlFor="field-instrumentKey">Instrument</label>
+        <input
+          id="field-instrumentKey"
+          value={instrumentKey}
+          onChange={(event) => setInstrumentKey(event.target.value)}
+          aria-describedby={errors.instrumentKey === undefined ? undefined : "error-instrumentKey"}
+        />
+        {errors.instrumentKey !== undefined && (
+          <p id="error-instrumentKey" role="alert" className="error">
+            {errors.instrumentKey}
+          </p>
+        )}
+  
+        
+        </div>
+        <div>
+  <label htmlFor="field-quantity">Planned Leg quantity</label>
+        <input
+          id="field-quantity"
+          value={quantity}
+          onChange={(event) => setQuantity(event.target.value)}
+          inputMode="decimal"
+          aria-describedby={errors.quantity === undefined ? undefined : "error-quantity"}
+        />
+        {errors.quantity !== undefined && (
+          <p id="error-quantity" role="alert" className="error">
+            {errors.quantity}
+          </p>
+        )}
+        </div>
+      </div>
 
       <fieldset>
         <legend>Stops and Targets</legend>

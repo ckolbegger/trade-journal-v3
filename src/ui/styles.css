@@ -220,3 +220,20 @@ select {
     padding-bottom: 5rem;
   }
 }
+
+/* D2 plan form: a labelled single column at narrow widths, a two-column grid from the wide breakpoint. */
+.plan-form__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem 1.25rem;
+}
+
+@media (min-width: 900px) {
+  .plan-form__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.plan-form__grid > * {
+  min-width: 0;
+}

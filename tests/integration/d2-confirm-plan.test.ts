@@ -6,6 +6,7 @@ import { D2_SCHEMA_MANIFEST, D2_SCHEMA_VERSION, openDatabaseWithStores } from ".
 import { createTransactionSeam, type TransactionSeam } from "../../src/persistence/indexeddb/transaction";
 import { createWriteGate } from "../../src/persistence/indexeddb/writeGate";
 import { queryRecords } from "../../src/trade-record";
+import { derive } from "../../src/analysis/trade";
 import { confirmPlan, type ConfirmPlanCommand } from "../../src/trade-workflows";
 import { loadSubstitutions } from "../harness/bootstrap";
 import { close, openD2Seam, writable } from "../support/store";
@@ -275,6 +276,52 @@ describe("The D2 mock-free integration path, from the production command to dura
     expect(page.counts.batchEntries).toBe(1);
     // A bounded page, not an all-history replay: one row returned although two Trades exist.
     expect(page.rows).toHaveLength(1);
+  });
+
+  it("should surface a controlled stored-lifecycle disagreement on the read path and repair nothing, when the stored state is mutated through the real persistence seam", async () => {
+    // Decision PD8 tier 2: authoritative derived state may be mutated for a validation scenario,
+    // through the real persistence seam, disclosed alongside the correct derivation.
+    const confirmed = await confirmPlan(seam, command());
+    expect(confirmed.outcome).toBe("Accepted");
+    if (confirmed.outcome !== "Accepted") return;
+    const tradeId = confirmed.value.postCommit.trades[0]?.tradeId ?? "";
+
+    await seam.commit({
+      participants: [
+        {
+          store: "tradeLifecycle",
+          put: [{ tradeId, state: "Open", factRevision: 1, effectiveFactDigest: "controlled", causingFactId: `${tradeId}:plan` }],
+        },
+        { store: "lifecycleIndex", put: [{ tradeId, state: "Open", factRevision: 1 }] },
+      ],
+    });
+    const mutated = (await seam.snapshot(["tradeLifecycle", "lifecycleIndex"])).rows("tradeLifecycle");
+
+    const page = await queryRecords(seam, {
+      lifecycle: "CurrentState",
+      state: "Open",
+      projection: "AnalysisInput",
+      limit: 200,
+    });
+    expect(page.rows.map((row) => row.tradeId)).toEqual([tradeId]);
+    const input = page.batch[0];
+    expect(input).toBeDefined();
+    if (input === undefined) return;
+
+    const derived = derive({
+      tradeId,
+      sourceFactRevision: input.factRevision,
+      economicTime: input.economicTime,
+      analysisCutoff: PLAN_ECONOMIC_TIME,
+      storedLifecycle: "Open",
+      facts: [{ kind: "trade" }, { kind: "plan" }],
+    });
+
+    expect(derived.agreement).toMatchObject({ status: "disagreement", stored: "Open", expected: "Planned" });
+    expect(derived.findings).toHaveLength(1);
+
+    // The read repaired nothing: the controlled stored state is still exactly what was written.
+    expect((await seam.snapshot(["tradeLifecycle"])).rows("tradeLifecycle")).toEqual(mutated);
   });
 
   it("should keep D1's accepted behavior green when D2's suite runs in the same run, so that the cumulative suite still protects the foundation", async () => {

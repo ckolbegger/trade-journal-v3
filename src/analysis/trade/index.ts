@@ -56,6 +56,7 @@ export type PlanIssueCode =
   | "NoManagementCoverage"
   | "IncompleteConditionBasis"
   | "MissingMonetaryBoundary"
+  | "NonPositiveMonetaryBoundary"
   | "NonPositiveOriginalPlannedRisk"
   | "StructureValueNotInstalled"
   | "UnavailableBaseline";
@@ -413,6 +414,15 @@ export async function assessPlan(input: PlanAssessmentInput): Promise<PlanAssess
         field: `${field}.monetaryBoundary`,
         detail:
           "an underlying-price condition needs a frozen monetary boundary; without it neither risk nor reward is computable",
+        conditionId: condition.conditionId,
+      });
+    } else if (!positiveDecimal(condition.monetaryBoundary.amount)) {
+      // A frozen boundary that is zero, negative or non-numeric cannot measure anything. Accepting it
+      // would store a baseline whose declared per-condition boundary contradicts its own 1R.
+      issues.push({
+        code: "NonPositiveMonetaryBoundary",
+        field: `${field}.monetaryBoundary`,
+        detail: `the frozen monetary boundary of this ${condition.role} must be a positive number; it is "${condition.monetaryBoundary.amount}"`,
         conditionId: condition.conditionId,
       });
     }

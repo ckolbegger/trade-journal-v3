@@ -73,6 +73,9 @@ test.describe("d2-confirm-plan", () => {
     await expect(page.getByRole("heading", { name: "Plan confirmed" })).toBeVisible();
     await expect(page.getByTestId("saved-one-r")).toHaveText("500");
     await expect(page.getByTestId("saved-thesis")).toHaveText("Breakout above the base");
+    // The saved screen shows the frozen original management, not only the numbers that fit a card.
+    await expect(page.getByTestId("saved-condition-cond-1")).toContainText("175");
+    await expect(page.getByTestId("saved-condition-cond-2")).toContainText("190");
 
     // The Trade view shows the frozen Plan, stored Planned, 1R and no Terminal Disposition.
     await page.getByRole("button", { name: "Open the Trade" }).click();

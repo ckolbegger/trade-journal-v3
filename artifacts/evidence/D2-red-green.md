@@ -709,3 +709,70 @@ counterpart.
 | R3 | `npx tsc --noEmit` | exit 0 | pass |
 | R4 | `npm run lint:layers` | `123 files, 0 violations` | pass |
 | R5 | `npx eslint .` | exit 0 | pass |
+
+---
+
+## T20 — `S` Independent browser-critic gate for D2
+
+Structural task: exact verification (V20.1–V20.8) instead of invented unit tests.
+
+### Round 1 — critic `critic-d2-1792408297955-47d5f745`
+
+The critic was a fresh sub-agent that did not write the implementation, was given the frozen `specs/`
+baseline, D2's breakdown §0/§4 and the intentional non-defect list, started the runtime itself
+(`npm run build && npx vite preview --port 5177 --strictPort`, `GET /sw.js` → 200, release id
+`40c8cab5…8335d`) and drove Chromium against `http://127.0.0.1:5177`.
+
+| # | Command / artefact | Observed | Result |
+|---|---|---|---|
+| V20.1 | `npm run build && npx vite preview --port 5177 --strictPort`, started by the critic | served `http://127.0.0.1:5177`, `Writable`, exact URL/port recorded in the report | pass |
+| V20.2 | `npx vitest run --project unit` | zero failures | pass |
+| V20.3 | `npx vitest run --project integration` | zero failures, including the real-engine durability leg | pass |
+| V20.4 | `npx playwright test tests/browser/d2-*` | all D2 browser flows green | pass |
+| V20.5 | critic flow report, 12 rows × 2 viewports | **24 entries, 20 passed, 4 failed** | **fail** |
+| V20.8 | reuse check over the report | `didWriteImplementation: false`, `spawnedAfterFix: false`, `boundariesGiven` present | pass |
+
+**Two defects reported, both reproduced by a failing test before any fix.**
+
+**D-1 — a Plan with a zero frozen monetary boundary was accepted (flow 5, `AC-PLAN-002`).**
+The critic submitted Stop 175 / monetary 0 and Target 190 / monetary 0; the confirmation was accepted
+and saved a Plan row whose `perConditionBasis[*].monetaryBoundary` was `0 USD` while
+`originalPlannedRisk`/`oneR` were `500 USD` — an internally contradictory frozen baseline.
+*Reproduced first:* `npx vitest run --project unit tests/trade-analysis/assess-plan.long-stock.test.ts
+-t "zero or negative"` → `AssertionError: expected 'Accepted' to be 'Rejected'`.
+*Cause:* `assessPlan` validated the *presence* of a monetary boundary but not that it measures
+anything, and the baseline distance was computed from price × quantity only.
+*Fix:* a frozen monetary boundary that is zero, negative or non-numeric is now a typed
+`NonPositiveMonetaryBoundary` naming the offending condition. This also replaces the critic's second
+observation — a non-numeric boundary was previously rejected only by the coordinator with a message
+naming no condition.
+
+**D-2 — the confirmation card did not show the frozen Plan's original management (flow 4,
+`AC-RESP-001`).**
+The commit was correct, but the "Plan confirmed" card omitted the Stop and Target, the instrument and
+the strategy, so the saved screen did not show "the frozen Plan, original Stop and Target" as D2 §4
+flow 4 requires.
+*Reproduced first:* the browser case gained
+`expect(getByTestId("saved-condition-cond-1")).toContainText("175")` and the Target equivalent, which
+failed against the old card.
+*Fix:* the card now shows Strategy, Instrument, intended entry, Planned Leg side/quantity, 1R,
+lifecycle, both reflection answers and an "Original management" list rendering each condition's role,
+direction, boundary price, frozen monetary boundary and prose comment. It also gained a "Start
+another plan" control, which removes the dead end the critic reported as an unscored observation.
+
+**Unscored observations actioned.** (1) The form's top-level fields were inline flow, not a labelled
+single column at 375; they are now a labelled single column at narrow widths and a two-column grid
+from the wide breakpoint. (3) `AC-LIFE-003`'s read-side half had no test inducing the disagreement;
+`tests/integration/d2-confirm-plan.test.ts` now mutates the stored lifecycle through the real
+persistence seam under decision PD8 tier 2, asserts the read path reports the structured disagreement
+naming both states, and asserts the read repaired nothing.
+
+**Re-verified after the fixes (V20.7):**
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| V20.2 | `npx vitest run` | `Test Files 45 passed (45)`, `Tests 322 passed (322)` | pass |
+| V20.3 | integration project included above | 8/8 in `d2-confirm-plan`, 8/8 in `d2-atomicity`, 5/5 in `d2-migration` | pass |
+| V20.4 | `npx playwright test` | `164 passed (2.2m)` across all four projects | pass |
+| — | `npx tsc --noEmit`, `npm run lint:layers`, `npx eslint .` | exit 0; `123 files, 0 violations` | pass |
+

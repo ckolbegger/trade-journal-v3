@@ -201,6 +201,34 @@ describe("TradeAnalysis.assessPlan for the Long Stock shape, at the public asses
     expect(result.oneR).toMatchObject({ outcome: "Value" });
   });
 
+  it("should reject with a typed issue naming the condition when a condition's frozen monetary boundary is zero or negative, because the frozen baseline must be measured from a positive monetary boundary", async () => {
+    const zeroBoundary = await assessPlan(
+      input(
+        planOfConditions([
+          underlyingStop({ monetaryBoundary: { amount: "0", currency: "USD" } }),
+          underlyingTarget(),
+        ]),
+      ),
+    );
+
+    expect(zeroBoundary.outcome).toBe("Rejected");
+    if (zeroBoundary.outcome !== "Rejected") return;
+    const issue = zeroBoundary.issues.find(
+      (candidate) => candidate.code === "NonPositiveMonetaryBoundary",
+    );
+    expect(issue?.conditionId).toBe("cond-stop");
+
+    const negativeTarget = await assessPlan(
+      input(
+        planOfConditions([
+          underlyingStop(),
+          underlyingTarget({ monetaryBoundary: { amount: "-1", currency: "USD" } }),
+        ]),
+      ),
+    );
+    expect(negativeTarget.outcome).toBe("Rejected");
+  });
+
   it("should return an identical normalized semantics value when the same Plan is assessed twice with the same Strategy shape, because the operation is pure and deterministic", async () => {
     const first = await assessPlan(input());
     const second = await assessPlan(input());
