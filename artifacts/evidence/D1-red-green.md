@@ -603,3 +603,24 @@ instant, which closes T5's deferred integration assertion in the persisted recei
 **Production wiring.** The coordinator takes its readiness, seam, migration and root observation as
 ports; the composition root wires them for the browser in T29, and the durable after-restart assertion is
 repeated by T33.
+
+---
+
+## T26 — `B` `Workspace.getStatus`
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T26.1 | Ready with the full-content binding, time zone and revision, capability manifest, onboarding, readiness evidence, protection, schema versions and latest receipt | `npx vitest run tests/workspace/status-ready.test.ts -t "full-content Workspace binding"` — the binding was omitted from the Ready status | same command — 1 passed; the five-part binding, time zone, manifest, onboarding, readiness, protection, schema version and receipt are all present |
+| T26.2 | Initialization Required only when a writable store was opened successfully and proved that no Workspace exists | Covered by the same read-result branch as T26.6; `npx vitest run tests/workspace/status-initialization.test.ts` | 1 passed; `InitializationRequired` with no binding and no time zone |
+| T26.3 | Recovery Only with readable status and backup actions when the Workspace is readable and readiness fails | `npx vitest run tests/workspace/status-recovery.test.ts -t "Recovery Only"` — `Unsupported` was returned whenever readiness failed, ignoring the readable Workspace | same command — 1 passed with `RecoveryOnly`, the readable binding/time zone and `export-backup` |
+| T26.4 | Unsupported with the failed-check reasons when no existing root needs protection | `npx vitest run tests/workspace/status-recovery.test.ts -t "no existing root"` — covered by the same mapping red as T26.3 | 1 passed; `Unsupported` with `retry` and `try-another-browser` |
+| T26.5 | Integrity Blocked with the readiness evidence and safe actions when the root cannot be read | `npx vitest run tests/workspace/status-integrity.test.ts -t "known or possible existing root"` — covered by the unreadable-read mapping red as T26.6 | 1 passed; `IntegrityBlocked` with the Writable readiness evidence and both recovery actions |
+| T26.6 | never treat a failed or ambiguous store read as an empty store | `npx vitest run tests/workspace/status-integrity.test.ts -t "ambiguous store read"` — a thrown read was reported as `InitializationRequired` | same command — 1 passed; `IntegrityBlocked`, never `InitializationRequired` |
+| T26.7 | mutate and repair nothing, proven by identical store digests | No separate product red is claimed: the status coordinator holds no write port and has no write path, so it structurally cannot repair. The case is verified by fingerprinting the real stores before and after a call that reports a disagreement | `npx vitest run tests/workspace/status-nonmutating.test.ts` — 1 passed; byte-identical `workspaceMeta` and `lifecycleIndex` |
+| T26.8 | accept the observation instant from the injected Clock and return identical status for identical inputs | `npx vitest run tests/workspace/status-ready.test.ts -t "identical status"` — a stateful sequence field made two identical calls differ | same command — 1 passed; deep-equal statuses at the injected instant |
+
+Status maps the readiness outcome and the root/workspace read result to one of the five outcomes, carries
+the immutable capability manifest, and never reads or writes beyond the ports it is given.
+
+**Integration half deferred.** The fresh/seeded/deleted-asset origins with three resulting statuses and
+unchanged digests land with T29's production wiring and T33.
