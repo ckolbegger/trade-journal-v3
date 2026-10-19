@@ -63,3 +63,18 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ## 5. Surface Better Alternatives
 
 I'm always open to ideas on better ways to do things. Please don't hesitate to suggest a better way, or one that has long lasting impact over a tactical change.
+
+# Project tooling
+
+- **Complete cumulative suite runs go to the `suite-runner` subagent** (`.claude/agents/suite-runner.md`), never the main session. Give it the evidence directory and a run label, then record its returned table in `structural.md`. Do not rerun the suites to check its work. A failing run comes back as named failures; reproduce and fix them in the main session.
+- **Start-of-deliverable reading is scoped, to keep the context small** (plan decision 45).
+  - For `specs/`, read the ranges listed in `plan/spec-reading/D<nn>.md`. Don't read the whole `plan/spec-map.md`: search it for any other section the work touches, and read that section before building on it.
+  - Read the current deliverable's breakdown in full.
+
+  From the rest of the frozen plan, read only what the deliverable uses:
+  - `implementation-plan.md` without the definition sections of deliverables later than the current one
+  - the acceptance matrix's opening sections only, looking up other rows by scenario ID when needed
+  - only the sections of earlier breakdowns that the current one builds on (decisions, boundaries, task graph, structural tasks, harnesses), never their behavioral task text
+
+  When writing the next deliverable's handoff, give its reading list in this form, naming the sections to read. Drafting a breakdown still reads `specs/` in full, and retags its deliverable in the map before regenerating the lists with `.claude/scripts/spec-reading-lists.py`.
+- Single-case TDD runs stay in the main session. A PreToolUse hook (`.claude/hooks/filter-test-output.sh`) cuts their output to failures and the summary and saves the full log; put `CLAUDE_FULL_OUTPUT=1` in a command to see everything.

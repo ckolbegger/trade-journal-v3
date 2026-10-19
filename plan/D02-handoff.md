@@ -4,7 +4,7 @@
 
 Written 2026-10-19, after D1 completed. [D01-handoff.md](D01-handoff.md) is the record of D1's session; this note is the starting point for D2.
 
-This session **implements D2, "Open a Long Stock position"**, under the frozen plan at revision 4. D1 is complete:
+This session **implements D2, "Open a Long Stock position"**, under the frozen plan at revision 5. D1 is complete:
 - Its gate passed (critic-2).
 - Every D1 acceptance row is marked covered.
 - It is tagged `claude-opus-5.5-d1` and pushed.
@@ -20,7 +20,7 @@ The repository hosts several independent implementations of the same spec, each 
 | Worktree path | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | Branch | `claude-opus-5.5` |
 | Dev server port | `5175`, from the gitignored `.env.local` |
-| Frozen plan | tag `claude-opus-5.5-plan-r4` (revision 4) |
+| Frozen plan | tag `claude-opus-5.5-plan-r5` (revision 5) |
 | D1 release | tag `claude-opus-5.5-d1` |
 
 Run these checks. Each one must match:
@@ -29,9 +29,9 @@ Run these checks. Each one must match:
 |---|---|
 | `git rev-parse --show-toplevel` | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | `git branch --show-current` | `claude-opus-5.5` |
-| `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5`, either in sync or ahead only by the commit that added this note. The only untracked file is `handoff-claude-opus-5.5-2026-10-11.md`. |
-| `git log --oneline claude-opus-5.5-d1..HEAD` | only the commit that added this note (`docs(plan): add the D2 handoff`) |
-| `git tag --list 'claude-opus-5.5-*'` | includes `claude-opus-5.5-plan-r4` and `claude-opus-5.5-d1` |
+| `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5`, either in sync or ahead only by the two commits in the next row. The only untracked file is `handoff-claude-opus-5.5-2026-10-11.md`. |
+| `git log --oneline claude-opus-5.5-d1..HEAD` | only the commit that added this note (`docs(plan): add the D2 handoff`) and the revision 5 commit, tagged `claude-opus-5.5-plan-r5` |
+| `git tag --list 'claude-opus-5.5-*'` | includes `claude-opus-5.5-plan-r5` and `claude-opus-5.5-d1` |
 | `grep DEV_PORT .env.local` | `DEV_PORT=5175` |
 | `node --version` | `v26.x`, at or above `v26.12.0` (decision 43) |
 | `npm ci && npx vitest run` | `Test Files 30 passed (30)`, `Tests 226 passed (226)` (207 unit and 19 integration) |
@@ -49,25 +49,25 @@ The worktree's `.claude/settings.local.json` sets `"syncClaudeAiPlugins": false`
 
 ## 2. How to start
 
-The governing instruction is [plan/kickoff.md](kickoff.md). Follow it exactly. It requires reading two baselines in full.
+The governing instruction is [plan/kickoff.md](kickoff.md). Follow it exactly. It requires reading two baselines, each scoped to what D2 uses, as decision 45 and the kickoff's plan-specific conditions direct.
 
-**The `specs/` baseline:** `specs/README.md`, every document it indexes, and `specs/acceptance/acceptance-contract.md`.
+**The `specs/` baseline (scoped):** read [plan/spec-reading/D02.md](spec-reading/D02.md), then read exactly the files and line ranges it lists, each range in full. It covers every core section of the [spec map](spec-map.md) plus every section tagged for D2. Don't read `plan/spec-map.md` in full. Search it when the work touches a section that isn't on the list, then read that section in the spec before building on it. If the missing section should have been tagged for D2, correct the map, regenerate the lists with `python3 .claude/scripts/spec-reading-lists.py`, and note the correction in `evidence/D02/structural.md`.
 
-**The frozen plan:**
-- `plan/implementation-plan.md`: recorded decisions 1–44, the rules and cumulative obligations, the freeze record, the risks, the review queue, and D2's definition.
-- `plan/technology-stack.md`, including "Pinned versions".
-- `plan/acceptance-matrix.md`.
-- `plan/D01-start-a-workspace-and-confirm-a-long-stock-plan.md`: D2 builds on D1's task identities, storage layout (A10), test tiers (decision 19), and harnesses.
-- **`plan/D02-open-a-long-stock-position.md`**, which is the work.
+**The frozen plan (scoped):**
+- `plan/implementation-plan.md`: everything except the `## D3` through `## D28` definition sections. That leaves the recorded decisions 1–45, the rules and cumulative obligations, the freeze record, the D1 and D2 definitions (D2's is the work), and the closing sections: parallelism, coverage index, and review queue. Section 3 of this note lists the amendments later breakdowns made to D2.
+- `plan/technology-stack.md` in full, including "Pinned versions".
+- `plan/acceptance-matrix.md`: only the opening sections, through "Evidence methods common to every row". D2's rows are in full in section 8 of the D2 breakdown. Look up any other row by its scenario ID only when you need it, for example to update a status.
+- `plan/D01-start-a-workspace-and-confirm-a-long-stock-plan.md`: only sections 1 (decisions, assumptions, and the storage layout A10), 2 (implementation boundaries), 3 (task graph and task identities), 5 (structural tasks), and 6 (test substitutes and harnesses). Skip its behavioral tasks, critic flows, acceptance rows, clause check, and evidence sections. D1 is built, so the code, together with section 4 of this handoff, shows what it left in place.
+- **`plan/D02-open-a-long-stock-position.md` in full**, which is the work.
 
-You may read D4–D8's breakdowns for context, since several of them amend D2 (see section 3). Do not read the definition sections for D9–D28: the user's rule is to read only the deliverable definitions in play.
+You may read D4–D8's breakdowns for context, since several of them amend D2 (see section 3). Read only the parts that touch D2.
 
 `specs/` and the frozen plan are read-only. If implementation needs a deviation:
 1. Stop before making it.
 2. Name the affected specification passages, acceptance scenarios and durable compatibility.
 3. Ask for approval to revise the plan.
 
-An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`; the next one is r5. Updating an acceptance row's status from `planned` to `covered` once evidence exists is not a revision, but ask the user before doing it, as was done for D1.
+An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`; the next one is r6. Updating an acceptance row's status from `planned` to `covered` once evidence exists is not a revision, but ask the user before doing it, as was done for D1.
 
 ## 3. D2 specifics
 
@@ -83,7 +83,7 @@ An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`; the ne
 - **TDD discipline.** Run every `it should` case red, then green, one at a time. Record the commands and outcomes in `evidence/D02/tdd-log.md`. A test that passes on its first run, or code written before its red, must be fixed and rerun to a genuine red, never logged and skipped. If no genuine red exists, flag it for the user rather than fabricate one (D1's T1.17 case 2 is the precedent). Structural tasks record their exact verification in `evidence/D02/structural.md`. Engine and OS versions go in `evidence/D02/provenance.md`.
 - **Test cost.** Routine browser suites run in Chromium only, with the faults build. Evidence from all three engines belongs in RC.
 - **The browser-critic gate (T2.24).**
-  1. Run the complete cumulative unit, integration and browser suites until they pass, and record the run.
+  1. Run the complete cumulative unit, integration and browser suites with the `suite-runner` subagent until they pass, and record the run.
   2. Spawn a **fresh** critic agent. The frozen plan authorizes this spawn.
   3. Give it D2's section 7 inputs and the future-capability list.
   4. It starts the app itself, drives the production UI in a browser, runs C2.1 onward, and never edits code.
@@ -136,7 +136,7 @@ Avoid test names containing parentheses or quotes, which break `-t` filtering, a
 ## 5. Working rules
 
 - Commit each finished task locally, with the co-author line. **Never push** unless the user asks.
-- End every task with a complete cumulative suite run, recorded in `evidence/D02/structural.md` with full outputs in `evidence/D02/suite-runs/`. The run covers unit, integration and browser suites, plus the static and verify checks: typecheck, `tsc6`, lint, `lint:deps`, build, and every `verify:*`. The TDD log's single-case rows do not prove the suites pass.
+- End every task with a complete cumulative suite run, delegated to the `suite-runner` subagent (it writes the full outputs to `evidence/D02/suite-runs/` and returns the table), and recorded in `evidence/D02/structural.md`. The run covers unit, integration and browser suites, plus the static and verify checks: typecheck, `tsc6`, lint, `lint:deps`, build, and every `verify:*`. The TDD log's single-case rows do not prove the suites pass.
 - Refer to document sections in words, never with the "§" sign.
 - Lead with a recommendation and its tradeoff. Ask **one consequential decision at a time**, in prose.
 - Check every user proposal against the spec. If one conflicts, quote the passages, offer the closest compliant design, and let the user choose.
