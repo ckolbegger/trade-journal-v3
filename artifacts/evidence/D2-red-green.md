@@ -933,6 +933,21 @@ The gap was in the plan, not only in D2, so it is now closed there:
   because D3:T4's D8 case already fixes "no effective position-changing fact → empty Positions with
   expected lifecycle Planned".
 
-The one residual from the audit that remains — the `derive` branch with no stored lifecycle does not
-assert its own cutoff — is a test-detail nicety, not a behaviour gap, and is recorded above rather
-than silently dropped.
+**Residual folded in.** The `derive` branch that handles a missing stored lifecycle had no case at
+all — every existing case supplied `storedLifecycle`, so that branch's cutoff, its agreement status
+and its empty `findings` were all unasserted. A case now covers it: *"should report the agreement as
+unavailable with a stable reason, bind the supplied cutoff and raise no finding when no stored
+lifecycle binding is supplied at all"*. Verified as discriminating by two mutations of that branch —
+dropping its cutoff (R1) and reporting `agreed` instead of `unavailable` (R2) — each of which now
+fails exactly that case.
+
+### Commit — fold in the untested `derive` branch
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| R1 | `npx vitest run` | `Test Files 45 passed (45)`, `Tests 324 passed (324)` | pass |
+| R2 | `npx playwright test` | `164 passed (2.3m)` | pass |
+| R3 | `npx tsc --noEmit` | exit 0 | pass |
+| R4 | `npm run lint:layers` | `123 files, 0 violations` | pass |
+| R5 | `npx eslint .` | exit 0 | pass |
+| R6 | mutation R1 (branch cutoff dropped) / R2 (branch reports agreed) | each fails exactly the new case | pass |

@@ -88,6 +88,25 @@ describe("TradeAnalysis.derive expected Lifecycle State and agreement, at the pu
     expect(result.tradeId).toBe("trade-1");
   });
 
+  it("should report the agreement as unavailable with a stable reason, bind the supplied cutoff and raise no finding when no stored lifecycle binding is supplied at all", () => {
+    const result = derive(
+      input({
+        storedLifecycle: undefined,
+        analysisCutoff: "2026-10-20T21:00:00.000Z",
+      }),
+    );
+
+    expect(result.expectedLifecycle).toEqual({ outcome: "Value", value: "Planned" });
+    expect(result.agreement).toMatchObject({
+      status: "unavailable",
+      reason: "NoStoredLifecycle",
+      expected: "Planned",
+    });
+    expect(result.agreement.stored).toBeUndefined();
+    expect(result.findings).toEqual([]);
+    expect(result.analysisCutoff).toBe("2026-10-20T21:00:00.000Z");
+  });
+
   it("should return identical expected lifecycle and agreement values when the same record and cutoff are derived twice", () => {
     const first = derive(input());
     const second = derive(input());
