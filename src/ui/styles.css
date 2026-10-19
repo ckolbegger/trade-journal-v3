@@ -237,3 +237,15 @@ select {
 .plan-form__grid > * {
   min-width: 0;
 }
+
+/* Long exact values wrap rather than widening the page: the narrow view never scrolls sideways. */
+.facts dd,
+.facts dt {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 899px) {
+  .app-shell {
+    overflow-x: hidden;
+  }
+}

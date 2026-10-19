@@ -1,38 +1,33 @@
 {
-  "criticId": "critic-d2-1792408297955-47d5f745",
+  "criticId": "critic-d2-1792409136-7d2e5c",
   "didWriteImplementation": false,
-  "spawnedAfterFix": false,
+  "spawnedAfterFix": true,
   "servedUrl": "http://127.0.0.1:5177",
   "servedPort": 5177,
-  "servedReleaseId": "40c8cab58aeab79fafda5120eff15b32cb081239bc074d28c09bbb110988335d",
   "browserEngines": [
     "chromium"
   ],
   "boundariesGiven": {
     "deliverableScope": "D2 confirmation only",
     "futureCapabilities": [
-      "Long Stock is the only Strategy offered (the other ten canonical seeds arrive at D8, D9, D11 and D12)",
-      "No position entry, Execution, Position, Lot Match, fees or realized P&L (D3)",
-      "No Daily Review, Marks, Expected Mark Status or Stop-Discipline episode (D4)",
-      "No corrections, Void, Rebuild, Correction Footprint or View history (D15, D16)",
-      "No Close Reason, Abandonment Reason, Close Review or Abandonment (D6)",
-      "No management revision; D2 freezes original management only (D14)",
-      "No Terminal Disposition, because no effective disposing facts exist",
-      "No valuation, marked P&L, Overrun or Expiration Payoff curve",
-      "Only two of the seven fixed Journal Entry Types and two of the seven Sources exist (D17)",
-      "Unsaved form state surviving a resize is required behavior and not stored evidence",
-      "Stored Lifecycle State and derived expected Lifecycle State are shown as separate concepts",
-      "No operation-required read-back after Save",
-      "No statement about startup or open-list timing",
-      "Native <select> controls set by value rather than synthetic arrow keys in automated runs"
+      "Every Strategy other than Long Stock, and the remaining ten canonical Strategy seeds (D8, D9, D11, D12).",
+      "Position recording, Executions, Positions, Lots, FIFO Lot Matches, fees, realized P&L, and Planned becoming Open (D3).",
+      "Daily Review, Mark entry, Expected Mark Status, and Stop-Discipline deviation reconciliation (D4).",
+      "Corrections: Replace, Void, Rebuild, Correction Footprint, View history and audit history UI (D15, D16).",
+      "Close Reason, Abandonment Reason, Close Review and abandonPlan; no close or abandonment at D2 (D6).",
+      "Management revisions: D2 freezes original management only and offers no revision (D14).",
+      "Terminal Disposition, valuation, marked P&L, Overrun and Expiration Payoff: no Marks or disposing facts exist at D2.",
+      "The remaining five of seven Journal Entry Types and five of seven Sources, and the full seedDefaults manifest (D17).",
+      "Backup, Restore, migration of older Workspaces, installation and update (D7, D20, D21, D22).",
+      "Any latency claim; D2 asserts boundedness only and no timing statement (AC-PERF-001 is unowned)."
     ]
   },
   "totals": {
     "flows": 12,
     "viewports": 2,
     "entries": 24,
-    "passed": 20,
-    "failed": 4
+    "passed": 24,
+    "failed": 0
   },
   "entries": [
     {
@@ -45,13 +40,13 @@
       },
       "acceptanceId": "AC-UI-002",
       "actions": [
-        "Launched a fresh persistent Chromium profile at 127.0.0.1:5177 with the harness init script (__TRADE_JOURNAL_HARNESS__=true, startup override {}).",
-        "Chose Time zone \"America/New_York\" and pressed \"Create this journal\".",
-        "Opened \"Set up\", added Institution \"Fidelity\" and Account \"Main\", and waited for both lists.",
-        "Read the Onboarding status line and the Primary navigation bounding box.",
-        "Pressed the \"Plan\" navigation button and waited for the plan heading."
+        "Opened a fresh browser context (empty storage) and armed the harness with __TRADE_JOURNAL_HARNESS__ = true and __TRADE_JOURNAL_STARTUP_OVERRIDE__ = {}.",
+        "Navigated to http://127.0.0.1:5177/, chose New York as the Time zone and pressed Create this journal.",
+        "Opened Set up, added Institution Fidelity and Account Main, and waited for Onboarding: Ready for Trade Planning.",
+        "Pressed the Plan button in nav[aria-label=Primary] and waited for the Confirm a plan heading.",
+        "Measured the navigation arrangement and read every visible h2 heading to confirm the Ready state rather than Loading/Empty/Error."
       ],
-      "observation": "Onboarding status read \"Onboarding: Ready for Trade Planning\". Primary navigation buttons were [\"Status\",\"Set up\",\"Plan\",\"Trades\"]; its box was {\"x\":0,\"y\":751,\"width\":375,\"height\":61} (bottom arrangement expected). Pressing Plan showed the \"Confirm a plan\" card with 9/9 form controls and no Loading/Empty/Error text (panel text starts \"Confirm a plan\\nAccount\\nChoose an Account\\nMain\\nStrategy\\nChoose a Strategy\\nLong St\"). Screenshot: /tmp/d2-critic-shots/narrow-flow1-plan-ready.png Additional visual observation: the top-level Plan fields use inline flow, so at 375 the \"Instrument\" and \"Planned Leg quantity\" labels wrap beside/over the preceding entry and Instrument inputs instead of sitting above their own controls. Every field, label association and action was still present and reachable, so this did not change the flow status.",
+      "observation": "The Plan button is button #3 of 4 inside nav[aria-label=\"Primary\"] and opened the confirmation form. Layout: 375x812: nav box x=0 y=751 w=375 h=61, position=fixed, flex-direction=row, expected bottom navigation (fixed at the bottom). Visible h2 headings after opening the entry point: [\"This browser may clear your journal data\",\"Confirm a plan\"]. The form rendered Account, Strategy, Intended entry, Instrument, Planned Leg quantity, the two Stops/Targets condition blocks, the four Plan Reflection prompts and Save the plan/Cancel; there was no Loading the plan form, no The plan form could not be loaded, no Set up an Account first and no No Trades yet. Onboarding reported Ready for Trade Planning before the entry point was opened. Screenshot: /tmp/d2c/shots/narrow-flow1-plan-ready.png",
       "status": "pass"
     },
     {
@@ -64,13 +59,13 @@
       },
       "acceptanceId": "AC-UI-002",
       "actions": [
-        "Launched a fresh persistent Chromium profile at 127.0.0.1:5177 with the harness init script (__TRADE_JOURNAL_HARNESS__=true, startup override {}).",
-        "Chose Time zone \"America/New_York\" and pressed \"Create this journal\".",
-        "Opened \"Set up\", added Institution \"Fidelity\" and Account \"Main\", and waited for both lists.",
-        "Read the Onboarding status line and the Primary navigation bounding box.",
-        "Pressed the \"Plan\" navigation button and waited for the plan heading."
+        "Opened a fresh browser context (empty storage) and armed the harness with __TRADE_JOURNAL_HARNESS__ = true and __TRADE_JOURNAL_STARTUP_OVERRIDE__ = {}.",
+        "Navigated to http://127.0.0.1:5177/, chose New York as the Time zone and pressed Create this journal.",
+        "Opened Set up, added Institution Fidelity and Account Main, and waited for Onboarding: Ready for Trade Planning.",
+        "Pressed the Plan button in nav[aria-label=Primary] and waited for the Confirm a plan heading.",
+        "Measured the navigation arrangement and read every visible h2 heading to confirm the Ready state rather than Loading/Empty/Error."
       ],
-      "observation": "Onboarding status read \"Onboarding: Ready for Trade Planning\". Primary navigation buttons were [\"Status\",\"Set up\",\"Plan\",\"Trades\"]; its box was {\"x\":0,\"y\":16,\"width\":208,\"height\":884} (left arrangement expected). Pressing Plan showed the \"Confirm a plan\" card with 9/9 form controls and no Loading/Empty/Error text (panel text starts \"Confirm a plan\\nAccount\\nChoose an Account\\nMain\\nStrategy\\nChoose a Strategy\\nLong St\"). Screenshot: /tmp/d2-critic-shots/wide-flow1-plan-ready.png Additional visual observation: the five top-level Plan controls are laid out in one horizontal run (Account, Strategy, Intended entry, Instrument, Planned Leg quantity) rather than a labelled vertical form, so labels sit beside controls and the row runs off the form's natural column. Every field, label association and action was still present and reachable, so this did not change the flow status.",
+      "observation": "The Plan button is button #3 of 4 inside nav[aria-label=\"Primary\"] and opened the confirmation form. Layout: 1440x900: nav box x=0 y=16 w=208 h=884, position=fixed, flex-direction=column, expected left sidebar (fixed at the left, column direction). Visible h2 headings after opening the entry point: [\"This browser may clear your journal data\",\"Confirm a plan\"]. The form rendered Account, Strategy, Intended entry, Instrument, Planned Leg quantity, the two Stops/Targets condition blocks, the four Plan Reflection prompts and Save the plan/Cancel; there was no Loading the plan form, no The plan form could not be loaded, no Set up an Account first and no No Trades yet. Onboarding reported Ready for Trade Planning before the entry point was opened. Screenshot: /tmp/d2c/shots/wide-flow1-plan-ready.png",
       "status": "pass"
     },
     {
@@ -83,12 +78,11 @@
       },
       "acceptanceId": "AC-PLAN-001",
       "actions": [
-        "Stayed on the open Plan confirmation form from flow 1.",
-        "Read every option of the native \"Strategy\" select and pressed it once.",
-        "Set window.__d2NoReload, chose Account Main, then chose Strategy Long Stock.",
-        "Re-read the marker, both select values, the visible field set and any validation messages."
+        "On the open confirmation form, opened the Account select and chose Account Main.",
+        "Opened the Strategy select and read every option in the closed native select.",
+        "Chose Long Stock, then read the Account and Strategy selected values, the visible form fields and performance.timeOrigin."
       ],
-      "observation": "The Strategy select offered [\"Choose a Strategy\",\"Long Stock\"] — exactly one selectable Strategy, Long Stock. After choosing Account and Strategy the select values were account=\"account:institution:fidelity:main\" strategy=\"strategy.long-stock\", the no-reload marker survived (\"kept\"), all form fields were visible (2 boundary-price and 2 monetary-boundary inputs) and no validation message appeared. Screenshot: /tmp/d2-critic-shots/narrow-flow2-strategy-selected.png",
+      "observation": "The Strategy select offered exactly 1 Strategy beyond its placeholder: [\"Choose a Strategy\",\"Long Stock\"]. Choosing Long Stock set the select value to \"strategy.long-stock\" and the Account select value to \"account:institution:fidelity:main\"; the form still rendered the same fields (intended entry, instrument, quantity, 2 Boundary price inputs, 2 Monetary boundary (USD) inputs, both required prompts) and performance.timeOrigin was unchanged (1792408953938.7 -> 1792408953938.7), so there was no reload. Screenshot: /tmp/d2c/shots/narrow-flow2-strategy-selected.png",
       "status": "pass"
     },
     {
@@ -101,12 +95,11 @@
       },
       "acceptanceId": "AC-PLAN-001",
       "actions": [
-        "Stayed on the open Plan confirmation form from flow 1.",
-        "Read every option of the native \"Strategy\" select and pressed it once.",
-        "Set window.__d2NoReload, chose Account Main, then chose Strategy Long Stock.",
-        "Re-read the marker, both select values, the visible field set and any validation messages."
+        "On the open confirmation form, opened the Account select and chose Account Main.",
+        "Opened the Strategy select and read every option in the closed native select.",
+        "Chose Long Stock, then read the Account and Strategy selected values, the visible form fields and performance.timeOrigin."
       ],
-      "observation": "The Strategy select offered [\"Choose a Strategy\",\"Long Stock\"] — exactly one selectable Strategy, Long Stock. After choosing Account and Strategy the select values were account=\"account:institution:fidelity:main\" strategy=\"strategy.long-stock\", the no-reload marker survived (\"kept\"), all form fields were visible (2 boundary-price and 2 monetary-boundary inputs) and no validation message appeared. Screenshot: /tmp/d2-critic-shots/wide-flow2-strategy-selected.png",
+      "observation": "The Strategy select offered exactly 1 Strategy beyond its placeholder: [\"Choose a Strategy\",\"Long Stock\"]. Choosing Long Stock set the select value to \"strategy.long-stock\" and the Account select value to \"account:institution:fidelity:main\"; the form still rendered the same fields (intended entry, instrument, quantity, 2 Boundary price inputs, 2 Monetary boundary (USD) inputs, both required prompts) and performance.timeOrigin was unchanged (1792408963980.8 -> 1792408963980.8), so there was no reload. Screenshot: /tmp/d2c/shots/wide-flow2-strategy-selected.png",
       "status": "pass"
     },
     {
@@ -119,12 +112,11 @@
       },
       "acceptanceId": "AC-PLAN-002",
       "actions": [
-        "Filled Account Main, Strategy Long Stock, intended entry 180, Instrument AAPL, quantity 100, Stop 175 with monetary boundary 500, Target 190 with monetary boundary 1000, and the Thesis prompt.",
-        "Left the Invalidation prompt blank.",
-        "Recorded every IndexedDB store row count, pressed Save the plan once, and re-read the message and all entered values.",
-        "Recorded every IndexedDB store row count again."
+        "On a fresh context, created the journal, Institution Fidelity and Account Main, opened Plan and filled Account, Long Stock, intended entry 180, instrument AAPL, quantity 100, Stop 175 with monetary 500, Target 190 with monetary 1000 and the Thesis answer.",
+        "Left What would invalidate the thesis? blank, recorded every durable store count and revision plus the entered values, and pressed Save the plan.",
+        "Read the visible alerts, checked for a Plan confirmed heading, re-read the entered values and re-recorded the durable revision snapshot."
       ],
-      "observation": "Save produced the inline message [\"Answer \\\"What would invalidate the thesis?\\\" before saving.\"] which names the Invalidation prompt; no \"Plan confirmed\" heading appeared (count 0). All entered values were preserved ({\"entry\":\"180\",\"instrument\":\"AAPL\",\"quantity\":\"100\",\"stopPrice\":\"175\",\"stopMoney\":\"500\",\"targetPrice\":\"190\",\"targetMoney\":\"1000\",\"thesis\":\"Breakout above the 180 base on expanding volume.\",\"account\":\"account:institution:fidelity:main\",\"strategy\":\"strategy.long-stock\"}). Store counts before {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} and after {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} were identical. Screenshot: /tmp/d2-critic-shots/narrow-flow3-invalid-invalidation.png",
+      "observation": "Press of Save produced the inline alert [\"Answer \\\"What would invalidate the thesis?\\\" before saving.\"] (role=alert, next to the Invalidation prompt) and no Plan confirmed heading (count 0). Entered values were preserved: {\"entry\":\"180\",\"instrument\":\"AAPL\",\"quantity\":\"100\",\"stop\":\"175\",\"stopMoney\":\"500\",\"target\":\"190\",\"targetMoney\":\"1000\",\"thesis\":\"Breakout above the 180 base on expanding volume.\",\"account\":\"Main\"}. Durable state unchanged: {\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null} -> {\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null}, so no Trade Record, Journal, lifecycle or version write. Screenshot: /tmp/d2c/shots/narrow-flow3-invalidation-validation.png",
       "status": "pass"
     },
     {
@@ -137,12 +129,11 @@
       },
       "acceptanceId": "AC-PLAN-002",
       "actions": [
-        "Filled Account Main, Strategy Long Stock, intended entry 180, Instrument AAPL, quantity 100, Stop 175 with monetary boundary 500, Target 190 with monetary boundary 1000, and the Thesis prompt.",
-        "Left the Invalidation prompt blank.",
-        "Recorded every IndexedDB store row count, pressed Save the plan once, and re-read the message and all entered values.",
-        "Recorded every IndexedDB store row count again."
+        "On a fresh context, created the journal, Institution Fidelity and Account Main, opened Plan and filled Account, Long Stock, intended entry 180, instrument AAPL, quantity 100, Stop 175 with monetary 500, Target 190 with monetary 1000 and the Thesis answer.",
+        "Left What would invalidate the thesis? blank, recorded every durable store count and revision plus the entered values, and pressed Save the plan.",
+        "Read the visible alerts, checked for a Plan confirmed heading, re-read the entered values and re-recorded the durable revision snapshot."
       ],
-      "observation": "Save produced the inline message [\"Answer \\\"What would invalidate the thesis?\\\" before saving.\"] which names the Invalidation prompt; no \"Plan confirmed\" heading appeared (count 0). All entered values were preserved ({\"entry\":\"180\",\"instrument\":\"AAPL\",\"quantity\":\"100\",\"stopPrice\":\"175\",\"stopMoney\":\"500\",\"targetPrice\":\"190\",\"targetMoney\":\"1000\",\"thesis\":\"Breakout above the 180 base on expanding volume.\",\"account\":\"account:institution:fidelity:main\",\"strategy\":\"strategy.long-stock\"}). Store counts before {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} and after {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} were identical. Screenshot: /tmp/d2-critic-shots/wide-flow3-invalid-invalidation.png",
+      "observation": "Press of Save produced the inline alert [\"Answer \\\"What would invalidate the thesis?\\\" before saving.\"] (role=alert, next to the Invalidation prompt) and no Plan confirmed heading (count 0). Entered values were preserved: {\"entry\":\"180\",\"instrument\":\"AAPL\",\"quantity\":\"100\",\"stop\":\"175\",\"stopMoney\":\"500\",\"target\":\"190\",\"targetMoney\":\"1000\",\"thesis\":\"Breakout above the 180 base on expanding volume.\",\"account\":\"Main\"}. Durable state unchanged: {\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null} -> {\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null}, so no Trade Record, Journal, lifecycle or version write. Screenshot: /tmp/d2c/shots/wide-flow3-invalidation-validation.png",
       "status": "pass"
     },
     {
@@ -155,16 +146,13 @@
       },
       "acceptanceId": "AC-RESP-001",
       "actions": [
-        "On the same open form, filled Account Main, Strategy Long Stock, intended entry 180, Instrument AAPL, quantity 100, Stop boundary 175 with monetary boundary 500, Target boundary 190 with monetary boundary 1000, and both required Plan Reflection answers.",
-        "Recorded every IndexedDB store row count, pressed Save the plan exactly once, and waited for the confirmation screen.",
-        "Read the whole saved card text and the saved 1R, Thesis and Invalidation values.",
-        "Recorded every store row count again and inspected the persisted tradeRecord and tradeLifecycle rows."
+        "Filled the blank Invalidation answer on the same form and recorded every durable store count, the stored revisions and performance.timeOrigin.",
+        "Pressed Save the plan exactly once and waited for the Plan confirmed heading.",
+        "Read the whole saved card, the saved 1R/entry/quantity/instrument/strategy/Thesis/Invalidation and both saved condition lines via their data-testids.",
+        "Re-read every durable store and the stored lifecycle record, and compared the delta with the single confirmation expectation."
       ],
-      "observation": "One Save produced the \"Plan confirmed\" card. 1R read \"500\"; the Thesis read \"Breakout above the 180 base on expanding volume.\" and the Invalidation \"A daily close back inside the base invalidates the thesis.\". Durable state after the click: tradeRecord rows 5, journal rows 3 (was 2), tradeLifecycle 1 with state [\"Planned\"], lifecycleIndex 1, tradeVersion 1. The saved card did NOT show a Stop, did NOT show a Target, did NOT show 175 and did NOT show 190. Card text: \"Plan confirmed\\n\\nOne Trade, one frozen Plan and one completed Plan Reflection were saved.\\n\\nIntended entry\\n180\\nPlanned Leg quantity\\n100\\n1R (frozen at confirmation)\\n500\\nLifecycle\\nPlanned\\nWhy this trade\\nBreakout above the 180 base on expanding volume.\\nWhat would invalidate it\\nA daily close back inside the base invalidates the thesis.\\nOpen the Trade\". Screenshot: /tmp/d2-critic-shots/narrow-flow4-plan-confirmed.png The stored Plan does contain both conditions (cond-1 Stop 175/500, cond-2 Target 190/1000) and the long 100 AAPL leg, and the Trade view renders them; the gap is that the post-commit confirmation card does not show the frozen Plan, its original Stop or its Target.",
-      "status": "fail",
-      "expected": "The saved screen shows the frozen Plan, the original Stop and Target, the positive baseline 1R (500) and the completed Plan Reflection in one confirmation.",
-      "actual": "1R=\"500\", thesis/invalidation present, stored Planned=[\"Planned\"]; the saved card showed no Stop/Target: \"Plan confirmed\\n\\nOne Trade, one frozen Plan and one completed Plan Reflection were saved.\\n\\nIntended entry\\n180\\nPlanned Leg quantity\\n100\\n1R (frozen at confirmation)\\n500\\nLifecycle\\nPlanned\\nWhy this trade\\nBreakout above the 180 base on expanding volume.\\nWhat would invalidate it\\nA daily close back inside the base invalidates the thesis.\\nOpen the Trade\" The durable Plan row holds conditions cond-1 (Stop, boundary 175, monetary 500 USD) and cond-2 (Target, boundary 190, monetary 1000 USD) and baseline originalPlannedRisk/oneR 500 USD, so only the confirmation card is incomplete.",
-      "evidence": "/tmp/d2-critic-shots/narrow-flow4-plan-confirmed.png"
+      "observation": "One Save produced the \"Plan confirmed\" card. Saved values: 1R=\"500\", intended entry=\"180\", quantity=\"long 100\", instrument=\"AAPL\", strategy=\"Long Stock\", lifecycle shown as Planned, saved Stop line \"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\", saved Target line \"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\", saved Thesis \"Breakout above the 180 base on expanding volume.\", saved Invalidation \"A daily close back inside the base invalidates the thesis.\". Full card text: \"Plan confirmed\\n\\nOne Trade, one frozen Plan, its original management and one completed Plan Reflection were saved together.\\n\\nStrategy\\nLong Stock\\nInstrument\\nAAPL\\nIntended entry\\n180\\nPlanned Leg quantity\\nlong 100\\n1R (frozen at confirmation)\\n500\\nLifecycle\\nPlanned\\nWhy this trade\\nBreakout above the 180 base on expanding volume.\\nWhat would invalidate it\\nA daily close back inside the base invalidates the thesis.\\nOriginal management\\nStop AtOrBelow 175 (frozen monetary boundary 500 USD)\\nTarget AtOrAbove 190 (frozen monetary boundary 1000 USD)\\nOpen the TradeStart another plan\". Durable delta: journal +1 entry ({\"id\":\"entry:plan-confirmation:1\",\"revision\":1,\"entryTypeStableKey\":\"entryType.plan-reflection\",\"sourceStableKey\":\"source.plan-confirmation\",\"thesis\":\"Breakout above the 180 base on expanding volume.\",\"invalidation\":\"A daily close back inside the base invalidates the thesis.\",\"answers\":[{\"promptStableKey\":\"prompt.plan-reflection.thesis\",\"value\":\"Breakout above the 180 base on expanding volume.\",\"promptLabel\":\"Why this trade, why now?\",\"semanticRole\":\"thesis\"},{\"promptStableKey\":\"prompt.plan-reflection.invalidation\",\"value\":\"A daily close back inside the base invalidates the thesis.\",\"promptLabel\":\"What would invalidate the thesis?\",\"semanticRole\":\"invalidation\"}]}), tradeRecord rows +5, tradeLifecycle state \"Planned\", lifecycleIndex \"Planned\", exactly 1 tradeVersion row at factRevision 1, stored revisions {\"journal\":2,\"referenceCatalog\":3,\"workspaceMeta\":1,\"tradeRecord\":1,\"tradeLifecycle\":1,\"lifecycleIndex\":1,\"tradeVersion\":1}. performance.timeOrigin unchanged (1792408954442 -> 1792408954442). Layout measurement at this viewport: {\"innerWidth\":375,\"scrollWidth\":399,\"leafElementsBeyondViewport\":0}. Screenshot: /tmp/d2c/shots/narrow-flow4-plan-confirmed.png The document scrollWidth measured 399 against innerWidth 375, but leafElementsBeyondViewport was 0: only the saved card's outer box and its right padding extend past the viewport, so no text, field or action is clipped; no section 4 flow expectation forbids horizontal scrolling, so this is recorded as a layout observation, not a flow failure.",
+      "status": "pass"
     },
     {
       "flow": 4,
@@ -176,16 +164,13 @@
       },
       "acceptanceId": "AC-RESP-001",
       "actions": [
-        "On the same open form, filled Account Main, Strategy Long Stock, intended entry 180, Instrument AAPL, quantity 100, Stop boundary 175 with monetary boundary 500, Target boundary 190 with monetary boundary 1000, and both required Plan Reflection answers.",
-        "Recorded every IndexedDB store row count, pressed Save the plan exactly once, and waited for the confirmation screen.",
-        "Read the whole saved card text and the saved 1R, Thesis and Invalidation values.",
-        "Recorded every store row count again and inspected the persisted tradeRecord and tradeLifecycle rows."
+        "Filled the blank Invalidation answer on the same form and recorded every durable store count, the stored revisions and performance.timeOrigin.",
+        "Pressed Save the plan exactly once and waited for the Plan confirmed heading.",
+        "Read the whole saved card, the saved 1R/entry/quantity/instrument/strategy/Thesis/Invalidation and both saved condition lines via their data-testids.",
+        "Re-read every durable store and the stored lifecycle record, and compared the delta with the single confirmation expectation."
       ],
-      "observation": "One Save produced the \"Plan confirmed\" card. 1R read \"500\"; the Thesis read \"Breakout above the 180 base on expanding volume.\" and the Invalidation \"A daily close back inside the base invalidates the thesis.\". Durable state after the click: tradeRecord rows 5, journal rows 3 (was 2), tradeLifecycle 1 with state [\"Planned\"], lifecycleIndex 1, tradeVersion 1. The saved card did NOT show a Stop, did NOT show a Target, did NOT show 175 and did NOT show 190. Card text: \"Plan confirmed\\n\\nOne Trade, one frozen Plan and one completed Plan Reflection were saved.\\n\\nIntended entry\\n180\\nPlanned Leg quantity\\n100\\n1R (frozen at confirmation)\\n500\\nLifecycle\\nPlanned\\nWhy this trade\\nBreakout above the 180 base on expanding volume.\\nWhat would invalidate it\\nA daily close back inside the base invalidates the thesis.\\nOpen the Trade\". Screenshot: /tmp/d2-critic-shots/wide-flow4-plan-confirmed.png The stored Plan does contain both conditions (cond-1 Stop 175/500, cond-2 Target 190/1000) and the long 100 AAPL leg, and the Trade view renders them; the gap is that the post-commit confirmation card does not show the frozen Plan, its original Stop or its Target.",
-      "status": "fail",
-      "expected": "The saved screen shows the frozen Plan, the original Stop and Target, the positive baseline 1R (500) and the completed Plan Reflection in one confirmation.",
-      "actual": "1R=\"500\", thesis/invalidation present, stored Planned=[\"Planned\"]; the saved card showed no Stop/Target: \"Plan confirmed\\n\\nOne Trade, one frozen Plan and one completed Plan Reflection were saved.\\n\\nIntended entry\\n180\\nPlanned Leg quantity\\n100\\n1R (frozen at confirmation)\\n500\\nLifecycle\\nPlanned\\nWhy this trade\\nBreakout above the 180 base on expanding volume.\\nWhat would invalidate it\\nA daily close back inside the base invalidates the thesis.\\nOpen the Trade\" The durable Plan row holds conditions cond-1 (Stop, boundary 175, monetary 500 USD) and cond-2 (Target, boundary 190, monetary 1000 USD) and baseline originalPlannedRisk/oneR 500 USD, so only the confirmation card is incomplete.",
-      "evidence": "/tmp/d2-critic-shots/wide-flow4-plan-confirmed.png"
+      "observation": "One Save produced the \"Plan confirmed\" card. Saved values: 1R=\"500\", intended entry=\"180\", quantity=\"long 100\", instrument=\"AAPL\", strategy=\"Long Stock\", lifecycle shown as Planned, saved Stop line \"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\", saved Target line \"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\", saved Thesis \"Breakout above the 180 base on expanding volume.\", saved Invalidation \"A daily close back inside the base invalidates the thesis.\". Full card text: \"Plan confirmed\\n\\nOne Trade, one frozen Plan, its original management and one completed Plan Reflection were saved together.\\n\\nStrategy\\nLong Stock\\nInstrument\\nAAPL\\nIntended entry\\n180\\nPlanned Leg quantity\\nlong 100\\n1R (frozen at confirmation)\\n500\\nLifecycle\\nPlanned\\nWhy this trade\\nBreakout above the 180 base on expanding volume.\\nWhat would invalidate it\\nA daily close back inside the base invalidates the thesis.\\nOriginal management\\nStop AtOrBelow 175 (frozen monetary boundary 500 USD)\\nTarget AtOrAbove 190 (frozen monetary boundary 1000 USD)\\nOpen the TradeStart another plan\". Durable delta: journal +1 entry ({\"id\":\"entry:plan-confirmation:1\",\"revision\":1,\"entryTypeStableKey\":\"entryType.plan-reflection\",\"sourceStableKey\":\"source.plan-confirmation\",\"thesis\":\"Breakout above the 180 base on expanding volume.\",\"invalidation\":\"A daily close back inside the base invalidates the thesis.\",\"answers\":[{\"promptStableKey\":\"prompt.plan-reflection.thesis\",\"value\":\"Breakout above the 180 base on expanding volume.\",\"promptLabel\":\"Why this trade, why now?\",\"semanticRole\":\"thesis\"},{\"promptStableKey\":\"prompt.plan-reflection.invalidation\",\"value\":\"A daily close back inside the base invalidates the thesis.\",\"promptLabel\":\"What would invalidate the thesis?\",\"semanticRole\":\"invalidation\"}]}), tradeRecord rows +5, tradeLifecycle state \"Planned\", lifecycleIndex \"Planned\", exactly 1 tradeVersion row at factRevision 1, stored revisions {\"journal\":2,\"referenceCatalog\":3,\"workspaceMeta\":1,\"tradeRecord\":1,\"tradeLifecycle\":1,\"lifecycleIndex\":1,\"tradeVersion\":1}. performance.timeOrigin unchanged (1792408964559.3 -> 1792408964559.3). Layout measurement at this viewport: {\"innerWidth\":1440,\"scrollWidth\":1440,\"leafElementsBeyondViewport\":0}. Screenshot: /tmp/d2c/shots/wide-flow4-plan-confirmed.png",
+      "status": "pass"
     },
     {
       "flow": 5,
@@ -197,17 +182,13 @@
       },
       "acceptanceId": "AC-PLAN-002",
       "actions": [
-        "Fresh persistent profile: created the journal, Institution Fidelity and Account Main, and opened the empty Plan form.",
-        "Filled entry 180, AAPL, quantity 100, Stop 175 and Target 190 with BOTH Monetary boundary (USD) inputs set to 0, and answered both required prompts. The submitted conditions therefore declare no positive monetary risk.",
-        "Captured the filled form (screenshot zero-monetary-form) and the IndexedDB store row counts before Save.",
-        "Pressed Save the plan once, waited, and read the resulting screen, the saved 1R and the store row counts again.",
-        "Attempt 2 in a second fresh profile: set the same Plan but with the Stop boundary price as the non-numeric text \"abc\", pressed Save, and read the typed message and store counts."
+        "On a fresh context, created the journal, Institution Fidelity and Account Main, opened Plan and filled entry 180, AAPL, quantity 100, Stop 175 and Target 190, with BOTH Monetary boundary (USD) inputs set to 0, plus both required reflection answers.",
+        "Recorded every durable store count and the stored revisions before Save.",
+        "Pressed Save the plan once, read all visible role=alert text, checked for a Plan confirmed heading and re-read the entered values.",
+        "Recorded the durable snapshot again and compared it with the pre-Save snapshot."
       ],
-      "observation": "The submitted form showed Stop \"175\" / monetary \"0\" and Target \"190\" / monetary \"0\" with entry \"180\" and quantity \"100\" (/tmp/d2-critic-shots/narrow-flow5-zero-monetary-form.png). Save was ACCEPTED: \"Plan confirmed\" appeared with 1R \"500\"; the card read \"Plan confirmed\\n\\nOne Trade, one frozen Plan and one completed Plan Reflection were saved.\\n\\nIntended entry\\n180\\nPlanned Leg quantity\\n100\\n1R (frozen at confirmation)\\n500\\nLifecycle\\nPlanned\\nWhy this trade\\nBreakout above the 180 base on expanding volume.\\nWhat would invalidate it\\nA daily close back inside the base invalidates the thesis.\\nOpen the Trade\" (/tmp/d2-critic-shots/narrow-flow5-zero-monetary-boundary.png). Store counts went {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} → {\"journal\":3,\"lifecycleIndex\":1,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":1,\"tradeRecord\":5,\"tradeVersion\":1,\"workspaceMeta\":2}, i.e. a Trade, Plan, lifecycle record, index entry, version row and Journal Entry were written. Attempt 2 (Stop boundary price \"abc\") produced [\"The Plan was not saved. Your entries are still here.Original Planned Risk must be a positive number; an unavailable baseline is not a confirmable Plan\"] with no saved screen and unchanged counts ({\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} → {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2}), but the message names no condition, boundary or field (/tmp/d2-critic-shots/narrow-flow5-non-numeric-baseline.png). The wrong-side Stop that does produce the baseline rejection is flow 6's construction. The raw stored Plan row confirms the inconsistency: perConditionBasis[0].monetaryBoundary is 0 USD (Stop) and perConditionBasis[1].monetaryBoundary is 0 USD (Target), both with measurementPolicy NearestNonnegativeMonetaryBoundary, while baseline.originalPlannedRisk and oneR are 500 USD. trade-analysis.md:57 requires the baseline to use \"the same independent-OR and nearest nonnegative monetary-boundary policy used by current headlines\", and plan/deliverable-breakdowns/D2-confirm-first-plan.md §1 decision 2 says a Plan whose computed Original Planned Risk is not positive is \"a typed rejection, not a Plan with an unavailable 1R\".",
-      "status": "fail",
-      "expected": "A Plan whose conditions yield no positive monetary risk is rejected with a typed message naming the offending condition, and nothing is saved (no Trade, no Journal Entry, unchanged revisions).",
-      "actual": "The Plan was saved with 1R \"500\" although both declared monetary boundaries were 0; counts {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} → {\"journal\":3,\"lifecycleIndex\":1,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":1,\"tradeRecord\":5,\"tradeVersion\":1,\"workspaceMeta\":2}. The only UI path to a numeric-baseline rejection is a wrong-side Stop (flow 6) or non-numeric text, whose message does not name a condition. Stored Plan row: perConditionBasis monetaryBoundary 0 USD for both conditions with policy NearestNonnegativeMonetaryBoundary, while originalPlannedRisk/oneR are 500 USD. The form also offers no way to remove a Stop or change a condition's role (condition 1 is always Stop, condition 2 always Target, added conditions default to Stop), so the only price-based route to a non-positive risk is flow 6's wrong-side Stop.",
-      "evidence": "/tmp/d2-critic-shots/narrow-flow5-zero-monetary-form.png; /tmp/d2-critic-shots/narrow-flow5-zero-monetary-boundary.png; /tmp/d2-critic-shots/narrow-flow5-non-numeric-baseline.png; counts {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} -> {\"journal\":3,\"lifecycleIndex\":1,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":1,\"tradeRecord\":5,\"tradeVersion\":1,\"workspaceMeta\":2}"
+      "observation": "The frozen monetary boundaries were submitted as 0 and 0. Save was REJECTED with [\"The Plan was not saved. Your entries are still here.\\n\\nthe frozen monetary boundary of this Stop must be a positive number; it is \\\"0\\\"\\nthe frozen monetary boundary of this Target must be a positive number; it is \\\"0\\\"\"]; the message names the offending conditions (\"this Stop\", \"this Target\") and states each frozen monetary boundary must be a positive number. No Plan confirmed heading appeared (count 0). Durable state did not move: {\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null} -> {\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null}, i.e. tradeRecord 0, tradeLifecycle 0, lifecycleIndex 0, tradeVersion 0, journal entry rows 0. The form kept the entered values (entry \"180\", Stop boundary \"175\", Target boundary \"190\", monetary boundaries \"0\"/\"0\"). Screenshot: /tmp/d2c/shots/narrow-flow5-zero-monetary-rejected.png",
+      "status": "pass"
     },
     {
       "flow": 5,
@@ -219,17 +200,13 @@
       },
       "acceptanceId": "AC-PLAN-002",
       "actions": [
-        "Fresh persistent profile: created the journal, Institution Fidelity and Account Main, and opened the empty Plan form.",
-        "Filled entry 180, AAPL, quantity 100, Stop 175 and Target 190 with BOTH Monetary boundary (USD) inputs set to 0, and answered both required prompts. The submitted conditions therefore declare no positive monetary risk.",
-        "Captured the filled form (screenshot zero-monetary-form) and the IndexedDB store row counts before Save.",
-        "Pressed Save the plan once, waited, and read the resulting screen, the saved 1R and the store row counts again.",
-        "Attempt 2 in a second fresh profile: set the same Plan but with the Stop boundary price as the non-numeric text \"abc\", pressed Save, and read the typed message and store counts."
+        "On a fresh context, created the journal, Institution Fidelity and Account Main, opened Plan and filled entry 180, AAPL, quantity 100, Stop 175 and Target 190, with BOTH Monetary boundary (USD) inputs set to 0, plus both required reflection answers.",
+        "Recorded every durable store count and the stored revisions before Save.",
+        "Pressed Save the plan once, read all visible role=alert text, checked for a Plan confirmed heading and re-read the entered values.",
+        "Recorded the durable snapshot again and compared it with the pre-Save snapshot."
       ],
-      "observation": "The submitted form showed Stop \"175\" / monetary \"0\" and Target \"190\" / monetary \"0\" with entry \"180\" and quantity \"100\" (/tmp/d2-critic-shots/wide-flow5-zero-monetary-form.png). Save was ACCEPTED: \"Plan confirmed\" appeared with 1R \"500\"; the card read \"Plan confirmed\\n\\nOne Trade, one frozen Plan and one completed Plan Reflection were saved.\\n\\nIntended entry\\n180\\nPlanned Leg quantity\\n100\\n1R (frozen at confirmation)\\n500\\nLifecycle\\nPlanned\\nWhy this trade\\nBreakout above the 180 base on expanding volume.\\nWhat would invalidate it\\nA daily close back inside the base invalidates the thesis.\\nOpen the Trade\" (/tmp/d2-critic-shots/wide-flow5-zero-monetary-boundary.png). Store counts went {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} → {\"journal\":3,\"lifecycleIndex\":1,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":1,\"tradeRecord\":5,\"tradeVersion\":1,\"workspaceMeta\":2}, i.e. a Trade, Plan, lifecycle record, index entry, version row and Journal Entry were written. Attempt 2 (Stop boundary price \"abc\") produced [\"The Plan was not saved. Your entries are still here.Original Planned Risk must be a positive number; an unavailable baseline is not a confirmable Plan\"] with no saved screen and unchanged counts ({\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} → {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2}), but the message names no condition, boundary or field (/tmp/d2-critic-shots/wide-flow5-non-numeric-baseline.png). The wrong-side Stop that does produce the baseline rejection is flow 6's construction. The raw stored Plan row confirms the inconsistency: perConditionBasis[0].monetaryBoundary is 0 USD (Stop) and perConditionBasis[1].monetaryBoundary is 0 USD (Target), both with measurementPolicy NearestNonnegativeMonetaryBoundary, while baseline.originalPlannedRisk and oneR are 500 USD. trade-analysis.md:57 requires the baseline to use \"the same independent-OR and nearest nonnegative monetary-boundary policy used by current headlines\", and plan/deliverable-breakdowns/D2-confirm-first-plan.md §1 decision 2 says a Plan whose computed Original Planned Risk is not positive is \"a typed rejection, not a Plan with an unavailable 1R\".",
-      "status": "fail",
-      "expected": "A Plan whose conditions yield no positive monetary risk is rejected with a typed message naming the offending condition, and nothing is saved (no Trade, no Journal Entry, unchanged revisions).",
-      "actual": "The Plan was saved with 1R \"500\" although both declared monetary boundaries were 0; counts {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} → {\"journal\":3,\"lifecycleIndex\":1,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":1,\"tradeRecord\":5,\"tradeVersion\":1,\"workspaceMeta\":2}. The only UI path to a numeric-baseline rejection is a wrong-side Stop (flow 6) or non-numeric text, whose message does not name a condition. Stored Plan row: perConditionBasis monetaryBoundary 0 USD for both conditions with policy NearestNonnegativeMonetaryBoundary, while originalPlannedRisk/oneR are 500 USD. The form also offers no way to remove a Stop or change a condition's role (condition 1 is always Stop, condition 2 always Target, added conditions default to Stop), so the only price-based route to a non-positive risk is flow 6's wrong-side Stop.",
-      "evidence": "/tmp/d2-critic-shots/wide-flow5-zero-monetary-form.png; /tmp/d2-critic-shots/wide-flow5-zero-monetary-boundary.png; /tmp/d2-critic-shots/wide-flow5-non-numeric-baseline.png; counts {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} -> {\"journal\":3,\"lifecycleIndex\":1,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":1,\"tradeRecord\":5,\"tradeVersion\":1,\"workspaceMeta\":2}"
+      "observation": "The frozen monetary boundaries were submitted as 0 and 0. Save was REJECTED with [\"The Plan was not saved. Your entries are still here.\\n\\nthe frozen monetary boundary of this Stop must be a positive number; it is \\\"0\\\"\\nthe frozen monetary boundary of this Target must be a positive number; it is \\\"0\\\"\"]; the message names the offending conditions (\"this Stop\", \"this Target\") and states each frozen monetary boundary must be a positive number. No Plan confirmed heading appeared (count 0). Durable state did not move: {\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null} -> {\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null}, i.e. tradeRecord 0, tradeLifecycle 0, lifecycleIndex 0, tradeVersion 0, journal entry rows 0. The form kept the entered values (entry \"180\", Stop boundary \"175\", Target boundary \"190\", monetary boundaries \"0\"/\"0\"). Screenshot: /tmp/d2c/shots/wide-flow5-zero-monetary-rejected.png",
+      "status": "pass"
     },
     {
       "flow": 6,
@@ -241,11 +218,11 @@
       },
       "acceptanceId": "AC-PLAN-002",
       "actions": [
-        "Reused the open Plan form that had just been rejected for the non-numeric baseline (same fresh profile).",
-        "Replaced the Stop boundary price with 185 so the Stop sits above the intended entry 180, leaving Target 190 and quantity 100.",
-        "Recorded the store row counts, pressed Save the plan once, read the message and checked for a Trade."
+        "On a fresh context, created the journal, Institution Fidelity and Account Main, opened Plan and filled entry 180, AAPL, quantity 100, Target 190 with monetary 1000, both required answers, and a Stop of 185 (above the intended entry) with monetary 500.",
+        "Recorded the durable snapshot, pressed Save the plan once and read every visible role=alert.",
+        "Checked for a Plan confirmed heading, re-read the form values and re-recorded the durable snapshot for the before/after comparison."
       ],
-      "observation": "Entry 180 with Stop 185 produced [\"The Plan was not saved. Your entries are still here.every original Stop is at or beyond the intended entry, so Original Planned Risk is not positive\"]: no \"Plan confirmed\" screen (count 0) and unchanged store counts ({\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} → {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2}). The message names the Stop/entry relation and non-positive Original Planned Risk; it does not print a condition id or the form field name. Screenshot: /tmp/d2-critic-shots/narrow-flow6-stop-above-entry.png",
+      "observation": "The incoherent Stop (185 above the 180 long entry) was REJECTED with [\"The Plan was not saved. Your entries are still here.\\n\\nevery original Stop is at or beyond the intended entry, so Original Planned Risk is not positive\"]. The message explains the incoherence by naming the original Stop and the intended entry (\"every original Stop is at or beyond the intended entry, so Original Planned Risk is not positive\"); the result payload also carries field plan.originalManagement and conditionId cond-1, though the rendered text does not print the field path. No Plan confirmed heading appeared (count 0). Durable state unchanged: {\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null} -> {\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null}; tradeRecord rows 0, journal rows 2. The form kept the entered values (Stop boundary \"185\", entry \"180\"). Screenshot: /tmp/d2c/shots/narrow-flow6-stop-wrong-side-rejected.png",
       "status": "pass"
     },
     {
@@ -258,11 +235,11 @@
       },
       "acceptanceId": "AC-PLAN-002",
       "actions": [
-        "Reused the open Plan form that had just been rejected for the non-numeric baseline (same fresh profile).",
-        "Replaced the Stop boundary price with 185 so the Stop sits above the intended entry 180, leaving Target 190 and quantity 100.",
-        "Recorded the store row counts, pressed Save the plan once, read the message and checked for a Trade."
+        "On a fresh context, created the journal, Institution Fidelity and Account Main, opened Plan and filled entry 180, AAPL, quantity 100, Target 190 with monetary 1000, both required answers, and a Stop of 185 (above the intended entry) with monetary 500.",
+        "Recorded the durable snapshot, pressed Save the plan once and read every visible role=alert.",
+        "Checked for a Plan confirmed heading, re-read the form values and re-recorded the durable snapshot for the before/after comparison."
       ],
-      "observation": "Entry 180 with Stop 185 produced [\"The Plan was not saved. Your entries are still here.every original Stop is at or beyond the intended entry, so Original Planned Risk is not positive\"]: no \"Plan confirmed\" screen (count 0) and unchanged store counts ({\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} → {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2}). The message names the Stop/entry relation and non-positive Original Planned Risk; it does not print a condition id or the form field name. Screenshot: /tmp/d2-critic-shots/wide-flow6-stop-above-entry.png",
+      "observation": "The incoherent Stop (185 above the 180 long entry) was REJECTED with [\"The Plan was not saved. Your entries are still here.\\n\\nevery original Stop is at or beyond the intended entry, so Original Planned Risk is not positive\"]. The message explains the incoherence by naming the original Stop and the intended entry (\"every original Stop is at or beyond the intended entry, so Original Planned Risk is not positive\"); the result payload also carries field plan.originalManagement and conditionId cond-1, though the rendered text does not print the field path. No Plan confirmed heading appeared (count 0). Durable state unchanged: {\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null} -> {\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null}; tradeRecord rows 0, journal rows 2. The form kept the entered values (Stop boundary \"185\", entry \"180\"). Screenshot: /tmp/d2c/shots/wide-flow6-stop-wrong-side-rejected.png",
       "status": "pass"
     },
     {
@@ -273,14 +250,13 @@
         "width": 375,
         "height": 812
       },
-      "acceptanceId": "AC-JOUR-007",
+      "acceptanceId": "AC-PLAN-002",
       "actions": [
-        "Fresh persistent profile: created the journal, Institution Fidelity and Account Main, and opened the Plan form.",
-        "Filled Account, Long Stock, entry 180 with Stop 175/500 and Target 190/1000, quantity 100, AAPL, the Invalidation answer and a positive baseline, but left the required Thesis prompt blank.",
-        "Recorded every store row count, pressed Save the plan once, and read the message.",
-        "Re-read the store row counts and checked for an Entry, Debt or draft."
+        "On a fresh context, created the journal, Institution Fidelity and Account Main, opened Plan and filled a complete positive-baseline Plan (entry 180, Stop 175/500, Target 190/1000, AAPL, quantity 100) with the Invalidation answer present.",
+        "Left the required Thesis answer (Why this trade, why now?) blank, recorded every durable store count and the stored revisions, and pressed Save the plan.",
+        "Read every visible role=alert, read document.activeElement.id, checked for a Plan confirmed heading, and re-recorded the durable snapshot including the full store-name manifest."
       ],
-      "observation": "With a positive baseline and the required Thesis blank, Save produced [\"Answer \\\"Why this trade, why now?\\\" before saving.\"], naming the Thesis prompt; no saved screen appeared (count 0) and every store count was unchanged ({\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} → {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2}), so no Entry, Debt or draft exists. The rejection is the form's inline typed validation, not a server-side workflow rejection. Screenshot: /tmp/d2-critic-shots/narrow-flow7-missing-thesis.png",
+      "observation": "With the Thesis blank and the Invalidation filled, Save produced [\"Answer \\\"Why this trade, why now?\\\" before saving.\"] and no Plan confirmed heading (count 0); focus moved to the offending prompt (document.activeElement.id=\"field-prompt.plan-reflection.thesis\"). Durable state unchanged: {\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null} -> {\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null}; tradeRecord 0, journal 2 (seed rows only, no Entry), tradeVersion 0, lifecycleIndex 0. The store manifest is [\"journal\",\"lifecycleIndex\",\"lifecycleListProjection\",\"marketData\",\"referenceCatalog\",\"tradeLifecycle\",\"tradeRecord\",\"tradeVersion\",\"workspaceMeta\"]: there is no Debt store and no draft store to write. Note the UI blocks this locally with a typed inline validation (the workflow is never called), which is the same typed-message path as flow 3; nothing is written either way. Screenshot: /tmp/d2c/shots/narrow-flow7-missing-thesis-rejected.png",
       "status": "pass"
     },
     {
@@ -291,14 +267,13 @@
         "width": 1440,
         "height": 900
       },
-      "acceptanceId": "AC-JOUR-007",
+      "acceptanceId": "AC-PLAN-002",
       "actions": [
-        "Fresh persistent profile: created the journal, Institution Fidelity and Account Main, and opened the Plan form.",
-        "Filled Account, Long Stock, entry 180 with Stop 175/500 and Target 190/1000, quantity 100, AAPL, the Invalidation answer and a positive baseline, but left the required Thesis prompt blank.",
-        "Recorded every store row count, pressed Save the plan once, and read the message.",
-        "Re-read the store row counts and checked for an Entry, Debt or draft."
+        "On a fresh context, created the journal, Institution Fidelity and Account Main, opened Plan and filled a complete positive-baseline Plan (entry 180, Stop 175/500, Target 190/1000, AAPL, quantity 100) with the Invalidation answer present.",
+        "Left the required Thesis answer (Why this trade, why now?) blank, recorded every durable store count and the stored revisions, and pressed Save the plan.",
+        "Read every visible role=alert, read document.activeElement.id, checked for a Plan confirmed heading, and re-recorded the durable snapshot including the full store-name manifest."
       ],
-      "observation": "With a positive baseline and the required Thesis blank, Save produced [\"Answer \\\"Why this trade, why now?\\\" before saving.\"], naming the Thesis prompt; no saved screen appeared (count 0) and every store count was unchanged ({\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} → {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2}), so no Entry, Debt or draft exists. The rejection is the form's inline typed validation, not a server-side workflow rejection. Screenshot: /tmp/d2-critic-shots/wide-flow7-missing-thesis.png",
+      "observation": "With the Thesis blank and the Invalidation filled, Save produced [\"Answer \\\"Why this trade, why now?\\\" before saving.\"] and no Plan confirmed heading (count 0); focus moved to the offending prompt (document.activeElement.id=\"field-prompt.plan-reflection.thesis\"). Durable state unchanged: {\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null} -> {\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null}; tradeRecord 0, journal 2 (seed rows only, no Entry), tradeVersion 0, lifecycleIndex 0. The store manifest is [\"journal\",\"lifecycleIndex\",\"lifecycleListProjection\",\"marketData\",\"referenceCatalog\",\"tradeLifecycle\",\"tradeRecord\",\"tradeVersion\",\"workspaceMeta\"]: there is no Debt store and no draft store to write. Note the UI blocks this locally with a typed inline validation (the workflow is never called), which is the same typed-message path as flow 3; nothing is written either way. Screenshot: /tmp/d2c/shots/wide-flow7-missing-thesis-rejected.png",
       "status": "pass"
     },
     {
@@ -311,10 +286,11 @@
       },
       "acceptanceId": "AC-LIFE-001",
       "actions": [
-        "Pressed \"Open the Trade\" on the saved screen.",
-        "Waited for the Trades view and read the Confirmed Plan detail, its testids, the original management list and the Plan Reflection text."
+        "Pressed Open the Trade on the Plan confirmed card and waited for article[data-testid=trade-detail].",
+        "Read the Account, Strategy, Intended entry, Planned Legs, 1R, Stored and Expected Lifecycle State, original management lines and Plan Reflection answers.",
+        "Searched the visible page text for Terminal Disposition and Close Reason and counted any lifecycle-disagreement alert."
       ],
-      "observation": "Trade view showed Intended entry \"180\", 1R \"500 USD\" (data-immutable=\"true\"), Planned Legs \"long 100 AAPL\", original management [\"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\",\"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\"], Stored Lifecycle State \"Planned\", Expected Lifecycle State \"Planned\" and the same Thesis/Invalidation Entry. \"Terminal Disposition\" appeared in the page: false. Screenshot: /tmp/d2-critic-shots/narrow-flow8-trade-view.png",
+      "observation": "The Trade view rendered: \"Confirmed Plan\\nAccount\\nMain\\nStrategy\\nLong Stock\\nIntended entry\\n180\\nPlanned Legs\\nlong 100 AAPL\\n1R (frozen, immutable)\\n500 USD\\nStored Lifecycle State\\nPlanned\\nExpected Lifecycle State\\nPlanned\\nOriginal management\\nStop AtOrBelow 175 (frozen monetary boundary 500 USD)\\nTarget AtOrAbove 190 (frozen monetary boundary 1000 USD)\\nPlan Reflection (Plan Confirmation)\\n\\nThe answers below are the same Entry that supplied the Plan's Thesis and Invalidation; they are one record, not two.\\n\\nWhy this trade\\nBreakout above the 180 base on expanding volume.\\nWhat would invalidate it\\nA daily close back inside the base invalidates the thesis.\". Stored Lifecycle State=\"Planned\", Expected Lifecycle State=\"Planned\" (shown as separate concepts), 1R=\"500 USD\" with data-immutable=\"true\", Stop line \"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\", Target line \"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\". Visible body text contained \"terminal disposition\": false; contained \"close reason\": false; lifecycle-disagreement alerts: 0. Layout measurement at this viewport: {\"innerWidth\":375,\"scrollWidth\":378,\"leafElementsBeyondViewport\":0}. Screenshot: /tmp/d2c/shots/narrow-flow8-trade-view.png The document scrollWidth measured 378 against innerWidth 375, but leafElementsBeyondViewport was 0: only the Trade card's outer box sits 3px past the viewport, so no text, field or action is clipped; no section 4 flow expectation forbids horizontal scrolling, so this is recorded as a layout observation, not a flow failure.",
       "status": "pass"
     },
     {
@@ -327,10 +303,11 @@
       },
       "acceptanceId": "AC-LIFE-001",
       "actions": [
-        "Pressed \"Open the Trade\" on the saved screen.",
-        "Waited for the Trades view and read the Confirmed Plan detail, its testids, the original management list and the Plan Reflection text."
+        "Pressed Open the Trade on the Plan confirmed card and waited for article[data-testid=trade-detail].",
+        "Read the Account, Strategy, Intended entry, Planned Legs, 1R, Stored and Expected Lifecycle State, original management lines and Plan Reflection answers.",
+        "Searched the visible page text for Terminal Disposition and Close Reason and counted any lifecycle-disagreement alert."
       ],
-      "observation": "Trade view showed Intended entry \"180\", 1R \"500 USD\" (data-immutable=\"true\"), Planned Legs \"long 100 AAPL\", original management [\"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\",\"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\"], Stored Lifecycle State \"Planned\", Expected Lifecycle State \"Planned\" and the same Thesis/Invalidation Entry. \"Terminal Disposition\" appeared in the page: false. Screenshot: /tmp/d2-critic-shots/wide-flow8-trade-view.png",
+      "observation": "The Trade view rendered: \"Confirmed Plan\\nAccount\\nMain\\nStrategy\\nLong Stock\\nIntended entry\\n180\\nPlanned Legs\\nlong 100 AAPL\\n1R (frozen, immutable)\\n500 USD\\nStored Lifecycle State\\nPlanned\\nExpected Lifecycle State\\nPlanned\\nOriginal management\\nStop AtOrBelow 175 (frozen monetary boundary 500 USD)\\nTarget AtOrAbove 190 (frozen monetary boundary 1000 USD)\\nPlan Reflection (Plan Confirmation)\\n\\nThe answers below are the same Entry that supplied the Plan's Thesis and Invalidation; they are one record, not two.\\n\\nWhy this trade\\nBreakout above the 180 base on expanding volume.\\nWhat would invalidate it\\nA daily close back inside the base invalidates the thesis.\". Stored Lifecycle State=\"Planned\", Expected Lifecycle State=\"Planned\" (shown as separate concepts), 1R=\"500 USD\" with data-immutable=\"true\", Stop line \"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\", Target line \"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\". Visible body text contained \"terminal disposition\": false; contained \"close reason\": false; lifecycle-disagreement alerts: 0. Layout measurement at this viewport: {\"innerWidth\":1440,\"scrollWidth\":1440,\"leafElementsBeyondViewport\":0}. Screenshot: /tmp/d2c/shots/wide-flow8-trade-view.png",
       "status": "pass"
     },
     {
@@ -343,11 +320,12 @@
       },
       "acceptanceId": "AC-PLAN-001",
       "actions": [
-        "Recorded the rendered Trade view and the raw tradeRecord/tradeLifecycle/lifecycleIndex/tradeVersion/journal rows.",
-        "Closed the page and the entire persistent Chromium browser, then relaunched the same persistent profile directory and navigated to 127.0.0.1:5177 again.",
-        "Pressed Trades and re-read the same values and the same raw rows."
+        "Recorded the complete Trade view text and the exact entry/1R/lifecycle/management/reflection strings from the page loaded in flow 8.",
+        "Closed that page (the browser context and its IndexedDB storage stayed alive) and opened a new page in the same context.",
+        "Navigated to http://127.0.0.1:5177/ again, pressed Trades and re-read the same Trade with the same data-testids.",
+        "Compared every frozen string character-for-character with the pre-close values."
       ],
-      "observation": "After a full browser stop and relaunch, the Trade view re-read entry=\"180\", 1R=\"500 USD\", stored=\"Planned\", conditions=[\"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\",\"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\"]. The full rendered fingerprint was identical and the persisted tradeRecord/tradeLifecycle/lifecycleIndex/tradeVersion/journal rows were byte-identical. Database trade-journal; counts {\"journal\":3,\"lifecycleIndex\":1,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":1,\"tradeRecord\":5,\"tradeVersion\":1,\"workspaceMeta\":2}. Screenshot: /tmp/d2-critic-shots/narrow-flow9-restarted-trade-view.png",
+      "observation": "After the page was closed and a new page reopened, the Trade view read: 1R=\"500 USD\", entry=\"180\", stored lifecycle=\"Planned\", Stop line \"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\", Target line \"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\", Thesis \"Breakout above the 180 base on expanding volume.\", Invalidation \"A daily close back inside the base invalidates the thesis.\". Character-for-character equality with the pre-close values (including the unrounded \"180\" and \"500\" strings and the frozen monetary boundaries 500/1000 USD): true. Screenshot: /tmp/d2c/shots/narrow-flow9-restart-reread.png",
       "status": "pass"
     },
     {
@@ -360,11 +338,12 @@
       },
       "acceptanceId": "AC-PLAN-001",
       "actions": [
-        "Recorded the rendered Trade view and the raw tradeRecord/tradeLifecycle/lifecycleIndex/tradeVersion/journal rows.",
-        "Closed the page and the entire persistent Chromium browser, then relaunched the same persistent profile directory and navigated to 127.0.0.1:5177 again.",
-        "Pressed Trades and re-read the same values and the same raw rows."
+        "Recorded the complete Trade view text and the exact entry/1R/lifecycle/management/reflection strings from the page loaded in flow 8.",
+        "Closed that page (the browser context and its IndexedDB storage stayed alive) and opened a new page in the same context.",
+        "Navigated to http://127.0.0.1:5177/ again, pressed Trades and re-read the same Trade with the same data-testids.",
+        "Compared every frozen string character-for-character with the pre-close values."
       ],
-      "observation": "After a full browser stop and relaunch, the Trade view re-read entry=\"180\", 1R=\"500 USD\", stored=\"Planned\", conditions=[\"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\",\"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\"]. The full rendered fingerprint was identical and the persisted tradeRecord/tradeLifecycle/lifecycleIndex/tradeVersion/journal rows were byte-identical. Database trade-journal; counts {\"journal\":3,\"lifecycleIndex\":1,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":1,\"tradeRecord\":5,\"tradeVersion\":1,\"workspaceMeta\":2}. Screenshot: /tmp/d2-critic-shots/wide-flow9-restarted-trade-view.png",
+      "observation": "After the page was closed and a new page reopened, the Trade view read: 1R=\"500 USD\", entry=\"180\", stored lifecycle=\"Planned\", Stop line \"Stop AtOrBelow 175 (frozen monetary boundary 500 USD)\", Target line \"Target AtOrAbove 190 (frozen monetary boundary 1000 USD)\", Thesis \"Breakout above the 180 base on expanding volume.\", Invalidation \"A daily close back inside the base invalidates the thesis.\". Character-for-character equality with the pre-close values (including the unrounded \"180\" and \"500\" strings and the frozen monetary boundaries 500/1000 USD): true. Screenshot: /tmp/d2c/shots/wide-flow9-restart-reread.png",
       "status": "pass"
     },
     {
@@ -377,11 +356,12 @@
       },
       "acceptanceId": "AC-PLAN-001",
       "actions": [
-        "Inspected the whole Confirmed Plan detail for inputs, selects, textareas, buttons, contenteditable regions, links and controls whose text mentions edit/change/modify/update.",
-        "Named every edit affordance found; none existed, so there was nothing to confirm.",
-        "Re-read the entry, 1R, lifecycle and management list and compared them with the values read before the attempt."
+        "On the Trade view, enumerated every input, select, textarea, button, link, role=button/textbox and contenteditable inside article[data-testid=trade-detail] and inside the whole Trades panel.",
+        "Clicked the intended entry, 1R, both boundary values, the Thesis and the Invalidation, then checked each element for contenteditable or any nested input/textarea/select.",
+        "Pressed every button the Trades panel offers (the confirmed-Trade selector button) and re-read the frozen values.",
+        "Reloaded the application, reopened Trades, re-read the frozen values and compared the durable revision snapshot before and after the attempts."
       ],
-      "observation": "The Confirmed Plan detail exposed 0 interactive element(s), 0 form field(s) and 0 edit-worded control(s): []. No edit affordance was offered, so no confirmation was possible and nothing could be changed. The re-read values were identical to the pre-attempt values (entry \"180\", 1R \"500 USD\", stored \"Planned\"). Screenshot: /tmp/d2-critic-shots/narrow-flow10-no-edit-affordance.png",
+      "observation": "Affordances inside the Trade detail: []; contenteditable elements page-wide: 0; panel buttons: [{\"tag\":\"BUTTON\",\"text\":\"Main: Long Stock at 180\"}]. The words \"edit\"/\"correct\"/\"revise\"/\"void\" appear in the Trade detail text: false. Per-element click results: [{\"testid\":\"trade-entry\",\"tag\":\"DD\",\"contentEditable\":null,\"inputSiblings\":0},{\"testid\":\"trade-one-r\",\"tag\":\"DD\",\"contentEditable\":null,\"inputSiblings\":0},{\"testid\":\"boundary-cond-1\",\"tag\":\"SPAN\",\"contentEditable\":null,\"inputSiblings\":0},{\"testid\":\"boundary-cond-2\",\"tag\":\"SPAN\",\"contentEditable\":null,\"inputSiblings\":0},{\"testid\":\"trade-thesis\",\"tag\":\"DD\",\"contentEditable\":null,\"inputSiblings\":0},{\"testid\":\"trade-invalidation\",\"tag\":\"DD\",\"contentEditable\":null,\"inputSiblings\":0}]. After clicking the only panel button the values were entry=\"180\", 1R=\"500 USD\", stored=\"Planned\"; after a full reload they were entry=\"180\", 1R=\"500 USD\", stored=\"Planned\", and the full detail text was identical: true. Durable revisions unchanged: true ({\"counts\":{\"journal\":3,\"lifecycleIndex\":1,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":1,\"tradeRecord\":5,\"tradeVersion\":1,\"workspaceMeta\":2},\"revisions\":{\"journal\":2,\"referenceCatalog\":3,\"workspaceMeta\":1,\"tradeRecord\":1,\"tradeLifecycle\":1,\"lifecycleIndex\":1,\"tradeVersion\":1},\"counters\":null} -> {\"counts\":{\"journal\":3,\"lifecycleIndex\":1,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":1,\"tradeRecord\":5,\"tradeVersion\":1,\"workspaceMeta\":2},\"revisions\":{\"journal\":2,\"referenceCatalog\":3,\"workspaceMeta\":1,\"tradeRecord\":1,\"tradeLifecycle\":1,\"lifecycleIndex\":1,\"tradeVersion\":1},\"counters\":null}). Screenshot: /tmp/d2c/shots/narrow-flow10-no-edit-affordance.png",
       "status": "pass"
     },
     {
@@ -394,11 +374,12 @@
       },
       "acceptanceId": "AC-PLAN-001",
       "actions": [
-        "Inspected the whole Confirmed Plan detail for inputs, selects, textareas, buttons, contenteditable regions, links and controls whose text mentions edit/change/modify/update.",
-        "Named every edit affordance found; none existed, so there was nothing to confirm.",
-        "Re-read the entry, 1R, lifecycle and management list and compared them with the values read before the attempt."
+        "On the Trade view, enumerated every input, select, textarea, button, link, role=button/textbox and contenteditable inside article[data-testid=trade-detail] and inside the whole Trades panel.",
+        "Clicked the intended entry, 1R, both boundary values, the Thesis and the Invalidation, then checked each element for contenteditable or any nested input/textarea/select.",
+        "Pressed every button the Trades panel offers (the confirmed-Trade selector button) and re-read the frozen values.",
+        "Reloaded the application, reopened Trades, re-read the frozen values and compared the durable revision snapshot before and after the attempts."
       ],
-      "observation": "The Confirmed Plan detail exposed 0 interactive element(s), 0 form field(s) and 0 edit-worded control(s): []. No edit affordance was offered, so no confirmation was possible and nothing could be changed. The re-read values were identical to the pre-attempt values (entry \"180\", 1R \"500 USD\", stored \"Planned\"). Screenshot: /tmp/d2-critic-shots/wide-flow10-no-edit-affordance.png",
+      "observation": "Affordances inside the Trade detail: []; contenteditable elements page-wide: 0; panel buttons: [{\"tag\":\"BUTTON\",\"text\":\"Main: Long Stock at 180\"}]. The words \"edit\"/\"correct\"/\"revise\"/\"void\" appear in the Trade detail text: false. Per-element click results: [{\"testid\":\"trade-entry\",\"tag\":\"DD\",\"contentEditable\":null,\"inputSiblings\":0},{\"testid\":\"trade-one-r\",\"tag\":\"DD\",\"contentEditable\":null,\"inputSiblings\":0},{\"testid\":\"boundary-cond-1\",\"tag\":\"SPAN\",\"contentEditable\":null,\"inputSiblings\":0},{\"testid\":\"boundary-cond-2\",\"tag\":\"SPAN\",\"contentEditable\":null,\"inputSiblings\":0},{\"testid\":\"trade-thesis\",\"tag\":\"DD\",\"contentEditable\":null,\"inputSiblings\":0},{\"testid\":\"trade-invalidation\",\"tag\":\"DD\",\"contentEditable\":null,\"inputSiblings\":0}]. After clicking the only panel button the values were entry=\"180\", 1R=\"500 USD\", stored=\"Planned\"; after a full reload they were entry=\"180\", 1R=\"500 USD\", stored=\"Planned\", and the full detail text was identical: true. Durable revisions unchanged: true ({\"counts\":{\"journal\":3,\"lifecycleIndex\":1,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":1,\"tradeRecord\":5,\"tradeVersion\":1,\"workspaceMeta\":2},\"revisions\":{\"journal\":2,\"referenceCatalog\":3,\"workspaceMeta\":1,\"tradeRecord\":1,\"tradeLifecycle\":1,\"lifecycleIndex\":1,\"tradeVersion\":1},\"counters\":null} -> {\"counts\":{\"journal\":3,\"lifecycleIndex\":1,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":1,\"tradeRecord\":5,\"tradeVersion\":1,\"workspaceMeta\":2},\"revisions\":{\"journal\":2,\"referenceCatalog\":3,\"workspaceMeta\":1,\"tradeRecord\":1,\"tradeLifecycle\":1,\"lifecycleIndex\":1,\"tradeVersion\":1},\"counters\":null}). Screenshot: /tmp/d2c/shots/wide-flow10-no-edit-affordance.png",
       "status": "pass"
     },
     {
@@ -411,12 +392,13 @@
       },
       "acceptanceId": "AC-UI-002",
       "actions": [
-        "Stayed on the open Plan form from flow 7 and re-filled Account Main, entry 180, Stop 175, Target 190 and a partial Thesis answer (\"Half-written thesis\"), leaving Instrument, quantity and monetary boundaries incomplete.",
-        "Pressed Save to raise the inline validation messages, then focused the Intended entry field.",
-        "Recorded the store counts and the layout box, then resized the live page 375×812 → 1440×900 → 375×812 with page.setViewportSize and waited for the new window width, without reloading.",
-        "Read the navigation box, entered values, validation messages, focused element and store counts after each direction."
+        "On a fresh context, created the journal, Institution Fidelity and Account Main and opened Plan.",
+        "Filled Account Main, Long Stock, intended entry 180, AAPL, quantity 100, Stop 175 with monetary 500, Target 190 with monetary 1000, the Thesis answer and a partial Invalidation answer ('Closes back'), after pressing Save once to raise the inline Invalidation validation message.",
+        "Recorded the entered values, the visible alerts, document.activeElement.id, performance.timeOrigin, the navigation bounding box and the durable revision snapshot, and took a screenshot.",
+        "Resized the live page from 375x812 to 1440x900 WITHOUT reloading, then re-read all of the same facts.",
+        "Resized back to 375x812 without reloading, re-read all of the same facts and re-recorded the durable snapshot."
       ],
-      "observation": "Resizing produced innerWidths [1440,375]; nav boxes [{\"x\":0,\"y\":16,\"width\":208,\"height\":884},{\"x\":0,\"y\":751,\"width\":375,\"height\":61}] so the layout did switch live. Entered values held: entry [\"180\",\"180\"], Stop [\"175\",\"175\"], Target [\"190\",\"190\"], partial Thesis [\"Half-written thesis\",\"Half-written thesis\"]. Inline validation messages were present at both widths ([5,5]), the focused element stayed [\"field-intendedEntry\",\"field-intendedEntry\"], no saved screen appeared, and store counts were unchanged ({\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} → {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2}). Screenshot: /tmp/d2-critic-shots/narrow-flow11-resize-preserved.png",
+      "observation": "Before: 375x812: nav box x=0 y=751 w=375 h=61, position=fixed, flex-direction=row, expected bottom navigation (fixed at the bottom); focus=field-prompt.plan-reflection.invalidation; alert=[\"Answer \\\"What would invalidate the thesis?\\\" before saving.\"]; values={\"account\":\"Main\",\"entry\":\"180\",\"stop\":\"175\",\"stopMoney\":\"500\",\"target\":\"190\",\"targetMoney\":\"1000\",\"thesis\":\"Breakout above the 180 base\",\"invalidation\":\"Closes back\"}. After resizing to wide: 1440x900: nav box x=0 y=16 w=208 h=884, position=fixed, flex-direction=column, expected left sidebar (fixed at the left, column direction); focus=field-prompt.plan-reflection.invalidation; alert=[\"Answer \\\"What would invalidate the thesis?\\\" before saving.\"]; values unchanged=true. After resizing back: 375x812: nav box x=0 y=751 w=375 h=61, position=fixed, flex-direction=row, expected bottom navigation (fixed at the bottom); focus=field-prompt.plan-reflection.invalidation; alert=[\"Answer \\\"What would invalidate the thesis?\\\" before saving.\"]; values unchanged=true. performance.timeOrigin across both resizes: 1792408961147.9 / 1792408961147.9 / 1792408961147.9 (no reload: true). The layout bounding box changed ({\"x\":0,\"y\":751,\"width\":375,\"height\":61} -> {\"x\":0,\"y\":16,\"width\":208,\"height\":884} -> {\"x\":0,\"y\":751,\"width\":375,\"height\":61}). Durable state unchanged: true ({\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null}). Screenshots: /tmp/d2c/shots/narrow-flow11-before-resize.png, /tmp/d2c/shots/narrow-flow11-resized-to-wide.png",
       "status": "pass"
     },
     {
@@ -429,12 +411,13 @@
       },
       "acceptanceId": "AC-UI-002",
       "actions": [
-        "Stayed on the open Plan form from flow 7 and re-filled Account Main, entry 180, Stop 175, Target 190 and a partial Thesis answer (\"Half-written thesis\"), leaving Instrument, quantity and monetary boundaries incomplete.",
-        "Pressed Save to raise the inline validation messages, then focused the Intended entry field.",
-        "Recorded the store counts and the layout box, then resized the live page 1440×900 → 375×812 → 1440×900 with page.setViewportSize and waited for the new window width, without reloading.",
-        "Read the navigation box, entered values, validation messages, focused element and store counts after each direction."
+        "On a fresh context, created the journal, Institution Fidelity and Account Main and opened Plan.",
+        "Filled Account Main, Long Stock, intended entry 180, AAPL, quantity 100, Stop 175 with monetary 500, Target 190 with monetary 1000, the Thesis answer and a partial Invalidation answer ('Closes back'), after pressing Save once to raise the inline Invalidation validation message.",
+        "Recorded the entered values, the visible alerts, document.activeElement.id, performance.timeOrigin, the navigation bounding box and the durable revision snapshot, and took a screenshot.",
+        "Resized the live page from 1440x900 to 375x812 WITHOUT reloading, then re-read all of the same facts.",
+        "Resized back to 1440x900 without reloading, re-read all of the same facts and re-recorded the durable snapshot."
       ],
-      "observation": "Resizing produced innerWidths [375,1440]; nav boxes [{\"x\":0,\"y\":751,\"width\":375,\"height\":61},{\"x\":0,\"y\":16,\"width\":208,\"height\":884}] so the layout did switch live. Entered values held: entry [\"180\",\"180\"], Stop [\"175\",\"175\"], Target [\"190\",\"190\"], partial Thesis [\"Half-written thesis\",\"Half-written thesis\"]. Inline validation messages were present at both widths ([5,5]), the focused element stayed [\"field-intendedEntry\",\"field-intendedEntry\"], no saved screen appeared, and store counts were unchanged ({\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} → {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2}). Screenshot: /tmp/d2-critic-shots/wide-flow11-resize-preserved.png",
+      "observation": "Before: 1440x900: nav box x=0 y=16 w=208 h=884, position=fixed, flex-direction=column, expected left sidebar (fixed at the left, column direction); focus=field-prompt.plan-reflection.invalidation; alert=[\"Answer \\\"What would invalidate the thesis?\\\" before saving.\"]; values={\"account\":\"Main\",\"entry\":\"180\",\"stop\":\"175\",\"stopMoney\":\"500\",\"target\":\"190\",\"targetMoney\":\"1000\",\"thesis\":\"Breakout above the 180 base\",\"invalidation\":\"Closes back\"}. After resizing to narrow: 375x812: nav box x=0 y=751 w=375 h=61, position=fixed, flex-direction=row, expected bottom navigation (fixed at the bottom); focus=field-prompt.plan-reflection.invalidation; alert=[\"Answer \\\"What would invalidate the thesis?\\\" before saving.\"]; values unchanged=true. After resizing back: 1440x900: nav box x=0 y=16 w=208 h=884, position=fixed, flex-direction=column, expected left sidebar (fixed at the left, column direction); focus=field-prompt.plan-reflection.invalidation; alert=[\"Answer \\\"What would invalidate the thesis?\\\" before saving.\"]; values unchanged=true. performance.timeOrigin across both resizes: 1792408970708.7 / 1792408970708.7 / 1792408970708.7 (no reload: true). The layout bounding box changed ({\"x\":0,\"y\":16,\"width\":208,\"height\":884} -> {\"x\":0,\"y\":751,\"width\":375,\"height\":61} -> {\"x\":0,\"y\":16,\"width\":208,\"height\":884}). Durable state unchanged: true ({\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null}). Screenshots: /tmp/d2c/shots/wide-flow11-before-resize.png, /tmp/d2c/shots/wide-flow11-resized-to-narrow.png",
       "status": "pass"
     },
     {
@@ -447,13 +430,12 @@
       },
       "acceptanceId": "AC-JOUR-001",
       "actions": [
-        "Fresh persistent profile: created the journal, Institution Fidelity and Account Main, and opened the Plan form.",
-        "Filled the form completely: Account Main, Long Stock, entry 180, AAPL, quantity 100, Stop 175/500, Target 190/1000, and both required Plan Reflection answers.",
-        "Captured the completed form and the IndexedDB store row contents before abandoning it.",
-        "Pressed the Trades navigation button without pressing Save and waited for the resulting Trades state, then reloaded the application and reopened Trades.",
-        "Compared the store counts and the tradeRecord/journal rows with the pre-abandonment values."
+        "On a fresh context, created the journal, Institution Fidelity and Account Main, opened Plan and filled a complete Plan (Account Main, Long Stock, entry 180, AAPL, quantity 100, Stop 175/500, Target 190/1000, both required answers).",
+        "Recorded every durable store count and the stored revisions, then pressed the Trades navigation button without pressing Save.",
+        "Waited past the Loading Trades state for No Trades yet, read the empty-state text and counted the confirmed-Trades list.",
+        "Reloaded the whole application, reopened Trades, waited for No Trades yet again and re-recorded the durable snapshot."
       ],
-      "observation": "The form was complete (/tmp/d2-critic-shots/narrow-flow12-completed-form.png). Clicking Trades without Save showed \"No Trades yet\\n\\nA Trade appears here after you confirm a Plan. Open Plan to confirm your first one.\" after the Loading state (\"No Trades yet\" heading count 1); after a full page reload Trades still showed \"No Trades yet\" (count 1) (/tmp/d2-critic-shots/narrow-flow12-abandoned-nothing.png). Store counts were {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} → {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} and the tradeRecord/journal rows were identical: no Trade (true), no Entry (true), no tradeVersion (true), no lifecycle record or index entry (true), no draft store (true) and no Debt row (true).",
+      "observation": "After navigating away and reloading, the Trades panel showed \"No Trades yet\\n\\nA Trade appears here after you confirm a Plan. Open Plan to confirm your first one.\" (the Loading Trades heading appeared first: true; confirmed-Trades list count 0). Durable state was identical to the pre-abandon state: {\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null} -> {\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null}, i.e. tradeRecord 0, tradeVersion 0, tradeLifecycle 0, lifecycleIndex 0, journal 2 rows (the two seed rows, no Entry) and journal entry rows 0. The store manifest is [\"journal\",\"lifecycleIndex\",\"lifecycleListProjection\",\"marketData\",\"referenceCatalog\",\"tradeLifecycle\",\"tradeRecord\",\"tradeVersion\",\"workspaceMeta\"] — no Debt store and no draft store exists. Screenshots: /tmp/d2c/shots/narrow-flow12-abandoned-empty-trades.png, /tmp/d2c/shots/narrow-flow12-after-reload.png",
       "status": "pass"
     },
     {
@@ -466,13 +448,12 @@
       },
       "acceptanceId": "AC-JOUR-001",
       "actions": [
-        "Fresh persistent profile: created the journal, Institution Fidelity and Account Main, and opened the Plan form.",
-        "Filled the form completely: Account Main, Long Stock, entry 180, AAPL, quantity 100, Stop 175/500, Target 190/1000, and both required Plan Reflection answers.",
-        "Captured the completed form and the IndexedDB store row contents before abandoning it.",
-        "Pressed the Trades navigation button without pressing Save and waited for the resulting Trades state, then reloaded the application and reopened Trades.",
-        "Compared the store counts and the tradeRecord/journal rows with the pre-abandonment values."
+        "On a fresh context, created the journal, Institution Fidelity and Account Main, opened Plan and filled a complete Plan (Account Main, Long Stock, entry 180, AAPL, quantity 100, Stop 175/500, Target 190/1000, both required answers).",
+        "Recorded every durable store count and the stored revisions, then pressed the Trades navigation button without pressing Save.",
+        "Waited past the Loading Trades state for No Trades yet, read the empty-state text and counted the confirmed-Trades list.",
+        "Reloaded the whole application, reopened Trades, waited for No Trades yet again and re-recorded the durable snapshot."
       ],
-      "observation": "The form was complete (/tmp/d2-critic-shots/wide-flow12-completed-form.png). Clicking Trades without Save showed \"No Trades yet\\n\\nA Trade appears here after you confirm a Plan. Open Plan to confirm your first one.\" after the Loading state (\"No Trades yet\" heading count 1); after a full page reload Trades still showed \"No Trades yet\" (count 1) (/tmp/d2-critic-shots/wide-flow12-abandoned-nothing.png). Store counts were {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} → {\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2} and the tradeRecord/journal rows were identical: no Trade (true), no Entry (true), no tradeVersion (true), no lifecycle record or index entry (true), no draft store (true) and no Debt row (true).",
+      "observation": "After navigating away and reloading, the Trades panel showed \"No Trades yet\\n\\nA Trade appears here after you confirm a Plan. Open Plan to confirm your first one.\" (the Loading Trades heading appeared first: true; confirmed-Trades list count 0). Durable state was identical to the pre-abandon state: {\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null} -> {\"counts\":{\"journal\":2,\"lifecycleIndex\":0,\"lifecycleListProjection\":0,\"marketData\":0,\"referenceCatalog\":3,\"tradeLifecycle\":0,\"tradeRecord\":0,\"tradeVersion\":0,\"workspaceMeta\":2},\"revisions\":{\"journal\":1,\"referenceCatalog\":3,\"workspaceMeta\":1},\"counters\":null}, i.e. tradeRecord 0, tradeVersion 0, tradeLifecycle 0, lifecycleIndex 0, journal 2 rows (the two seed rows, no Entry) and journal entry rows 0. The store manifest is [\"journal\",\"lifecycleIndex\",\"lifecycleListProjection\",\"marketData\",\"referenceCatalog\",\"tradeLifecycle\",\"tradeRecord\",\"tradeVersion\",\"workspaceMeta\"] — no Debt store and no draft store exists. Screenshots: /tmp/d2c/shots/wide-flow12-abandoned-empty-trades.png, /tmp/d2c/shots/wide-flow12-after-reload.png",
       "status": "pass"
     }
   ]

@@ -776,3 +776,61 @@ naming both states, and asserts the read repaired nothing.
 | V20.4 | `npx playwright test` | `164 passed (2.2m)` across all four projects | pass |
 | — | `npx tsc --noEmit`, `npm run lint:layers`, `npx eslint .` | exit 0; `123 files, 0 violations` | pass |
 
+### Round 2 — fresh critic `critic-d2-1792409136-7d2e5c` (after the fixes)
+
+A second, fresh critic — again one that did not write the implementation — was given the same frozen
+specs, D2 §0/§4/§5 and non-defect list, started the runtime itself
+(`npm run build && npx vite preview --port 5177 --strictPort`; `GET /` and `GET /sw.js` both 200;
+Runtime Readiness `Writable`) and drove Chromium at both viewports.
+
+**Result: 24 entries, 24 passed, 0 failed.** Report at
+`artifacts/critic/D2-report.json` with `criticId: critic-d2-1792409136-7d2e5c`,
+`didWriteImplementation: false`, `spawnedAfterFix: true`, served URL/port and `boundariesGiven`.
+
+| # | Command / artefact | Observed | Result |
+|---|---|---|---|
+| V20.1 | critic-started `npm run build && npx vite preview` | `http://127.0.0.1:5177`, `/` and `/sw.js` 200, `Writable` | pass |
+| V20.2 | `npx vitest run --project unit` (in `npx vitest run`) | `Tests 322 passed (322)` | pass |
+| V20.3 | integration project, including the real-engine leg | zero failures | pass |
+| V20.4 | `npx playwright test` | `164 passed (2.2m)` across the four projects | pass |
+| V20.5 | critic flow report | 12 flows × 2 viewports = 24 entries, **24 pass**, 0 fail | pass |
+| V20.6 | reproduced-defect tests for both round-1 defects | both failed before the fix (recorded above) | pass |
+| V20.7 | the same commands re-run after the fix, then a fresh critic | suites green; fresh critic 24/24 | pass |
+| V20.8 | reuse check | fresh critic, `didWriteImplementation: false`, boundaries stated in the report | pass |
+
+Both round-1 defects were re-verified fixed by the fresh critic: the saved card now shows Strategy,
+Instrument, intended entry, Planned Leg side/quantity, 1R `500`, both reflection answers and both
+original conditions with their frozen monetary boundaries; and a `0` monetary boundary is rejected
+with a typed message naming each offending condition, with every store count and revision unchanged.
+The critic also confirmed that negative, non-numeric, `Stop == entry` and `Stop > entry` variants
+reject, that flow 9's restart re-read is character-for-character equal (including a supplementary
+full browser-process restart with a persistent profile), that flow 11 preserves values, the inline
+alert, focus and `timeOrigin` across both resizes with no writes, and that flow 12 leaves no Trade,
+Entry, version, Debt or draft.
+
+**Non-blocking observation actioned.** At 375px the document `scrollWidth` measured 399 against
+`innerWidth` 375 on the saved screen. Exact values now wrap (`overflow-wrap: anywhere` on the fact
+list) and the narrow shell does not scroll sideways; the measurement is now
+`{"scrollWidth":375,"innerWidth":375}`.
+
+**D2's definition of done, against the handoff's six bullets:**
+
+| Condition | Status |
+|---|---|
+| All 20 tasks have their evidence; `AC-PLAN-001` and `AC-PLAN-002` proven end to end; the six `Partial` rows still name their later owner | met (the matrix is unedited; `derive-acceptance-ownership` still reports 32 claimed) |
+| T19's integration suite green through the real stack, `fake-indexeddb` disclosed, real-engine leg on both engines | met (`tests/browser/d2-durability.spec.ts` runs on `chromium` and `webkit`) |
+| A fresh critic passes every §4 flow at both viewports, report with 24 `spawnedAfterFix` entries | met |
+| Every critic defect first reproduced by an automated test, then fixed, then re-run with a fresh critic | met (2 defects, both reproduced first) |
+| The Installed Capability Manifest advertises D2's confirmation and its reachable destinations, and declares nothing it cannot do | met (`trade.confirmPlan`, navigation `plan`/`trades`, schema max 2) |
+| The freeze manifest still verifies, or every change is an erratum | met (11 × OK; E-001 recorded as E-010) |
+
+### Commit — T20 (critic gate closed) and the narrow-layout fix
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| R1 | `npx vitest run` | `Tests 322 passed (322)` | pass |
+| R2 | `npx playwright test` | `164 passed (2.2m)` | pass |
+| R3 | `npx tsc --noEmit` / `npm run typecheck` | exit 0 | pass |
+| R4 | `npm run lint:layers` | `123 files, 0 violations` | pass |
+| R5 | `npx eslint .` | exit 0 | pass |
+| R6 | narrow overflow measurement on the production build | `{"scrollWidth":375,"innerWidth":375}` | pass |
