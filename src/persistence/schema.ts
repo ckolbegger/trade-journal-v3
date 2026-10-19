@@ -35,5 +35,7 @@ export function upgradeWorkspace(db: IDBDatabase, oldVersion: number): void {
     // One current outcome per Journal obligation key (Journal, "Debt and obligation semantics").
     entries.createIndex('byObligation', 'obligationKey', { unique: true });
     entries.createIndex('byAnchorTrade', 'anchorTradeId');
+    // The authoritative stored Lifecycle State, ordered by Plan time, for current-state lists.
+    stores.get('trades')!.createIndex('byLifecycle', ['lifecycle', 'planTime', 'tradeId']);
   }
 }
