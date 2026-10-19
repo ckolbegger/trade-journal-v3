@@ -1,0 +1,25 @@
+{
+  // TypeScript 7.0 type checks (`tsc`); 6.0.3 serves typed linting and `tsc6` (decision 44).
+  // Options whose defaults changed in 6.0/7.0 are set explicitly; none of the options 7.0 removed
+  // (baseUrl, moduleResolution node10/classic, target es5, outFile, downlevelIteration) is used.
+  "compilerOptions": {
+    "target": "es2024",
+    "lib": ["es2024", "dom"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "types": ["vite/client", "node"],
+    "rootDir": ".",
+    "strict": true,
+    "esModuleInterop": true,
+    "noUncheckedSideEffectImports": true,
+    "libReplacement": false,
+    "jsx": "react-jsx",
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["src", "vite.config.ts"]
+}
