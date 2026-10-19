@@ -443,3 +443,27 @@ identity and list digest as evidence for the readiness gate. The browser harness
 **Readiness half deferred.** The integration case also asserts "readiness becomes `Unsupported`" when an
 asset is missing. The readiness gate is T20, so that assertion is recorded with T20's per-check matrix and
 repeated by T33.
+
+---
+
+## T19 — `B` Capacity and headroom derivation
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T19.1 | derive the minimum from the declared workload terms and expose each term with its contribution | `npx vitest run tests/capacity/derive-minimum.test.ts` — a fixed constant with `terms: []` and no per-record contributions | same command — 1 passed; seven named terms whose bytes sum to the total |
+| T19.2 | pass when the host reports free capacity at or above the derived minimum, returning observed and derived as evidence | `npx vitest run tests/capacity/sufficient.test.ts` — a sufficient host was refused as `Insufficient` | same command — 1 passed with the observed value, the derived minimum and both headroom terms |
+| T19.3 | fail naming the derived minimum, the observed free capacity and the shortfall | `npx vitest run tests/capacity/shortfall.test.ts` — a bare boolean result with no minimum or shortfall | same command — 1 passed with `derivedMinimumBytes`, `observedFreeBytes` and `shortfallBytes: 1234` |
+| T19.4 | treat a host that cannot report a capacity estimate as a failed check with Unavailable evidence | `npx vitest run tests/capacity/unavailable.test.ts` — an absent estimate was treated as unlimited (`Sufficient`) | same command — 1 passed with `Unavailable`, the host's reason and the derived minimum |
+| T19.5 | include backup and migration headroom as separately named terms with disclosed multiples | `npx vitest run tests/capacity/derive-minimum.test.ts -t "headroom"` — both headroom terms were omitted | same command — 1 passed; migration is the largest section rewrite times 2 and backup is the representative artifact times 2 |
+| T19.6 | scale the minimum with the declared workload, proving no baked-in byte constant | `npx vitest run tests/capacity/scaling.test.ts` — the total did not move when the Trade count doubled (`+0`) | same command — 1 passed; the increase is the per-Trade term plus the backup-headroom growth at the disclosed multiple |
+| T19.7 | the same derived minimum for the same inputs across two runs and both hosts | `npx vitest run tests/capacity/determinism.test.ts` — a stateful counter made two identical derivations differ | same command — 1 passed; deep-equal derivations and integer bytes |
+| T19.8 | record the derived minimum, the observed capacity and the headroom terms in readiness evidence | `npx vitest run tests/capacity/sufficient.test.ts` — the evidence carried no terms (`[]` instead of seven) | same command — 1 passed with the full term list and both headroom contributions |
+
+The module is pure integer arithmetic; the readiness gate supplies the observed free bytes from the host
+port, so T19 itself reads no host API. The workbook terms are `MATURE_WORKLOAD` (25,000 Trades, 200 Open,
+200,000 position-changing facts, 125,000 Marks, 10,000 Journal versions, 500 reference records) with the
+per-record byte terms and the two disclosed multiples exposed on every result.
+
+**Integration half deferred.** Reading the true estimate through the host port and recording the verdict
+in the Workspace initialization receipt needs the gate (T20) and `Workspace.initialize` (T25); those
+assertions are recorded there and repeated by T33.
