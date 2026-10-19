@@ -115,7 +115,13 @@ export function assessPlan(input: PlanAssessmentInput): PlanAssessment {
     if (!issues.some((i) => i.code === code)) issues.push({ code });
   };
 
-  if (!matchesShape(plan.legs, input.strategyShape)) return { kind: 'Rejected', issues: [{ code: 'StrategyShapeMismatch' }] };
+  if (!matchesShape(plan.legs, input.strategyShape)) {
+    issue('StrategyShapeMismatch');
+    // The Long Stock rules below still apply to a leading Long Stock leg, so its issues are
+    // reported together with the shape (AC-PLAN-002); any other leading leg is not assessed.
+    const first = plan.legs[0];
+    if (first?.side !== 'Long' || first.instrument.kind !== 'Stock') return { kind: 'Rejected', issues };
+  }
   for (const leg of plan.legs) {
     const symbol = normalizeSymbol(leg.instrument.symbol);
     if (!SYMBOL.test(symbol)) issue('MissingInstrument');

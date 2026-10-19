@@ -26,16 +26,21 @@ export const WORKSPACE_KEY_PATHS: Readonly<Record<WorkspaceStore, string>> = {
 
 export const WORKSPACE_VERSION = 1;
 
+// The Workspace indexes: private derived state, created by migration and rebuildable from records.
+export function createWorkspaceIndexes(store: (name: WorkspaceStore) => IDBObjectStore): void {
+  const entries = store('journalEntries');
+  // One current outcome per Journal obligation key (Journal, "Debt and obligation semantics").
+  entries.createIndex('byObligation', 'obligationKey', { unique: true });
+  entries.createIndex('byAnchorTrade', 'anchorTradeId');
+  // The authoritative stored Lifecycle State, ordered by Plan time, for current-state lists.
+  store('trades').createIndex('byLifecycle', ['lifecycle', 'planTime', 'tradeId']);
+}
+
 export function upgradeWorkspace(db: IDBDatabase, oldVersion: number): void {
   if (oldVersion < 1) {
     const stores = new Map(
       Object.entries(WORKSPACE_KEY_PATHS).map(([store, keyPath]) => [store, db.createObjectStore(store, { keyPath })]),
     );
-    const entries = stores.get('journalEntries')!;
-    // One current outcome per Journal obligation key (Journal, "Debt and obligation semantics").
-    entries.createIndex('byObligation', 'obligationKey', { unique: true });
-    entries.createIndex('byAnchorTrade', 'anchorTradeId');
-    // The authoritative stored Lifecycle State, ordered by Plan time, for current-state lists.
-    stores.get('trades')!.createIndex('byLifecycle', ['lifecycle', 'planTime', 'tradeId']);
+    createWorkspaceIndexes((name) => stores.get(name)!);
   }
 }

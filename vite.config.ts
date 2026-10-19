@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
     server: { port, strictPort: true },
     preview: { port, strictPort: true },
     test: {
-      include: ['src/**/*.test.{ts,tsx}'],
+      include: ['src/**/*.test.{ts,tsx}', 'tests/integration/**/*.test.ts'],
       setupFiles: ['tests/setup/idb-globals.ts'],
     },
   };

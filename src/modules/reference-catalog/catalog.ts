@@ -161,11 +161,18 @@ function displayLabel(label: string): string {
   return label.trim().replace(/\s+/g, ' ');
 }
 
+// Drops persistence's write stamp so callers see exactly the Catalog record a save returned.
+function stripRevision(stored: Record<string, unknown>): CatalogRecord {
+  const record = { ...stored };
+  delete record['revision'];
+  return record as unknown as CatalogRecord;
+}
+
 export function createReferenceCatalog(deps: ReferenceCatalogDeps): ReferenceCatalog {
   async function readCatalog() {
     const { value } = await deps.persistence.readSnapshot(['meta', 'catalog'], async (tx) => ({
       meta: (await tx.get('meta', 'catalog')) as CatalogMeta | undefined,
-      records: (await tx.getAll('catalog')) as unknown as CatalogRecord[],
+      records: (await tx.getAll('catalog')).map(stripRevision),
     }));
     return { catalogRevision: value.meta?.catalogRevision ?? 0, records: value.records };
   }

@@ -136,7 +136,7 @@ export function createWorkspace(deps: WorkspaceDeps): Workspace {
     };
   }
 
-  return {
+  const workspace: Workspace = {
     async requestDurability() {
       if (!deps.host.persisted || !deps.host.persist) {
         requestedProtection = 'Unavailable';
@@ -224,6 +224,8 @@ export function createWorkspace(deps: WorkspaceDeps): Workspace {
         ...journalSeed.definitions.map((d): StoreRecord => ({ store: 'journalDefinitions', value: { ...d } })),
       ];
       const created = await deps.persistence.createWorkspace(records);
+      // A concurrent first run made its Workspace visible first (D1 A12): open that one instead.
+      if (created.kind === 'AlreadyInitialized') return workspace.initialize(request);
       if (created.kind !== 'Created') throw new Error(`Workspace not created: ${created.kind}`);
       latestReceipt = {
         fresh: true,
@@ -238,4 +240,5 @@ export function createWorkspace(deps: WorkspaceDeps): Workspace {
       return { kind: 'Opened', status: await readyStatus(await deps.session.recheck()), receipt: latestReceipt };
     },
   };
+  return workspace;
 }

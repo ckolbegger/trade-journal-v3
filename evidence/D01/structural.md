@@ -131,3 +131,7 @@ verify:capacity OK: required quota 1646103699 = 3 × 548701233, schema 1
 ```
 
 The 500 deterministic Plans run through `createApplication` on the engine's real IndexedDB (`tools/capacity/measure-page.ts`, served by Vite); readiness inputs come from NodeTestHost because no service worker controls that page. M = 25,000 measured Trades with Plan Reflections + 60 Catalog records + the section 1.3 allowances (estimated JSON bytes per planned shape, `tools/capacity/profile.ts`) × the measured overhead ratio. M (0.55 GB) is below the plan's expected 0.6–0.8 GB because Chromium's measured overhead is 1.25 on-disk bytes per JSON byte; the allowances are disclosed estimates until their deliverables measure them. Guard check: setting the basis `schemaVersion` to 2 made `verify:capacity` fail ("basis measured at schema version 2, current is 1"). The production bundle embeds 1646103699.
+
+## T1.28 Node integration suite
+
+`npm run test:integration` (2026-10-19): `Test Files 6 passed (6)`, `Tests 19 passed (19)`, covering I1.1–I1.11 (I1.7 runs six fault sets). Each case builds `createApplication` on fake-indexeddb and NodeTestHost and calls facade operations only; restart closes the Workspace connection (`Persistence.close`) and builds a new application on the same factory. I1.11 uses `rebuildPrivateState`, which drops every index and recreates it through the migration's `createWorkspaceIndexes` in one version-change transaction. `npm run test:unit` is now `vitest run src`; `npx vitest run` runs both.

@@ -133,6 +133,8 @@ export interface Persistence {
   // True once another connection asked to change the Workspace database's version, for
   // example a later release migrating it: this session may no longer write.
   isSuperseded(): boolean;
+  // Closes the Workspace connection, as when the page goes away; a later call reopens it.
+  close(): void;
 }
 
 interface PointerRecord {
@@ -169,6 +171,12 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
 
   return {
     isSuperseded: () => superseded,
+
+    close() {
+      const closing = connection;
+      connection = undefined;
+      void closing?.then((db) => db.close());
+    },
 
     async readSnapshot(stores, read) {
       const db = await workspace();

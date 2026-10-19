@@ -23,3 +23,4 @@ export {
   requireOpen,
   type SemanticTransaction,
 } from './semantic-transaction.ts';
+export { rebuildPrivateState } from './rebuild.ts';

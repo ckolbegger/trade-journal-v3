@@ -1,7 +1,7 @@
-import { IDBDatabase as FakeIDBDatabase, IDBFactory } from 'fake-indexeddb';
+import { IDBDatabase as FakeIDBDatabase, IDBFactory, IDBObjectStore as FakeIDBObjectStore } from 'fake-indexeddb';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RuntimeNotWritable } from '../delivery/runtime-not-writable.ts';
-import { createPersistence, type WriteGate } from './index.ts';
+import { createPersistence, rebuildPrivateState, type WriteGate } from './index.ts';
 
 function sequentialIds() {
   let n = 0;
@@ -399,5 +399,51 @@ describe('versionchange (amendment agreed during the D2 breakdown, 2026-10-11)',
       { check: 'control', reason: 'DifferentRelease' },
       { check: 'control', reason: 'SessionSuperseded' },
     ]);
+  });
+});
+
+describe('connection lifecycle and private-state rebuild (D1 section 6.1)', () => {
+  it('should close its Workspace connection on close, so a later version change does not mark the session superseded', async () => {
+    const p = persistence();
+    const created = await p.createWorkspace([]);
+    if (created.kind !== 'Created') throw new Error('workspace not created');
+    await p.commit({ checks: [], writes: [] });
+    p.close();
+    const later = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = factory.open(created.databaseName, 2);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error ?? new Error('open failed'));
+    });
+    later.close();
+    expect(p.isSuperseded()).toBe(false);
+  });
+
+  it('should drop and recreate every Workspace index through the migration path, keeping every record', async () => {
+    const p = persistence();
+    const created = await p.createWorkspace([
+      { store: 'trades', value: { tradeId: 'trade-1', lifecycle: 'Planned', planTime: '2026-10-12T13:30:00Z' } },
+      { store: 'journalEntries', value: { id: 'entry-1', obligationKey: 'plan:trade-1', anchorTradeId: 'trade-1' } },
+    ]);
+    if (created.kind !== 'Created') throw new Error('workspace not created');
+    p.close();
+    const deleted = vi.spyOn(FakeIDBObjectStore.prototype, 'deleteIndex');
+    const createdIndexes = vi.spyOn(FakeIDBObjectStore.prototype, 'createIndex');
+
+    await rebuildPrivateState(factory, created.databaseName);
+
+    expect(deleted.mock.calls.map(([name]) => name).sort()).toEqual(['byAnchorTrade', 'byLifecycle', 'byObligation']);
+    expect(createdIndexes.mock.calls.map(([name]) => name).sort()).toEqual(['byAnchorTrade', 'byLifecycle', 'byObligation']);
+    const db = await new Promise<IDBDatabase>((resolve) => {
+      const request = factory.open(created.databaseName);
+      request.onsuccess = () => resolve(request.result);
+    });
+    const byLifecycle = await new Promise<unknown[]>((resolve) => {
+      const request = db.transaction('trades').objectStore('trades').index('byLifecycle').getAll();
+      request.onsuccess = () => resolve(request.result);
+    });
+    const obligation = db.transaction('journalEntries').objectStore('journalEntries').index('byObligation');
+    db.close();
+    expect(byLifecycle).toEqual([{ tradeId: 'trade-1', lifecycle: 'Planned', planTime: '2026-10-12T13:30:00Z', revision: 1 }]);
+    expect([obligation.keyPath, obligation.unique]).toEqual(['obligationKey', true]);
   });
 });

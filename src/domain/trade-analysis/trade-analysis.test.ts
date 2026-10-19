@@ -92,6 +92,14 @@ describe('assessPlan: Long Stock', () => {
     }
   });
 
+  it('should report StrategyShapeMismatch together with the other issues of a leading Long Stock leg, so every issue is returned at once', () => {
+    const leg = { side: 'Long', instrument: { kind: 'Stock', symbol: 'XYZ' }, quantity: '100', intendedEntry: '50' } as const;
+    expect(assessPlan(plan({ legs: [leg, leg], stops: [{ kind: 'UnderlyingPrice', price: '52' }] }))).toEqual({
+      kind: 'Rejected',
+      issues: [{ code: 'StrategyShapeMismatch' }, { code: 'NoPositiveRisk' }],
+    });
+  });
+
   it('should reject a leg whose symbol differs from the Plan\'s underlying with UnderlyingMismatch', () => {
     const legs = [{ side: 'Long', instrument: { kind: 'Stock', symbol: 'ABC' }, quantity: '100', intendedEntry: '50' }] as const;
     expect(assessPlan(plan({ legs }))).toEqual({ kind: 'Rejected', issues: [{ code: 'UnderlyingMismatch' }] });
