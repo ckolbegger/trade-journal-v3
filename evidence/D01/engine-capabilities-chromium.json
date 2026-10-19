@@ -1,0 +1,32 @@
+{
+  "engine": "chromium",
+  "engineVersion": "153.0.8010.12",
+  "os": "macOS 26.6.2 (25G83), arm64",
+  "node": "v26.12.0",
+  "origin": "http://localhost:5175",
+  "capabilities": {
+    "isSecureContext": true,
+    "serviceWorkerRegistrationAndControl": true,
+    "cacheStorage": true,
+    "storageEstimate": true,
+    "storagePersisted": true,
+    "broadcastChannel": true,
+    "cryptoSubtle": true,
+    "indexedDB": true,
+    "persistentContextRestart": true,
+    "offlineRelaunch": true,
+    "sigkillOfBrowserProcess": true
+  },
+  "details": {
+    "storageEstimate": {
+      "quota": 10737419884,
+      "usage": 1644,
+      "usageDetails": {
+        "caches": 1280,
+        "serviceWorkerRegistrations": 364
+      }
+    },
+    "storagePersisted": false,
+    "killedProcesses": 1
+  }
+}

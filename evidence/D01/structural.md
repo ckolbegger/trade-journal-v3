@@ -40,3 +40,27 @@ npx tsc6 --version
 
 - npm 11.20.0 withheld three install scripts not covered by `allowScripts`: `esbuild@0.28.1`, `fsevents@2.3.3`, and `workerd@1.20261001.1`. None is needed by any T1.1 step (the build, preview, lint, and type checks all pass without them). `workerd` belongs to `wrangler`, which is not used until a Cloudflare publish.
 - `npm audit` reports 3 high-severity findings, all in `sharp` (CVE-2026-96889, via `miniflare`) pulled in by the pinned `wrangler@4.147.0`, a deploy-only development tool. The suggested fix is `wrangler@4.151.1`, which would change a pin and so needs a plan revision. Raised with the user; not changed here.
+
+## T1.2 Engine capability smoke (Chromium; Firefox and WebKit in RC)
+
+Run 2026-10-18; versions in [provenance.md](provenance.md).
+
+**Verification:** `npx playwright test e2e/smoke/engine-capabilities.spec.ts --project=chromium`, which exited 0 (`1 passed`, 3.7 s).
+
+The spec serves a probe page and a caching service worker from an in-process server on `http://localhost:5175` (strict: it fails if the port is busy), drives a persistent Chromium profile, and writes its results to [engine-capabilities-chromium.json](engine-capabilities-chromium.json).
+
+| Capability | Result | How it was checked |
+|---|---|---|
+| `isSecureContext` | true | `window.isSecureContext` on the loopback origin |
+| Service-worker registration and control | true | active registration at `/` and a non-null `navigator.serviceWorker.controller` |
+| `CacheStorage` | true | put, match, and delete a cache entry |
+| IndexedDB | true | `durability: "strict"` write read back |
+| `storage.estimate` | true | quota 10,737,419,884 bytes and usage reported |
+| `storage.persisted` | true | resolves to a boolean (`false`: Best Effort in this profile) |
+| `BroadcastChannel` | true | a message delivered between two channels |
+| `crypto.subtle` | true | SHA-256 of `abc` equals the standard digest |
+| Persistent-context stop and restart | true | data and service-worker control intact after closing and relaunching the profile |
+| Offline relaunch | true | server stopped and the context launched offline; the page loaded from the worker's cache with its data |
+| SIGKILL of the browser process | true | a committed strict write survived `SIGKILL` of the browser process (1 process matched the profile) and a relaunch |
+
+**Gate:** no capability is false, so work continues to T1.8 without a stop.
