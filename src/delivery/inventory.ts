@@ -1,8 +1,9 @@
 // Offline Release Inventory: one release identity plus every asset and its SHA-256 digest.
 //
 // The release identity is embedded in the app bundle and the service worker, so an asset's
-// digest is taken with that identity replaced by the build-time token. This keeps the
-// identity equal to the hash of the sorted digest list without a circular dependency.
+// digest is taken with every occurrence of that identity masked by 64 zeros. This keeps the
+// identity equal to the hash of the sorted digest list without a circular dependency. The mask
+// is not a placeholder the build rewrites, so a minifier folding it cannot break the digest.
 
 export interface InventoryAsset {
   readonly path: string;
@@ -15,11 +16,7 @@ export interface OfflineReleaseInventory {
   readonly assets: readonly InventoryAsset[];
 }
 
-// "@@TJ_RELEASE_ID@@", built from character codes so the build's substitution of the
-// token never rewrites this copy.
-export const RELEASE_ID_TOKEN = String.fromCharCode(
-  64, 64, 84, 74, 95, 82, 69, 76, 69, 65, 83, 69, 95, 73, 68, 64, 64,
-);
+const IDENTITY_MASK = '0'.repeat(64);
 
 const encoder = new TextEncoder();
 
@@ -62,8 +59,9 @@ export function replaceBytes(bytes: Uint8Array, from: string, to: string): Uint8
   return out;
 }
 
-export function assetDigest(bytes: Uint8Array, releaseId: string): Promise<string> {
-  return sha256Hex(replaceBytes(bytes, releaseId, RELEASE_ID_TOKEN));
+// `identity` is the release identity in built files, or the build placeholder before substitution.
+export function assetDigest(bytes: Uint8Array, identity: string): Promise<string> {
+  return sha256Hex(replaceBytes(bytes, identity, IDENTITY_MASK));
 }
 
 export function releaseIdentityOf(assets: readonly InventoryAsset[]): Promise<string> {

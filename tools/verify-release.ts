@@ -1,12 +1,8 @@
 // npm run verify:release [dir]: checks a built release folder (default dist/) against D1 T1.3.
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import {
-  assetDigest,
-  RELEASE_ID_TOKEN,
-  releaseIdentityOf,
-  type OfflineReleaseInventory,
-} from '../src/delivery/inventory.ts';
+import { assetDigest, releaseIdentityOf, type OfflineReleaseInventory } from '../src/delivery/inventory.ts';
+import { RELEASE_ID_PLACEHOLDER } from '../src/delivery/release-identity.ts';
 import { INVENTORY_FILE, isInventoried, listFiles, SERVICE_WORKER_FILE } from './release.ts';
 
 export async function verifyRelease(dir: string): Promise<string[]> {
@@ -51,7 +47,10 @@ export async function verifyRelease(dir: string): Promise<string[]> {
   }
 
   const sw = await readFile(path.join(dir, SERVICE_WORKER_FILE), 'utf8');
-  if (!sw.includes(inventory.releaseId)) problems.push('sw.js does not embed the release identity');
+  // Exactly one copy, at RELEASE_ID: a second copy means the build rewrote code that a
+  // minifier folded into the placeholder.
+  const swCopies = sw.split(inventory.releaseId).length - 1;
+  if (swCopies !== 1) problems.push(`sw.js embeds the release identity ${swCopies} times, not once`);
   const html = await readFile(path.join(dir, 'index.html'), 'utf8');
   const entry = /<script type="module" crossorigin src="\/([^"]+)"/.exec(html)?.[1];
   if (!entry) problems.push('index.html has no module entry script');
@@ -59,8 +58,8 @@ export async function verifyRelease(dir: string): Promise<string[]> {
     problems.push(`app bundle ${entry} does not embed the release identity`);
   }
   for (const f of files) {
-    if ((await readFile(path.join(dir, f), 'latin1')).includes(RELEASE_ID_TOKEN)) {
-      problems.push(`unreplaced release-identity token in ${f}`);
+    if ((await readFile(path.join(dir, f), 'latin1')).includes(RELEASE_ID_PLACEHOLDER)) {
+      problems.push(`unreplaced release-identity placeholder in ${f}`);
     }
   }
   return problems;
