@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => {
     preview: { port, strictPort: true },
     test: {
       include: ['src/**/*.test.{ts,tsx}'],
+      setupFiles: ['tests/setup/idb-globals.ts'],
     },
   };
 });
