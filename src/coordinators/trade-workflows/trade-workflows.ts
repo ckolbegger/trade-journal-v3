@@ -150,6 +150,7 @@ export function createTradeWorkflows(deps: TradeWorkflowsDeps): TradeWorkflows {
       });
       if (prepared.kind !== 'Prepared') throw new Error('incoherent');
       const derived = derive({ record: prepared.analysisInput });
+      if (derived.kind !== 'Derived') throw new Error('incoherent');
       const tx = beginSemanticTransaction();
       const staged = deps.tradeRecord.applyPreparedChange(tx, prepared, {
         candidateDigest: prepared.digest,
@@ -165,6 +166,8 @@ export function createTradeWorkflows(deps: TradeWorkflowsDeps): TradeWorkflows {
       if (committed.kind === 'RuntimeNotWritable') return committed;
       if (committed.kind !== 'Committed') throw new Error(committed.kind);
       const trade = staged.projection;
+      const derivation = derive({ record: trade });
+      if (derivation.kind !== 'Derived') throw new Error('incoherent');
       const entry = journal.entries[0]!;
       return {
         kind: 'Confirmed',
@@ -178,7 +181,7 @@ export function createTradeWorkflows(deps: TradeWorkflowsDeps): TradeWorkflows {
           lifecycleTransitions: [{ tradeId: trade.tradeId, from: null, to: trade.storedLifecycle }],
           entryId: entry.id,
         },
-        postCommit: { trade, derivation: derive({ record: trade }), entry },
+        postCommit: { trade, derivation, entry },
         affected: [{ scope: 'TradeList', lifecycle: trade.storedLifecycle }],
       };
     }

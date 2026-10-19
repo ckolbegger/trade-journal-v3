@@ -11,7 +11,13 @@ export {
 } from './plan.ts';
 export {
   derive,
+  type DerivationResult,
   type DerivedTradeState,
+  type ExecutionFact,
+  type IncoherentFacts,
+  type InstrumentPosition,
+  type OpenLot,
+  type PositionChangeFact,
   type LifecycleAgreement,
   type LifecycleState,
   type TradeAnalysisRecord,

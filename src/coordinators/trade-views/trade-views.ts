@@ -129,6 +129,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const narrative = await deps.journal.query({ scope: 'TradeNarrative', tradeId: request.tradeId });
         // Derived once and reused for every figure in the view.
         const derived = derive({ record: analysis });
+        if (derived.kind !== 'Derived') throw new Error('incoherent');
         const resolved = labels.kind === 'Resolved' ? labels.resolved : {};
         const { plan } = analysis;
         return {
@@ -179,7 +180,9 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         );
         const label = (id: string) => (labels.kind === 'Resolved' ? labels.resolved[id] : undefined);
         const items = records.map(({ summary, analysis }): PlannedTradeItem => {
-          const { baseline } = derive({ record: analysis });
+          const derived = derive({ record: analysis });
+          if (derived.kind !== 'Derived') throw new Error('incoherent');
+          const { baseline } = derived;
           return {
             tradeId: summary.tradeId,
             underlying: summary.underlying,

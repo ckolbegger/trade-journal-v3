@@ -168,23 +168,29 @@ describe('derive: Planned', () => {
     };
   }
 
+  function derived(input: { record: TradeAnalysisRecord }) {
+    const result = derive(input);
+    if (result.kind !== 'Derived') throw new Error(`expected Derived, got ${JSON.stringify(result)}`);
+    return result;
+  }
+
   it('should derive expected lifecycle Planned, agreement Agrees with stored Planned, no Positions, and the frozen Plan Baseline and 1R for a record with no position-changing facts', () => {
-    const derived = derive({ record: record() });
-    expect(derived.tradeId).toBe('trade-1');
-    expect(derived.factRevision).toBe(7);
-    expect(derived.expectedLifecycle).toBe('Planned');
-    expect(derived.agreement).toEqual({ kind: 'Agrees' });
-    expect(derived.positions).toEqual([]);
-    expect(derived.baseline.oneR.equals(money(250n))).toBe(true);
-    expect(derived.baseline.originalPlannedReward.equals(money(600n))).toBe(true);
+    const state = derived({ record: record() });
+    expect(state.tradeId).toBe('trade-1');
+    expect(state.factRevision).toBe(7);
+    expect(state.expectedLifecycle).toBe('Planned');
+    expect(state.agreement).toEqual({ kind: 'Agrees' });
+    expect(state.positions).toEqual([]);
+    expect(state.baseline.oneR.equals(money(250n))).toBe(true);
+    expect(state.baseline.originalPlannedReward.equals(money(600n))).toBe(true);
   });
 
   it('should report a structured LifecycleDisagreement finding, without changing anything, when the supplied stored lifecycle is Open but no exposure facts exist', () => {
     const input = { record: record('Open') };
     const snapshot = structuredClone(input);
-    const derived = derive(input);
-    expect(derived.expectedLifecycle).toBe('Planned');
-    expect(derived.agreement).toEqual({ kind: 'LifecycleDisagreement', stored: 'Open', expected: 'Planned' });
+    const state = derived(input);
+    expect(state.expectedLifecycle).toBe('Planned');
+    expect(state.agreement).toEqual({ kind: 'LifecycleDisagreement', stored: 'Open', expected: 'Planned' });
     expect(input).toEqual(snapshot);
   });
 
@@ -192,9 +198,9 @@ describe('derive: Planned', () => {
     expect(derive({ record: record() })).toEqual(derive({ record: record() }));
     // Outputs are inert (Trade Analysis contract): they never alias the caller's input.
     const input = { record: record() };
-    const derived = derive(input);
-    const before = structuredClone(derived.baseline.stopBasis.map((b) => b.condition));
+    const state = derived(input);
+    const before = structuredClone(state.baseline.stopBasis.map((b) => b.condition));
     (input.record.plan.stops[0] as { price: string }).price = '1';
-    expect(derived.baseline.stopBasis.map((b) => b.condition)).toEqual(before);
+    expect(state.baseline.stopBasis.map((b) => b.condition)).toEqual(before);
   });
 });
