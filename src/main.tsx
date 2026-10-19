@@ -9,6 +9,7 @@ import {
 } from "./persistence/indexeddb/schema";
 import { createTransactionSeam } from "./persistence/indexeddb/transaction";
 import { createWriteGate } from "./persistence/indexeddb/writeGate";
+import { establishApplicationReadiness } from "./composition/readiness";
 import { validateReleaseInventory } from "./release/inventory";
 import { App } from "./ui/App";
 import "./ui/styles.css";
@@ -41,6 +42,10 @@ declare global {
     __TRADE_JOURNAL_INVENTORY__?: {
       validate: (expectedReleaseId?: string) => Promise<unknown>;
     };
+    /** The browser harness may run the complete Runtime Readiness gate. */
+    __TRADE_JOURNAL_READINESS__?: {
+      evaluate: () => Promise<unknown>;
+    };
   }
 }
 
@@ -51,6 +56,9 @@ if (harnessEnabled()) {
     delete: deleteDatabase,
     version: SCHEMA_VERSION,
     manifest: SCHEMA_MANIFEST,
+  };
+  window.__TRADE_JOURNAL_READINESS__ = {
+    evaluate: () => establishApplicationReadiness(context.host),
   };
   window.__TRADE_JOURNAL_INVENTORY__ = {
     validate: (expectedReleaseId?: string) =>

@@ -467,3 +467,24 @@ per-record byte terms and the two disclosed multiples exposed on every result.
 **Integration half deferred.** Reading the true estimate through the host port and recording the verdict
 in the Workspace initialization receipt needs the gate (T20) and `Workspace.initialize` (T25); those
 assertions are recorded there and repeated by T33.
+
+---
+
+## T20 — `B` Runtime Readiness gate: four functional checks, browser-neutral
+
+| # | Case phrase | Red command and observation | Green command and observation |
+|---|---|---|---|
+| T20.1 | Writable with all four check results recorded when the diagnostic, capacity, control and inventory checks pass | `npx vitest run tests/readiness/all-pass.test.ts` — the gate returned Writable without running the inventory check (three checks recorded) | same command — 1 passed; four passed checks in order, `Writable`, no failed check, no safe action, capacity evidence present |
+| T20.2 | Unsupported listing every failed check when two or more fail | `npx vitest run tests/readiness/simultaneous.test.ts` — only the first failed check was reported | same command — 1 passed; all four checks ran and all four are named when they fail |
+| T20.3 | Unsupported with a safe retry action when the diagnostic fails, leaving no authoritative fact | `npx vitest run tests/readiness/diagnostic-nonmutating.test.ts` — a probe row survived the diagnostic, so the `workspaceMeta` fingerprint changed | same command — 1 passed; the diagnostic commits, the probe is gone, the revision row is byte-identical, and a failed diagnostic yields `Unsupported` with `retry` |
+| T20.4 | Unsupported naming the derived minimum and the observed capacity when capacity fails | `npx vitest run tests/readiness/failed-check-details.test.ts -t "derived minimum"` — the detail was the bare string `capacity is insufficient` | same command — 1 passed; the detail contains the derived minimum (793,088,000), the observed value and the 500-byte shortfall |
+| T20.5 | Unsupported naming the intended release when the worker does not control the page | `npx vitest run tests/readiness/failed-check-details.test.ts -t "intended release"` — the detail named neither release | same command — 1 passed; it names `release-1` (intended) and `release-2` (controlling) |
+| T20.6 | Unsupported naming the missing or corrupt assets when the inventory fails | `npx vitest run tests/readiness/failed-check-details.test.ts -t "missing or corrupt"` — only the first failure was named | same command — 1 passed; both `missing /assets/app.js` and `corrupt /index.html` are named |
+| T20.7 | decide from functional results only, regardless of the user-agent | `npx vitest run tests/readiness/no-allowlist.test.ts` — a user-agent allowlist forced an all-passing run to `Unsupported` | same command — 1 passed; a claimed-supported UA with a failing check is `Unsupported`, an unrecognised UA with all checks passing is `Writable` |
+| T20.8 | report protection alongside the outcome and stay Writable when protection is BestEffort or Unavailable | `npx vitest run tests/readiness/protection-advisory.test.ts` — advisory protection was treated as a failed check and the run became `Unsupported` | same command — 1 passed; both advisory states stay `Writable` with `notProtectedWarning: true` |
+| T20.9 | two-engine real-engine readiness with versions recorded as provenance only | `npx playwright test tests/browser/readiness.spec.ts --project=chromium --project=webkit` | exit 0 on both engines; `Writable` with four passed checks, protection reported, no version field on the result, and engine versions written only to `artifacts/browser/readiness-<project>.json` |
+
+The gate runs every check unconditionally, derives its outcome only from the four functional results,
+maps the host port's typed results into capacity and inventory inputs, and never reads a browser identity.
+Forced per-check failure payloads are asserted at the port-injection seam here; the same failures are
+driven through the production UI by T29's forced-condition flows and repeated by T33.
