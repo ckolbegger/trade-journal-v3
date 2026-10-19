@@ -67,7 +67,7 @@ async function rawGet(database: string, store: string, key: IDBValidKey): Promis
   return value;
 }
 
-const writable: WriteGate = { recheck: () => Promise.resolve(null) };
+const writable: WriteGate = { current: () => null, recheck: () => Promise.resolve(null) };
 
 function persistence(writeGate: WriteGate = writable) {
   return createPersistence({ indexedDB: factory, ids: sequentialIds(), writeGate });
@@ -366,7 +366,7 @@ describe('versionchange (amendment agreed during the D2 breakdown, 2026-10-11)',
       safeActions: [{ action: 'Reload', explanation: 'Reload to continue with the updated release.' }],
     };
     const recheck = vi.fn<WriteGate['recheck']>(() => Promise.resolve(refusal));
-    const p = persistence({ recheck });
+    const p = persistence({ current: () => null, recheck });
     const created = await p.createWorkspace([]);
     if (created.kind !== 'Created') throw new Error('workspace not created');
     await p.commit({ checks: [], writes: [] });

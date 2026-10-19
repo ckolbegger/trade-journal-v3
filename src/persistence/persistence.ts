@@ -18,8 +18,10 @@ export interface IdGenerator {
   next(): string;
 }
 
-// Reruns Runtime Readiness: null when the session is Writable, otherwise the refusal.
+// The session's Runtime Readiness as the persistence boundary sees it: null when Writable,
+// otherwise the refusal. `current` is synchronous; `recheck` reruns readiness.
 export interface WriteGate {
+  current(): RuntimeNotWritable | null;
   recheck(): Promise<RuntimeNotWritable | null>;
 }
 
@@ -66,6 +68,7 @@ export interface StoreRecord {
 }
 
 export type CreateWorkspaceResult =
+  | RuntimeNotWritable
   | { readonly kind: 'Created'; readonly databaseName: string; readonly binding: WorkspaceSnapshotBinding }
   | { readonly kind: 'AlreadyInitialized'; readonly databaseName: string };
 
@@ -180,6 +183,9 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
 
     async commit(writeSet) {
       if (superseded) return (await deps.writeGate.recheck()) ?? SUPERSEDED;
+      // Outside Writable, refuse before any write transaction is opened.
+      const refusal = deps.writeGate.current();
+      if (refusal) return refusal;
       const db = await workspace();
       const stores = [
         ...new Set<WorkspaceStore>(['meta', ...writeSet.checks.map((c) => c.store), ...writeSet.writes.map((w) => w.store)]),
@@ -226,6 +232,8 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
     },
 
     async createWorkspace(initialRecords) {
+      const refusal = deps.writeGate.current();
+      if (refusal) return refusal;
       const databaseName = `${WORKSPACE_PREFIX}${deps.ids.next()}`;
       const workspace = await openDatabase(deps.indexedDB, databaseName, WORKSPACE_VERSION, (db, oldVersion, tx) => {
         upgradeWorkspace(db, oldVersion);
