@@ -143,3 +143,6 @@ export interface PlanBaseline {
   readonly oneR: Money;
   readonly perConditionBasis: readonly PerConditionBasis[];
 }
+
+/** Where a Trade is in the lifecycle. Stored authoritatively; derived independently by analysis. */
+export type LifecycleStateName = "Planned" | "Open" | "Closed" | "Abandoned";

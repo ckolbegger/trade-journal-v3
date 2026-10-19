@@ -27,8 +27,7 @@ export const TRADE_LIFECYCLE_STORE = "tradeLifecycle";
 export const TRADE_VERSION_STORE = "tradeVersion";
 export const LIFECYCLE_INDEX_STORE = "lifecycleIndex";
 
-/** Where a Trade is in the lifecycle. Stored here; derived independently by Trade Analysis. */
-export type LifecycleStateName = "Planned" | "Open" | "Closed" | "Abandoned";
+export type { LifecycleStateName } from "../plan";
 
 /**
  * The complete effective projection Trade Analysis needs for one Trade. `candidate: true` marks a
@@ -376,3 +375,19 @@ export async function prepareChange(
 
   return { outcome: "Prepared", ...(before === undefined ? {} : { before }), candidate, digest };
 }
+
+export {
+  applyPreparedChange,
+  type ApplyPreparedTradeChangeCommand,
+  type DerivedTradeReconciliation,
+  type StagedTradeProjection,
+  type TradeIdentityMapping,
+  type TradeRecordApplyResult,
+} from "./apply";
+export {
+  queryRecords,
+  type LifecycleListRow,
+  type QueryCounts,
+  type TradeRecordPage,
+  type TradeRecordQuery,
+} from "./query";

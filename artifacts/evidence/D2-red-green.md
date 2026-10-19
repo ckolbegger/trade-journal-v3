@@ -400,3 +400,76 @@ recorded that way rather than presented as red-first.
 | R3 | `npx tsc --noEmit` | exit 0 | pass |
 | R4 | `npm run lint:layers` | `104 files, 0 violations` | pass |
 | R5 | `npx eslint .` | exit 0 | pass |
+
+---
+
+## T3 — `B` `applyPreparedChange` and stored `Planned` Lifecycle State
+
+## T4 — `B` Lifecycle index membership for `Planned`
+
+Seams: `TradeRecord.applyPreparedChange` in `src/trade-record/apply.ts` and
+`TradeRecord.queryRecords` in `src/trade-record/query.ts`; suites
+`tests/trade-record/apply-prepared-change.confirm-plan.test.ts` (8 cases) and
+`tests/trade-record/lifecycle-index.test.ts` (8 cases), over the real D2-migrated store.
+
+**Red.** Both modules were authored with their cases in the same pass, so red was **unreachable** in
+that ordering. To prove each case tests the behaviour, both functions were replaced with typed stubs
+(`applyPreparedChange` rejecting "the Confirm Plan prepared change as unsupported"; `queryRecords`
+returning an empty page) and the suites re-run:
+
+```text
+npx vitest run --project unit tests/trade-record
+→ the Confirm Plan and index-membership cases fail:
+  expected 'NoWrite' to be 'Staged'          (no identities, no lifecycle, no index entry)
+  expected [] to deeply equal [ … ]          (Planned page empty)
+  expected 0 to be 1                         (batch/index counts)
+```
+
+**Green.** `Tests 16 passed (16)` after restoring the implementations. This is a re-established red
+after test-after development, recorded as such.
+
+**What the implementation does.**
+
+- `applyPreparedChange` writes nothing itself. It rechecks the base revision and the digest, requires
+  a `DerivedTradeReconciliation` bound to the exact candidate identity, derives the durable
+  `tradeId`/`FactRevision`/`RecordedSequence`, and returns the participants for the coordinator's one
+  commit: the fact rows (`trade`, `plan`, one `planned-leg` per leg, one `management-condition` per
+  condition), the stored `tradeLifecycle` record with its `effectiveFactDigest` and `causingFactId`,
+  the authoritative `lifecycleIndex` entry, and the `tradeVersion` metadata row. Absent, unbound,
+  mismatched and stale reconciliations are typed no-write results with no participants.
+- `queryRecords(CurrentState)` selects from the authoritative lifecycle index in one bounded pass and
+  returns the complete `AnalysisInput` batch with `indexCursors: 1`, `batchReads: 1` and
+  `perRecordReads: 0`. It never backfills or repairs an index entry.
+
+**Defect found by writing the cases.** A prepared *creation* applied twice succeeded and rewrote
+`FactRevision 1`, because the existence check compared the non-durable candidate reference instead of
+the derived durable `tradeId`. A repeated creation is now a typed `StaleRevision` naming the existing
+revision.
+
+---
+
+## T7 — `B` Expected lifecycle and `Planned` agreement
+
+Seam: `TradeAnalysis.derive` in `src/analysis/trade/derive.ts`; suite
+`tests/trade-analysis/expected-lifecycle.test.ts` (8 cases).
+
+**Red.** `Tests 6 failed | 2 passed` against the stub derive: `expected { outcome: 'Unavailable',
+reason: 'NotImplemented' } to equal { outcome: 'Value', value: 'Planned' }`, the disagreement and
+finding cases, the future-Economic-Time case, and the insufficient-facts reason. Purity and
+determinism passed trivially against the stub, so their red was **unreachable** for that stub shape.
+
+**Green.** `Tests 8 passed (8)`. Stored Lifecycle State stays authoritative: `derive` returns the
+expected state, an `agreed`/`disagreement`/`unavailable` agreement status naming both values, and a
+structured `LifecycleDisagreement` finding — never an exception and never a repair. Ordering follows
+Economic Time, not save time, and the result binds the exact source `FactRevision`.
+
+
+### Commit — T3 + T4 + T7 (apply, lifecycle index, expected lifecycle)
+
+| # | Command | Observed | Result |
+|---|---|---|---|
+| R1 | `npx vitest run` | `Test Files 40 passed (40)`, `Tests 289 passed (289)` | pass |
+| R2 | `npx playwright test` | `132 passed (1.9m)` | pass |
+| R3 | `npx tsc --noEmit` | exit 0 | pass |
+| R4 | `npm run lint:layers` | `112 files, 0 violations` | pass |
+| R5 | `npx eslint .` | exit 0 | pass |

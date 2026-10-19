@@ -1,6 +1,7 @@
 import type { CalculationAvailability } from "../../results";
 import type {
   ConditionBasis,
+  PlanBaseline,
   PlanCondition,
   PlannedLeg,
   StrategyRole,
@@ -518,3 +519,42 @@ export async function assessPlan(input: PlanAssessmentInput): Promise<PlanAssess
     ],
   };
 }
+
+/**
+ * The frozen Plan Baseline the Trade Record stores: the accepted assessed values with no availability
+ * branch left, or undefined when any required component is unavailable. A Plan with no positive
+ * numeric 1R is a typed rejection at the coordinator, never a stored approximation.
+ */
+export function frozenBaseline(assessment: Extract<PlanAssessment, { outcome: "Accepted" }>): PlanBaseline | undefined {
+  const { originalPlannedRisk, originalPlannedReward, plannedRewardRiskRatio, oneR } =
+    assessment.baseline;
+  if (
+    originalPlannedRisk.outcome !== "Value" ||
+    originalPlannedReward.outcome !== "Value" ||
+    plannedRewardRiskRatio.outcome !== "Value" ||
+    oneR.outcome !== "Value"
+  ) {
+    return undefined;
+  }
+  return {
+    originalPlannedRisk: originalPlannedRisk.value,
+    originalPlannedReward: originalPlannedReward.value,
+    plannedRewardRiskRatio: plannedRewardRiskRatio.value,
+    oneR: oneR.value,
+    perConditionBasis: assessment.baseline.perConditionBasis.map((basis) => ({
+      conditionId: basis.conditionId,
+      role: basis.role,
+      kind: basis.kind,
+      basis: basis.basis,
+      ...(basis.boundaryPrice === undefined ? {} : { boundaryPrice: basis.boundaryPrice }),
+      ...(basis.monetaryBoundary === undefined ? {} : { monetaryBoundary: basis.monetaryBoundary }),
+    })),
+  };
+}
+
+export {
+  derive,
+  type DerivedTradeState,
+  type LifecycleAgreement,
+  type TradeDerivationInput,
+} from "./derive";
