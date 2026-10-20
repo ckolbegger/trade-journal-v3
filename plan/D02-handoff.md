@@ -30,7 +30,7 @@ Run these checks. Each one must match:
 | `git rev-parse --show-toplevel` | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | `git branch --show-current` | `claude-opus-5.5` |
 | `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5`, either in sync or ahead only by the commits in the next row. The only untracked file is `handoff-claude-opus-5.5-2026-10-11.md`. |
-| `git log --oneline claude-opus-5.5-d1..HEAD` | the commit that added this note (`docs(plan): add the D2 handoff`), the revision 5 commit (tagged `claude-opus-5.5-plan-r5`), its follow-up that updated this note, and then only D2 task commits and their evidence and handoff updates, ending with the commit section 7 names as the last commit |
+| `git log --oneline claude-opus-5.5-d1..HEAD` | the commit that added this note (`docs(plan): add the D2 handoff`), the revision 5 commit (tagged `claude-opus-5.5-plan-r5`), its follow-up that updated this note, and then only D2 task commits and their evidence and handoff updates (plus the tooling commit that added `.claude/scripts/tdd.sh`, after T2.1), ending with the commit section 7 names as the last commit |
 | `git tag --list 'claude-opus-5.5-*'` | includes `claude-opus-5.5-plan-r5` and `claude-opus-5.5-d1` |
 | `grep DEV_PORT .env.local` | `DEV_PORT=5175` |
 | `node --version` | `v26.x`, at or above `v26.12.0` (decision 43) |
@@ -115,23 +115,7 @@ Browser-test lessons from D1, all already handled in `e2e/d1/support.ts` and wor
 - Playwright's offline emulation doesn't cover service-worker fetches. Offline cases also stop the server.
 - A form control's focus ring needs `:focus-within` for date-time inputs.
 
-TDD logging helper: D1 used this script from the session scratchpad. Recreate it there, not in the repository:
-
-```zsh
-#!/bin/zsh
-# usage: tdd.sh red|green <task> <test file> <test name>   (appends to evidence/D02/tdd-log.md)
-phase=$1; task=$2; file=$3; name=$4
-out=$(npx vitest run "$file" -t "$name" 2>&1); code=$?
-clean=$(print -r -- "$out" | sed $'s/\x1b\\[[0-9;]*m//g')
-summary=$(print -r -- "$clean" | grep -E '^ +Tests ' | head -1 | sed 's/^ *//; s/ *([0-9.]*m\?s)//; s/ | /, /g')
-err=$(print -r -- "$clean" | grep -E '^ *[A-Za-z]*Error:|^ *(Expected|Received)' | head -2 | tr '\n' ' ' | sed 's/|/\\|/g; s/  */ /g' | cut -c1-220)
-print -r -- "$phase exit=$code | $summary | $err"
-printf '| %s | %s | %s | `npx vitest run %s -t "%s"` | exit %s; %s | %s |\n' "$task" "$name" "$phase" "$file" "$name" "$code" "$summary" "$err" >> evidence/D02/tdd-log.md
-if [[ $phase == red && $code == 0 ]]; then print "!!! RED PHASE PASSED: invalid red"; fi
-if [[ $phase == green && $code != 0 ]]; then print -r -- "$clean" | tail -40; fi
-```
-
-Avoid test names containing parentheses or quotes, which break `-t` filtering, and start `evidence/D02/tdd-log.md` with a note that its rows are single-case runs.
+TDD logging helper: `.claude/scripts/tdd.sh`, committed. `CLAUDE.md` ("Project tooling") says how to use it. `evidence/D02/tdd-log.md` already exists.
 
 ## 5. Working rules
 
@@ -167,5 +151,5 @@ Update this section at the end of each task.
 |---|---|
 | Tasks done | T2.1 (`335e62d`), cumulative run green (`evidence/D02/structural.md`). |
 | Next task | T2.2, Trade Analysis: entry window, Entry Resolution Point, Entry Quality, Planned-Leg Fulfillment. `derive` now returns `DerivationResult` (`Derived` or `IncoherentFacts`); the D1 call sites narrow it with an `incoherent` throw that T2.6 and T2.7 replace. Test fixture: `src/domain/trade-analysis/reference-trade.ts`. |
-| Last commit | `docs(plan): settle T2.1's first-run passes and refresh the D2 location checks` |
+| Last commit | `chore(tooling): commit the TDD logging helper and its CLAUDE.md rule` |
 | Open questions | Settled 2026-10-19: T2.1's two first-run passes ("keep exact values for fractional inputs" and "report agreement Agrees when the supplied stored lifecycle equals the expected one") stay as regression guards (`tdd-log.md`). Carried from D1: `npm audit` reports 3 high findings in `sharp` via the pinned `wrangler@4.147.0` (deploy-only), and fixing them needs a pin change, so a plan revision. `engine-strict`'s refusal was never exercised. `sw.js` is outside the inventory by design (T1.3), so a worker-only change keeps the release identity. |

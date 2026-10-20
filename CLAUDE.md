@@ -77,4 +77,9 @@ I'm always open to ideas on better ways to do things. Please don't hesitate to s
   - only the sections of earlier breakdowns that the current one builds on (decisions, boundaries, task graph, structural tasks, harnesses), never their behavioral task text
 
   When writing the next deliverable's handoff, give its reading list in this form, naming the sections to read. Drafting a breakdown still reads `specs/` in full, and retags its deliverable in the map before regenerating the lists with `.claude/scripts/spec-reading-lists.py`.
+- **Run every TDD red and green with `.claude/scripts/tdd.sh red|green <task> <test file> "<test name>"`**, never with a hand-written `vitest` command. It runs the one case, prints one summary line, and appends the row to `evidence/D<nn>/tdd-log.md`, taking `<nn>` from the task ID (T2.2 → D02).
+  - Run it as a command on its own. When it is chained with another `vitest` command, the output-filter hook replaces its summary line.
+  - Start a new deliverable's `tdd-log.md` first, with a note that its rows are single-case runs. The helper refuses to run without it.
+  - Avoid parentheses and quotes in test names, which break `-t` filtering.
+  - It writes only red and green rows. Append first-run-pass notes, user decisions, and the refactor row to the log yourself.
 - Single-case TDD runs stay in the main session. A PreToolUse hook (`.claude/hooks/filter-test-output.sh`) cuts their output to failures and the summary and saves the full log; put `CLAUDE_FULL_OUTPUT=1` in a command to see everything.
