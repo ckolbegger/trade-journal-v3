@@ -1,6 +1,6 @@
-// npm run verify:fixtures: every committed Workspace fixture opens with the current release
-// (Ready at the current schema; after a later schema change, through migration) and presents
-// views equal to its committed snapshot (D1 T1.31).
+// npm run verify:fixtures: every committed Workspace fixture opens with the current release and
+// presents views equal to its committed snapshot (D1 T1.31). A fixture at the current schema opens
+// Ready without migrating; an older one migrates to the current schema first (D2 T2.19).
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
@@ -9,6 +9,7 @@ import { sequentialIds } from '../tests/support/workspace.ts';
 import { FIXTURES_DIR, launchOn, loadDump, viewsOf, type WorkspaceDump } from './fixtures/workspace-fixture.ts';
 
 const problems: string[] = [];
+const verified: string[] = [];
 const fixtures = (await readdir(FIXTURES_DIR)).filter((name) => name.startsWith('workspace-v')).sort();
 if (fixtures.length === 0) problems.push(`no Workspace fixtures in ${FIXTURES_DIR}`);
 for (const name of fixtures) {
@@ -28,16 +29,30 @@ for (const name of fixtures) {
     problems.push(`${name}: initialize is ${opened.kind}, not Opened`);
     continue;
   }
+  const migration = opened.receipt.migration;
+  if (dump.schemaVersion < SCHEMA_VERSION && (migration?.fromVersion !== dump.schemaVersion || migration.toVersion !== SCHEMA_VERSION)) {
+    problems.push(`${name}: opening did not migrate it from schema ${dump.schemaVersion} to ${SCHEMA_VERSION}`);
+    continue;
+  }
+  if (dump.schemaVersion === SCHEMA_VERSION && migration !== undefined) {
+    problems.push(`${name}: opening migrated a Workspace already at schema ${SCHEMA_VERSION}`);
+    continue;
+  }
   const status = await app.Workspace.getStatus();
   if (status.kind !== 'Ready') {
     problems.push(`${name}: getStatus is ${status.kind}, not Ready`);
     continue;
   }
-  const views = await viewsOf(app);
-  if (!isDeepStrictEqual(views, expected)) problems.push(`${name}: views differ from expected-views.json`);
+  const views = await viewsOf(app, dump.schemaVersion);
+  if (!isDeepStrictEqual(views, expected)) {
+    problems.push(`${name}: views differ from expected-views.json`);
+    continue;
+  }
+  verified.push(`${name}: schema ${dump.schemaVersion}, ${migration ? `migrated to ${migration.toVersion} into ${migration.databaseName}` : 'opened without migration'}, views equal`);
 }
 if (problems.length > 0) {
   for (const p of problems) console.error(`FAIL ${p}`);
   process.exit(1);
 }
-console.log(`verify:fixtures OK: ${fixtures.join(', ')} open (migrating where older) Ready at schema ${SCHEMA_VERSION} with views equal to their snapshots`);
+for (const line of verified) console.log(line);
+console.log(`verify:fixtures OK: ${fixtures.join(', ')} open Ready at schema ${SCHEMA_VERSION} with views equal to their snapshots`);

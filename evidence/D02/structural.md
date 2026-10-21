@@ -453,3 +453,24 @@ Run 2026-10-21 14:45 EDT on commit `bae4262` (the only uncommitted files were th
 | Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.18-checks.txt` |
 
 Failures: none.
+
+## T2.19 Schema-v2 Workspace fixture; v1 fixture migrated
+
+Built: `tools/fixtures-freeze.ts` builds D1's content through the facade (initialize, Fidelity and Charles Schwab, three Accounts, five confirmed Plans) and then three Open Trades, each the reference Trade (100 shares, entry 50.00, Stop 47.50, Target 56.00, confirmed 2026-10-12 09:00 America/New_York) with a prefix of PC1–PC3 recorded through `TradeWorkflows.recordPositionChange`:
+
+| Trade | Account | Position Changes and reflections | Result |
+|---|---|---|---|
+| CSCO | Roth IRA | PC1 Complete, PC2 Complete, PC3 Decline with reason | Resolved, 120 open, Filled With Deviation, the fixture's one Entry Size (Excess) occurrence of 20 shares caused by PC3 |
+| KO | Individual | PC1 Complete, PC2 Decline without reason | Resolved, 100 open, Filled As Planned |
+| PFE | Brokerage | PC1 Decline with reason | Entering, 60 of 100, Partially Filled |
+
+`viewsOf(app, schemaVersion)` (in `tools/fixtures/workspace-fixture.ts`) returns, for schema 1, the Planned list and its Details exactly as before; from schema 2 it adds the Open list and the Open Trades' Details. `tools/verify-fixtures.ts` now requires a fixture older than the current schema to open with a migration receipt from its schema to the current one, and a fixture at the current schema to open without one; both must then be Ready with views equal to their snapshot. The T2.10 migration test passes the v1 schema version to `viewsOf`.
+
+| Command | Result |
+|---|---|
+| `npm run fixtures:freeze -- --schema 2` | `fixtures:freeze OK: tests/fixtures/workspace-v2 (schema 2, 5 Planned and 3 Open Trades, 3 Accounts)`, exit 0. The dump holds `tj-root` (pointer to `tj-ws-fx-0004`) and `tj-ws-fx-0004` (meta schema 2; 8 trades, 11 journal entries, 3 declines, 14 obligation records). |
+| `npm run verify:fixtures` | `workspace-v1: schema 1, migrated to 2 into tj-ws-verify-0001, views equal`; `workspace-v2: schema 2, opened without migration, views equal`; `verify:fixtures OK: workspace-v1, workspace-v2 open Ready at schema 2 with views equal to their snapshots`, exit 0 |
+| `verify:fixtures` with CSCO's `"deviationCount": 1` changed to `0` in a copy of the v2 snapshot | `FAIL workspace-v2: views differ from expected-views.json`, exit 1; snapshot restored (`cmp` equal) and rerun OK |
+| `npm run fixtures:freeze -- --schema 2` again | `fixtures:freeze: tests/fixtures/workspace-v2 exists; committed fixtures are never regenerated`, exit 1 |
+| `git diff --stat -- tests/fixtures/workspace-v1` | empty: the v1 fixture is unchanged |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |

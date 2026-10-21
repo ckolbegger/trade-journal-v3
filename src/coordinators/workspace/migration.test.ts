@@ -21,7 +21,7 @@ async function v1Stack(edit?: (dump: MutableDump) => void, migrationHooks?: Migr
   edit?.(dump as unknown as MutableDump);
   const stack = await testStack(await loadDump(dump), dump.asOf);
   const workspace = createWorkspace({ ...stack, host: stack.testHost.host, releaseId: stack.testHost.releaseId, migrationHooks });
-  return { ...stack, workspace, views: () => viewsOf({ TradeViewsAndReporting: createTradeViews(stack) }) };
+  return { ...stack, workspace, views: () => viewsOf({ TradeViewsAndReporting: createTradeViews(stack) }, V1_DUMP.schemaVersion) };
 }
 
 // Test code edits a stored record directly, outside the application.

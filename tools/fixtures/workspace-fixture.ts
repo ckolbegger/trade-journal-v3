@@ -119,15 +119,19 @@ function normalize(value: unknown): unknown {
   return value;
 }
 
-// The normalized Planned list and every Detail; bindings are opaque revision tokens and omitted.
-export async function viewsOf(app: Pick<Application, 'TradeViewsAndReporting'>): Promise<unknown> {
-  const list = await app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Planned' });
-  if (list.kind !== 'Ready') throw new Error(`browseTrades: ${list.kind}`);
+// The normalized views the release that froze a fixture of this schema version presented: the
+// Planned list (and from schema 2 the Open list) and every listed Trade's Detail. Bindings are opaque
+// revision tokens and omitted.
+export async function viewsOf(app: Pick<Application, 'TradeViewsAndReporting'>, schemaVersion: number): Promise<unknown> {
+  const planned = await app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Planned' });
+  if (planned.kind !== 'Ready') throw new Error(`browseTrades Planned: ${planned.kind}`);
+  const open = schemaVersion >= 2 ? await app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Open' }) : undefined;
+  if (open && open.kind !== 'Ready') throw new Error(`browseTrades Open: ${open.kind}`);
   const details = [];
-  for (const item of list.view.items) {
+  for (const item of [...planned.view.items, ...(open?.view.items ?? [])]) {
     const detail = await app.TradeViewsAndReporting.getTradeDetail({ tradeId: item.tradeId });
     if (detail.kind !== 'Ready') throw new Error(`getTradeDetail ${item.tradeId}: ${detail.kind}`);
     details.push(detail.view);
   }
-  return normalize({ planned: list.view.items, details });
+  return normalize(open ? { planned: planned.view.items, open: open.view.items, details } : { planned: planned.view.items, details });
 }

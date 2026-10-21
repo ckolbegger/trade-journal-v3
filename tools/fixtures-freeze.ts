@@ -1,10 +1,12 @@
 // npm run fixtures:freeze -- --schema <n>: builds the schema-<n> Workspace fixture through the
 // facade only and writes its raw dump and expected views (D1 T1.31). A committed fixture is never
-// regenerated, so an existing one is refused.
+// regenerated, so an existing one is refused. Schema 2 (D2 T2.19) adds three Open Trades to D1's
+// content.
 import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { IDBFactory } from 'fake-indexeddb';
+import type { ConfirmPlanResult, PositionChangeMember, ReflectionDisposition } from '../src/app/types.ts';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
 import { dumpDatabases, FIXTURES_DIR, GENERATOR_VERSION, launchOn, viewsOf, type WorkspaceDump } from './fixtures/workspace-fixture.ts';
 
@@ -78,9 +80,88 @@ for (const [i, plan] of plans.entries()) {
   if (result.kind !== 'Confirmed') throw new Error(`confirmPlan ${plan.symbol}: ${result.kind}`);
 }
 
+// D2's reference Trade (breakdown, section 4): 100 shares, intended entry 50.00, Stop 47.50,
+// Target 56.00, confirmed 2026-10-12 09:00 America/New_York; PC1 60 @ 50.10 at 10:00, PC2 40 @ 50.30
+// at 11:00, PC3 20 @ 51.00 at 14:00, each with a 1.00 fee. Each Open Trade records a prefix of them:
+// PC1 only (Entering), PC1–PC2 (Resolved, Filled As Planned), and PC1–PC3 (Resolved, one Entry Size
+// occurrence of 20 shares caused by PC3), with Complete and Decline reflections mixed.
+const pcDefinition = await app.Journal.getDefinitions({ latestFor: 'entry-type.position-change-reflection' });
+if (pcDefinition.kind !== 'Found') throw new Error('Position Change Reflection definition missing');
+const complete = (mode: string, emotion: string, confidence: number): ReflectionDisposition => ({
+  kind: 'Complete',
+  form: {
+    definitionId: pcDefinition.definition.id,
+    answers: {
+      'prompt.position-change-reflection.decision-mode': { kind: 'Option', optionId: `option.position-change-reflection.decision-mode.${mode}` },
+      'prompt.position-change-reflection.primary-emotion': { kind: 'Option', optionId: `option.position-change-reflection.primary-emotion.${emotion}` },
+      'prompt.position-change-reflection.decision-confidence': { kind: 'Scale', value: confidence },
+    },
+  },
+});
+const decline = (reason?: string): ReflectionDisposition =>
+  reason === undefined ? { kind: 'Decline', definitionId: pcDefinition.definition.id } : { kind: 'Decline', definitionId: pcDefinition.definition.id, reason };
+const referenceChanges = [
+  { economicTime: '2026-10-12T14:00:00Z', quantity: '60', price: '50.10' },
+  { economicTime: '2026-10-12T15:00:00Z', quantity: '40', price: '50.30' },
+  { economicTime: '2026-10-12T18:00:00Z', quantity: '20', price: '51.00' },
+];
+const openTrades = [
+  { symbol: 'CSCO', reflections: [complete('as-planned', 'calm', 4), complete('as-planned', 'calm', 4), decline('Added into strength; reflecting later.')] },
+  { symbol: 'KO', reflections: [complete('as-planned', 'eager', 3), decline()] },
+  { symbol: 'PFE', reflections: [decline('Entered between meetings.')] },
+];
+for (const [i, open] of openTrades.entries()) {
+  const account = accounts[i % accounts.length]!.record;
+  const confirmed: ConfirmPlanResult = await app.TradeWorkflows.confirmPlan({
+    accountId: account.id,
+    accountRevision: account.recordRevision,
+    strategyId: strategy.id,
+    strategyRevision: strategy.recordRevision,
+    economicTime: '2026-10-12T13:00:00Z',
+    plan: {
+      underlying: open.symbol,
+      legs: [{ side: 'Long', instrument: { kind: 'Stock', symbol: open.symbol }, quantity: '100', intendedEntry: '50.00' }],
+      stops: [{ kind: 'UnderlyingPrice', price: '47.50' }],
+      targets: [{ kind: 'UnderlyingPrice', price: '56.00' }],
+    },
+    reflection: {
+      definitionId: definition.definition.id,
+      answers: {
+        'prompt.plan-reflection.thesis': { kind: 'Text', text: `${open.symbol}: reclaiming 50 after a higher low.` },
+        'prompt.plan-reflection.invalidation': { kind: 'Text', text: 'A daily close below 47.50.' },
+      },
+    },
+  });
+  if (confirmed.kind !== 'Confirmed') throw new Error(`confirmPlan ${open.symbol}: ${confirmed.kind}`);
+  const trade = confirmed.postCommit.trade;
+  let factRevision = trade.factRevision;
+  for (const [n, reflection] of open.reflections.entries()) {
+    const change = referenceChanges[n]!;
+    const member: PositionChangeMember = {
+      kind: 'Execution',
+      tradeId: trade.tradeId,
+      action: 'Buy',
+      instrument: { kind: 'Stock', symbol: open.symbol },
+      intent: { kind: 'ServesPlannedLeg', plannedLegId: trade.plan.legs[0]!.factId },
+      quantity: change.quantity,
+      price: change.price,
+      fee: '1.00',
+      economicTime: change.economicTime,
+    };
+    const recorded = await app.TradeWorkflows.recordPositionChange({
+      originTradeId: trade.tradeId,
+      trades: [{ tradeId: trade.tradeId, expectedFactRevision: factRevision }],
+      members: [member],
+      reflection,
+    });
+    if (recorded.kind !== 'Recorded') throw new Error(`recordPositionChange ${open.symbol} PC${n + 1}: ${recorded.kind}`);
+    factRevision = recorded.receipt.factRevision;
+  }
+}
+
 const dump: WorkspaceDump = { schemaVersion: SCHEMA_VERSION, generatorVersion: GENERATOR_VERSION, asOf: AS_OF, databases: await dumpDatabases(factory) };
-const views = await viewsOf(app);
+const views = await viewsOf(app, SCHEMA_VERSION);
 await mkdir(dir, { recursive: true });
 await writeFile(path.join(dir, 'dump.json'), `${JSON.stringify(dump, null, 2)}\n`);
 await writeFile(path.join(dir, 'expected-views.json'), `${JSON.stringify(views, null, 2)}\n`);
-console.log(`fixtures:freeze OK: ${dir} (schema ${SCHEMA_VERSION}, ${plans.length} Plans, ${accounts.length} Accounts)`);
+console.log(`fixtures:freeze OK: ${dir} (schema ${SCHEMA_VERSION}, ${plans.length} Planned and ${openTrades.length} Open Trades, ${accounts.length} Accounts)`);
