@@ -359,3 +359,21 @@ Run 2026-10-21 14:31 EDT on commit `4bbf4ff` (the only uncommitted files were th
 | Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.16-checks.txt` |
 
 Failures: none.
+
+## T2.17 Previous-release harness
+
+`npm run build:releases && npm run verify:releases` (2026-10-21, Node v26.12.0), second run (the d1 build reused from its cache):
+
+```
+build:releases: d1 reused from /var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-release-d1-402b94835793 (claude-opus-5.5-d1 at 402b94835793587df2d10de1f3564e276843618b)
+build:releases OK: v1, v2, v2-corrupt, d1, d2 in /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/dist-releases; v2-corrupt alters /assets/index-B21LeF9u.css
+verify:releases OK: v1 583ce8d6b026c6d87383e9862719e6551fa90c2ffbce4310b5615f1474fed50d, v2 ac9db116ce5388a52c97bb7432ee578c1da43ec128faf6fdeb2aba91f7ace407, v2-corrupt fails only on /assets/index-B21LeF9u.css, d1 9c8b5b3dac0bff4a2ddda1888ee01c8532b419da03ba1a9f080e4f0fc77dee78 schema 1, d2 ab964e0bee2261f09c0ccd8ca000520c41b548bee559c70f7d3a790c8bd613bb schema 2
+```
+
+The first (cold) run printed `build:releases: d1 built in …` instead, with the same identities, and took about 5 seconds in all (npm ci from the local cache).
+
+How `d1` is built (A34): `tools/build-releases.ts` resolves the tag `claude-opus-5.5-d1` to its commit, runs `git archive` into `<os tmpdir>/tj-release-d1-<commit12>` (no checkout, no worktree), runs `npm ci` there from D1's own lockfile, then D1's own `npm run build` with `TJ_BUILD_LABEL=d1` (the v1/v2 label mechanism, which D1's `release-plugin.ts` already reads) and `DEV_PORT=5175` (D1's vite config demands it; it is in the uncommitted `.env.local`). A marker file holding the commit makes repeat runs copy the cached `dist`. `NODE_ENV` is removed from the child's environment, because Vite's in-process builds set it to `production` and `npm ci` would then skip the dev dependencies. `d2` is the current source built with label `d2`. Both are plain root-scoped builds, so they share the harness origin `localhost:5175` and service-worker scope with v1, v2 and the faults build.
+
+`verify:releases` now also runs `verify:release` on d1 and d2, requires v1, v2, d1 and d2 to have four distinct identities, and reads each release's schema version from what its bundle writes to the Workspace schema meta record (`` key:`schema`,schemaVersion:N ``, exactly one per bundle): d1 1, d2 2. Negative control: replacing `dist-releases/d1` with a copy of d2 made it fail with `FAIL releases share an identity …` and `FAIL d1: reports schema 2, expected 1`.
+
+Switching: in Playwright, `startReleaseServer({ root: process.cwd(), release: 'dist-releases/d1' })`, then `server.use('dist-releases/d2')` or `server.use('dist-faults')`. For the critic, `npm run serve:releases -- d1` starts on d1 (default v1) with the project folder as root; keys 1 v1, 2 v2, 3 v2-corrupt, 4 d1, 5 d2, f dist-faults (needs `npm run build:faults` first), q quit. Smoke-checked: the server returned d1's, d2's and the faults build's identities in turn on one origin, and the keypresses 4, 5, f switched the served folder.

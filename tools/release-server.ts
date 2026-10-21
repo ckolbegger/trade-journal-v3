@@ -1,7 +1,8 @@
 // The release harness server (D1 A15): serves one built release folder at a time on one origin,
 // with Cloudflare-Pages-like caching headers, so switching release looks to the browser like a
 // deploy. Used only by tests and the critic.
-// npm run serve:releases: press 1 (v1), 2 (v2), 3 (v2-corrupt) to switch; q to quit.
+// npm run serve:releases [-- <release>]: starts on v1 (or the named release); press 1 (v1),
+// 2 (v2), 3 (v2-corrupt), 4 (d1), 5 (d2) or f (the faults build, dist-faults) to switch; q to quit.
 import { createHash } from 'node:crypto';
 import { readFile, stat } from 'node:fs/promises';
 import { createServer } from 'node:http';
@@ -34,8 +35,9 @@ async function fileAt(dir: string, pathname: string): Promise<string | undefined
   return info?.isFile() ? file : undefined;
 }
 
-// A release is a built folder under the root: a harness release (v1, v2, v2-corrupt) by default,
-// or another build such as dist-faults with the project folder as root.
+// A release is a built folder under the root: a harness release (v1, v2, v2-corrupt, d1, d2) by
+// default, or, with the project folder as root, `dist-releases/<name>` or another build such as
+// dist-faults.
 export interface ReleaseServer {
   readonly url: string;
   current(): string;
@@ -91,14 +93,23 @@ export async function startReleaseServer(
 }
 
 if (import.meta.main) {
-  const harness = await startReleaseServer();
-  const show = () => console.log(`Serving ${harness.current()} at ${harness.url}  (1 v1, 2 v2, 3 v2-corrupt, q quit)`);
+  // The project folder is the root, so the faults build is served from the same origin as the
+  // harness releases: an update from d1 can land on it (C2.9).
+  const folders: Readonly<Record<string, string>> = {
+    ...Object.fromEntries(RELEASES.map((name, index) => [String(index + 1), `dist-releases/${name}`])),
+    f: 'dist-faults',
+  };
+  const start = process.argv[2] ?? 'v1';
+  const harness = await startReleaseServer({ root: process.cwd(), release: `dist-releases/${start}` });
+  const keys = Object.entries(folders)
+    .map(([key, folder]) => `${key} ${path.basename(folder)}`)
+    .join(', ');
+  const show = () => console.log(`Serving ${harness.current()} at ${harness.url}  (${keys}, q quit)`);
   show();
   if (process.stdin.isTTY) process.stdin.setRawMode(true);
   process.stdin.on('data', (key) => {
     const pressed = key.toString();
-    const index = Number(pressed) - 1;
-    const chosen = RELEASES[index];
+    const chosen = folders[pressed];
     if (chosen) {
       harness.use(chosen);
       show();
