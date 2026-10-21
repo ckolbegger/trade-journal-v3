@@ -2,8 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { NarrativeAnswer, PlannedTradeDetail, TradeDetailView } from '../../app/types.ts';
-import { parseDecimal } from '../../domain/values/index.ts';
-import { localTime, money, ratio } from '../format.ts';
+import { decimalMoney as price, localTime, money, ratio } from '../format.ts';
 
 export interface TradeDetailProps {
   readonly facade: UiFacade;
@@ -15,12 +14,6 @@ type DetailState =
   | { readonly kind: 'Ready'; readonly view: TradeDetailView }
   | { readonly kind: 'NotFound' }
   | { readonly kind: 'Error' };
-
-// A stored finite decimal as Money.
-function price(text: string): string {
-  const parsed = parseDecimal(text);
-  return parsed.ok ? money(parsed.value) : text;
-}
 
 function answerText(answer: NarrativeAnswer): string {
   if (answer.kind === 'Text') return answer.text;

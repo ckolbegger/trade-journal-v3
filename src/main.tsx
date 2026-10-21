@@ -12,6 +12,7 @@ import { useRuntime } from './ui/runtime.tsx';
 import { AboutView } from './ui/screens/AboutView.tsx';
 import { AccountsView } from './ui/screens/AccountsView.tsx';
 import { PlanForm } from './ui/screens/PlanForm.tsx';
+import { PositionChangeForm } from './ui/screens/PositionChangeForm.tsx';
 import { TradeDetail } from './ui/screens/TradeDetail.tsx';
 import { TradeList } from './ui/screens/TradeList.tsx';
 import { createReleaseUpdateController } from './ui/update/controller.ts';
@@ -67,9 +68,8 @@ async function start(container: HTMLElement) {
     'trade-detail': function Detail() {
       return <TradeDetail facade={facade} timeZone={useZone()} />;
     },
-    // T2.12 builds the Position Change form; until then the route shows the Trade's Detail.
     'record-entry': function RecordEntry() {
-      return <TradeDetail facade={facade} timeZone={useZone()} />;
+      return <PositionChangeForm facade={facade} timeZone={useZone()} now={now} onDirtyChange={setUnsaved} />;
     },
     'new-plan': function NewPlan() {
       return <PlanForm facade={facade} timeZone={useZone()} now={now} onDirtyChange={setUnsaved} />;

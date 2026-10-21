@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import { fromWorkspaceLocal, toWorkspaceLocal } from '../../domain/time/index.ts';
 import type { EntryDefinitionRecord } from '../../app/types.ts';
 import { useRuntime } from '../runtime.tsx';
 import { confirmedDetail } from './confirmed-detail.ts';
+import { fieldIssues, IssueSummary } from './form-issues.tsx';
 import { describeIssues, type FieldIssue } from './plan-issues.ts';
 import { ReflectionPrompts, type Answers } from './ReflectionPrompts.tsx';
 
@@ -73,13 +74,6 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
   useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange]);
   // Leaving the form abandons it, so it no longer holds an update back.
   useEffect(() => () => onDirtyChange(false), [onDirtyChange]);
-  const summaryRef = useRef<HTMLElement>(null);
-
-  // A rejected confirmation moves focus to the summary of every issue.
-  useEffect(() => {
-    if (issues.length > 0) summaryRef.current?.focus();
-  }, [issues]);
-
   useEffect(() => {
     const rows = async (family: 'Institution' | 'Account' | 'Strategy') => {
       const page = await facade.ReferenceCatalog.query({ family, pageSize: 500 });
@@ -149,16 +143,7 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
 
   if (!accounts || !definition) return <p role="status">Loading the Plan form…</p>;
 
-  const errorFor = (field: string) => issues.filter((i) => i.field === field).map((i) => i.message).join(' ') || undefined;
-  const fieldError = (field: string) => {
-    const error = errorFor(field);
-    return error ? (
-      <p id={`${field}-error`} className="field-error">
-        {error}
-      </p>
-    ) : null;
-  };
-  const describedBy = (field: string) => (errorFor(field) ? { 'aria-invalid': true, 'aria-describedby': `${field}-error` } : {});
+  const { fieldError, describedBy, promptErrors } = fieldIssues(issues);
   const input = (name: keyof Fields, label: string, inputMode?: 'decimal') => (
     <div className="field">
       <label>
@@ -168,21 +153,12 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
       {fieldError(name)}
     </div>
   );
-  const promptErrors = Object.fromEntries(definition.prompts.flatMap((p) => (errorFor(p.id) ? [[p.id, errorFor(p.id)!]] : [])));
 
   return (
     <form className="plan-form" noValidate onSubmit={(event) => void submit(event)}>
       <h1>New Plan</h1>
-      {issues.length > 0 && (
-        <section ref={summaryRef} tabIndex={-1} className="banner warning" aria-labelledby="plan-issues-heading">
-          <h2 id="plan-issues-heading">This Plan can’t be confirmed yet</h2>
-          <ul>
-            {issues.map((issue) => (
-              <li key={`${issue.field}-${issue.message}`}>{issue.message}</li>
-            ))}
-          </ul>
-        </section>
-      )}
+      {/* A rejected confirmation moves focus to the summary of every issue. */}
+      <IssueSummary id="plan-issues-heading" heading="This Plan can’t be confirmed yet" issues={issues} />
       <label>
         Account
         <select value={fields.accountId} onChange={(e) => set('accountId')(e.target.value)}>
@@ -212,7 +188,7 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
         Plan time
         <input type="datetime-local" value={fields.planTime} onChange={(e) => set('planTime')(e.target.value)} />
       </label>
-      <ReflectionPrompts definition={definition} answers={answers} onChange={setAnswers} errors={promptErrors} />
+      <ReflectionPrompts definition={definition} answers={answers} onChange={setAnswers} errors={promptErrors(definition)} />
       <button type="submit" className="pill primary" disabled={!writable}>
         Confirm Plan
       </button>

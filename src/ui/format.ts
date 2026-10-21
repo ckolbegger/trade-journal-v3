@@ -1,9 +1,15 @@
 import { toWorkspaceLocal } from '../domain/time/index.ts';
-import { formatDecimal, formatMoney, type Rational } from '../domain/values/index.ts';
+import { formatDecimal, formatMoney, parseDecimal, type Rational } from '../domain/values/index.ts';
 
 // Presentation only. Values may arrive structurally cloned (navigation state), so only their
 // numerator and denominator fields are read.
 export const money = (value: Rational): string => formatMoney(value);
+
+// A stored finite decimal (a price or fee as entered) as Money.
+export const decimalMoney = (text: string): string => {
+  const parsed = parseDecimal(text);
+  return parsed.ok ? money(parsed.value) : text;
+};
 
 // A ratio to at most two decimals, without trailing zeros (12/5 → "2.4").
 export const ratio = (value: Rational): string => formatDecimal(value, 2).replace(/\.?0+$/, '');
