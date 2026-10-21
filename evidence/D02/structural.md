@@ -137,3 +137,16 @@ Run 2026-10-21 12:49 EDT on commit `b7f3583` (the only uncommitted files were th
 | Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 10 of 11 exit 0 | `suite-runs/t2.5-checks.txt` |
 
 Failures: one, the expected `verify:fixtures` failure (`FAIL workspace-v1: getStatus is IntegrityBlocked, not Ready`) that T2.10 clears. No other failure.
+
+## Cumulative run after T2.9
+
+Run 2026-10-21 12:58 EDT on commit `0733f71` (the only uncommitted files were this run's own outputs and the untracked older handoff note), Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 33 passed (33)`, `Tests 284 passed (284)`, exit 0 | `suite-runs/t2.9-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 6 passed (6)`, `Tests 19 passed (19)`, exit 0 | `suite-runs/t2.9-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `27 passed (44.0s)`, exit 0 | `suite-runs/t2.9-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 10 of 11 exit 0 | `suite-runs/t2.9-checks.txt` |
+
+Failures: one, the expected `verify:fixtures` failure (`FAIL workspace-v1: getStatus is IntegrityBlocked, not Ready`) that T2.10 clears. No other failure.
