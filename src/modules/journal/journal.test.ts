@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { fixedClock } from '../../domain/time/index.ts';
 import { beginSemanticTransaction, NotInSemanticTransaction, type SemanticTransaction } from '../../persistence/index.ts';
 import { emptyWorkspace, sequentialIds } from '../../../tests/support/workspace.ts';
-import { createJournal, D1_JOURNAL_MANIFEST } from './index.ts';
+import { createJournal, D1_JOURNAL_MANIFEST, type PlanReflectionRequest } from './index.ts';
 
 const clock = fixedClock('2026-10-12T14:05:00Z');
 
@@ -138,7 +138,7 @@ describe('prepareEffects: completed Plan Reflection', () => {
       origin: { kind: 'Plan', ref: 'candidate:plan' },
       momentTime: '2026-10-12T13:30:00Z',
       ...overrides,
-    } as Parameters<Awaited<ReturnType<typeof seeded>>['journal']['prepareEffects']>[0];
+    } as PlanReflectionRequest;
   }
 
   const complete = {
@@ -166,6 +166,7 @@ describe('prepareEffects: completed Plan Reflection', () => {
               authoredTime: '2026-10-12T14:05:00Z',
             }),
           ],
+          declines: [],
         },
       }),
     );
@@ -286,7 +287,7 @@ describe('applyPreparedEffects', () => {
       definitionId: 'j-0001',
       responses: p.effects.entries[0]!.responses,
     };
-    expect(staged).toEqual({ kind: 'Staged', entries: [expected] });
+    expect(staged).toEqual({ kind: 'Staged', entries: [expected], declines: [] });
     expect((await stored(persistence)).entries).toEqual([]);
     expect((await persistence.commit(tx.close())).kind).toBe('Committed');
     expect((await stored(persistence)).entries).toEqual([
@@ -375,6 +376,7 @@ describe('query: Trade narrative', () => {
     if (page.kind !== 'Page') throw new Error('expected a page');
     expect(page.items.map((i) => i.id)).toEqual(['e-c', 'e-a', 'e-b']);
     expect(page.items[0]).toEqual({
+      kind: 'Entry',
       id: 'e-c',
       entryType: 'Plan Reflection',
       source: 'Plan Confirmation',

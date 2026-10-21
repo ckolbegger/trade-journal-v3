@@ -49,6 +49,8 @@ export function createWorkspaceIndexes(store: (name: WorkspaceStore) => IDBObjec
   // One current outcome per Journal obligation key (Journal, "Debt and obligation semantics").
   entries.createIndex('byObligation', 'obligationKey', { unique: true });
   entries.createIndex('byAnchorTrade', 'anchorTradeId');
+  // A Trade's declines, for its narrative.
+  store('journalDeclines').createIndex('byAnchorTrade', 'anchorTradeId');
   // The authoritative stored Lifecycle State, ordered by Plan time, for current-state lists.
   store('trades').createIndex('byLifecycle', ['lifecycle', 'planTime', 'tradeId']);
   // The Open list, most recent activity first: `activityDesc` is a descending sort key (D2 A28).

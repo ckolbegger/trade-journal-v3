@@ -431,8 +431,8 @@ describe('connection lifecycle and private-state rebuild (D1 section 6.1)', () =
 
     await rebuildPrivateState(factory, created.databaseName);
 
-    expect(deleted.mock.calls.map(([name]) => name).sort()).toEqual(['byAnchorTrade', 'byLifecycle', 'byLifecycleActivity', 'byObligation']);
-    expect(createdIndexes.mock.calls.map(([name]) => name).sort()).toEqual(['byAnchorTrade', 'byLifecycle', 'byLifecycleActivity', 'byObligation']);
+    expect(deleted.mock.calls.map(([name]) => name).sort()).toEqual(['byAnchorTrade', 'byAnchorTrade', 'byLifecycle', 'byLifecycleActivity', 'byObligation']);
+    expect(createdIndexes.mock.calls.map(([name]) => name).sort()).toEqual(['byAnchorTrade', 'byAnchorTrade', 'byLifecycle', 'byLifecycleActivity', 'byObligation']);
     const db = await new Promise<IDBDatabase>((resolve) => {
       const request = factory.open(created.databaseName);
       request.onsuccess = () => resolve(request.result);

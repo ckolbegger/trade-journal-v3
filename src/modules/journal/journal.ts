@@ -3,14 +3,22 @@ import { requireOpen, type IdGenerator, type Persistence, type SemanticTransacti
 import type {
   AnswerInput,
   CandidateRef,
+  DeclineProjection,
   EntryProjection,
+  JournalObligationKey,
   JournalApplyResult,
   JournalIssue,
   JournalPage,
   JournalQuery,
   NarrativeAnswer,
   NarrativeEntry,
+  NarrativeItem,
+  JournalEffectRequest,
   PlanReflectionRequest,
+  PlanSemantics,
+  PositionChangeReflectionRequest,
+  PreparedJournalOutcome,
+  PreparePlanReflectionResult,
   ResponseValue,
   PrepareJournalEffectsResult,
 } from './effects.ts';
@@ -42,12 +50,13 @@ export interface Journal {
   seedDefaults(manifest: JournalSeedManifest): Promise<SeedJournalResult>;
   getDefinitions(request: GetDefinitionsRequest): Promise<GetDefinitionsResult>;
   // Validates a workflow's Journal obligation and prepares its outcome without writing.
-  prepareEffects(request: PlanReflectionRequest): Promise<PrepareJournalEffectsResult>;
+  prepareEffects(request: PlanReflectionRequest): Promise<PreparePlanReflectionResult>;
+  prepareEffects(request: PositionChangeReflectionRequest): Promise<PrepareJournalEffectsResult>;
   // Stages prepared outcomes in the coordinator's semantic transaction, mapping candidate
   // references through Trade Record's durable identities; assigns Entry identities.
   applyPreparedEffects(
     tx: SemanticTransaction,
-    prepared: Extract<PrepareJournalEffectsResult, { kind: 'Prepared' }>,
+    prepared: PreparedJournalOutcome,
     mapping: Readonly<Record<CandidateRef, string>>,
   ): JournalApplyResult;
   query(query: JournalQuery): Promise<JournalPage>;
@@ -64,6 +73,16 @@ interface StoredEntry {
     readonly definitionId: string;
     readonly responses: readonly { readonly promptId: string; readonly value: ResponseValue }[];
   }[];
+}
+
+interface StoredDecline {
+  readonly id: string;
+  readonly entryTypeKey: string;
+  readonly sourceKey: string;
+  readonly anchor: { readonly kind: 'Trade'; readonly tradeId: string };
+  readonly momentTime: string;
+  readonly authoredTime: string;
+  readonly reason?: string;
 }
 
 // Drops persistence's write stamp so callers see exactly the immutable definition revision.
@@ -168,13 +187,111 @@ function narrativeEntry(
   };
 }
 
+// A decline's optional reason, in characters (Unicode code points) (D2 A29).
+const MAX_DECLINE_REASON = 500;
+
+// The fixed Entry Type and automatic Source of each workflow obligation.
+const OBLIGATIONS = {
+  PlanReflection: { entryTypeKey: 'entry-type.plan-reflection', sourceKey: 'source.plan-confirmation' },
+  PositionChangeReflection: { entryTypeKey: 'entry-type.position-change-reflection', sourceKey: 'source.position-change' },
+} as const;
+
 export function createJournal(deps: JournalDeps): Journal {
+  async function prepareEffects(
+    request: JournalEffectRequest,
+  ): Promise<PrepareJournalEffectsResult | PreparePlanReflectionResult> {
+    const { disposition } = request;
+    // Plan Reflection requires completion now; Position Change Reflection may also be declined.
+    // Defer arrives with D5.
+    const declining = disposition.kind === 'Decline' && request.obligation === 'PositionChangeReflection';
+    if (disposition.kind !== 'Complete' && !declining) return { kind: 'Rejected', issues: [{ code: 'DispositionNotAllowed' }] };
+    const { entryTypeKey, sourceKey } = OBLIGATIONS[request.obligation];
+    const obligationKey: JournalObligationKey =
+      request.obligation === 'PlanReflection'
+        ? { entryType: 'PlanReflection', trade: request.anchor.ref }
+        : { entryType: 'PositionChangeReflection', positionChange: request.origin.ref };
+    const { value } = await deps.persistence.readSnapshot(['journalDefinitions', 'meta'], async (tx) => ({
+      definitions: (await tx.getAll('journalDefinitions')) as unknown as EntryDefinitionRecord[],
+      meta: (await tx.get('meta', 'journal')) as JournalMeta | undefined,
+    }));
+    const snapshot = { journalRevision: value.meta?.journalRevision ?? 0 };
+    // The outcome must name the exact current revision the trader was shown.
+    const definition = value.definitions
+      .filter((d) => d.entryTypeKey === entryTypeKey)
+      .sort((a, b) => b.revisionNumber - a.revisionNumber)[0];
+    const shown = disposition.kind === 'Decline' ? disposition.definitionId : disposition.form.definitionId;
+    if (!definition || definition.id !== shown) {
+      return { kind: 'Rejected', issues: [{ code: 'DefinitionRevisionMismatch' }] };
+    }
+    if (disposition.kind === 'Decline' && request.obligation === 'PositionChangeReflection') {
+      if ([...(disposition.reason ?? '')].length > MAX_DECLINE_REASON) return { kind: 'Rejected', issues: [{ code: 'ReasonTooLong' }] };
+      return {
+        kind: 'Prepared',
+        effects: {
+          entries: [],
+          declines: [
+            {
+              entryTypeKey,
+              obligationKey,
+              anchor: request.anchor,
+              sourceKey,
+              origin: request.origin,
+              definitionId: definition.id,
+              ...(disposition.reason === undefined ? {} : { reason: disposition.reason }),
+              momentTime: request.momentTime,
+              authoredTime: deps.clock.now(),
+            },
+          ],
+        },
+        snapshot,
+      };
+    }
+    // Unreachable after the guard above; it narrows the disposition to Complete.
+    if (disposition.kind !== 'Complete') return { kind: 'Rejected', issues: [{ code: 'DispositionNotAllowed' }] };
+    const form = disposition.form;
+    const issues = validateForm(definition, form.answers);
+    if (issues.length > 0) return { kind: 'Rejected', issues };
+    const prepared: PreparedJournalOutcome = {
+      kind: 'Prepared',
+      effects: {
+        entries: [
+          {
+            entryTypeKey,
+            definitionId: form.definitionId,
+            sourceKey,
+            obligationKey,
+            anchor: request.anchor,
+            origin: request.origin,
+            momentTime: request.momentTime,
+            authoredTime: deps.clock.now(),
+            // A blank optional answer is saved as Unanswered, never as declined.
+            responses: definition.prompts.map((prompt) => {
+              const answer = form.answers[prompt.id];
+              return { promptId: prompt.id, value: answer === undefined || isBlank(answer) ? { kind: 'Unanswered' } : answer };
+            }),
+          },
+        ],
+        declines: [],
+      },
+      snapshot,
+    };
+    if (request.obligation !== 'PlanReflection') return prepared;
+    const textFor = (role: 'Thesis' | 'Invalidation') => {
+      const prompt = definition.prompts.find((p) => p.kind === 'Text' && p.role === role);
+      const answer = prompt ? form.answers[prompt.id] : undefined;
+      return answer?.kind === 'Text' ? answer.text : '';
+    };
+    const semantics: PlanSemantics = { Thesis: textFor('Thesis'), Invalidation: textFor('Invalidation') };
+    return { ...prepared, semantics };
+  }
+
   return {
     async query(query) {
       const { value } = await deps.persistence.readSnapshot(
-        ['journalEntries', 'journalDefinitions', 'journalTypes', 'meta'],
+        ['journalEntries', 'journalDeclines', 'journalDefinitions', 'journalTypes', 'meta'],
         async (tx) => ({
           entries: (await tx.getAllFromIndex('journalEntries', 'byAnchorTrade', query.tradeId)) as unknown as StoredEntry[],
+          declines: (await tx.getAllFromIndex('journalDeclines', 'byAnchorTrade', query.tradeId)) as unknown as StoredDecline[],
           definitions: (await tx.getAll('journalDefinitions')) as unknown as EntryDefinitionRecord[],
           types: (await tx.getAll('journalTypes')) as unknown as JournalTypeRecord[],
           meta: (await tx.get('meta', 'journal')) as JournalMeta | undefined,
@@ -182,94 +299,89 @@ export function createJournal(deps: JournalDeps): Journal {
       );
       const definitions = new Map(value.definitions.map((d) => [d.id, d]));
       const labels = new Map(value.types.map((t) => [t.productKey, t.label]));
-      const items = [...value.entries]
-        .sort((a, b) =>
-          a.momentTime !== b.momentTime ? (a.momentTime < b.momentTime ? -1 : 1) : a.id < b.id ? -1 : a.id > b.id ? 1 : 0,
-        )
-        .map((entry) => narrativeEntry(entry, definitions, labels));
+      const label = (key: string) => labels.get(key) ?? key;
+      const items: NarrativeItem[] = [
+        ...value.entries.map((entry): NarrativeItem => ({ kind: 'Entry', ...narrativeEntry(entry, definitions, labels) })),
+        ...value.declines.map(
+          (decline): NarrativeItem => ({
+            kind: 'Decline',
+            id: decline.id,
+            entryType: label(decline.entryTypeKey),
+            source: label(decline.sourceKey),
+            anchor: decline.anchor,
+            momentTime: decline.momentTime,
+            authoredTime: decline.authoredTime,
+            ...(decline.reason === undefined ? {} : { reason: decline.reason }),
+          }),
+        ),
+      ];
+      items.sort((a, b) =>
+        a.momentTime !== b.momentTime ? (a.momentTime < b.momentTime ? -1 : 1) : a.id < b.id ? -1 : a.id > b.id ? 1 : 0,
+      );
       return { kind: 'Page', items, snapshot: { journalRevision: value.meta?.journalRevision ?? 0 } };
     },
 
     applyPreparedEffects(tx, prepared, mapping) {
       requireOpen(tx);
+      // Trade Record's exact durable mapping; a reference it does not list is already durable.
+      const durable = (ref: CandidateRef) => mapping[ref] ?? ref;
+      const keyOf = (key: JournalObligationKey) =>
+        key.entryType === 'PlanReflection' ? `PlanReflection:${durable(key.trade)}` : `PositionChangeReflection:${durable(key.positionChange)}`;
+      // Each outcome is staged with its obligation record; `add` fails the whole transaction when
+      // the key already has an outcome (D2 A28).
+      const stageObligation = (obligationKey: string, outcome: { kind: 'Entry' | 'Decline'; id: string }) =>
+        tx.stage({ op: 'add', store: 'journalObligations', value: { obligationKey, outcome } });
       const entries = prepared.effects.entries.map((entry): EntryProjection => {
-        const tradeId = mapping[entry.anchor.ref]!;
-        return {
+        const projection: EntryProjection = {
           id: deps.ids.next(),
           entryTypeKey: entry.entryTypeKey,
           sourceKey: entry.sourceKey,
-          anchor: { kind: 'Trade', tradeId },
-          origin: { kind: 'Plan', factId: mapping[entry.origin.ref]! },
+          anchor: { kind: 'Trade', tradeId: durable(entry.anchor.ref) },
+          origin: { kind: entry.origin.kind, factId: durable(entry.origin.ref) },
           momentTime: entry.momentTime,
           authoredTime: entry.authoredTime,
           definitionId: entry.definitionId,
           responses: entry.responses,
         };
-      });
-      for (const entry of entries) {
-        const { definitionId, responses, ...identity } = entry;
+        const { definitionId, responses, ...identity } = projection;
+        const obligationKey = keyOf(entry.obligationKey);
         tx.stage({
           op: 'add',
           store: 'journalEntries',
           value: {
             ...identity,
-            obligationKey: `PlanReflection:${entry.anchor.tradeId}`,
-            anchorTradeId: entry.anchor.tradeId,
+            obligationKey,
+            anchorTradeId: projection.anchor.tradeId,
             // An Entry is a stable identity with an immutable version chain (one version until D13).
-            versions: [{ versionNumber: 1, definitionId, responses, savedAt: entry.authoredTime }],
+            versions: [{ versionNumber: 1, definitionId, responses, savedAt: projection.authoredTime }],
           },
         });
-      }
+        stageObligation(obligationKey, { kind: 'Entry', id: projection.id });
+        return projection;
+      });
+      const declines = prepared.effects.declines.map((decline): DeclineProjection => {
+        const projection: DeclineProjection = {
+          id: deps.ids.next(),
+          entryTypeKey: decline.entryTypeKey,
+          sourceKey: decline.sourceKey,
+          anchor: { kind: 'Trade', tradeId: durable(decline.anchor.ref) },
+          origin: { kind: 'PositionChange', factId: durable(decline.origin.ref) },
+          definitionId: decline.definitionId,
+          ...(decline.reason === undefined ? {} : { reason: decline.reason }),
+          momentTime: decline.momentTime,
+          authoredTime: decline.authoredTime,
+        };
+        const obligationKey = keyOf(decline.obligationKey);
+        tx.stage({ op: 'add', store: 'journalDeclines', value: { ...projection, obligationKey, anchorTradeId: projection.anchor.tradeId } });
+        stageObligation(obligationKey, { kind: 'Decline', id: projection.id });
+        return projection;
+      });
       tx.stage({ op: 'put', store: 'meta', value: { key: 'journal', journalRevision: prepared.snapshot.journalRevision + 1 } });
-      return { kind: 'Staged', entries };
+      return { kind: 'Staged', entries, declines };
     },
 
-
-    async prepareEffects(request) {
-      // Plan Reflection requires completion now; it cannot be deferred or declined.
-      if (request.disposition.kind !== 'Complete') return { kind: 'Rejected', issues: [{ code: 'DispositionNotAllowed' }] };
-      const form = request.disposition.form;
-      const { value } = await deps.persistence.readSnapshot(['journalDefinitions', 'meta'], async (tx) => ({
-        definitions: (await tx.getAll('journalDefinitions')) as unknown as EntryDefinitionRecord[],
-        meta: (await tx.get('meta', 'journal')) as JournalMeta | undefined,
-      }));
-      // The form must answer the exact current revision the trader was shown.
-      const definition = value.definitions
-        .filter((d) => d.entryTypeKey === 'entry-type.plan-reflection')
-        .sort((a, b) => b.revisionNumber - a.revisionNumber)[0];
-      if (!definition || definition.id !== form.definitionId) {
-        return { kind: 'Rejected', issues: [{ code: 'DefinitionRevisionMismatch' }] };
-      }
-      const issues = validateForm(definition, form.answers);
-      if (issues.length > 0) return { kind: 'Rejected', issues };
-      const textFor = (role: 'Thesis' | 'Invalidation') => {
-        const prompt = definition.prompts.find((p) => p.kind === 'Text' && p.role === role);
-        const answer = prompt ? form.answers[prompt.id] : undefined;
-        return answer?.kind === 'Text' ? answer.text : '';
-      };
-      return {
-        kind: 'Prepared',
-        effects: {
-          entries: [
-            {
-              entryTypeKey: 'entry-type.plan-reflection',
-              definitionId: form.definitionId,
-              sourceKey: 'source.plan-confirmation',
-              anchor: request.anchor,
-              origin: request.origin,
-              momentTime: request.momentTime,
-              authoredTime: deps.clock.now(),
-              responses: definition.prompts.map((prompt) => ({
-                promptId: prompt.id,
-                value: form.answers[prompt.id] ?? { kind: 'Unanswered' },
-              })),
-            },
-          ],
-        },
-        semantics: { Thesis: textFor('Thesis'), Invalidation: textFor('Invalidation') },
-        snapshot: { journalRevision: value.meta?.journalRevision ?? 0 },
-      };
-    },
+    // One implementation serves both overloads: only a Plan Reflection carries semantics.
+    prepareEffects: prepareEffects as Journal['prepareEffects'],
 
     async getDefinitions(request) {
       const { value } = await deps.persistence.readSnapshot(['journalDefinitions'], (tx) => tx.getAll('journalDefinitions'));

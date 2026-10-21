@@ -14,7 +14,8 @@ export type ReflectionDisposition =
       readonly kind: 'Complete';
       readonly form: { readonly definitionId: string; readonly answers: Readonly<Record<string, AnswerInput>> };
     }
-  | { readonly kind: 'Decline' }
+  // An explicit decline names the definition revision the trader was shown.
+  | { readonly kind: 'Decline'; readonly definitionId: string; readonly reason?: string }
   | { readonly kind: 'Defer' };
 
 export interface PlanReflectionRequest {
@@ -25,6 +26,24 @@ export interface PlanReflectionRequest {
   readonly momentTime: Instant;
 }
 
+// The reflection owed for one Position Change. The Anchor names the originating Trade (already
+// durable, or a candidate); the origin names the candidate Position Change; the moment time is
+// the Position Change's Economic Time (D2 A19).
+export interface PositionChangeReflectionRequest {
+  readonly obligation: 'PositionChangeReflection';
+  readonly disposition: ReflectionDisposition;
+  readonly anchor: { readonly kind: 'Trade'; readonly ref: CandidateRef };
+  readonly origin: { readonly kind: 'PositionChange'; readonly ref: CandidateRef };
+  readonly momentTime: Instant;
+}
+
+export type JournalEffectRequest = PlanReflectionRequest | PositionChangeReflectionRequest;
+
+// One obligation has exactly one current outcome (Journal, "Debt and obligation semantics").
+export type JournalObligationKey =
+  | { readonly entryType: 'PlanReflection'; readonly trade: CandidateRef }
+  | { readonly entryType: 'PositionChangeReflection'; readonly positionChange: CandidateRef };
+
 // A saved answer: "optional" means Unanswered is a valid value; it never means declined.
 export type ResponseValue = AnswerInput | { readonly kind: 'Unanswered' };
 
@@ -32,16 +51,31 @@ export interface PreparedEntry {
   readonly entryTypeKey: string;
   readonly definitionId: string;
   readonly sourceKey: string;
+  readonly obligationKey: JournalObligationKey;
   readonly anchor: { readonly kind: 'Trade'; readonly ref: CandidateRef };
-  readonly origin: { readonly kind: 'Plan'; readonly ref: CandidateRef };
+  readonly origin: { readonly kind: 'Plan' | 'PositionChange'; readonly ref: CandidateRef };
   readonly momentTime: Instant;
   readonly authoredTime: Instant;
   // One response per prompt of the definition revision, in its order.
   readonly responses: readonly { readonly promptId: string; readonly value: ResponseValue }[];
 }
 
+// An explicit decline of a reflection obligation (D2 A29): a distinct record, never an Entry.
+export interface PreparedDecline {
+  readonly entryTypeKey: string;
+  readonly obligationKey: JournalObligationKey;
+  readonly anchor: { readonly kind: 'Trade'; readonly ref: CandidateRef };
+  readonly sourceKey: string;
+  readonly origin: { readonly kind: 'PositionChange'; readonly ref: CandidateRef };
+  readonly definitionId: string;
+  readonly reason?: string;
+  readonly momentTime: Instant;
+  readonly authoredTime: Instant;
+}
+
 export interface PreparedJournalEffects {
   readonly entries: readonly PreparedEntry[];
+  readonly declines: readonly PreparedDecline[];
 }
 
 export interface JournalIssue {
@@ -52,19 +86,30 @@ export interface JournalIssue {
     | 'UnknownOption'
     | 'UnknownPrompt'
     | 'DefinitionRevisionMismatch'
-    | 'DispositionNotAllowed';
+    | 'DispositionNotAllowed'
+    | 'ReasonTooLong';
+}
+
+export interface PreparedJournalOutcome {
+  readonly kind: 'Prepared';
+  readonly effects: PreparedJournalEffects;
+  // The Journal snapshot this outcome was validated against, rechecked when applied.
+  readonly snapshot: { readonly journalRevision: number };
 }
 
 export type PrepareJournalEffectsResult =
   | { readonly kind: 'Rejected'; readonly issues: readonly JournalIssue[] }
-  | {
-  readonly kind: 'Prepared';
-  readonly effects: PreparedJournalEffects;
-  // Workflow-critical answers by semantic role, entered once and frozen into the Plan facts.
-  readonly semantics: { readonly Thesis: string; readonly Invalidation: string };
-      // The Journal snapshot this outcome was validated against, rechecked when applied.
-      readonly snapshot: { readonly journalRevision: number };
-    };
+  | PreparedJournalOutcome;
+
+// Workflow-critical answers by semantic role, entered once and frozen into the Plan facts.
+export interface PlanSemantics {
+  readonly Thesis: string;
+  readonly Invalidation: string;
+}
+
+export type PreparePlanReflectionResult =
+  | { readonly kind: 'Rejected'; readonly issues: readonly JournalIssue[] }
+  | (PreparedJournalOutcome & { readonly semantics: PlanSemantics });
 
 // The durable projection of a staged or saved Entry: its current version flattened.
 export interface EntryProjection {
@@ -72,14 +117,31 @@ export interface EntryProjection {
   readonly entryTypeKey: string;
   readonly sourceKey: string;
   readonly anchor: { readonly kind: 'Trade'; readonly tradeId: string };
-  readonly origin: { readonly kind: 'Plan'; readonly factId: string };
+  readonly origin: { readonly kind: 'Plan' | 'PositionChange'; readonly factId: string };
   readonly momentTime: Instant;
   readonly authoredTime: Instant;
   readonly definitionId: string;
   readonly responses: readonly { readonly promptId: string; readonly value: ResponseValue }[];
 }
 
-export type JournalApplyResult = { readonly kind: 'Staged'; readonly entries: readonly EntryProjection[] };
+// The durable projection of a staged or saved decline.
+export interface DeclineProjection {
+  readonly id: string;
+  readonly entryTypeKey: string;
+  readonly sourceKey: string;
+  readonly anchor: { readonly kind: 'Trade'; readonly tradeId: string };
+  readonly origin: { readonly kind: 'PositionChange'; readonly factId: string };
+  readonly definitionId: string;
+  readonly reason?: string;
+  readonly momentTime: Instant;
+  readonly authoredTime: Instant;
+}
+
+export type JournalApplyResult = {
+  readonly kind: 'Staged';
+  readonly entries: readonly EntryProjection[];
+  readonly declines: readonly DeclineProjection[];
+};
 
 export interface JournalQuery {
   readonly scope: 'TradeNarrative';
@@ -103,8 +165,22 @@ export interface NarrativeEntry {
   readonly responses: readonly { readonly prompt: string; readonly answer: NarrativeAnswer }[];
 }
 
+// A decline in a Trade's narrative, labelled from its Entry Type and Source.
+export interface NarrativeDecline {
+  readonly kind: 'Decline';
+  readonly id: string;
+  readonly entryType: string;
+  readonly source: string;
+  readonly anchor: { readonly kind: 'Trade'; readonly tradeId: string };
+  readonly momentTime: Instant;
+  readonly authoredTime: Instant;
+  readonly reason?: string;
+}
+
+export type NarrativeItem = ({ readonly kind: 'Entry' } & NarrativeEntry) | NarrativeDecline;
+
 export type JournalPage = {
   readonly kind: 'Page';
-  readonly items: readonly NarrativeEntry[];
+  readonly items: readonly NarrativeItem[];
   readonly snapshot: { readonly journalRevision: number };
 };

@@ -1,20 +1,30 @@
 export { createJournal, prepareJournalSeed, type GetDefinitionsRequest, type GetDefinitionsResult, type Journal, type PreparedJournalSeed, type JournalDeps, type SeedJournalResult } from './journal.ts';
-export { D1_JOURNAL_MANIFEST, type JournalSeedManifest } from './manifest.ts';
+export { D1_JOURNAL_MANIFEST, D2_JOURNAL_MANIFEST, type JournalSeedManifest } from './manifest.ts';
 export type { EntryDefinitionRecord, JournalSnapshot, JournalTypeRecord, PromptDefinition, PromptOption, PromptRole } from './records.ts';
 export type {
   AnswerInput,
   CandidateRef,
+  DeclineProjection,
   EntryProjection,
   JournalApplyResult,
+  JournalEffectRequest,
   JournalIssue,
+  JournalObligationKey,
   JournalPage,
   JournalQuery,
   NarrativeAnswer,
+  NarrativeDecline,
   NarrativeEntry,
+  NarrativeItem,
   PlanReflectionRequest,
+  PlanSemantics,
+  PositionChangeReflectionRequest,
+  PreparedDecline,
   PreparedEntry,
   PreparedJournalEffects,
+  PreparedJournalOutcome,
   PrepareJournalEffectsResult,
+  PreparePlanReflectionResult,
   ReflectionDisposition,
   ResponseValue,
 } from './effects.ts';

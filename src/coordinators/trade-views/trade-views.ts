@@ -153,7 +153,9 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
               account: resolved['account']?.label ?? '',
               institution: resolved['account']?.institution?.label ?? '',
             },
-            journal: narrative.items,
+            // A Planned Trade has no Position Change, so its narrative holds Entries only; T2.7's
+            // Open Detail carries declines too.
+            journal: narrative.items.filter((item) => item.kind === 'Entry'),
           },
         };
       });
