@@ -117,6 +117,22 @@ export async function onboard(page: Page, institution = 'Fidelity', account = 'R
   await page.getByLabel('Institution').fill(institution);
   await page.getByLabel('Account').fill(account);
   await page.getByRole('button', { name: 'Save and continue' }).click();
+  await expectNoTradesYet(page);
+}
+
+// The Trades view opens on its Open tab (D2 A32); a direct navigation to the Planned list uses this.
+export const PLANNED = '/?lifecycle=Planned';
+
+export async function openPlanned(page: Page): Promise<void> {
+  const tab = page.getByRole('tablist', { name: 'Trades by lifecycle' }).getByRole('tab', { name: 'Planned' });
+  await tab.click();
+  await expect(tab).toHaveAttribute('aria-selected', 'true');
+}
+
+// A new Workspace's Trades view: the Open tab's Empty state, then the Planned tab's.
+export async function expectNoTradesYet(page: Page): Promise<void> {
+  await expect(page.getByText('No open trades. Recording an entry on a Planned Trade opens it.')).toBeVisible();
+  await openPlanned(page);
   await expect(page.getByText('No planned trades yet')).toBeVisible();
 }
 

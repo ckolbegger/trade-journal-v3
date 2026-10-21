@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, fillPlan, firstPage, onboardedPage, probe, READY, test, workspaceOf, type PlanValues } from './support.ts';
+import { expect, fillPlan, firstPage, onboardedPage, openPlanned, PLANNED, probe, READY, test, workspaceOf, type PlanValues } from './support.ts';
 
 // Distinctive values, so any trace of them in storage is unmistakable.
 const TYPED: PlanValues = {
@@ -59,13 +59,14 @@ test.describe('B1.14 nothing is saved without Save', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
+    await openPlanned(page);
     await expect(page.getByText('No planned trades yet')).toBeVisible();
     expect(traces(await webStorage(page))).toEqual([]);
     await context.close();
 
     const relaunched = await profile.launch();
     const again = await firstPage(relaunched);
-    await again.goto('/');
+    await again.goto(PLANNED);
     await expect(again.getByText('No planned trades yet')).toBeVisible(READY);
     const probed = await probe(again);
     const workspace = workspaceOf(probed)!;

@@ -258,3 +258,21 @@ Run 2026-10-21 13:56 EDT on commit `534c0f0` (the only uncommitted files were th
 | Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.12-checks.txt` |
 
 Failures: none.
+
+## Fix after T2.13: D1 browser specs open the Planned tab
+
+T2.13 (`19eaaf8`, A32) made Open the default Trades tab at `/`, so D1 browser steps that expected the Planned list there timed out. The fix changes only the D1 browser specs; no production code changes.
+
+- `e2e/d1/support.ts`: adds `PLANNED` (`/?lifecycle=Planned`), `openPlanned` (clicks the "Planned" tab in the "Trades by lifecycle" tablist and checks it is selected), and `expectNoTradesYet` (asserts the Open tab's Empty state, "No open trades. Recording an entry on a Planned Trade opens it.", then opens Planned and asserts "No planned trades yet"). `onboard` now ends with `expectNoTradesYet`, so it still finishes on the empty Planned list.
+- Direct navigations that expect Planned rows or the Planned Empty state go to `PLANNED`: B1.2 and B1.3 relaunch, B1.4 both offline reopenings, B1.13 clean tab, B1.14 restart, and B1.6 (`/?lifecycle=Planned&faults=…`).
+- Steps that reach the Trades view through the Primary navigation click the Planned tab before their Planned assertion: B1.14 after leaving the form, B1.15 axe "Planned list".
+- The critic-2 onboarding case uses `expectNoTradesYet`; the B1.15 keyboard-only case, which only checks the screen after onboarding, asserts the Open tab's Empty state instead.
+
+No D1 assertion was removed or weakened.
+
+| Run | Command | Result |
+|---|---|---|
+| Reproduction before the change | `npx playwright test e2e/d1/plan.spec.ts -g "B1.2"` | 1 failed (timeout in `onboard` at `support.ts:120` waiting for "No planned trades yet") |
+| Before (T2.13 cumulative run) | `npm run test:e2e` | 20 failed, 7 passed (`suite-runs/t2.13-browser.txt`) |
+| After | `npm run test:e2e` | `27 passed (42.5s)`, exit 0 |
+| Checks | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | 4 of 4 exit 0 |

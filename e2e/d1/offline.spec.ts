@@ -1,4 +1,4 @@
-import { confirmPlan, expect, firstPage, onboardedPage, PLAN, READY, test } from './support.ts';
+import { confirmPlan, expect, firstPage, onboardedPage, PLAN, PLANNED, READY, test } from './support.ts';
 
 test.describe('B1.4 offline cold restart', () => {
   test('should open Writable without a network, confirm a second Plan and add an Account, and keep both across another offline restart', async ({ server, profile }) => {
@@ -10,7 +10,7 @@ test.describe('B1.4 offline cold restart', () => {
 
     const offline = await profile.launch({ offline: true });
     const page = await firstPage(offline);
-    await page.goto('/');
+    await page.goto(PLANNED);
     await expect(page.getByRole('row', { name: /XYZ/ })).toBeVisible(READY);
     await expect(page.getByRole('heading', { name: /Read only/ })).toHaveCount(0);
     await confirmPlan(page, { ...PLAN, symbol: 'ABC' });
@@ -23,7 +23,7 @@ test.describe('B1.4 offline cold restart', () => {
 
     const again = await profile.launch({ offline: true });
     const reopened = await firstPage(again);
-    await reopened.goto('/');
+    await reopened.goto(PLANNED);
     await expect(reopened.getByRole('row', { name: /XYZ/ })).toBeVisible(READY);
     await expect(reopened.getByRole('row', { name: /ABC/ })).toBeVisible();
     await reopened.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Accounts' }).click();

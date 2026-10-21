@@ -1,4 +1,4 @@
-import { confirmPlan, EXPLANATION, expect, FAULT_SETS, firstPage, onboardedPage, probe, READY, test } from './support.ts';
+import { confirmPlan, EXPLANATION, expect, FAULT_SETS, firstPage, onboardedPage, PLANNED, probe, READY, test } from './support.ts';
 
 test.describe('B1.6 Recovery Only matrix (existing Workspace, faults build)', () => {
   test('should open Recovery Only with the failed checks for each fault set, keeping the Plan readable and the stores unchanged', async ({ server, profile }) => {
@@ -13,7 +13,7 @@ test.describe('B1.6 Recovery Only matrix (existing Workspace, faults build)', ()
     for (const failing of FAULT_SETS) {
       const context = await profile.launch();
       const page = await firstPage(context);
-      await page.goto(`/?faults=${failing.join(',')}`);
+      await page.goto(`${PLANNED}&faults=${failing.join(',')}`);
       const banner = page.getByRole('region', { name: "Read only: this browser can't save right now" });
       await expect(banner, failing.join(',')).toBeVisible(READY);
       await expect(banner.getByRole('listitem')).toHaveText(failing.map((check) => EXPLANATION[check]));

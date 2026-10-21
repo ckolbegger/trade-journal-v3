@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { chromium } from '@playwright/test';
-import { BASE_URL, confirmPlan, expect, firstPage, onboardedPage, probe, READY, test, workspaceOf, ZONE } from './support.ts';
+import { BASE_URL, confirmPlan, expect, firstPage, onboardedPage, PLANNED, probe, READY, test, workspaceOf, ZONE } from './support.ts';
 
 test.describe('B1.2 onboarding and first Plan', () => {
   test('should show the Plan, 1R, and reflection after relaunch, with one Trade, one Entry, and Planned in the index', async ({ server, profile }) => {
@@ -13,7 +13,7 @@ test.describe('B1.2 onboarding and first Plan', () => {
 
     const relaunched = await profile.launch();
     const again = await firstPage(relaunched);
-    await again.goto('/');
+    await again.goto(PLANNED);
     const row = again.getByRole('row', { name: /XYZ/ });
     await expect(row).toBeVisible(READY);
     await expect(row).toContainText('$250.00');
@@ -46,7 +46,7 @@ test.describe('B1.3 kill after commit', () => {
     const relaunched = await spawnedBrowser(profile.dir, 9334);
     try {
       const page = await firstPage(relaunched.context);
-      await page.goto(BASE_URL);
+      await page.goto(`${BASE_URL}${PLANNED}`);
       await page.getByRole('row', { name: /XYZ/ }).getByRole('link', { name: 'XYZ' }).click(READY);
       await expect(page.getByText('Breakout above the 50-day on volume.')).toBeVisible();
       const workspace = workspaceOf(await probe(page))!;

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import type { Page } from '@playwright/test';
 import type { OfflineReleaseInventory } from '../../src/delivery/inventory.ts';
-import { expect, fillPlan, onboardedPage, probe, READY, test, workspaceOf } from './support.ts';
+import { expect, fillPlan, onboardedPage, PLANNED, probe, READY, test, workspaceOf } from './support.ts';
 
 const identity = (release: string) =>
   (JSON.parse(readFileSync(`dist-releases/${release}/inventory.json`, 'utf8')) as OfflineReleaseInventory).releaseId;
@@ -113,7 +113,7 @@ test.describe('B1.13 two tabs, one unsaved', () => {
     const context = await profile.launch();
     const editing = await onboardedPage(context);
     const clean = await context.newPage();
-    await clean.goto('/');
+    await clean.goto(PLANNED);
     await expect(clean.getByRole('heading', { name: /Trades|Planned/ }).or(clean.getByText('No planned trades yet'))).toBeVisible(READY);
     await openNewPlan(editing);
     await fillPlan(editing);

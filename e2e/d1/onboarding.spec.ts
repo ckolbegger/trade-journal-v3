@@ -1,4 +1,4 @@
-import { expect, firstPage, probe, READY, startJournal, test, workspaceOf } from './support.ts';
+import { expect, expectNoTradesYet, firstPage, probe, READY, startJournal, test, workspaceOf } from './support.ts';
 
 // Strengthening from critic-2's observations (not a planned B1 case).
 test.describe('onboarding after a partly failed attempt (critic-2)', () => {
@@ -21,7 +21,7 @@ test.describe('onboarding after a partly failed attempt (critic-2)', () => {
     await expect(page.getByLabel('Institution')).toHaveValue('Schwab', READY);
     await page.getByLabel('Account').fill('Individual');
     await page.getByRole('button', { name: 'Save and continue' }).click();
-    await expect(page.getByText('No planned trades yet')).toBeVisible();
+    await expectNoTradesYet(page);
     const catalog = workspaceOf(await probe(page))!.stores['catalog'] as { kind: string; label: string }[];
     expect(catalog.filter((r) => r.kind === 'Institution').map((r) => r.label)).toEqual(['Schwab']);
     await context.close();

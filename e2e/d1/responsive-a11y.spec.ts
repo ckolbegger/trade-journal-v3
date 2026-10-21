@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import type { Locator, Page } from '@playwright/test';
-import { BASE_URL, expect, firstPage, onboard, onboardedPage, PLAN, profileAt, READY, startJournal, test } from './support.ts';
+import { BASE_URL, expect, firstPage, onboard, onboardedPage, openPlanned, PLAN, profileAt, READY, startJournal, test } from './support.ts';
 
 async function expectAccessible(page: Page, state: string): Promise<void> {
   // @axe-core/playwright types its page against its own playwright-core copy; the object is the same.
@@ -87,6 +87,7 @@ test.describe('B1.15 responsive and accessible', () => {
     await expect(page.getByRole('heading', { name: PLAN.symbol, level: 1 })).toBeVisible();
     await expectAccessible(page, 'Trade Detail');
     await nav(page).getByRole('link', { name: 'Trades' }).click();
+    await openPlanned(page);
     await expect(page.getByRole('row', { name: /XYZ/ })).toBeVisible();
     await expectAccessible(page, 'Planned list');
     await nav(page).getByRole('link', { name: 'Accounts' }).click();
@@ -146,7 +147,7 @@ test.describe('B1.15 responsive and accessible', () => {
     await tabTo(page, page.getByLabel('Account'));
     await page.keyboard.type('Roth IRA');
     await page.keyboard.press('Enter');
-    await expect(page.getByText('No planned trades yet')).toBeVisible();
+    await expect(page.getByText('No open trades. Recording an entry on a Planned Trade opens it.')).toBeVisible();
 
     await tabTo(page, nav(page).getByRole('link', { name: 'New Plan' }));
     await page.keyboard.press('Enter');
