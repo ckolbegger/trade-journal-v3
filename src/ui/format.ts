@@ -14,5 +14,8 @@ export const decimalMoney = (text: string): string => {
 // A ratio to at most two decimals, without trailing zeros (12/5 → "2.4").
 export const ratio = (value: Rational): string => formatDecimal(value, 2).replace(/\.?0+$/, '');
 
+// A Quantity to at most six decimals (A9), without trailing zeros (241/2 → "120.5").
+export const quantity = (value: Rational): string => formatDecimal(value, 6).replace(/\.?0+$/, '');
+
 // An instant as a Workspace-local date and time.
 export const localTime = (instant: string, timeZone: string): string => toWorkspaceLocal(instant, timeZone).replace('T', ' ');

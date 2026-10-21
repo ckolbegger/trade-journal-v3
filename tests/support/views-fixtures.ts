@@ -53,3 +53,20 @@ export const plannedDetail = {
     },
   ],
 } as const;
+
+// An Open list item: 60 of 100 shares entered at an average 50.10 with $1.00 of fees.
+export const openItem = {
+  tradeId: 'trade-2',
+  underlying: 'ABC',
+  strategy: 'Long Stock',
+  account: 'Roth IRA',
+  institution: 'Fidelity',
+  openQuantity: Rational.of(60n),
+  plannedQuantity: Rational.of(100n),
+  averageOpenCost: { kind: 'Value', value: Rational.of(501n, 10n) },
+  incurredFees: Rational.of(1n),
+  entryStatus: 'Entering',
+  deviationCount: 0,
+  integrity: 'Agrees',
+  lastActivity: '2026-10-13T14:00:00Z',
+} as const;

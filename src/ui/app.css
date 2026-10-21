@@ -149,6 +149,36 @@ a {
   font-weight: 600;
 }
 
+/* Text carries the meaning; the warning colours only reinforce it. */
+.badge.warning {
+  background: var(--warning-ground);
+  border-color: var(--warning-line);
+}
+
+/* Lifecycle tabs. */
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.tabs [role='tab'] {
+  min-height: 44px;
+  padding: 0.5rem 1.2rem;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tabs [role='tab'][aria-selected='true'] {
+  background: var(--ink);
+  color: #ffffff;
+}
+
 /* Actions and fields. */
 .pill {
   display: inline-block;
@@ -246,6 +276,10 @@ label.chip input {
 .number {
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+.table-scroll {
+  overflow-x: auto;
 }
 
 table.trades {
