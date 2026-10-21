@@ -10,23 +10,44 @@ export interface EngineMeasurement {
   readonly plans: number;
   // estimate().usage delta per Trade together with its Plan Reflection Entry.
   readonly bytesPerTradeWithReflection: number;
-  // Stored JSON bytes per Trade document plus its Plan Reflection Entry.
+  // Stored JSON bytes per Trade document plus its Plan Reflection Entry and obligation record.
   readonly jsonBytesPerTradeWithReflection: number;
   // On-disk bytes per JSON byte for this engine's own records.
   readonly overheadRatio: number;
   // Stored JSON bytes per Catalog record (Institution, Account, Strategy).
   readonly jsonBytesPerCatalogRecord: number;
+  // The Open phase (D2): Plans opened with Position Changes, their Executions and reflections.
+  readonly openTrades: number;
+  readonly positionChanges: number;
+  readonly executions: number;
+  readonly reflectionEntries: number;
+  readonly reflectionDeclines: number;
+  readonly usageAfterOpen: number;
+  // On-disk bytes per JSON byte over the Open phase (estimate().usage delta / JSON delta).
+  readonly positionChangeOverheadRatio: number;
+  readonly jsonBytesPerPositionChange: number;
+  readonly jsonBytesPerExecution: number;
+  readonly jsonBytesPerPositionChangeReflection: number;
+  // Each kind's JSON bytes × the Open phase's overhead ratio.
+  readonly bytesPerPositionChange: number;
+  readonly bytesPerExecution: number;
+  readonly bytesPerPositionChangeReflection: number;
 }
 
-// Measured kinds: Trades with their Plan Reflection Entries (25,000 each), Catalog records.
-export const MEASURED = { tradesWithPlanReflection: 25_000, catalogRecords: 60 } as const;
+// Measured kinds and their mature counts (D1 plan, section 1.3). Executions stand in for the
+// whole "Executions and settlement facts" count until D7 adds settlement facts, and Position
+// Change Reflection Entries and declines for the whole outcome count until D5 adds Debt.
+export const MEASURED = {
+  tradesWithPlanReflection: 25_000,
+  catalogRecords: 60,
+  positionChanges: 100_000,
+  executions: 200_000,
+  positionChangeReflectionOutcomes: 100_000,
+} as const;
 
 // Kinds that do not exist yet: count × estimated JSON bytes from the planned shape, scaled by the
 // measured overhead ratio. Each schema-changing deliverable replaces its allowance.
 export const ALLOWANCES = [
-  { kind: 'Position Changes', count: 100_000, jsonBytes: 700, until: 'D2', shape: 'change header, quantity, price, Economic Time, Plan Basis' },
-  { kind: 'Executions and settlement facts', count: 200_000, jsonBytes: 450, until: 'D2 and D7', shape: 'instrument, side, quantity, price, fees, time' },
-  { kind: 'Position Change Reflection outcomes', count: 100_000, jsonBytes: 600, until: 'D2 and D5', shape: 'four short answers or a decline' },
   { kind: 'Close Review outcomes', count: 24_700, jsonBytes: 1_200, until: 'D6', shape: 'review answers and grades' },
   { kind: 'Daily Trade Review Actions', count: 126_000, jsonBytes: 350, until: 'D4', shape: 'action kind, session, short note' },
   { kind: 'Review Notes and Trader Reflections', count: 5_000, jsonBytes: 1_500, until: 'D13', shape: 'free text' },
@@ -43,7 +64,10 @@ export interface Projection {
 export function project(m: EngineMeasurement): Projection {
   const measured =
     MEASURED.tradesWithPlanReflection * m.bytesPerTradeWithReflection +
-    MEASURED.catalogRecords * m.jsonBytesPerCatalogRecord * m.overheadRatio;
+    MEASURED.catalogRecords * m.jsonBytesPerCatalogRecord * m.overheadRatio +
+    MEASURED.positionChanges * m.bytesPerPositionChange +
+    MEASURED.executions * m.bytesPerExecution +
+    MEASURED.positionChangeReflectionOutcomes * m.bytesPerPositionChangeReflection;
   const allowed = ALLOWANCES.reduce((sum, a) => sum + a.count * a.jsonBytes * m.overheadRatio, 0);
   const projectedWorkspaceBytes = Math.ceil(measured + allowed);
   return { projectedWorkspaceBytes, requiredQuotaBytes: 3 * projectedWorkspaceBytes };

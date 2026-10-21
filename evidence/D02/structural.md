@@ -390,3 +390,53 @@ Run 2026-10-21 14:36 EDT on commit `a154d80` (the only uncommitted files were th
 | Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.17-checks.txt` |
 
 Failures: none.
+
+## T2.18 Capacity basis recomputed for schema 2
+
+The in-browser measurement (`tools/capacity/measure-page.ts`, Chromium through Playwright, production application facade only) now has a second phase. After the 500 Plans it opens the first 200 of them through `TradeWorkflows.recordPositionChange`, reading each Trade's FactRevision and Planned Leg through `getTradeDetail`. The Trades get 1, 2, 3, 2, … Position Changes, which comes to 400, and the Position Changes get 1, 2, 3, 2, … Executions, which comes to 800. Every fifth reflection is a decline (80 declines, 320 Entries; half the declines give a reason and half the Entries have a note). This follows the D2 plan's section 1.3.
+
+The method is D1's overhead-ratio method, applied to the phase. The phase's overhead ratio is its `estimate().usage` delta divided by the JSON bytes it added: Trade documents plus `journalEntries`, `journalDeclines`, and `journalObligations`. Each kind's on-disk bytes are its own JSON bytes times that ratio:
+- **Execution:** the Execution facts inside the Trade documents.
+- **Position Change:** the Trade document's growth beyond its Executions. This covers the Position Change fact, Last Activity, the counters, and any recorded Deviations.
+- **Position Change Reflection outcome:** the growth of the three Journal stores.
+
+`tools/capacity/profile.ts` moves these three kinds from `ALLOWANCES` to `MEASURED`, at mature counts of 100,000, 200,000, and 100,000. `project` adds `count × measured bytes` for each of them. `verify:capacity` was not changed.
+
+One method change on the Plan phase: its JSON now also counts the Plan Reflection's obligation record, since T2.5 gives Plan Reflections obligation records too. Without that, the obligation bytes T2.4 and T2.5 added after T2.8 counted as overhead. They inflated the ratio to 1.565 (two trial runs: 1.5688 and 1.5653) and scaled every remaining allowance with it. With the obligation records counted, the ratio is 1.4704. The remaining gap above T2.8's 1.2403 is not attributed record by record. The likely cause is the per-commit rewrite of the `meta {key:'tradeRecord'}` record that T2.4 added, which is real on-disk usage, so it stays in the ratio.
+
+```text
+$ npm run measure:capacity
+chromium 153.0.8010.12: {"plans":500,"usageBefore":147456,"usageAfter":1986560,"bytesPerTradeWithReflection":3678.208,"jsonBytesPerTradeWithReflection":2501.43,"overheadRatio":1.4704421071147304,"jsonBytesPerCatalogRecord":237.33333333333334,"openTrades":200,"positionChanges":400,"executions":800,"reflectionEntries":320,"reflectionDeclines":80,"usageAfterOpen":2985984,"positionChangeOverheadRatio":1.0319106098182997,"jsonBytesPerPositionChange":449.255,"jsonBytesPerExecution":366.95,"jsonBytesPerPositionChangeReflection":1238.14,"bytesPerPositionChange":463.5910010139202,"bytesPerExecution":378.65959827282506,"bytesPerPositionChangeReflection":1277.6498024404298}
+measure:capacity OK: M 577161694 bytes, required quota 1731485082 bytes
+
+$ npm run verify:capacity
+verify:capacity OK: required quota 1731485082 = 3 × 577161694, schema 2
+```
+
+To check the guard, the basis was temporarily edited to `"schemaVersion": 1` and then restored byte for byte:
+
+```text
+$ npm run verify:capacity
+FAIL basis measured at schema version 1, current is 2: run measure:capacity
+(exit 1)
+```
+
+| Figure | Before (T2.8 basis) | After (T2.18) | Basis after T2.18 |
+|---|---|---|---|
+| Engine | Chromium 153.0.8010.12 | Chromium 153.0.8010.12 | |
+| Trade with Plan Reflection, bytes (× 25,000) | 2,908.16 → 72,704,000 | 3,678.208 → 91,955,200 | measured |
+| Plan-phase overhead ratio | 1.2403 | 1.4704 | measured |
+| Position Change, bytes (× 100,000) | 700 JSON × 1.2403 = 868.24 → 86,824,298 | 449.255 JSON × 1.0319 = 463.59 → 46,359,100 | **measured** (was allowance) |
+| Execution, bytes (× 200,000) | 450 JSON × 1.2403 = 558.16 → 111,631,240 | 366.95 JSON × 1.0319 = 378.66 → 75,731,920 | **measured** (was allowance) |
+| Position Change Reflection outcome, bytes (× 100,000) | 600 JSON × 1.2403 = 744.21 → 74,420,826 | 1,238.14 JSON × 1.0319 = 1,277.65 → 127,764,980 | **measured** (was allowance) |
+| Catalog records (× 60) | 17,663 | 20,939 | measured JSON × plan-phase ratio |
+| Remaining allowances (Close Review, Daily Trade Review Actions, Review Notes, Marks, Daily Bars, Correction versions) | 198,505,151 | 235,329,555 | allowance JSON × plan-phase ratio |
+| Projected Workspace M | 544,103,178 bytes | 577,161,694 bytes | |
+| Required quota (3 × M) | 1,632,309,534 bytes | 1,731,485,082 bytes (+6.1%) | |
+
+`src/delivery/capacity-basis.json` names `schemaVersion: 2` and holds these figures. The required quota rose by about 99 MB, to 1.73 GB. Chromium on the dev machine reports a quota of 10,737,418,240 bytes (Playwright Chromium 153.0.8010.12, `navigator.storage.estimate()` on a localhost page, 708 GB free disk), which is well above 1.73 GB, so readiness stays Writable in the browser suites.
+
+Disclosed limits:
+- Measured Executions stand in for the whole mature count of 200,000 "Executions and settlement facts" until D7 measures settlement facts.
+- Measured Entries and declines stand in for the whole 100,000 Position Change Reflection outcomes until D5 adds Debt.
+- The six kinds listed above remain allowances.
