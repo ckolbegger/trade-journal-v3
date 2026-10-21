@@ -49,6 +49,8 @@ The worktree's `.claude/settings.local.json` sets `"syncClaudeAiPlugins": false`
 
 ## 2. How to start
 
+Read [.claude/docs/implementing.md](../.claude/docs/implementing.md) first. It sets how this session orchestrates: the scoped reading below, delegating each task to the `tdd-task` subagent, writing briefs, and recording `suite-runner` runs.
+
 The governing instruction is [plan/kickoff.md](kickoff.md). Follow it exactly. It requires reading two baselines, each scoped to what D2 uses, as decision 45 and the kickoff's plan-specific conditions direct.
 
 **The `specs/` baseline (scoped):** read [plan/spec-reading/D02.md](spec-reading/D02.md), then read exactly the files and line ranges it lists, each range in full. It covers every core section of the [spec map](spec-map.md) plus every section tagged for D2. Don't read `plan/spec-map.md` in full. Search it when the work touches a section that isn't on the list, then read that section in the spec before building on it. If the missing section should have been tagged for D2, correct the map, regenerate the lists with `python3 .claude/scripts/spec-reading-lists.py`, and note the correction in `evidence/D02/structural.md`.
@@ -115,7 +117,7 @@ Browser-test lessons from D1, all already handled in `e2e/d1/support.ts` and wor
 - Playwright's offline emulation doesn't cover service-worker fetches. Offline cases also stop the server.
 - A form control's focus ring needs `:focus-within` for date-time inputs.
 
-TDD logging helper: `.claude/scripts/tdd.sh`, committed. `CLAUDE.md` ("Project tooling") says how to use it. `evidence/D02/tdd-log.md` already exists.
+TDD logging helper: `.claude/scripts/tdd.sh`, committed. The `tdd-task` agent (`.claude/agents/tdd-task.md`) says how to use it. `evidence/D02/tdd-log.md` already exists.
 
 ## 5. Working rules
 

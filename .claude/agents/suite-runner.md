@@ -1,6 +1,6 @@
 ---
 name: suite-runner
-description: Runs this project's complete cumulative suite (unit, integration, browser, and every static and verify check), writes the full outputs to the deliverable's evidence/<Dnn>/suite-runs/, and returns only a short result table. Use it at the end of every task, before every critic gate, and whenever a "complete cumulative run" is required. Never run the full suite in the main session. Single-case TDD red and green runs stay in the main session.
+description: Runs this project's complete cumulative suite (unit, integration, browser, and every static and verify check), writes the full outputs to the deliverable's evidence/<Dnn>/suite-runs/, and returns only a short result table. Use it at the end of every task, before every critic gate, and whenever a "complete cumulative run" is required. Never run the full suite in the main session. Single-case TDD red and green runs happen inside each task's subagent.
 tools: Bash, Read
 model: sonnet
 ---
