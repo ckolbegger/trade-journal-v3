@@ -1,3 +1,5 @@
+import { Temporal } from 'temporal-polyfill';
+
 export const ROOT_DATABASE = 'tj-root';
 export const ROOT_VERSION = 1;
 export const WORKSPACE_PREFIX = 'tj-ws-';
@@ -60,4 +62,12 @@ export function upgradeWorkspace(db: IDBDatabase, oldVersion: number): void {
     );
     createWorkspaceIndexes((name) => stores.get(name)!);
   }
+}
+
+// The private `activityDesc` sort key over a Trade's Last Activity (D2 A28, A139): ascending key
+// order is descending Last Activity. Each digit of the zero-padded epoch nanoseconds is replaced by
+// its nine's complement, so the key is exact and fixed-width.
+export function activityDescOf(lastActivity: string): string {
+  const nanoseconds = Temporal.Instant.from(lastActivity).epochNanoseconds.toString().padStart(20, '0');
+  return nanoseconds.replace(/\d/g, (digit) => String(9 - Number(digit)));
 }

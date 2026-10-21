@@ -17,7 +17,7 @@ export {
   type WriteGate,
   type WriteSet,
 } from './persistence.ts';
-export type { WorkspaceStore } from './schema.ts';
+export { activityDescOf, type WorkspaceStore } from './schema.ts';
 export {
   beginSemanticTransaction,
   NotInSemanticTransaction,

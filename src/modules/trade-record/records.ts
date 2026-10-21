@@ -1,4 +1,4 @@
-import type { ConditionInput, LifecycleState, PlannedLegInput } from '../../domain/trade-analysis/index.ts';
+import type { ConditionInput, ExecutionFact, LifecycleState, PlannedLegInput, RecordedDeviation } from '../../domain/trade-analysis/index.ts';
 import type { Instant } from '../../domain/time/index.ts';
 
 export interface PlanFactValue {
@@ -12,7 +12,21 @@ export type FactValue =
   | { readonly kind: 'Plan'; readonly value: PlanFactValue }
   | { readonly kind: 'PlannedLeg'; readonly value: PlannedLegInput }
   | { readonly kind: 'Stop'; readonly value: ConditionInput }
-  | { readonly kind: 'Target'; readonly value: ConditionInput };
+  | { readonly kind: 'Target'; readonly value: ConditionInput }
+  | { readonly kind: 'PositionChange'; readonly value: PositionChangeFactValue }
+  | { readonly kind: 'Execution'; readonly value: ExecutionFactValue };
+
+// One fill as submitted and stored: action, Instrument, quantity, price, fee, its own Economic
+// Time, and its Planned-Leg intent (D2 A18).
+export type ExecutionFactValue = Omit<ExecutionFact, 'factId' | 'recordedSequence'>;
+
+// One decision grouping its members (D2 A21): its Economic Time is its earliest member's (A19).
+export interface PositionChangeFactValue {
+  readonly economicTime: Instant;
+  readonly originTradeId: string;
+  readonly participatingTradeIds: readonly string[];
+  readonly memberIds: readonly string[];
+}
 
 // One stable fact identity with its immutable version list (decision 11: exactly one version
 // until corrections arrive in D15).
@@ -37,6 +51,13 @@ export interface TradeDocument {
   readonly underlying: string;
   readonly factRevision: number;
   readonly facts: readonly TradeFact[];
+  // The last Recorded Sequence assigned in this Trade (D2 A20); Trades confirmed before it existed
+  // continue after their highest one.
+  readonly recordedSequenceCounter?: number;
+  // The latest Economic Time among the Plan and effective Position Changes (D2 A27).
+  readonly lastActivity?: Instant;
+  // Recorded Deviation occurrences, each a stable identity with its version list (D2 A26).
+  readonly deviations?: readonly RecordedDeviation[];
 }
 
 export interface ConfirmPlanChange {
@@ -48,4 +69,12 @@ export interface ConfirmPlanChange {
     readonly stops: readonly ConditionInput[];
     readonly targets: readonly ConditionInput[];
   };
+}
+
+// Records one decision's Executions on one Trade, against the FactRevision the caller read.
+export interface PositionChangeChange {
+  readonly kind: 'PositionChange';
+  readonly tradeId: string;
+  readonly expectedFactRevision: number;
+  readonly executions: readonly ExecutionFactValue[];
 }
