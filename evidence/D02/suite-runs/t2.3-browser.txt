@@ -1,0 +1,57 @@
+
+> trade-journal-v3@0.0.0 test:e2e
+> npm run build:faults && npm run build:releases && playwright test e2e/d1
+
+
+> trade-journal-v3@0.0.0 build:faults
+> vite build --mode faults --outDir dist-faults
+
+vite v8.3.2 building client environment for faults...
+transforming...
+✓ 96 modules transformed.
+rendering chunks...
+computing gzip size...
+dist-faults/index.html                   0.50 kB │ gzip:   0.30 kB
+dist-faults/assets/index-DCQ3XogC.css    3.54 kB │ gzip:   1.31 kB
+dist-faults/assets/faults-ChjcxTL3.js    0.95 kB │ gzip:   0.51 kB
+dist-faults/assets/index-G7cHNqch.js   398.74 kB │ gzip: 125.88 kB
+
+✓ built in 335ms
+
+> trade-journal-v3@0.0.0 build:releases
+> node tools/build-releases.ts
+
+build:releases OK: v1, v2, v2-corrupt in /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/dist-releases; v2-corrupt alters /assets/index-DCQ3XogC.css
+
+Running 27 tests using 1 worker
+
+  ✓   1 [chromium] › e2e/d1/identity.spec.ts:6:5 › B1.1 identity and Writable tab › should serve a complete manifest and digest-valid inventory and reach Writable with all four checks passing (1.4s)
+  ✓   2 [chromium] › e2e/d1/identity.spec.ts:6:5 › B1.1 identity and Writable tab › should serve a complete manifest and digest-valid inventory and reach Writable with all four checks passing under an unknown user agent (807ms)
+  ✓   3 [chromium] › e2e/d1/integrity-blocked.spec.ts:6:3 › B1.8 Integrity Blocked › should block a root at version 99 created before launch, offering only Retry and leaving the root untouched (589ms)
+  ✓   4 [chromium] › e2e/d1/integrity-blocked.spec.ts:38:3 › B1.8 Integrity Blocked › should block a pointer whose Workspace database was deleted, keeping the pointer and creating no new Workspace (778ms)
+  ✓   5 [chromium] › e2e/d1/no-save.spec.ts:50:3 › B1.14 nothing is saved without Save › should store no Entry, Trade, draft, or Web Storage value after typing, resizing, leaving, and restarting (1.5s)
+  ✓   6 [chromium] › e2e/d1/offline.spec.ts:4:3 › B1.4 offline cold restart › should open Writable without a network, confirm a second Plan and add an Account, and keep both across another offline restart (2.4s)
+  ✓   7 [chromium] › e2e/d1/onboarding.spec.ts:5:3 › onboarding after a partly failed attempt (critic-2) › should show the protection warning on first run and onboarding, and reuse an Institution saved without its Account after a reload (860ms)
+  ✓   8 [chromium] › e2e/d1/plan.spec.ts:7:3 › B1.2 onboarding and first Plan › should show the Plan, 1R, and reflection after relaunch, with one Trade, one Entry, and Planned in the index (1.5s)
+  ✓   9 [chromium] › e2e/d1/plan.spec.ts:35:3 › B1.3 kill after commit › should keep the complete Plan, with its Entry, after the browser process is killed once the confirmation renders (1.4s)
+  ✓  10 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly diagnostic, with Retry and the another-browser recommendation, creating no Workspace (544ms)
+  ✓  11 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly capacity, with Retry and the another-browser recommendation, creating no Workspace (541ms)
+  ✓  12 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly control, with Retry and the another-browser recommendation, creating no Workspace (527ms)
+  ✓  13 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly inventory, with Retry and the another-browser recommendation, creating no Workspace (533ms)
+  ✓  14 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly diagnostic and capacity, with Retry and the another-browser recommendation, creating no Workspace (538ms)
+  ✓  15 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly control and inventory, with Retry and the another-browser recommendation, creating no Workspace (650ms)
+  ✓  16 [chromium] › e2e/d1/readiness.spec.ts:25:3 › B1.7 protection is advisory › should stay Writable with the warning and durability action while unprotected, and report the request honestly (987ms)
+  ✓  17 [chromium] › e2e/d1/recovery-only.spec.ts:4:3 › B1.6 Recovery Only matrix (existing Workspace, faults build) › should open Recovery Only with the failed checks for each fault set, keeping the Plan readable and the stores unchanged (4.6s)
+  ✓  18 [chromium] › e2e/d1/responsive-a11y.spec.ts:33:3 › B1.15 responsive and accessible › should switch layout at 960 px with the route and entered values intact (836ms)
+  ✓  19 [chromium] › e2e/d1/responsive-a11y.spec.ts:57:3 › B1.15 responsive and accessible › should report no WCAG 2.1 AA violations in any D1 view state (4.4s)
+  ✓  20 [chromium] › e2e/d1/responsive-a11y.spec.ts:134:3 › B1.15 responsive and accessible › should complete onboarding and a Plan with the keyboard only, with visible focus throughout (839ms)
+  ✓  21 [chromium] › e2e/d1/runtime-failure.spec.ts:5:5 › B1.9 mid-session failure (faults build) › should explain RuntimeNotWritable, keep the form values, and switch to Recovery Only when inventory starts failing before Confirm (923ms)
+  ✓  22 [chromium] › e2e/d1/runtime-failure.spec.ts:5:5 › B1.9 mid-session failure (faults build) › should explain RuntimeNotWritable, keep the form values, and switch to Recovery Only when diagnostic starts failing before Confirm (949ms)
+  ✓  23 [chromium] › e2e/d1/update.spec.ts:42:3 › B1.10 update with unsaved work › should notify only once v2 is waiting, defer Reload while the form is unsaved, then activate v2 with the Workspace unchanged (3.7s)
+  ✓  24 [chromium] › e2e/d1/update.spec.ts:74:3 › B1.11 corrupt update › should show no notice, keep v1 in control, and leave no v2 cache when the update fails verification (2.5s)
+  ✓  25 [chromium] › e2e/d1/update.spec.ts:90:3 › B1.12 offline keeps the installed release › should show no notice offline and keep v1 running and Writable (2.6s)
+  ✓  26 [chromium] › e2e/d1/update.spec.ts:111:3 › B1.13 two tabs, one unsaved › should explain in the clean tab that another tab has unsaved work, keeping Reload disabled until that form is cancelled (2.6s)
+  ✓  27 [chromium] › e2e/d1/update.spec.ts:133:3 › B1.13 two tabs, the clean one opened after the form became unsaved (critic-1) › should defer Reload and explain in a tab opened later, where "Check for updates" reports the waiting update once (2.8s)
+
+  27 passed (43.1s)
+EXIT 0

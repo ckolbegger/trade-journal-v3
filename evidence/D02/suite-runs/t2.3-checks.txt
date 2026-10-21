@@ -1,0 +1,82 @@
+$ npm run typecheck
+
+> trade-journal-v3@0.0.0 typecheck
+> tsc
+
+EXIT 0
+$ npx tsc6 --noEmit
+EXIT 0
+$ npm run lint
+
+> trade-journal-v3@0.0.0 lint
+> eslint .
+
+EXIT 0
+$ npm run lint:deps
+
+> trade-journal-v3@0.0.0 lint:deps
+> node tools/lint-deps.ts
+
+
+✔ no dependency violations found (121 modules, 353 dependencies cruised)
+
+lint:deps OK (src)
+EXIT 0
+$ npm run build
+
+> trade-journal-v3@0.0.0 build
+> vite build
+
+vite v8.3.2 building client environment for production...
+transforming...
+✓ 95 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.50 kB │ gzip:   0.30 kB
+dist/assets/index-DCQ3XogC.css    3.54 kB │ gzip:   1.31 kB
+dist/assets/index-DSJC3LAo.js   398.63 kB │ gzip: 125.82 kB
+
+✓ built in 81ms
+EXIT 0
+$ npm run verify:release
+
+> trade-journal-v3@0.0.0 verify:release
+> node tools/verify-release.ts
+
+OK /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/dist: release 495f9d34ef06d46ae60ce3c8061367b6b9bb8f6e05be181e5f713bd7ae2956ed, 6 assets
+EXIT 0
+$ npm run verify:capabilities
+
+> trade-journal-v3@0.0.0 verify:capabilities
+> node tools/verify-capabilities.ts
+
+verify:capabilities OK: 11 operations, 6 routes, release 853915999821e451dab53a036014cc8b75c550437222e52b40765fad954a9b29
+EXIT 0
+$ npm run verify:releases
+
+> trade-journal-v3@0.0.0 verify:releases
+> node tools/verify-releases.ts
+
+verify:releases OK: v1 3517fa0f584ef5b4bc8b75cf80e71f3b83646139b8689fee63876b1c345e9f44, v2 2e3225fd737be4d89edc536f16ba3df1fb7afe2edc7a033310af56a5557860ed, v2-corrupt fails only on /assets/index-DCQ3XogC.css
+EXIT 0
+$ npm run verify:no-fault-hooks
+
+> trade-journal-v3@0.0.0 verify:no-fault-hooks
+> node tools/verify-no-fault-hooks.ts
+
+verify:no-fault-hooks OK: /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/dist has no fault hooks
+EXIT 0
+$ npm run verify:capacity
+
+> trade-journal-v3@0.0.0 verify:capacity
+> node tools/verify-capacity.ts
+
+verify:capacity OK: required quota 1646103699 = 3 × 548701233, schema 1
+EXIT 0
+$ npm run verify:fixtures
+
+> trade-journal-v3@0.0.0 verify:fixtures
+> node tools/verify-fixtures.ts
+
+verify:fixtures OK: workspace-v1 open Ready at schema 1 with views equal to their snapshots
+EXIT 0
