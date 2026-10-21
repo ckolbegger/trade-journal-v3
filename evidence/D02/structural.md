@@ -193,3 +193,18 @@ Run 2026-10-21 13:26 EDT on commit `cbe9b54` (the only uncommitted files were th
 Failures: none.
 
 **Implementation decisions (T2.6, recorded 2026-10-21).** A command Execution naming a Planned Leg the Plan does not have is rejected as `VariantNotInstalled(OtherInstrument)` before analysis (serving another leg's terms is D10's Planned-Leg Terms); `IntegrityDisagreement` stays for stored incoherent facts (I2.8 c). An unknown Trade surfaces as `StorageFailure`, because D2 cannot delete a Trade. An extra case rejects an empty Position Change with `NoExecutions`.
+
+## Cumulative run after T2.7
+
+Run 2026-10-21 13:39 EDT on commit `a1a9ad0` (the only uncommitted files were this run's own outputs and the untracked older handoff note), Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 36 passed (36)`, `Tests 314 passed (314)`, exit 0 | `suite-runs/t2.7-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 6 passed (6)`, `Tests 19 passed (19)`, exit 0 | `suite-runs/t2.7-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `27 passed (40.7s)`, exit 0 | `suite-runs/t2.7-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.7-checks.txt` |
+
+Failures: none.
+
+**Implementation decisions (T2.7, recorded 2026-10-21).** The Planned form of Detail is returned only when both stored and expected lifecycle are Planned; any other Trade gets the Open form (so a stored-Planned Trade with opening facts shows its disagreement). Deviation count counts recorded occurrences whose latest version is Active. Average open cost is the quantity-weighted Open Lot price, excluding fees. Three type-only edits outside T2.7's scope (`src/app/types.ts`, `TradeDetail.tsx`, a D1 integration test) keep typecheck at 0 until T2.11 and T2.14 replace them.
