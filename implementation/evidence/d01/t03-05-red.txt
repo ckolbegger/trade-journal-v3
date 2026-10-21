@@ -1,0 +1,43 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-readiness.test.ts -t should recheck each
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-readiness.test.ts (5 tests | 1 failed | 4 skipped) 10ms
+   × should recheck each launch and invalidate the next mutation after a runtime failure 9ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-readiness.test.ts > should recheck each launch and invalidate the next mutation after a runtime failure
+AssertionError: expected { status: 'Writable', …(2) } to match object { status: 'RuntimeNotWritable', …(1) }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "failedChecks": [
+-     "transaction",
+-   ],
+-   "status": "RuntimeNotWritable",
++   "status": "Writable",
+  }
+
+ ❯ tests/unit/d01-readiness.test.ts:56:31
+     54|   f.set({ transaction: false, control: false });
+     55|   f.runtime.invalidate('transaction');
+     56|   expect(f.runtime.current()).toMatchObject({ status: 'RuntimeNotWrita…
+       |                               ^
+     57|   expect(await f.runtime.mutate(undefined, async () => 'unsafe')).toMa…
+     58|   expect(f.runtime.current()).toMatchObject({ status: 'RuntimeNotWrita…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 skipped (5)
+   Start at  20:59:45
+   Duration  330ms (environment 83%, import 6%, transform 6%, tests 4%, worker 1%)
+

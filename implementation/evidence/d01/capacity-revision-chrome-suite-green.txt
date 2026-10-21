@@ -1,0 +1,20 @@
+
+> trade-journal-v3@0.1.0 test:browser
+> playwright test d01-release --project=chromium
+
+[WebServer] (node:96361) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:96363) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+native host evidence {
+  secure: true,
+  storage: { quota: 10737418240, usage: 0, usageDetails: {} },
+  controller: undefined,
+  caches: []
+}
+  ✓  1 [chromium] › tests/browser/d01-release.spec.ts:2:1 › D1-T09 withholds Writable until a complete verified release controls the page (352ms)
+
+  1 passed (985ms)

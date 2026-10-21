@@ -1,0 +1,45 @@
+Trades
+New Plan
+Workspace
+
+AFTER-CLOSE JOURNAL · USD
+
+New Plan
+Check for application updates
+Update available
+
+Update deferred while this form has unsaved values. Save or Cancel before reloading.
+
+Reload to update
+Storage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection
+
+Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.
+
+Review before continuing
+Stop must be below intended entry so Planned risk is positive.
+Long Stock Plan
+
+Freeze your intended entry, original management and Plan Reflection before entering.
+
+Account
+Stock symbol
+Quantity (shares)
+Intended entry (USD)
+Stop (underlying price, USD)
+Target (underlying price, USD)
+Plan Reflection
+Why this trade, why now?
+What would invalidate the thesis?
+Conviction (optional, 1–5)
+Primary emotion (optional)
+Unanswered
+Calm
+Eager
+Anxious
+FOMO
+Revenge
+Relieved
+Frustrated
+Other
+Confirm Plan
+Cancel

@@ -1,0 +1,14 @@
+[
+  {
+    "name": "B04 failed real release staging keeps old worker/input/data",
+    "status": "PASS"
+  },
+  {
+    "name": "B04 complete staged update defers active form and blocks other clients",
+    "status": "PASS"
+  },
+  {
+    "name": "B04 updated release cold offline",
+    "status": "PASS"
+  }
+]

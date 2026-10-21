@@ -1,0 +1,6 @@
+{
+  "active": "http://localhost:5174/sw.js",
+  "caches": [
+    "trade-journal-release-c61a00ab2f5941e47bf1b2b4436a779b74b40531b110fd4f9201adf864fef704"
+  ]
+}

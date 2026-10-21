@@ -1,0 +1,32 @@
+export function hostFault(initial) {
+  globalThis.__criticFault = initial;
+  const estimate = StorageManager.prototype.estimate;
+  StorageManager.prototype.estimate = function () {
+    if (globalThis.__criticFault.includes('capacity')) return Promise.resolve({ usage: 0, quota: 1 });
+    if (globalThis.__criticFault.includes('estimateUnavailable')) return Promise.resolve({});
+    return estimate.call(this);
+  };
+  const persist = StorageManager.prototype.persist;
+  const persisted = StorageManager.prototype.persisted;
+  StorageManager.prototype.persisted = function () { return globalThis.__criticFault.includes('bestEffort') ? Promise.resolve(false) : persisted.call(this); };
+  StorageManager.prototype.persist = function () { return globalThis.__criticFault.includes('bestEffort') ? Promise.resolve(false) : persist.call(this); };
+  const controller = Object.getOwnPropertyDescriptor(ServiceWorkerContainer.prototype, 'controller');
+  Object.defineProperty(ServiceWorkerContainer.prototype, 'controller', { configurable: true, get() { return globalThis.__criticFault.includes('control') ? null : controller.get.call(this); } });
+  const put = IDBObjectStore.prototype.put;
+  IDBObjectStore.prototype.put = function (...args) {
+    const q = put.apply(this,args);
+    if (this.name === 'diagnostic' && globalThis.__criticFault.includes('transaction')) this.transaction.abort();
+    return q;
+  };
+  const add = IDBObjectStore.prototype.add;
+  IDBObjectStore.prototype.add = function (...args) {
+    const q = add.apply(this,args);
+    if (this.name === 'versions' && ((globalThis.__criticFault.includes('abortPlan') && args[0].kind === 'Plan') || (globalThis.__criticFault.includes('abortJournal') && args[0].kind === 'JournalEntry'))) this.transaction.abort();
+    return q;
+  };
+  const get = IDBObjectStore.prototype.get;
+  IDBObjectStore.prototype.get = function (...args) {
+    if (this.name === 'roots' && globalThis.__criticFault.includes('unreadable')) throw new DOMException('Independent critic: native root read unavailable', 'UnknownError');
+    return get.apply(this,args);
+  };
+}

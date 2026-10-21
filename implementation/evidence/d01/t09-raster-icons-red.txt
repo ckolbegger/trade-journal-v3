@@ -1,0 +1,48 @@
+
+> trade-journal-v3@0.1.0 test:browser
+> playwright test --project=webkit --grep=withholds Writable
+
+[WebServer] (node:21877) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:21882) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+native host evidence {
+  secure: true,
+  storage: { quota: 20615843021, usage: 4 },
+  controller: undefined,
+  caches: []
+}
+  ✘  1 [webkit] › tests/browser/d01-release.spec.ts:2:1 › D1-T09 withholds Writable until a complete verified release controls the page (768ms)
+
+
+  1) [webkit] › tests/browser/d01-release.spec.ts:2:1 › D1-T09 withholds Writable until a complete verified release controls the page 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    Expected: ArrayContaining [{"purpose": "any", "sizes": "192x192", "src": "/icon-192.png", "type": "image/png"}, {"purpose": "any", "sizes": "512x512", "src": "/icon-512.png", "type": "image/png"}]
+    Received: [{"purpose": "any", "sizes": "any", "src": "/icon.svg", "type": "image/svg+xml"}]
+
+      14 |   const identity = await manifest.json() as { display: string; icons: { src: string; sizes: string; type: string }[] };
+      15 |   expect(identity.display).toBe('standalone');
+    > 16 |   expect(identity.icons).toEqual(expect.arrayContaining([{ src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' }, { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' }]));
+         |                          ^
+      17 |   expect(await page.evaluate(() => navigator.serviceWorker.controller?.scriptURL)).toContain('/sw.js');
+      18 | });
+      19 |
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-release.spec.ts:16:26
+
+    Error Context: test-results/d01-release-D1-T09-withhol-424dc-d-release-controls-the-page-webkit/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/d01-release-D1-T09-withhol-424dc-d-release-controls-the-page-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/d01-release-D1-T09-withhol-424dc-d-release-controls-the-page-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [webkit] › tests/browser/d01-release.spec.ts:2:1 › D1-T09 withholds Writable until a complete verified release controls the page 

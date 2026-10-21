@@ -1,0 +1,14 @@
+[
+  {
+    "name": "B04 manifest and native cached inventory SHA256 completeness",
+    "status": "PASS"
+  },
+  {
+    "name": "B03 advisory native storage request then explicit denial",
+    "status": "PASS"
+  },
+  {
+    "name": "B05 explicit list Error and safe retry",
+    "status": "PASS"
+  }
+]

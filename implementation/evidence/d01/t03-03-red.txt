@@ -1,0 +1,41 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-readiness.test.ts -t should preserve readable
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-readiness.test.ts (3 tests | 1 failed | 2 skipped) 6ms
+   × should preserve readable recovery and reject every mutation at persistence 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-readiness.test.ts > should preserve readable recovery and reject every mutation at persistence
+AssertionError: expected { status: 'RuntimeNotWritable', …(4) } to match object { status: 'RuntimeNotWritable', …(3) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "failedChecks": [
+      "inventory",
+    ],
+-   "runtimeReadiness": "RecoveryOnly",
++   "runtimeReadiness": "Unsupported",
+    "status": "RuntimeNotWritable",
+-   "workspaceStatus": "RecoveryOnly",
++   "workspaceStatus": "None",
+  }
+
+ ❯ tests/unit/d01-readiness.test.ts:38:41
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 skipped (3)
+   Start at  20:59:11
+   Duration  315ms (environment 85%, import 6%, transform 6%, tests 3%, worker 1%)
+

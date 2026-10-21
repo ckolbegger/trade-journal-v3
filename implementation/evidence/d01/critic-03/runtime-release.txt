@@ -1,0 +1,9 @@
+Owned preview terminal85022 stopped with Ctrl-C.
+Owned headed Chromium terminal38697 stopped with Ctrl-C.
+All script finally blocks closed owned native persistent browser contexts.
+Native process inspection: ps -axo pid,ppid,command | rg 'critic03|tjv3-critic03|vite preview'
+Observed only the inspection command itself and rg; no remaining critic-owned runtime/browser processes.
+Final lsof -nP -iTCP:5174 -sTCP:LISTEN: no output, exit1 (no listener).
+Source snapshot08075a01142b261888f1ad36be1d46faa424707850faad306bbc641da6dbcd3d byte-compared unchanged.
+Original dist matches complete pre-update saved copy byte-for-byte, release300a490ca6b84be520cae4fa04a13cea4bd4e1c0012897e781f91ae2f921c890.
+PORT5174 RELEASED.

@@ -1,0 +1,5 @@
+{
+  "error": "TimeoutError: locator.fill: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('Why this trade, why now?', { exact: true })\u001b[22m\n",
+  "stack": "locator.fill: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('Why this trade, why now?', { exact: true })\u001b[22m\n\n    at /private/tmp/critic02-core.mjs:8:161",
+  "events": []
+}

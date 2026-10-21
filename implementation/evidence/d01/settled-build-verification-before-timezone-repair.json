@@ -1,0 +1,38 @@
+{
+  "baseline": "db3580cdc1ee95b5056a4de6dc36430cdd71a421",
+  "sourceDigest": "564da40305d97f30220c30934108df6f446c8148b81aec8cb937389a1b0996f6",
+  "changedSinceChecks": [],
+  "gates": [
+    {
+      "stage": "capacity-final-lint",
+      "exit": 0,
+      "sourceDigest": "564da40305d97f30220c30934108df6f446c8148b81aec8cb937389a1b0996f6"
+    },
+    {
+      "stage": "capacity-final-unit",
+      "exit": 0,
+      "sourceDigest": "564da40305d97f30220c30934108df6f446c8148b81aec8cb937389a1b0996f6"
+    },
+    {
+      "stage": "capacity-final-integration",
+      "exit": 0,
+      "sourceDigest": "564da40305d97f30220c30934108df6f446c8148b81aec8cb937389a1b0996f6"
+    },
+    {
+      "stage": "capacity-final-build",
+      "exit": 0,
+      "sourceDigest": "564da40305d97f30220c30934108df6f446c8148b81aec8cb937389a1b0996f6"
+    },
+    {
+      "stage": "capacity-final-browser",
+      "exit": 0,
+      "sourceDigest": "564da40305d97f30220c30934108df6f446c8148b81aec8cb937389a1b0996f6"
+    },
+    {
+      "stage": "capacity-final-benchmark",
+      "exit": 0,
+      "sourceDigest": "564da40305d97f30220c30934108df6f446c8148b81aec8cb937389a1b0996f6"
+    }
+  ],
+  "release": "0df453b26465fd0b7da9c2cdeb6f48331b793ef8e6e285d12422f0239924c261"
+}

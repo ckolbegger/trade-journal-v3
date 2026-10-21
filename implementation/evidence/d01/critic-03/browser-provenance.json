@@ -1,0 +1,9 @@
+{
+  "node": "v26.12.0",
+  "playwright": "1.64.0",
+  "executables": {
+    "webkit": "/Users/ckolbegger/Library/Caches/ms-playwright/webkit-2370/pw_run.sh",
+    "chromium": "/Users/ckolbegger/Library/Caches/ms-playwright/chromium-1248/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+    "firefox": "/Users/ckolbegger/Library/Caches/ms-playwright/firefox-1555/firefox/Nightly.app/Contents/MacOS/firefox"
+  }
+}

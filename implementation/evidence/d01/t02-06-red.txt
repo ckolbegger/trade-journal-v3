@@ -1,0 +1,33 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-analysis.test.ts -t should reject blank
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-analysis.test.ts (6 tests | 1 failed | 5 skipped) 2ms
+   × should reject blank and malformed decimal inputs as typed issues 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-analysis.test.ts > should reject blank and malformed decimal inputs as typed issues
+Error: [DecimalError] Invalid argument: one
+ ❯ parseOther node_modules/decimal.js/decimal.mjs:3622:11
+ ❯ new Decimal node_modules/decimal.js/decimal.mjs:4384:55
+ ❯ assessPlan src/domain/trade-analysis/index.ts:23:20
+     21|   const instrument = input.instrument;
+     22|   if (!instrument || instrument.kind !== 'Stock' || instrument.currenc…
+     23|   const quantity = new Decimal(input.quantity);
+       |                    ^
+     24|   if (!quantity.isFinite() || quantity.lte(0)) issues.push('PositiveQu…
+     25|   if (!input.thesis.trim()) issues.push('ThesisRequired');
+ ❯ tests/unit/d01-analysis.test.ts:29:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 skipped (6)
+   Start at  21:12:14
+   Duration  278ms (environment 89%, transform 6%, import 2%, tests 1%, worker 1%)
+

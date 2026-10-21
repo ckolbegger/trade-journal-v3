@@ -1,0 +1,38 @@
+{
+  "baseline": "db3580cdc1ee95b5056a4de6dc36430cdd71a421",
+  "sourceDigest": "0985b99e60f7986eaf3693b2faf4388374534e6d060d8b385048414db5f2c6cd",
+  "changedSinceChecks": [],
+  "gates": [
+    {
+      "stage": "critic-ready-lint",
+      "exit": 0,
+      "sourceDigest": "0985b99e60f7986eaf3693b2faf4388374534e6d060d8b385048414db5f2c6cd"
+    },
+    {
+      "stage": "critic-ready-unit",
+      "exit": 0,
+      "sourceDigest": "0985b99e60f7986eaf3693b2faf4388374534e6d060d8b385048414db5f2c6cd"
+    },
+    {
+      "stage": "critic-ready-integration",
+      "exit": 0,
+      "sourceDigest": "0985b99e60f7986eaf3693b2faf4388374534e6d060d8b385048414db5f2c6cd"
+    },
+    {
+      "stage": "critic-ready-build",
+      "exit": 0,
+      "sourceDigest": "0985b99e60f7986eaf3693b2faf4388374534e6d060d8b385048414db5f2c6cd"
+    },
+    {
+      "stage": "critic-ready-browser",
+      "exit": 0,
+      "sourceDigest": "0985b99e60f7986eaf3693b2faf4388374534e6d060d8b385048414db5f2c6cd"
+    },
+    {
+      "stage": "critic-ready-benchmark",
+      "exit": 0,
+      "sourceDigest": "0985b99e60f7986eaf3693b2faf4388374534e6d060d8b385048414db5f2c6cd"
+    }
+  ],
+  "release": "12092e686a53550a45090f41eb805105c2335bd34c96c11abd040589bcee9421"
+}

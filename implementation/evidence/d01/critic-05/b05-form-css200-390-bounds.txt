@@ -1,0 +1,207 @@
+{
+  "viewport": 390,
+  "document": 390,
+  "actions": [
+    {
+      "name": "Trades",
+      "x": 20.796875,
+      "right": 115.21875,
+      "width": 94.421875,
+      "scrollWidth": 45,
+      "clientWidth": 45
+    },
+    {
+      "name": "New Plan",
+      "x": 128.015625,
+      "right": 237.046875,
+      "width": 109.03125,
+      "scrollWidth": 53,
+      "clientWidth": 53
+    },
+    {
+      "name": "Workspace",
+      "x": 249.84375,
+      "right": 369.203125,
+      "width": 119.359375,
+      "scrollWidth": 58,
+      "clientWidth": 58
+    },
+    {
+      "name": "Check for application updates",
+      "x": 32,
+      "right": 358,
+      "width": 326,
+      "scrollWidth": 161,
+      "clientWidth": 161
+    },
+    {
+      "name": "Request storage protection",
+      "x": 66,
+      "right": 324,
+      "width": 258,
+      "scrollWidth": 127,
+      "clientWidth": 127
+    },
+    {
+      "name": "AccountCritic taxable · Charles Schwab",
+      "x": 66,
+      "right": 324,
+      "width": 258,
+      "scrollWidth": 127,
+      "clientWidth": 127
+    },
+    {
+      "name": "Stock symbol",
+      "x": 66,
+      "right": 324,
+      "width": 258,
+      "scrollWidth": 127,
+      "clientWidth": 127
+    },
+    {
+      "name": "Quantity (shares)",
+      "x": 66,
+      "right": 324,
+      "width": 258,
+      "scrollWidth": 127,
+      "clientWidth": 127
+    },
+    {
+      "name": "Intended entry (USD)",
+      "x": 66,
+      "right": 324,
+      "width": 258,
+      "scrollWidth": 127,
+      "clientWidth": 127
+    },
+    {
+      "name": "Stop (underlying price, USD)",
+      "x": 66,
+      "right": 324,
+      "width": 258,
+      "scrollWidth": 127,
+      "clientWidth": 127
+    },
+    {
+      "name": "Target (underlying price, USD)",
+      "x": 66,
+      "right": 324,
+      "width": 258,
+      "scrollWidth": 127,
+      "clientWidth": 127
+    },
+    {
+      "name": "Why this trade, why now?Independent critic: breakout after close.",
+      "x": 66,
+      "right": 324,
+      "width": 258,
+      "scrollWidth": 127,
+      "clientWidth": 127
+    },
+    {
+      "name": "What would invalidate the thesis?A close below support.",
+      "x": 66,
+      "right": 324,
+      "width": 258,
+      "scrollWidth": 127,
+      "clientWidth": 127
+    },
+    {
+      "name": "Conviction (optional, 1–5)Unanswered12345",
+      "x": 66,
+      "right": 324,
+      "width": 258,
+      "scrollWidth": 127,
+      "clientWidth": 127
+    },
+    {
+      "name": "Unanswered",
+      "x": 108,
+      "right": 134,
+      "width": 26,
+      "scrollWidth": 13,
+      "clientWidth": 13
+    },
+    {
+      "name": "Calm",
+      "x": 108,
+      "right": 134,
+      "width": 26,
+      "scrollWidth": 13,
+      "clientWidth": 13
+    },
+    {
+      "name": "Eager",
+      "x": 108,
+      "right": 134,
+      "width": 26,
+      "scrollWidth": 13,
+      "clientWidth": 13
+    },
+    {
+      "name": "Anxious",
+      "x": 108,
+      "right": 134,
+      "width": 26,
+      "scrollWidth": 13,
+      "clientWidth": 13
+    },
+    {
+      "name": "FOMO",
+      "x": 108,
+      "right": 134,
+      "width": 26,
+      "scrollWidth": 13,
+      "clientWidth": 13
+    },
+    {
+      "name": "Revenge",
+      "x": 108,
+      "right": 134,
+      "width": 26,
+      "scrollWidth": 13,
+      "clientWidth": 13
+    },
+    {
+      "name": "Relieved",
+      "x": 108,
+      "right": 134,
+      "width": 26,
+      "scrollWidth": 13,
+      "clientWidth": 13
+    },
+    {
+      "name": "Frustrated",
+      "x": 108,
+      "right": 134,
+      "width": 26,
+      "scrollWidth": 13,
+      "clientWidth": 13
+    },
+    {
+      "name": "Other",
+      "x": 108,
+      "right": 134,
+      "width": 26,
+      "scrollWidth": 13,
+      "clientWidth": 13
+    },
+    {
+      "name": "Confirm Plan",
+      "x": 66,
+      "right": 305.109375,
+      "width": 239.109375,
+      "scrollWidth": 118,
+      "clientWidth": 118
+    },
+    {
+      "name": "Cancel",
+      "x": 66,
+      "right": 230.484375,
+      "width": 164.484375,
+      "scrollWidth": 80,
+      "clientWidth": 80
+    }
+  ],
+  "textOutOfBounds": []
+}

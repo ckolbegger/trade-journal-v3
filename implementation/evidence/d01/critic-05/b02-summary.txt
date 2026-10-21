@@ -1,0 +1,8 @@
+{
+  "invalidNoWrite": true,
+  "correctedSaved": true,
+  "cancelNoWrite": true,
+  "staleNoWrite": true,
+  "abortPlanNoWrite": true,
+  "abortJournalNoWrite": true
+}

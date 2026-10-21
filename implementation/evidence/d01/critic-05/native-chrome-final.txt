@@ -1,0 +1,44 @@
+{
+  "version": "155.0.8059.85",
+  "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+  "quota": {
+    "quota": 10741048000,
+    "usage": 3629760,
+    "usageDetails": {
+      "caches": 3513856,
+      "indexedDB": 111969,
+      "serviceWorkerRegistrations": 3935
+    }
+  },
+  "manifest": {
+    "name": "Trade Journal",
+    "short_name": "Trade Journal",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f6f4ed",
+    "theme_color": "#f6f4ed",
+    "lang": "en",
+    "scope": "/",
+    "id": "/",
+    "icons": [
+      {
+        "src": "/icon-192.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any"
+      },
+      {
+        "src": "/icon-512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any"
+      },
+      {
+        "src": "/icon.svg",
+        "sizes": "any",
+        "type": "image/svg+xml",
+        "purpose": "any"
+      }
+    ]
+  }
+}

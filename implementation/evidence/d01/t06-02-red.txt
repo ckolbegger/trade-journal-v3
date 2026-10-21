@@ -1,0 +1,270 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-confirmation.test.ts -t should return a complete
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-confirmation.test.ts (2 tests | 1 failed | 1 skipped) 20ms
+   × should return a complete commit receipt and saved projections without a follow-up read 20ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-confirmation.test.ts > should return a complete commit receipt and saved projections without a follow-up read
+AssertionError: expected { status: 'Confirmed', …(5) } to match object { receipt: { …(8) } }
+(43 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "receipt": {
+-     "entryId": "fcb416e1-13cc-458f-a48e-5c35a1d1b62d",
+-     "entryVersion": "95406e31-3ea6-4c80-a40f-141e35712685",
++   "assessment": {
++     "baseline": {
++       "conditions": [
++         {
++           "amount": "500",
++           "kind": "Stop",
++           "price": "45",
++         },
++         {
++           "amount": "1000",
++           "kind": "Target",
++           "price": "60",
++         },
++       ],
++       "oneR": "500",
++       "ratio": {
++         "denominator": "1",
++         "numerator": "2",
++       },
++       "reward": "1000",
++       "risk": "500",
++     },
++     "expirationMethod": {
++       "reason": "NoOptionExpirationAnchor",
++       "status": "NotApplicable",
++     },
++     "plan": {
++       "entry": "50",
++       "instrument": {
++         "currency": "USD",
++         "kind": "Stock",
++         "symbol": "XYZ",
++       },
++       "invalidation": "Thesis fails",
++       "quantity": "100",
++       "stop": "45",
++       "target": "60",
++       "thesis": "Improving earnings",
++     },
++     "status": "Accepted",
++   },
++   "entry": {
++     "anchor": {
++       "kind": "Trade",
++       "tradeId": "c60c368d-7341-4329-96c2-06bd8a028b46",
++     },
++     "definition": {
++       "id": "plan-reflection",
++       "label": "Plan Reflection",
++       "prompts": [
++         {
++           "id": "thesis",
++           "kind": "Text",
++           "required": true,
++           "role": "Thesis",
++           "wording": "Why this trade, why now?",
++         },
++         {
++           "id": "invalidation",
++           "kind": "Text",
++           "required": true,
++           "role": "Invalidation",
++           "wording": "What would invalidate the thesis?",
++         },
++         {
++           "id": "conviction",
++           "kind": "Scale",
++           "maximum": 5,
++           "minimum": 1,
++           "required": false,
++           "wording": "Conviction",
++         },
++         {
++           "id": "emotion",
++           "kind": "SingleSelect",
++           "options": [
++             {
++               "id": "calm",
++               "label": "Calm",
++             },
++             {
++               "id": "eager",
++               "label": "Eager",
++             },
++             {
++               "id": "anxious",
++               "label": "Anxious",
++             },
++             {
++               "id": "fomo",
++               "label": "FOMO",
++             },
++             {
++               "id": "revenge",
++               "label": "Revenge",
++             },
++             {
++               "id": "relieved",
++               "label": "Relieved",
++             },
++             {
++               "id": "frustrated",
++               "label": "Frustrated",
++             },
++             {
++               "id": "other",
++               "label": "Other",
++             },
++           ],
++           "required": false,
++           "wording": "Primary emotion",
++         },
++       ],
++       "revision": "plan-reflection-v1",
++     },
++     "firstAuthoredTime": "2026-10-18T23:00:00Z",
++     "id": "fcb416e1-13cc-458f-a48e-5c35a1d1b62d",
++     "momentTime": "2026-10-17T20:00:00Z",
++     "origin": {
+        "factId": "c21a3a0c-b781-4eed-8279-4a3902013132",
+-     "factRevision": "8ba22446-35bc-40a8-984a-47d11ab15824",
+-     "factVersionId": "40550feb-d00c-49b1-be51-c8e388a785f7",
++       "kind": "Plan",
++     },
++     "responses": {
++       "conviction": {
++         "kind": "Unanswered",
++       },
++       "emotion": {
++         "kind": "Unanswered",
++       },
++       "invalidation": {
++         "kind": "Text",
++         "value": "Thesis fails",
++       },
++       "thesis": {
++         "kind": "Text",
++         "value": "Improving earnings",
++       },
++     },
++     "saveTime": "2026-10-18T23:00:00Z",
++     "source": {
++       "id": "plan-confirmation",
++       "label": "Plan Confirmation",
++     },
++     "version": "95406e31-3ea6-4c80-a40f-141e35712685",
++   },
++   "reconciliation": {
++     "baseline": {
++       "conditions": [
++         {
++           "amount": "500",
++           "kind": "Stop",
++           "price": "45",
++         },
++         {
++           "amount": "1000",
++           "kind": "Target",
++           "price": "60",
++         },
++       ],
++       "oneR": "500",
++       "ratio": {
++         "denominator": "1",
++         "numerator": "2",
++       },
++       "reward": "1000",
++       "risk": "500",
++     },
++     "deviations": [],
++     "entryReadiness": "Unfilled",
++     "lotMatches": [],
++     "positions": [],
++     "reconciliation": {
++       "candidateId": "{\"accountId\":\"a9b31b74-67ec-4652-acf9-0ee7b872b962\",\"strategyId\":\"long-stock\",\"economicTime\":\"2026-10-17T20:00:00Z\",\"assessment\":{\"status\":\"Accepted\",\"expirationMethod\":{\"status\":\"NotApplicable\",\"reason\":\"NoOptionExpirationAnchor\"},\"plan\":{\"instrument\":{\"kind\":\"Stock\",\"symbol\":\"XYZ\",\"currency\":\"USD\"},\"quantity\":\"100\",\"entry\":\"50\",\"stop\":\"45\",\"target\":\"60\",\"thesis\":\"Improving earnings\",\"invalidation\":\"Thesis fails\"},\"baseline\":{\"risk\":\"500\",\"oneR\":\"500\",\"reward\":\"1000\",\"ratio\":{\"numerator\":\"2\",\"denominator\":\"1\"},\"conditions\":[{\"kind\":\"Stop\",\"price\":\"45\",\"amount\":\"500\"},{\"kind\":\"Target\",\"price\":\"60\",\"amount\":\"1000\"}]}},\"revision\":\"adc3701c-8f11-4638-b23a-d43582552fc0\"}",
++       "digest": "{\"accountId\":\"a9b31b74-67ec-4652-acf9-0ee7b872b962\",\"strategyId\":\"long-stock\",\"economicTime\":\"2026-10-17T20:00:00Z\",\"assessment\":{\"status\":\"Accepted\",\"expirationMethod\":{\"status\":\"NotApplicable\",\"reason\":\"NoOptionExpirationAnchor\"},\"plan\":{\"instrument\":{\"kind\":\"Stock\",\"symbol\":\"XYZ\",\"currency\":\"USD\"},\"quantity\":\"100\",\"entry\":\"50\",\"stop\":\"45\",\"target\":\"60\",\"thesis\":\"Improving earnings\",\"invalidation\":\"Thesis fails\"},\"baseline\":{\"risk\":\"500\",\"oneR\":\"500\",\"reward\":\"1000\",\"ratio\":{\"numerator\":\"2\",\"denominator\":\"1\"},\"conditions\":[{\"kind\":\"Stop\",\"price\":\"45\",\"amount\":\"500\"},{\"kind\":\"Target\",\"price\":\"60\",\"amount\":\"1000\"}]}},\"revision\":\"adc3701c-8f11-4638-b23a-d43582552fc0\"}",
++       "expectedLifecycle": "Planned",
++       "revision": "adc3701c-8f11-4638-b23a-d43582552fc0",
++     },
++     "status": "Derived",
++     "terminalDisposition": null,
++   },
++   "status": "Confirmed",
++   "trade": {
++     "accountId": "a9b31b74-67ec-4652-acf9-0ee7b872b962",
++     "baseline": {
++       "conditions": [
++         {
++           "amount": "500",
++           "kind": "Stop",
++           "price": "45",
++         },
++         {
++           "amount": "1000",
++           "kind": "Target",
++           "price": "60",
++         },
++       ],
++       "oneR": "500",
++       "ratio": {
++         "denominator": "1",
++         "numerator": "2",
++       },
++       "reward": "1000",
++       "risk": "500",
++     },
++     "economicTime": "2026-10-17T20:00:00Z",
+      "lifecycle": "Planned",
++     "plan": {
++       "entry": "50",
++       "instrument": {
++         "currency": "USD",
++         "kind": "Stock",
++         "symbol": "XYZ",
++       },
++       "invalidation": "Thesis fails",
++       "quantity": "100",
++       "stop": "45",
++       "target": "60",
++       "thesis": "Improving earnings",
++     },
++     "planFactId": "c21a3a0c-b781-4eed-8279-4a3902013132",
++     "planVersionId": "40550feb-d00c-49b1-be51-c8e388a785f7",
++     "plannedLegId": "e8ad32d4-d9f5-4b1d-b7ea-3190d8f40ea0",
++     "revision": "8ba22446-35bc-40a8-984a-47d11ab15824",
++     "saveTime": "2026-10-18T23:00:00Z",
++     "sequence": 1,
++     "stopId": "d6762974-0cfd-4a0b-ba4c-36d784f13e48",
++     "strategyId": "long-stock",
++     "targetId": "7f143542-1da4-46be-ae18-a8be8193330e",
+      "tradeId": "c60c368d-7341-4329-96c2-06bd8a028b46",
+-     "workspaceRevision": "cec0e9aa-c4d5-4d75-ae46-d18a69967a21",
+    },
++   "workspaceRevision": "cec0e9aa-c4d5-4d75-ae46-d18a69967a21",
+  }
+
+ ❯ tests/unit/d01-confirmation.test.ts:18:18
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 skipped (2)
+   Start at  21:04:14
+   Duration  334ms (environment 70%, import 12%, transform 11%, tests 8%, worker 1%)
+

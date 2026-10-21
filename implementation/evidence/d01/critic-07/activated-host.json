@@ -1,0 +1,25 @@
+{
+  "secure": true,
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+  "quota": {
+    "quota": 10742711852,
+    "usage": 5293612,
+    "usageDetails": {
+      "caches": 5237760,
+      "indexedDB": 51917,
+      "serviceWorkerRegistrations": 3935
+    }
+  },
+  "persisted": false,
+  "controller": "http://localhost:5174/sw.js",
+  "active": "activated",
+  "verified": {
+    "release": "2e33130107e703ce838e1697f73cb6cb3402b605d3bdf60bb08da2d0b2561966",
+    "verified": true,
+    "assetCount": 9
+  },
+  "cacheNames": [
+    "trade-journal-release-ab2297ad212bf6d6159b2c2471477358892b183a3d0e4706a792ca123f002e69",
+    "trade-journal-release-2e33130107e703ce838e1697f73cb6cb3402b605d3bdf60bb08da2d0b2561966"
+  ]
+}

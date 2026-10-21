@@ -1,0 +1,4154 @@
+{
+  "existing-transaction-unchanged": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "c9a918a0-3a93-4474-a505-9b98c50a2962",
+      "revision": "f91edd46-de92-4598-928f-4986007b3be0",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "78ec3cda-7de0-4d1e-b9a1-219d0fb5067b",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 4,
+      "recordedSequence": 1
+    },
+    "versionCount": 7
+  },
+  "axe-recovery-transaction": [],
+  "existing-transaction-history-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "c9a918a0-3a93-4474-a505-9b98c50a2962",
+      "revision": "f91edd46-de92-4598-928f-4986007b3be0",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "78ec3cda-7de0-4d1e-b9a1-219d0fb5067b",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 4,
+      "recordedSequence": 1
+    },
+    "versionCount": 7
+  },
+  "existing-transaction": {
+    "reasons": [
+      "transaction"
+    ],
+    "body": "TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nREAD · Planned\nCheck for application updates\nRecovery Only\n\nReading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.\n\nRetry startup\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nPlan confirmed and saved on this device.\n\nReview before continuing\nBrowser storage could not complete a test transaction.\nPlanned · Unfilled\nFrozen Plan Baseline\n\nFidelity recovery · Brokerage recovery · Long Stock\n\nOriginal Planned Risk · 1R\n$500.00\nOriginal Planned Reward\n$1000.00\nPlanned reward/risk ratio\n2/1\nIntended entry\n$50 × 100 shares\nStop · underlying price\n$45\nTarget · underlying price\n$60\n\nNo exposure has been entered.\n\nPlan Reflection\n\nTrade Anchor · Plan Confirmation\n\nWhy this trade, why now?\n\nIndependent critic: trend and catalyst\n\nWhat would invalidate the thesis?\n\nIndependent critic: close below support\n\nConviction\n\nUnanswered\n\nPrimary emotion\n\nUnanswered\n\nView history\n\nConfirmed: 2026-10-19 05:16:27.576 America/New_York\n\nSaved: 2026-10-19 05:16:27.587 America/New_York\n\nRecorded Sequence: 1\n\nPlan fact: 1a616ee6-edcf-4e06-b760-cbdb87770608\n\nVersion: f645265d-7e40-4b6c-b067-db990b206977",
+    "trace": [
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "op": "add",
+        "kind": "Strategy"
+      },
+      {
+        "op": "add",
+        "kind": "Definition"
+      },
+      {
+        "op": "add",
+        "kind": "Source"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "op": "add",
+        "kind": "Institution"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "op": "add",
+        "kind": "Account"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "op": "add",
+        "kind": "Plan"
+      },
+      {
+        "op": "add",
+        "kind": "JournalEntry"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      "native diagnostic transaction aborted",
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      }
+    ]
+  },
+  "existing-capacity-unchanged": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "c9a918a0-3a93-4474-a505-9b98c50a2962",
+      "revision": "f91edd46-de92-4598-928f-4986007b3be0",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "78ec3cda-7de0-4d1e-b9a1-219d0fb5067b",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 4,
+      "recordedSequence": 1
+    },
+    "versionCount": 7
+  },
+  "axe-recovery-capacity": [],
+  "existing-capacity-history-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "c9a918a0-3a93-4474-a505-9b98c50a2962",
+      "revision": "f91edd46-de92-4598-928f-4986007b3be0",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "78ec3cda-7de0-4d1e-b9a1-219d0fb5067b",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 4,
+      "recordedSequence": 1
+    },
+    "versionCount": 7
+  },
+  "existing-capacity": {
+    "reasons": [
+      "capacity"
+    ],
+    "body": "TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nREAD · Planned\nCheck for application updates\nRecovery Only\n\nReading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.\n\nRetry startup\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nPlan confirmed and saved on this device.\n\nReview before continuing\nThis browser does not have the required available storage capacity.\nPlanned · Unfilled\nFrozen Plan Baseline\n\nFidelity recovery · Brokerage recovery · Long Stock\n\nOriginal Planned Risk · 1R\n$500.00\nOriginal Planned Reward\n$1000.00\nPlanned reward/risk ratio\n2/1\nIntended entry\n$50 × 100 shares\nStop · underlying price\n$45\nTarget · underlying price\n$60\n\nNo exposure has been entered.\n\nPlan Reflection\n\nTrade Anchor · Plan Confirmation\n\nWhy this trade, why now?\n\nIndependent critic: trend and catalyst\n\nWhat would invalidate the thesis?\n\nIndependent critic: close below support\n\nConviction\n\nUnanswered\n\nPrimary emotion\n\nUnanswered\n\nView history\n\nConfirmed: 2026-10-19 05:16:27.576 America/New_York\n\nSaved: 2026-10-19 05:16:27.587 America/New_York\n\nRecorded Sequence: 1\n\nPlan fact: 1a616ee6-edcf-4e06-b760-cbdb87770608\n\nVersion: f645265d-7e40-4b6c-b067-db990b206977",
+    "trace": [
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "op": "add",
+        "kind": "Strategy"
+      },
+      {
+        "op": "add",
+        "kind": "Definition"
+      },
+      {
+        "op": "add",
+        "kind": "Source"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "op": "add",
+        "kind": "Institution"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "op": "add",
+        "kind": "Account"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "op": "add",
+        "kind": "Plan"
+      },
+      {
+        "op": "add",
+        "kind": "JournalEntry"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      "native diagnostic transaction aborted",
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      "native storage estimate failure",
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      }
+    ]
+  },
+  "existing-control-unchanged": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "c9a918a0-3a93-4474-a505-9b98c50a2962",
+      "revision": "f91edd46-de92-4598-928f-4986007b3be0",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "78ec3cda-7de0-4d1e-b9a1-219d0fb5067b",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 4,
+      "recordedSequence": 1
+    },
+    "versionCount": 7
+  },
+  "axe-recovery-control": [],
+  "existing-control-history-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "c9a918a0-3a93-4474-a505-9b98c50a2962",
+      "revision": "f91edd46-de92-4598-928f-4986007b3be0",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "78ec3cda-7de0-4d1e-b9a1-219d0fb5067b",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 4,
+      "recordedSequence": 1
+    },
+    "versionCount": 7
+  },
+  "existing-control": {
+    "reasons": [
+      "control"
+    ],
+    "body": "TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nREAD · Planned\nCheck for application updates\nRecovery Only\n\nReading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.\n\nRetry startup\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nPlan confirmed and saved on this device.\n\nReview before continuing\nThe verified application is not controlling this tab.\nPlanned · Unfilled\nFrozen Plan Baseline\n\nFidelity recovery · Brokerage recovery · Long Stock\n\nOriginal Planned Risk · 1R\n$500.00\nOriginal Planned Reward\n$1000.00\nPlanned reward/risk ratio\n2/1\nIntended entry\n$50 × 100 shares\nStop · underlying price\n$45\nTarget · underlying price\n$60\n\nNo exposure has been entered.\n\nPlan Reflection\n\nTrade Anchor · Plan Confirmation\n\nWhy this trade, why now?\n\nIndependent critic: trend and catalyst\n\nWhat would invalidate the thesis?\n\nIndependent critic: close below support\n\nConviction\n\nUnanswered\n\nPrimary emotion\n\nUnanswered\n\nView history\n\nConfirmed: 2026-10-19 05:16:27.576 America/New_York\n\nSaved: 2026-10-19 05:16:27.587 America/New_York\n\nRecorded Sequence: 1\n\nPlan fact: 1a616ee6-edcf-4e06-b760-cbdb87770608\n\nVersion: f645265d-7e40-4b6c-b067-db990b206977",
+    "trace": [
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "op": "add",
+        "kind": "Strategy"
+      },
+      {
+        "op": "add",
+        "kind": "Definition"
+      },
+      {
+        "op": "add",
+        "kind": "Source"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "op": "add",
+        "kind": "Institution"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "op": "add",
+        "kind": "Account"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "op": "add",
+        "kind": "Plan"
+      },
+      {
+        "op": "add",
+        "kind": "JournalEntry"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      "native diagnostic transaction aborted",
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      "native storage estimate failure",
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "maskedController": "http://localhost:5174/sw.js"
+      },
+      {
+        "maskedController": "http://localhost:5174/sw.js"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      }
+    ]
+  },
+  "existing-inventory-unchanged": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "c9a918a0-3a93-4474-a505-9b98c50a2962",
+      "revision": "f91edd46-de92-4598-928f-4986007b3be0",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "78ec3cda-7de0-4d1e-b9a1-219d0fb5067b",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 4,
+      "recordedSequence": 1
+    },
+    "versionCount": 7
+  },
+  "axe-recovery-inventory": [],
+  "existing-inventory-history-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "c9a918a0-3a93-4474-a505-9b98c50a2962",
+      "revision": "f91edd46-de92-4598-928f-4986007b3be0",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "78ec3cda-7de0-4d1e-b9a1-219d0fb5067b",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 4,
+      "recordedSequence": 1
+    },
+    "versionCount": 7
+  },
+  "existing-inventory": {
+    "reasons": [
+      "inventory"
+    ],
+    "body": "TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nREAD · Planned\nCheck for application updates\nRecovery Only\n\nReading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.\n\nRetry startup\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nPlan confirmed and saved on this device.\n\nReview before continuing\nThe offline application files are missing or damaged.\nPlanned · Unfilled\nFrozen Plan Baseline\n\nFidelity recovery · Brokerage recovery · Long Stock\n\nOriginal Planned Risk · 1R\n$500.00\nOriginal Planned Reward\n$1000.00\nPlanned reward/risk ratio\n2/1\nIntended entry\n$50 × 100 shares\nStop · underlying price\n$45\nTarget · underlying price\n$60\n\nNo exposure has been entered.\n\nPlan Reflection\n\nTrade Anchor · Plan Confirmation\n\nWhy this trade, why now?\n\nIndependent critic: trend and catalyst\n\nWhat would invalidate the thesis?\n\nIndependent critic: close below support\n\nConviction\n\nUnanswered\n\nPrimary emotion\n\nUnanswered\n\nView history\n\nConfirmed: 2026-10-19 05:16:27.576 America/New_York\n\nSaved: 2026-10-19 05:16:27.587 America/New_York\n\nRecorded Sequence: 1\n\nPlan fact: 1a616ee6-edcf-4e06-b760-cbdb87770608\n\nVersion: f645265d-7e40-4b6c-b067-db990b206977",
+    "trace": [
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "op": "add",
+        "kind": "Strategy"
+      },
+      {
+        "op": "add",
+        "kind": "Definition"
+      },
+      {
+        "op": "add",
+        "kind": "Source"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "op": "add",
+        "kind": "Institution"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "op": "add",
+        "kind": "Account"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "op": "add",
+        "kind": "Plan"
+      },
+      {
+        "op": "add",
+        "kind": "JournalEntry"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      "native diagnostic transaction aborted",
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      "native storage estimate failure",
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "maskedController": "http://localhost:5174/sw.js"
+      },
+      {
+        "maskedController": "http://localhost:5174/sw.js"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      }
+    ]
+  },
+  "existing-simultaneous-unchanged": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "c9a918a0-3a93-4474-a505-9b98c50a2962",
+      "revision": "f91edd46-de92-4598-928f-4986007b3be0",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "78ec3cda-7de0-4d1e-b9a1-219d0fb5067b",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 4,
+      "recordedSequence": 1
+    },
+    "versionCount": 7
+  },
+  "axe-recovery-simultaneous": [],
+  "existing-simultaneous-history-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "c9a918a0-3a93-4474-a505-9b98c50a2962",
+      "revision": "f91edd46-de92-4598-928f-4986007b3be0",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "78ec3cda-7de0-4d1e-b9a1-219d0fb5067b",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 4,
+      "recordedSequence": 1
+    },
+    "versionCount": 7
+  },
+  "existing-simultaneous": {
+    "reasons": [
+      "transaction",
+      "capacity",
+      "control",
+      "inventory"
+    ],
+    "body": "TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nREAD · Planned\nCheck for application updates\nRecovery Only\n\nReading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.\n\nRetry startup\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nPlan confirmed and saved on this device.\n\nReview before continuing\nBrowser storage could not complete a test transaction.\nThis browser does not have the required available storage capacity.\nThe verified application is not controlling this tab.\nThe offline application files are missing or damaged.\nPlanned · Unfilled\nFrozen Plan Baseline\n\nFidelity recovery · Brokerage recovery · Long Stock\n\nOriginal Planned Risk · 1R\n$500.00\nOriginal Planned Reward\n$1000.00\nPlanned reward/risk ratio\n2/1\nIntended entry\n$50 × 100 shares\nStop · underlying price\n$45\nTarget · underlying price\n$60\n\nNo exposure has been entered.\n\nPlan Reflection\n\nTrade Anchor · Plan Confirmation\n\nWhy this trade, why now?\n\nIndependent critic: trend and catalyst\n\nWhat would invalidate the thesis?\n\nIndependent critic: close below support\n\nConviction\n\nUnanswered\n\nPrimary emotion\n\nUnanswered\n\nView history\n\nConfirmed: 2026-10-19 05:16:27.576 America/New_York\n\nSaved: 2026-10-19 05:16:27.587 America/New_York\n\nRecorded Sequence: 1\n\nPlan fact: 1a616ee6-edcf-4e06-b760-cbdb87770608\n\nVersion: f645265d-7e40-4b6c-b067-db990b206977",
+    "trace": [
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "op": "add",
+        "kind": "Strategy"
+      },
+      {
+        "op": "add",
+        "kind": "Definition"
+      },
+      {
+        "op": "add",
+        "kind": "Source"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "op": "add",
+        "kind": "Institution"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "op": "add",
+        "kind": "Account"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "op": "add",
+        "kind": "Plan"
+      },
+      {
+        "op": "add",
+        "kind": "JournalEntry"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      "native diagnostic transaction aborted",
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      "native storage estimate failure",
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "maskedController": "http://localhost:5174/sw.js"
+      },
+      {
+        "maskedController": "http://localhost:5174/sw.js"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      "native diagnostic transaction aborted",
+      {
+        "maskedController": "http://localhost:5174/sw.js"
+      },
+      {
+        "maskedController": "http://localhost:5174/sw.js"
+      },
+      "native storage estimate failure",
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      }
+    ]
+  },
+  "axe-unreadable-root": [],
+  "unreadable-root-preserved": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "c9a918a0-3a93-4474-a505-9b98c50a2962",
+      "revision": "f91edd46-de92-4598-928f-4986007b3be0",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "78ec3cda-7de0-4d1e-b9a1-219d0fb5067b",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 4,
+      "recordedSequence": 1
+    },
+    "versionCount": 7
+  },
+  "fresh-transaction-no-initialization": {
+    "unchanged": true,
+    "versionCount": 0
+  },
+  "axe-unsupported-transaction": [],
+  "fresh-transaction": {
+    "reasons": [
+      "transaction"
+    ],
+    "trace": [
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      "native diagnostic transaction aborted",
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      }
+    ]
+  },
+  "fresh-transaction-retry-no-data": {
+    "unchanged": true,
+    "versionCount": 0
+  },
+  "fresh-capacity-no-initialization": {
+    "unchanged": true,
+    "versionCount": 0
+  },
+  "axe-unsupported-capacity": [],
+  "fresh-capacity": {
+    "reasons": [
+      "capacity"
+    ],
+    "trace": [
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      "native storage estimate failure",
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      }
+    ]
+  },
+  "fresh-capacity-retry-no-data": {
+    "unchanged": true,
+    "versionCount": 0
+  },
+  "fresh-control-no-initialization": {
+    "unchanged": true,
+    "versionCount": 0
+  },
+  "axe-unsupported-control": [],
+  "fresh-control": {
+    "reasons": [
+      "control"
+    ],
+    "trace": [
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "maskedController": "http://localhost:5174/sw.js"
+      },
+      {
+        "maskedController": "http://localhost:5174/sw.js"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      }
+    ]
+  },
+  "fresh-control-retry-no-data": {
+    "unchanged": true,
+    "versionCount": 0
+  },
+  "fresh-inventory-no-initialization": {
+    "unchanged": true,
+    "versionCount": 0
+  },
+  "axe-unsupported-inventory": [],
+  "fresh-inventory": {
+    "reasons": [
+      "inventory"
+    ],
+    "trace": [
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      }
+    ]
+  },
+  "fresh-inventory-retry-no-data": {
+    "unchanged": true,
+    "versionCount": 0
+  },
+  "fresh-simultaneous-no-initialization": {
+    "unchanged": true,
+    "versionCount": 0
+  },
+  "axe-unsupported-simultaneous": [],
+  "fresh-simultaneous": {
+    "reasons": [
+      "transaction",
+      "capacity",
+      "control",
+      "inventory"
+    ],
+    "trace": [
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "lifecycle",
+          "projections",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      {
+        "transaction": [
+          "projections",
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic"
+        ],
+        "mode": "readwrite"
+      },
+      "native diagnostic transaction aborted",
+      {
+        "maskedController": "http://localhost:5174/sw.js"
+      },
+      {
+        "maskedController": "http://localhost:5174/sw.js"
+      },
+      "native storage estimate failure",
+      {
+        "transaction": [
+          "roots"
+        ],
+        "mode": "readonly"
+      },
+      {
+        "transaction": [
+          "diagnostic",
+          "lifecycle",
+          "roots",
+          "versions"
+        ],
+        "mode": "readonly"
+      }
+    ]
+  },
+  "fresh-simultaneous-retry-no-data": {
+    "unchanged": true,
+    "versionCount": 0
+  },
+  "host-chromium": {
+    "body": "Unsupported\n\nWe could not verify safe writing in this environment.\n\nThis browser does not have the required available storage capacity.\nRetry startup\n\nTry another browser that meets the readiness requirements.\n\nAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.",
+    "native": {
+      "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+      "secure": true,
+      "quota": {
+        "quota": 10739187861,
+        "usage": 1769621,
+        "usageDetails": {
+          "caches": 1758464,
+          "indexedDB": 7238,
+          "serviceWorkerRegistrations": 3919
+        }
+      },
+      "persisted": false,
+      "controller": "http://localhost:5174/sw.js"
+    },
+    "state": {
+      "roots": [],
+      "versions": [],
+      "lifecycle": [],
+      "diagnostic": []
+    }
+  },
+  "host-firefox": {
+    "body": "Unsupported\n\nWe could not verify safe writing in this environment.\n\nThis browser does not have the required available storage capacity.\nRetry startup\n\nTry another browser that meets the readiness requirements.\n\nAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.",
+    "native": {
+      "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:157.0) Gecko/20100101 Firefox/157.0",
+      "secure": true,
+      "quota": {
+        "quota": 10737418240,
+        "usage": 798369
+      },
+      "persisted": false,
+      "controller": "http://localhost:5174/sw.js"
+    },
+    "state": {
+      "roots": [],
+      "versions": [],
+      "lifecycle": [],
+      "diagnostic": []
+    }
+  }
+}

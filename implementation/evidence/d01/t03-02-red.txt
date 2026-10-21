@@ -1,0 +1,45 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-readiness.test.ts -t should report each
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-readiness.test.ts (2 tests | 1 failed | 1 skipped) 6ms
+   × should report each failure and simultaneous failures without creating authoritative data 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-readiness.test.ts > should report each failure and simultaneous failures without creating authoritative data
+AssertionError: expected { status: 'Writable', …(2) } to match object { status: 'RuntimeNotWritable', …(3) }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "failedChecks": [
+-     "transaction",
+-   ],
+-   "runtimeReadiness": "Unsupported",
+-   "status": "RuntimeNotWritable",
+-   "workspaceStatus": "None",
++   "status": "Writable",
+  }
+
+ ❯ tests/unit/d01-readiness.test.ts:26:43
+     24|     const f = fixture();
+     25|     f.set(Object.fromEntries(failures.map(key => [key, false])));
+     26|     expect(await f.workspace.getStatus()).toMatchObject({ status: 'Run…
+       |                                           ^
+     27|     expect(await f.runtime.mutate(undefined, async () => { throw new E…
+     28|     expect(await f.store.roots.count()).toBe(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 skipped (2)
+   Start at  20:58:56
+   Duration  324ms (environment 84%, import 6%, transform 6%, tests 2%, worker 1%)
+

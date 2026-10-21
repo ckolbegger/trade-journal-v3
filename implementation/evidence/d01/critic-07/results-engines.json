@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Cross-host native firefox",
+    "status": "PASS"
+  },
+  {
+    "name": "Cross-host stopped offline firefox",
+    "status": "PASS"
+  },
+  {
+    "name": "Cross-host native webkit",
+    "status": "PASS"
+  },
+  {
+    "name": "Cross-host stopped offline webkit",
+    "status": "PASS"
+  }
+]

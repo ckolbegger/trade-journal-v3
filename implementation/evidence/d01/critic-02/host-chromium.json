@@ -1,0 +1,20 @@
+{
+  "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+  "secure": true,
+  "estimate": {
+    "quota": 10739187851,
+    "usage": 1769611,
+    "usageDetails": {
+      "caches": 1758464,
+      "indexedDB": 7228,
+      "serviceWorkerRegistrations": 3919
+    }
+  },
+  "body": "Unsupported\n\nWe could not verify safe writing in this environment.\n\nThis browser does not have the required available storage capacity.\nRetry startup\n\nTry another browser that meets the readiness requirements.\n\nAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.",
+  "state": {
+    "roots": [],
+    "versions": [],
+    "lifecycle": [],
+    "diagnostic": []
+  }
+}

@@ -1,0 +1,2 @@
+96720 41683 /bin/zsh -lc lsof -nP -iTCP:5174 -sTCP:LISTEN > implementation/evidence/d01/critic-06/runtime-cleanup.txt; ps -axo pid,ppid,command | rg 'Google Chrome.*critic06|node /private/tmp/critic06|vite preview --host localhost --port 5174' >> implementation/evidence/d01/critic-06/runtime-cleanup.txt
+96725 96720 rg Google Chrome.*critic06|node /private/tmp/critic06|vite preview --host localhost --port 5174

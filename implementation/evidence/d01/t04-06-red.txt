@@ -1,0 +1,49 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-workspace.test.ts -t should publish complete
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-workspace.test.ts (6 tests | 1 failed | 5 skipped) 12ms
+   × should publish complete generation and reject a stale generation before mutation 12ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-workspace.test.ts > should publish complete generation and reject a stale generation before mutation
+AssertionError: expected { status: 'Opened', …(3) } to match object { status: 'Opened', receipt: { …(2) } }
+(13 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "receipt": {
+-     "authoritativeCount": 3,
+-     "candidateSealed": true,
++     "fresh": true,
++     "seeds": [
++       "long-stock",
++       "plan-reflection",
++       "plan-confirmation",
++     ],
+    },
+    "status": "Opened",
+  }
+
+ ❯ tests/unit/d01-workspace.test.ts:66:18
+     64|   const f = fixture();
+     65|   const opened = await f.workspace.initialize({ openingInstant: instan…
+     66|   expect(opened).toMatchObject({ status: 'Opened', receipt: { candidat…
+       |                  ^
+     67|   const before = await f.store.versions.toArray();
+     68|   expect(await f.workspace.runtime.mutate('retired-generation', async …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 skipped (6)
+   Start at  21:01:41
+   Duration  331ms (environment 76%, import 11%, transform 8%, tests 5%, worker 1%)
+

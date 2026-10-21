@@ -1,0 +1,33 @@
+{
+  "sourceDigest": "d5d4ba6b0e4771699f7e625aea663a1c7e03a6973ad6177b7b6ae21b7c567c3f",
+  "changedSinceChecks": [],
+  "expectedRelease": "ab2297ad212bf6d6159b2c2471477358892b183a3d0e4706a792ca123f002e69",
+  "actualRelease": "ab2297ad212bf6d6159b2c2471477358892b183a3d0e4706a792ca123f002e69",
+  "critic": "critic-07/report.md",
+  "localFindings": 0,
+  "nativePrimaryBrowser": "Google Chrome 155.0.8059.85",
+  "unitTests": 63,
+  "integrationTests": 3,
+  "browserTests": {
+    "passed": 57,
+    "skipped": 0
+  },
+  "criticNamedChecks": 29,
+  "criticAxeAudits": 6,
+  "criticEvidenceLimits": [
+    "No separate frozen Loading-screen accessibility capture in critic07",
+    "Attempted native transaction-entry trace was empty and is not claimed as proof; cumulative integration retains that obligation"
+  ],
+  "remainingHostEvidence": [
+    "OS installation and installed launch",
+    "native browser-chrome 200% zoom"
+  ],
+  "productionHTTPS": "UserDeferred",
+  "authorizedCapacityPolicy": "implementation/plan/d01-capacity-policy-revision.md",
+  "localPreview": "http://localhost:5174",
+  "userTabRegression": {
+    "screenshot": "account-creation-after.png",
+    "result": "Normal verified update activated with empty drafts; Add Account heading/button and New Account name visible; no saved user record changed"
+  },
+  "upgrade": "Stage online, save or clear drafts, explicitly reload via verified update; do not clear site data"
+}

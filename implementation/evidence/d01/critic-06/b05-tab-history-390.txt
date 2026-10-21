@@ -1,0 +1,65 @@
+Trades
+New Plan
+Workspace
+
+AFTER-CLOSE JOURNAL · USD
+
+TAB390 · Planned
+Check for application updates
+Storage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection
+
+Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.
+
+Plan confirmed and saved on this device.
+
+Planned · Unfilled
+Frozen Plan Baseline
+
+Keyboard 390 · Taxable 390 · Long Stock
+
+Original Planned Risk · 1R
+$500.00
+Original Planned Reward
+$1000.00
+Planned reward/risk ratio
+2/1
+Intended entry
+$50 × 100 shares
+Stop · underlying price
+$45
+Target · underlying price
+$60
+
+No exposure has been entered.
+
+Plan Reflection
+
+Trade Anchor · Plan Confirmation
+
+Why this trade, why now?
+
+Demand is holding above support.
+
+What would invalidate the thesis?
+
+A sustained support break.
+
+Conviction
+
+Unanswered
+
+Primary emotion
+
+Calm
+
+View history
+
+Confirmed: 2026-10-20 21:02:05.632 America/New_York
+
+Saved: 2026-10-20 21:02:05.873 America/New_York
+
+Recorded Sequence: 1
+
+Plan fact: b599ed85-49c2-4d97-8b4c-46ed91da0288
+
+Version: 2b3998d3-3e6e-4a45-ba81-e953abeb4971

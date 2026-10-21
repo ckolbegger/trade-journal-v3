@@ -1,0 +1,43 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit --testNamePattern=complete RuntimeNotWritable context
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-workspace.test.ts (11 tests | 1 failed | 10 skipped) 17ms
+   × should preserve complete RuntimeNotWritable context from initialization when root validation fails 17ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-workspace.test.ts > should preserve complete RuntimeNotWritable context from initialization when root validation fails
+AssertionError: expected { status: 'IntegrityBlocked' } to match object { status: 'RuntimeNotWritable', …(4) }
+
+- Expected
++ Received
+
+  {
+-   "failedChecks": [
+-     "InvalidRoot",
+-   ],
+-   "runtimeReadiness": "Unsupported",
+-   "safeActions": [
+-     "Retry",
+-     "Try another browser; its storage is separate",
+-   ],
+-   "status": "RuntimeNotWritable",
+-   "workspaceStatus": "IntegrityBlocked",
++   "status": "IntegrityBlocked",
+  }
+
+ ❯ tests/unit/d01-workspace.test.ts:117:69
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 skipped (7)
+      Tests  1 failed | 54 skipped (55)
+   Start at  23:22:55
+   Duration  454ms (environment 76%, import 12%, transform 11%, tests 1%, worker 1%)
+

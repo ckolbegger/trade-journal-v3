@@ -1,0 +1,43 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-analysis.test.ts -t should classify Stock
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-analysis.test.ts (3 tests | 1 failed | 2 skipped) 5ms
+   × should classify Stock expiration internally without advertising payoff 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-analysis.test.ts > should classify Stock expiration internally without advertising payoff
+AssertionError: expected { status: 'Accepted', …(2) } to match object { status: 'Accepted', …(1) }
+(14 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "expirationMethod": {
+-     "reason": "NoOptionExpirationAnchor",
+-     "status": "NotApplicable",
+-   },
+    "status": "Accepted",
+  }
+
+ ❯ tests/unit/d01-analysis.test.ts:15:28
+     13| });
+     14| it('should classify Stock expiration internally without advertising pa…
+     15|   expect(assessPlan(plan)).toMatchObject({ status: 'Accepted', expirat…
+       |                            ^
+     16| });
+     17|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 skipped (3)
+   Start at  20:57:38
+   Duration  308ms (environment 89%, transform 6%, import 2%, tests 2%, worker 1%)
+

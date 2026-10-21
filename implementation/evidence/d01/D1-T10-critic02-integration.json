@@ -1,0 +1,14 @@
+{
+  "id": "D1-T10",
+  "stage": "critic02-integration",
+  "baseline": "db3580cdc1ee95b5056a4de6dc36430cdd71a421",
+  "sourceDigest": "09f1fb19d81e4ba06267dd4f81bd64fadce25e499f320cfcccdcd6d2a4ffab8a",
+  "command": [
+    "npm",
+    "run",
+    "test:integration"
+  ],
+  "exit": 0,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:integration\n> vitest run --project integration\n\n\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n\n Test Files  1 passed (1)\n      Tests  3 passed (3)\n   Start at  04:53:03\n   Duration  166ms (tests 33%, transform 32%, import 27%, setup 7%, worker 1%)\n\n",
+  "stderr": ""
+}

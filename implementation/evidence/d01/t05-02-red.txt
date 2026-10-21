@@ -1,0 +1,43 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-catalog.test.ts -t should reject normalized
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-catalog.test.ts (2 tests | 1 failed | 1 skipped) 14ms
+   × should reject normalized duplicates, wrong or inactive parents and stale catalog without writes 13ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-catalog.test.ts > should reject normalized duplicates, wrong or inactive parents and stale catalog without writes
+AssertionError: expected { status: 'Saved', …(3) } to match object { status: 'Rejected', …(1) }
+(9 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "issues": [
+-     "DuplicateLabel",
+-   ],
+-   "status": "Rejected",
++   "status": "Saved",
+  }
+
+ ❯ tests/unit/d01-catalog.test.ts:31:95
+     29|   const base = { generation: f.root.generation, expectedCatalogRevisio…
+     30|   const before = await f.store.versions.toArray();
+     31|   expect(await f.catalog.save({ ...base, kind: 'Institution', label: '…
+       |                                                                                               ^
+     32|   expect(await f.catalog.save({ ...base, kind: 'Account', label: 'Taxa…
+     33|   expect(await f.catalog.save({ ...base, kind: 'Institution', label: '…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 skipped (2)
+   Start at  21:02:25
+   Duration  339ms (environment 75%, import 11%, transform 8%, tests 5%, worker 1%)
+

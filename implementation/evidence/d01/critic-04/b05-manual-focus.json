@@ -1,0 +1,24 @@
+{
+  "active": {
+    "tag": "BUTTON",
+    "type": "submit",
+    "name": "Workspace",
+    "value": "",
+    "rect": {
+      "x": 16,
+      "y": 224.75,
+      "width": 182,
+      "height": 46.78125
+    },
+    "viewport": {
+      "w": 1440,
+      "h": 1000
+    }
+  },
+  "style": {
+    "outline": "3px solid rgb(75, 100, 190)",
+    "outlineOffset": "3px",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgb(37, 40, 32)"
+  }
+}

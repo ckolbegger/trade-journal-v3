@@ -1,0 +1,113 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit --testNamePattern=display retained instants
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-ui.test.tsx (9 tests | 1 failed | 8 skipped) 99ms
+   × should display retained instants in the Workspace time zone without changing their values 98ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-ui.test.tsx > should display retained instants in the Workspace time zone without changing their values
+TestingLibraryElementError: Unable to find an element with the text: View history. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"_shell_d47682"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Primary"[39m
+      [36m>[39m
+        [36m<strong>[39m
+          [0mTRADE JOURNAL[0m
+        [36m</strong>[39m
+        [36m<button>[39m
+          [0mTrades[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mNew Plan[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mWorkspace[0m
+        [36m</button>[39m
+      [36m</nav>[39m
+      [36m<main>[39m
+        [36m<header>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"_eyebrow_d47682"[39m
+          [36m>[39m
+            [0mAFTER-CLOSE JOURNAL · USD[0m
+          [36m</p>[39m
+          [36m<h1[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [0mTrades[0m
+          [36m</h1>[39m
+        [36m</header>[39m
+        [36m<aside[39m
+          [33mclass[39m=[32m"_warning_d47682"[39m
+        [36m>[39m
+          [36m<strong>[39m
+            [0mStorage is [0m
+            [0mBest Effort[0m
+            [0m.[0m
+          [36m</strong>[39m
+          [0m This browser may clear your data. Backup is not installed until a later release. [0m
+          [36m<button>[39m
+            [0mRequest storage protection[0m
+          [36m</button>[39m
+        [36m</aside>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"_install_d47682"[39m
+        [36m>[39m
+          [0mWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.[0m
+        [36m</p>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"_card_d47682"[39m
+        [36m>[39m
+          [36m<h2>[39m
+            [0mPlanned Trades[0m
+          [36m</h2>[39m
+          [36m<ul[39m
+            [33mclass[39m=[32m"_tradeList_d47682"[39m
+          [36m>[39m
+            [36m<li>[39m
+              [36m<button>[39m
+                [0mXYZ[0m
+                [0m · Planned [0m
+                [36m<span>[39m
+                  [0m$500.00[0m
+                  [0m risk[0m
+                [36m</span>[39m
+              [36m</button>[39m
+            [36m</li>[39m
+          [36m</ul>[39m
+        [36m</section>[39m
+      [36m</main>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ tests/unit/d01-ui.test.tsx:166:27
+    164|   render(<App services={{ workspace: f.workspace, catalog: f.catalog, …
+    165|   await user.click(await screen.findByRole('button', { name: /XYZ · Pl…
+    166|   await user.click(screen.getByText('View history'));
+       |                           ^
+    167|   expect(screen.getByText('Confirmed: 2026-10-17 16:00:00 America/New_…
+    168|   expect(screen.getByText('Saved: 2026-10-18 19:00:00 America/New_York…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 skipped (7)
+      Tests  1 failed | 46 skipped (47)
+   Start at  22:55:29
+   Duration  578ms (environment 73%, import 11%, transform 11%, tests 4%, worker 1%)
+

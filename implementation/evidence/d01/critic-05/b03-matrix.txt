@@ -1,0 +1,109 @@
+[
+  {
+    "name": "fresh-transaction",
+    "issues": [
+      "transaction"
+    ],
+    "state": "Unsupported\n\nWe could not verify safe writing in this environment.\n\nBrowser storage could not complete a test transaction.\nRetry startup\n\nTry another browser that meets the readiness requirements.\n\nAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.",
+    "unchanged": true
+  },
+  {
+    "name": "fresh-capacity",
+    "issues": [
+      "capacity"
+    ],
+    "state": "Unsupported\n\nWe could not verify safe writing in this environment.\n\nThis browser does not have the required available storage capacity.\nRetry startup\n\nTry another browser that meets the readiness requirements.\n\nAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.",
+    "unchanged": true
+  },
+  {
+    "name": "fresh-control",
+    "issues": [
+      "control"
+    ],
+    "state": "Unsupported\n\nWe could not verify safe writing in this environment.\n\nThe verified application is not controlling this tab.\nRetry startup\n\nTry another browser that meets the readiness requirements.\n\nAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.",
+    "unchanged": true
+  },
+  {
+    "name": "fresh-inventory",
+    "issues": [
+      "inventory"
+    ],
+    "state": "Unsupported\n\nWe could not verify safe writing in this environment.\n\nThe offline application files are missing or damaged.\nRetry startup\n\nTry another browser that meets the readiness requirements.\n\nAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.",
+    "unchanged": true
+  },
+  {
+    "name": "fresh-transaction-capacity",
+    "issues": [
+      "transaction",
+      "capacity"
+    ],
+    "state": "Unsupported\n\nWe could not verify safe writing in this environment.\n\nBrowser storage could not complete a test transaction.\nThis browser does not have the required available storage capacity.\nRetry startup\n\nTry another browser that meets the readiness requirements.\n\nAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.",
+    "unchanged": true
+  },
+  {
+    "name": "fresh-estimateUnavailable",
+    "issues": [
+      "capacity"
+    ],
+    "state": "Unsupported\n\nWe could not verify safe writing in this environment.\n\nThis browser does not have the required available storage capacity.\nRetry startup\n\nTry another browser that meets the readiness requirements.\n\nAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.",
+    "unchanged": true
+  },
+  {
+    "name": "existing-transaction",
+    "issues": [
+      "transaction"
+    ],
+    "state": "TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nRecovery Only\n\nReading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.\n\nRetry startup\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nReview before continuing\nBrowser storage could not complete a test transaction.\nPlanned Trades\nMSFT · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk\nAAPL · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk",
+    "unchanged": true
+  },
+  {
+    "name": "existing-capacity",
+    "issues": [
+      "capacity"
+    ],
+    "state": "TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nRecovery Only\n\nReading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.\n\nRetry startup\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nReview before continuing\nThis browser does not have the required available storage capacity.\nPlanned Trades\nMSFT · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk\nAAPL · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk",
+    "unchanged": true
+  },
+  {
+    "name": "existing-control",
+    "issues": [
+      "control"
+    ],
+    "state": "TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nRecovery Only\n\nReading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.\n\nRetry startup\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nReview before continuing\nThe verified application is not controlling this tab.\nPlanned Trades\nMSFT · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk\nAAPL · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk",
+    "unchanged": true
+  },
+  {
+    "name": "existing-inventory",
+    "issues": [
+      "inventory"
+    ],
+    "state": "TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nRecovery Only\n\nReading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.\n\nRetry startup\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nReview before continuing\nThe offline application files are missing or damaged.\nPlanned Trades\nMSFT · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk\nAAPL · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk",
+    "unchanged": true
+  },
+  {
+    "name": "existing-transaction-capacity",
+    "issues": [
+      "transaction",
+      "capacity"
+    ],
+    "state": "TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nRecovery Only\n\nReading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.\n\nRetry startup\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nReview before continuing\nBrowser storage could not complete a test transaction.\nThis browser does not have the required available storage capacity.\nPlanned Trades\nMSFT · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk\nAAPL · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk",
+    "unchanged": true
+  },
+  {
+    "name": "existing-estimateUnavailable",
+    "issues": [
+      "capacity"
+    ],
+    "state": "TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nRecovery Only\n\nReading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.\n\nRetry startup\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nReview before continuing\nThis browser does not have the required available storage capacity.\nPlanned Trades\nMSFT · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk\nAAPL · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk",
+    "unchanged": true
+  },
+  {
+    "name": "existing-unreadable",
+    "issues": [
+      "capacity",
+      "UnreadableRoot"
+    ],
+    "state": "IntegrityBlocked\n\nWe could not verify safe writing in this environment.\n\nThis browser does not have the required available storage capacity.\nThis browser could not read the existing Workspace. Its data has not been replaced.\nRetry startup\n\nAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.",
+    "unchanged": true
+  }
+]

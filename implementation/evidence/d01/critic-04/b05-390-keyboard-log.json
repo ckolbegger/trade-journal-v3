@@ -1,0 +1,661 @@
+[
+  {
+    "target": "Workspace time zone",
+    "tag": "INPUT",
+    "type": "text",
+    "name": "Workspace time zone",
+    "value": "",
+    "checked": false,
+    "rect": {
+      "x": 24,
+      "y": 324.453125,
+      "width": 342,
+      "height": 45.1875
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Create Workspace",
+    "tag": "BUTTON",
+    "type": "submit",
+    "name": "Create Workspace",
+    "value": "",
+    "rect": {
+      "x": 24,
+      "y": 385.640625,
+      "width": 170.5,
+      "height": 46.78125
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Institution name",
+    "tag": "BUTTON",
+    "type": "submit",
+    "name": "Check for application updates",
+    "value": "",
+    "rect": {
+      "x": 16,
+      "y": 120.265625,
+      "width": 253.921875,
+      "height": 46.78125
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Institution name",
+    "tag": "BUTTON",
+    "type": "submit",
+    "name": "Request storage protection",
+    "value": "",
+    "rect": {
+      "x": 86.125,
+      "y": 232.828125,
+      "width": 208.78125,
+      "height": 44
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Institution name",
+    "tag": "INPUT",
+    "type": "text",
+    "name": "Institution name",
+    "value": "",
+    "checked": false,
+    "rect": {
+      "x": 33,
+      "y": 662.46875,
+      "width": 324,
+      "height": 45.1875
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Save Institution",
+    "tag": "BUTTON",
+    "type": "submit",
+    "name": "Save Institution",
+    "value": "",
+    "rect": {
+      "x": 33,
+      "y": 723.65625,
+      "width": 148.28125,
+      "height": 46.78125
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Account name",
+    "tag": "SELECT",
+    "type": "select-one",
+    "name": "InstitutionCharles Schwab",
+    "value": "3f89b852-9320-4962-a55e-6b4e44b0ee80",
+    "rect": {
+      "x": 33,
+      "y": 848.234375,
+      "width": 324,
+      "height": 23
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Account name",
+    "tag": "INPUT",
+    "type": "text",
+    "name": "Account name",
+    "value": "",
+    "checked": false,
+    "rect": {
+      "x": 33,
+      "y": 916.03125,
+      "width": 324,
+      "height": 45.1875
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Save Account",
+    "tag": "BUTTON",
+    "type": "submit",
+    "name": "Save Account",
+    "value": "",
+    "rect": {
+      "x": 33,
+      "y": 953.21875,
+      "width": 136.3125,
+      "height": 46.78125
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "New Plan",
+    "tag": "BUTTON",
+    "type": "submit",
+    "name": "Trades",
+    "value": "",
+    "rect": {
+      "x": 27.375,
+      "y": 945.609375,
+      "width": 70.4375,
+      "height": 44
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "New Plan",
+    "tag": "BUTTON",
+    "type": "submit",
+    "name": "New Plan",
+    "value": "",
+    "rect": {
+      "x": 138.1875,
+      "y": 945.609375,
+      "width": 86.390625,
+      "height": 44
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Confirm Plan",
+    "tag": "BUTTON",
+    "type": "submit",
+    "name": "Check for application updates",
+    "value": "",
+    "rect": {
+      "x": 16,
+      "y": 120.265625,
+      "width": 253.921875,
+      "height": 46.78125
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Confirm Plan",
+    "tag": "BUTTON",
+    "type": "submit",
+    "name": "Request storage protection",
+    "value": "",
+    "rect": {
+      "x": 86.125,
+      "y": 232.828125,
+      "width": 208.78125,
+      "height": 44
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Confirm Plan",
+    "tag": "SELECT",
+    "type": "select-one",
+    "name": "AccountIndividual 390 · Charles Schwab",
+    "value": "3036e323-da7e-43d2-ba8e-2b7d84f0c76e",
+    "rect": {
+      "x": 33,
+      "y": 662.46875,
+      "width": 324,
+      "height": 23
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Confirm Plan",
+    "tag": "INPUT",
+    "type": "text",
+    "name": "Stock symbol",
+    "value": "",
+    "checked": false,
+    "rect": {
+      "x": 33,
+      "y": 730.265625,
+      "width": 324,
+      "height": 45.1875
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Confirm Plan",
+    "tag": "INPUT",
+    "type": "text",
+    "name": "Quantity (shares)",
+    "value": "",
+    "checked": false,
+    "rect": {
+      "x": 33,
+      "y": 820.25,
+      "width": 324,
+      "height": 45.1875
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Confirm Plan",
+    "tag": "INPUT",
+    "type": "text",
+    "name": "Intended entry (USD)",
+    "value": "",
+    "checked": false,
+    "rect": {
+      "x": 33,
+      "y": 910.234375,
+      "width": 324,
+      "height": 45.1875
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Confirm Plan",
+    "tag": "INPUT",
+    "type": "text",
+    "name": "Stop (underlying price, USD)",
+    "value": "",
+    "checked": false,
+    "rect": {
+      "x": 33,
+      "y": 1000.21875,
+      "width": 324,
+      "height": 45.1875
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Confirm Plan",
+    "tag": "INPUT",
+    "type": "text",
+    "name": "Target (underlying price, USD)",
+    "value": "",
+    "checked": false,
+    "rect": {
+      "x": 33,
+      "y": 1090.203125,
+      "width": 324,
+      "height": 45.1875
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Confirm Plan",
+    "tag": "TEXTAREA",
+    "type": "textarea",
+    "name": "Why this trade, why now?",
+    "value": "",
+    "rect": {
+      "x": 33,
+      "y": 1223.765625,
+      "width": 324,
+      "height": 100
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Confirm Plan",
+    "tag": "TEXTAREA",
+    "type": "textarea",
+    "name": "What would invalidate the thesis?",
+    "value": "",
+    "rect": {
+      "x": 33,
+      "y": 1368.5625,
+      "width": 324,
+      "height": 100
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Confirm Plan",
+    "tag": "SELECT",
+    "type": "select-one",
+    "name": "Conviction (optional, 1–5)Unanswered12345",
+    "value": "",
+    "rect": {
+      "x": 33,
+      "y": 488.359375,
+      "width": 324,
+      "height": 23
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Confirm Plan",
+    "tag": "INPUT",
+    "type": "radio",
+    "name": "Unanswered",
+    "value": "on",
+    "checked": true,
+    "rect": {
+      "x": 51,
+      "y": 581,
+      "width": 12,
+      "height": 12
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Confirm Plan",
+    "tag": "BUTTON",
+    "type": "submit",
+    "name": "Confirm Plan",
+    "value": "",
+    "rect": {
+      "x": 33,
+      "y": 952.953125,
+      "width": 130.46875,
+      "height": 46.78125
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Stock symbol",
+    "tag": "SELECT",
+    "type": "select-one",
+    "name": "AccountIndividual 390 · Charles Schwab",
+    "value": "3036e323-da7e-43d2-ba8e-2b7d84f0c76e",
+    "rect": {
+      "x": 33,
+      "y": 961.3125,
+      "width": 324,
+      "height": 23
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Stock symbol",
+    "tag": "INPUT",
+    "type": "text",
+    "name": "Stock symbol",
+    "value": "",
+    "checked": false,
+    "rect": {
+      "x": 33,
+      "y": 1029.109375,
+      "width": 324,
+      "height": 45.1875
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Quantity (shares)",
+    "tag": "INPUT",
+    "type": "text",
+    "name": "Quantity (shares)",
+    "value": "",
+    "checked": false,
+    "rect": {
+      "x": 33,
+      "y": 1119.09375,
+      "width": 324,
+      "height": 45.1875
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Intended entry (USD)",
+    "tag": "INPUT",
+    "type": "text",
+    "name": "Intended entry (USD)",
+    "value": "",
+    "checked": false,
+    "rect": {
+      "x": 33,
+      "y": 1209.078125,
+      "width": 324,
+      "height": 45.1875
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Stop (underlying price, USD)",
+    "tag": "INPUT",
+    "type": "text",
+    "name": "Stop (underlying price, USD)",
+    "value": "",
+    "checked": false,
+    "rect": {
+      "x": 33,
+      "y": 1299.0625,
+      "width": 324,
+      "height": 45.1875
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Target (underlying price, USD)",
+    "tag": "INPUT",
+    "type": "text",
+    "name": "Target (underlying price, USD)",
+    "value": "",
+    "checked": false,
+    "rect": {
+      "x": 33,
+      "y": 1389.046875,
+      "width": 324,
+      "height": 45.1875
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Why this trade, why now?",
+    "tag": "TEXTAREA",
+    "type": "textarea",
+    "name": "Why this trade, why now?",
+    "value": "",
+    "rect": {
+      "x": 33,
+      "y": 1522.609375,
+      "width": 324,
+      "height": 100
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "What would invalidate the thesis?",
+    "tag": "TEXTAREA",
+    "type": "textarea",
+    "name": "What would invalidate the thesis?",
+    "value": "",
+    "rect": {
+      "x": 33,
+      "y": 1667.40625,
+      "width": 324,
+      "height": 100
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Unanswered",
+    "tag": "SELECT",
+    "type": "select-one",
+    "name": "Conviction (optional, 1–5)Unanswered12345",
+    "value": "",
+    "rect": {
+      "x": 33,
+      "y": 488.203125,
+      "width": 324,
+      "height": 23
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Unanswered",
+    "tag": "INPUT",
+    "type": "radio",
+    "name": "Unanswered",
+    "value": "on",
+    "checked": true,
+    "rect": {
+      "x": 51,
+      "y": 580.84375,
+      "width": 12,
+      "height": 12
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "Confirm Plan",
+    "tag": "BUTTON",
+    "type": "submit",
+    "name": "Confirm Plan",
+    "value": "",
+    "rect": {
+      "x": 33,
+      "y": 952.796875,
+      "width": 130.46875,
+      "height": 46.78125
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "View history",
+    "tag": "BUTTON",
+    "type": "submit",
+    "name": "Check for application updates",
+    "value": "",
+    "rect": {
+      "x": 16,
+      "y": 120.265625,
+      "width": 253.921875,
+      "height": 46.78125
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "View history",
+    "tag": "BUTTON",
+    "type": "submit",
+    "name": "Request storage protection",
+    "value": "",
+    "rect": {
+      "x": 86.125,
+      "y": 232.828125,
+      "width": 208.78125,
+      "height": 44
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  },
+  {
+    "target": "View history",
+    "tag": "SUMMARY",
+    "name": "View history",
+    "rect": {
+      "x": 33,
+      "y": 838.578125,
+      "width": 324,
+      "height": 24
+    },
+    "viewport": {
+      "w": 390,
+      "h": 1000
+    }
+  }
+]

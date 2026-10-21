@@ -1,0 +1,7 @@
+{
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "sw_vers": "ProductName:\t\tmacOS\nProductVersion:\t\t26.6.2\nBuildVersion:\t\t25G83\n",
+  "node": "v26.12.0\n",
+  "baseRelease": "ab2297ad212bf6d6159b2c2471477358892b183a3d0e4706a792ca123f002e69",
+  "updateRelease": "2e33130107e703ce838e1697f73cb6cb3402b605d3bdf60bb08da2d0b2561966"
+}

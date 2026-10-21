@@ -1,0 +1,15 @@
+{
+  "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:157.0) Gecko/20100101 Firefox/157.0",
+  "secure": true,
+  "estimate": {
+    "quota": 10737418240,
+    "usage": 798348
+  },
+  "body": "Unsupported\n\nWe could not verify safe writing in this environment.\n\nThis browser does not have the required available storage capacity.\nRetry startup\n\nTry another browser that meets the readiness requirements.\n\nAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.",
+  "state": {
+    "roots": [],
+    "versions": [],
+    "lifecycle": [],
+    "diagnostic": []
+  }
+}

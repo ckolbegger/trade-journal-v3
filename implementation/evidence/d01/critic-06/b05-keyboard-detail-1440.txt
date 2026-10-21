@@ -1,0 +1,66 @@
+TRADE JOURNAL
+Trades
+New Plan
+Workspace
+
+AFTER-CLOSE JOURNAL · USD
+
+K1440 · Planned
+Check for application updates
+Storage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection
+
+Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.
+
+Plan confirmed and saved on this device.
+
+Planned · Unfilled
+Frozen Plan Baseline
+
+Critic06 Brokerage · Critic06 Taxable · Long Stock
+
+Original Planned Risk · 1R
+$500.00
+Original Planned Reward
+$1000.00
+Planned reward/risk ratio
+2/1
+Intended entry
+$50 × 100 shares
+Stop · underlying price
+$45
+Target · underlying price
+$60
+
+No exposure has been entered.
+
+Plan Reflection
+
+Trade Anchor · Plan Confirmation
+
+Why this trade, why now?
+
+Demand is holding above support.
+
+What would invalidate the thesis?
+
+A sustained support break.
+
+Conviction
+
+Unanswered
+
+Primary emotion
+
+Eager
+
+View history
+
+Confirmed: 2026-10-20 21:03:01.423 America/New_York
+
+Saved: 2026-10-20 21:03:01.434 America/New_York
+
+Recorded Sequence: 4
+
+Plan fact: 2290a851-ec7b-43ef-b517-7da0aefd67d3
+
+Version: e579a4d0-1525-4997-80e2-e8f6d4fc50ea

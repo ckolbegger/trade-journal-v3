@@ -1,0 +1,96 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-ui.test.tsx -t should keep recovery
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-ui.test.tsx (3 tests | 1 failed | 2 skipped) 1035ms
+   × should keep recovery reads and history available while every mutation is disabled 1034ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-ui.test.tsx > should keep recovery reads and history available while every mutation is disabled
+TestingLibraryElementError: Unable to find an element with the text: Recovery Only. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<main[39m
+      [33mclass[39m=[32m"_startup_d47682"[39m
+    [36m>[39m
+      [36m<h1[39m
+        [33mtabindex[39m=[32m"-1"[39m
+      [36m>[39m
+        [0mRecoveryOnly[0m
+      [36m</h1>[39m
+      [36m<p>[39m
+        [0mWe could not verify safe writing in this environment.[0m
+      [36m</p>[39m
+      [36m<ul>[39m
+        [36m<li>[39m
+          [0mcapacity[0m
+        [36m</li>[39m
+        [36m<li>[39m
+          [0minventory[0m
+        [36m</li>[39m
+      [36m</ul>[39m
+      [36m<button>[39m
+        [0mRetry startup[0m
+      [36m</button>[39m
+      [36m<p>[39m
+        [0mAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.[0m
+      [36m</p>[39m
+    [36m</main>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<main[39m
+      [33mclass[39m=[32m"_startup_d47682"[39m
+    [36m>[39m
+      [36m<h1[39m
+        [33mtabindex[39m=[32m"-1"[39m
+      [36m>[39m
+        [0mRecoveryOnly[0m
+      [36m</h1>[39m
+      [36m<p>[39m
+        [0mWe could not verify safe writing in this environment.[0m
+      [36m</p>[39m
+      [36m<ul>[39m
+        [36m<li>[39m
+          [0mcapacity[0m
+        [36m</li>[39m
+        [36m<li>[39m
+          [0minventory[0m
+        [36m</li>[39m
+      [36m</ul>[39m
+      [36m<button>[39m
+        [0mRetry startup[0m
+      [36m</button>[39m
+      [36m<p>[39m
+        [0mAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.[0m
+      [36m</p>[39m
+    [36m</main>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/unit/d01-ui.test.tsx:74:23
+     72|   vi.spyOn(f.runtime.host, 'check').mockResolvedValue({ transaction: t…
+     73|   render(<App services={{ workspace: f.workspace, catalog: f.catalog, …
+     74|   expect(await screen.findByText('Recovery Only')).toBeTruthy();
+       |                       ^
+     75|   expect((screen.getByRole('button', { name: 'New Plan' }) as HTMLButt…
+     76|   await user.click(screen.getByRole('button', { name: 'Trades' }));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 skipped (3)
+   Start at  21:12:42
+   Duration  1.42s (tests 77%, environment 14%, import 5%, transform 4%)
+

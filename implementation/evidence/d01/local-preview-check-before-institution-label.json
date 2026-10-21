@@ -1,0 +1,52 @@
+{
+  "origin": "http://localhost:5174",
+  "release": "ab2297ad212bf6d6159b2c2471477358892b183a3d0e4706a792ca123f002e69",
+  "checked": [
+    {
+      "url": "/assets/index-CA2l09YL.js",
+      "bytes": 557270,
+      "sha256": "12e71554398ce54bb9a5910b5109b6fb35b4f6a7add1c746594a283723e4b090"
+    },
+    {
+      "url": "/assets/index-Ukg-5B9v.css",
+      "bytes": 2898,
+      "sha256": "a2168dbf5e6e8e5c495a0e2c0f0058e968fbb9009df4ea06d74071873b52811c"
+    },
+    {
+      "url": "/capabilities.json",
+      "bytes": 1290,
+      "sha256": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a"
+    },
+    {
+      "url": "/icon-192.png",
+      "bytes": 3409,
+      "sha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9"
+    },
+    {
+      "url": "/icon-512.png",
+      "bytes": 12236,
+      "sha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457"
+    },
+    {
+      "url": "/icon.svg",
+      "bytes": 180,
+      "sha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9"
+    },
+    {
+      "url": "/index.html",
+      "bytes": 446,
+      "sha256": "452de20b7927f8e2dacaaa77308d3ac3d48fd02d4a2069ea1816c6cc11e0c699"
+    },
+    {
+      "url": "/manifest.webmanifest",
+      "bytes": 416,
+      "sha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd"
+    },
+    {
+      "url": "/sw.js",
+      "bytes": 3935,
+      "sha256": "60543deeb5cae5ac827bf58a437db2f85bd54eb1d5fac3914a77eb773369c6ce"
+    }
+  ],
+  "verifiedAt": "2026-10-21T03:15:50.365Z"
+}

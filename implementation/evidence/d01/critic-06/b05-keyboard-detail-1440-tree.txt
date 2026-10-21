@@ -1,0 +1,48 @@
+- navigation "Primary":
+  - strong: TRADE JOURNAL
+  - button "Trades"
+  - button "New Plan"
+  - button "Workspace"
+- main:
+  - paragraph: AFTER-CLOSE JOURNAL · USD
+  - heading "K1440 · Planned" [level=1]
+  - button "Check for application updates"
+  - complementary "Storage protection":
+    - strong: Storage is Best Effort.
+    - text: This browser may clear your data. Backup is not installed until a later release.
+    - button "Request storage protection"
+  - paragraph: Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.
+  - status: Plan confirmed and saved on this device.
+  - text: Planned · Unfilled
+  - heading "Frozen Plan Baseline" [level=2]
+  - paragraph: Critic06 Brokerage · Critic06 Taxable · Long Stock
+  - term: Original Planned Risk · 1R
+  - definition: $500.00
+  - term: Original Planned Reward
+  - definition: $1000.00
+  - term: Planned reward/risk ratio
+  - definition: 2/1
+  - term: Intended entry
+  - definition: $50 × 100 shares
+  - term: Stop · underlying price
+  - definition: $45
+  - term: Target · underlying price
+  - definition: $60
+  - paragraph: No exposure has been entered.
+  - heading "Plan Reflection" [level=2]
+  - paragraph: Trade Anchor · Plan Confirmation
+  - heading "Why this trade, why now?" [level=3]
+  - paragraph: Demand is holding above support.
+  - heading "What would invalidate the thesis?" [level=3]
+  - paragraph: A sustained support break.
+  - heading "Conviction" [level=3]
+  - paragraph: Unanswered
+  - heading "Primary emotion" [level=3]
+  - paragraph: Eager
+  - group:
+    - text: View history
+    - paragraph: "Confirmed: 2026-10-20 21:03:01.423 America/New_York"
+    - paragraph: "Saved: 2026-10-20 21:03:01.434 America/New_York"
+    - paragraph: "Recorded Sequence: 4"
+    - paragraph: "Plan fact: 2290a851-ec7b-43ef-b517-7da0aefd67d3"
+    - paragraph: "Version: e579a4d0-1525-4997-80e2-e8f6d4fc50ea"

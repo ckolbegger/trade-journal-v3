@@ -1,0 +1,386 @@
+{
+  "dataset": {
+    "count": 25000,
+    "serializedBytes": 61919454,
+    "elapsedMs": 155650,
+    "samples": [
+      "db832683-1194-450c-a96d-7fd6ff114fc9",
+      "06f17e97-36e2-4bf9-8e2b-a0cd04354980",
+      "9795ad16-b416-4c54-9170-b7dfbf1f7b13"
+    ],
+    "storage": {
+      "quota": 20615843021,
+      "usage": 139522044
+    }
+  },
+  "before": {
+    "count": 25000,
+    "first": "9795ad16-b416-4c54-9170-b7dfbf1f7b13",
+    "detail": {
+      "status": "Ready",
+      "reconciliation": {
+        "candidateId": "32e60901-3c66-48e0-8ce4-2a5bb1bad03f",
+        "revision": "77ffcf50-7b57-430b-a8a7-ed82fcdd7753",
+        "digest": "{\"instrument\":{\"kind\":\"Stock\",\"currency\":\"USD\",\"symbol\":\"XYZ\"},\"quantity\":\"100\",\"entry\":\"50\",\"stop\":\"45\",\"target\":\"60\",\"thesis\":\"Deterministic D1 Plan 24999: earnings thesis\",\"invalidation\":\"Earnings evidence reverses for Plan 24999\"}",
+        "expectedLifecycle": "Planned"
+      },
+      "baseline": {
+        "risk": "500",
+        "oneR": "500",
+        "reward": "1000",
+        "ratio": {
+          "numerator": "2",
+          "denominator": "1"
+        },
+        "conditions": [
+          {
+            "kind": "Stop",
+            "price": "45",
+            "amount": "500"
+          },
+          {
+            "kind": "Target",
+            "price": "60",
+            "amount": "1000"
+          }
+        ]
+      },
+      "entryReadiness": "Unfilled",
+      "positions": [],
+      "lotMatches": [],
+      "deviations": [],
+      "terminalDisposition": null,
+      "trade": {
+        "tradeId": "9795ad16-b416-4c54-9170-b7dfbf1f7b13",
+        "revision": "77ffcf50-7b57-430b-a8a7-ed82fcdd7753",
+        "planFactId": "32e60901-3c66-48e0-8ce4-2a5bb1bad03f",
+        "planVersionId": "c730a3c2-47f5-43f6-b3fc-8ef07596687e",
+        "plannedLegId": "fe4e9fff-ee22-4f6e-b3ce-d95dd0c06a93",
+        "stopId": "ea574fa0-c691-49ff-9d3d-deeb86eacd88",
+        "targetId": "2874cf37-0d71-4743-a4f2-37435613953a",
+        "accountId": "fc9624d9-3231-4352-a8e4-47013d4ec01f",
+        "strategyId": "long-stock",
+        "lifecycle": "Planned",
+        "plan": {
+          "instrument": {
+            "kind": "Stock",
+            "currency": "USD",
+            "symbol": "XYZ"
+          },
+          "quantity": "100",
+          "entry": "50",
+          "stop": "45",
+          "target": "60",
+          "thesis": "Deterministic D1 Plan 24999: earnings thesis",
+          "invalidation": "Earnings evidence reverses for Plan 24999"
+        },
+        "baseline": {
+          "risk": "500",
+          "oneR": "500",
+          "reward": "1000",
+          "ratio": {
+            "numerator": "2",
+            "denominator": "1"
+          },
+          "conditions": [
+            {
+              "kind": "Stop",
+              "price": "45",
+              "amount": "500"
+            },
+            {
+              "kind": "Target",
+              "price": "60",
+              "amount": "1000"
+            }
+          ]
+        },
+        "economicTime": "2025-10-18T00:00:00.000Z",
+        "saveTime": "2026-10-18T23:00:00Z",
+        "sequence": 25000
+      },
+      "entries": [
+        {
+          "id": "39756722-24a3-4e81-86f2-945d4ae7fd17",
+          "version": "8d08daa6-521e-4c29-9d67-9887c3964e96",
+          "definition": {
+            "id": "plan-reflection",
+            "revision": "plan-reflection-v1",
+            "label": "Plan Reflection",
+            "prompts": [
+              {
+                "id": "thesis",
+                "wording": "Why this trade, why now?",
+                "kind": "Text",
+                "required": true,
+                "role": "Thesis"
+              },
+              {
+                "id": "invalidation",
+                "wording": "What would invalidate the thesis?",
+                "kind": "Text",
+                "required": true,
+                "role": "Invalidation"
+              },
+              {
+                "id": "conviction",
+                "wording": "Conviction",
+                "kind": "Scale",
+                "required": false,
+                "minimum": 1,
+                "maximum": 5
+              },
+              {
+                "id": "emotion",
+                "wording": "Primary emotion",
+                "kind": "SingleSelect",
+                "required": false,
+                "options": [
+                  {
+                    "id": "calm",
+                    "label": "Calm"
+                  },
+                  {
+                    "id": "eager",
+                    "label": "Eager"
+                  },
+                  {
+                    "id": "anxious",
+                    "label": "Anxious"
+                  },
+                  {
+                    "id": "fomo",
+                    "label": "FOMO"
+                  },
+                  {
+                    "id": "revenge",
+                    "label": "Revenge"
+                  },
+                  {
+                    "id": "relieved",
+                    "label": "Relieved"
+                  },
+                  {
+                    "id": "frustrated",
+                    "label": "Frustrated"
+                  },
+                  {
+                    "id": "other",
+                    "label": "Other"
+                  }
+                ]
+              }
+            ]
+          },
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "9795ad16-b416-4c54-9170-b7dfbf1f7b13"
+          },
+          "origin": {
+            "kind": "Plan",
+            "factId": "32e60901-3c66-48e0-8ce4-2a5bb1bad03f"
+          },
+          "source": {
+            "id": "plan-confirmation",
+            "label": "Plan Confirmation"
+          },
+          "momentTime": "2025-10-18T00:00:00.000Z",
+          "firstAuthoredTime": "2026-10-18T23:00:00Z",
+          "saveTime": "2026-10-18T23:00:00Z",
+          "responses": {
+            "thesis": {
+              "kind": "Text",
+              "value": "Deterministic D1 Plan 24999: earnings thesis"
+            },
+            "invalidation": {
+              "kind": "Text",
+              "value": "Earnings evidence reverses for Plan 24999"
+            },
+            "conviction": {
+              "kind": "Scale",
+              "value": "5"
+            },
+            "emotion": {
+              "kind": "SingleSelect",
+              "value": "calm"
+            }
+          }
+        }
+      ],
+      "history": [
+        {
+          "tradeId": "9795ad16-b416-4c54-9170-b7dfbf1f7b13",
+          "revision": "77ffcf50-7b57-430b-a8a7-ed82fcdd7753",
+          "planFactId": "32e60901-3c66-48e0-8ce4-2a5bb1bad03f",
+          "planVersionId": "c730a3c2-47f5-43f6-b3fc-8ef07596687e",
+          "plannedLegId": "fe4e9fff-ee22-4f6e-b3ce-d95dd0c06a93",
+          "stopId": "ea574fa0-c691-49ff-9d3d-deeb86eacd88",
+          "targetId": "2874cf37-0d71-4743-a4f2-37435613953a",
+          "accountId": "fc9624d9-3231-4352-a8e4-47013d4ec01f",
+          "strategyId": "long-stock",
+          "lifecycle": "Planned",
+          "plan": {
+            "instrument": {
+              "kind": "Stock",
+              "currency": "USD",
+              "symbol": "XYZ"
+            },
+            "quantity": "100",
+            "entry": "50",
+            "stop": "45",
+            "target": "60",
+            "thesis": "Deterministic D1 Plan 24999: earnings thesis",
+            "invalidation": "Earnings evidence reverses for Plan 24999"
+          },
+          "baseline": {
+            "risk": "500",
+            "oneR": "500",
+            "reward": "1000",
+            "ratio": {
+              "numerator": "2",
+              "denominator": "1"
+            },
+            "conditions": [
+              {
+                "kind": "Stop",
+                "price": "45",
+                "amount": "500"
+              },
+              {
+                "kind": "Target",
+                "price": "60",
+                "amount": "1000"
+              }
+            ]
+          },
+          "economicTime": "2025-10-18T00:00:00.000Z",
+          "saveTime": "2026-10-18T23:00:00Z",
+          "sequence": 25000
+        }
+      ],
+      "labels": {
+        "account": "Taxable",
+        "institution": "Fidelity",
+        "strategy": "Long Stock"
+      }
+    }
+  },
+  "browserName": "webkit",
+  "browserVersion": "27.2",
+  "environment": {
+    "platform": "darwin",
+    "osRelease": "25.6.0",
+    "cpu": "Apple M4 Max",
+    "memoryBytes": 68719476736,
+    "node": "v26.12.0"
+  },
+  "source": "25,000 confirmPlan commands, native browser store; no executions or market observations",
+  "futureCapacityReserves": "D1 plan budgets only; not fabricated domain records",
+  "cold": [
+    262.7542919999978,
+    249.5264170000155,
+    286.9806669999962,
+    264.7150419999962,
+    268.06099999998696,
+    252.69545800000196,
+    239.48179199997685,
+    280.95716699998593,
+    242.02170799998567,
+    247.56020800000988,
+    276.0445419999887,
+    248.01516700000502,
+    275.40729199998896,
+    262.5990419999871,
+    276.60324999998556,
+    264.0861670000013,
+    269.83279200000106,
+    243.35058299999218,
+    270.549291000003,
+    268.8788339999737,
+    258.6400840000133,
+    258.73895800000173,
+    240.0628340000112,
+    259.05220899998676,
+    255.67987500000163,
+    274.17862500000047,
+    246.08179100000416,
+    258.72912499998347,
+    262.0978339999856,
+    258.00808300002245,
+    251.86187500000233,
+    264.0027500000142,
+    275.7267910000228,
+    280.4400000000023,
+    257.2317500000063,
+    257.1677919999929,
+    263.1523750000051,
+    261.9245420000225,
+    257.9641249999986,
+    259.03308399999514,
+    251.14687500000582,
+    273.8086669999757,
+    258.39716699998826,
+    257.94429200000013,
+    261.74566700001014,
+    255.60699999998906,
+    273.8248339999991,
+    258.671875,
+    261.8119589999842,
+    273.8472920000204
+  ],
+  "warm": [
+    75.52612500000396,
+    56.048666999995476,
+    53.46758300001966,
+    70.19041700000525,
+    66.23012500000186,
+    48.46533399997861,
+    87.46329200000037,
+    57.11529099999461,
+    84.43524999998044,
+    80.46704099999624,
+    37.4381669999857,
+    81.17024999999558,
+    37.70074999998906,
+    59.07600000000093,
+    47.31320899998536,
+    56.62924999999814,
+    49.94591599999694,
+    85.2532910000009,
+    66.85083399998257,
+    57.54670800000895,
+    48.96450000000186,
+    39.14504100001068,
+    62.37025000000722,
+    50.255750000011176,
+    49.95116599998437,
+    78.34595799999079,
+    48.67845799998031,
+    50.55520799997612,
+    79.70687499997439,
+    57.91729199999827,
+    55.796082999993814,
+    69.28441600000951,
+    38.74875000002794,
+    53.88941599999089,
+    49.99995800000033,
+    37.33037500001956,
+    47.77229100000113,
+    49.29058400000213,
+    62.8612500000163,
+    49.212916999997105,
+    48.88245900001493,
+    48.88341599999694,
+    38.04295799997635,
+    48.72629099999904,
+    47.31458400000702,
+    49.80720899999142,
+    71.21424999998999,
+    70.0223330000008,
+    50.00158400001237,
+    50.596415999985766
+  ],
+  "percentile": "nearest rank ceil(0.95*n)",
+  "coldP95": 280.4400000000023,
+  "warmP95": 84.43524999998044
+}

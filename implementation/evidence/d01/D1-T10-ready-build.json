@@ -1,0 +1,14 @@
+{
+  "id": "D1-T10",
+  "stage": "ready-build",
+  "baseline": "db3580cdc1ee95b5056a4de6dc36430cdd71a421",
+  "sourceDigest": "295a26f48ceddf9342a793cc361068c1d3a53a982547739a5a3979fc71e3cf09",
+  "command": [
+    "npm",
+    "run",
+    "build"
+  ],
+  "exit": 0,
+  "stdout": "\n> trade-journal-v3@0.1.0 build\n> npm run typecheck && vite build && node tools/inventory.mjs\n\n\n> trade-journal-v3@0.1.0 typecheck\n> node node_modules/@typescript/native/bin/tsc -b\n\nvite v8.3.4 building client environment for production...\ntransforming...\n✓ 31 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/manifest.webmanifest         0.41 kB\ndist/index.html                   0.44 kB │ gzip:   0.29 kB\ndist/assets/index-BF2tpiZ9.css    2.85 kB │ gzip:   1.07 kB\ndist/assets/index-DcKec5m2.js   556.47 kB │ gzip: 172.24 kB\n\n✓ built in 82ms\n\nPWA v2.0.0\nBuilding worker/sw.ts service worker (\"es\" format)...\nvite v8.3.4 building client environment for production...\ntransforming...\n✓ 2 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/sw.mjs  2.81 kB │ gzip: 1.30 kB\n\n✓ built in 9ms\n\nPWA v2.0.0\nmode      injectManifest\nformat:   es\nprecache  12 entries (563.78 KiB)\nfiles generated\n  dist/sw.js\nInventoried 9 emitted assets with SHA-256 digests\n",
+  "stderr": "\n WARN  inlineDynamicImports option is deprecated, please use codeSplitting: false instead.\n\n[plugin builtin:vite-reporter] \n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+}

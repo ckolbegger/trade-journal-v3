@@ -1,0 +1,120 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-ui.test.tsx -t should offer honest
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-ui.test.tsx (4 tests | 1 failed | 3 skipped) 111ms
+   × should offer honest storage and installation guidance without disabling writable planning 111ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-ui.test.tsx > should offer honest storage and installation guidance without disabling writable planning
+TestingLibraryElementError: Unable to find an element with the text: /Add to Home Screen/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"_shell_d47682"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Primary"[39m
+      [36m>[39m
+        [36m<strong>[39m
+          [0mTRADE JOURNAL[0m
+        [36m</strong>[39m
+        [36m<button>[39m
+          [0mTrades[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mdisabled[39m=[32m""[39m
+        [36m>[39m
+          [0mNew Plan[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mWorkspace[0m
+        [36m</button>[39m
+      [36m</nav>[39m
+      [36m<main>[39m
+        [36m<header>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"_eyebrow_d47682"[39m
+          [36m>[39m
+            [0mAFTER-CLOSE JOURNAL · USD[0m
+          [36m</p>[39m
+          [36m<h1[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [0mTrades[0m
+          [36m</h1>[39m
+        [36m</header>[39m
+        [36m<aside[39m
+          [33mclass[39m=[32m"_warning_d47682"[39m
+        [36m>[39m
+          [36m<strong>[39m
+            [0mStorage is [0m
+            [0mBest Effort[0m
+            [0m.[0m
+          [36m</strong>[39m
+          [0m This browser may clear your data. Backup is not installed until a later release. [0m
+          [36m<button>[39m
+            [0mRequest storage protection[0m
+          [36m</button>[39m
+        [36m</aside>[39m
+        [36m<p[39m
+          [33mrole[39m=[32m"status"[39m
+        [36m>[39m
+          [0mThe host did not grant stronger storage protection.[0m
+        [36m</p>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"_card_d47682"[39m
+        [36m>[39m
+          [36m<h2>[39m
+            [0mAdd your brokerage records[0m
+          [36m</h2>[39m
+          [36m<p>[39m
+            [0mUse your real Institution and Account. They are trading records; there is no application login.[0m
+          [36m</p>[39m
+          [36m<p>[39m
+            [0mTime zone: [0m
+            [0mUTC[0m
+          [36m</p>[39m
+          [36m<form>[39m
+            [36m<label>[39m
+              [0mInstitution name[0m
+              [36m<input[39m
+                [33mrequired[39m=[32m""[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</label>[39m
+            [36m<button>[39m
+              [0mSave Institution[0m
+            [36m</button>[39m
+          [36m</form>[39m
+        [36m</section>[39m
+      [36m</main>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ tests/unit/d01-ui.test.tsx:91:17
+     89|   expect(await screen.findByText('The host did not grant stronger stor…
+     90|   expect((screen.getByRole('button', { name: 'Save Institution' }) as …
+     91|   expect(screen.getByText(/Add to Home Screen/)).toBeTruthy();
+       |                 ^
+     92|   cleanup(); f.store.close();
+     93| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 skipped (4)
+   Start at  21:13:06
+   Duration  510ms (environment 45%, tests 26%, import 17%, transform 12%)
+

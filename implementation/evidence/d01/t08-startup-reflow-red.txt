@@ -1,0 +1,42 @@
+
+> trade-journal-v3@0.1.0 test:browser
+> playwright test --project webkit --grep at 390px
+
+[WebServer] (node:61038) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:61039) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [webkit] › tests/browser/d01-ui.spec.ts:72:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 390px (761ms)
+
+
+  1) [webkit] › tests/browser/d01-ui.spec.ts:72:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 390px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      74 |     await requireWritable(page);
+      75 |     await page.evaluate(() => { document.documentElement.style.zoom = '2'; });
+    > 76 |     expect(await page.getByRole('heading').evaluate(heading => heading.scrollWidth <= heading.clientWidth)).toBe(true);
+         |                                                                                                             ^
+      77 |     await page.evaluate(() => { document.documentElement.style.zoom = ''; });
+      78 |     await tabTo(page, page.getByLabel('Workspace time zone')); await page.keyboard.type('America/New_York');
+      79 |     await tabTo(page, page.getByRole('button', { name: 'Create Workspace' })); await page.keyboard.press('Enter');
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-ui.spec.ts:76:109
+
+    Error Context: test-results/d01-ui-D1-B05-keyboard-onl-e2973-esize-zoom-and-axe-at-390px-webkit/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/d01-ui-D1-B05-keyboard-onl-e2973-esize-zoom-and-axe-at-390px-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/d01-ui-D1-B05-keyboard-onl-e2973-esize-zoom-and-axe-at-390px-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [webkit] › tests/browser/d01-ui.spec.ts:72:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 390px 

@@ -1,0 +1,64 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-workspace.test.ts -t should reopen idempotently
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-workspace.test.ts (3 tests | 1 failed | 2 skipped) 16ms
+   × should reopen idempotently with stable seeds and unchanged metadata 16ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-workspace.test.ts > should reopen idempotently with stable seeds and unchanged metadata
+AssertionError: expected { status: 'Opened', …(3) } to match object { status: 'Opened', …(3) }
+
+- Expected
++ Received
+
+  {
+    "onboarding": "NeedsInstitutionAndAccount",
+    "receipt": {
+-     "fresh": false,
+-     "seeds": [],
++     "fresh": true,
++     "seeds": [
++       "long-stock",
++       "plan-reflection",
++       "plan-confirmation",
++     ],
+    },
+    "root": {
+-     "catalogRevision": "f9679be6-4843-471b-8090-a2934a70e7d4",
++     "catalogRevision": "fe54a29d-5b9e-4900-8000-73f6f69d2c6d",
+      "commitOrdinal": 1,
+      "definitionRevision": "plan-reflection-v1",
+-     "generation": "7ad60759-a318-43df-86e0-38cfc8c3147b",
++     "generation": "8b684fc3-599c-4e15-850f-632e19cb82c7",
+      "key": "active",
+      "recordedSequence": 0,
+-     "revision": "d1d89c96-b101-4a79-8665-a435fbfed17e",
++     "revision": "df705958-fc2c-4298-9a38-de1fceae86f8",
+      "schema": 1,
+-     "timeZone": "America/New_York",
++     "timeZone": "UTC",
+    },
+    "status": "Opened",
+  }
+
+ ❯ tests/unit/d01-workspace.test.ts:36:18
+     34|   const before = await f.store.versions.toArray();
+     35|   const second = await f.workspace.initialize({ openingInstant: '2026-…
+     36|   expect(second).toMatchObject({ ...first, receipt: { fresh: false, se…
+       |                  ^
+     37|   expect(await f.store.versions.toArray()).toEqual(before);
+     38|   f.store.close();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 skipped (3)
+   Start at  21:01:01
+   Duration  355ms (environment 75%, import 11%, transform 7%, tests 6%, worker 1%)
+

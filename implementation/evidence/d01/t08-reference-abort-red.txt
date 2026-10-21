@@ -1,0 +1,280 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit --testNamePattern=reference draft after a storage abort
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-ui.test.tsx (8 tests | 1 failed | 7 skipped) 1149ms
+   × should enter Recovery Only and retain a reference draft after a storage abort 1148ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-ui.test.tsx > should enter Recovery Only and retain a reference draft after a storage abort
+TestingLibraryElementError: Unable to find an element with the text: Recovery Only. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"_shell_d47682"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Primary"[39m
+      [36m>[39m
+        [36m<strong>[39m
+          [0mTRADE JOURNAL[0m
+        [36m</strong>[39m
+        [36m<button>[39m
+          [0mTrades[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mNew Plan[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mWorkspace[0m
+        [36m</button>[39m
+      [36m</nav>[39m
+      [36m<main>[39m
+        [36m<header>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"_eyebrow_d47682"[39m
+          [36m>[39m
+            [0mAFTER-CLOSE JOURNAL · USD[0m
+          [36m</p>[39m
+          [36m<h1[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [0mWorkspace[0m
+          [36m</h1>[39m
+        [36m</header>[39m
+        [36m<aside[39m
+          [33mclass[39m=[32m"_warning_d47682"[39m
+        [36m>[39m
+          [36m<strong>[39m
+            [0mStorage is [0m
+            [0mBest Effort[0m
+            [0m.[0m
+          [36m</strong>[39m
+          [0m This browser may clear your data. Backup is not installed until a later release. [0m
+          [36m<button>[39m
+            [0mRequest storage protection[0m
+          [36m</button>[39m
+        [36m</aside>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"_install_d47682"[39m
+        [36m>[39m
+          [0mWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"_errors_d47682"[39m
+          [33mid[39m=[32m"plan-issues"[39m
+          [33mrole[39m=[32m"alert"[39m
+        [36m>[39m
+          [36m<h2[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [0mReview before continuing[0m
+          [36m</h2>[39m
+          [36m<ul>[39m
+            [36m<li[39m
+              [33mdata-issue[39m=[32m"StorageFailure"[39m
+            [36m>[39m
+              [0mSaving failed. Nothing was recorded. Your entered values are preserved. Retry startup before saving again.[0m
+            [36m</li>[39m
+          [36m</ul>[39m
+        [36m</div>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"_card_d47682"[39m
+        [36m>[39m
+          [36m<h2>[39m
+            [0mWorkspace[0m
+          [36m</h2>[39m
+          [36m<p>[39m
+            [0mUse your real Institution and Account. They are trading records; there is no application login.[0m
+          [36m</p>[39m
+          [36m<p>[39m
+            [0mTime zone: [0m
+            [0mAmerica/New_York[0m
+          [36m</p>[39m
+          [36m<form>[39m
+            [36m<label>[39m
+              [0mInstitution name[0m
+              [36m<input[39m
+                [33mrequired[39m=[32m""[39m
+                [33mvalue[39m=[32m"Second broker"[39m
+              [36m/>[39m
+            [36m</label>[39m
+            [36m<button>[39m
+              [0mSave Institution[0m
+            [36m</button>[39m
+          [36m</form>[39m
+          [36m<form>[39m
+            [36m<label>[39m
+              [0mInstitution[0m
+              [36m<select>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"6342f7b9-f05f-4195-857e-82fa75ec53d0"[39m
+                [36m>[39m
+                  [0mBroker[0m
+                [36m</option>[39m
+              [36m</select>[39m
+            [36m</label>[39m
+            [36m<label>[39m
+              [0mAccount name[0m
+              [36m<input[39m
+                [33mrequired[39m=[32m""[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</label>[39m
+            [36m<button>[39m
+              [0mSave Account[0m
+            [36m</button>[39m
+          [36m</form>[39m
+        [36m</section>[39m
+      [36m</main>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"_shell_d47682"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Primary"[39m
+      [36m>[39m
+        [36m<strong>[39m
+          [0mTRADE JOURNAL[0m
+        [36m</strong>[39m
+        [36m<button>[39m
+          [0mTrades[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mNew Plan[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mWorkspace[0m
+        [36m</button>[39m
+      [36m</nav>[39m
+      [36m<main>[39m
+        [36m<header>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"_eyebrow_d47682"[39m
+          [36m>[39m
+            [0mAFTER-CLOSE JOURNAL · USD[0m
+          [36m</p>[39m
+          [36m<h1[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [0mWorkspace[0m
+          [36m</h1>[39m
+        [36m</header>[39m
+        [36m<aside[39m
+          [33mclass[39m=[32m"_warning_d47682"[39m
+        [36m>[39m
+          [36m<strong>[39m
+            [0mStorage is [0m
+            [0mBest Effort[0m
+            [0m.[0m
+          [36m</strong>[39m
+          [0m This browser may clear your data. Backup is not installed until a later release. [0m
+          [36m<button>[39m
+            [0mRequest storage protection[0m
+          [36m</button>[39m
+        [36m</aside>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"_install_d47682"[39m
+        [36m>[39m
+          [0mWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"_errors_d47682"[39m
+          [33mid[39m=[32m"plan-issues"[39m
+          [33mrole[39m=[32m"alert"[39m
+        [36m>[39m
+          [36m<h2[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [0mReview before continuing[0m
+          [36m</h2>[39m
+          [36m<ul>[39m
+            [36m<li[39m
+              [33mdata-issue[39m=[32m"StorageFailure"[39m
+            [36m>[39m
+              [0mSaving failed. Nothing was recorded. Your entered values are preserved. Retry startup before saving again.[0m
+            [36m</li>[39m
+          [36m</ul>[39m
+        [36m</div>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"_card_d47682"[39m
+        [36m>[39m
+          [36m<h2>[39m
+            [0mWorkspace[0m
+          [36m</h2>[39m
+          [36m<p>[39m
+            [0mUse your real Institution and Account. They are trading records; there is no application login.[0m
+          [36m</p>[39m
+          [36m<p>[39m
+            [0mTime zone: [0m
+            [0mAmerica/New_York[0m
+          [36m</p>[39m
+          [36m<form>[39m
+            [36m<label>[39m
+              [0mInstitution name[0m
+              [36m<input[39m
+                [33mrequired[39m=[32m""[39m
+                [33mvalue[39m=[32m"Second broker"[39m
+              [36m/>[39m
+            [36m</label>[39m
+            [36m<button>[39m
+              [0mSave Institution[0m
+            [36m</button>[39m
+          [36m</form>[39m
+          [36m<form>[39m
+            [36m<label>[39m
+              [0mInstitution[0m
+              [36m<select>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"6342f7b9-f05f-4195-857e-82fa75ec53d0"[39m
+                [36m>[39m
+                  [0mBroker[0m
+                [36m</option>[39m
+              [36m</select>[39m
+            [36m</label>[39m
+            [36m<label>[39m
+              [0mAccount name[0m
+              [36m<input[39m
+                [33mrequired[39m=[32m""[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</label>[39m
+            [36m<button>[39m
+              [0mSave Account[0m
+            [36m</button>[39m
+          [36m</form>[39m
+        [36m</section>[39m
+      [36m</main>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/unit/d01-ui.test.tsx:153:23
+    151|   f.store.versions.hook('creating', fault);
+    152|   await user.click(screen.getByRole('button', { name: 'Save Institutio…
+    153|   expect(await screen.findByText('Recovery Only')).toBeTruthy();
+       |                       ^
+    154|   expect(screen.getByRole<HTMLButtonElement>('button', { name: 'New Pl…
+    155|   f.store.versions.hook('creating').unsubscribe(fault);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 skipped (7)
+      Tests  1 failed | 45 skipped (46)
+   Start at  22:54:27
+   Duration  1.63s (environment 51%, tests 33%, transform 8%, import 8%)
+

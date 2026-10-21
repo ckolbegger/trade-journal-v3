@@ -1,0 +1,169 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit --testNamePattern=advisory landmarks
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-ui.test.tsx (14 tests | 1 failed | 13 skipped) 1027ms
+   × should distinguish update, recovery and storage advisory landmarks after a late readiness failure 1027ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-ui.test.tsx > should distinguish update, recovery and storage advisory landmarks after a late readiness failure
+TestingLibraryElementError: Unable to find an element with the text: Update available. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"_shell_d47682"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Primary"[39m
+      [36m>[39m
+        [36m<strong>[39m
+          [0mTRADE JOURNAL[0m
+        [36m</strong>[39m
+        [36m<button>[39m
+          [0mTrades[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mNew Plan[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mWorkspace[0m
+        [36m</button>[39m
+      [36m</nav>[39m
+      [36m<main>[39m
+        [36m<header>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"_eyebrow_d47682"[39m
+          [36m>[39m
+            [0mAFTER-CLOSE JOURNAL · USD[0m
+          [36m</p>[39m
+          [36m<h1[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [0mTrades[0m
+          [36m</h1>[39m
+        [36m</header>[39m
+        [36m<button>[39m
+          [0mCheck for application updates[0m
+        [36m</button>[39m
+        [36m<aside[39m
+          [33mclass[39m=[32m"_warning_d47682"[39m
+        [36m>[39m
+          [36m<strong>[39m
+            [0mStorage is [0m
+            [0mBest Effort[0m
+            [0m.[0m
+          [36m</strong>[39m
+          [0m This browser may clear your data. Backup is not installed until a later release. [0m
+          [36m<button>[39m
+            [0mRequest storage protection[0m
+          [36m</button>[39m
+        [36m</aside>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"_install_d47682"[39m
+        [36m>[39m
+          [0mWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.[0m
+        [36m</p>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"_card_d47682"[39m
+        [36m>[39m
+          [36m<h2>[39m
+            [0mPlanned Trades[0m
+          [36m</h2>[39m
+          [36m<p>[39m
+            [0mNo confirmed Plans match this view.[0m
+          [36m</p>[39m
+        [36m</section>[39m
+      [36m</main>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"_shell_d47682"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Primary"[39m
+      [36m>[39m
+        [36m<strong>[39m
+          [0mTRADE JOURNAL[0m
+        [36m</strong>[39m
+        [36m<button>[39m
+          [0mTrades[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mNew Plan[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mWorkspace[0m
+        [36m</button>[39m
+      [36m</nav>[39m
+      [36m<main>[39m
+        [36m<header>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"_eyebrow_d47682"[39m
+          [36m>[39m
+            [0mAFTER-CLOSE JOURNAL · USD[0m
+          [36m</p>[39m
+          [36m<h1[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [0mTrades[0m
+          [36m</h1>[39m
+        [36m</header>[39m
+        [36m<button>[39m
+          [0mCheck for application updates[0m
+        [36m</button>[39m
+        [36m<aside[39m
+          [33mclass[39m=[32m"_warning_d47682"[39m
+        [36m>[39m
+          [36m<strong>[39m
+            [0mStorage is [0m
+            [0mBest Effort[0m
+            [0m.[0m
+          [36m</strong>[39m
+          [0m This browser may clear your data. Backup is not installed until a later release. [0m
+          [36m<button>[39m
+            [0mRequest storage protection[0m
+          [36m</button>[39m
+        [36m</aside>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"_install_d47682"[39m
+        [36m>[39m
+          [0mWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.[0m
+        [36m</p>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"_card_d47682"[39m
+        [36m>[39m
+          [36m<h2>[39m
+            [0mPlanned Trades[0m
+          [36m</h2>[39m
+          [36m<p>[39m
+            [0mNo confirmed Plans match this view.[0m
+          [36m</p>[39m
+        [36m</section>[39m
+      [36m</main>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/unit/d01-ui.test.tsx:234:16
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 skipped (7)
+      Tests  1 failed | 57 skipped (58)
+   Start at  05:07:25
+   Duration  1.49s (environment 53%, tests 32%, import 8%, transform 6%)
+

@@ -1,0 +1,11 @@
+- main:
+  - heading "Your device-local Workspace" [level=1]
+  - paragraph: Choose a rules-based time zone. This journal stays in this browser on this device.
+  - text: Workspace time zone
+  - textbox "Workspace time zone" [invalid]:
+    - /placeholder: e.g. America/New_York
+    - text: "-05:00"
+  - button "Create Workspace"
+  - alert:
+    - heading "Choose your time zone" [level=2]
+    - paragraph: Enter a rules-based time zone, such as America/New_York.

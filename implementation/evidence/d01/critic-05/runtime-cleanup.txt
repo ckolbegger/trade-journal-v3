@@ -1,0 +1,4 @@
+{
+  "contextsClosed": true,
+  "remainingHarnessPages": 0
+}

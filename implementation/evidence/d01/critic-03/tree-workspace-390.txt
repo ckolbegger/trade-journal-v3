@@ -1,0 +1,26 @@
+- navigation "Primary":
+  - button "Trades"
+  - button "New Plan"
+  - button "Workspace"
+- main:
+  - paragraph: AFTER-CLOSE JOURNAL · USD
+  - heading "Workspace" [level=1]
+  - button "Check for application updates"
+  - complementary "Storage protection":
+    - strong: Storage is Best Effort.
+    - text: This browser may clear your data. Backup is not installed until a later release.
+    - button "Request storage protection"
+  - paragraph: Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.
+  - status: Account saved. You can now confirm a Plan.
+  - heading "Workspace" [level=2]
+  - paragraph: Use your real Institution and Account. They are trading records; there is no application login.
+  - paragraph: "Time zone: America/New_York"
+  - text: Institution name
+  - textbox "Institution name"
+  - button "Save Institution"
+  - text: Institution
+  - combobox "Institution":
+    - option "Interactive Brokers 390" [selected]
+  - text: Account name
+  - textbox "Account name"
+  - button "Save Account"

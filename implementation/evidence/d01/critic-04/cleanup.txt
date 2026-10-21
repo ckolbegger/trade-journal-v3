@@ -1,0 +1,1 @@
+All own browser contexts and persistent Node process closed. Own preview PID 65514 terminated. lsof -nP -iTCP:5174 -sTCP:LISTEN returned no rows. diff -qr dist /private/tmp/critic04-base-dist returned no differences. Runtime released to parent before final report.

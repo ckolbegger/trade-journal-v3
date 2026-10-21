@@ -1,0 +1,39 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-confirmation.test.ts -t should validate optional
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-confirmation.test.ts (7 tests | 1 failed | 6 skipped) 19ms
+   × should validate optional stable answers and retain explicit Unanswered snapshots 19ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-confirmation.test.ts > should validate optional stable answers and retain explicit Unanswered snapshots
+AssertionError: expected { status: 'Confirmed', …(6) } to match object { Object (status, issues) }
+(51 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "issues": [
+-     "InvalidConviction",
+-     "UnknownEmotion",
+-   ],
+-   "status": "Rejected",
++   "status": "Confirmed",
+  }
+
+ ❯ tests/unit/d01-confirmation.test.ts:97:137
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 skipped (7)
+   Start at  21:05:47
+   Duration  350ms (environment 69%, transform 12%, import 12%, tests 7%, worker 1%)
+

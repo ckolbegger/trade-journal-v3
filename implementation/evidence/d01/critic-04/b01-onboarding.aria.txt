@@ -1,0 +1,3 @@
+- main:
+  - heading "Trade Journal" [level=1]
+  - status: Verifying startup and local storage…

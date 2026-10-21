@@ -1,0 +1,30 @@
+[
+  {
+    "width": 390,
+    "conflict": {
+      "unchanged": true,
+      "symbol": "KEYSTALE"
+    },
+    "abort": {
+      "unchanged": true,
+      "log": [
+        "JournalEntry"
+      ],
+      "symbol": "KEYSTALE"
+    }
+  },
+  {
+    "width": 1440,
+    "conflict": {
+      "unchanged": true,
+      "symbol": "KEYSTALE"
+    },
+    "abort": {
+      "unchanged": true,
+      "log": [
+        "JournalEntry"
+      ],
+      "symbol": "KEYSTALE"
+    }
+  }
+]

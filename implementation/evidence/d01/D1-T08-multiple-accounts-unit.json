@@ -1,0 +1,14 @@
+{
+  "id": "D1-T08",
+  "stage": "multiple-accounts-unit",
+  "baseline": "db3580cdc1ee95b5056a4de6dc36430cdd71a421",
+  "sourceDigest": "882b57eb02a27ca663361d9ce2e34ac825273108abe5a225f5b52ffc528645c4",
+  "command": [
+    "npm",
+    "run",
+    "test:unit"
+  ],
+  "exit": 0,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:unit\n> vitest run --project unit\n\n\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n\n Test Files  7 passed (7)\n      Tests  62 passed (62)\n   Start at  22:44:26\n   Duration  2.00s (tests 43%, environment 43%, transform 7%, import 6%)\n\n",
+  "stderr": ""
+}

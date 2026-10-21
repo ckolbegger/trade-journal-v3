@@ -1,0 +1,8 @@
+- main:
+  - heading "IntegrityBlocked" [level=1]
+  - paragraph: We could not verify safe writing in this environment.
+  - list:
+    - listitem: This browser does not have the required available storage capacity.
+    - listitem: This browser could not read the existing Workspace. Its data has not been replaced.
+  - button "Retry startup"
+  - paragraph: Another browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.

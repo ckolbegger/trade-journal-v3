@@ -1,0 +1,38 @@
+{
+  "baseline": "db3580cdc1ee95b5056a4de6dc36430cdd71a421",
+  "sourceDigest": "7be7f33a14de48ba7acf0ac889ae1cebda833f3483e8ce659025fdcb822a5775",
+  "changedSinceChecks": [],
+  "gates": [
+    {
+      "stage": "timezone-final-lint",
+      "exit": 0,
+      "sourceDigest": "7be7f33a14de48ba7acf0ac889ae1cebda833f3483e8ce659025fdcb822a5775"
+    },
+    {
+      "stage": "timezone-final-unit",
+      "exit": 0,
+      "sourceDigest": "7be7f33a14de48ba7acf0ac889ae1cebda833f3483e8ce659025fdcb822a5775"
+    },
+    {
+      "stage": "timezone-final-integration",
+      "exit": 0,
+      "sourceDigest": "7be7f33a14de48ba7acf0ac889ae1cebda833f3483e8ce659025fdcb822a5775"
+    },
+    {
+      "stage": "timezone-final-build",
+      "exit": 0,
+      "sourceDigest": "7be7f33a14de48ba7acf0ac889ae1cebda833f3483e8ce659025fdcb822a5775"
+    },
+    {
+      "stage": "timezone-final-browser",
+      "exit": 0,
+      "sourceDigest": "7be7f33a14de48ba7acf0ac889ae1cebda833f3483e8ce659025fdcb822a5775"
+    },
+    {
+      "stage": "timezone-final-benchmark",
+      "exit": 0,
+      "sourceDigest": "7be7f33a14de48ba7acf0ac889ae1cebda833f3483e8ce659025fdcb822a5775"
+    }
+  ],
+  "release": "4870cf845745ed4fd6668af735e76a044e459840651b6f2c5bbce7711d1d81a8"
+}

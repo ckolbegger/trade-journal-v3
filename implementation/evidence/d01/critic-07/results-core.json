@@ -1,0 +1,14 @@
+[
+  {
+    "name": "B01 and account presentation/time-zone regression",
+    "status": "PASS"
+  },
+  {
+    "name": "B02 invalid, preserved navigation and Cancel",
+    "status": "PASS"
+  },
+  {
+    "name": "B01 stopped Chrome offline reopen and manual Plan",
+    "status": "PASS"
+  }
+]

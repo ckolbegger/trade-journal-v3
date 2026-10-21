@@ -1,0 +1,66 @@
+TRADE JOURNAL
+Trades
+New Plan
+Workspace
+
+AFTER-CLOSE JOURNAL · USD
+
+QQQ · Planned
+Check for application updates
+Storage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection
+
+Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.
+
+Plan confirmed and saved on this device.
+
+Planned · Unfilled
+Frozen Plan Baseline
+
+Fidelity · Individual 1440 · Long Stock
+
+Original Planned Risk · 1R
+$500.00
+Original Planned Reward
+$1000.00
+Planned reward/risk ratio
+2/1
+Intended entry
+$50 × 100 shares
+Stop · underlying price
+$45
+Target · underlying price
+$60
+
+No exposure has been entered.
+
+Plan Reflection
+
+Trade Anchor · Plan Confirmation
+
+Why this trade, why now?
+
+Keyboard-only fixture P
+
+What would invalidate the thesis?
+
+Thesis fails on margin weakness
+
+Conviction
+
+Unanswered
+
+Primary emotion
+
+Unanswered
+
+View history
+
+Confirmed: 2026-10-19 15:35:29.283 Europe/London
+
+Saved: 2026-10-19 15:35:29.294 Europe/London
+
+Recorded Sequence: 1
+
+Plan fact: 903c73c8-2b2d-454e-9039-9c3c5ac99952
+
+Version: 08676b6f-96ea-4a14-a0ed-a81c38f7ed67

@@ -1,0 +1,53 @@
+browserType.launchPersistentContext: Target page, context or browser has been closed
+Browser logs:
+
+<launching> /Users/ckolbegger/Library/Caches/ms-playwright/webkit-2370/pw_run.sh --inspector-pipe --headless --user-data-dir=/private/tmp/tjv3-critic04-main about:blank
+<launched> pid=65550
+[pid=65550][err] /Users/ckolbegger/Library/Caches/ms-playwright/webkit-2370/pw_run.sh: line 7: 65556 Abort trap: 6           DYLD_FRAMEWORK_PATH="$DYLIB_PATH" DYLD_LIBRARY_PATH="$DYLIB_PATH" "$PLAYWRIGHT" "$@"
+Call log:
+  - <launching> /Users/ckolbegger/Library/Caches/ms-playwright/webkit-2370/pw_run.sh --inspector-pipe --headless --user-data-dir=/private/tmp/tjv3-critic04-main about:blank
+  - <launched> pid=65550
+  - [pid=65550][err] /Users/ckolbegger/Library/Caches/ms-playwright/webkit-2370/pw_run.sh: line 7: 65556 Abort trap: 6           DYLD_FRAMEWORK_PATH="$DYLIB_PATH" DYLD_LIBRARY_PATH="$DYLIB_PATH" "$PLAYWRIGHT" "$@"
+  - [pid=65550] <gracefully close start>
+  - [pid=65550] <kill>
+  - [pid=65550] <will force kill>
+  - [pid=65550] exception while trying to kill process: Error: kill EPERM
+  - [pid=65550] <process did exit: exitCode=134, signal=null>
+  - [pid=65550] starting temporary directories cleanup
+  - [pid=65550] finished temporary directories cleanup
+  - [pid=65550] <gracefully close end>
+
+    at async Object.launch (/private/tmp/critic04-helper.cjs:9:73)
+    at async eval (<anonymous>:3:17)
+    at async run (/private/tmp/critic04-helper.cjs:15:115)
+    at async /Users/ckolbegger/src/trade-journal-v3/.node_repl_cell_1.mjs:6:761
+locator.selectOption: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByLabel('Conviction (optional, 1–5)', { exact: true })[22m
+
+    at eval (<anonymous>:3:526)
+    at async run (/private/tmp/critic04-helper.cjs:15:115)
+    at async REPL6:1:33
+    at async node:repl:660:31
+locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('button', { name: 'View history', exact: true })[22m
+
+    at eval (<anonymous>:3:62)
+    at run (/private/tmp/critic04-helper.cjs:15:190)
+    at REPL9:1:39
+    at REPL9:2:4
+locator.waitFor: Timeout 10000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('heading', { name: 'Integrity Blocked', exact: true }) to be visible[22m
+
+    at eval (<anonymous>:3:483)
+    at async run (/private/tmp/critic04-helper.cjs:15:115)
+    at async REPL25:1:33
+    at async node:repl:660:31
+page.evaluate: UnknownError: Critic04 controlled native read failure
+    at Object.durable (/private/tmp/critic04-helper.cjs:12:42)
+    at eval (<anonymous>:3:1302)
+    at async run (/private/tmp/critic04-helper.cjs:15:115)
+    at async REPL42:1:33
+    at async node:repl:660:31

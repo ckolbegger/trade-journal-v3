@@ -1,0 +1,3 @@
+Trade Journal
+
+Verifying startup and local storage…

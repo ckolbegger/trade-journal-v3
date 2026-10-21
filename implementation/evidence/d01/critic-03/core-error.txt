@@ -1,0 +1,6 @@
+page.goto: Could not connect to the server.
+Call log:
+[2m  - navigating to "http://localhost:5174/", waiting until "load"[22m
+
+    at ready (/private/tmp/critic03.mjs:12:33)
+    at run (/private/tmp/critic03.mjs:25:74)

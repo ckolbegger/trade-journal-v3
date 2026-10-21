@@ -1,0 +1,6 @@
+locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('heading', { name: 'Recovery Only', exact: true }) to be visible[22m
+
+    at main (/private/tmp/critic06.mjs:37:218)
+    at async file:///private/tmp/critic06.mjs:44:5

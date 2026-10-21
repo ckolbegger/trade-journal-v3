@@ -1,0 +1,23 @@
+[
+  {
+    "stage": "Plan",
+    "equal": true,
+    "log": [],
+    "symbol": "ABORT",
+    "text": "TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nNew Plan\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nReview before continuing\nBrokerage records changed in another tab. Review your selections before confirming again.\nReview current references\nLong Stock Plan\n\nFreeze your intended entry, original management and Plan Reflection before entering.\n\nAccount\nStock symbol\nQuantity (shares)\nIntended entry (USD)\nStop (underlying price, USD)\nTarget (underlying price, USD)\nPlan Reflection\nWhy this trade, why now?\nWhat would invalidate the thesis?\nConviction (optional, 1–5)\nPrimary emotion (optional)\nUnanswered\nCalm\nEager\nAnxious\nFOMO\nRevenge\nRelieved\nFrustrated\nOther\nConfirm Plan\nCancel",
+    "reopenedEqual": true
+  },
+  {
+    "stage": "JournalEntry",
+    "equal": true,
+    "log": [
+      {
+        "kind": "JournalEntry",
+        "stage": "native request succeeded, transaction aborted"
+      }
+    ],
+    "symbol": "ABORT",
+    "text": "TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nNew Plan\nCheck for application updates\nRecovery Only\n\nReading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.\n\nRetry startup\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nReview before continuing\nSaving failed. Nothing was recorded. Your entered values are preserved. Retry startup before saving again.\nLong Stock Plan\n\nFreeze your intended entry, original management and Plan Reflection before entering.\n\nAccount\nStock symbol\nQuantity (shares)\nIntended entry (USD)\nStop (underlying price, USD)\nTarget (underlying price, USD)\nPlan Reflection\nWhy this trade, why now?\nWhat would invalidate the thesis?\nConviction (optional, 1–5)\nPrimary emotion (optional)\nUnanswered\nCalm\nEager\nAnxious\nFOMO\nRevenge\nRelieved\nFrustrated\nOther\nConfirm Plan\nCancel",
+    "reopenedEqual": true
+  }
+]

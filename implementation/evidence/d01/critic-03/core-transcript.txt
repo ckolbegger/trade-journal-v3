@@ -1,0 +1,16 @@
+2026-10-19T09:14:54.999Z axe-timezone []
+2026-10-19T09:14:55.014Z fresh {"roots":[],"versions":[],"lifecycle":[],"diagnostic":[]}
+2026-10-19T09:14:55.393Z axe-empty []
+2026-10-19T09:14:55.486Z empty-invalid-no-write {"unchanged":true,"root":{"key":"active","generation":"f5cb0459-e575-4423-a307-b5f88b8671b4","revision":"e331066d-1f74-4d8c-b4fc-0cb1c4d33c6f","schema":1,"timeZone":"America/New_York","catalogRevision":"3621fa37-21da-4885-b902-f2c8329f547f","definitionRevision":"plan-reflection-v1","commitOrdinal":3,"recordedSequence":0},"versionCount":5}
+2026-10-19T09:14:55.738Z axe-invalid []
+2026-10-19T09:14:55.835Z zero-risk-no-write {"unchanged":true,"root":{"key":"active","generation":"f5cb0459-e575-4423-a307-b5f88b8671b4","revision":"e331066d-1f74-4d8c-b4fc-0cb1c4d33c6f","schema":1,"timeZone":"America/New_York","catalogRevision":"3621fa37-21da-4885-b902-f2c8329f547f","definitionRevision":"plan-reflection-v1","commitOrdinal":3,"recordedSequence":0},"versionCount":5}
+locator.selectOption: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByLabel('Conviction (optional, 1–5)', { exact: true })[22m
+
+    at run (/private/tmp/critic03.mjs:26:715) {
+  log: [
+    "  - waiting for getByLabel('Conviction (optional, 1–5)', { exact: true })"
+  ],
+  name: 'TimeoutError'
+}

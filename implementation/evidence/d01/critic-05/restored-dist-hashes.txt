@@ -1,0 +1,15 @@
+{
+  "exactBaseRestored": true,
+  "files": {
+    "index.html": "1c073bc60e6ce3050697e724c00a148e1b759fe77ca623cd2b80b78f8f0645f8",
+    "capabilities.json": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a",
+    "icon-192.png": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+    "icon.svg": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+    "offline-inventory.json": "f8ff32e248b9c8b947a396ea9c0f525a44c94ec61154b360a786221e4b4f52a3",
+    "manifest.webmanifest": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+    "sw.js": "7fdd435d7a6c53d45f96e8a63823a8417e52b41fa63c1bb730c31a6afa9b0090",
+    "icon-512.png": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+    "assets/index-ClU3W26k.js": "8423042eff3238b21066557e670c844f5544d40e233dc00a07099f2503d925c8",
+    "assets/index-Ukg-5B9v.css": "a2168dbf5e6e8e5c495a0e2c0f0058e968fbb9009df4ea06d74071873b52811c"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "baseline": "db3580cdc1ee95b5056a4de6dc36430cdd71a421",
+  "sourceDigest": "d5d4ba6b0e4771699f7e625aea663a1c7e03a6973ad6177b7b6ae21b7c567c3f",
+  "changedSinceChecks": [],
+  "gates": [
+    {
+      "stage": "account-copy-lint",
+      "exit": 0,
+      "sourceDigest": "d5d4ba6b0e4771699f7e625aea663a1c7e03a6973ad6177b7b6ae21b7c567c3f"
+    },
+    {
+      "stage": "account-copy-unit",
+      "exit": 0,
+      "sourceDigest": "d5d4ba6b0e4771699f7e625aea663a1c7e03a6973ad6177b7b6ae21b7c567c3f"
+    },
+    {
+      "stage": "account-copy-integration",
+      "exit": 0,
+      "sourceDigest": "d5d4ba6b0e4771699f7e625aea663a1c7e03a6973ad6177b7b6ae21b7c567c3f"
+    },
+    {
+      "stage": "account-copy-build",
+      "exit": 0,
+      "sourceDigest": "d5d4ba6b0e4771699f7e625aea663a1c7e03a6973ad6177b7b6ae21b7c567c3f"
+    },
+    {
+      "stage": "account-copy-browser",
+      "exit": 0,
+      "sourceDigest": "d5d4ba6b0e4771699f7e625aea663a1c7e03a6973ad6177b7b6ae21b7c567c3f"
+    },
+    {
+      "stage": "account-copy-benchmark",
+      "exit": 0,
+      "sourceDigest": "d5d4ba6b0e4771699f7e625aea663a1c7e03a6973ad6177b7b6ae21b7c567c3f"
+    }
+  ],
+  "release": "ab2297ad212bf6d6159b2c2471477358892b183a3d0e4706a792ca123f002e69"
+}

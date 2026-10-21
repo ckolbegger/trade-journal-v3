@@ -1,0 +1,58 @@
+{
+  "viewport": {
+    "width": 390,
+    "height": 1000
+  },
+  "beforeViolations": [],
+  "afterViolations": [
+    {
+      "id": "landmark-unique",
+      "impact": "moderate",
+      "tags": [
+        "cat.semantics",
+        "best-practice"
+      ],
+      "description": "Ensure landmarks are unique",
+      "help": "Landmarks should have a unique role or role/label/title (i.e. accessible name) combination",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/landmark-unique?application=playwright",
+      "nodes": [
+        {
+          "any": [
+            {
+              "id": "landmark-is-unique",
+              "data": {
+                "role": "complementary",
+                "accessibleText": null
+              },
+              "relatedNodes": [
+                {
+                  "html": "<aside class=\"_warning_1ei95_20\"><strong>Storage is Best Effort.</strong> This browser may clear your data. Backup is not installed until a later release. <button>Request storage protection</button></aside>",
+                  "target": [
+                    "aside:nth-child(4)"
+                  ]
+                }
+              ],
+              "impact": "moderate",
+              "message": "The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "moderate",
+          "html": "<aside class=\"_warning_1ei95_20\"><h2>Recovery Only</h2><p>Reading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.</p><button>Retry startup</button></aside>",
+          "target": [
+            "aside:nth-child(3)"
+          ],
+          "failureSummary": "Fix any of the following:\n  The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable"
+        }
+      ]
+    }
+  ],
+  "asideDom": [
+    "<aside class=\"_warning_1ei95_20\"><h2>Recovery Only</h2><p>Reading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.</p><button>Retry startup</button></aside>",
+    "<aside class=\"_warning_1ei95_20\"><strong>Storage is Best Effort.</strong> This browser may clear your data. Backup is not installed until a later release. <button>Request storage protection</button></aside>"
+  ],
+  "tree": "- navigation \"Primary\":\n  - button \"Trades\"\n  - button \"New Plan\" [disabled]\n  - button \"Workspace\"\n- main:\n  - paragraph: AFTER-CLOSE JOURNAL · USD\n  - heading \"New Plan\" [level=1]\n  - button \"Check for application updates\"\n  - complementary:\n    - heading \"Recovery Only\" [level=2]\n    - paragraph: Reading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.\n    - button \"Retry startup\"\n  - complementary:\n    - strong: Storage is Best Effort.\n    - text: This browser may clear your data. Backup is not installed until a later release.\n    - button \"Request storage protection\"\n  - paragraph: Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n  - alert:\n    - heading \"Review before continuing\" [level=2]\n    - list:\n      - listitem: This browser does not have the required available storage capacity.\n  - heading \"Long Stock Plan\" [level=2]\n  - paragraph: Freeze your intended entry, original management and Plan Reflection before entering.\n  - text: Account\n  - combobox \"Account\":\n    - option \"Brokerage · Fidelity\" [selected]\n  - text: Stock symbol\n  - textbox \"Stock symbol\": RECOVERY\n  - text: Quantity (shares)\n  - textbox \"Quantity (shares)\": \"100\"\n  - text: Intended entry (USD)\n  - textbox \"Intended entry (USD)\": \"50\"\n  - text: Stop (underlying price, USD)\n  - textbox \"Stop (underlying price, USD)\": \"45\"\n  - text: Target (underlying price, USD)\n  - textbox \"Target (underlying price, USD)\": \"60\"\n  - heading \"Plan Reflection\" [level=2]\n  - text: Why this trade, why now?\n  - textbox \"Why this trade, why now?\": A deliberate test plan\n  - text: What would invalidate the thesis?\n  - textbox \"What would invalidate the thesis?\": A confirmed break below support\n  - text: Conviction (optional, 1–5)\n  - combobox \"Conviction (optional, 1–5)\":\n    - option \"Unanswered\" [selected]\n    - option \"1\"\n    - option \"2\"\n    - option \"3\"\n    - option \"4\"\n    - option \"5\"\n  - group \"Primary emotion (optional)\":\n    - text: Primary emotion (optional)\n    - radio \"Unanswered\" [checked]\n    - text: Unanswered\n    - radio \"Calm\"\n    - text: Calm\n    - radio \"Eager\"\n    - text: Eager\n    - radio \"Anxious\"\n    - text: Anxious\n    - radio \"FOMO\"\n    - text: FOMO\n    - radio \"Revenge\"\n    - text: Revenge\n    - radio \"Relieved\"\n    - text: Relieved\n    - radio \"Frustrated\"\n    - text: Frustrated\n    - radio \"Other\"\n    - text: Other\n  - button \"Confirm Plan\" [disabled]\n  - button \"Cancel\"",
+  "noOtherNativeOverrides": true,
+  "authoritativeUnchanged": true
+}

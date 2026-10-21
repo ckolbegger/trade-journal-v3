@@ -1,0 +1,138 @@
+{
+  "keyboard-stale-390-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "46c49b3e-fe96-480e-9139-a1b556a7280f",
+      "revision": "fc43bfd7-79f6-4f4e-a36e-1da1e68e3248",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "10f2b983-75db-431b-820c-9e2fd9c3f384",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 5,
+      "recordedSequence": 1
+    },
+    "versionCount": 8
+  },
+  "axe-keyboard-stale-390": [],
+  "keyboard-Plan-abort-390-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "46c49b3e-fe96-480e-9139-a1b556a7280f",
+      "revision": "fc43bfd7-79f6-4f4e-a36e-1da1e68e3248",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "10f2b983-75db-431b-820c-9e2fd9c3f384",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 5,
+      "recordedSequence": 1
+    },
+    "versionCount": 8
+  },
+  "axe-keyboard-Plan-abort-390": [],
+  "supplemental-reflow-390": {
+    "method": "CSS zoom supplemental only",
+    "zoom": "2",
+    "innerWidth": 390,
+    "clientWidth": 390,
+    "scrollWidth": 390
+  },
+  "contrast-390": {
+    "colors": {
+      "text": "rgb(38, 40, 32)",
+      "background": "rgb(255, 255, 255)",
+      "border": "rgb(119, 121, 112)",
+      "focus": "rgb(75, 100, 190)",
+      "focusStyle": "solid",
+      "focusWidth": "3px",
+      "page": "rgb(246, 244, 237)"
+    },
+    "text": 14.927628369442512,
+    "essentialBorder": 4.417976822198212,
+    "focusOnPage": 4.936314966034985
+  },
+  "final-cancel-390-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "46c49b3e-fe96-480e-9139-a1b556a7280f",
+      "revision": "fc43bfd7-79f6-4f4e-a36e-1da1e68e3248",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "10f2b983-75db-431b-820c-9e2fd9c3f384",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 5,
+      "recordedSequence": 1
+    },
+    "versionCount": 8
+  },
+  "keyboard-stale-1440-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "98049572-219c-4401-bbdd-93f3af84b55e",
+      "revision": "199947c1-0c9a-49cf-a46b-c442f5b82e04",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "565ffc5f-158e-48ec-af3c-e6ef37c1df96",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 5,
+      "recordedSequence": 1
+    },
+    "versionCount": 8
+  },
+  "axe-keyboard-stale-1440": [],
+  "keyboard-Plan-abort-1440-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "98049572-219c-4401-bbdd-93f3af84b55e",
+      "revision": "199947c1-0c9a-49cf-a46b-c442f5b82e04",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "565ffc5f-158e-48ec-af3c-e6ef37c1df96",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 5,
+      "recordedSequence": 1
+    },
+    "versionCount": 8
+  },
+  "axe-keyboard-Plan-abort-1440": [],
+  "supplemental-reflow-1440": {
+    "method": "CSS zoom supplemental only",
+    "zoom": "2",
+    "innerWidth": 1440,
+    "clientWidth": 1440,
+    "scrollWidth": 1440
+  },
+  "contrast-1440": {
+    "colors": {
+      "text": "rgb(38, 40, 32)",
+      "background": "rgb(255, 255, 255)",
+      "border": "rgb(119, 121, 112)",
+      "focus": "rgb(75, 100, 190)",
+      "focusStyle": "solid",
+      "focusWidth": "3px",
+      "page": "rgb(246, 244, 237)"
+    },
+    "text": 14.927628369442512,
+    "essentialBorder": 4.417976822198212,
+    "focusOnPage": 4.936314966034985
+  },
+  "final-cancel-1440-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "98049572-219c-4401-bbdd-93f3af84b55e",
+      "revision": "199947c1-0c9a-49cf-a46b-c442f5b82e04",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "565ffc5f-158e-48ec-af3c-e6ef37c1df96",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 5,
+      "recordedSequence": 1
+    },
+    "versionCount": 8
+  }
+}

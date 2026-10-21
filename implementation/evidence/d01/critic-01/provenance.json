@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-19T08:49:32.020Z",
+  "sourceDigest": "0985b99e60f7986eaf3693b2faf4388374534e6d060d8b385048414db5f2c6cd",
+  "baseRelease": "12092e686a53550a45090f41eb805105c2335bd34c96c11abd040589bcee9421",
+  "inventoryDigest": "a7aa1fa7e3eadd7365cf080e2df9fb9885de1e5c5691867185b6dcaf4ee5b403",
+  "node": "v26.12.0",
+  "playwright": "1.64.0",
+  "webkit": "27.2",
+  "otherHosts": [
+    {
+      "name": "chromium",
+      "version": "156.0.8078.4",
+      "estimate": {
+        "quota": 10739187337,
+        "usage": 1769097,
+        "usageDetails": {
+          "caches": 1757952,
+          "indexedDB": 7226,
+          "serviceWorkerRegistrations": 3919
+        }
+      }
+    },
+    {
+      "name": "firefox",
+      "version": "157.0",
+      "estimate": {
+        "quota": 10737418240,
+        "usage": 798296
+      }
+    }
+  ],
+  "os": "ProductName:\t\tmacOS\nProductVersion:\t\t26.6.2\nBuildVersion:\t\t25G83\n",
+  "arch": "arm64"
+}

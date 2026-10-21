@@ -1,0 +1,2 @@
+PASS B02 stale Catalog preserves draft and no writes
+PASS B02 native transaction abort after Plan before Journal

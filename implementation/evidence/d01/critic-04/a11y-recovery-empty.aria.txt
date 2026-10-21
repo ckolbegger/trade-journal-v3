@@ -1,0 +1,23 @@
+- navigation "Primary":
+  - button "Trades"
+  - button "New Plan" [disabled]
+  - button "Workspace"
+- main:
+  - paragraph: AFTER-CLOSE JOURNAL · USD
+  - heading "Trades" [level=1]
+  - button "Check for application updates"
+  - complementary "Recovery Only":
+    - heading "Recovery Only" [level=2]
+    - paragraph: Reading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.
+    - button "Retry startup"
+  - complementary "Storage protection":
+    - strong: Storage is Best Effort.
+    - text: This browser may clear your data. Backup is not installed until a later release.
+    - button "Request storage protection"
+  - paragraph: Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.
+  - alert:
+    - heading "Review before continuing" [level=2]
+    - list:
+      - listitem: This browser does not have the required available storage capacity.
+  - heading "Planned Trades" [level=2]
+  - paragraph: No confirmed Plans match this view.

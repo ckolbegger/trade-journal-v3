@@ -1,0 +1,30 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-confirmation.test.ts -t should roll back every
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-confirmation.test.ts (4 tests | 1 failed | 3 skipped) 17ms
+   × should roll back every participant and ordinal on Journal abort or late gate failure 17ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-confirmation.test.ts > should roll back every participant and ordinal on Journal abort or late gate failure
+Error: InjectedJournalAbort
+ ❯ tests/unit/d01-confirmation.test.ts:41:89
+     39|   const root = await f.store.roots.get('active');
+     40|   const { Journal } = await import('../../src/domain/journal');
+     41|   const failure = vi.spyOn(Journal.prototype, 'applyPreparedEffects').…
+       |                                                                                         ^
+     42|   expect(await f.workflows.confirmPlan(f.command)).toMatchObject({ sta…
+     43|   expect(await f.store.versions.toArray()).toEqual(before);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 skipped (4)
+   Start at  21:04:48
+   Duration  337ms (environment 70%, import 12%, transform 11%, tests 7%, worker 1%)
+

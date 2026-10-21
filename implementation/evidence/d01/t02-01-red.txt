@@ -1,0 +1,70 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-analysis.test.ts -t should accept fixture P
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-analysis.test.ts (1 test | 1 failed) 5ms
+   ❯ frozen Long Stock Plan assessment (1)
+     × should accept fixture P and freeze exact risk, reward and ratio 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-analysis.test.ts > frozen Long Stock Plan assessment > should accept fixture P and freeze exact risk, reward and ratio
+AssertionError: expected { status: 'Rejected', …(1) } to match object { status: 'Accepted', …(2) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "baseline": {
+-     "conditions": [
+-       {
+-         "amount": "500",
+-         "kind": "Stop",
+-         "price": "45",
+-       },
+-       {
+-         "amount": "1000",
+-         "kind": "Target",
+-         "price": "60",
+-       },
+-     ],
+-     "oneR": "500",
+-     "ratio": {
+-       "denominator": "1",
+-       "numerator": "2",
+-     },
+-     "reward": "1000",
+-     "risk": "500",
+-   },
+-   "plan": {
+-     "entry": "50",
+-     "instrument": {
+-       "currency": "USD",
+-       "kind": "Stock",
+-       "symbol": "XYZ",
+-     },
+-     "invalidation": "Earnings thesis fails",
+-     "quantity": "100",
+-     "stop": "45",
+-     "target": "60",
+-     "thesis": "Improving earnings",
+-   },
+-   "status": "Accepted",
++   "status": "Rejected",
+  }
+
+ ❯ tests/unit/d01-analysis.test.ts:6:30
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  20:57:03
+   Duration  435ms (environment 94%, transform 3%, tests 1%, import 1%, worker 1%)
+

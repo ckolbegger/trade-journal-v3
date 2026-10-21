@@ -1,0 +1,19 @@
+{
+  "node": "v26.12.0",
+  "npm": "11.20.0",
+  "native": "7.0.2",
+  "typescriptWrapper": "6.0.2",
+  "typescriptAPI": "6.0.3",
+  "compiler": "Version 7.0.2",
+  "baseline": "db3580cdc1ee95b5056a4de6dc36430cdd71a421",
+  "branch": "codex-gpt-6.1-sol",
+  "sha256": {
+    "package.json": "b1ed128008094d5e55d323158212509f1a51922be28b02d5f44df8465b4158df",
+    "package-lock.json": "4a834319bc9f7a93451a5fadc18ad2bd107993735ca2a577faefe250d33acc55",
+    ".node-version": "b20a182c7b42cbf1ab3e380c2a050d469f6b5eacdf55dff575afb3ca372b6f2b",
+    "implementation/plan/d01-long-stock-plan.md": "8924a313da61e89fa580144db1a150cb79cba4b0cc1afbb14278090fb8ff0afc",
+    "implementation/technology-stack.md": "c078489445a6cefdec797d295e3ad4e27a889468ade8c9b09d6840abdc9b6980",
+    "implementation/delivery-plan.md": "811b49b60200ba43fca01cce9b1cc79bf36d11a41918f83fe5ab14d58cd55b33",
+    "implementation/research/typescript-eslint-compatibility-2026-10-18.md": "95ef91ecc32b685833440d50453820a20609d41851ee5f97850cc4e335fc9d71"
+  }
+}

@@ -1,0 +1,8 @@
+- main:
+  - heading "Unsupported" [level=1]
+  - paragraph: We could not verify safe writing in this environment.
+  - list:
+    - listitem: Browser storage could not complete a test transaction.
+  - button "Retry startup"
+  - paragraph: Try another browser that meets the readiness requirements.
+  - paragraph: Another browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.

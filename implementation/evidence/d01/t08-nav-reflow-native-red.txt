@@ -1,0 +1,42 @@
+
+> trade-journal-v3@0.1.0 test:browser
+> playwright test --project webkit --grep at 390px
+
+[WebServer] (node:58659) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:58661) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [webkit] › tests/browser/d01-ui.spec.ts:72:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 390px (1.5s)
+
+
+  1) [webkit] › tests/browser/d01-ui.spec.ts:72:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 390px 
+
+    Error: expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 390
+    Received:    475.09375
+
+       95 |       if (!bounds) throw new Error('Navigation action must be rendered');
+       96 |       expect(bounds.x).toBeGreaterThanOrEqual(0);
+    >  97 |       expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
+          |                                       ^
+       98 |       expect(bounds.y).toBeGreaterThanOrEqual(0);
+       99 |       expect(bounds.y + bounds.height).toBeLessThanOrEqual(900);
+      100 |       expect(await action.evaluate(button => button.scrollWidth <= button.clientWidth)).toBe(true);
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-ui.spec.ts:97:39
+
+    Error Context: test-results/d01-ui-D1-B05-keyboard-onl-e2973-esize-zoom-and-axe-at-390px-webkit/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/d01-ui-D1-B05-keyboard-onl-e2973-esize-zoom-and-axe-at-390px-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/d01-ui-D1-B05-keyboard-onl-e2973-esize-zoom-and-axe-at-390px-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [webkit] › tests/browser/d01-ui.spec.ts:72:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 390px 

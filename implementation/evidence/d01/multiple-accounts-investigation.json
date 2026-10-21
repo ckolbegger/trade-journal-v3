@@ -1,0 +1,11 @@
+{
+  "productionRelease": "4870cf845745ed4fd6668af735e76a044e459840651b6f2c5bbce7711d1d81a8",
+  "productionSourceChanged": [],
+  "result": "Distinct Accounts under one Institution pass; current user form rejects an existing Account name",
+  "testOnlyChange": "tests/unit/d01-ui.test.tsx",
+  "newRegression": "Second Account after confirmed Plan; same Institution parent; both selectable after App reopen",
+  "initialTest": "Immediate pass, not a valid Red",
+  "native": "multiple-accounts-native-initial.json",
+  "userObservation": "multiple-accounts-duplicate-name.png",
+  "awaiting": "Specific failing steps if the second Account name is distinct"
+}

@@ -1,0 +1,126 @@
+import 'fake-indexeddb/auto';
+import { describe, it, expect, vi } from 'vitest';
+import { workspaceFixture, economicTime, saveTime } from '../fixtures';
+describe('durable Plan confirmation', () => {
+  it('should commit fixture P and its exact entered-once Plan Reflection atomically', async () => {
+    const f = await workspaceFixture();
+    const result = await f.workflows.confirmPlan(f.command);
+    expect(result).toMatchObject({ status: 'Confirmed', trade: { accountId: f.command.accountId, lifecycle: 'Planned', plan: { thesis: f.command.reflection.thesis, invalidation: f.command.reflection.invalidation }, baseline: { oneR: '500', reward: '1000' } }, entry: { source: { id: 'plan-confirmation', label: 'Plan Confirmation' }, definition: { revision: 'plan-reflection-v1' } } });
+    expect(await f.store.lifecycle.count()).toBe(1);
+    expect(await f.store.versions.where('[generation+kind]').equals([f.command.generation, 'JournalEntry']).count()).toBe(1);
+    f.store.close();
+  });
+});
+it('should return a complete commit receipt and saved projections without a follow-up read', async () => {
+  const f = await workspaceFixture();
+  const result = await f.workflows.confirmPlan(f.command);
+  if (result.status !== 'Confirmed') throw new Error('Confirmation failed');
+  expect(result).toMatchObject({ receipt: { tradeId: result.trade.tradeId, factRevision: result.trade.revision, factId: result.trade.planFactId, factVersionId: result.trade.planVersionId, entryId: result.entry.id, entryVersion: result.entry.version, lifecycle: 'Planned', workspaceRevision: result.workspaceRevision } });
+  expect(result.entry.anchor).toEqual({ kind: 'Trade', tradeId: result.trade.tradeId });
+  expect(result.entry.origin).toEqual({ kind: 'Plan', factId: result.trade.planFactId });
+  f.store.close();
+});
+it('should reject invalid reflection and stale catalog, definition or generation without identities', async () => {
+  const f = await workspaceFixture();
+  const before = await f.store.versions.toArray();
+  const root = await f.store.roots.get('active');
+  expect(await f.workflows.confirmPlan({ ...f.command, reflection: { thesis: '', invalidation: '' }, plan: { ...f.command.plan, stop: '50' } })).toMatchObject({ status: 'Rejected', issues: ['ThesisRequired', 'InvalidationRequired', 'PositiveRiskRequired'] });
+  expect(await f.workflows.confirmPlan({ ...f.command, expectedCatalogRevision: 'old', definitionRevision: 'old' })).toMatchObject({ status: 'Conflict', issues: ['CatalogChanged', 'DefinitionChanged'] });
+  expect(await f.workflows.confirmPlan({ ...f.command, accountId: 'long-stock' })).toMatchObject({ status: 'Rejected', issues: ['SelectableAccountRequired'] });
+  expect(await f.workflows.confirmPlan({ ...f.command, generation: 'retired' })).toMatchObject({ status: 'Conflict' });
+  expect(await f.store.versions.toArray()).toEqual(before);
+  expect(await f.store.roots.get('active')).toEqual(root);
+  f.store.close();
+});
+
+it('should roll back every participant and ordinal on Journal abort or late gate failure', async () => {
+  const f = await workspaceFixture();
+  const before = await f.store.versions.toArray();
+  const root = await f.store.roots.get('active');
+  const { Journal } = await import('../../src/domain/journal');
+  const failure = vi.spyOn(Journal.prototype, 'applyPreparedEffects').mockRejectedValue(new Error('InjectedJournalAbort'));
+  expect(await f.workflows.confirmPlan(f.command)).toMatchObject({ status: 'StorageFailure' });
+  expect(await f.store.versions.toArray()).toEqual(before);
+  expect(await f.store.roots.get('active')).toEqual(root);
+  expect(await f.store.lifecycle.count()).toBe(0);
+  failure.mockRestore();
+  let calls = 0;
+  vi.spyOn(f.runtime.host, 'check').mockImplementation(() => Promise.resolve({ transaction: true, capacity: true, inventory: ++calls === 1, control: true, protection: 'BestEffort' }));
+  expect(await f.workflows.confirmPlan(f.command)).toMatchObject({ status: 'RuntimeNotWritable', failedChecks: ['inventory'] });
+  expect(await f.store.versions.toArray()).toEqual(before);
+  f.store.close();
+});
+it('should reject reconciliation for altered candidate content, digest or revision before staging', async () => {
+  const f = await workspaceFixture();
+  const { TradeRecord } = await import('../../src/domain/trade-record');
+  const { assessPlan, derive } = await import('../../src/domain/trade-analysis');
+  const root = await f.store.roots.get('active');
+  if (!root) throw new Error('Root required');
+  const assessment = assessPlan({ ...f.command.plan, ...f.command.reflection });
+  if (assessment.status !== 'Accepted') throw new Error('Assessment required');
+  const records = new TradeRecord(f.store);
+  const candidate = records.prepareChange({ accountId: f.command.accountId, strategyId: f.command.strategyId, economicTime, assessment, revision: root.revision });
+  const reconciliation = derive(candidate);
+  await expect(f.store.transaction('rw', [f.store.versions, f.store.lifecycle], () => records.applyPreparedChange({ ...candidate, plan: { ...candidate.plan, quantity: '999' } }, reconciliation, root, saveTime))).rejects.toThrow('ReconciliationConflict');
+  await expect(f.store.transaction('rw', [f.store.versions, f.store.lifecycle], () => records.applyPreparedChange({ ...candidate, digest: 'other' }, reconciliation, root, saveTime))).rejects.toThrow('ReconciliationConflict');
+  await expect(f.store.transaction('rw', [f.store.versions, f.store.lifecycle], () => records.applyPreparedChange(candidate, reconciliation, { ...root, revision: 'other' }, saveTime))).rejects.toThrow('ReconciliationConflict');
+  expect(await f.store.lifecycle.count()).toBe(0);
+  f.store.close();
+});
+it('should retain distinct economic and save times and sequence order after reopening', async () => {
+  const f = await workspaceFixture();
+  const { TradeRecord } = await import('../../src/domain/trade-record');
+  const { Store } = await import('../../src/infrastructure/storage');
+  let counter = 999999;
+  const identity = vi.spyOn(crypto, 'randomUUID').mockImplementation(() => `ffffffff-ffff-ffff-ffff-${String(counter--).padStart(12, '0')}`);
+  const first = await f.workflows.confirmPlan(f.command);
+  const second = await f.workflows.confirmPlan(f.command);
+  identity.mockRestore();
+  if (first.status !== 'Confirmed' || second.status !== 'Confirmed') throw new Error('Confirmation failed');
+  expect(first.trade.tradeId > second.trade.tradeId).toBe(true);
+  expect(first.trade.sequence).toBe(1);
+  expect(second.trade.sequence).toBe(2);
+  expect(first.trade.planFactId).not.toBe(first.trade.planVersionId);
+  expect(first.trade).toMatchObject({ economicTime, saveTime });
+  expect(first.entry).toMatchObject({ momentTime: economicTime, firstAuthoredTime: saveTime, origin: { kind: 'Plan', factId: first.trade.planFactId }, anchor: { kind: 'Trade', tradeId: first.trade.tradeId } });
+  const name = f.store.name;
+  f.store.close();
+  const reopened = new Store(name);
+  const records = new TradeRecord(reopened);
+  expect(await records.getRecord(first.trade.tradeId)).toEqual(first.trade);
+  expect(await records.history(second.trade.tradeId)).toEqual([second.trade]);
+  reopened.close();
+});
+it('should reject an assessment baseline that disagrees with candidate-bound derivation', async () => {
+  const f = await workspaceFixture();
+  const { TradeRecord } = await import('../../src/domain/trade-record');
+  const { assessPlan, derive } = await import('../../src/domain/trade-analysis');
+  const root = await f.store.roots.get('active');
+  const assessment = assessPlan({ ...f.command.plan, ...f.command.reflection });
+  if (!root || assessment.status !== 'Accepted') throw new Error('Fixture required');
+  const records = new TradeRecord(f.store);
+  const candidate = records.prepareChange({ accountId: f.command.accountId, strategyId: f.command.strategyId, economicTime, assessment: { ...assessment, baseline: { ...assessment.baseline, oneR: '900' } }, revision: root.revision });
+  await expect(f.store.transaction('rw', [f.store.versions, f.store.lifecycle], () => records.applyPreparedChange(candidate, derive(candidate), root, saveTime))).rejects.toThrow('ReconciliationConflict');
+  expect(await f.store.lifecycle.count()).toBe(0);
+  f.store.close();
+});
+it('should validate optional stable answers and retain explicit Unanswered snapshots', async () => {
+  const f = await workspaceFixture();
+  const before = await f.store.versions.toArray();
+  expect(await f.workflows.confirmPlan({ ...f.command, reflection: { ...f.command.reflection, conviction: '6', emotion: 'unknown' } })).toMatchObject({ status: 'Rejected', issues: ['InvalidConviction', 'UnknownEmotion'] });
+  expect(await f.store.versions.toArray()).toEqual(before);
+  const result = await f.workflows.confirmPlan({ ...f.command, reflection: { ...f.command.reflection, conviction: '4', emotion: 'calm' } });
+  expect(result).toMatchObject({ status: 'Confirmed', entry: { responses: { conviction: { kind: 'Scale', value: '4' }, emotion: { kind: 'SingleSelect', value: 'calm' } } } });
+  const omitted = await f.workflows.confirmPlan(f.command);
+  expect(omitted).toMatchObject({ status: 'Confirmed', entry: { responses: { conviction: { kind: 'Unanswered' }, emotion: { kind: 'Unanswered' } } } });
+  f.store.close();
+});
+it('should reject an unknown-newer root at the mutation gate without staging facts', async () => {
+  const f = await workspaceFixture();
+  await f.store.roots.update('active', { schema: 999 });
+  const root = await f.store.roots.get('active'); const versions = await f.store.versions.toArray();
+  expect(await f.workflows.confirmPlan(f.command)).toMatchObject({ status: 'RuntimeNotWritable', workspaceStatus: 'IntegrityBlocked', failedChecks: ['UnsupportedSchema'] });
+  expect(await f.store.roots.get('active')).toEqual(root);
+  expect(await f.store.versions.toArray()).toEqual(versions);
+  f.store.close();
+});

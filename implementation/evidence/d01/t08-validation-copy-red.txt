@@ -1,0 +1,305 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit --testNamePattern=entered values through validation
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-ui.test.tsx (7 tests | 1 failed | 6 skipped) 134ms
+   × should preserve entered values through validation, navigation and a catalog conflict 134ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-ui.test.tsx > should preserve entered values through validation, navigation and a catalog conflict
+TestingLibraryElementError: Unable to find an element with the text: Enter a quantity greater than zero.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"_shell_d47682"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Primary"[39m
+      [36m>[39m
+        [36m<strong>[39m
+          [0mTRADE JOURNAL[0m
+        [36m</strong>[39m
+        [36m<button>[39m
+          [0mTrades[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mNew Plan[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mWorkspace[0m
+        [36m</button>[39m
+      [36m</nav>[39m
+      [36m<main>[39m
+        [36m<header>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"_eyebrow_d47682"[39m
+          [36m>[39m
+            [0mAFTER-CLOSE JOURNAL · USD[0m
+          [36m</p>[39m
+          [36m<h1[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [0mNew Plan[0m
+          [36m</h1>[39m
+        [36m</header>[39m
+        [36m<aside[39m
+          [33mclass[39m=[32m"_warning_d47682"[39m
+        [36m>[39m
+          [36m<strong>[39m
+            [0mStorage is [0m
+            [0mBest Effort[0m
+            [0m.[0m
+          [36m</strong>[39m
+          [0m This browser may clear your data. Backup is not installed until a later release. [0m
+          [36m<button>[39m
+            [0mRequest storage protection[0m
+          [36m</button>[39m
+        [36m</aside>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"_install_d47682"[39m
+        [36m>[39m
+          [0mWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"_errors_d47682"[39m
+          [33mrole[39m=[32m"alert"[39m
+        [36m>[39m
+          [36m<h2[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [0mReview before continuing[0m
+          [36m</h2>[39m
+          [36m<ul>[39m
+            [36m<li>[39m
+              [0mPositiveQuantityRequired[0m
+            [36m</li>[39m
+            [36m<li>[39m
+              [0mThesisRequired[0m
+            [36m</li>[39m
+            [36m<li>[39m
+              [0mInvalidationRequired[0m
+            [36m</li>[39m
+            [36m<li>[39m
+              [0mInvalidEntry[0m
+            [36m</li>[39m
+            [36m<li>[39m
+              [0mInvalidStop[0m
+            [36m</li>[39m
+            [36m<li>[39m
+              [0mInvalidTarget[0m
+            [36m</li>[39m
+          [36m</ul>[39m
+        [36m</div>[39m
+        [36m<form[39m
+          [33mclass[39m=[32m"_card_d47682"[39m
+          [33mnovalidate[39m=[32m""[39m
+        [36m>[39m
+          [36m<h2>[39m
+            [0mLong Stock Plan[0m
+          [36m</h2>[39m
+          [36m<p>[39m
+            [0mFreeze your intended entry, original management and Plan Reflection before entering.[0m
+          [36m</p>[39m
+          [36m<label>[39m
+            [0mAccount[0m
+            [36m<select>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"45c375b4-6d92-45e8-96bb-e086c163aafa"[39m
+              [36m>[39m
+                [0mTrading[0m
+              [36m</option>[39m
+            [36m</select>[39m
+          [36m</label>[39m
+          [36m<label>[39m
+            [0mStock symbol[0m
+            [36m<input[39m
+              [33minputmode[39m=[32m"text"[39m
+              [33mvalue[39m=[32m"XYZ"[39m
+            [36m/>[39m
+          [36m</label>[39m
+          [36m<label>[39m
+            [0mQuantity (shares)[0m
+            [36m<input[39m
+              [33minputmode[39m=[32m"decimal"[39m
+              [33mvalue[39m=[32m""[39m
+            [36m/>[39m
+          [36m</label>[39m
+          [36m<label>[39m
+            [0mIntended entry (USD)[0m
+            [36m<input[39m
+              [33minputmode[39m=[32m"decimal"[39m
+              [33mvalue[39m=[32m""[39m
+            [36m/>[39m
+          [36m</label>[39m
+          [36m<label>[39m
+            [0mStop (underlying price, USD)[0m
+            [36m<input[39m
+              [33minputmode[39m=[32m"decimal"[39m
+              [33mvalue[39m=[32m""[39m
+            [36m/>[39m
+          [36m</label>[39m
+          [36m<label>[39m
+            [0mTarget (underlying price, USD)[0m
+            [36m<input[39m
+              [33minputmode[39m=[32m"decimal"[39m
+              [33mvalue[39m=[32m""[39m
+            [36m/>[39m
+          [36m</label>[39m
+          [36m<h2>[39m
+            [0mPlan Reflection[0m
+          [36m</h2>[39m
+          [36m<label>[39m
+            [0mWhy this trade, why now?[0m
+            [36m<textarea />[39m
+          [36m</label>[39m
+          [36m<label>[39m
+            [0mWhat would invalidate the thesis?[0m
+            [36m<textarea />[39m
+          [36m</label>[39m
+          [36m<label>[39m
+            [0mConviction (optional, 1–5)[0m
+            [36m<select>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m""[39m
+              [36m>[39m
+                [0mUnanswered[0m
+              [36m</option>[39m
+              [36m<option>[39m
+                [0m1[0m
+              [36m</option>[39m
+              [36m<option>[39m
+                [0m2[0m
+              [36m</option>[39m
+              [36m<option>[39m
+                [0m3[0m
+              [36m</option>[39m
+              [36m<option>[39m
+                [0m4[0m
+              [36m</option>[39m
+              [36m<option>[39m
+                [0m5[0m
+              [36m</option>[39m
+            [36m</select>[39m
+          [36m</label>[39m
+          [36m<fieldset>[39m
+            [36m<legend>[39m
+              [0mPrimary emotion (optional)[0m
+            [36m</legend>[39m
+            [36m<label>[39m
+              [36m<input[39m
+                [33mchecked[39m=[32m""[39m
+                [33mname[39m=[32m"emotion"[39m
+                [33mtype[39m=[32m"radio"[39m
+              [36m/>[39m
+              [0mUnanswered[0m
+            [36m</label>[39m
+            [36m<label>[39m
+              [36m<input[39m
+                [33mname[39m=[32m"emotion"[39m
+                [33mtype[39m=[32m"radio"[39m
+                [33mvalue[39m=[32m"calm"[39m
+              [36m/>[39m
+              [0mCalm[0m
+            [36m</label>[39m
+            [36m<label>[39m
+              [36m<input[39m
+                [33mname[39m=[32m"emotion"[39m
+                [33mtype[39m=[32m"radio"[39m
+                [33mvalue[39m=[32m"eager"[39m
+              [36m/>[39m
+              [0mEager[0m
+            [36m</label>[39m
+            [36m<label>[39m
+              [36m<input[39m
+                [33mname[39m=[32m"emotion"[39m
+                [33mtype[39m=[32m"radio"[39m
+                [33mvalue[39m=[32m"anxious"[39m
+              [36m/>[39m
+              [0mAnxious[0m
+            [36m</label>[39m
+            [36m<label>[39m
+              [36m<input[39m
+                [33mname[39m=[32m"emotion"[39m
+                [33mtype[39m=[32m"radio"[39m
+                [33mvalue[39m=[32m"fomo"[39m
+              [36m/>[39m
+              [0mFOMO[0m
+            [36m</label>[39m
+            [36m<label>[39m
+              [36m<input[39m
+                [33mname[39m=[32m"emotion"[39m
+                [33mtype[39m=[32m"radio"[39m
+                [33mvalue[39m=[32m"revenge"[39m
+              [36m/>[39m
+              [0mRevenge[0m
+            [36m</label>[39m
+            [36m<label>[39m
+              [36m<input[39m
+                [33mname[39m=[32m"emotion"[39m
+                [33mtype[39m=[32m"radio"[39m
+                [33mvalue[39m=[32m"relieved"[39m
+              [36m/>[39m
+              [0mRelieved[0m
+            [36m</label>[39m
+            [36m<label>[39m
+              [36m<input[39m
+                [33mname[39m=[32m"emotion"[39m
+                [33mtype[39m=[32m"radio"[39m
+                [33mvalue[39m=[32m"frustrated"[39m
+              [36m/>[39m
+              [0mFrustrated[0m
+            [36m</label>[39m
+            [36m<label>[39m
+              [36m<input[39m
+                [33mname[39m=[32m"emotion"[39m
+                [33mtype[39m=[32m"radio"[39m
+                [33mvalue[39m=[32m"other"[39m
+              [36m/>[39m
+              [0mOther[0m
+            [36m</label>[39m
+          [36m</fieldset>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"_actions_d47682"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mtype[39m=[32m"submit"[39m
+            [36m>[39m
+              [0mConfirm Plan[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mCancel[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</form>[39m
+      [36m</main>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ tests/unit/d01-ui.test.tsx:52:17
+     50|   expect(await screen.findByRole('alert')).toBeTruthy();
+     51|   expect(document.activeElement?.textContent).toContain('Review before…
+     52|   expect(screen.getByText('Enter a quantity greater than zero.')).toBe…
+       |                 ^
+     53|   expect(screen.getByLabelText('Quantity (shares)').getAttribute('aria…
+     54|   await user.click(screen.getByRole('button', { name: 'Workspace' }));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 skipped (7)
+      Tests  1 failed | 44 skipped (45)
+   Start at  22:53:34
+   Duration  604ms (environment 72%, import 11%, transform 10%, tests 6%, worker 1%)
+

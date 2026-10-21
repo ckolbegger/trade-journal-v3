@@ -1,0 +1,8 @@
+
+> trade-journal-v3@0.1.0 test:browser
+> playwright test --project chromium d01-release
+
+Error: Project(s) "d01-release" not found. Available projects: "chromium", "firefox", "webkit"
+    at Object.filterProjects (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/runner/index.js:2164:11)
+    at runTests (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/cli/testActions.js:59:30)
+    at _Command.<anonymous> (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/program.js:55:7)

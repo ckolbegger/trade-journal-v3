@@ -1,0 +1,82 @@
+[
+  {
+    "name": "update-dirty",
+    "violations": []
+  },
+  {
+    "name": "update-other-tab",
+    "violations": []
+  },
+  {
+    "name": "ready-list",
+    "violations": []
+  },
+  {
+    "name": "validation-wide",
+    "violations": []
+  },
+  {
+    "name": "reflow-390",
+    "violations": []
+  },
+  {
+    "name": "reflow-1440",
+    "violations": []
+  },
+  {
+    "name": "workspace",
+    "violations": []
+  },
+  {
+    "name": "detail-history",
+    "violations": []
+  },
+  {
+    "name": "conflict",
+    "violations": []
+  },
+  {
+    "name": "recovery-list",
+    "violations": []
+  },
+  {
+    "name": "recovery-workspace",
+    "violations": []
+  },
+  {
+    "name": "loading",
+    "violations": []
+  },
+  {
+    "name": "error-verified",
+    "violations": []
+  },
+  {
+    "name": "first-timezone",
+    "violations": []
+  },
+  {
+    "name": "onboarding",
+    "violations": []
+  },
+  {
+    "name": "empty",
+    "violations": []
+  },
+  {
+    "name": "form-narrow",
+    "violations": []
+  },
+  {
+    "name": "recovery-empty",
+    "violations": []
+  },
+  {
+    "name": "unsupported",
+    "violations": []
+  },
+  {
+    "name": "integrity-blocked",
+    "violations": []
+  }
+]

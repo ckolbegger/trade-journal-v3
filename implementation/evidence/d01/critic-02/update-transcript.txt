@@ -1,0 +1,12 @@
+node:internal/modules/run_main:111
+    triggerUncaughtException(
+    ^
+
+page.evaluate: Execution context was destroyed, most likely because of a navigation
+    at identity (/private/tmp/critic02-update.mjs:4:43)
+    at /private/tmp/critic02-update.mjs:8:615 {
+  log: [],
+  name: 'Error'
+}
+
+Node.js v26.12.0

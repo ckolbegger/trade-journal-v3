@@ -1,0 +1,45 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit --testNamePattern=invalid recovery data
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-workspace.test.ts (10 tests | 1 failed | 9 skipped) 26ms
+   × should report integrity failure together with failed readiness instead of opening invalid recovery data 25ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-workspace.test.ts > should report integrity failure together with failed readiness instead of opening invalid recovery data
+AssertionError: expected { status: 'RuntimeNotWritable', …(6) } to match object { status: 'RuntimeNotWritable', …(2) }
+(7 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "failedChecks": [
+      "inventory",
+-     "InvalidRoot",
+    ],
+    "status": "RuntimeNotWritable",
+-   "workspaceStatus": "IntegrityBlocked",
++   "workspaceStatus": "RecoveryOnly",
+  }
+
+ ❯ tests/unit/d01-workspace.test.ts:109:41
+    107|   const before = await f.store.roots.get('active');
+    108|   vi.spyOn(f.runtime.host, 'check').mockResolvedValue({ transaction: t…
+    109|   expect(await f.workspace.getStatus()).toMatchObject({ status: 'Runti…
+       |                                         ^
+    110|   expect(await f.store.roots.get('active')).toEqual(before);
+    111|   f.store.close();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 skipped (7)
+      Tests  1 failed | 51 skipped (52)
+   Start at  23:08:53
+   Duration  461ms (environment 75%, transform 12%, import 12%, tests 1%, worker 1%)
+

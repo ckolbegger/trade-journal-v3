@@ -1,0 +1,5 @@
+
+> trade-journal-v3@0.1.0 preview
+> vite preview --host localhost --port 5174 --strictPort
+
+  ➜  Local:   http://localhost:5174/

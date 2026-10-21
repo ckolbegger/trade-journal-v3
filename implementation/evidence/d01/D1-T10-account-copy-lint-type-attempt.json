@@ -1,0 +1,14 @@
+{
+  "id": "D1-T10",
+  "stage": "account-copy-lint",
+  "baseline": "db3580cdc1ee95b5056a4de6dc36430cdd71a421",
+  "sourceDigest": "1a8b467427c89e94e519519283d9ff71fe25d10ecbab7ba9d4f0426df8e35868",
+  "command": [
+    "npm",
+    "run",
+    "lint"
+  ],
+  "exit": 0,
+  "stdout": "\n> trade-journal-v3@0.1.0 lint\n> eslint . --max-warnings 0\n\n",
+  "stderr": ""
+}

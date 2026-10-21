@@ -1,0 +1,15 @@
+const fs=require('node:fs');
+const path=require('node:path');
+const {createRequire}=require('node:module');
+const req=createRequire('/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/package.json');
+const {webkit,chromium,firefox}=req('playwright');
+const root='/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol';
+const out=root+'/implementation/evidence/d01/critic-04';
+function save(name,value){fs.writeFileSync(path.join(out,name),typeof value==='string'?value:JSON.stringify(value,null,2));}
+async function launch(name='main',type=webkit,width=1440){const context=await type.launchPersistentContext('/private/tmp/tjv3-critic04-'+name,{headless:true,viewport:{width,height:1000}});const page=context.pages()[0]||await context.newPage();page.on('console',msg=>fs.appendFileSync(out+'/console.txt',`${name} ${msg.type()} ${msg.text()}\n`));page.on('pageerror',err=>fs.appendFileSync(out+'/console.txt',`${name} PAGEERROR ${err.stack}\n`));return {context,page};}
+async function snapshot(page,name){save(name+'.aria.txt',await page.locator('body').ariaSnapshot());save(name+'.text.txt',await page.locator('body').innerText());await page.screenshot({path:out+'/'+name+'.png',fullPage:true});}
+async function open(page){await page.goto('http://localhost:5174');await page.waitForTimeout(1500);}
+async function durable(page){return page.evaluate(async()=>{const dbs=await indexedDB.databases();const all={};for(const item of dbs){const db=await new Promise((res,rej)=>{const r=indexedDB.open(item.name);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});const stores={};for(const name of db.objectStoreNames){stores[name]=await new Promise((res,rej)=>{const t=db.transaction(name,'readonly');const r=t.objectStore(name).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}all[item.name]={version:db.version,stores};db.close();}return all;});}
+async function host(page){return page.evaluate(async()=>({secure:isSecureContext,userAgent:navigator.userAgent,language:navigator.language,zone:Intl.DateTimeFormat().resolvedOptions().timeZone,estimate:await navigator.storage.estimate(),persisted:navigator.storage.persisted?await navigator.storage.persisted():null,controller:navigator.serviceWorker.controller?.scriptURL,registrations:await Promise.all((await navigator.serviceWorker.getRegistrations()).map(async r=>({scope:r.scope,active:r.active?.scriptURL,waiting:r.waiting?.scriptURL,installing:r.installing?.scriptURL}))),caches:await caches.keys()}));}
+module.exports={fs,path,req,webkit,chromium,firefox,root,out,save,launch,snapshot,open,durable,host};
+module.exports.run=async function run(code){fs.appendFileSync(out+'/execution-script.txt',code+'\n\n');try{return await new (Object.getPrototypeOf(async function(){}).constructor)('h',code)(module.exports);}catch(e){fs.appendFileSync(out+'/execution-errors.txt',String(e.stack)+'\n');throw e;}};

@@ -1,0 +1,39 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-readiness.test.ts -t should report explicit
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-readiness.test.ts (6 tests | 1 failed | 5 skipped) 5ms
+   × should report explicit durability outcomes without authoritative changes 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-readiness.test.ts > should report explicit durability outcomes without authoritative changes
+AssertionError: expected { status: 'NotImproved' } to deeply equal { status: 'NotImproved', …(1) }
+
+- Expected
++ Received
+
+  {
+-   "currentProtection": "BestEffort",
+    "status": "NotImproved",
+  }
+
+ ❯ tests/unit/d01-readiness.test.ts:66:49
+     64| it('should report explicit durability outcomes without authoritative c…
+     65|   const f = fixture();
+     66|   expect(await f.workspace.requestDurability()).toEqual({ status: 'Not…
+       |                                                 ^
+     67|   f.set({ protection: 'Protected' });
+     68|   expect(await f.workspace.requestDurability()).toEqual({ status: 'Alr…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 skipped (6)
+   Start at  21:00:00
+   Duration  319ms (environment 84%, import 7%, transform 7%, tests 2%, worker 1%)
+

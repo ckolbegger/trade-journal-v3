@@ -1,0 +1,21 @@
+{
+  "secure": true,
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15",
+  "language": "en-US",
+  "zone": "America/New_York",
+  "estimate": {
+    "quota": 20615843021,
+    "usage": 722182
+  },
+  "persisted": false,
+  "controller": "http://localhost:5174/sw.js",
+  "registrations": [
+    {
+      "scope": "http://localhost:5174/",
+      "active": "http://localhost:5174/sw.js"
+    }
+  ],
+  "caches": [
+    "trade-journal-release-c61a00ab2f5941e47bf1b2b4436a779b74b40531b110fd4f9201adf864fef704"
+  ]
+}

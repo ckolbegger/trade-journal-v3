@@ -1,0 +1,8 @@
+file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tools/inventory.mjs:23
+  if (!expected.has(asset.url) || expected.get(asset.url) !== asset.sha256) throw new Error(`Precache omission or incorrect SHA-256: ${asset.url}`);
+                                                                                  ^
+
+Error: Precache omission or incorrect SHA-256: /capabilities.json
+    at file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tools/inventory.mjs:23:83
+
+Node.js v26.12.0

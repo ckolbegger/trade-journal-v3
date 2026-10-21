@@ -1,0 +1,49 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-analysis.test.ts -t should bind Planned
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-analysis.test.ts (5 tests | 1 failed | 4 skipped) 5ms
+   × should bind Planned reconciliation to the exact candidate and surface disagreement 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-analysis.test.ts > should bind Planned reconciliation to the exact candidate and surface disagreement
+AssertionError: expected { status: 'IntegrityBlocked', …(1) } to match object { status: 'Derived', …(7) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "baseline": {
+-     "oneR": "500",
+-   },
+-   "deviations": [],
+-   "entryReadiness": "Unfilled",
+-   "lotMatches": [],
+-   "positions": [],
+-   "reconciliation": {
+-     "candidateId": "candidate-1",
+-     "digest": "digest-1",
+-     "expectedLifecycle": "Planned",
+-     "revision": "r1",
+-   },
+-   "status": "Derived",
+-   "terminalDisposition": null,
++   "status": "IntegrityBlocked",
+  }
+
+ ❯ tests/unit/d01-analysis.test.ts:24:29
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 skipped (5)
+   Start at  20:58:08
+   Duration  299ms (environment 89%, transform 6%, import 2%, tests 2%, worker 1%)
+

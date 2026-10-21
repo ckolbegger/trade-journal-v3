@@ -1,0 +1,49 @@
+
+> trade-journal-v3@0.1.0 test:browser
+> playwright test --project webkit --grep D1-B01
+
+[WebServer] (node:13327) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:13328) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [webkit] › tests/browser/d01-offline.spec.ts:3:1 › D1-B01 D1-T09 stopped-browser offline reopening retains the Plan and history (6.9s)
+
+
+  1) [webkit] › tests/browser/d01-offline.spec.ts:3:1 › D1-B01 D1-T09 stopped-browser offline reopening retains the Plan and history 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('button', { name: /XYZ · Planned/ })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('button', { name: /XYZ · Planned/ }) with timeout 5000ms
+      - waiting for getByRole('button', { name: /XYZ · Planned/ })
+
+
+      10 |     const offline = await reopened.newPage();
+      11 |     await offline.goto('/');
+    > 12 |     await expect(offline.getByRole('button', { name: /XYZ · Planned/ })).toBeVisible();
+         |                                                                          ^
+      13 |     await offline.getByRole('button', { name: /XYZ · Planned/ }).click();
+      14 |     await offline.getByText('View history', { exact: true }).click();
+      15 |     await expect(offline.getByText(fact ?? 'Missing fact')).toBeVisible();
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-offline.spec.ts:12:74
+
+    Error Context: test-results/d01-offline-D1-B01-D1-T09--08bee-etains-the-Plan-and-history-webkit/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/d01-offline-D1-B01-D1-T09--08bee-etains-the-Plan-and-history-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/d01-offline-D1-B01-D1-T09--08bee-etains-the-Plan-and-history-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [webkit] › tests/browser/d01-offline.spec.ts:3:1 › D1-B01 D1-T09 stopped-browser offline reopening retains the Plan and history 

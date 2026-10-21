@@ -1,0 +1,81 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-confirmation.test.ts -t should reject reconciliation
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-confirmation.test.ts (5 tests | 1 failed | 4 skipped) 18ms
+   × should reject reconciliation for altered candidate content, digest or revision before staging 18ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-confirmation.test.ts > should reject reconciliation for altered candidate content, digest or revision before staging
+AssertionError: promise resolved "{ …(15) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "accountId": "e9702619-484d-4051-9488-fd99c301a9c9",
++   "baseline": {
++     "conditions": [
++       {
++         "amount": "500",
++         "kind": "Stop",
++         "price": "45",
++       },
++       {
++         "amount": "1000",
++         "kind": "Target",
++         "price": "60",
++       },
++     ],
++     "oneR": "500",
++     "ratio": {
++       "denominator": "1",
++       "numerator": "2",
++     },
++     "reward": "1000",
++     "risk": "500",
++   },
++   "economicTime": "2026-10-17T20:00:00Z",
++   "lifecycle": "Planned",
++   "plan": {
++     "entry": "50",
++     "instrument": {
++       "currency": "USD",
++       "kind": "Stock",
++       "symbol": "XYZ",
++     },
++     "invalidation": "Thesis fails",
++     "quantity": "999",
++     "stop": "45",
++     "target": "60",
++     "thesis": "Improving earnings",
++   },
++   "planFactId": "f0b15c1c-a7dd-4058-88ab-58f1b109b642",
++   "planVersionId": "0f40a0f2-1a49-4839-910c-285c035faf7c",
++   "plannedLegId": "c8eb6118-4382-4ae5-98e7-35d50d8d9ea2",
++   "revision": "6ee03cf3-38f1-4ffe-aac2-3c7925dcafc3",
++   "saveTime": "2026-10-18T23:00:00Z",
++   "sequence": 1,
++   "stopId": "9744431e-cd32-49bc-9ecf-6fcf7ebd2e12",
++   "strategyId": "long-stock",
++   "targetId": "d37ceda1-99df-4c62-8df2-c6e00e1137f7",
++   "tradeId": "cc746521-669e-41f5-a033-f53447f3b958",
+  }
+
+ ❯ tests/unit/d01-confirmation.test.ts:64:212
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 skipped (5)
+   Start at  21:05:07
+   Duration  349ms (environment 70%, import 12%, transform 11%, tests 7%, worker 1%)
+

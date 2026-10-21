@@ -1,0 +1,68 @@
+{
+  "release": "42742c99abf6a9031cf8783bd135bc7450ec349b935c98a2f349b3cebe9f795f",
+  "results": [
+    {
+      "url": "/assets/index-B46ObyIX.css",
+      "expected": "646a01dbd7e0663f32553a9bb1f93ccc99ba632c21029d2852e6a369773f7cd0",
+      "observed": "646a01dbd7e0663f32553a9bb1f93ccc99ba632c21029d2852e6a369773f7cd0",
+      "bytes": 2875,
+      "pass": true
+    },
+    {
+      "url": "/assets/index-pLaUHyuZ.js",
+      "expected": "3c4d5c4235e80f62563810251507bedc435f9fc67645688d46433b1d50e7ee95",
+      "observed": "3c4d5c4235e80f62563810251507bedc435f9fc67645688d46433b1d50e7ee95",
+      "bytes": 556605,
+      "pass": true
+    },
+    {
+      "url": "/capabilities.json",
+      "expected": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a",
+      "observed": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a",
+      "bytes": 1290,
+      "pass": true
+    },
+    {
+      "url": "/icon-192.png",
+      "expected": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+      "observed": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+      "bytes": 3409,
+      "pass": true
+    },
+    {
+      "url": "/icon-512.png",
+      "expected": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+      "observed": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+      "bytes": 12236,
+      "pass": true
+    },
+    {
+      "url": "/icon.svg",
+      "expected": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+      "observed": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+      "bytes": 180,
+      "pass": true
+    },
+    {
+      "url": "/index.html",
+      "expected": "ee01d1a09e5b045f2469ad7a43f4163e0b4a234ef35a4eb40e9373160c0e9b5e",
+      "observed": "ee01d1a09e5b045f2469ad7a43f4163e0b4a234ef35a4eb40e9373160c0e9b5e",
+      "bytes": 446,
+      "pass": true
+    },
+    {
+      "url": "/manifest.webmanifest",
+      "expected": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+      "observed": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+      "bytes": 416,
+      "pass": true
+    },
+    {
+      "url": "/sw.js",
+      "expected": "ed6ddd10d84df29e3e1cc1cfd8d994d2db689e4a9c4f0820cd5983622007ae76",
+      "observed": "ed6ddd10d84df29e3e1cc1cfd8d994d2db689e4a9c4f0820cd5983622007ae76",
+      "bytes": 3919,
+      "pass": true
+    }
+  ]
+}

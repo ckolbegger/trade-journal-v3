@@ -1,0 +1,12 @@
+[
+  {
+    "name": "chrome-core-v2",
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  },
+  {
+    "name": "chrome-offline",
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  }
+]

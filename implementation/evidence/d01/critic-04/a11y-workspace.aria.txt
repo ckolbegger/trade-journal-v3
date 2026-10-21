@@ -1,0 +1,31 @@
+- navigation "Primary":
+  - strong: TRADE JOURNAL
+  - button "Trades"
+  - button "New Plan"
+  - button "Workspace"
+- main:
+  - paragraph: AFTER-CLOSE JOURNAL · USD
+  - heading "Workspace" [level=1]
+  - button "Check for application updates"
+  - complementary "Update available":
+    - heading "Update available" [level=2]
+    - paragraph: The complete new release is verified. Reload when you are ready.
+    - button "Reload to update"
+  - complementary "Storage protection":
+    - strong: Storage is Best Effort.
+    - text: This browser may clear your data. Backup is not installed until a later release.
+    - button "Request storage protection"
+  - paragraph: Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.
+  - heading "Workspace" [level=2]
+  - paragraph: Use your real Institution and Account. They are trading records; there is no application login.
+  - paragraph: "Time zone: America/Los_Angeles"
+  - text: Institution name
+  - textbox "Institution name"
+  - button "Save Institution"
+  - text: Institution
+  - combobox "Institution":
+    - option "Fidelity" [selected]
+    - option "Interactive Brokers"
+  - text: Account name
+  - textbox "Account name"
+  - button "Save Account"

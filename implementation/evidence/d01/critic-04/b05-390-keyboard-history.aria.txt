@@ -1,0 +1,47 @@
+- navigation "Primary":
+  - button "Trades"
+  - button "New Plan"
+  - button "Workspace"
+- main:
+  - paragraph: AFTER-CLOSE JOURNAL · USD
+  - heading "SPY · Planned" [level=1]
+  - button "Check for application updates"
+  - complementary "Storage protection":
+    - strong: Storage is Best Effort.
+    - text: This browser may clear your data. Backup is not installed until a later release.
+    - button "Request storage protection"
+  - paragraph: Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.
+  - status: Plan confirmed and saved on this device.
+  - text: Planned · Unfilled
+  - heading "Frozen Plan Baseline" [level=2]
+  - paragraph: Charles Schwab · Individual 390 · Long Stock
+  - term: Original Planned Risk · 1R
+  - definition: $500.00
+  - term: Original Planned Reward
+  - definition: $1000.00
+  - term: Planned reward/risk ratio
+  - definition: 2/1
+  - term: Intended entry
+  - definition: $50 × 100 shares
+  - term: Stop · underlying price
+  - definition: $45
+  - term: Target · underlying price
+  - definition: $60
+  - paragraph: No exposure has been entered.
+  - heading "Plan Reflection" [level=2]
+  - paragraph: Trade Anchor · Plan Confirmation
+  - heading "Why this trade, why now?" [level=3]
+  - paragraph: Keyboard-only fixture P
+  - heading "What would invalidate the thesis?" [level=3]
+  - paragraph: Thesis fails on margin weakness
+  - heading "Conviction" [level=3]
+  - paragraph: Unanswered
+  - heading "Primary emotion" [level=3]
+  - paragraph: Calm
+  - group:
+    - text: View history
+    - paragraph: "Confirmed: 2026-10-19 10:34:55.627 America/New_York"
+    - paragraph: "Saved: 2026-10-19 10:34:55.64 America/New_York"
+    - paragraph: "Recorded Sequence: 1"
+    - paragraph: "Plan fact: 8a993085-ca71-4790-87dc-d057667d49ea"
+    - paragraph: "Version: 1a88e95b-4344-457f-b274-1c2590ca0e39"

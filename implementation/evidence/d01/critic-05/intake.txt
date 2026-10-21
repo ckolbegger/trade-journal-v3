@@ -1,0 +1,11 @@
+Independent critic attempt 05; preparation only until explicit runtime release.
+Worktree: /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+Branch: codex-gpt-6.1-sol
+Baseline: db3580cdc1ee95b5056a4de6dc36430cdd71a421
+Specs tree: 7ca277bffbe19d0ca3c24fc703817a95af54639d; git diff baseline -- specs empty.
+Read /private/tmp/handoff-D1.md in full, local AGENTS, specs index, glossary, all ADRs, overview, ten modules, UI and delivery contracts, complete acceptance contract, kickoff, screenshot index, planning protocol and traceability; complete D1 plan including tooling/resource appendix, stack and compatibility research; accepted planning approach and D1 roadmap boundary.
+Authoritative addendum: implementation/plan/d01-capacity-policy-revision.md. Installed envelope M=543817728 bytes, H=(max(0,M-L)+C)*1.25; ~680MB fresh. Previous 16GB floor is superseded. Functional checks, native transactions, rollback and quota failure still fail closed.
+No previous critic scripts or results read/reused. Own executable browser harness lives /private/tmp/critic05-repl.mjs; evidence copy independent-harness.txt.
+No deployment, push, commit, implementation/test/config/spec/plan editing. Browser/runtime/dist ownership not assumed; waiting for root explicit release after cumulative verification.
+Planned evidence: native persistent isolated Chrome at actual quota; UI-only creation and confirmation; actual stopped-browser offline restart; full authoritative roots/versions/lifecycle bytes before/after failures; host-only fault injection disclosed per case; fresh/existing four failure matrix; full SHA inventory; actual old-release-to-new upgrade and second real-release update; native keyboard interaction with no programmatic focus, narrow/wide/live boundary/reflow, axe and manual tree; supplemental Firefox/WebKit readiness/resource observations.
+Production HTTPS is explicitly deferred by user LOCAL ONLY instruction. Actual OS installation/Chrome native zoom only if safe isolation available; lack of proof must remain a limitation, never substituted with manifest/CSS zoom.

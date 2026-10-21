@@ -1,0 +1,71 @@
+
+> trade-journal-v3@0.1.0 test:browser
+> playwright test --project webkit --grep D1-B02|D1-B05|unreadable
+
+[WebServer] (node:97701) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:97710) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [webkit] › tests/browser/d01-readiness.spec.ts:60:1 › D1-B03 unreadable existing storage is Integrity Blocked and never replaced (2.1s)
+  ✓  2 [webkit] › tests/browser/d01-ui.spec.ts:12:1 › D1-B02 invalid input, catalog conflict and Cancel preserve input and write no Plan (1.6s)
+  ✘  3 [webkit] › tests/browser/d01-ui.spec.ts:34:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 390px (1.0s)
+(node:97872) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  4 [webkit] › tests/browser/d01-ui.spec.ts:34:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 1440px (1.1s)
+
+
+  1) [webkit] › tests/browser/d01-ui.spec.ts:34:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 390px 
+
+    Error: Control not reachable through the keyboard
+
+       8 |     await page.keyboard.press('Tab');
+       9 |   }
+    > 10 |   throw new Error('Control not reachable through the keyboard');
+         |         ^
+      11 | }
+      12 | test('D1-B02 invalid input, catalog conflict and Cancel preserve input and write no Plan', async ({ page, context }) => {
+      13 |   await onboard(page); await fillPlan(page);
+        at tabTo (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-ui.spec.ts:10:9)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-ui.spec.ts:38:5
+
+    Error Context: test-results/d01-ui-D1-B05-keyboard-onl-e2973-esize-zoom-and-axe-at-390px-webkit/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/d01-ui-D1-B05-keyboard-onl-e2973-esize-zoom-and-axe-at-390px-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/d01-ui-D1-B05-keyboard-onl-e2973-esize-zoom-and-axe-at-390px-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [webkit] › tests/browser/d01-ui.spec.ts:34:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 1440px 
+
+    Error: Control not reachable through the keyboard
+
+       8 |     await page.keyboard.press('Tab');
+       9 |   }
+    > 10 |   throw new Error('Control not reachable through the keyboard');
+         |         ^
+      11 | }
+      12 | test('D1-B02 invalid input, catalog conflict and Cancel preserve input and write no Plan', async ({ page, context }) => {
+      13 |   await onboard(page); await fillPlan(page);
+        at tabTo (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-ui.spec.ts:10:9)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-ui.spec.ts:38:5
+
+    Error Context: test-results/d01-ui-D1-B05-keyboard-onl-209d1-size-zoom-and-axe-at-1440px-webkit/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/d01-ui-D1-B05-keyboard-onl-209d1-size-zoom-and-axe-at-1440px-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/d01-ui-D1-B05-keyboard-onl-209d1-size-zoom-and-axe-at-1440px-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [webkit] › tests/browser/d01-ui.spec.ts:34:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 390px 
+    [webkit] › tests/browser/d01-ui.spec.ts:34:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 1440px 
+  2 passed (6.9s)

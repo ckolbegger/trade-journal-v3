@@ -1,0 +1,56 @@
+[
+  {
+    "width": 390,
+    "cancelSame": true,
+    "conflict": {
+      "text": "Review before continuing\nBrokerage records changed in another tab. Review your selections before confirming again.\nReview current references",
+      "preserved": "CONFLICT",
+      "noWrite": true,
+      "focus": {
+        "tag": "H2",
+        "text": "Review before continuing",
+        "labels": [],
+        "outline": "3px solid rgb(75, 100, 190)"
+      }
+    },
+    "aborted": {
+      "text": "Review before continuing\nSaving failed. Nothing was recorded. Your entered values are preserved. Retry startup before saving again.",
+      "preserved": "CONFLICT",
+      "noWrite": true,
+      "focus": {
+        "tag": "H2",
+        "text": "Review before continuing",
+        "labels": [],
+        "outline": "3px solid rgb(75, 100, 190)"
+      }
+    },
+    "restartNoWrite": true
+  },
+  {
+    "width": 1440,
+    "cancelSame": true,
+    "conflict": {
+      "text": "Review before continuing\nBrokerage records changed in another tab. Review your selections before confirming again.\nReview current references",
+      "preserved": "CONFLICT",
+      "noWrite": true,
+      "focus": {
+        "tag": "H2",
+        "text": "Review before continuing",
+        "labels": [],
+        "outline": "3px solid rgb(75, 100, 190)"
+      }
+    },
+    "aborted": {
+      "text": "Review before continuing\nSaving failed. Nothing was recorded. Your entered values are preserved. Retry startup before saving again.",
+      "preserved": "CONFLICT",
+      "noWrite": true,
+      "focus": {
+        "tag": "H2",
+        "text": "Review before continuing",
+        "labels": [],
+        "outline": "3px solid rgb(75, 100, 190)"
+      }
+    },
+    "restartNoWrite": true
+  }
+]

@@ -1,0 +1,55 @@
+{
+  "identity": "trade-journal-d1-v1",
+  "scope": "Exact Long Stock Plans with fixed underlying-price Stop and Target",
+  "operations": {
+    "Workspace": [
+      "initialize",
+      "getStatus",
+      "requestDurability"
+    ],
+    "ReferenceCatalog": [
+      "save.CreateInstitution",
+      "save.CreateAccount",
+      "query.Strategy",
+      "query.Institution",
+      "query.Account",
+      "resolve.NewSelection",
+      "resolve.DisplayOnly",
+      "resolve.RetainedReference"
+    ],
+    "TradeWorkflows": [
+      "confirmPlan"
+    ],
+    "TradeAnalysis": [
+      "assessPlan.LongStock",
+      "derive.Planned"
+    ],
+    "TradeRecord": [
+      "prepareChange.ConfirmPlan",
+      "applyPreparedChange.ConfirmPlan",
+      "getRecord",
+      "queryRecords.Planned",
+      "history",
+      "resolveAnchors.Trade"
+    ],
+    "Journal": [
+      "getDefinitions.PlanReflection",
+      "prepareEffects.PlanReflection",
+      "applyPreparedEffects.PlanReflection",
+      "query.TradeNarrative"
+    ],
+    "TradeViewsAndReporting": [
+      "browseTrades.Planned",
+      "getTradeDetail.Planned"
+    ]
+  },
+  "backupSchemaRanges": [],
+  "providerAdapters": [],
+  "calendarPolicy": {
+    "approvedRange": [
+      "2021-01-01",
+      "2028-12-31"
+    ],
+    "installedSessionOperations": []
+  }
+}

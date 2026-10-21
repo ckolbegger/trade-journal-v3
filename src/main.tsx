@@ -1,0 +1,14 @@
+import { createRoot } from 'react-dom/client';
+import { Store, Runtime } from './infrastructure/storage';
+import { BrowserHost } from './infrastructure/browser-host';
+import { Workspace } from './application/workspace';
+import { ReferenceCatalog } from './domain/reference-catalog';
+import { TradeWorkflows } from './application/trade-workflows';
+import { TradeViewsAndReporting } from './application/trade-views-and-reporting';
+import { App } from './presentation/App';
+const store = new Store('trade-journal-v3');
+const host = new BrowserHost();
+const runtime = new Runtime(store, host);
+const services = { workspace: new Workspace(runtime), catalog: new ReferenceCatalog(store, runtime), workflows: new TradeWorkflows(runtime), views: new TradeViewsAndReporting(store) };
+const root = document.getElementById('root');
+if (root) createRoot(root).render(<App services={services} delivery={host} />);

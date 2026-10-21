@@ -1,0 +1,523 @@
+{
+  "browser": "157.0",
+  "secure": true,
+  "controller": "http://localhost:5174/sw.js",
+  "quota": {
+    "quota": 10737418240,
+    "usage": 917998
+  },
+  "persisted": false,
+  "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:157.0) Gecko/20100101 Firefox/157.0",
+  "caches": [
+    {
+      "name": "trade-journal-release-4870cf845745ed4fd6668af735e76a044e459840651b6f2c5bbce7711d1d81a8",
+      "manifest": {
+        "version": 1,
+        "releaseId": "4870cf845745ed4fd6668af735e76a044e459840651b6f2c5bbce7711d1d81a8",
+        "assets": [
+          {
+            "url": "/assets/index-DMpQF0ZT.js",
+            "bytes": 557140,
+            "sha256": "91882cca288878acb3fd9831eac1badc357709fb417b433ebc122845da147144"
+          },
+          {
+            "url": "/assets/index-Ukg-5B9v.css",
+            "bytes": 2898,
+            "sha256": "a2168dbf5e6e8e5c495a0e2c0f0058e968fbb9009df4ea06d74071873b52811c"
+          },
+          {
+            "url": "/capabilities.json",
+            "bytes": 1290,
+            "sha256": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a"
+          },
+          {
+            "url": "/icon-192.png",
+            "bytes": 3409,
+            "sha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9"
+          },
+          {
+            "url": "/icon-512.png",
+            "bytes": 12236,
+            "sha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457"
+          },
+          {
+            "url": "/icon.svg",
+            "bytes": 180,
+            "sha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9"
+          },
+          {
+            "url": "/index.html",
+            "bytes": 446,
+            "sha256": "63877e183e3ff956c2e09aaf7838099a5acc3c5c60da2235e9ebd0540161d67d"
+          },
+          {
+            "url": "/manifest.webmanifest",
+            "bytes": 416,
+            "sha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd"
+          },
+          {
+            "url": "/sw.js",
+            "bytes": 3935,
+            "sha256": "3e0fb904a941ae00b282f168b71bdc7a557fefb4081f43016d1d2537f4cde00e"
+          }
+        ]
+      },
+      "proofs": [
+        {
+          "url": "/assets/index-DMpQF0ZT.js",
+          "bytes": 557140,
+          "valid": true
+        },
+        {
+          "url": "/assets/index-Ukg-5B9v.css",
+          "bytes": 2898,
+          "valid": true
+        },
+        {
+          "url": "/capabilities.json",
+          "bytes": 1290,
+          "valid": true
+        },
+        {
+          "url": "/icon-192.png",
+          "bytes": 3409,
+          "valid": true
+        },
+        {
+          "url": "/icon-512.png",
+          "bytes": 12236,
+          "valid": true
+        },
+        {
+          "url": "/icon.svg",
+          "bytes": 180,
+          "valid": true
+        },
+        {
+          "url": "/index.html",
+          "bytes": 446,
+          "valid": true
+        },
+        {
+          "url": "/manifest.webmanifest",
+          "bytes": 416,
+          "valid": true
+        },
+        {
+          "url": "/sw.js",
+          "bytes": 3935,
+          "valid": true
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "name": "Trade Journal",
+    "short_name": "Trade Journal",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f6f4ed",
+    "theme_color": "#f6f4ed",
+    "lang": "en",
+    "scope": "/",
+    "id": "/",
+    "icons": [
+      {
+        "src": "/icon-192.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any"
+      },
+      {
+        "src": "/icon-512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any"
+      },
+      {
+        "src": "/icon.svg",
+        "sizes": "any",
+        "type": "image/svg+xml",
+        "purpose": "any"
+      }
+    ]
+  },
+  "state": {
+    "diagnostic": [],
+    "lifecycle": [
+      {
+        "key": "57db01ab-698d-4ffa-bf53-8d52575a68a7:d793d27d-807b-4433-b1f4-7e65d6afe68d",
+        "generation": "57db01ab-698d-4ffa-bf53-8d52575a68a7",
+        "tradeId": "d793d27d-807b-4433-b1f4-7e65d6afe68d",
+        "lifecycle": "Planned",
+        "accountId": "81ddf61c-2899-4b02-958e-27efa1d5bbc8",
+        "symbol": "FIREFOX",
+        "economicTime": "2026-10-21T01:03:30.456Z",
+        "economicOrder": "08641792544610456000000",
+        "sequence": 1,
+        "version": "6774b8cc-1a5e-4f6c-b597-d167b4463f49",
+        "revision": "39d1d2d1-4f36-4dc9-923c-71b2f65ea261"
+      }
+    ],
+    "projections": [
+      {
+        "key": "active-size:57db01ab-698d-4ffa-bf53-8d52575a68a7",
+        "value": {
+          "revision": "a1be40bc-4f95-4e25-bfad-c91bd69829e3",
+          "serializedRowsBytes": 6438
+        }
+      }
+    ],
+    "roots": [
+      {
+        "key": "active",
+        "generation": "57db01ab-698d-4ffa-bf53-8d52575a68a7",
+        "revision": "a1be40bc-4f95-4e25-bfad-c91bd69829e3",
+        "schema": 1,
+        "timeZone": "America/New_York",
+        "catalogRevision": "5e82ce3d-634f-4ecd-aaf7-4a9206b3eedb",
+        "definitionRevision": "plan-reflection-v1",
+        "commitOrdinal": 4,
+        "recordedSequence": 1
+      }
+    ],
+    "versions": [
+      {
+        "version": "508c5026-d828-4138-9e80-9fa6644f9a45",
+        "id": "9b2471cd-7a4e-46b2-86df-4cfd56bd0146",
+        "generation": "57db01ab-698d-4ffa-bf53-8d52575a68a7",
+        "kind": "Institution",
+        "value": {
+          "id": "9b2471cd-7a4e-46b2-86df-4cfd56bd0146",
+          "version": "508c5026-d828-4138-9e80-9fa6644f9a45",
+          "kind": "Institution",
+          "label": "Critic06 firefox Brokerage",
+          "active": true,
+          "origin": "Trader"
+        },
+        "tradeId": "",
+        "economicTime": "2026-10-21T01:03:30.250Z",
+        "saveTime": "2026-10-21T01:03:30.250Z",
+        "sequence": 0,
+        "commitOrdinal": 2
+      },
+      {
+        "version": "57db01ab-698d-4ffa-bf53-8d52575a68a7:long-stock-v1",
+        "id": "long-stock",
+        "generation": "57db01ab-698d-4ffa-bf53-8d52575a68a7",
+        "kind": "Strategy",
+        "value": {
+          "id": "long-stock",
+          "kind": "Strategy",
+          "label": "Long Stock",
+          "active": true,
+          "shape": {
+            "roles": [
+              {
+                "kind": "Stock",
+                "direction": "Long",
+                "relativeQuantity": "1"
+              }
+            ]
+          },
+          "origin": "Default"
+        },
+        "tradeId": "",
+        "economicTime": "2026-10-21T01:03:30.164Z",
+        "saveTime": "2026-10-21T01:03:30.164Z",
+        "sequence": 0,
+        "commitOrdinal": 1
+      },
+      {
+        "id": "plan-confirmation",
+        "version": "57db01ab-698d-4ffa-bf53-8d52575a68a7:plan-confirmation-v1",
+        "kind": "Source",
+        "value": {
+          "id": "plan-confirmation",
+          "label": "Plan Confirmation"
+        },
+        "generation": "57db01ab-698d-4ffa-bf53-8d52575a68a7",
+        "tradeId": "",
+        "economicTime": "2026-10-21T01:03:30.164Z",
+        "saveTime": "2026-10-21T01:03:30.164Z",
+        "sequence": 0,
+        "commitOrdinal": 1
+      },
+      {
+        "id": "plan-reflection",
+        "version": "57db01ab-698d-4ffa-bf53-8d52575a68a7:plan-reflection-v1",
+        "kind": "Definition",
+        "value": {
+          "id": "plan-reflection",
+          "revision": "plan-reflection-v1",
+          "label": "Plan Reflection",
+          "prompts": [
+            {
+              "id": "thesis",
+              "wording": "Why this trade, why now?",
+              "kind": "Text",
+              "required": true,
+              "role": "Thesis"
+            },
+            {
+              "id": "invalidation",
+              "wording": "What would invalidate the thesis?",
+              "kind": "Text",
+              "required": true,
+              "role": "Invalidation"
+            },
+            {
+              "id": "conviction",
+              "wording": "Conviction",
+              "kind": "Scale",
+              "required": false,
+              "minimum": 1,
+              "maximum": 5
+            },
+            {
+              "id": "emotion",
+              "wording": "Primary emotion",
+              "kind": "SingleSelect",
+              "required": false,
+              "options": [
+                {
+                  "id": "calm",
+                  "label": "Calm"
+                },
+                {
+                  "id": "eager",
+                  "label": "Eager"
+                },
+                {
+                  "id": "anxious",
+                  "label": "Anxious"
+                },
+                {
+                  "id": "fomo",
+                  "label": "FOMO"
+                },
+                {
+                  "id": "revenge",
+                  "label": "Revenge"
+                },
+                {
+                  "id": "relieved",
+                  "label": "Relieved"
+                },
+                {
+                  "id": "frustrated",
+                  "label": "Frustrated"
+                },
+                {
+                  "id": "other",
+                  "label": "Other"
+                }
+              ]
+            }
+          ]
+        },
+        "generation": "57db01ab-698d-4ffa-bf53-8d52575a68a7",
+        "tradeId": "",
+        "economicTime": "2026-10-21T01:03:30.164Z",
+        "saveTime": "2026-10-21T01:03:30.164Z",
+        "sequence": 0,
+        "commitOrdinal": 1
+      },
+      {
+        "version": "6774b8cc-1a5e-4f6c-b597-d167b4463f49",
+        "id": "d1fa37a3-032b-473f-880a-63dc6dd6af74",
+        "generation": "57db01ab-698d-4ffa-bf53-8d52575a68a7",
+        "kind": "Plan",
+        "tradeId": "d793d27d-807b-4433-b1f4-7e65d6afe68d",
+        "economicTime": "2026-10-21T01:03:30.456Z",
+        "saveTime": "2026-10-21T01:03:30.475Z",
+        "sequence": 1,
+        "commitOrdinal": 4,
+        "value": {
+          "tradeId": "d793d27d-807b-4433-b1f4-7e65d6afe68d",
+          "revision": "39d1d2d1-4f36-4dc9-923c-71b2f65ea261",
+          "planFactId": "d1fa37a3-032b-473f-880a-63dc6dd6af74",
+          "planVersionId": "6774b8cc-1a5e-4f6c-b597-d167b4463f49",
+          "plannedLegId": "6250698f-64cb-4172-b49c-792eeb33747c",
+          "stopId": "d64574c3-397a-49ee-bf36-510fb097b2c3",
+          "targetId": "e3efeece-c561-4010-8c3b-bfee5adead2e",
+          "accountId": "81ddf61c-2899-4b02-958e-27efa1d5bbc8",
+          "strategyId": "long-stock",
+          "lifecycle": "Planned",
+          "plan": {
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "FIREFOX",
+              "currency": "USD"
+            },
+            "quantity": "100",
+            "entry": "50",
+            "stop": "45",
+            "target": "60",
+            "thesis": "Demand is holding above support.",
+            "invalidation": "A sustained support break."
+          },
+          "baseline": {
+            "risk": "500",
+            "oneR": "500",
+            "reward": "1000",
+            "ratio": {
+              "numerator": "2",
+              "denominator": "1"
+            },
+            "conditions": [
+              {
+                "kind": "Stop",
+                "price": "45",
+                "amount": "500"
+              },
+              {
+                "kind": "Target",
+                "price": "60",
+                "amount": "1000"
+              }
+            ]
+          },
+          "economicTime": "2026-10-21T01:03:30.456Z",
+          "saveTime": "2026-10-21T01:03:30.475Z",
+          "sequence": 1
+        }
+      },
+      {
+        "version": "d586f448-b2b3-4cfb-a79b-6a24be9fabea",
+        "id": "81ddf61c-2899-4b02-958e-27efa1d5bbc8",
+        "generation": "57db01ab-698d-4ffa-bf53-8d52575a68a7",
+        "kind": "Account",
+        "value": {
+          "id": "81ddf61c-2899-4b02-958e-27efa1d5bbc8",
+          "version": "d586f448-b2b3-4cfb-a79b-6a24be9fabea",
+          "kind": "Account",
+          "label": "Critic06 firefox Taxable",
+          "active": true,
+          "origin": "Trader",
+          "parentId": "9b2471cd-7a4e-46b2-86df-4cfd56bd0146"
+        },
+        "tradeId": "",
+        "economicTime": "2026-10-21T01:03:30.333Z",
+        "saveTime": "2026-10-21T01:03:30.333Z",
+        "sequence": 0,
+        "commitOrdinal": 3
+      },
+      {
+        "version": "fe2a2cb0-fa8d-4964-a773-f5985a0997c4",
+        "id": "f4579146-b9ba-42e9-a819-6239f865543d",
+        "generation": "57db01ab-698d-4ffa-bf53-8d52575a68a7",
+        "kind": "JournalEntry",
+        "tradeId": "d793d27d-807b-4433-b1f4-7e65d6afe68d",
+        "economicTime": "2026-10-21T01:03:30.456Z",
+        "saveTime": "2026-10-21T01:03:30.475Z",
+        "sequence": 1,
+        "commitOrdinal": 4,
+        "value": {
+          "id": "f4579146-b9ba-42e9-a819-6239f865543d",
+          "version": "fe2a2cb0-fa8d-4964-a773-f5985a0997c4",
+          "definition": {
+            "id": "plan-reflection",
+            "revision": "plan-reflection-v1",
+            "label": "Plan Reflection",
+            "prompts": [
+              {
+                "id": "thesis",
+                "wording": "Why this trade, why now?",
+                "kind": "Text",
+                "required": true,
+                "role": "Thesis"
+              },
+              {
+                "id": "invalidation",
+                "wording": "What would invalidate the thesis?",
+                "kind": "Text",
+                "required": true,
+                "role": "Invalidation"
+              },
+              {
+                "id": "conviction",
+                "wording": "Conviction",
+                "kind": "Scale",
+                "required": false,
+                "minimum": 1,
+                "maximum": 5
+              },
+              {
+                "id": "emotion",
+                "wording": "Primary emotion",
+                "kind": "SingleSelect",
+                "required": false,
+                "options": [
+                  {
+                    "id": "calm",
+                    "label": "Calm"
+                  },
+                  {
+                    "id": "eager",
+                    "label": "Eager"
+                  },
+                  {
+                    "id": "anxious",
+                    "label": "Anxious"
+                  },
+                  {
+                    "id": "fomo",
+                    "label": "FOMO"
+                  },
+                  {
+                    "id": "revenge",
+                    "label": "Revenge"
+                  },
+                  {
+                    "id": "relieved",
+                    "label": "Relieved"
+                  },
+                  {
+                    "id": "frustrated",
+                    "label": "Frustrated"
+                  },
+                  {
+                    "id": "other",
+                    "label": "Other"
+                  }
+                ]
+              }
+            ]
+          },
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "d793d27d-807b-4433-b1f4-7e65d6afe68d"
+          },
+          "origin": {
+            "kind": "Plan",
+            "factId": "d1fa37a3-032b-473f-880a-63dc6dd6af74"
+          },
+          "source": {
+            "id": "plan-confirmation",
+            "label": "Plan Confirmation"
+          },
+          "momentTime": "2026-10-21T01:03:30.456Z",
+          "firstAuthoredTime": "2026-10-21T01:03:30.475Z",
+          "saveTime": "2026-10-21T01:03:30.475Z",
+          "responses": {
+            "thesis": {
+              "kind": "Text",
+              "value": "Demand is holding above support."
+            },
+            "invalidation": {
+              "kind": "Text",
+              "value": "A sustained support break."
+            },
+            "conviction": {
+              "kind": "Unanswered"
+            },
+            "emotion": {
+              "kind": "Unanswered"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,230 @@
+{
+  "axe-keyboard-390-empty": [],
+  "keyboard-390-invalid-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "46c49b3e-fe96-480e-9139-a1b556a7280f",
+      "revision": "2f862a1e-2f9f-4f52-a344-485df5fee913",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "8b6eccdf-f098-4b33-8ced-d1d6b8d11526",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 3,
+      "recordedSequence": 0
+    },
+    "versionCount": 5
+  },
+  "axe-keyboard-390-validation": [],
+  "axe-keyboard-390-form": [],
+  "resize-390": [
+    {
+      "width": 767,
+      "nav": {
+        "position": "fixed",
+        "direction": "row"
+      },
+      "scrollWidth": 767,
+      "clientWidth": 767,
+      "focus": "INPUT"
+    },
+    {
+      "width": 768,
+      "nav": {
+        "position": "static",
+        "direction": "column"
+      },
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "focus": "INPUT"
+    },
+    {
+      "width": 390,
+      "nav": {
+        "position": "fixed",
+        "direction": "row"
+      },
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "focus": "INPUT"
+    },
+    {
+      "width": 1440,
+      "nav": {
+        "position": "static",
+        "direction": "column"
+      },
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "focus": "INPUT"
+    },
+    {
+      "width": 390,
+      "nav": {
+        "position": "fixed",
+        "direction": "row"
+      },
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "focus": "INPUT"
+    }
+  ],
+  "native-zoom-attempt-390": {
+    "beforeZoom": {
+      "innerWidth": 390,
+      "devicePixelRatio": 1,
+      "visualViewport": 390
+    },
+    "afterZoom": {
+      "innerWidth": 390,
+      "devicePixelRatio": 1,
+      "visualViewport": 390
+    }
+  },
+  "keyboard-390-abort-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "46c49b3e-fe96-480e-9139-a1b556a7280f",
+      "revision": "2f862a1e-2f9f-4f52-a344-485df5fee913",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "8b6eccdf-f098-4b33-8ced-d1d6b8d11526",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 3,
+      "recordedSequence": 0
+    },
+    "versionCount": 5
+  },
+  "axe-keyboard-390-aborted": [],
+  "axe-keyboard-390-detail-history": [],
+  "keyboard-390-cancel-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "46c49b3e-fe96-480e-9139-a1b556a7280f",
+      "revision": "f17405b4-f18a-437f-bcf5-4bb19a4c0e9e",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "8b6eccdf-f098-4b33-8ced-d1d6b8d11526",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 4,
+      "recordedSequence": 1
+    },
+    "versionCount": 7
+  },
+  "axe-keyboard-1440-empty": [],
+  "keyboard-1440-invalid-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "98049572-219c-4401-bbdd-93f3af84b55e",
+      "revision": "7f05f1bf-03f6-404b-819a-d5ad1127870f",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "03f064a4-3ac5-4492-b6f6-2656336b0024",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 3,
+      "recordedSequence": 0
+    },
+    "versionCount": 5
+  },
+  "axe-keyboard-1440-validation": [],
+  "axe-keyboard-1440-form": [],
+  "resize-1440": [
+    {
+      "width": 767,
+      "nav": {
+        "position": "fixed",
+        "direction": "row"
+      },
+      "scrollWidth": 767,
+      "clientWidth": 767,
+      "focus": "INPUT"
+    },
+    {
+      "width": 768,
+      "nav": {
+        "position": "static",
+        "direction": "column"
+      },
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "focus": "INPUT"
+    },
+    {
+      "width": 390,
+      "nav": {
+        "position": "fixed",
+        "direction": "row"
+      },
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "focus": "INPUT"
+    },
+    {
+      "width": 1440,
+      "nav": {
+        "position": "static",
+        "direction": "column"
+      },
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "focus": "INPUT"
+    },
+    {
+      "width": 1440,
+      "nav": {
+        "position": "static",
+        "direction": "column"
+      },
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "focus": "INPUT"
+    }
+  ],
+  "native-zoom-attempt-1440": {
+    "beforeZoom": {
+      "innerWidth": 1440,
+      "devicePixelRatio": 1,
+      "visualViewport": 1440
+    },
+    "afterZoom": {
+      "innerWidth": 1440,
+      "devicePixelRatio": 1,
+      "visualViewport": 1440
+    }
+  },
+  "keyboard-1440-abort-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "98049572-219c-4401-bbdd-93f3af84b55e",
+      "revision": "7f05f1bf-03f6-404b-819a-d5ad1127870f",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "03f064a4-3ac5-4492-b6f6-2656336b0024",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 3,
+      "recordedSequence": 0
+    },
+    "versionCount": 5
+  },
+  "axe-keyboard-1440-aborted": [],
+  "axe-keyboard-1440-detail-history": [],
+  "keyboard-1440-cancel-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "98049572-219c-4401-bbdd-93f3af84b55e",
+      "revision": "b6b9cc79-749a-4cef-91ad-c6222c8ef178",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "03f064a4-3ac5-4492-b6f6-2656336b0024",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 4,
+      "recordedSequence": 1
+    },
+    "versionCount": 7
+  }
+}

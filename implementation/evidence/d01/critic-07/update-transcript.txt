@@ -1,0 +1,3 @@
+PASS B04 failed real release staging keeps old worker/input/data
+PASS B04 complete staged update defers active form and blocks other clients
+PASS B04 updated release cold offline

@@ -1,0 +1,17 @@
+- navigation "Primary":
+  - strong: TRADE JOURNAL
+  - button "Trades"
+  - button "New Plan"
+  - button "Workspace"
+- main:
+  - paragraph: AFTER-CLOSE JOURNAL · USD
+  - heading "Trades" [level=1]
+  - button "Check for application updates"
+  - complementary "Storage protection":
+    - strong: Storage is Best Effort.
+    - text: This browser may clear your data. Backup is not installed until a later release.
+    - button "Request storage protection"
+  - paragraph: Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.
+  - heading "Planned Trades" [level=2]
+  - alert: Error
+  - button "Retry list"

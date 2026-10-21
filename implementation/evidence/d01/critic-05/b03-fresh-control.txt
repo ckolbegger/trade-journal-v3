@@ -1,0 +1,10 @@
+Unsupported
+
+We could not verify safe writing in this environment.
+
+The verified application is not controlling this tab.
+Retry startup
+
+Try another browser that meets the readiness requirements.
+
+Another browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.

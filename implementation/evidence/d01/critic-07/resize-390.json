@@ -1,0 +1,26 @@
+[
+  {
+    "width": 767,
+    "scrollWidth": 767,
+    "nav": "fixed",
+    "heading": "New Plan"
+  },
+  {
+    "width": 768,
+    "scrollWidth": 768,
+    "nav": "static",
+    "heading": "New Plan"
+  },
+  {
+    "width": 390,
+    "scrollWidth": 390,
+    "nav": "fixed",
+    "heading": "New Plan"
+  },
+  {
+    "width": 1440,
+    "scrollWidth": 1440,
+    "nav": "static",
+    "heading": "New Plan"
+  }
+]

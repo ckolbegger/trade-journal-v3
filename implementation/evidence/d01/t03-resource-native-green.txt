@@ -1,0 +1,104 @@
+
+> trade-journal-v3@0.1.0 test:browser
+> playwright test --project=webkit --grep=native resource receipt|native transaction abort
+
+[WebServer] (node:13760) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:13762) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Native resource receipt {
+  M: 6585417728,
+  L: 6739,
+  C: 561261,
+  Q: 20615267904,
+  H: 16464237472.5,
+  quota: 20615843021,
+  usage: 575117,
+  method: 'SerializedActiveLowerBound'
+}
+  ✓  1 [webkit] › tests/browser/d01-resources.spec.ts:3:1 › D1-T03 native resource receipt accounts for stored bytes and complete cache growth (1.2s)
+  ✘  2 [webkit] › tests/browser/d01-ui.spec.ts:35:1 › D1-B02 native transaction abort preserves every participant and entered Plan (1.2s)
+
+
+  1) [webkit] › tests/browser/d01-ui.spec.ts:35:1 › D1-B02 native transaction abort preserves every participant and entered Plan 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  3
+    + Received  + 23
+
+    @@ -1,16 +1,16 @@
+      Object {
+        "lifecycle": Array [],
+        "roots": Array [
+          Object {
+    -       "catalogRevision": "b27c8d77-9d40-470d-be10-212085ccb882",
+    -       "commitOrdinal": 2,
+    +       "catalogRevision": "035e2e06-bbc8-4d2c-acdc-12cdd99d9167",
+    +       "commitOrdinal": 3,
+            "definitionRevision": "plan-reflection-v1",
+            "generation": "b964d94d-d446-4f1e-8cab-81d5559e0bdf",
+            "key": "active",
+            "recordedSequence": 0,
+    -       "revision": "857fb744-79d1-48c0-970d-3a26c3fd1a6f",
+    +       "revision": "a529def3-6f32-449f-9b82-f80962a1191f",
+            "schema": 1,
+            "timeZone": "America/New_York",
+          },
+        ],
+        "versions": Array [
+    @@ -152,8 +152,28 @@
+                },
+              ],
+              "revision": "plan-reflection-v1",
+            },
+            "version": "b964d94d-d446-4f1e-8cab-81d5559e0bdf:plan-reflection-v1",
+    +     },
+    +     Object {
+    +       "commitOrdinal": 3,
+    +       "economicTime": "2026-10-19T02:52:38.857Z",
+    +       "generation": "b964d94d-d446-4f1e-8cab-81d5559e0bdf",
+    +       "id": "6f0c96ba-0741-4259-aa42-04f89c8f6c85",
+    +       "kind": "Account",
+    +       "saveTime": "2026-10-19T02:52:38.857Z",
+    +       "sequence": 0,
+    +       "tradeId": "",
+    +       "value": Object {
+    +         "active": true,
+    +         "id": "6f0c96ba-0741-4259-aa42-04f89c8f6c85",
+    +         "kind": "Account",
+    +         "label": "Taxable",
+    +         "origin": "Trader",
+    +         "parentId": "78b6f3c2-30c6-4f50-9f7d-47b918623995",
+    +         "version": "f5190ead-246f-42d5-8315-b9696dbad1d8",
+    +       },
+    +       "version": "f5190ead-246f-42d5-8315-b9696dbad1d8",
+          },
+        ],
+      }
+
+      57 |   await expect(page.getByRole('alert')).toContainText('StorageFailure');
+      58 |   await expect(page.getByLabel('Stock symbol')).toHaveValue('XYZ');
+    > 59 |   expect(await snapshot()).toEqual(before);
+         |                            ^
+      60 |   await context.close();
+      61 |   const reopened = await playwright[browserName].launchPersistentContext(profilePath, { headless: true, baseURL });
+      62 |   try {
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-ui.spec.ts:59:28
+
+    Error Context: test-results/d01-ui-D1-B02-native-trans-04926-articipant-and-entered-Plan-webkit/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/d01-ui-D1-B02-native-trans-04926-articipant-and-entered-Plan-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/d01-ui-D1-B02-native-trans-04926-articipant-and-entered-Plan-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [webkit] › tests/browser/d01-ui.spec.ts:35:1 › D1-B02 native transaction abort preserves every participant and entered Plan 
+  1 passed (3.1s)

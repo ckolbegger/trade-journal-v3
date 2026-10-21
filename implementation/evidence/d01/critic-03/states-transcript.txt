@@ -1,0 +1,24 @@
+2026-10-19T09:18:32.822Z axe-loading-390 []
+2026-10-19T09:18:33.070Z axe-timezone-390 []
+2026-10-19T09:18:33.443Z axe-institution-onboarding-390 []
+2026-10-19T09:18:33.630Z durability-390 {"body":"Trades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nThe host did not grant stronger storage protection.\n\nAdd your brokerage records\n\nUse your real Institution and Account. They are trading records; there is no application login.\n\nTime zone: America/New_York\n\nInstitution name\nSave Institution","native":{"persisted":false}}
+2026-10-19T09:18:33.632Z durability-390-no-authoritative-write {"unchanged":true,"root":{"key":"active","generation":"ba800029-9360-494c-8b8b-77d3d2fb967f","revision":"d422dc70-ddf4-4bb4-869d-7956c2c29139","schema":1,"timeZone":"America/New_York","catalogRevision":"beec4308-e50e-4c51-b3ac-282195a13976","definitionRevision":"plan-reflection-v1","commitOrdinal":1,"recordedSequence":0},"versionCount":3}
+2026-10-19T09:18:33.938Z axe-account-onboarding-390 []
+2026-10-19T09:18:34.271Z axe-workspace-390 []
+2026-10-19T09:18:34.334Z duplicate-390-no-write {"unchanged":true,"root":{"key":"active","generation":"ba800029-9360-494c-8b8b-77d3d2fb967f","revision":"6ef326ed-61d0-427e-ba15-5f4977bc49e9","schema":1,"timeZone":"America/New_York","catalogRevision":"3a72cb20-a144-4551-be78-5976255d20d6","definitionRevision":"plan-reflection-v1","commitOrdinal":3,"recordedSequence":0},"versionCount":5}
+2026-10-19T09:18:34.565Z axe-duplicate-reference-390 []
+2026-10-19T09:18:34.890Z axe-list-error-390 []
+2026-10-19T09:18:34.900Z list-error-390-no-write {"unchanged":true,"root":{"key":"active","generation":"ba800029-9360-494c-8b8b-77d3d2fb967f","revision":"6ef326ed-61d0-427e-ba15-5f4977bc49e9","schema":1,"timeZone":"America/New_York","catalogRevision":"3a72cb20-a144-4551-be78-5976255d20d6","definitionRevision":"plan-reflection-v1","commitOrdinal":3,"recordedSequence":0},"versionCount":5}
+2026-10-19T09:18:34.948Z states-390 {"loading":true,"onboarding":true,"workspace":true,"duplicateError":true,"listErrorRetry":true}
+2026-10-19T09:18:35.599Z axe-loading-1440 []
+2026-10-19T09:18:35.832Z axe-timezone-1440 []
+2026-10-19T09:18:36.130Z axe-institution-onboarding-1440 []
+2026-10-19T09:18:36.327Z durability-1440 {"body":"TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nThe host did not grant stronger storage protection.\n\nAdd your brokerage records\n\nUse your real Institution and Account. They are trading records; there is no application login.\n\nTime zone: America/New_York\n\nInstitution name\nSave Institution","native":{"persisted":false}}
+2026-10-19T09:18:36.328Z durability-1440-no-authoritative-write {"unchanged":true,"root":{"key":"active","generation":"3da0f1c2-922b-488b-87fa-9d1ef08608d4","revision":"de40550e-5f8a-42b6-b8e7-07767aa2e0b3","schema":1,"timeZone":"America/New_York","catalogRevision":"7403e034-d681-4cf3-827b-3963a1b5165d","definitionRevision":"plan-reflection-v1","commitOrdinal":1,"recordedSequence":0},"versionCount":3}
+2026-10-19T09:18:36.596Z axe-account-onboarding-1440 []
+2026-10-19T09:18:36.909Z axe-workspace-1440 []
+2026-10-19T09:18:36.982Z duplicate-1440-no-write {"unchanged":true,"root":{"key":"active","generation":"3da0f1c2-922b-488b-87fa-9d1ef08608d4","revision":"a2629fb3-4934-4f2b-af7b-4f4d048cb7ad","schema":1,"timeZone":"America/New_York","catalogRevision":"766dbe10-b65e-4e49-89c4-a087a59a48c8","definitionRevision":"plan-reflection-v1","commitOrdinal":3,"recordedSequence":0},"versionCount":5}
+2026-10-19T09:18:37.195Z axe-duplicate-reference-1440 []
+2026-10-19T09:18:37.508Z axe-list-error-1440 []
+2026-10-19T09:18:37.522Z list-error-1440-no-write {"unchanged":true,"root":{"key":"active","generation":"3da0f1c2-922b-488b-87fa-9d1ef08608d4","revision":"a2629fb3-4934-4f2b-af7b-4f4d048cb7ad","schema":1,"timeZone":"America/New_York","catalogRevision":"766dbe10-b65e-4e49-89c4-a087a59a48c8","definitionRevision":"plan-reflection-v1","commitOrdinal":3,"recordedSequence":0},"versionCount":5}
+2026-10-19T09:18:37.563Z states-1440 {"loading":true,"onboarding":true,"workspace":true,"duplicateError":true,"listErrorRetry":true}

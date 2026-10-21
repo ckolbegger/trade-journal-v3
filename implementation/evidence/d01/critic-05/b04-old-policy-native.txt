@@ -1,0 +1,15 @@
+{
+  "quota": {
+    "quota": 10739186053,
+    "usage": 1767813,
+    "usageDetails": {
+      "caches": 1756672,
+      "indexedDB": 7222,
+      "serviceWorkerRegistrations": 3919
+    }
+  },
+  "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+  "cacheNames": [
+    "trade-journal-release-c61a00ab2f5941e47bf1b2b4436a779b74b40531b110fd4f9201adf864fef704"
+  ]
+}

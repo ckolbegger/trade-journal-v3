@@ -1,0 +1,22 @@
+Trades
+New Plan
+Workspace
+
+AFTER-CLOSE JOURNAL · USD
+
+Trades
+Check for application updates
+Recovery Only
+
+Reading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.
+
+Retry startup
+Storage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection
+
+Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.
+
+Review before continuing
+This browser does not have the required available storage capacity.
+Planned Trades
+
+No confirmed Plans match this view.

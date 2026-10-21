@@ -1,0 +1,8 @@
+[
+  {
+    "name": "B03 fresh transaction",
+    "status": "FAIL",
+    "error": "Error: page.evaluate: UnknownError: Induced diagnostic failure",
+    "stack": "page.evaluate: UnknownError: Induced diagnostic failure\n    at snapshot (/private/tmp/critic07-runner.mjs:19:37)\n    at /private/tmp/critic07-runner.mjs:77:193\n    at async run (/private/tmp/critic07-runner.mjs:30:33)\n    at async file:///private/tmp/critic07-runner.mjs:77:7"
+  }
+]

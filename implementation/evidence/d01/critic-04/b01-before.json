@@ -1,0 +1,194 @@
+{
+  "trade-journal-v3": {
+    "version": 10,
+    "stores": {
+      "diagnostic": [],
+      "lifecycle": [],
+      "projections": [
+        {
+          "key": "active-size:45bbc056-c663-4b69-8d8a-cb9602d4f0d1",
+          "value": {
+            "revision": "993efc7e-71a1-43cd-b787-fdad7f4efd55",
+            "serializedRowsBytes": 2874
+          }
+        }
+      ],
+      "roots": [
+        {
+          "key": "active",
+          "generation": "45bbc056-c663-4b69-8d8a-cb9602d4f0d1",
+          "revision": "993efc7e-71a1-43cd-b787-fdad7f4efd55",
+          "schema": 1,
+          "timeZone": "America/Los_Angeles",
+          "catalogRevision": "6a20fc8b-5b98-4cea-a6ae-495030e1280c",
+          "definitionRevision": "plan-reflection-v1",
+          "commitOrdinal": 3,
+          "recordedSequence": 0
+        }
+      ],
+      "versions": [
+        {
+          "version": "1baf8fb5-943c-4364-829a-7d3c22374eb3",
+          "id": "41b21108-cfda-47c0-998e-3fec0c612c61",
+          "generation": "45bbc056-c663-4b69-8d8a-cb9602d4f0d1",
+          "kind": "Account",
+          "value": {
+            "id": "41b21108-cfda-47c0-998e-3fec0c612c61",
+            "version": "1baf8fb5-943c-4364-829a-7d3c22374eb3",
+            "kind": "Account",
+            "label": "Individual U704390",
+            "active": true,
+            "origin": "Trader",
+            "parentId": "b3462de1-e09b-44dd-8678-f7c43ff0f239"
+          },
+          "tradeId": "",
+          "economicTime": "2026-10-19T14:26:18.350Z",
+          "saveTime": "2026-10-19T14:26:18.350Z",
+          "sequence": 0,
+          "commitOrdinal": 3
+        },
+        {
+          "version": "45bbc056-c663-4b69-8d8a-cb9602d4f0d1:long-stock-v1",
+          "id": "long-stock",
+          "generation": "45bbc056-c663-4b69-8d8a-cb9602d4f0d1",
+          "kind": "Strategy",
+          "value": {
+            "id": "long-stock",
+            "kind": "Strategy",
+            "label": "Long Stock",
+            "active": true,
+            "shape": {
+              "roles": [
+                {
+                  "kind": "Stock",
+                  "direction": "Long",
+                  "relativeQuantity": "1"
+                }
+              ]
+            },
+            "origin": "Default"
+          },
+          "tradeId": "",
+          "economicTime": "2026-10-19T14:25:38.636Z",
+          "saveTime": "2026-10-19T14:25:38.636Z",
+          "sequence": 0,
+          "commitOrdinal": 1
+        },
+        {
+          "id": "plan-confirmation",
+          "version": "45bbc056-c663-4b69-8d8a-cb9602d4f0d1:plan-confirmation-v1",
+          "kind": "Source",
+          "value": {
+            "id": "plan-confirmation",
+            "label": "Plan Confirmation"
+          },
+          "generation": "45bbc056-c663-4b69-8d8a-cb9602d4f0d1",
+          "tradeId": "",
+          "economicTime": "2026-10-19T14:25:38.636Z",
+          "saveTime": "2026-10-19T14:25:38.636Z",
+          "sequence": 0,
+          "commitOrdinal": 1
+        },
+        {
+          "id": "plan-reflection",
+          "version": "45bbc056-c663-4b69-8d8a-cb9602d4f0d1:plan-reflection-v1",
+          "kind": "Definition",
+          "value": {
+            "id": "plan-reflection",
+            "revision": "plan-reflection-v1",
+            "label": "Plan Reflection",
+            "prompts": [
+              {
+                "id": "thesis",
+                "wording": "Why this trade, why now?",
+                "kind": "Text",
+                "required": true,
+                "role": "Thesis"
+              },
+              {
+                "id": "invalidation",
+                "wording": "What would invalidate the thesis?",
+                "kind": "Text",
+                "required": true,
+                "role": "Invalidation"
+              },
+              {
+                "id": "conviction",
+                "wording": "Conviction",
+                "kind": "Scale",
+                "required": false,
+                "minimum": 1,
+                "maximum": 5
+              },
+              {
+                "id": "emotion",
+                "wording": "Primary emotion",
+                "kind": "SingleSelect",
+                "required": false,
+                "options": [
+                  {
+                    "id": "calm",
+                    "label": "Calm"
+                  },
+                  {
+                    "id": "eager",
+                    "label": "Eager"
+                  },
+                  {
+                    "id": "anxious",
+                    "label": "Anxious"
+                  },
+                  {
+                    "id": "fomo",
+                    "label": "FOMO"
+                  },
+                  {
+                    "id": "revenge",
+                    "label": "Revenge"
+                  },
+                  {
+                    "id": "relieved",
+                    "label": "Relieved"
+                  },
+                  {
+                    "id": "frustrated",
+                    "label": "Frustrated"
+                  },
+                  {
+                    "id": "other",
+                    "label": "Other"
+                  }
+                ]
+              }
+            ]
+          },
+          "generation": "45bbc056-c663-4b69-8d8a-cb9602d4f0d1",
+          "tradeId": "",
+          "economicTime": "2026-10-19T14:25:38.636Z",
+          "saveTime": "2026-10-19T14:25:38.636Z",
+          "sequence": 0,
+          "commitOrdinal": 1
+        },
+        {
+          "version": "fc6ffec9-2df7-4db4-bb7c-23c3a5732dac",
+          "id": "b3462de1-e09b-44dd-8678-f7c43ff0f239",
+          "generation": "45bbc056-c663-4b69-8d8a-cb9602d4f0d1",
+          "kind": "Institution",
+          "value": {
+            "id": "b3462de1-e09b-44dd-8678-f7c43ff0f239",
+            "version": "fc6ffec9-2df7-4db4-bb7c-23c3a5732dac",
+            "kind": "Institution",
+            "label": "Interactive Brokers",
+            "active": true,
+            "origin": "Trader"
+          },
+          "tradeId": "",
+          "economicTime": "2026-10-19T14:26:05.869Z",
+          "saveTime": "2026-10-19T14:26:05.869Z",
+          "sequence": 0,
+          "commitOrdinal": 2
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,56 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-confirmation.test.ts -t should commit fixture P
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-confirmation.test.ts (1 test | 1 failed) 16ms
+   ❯ durable Plan confirmation (1)
+     × should commit fixture P and its exact entered-once Plan Reflection atomically 15ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-confirmation.test.ts > durable Plan confirmation > should commit fixture P and its exact entered-once Plan Reflection atomically
+AssertionError: expected { status: 'NotImplemented' } to match object { status: 'Confirmed', …(2) }
+
+- Expected
++ Received
+
+  {
+-   "entry": {
+-     "definition": {
+-       "revision": "plan-reflection-v1",
+-     },
+-     "source": {
+-       "id": "plan-confirmation",
+-       "label": "Plan Confirmation",
+-     },
+-   },
+-   "status": "Confirmed",
+-   "trade": {
+-     "accountId": "431cc12a-80c2-4cd4-8f96-77adb6fe0fbb",
+-     "baseline": {
+-       "oneR": "500",
+-       "reward": "1000",
+-     },
+-     "lifecycle": "Planned",
+-     "plan": {
+-       "invalidation": "Thesis fails",
+-       "thesis": "Improving earnings",
+-     },
+-   },
++   "status": "NotImplemented",
+  }
+
+ ❯ tests/unit/d01-confirmation.test.ts:8:20
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  21:03:31
+   Duration  330ms (environment 74%, import 11%, transform 8%, tests 6%, worker 1%)
+

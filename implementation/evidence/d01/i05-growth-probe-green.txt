@@ -1,0 +1,57 @@
+
+> trade-journal-v3@0.1.0 test:benchmark
+> playwright test --config playwright.benchmark.config.ts d01-probe --project=webkit
+
+[WebServer] (node:3498) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:3499) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "dataset": {
+    "count": 10,
+    "serializedBytes": 24630,
+    "elapsedMs": 83,
+    "samples": [
+      "e7b210be-275a-4fc7-b93e-dbeec59fee8e",
+      "c14f934e-494a-403c-bd9a-1e6d6f1d42b6",
+      "93c7e3ff-e593-4ee7-80a6-6f2290972082"
+    ],
+    "storage": {
+      "quota": 20615843021,
+      "usage": 152535833
+    }
+  },
+  "observed": {
+    "estimate": {
+      "calls": 23,
+      "ms": 6,
+      "events": 23
+    },
+    "store.put": {
+      "calls": 32,
+      "ms": 4,
+      "events": 32
+    },
+    "store.get": {
+      "calls": 100,
+      "ms": 9,
+      "events": 100
+    },
+    "index.getAll": {
+      "calls": 36,
+      "ms": 3,
+      "events": 36
+    },
+    "store.add": {
+      "calls": 30,
+      "ms": 8,
+      "events": 30
+    }
+  }
+}
+  ✓  1 [webkit] › tests/benchmark/d01-probe.spec.ts:2:1 › diagnose native command growth without replacing application results (3.3s)
+
+  1 passed (4.0s)

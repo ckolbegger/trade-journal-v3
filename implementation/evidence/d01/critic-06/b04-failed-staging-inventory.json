@@ -1,0 +1,149 @@
+{
+  "secure": true,
+  "controller": "http://localhost:5174/sw.js",
+  "quota": {
+    "quota": 10741059398,
+    "usage": 3641158,
+    "usageDetails": {
+      "caches": 3478016,
+      "indexedDB": 159207,
+      "serviceWorkerRegistrations": 3935
+    }
+  },
+  "persisted": false,
+  "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+  "caches": [
+    {
+      "name": "trade-journal-release-4870cf845745ed4fd6668af735e76a044e459840651b6f2c5bbce7711d1d81a8",
+      "manifest": {
+        "version": 1,
+        "releaseId": "4870cf845745ed4fd6668af735e76a044e459840651b6f2c5bbce7711d1d81a8",
+        "assets": [
+          {
+            "url": "/assets/index-DMpQF0ZT.js",
+            "bytes": 557140,
+            "sha256": "91882cca288878acb3fd9831eac1badc357709fb417b433ebc122845da147144"
+          },
+          {
+            "url": "/assets/index-Ukg-5B9v.css",
+            "bytes": 2898,
+            "sha256": "a2168dbf5e6e8e5c495a0e2c0f0058e968fbb9009df4ea06d74071873b52811c"
+          },
+          {
+            "url": "/capabilities.json",
+            "bytes": 1290,
+            "sha256": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a"
+          },
+          {
+            "url": "/icon-192.png",
+            "bytes": 3409,
+            "sha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9"
+          },
+          {
+            "url": "/icon-512.png",
+            "bytes": 12236,
+            "sha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457"
+          },
+          {
+            "url": "/icon.svg",
+            "bytes": 180,
+            "sha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9"
+          },
+          {
+            "url": "/index.html",
+            "bytes": 446,
+            "sha256": "63877e183e3ff956c2e09aaf7838099a5acc3c5c60da2235e9ebd0540161d67d"
+          },
+          {
+            "url": "/manifest.webmanifest",
+            "bytes": 416,
+            "sha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd"
+          },
+          {
+            "url": "/sw.js",
+            "bytes": 3935,
+            "sha256": "3e0fb904a941ae00b282f168b71bdc7a557fefb4081f43016d1d2537f4cde00e"
+          }
+        ]
+      },
+      "proofs": [
+        {
+          "url": "/assets/index-DMpQF0ZT.js",
+          "bytes": 557140,
+          "valid": true
+        },
+        {
+          "url": "/assets/index-Ukg-5B9v.css",
+          "bytes": 2898,
+          "valid": true
+        },
+        {
+          "url": "/capabilities.json",
+          "bytes": 1290,
+          "valid": true
+        },
+        {
+          "url": "/icon-192.png",
+          "bytes": 3409,
+          "valid": true
+        },
+        {
+          "url": "/icon-512.png",
+          "bytes": 12236,
+          "valid": true
+        },
+        {
+          "url": "/icon.svg",
+          "bytes": 180,
+          "valid": true
+        },
+        {
+          "url": "/index.html",
+          "bytes": 446,
+          "valid": true
+        },
+        {
+          "url": "/manifest.webmanifest",
+          "bytes": 416,
+          "valid": true
+        },
+        {
+          "url": "/sw.js",
+          "bytes": 3935,
+          "valid": true
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "name": "Trade Journal",
+    "short_name": "Trade Journal",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f6f4ed",
+    "theme_color": "#f6f4ed",
+    "lang": "en",
+    "scope": "/",
+    "id": "/",
+    "icons": [
+      {
+        "src": "/icon-192.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any"
+      },
+      {
+        "src": "/icon-512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any"
+      },
+      {
+        "src": "/icon.svg",
+        "sizes": "any",
+        "type": "image/svg+xml",
+        "purpose": "any"
+      }
+    ]
+  }
+}

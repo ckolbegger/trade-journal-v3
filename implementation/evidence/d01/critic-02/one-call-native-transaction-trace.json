@@ -1,0 +1,155 @@
+{
+  "trace": [
+    {
+      "event": "begin",
+      "id": 0,
+      "mode": "readwrite",
+      "stores": [
+        "diagnostic"
+      ]
+    },
+    {
+      "event": "complete",
+      "id": 0,
+      "mode": "readwrite"
+    },
+    {
+      "event": "begin",
+      "id": 2,
+      "mode": "readonly",
+      "stores": [
+        "projections",
+        "roots"
+      ]
+    },
+    {
+      "event": "complete",
+      "id": 2,
+      "mode": "readonly"
+    },
+    {
+      "event": "begin",
+      "id": 4,
+      "mode": "readonly",
+      "stores": [
+        "roots"
+      ]
+    },
+    {
+      "event": "begin",
+      "id": 5,
+      "mode": "readonly",
+      "stores": [
+        "roots"
+      ]
+    },
+    {
+      "event": "complete",
+      "id": 4,
+      "mode": "readonly"
+    },
+    {
+      "event": "begin",
+      "id": 7,
+      "mode": "readonly",
+      "stores": [
+        "roots",
+        "versions"
+      ]
+    },
+    {
+      "event": "complete",
+      "id": 5,
+      "mode": "readonly"
+    },
+    {
+      "event": "complete",
+      "id": 7,
+      "mode": "readonly"
+    },
+    {
+      "event": "begin",
+      "id": 10,
+      "mode": "readonly",
+      "stores": [
+        "roots"
+      ]
+    },
+    {
+      "event": "begin",
+      "id": 11,
+      "mode": "readonly",
+      "stores": [
+        "versions"
+      ]
+    },
+    {
+      "event": "complete",
+      "id": 10,
+      "mode": "readonly"
+    },
+    {
+      "event": "begin",
+      "id": 13,
+      "mode": "readwrite",
+      "stores": [
+        "diagnostic"
+      ]
+    },
+    {
+      "event": "complete",
+      "id": 11,
+      "mode": "readonly"
+    },
+    {
+      "event": "complete",
+      "id": 13,
+      "mode": "readwrite"
+    },
+    {
+      "event": "begin",
+      "id": 16,
+      "mode": "readonly",
+      "stores": [
+        "projections",
+        "roots"
+      ]
+    },
+    {
+      "event": "complete",
+      "id": 16,
+      "mode": "readonly"
+    },
+    {
+      "event": "begin",
+      "id": 18,
+      "mode": "readonly",
+      "stores": [
+        "roots"
+      ]
+    },
+    {
+      "event": "begin",
+      "id": 19,
+      "mode": "readwrite",
+      "stores": [
+        "lifecycle",
+        "projections",
+        "roots",
+        "versions"
+      ]
+    },
+    {
+      "event": "complete",
+      "id": 18,
+      "mode": "readonly"
+    },
+    {
+      "event": "complete",
+      "id": 19,
+      "mode": "readwrite"
+    }
+  ],
+  "noReadAfterCommit": true,
+  "rendered": "AFTER-CLOSE JOURNAL · USD\n\nTRACE2 · Planned\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nPlan confirmed and saved on this device.\n\nPlanned · Unfilled\nFrozen Plan Baseline\n\nVanguard · Taxable · Long Stock\n\nOriginal Planned Risk · 1R\n$500.00\nOriginal Planned Reward\n$1000.00\nPlanned reward/risk ratio\n2/1\nIntended entry\n$50 × 100 shares\nStop · underlying price\n$45\nTarget · underlying price\n$60\n\nNo exposure has been entered.\n\nPlan Reflection\n\nTrade Anchor · Plan Confirmation\n\nWhy this trade, why now?\n\nA deliberate test plan\n\nWhat would invalidate the thesis?\n\nA confirmed break below support\n\nConviction\n\nUnanswered\n\nPrimary emotion\n\nUnanswered\n\nView history"
+}

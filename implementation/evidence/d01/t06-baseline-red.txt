@@ -1,0 +1,81 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit --testNamePattern=assessment baseline
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-confirmation.test.ts (8 tests | 1 failed | 7 skipped) 19ms
+   × should reject an assessment baseline that disagrees with candidate-bound derivation 19ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-confirmation.test.ts > should reject an assessment baseline that disagrees with candidate-bound derivation
+AssertionError: promise resolved "{ …(15) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "accountId": "24dc3ed6-2153-4850-8412-7d8a9854be3e",
++   "baseline": {
++     "conditions": [
++       {
++         "amount": "500",
++         "kind": "Stop",
++         "price": "45",
++       },
++       {
++         "amount": "1000",
++         "kind": "Target",
++         "price": "60",
++       },
++     ],
++     "oneR": "900",
++     "ratio": {
++       "denominator": "1",
++       "numerator": "2",
++     },
++     "reward": "1000",
++     "risk": "500",
++   },
++   "economicTime": "2026-10-17T20:00:00Z",
++   "lifecycle": "Planned",
++   "plan": {
++     "entry": "50",
++     "instrument": {
++       "currency": "USD",
++       "kind": "Stock",
++       "symbol": "XYZ",
++     },
++     "invalidation": "Thesis fails",
++     "quantity": "100",
++     "stop": "45",
++     "target": "60",
++     "thesis": "Improving earnings",
++   },
++   "planFactId": "fb134aea-dfbc-4bca-94e1-2d7cc02ab310",
++   "planVersionId": "b27376ca-2a07-4f63-a4e1-354e2f9a1781",
++   "plannedLegId": "c3ba4626-6d3a-4d69-9327-8d53d4782b7f",
++   "revision": "74785235-6841-473a-aeed-c3e2df72996b",
++   "saveTime": "2026-10-18T23:00:00Z",
++   "sequence": 1,
++   "stopId": "48bbb506-3ef7-4266-8c50-69d56a44835e",
++   "strategyId": "long-stock",
++   "targetId": "d4432030-9d00-4dcb-9e12-bac1132c26d2",
++   "tradeId": "28340e5e-7abc-45b2-b66b-16283ffd0824",
+  }
+
+ ❯ tests/unit/d01-confirmation.test.ts:103:162
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 skipped (7)
+      Tests  1 failed | 37 skipped (38)
+   Start at  22:38:55
+   Duration  459ms (environment 76%, import 12%, transform 10%, tests 1%, worker 1%)
+

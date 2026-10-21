@@ -1,0 +1,69 @@
+{
+  "viewport": 390,
+  "document": 390,
+  "actions": [
+    {
+      "text": "Trades",
+      "rect": {
+        "x": 20.796875,
+        "width": 94.421875
+      },
+      "scrollWidth": 45,
+      "clientWidth": 45
+    },
+    {
+      "text": "New Plan",
+      "rect": {
+        "x": 128.015625,
+        "width": 109.03125
+      },
+      "scrollWidth": 53,
+      "clientWidth": 53
+    },
+    {
+      "text": "Workspace",
+      "rect": {
+        "x": 249.84375,
+        "width": 119.359375
+      },
+      "scrollWidth": 58,
+      "clientWidth": 58
+    },
+    {
+      "text": "Check for application updates",
+      "rect": {
+        "x": 32,
+        "width": 326
+      },
+      "scrollWidth": 161,
+      "clientWidth": 161
+    },
+    {
+      "text": "Request storage protection",
+      "rect": {
+        "x": 66,
+        "width": 258
+      },
+      "scrollWidth": 127,
+      "clientWidth": 127
+    },
+    {
+      "text": "MSFT · Planned Unfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk",
+      "rect": {
+        "x": 66,
+        "width": 258
+      },
+      "scrollWidth": 129,
+      "clientWidth": 129
+    },
+    {
+      "text": "AAPL · Planned Unfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk",
+      "rect": {
+        "x": 66,
+        "width": 258
+      },
+      "scrollWidth": 129,
+      "clientWidth": 129
+    }
+  ]
+}

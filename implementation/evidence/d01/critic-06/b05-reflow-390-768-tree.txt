@@ -1,0 +1,74 @@
+- navigation "Primary":
+  - strong: TRADE JOURNAL
+  - button "Trades"
+  - button "New Plan"
+  - button "Workspace"
+- main:
+  - paragraph: AFTER-CLOSE JOURNAL · USD
+  - heading "New Plan" [level=1]
+  - button "Check for application updates"
+  - complementary "Storage protection":
+    - strong: Storage is Best Effort.
+    - text: This browser may clear your data. Backup is not installed until a later release.
+    - button "Request storage protection"
+  - paragraph: Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.
+  - alert:
+    - heading "Review before continuing" [level=2]
+    - list:
+      - listitem: Enter an exact USD Stock symbol.
+      - listitem: Enter a quantity greater than zero.
+      - listitem: Explain why this trade, why now.
+      - listitem: Explain what would invalidate the thesis.
+      - listitem: Enter a valid nonnegative intended entry.
+      - listitem: Enter a valid nonnegative Stop price.
+      - listitem: Enter a valid nonnegative Target price.
+  - heading "Long Stock Plan" [level=2]
+  - paragraph: Freeze your intended entry, original management and Plan Reflection before entering.
+  - text: Account
+  - combobox "Account":
+    - option "Critic06 Taxable · Critic06 Brokerage" [selected]
+  - text: Stock symbol
+  - textbox "Stock symbol" [invalid]: K390
+  - text: Quantity (shares)
+  - textbox "Quantity (shares)" [invalid]: "100"
+  - text: Intended entry (USD)
+  - textbox "Intended entry (USD)" [invalid]: "50"
+  - text: Stop (underlying price, USD)
+  - textbox "Stop (underlying price, USD)" [invalid]: "45"
+  - text: Target (underlying price, USD)
+  - textbox "Target (underlying price, USD)" [invalid]: "60"
+  - heading "Plan Reflection" [level=2]
+  - text: Why this trade, why now?
+  - textbox "Why this trade, why now?" [invalid]: Demand is holding above support.
+  - text: What would invalidate the thesis?
+  - textbox "What would invalidate the thesis?" [invalid]: A sustained support break.
+  - text: Conviction (optional, 1–5)
+  - combobox "Conviction (optional, 1–5)":
+    - option "Unanswered" [selected]
+    - option "1"
+    - option "2"
+    - option "3"
+    - option "4"
+    - option "5"
+  - group "Primary emotion (optional)":
+    - text: Primary emotion (optional)
+    - radio "Unanswered" [checked]
+    - text: Unanswered
+    - radio "Calm"
+    - text: Calm
+    - radio "Eager"
+    - text: Eager
+    - radio "Anxious"
+    - text: Anxious
+    - radio "FOMO"
+    - text: FOMO
+    - radio "Revenge"
+    - text: Revenge
+    - radio "Relieved"
+    - text: Relieved
+    - radio "Frustrated"
+    - text: Frustrated
+    - radio "Other"
+    - text: Other
+  - button "Confirm Plan"
+  - button "Cancel"

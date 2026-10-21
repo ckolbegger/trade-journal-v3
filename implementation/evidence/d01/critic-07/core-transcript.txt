@@ -1,0 +1,18 @@
+node:internal/modules/run_main:111
+    triggerUncaughtException(
+    ^
+
+locator.selectOption: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByLabel('Conviction (optional, 1–5)', { exact: true })[22m
+
+    at /private/tmp/critic07-runner.mjs:40:144
+    at async run (/private/tmp/critic07-runner.mjs:30:33)
+    at async file:///private/tmp/critic07-runner.mjs:35:2 {
+  log: [
+    "  - waiting for getByLabel('Conviction (optional, 1–5)', { exact: true })"
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v26.12.0

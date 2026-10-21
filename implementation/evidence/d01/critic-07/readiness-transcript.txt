@@ -1,0 +1,13 @@
+node:internal/modules/run_main:111
+    triggerUncaughtException(
+    ^
+
+page.evaluate: UnknownError: Induced diagnostic failure
+    at snapshot (/private/tmp/critic07-runner.mjs:19:37)
+    at /private/tmp/critic07-runner.mjs:77:193
+    at async run (/private/tmp/critic07-runner.mjs:30:33)
+    at async file:///private/tmp/critic07-runner.mjs:77:7 {
+  log: []
+}
+
+Node.js v26.12.0

@@ -1,0 +1,4 @@
+Exact base dist restored and SHA-256 compared against independent pre-run backup; all files identical.
+Own Chrome/Firefox/WebKit contexts closed, harness exited, own strict npm preview stopped.
+Elevated lsof -nP -iTCP:5174 -sTCP:LISTEN returned no output; pgrep -fl critic05- returned no output. Both had exit 1 (no match).
+No implementation, tests, config, specs or plan modified. No deployment, commit or push.

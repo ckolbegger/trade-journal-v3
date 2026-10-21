@@ -1,0 +1,49 @@
+
+> trade-journal-v3@0.1.0 test:browser
+> playwright test --project webkit --grep D1-B04 D1-T09 stages
+
+[WebServer] (node:14422) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:14423) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [webkit] › tests/browser/d01-update.spec.ts:6:1 › D1-B04 D1-T09 stages a verified update and defers activation through an unsaved form (6.1s)
+
+
+  1) [webkit] › tests/browser/d01-update.spec.ts:6:1 › D1-B04 D1-T09 stages a verified update and defers activation through an unsaved form 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('button', { name: 'Check for application updates' })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('button', { name: 'Check for application updates' }) with timeout 5000ms
+      - waiting for getByRole('button', { name: 'Check for application updates' })
+
+
+       6 | test('D1-B04 D1-T09 stages a verified update and defers activation through an unsaved form', async ({ page }) => {
+       7 |   await onboard(page); await fillPlan(page);
+    >  8 |   await expect(page.getByRole('button', { name: 'Check for application updates' })).toBeVisible();
+         |                                                                                     ^
+       9 |   const before = await page.evaluate(async () => {
+      10 |     const channel = new MessageChannel();
+      11 |     return new Promise<string>(resolve => { channel.port1.onmessage = (event: MessageEvent<{ release: string }>) => resolve(event.data.release); navigator.serviceWorker.controller?.postMessage('VERIFY_RELEASE', [channel.port2]); });
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-update.spec.ts:8:85
+
+    Error Context: test-results/d01-update-D1-B04-D1-T09-s-ed52d-ion-through-an-unsaved-form-webkit/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/d01-update-D1-B04-D1-T09-s-ed52d-ion-through-an-unsaved-form-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/d01-update-D1-B04-D1-T09-s-ed52d-ion-through-an-unsaved-form-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [webkit] › tests/browser/d01-update.spec.ts:6:1 › D1-B04 D1-T09 stages a verified update and defers activation through an unsaved form 

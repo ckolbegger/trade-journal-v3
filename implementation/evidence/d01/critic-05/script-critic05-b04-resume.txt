@@ -1,0 +1,11 @@
+await log('b04-upgrade-inventory',{after:await inventory(),authoritative:await bytes(),dataCleared:false});await ctx.close();
+const serve=async(path)=>{await fs.rm(base+'/dist',{recursive:true});await fs.cp(path,base+'/dist',{recursive:true});};
+try{
+ await launch('main');await go();const before=await bytes();await plan('UPDATE');const controller=await p.evaluate(()=>navigator.serviceWorker.controller.scriptURL);
+ await serve(base+'/.cache/update-dist');
+ const files=await fs.readdir(base+'/dist/assets');const css=files.find(x=>x.endsWith('.css'));assert(css);await fs.appendFile(base+'/dist/assets/'+css,'\n/* critic deliberately invalid SHA */');
+ await click('Check for application updates');await p.waitForTimeout(8000);assert.equal(await p.getByRole('heading',{name:'Update available',exact:true}).count(),0);assert.equal(await p.getByLabel('Stock symbol',{exact:true}).inputValue(),'UPDATE');assert.equal(await bytes(),before);await shot('b04-failed-staging');
+ await serve(base+'/.cache/update-dist');await click('Check for application updates');await p.getByRole('heading',{name:'Update available',exact:true}).waitFor({timeout:30000});assert(await p.getByRole('button',{name:'Reload to update',exact:true}).isDisabled());assert.equal(await p.getByLabel('Stock symbol',{exact:true}).inputValue(),'UPDATE');assert.equal(await p.evaluate(()=>navigator.serviceWorker.controller.scriptURL),controller);await shot('b04-dirty-deferred');await log('b04-second-release-inventory',await inventory());await click('Cancel');
+ let other=await ctx.newPage();await other.goto(url);await click('Reload to update');await p.getByText('Close other Trade Journal tabs before reloading to update.',{exact:true}).waitFor();await shot('b04-other-tab-guard');await other.close();await click('Reload to update');await p.waitForEvent('load');await settle();assert.equal(await bytes(),before);await shot('b04-safe-activated');await log('b04-final-inventory',await inventory());await ctx.close();await launch('main');await ctx.setOffline(true);await go();assert.equal(await bytes(),before);await shot('b04-updated-stopped-offline');await ctx.close();
+}finally{await serve('/private/tmp/critic05-base-dist');}
+await launch('main');await go();

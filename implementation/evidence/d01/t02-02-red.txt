@@ -1,0 +1,71 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-analysis.test.ts -t should report every
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-analysis.test.ts (2 tests | 1 failed | 1 skipped) 4ms
+   × should report every incoherent or missing Plan issue without a baseline 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-analysis.test.ts > should report every incoherent or missing Plan issue without a baseline
+AssertionError: expected { status: 'Accepted', …(2) } to deeply equal { Object (status, issues) }
+
+- Expected
++ Received
+
+  {
+-   "issues": [
+-     "ExactStockRequired",
+-     "PositiveQuantityRequired",
+-     "ThesisRequired",
+-     "InvalidationRequired",
+-     "PositiveRiskRequired",
+-     "ForwardRewardRequired",
++   "baseline": {
++     "conditions": [
++       {
++         "amount": "0",
++         "kind": "Stop",
++         "price": "50",
++       },
++       {
++         "amount": "10",
++         "kind": "Target",
++         "price": "40",
++       },
+      ],
+-   "status": "Rejected",
++     "oneR": "0",
++     "ratio": {
++       "denominator": "1",
++       "numerator": "Infinity",
++     },
++     "reward": "10",
++     "risk": "0",
++   },
++   "plan": {
++     "entry": "50",
++     "instrument": undefined,
++     "invalidation": "",
++     "quantity": "-1",
++     "stop": "50",
++     "target": "40",
++     "thesis": " ",
++   },
++   "status": "Accepted",
+  }
+
+ ❯ tests/unit/d01-analysis.test.ts:11:131
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 skipped (2)
+   Start at  20:57:25
+   Duration  295ms (environment 90%, transform 5%, import 2%, tests 2%, worker 1%)
+

@@ -1,0 +1,13 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-analysis.test.ts
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  20:58:14
+   Duration  304ms (environment 90%, transform 6%, import 2%, tests 1%, worker 1%)
+

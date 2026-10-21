@@ -1,0 +1,34 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-ui.test.tsx -t should preserve entered
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-ui.test.tsx (2 tests | 1 failed | 1 skipped) 124ms
+   × should preserve entered values through validation, navigation and a catalog conflict 123ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-ui.test.tsx > should preserve entered values through validation, navigation and a catalog conflict
+AssertionError: expected 'Confirm Plan' to contain 'Review before continuing'
+
+Expected: "Review before continuing"
+Received: "Confirm Plan"
+
+ ❯ tests/unit/d01-ui.test.tsx:51:47
+     49|   await user.click(screen.getByRole('button', { name: 'Confirm Plan' }…
+     50|   expect(await screen.findByRole('alert')).toBeTruthy();
+     51|   expect(document.activeElement?.textContent).toContain('Review before…
+       |                                               ^
+     52|   await user.click(screen.getByRole('button', { name: 'Workspace' }));
+     53|   await user.click(screen.getByRole('button', { name: 'New Plan' }));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 skipped (2)
+   Start at  21:12:03
+   Duration  529ms (environment 44%, tests 27%, import 17%, transform 11%)
+

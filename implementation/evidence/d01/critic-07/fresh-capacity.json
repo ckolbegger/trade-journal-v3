@@ -1,0 +1,10 @@
+{
+  "state": {
+    "roots": [],
+    "versions": [],
+    "lifecycle": [],
+    "projections": [],
+    "diagnostic": []
+  },
+  "body": "Unsupported\n\nWe could not verify safe writing in this environment.\n\nThis browser does not have the required available storage capacity.\nRetry startup\n\nTry another browser that meets the readiness requirements.\n\nAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release."
+}

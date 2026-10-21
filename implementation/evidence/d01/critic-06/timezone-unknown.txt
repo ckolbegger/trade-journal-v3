@@ -1,0 +1,9 @@
+Your device-local Workspace
+
+Choose a rules-based time zone. This journal stays in this browser on this device.
+
+Workspace time zone
+Create Workspace
+Choose your time zone
+
+Enter a rules-based time zone, such as America/New_York.

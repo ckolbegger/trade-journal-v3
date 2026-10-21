@@ -1,0 +1,219 @@
+{
+  "inventory": {
+    "version": 1,
+    "releaseId": "12092e686a53550a45090f41eb805105c2335bd34c96c11abd040589bcee9421",
+    "assets": [
+      {
+        "url": "/assets/index-B46ObyIX.css",
+        "bytes": 2875,
+        "sha256": "646a01dbd7e0663f32553a9bb1f93ccc99ba632c21029d2852e6a369773f7cd0"
+      },
+      {
+        "url": "/assets/index-nteGz-ER.js",
+        "bytes": 556499,
+        "sha256": "4e1adad06ed134db8ec970eb6e5769c1ba066daee04a32bdbdfdb67e36ffc792"
+      },
+      {
+        "url": "/capabilities.json",
+        "bytes": 1290,
+        "sha256": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a"
+      },
+      {
+        "url": "/icon-192.png",
+        "bytes": 3409,
+        "sha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9"
+      },
+      {
+        "url": "/icon-512.png",
+        "bytes": 12236,
+        "sha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457"
+      },
+      {
+        "url": "/icon.svg",
+        "bytes": 180,
+        "sha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9"
+      },
+      {
+        "url": "/index.html",
+        "bytes": 446,
+        "sha256": "1b6f31deaaaff80b755b8dfbd869baed21e479a13c4313a036d183ecb20f0f49"
+      },
+      {
+        "url": "/manifest.webmanifest",
+        "bytes": 416,
+        "sha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd"
+      },
+      {
+        "url": "/sw.js",
+        "bytes": 3919,
+        "sha256": "03ceda6b2a566249ba29f6ec95ca3ccd93ca27aae890909b19de5078c2d17900"
+      }
+    ]
+  },
+  "assets": [
+    {
+      "url": "/assets/index-B46ObyIX.css",
+      "bytes": 2875,
+      "sha256": "646a01dbd7e0663f32553a9bb1f93ccc99ba632c21029d2852e6a369773f7cd0",
+      "observedBytes": 2875,
+      "observedSHA": "646a01dbd7e0663f32553a9bb1f93ccc99ba632c21029d2852e6a369773f7cd0",
+      "valid": true
+    },
+    {
+      "url": "/assets/index-nteGz-ER.js",
+      "bytes": 556499,
+      "sha256": "4e1adad06ed134db8ec970eb6e5769c1ba066daee04a32bdbdfdb67e36ffc792",
+      "observedBytes": 556499,
+      "observedSHA": "4e1adad06ed134db8ec970eb6e5769c1ba066daee04a32bdbdfdb67e36ffc792",
+      "valid": true
+    },
+    {
+      "url": "/capabilities.json",
+      "bytes": 1290,
+      "sha256": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a",
+      "observedBytes": 1290,
+      "observedSHA": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a",
+      "valid": true
+    },
+    {
+      "url": "/icon-192.png",
+      "bytes": 3409,
+      "sha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+      "observedBytes": 3409,
+      "observedSHA": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+      "valid": true
+    },
+    {
+      "url": "/icon-512.png",
+      "bytes": 12236,
+      "sha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+      "observedBytes": 12236,
+      "observedSHA": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+      "valid": true
+    },
+    {
+      "url": "/icon.svg",
+      "bytes": 180,
+      "sha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+      "observedBytes": 180,
+      "observedSHA": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+      "valid": true
+    },
+    {
+      "url": "/index.html",
+      "bytes": 446,
+      "sha256": "1b6f31deaaaff80b755b8dfbd869baed21e479a13c4313a036d183ecb20f0f49",
+      "observedBytes": 446,
+      "observedSHA": "1b6f31deaaaff80b755b8dfbd869baed21e479a13c4313a036d183ecb20f0f49",
+      "valid": true
+    },
+    {
+      "url": "/manifest.webmanifest",
+      "bytes": 416,
+      "sha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+      "observedBytes": 416,
+      "observedSHA": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+      "valid": true
+    },
+    {
+      "url": "/sw.js",
+      "bytes": 3919,
+      "sha256": "03ceda6b2a566249ba29f6ec95ca3ccd93ca27aae890909b19de5078c2d17900",
+      "observedBytes": 3919,
+      "observedSHA": "03ceda6b2a566249ba29f6ec95ca3ccd93ca27aae890909b19de5078c2d17900",
+      "valid": true
+    }
+  ],
+  "manifest": {
+    "name": "Trade Journal",
+    "short_name": "Trade Journal",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f6f4ed",
+    "theme_color": "#f6f4ed",
+    "lang": "en",
+    "scope": "/",
+    "id": "/",
+    "icons": [
+      {
+        "src": "/icon-192.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any"
+      },
+      {
+        "src": "/icon-512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any"
+      },
+      {
+        "src": "/icon.svg",
+        "sizes": "any",
+        "type": "image/svg+xml",
+        "purpose": "any"
+      }
+    ]
+  },
+  "capabilities": {
+    "identity": "trade-journal-d1-v1",
+    "scope": "Exact Long Stock Plans with fixed underlying-price Stop and Target",
+    "operations": {
+      "Workspace": [
+        "initialize",
+        "getStatus",
+        "requestDurability"
+      ],
+      "ReferenceCatalog": [
+        "save.CreateInstitution",
+        "save.CreateAccount",
+        "query.Strategy",
+        "query.Institution",
+        "query.Account",
+        "resolve.NewSelection",
+        "resolve.DisplayOnly",
+        "resolve.RetainedReference"
+      ],
+      "TradeWorkflows": [
+        "confirmPlan"
+      ],
+      "TradeAnalysis": [
+        "assessPlan.LongStock",
+        "derive.Planned"
+      ],
+      "TradeRecord": [
+        "prepareChange.ConfirmPlan",
+        "applyPreparedChange.ConfirmPlan",
+        "getRecord",
+        "queryRecords.Planned",
+        "history",
+        "resolveAnchors.Trade"
+      ],
+      "Journal": [
+        "getDefinitions.PlanReflection",
+        "prepareEffects.PlanReflection",
+        "applyPreparedEffects.PlanReflection",
+        "query.TradeNarrative"
+      ],
+      "TradeViewsAndReporting": [
+        "browseTrades.Planned",
+        "getTradeDetail.Planned"
+      ]
+    },
+    "backupSchemaRanges": [],
+    "providerAdapters": [],
+    "calendarPolicy": {
+      "approvedRange": [
+        "2021-01-01",
+        "2028-12-31"
+      ],
+      "installedSessionOperations": []
+    }
+  },
+  "secure": true,
+  "controller": "http://localhost:5174/sw.js",
+  "installation": {
+    "standalone": false,
+    "beforeInstallPrompt": false
+  }
+}

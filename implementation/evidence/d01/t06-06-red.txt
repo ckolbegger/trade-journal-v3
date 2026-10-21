@@ -1,0 +1,85 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-confirmation.test.ts -t should retain distinct
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-confirmation.test.ts (6 tests | 1 failed | 5 skipped) 20ms
+   × should retain distinct economic and save times and sequence order after reopening 19ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-confirmation.test.ts > should retain distinct economic and save times and sequence order after reopening
+AssertionError: expected undefined to deeply equal { …(15) }
+
+- Expected:
+{
+  "accountId": "08a3f1e1-e543-4263-9f70-a702a25bf775",
+  "baseline": {
+    "conditions": [
+      {
+        "amount": "500",
+        "kind": "Stop",
+        "price": "45",
+      },
+      {
+        "amount": "1000",
+        "kind": "Target",
+        "price": "60",
+      },
+    ],
+    "oneR": "500",
+    "ratio": {
+      "denominator": "1",
+      "numerator": "2",
+    },
+    "reward": "1000",
+    "risk": "500",
+  },
+  "economicTime": "2026-10-17T20:00:00Z",
+  "lifecycle": "Planned",
+  "plan": {
+    "entry": "50",
+    "instrument": {
+      "currency": "USD",
+      "kind": "Stock",
+      "symbol": "XYZ",
+    },
+    "invalidation": "Thesis fails",
+    "quantity": "100",
+    "stop": "45",
+    "target": "60",
+    "thesis": "Improving earnings",
+  },
+  "planFactId": "ffffffff-ffff-ffff-ffff-000000999997",
+  "planVersionId": "ffffffff-ffff-ffff-ffff-000000999996",
+  "plannedLegId": "ffffffff-ffff-ffff-ffff-000000999995",
+  "revision": "ffffffff-ffff-ffff-ffff-000000999998",
+  "saveTime": "2026-10-18T23:00:00Z",
+  "sequence": 1,
+  "stopId": "ffffffff-ffff-ffff-ffff-000000999994",
+  "strategyId": "long-stock",
+  "targetId": "ffffffff-ffff-ffff-ffff-000000999993",
+  "tradeId": "ffffffff-ffff-ffff-ffff-000000999999",
+}
+
++ Received:
+undefined
+
+ ❯ tests/unit/d01-confirmation.test.ts:90:56
+     88|   const reopened = new Store(name);
+     89|   const records = new TradeRecord(reopened);
+     90|   expect(await records.getRecord(first.trade.tradeId)).toEqual(first.t…
+       |                                                        ^
+     91|   expect(await records.history(second.trade.tradeId)).toEqual([second.…
+     92|   reopened.close();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 skipped (6)
+   Start at  21:05:32
+   Duration  335ms (environment 70%, import 11%, transform 11%, tests 7%, worker 1%)
+

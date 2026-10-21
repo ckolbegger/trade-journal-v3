@@ -1,0 +1,28 @@
+{
+  "host": {
+    "secure": true,
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15",
+    "language": "en-US",
+    "zone": "America/New_York",
+    "estimate": {
+      "quota": 20615843021,
+      "usage": 3590807
+    },
+    "persisted": false,
+    "controller": "http://localhost:5174/sw.js",
+    "registrations": [
+      {
+        "scope": "http://localhost:5174/",
+        "active": "http://localhost:5174/sw.js",
+        "waiting": "http://localhost:5174/sw.js"
+      }
+    ],
+    "caches": [
+      "trade-journal-release-c61a00ab2f5941e47bf1b2b4436a779b74b40531b110fd4f9201adf864fef704",
+      "trade-journal-release-8edc2fc8876a07aea9177871c1b4fc424f990a76d4b1f129251554e1e32f4d5c"
+    ]
+  },
+  "otherSymbol": "OTHER",
+  "text": "TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nUpdate available\n\nThe complete new release is verified. Reload when you are ready.\n\nReload to update\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nClose other Trade Journal tabs before reloading to update.\n\nPlanned Trades\nAAPL · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk\nMSFT · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk",
+  "unchanged": true
+}

@@ -1,0 +1,50 @@
+
+> trade-journal-v3@0.1.0 test:browser
+> playwright test --project=webkit --grep=native resource receipt
+
+[WebServer] (node:12609) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:12616) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [webkit] › tests/browser/d01-resources.spec.ts:3:1 › D1-T03 native resource receipt accounts for stored bytes and complete cache growth (1.3s)
+
+
+  1) [webkit] › tests/browser/d01-resources.spec.ts:3:1 › D1-T03 native resource receipt accounts for stored bytes and complete cache growth 
+
+    Error: expect(received).toMatchObject(expected)
+
+    - Expected  - 4
+    + Received  + 1
+
+      Object {
+    -   "capacityEvidence": Object {
+    -     "method": "SerializedActiveLowerBound",
+    -   },
+    -   "status": "Writable",
+    +   "status": "RuntimeNotWritable",
+      }
+
+       5 |   await page.addScriptTag({ path: '.cache/browser-generator/generator.js' });
+       6 |   const result = await page.evaluate(() => window.d1Evidence.measure());
+    >  7 |   expect(result).toMatchObject({ status: 'Writable', capacityEvidence: { method: 'SerializedActiveLowerBound' } });
+         |                  ^
+       8 |   if (!('capacityEvidence' in result) || !result.capacityEvidence) throw new Error('Native capacity evidence required');
+       9 |   const { M, L, C, Q, H, quota, usage } = result.capacityEvidence;
+      10 |   expect(M).toBe(6585417728); expect(L).toBeGreaterThan(1000); expect(C).toBeGreaterThan(500000);
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-resources.spec.ts:7:18
+
+    Error Context: test-results/d01-resources-D1-T03-nativ-f8e61-s-and-complete-cache-growth-webkit/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/d01-resources-D1-T03-nativ-f8e61-s-and-complete-cache-growth-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/d01-resources-D1-T03-nativ-f8e61-s-and-complete-cache-growth-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [webkit] › tests/browser/d01-resources.spec.ts:3:1 › D1-T03 native resource receipt accounts for stored bytes and complete cache growth 

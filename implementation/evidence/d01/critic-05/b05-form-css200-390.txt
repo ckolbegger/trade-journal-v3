@@ -1,0 +1,47 @@
+Trades
+New Plan
+Workspace
+
+AFTER-CLOSE JOURNAL · USD
+
+New Plan
+Check for application updates
+Storage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection
+
+Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.
+
+References refreshed. Review your selections and confirm again.
+
+Long Stock Plan
+
+Freeze your intended entry, original management and Plan Reflection before entering.
+
+Account
+Critic taxable · Charles Schwab
+Stock symbol
+Quantity (shares)
+Intended entry (USD)
+Stop (underlying price, USD)
+Target (underlying price, USD)
+Plan Reflection
+Why this trade, why now?
+What would invalidate the thesis?
+Conviction (optional, 1–5)
+Unanswered
+1
+2
+3
+4
+5
+Primary emotion (optional)
+Unanswered
+Calm
+Eager
+Anxious
+FOMO
+Revenge
+Relieved
+Frustrated
+Other
+Confirm Plan
+Cancel

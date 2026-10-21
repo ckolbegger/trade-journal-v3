@@ -1,0 +1,40 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit --testNamePattern=incomplete authoritative data
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-workspace.test.ts (7 tests | 1 failed | 6 skipped) 16ms
+   × should block reopening incomplete authoritative data without publishing Ready or repairing it 15ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-workspace.test.ts > should block reopening incomplete authoritative data without publishing Ready or repairing it
+AssertionError: expected { status: 'Opened', …(5) } to match object { status: 'IntegrityBlocked' }
+(22 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "status": "IntegrityBlocked",
++   "status": "Opened",
+  }
+
+ ❯ tests/unit/d01-workspace.test.ts:78:69
+     76|   await f.store.versions.delete(`${opened.root.generation}:plan-reflec…
+     77|   const before = await f.store.versions.toArray();
+     78|   expect(await f.workspace.initialize({ openingInstant: instant })).to…
+       |                                                                     ^
+     79|   expect(await f.workspace.getStatus()).toMatchObject({ status: 'Runti…
+     80|   expect(await f.store.versions.toArray()).toEqual(before);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 skipped (7)
+      Tests  1 failed | 41 skipped (42)
+   Start at  22:43:35
+   Duration  499ms (environment 74%, import 13%, transform 11%, tests 1%, worker 1%)
+

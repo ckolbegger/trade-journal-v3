@@ -1,0 +1,38 @@
+{
+  "baseline": "db3580cdc1ee95b5056a4de6dc36430cdd71a421",
+  "sourceDigest": "b026eee2a66928fbbb8ceebee3fa47d94d0fb01f756b065edd0587149ae36dfc",
+  "changedSinceChecks": [],
+  "gates": [
+    {
+      "stage": "critic04-lint",
+      "exit": 0,
+      "sourceDigest": "b026eee2a66928fbbb8ceebee3fa47d94d0fb01f756b065edd0587149ae36dfc"
+    },
+    {
+      "stage": "critic04-unit",
+      "exit": 0,
+      "sourceDigest": "b026eee2a66928fbbb8ceebee3fa47d94d0fb01f756b065edd0587149ae36dfc"
+    },
+    {
+      "stage": "critic04-integration",
+      "exit": 0,
+      "sourceDigest": "b026eee2a66928fbbb8ceebee3fa47d94d0fb01f756b065edd0587149ae36dfc"
+    },
+    {
+      "stage": "critic04-build",
+      "exit": 0,
+      "sourceDigest": "b026eee2a66928fbbb8ceebee3fa47d94d0fb01f756b065edd0587149ae36dfc"
+    },
+    {
+      "stage": "critic04-browser",
+      "exit": 0,
+      "sourceDigest": "b026eee2a66928fbbb8ceebee3fa47d94d0fb01f756b065edd0587149ae36dfc"
+    },
+    {
+      "stage": "critic04-benchmark",
+      "exit": 0,
+      "sourceDigest": "b026eee2a66928fbbb8ceebee3fa47d94d0fb01f756b065edd0587149ae36dfc"
+    }
+  ],
+  "release": "c61a00ab2f5941e47bf1b2b4436a779b74b40531b110fd4f9201adf864fef704"
+}

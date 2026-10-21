@@ -1,0 +1,34 @@
+
+> trade-journal-v3@0.1.0 test:browser
+> playwright test --project=webkit
+
+[WebServer] (node:3832) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 15 tests using 1 worker
+
+(node:3833) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [webkit] › tests/browser/d01-offline.spec.ts:3:1 › D1-B01 D1-T09 stopped-browser offline reopening retains the Plan and history (2.6s)
+  ✓   2 [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures transaction (1.0s)
+  ✓   3 [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures capacity (945ms)
+  ✓   4 [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures control (6.3s)
+  ✓   5 [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures inventory (988ms)
+  ✓   6 [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures capacity+inventory (865ms)
+  ✓   7 [webkit] › tests/browser/d01-readiness.spec.ts:38:1 › D1-B03 D1-I03 native cache failure preserves Recovery Only reads and rejects next mutation (1.4s)
+  ✓   8 [webkit] › tests/browser/d01-readiness.spec.ts:60:1 › D1-B03 unreadable existing storage is Integrity Blocked and never replaced (2.1s)
+native host evidence {
+  secure: true,
+  storage: { quota: 20615843021, usage: 421 },
+  controller: undefined,
+  caches: []
+}
+  ✓   9 [webkit] › tests/browser/d01-release.spec.ts:2:1 › D1-T09 withholds Writable until a complete verified release controls the page (743ms)
+  ✓  10 [webkit] › tests/browser/d01-ui.spec.ts:14:1 › D1-B02 invalid input, catalog conflict and Cancel preserve input and write no Plan (1.7s)
+  ✓  11 [webkit] › tests/browser/d01-ui.spec.ts:36:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 390px (1.7s)
+  ✓  12 [webkit] › tests/browser/d01-ui.spec.ts:36:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 1440px (1.8s)
+  ✓  13 [webkit] › tests/browser/d01-update.spec.ts:6:1 › D1-B04 D1-T09 stages a verified update and defers activation through an unsaved form (1.4s)
+  ✓  14 [webkit] › tests/browser/d01-update.spec.ts:39:1 › D1-B04 D1-T09 failed new-asset staging preserves the old offline release and unsaved input (1.3s)
+  ✓  15 [webkit] › tests/browser/d01-update.spec.ts:73:1 › D1-B04 one tab cannot activate an update over another tab with an unsaved Plan (1.5s)
+
+  15 passed (27.2s)

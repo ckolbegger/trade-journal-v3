@@ -1,0 +1,79 @@
+[
+  {
+    "case": "fresh-transaction",
+    "issues": [
+      "transaction"
+    ],
+    "unchangedNoWorkspace": true
+  },
+  {
+    "case": "fresh-capacity",
+    "issues": [
+      "capacity"
+    ],
+    "unchangedNoWorkspace": true
+  },
+  {
+    "case": "fresh-control",
+    "issues": [
+      "control"
+    ],
+    "unchangedNoWorkspace": true
+  },
+  {
+    "case": "fresh-inventory",
+    "issues": [
+      "inventory"
+    ],
+    "unchangedNoWorkspace": true
+  },
+  {
+    "case": "fresh-simultaneous",
+    "issues": [
+      "transaction",
+      "capacity"
+    ],
+    "unchangedNoWorkspace": true
+  },
+  {
+    "case": "recovery-transaction",
+    "readDetailHistory": true,
+    "mutationsDisabled": true,
+    "unchanged": true
+  },
+  {
+    "case": "recovery-capacity",
+    "readDetailHistory": true,
+    "mutationsDisabled": true,
+    "unchanged": true
+  },
+  {
+    "case": "recovery-control",
+    "readDetailHistory": true,
+    "mutationsDisabled": true,
+    "unchanged": true
+  },
+  {
+    "case": "recovery-inventory",
+    "readDetailHistory": true,
+    "mutationsDisabled": true,
+    "unchanged": true
+  },
+  {
+    "case": "recovery-simultaneous",
+    "readDetailHistory": true,
+    "mutationsDisabled": true,
+    "unchanged": true
+  },
+  {
+    "case": "unreadable-known-root",
+    "noInitialization": true,
+    "preservedRootAndHistories": true
+  },
+  {
+    "case": "late-failure",
+    "inputPreserved": true,
+    "rejectedBeforeMutation": true,
+    "unchanged": true
+  }
+]

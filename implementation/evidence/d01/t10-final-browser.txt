@@ -1,0 +1,97 @@
+
+> trade-journal-v3@0.1.0 test:browser
+> playwright test
+
+[WebServer] (node:20235) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 51 tests using 1 worker
+
+(node:20260) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  -   1 [chromium] › tests/browser/d01-offline.spec.ts:3:1 › D1-B01 D1-T09 stopped-browser offline reopening retains the Plan and history
+  -   2 [chromium] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures transaction
+  -   3 [chromium] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures capacity
+  -   4 [chromium] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures control
+  -   5 [chromium] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures inventory
+  -   6 [chromium] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures capacity+inventory
+  -   7 [chromium] › tests/browser/d01-readiness.spec.ts:38:1 › D1-B03 D1-I03 native cache failure preserves Recovery Only reads and rejects next mutation
+  -   8 [chromium] › tests/browser/d01-readiness.spec.ts:60:1 › D1-B03 unreadable existing storage is Integrity Blocked and never replaced
+native host evidence {
+  secure: true,
+  storage: { quota: 10737418240, usage: 0, usageDetails: {} },
+  controller: undefined,
+  caches: []
+}
+  ✓   9 [chromium] › tests/browser/d01-release.spec.ts:2:1 › D1-T09 withholds Writable until a complete verified release controls the page (347ms)
+  -  10 [chromium] › tests/browser/d01-resources.spec.ts:3:1 › D1-T03 native resource receipt accounts for stored bytes and complete cache growth
+  -  11 [chromium] › tests/browser/d01-ui.spec.ts:14:1 › D1-B02 invalid input, catalog conflict and Cancel preserve input and write no Plan
+  -  12 [chromium] › tests/browser/d01-ui.spec.ts:35:1 › D1-B02 native transaction abort preserves every participant and entered Plan
+  -  13 [chromium] › tests/browser/d01-ui.spec.ts:72:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 390px
+  -  14 [chromium] › tests/browser/d01-ui.spec.ts:72:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 1440px
+  -  15 [chromium] › tests/browser/d01-update.spec.ts:6:1 › D1-B04 D1-T09 stages a verified update and defers activation through an unsaved form
+  -  16 [chromium] › tests/browser/d01-update.spec.ts:39:1 › D1-B04 D1-T09 failed new-asset staging preserves the old offline release and unsaved input
+  -  17 [chromium] › tests/browser/d01-update.spec.ts:73:1 › D1-B04 one tab cannot activate an update over another tab with an unsaved Plan
+(node:20394) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  -  18 [firefox] › tests/browser/d01-offline.spec.ts:3:1 › D1-B01 D1-T09 stopped-browser offline reopening retains the Plan and history
+  -  19 [firefox] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures transaction
+  -  20 [firefox] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures capacity
+  -  21 [firefox] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures control
+  -  22 [firefox] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures inventory
+  -  23 [firefox] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures capacity+inventory
+  -  24 [firefox] › tests/browser/d01-readiness.spec.ts:38:1 › D1-B03 D1-I03 native cache failure preserves Recovery Only reads and rejects next mutation
+  -  25 [firefox] › tests/browser/d01-readiness.spec.ts:60:1 › D1-B03 unreadable existing storage is Integrity Blocked and never replaced
+native host evidence {
+  secure: true,
+  storage: { quota: 10737418240, usage: 49152 },
+  controller: undefined,
+  caches: []
+}
+  ✓  26 [firefox] › tests/browser/d01-release.spec.ts:2:1 › D1-T09 withholds Writable until a complete verified release controls the page (1.5s)
+  -  27 [firefox] › tests/browser/d01-resources.spec.ts:3:1 › D1-T03 native resource receipt accounts for stored bytes and complete cache growth
+  -  28 [firefox] › tests/browser/d01-ui.spec.ts:14:1 › D1-B02 invalid input, catalog conflict and Cancel preserve input and write no Plan
+  -  29 [firefox] › tests/browser/d01-ui.spec.ts:35:1 › D1-B02 native transaction abort preserves every participant and entered Plan
+  -  30 [firefox] › tests/browser/d01-ui.spec.ts:72:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 390px
+  -  31 [firefox] › tests/browser/d01-ui.spec.ts:72:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 1440px
+  -  32 [firefox] › tests/browser/d01-update.spec.ts:6:1 › D1-B04 D1-T09 stages a verified update and defers activation through an unsaved form
+  -  33 [firefox] › tests/browser/d01-update.spec.ts:39:1 › D1-B04 D1-T09 failed new-asset staging preserves the old offline release and unsaved input
+  -  34 [firefox] › tests/browser/d01-update.spec.ts:73:1 › D1-B04 one tab cannot activate an update over another tab with an unsaved Plan
+(node:21003) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  35 [webkit] › tests/browser/d01-offline.spec.ts:3:1 › D1-B01 D1-T09 stopped-browser offline reopening retains the Plan and history (2.1s)
+  ✓  36 [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures transaction (807ms)
+  ✓  37 [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures capacity (797ms)
+  ✓  38 [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures control (6.2s)
+  ✓  39 [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures inventory (827ms)
+  ✓  40 [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures capacity+inventory (813ms)
+  ✓  41 [webkit] › tests/browser/d01-readiness.spec.ts:38:1 › D1-B03 D1-I03 native cache failure preserves Recovery Only reads and rejects next mutation (1.4s)
+  ✓  42 [webkit] › tests/browser/d01-readiness.spec.ts:60:1 › D1-B03 unreadable existing storage is Integrity Blocked and never replaced (2.1s)
+native host evidence {
+  secure: true,
+  storage: { quota: 20615843021, usage: 263 },
+  controller: undefined,
+  caches: []
+}
+  ✓  43 [webkit] › tests/browser/d01-release.spec.ts:2:1 › D1-T09 withholds Writable until a complete verified release controls the page (710ms)
+Native resource receipt {
+  M: 6585417728,
+  L: 6781,
+  C: 565173,
+  Q: 20615264187,
+  H: 16464242310,
+  quota: 20615843021,
+  usage: 578834,
+  method: 'SerializedActiveLowerBound'
+}
+  ✓  44 [webkit] › tests/browser/d01-resources.spec.ts:3:1 › D1-T03 native resource receipt accounts for stored bytes and complete cache growth (1.2s)
+  ✓  45 [webkit] › tests/browser/d01-ui.spec.ts:14:1 › D1-B02 invalid input, catalog conflict and Cancel preserve input and write no Plan (1.7s)
+  ✓  46 [webkit] › tests/browser/d01-ui.spec.ts:35:1 › D1-B02 native transaction abort preserves every participant and entered Plan (2.1s)
+  ✓  47 [webkit] › tests/browser/d01-ui.spec.ts:72:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 390px (1.8s)
+  ✓  48 [webkit] › tests/browser/d01-ui.spec.ts:72:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 1440px (1.9s)
+  ✓  49 [webkit] › tests/browser/d01-update.spec.ts:6:1 › D1-B04 D1-T09 stages a verified update and defers activation through an unsaved form (1.5s)
+  ✓  50 [webkit] › tests/browser/d01-update.spec.ts:39:1 › D1-B04 D1-T09 failed new-asset staging preserves the old offline release and unsaved input (1.2s)
+  ✓  51 [webkit] › tests/browser/d01-update.spec.ts:73:1 › D1-B04 one tab cannot activate an update over another tab with an unsaved Plan (1.5s)
+
+  32 skipped
+  19 passed (1.0m)

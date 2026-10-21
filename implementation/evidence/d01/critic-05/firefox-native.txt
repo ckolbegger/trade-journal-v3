@@ -1,0 +1,10 @@
+{
+  "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:157.0) Gecko/20100101 Firefox/157.0",
+  "secure": true,
+  "estimate": {
+    "quota": 10737418240,
+    "usage": 802486
+  },
+  "persisted": false,
+  "controller": "http://localhost:5174/sw.js"
+}

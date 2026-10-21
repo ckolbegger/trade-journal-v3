@@ -1,0 +1,252 @@
+[
+  {
+    "kind": "field",
+    "label": "Workspace time zone",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Workspace time zone"
+      ],
+      "value": "",
+      "outline": "3px solid rgb(75, 100, 190)"
+    }
+  },
+  {
+    "kind": "button",
+    "label": "Create Workspace",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Create Workspace",
+      "labels": [],
+      "value": "",
+      "outline": "3px solid rgb(75, 100, 190)"
+    }
+  },
+  {
+    "kind": "field",
+    "label": "Institution name",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Institution name"
+      ],
+      "value": "",
+      "outline": "3px solid rgb(75, 100, 190)"
+    }
+  },
+  {
+    "kind": "button",
+    "label": "Save Institution",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Save Institution",
+      "labels": [],
+      "value": "",
+      "outline": "3px solid rgb(75, 100, 190)"
+    }
+  },
+  {
+    "kind": "field",
+    "label": "Account name",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Account name"
+      ],
+      "value": "",
+      "outline": "3px solid rgb(75, 100, 190)"
+    }
+  },
+  {
+    "kind": "button",
+    "label": "Save Account",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Save Account",
+      "labels": [],
+      "value": "",
+      "outline": "3px solid rgb(75, 100, 190)"
+    }
+  },
+  {
+    "kind": "button",
+    "label": "New Plan",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "New Plan",
+      "labels": [],
+      "value": "",
+      "outline": "3px solid rgb(75, 100, 190)"
+    }
+  },
+  {
+    "kind": "button",
+    "label": "Confirm Plan",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Confirm Plan",
+      "labels": [],
+      "value": "",
+      "outline": "3px solid rgb(75, 100, 190)"
+    }
+  },
+  {
+    "kind": "field",
+    "label": "Stock symbol",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Stock symbol"
+      ],
+      "value": "",
+      "outline": "3px solid rgb(75, 100, 190)"
+    }
+  },
+  {
+    "kind": "field",
+    "label": "Quantity (shares)",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Quantity (shares)"
+      ],
+      "value": "",
+      "outline": "3px solid rgb(75, 100, 190)"
+    }
+  },
+  {
+    "kind": "field",
+    "label": "Intended entry (USD)",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Intended entry (USD)"
+      ],
+      "value": "",
+      "outline": "3px solid rgb(75, 100, 190)"
+    }
+  },
+  {
+    "kind": "field",
+    "label": "Stop (underlying price, USD)",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Stop (underlying price, USD)"
+      ],
+      "value": "",
+      "outline": "3px solid rgb(75, 100, 190)"
+    }
+  },
+  {
+    "kind": "field",
+    "label": "Target (underlying price, USD)",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Target (underlying price, USD)"
+      ],
+      "value": "",
+      "outline": "3px solid rgb(75, 100, 190)"
+    }
+  },
+  {
+    "kind": "field",
+    "label": "Why this trade, why now?",
+    "active": {
+      "tag": "TEXTAREA",
+      "type": "textarea",
+      "text": "",
+      "labels": [
+        "Why this trade, why now?"
+      ],
+      "value": "",
+      "outline": "3px solid rgb(75, 100, 190)"
+    }
+  },
+  {
+    "kind": "field",
+    "label": "What would invalidate the thesis?",
+    "active": {
+      "tag": "TEXTAREA",
+      "type": "textarea",
+      "text": "",
+      "labels": [
+        "What would invalidate the thesis?"
+      ],
+      "value": "",
+      "outline": "3px solid rgb(75, 100, 190)"
+    }
+  },
+  {
+    "kind": "field",
+    "label": "Conviction",
+    "active": {
+      "tag": "SELECT",
+      "type": "select-one",
+      "text": "Unanswered12345",
+      "labels": [
+        "Conviction (optional, 1–5)Unanswered12345"
+      ],
+      "value": "",
+      "outline": "3px solid rgb(75, 100, 190)"
+    }
+  },
+  {
+    "kind": "field",
+    "label": "Unanswered",
+    "active": {
+      "tag": "INPUT",
+      "type": "radio",
+      "text": "",
+      "labels": [
+        "Unanswered"
+      ],
+      "value": "on",
+      "outline": "3px solid rgb(75, 100, 190)"
+    }
+  },
+  {
+    "kind": "button",
+    "label": "Confirm Plan",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Confirm Plan",
+      "labels": [],
+      "value": "",
+      "outline": "3px solid rgb(75, 100, 190)"
+    }
+  },
+  {
+    "kind": "summary",
+    "label": "View history",
+    "active": {
+      "tag": "SUMMARY",
+      "text": "View history",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)"
+    }
+  }
+]

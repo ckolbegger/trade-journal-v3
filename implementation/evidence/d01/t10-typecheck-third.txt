@@ -1,0 +1,4 @@
+
+> trade-journal-v3@0.1.0 typecheck
+> node node_modules/@typescript/native/bin/tsc -b
+

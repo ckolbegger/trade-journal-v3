@@ -1,0 +1,146 @@
+{
+  "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15",
+  "secure": true,
+  "estimate": {
+    "quota": 20615843021,
+    "usage": 590932
+  },
+  "worker": "http://localhost:5174/sw.js",
+  "manifest": {
+    "name": "Trade Journal",
+    "short_name": "Trade Journal",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f6f4ed",
+    "theme_color": "#f6f4ed",
+    "lang": "en",
+    "scope": "/",
+    "id": "/",
+    "icons": [
+      {
+        "src": "/icon-192.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any"
+      },
+      {
+        "src": "/icon-512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any"
+      },
+      {
+        "src": "/icon.svg",
+        "sizes": "any",
+        "type": "image/svg+xml",
+        "purpose": "any"
+      }
+    ]
+  },
+  "inventory": {
+    "version": 1,
+    "releaseId": "42742c99abf6a9031cf8783bd135bc7450ec349b935c98a2f349b3cebe9f795f",
+    "assets": [
+      {
+        "url": "/assets/index-B46ObyIX.css",
+        "bytes": 2875,
+        "sha256": "646a01dbd7e0663f32553a9bb1f93ccc99ba632c21029d2852e6a369773f7cd0"
+      },
+      {
+        "url": "/assets/index-pLaUHyuZ.js",
+        "bytes": 556605,
+        "sha256": "3c4d5c4235e80f62563810251507bedc435f9fc67645688d46433b1d50e7ee95"
+      },
+      {
+        "url": "/capabilities.json",
+        "bytes": 1290,
+        "sha256": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a"
+      },
+      {
+        "url": "/icon-192.png",
+        "bytes": 3409,
+        "sha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9"
+      },
+      {
+        "url": "/icon-512.png",
+        "bytes": 12236,
+        "sha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457"
+      },
+      {
+        "url": "/icon.svg",
+        "bytes": 180,
+        "sha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9"
+      },
+      {
+        "url": "/index.html",
+        "bytes": 446,
+        "sha256": "ee01d1a09e5b045f2469ad7a43f4163e0b4a234ef35a4eb40e9373160c0e9b5e"
+      },
+      {
+        "url": "/manifest.webmanifest",
+        "bytes": 416,
+        "sha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd"
+      },
+      {
+        "url": "/sw.js",
+        "bytes": 3919,
+        "sha256": "ed6ddd10d84df29e3e1cc1cfd8d994d2db689e4a9c4f0820cd5983622007ae76"
+      }
+    ]
+  },
+  "capabilities": {
+    "identity": "trade-journal-d1-v1",
+    "scope": "Exact Long Stock Plans with fixed underlying-price Stop and Target",
+    "operations": {
+      "Workspace": [
+        "initialize",
+        "getStatus",
+        "requestDurability"
+      ],
+      "ReferenceCatalog": [
+        "save.CreateInstitution",
+        "save.CreateAccount",
+        "query.Strategy",
+        "query.Institution",
+        "query.Account",
+        "resolve.NewSelection",
+        "resolve.DisplayOnly",
+        "resolve.RetainedReference"
+      ],
+      "TradeWorkflows": [
+        "confirmPlan"
+      ],
+      "TradeAnalysis": [
+        "assessPlan.LongStock",
+        "derive.Planned"
+      ],
+      "TradeRecord": [
+        "prepareChange.ConfirmPlan",
+        "applyPreparedChange.ConfirmPlan",
+        "getRecord",
+        "queryRecords.Planned",
+        "history",
+        "resolveAnchors.Trade"
+      ],
+      "Journal": [
+        "getDefinitions.PlanReflection",
+        "prepareEffects.PlanReflection",
+        "applyPreparedEffects.PlanReflection",
+        "query.TradeNarrative"
+      ],
+      "TradeViewsAndReporting": [
+        "browseTrades.Planned",
+        "getTradeDetail.Planned"
+      ]
+    },
+    "backupSchemaRanges": [],
+    "providerAdapters": [],
+    "calendarPolicy": {
+      "approvedRange": [
+        "2021-01-01",
+        "2028-12-31"
+      ],
+      "installedSessionOperations": []
+    }
+  }
+}

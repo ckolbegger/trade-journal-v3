@@ -1,0 +1,46 @@
+
+> trade-journal-v3@0.1.0 build
+> npm run typecheck && vite build && node tools/inventory.mjs
+
+
+> trade-journal-v3@0.1.0 typecheck
+> node node_modules/@typescript/native/bin/tsc -b
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 31 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/manifest.webmanifest         0.26 kB
+dist/index.html                   0.44 kB │ gzip:   0.29 kB
+dist/assets/index-BF2tpiZ9.css    2.85 kB │ gzip:   1.07 kB
+dist/assets/index-DbrR7Wxr.js   551.82 kB │ gzip: 171.29 kB
+
+✓ built in 80ms
+
+PWA v2.0.0
+Building worker/sw.ts service worker ("es" format)...
+vite v8.3.4 building client environment for production...
+
+ WARN  inlineDynamicImports option is deprecated, please use codeSplitting: false instead.
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+transforming...
+✓ 2 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/sw.mjs  2.81 kB │ gzip: 1.30 kB
+
+✓ built in 8ms
+
+PWA v2.0.0
+mode      injectManifest
+format:   es
+precache  8 entries (543.52 KiB)
+files generated
+  dist/sw.js
+Inventoried 7 emitted assets with SHA-256 digests

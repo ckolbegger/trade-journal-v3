@@ -1,0 +1,60 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-analysis.test.ts -t should normalize decimal
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-analysis.test.ts (7 tests | 1 failed | 6 skipped) 6ms
+   × should normalize decimal sign, zero and formatting without native-number conversion 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-analysis.test.ts > should normalize decimal sign, zero and formatting without native-number conversion
+AssertionError: expected { status: 'Accepted', …(3) } to match object { status: 'Accepted', …(2) }
+(15 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "baseline": {
+      "conditions": [
+        {
+          "amount": "5000",
+-         "price": "0",
++         "price": "-0",
+        },
+        {
+          "amount": "1000",
+-         "price": "60",
++         "price": "6e1",
+        },
+      ],
+      "oneR": "5000",
+      "reward": "1000",
+    },
+    "plan": {
+-     "entry": "50",
+-     "quantity": "100",
+-     "stop": "0",
+-     "target": "60",
++     "entry": "+50.000",
++     "quantity": "00100.00",
++     "stop": "-0",
++     "target": "6e1",
+    },
+    "status": "Accepted",
+  }
+
+ ❯ tests/unit/d01-analysis.test.ts:32:102
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 skipped (7)
+   Start at  21:20:27
+   Duration  440ms (environment 93%, transform 4%, tests 2%, import 1%, worker 1%)
+

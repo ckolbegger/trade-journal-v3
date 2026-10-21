@@ -1,0 +1,46 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit --testNamePattern=complete retained authoritative count
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-workspace.test.ts (9 tests | 1 failed | 8 skipped) 29ms
+   × should bind an existing initialization receipt to the complete retained authoritative count 29ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-workspace.test.ts > should bind an existing initialization receipt to the complete retained authoritative count
+AssertionError: expected { status: 'Opened', …(5) } to match object { status: 'Opened', …(2) }
+(13 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -1,8 +1,8 @@
+  {
+    "receipt": {
+-     "authoritativeCount": 7,
++     "authoritativeCount": 3,
+      "fresh": false,
+    },
+    "root": {
+      "recordedSequence": 1,
+    },
+
+ ❯ tests/unit/d01-workspace.test.ts:100:69
+     98|   const f = await workspaceFixture();
+     99|   await f.workflows.confirmPlan(f.command);
+    100|   expect(await f.workspace.initialize({ openingInstant: instant })).to…
+       |                                                                     ^
+    101|   f.store.close();
+    102| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 skipped (7)
+      Tests  1 failed | 49 skipped (50)
+   Start at  22:57:17
+   Duration  461ms (environment 76%, import 12%, transform 10%, tests 1%, worker 1%)
+

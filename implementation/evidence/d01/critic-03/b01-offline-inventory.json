@@ -1,0 +1,227 @@
+{
+  "secure": true,
+  "origin": "http://localhost:5174",
+  "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15",
+  "controller": "http://localhost:5174/sw.js",
+  "estimate": {
+    "quota": 20615843021,
+    "usage": 722159
+  },
+  "persisted": false,
+  "releases": [
+    {
+      "name": "trade-journal-release-300a490ca6b84be520cae4fa04a13cea4bd4e1c0012897e781f91ae2f921c890",
+      "inventory": {
+        "version": 1,
+        "releaseId": "300a490ca6b84be520cae4fa04a13cea4bd4e1c0012897e781f91ae2f921c890",
+        "assets": [
+          {
+            "url": "/assets/index-B46ObyIX.css",
+            "bytes": 2875,
+            "sha256": "646a01dbd7e0663f32553a9bb1f93ccc99ba632c21029d2852e6a369773f7cd0"
+          },
+          {
+            "url": "/assets/index-DaWfOxnI.js",
+            "bytes": 556700,
+            "sha256": "864ed768971348e68c79b0c16ccd4bd1e9dda911e38a9dc23f54ed79bec9a103"
+          },
+          {
+            "url": "/capabilities.json",
+            "bytes": 1290,
+            "sha256": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a"
+          },
+          {
+            "url": "/icon-192.png",
+            "bytes": 3409,
+            "sha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9"
+          },
+          {
+            "url": "/icon-512.png",
+            "bytes": 12236,
+            "sha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457"
+          },
+          {
+            "url": "/icon.svg",
+            "bytes": 180,
+            "sha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9"
+          },
+          {
+            "url": "/index.html",
+            "bytes": 446,
+            "sha256": "3606fd57397825d87f3abab3693008b143e916e2b63d6f9073c987afc89ac3af"
+          },
+          {
+            "url": "/manifest.webmanifest",
+            "bytes": 416,
+            "sha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd"
+          },
+          {
+            "url": "/sw.js",
+            "bytes": 3919,
+            "sha256": "503ac7b45775aa8c5e4c7676a17c0d08eb1e2dd3347d3f6cffa6c87a5434d454"
+          }
+        ]
+      },
+      "proofs": [
+        {
+          "url": "/assets/index-B46ObyIX.css",
+          "bytes": 2875,
+          "sha256": "646a01dbd7e0663f32553a9bb1f93ccc99ba632c21029d2852e6a369773f7cd0",
+          "observedBytes": 2875,
+          "digest": "646a01dbd7e0663f32553a9bb1f93ccc99ba632c21029d2852e6a369773f7cd0",
+          "valid": true
+        },
+        {
+          "url": "/assets/index-DaWfOxnI.js",
+          "bytes": 556700,
+          "sha256": "864ed768971348e68c79b0c16ccd4bd1e9dda911e38a9dc23f54ed79bec9a103",
+          "observedBytes": 556700,
+          "digest": "864ed768971348e68c79b0c16ccd4bd1e9dda911e38a9dc23f54ed79bec9a103",
+          "valid": true
+        },
+        {
+          "url": "/capabilities.json",
+          "bytes": 1290,
+          "sha256": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a",
+          "observedBytes": 1290,
+          "digest": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a",
+          "valid": true
+        },
+        {
+          "url": "/icon-192.png",
+          "bytes": 3409,
+          "sha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+          "observedBytes": 3409,
+          "digest": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+          "valid": true
+        },
+        {
+          "url": "/icon-512.png",
+          "bytes": 12236,
+          "sha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+          "observedBytes": 12236,
+          "digest": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+          "valid": true
+        },
+        {
+          "url": "/icon.svg",
+          "bytes": 180,
+          "sha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+          "observedBytes": 180,
+          "digest": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+          "valid": true
+        },
+        {
+          "url": "/index.html",
+          "bytes": 446,
+          "sha256": "3606fd57397825d87f3abab3693008b143e916e2b63d6f9073c987afc89ac3af",
+          "observedBytes": 446,
+          "digest": "3606fd57397825d87f3abab3693008b143e916e2b63d6f9073c987afc89ac3af",
+          "valid": true
+        },
+        {
+          "url": "/manifest.webmanifest",
+          "bytes": 416,
+          "sha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+          "observedBytes": 416,
+          "digest": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+          "valid": true
+        },
+        {
+          "url": "/sw.js",
+          "bytes": 3919,
+          "sha256": "503ac7b45775aa8c5e4c7676a17c0d08eb1e2dd3347d3f6cffa6c87a5434d454",
+          "observedBytes": 3919,
+          "digest": "503ac7b45775aa8c5e4c7676a17c0d08eb1e2dd3347d3f6cffa6c87a5434d454",
+          "valid": true
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "name": "Trade Journal",
+    "short_name": "Trade Journal",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f6f4ed",
+    "theme_color": "#f6f4ed",
+    "lang": "en",
+    "scope": "/",
+    "id": "/",
+    "icons": [
+      {
+        "src": "/icon-192.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any"
+      },
+      {
+        "src": "/icon-512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any"
+      },
+      {
+        "src": "/icon.svg",
+        "sizes": "any",
+        "type": "image/svg+xml",
+        "purpose": "any"
+      }
+    ]
+  },
+  "capabilities": {
+    "identity": "trade-journal-d1-v1",
+    "scope": "Exact Long Stock Plans with fixed underlying-price Stop and Target",
+    "operations": {
+      "Workspace": [
+        "initialize",
+        "getStatus",
+        "requestDurability"
+      ],
+      "ReferenceCatalog": [
+        "save.CreateInstitution",
+        "save.CreateAccount",
+        "query.Strategy",
+        "query.Institution",
+        "query.Account",
+        "resolve.NewSelection",
+        "resolve.DisplayOnly",
+        "resolve.RetainedReference"
+      ],
+      "TradeWorkflows": [
+        "confirmPlan"
+      ],
+      "TradeAnalysis": [
+        "assessPlan.LongStock",
+        "derive.Planned"
+      ],
+      "TradeRecord": [
+        "prepareChange.ConfirmPlan",
+        "applyPreparedChange.ConfirmPlan",
+        "getRecord",
+        "queryRecords.Planned",
+        "history",
+        "resolveAnchors.Trade"
+      ],
+      "Journal": [
+        "getDefinitions.PlanReflection",
+        "prepareEffects.PlanReflection",
+        "applyPreparedEffects.PlanReflection",
+        "query.TradeNarrative"
+      ],
+      "TradeViewsAndReporting": [
+        "browseTrades.Planned",
+        "getTradeDetail.Planned"
+      ]
+    },
+    "backupSchemaRanges": [],
+    "providerAdapters": [],
+    "calendarPolicy": {
+      "approvedRange": [
+        "2021-01-01",
+        "2028-12-31"
+      ],
+      "installedSessionOperations": []
+    }
+  }
+}

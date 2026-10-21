@@ -1,0 +1,45 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-readiness.test.ts -t should block an unreadable
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-readiness.test.ts (4 tests | 1 failed | 3 skipped) 6ms
+   × should block an unreadable possible root even when host checks pass 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-readiness.test.ts > should block an unreadable possible root even when host checks pass
+AssertionError: expected { status: 'Writable', …(2) } to match object { status: 'RuntimeNotWritable', …(3) }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "failedChecks": [
+-     "UnreadableRoot",
+-   ],
+-   "runtimeReadiness": "Unsupported",
+-   "status": "RuntimeNotWritable",
+-   "workspaceStatus": "IntegrityBlocked",
++   "status": "Writable",
+  }
+
+ ❯ tests/unit/d01-readiness.test.ts:46:41
+     44|   const f = fixture();
+     45|   vi.spyOn(f.store, 'inspect').mockResolvedValue({ status: 'IntegrityB…
+     46|   expect(await f.workspace.getStatus()).toMatchObject({ status: 'Runti…
+       |                                         ^
+     47|   expect(await f.runtime.mutate(undefined, async () => { throw new Err…
+     48|   f.store.close();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 skipped (4)
+   Start at  20:59:21
+   Duration  315ms (environment 83%, import 7%, transform 7%, tests 3%, worker 1%)
+

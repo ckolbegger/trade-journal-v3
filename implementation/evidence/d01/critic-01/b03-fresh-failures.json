@@ -1,0 +1,67 @@
+[
+  {
+    "fault": "diag",
+    "text": "Unsupported\n\nWe could not verify safe writing in this environment.\n\nBrowser storage could not complete a test transaction.\nRetry startup\n\nAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.",
+    "snapshot": {
+      "trade-journal-v3": {
+        "diagnostic": [],
+        "lifecycle": [],
+        "projections": [],
+        "roots": [],
+        "versions": []
+      }
+    }
+  },
+  {
+    "fault": "capacity",
+    "text": "Unsupported\n\nWe could not verify safe writing in this environment.\n\nThis browser does not have the required available storage capacity.\nRetry startup\n\nAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.",
+    "snapshot": {
+      "trade-journal-v3": {
+        "diagnostic": [],
+        "lifecycle": [],
+        "projections": [],
+        "roots": [],
+        "versions": []
+      }
+    }
+  },
+  {
+    "fault": "control",
+    "text": "Unsupported\n\nWe could not verify safe writing in this environment.\n\nThe verified application is not controlling this tab.\nRetry startup\n\nAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.",
+    "snapshot": {
+      "trade-journal-v3": {
+        "diagnostic": [],
+        "lifecycle": [],
+        "projections": [],
+        "roots": [],
+        "versions": []
+      }
+    }
+  },
+  {
+    "fault": "pair",
+    "text": "Unsupported\n\nWe could not verify safe writing in this environment.\n\nBrowser storage could not complete a test transaction.\nThis browser does not have the required available storage capacity.\nRetry startup\n\nAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.",
+    "snapshot": {
+      "trade-journal-v3": {
+        "diagnostic": [],
+        "lifecycle": [],
+        "projections": [],
+        "roots": [],
+        "versions": []
+      }
+    }
+  },
+  {
+    "fault": "inventoryMissing",
+    "text": "Unsupported\n\nWe could not verify safe writing in this environment.\n\nThe offline application files are missing or damaged.\nRetry startup\n\nAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.",
+    "snapshot": {
+      "trade-journal-v3": {
+        "diagnostic": [],
+        "lifecycle": [],
+        "projections": [],
+        "roots": [],
+        "versions": []
+      }
+    }
+  }
+]

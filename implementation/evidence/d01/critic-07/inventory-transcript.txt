@@ -1,0 +1,3 @@
+PASS B04 manifest and native cached inventory SHA256 completeness
+PASS B03 advisory native storage request then explicit denial
+PASS B05 explicit list Error and safe retry

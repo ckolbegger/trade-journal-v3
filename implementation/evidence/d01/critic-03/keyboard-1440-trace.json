@@ -1,0 +1,1512 @@
+[
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Workspace time zone"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Meta+A",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Workspace time zone"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "typed": "America/New_York"
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Create Workspace",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Enter",
+    "active": {
+      "tag": "BODY",
+      "text": "Trade JournalVerifying startup and local storage…\n",
+      "labels": [],
+      "outline": "3px none rgb(38, 40, 32)",
+      "bg": "rgb(246, 244, 237)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Check for application updates",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Request storage protection",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Institution name"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Meta+A",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Institution name"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "typed": "Vanguard keyboard 1440"
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Save Institution",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Enter",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Save Institution",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "SELECT",
+      "type": "select-one",
+      "text": "Vanguard keyboard 1440",
+      "labels": [
+        "InstitutionVanguard keyboard 1440"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Account name"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Meta+A",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Account name"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "typed": "Main 1440"
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Save Account",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Enter",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Save Account",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Trades",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "New Plan",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Enter",
+    "active": {
+      "tag": "H1",
+      "text": "New Plan",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Check for application updates",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Request storage protection",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "SELECT",
+      "type": "select-one",
+      "text": "Main 1440 · Vanguard keyboard 1440",
+      "labels": [
+        "AccountMain 1440 · Vanguard keyboard 1440"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Stock symbol"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Quantity (shares)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Intended entry (USD)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Stop (underlying price, USD)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Target (underlying price, USD)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "TEXTAREA",
+      "type": "textarea",
+      "text": "",
+      "labels": [
+        "Why this trade, why now?"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "TEXTAREA",
+      "type": "textarea",
+      "text": "",
+      "labels": [
+        "What would invalidate the thesis?"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "SELECT",
+      "type": "select-one",
+      "text": "Unanswered12345",
+      "labels": [
+        "Conviction (optional, 1–5)Unanswered12345"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "radio",
+      "text": "",
+      "labels": [
+        "Unanswered"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Confirm Plan",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Enter",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Saving…",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "SELECT",
+      "type": "select-one",
+      "text": "Main 1440 · Vanguard keyboard 1440",
+      "labels": [
+        "AccountMain 1440 · Vanguard keyboard 1440"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Stock symbol"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Meta+A",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Stock symbol"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "typed": "KEY1440"
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Quantity (shares)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Meta+A",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Quantity (shares)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "typed": "100"
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Intended entry (USD)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Meta+A",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Intended entry (USD)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "typed": "50"
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Stop (underlying price, USD)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Meta+A",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Stop (underlying price, USD)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "typed": "45"
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Target (underlying price, USD)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Meta+A",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Target (underlying price, USD)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "typed": "60"
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "TEXTAREA",
+      "type": "textarea",
+      "text": "",
+      "labels": [
+        "Why this trade, why now?"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Meta+A",
+    "active": {
+      "tag": "TEXTAREA",
+      "type": "textarea",
+      "text": "",
+      "labels": [
+        "Why this trade, why now?"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "typed": "Keyboard thesis"
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "TEXTAREA",
+      "type": "textarea",
+      "text": "",
+      "labels": [
+        "What would invalidate the thesis?"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Meta+A",
+    "active": {
+      "tag": "TEXTAREA",
+      "type": "textarea",
+      "text": "",
+      "labels": [
+        "What would invalidate the thesis?"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "typed": "Keyboard invalidation"
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "SELECT",
+      "type": "select-one",
+      "text": "Unanswered12345",
+      "labels": [
+        "Conviction (optional, 1–5)Unanswered12345"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "radio",
+      "text": "",
+      "labels": [
+        "Unanswered"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)"
+    }
+  },
+  {
+    "key": "ArrowRight",
+    "active": {
+      "tag": "INPUT",
+      "type": "radio",
+      "text": "",
+      "labels": [
+        "Calm"
+      ],
+      "outline": "3px none rgb(0, 0, 0)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)"
+    }
+  },
+  {
+    "key": "Meta++",
+    "active": {
+      "tag": "INPUT",
+      "type": "radio",
+      "text": "",
+      "labels": [
+        "Calm"
+      ],
+      "outline": "3px none rgb(0, 0, 0)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)"
+    }
+  },
+  {
+    "key": "Meta++",
+    "active": {
+      "tag": "INPUT",
+      "type": "radio",
+      "text": "",
+      "labels": [
+        "Calm"
+      ],
+      "outline": "3px none rgb(0, 0, 0)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)"
+    }
+  },
+  {
+    "key": "Meta++",
+    "active": {
+      "tag": "INPUT",
+      "type": "radio",
+      "text": "",
+      "labels": [
+        "Calm"
+      ],
+      "outline": "3px none rgb(0, 0, 0)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)"
+    }
+  },
+  {
+    "key": "Meta++",
+    "active": {
+      "tag": "INPUT",
+      "type": "radio",
+      "text": "",
+      "labels": [
+        "Calm"
+      ],
+      "outline": "3px none rgb(0, 0, 0)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)"
+    }
+  },
+  {
+    "key": "Meta+0",
+    "active": {
+      "tag": "INPUT",
+      "type": "radio",
+      "text": "",
+      "labels": [
+        "Calm"
+      ],
+      "outline": "3px none rgb(0, 0, 0)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Confirm Plan",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Enter",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Saving…",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "SELECT",
+      "type": "select-one",
+      "text": "Main 1440 · Vanguard keyboard 1440",
+      "labels": [
+        "AccountMain 1440 · Vanguard keyboard 1440"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Stock symbol"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Quantity (shares)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Intended entry (USD)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Stop (underlying price, USD)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Target (underlying price, USD)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "TEXTAREA",
+      "type": "textarea",
+      "text": "Keyboard thesis",
+      "labels": [
+        "Why this trade, why now?Keyboard thesis"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "TEXTAREA",
+      "type": "textarea",
+      "text": "Keyboard invalidation",
+      "labels": [
+        "What would invalidate the thesis?Keyboard invalidation"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "SELECT",
+      "type": "select-one",
+      "text": "Unanswered12345",
+      "labels": [
+        "Conviction (optional, 1–5)Unanswered12345"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "radio",
+      "text": "",
+      "labels": [
+        "Calm"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "button",
+      "text": "Cancel",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BODY",
+      "text": "TRADE JOURNALTradesNew PlanWorkspaceAFTER-CLOSE JOURNAL · USDNew PlanCheck for application updatesRe",
+      "labels": [],
+      "outline": "3px none rgb(38, 40, 32)",
+      "bg": "rgb(246, 244, 237)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Trades",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Workspace",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Check for application updates",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Retry startup",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Enter",
+    "active": {
+      "tag": "BODY",
+      "text": "Trade JournalVerifying startup and local storage…\n",
+      "labels": [],
+      "outline": "3px none rgb(38, 40, 32)",
+      "bg": "rgb(246, 244, 237)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Check for application updates",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Request storage protection",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "SELECT",
+      "type": "select-one",
+      "text": "Main 1440 · Vanguard keyboard 1440",
+      "labels": [
+        "AccountMain 1440 · Vanguard keyboard 1440"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Stock symbol"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Quantity (shares)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Intended entry (USD)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Stop (underlying price, USD)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Target (underlying price, USD)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "TEXTAREA",
+      "type": "textarea",
+      "text": "Keyboard thesis",
+      "labels": [
+        "Why this trade, why now?Keyboard thesis"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "TEXTAREA",
+      "type": "textarea",
+      "text": "Keyboard invalidation",
+      "labels": [
+        "What would invalidate the thesis?Keyboard invalidation"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "SELECT",
+      "type": "select-one",
+      "text": "Unanswered12345",
+      "labels": [
+        "Conviction (optional, 1–5)Unanswered12345"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "radio",
+      "text": "",
+      "labels": [
+        "Calm"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Confirm Plan",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Enter",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Saving…",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Check for application updates",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Request storage protection",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "SUMMARY",
+      "text": "View history",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Enter",
+    "active": {
+      "tag": "SUMMARY",
+      "text": "View history",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BODY",
+      "text": "TRADE JOURNALTradesNew PlanWorkspaceAFTER-CLOSE JOURNAL · USDKEY1440 · PlannedCheck for application ",
+      "labels": [],
+      "outline": "3px none rgb(38, 40, 32)",
+      "bg": "rgb(246, 244, 237)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Trades",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "New Plan",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Enter",
+    "active": {
+      "tag": "H1",
+      "text": "New Plan",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Check for application updates",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Request storage protection",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "SELECT",
+      "type": "select-one",
+      "text": "Main 1440 · Vanguard keyboard 1440",
+      "labels": [
+        "AccountMain 1440 · Vanguard keyboard 1440"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Stock symbol"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Meta+A",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Stock symbol"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "typed": "CANCELKEY"
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Quantity (shares)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Intended entry (USD)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Stop (underlying price, USD)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "text",
+      "text": "",
+      "labels": [
+        "Target (underlying price, USD)"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "TEXTAREA",
+      "type": "textarea",
+      "text": "",
+      "labels": [
+        "Why this trade, why now?"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "TEXTAREA",
+      "type": "textarea",
+      "text": "",
+      "labels": [
+        "What would invalidate the thesis?"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "SELECT",
+      "type": "select-one",
+      "text": "Unanswered12345",
+      "labels": [
+        "Conviction (optional, 1–5)Unanswered12345"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "INPUT",
+      "type": "radio",
+      "text": "",
+      "labels": [
+        "Unanswered"
+      ],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "submit",
+      "text": "Confirm Plan",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(37, 40, 32)",
+      "color": "rgb(255, 255, 255)"
+    }
+  },
+  {
+    "key": "Alt+Tab",
+    "active": {
+      "tag": "BUTTON",
+      "type": "button",
+      "text": "Cancel",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgb(255, 255, 255)",
+      "color": "rgb(38, 40, 32)"
+    }
+  },
+  {
+    "key": "Enter",
+    "active": {
+      "tag": "H1",
+      "text": "Trades",
+      "labels": [],
+      "outline": "3px solid rgb(75, 100, 190)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(38, 40, 32)"
+    }
+  }
+]

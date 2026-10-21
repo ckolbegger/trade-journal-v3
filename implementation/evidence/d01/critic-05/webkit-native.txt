@@ -1,0 +1,10 @@
+{
+  "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15",
+  "secure": true,
+  "estimate": {
+    "quota": 20615843021,
+    "usage": 583300
+  },
+  "persisted": false,
+  "controller": "http://localhost:5174/sw.js"
+}

@@ -1,0 +1,8 @@
+$ npm run preview
+> trade-journal-v3@0.1.0 preview
+> vite preview
+Local: http://localhost:5174/
+press h + enter to show help
+[Owned persistent terminal session85022. All independent scripts used this strict local production preview.]
+^C
+[Session completed. Final lsof found no listener5174.]

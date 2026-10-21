@@ -1,0 +1,248 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit --testNamePattern=keep recovery reads and history available
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-ui.test.tsx (11 tests | 1 failed | 10 skipped) 1097ms
+   × should keep recovery reads and history available while every mutation is disabled 1097ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-ui.test.tsx > should keep recovery reads and history available while every mutation is disabled
+TestingLibraryElementError: Unable to find role="button" and name `/XYZ · Planned/`
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"_shell_d47682"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Primary"[39m
+      [36m>[39m
+        [36m<strong>[39m
+          [0mTRADE JOURNAL[0m
+        [36m</strong>[39m
+        [36m<button>[39m
+          [0mTrades[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mdisabled[39m=[32m""[39m
+        [36m>[39m
+          [0mNew Plan[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mWorkspace[0m
+        [36m</button>[39m
+      [36m</nav>[39m
+      [36m<main>[39m
+        [36m<header>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"_eyebrow_d47682"[39m
+          [36m>[39m
+            [0mAFTER-CLOSE JOURNAL · USD[0m
+          [36m</p>[39m
+          [36m<h1[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [0mTrades[0m
+          [36m</h1>[39m
+        [36m</header>[39m
+        [36m<aside[39m
+          [33mclass[39m=[32m"_warning_d47682"[39m
+        [36m>[39m
+          [36m<h2>[39m
+            [0mRecovery Only[0m
+          [36m</h2>[39m
+          [36m<p>[39m
+            [0mReading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.[0m
+          [36m</p>[39m
+          [36m<button>[39m
+            [0mRetry startup[0m
+          [36m</button>[39m
+        [36m</aside>[39m
+        [36m<aside[39m
+          [33mclass[39m=[32m"_warning_d47682"[39m
+        [36m>[39m
+          [36m<strong>[39m
+            [0mStorage is [0m
+            [0mBest Effort[0m
+            [0m.[0m
+          [36m</strong>[39m
+          [0m This browser may clear your data. Backup is not installed until a later release. [0m
+          [36m<button>[39m
+            [0mRequest storage protection[0m
+          [36m</button>[39m
+        [36m</aside>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"_install_d47682"[39m
+        [36m>[39m
+          [0mWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"_errors_d47682"[39m
+          [33mid[39m=[32m"plan-issues"[39m
+          [33mrole[39m=[32m"alert"[39m
+        [36m>[39m
+          [36m<h2[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [0mReview before continuing[0m
+          [36m</h2>[39m
+          [36m<ul>[39m
+            [36m<li[39m
+              [33mdata-issue[39m=[32m"capacity"[39m
+            [36m>[39m
+              [0mThis browser does not have the required available storage capacity.[0m
+            [36m</li>[39m
+            [36m<li[39m
+              [33mdata-issue[39m=[32m"inventory"[39m
+            [36m>[39m
+              [0mThe offline application files are missing or damaged.[0m
+            [36m</li>[39m
+          [36m</ul>[39m
+        [36m</div>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"_card_d47682"[39m
+        [36m>[39m
+          [36m<h2>[39m
+            [0mPlanned Trades[0m
+          [36m</h2>[39m
+          [36m<p[39m
+            [33mrole[39m=[32m"status"[39m
+          [36m>[39m
+            [0mLoading Planned Trades…[0m
+          [36m</p>[39m
+        [36m</section>[39m
+      [36m</main>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"_shell_d47682"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Primary"[39m
+      [36m>[39m
+        [36m<strong>[39m
+          [0mTRADE JOURNAL[0m
+        [36m</strong>[39m
+        [36m<button>[39m
+          [0mTrades[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mdisabled[39m=[32m""[39m
+        [36m>[39m
+          [0mNew Plan[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mWorkspace[0m
+        [36m</button>[39m
+      [36m</nav>[39m
+      [36m<main>[39m
+        [36m<header>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"_eyebrow_d47682"[39m
+          [36m>[39m
+            [0mAFTER-CLOSE JOURNAL · USD[0m
+          [36m</p>[39m
+          [36m<h1[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [0mTrades[0m
+          [36m</h1>[39m
+        [36m</header>[39m
+        [36m<aside[39m
+          [33mclass[39m=[32m"_warning_d47682"[39m
+        [36m>[39m
+          [36m<h2>[39m
+            [0mRecovery Only[0m
+          [36m</h2>[39m
+          [36m<p>[39m
+            [0mReading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.[0m
+          [36m</p>[39m
+          [36m<button>[39m
+            [0mRetry startup[0m
+          [36m</button>[39m
+        [36m</aside>[39m
+        [36m<aside[39m
+          [33mclass[39m=[32m"_warning_d47682"[39m
+        [36m>[39m
+          [36m<strong>[39m
+            [0mStorage is [0m
+            [0mBest Effort[0m
+            [0m.[0m
+          [36m</strong>[39m
+          [0m This browser may clear your data. Backup is not installed until a later release. [0m
+          [36m<button>[39m
+            [0mRequest storage protection[0m
+          [36m</button>[39m
+        [36m</aside>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"_install_d47682"[39m
+        [36m>[39m
+          [0mWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"_errors_d47682"[39m
+          [33mid[39m=[32m"plan-issues"[39m
+          [33mrole[39m=[32m"alert"[39m
+        [36m>[39m
+          [36m<h2[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [0mReview before continuing[0m
+          [36m</h2>[39m
+          [36m<ul>[39m
+            [36m<li[39m
+              [33mdata-issue[39m=[32m"capacity"[39m
+            [36m>[39m
+              [0mThis browser does not have the required available storage capacity.[0m
+            [36m</li>[39m
+            [36m<li[39m
+              [33mdata-issue[39m=[32m"inventory"[39m
+            [36m>[39m
+              [0mThe offline application files are missing or damaged.[0m
+            [36m</li>[39m
+          [36m</ul>[39m
+        [36m</div>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"_card_d47682"[39m
+        [36m>[39m
+          [36m<h2>[39m
+            [0mPlanned Trades[0m
+          [36m</h2>[39m
+          [36m<p[39m
+            [33mrole[39m=[32m"status"[39m
+          [36m>[39m
+            [0mLoading Planned Trades…[0m
+          [36m</p>[39m
+        [36m</section>[39m
+      [36m</main>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/unit/d01-ui.test.tsx:81:23
+     79|   expect(await screen.findByText('Recovery Only')).toBeTruthy();
+     80|   expect((screen.getByRole<HTMLButtonElement>('button', { name: 'New P…
+     81|   expect(await screen.findByRole('button', { name: /XYZ · Planned/ }))…
+       |                       ^
+     82|   await user.click(screen.getByRole('button', { name: 'Trades' }));
+     83|   await user.click(await screen.findByRole('button', { name: /XYZ · Pl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 skipped (7)
+      Tests  1 failed | 53 skipped (54)
+   Start at  23:21:14
+   Duration  1.60s (environment 51%, tests 31%, transform 9%, import 8%)
+

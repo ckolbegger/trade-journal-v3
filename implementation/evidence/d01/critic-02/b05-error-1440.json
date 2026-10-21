@@ -1,0 +1,116 @@
+{
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n... Skipped lines\n\n  {\n    diagnostic: [],\n    lifecycle: [],\n    roots: [\n      {\n+       catalogRevision: '14125a2d-4ba4-45f4-b4fa-2b038ab40f51',\n+       commitOrdinal: 3,\n-       catalogRevision: 'ee731146-eaae-4530-b95b-e3ef9991b475',\n-       commitOrdinal: 2,\n        definitionRevision: 'plan-reflection-v1',\n        generation: '5cdb6691-50a3-41fe-aed4-fe8de21055d6',\n        key: 'active',\n        recordedSequence: 0,\n+       revision: '7f12c353-e5d1-4652-b981-ca199a1bf8f1',\n-       revision: '022b3a0f-3351-490d-949a-16c7ec15bfc4',\n        schema: 1,\n        timeZone: 'America/New_York'\n      }\n    ],\n    versions: [\n...\n      },\n+     {\n+       commitOrdinal: 3,\n+       economicTime: '2026-10-19T09:01:10.319Z',\n+       generation: '5cdb6691-50a3-41fe-aed4-fe8de21055d6',\n+       id: 'ffc2412e-bfc7-4579-a8e9-2af4f7d210f0',\n+       kind: 'Account',\n+       saveTime: '2026-10-19T09:01:10.319Z',\n+       sequence: 0,\n+       tradeId: '',\n+       value: {\n+         active: true,\n+         id: 'ffc2412e-bfc7-4579-a8e9-2af4f7d210f0',\n+         kind: 'Account',\n+         label: 'Taxable',\n+         origin: 'Trader',\n+         parentId: '0f007b61-057f-44d9-84e9-58ab418c8187',\n+         version: 'f03faac0-3832-418b-b427-84325832bb2d'\n+       },\n+       version: 'f03faac0-3832-418b-b427-84325832bb2d'\n+     }\n    ]\n  }\n",
+  "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n... Skipped lines\n\n  {\n    diagnostic: [],\n    lifecycle: [],\n    roots: [\n      {\n+       catalogRevision: '14125a2d-4ba4-45f4-b4fa-2b038ab40f51',\n+       commitOrdinal: 3,\n-       catalogRevision: 'ee731146-eaae-4530-b95b-e3ef9991b475',\n-       commitOrdinal: 2,\n        definitionRevision: 'plan-reflection-v1',\n        generation: '5cdb6691-50a3-41fe-aed4-fe8de21055d6',\n        key: 'active',\n        recordedSequence: 0,\n+       revision: '7f12c353-e5d1-4652-b981-ca199a1bf8f1',\n-       revision: '022b3a0f-3351-490d-949a-16c7ec15bfc4',\n        schema: 1,\n        timeZone: 'America/New_York'\n      }\n    ],\n    versions: [\n...\n      },\n+     {\n+       commitOrdinal: 3,\n+       economicTime: '2026-10-19T09:01:10.319Z',\n+       generation: '5cdb6691-50a3-41fe-aed4-fe8de21055d6',\n+       id: 'ffc2412e-bfc7-4579-a8e9-2af4f7d210f0',\n+       kind: 'Account',\n+       saveTime: '2026-10-19T09:01:10.319Z',\n+       sequence: 0,\n+       tradeId: '',\n+       value: {\n+         active: true,\n+         id: 'ffc2412e-bfc7-4579-a8e9-2af4f7d210f0',\n+         kind: 'Account',\n+         label: 'Taxable',\n+         origin: 'Trader',\n+         parentId: '0f007b61-057f-44d9-84e9-58ab418c8187',\n+         version: 'f03faac0-3832-418b-b427-84325832bb2d'\n+       },\n+       version: 'f03faac0-3832-418b-b427-84325832bb2d'\n+     }\n    ]\n  }\n\n    at file:///private/tmp/critic02-keyboard.mjs:5:1022",
+  "trace": [
+    {
+      "tag": "INPUT",
+      "text": "",
+      "label": "Workspace time zone"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Create Workspace"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Check for application updates"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Request storage protection"
+    },
+    {
+      "tag": "INPUT",
+      "text": "",
+      "label": "Institution name"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Save Institution"
+    },
+    {
+      "tag": "SELECT",
+      "text": "Vanguard",
+      "label": "InstitutionVanguard"
+    },
+    {
+      "tag": "INPUT",
+      "text": "",
+      "label": "Account name"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Save Account"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Trades"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "New Plan"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Check for application updates"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Request storage protection"
+    },
+    {
+      "tag": "SELECT",
+      "text": "Taxable · Vanguard",
+      "label": "AccountTaxable · Vanguard"
+    },
+    {
+      "tag": "INPUT",
+      "text": "",
+      "label": "Stock symbol"
+    },
+    {
+      "tag": "INPUT",
+      "text": "",
+      "label": "Quantity (shares)"
+    },
+    {
+      "tag": "INPUT",
+      "text": "",
+      "label": "Intended entry (USD)"
+    },
+    {
+      "tag": "INPUT",
+      "text": "",
+      "label": "Stop (underlying price, USD)"
+    },
+    {
+      "tag": "INPUT",
+      "text": "",
+      "label": "Target (underlying price, USD)"
+    },
+    {
+      "tag": "TEXTAREA",
+      "text": "",
+      "label": "Why this trade, why now?"
+    },
+    {
+      "tag": "TEXTAREA",
+      "text": "",
+      "label": "What would invalidate the thesis?"
+    },
+    {
+      "tag": "SELECT",
+      "text": "Unanswered12345",
+      "label": "Conviction (optional, 1–5)Unanswered12345"
+    },
+    {
+      "tag": "INPUT",
+      "text": "",
+      "label": "Unanswered"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Confirm Plan"
+    }
+  ]
+}

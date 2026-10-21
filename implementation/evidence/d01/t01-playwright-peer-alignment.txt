@@ -1,0 +1,23 @@
+npm warn ERESOLVE overriding peer dependency
+npm warn While resolving: trade-journal-v3@0.1.0
+npm warn Found: playwright-core@1.64.1
+npm warn node_modules/playwright-core
+npm warn   peer playwright-core@">= 1.0.0" from @axe-core/playwright@4.13.0
+npm warn   node_modules/@axe-core/playwright
+npm warn     dev @axe-core/playwright@"4.13.0" from the root project
+npm warn   1 more (the root project)
+npm warn
+npm warn Could not resolve dependency:
+npm warn peer playwright-core@">= 1.0.0" from @axe-core/playwright@4.13.0
+npm warn node_modules/@axe-core/playwright
+npm warn   dev @axe-core/playwright@"4.13.0" from the root project
+npm error code ENOTFOUND
+npm error syscall getaddrinfo
+npm error errno ENOTFOUND
+npm error network request to https://registry.npmjs.org/playwright-core failed, reason: getaddrinfo ENOTFOUND registry.npmjs.org
+npm error network This is a problem related to network connectivity.
+npm error network In most cases you are behind a proxy or have bad network settings.
+npm error network
+npm error network If you are behind a proxy, please make sure that the 'proxy' config is set properly.  See: 'npm help config'
+npm error Log files were not written due to an error writing to the directory: /Users/ckolbegger/.npm/_logs
+npm error You can rerun the command with `--loglevel=verbose` to see the logs in your terminal

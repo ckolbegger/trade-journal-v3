@@ -1,0 +1,162 @@
+{
+  "after": [
+    {
+      "name": "trade-journal-release-c61a00ab2f5941e47bf1b2b4436a779b74b40531b110fd4f9201adf864fef704",
+      "release": "c61a00ab2f5941e47bf1b2b4436a779b74b40531b110fd4f9201adf864fef704",
+      "rows": [
+        {
+          "url": "/assets/index-BmZENfDQ.js",
+          "bytes": 556700,
+          "sha256": "e45968dc1f4f7f0b45bce6539f577f9df3df0c8a99cdefddd5fdb8db1b065131",
+          "actualBytes": 556700,
+          "actualHash": "e45968dc1f4f7f0b45bce6539f577f9df3df0c8a99cdefddd5fdb8db1b065131",
+          "valid": true
+        },
+        {
+          "url": "/assets/index-Ukg-5B9v.css",
+          "bytes": 2898,
+          "sha256": "a2168dbf5e6e8e5c495a0e2c0f0058e968fbb9009df4ea06d74071873b52811c",
+          "actualBytes": 2898,
+          "actualHash": "a2168dbf5e6e8e5c495a0e2c0f0058e968fbb9009df4ea06d74071873b52811c",
+          "valid": true
+        },
+        {
+          "url": "/capabilities.json",
+          "bytes": 1290,
+          "sha256": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a",
+          "actualBytes": 1290,
+          "actualHash": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a",
+          "valid": true
+        },
+        {
+          "url": "/icon-192.png",
+          "bytes": 3409,
+          "sha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+          "actualBytes": 3409,
+          "actualHash": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+          "valid": true
+        },
+        {
+          "url": "/icon-512.png",
+          "bytes": 12236,
+          "sha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+          "actualBytes": 12236,
+          "actualHash": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+          "valid": true
+        },
+        {
+          "url": "/icon.svg",
+          "bytes": 180,
+          "sha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+          "actualBytes": 180,
+          "actualHash": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+          "valid": true
+        },
+        {
+          "url": "/index.html",
+          "bytes": 446,
+          "sha256": "34aebf62064ebc7e18517e9bf456d761b7d21b28f6e6f4ed669b8000170a8037",
+          "actualBytes": 446,
+          "actualHash": "34aebf62064ebc7e18517e9bf456d761b7d21b28f6e6f4ed669b8000170a8037",
+          "valid": true
+        },
+        {
+          "url": "/manifest.webmanifest",
+          "bytes": 416,
+          "sha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+          "actualBytes": 416,
+          "actualHash": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+          "valid": true
+        },
+        {
+          "url": "/sw.js",
+          "bytes": 3919,
+          "sha256": "38c0b7da4f75999e3ae3cb8691b2d18b15aac788e43518db07d65328c036a028",
+          "actualBytes": 3919,
+          "actualHash": "38c0b7da4f75999e3ae3cb8691b2d18b15aac788e43518db07d65328c036a028",
+          "valid": true
+        }
+      ]
+    },
+    {
+      "name": "trade-journal-release-0df453b26465fd0b7da9c2cdeb6f48331b793ef8e6e285d12422f0239924c261",
+      "release": "0df453b26465fd0b7da9c2cdeb6f48331b793ef8e6e285d12422f0239924c261",
+      "rows": [
+        {
+          "url": "/assets/index-ClU3W26k.js",
+          "bytes": 556684,
+          "sha256": "8423042eff3238b21066557e670c844f5544d40e233dc00a07099f2503d925c8",
+          "actualBytes": 556684,
+          "actualHash": "8423042eff3238b21066557e670c844f5544d40e233dc00a07099f2503d925c8",
+          "valid": true
+        },
+        {
+          "url": "/assets/index-Ukg-5B9v.css",
+          "bytes": 2898,
+          "sha256": "a2168dbf5e6e8e5c495a0e2c0f0058e968fbb9009df4ea06d74071873b52811c",
+          "actualBytes": 2898,
+          "actualHash": "a2168dbf5e6e8e5c495a0e2c0f0058e968fbb9009df4ea06d74071873b52811c",
+          "valid": true
+        },
+        {
+          "url": "/capabilities.json",
+          "bytes": 1290,
+          "sha256": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a",
+          "actualBytes": 1290,
+          "actualHash": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a",
+          "valid": true
+        },
+        {
+          "url": "/icon-192.png",
+          "bytes": 3409,
+          "sha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+          "actualBytes": 3409,
+          "actualHash": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+          "valid": true
+        },
+        {
+          "url": "/icon-512.png",
+          "bytes": 12236,
+          "sha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+          "actualBytes": 12236,
+          "actualHash": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+          "valid": true
+        },
+        {
+          "url": "/icon.svg",
+          "bytes": 180,
+          "sha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+          "actualBytes": 180,
+          "actualHash": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+          "valid": true
+        },
+        {
+          "url": "/index.html",
+          "bytes": 446,
+          "sha256": "1c073bc60e6ce3050697e724c00a148e1b759fe77ca623cd2b80b78f8f0645f8",
+          "actualBytes": 446,
+          "actualHash": "1c073bc60e6ce3050697e724c00a148e1b759fe77ca623cd2b80b78f8f0645f8",
+          "valid": true
+        },
+        {
+          "url": "/manifest.webmanifest",
+          "bytes": 416,
+          "sha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+          "actualBytes": 416,
+          "actualHash": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+          "valid": true
+        },
+        {
+          "url": "/sw.js",
+          "bytes": 3935,
+          "sha256": "7fdd435d7a6c53d45f96e8a63823a8417e52b41fa63c1bb730c31a6afa9b0090",
+          "actualBytes": 3935,
+          "actualHash": "7fdd435d7a6c53d45f96e8a63823a8417e52b41fa63c1bb730c31a6afa9b0090",
+          "valid": true
+        }
+      ]
+    }
+  ],
+  "authoritative": "{\"roots\":[],\"versions\":[],\"lifecycle\":[]}",
+  "dataCleared": false
+}

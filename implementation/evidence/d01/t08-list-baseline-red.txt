@@ -1,0 +1,34 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit --testNamePattern=each Planned list row
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-ui.test.tsx (12 tests | 1 failed | 11 skipped) 80ms
+   × should show the frozen Plan Baseline and entry readiness in each Planned list row 79ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-ui.test.tsx > should show the frozen Plan Baseline and entry readiness in each Planned list row
+AssertionError: expected 'XYZ · Planned $500.00 risk' to contain 'Unfilled'
+
+Expected: "Unfilled"
+Received: "XYZ · Planned $500.00 risk"
+
+ ❯ tests/unit/d01-ui.test.tsx:212:27
+    210|   render(<App services={{ workspace: f.workspace, catalog: f.catalog, …
+    211|   const row = await screen.findByRole('button', { name: /XYZ · Planned…
+    212|   expect(row.textContent).toContain('Unfilled');
+       |                           ^
+    213|   expect(row.textContent).toContain('$500.00 risk');
+    214|   expect(row.textContent).toContain('$1000.00 reward');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 skipped (7)
+      Tests  1 failed | 55 skipped (56)
+   Start at  23:23:48
+   Duration  544ms (environment 73%, transform 12%, import 11%, tests 3%, worker 1%)
+

@@ -1,0 +1,25 @@
+TRADE JOURNAL
+Trades
+New Plan
+Workspace
+
+AFTER-CLOSE JOURNAL · USD
+
+Trades
+Check for application updates
+Update available
+
+The complete new release is verified. Reload when you are ready.
+
+Reload to update
+Storage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection
+
+Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.
+
+Planned Trades
+LATE · Planned
+Unfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk
+AAPL · Planned
+Unfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk
+MSFT · Planned
+Unfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk

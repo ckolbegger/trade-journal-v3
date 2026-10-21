@@ -1,0 +1,39 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-confirmation.test.ts -t should reject invalid reflection
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-confirmation.test.ts (3 tests | 1 failed | 2 skipped) 18ms
+   × should reject invalid reflection and stale catalog, definition or generation without identities 18ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-confirmation.test.ts > should reject invalid reflection and stale catalog, definition or generation without identities
+AssertionError: expected { status: 'Confirmed', …(6) } to match object { Object (status, issues) }
+(51 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "issues": [
+-     "CatalogChanged",
+-     "DefinitionChanged",
+-   ],
+-   "status": "Conflict",
++   "status": "Confirmed",
+  }
+
+ ❯ tests/unit/d01-confirmation.test.ts:28:118
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 skipped (3)
+   Start at  21:04:27
+   Duration  333ms (environment 71%, import 12%, transform 10%, tests 7%, worker 1%)
+

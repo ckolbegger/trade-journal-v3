@@ -1,0 +1,55 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-ui.test.tsx -t should complete first-run
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-ui.test.tsx (1 test | 1 failed) 1017ms
+   ❯ Long Stock Plan production UI (1)
+     × should complete first-run onboarding and confirm fixture P using accessible controls 1016ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-ui.test.tsx > Long Stock Plan production UI > should complete first-run onboarding and confirm fixture P using accessible controls
+TestingLibraryElementError: Unable to find a label with the text of: Workspace time zone
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<main>[39m
+      [36m<h1>[39m
+        [0mTrade Journal[0m
+      [36m</h1>[39m
+    [36m</main>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<main>[39m
+      [36m<h1>[39m
+        [0mTrade Journal[0m
+      [36m</h1>[39m
+    [36m</main>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/unit/d01-ui.test.tsx:21:34
+     19|     const f = fixture(); const user = userEvent.setup();
+     20|     render(<App services={f.services} />);
+     21|     await user.type(await screen.findByLabelText('Workspace time zone'…
+       |                                  ^
+     22|     await user.click(screen.getByRole('button', { name: 'Create Worksp…
+     23|     await user.type(await screen.findByLabelText('Institution name'), …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  21:10:12
+   Duration  1.43s (tests 75%, environment 14%, import 8%, transform 3%)
+

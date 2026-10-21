@@ -1,0 +1,13 @@
+Unsupported
+
+We could not verify safe writing in this environment.
+
+Browser storage could not complete a test transaction.
+This browser does not have the required available storage capacity.
+The verified application is not controlling this tab.
+The offline application files are missing or damaged.
+Retry startup
+
+Try another browser that meets the readiness requirements.
+
+Another browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.

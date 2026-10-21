@@ -1,0 +1,23 @@
+{
+  "src/main.tsx": "aaabc628a61b968a917fcb6b84bb0e4d44999cc5cde1bfb49d1f9a4b20db1f2d",
+  "src/vite-env.d.ts": "231f975bdaf52e6bc8f1e3f033926aa3abb37e3de8e6d208e711ad1db08f8b10",
+  "src/application/trade-views-and-reporting/index.ts": "e63f78c5bc4ead7511f950ed26807f68268dd4646fa9833f7fde99e65f91f071",
+  "src/application/trade-workflows/index.ts": "71e28ec0babdc63a7af488186dc3aeeb7e649f3f54a7c12834e6de5b43133ce2",
+  "src/application/workspace/index.ts": "a4cc31b3031debc398024eb379b751157e1246ec341ab4e035e1f3559414660d",
+  "src/infrastructure/storage.ts": "80559b2c137a611d02786bd5e4c5d4eea2298ec7ce01b58cc049391ea76f3b1e",
+  "src/infrastructure/browser-host.ts": "9a040c4b90ae8a6f97979305c6abd698dfe8ab5b3e796e67e10b1d281c0bbcec",
+  "src/domain/journal/index.ts": "8f62e6e947c5e4a429f090a9e9b7f38f4be4f2490bd6992b4dbf1344174d723f",
+  "src/domain/trade-analysis/index.ts": "34525b5ddf04c7c1be21c1331db11b848cb6169af76772309e896bd47b061ea1",
+  "src/domain/trade-record/index.ts": "607e441ab57539da8512616d5992b17c7913538224548db5f02851e0af36294a",
+  "src/domain/reference-catalog/index.ts": "ce666875a3ed036f8d8c10b73629a6be374c44d94206058b8210f05ac441bb30",
+  "src/presentation/App.tsx": "5cf5f357c8d88536f18af5c9b8a7fa6223822bdcb7a79a581342e87eea34283c",
+  "src/presentation/App.module.css": "782162c1b563ed976161df9254ed75518db12120a560d4de331d0479b9123cce",
+  "worker/sw.ts": "6752932cb312d1cf5a242f51dd6d8529cb696046e30419b20f209f1a67420b1c",
+  "worker/tsconfig.tsbuildinfo": "d55ae99abf2438ec7881ec755fa8ecfefb8ecc4e301eb1b84675775b42e03bd6",
+  "worker/tsconfig.json": "84b17b63a673c3cc5e35ab39d463b8602222e98f9a281557c2d17ee34f32f531",
+  "tools/evidence.mjs": "239dbce6f7a2e649908abfeb2d6676b5dc42a57b2a6c166971ac534fddc192ca",
+  "tools/browser-generator.ts": "7b32122580d66c9a7c70854971899606f3f39345d1fdce26a87947fdaf721b16",
+  "tools/inventory.mjs": "cf9dba7a8348f3cc71f70f76793135209d5a69d0cfb7adeced6c8cd634eff5d1",
+  "tools/build-browser-generator.mjs": "6bd710f95f0609782899f6e482841aa4bea4991f4da8c0311757a1027d25c742",
+  "tools/release.ts": "fa2047a669622ade8153eb8d650dfd443fffe9902a0d9d0917187cace3c70a71"
+}

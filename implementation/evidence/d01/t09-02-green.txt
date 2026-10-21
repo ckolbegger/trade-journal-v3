@@ -1,0 +1,23 @@
+
+> trade-journal-v3@0.1.0 test:browser
+> playwright test --project webkit --grep D1-B01|D1-T09 withholds
+
+[WebServer] (node:13755) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 2 workers
+
+(node:13756) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:13757) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+native host evidence {
+  secure: true,
+  storage: { quota: 20615843021, usage: 64 },
+  controller: undefined,
+  caches: []
+}
+  ✓  1 [webkit] › tests/browser/d01-release.spec.ts:2:1 › D1-T09 withholds Writable until a complete verified release controls the page (814ms)
+  ✓  2 [webkit] › tests/browser/d01-offline.spec.ts:3:1 › D1-B01 D1-T09 stopped-browser offline reopening retains the Plan and history (2.1s)
+
+  2 passed (2.7s)

@@ -1,0 +1,80 @@
+[
+  {
+    "state": "timezone",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "state": "empty",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "state": "workspace",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "state": "validation",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "state": "recovery",
+    "violations": [
+      {
+        "id": "landmark-unique",
+        "impact": "moderate",
+        "tags": [
+          "cat.semantics",
+          "best-practice"
+        ],
+        "description": "Ensure landmarks are unique",
+        "help": "Landmarks should have a unique role or role/label/title (i.e. accessible name) combination",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/landmark-unique?application=playwright",
+        "nodes": [
+          {
+            "any": [
+              {
+                "id": "landmark-is-unique",
+                "data": {
+                  "role": "complementary",
+                  "accessibleText": null
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<aside class=\"_warning_1ei95_20\"><strong>Storage is Best Effort.</strong> This browser may clear your data. Backup is not installed until a later release. <button>Request storage protection</button></aside>",
+                    "target": [
+                      "aside:nth-child(4)"
+                    ]
+                  }
+                ],
+                "impact": "moderate",
+                "message": "The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "moderate",
+            "html": "<aside class=\"_warning_1ei95_20\"><h2>Recovery Only</h2><p>Reading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.</p><button>Retry startup</button></aside>",
+            "target": [
+              "aside:nth-child(3)"
+            ],
+            "failureSummary": "Fix any of the following:\n  The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable"
+          }
+        ]
+      }
+    ],
+    "incomplete": []
+  },
+  {
+    "state": "integrity",
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "state": "unsupported",
+    "violations": [],
+    "incomplete": []
+  }
+]

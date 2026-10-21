@@ -1,0 +1,14 @@
+
+> trade-journal-v3@0.1.0 test:browser
+> playwright test --project webkit --grep D1-B04 D1-T09 stages
+
+[WebServer] (node:16324) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:16325) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [webkit] › tests/browser/d01-update.spec.ts:6:1 › D1-B04 D1-T09 stages a verified update and defers activation through an unsaved form (1.6s)
+
+  1 passed (2.3s)

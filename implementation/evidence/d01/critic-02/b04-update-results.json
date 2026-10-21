@@ -1,0 +1,30 @@
+[
+  {
+    "old": {
+      "release": "42742c99abf6a9031cf8783bd135bc7450ec349b935c98a2f349b3cebe9f795f",
+      "verified": true,
+      "assetCount": 9
+    }
+  },
+  {
+    "failedStagingNotAdvertised": true,
+    "priorReleaseRetained": true
+  },
+  {
+    "stagedRelease": "e08286eb4dc44c410b019a942f94cfd5a3735d71df165900f33872be9edb6f79",
+    "dirtyDeferred": true,
+    "oldControl": true
+  },
+  {
+    "multiTabBlocked": true,
+    "new": {
+      "release": "e08286eb4dc44c410b019a942f94cfd5a3735d71df165900f33872be9edb6f79",
+      "verified": true,
+      "assetCount": 9
+    },
+    "postActivationWritable": true
+  },
+  {
+    "stoppedOfflineRetainsNewRelease": true
+  }
+]

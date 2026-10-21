@@ -1,0 +1,744 @@
+[
+  {
+    "viewport": 1440,
+    "zoom": "2",
+    "scrollWidth": 1440,
+    "bodyWidth": 1440,
+    "title": "New Plan",
+    "symbol": "Z",
+    "nav": {
+      "x": 0,
+      "y": -1168,
+      "width": 430,
+      "height": 4583.015625,
+      "top": -1168,
+      "right": 430,
+      "bottom": 3415.015625,
+      "left": 0
+    },
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "text": "Trades",
+        "rect": {
+          "x": 32,
+          "y": -969.609375,
+          "width": 364,
+          "height": 93.59375,
+          "top": -969.609375,
+          "right": 396,
+          "bottom": -876.015625,
+          "left": 32
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": "New Plan",
+        "rect": {
+          "x": 32,
+          "y": -844.015625,
+          "width": 364,
+          "height": 93.59375,
+          "top": -844.015625,
+          "right": 396,
+          "bottom": -750.421875,
+          "left": 32
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Workspace",
+        "rect": {
+          "x": 32,
+          "y": -718.421875,
+          "width": 364,
+          "height": 93.59375,
+          "top": -718.421875,
+          "right": 396,
+          "bottom": -624.828125,
+          "left": 32
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Check for application updates",
+        "rect": {
+          "x": 574,
+          "y": -885.765625,
+          "width": 483.1875,
+          "height": 93.59375,
+          "top": -885.765625,
+          "right": 1057.1875,
+          "bottom": -792.171875,
+          "left": 574
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Request storage protection",
+        "rect": {
+          "x": 608,
+          "y": -660.609375,
+          "width": 389.859375,
+          "height": 88,
+          "top": -660.609375,
+          "right": 997.859375,
+          "bottom": -572.609375,
+          "left": 608
+        }
+      },
+      {
+        "tag": "SELECT",
+        "text": "AccountTaxable · Schwab",
+        "rect": {
+          "x": 624,
+          "y": 476.421875,
+          "width": 622,
+          "height": 48,
+          "top": 476.421875,
+          "right": 1246,
+          "bottom": 524.421875,
+          "left": 624
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Stock symbol",
+        "rect": {
+          "x": 624,
+          "y": 614.015625,
+          "width": 622,
+          "height": 90.375,
+          "top": 614.015625,
+          "right": 1246,
+          "bottom": 704.390625,
+          "left": 624
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Quantity (shares)",
+        "rect": {
+          "x": 624,
+          "y": 793.984375,
+          "width": 622,
+          "height": 90.375,
+          "top": 793.984375,
+          "right": 1246,
+          "bottom": 884.359375,
+          "left": 624
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Intended entry (USD)",
+        "rect": {
+          "x": 624,
+          "y": 973.953125,
+          "width": 622,
+          "height": 90.375,
+          "top": 973.953125,
+          "right": 1246,
+          "bottom": 1064.328125,
+          "left": 624
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Stop (underlying price, USD)",
+        "rect": {
+          "x": 624,
+          "y": 1153.921875,
+          "width": 622,
+          "height": 90.375,
+          "top": 1153.921875,
+          "right": 1246,
+          "bottom": 1244.296875,
+          "left": 624
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Target (underlying price, USD)",
+        "rect": {
+          "x": 624,
+          "y": 1333.890625,
+          "width": 622,
+          "height": 90.375,
+          "top": 1333.890625,
+          "right": 1246,
+          "bottom": 1424.265625,
+          "left": 624
+        }
+      },
+      {
+        "tag": "TEXTAREA",
+        "text": "Why this trade, why now?Resize preserves this thesis.",
+        "rect": {
+          "x": 624,
+          "y": 1601.046875,
+          "width": 622,
+          "height": 200,
+          "top": 1601.046875,
+          "right": 1246,
+          "bottom": 1801.046875,
+          "left": 624
+        }
+      },
+      {
+        "tag": "TEXTAREA",
+        "text": "What would invalidate the thesis?Resize preserves invalidation.",
+        "rect": {
+          "x": 624,
+          "y": 1890.640625,
+          "width": 622,
+          "height": 200,
+          "top": 1890.640625,
+          "right": 1246,
+          "bottom": 2090.640625,
+          "left": 624
+        }
+      },
+      {
+        "tag": "SELECT",
+        "text": "Conviction (optional, 1–5)Unanswered12345",
+        "rect": {
+          "x": 624,
+          "y": 2180.234375,
+          "width": 622,
+          "height": 48,
+          "top": 2180.234375,
+          "right": 1246,
+          "bottom": 2228.234375,
+          "left": 624
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Unanswered",
+        "rect": {
+          "x": 660,
+          "y": 2367.515625,
+          "width": 24,
+          "height": 24,
+          "top": 2367.515625,
+          "right": 684,
+          "bottom": 2391.515625,
+          "left": 660
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Calm",
+        "rect": {
+          "x": 660,
+          "y": 2447.515625,
+          "width": 24,
+          "height": 24,
+          "top": 2447.515625,
+          "right": 684,
+          "bottom": 2471.515625,
+          "left": 660
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Eager",
+        "rect": {
+          "x": 660,
+          "y": 2527.515625,
+          "width": 24,
+          "height": 24,
+          "top": 2527.515625,
+          "right": 684,
+          "bottom": 2551.515625,
+          "left": 660
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Anxious",
+        "rect": {
+          "x": 660,
+          "y": 2607.515625,
+          "width": 24,
+          "height": 24,
+          "top": 2607.515625,
+          "right": 684,
+          "bottom": 2631.515625,
+          "left": 660
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "FOMO",
+        "rect": {
+          "x": 660,
+          "y": 2687.515625,
+          "width": 24,
+          "height": 24,
+          "top": 2687.515625,
+          "right": 684,
+          "bottom": 2711.515625,
+          "left": 660
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Revenge",
+        "rect": {
+          "x": 660,
+          "y": 2767.515625,
+          "width": 24,
+          "height": 24,
+          "top": 2767.515625,
+          "right": 684,
+          "bottom": 2791.515625,
+          "left": 660
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Relieved",
+        "rect": {
+          "x": 660,
+          "y": 2847.515625,
+          "width": 24,
+          "height": 24,
+          "top": 2847.515625,
+          "right": 684,
+          "bottom": 2871.515625,
+          "left": 660
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Frustrated",
+        "rect": {
+          "x": 660,
+          "y": 2927.515625,
+          "width": 24,
+          "height": 24,
+          "top": 2927.515625,
+          "right": 684,
+          "bottom": 2951.515625,
+          "left": 660
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Other",
+        "rect": {
+          "x": 660,
+          "y": 3007.515625,
+          "width": 24,
+          "height": 24,
+          "top": 3007.515625,
+          "right": 684,
+          "bottom": 3031.515625,
+          "left": 660
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Confirm Plan",
+        "rect": {
+          "x": 624,
+          "y": 3143.421875,
+          "width": 251.421875,
+          "height": 93.59375,
+          "top": 3143.421875,
+          "right": 875.421875,
+          "bottom": 3237.015625,
+          "left": 624
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Cancel",
+        "rect": {
+          "x": 907.421875,
+          "y": 3143.421875,
+          "width": 170.640625,
+          "height": 93.59375,
+          "top": 3143.421875,
+          "right": 1078.0625,
+          "bottom": 3237.015625,
+          "left": 907.421875
+        }
+      }
+    ],
+    "axeViolations": []
+  },
+  {
+    "viewport": 390,
+    "zoom": "2",
+    "scrollWidth": 390,
+    "bodyWidth": 390,
+    "title": "New Plan",
+    "symbol": "ZZ",
+    "nav": {
+      "x": 0,
+      "y": 838.84375,
+      "width": 390,
+      "height": 161.15625,
+      "top": 838.84375,
+      "right": 390,
+      "bottom": 1000,
+      "left": 0
+    },
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "text": "Trades",
+        "rect": {
+          "x": 20.796875,
+          "y": 861.640625,
+          "width": 133.59375,
+          "height": 117.5625,
+          "top": 861.640625,
+          "right": 154.390625,
+          "bottom": 979.203125,
+          "left": 20.796875
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": "New Plan",
+        "rect": {
+          "x": 167.1875,
+          "y": 861.640625,
+          "width": 108.671875,
+          "height": 117.5625,
+          "top": 861.640625,
+          "right": 275.859375,
+          "bottom": 979.203125,
+          "left": 167.1875
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Workspace",
+        "rect": {
+          "x": 288.65625,
+          "y": 861.640625,
+          "width": 186.4375,
+          "height": 117.5625,
+          "top": 861.640625,
+          "right": 475.09375,
+          "bottom": 979.203125,
+          "left": 288.65625
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Check for application updates",
+        "rect": {
+          "x": 32,
+          "y": -2005.796875,
+          "width": 326,
+          "height": 189.59375,
+          "top": -2005.796875,
+          "right": 358,
+          "bottom": -1816.203125,
+          "left": 32
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Request storage protection",
+        "rect": {
+          "x": 66,
+          "y": -1521.515625,
+          "width": 258,
+          "height": 167.9375,
+          "top": -1521.515625,
+          "right": 324,
+          "bottom": -1353.578125,
+          "left": 66
+        }
+      },
+      {
+        "tag": "SELECT",
+        "text": "AccountTaxable · Schwab",
+        "rect": {
+          "x": 66,
+          "y": 317.828125,
+          "width": 258,
+          "height": 48,
+          "top": 317.828125,
+          "right": 324,
+          "bottom": 365.828125,
+          "left": 66
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Stock symbol",
+        "rect": {
+          "x": 66,
+          "y": 455.421875,
+          "width": 258,
+          "height": 90.375,
+          "top": 455.421875,
+          "right": 324,
+          "bottom": 545.796875,
+          "left": 66
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Quantity (shares)",
+        "rect": {
+          "x": 66,
+          "y": 635.390625,
+          "width": 258,
+          "height": 90.375,
+          "top": 635.390625,
+          "right": 324,
+          "bottom": 725.765625,
+          "left": 66
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Intended entry (USD)",
+        "rect": {
+          "x": 66,
+          "y": 863.359375,
+          "width": 258,
+          "height": 90.375,
+          "top": 863.359375,
+          "right": 324,
+          "bottom": 953.734375,
+          "left": 66
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Stop (underlying price, USD)",
+        "rect": {
+          "x": 66,
+          "y": 1091.328125,
+          "width": 258,
+          "height": 90.375,
+          "top": 1091.328125,
+          "right": 324,
+          "bottom": 1181.703125,
+          "left": 66
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Target (underlying price, USD)",
+        "rect": {
+          "x": 66,
+          "y": 1319.296875,
+          "width": 258,
+          "height": 90.375,
+          "top": 1319.296875,
+          "right": 324,
+          "bottom": 1409.671875,
+          "left": 66
+        }
+      },
+      {
+        "tag": "TEXTAREA",
+        "text": "Why this trade, why now?Resize preserves this thesis.",
+        "rect": {
+          "x": 66,
+          "y": 1634.453125,
+          "width": 258,
+          "height": 200,
+          "top": 1634.453125,
+          "right": 324,
+          "bottom": 1834.453125,
+          "left": 66
+        }
+      },
+      {
+        "tag": "TEXTAREA",
+        "text": "What would invalidate the thesis?Resize preserves invalidation.",
+        "rect": {
+          "x": 66,
+          "y": 2020.046875,
+          "width": 258,
+          "height": 200,
+          "top": 2020.046875,
+          "right": 324,
+          "bottom": 2220.046875,
+          "left": 66
+        }
+      },
+      {
+        "tag": "SELECT",
+        "text": "Conviction (optional, 1–5)Unanswered12345",
+        "rect": {
+          "x": 66,
+          "y": 2357.640625,
+          "width": 258,
+          "height": 48,
+          "top": 2357.640625,
+          "right": 324,
+          "bottom": 2405.640625,
+          "left": 66
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Unanswered",
+        "rect": {
+          "x": 102,
+          "y": 2640.921875,
+          "width": 24,
+          "height": 24,
+          "top": 2640.921875,
+          "right": 126,
+          "bottom": 2664.921875,
+          "left": 102
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Calm",
+        "rect": {
+          "x": 102,
+          "y": 2768.921875,
+          "width": 24,
+          "height": 24,
+          "top": 2768.921875,
+          "right": 126,
+          "bottom": 2792.921875,
+          "left": 102
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Eager",
+        "rect": {
+          "x": 102,
+          "y": 2848.921875,
+          "width": 24,
+          "height": 24,
+          "top": 2848.921875,
+          "right": 126,
+          "bottom": 2872.921875,
+          "left": 102
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Anxious",
+        "rect": {
+          "x": 102,
+          "y": 2928.921875,
+          "width": 24,
+          "height": 24,
+          "top": 2928.921875,
+          "right": 126,
+          "bottom": 2952.921875,
+          "left": 102
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "FOMO",
+        "rect": {
+          "x": 102,
+          "y": 3008.921875,
+          "width": 24,
+          "height": 24,
+          "top": 3008.921875,
+          "right": 126,
+          "bottom": 3032.921875,
+          "left": 102
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Revenge",
+        "rect": {
+          "x": 102,
+          "y": 3088.921875,
+          "width": 24,
+          "height": 24,
+          "top": 3088.921875,
+          "right": 126,
+          "bottom": 3112.921875,
+          "left": 102
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Relieved",
+        "rect": {
+          "x": 102,
+          "y": 3168.921875,
+          "width": 24,
+          "height": 24,
+          "top": 3168.921875,
+          "right": 126,
+          "bottom": 3192.921875,
+          "left": 102
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Frustrated",
+        "rect": {
+          "x": 102,
+          "y": 3248.921875,
+          "width": 24,
+          "height": 24,
+          "top": 3248.921875,
+          "right": 126,
+          "bottom": 3272.921875,
+          "left": 102
+        }
+      },
+      {
+        "tag": "INPUT",
+        "text": "Other",
+        "rect": {
+          "x": 102,
+          "y": 3328.921875,
+          "width": 24,
+          "height": 24,
+          "top": 3328.921875,
+          "right": 126,
+          "bottom": 3352.921875,
+          "left": 102
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Confirm Plan",
+        "rect": {
+          "x": 66,
+          "y": 3464.828125,
+          "width": 251.421875,
+          "height": 93.59375,
+          "top": 3464.828125,
+          "right": 317.421875,
+          "bottom": 3558.421875,
+          "left": 66
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Cancel",
+        "rect": {
+          "x": 66,
+          "y": 3590.421875,
+          "width": 170.640625,
+          "height": 93.59375,
+          "top": 3590.421875,
+          "right": 236.640625,
+          "bottom": 3684.015625,
+          "left": 66
+        }
+      }
+    ],
+    "axeViolations": []
+  }
+]

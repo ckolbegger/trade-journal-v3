@@ -1,0 +1,8 @@
+{
+  "before": "{\"roots\":[],\"versions\":[],\"lifecycle\":[]}",
+  "after": "{\"roots\":[],\"versions\":[],\"lifecycle\":[]}",
+  "issues": [
+    "transaction",
+    "capacity"
+  ]
+}

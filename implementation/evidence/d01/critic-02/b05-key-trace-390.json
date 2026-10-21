@@ -1,0 +1,294 @@
+[
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Workspace time zone"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Create Workspace"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Check for application updates"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Request storage protection"
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Institution name"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Save Institution"
+  },
+  {
+    "tag": "SELECT",
+    "text": "Vanguard",
+    "label": "InstitutionVanguard"
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Account name"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Save Account"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Trades"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "New Plan"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Check for application updates"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Request storage protection"
+  },
+  {
+    "tag": "SELECT",
+    "text": "Taxable · Vanguard",
+    "label": "AccountTaxable · Vanguard"
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Stock symbol"
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Quantity (shares)"
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Intended entry (USD)"
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Stop (underlying price, USD)"
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Target (underlying price, USD)"
+  },
+  {
+    "tag": "TEXTAREA",
+    "text": "",
+    "label": "Why this trade, why now?"
+  },
+  {
+    "tag": "TEXTAREA",
+    "text": "",
+    "label": "What would invalidate the thesis?"
+  },
+  {
+    "tag": "SELECT",
+    "text": "Unanswered12345",
+    "label": "Conviction (optional, 1–5)Unanswered12345"
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Unanswered"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Confirm Plan"
+  },
+  {
+    "tag": "SELECT",
+    "text": "Taxable · Vanguard",
+    "label": "AccountTaxable · Vanguard"
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Stock symbol"
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Quantity (shares)"
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Intended entry (USD)"
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Stop (underlying price, USD)"
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Target (underlying price, USD)"
+  },
+  {
+    "tag": "TEXTAREA",
+    "text": "Keyboard thesis",
+    "label": "Why this trade, why now?Keyboard thesis"
+  },
+  {
+    "tag": "TEXTAREA",
+    "text": "Keyboard invalidation",
+    "label": "What would invalidate the thesis?Keyboard invalidation"
+  },
+  {
+    "tag": "SELECT",
+    "text": "Unanswered12345",
+    "label": "Conviction (optional, 1–5)Unanswered12345"
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Unanswered"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Confirm Plan"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Check for application updates"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Request storage protection"
+  },
+  {
+    "tag": "SUMMARY",
+    "text": "View history"
+  },
+  {
+    "tag": "BODY",
+    "text": "TRADE JOURNALTradesNew PlanWorkspaceAFTER-CLOSE JOURNAL · USDMSFT · Pl"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Trades"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "New Plan"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Check for application updates"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Request storage protection"
+  },
+  {
+    "tag": "SELECT",
+    "text": "Taxable · Vanguard",
+    "label": "AccountTaxable · Vanguard"
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Stock symbol"
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Quantity (shares)"
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Intended entry (USD)"
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Stop (underlying price, USD)"
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Target (underlying price, USD)"
+  },
+  {
+    "tag": "TEXTAREA",
+    "text": "",
+    "label": "Why this trade, why now?"
+  },
+  {
+    "tag": "TEXTAREA",
+    "text": "",
+    "label": "What would invalidate the thesis?"
+  },
+  {
+    "tag": "SELECT",
+    "text": "Unanswered12345",
+    "label": "Conviction (optional, 1–5)Unanswered12345"
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Unanswered"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Confirm Plan"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Cancel"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Check for application updates"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Request storage protection"
+  },
+  {
+    "tag": "BODY",
+    "text": "TRADE JOURNALTradesNew PlanWorkspaceAFTER-CLOSE JOURNAL · USDTradesChe"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Trades"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "New Plan"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Check for application updates"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Request storage protection"
+  },
+  {
+    "tag": "SELECT",
+    "text": "Taxable · Vanguard",
+    "label": "AccountTaxable · Vanguard"
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "label": "Stock symbol"
+  }
+]

@@ -1,0 +1,65 @@
+Trades
+New Plan
+Workspace
+
+AFTER-CLOSE JOURNAL · USD
+
+SPY · Planned
+Check for application updates
+Storage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection
+
+Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.
+
+Plan confirmed and saved on this device.
+
+Planned · Unfilled
+Frozen Plan Baseline
+
+Charles Schwab · Individual 390 · Long Stock
+
+Original Planned Risk · 1R
+$500.00
+Original Planned Reward
+$1000.00
+Planned reward/risk ratio
+2/1
+Intended entry
+$50 × 100 shares
+Stop · underlying price
+$45
+Target · underlying price
+$60
+
+No exposure has been entered.
+
+Plan Reflection
+
+Trade Anchor · Plan Confirmation
+
+Why this trade, why now?
+
+Keyboard-only fixture P
+
+What would invalidate the thesis?
+
+Thesis fails on margin weakness
+
+Conviction
+
+Unanswered
+
+Primary emotion
+
+Calm
+
+View history
+
+Confirmed: 2026-10-19 10:34:55.627 America/New_York
+
+Saved: 2026-10-19 10:34:55.64 America/New_York
+
+Recorded Sequence: 1
+
+Plan fact: 8a993085-ca71-4790-87dc-d057667d49ea
+
+Version: 1a88e95b-4344-457f-b274-1c2590ca0e39

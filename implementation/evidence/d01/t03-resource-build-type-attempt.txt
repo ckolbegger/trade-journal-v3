@@ -1,0 +1,15 @@
+
+> trade-journal-v3@0.1.0 build
+> npm run typecheck && vite build && node tools/inventory.mjs
+
+
+> trade-journal-v3@0.1.0 typecheck
+> node node_modules/@typescript/native/bin/tsc -b
+
+tests/browser/d01-resources.spec.ts(9,11): error TS2339: Property 'M' does not exist on type '{}'.
+tests/browser/d01-resources.spec.ts(9,14): error TS2339: Property 'L' does not exist on type '{}'.
+tests/browser/d01-resources.spec.ts(9,17): error TS2339: Property 'C' does not exist on type '{}'.
+tests/browser/d01-resources.spec.ts(9,20): error TS2339: Property 'Q' does not exist on type '{}'.
+tests/browser/d01-resources.spec.ts(9,23): error TS2339: Property 'H' does not exist on type '{}'.
+tests/browser/d01-resources.spec.ts(9,26): error TS2339: Property 'quota' does not exist on type '{}'.
+tests/browser/d01-resources.spec.ts(9,33): error TS2339: Property 'usage' does not exist on type '{}'.

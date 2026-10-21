@@ -1,0 +1,280 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit --testNamePattern=conflicting reference bindings
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-ui.test.tsx (11 tests | 1 failed | 10 skipped) 1148ms
+   × should refresh conflicting reference bindings without losing the reference draft 1147ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-ui.test.tsx > should refresh conflicting reference bindings without losing the reference draft
+TestingLibraryElementError: Unable to find role="button" and name "Review current references"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"_shell_d47682"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Primary"[39m
+      [36m>[39m
+        [36m<strong>[39m
+          [0mTRADE JOURNAL[0m
+        [36m</strong>[39m
+        [36m<button>[39m
+          [0mTrades[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mNew Plan[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mWorkspace[0m
+        [36m</button>[39m
+      [36m</nav>[39m
+      [36m<main>[39m
+        [36m<header>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"_eyebrow_d47682"[39m
+          [36m>[39m
+            [0mAFTER-CLOSE JOURNAL · USD[0m
+          [36m</p>[39m
+          [36m<h1[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [0mWorkspace[0m
+          [36m</h1>[39m
+        [36m</header>[39m
+        [36m<aside[39m
+          [33mclass[39m=[32m"_warning_d47682"[39m
+        [36m>[39m
+          [36m<strong>[39m
+            [0mStorage is [0m
+            [0mBest Effort[0m
+            [0m.[0m
+          [36m</strong>[39m
+          [0m This browser may clear your data. Backup is not installed until a later release. [0m
+          [36m<button>[39m
+            [0mRequest storage protection[0m
+          [36m</button>[39m
+        [36m</aside>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"_install_d47682"[39m
+        [36m>[39m
+          [0mWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"_errors_d47682"[39m
+          [33mid[39m=[32m"plan-issues"[39m
+          [33mrole[39m=[32m"alert"[39m
+        [36m>[39m
+          [36m<h2[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [0mReview before continuing[0m
+          [36m</h2>[39m
+          [36m<ul>[39m
+            [36m<li[39m
+              [33mdata-issue[39m=[32m"Conflict"[39m
+            [36m>[39m
+              [0mConflict[0m
+            [36m</li>[39m
+          [36m</ul>[39m
+        [36m</div>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"_card_d47682"[39m
+        [36m>[39m
+          [36m<h2>[39m
+            [0mWorkspace[0m
+          [36m</h2>[39m
+          [36m<p>[39m
+            [0mUse your real Institution and Account. They are trading records; there is no application login.[0m
+          [36m</p>[39m
+          [36m<p>[39m
+            [0mTime zone: [0m
+            [0mAmerica/New_York[0m
+          [36m</p>[39m
+          [36m<form>[39m
+            [36m<label>[39m
+              [0mInstitution name[0m
+              [36m<input[39m
+                [33mrequired[39m=[32m""[39m
+                [33mvalue[39m=[32m"My new broker"[39m
+              [36m/>[39m
+            [36m</label>[39m
+            [36m<button>[39m
+              [0mSave Institution[0m
+            [36m</button>[39m
+          [36m</form>[39m
+          [36m<form>[39m
+            [36m<label>[39m
+              [0mInstitution[0m
+              [36m<select>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"0c857066-048d-437a-a07c-486a60afa4cb"[39m
+                [36m>[39m
+                  [0mBroker[0m
+                [36m</option>[39m
+              [36m</select>[39m
+            [36m</label>[39m
+            [36m<label>[39m
+              [0mAccount name[0m
+              [36m<input[39m
+                [33mrequired[39m=[32m""[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</label>[39m
+            [36m<button>[39m
+              [0mSave Account[0m
+            [36m</button>[39m
+          [36m</form>[39m
+        [36m</section>[39m
+      [36m</main>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"_shell_d47682"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Primary"[39m
+      [36m>[39m
+        [36m<strong>[39m
+          [0mTRADE JOURNAL[0m
+        [36m</strong>[39m
+        [36m<button>[39m
+          [0mTrades[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mNew Plan[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mWorkspace[0m
+        [36m</button>[39m
+      [36m</nav>[39m
+      [36m<main>[39m
+        [36m<header>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"_eyebrow_d47682"[39m
+          [36m>[39m
+            [0mAFTER-CLOSE JOURNAL · USD[0m
+          [36m</p>[39m
+          [36m<h1[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [0mWorkspace[0m
+          [36m</h1>[39m
+        [36m</header>[39m
+        [36m<aside[39m
+          [33mclass[39m=[32m"_warning_d47682"[39m
+        [36m>[39m
+          [36m<strong>[39m
+            [0mStorage is [0m
+            [0mBest Effort[0m
+            [0m.[0m
+          [36m</strong>[39m
+          [0m This browser may clear your data. Backup is not installed until a later release. [0m
+          [36m<button>[39m
+            [0mRequest storage protection[0m
+          [36m</button>[39m
+        [36m</aside>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"_install_d47682"[39m
+        [36m>[39m
+          [0mWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"_errors_d47682"[39m
+          [33mid[39m=[32m"plan-issues"[39m
+          [33mrole[39m=[32m"alert"[39m
+        [36m>[39m
+          [36m<h2[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [0mReview before continuing[0m
+          [36m</h2>[39m
+          [36m<ul>[39m
+            [36m<li[39m
+              [33mdata-issue[39m=[32m"Conflict"[39m
+            [36m>[39m
+              [0mConflict[0m
+            [36m</li>[39m
+          [36m</ul>[39m
+        [36m</div>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"_card_d47682"[39m
+        [36m>[39m
+          [36m<h2>[39m
+            [0mWorkspace[0m
+          [36m</h2>[39m
+          [36m<p>[39m
+            [0mUse your real Institution and Account. They are trading records; there is no application login.[0m
+          [36m</p>[39m
+          [36m<p>[39m
+            [0mTime zone: [0m
+            [0mAmerica/New_York[0m
+          [36m</p>[39m
+          [36m<form>[39m
+            [36m<label>[39m
+              [0mInstitution name[0m
+              [36m<input[39m
+                [33mrequired[39m=[32m""[39m
+                [33mvalue[39m=[32m"My new broker"[39m
+              [36m/>[39m
+            [36m</label>[39m
+            [36m<button>[39m
+              [0mSave Institution[0m
+            [36m</button>[39m
+          [36m</form>[39m
+          [36m<form>[39m
+            [36m<label>[39m
+              [0mInstitution[0m
+              [36m<select>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"0c857066-048d-437a-a07c-486a60afa4cb"[39m
+                [36m>[39m
+                  [0mBroker[0m
+                [36m</option>[39m
+              [36m</select>[39m
+            [36m</label>[39m
+            [36m<label>[39m
+              [0mAccount name[0m
+              [36m<input[39m
+                [33mrequired[39m=[32m""[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</label>[39m
+            [36m<button>[39m
+              [0mSave Account[0m
+            [36m</button>[39m
+          [36m</form>[39m
+        [36m</section>[39m
+      [36m</main>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/unit/d01-ui.test.tsx:198:33
+    196|   await f.catalog.save({ kind: 'Institution', label: 'Concurrent broke…
+    197|   await user.click(screen.getByRole('button', { name: 'Save Institutio…
+    198|   await user.click(await screen.findByRole('button', { name: 'Review c…
+       |                                 ^
+    199|   await screen.findByText('References refreshed. Review your selection…
+    200|   expect(screen.getByLabelText<HTMLInputElement>('Institution name').v…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 skipped (7)
+      Tests  1 failed | 53 skipped (54)
+   Start at  23:19:06
+   Duration  1.61s (environment 49%, tests 34%, transform 9%, import 8%)
+

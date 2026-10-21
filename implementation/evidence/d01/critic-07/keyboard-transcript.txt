@@ -1,0 +1,2 @@
+PASS B05 keyboard-only onboarding, invalid/corrected Plan, resize 390
+PASS B05 keyboard-only onboarding, invalid/corrected Plan, resize 1440

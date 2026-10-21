@@ -1,0 +1,55 @@
+
+> trade-journal-v3@0.1.0 test:browser
+> playwright test d01-release --project=chromium
+
+[WebServer] (node:95362) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:95383) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+native host evidence {
+  secure: true,
+  storage: { quota: 10737418757, usage: 517, usageDetails: { indexedDB: 517 } },
+  controller: undefined,
+  caches: []
+}
+  ✘  1 [chromium] › tests/browser/d01-release.spec.ts:2:1 › D1-T09 withholds Writable until a complete verified release controls the page (5.3s)
+
+
+  1) [chromium] › tests/browser/d01-release.spec.ts:2:1 › D1-T09 withholds Writable until a complete verified release controls the page 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByLabel('Workspace time zone')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByLabel('Workspace time zone') with timeout 5000ms
+      - waiting for getByLabel('Workspace time zone')
+
+
+      3 |   await page.goto('/');
+      4 |   console.log('native host evidence', await page.evaluate(async () => ({ secure: isSecureContext, storage: await navigator.storage.estimate(), controller: navigator.serviceWorker.controller?.scriptURL, caches: await caches.keys() })));
+    > 5 |   await expect(page.getByLabel('Workspace time zone')).toBeVisible();
+        |                                                        ^
+      6 |   expect(await page.evaluate(() => isSecureContext)).toBe(true);
+      7 |   const manifest = await page.request.get('/manifest.webmanifest');
+      8 |   const identity = await manifest.json() as { display: string; icons: { src: string; sizes: string; type: string }[] };
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-release.spec.ts:5:56
+
+    Error Context: test-results/d01-release-D1-T09-withhol-424dc-d-release-controls-the-page-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/d01-release-D1-T09-withhol-424dc-d-release-controls-the-page-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/d01-release-D1-T09-withhol-424dc-d-release-controls-the-page-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests/browser/d01-release.spec.ts:2:1 › D1-T09 withholds Writable until a complete verified release controls the page 

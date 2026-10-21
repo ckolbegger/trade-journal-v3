@@ -1,0 +1,37 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit --testNamePattern=retained Plan survives
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-ui.test.tsx (5 tests | 1 failed | 4 skipped) 179ms
+   × should keep update activation disabled while a retained Plan survives a reference save 179ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-ui.test.tsx > should keep update activation disabled while a retained Plan survives a reference save
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/d01-ui.test.tsx:105:96
+    103|   await waitFor(() => expect(screen.getByLabelText<HTMLInputElement>('…
+    104|   await user.click(screen.getByRole('button', { name: 'Check for appli…
+    105|   expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Reload…
+       |                                                                                                ^
+    106|   await user.click(screen.getByRole('button', { name: 'New Plan' }));
+    107|   expect(screen.getByLabelText<HTMLInputElement>('Stock symbol').value…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 skipped (7)
+      Tests  1 failed | 38 skipped (39)
+   Start at  22:39:18
+   Duration  621ms (environment 70%, import 11%, transform 10%, tests 8%, worker 1%)
+

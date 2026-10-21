@@ -1,0 +1,23 @@
+
+> trade-journal-v3@0.1.0 build
+> npm run typecheck && vite build && node tools/inventory.mjs
+
+
+> trade-journal-v3@0.1.0 typecheck
+> node node_modules/@typescript/native/bin/tsc -b
+
+tests/unit/d01-ui.test.tsx(292,61): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'exact' does not exist in type 'ByRoleOptions'.
+tests/unit/d01-ui.test.tsx(294,70): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'exact' does not exist in type 'ByRoleOptions'.
+tests/unit/d01-ui.test.tsx(296,68): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'exact' does not exist in type 'ByRoleOptions'.
+tests/unit/d01-ui.test.tsx(299,70): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'exact' does not exist in type 'ByRoleOptions'.
+tests/unit/d01-ui.test.tsx(300,56): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'exact' does not exist in type 'ByRoleOptions'.

@@ -1,0 +1,8 @@
+import {webkit,assert,contexts,results,events,write,pause,record,launch,ready,shot,state,same,installFaults,fault,scan,inventory} from './critic03-helpers.mjs';
+let keyTrace=[];
+async function key(p,k){await p.keyboard.press(k);keyTrace.push({key:k,active:await p.evaluate(()=>{const e=document.activeElement,s=getComputedStyle(e);return{tag:e.tagName,type:e.type,text:e.textContent?.slice(0,100),labels:[...(e.labels??[])].map(x=>x.textContent),outline:s.outline,bg:s.backgroundColor,color:s.color}})});}
+async function move(p,l){for(let i=0;i<120;i++){if(await l.evaluate(e=>e===document.activeElement))return;await key(p,'Alt+Tab')}throw Error('Native Option-Tab did not reach '+await l.evaluate(e=>e.outerHTML))}
+async function clickKey(p,l){await move(p,l);await key(p,'Enter')}
+async function typeKey(p,l,v){await move(p,l);await key(p,'Meta+A');await p.keyboard.type(v);keyTrace.push({typed:v})}
+
+export {key,move,clickKey,typeKey};

@@ -1,0 +1,38 @@
+{
+  "scope": "Requested one-button copy change: Save Institution -> Add Institution; creation/storage behavior unchanged",
+  "sourceDigest": "aad02ebae7441fc3da68d5f0955ee6ac6bc07449d87be1d0cf2ebec0b1fcebdc",
+  "release": "cf09c12a1139ef48c610a447f5a0b1714afc1764e8860d3f224365e656cbd2ae",
+  "gates": [
+    {
+      "stage": "institution-label-unit",
+      "exit": 0,
+      "sourceDigest": "aad02ebae7441fc3da68d5f0955ee6ac6bc07449d87be1d0cf2ebec0b1fcebdc"
+    },
+    {
+      "stage": "institution-label-lint",
+      "exit": 0,
+      "sourceDigest": "aad02ebae7441fc3da68d5f0955ee6ac6bc07449d87be1d0cf2ebec0b1fcebdc"
+    },
+    {
+      "stage": "institution-label-build",
+      "exit": 0,
+      "sourceDigest": "aad02ebae7441fc3da68d5f0955ee6ac6bc07449d87be1d0cf2ebec0b1fcebdc"
+    }
+  ],
+  "manualBrowser": "Existing user IAB safely activated verified release with empty drafts; Workspace shows Add Institution and Add Account",
+  "screenshot": "add-institution-label.png",
+  "savedUserRecordsChanged": false,
+  "priorFullD1Evidence": "critic-07/report.md (preceding wording; not rerun for this copy-only request)",
+  "notRepeated": [
+    "Full browser suite",
+    "Scale benchmark",
+    "Independent critic"
+  ],
+  "localPreview": "http://localhost:5174",
+  "priorFullD1Verification": "final-local-verification-before-institution-label.json",
+  "remainingHostEvidence": [
+    "OS installation and installed launch",
+    "native browser-chrome 200% zoom"
+  ],
+  "productionHTTPS": "UserDeferred"
+}

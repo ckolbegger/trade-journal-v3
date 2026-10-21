@@ -1,0 +1,41 @@
+node:internal/modules/run_main:111
+    triggerUncaughtException(
+    ^
+
+browserType.launchPersistentContext: Target page, context or browser has been closed
+Browser logs:
+
+<launching> /Users/ckolbegger/Library/Caches/ms-playwright/webkit-2370/pw_run.sh --inspector-pipe --headless --user-data-dir=/private/tmp/critic02-main about:blank
+<launched> pid=83481
+[pid=83481][err] /Users/ckolbegger/Library/Caches/ms-playwright/webkit-2370/pw_run.sh: line 7: 83487 Abort trap: 6           DYLD_FRAMEWORK_PATH="$DYLIB_PATH" DYLD_LIBRARY_PATH="$DYLIB_PATH" "$PLAYWRIGHT" "$@"
+Call log:
+[2m  - <launching> /Users/ckolbegger/Library/Caches/ms-playwright/webkit-2370/pw_run.sh --inspector-pipe --headless --user-data-dir=/private/tmp/critic02-main about:blank[22m
+[2m  - <launched> pid=83481[22m
+[2m  - [pid=83481][err] /Users/ckolbegger/Library/Caches/ms-playwright/webkit-2370/pw_run.sh: line 7: 83487 Abort trap: 6           DYLD_FRAMEWORK_PATH="$DYLIB_PATH" DYLD_LIBRARY_PATH="$DYLIB_PATH" "$PLAYWRIGHT" "$@"[22m
+[2m  - [pid=83481] <gracefully close start>[22m
+[2m  - [pid=83481] <kill>[22m
+[2m  - [pid=83481] <will force kill>[22m
+[2m  - [pid=83481] exception while trying to kill process: Error: kill ESRCH[22m
+[2m  - [pid=83481] <process did exit: exitCode=134, signal=null>[22m
+[2m  - [pid=83481] starting temporary directories cleanup[22m
+[2m  - [pid=83481] finished temporary directories cleanup[22m
+[2m  - [pid=83481] <gracefully close end>[22m
+
+    at async launch (/private/tmp/critic02-common.mjs:7:77)
+    at async file:///private/tmp/critic02-core.mjs:2:9 {
+  log: [
+    '  - <launching> /Users/ckolbegger/Library/Caches/ms-playwright/webkit-2370/pw_run.sh --inspector-pipe --headless --user-data-dir=/private/tmp/critic02-main about:blank',
+    '  - <launched> pid=83481',
+    '  - [pid=83481][err] /Users/ckolbegger/Library/Caches/ms-playwright/webkit-2370/pw_run.sh: line 7: 83487 Abort trap: 6           DYLD_FRAMEWORK_PATH="$DYLIB_PATH" DYLD_LIBRARY_PATH="$DYLIB_PATH" "$PLAYWRIGHT" "$@"',
+    '  - [pid=83481] <gracefully close start>',
+    '  - [pid=83481] <kill>',
+    '  - [pid=83481] <will force kill>',
+    '  - [pid=83481] exception while trying to kill process: Error: kill ESRCH',
+    '  - [pid=83481] <process did exit: exitCode=134, signal=null>',
+    '  - [pid=83481] starting temporary directories cleanup',
+    '  - [pid=83481] finished temporary directories cleanup',
+    '  - [pid=83481] <gracefully close end>'
+  ]
+}
+
+Node.js v26.12.0

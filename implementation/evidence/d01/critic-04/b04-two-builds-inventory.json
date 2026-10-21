@@ -1,0 +1,220 @@
+[
+  {
+    "dir": "dist",
+    "release": "c61a00ab2f5941e47bf1b2b4436a779b74b40531b110fd4f9201adf864fef704",
+    "manifest": {
+      "name": "Trade Journal",
+      "short_name": "Trade Journal",
+      "start_url": "/",
+      "display": "standalone",
+      "background_color": "#f6f4ed",
+      "theme_color": "#f6f4ed",
+      "lang": "en",
+      "scope": "/",
+      "id": "/",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "any"
+        },
+        {
+          "src": "/icon-512.png",
+          "sizes": "512x512",
+          "type": "image/png",
+          "purpose": "any"
+        },
+        {
+          "src": "/icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml",
+          "purpose": "any"
+        }
+      ]
+    },
+    "entries": [
+      {
+        "url": "/assets/index-BmZENfDQ.js",
+        "bytes": 556700,
+        "sha256": "e45968dc1f4f7f0b45bce6539f577f9df3df0c8a99cdefddd5fdb8db1b065131",
+        "actualBytes": 556700,
+        "actualSha256": "e45968dc1f4f7f0b45bce6539f577f9df3df0c8a99cdefddd5fdb8db1b065131",
+        "pass": true
+      },
+      {
+        "url": "/assets/index-Ukg-5B9v.css",
+        "bytes": 2898,
+        "sha256": "a2168dbf5e6e8e5c495a0e2c0f0058e968fbb9009df4ea06d74071873b52811c",
+        "actualBytes": 2898,
+        "actualSha256": "a2168dbf5e6e8e5c495a0e2c0f0058e968fbb9009df4ea06d74071873b52811c",
+        "pass": true
+      },
+      {
+        "url": "/capabilities.json",
+        "bytes": 1290,
+        "sha256": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a",
+        "actualBytes": 1290,
+        "actualSha256": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a",
+        "pass": true
+      },
+      {
+        "url": "/icon-192.png",
+        "bytes": 3409,
+        "sha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+        "actualBytes": 3409,
+        "actualSha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+        "pass": true
+      },
+      {
+        "url": "/icon-512.png",
+        "bytes": 12236,
+        "sha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+        "actualBytes": 12236,
+        "actualSha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+        "pass": true
+      },
+      {
+        "url": "/icon.svg",
+        "bytes": 180,
+        "sha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+        "actualBytes": 180,
+        "actualSha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+        "pass": true
+      },
+      {
+        "url": "/index.html",
+        "bytes": 446,
+        "sha256": "34aebf62064ebc7e18517e9bf456d761b7d21b28f6e6f4ed669b8000170a8037",
+        "actualBytes": 446,
+        "actualSha256": "34aebf62064ebc7e18517e9bf456d761b7d21b28f6e6f4ed669b8000170a8037",
+        "pass": true
+      },
+      {
+        "url": "/manifest.webmanifest",
+        "bytes": 416,
+        "sha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+        "actualBytes": 416,
+        "actualSha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+        "pass": true
+      },
+      {
+        "url": "/sw.js",
+        "bytes": 3919,
+        "sha256": "38c0b7da4f75999e3ae3cb8691b2d18b15aac788e43518db07d65328c036a028",
+        "actualBytes": 3919,
+        "actualSha256": "38c0b7da4f75999e3ae3cb8691b2d18b15aac788e43518db07d65328c036a028",
+        "pass": true
+      }
+    ]
+  },
+  {
+    "dir": ".cache/update-dist",
+    "release": "8edc2fc8876a07aea9177871c1b4fc424f990a76d4b1f129251554e1e32f4d5c",
+    "manifest": {
+      "name": "Trade Journal",
+      "short_name": "Trade Journal",
+      "start_url": "/",
+      "display": "standalone",
+      "background_color": "#f6f4ed",
+      "theme_color": "#f6f4ed",
+      "lang": "en",
+      "scope": "/",
+      "id": "/",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "any"
+        },
+        {
+          "src": "/icon-512.png",
+          "sizes": "512x512",
+          "type": "image/png",
+          "purpose": "any"
+        },
+        {
+          "src": "/icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml",
+          "purpose": "any"
+        }
+      ]
+    },
+    "entries": [
+      {
+        "url": "/assets/index-D5SmvdM2.js",
+        "bytes": 556700,
+        "sha256": "b92f606f6c7e7a9cbeec78e4d83dca3e35e80f81db5ce9e94c3e4d9e3ad4b1de",
+        "actualBytes": 556700,
+        "actualSha256": "b92f606f6c7e7a9cbeec78e4d83dca3e35e80f81db5ce9e94c3e4d9e3ad4b1de",
+        "pass": true
+      },
+      {
+        "url": "/assets/index-Ukg-5B9v.css",
+        "bytes": 2898,
+        "sha256": "a2168dbf5e6e8e5c495a0e2c0f0058e968fbb9009df4ea06d74071873b52811c",
+        "actualBytes": 2898,
+        "actualSha256": "a2168dbf5e6e8e5c495a0e2c0f0058e968fbb9009df4ea06d74071873b52811c",
+        "pass": true
+      },
+      {
+        "url": "/capabilities.json",
+        "bytes": 1290,
+        "sha256": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a",
+        "actualBytes": 1290,
+        "actualSha256": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a",
+        "pass": true
+      },
+      {
+        "url": "/icon-192.png",
+        "bytes": 3409,
+        "sha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+        "actualBytes": 3409,
+        "actualSha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+        "pass": true
+      },
+      {
+        "url": "/icon-512.png",
+        "bytes": 12236,
+        "sha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+        "actualBytes": 12236,
+        "actualSha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+        "pass": true
+      },
+      {
+        "url": "/icon.svg",
+        "bytes": 180,
+        "sha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+        "actualBytes": 180,
+        "actualSha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+        "pass": true
+      },
+      {
+        "url": "/index.html",
+        "bytes": 446,
+        "sha256": "74819ae1543ce92b90b8e1651f0a3cd5dc0a7c8d3ee4b37a62fdbe840ece567a",
+        "actualBytes": 446,
+        "actualSha256": "74819ae1543ce92b90b8e1651f0a3cd5dc0a7c8d3ee4b37a62fdbe840ece567a",
+        "pass": true
+      },
+      {
+        "url": "/manifest.webmanifest",
+        "bytes": 416,
+        "sha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+        "actualBytes": 416,
+        "actualSha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+        "pass": true
+      },
+      {
+        "url": "/sw.js",
+        "bytes": 3919,
+        "sha256": "ae072d7e508200ce11a529de766d67a5a91f4890993226836ffb2a7666d4e98b",
+        "actualBytes": 3919,
+        "actualSha256": "ae072d7e508200ce11a529de766d67a5a91f4890993226836ffb2a7666d4e98b",
+        "pass": true
+      }
+    ]
+  }
+]

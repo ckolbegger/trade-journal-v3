@@ -1,0 +1,15 @@
+{
+  "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+  "secure": true,
+  "quota": {
+    "quota": 10739186928,
+    "usage": 1768688,
+    "usageDetails": {
+      "caches": 1756928,
+      "indexedDB": 7825,
+      "serviceWorkerRegistrations": 3935
+    }
+  },
+  "protection": false,
+  "controller": "http://localhost:5174/sw.js"
+}

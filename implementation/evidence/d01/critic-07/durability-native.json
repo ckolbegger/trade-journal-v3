@@ -1,0 +1,24 @@
+{
+  "secure": true,
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+  "quota": {
+    "quota": 10739215111,
+    "usage": 1796871,
+    "usageDetails": {
+      "caches": 1758720,
+      "indexedDB": 34216,
+      "serviceWorkerRegistrations": 3935
+    }
+  },
+  "persisted": false,
+  "controller": "http://localhost:5174/sw.js",
+  "active": "activated",
+  "verified": {
+    "release": "ab2297ad212bf6d6159b2c2471477358892b183a3d0e4706a792ca123f002e69",
+    "verified": true,
+    "assetCount": 9
+  },
+  "cacheNames": [
+    "trade-journal-release-ab2297ad212bf6d6159b2c2471477358892b183a3d0e4706a792ca123f002e69"
+  ]
+}

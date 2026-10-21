@@ -1,0 +1,41 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-reads.test.ts -t should distinguish successful
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-reads.test.ts (2 tests | 1 failed | 1 skipped) 16ms
+   × should distinguish successful Empty from query failure and allow safe retry 15ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-reads.test.ts > should distinguish successful Empty from query failure and allow safe retry
+AssertionError: expected { status: 'Ready', items: [], …(2) } to match object { status: 'Empty', items: [] }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "items": [],
+-   "status": "Empty",
++   "status": "Ready",
+  }
+
+ ❯ tests/unit/d01-reads.test.ts:19:38
+     17|   const f = await workspaceFixture();
+     18|   const views = new TradeViewsAndReporting(f.store);
+     19|   expect(await views.browseTrades()).toMatchObject({ status: 'Empty', …
+       |                                      ^
+     20|   const { vi } = await import('vitest');
+     21|   const failure = vi.spyOn(f.store.roots, 'get').mockRejectedValue(new…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 skipped (2)
+   Start at  21:07:53
+   Duration  339ms (environment 71%, import 12%, transform 11%, tests 6%, worker 1%)
+

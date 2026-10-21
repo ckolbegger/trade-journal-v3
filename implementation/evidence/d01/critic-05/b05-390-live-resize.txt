@@ -1,0 +1,20 @@
+[
+  {
+    "width": 767,
+    "bodyWidth": 767,
+    "navDirection": "row",
+    "issue": true
+  },
+  {
+    "width": 768,
+    "bodyWidth": 768,
+    "navDirection": "column",
+    "issue": true
+  },
+  {
+    "width": 390,
+    "bodyWidth": 390,
+    "navDirection": "row",
+    "issue": true
+  }
+]

@@ -1,0 +1,44 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit --testNamePattern=unknown-newer root at the mutation gate
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-confirmation.test.ts (9 tests | 1 failed | 8 skipped) 22ms
+   × should reject an unknown-newer root at the mutation gate without staging facts 22ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-confirmation.test.ts > should reject an unknown-newer root at the mutation gate without staging facts
+AssertionError: expected { status: 'Confirmed', …(7) } to match object { status: 'RuntimeNotWritable', …(2) }
+(55 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "failedChecks": [
+-     "UnsupportedSchema",
+-   ],
+-   "status": "RuntimeNotWritable",
+-   "workspaceStatus": "IntegrityBlocked",
++   "status": "Confirmed",
+  }
+
+ ❯ tests/unit/d01-confirmation.test.ts:122:52
+    120|   await f.store.roots.update('active', { schema: 999 });
+    121|   const root = await f.store.roots.get('active'); const versions = awa…
+    122|   expect(await f.workflows.confirmPlan(f.command)).toMatchObject({ sta…
+       |                                                    ^
+    123|   expect(await f.store.roots.get('active')).toEqual(root);
+    124|   expect(await f.store.versions.toArray()).toEqual(versions);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 skipped (7)
+      Tests  1 failed | 52 skipped (53)
+   Start at  23:10:22
+   Duration  454ms (environment 74%, transform 13%, import 11%, tests 1%, worker 1%)
+

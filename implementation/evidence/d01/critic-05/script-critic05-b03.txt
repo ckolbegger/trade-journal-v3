@@ -1,0 +1,25 @@
+await ctx.close();
+await fs.cp('/private/tmp/critic05-main','/private/tmp/critic05-existing-template',{recursive:true});
+await launch('fresh-template');await go();assert((await p.locator('body').innerText()).includes('Workspace time zone'));await ctx.close();
+const {hostFault}=await import('/private/tmp/critic05-fault.mjs');
+const results=[];
+for(const existing of [false,true])for(const fault of ['transaction','capacity','control','inventory','transaction capacity','estimateUnavailable','unreadable']){
+ if(!existing&&fault==='unreadable')continue;
+ const name=(existing?'existing':'fresh')+'-'+fault.replaceAll(' ','-');
+ await fs.cp('/private/tmp/critic05-'+(existing?'existing-template':'fresh-template'),'/private/tmp/critic05-'+name,{recursive:true});
+ await launch(name);await go();const before=await bytes();
+ if(fault==='inventory'){await p.evaluate(async()=>{for(const n of await caches.keys()){const c=await caches.open(n);const keys=await c.keys();const css=keys.find(k=>k.url.endsWith('.css'));if(css)await c.delete(css);}});await p.reload();await settle();}
+ else {await ctx.addInitScript(hostFault,fault);await p.reload();await settle();}
+ const text=await p.locator('body').innerText();const issues=await p.locator('[data-issue]').evaluateAll(es=>es.map(e=>e.getAttribute('data-issue')));
+ assert(text.includes(fault==='unreadable'?'IntegrityBlocked':existing?'Recovery Only':'Unsupported'),name+': '+text);
+ if(fault==='transaction capacity'){assert(issues.includes('transaction'));assert(issues.includes('capacity'));}
+ await shot('b03-'+name);
+ if(existing&&fault!=='unreadable'){assert(await p.getByRole('button',{name:'New Plan',exact:true}).isDisabled());await p.getByRole('button',{name:/AAPL/}).click();await p.getByText('View history',{exact:true}).click();await shot('b03-'+name+'-history');}
+ if(fault!=='inventory')await p.evaluate(()=>globalThis.__criticFault='');
+ assert.equal(await bytes(),before,name+' authoritative unchanged');
+ await log('b03-'+name+'-bytes',{before,after:await bytes(),issues});
+ results.push({name,issues,state:text,unchanged:true});await ctx.close();
+}
+await log('b03-matrix',results);
+await launch('main');await go();await p.evaluate(hostFault,'bestEffort');const before=await bytes();await click('Request storage protection');await p.getByText('The host did not grant stronger storage protection.',{exact:true}).waitFor();assert.equal(await bytes(),before);assert(await p.getByRole('button',{name:'New Plan',exact:true}).isEnabled());await shot('b03-denied-durability');
+await plan('LATE');const late=await bytes();await p.evaluate(()=>globalThis.__criticFault='capacity');await click('Confirm Plan');await p.getByRole('heading',{name:'Recovery Only',exact:true}).waitFor();assert.equal(await bytes(),late);await shot('b03-late');await p.evaluate(()=>globalThis.__criticFault='');await click('Retry startup');await settle();assert.equal(await p.getByLabel('Stock symbol',{exact:true}).inputValue(),'LATE');await click('Cancel');await shot('b03-retry');

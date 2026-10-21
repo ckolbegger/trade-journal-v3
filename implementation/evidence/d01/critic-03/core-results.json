@@ -1,0 +1,327 @@
+{
+  "axe-timezone": [],
+  "fresh": {
+    "roots": [],
+    "versions": [],
+    "lifecycle": [],
+    "diagnostic": []
+  },
+  "axe-empty": [],
+  "empty-invalid-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "9c578fc1-a0b0-4bef-aea3-ccb55b7c95d7",
+      "revision": "0674ba9a-bf6b-40ba-a20b-383302477828",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "215b813a-1d51-4dda-b31a-4aa81a08d2d0",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 3,
+      "recordedSequence": 0
+    },
+    "versionCount": 5
+  },
+  "axe-invalid": [],
+  "zero-risk-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "9c578fc1-a0b0-4bef-aea3-ccb55b7c95d7",
+      "revision": "0674ba9a-bf6b-40ba-a20b-383302477828",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "215b813a-1d51-4dda-b31a-4aa81a08d2d0",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 3,
+      "recordedSequence": 0
+    },
+    "versionCount": 5
+  },
+  "axe-confirmed-history": [],
+  "B01-online": {
+    "root": {
+      "key": "active",
+      "generation": "9c578fc1-a0b0-4bef-aea3-ccb55b7c95d7",
+      "revision": "5af3241d-209c-4df3-b4f1-4fc052c95ceb",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "215b813a-1d51-4dda-b31a-4aa81a08d2d0",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 4,
+      "recordedSequence": 1
+    },
+    "plans": [
+      {
+        "version": "40c9cc83-b4ca-4576-936d-5e322d9841f9",
+        "id": "45a1cc0a-fd3f-45b8-84da-75f02bb35d38",
+        "generation": "9c578fc1-a0b0-4bef-aea3-ccb55b7c95d7",
+        "kind": "Plan",
+        "tradeId": "c46ff69c-614d-488e-8c55-343c8268bad4",
+        "economicTime": "2026-10-19T09:16:15.608Z",
+        "saveTime": "2026-10-19T09:16:15.620Z",
+        "sequence": 1,
+        "commitOrdinal": 4,
+        "value": {
+          "tradeId": "c46ff69c-614d-488e-8c55-343c8268bad4",
+          "revision": "27e520c0-5d8d-4061-82f8-5a22f681bca3",
+          "planFactId": "45a1cc0a-fd3f-45b8-84da-75f02bb35d38",
+          "planVersionId": "40c9cc83-b4ca-4576-936d-5e322d9841f9",
+          "plannedLegId": "205cab18-63b5-4275-86ad-a213b2b3a9ea",
+          "stopId": "5ee21766-8950-4263-acfc-a3840b0044af",
+          "targetId": "3838e1af-307d-4daf-819f-bb13c784819f",
+          "accountId": "b8b0f09e-53c4-4f10-9f8a-6557857cbf8a",
+          "strategyId": "long-stock",
+          "lifecycle": "Planned",
+          "plan": {
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "ACME",
+              "currency": "USD"
+            },
+            "quantity": "100",
+            "entry": "50",
+            "stop": "45",
+            "target": "60",
+            "thesis": "Independent critic: trend and catalyst",
+            "invalidation": "Independent critic: close below support"
+          },
+          "baseline": {
+            "risk": "500",
+            "oneR": "500",
+            "reward": "1000",
+            "ratio": {
+              "numerator": "2",
+              "denominator": "1"
+            },
+            "conditions": [
+              {
+                "kind": "Stop",
+                "price": "45",
+                "amount": "500"
+              },
+              {
+                "kind": "Target",
+                "price": "60",
+                "amount": "1000"
+              }
+            ]
+          },
+          "economicTime": "2026-10-19T09:16:15.608Z",
+          "saveTime": "2026-10-19T09:16:15.620Z",
+          "sequence": 1
+        }
+      }
+    ],
+    "entries": [
+      {
+        "version": "8d105cd3-6427-4b08-86d4-0e9a3dec97bb",
+        "id": "92bc4171-18cb-4773-aeca-6c99f48d7063",
+        "generation": "9c578fc1-a0b0-4bef-aea3-ccb55b7c95d7",
+        "kind": "JournalEntry",
+        "tradeId": "c46ff69c-614d-488e-8c55-343c8268bad4",
+        "economicTime": "2026-10-19T09:16:15.608Z",
+        "saveTime": "2026-10-19T09:16:15.620Z",
+        "sequence": 1,
+        "commitOrdinal": 4,
+        "value": {
+          "id": "92bc4171-18cb-4773-aeca-6c99f48d7063",
+          "version": "8d105cd3-6427-4b08-86d4-0e9a3dec97bb",
+          "definition": {
+            "id": "plan-reflection",
+            "revision": "plan-reflection-v1",
+            "label": "Plan Reflection",
+            "prompts": [
+              {
+                "id": "thesis",
+                "wording": "Why this trade, why now?",
+                "kind": "Text",
+                "required": true,
+                "role": "Thesis"
+              },
+              {
+                "id": "invalidation",
+                "wording": "What would invalidate the thesis?",
+                "kind": "Text",
+                "required": true,
+                "role": "Invalidation"
+              },
+              {
+                "id": "conviction",
+                "wording": "Conviction",
+                "kind": "Scale",
+                "required": false,
+                "minimum": 1,
+                "maximum": 5
+              },
+              {
+                "id": "emotion",
+                "wording": "Primary emotion",
+                "kind": "SingleSelect",
+                "required": false,
+                "options": [
+                  {
+                    "id": "calm",
+                    "label": "Calm"
+                  },
+                  {
+                    "id": "eager",
+                    "label": "Eager"
+                  },
+                  {
+                    "id": "anxious",
+                    "label": "Anxious"
+                  },
+                  {
+                    "id": "fomo",
+                    "label": "FOMO"
+                  },
+                  {
+                    "id": "revenge",
+                    "label": "Revenge"
+                  },
+                  {
+                    "id": "relieved",
+                    "label": "Relieved"
+                  },
+                  {
+                    "id": "frustrated",
+                    "label": "Frustrated"
+                  },
+                  {
+                    "id": "other",
+                    "label": "Other"
+                  }
+                ]
+              }
+            ]
+          },
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "c46ff69c-614d-488e-8c55-343c8268bad4"
+          },
+          "origin": {
+            "kind": "Plan",
+            "factId": "45a1cc0a-fd3f-45b8-84da-75f02bb35d38"
+          },
+          "source": {
+            "id": "plan-confirmation",
+            "label": "Plan Confirmation"
+          },
+          "momentTime": "2026-10-19T09:16:15.608Z",
+          "firstAuthoredTime": "2026-10-19T09:16:15.620Z",
+          "saveTime": "2026-10-19T09:16:15.620Z",
+          "responses": {
+            "thesis": {
+              "kind": "Text",
+              "value": "Independent critic: trend and catalyst"
+            },
+            "invalidation": {
+              "kind": "Text",
+              "value": "Independent critic: close below support"
+            },
+            "conviction": {
+              "kind": "Scale",
+              "value": "4"
+            },
+            "emotion": {
+              "kind": "SingleSelect",
+              "value": "calm"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "axe-list": [],
+  "cancel-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "9c578fc1-a0b0-4bef-aea3-ccb55b7c95d7",
+      "revision": "5af3241d-209c-4df3-b4f1-4fc052c95ceb",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "215b813a-1d51-4dda-b31a-4aa81a08d2d0",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 4,
+      "recordedSequence": 1
+    },
+    "versionCount": 7
+  },
+  "stopped-offline-unchanged": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "9c578fc1-a0b0-4bef-aea3-ccb55b7c95d7",
+      "revision": "5af3241d-209c-4df3-b4f1-4fc052c95ceb",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "215b813a-1d51-4dda-b31a-4aa81a08d2d0",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 4,
+      "recordedSequence": 1
+    },
+    "versionCount": 7
+  },
+  "B01-offline": {
+    "fullyStopped": true,
+    "contextOffline": true
+  },
+  "stale-catalog-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "9c578fc1-a0b0-4bef-aea3-ccb55b7c95d7",
+      "revision": "fe8d0a66-5ba8-41a3-96ca-12a129aecfb7",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "a42876de-c00d-44d1-9083-fa46863f7c2a",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 5,
+      "recordedSequence": 1
+    },
+    "versionCount": 8
+  },
+  "axe-conflict": [],
+  "Plan-native-abort-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "9c578fc1-a0b0-4bef-aea3-ccb55b7c95d7",
+      "revision": "fe8d0a66-5ba8-41a3-96ca-12a129aecfb7",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "a42876de-c00d-44d1-9083-fa46863f7c2a",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 5,
+      "recordedSequence": 1
+    },
+    "versionCount": 8
+  },
+  "axe-abort-Plan": [],
+  "JournalEntry-native-abort-no-write": {
+    "unchanged": true,
+    "root": {
+      "key": "active",
+      "generation": "9c578fc1-a0b0-4bef-aea3-ccb55b7c95d7",
+      "revision": "fe8d0a66-5ba8-41a3-96ca-12a129aecfb7",
+      "schema": 1,
+      "timeZone": "America/New_York",
+      "catalogRevision": "a42876de-c00d-44d1-9083-fa46863f7c2a",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 5,
+      "recordedSequence": 1
+    },
+    "versionCount": 8
+  },
+  "axe-abort-JournalEntry": [],
+  "B02": {
+    "invalid": true,
+    "zeroRisk": true,
+    "corrected": true,
+    "cancel": true,
+    "stale": true,
+    "nativePlanAndJournalAbort": true
+  }
+}

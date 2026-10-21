@@ -1,0 +1,306 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit --testNamePattern=advisory landmarks
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-ui.test.tsx (14 tests | 1 failed | 13 skipped) 170ms
+   × should distinguish update, recovery and storage advisory landmarks after a late readiness failure 169ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-ui.test.tsx > should distinguish update, recovery and storage advisory landmarks after a late readiness failure
+TestingLibraryElementError: Unable to find an accessible element with the role "complementary" and name "Update available"
+
+Here are the accessible roles:
+
+  navigation:
+
+  Name "Primary":
+  [36m<nav[39m
+    [33maria-label[39m=[32m"Primary"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  strong:
+
+  Name "":
+  [36m<strong />[39m
+
+  Name "":
+  [36m<strong />[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Trades":
+  [36m<button />[39m
+
+  Name "New Plan":
+  [36m<button[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Workspace":
+  [36m<button />[39m
+
+  Name "Check for application updates":
+  [36m<button />[39m
+
+  Name "Reload to update":
+  [36m<button[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Retry startup":
+  [36m<button />[39m
+
+  Name "Request storage protection":
+  [36m<button />[39m
+
+  --------------------------------------------------
+  main:
+
+  Name "":
+  [36m<main />[39m
+
+  --------------------------------------------------
+  banner:
+
+  Name "":
+  [36m<header />[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"_eyebrow_d47682"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"_install_d47682"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "Workspace":
+  [36m<h1[39m
+    [33mtabindex[39m=[32m"-1"[39m
+  [36m/>[39m
+
+  Name "Update available":
+  [36m<h2 />[39m
+
+  Name "Recovery Only":
+  [36m<h2 />[39m
+
+  Name "Review before continuing":
+  [36m<h2[39m
+    [33mtabindex[39m=[32m"-1"[39m
+  [36m/>[39m
+
+  Name "Workspace":
+  [36m<h2 />[39m
+
+  --------------------------------------------------
+  complementary:
+
+  Name "":
+  [36m<aside[39m
+    [33mclass[39m=[32m"_warning_d47682"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<aside[39m
+    [33mclass[39m=[32m"_warning_d47682"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<aside[39m
+    [33mclass[39m=[32m"_warning_d47682"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  alert:
+
+  Name "":
+  [36m<div[39m
+    [33mclass[39m=[32m"_errors_d47682"[39m
+    [33mid[39m=[32m"plan-issues"[39m
+    [33mrole[39m=[32m"alert"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  list:
+
+  Name "":
+  [36m<ul />[39m
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  [36m<li[39m
+    [33mdata-issue[39m=[32m"capacity"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"_shell_d47682"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Primary"[39m
+      [36m>[39m
+        [36m<strong>[39m
+          [0mTRADE JOURNAL[0m
+        [36m</strong>[39m
+        [36m<button>[39m
+          [0mTrades[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mdisabled[39m=[32m""[39m
+        [36m>[39m
+          [0mNew Plan[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mWorkspace[0m
+        [36m</button>[39m
+      [36m</nav>[39m
+      [36m<main>[39m
+        [36m<header>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"_eyebrow_d47682"[39m
+          [36m>[39m
+            [0mAFTER-CLOSE JOURNAL · USD[0m
+          [36m</p>[39m
+          [36m<h1[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [0mWorkspace[0m
+          [36m</h1>[39m
+        [36m</header>[39m
+        [36m<button>[39m
+          [0mCheck for application updates[0m
+        [36m</button>[39m
+        [36m<aside[39m
+          [33mclass[39m=[32m"_warning_d47682"[39m
+        [36m>[39m
+          [36m<h2>[39m
+            [0mUpdate available[0m
+          [36m</h2>[39m
+          [36m<p>[39m
+            [0mUpdate deferred while this form has unsaved values. Save or Cancel before reloading.[0m
+          [36m</p>[39m
+          [36m<button[39m
+            [33mdisabled[39m=[32m""[39m
+          [36m>[39m
+            [0mReload to update[0m
+          [36m</button>[39m
+        [36m</aside>[39m
+        [36m<aside[39m
+          [33mclass[39m=[32m"_warning_d47682"[39m
+        [36m>[39m
+          [36m<h2>[39m
+            [0mRecovery Only[0m
+          [36m</h2>[39m
+          [36m<p>[39m
+            [0mReading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.[0m
+          [36m</p>[39m
+          [36m<button>[39m
+            [0mRetry startup[0m
+          [36m</button>[39m
+        [36m</aside>[39m
+        [36m<aside[39m
+          [33mclass[39m=[32m"_warning_d47682"[39m
+        [36m>[39m
+          [36m<strong>[39m
+            [0mStorage is [0m
+            [0mBest Effort[0m
+            [0m.[0m
+          [36m</strong>[39m
+          [0m This browser may clear your data. Backup is not installed until a later release. [0m
+          [36m<button>[39m
+            [0mRequest storage protection[0m
+          [36m</button>[39m
+        [36m</aside>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"_install_d47682"[39m
+        [36m>[39m
+          [0mWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.[0m
+        [36m</p>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"_errors_d47682"[39m
+          [33mid[39m=[32m"plan-issues"[39m
+          [33mrole[39m=[32m"alert"[39m
+        [36m>[39m
+          [36m<h2[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [0mReview before continuing[0m
+          [36m</h2>[39m
+          [36m<ul>[39m
+            [36m<li[39m
+              [33mdata-issue[39m=[32m"capacity"[39m
+            [36m>[39m
+              [0mThis browser does not have the required available storage capacity.[0m
+            [36m</li>[39m
+          [36m</ul>[39m
+        [36m</div>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"_card_d47682"[39m
+        [36m>[39m
+          [36m<h2>[39m
+            [0mWorkspace[0m
+          [36m</h2>[39m
+          [36m<p>[39m
+            [0mTime zone: [0m
+            [0mAmerica/New_York[0m
+          [36m</p>[39m
+          [36m<p>[39m
+            [0mReference changes are disabled in Recovery Only.[0m
+          [36m</p>[39m
+        [36m</section>[39m
+      [36m</main>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ tests/unit/d01-ui.test.tsx:241:17
+    239|   await user.click(screen.getByRole('button', { name: 'Save Institutio…
+    240|   await screen.findByText('Recovery Only');
+    241|   expect(screen.getByRole('complementary', { name: 'Update available' …
+       |                 ^
+    242|   expect(screen.getByRole('complementary', { name: 'Recovery Only' }))…
+    243|   expect(screen.getByRole('complementary', { name: 'Storage protection…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 skipped (7)
+      Tests  1 failed | 57 skipped (58)
+   Start at  05:07:41
+   Duration  635ms (environment 70%, transform 12%, import 11%, tests 7%, worker 1%)
+

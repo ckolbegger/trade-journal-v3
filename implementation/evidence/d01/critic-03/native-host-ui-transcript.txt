@@ -1,0 +1,7 @@
+Native isolated Chromium launch via Playwright, own /private/tmp/tjv3-critic03-native-chrome profile, headless:false, viewport:null.
+EXECUTABLE /Users/ckolbegger/Library/Caches/ms-playwright/chromium-1248/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing
+BROWSER 156.0.8078.4
+READY
+CUA call: let nativeHost = await cua.getApp('/Users/ckolbegger/Library/Caches/ms-playwright/chromium-1248/chrome-mac-arm64/Google Chrome for Testing.app');
+Observed tool result: Wall time43.4774seconds; js execution timed out; kernel reset, rerun your request.
+No native chrome/installation actions were performed. Owned native browser stopped with Ctrl-C; process inspection afterward found no critic03 owned processes.

@@ -1,0 +1,244 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit --testNamePattern=complete first-run onboarding
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-ui.test.tsx (9 tests | 1 failed | 8 skipped) 391ms
+   ❯ Long Stock Plan production UI (1)
+     × should complete first-run onboarding and confirm fixture P using accessible controls 391ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-ui.test.tsx > Long Stock Plan production UI > should complete first-run onboarding and confirm fixture P using accessible controls
+TestingLibraryElementError: Unable to find an element with the text: Calm. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"_shell_d47682"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Primary"[39m
+      [36m>[39m
+        [36m<strong>[39m
+          [0mTRADE JOURNAL[0m
+        [36m</strong>[39m
+        [36m<button>[39m
+          [0mTrades[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mNew Plan[0m
+        [36m</button>[39m
+        [36m<button>[39m
+          [0mWorkspace[0m
+        [36m</button>[39m
+      [36m</nav>[39m
+      [36m<main>[39m
+        [36m<header>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"_eyebrow_d47682"[39m
+          [36m>[39m
+            [0mAFTER-CLOSE JOURNAL · USD[0m
+          [36m</p>[39m
+          [36m<h1[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [0mXYZ · Planned[0m
+          [36m</h1>[39m
+        [36m</header>[39m
+        [36m<aside[39m
+          [33mclass[39m=[32m"_warning_d47682"[39m
+        [36m>[39m
+          [36m<strong>[39m
+            [0mStorage is [0m
+            [0mBest Effort[0m
+            [0m.[0m
+          [36m</strong>[39m
+          [0m This browser may clear your data. Backup is not installed until a later release. [0m
+          [36m<button>[39m
+            [0mRequest storage protection[0m
+          [36m</button>[39m
+        [36m</aside>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"_install_d47682"[39m
+        [36m>[39m
+          [0mWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.[0m
+        [36m</p>[39m
+        [36m<p[39m
+          [33mrole[39m=[32m"status"[39m
+        [36m>[39m
+          [0mPlan confirmed and saved on this device.[0m
+        [36m</p>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"_card_d47682"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"_badge_d47682"[39m
+          [36m>[39m
+            [0mPlanned · Unfilled[0m
+          [36m</span>[39m
+          [36m<h2>[39m
+            [0mFrozen Plan Baseline[0m
+          [36m</h2>[39m
+          [36m<p>[39m
+            [0mFidelity[0m
+            [0m · [0m
+            [0mTaxable[0m
+            [0m · [0m
+            [0mLong Stock[0m
+          [36m</p>[39m
+          [36m<dl>[39m
+            [36m<dt>[39m
+              [0mOriginal Planned Risk · 1R[0m
+            [36m</dt>[39m
+            [36m<dd[39m
+              [33mtitle[39m=[32m"500"[39m
+            [36m>[39m
+              [0m$500.00[0m
+            [36m</dd>[39m
+            [36m<dt>[39m
+              [0mOriginal Planned Reward[0m
+            [36m</dt>[39m
+            [36m<dd[39m
+              [33mtitle[39m=[32m"1000"[39m
+            [36m>[39m
+              [0m$1000.00[0m
+            [36m</dd>[39m
+            [36m<dt>[39m
+              [0mPlanned reward/risk ratio[0m
+            [36m</dt>[39m
+            [36m<dd>[39m
+              [0m2[0m
+              [0m/[0m
+              [0m1[0m
+            [36m</dd>[39m
+            [36m<dt>[39m
+              [0mIntended entry[0m
+            [36m</dt>[39m
+            [36m<dd>[39m
+              [0m$[0m
+              [0m50[0m
+              [0m × [0m
+              [0m100[0m
+              [0m shares[0m
+            [36m</dd>[39m
+            [36m<dt>[39m
+              [0mStop · underlying price[0m
+            [36m</dt>[39m
+            [36m<dd>[39m
+              [0m$[0m
+              [0m45[0m
+            [36m</dd>[39m
+            [36m<dt>[39m
+              [0mTarget · underlying price[0m
+            [36m</dt>[39m
+            [36m<dd>[39m
+              [0m$[0m
+              [0m60[0m
+            [36m</dd>[39m
+          [36m</dl>[39m
+          [36m<p>[39m
+            [0mNo exposure has been entered.[0m
+          [36m</p>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33mclass[39m=[32m"_card_d47682"[39m
+        [36m>[39m
+          [36m<h2>[39m
+            [0mPlan Reflection[0m
+          [36m</h2>[39m
+          [36m<p>[39m
+            [0mTrade Anchor · [0m
+            [36m<span>[39m
+              [0mPlan Confirmation[0m
+            [36m</span>[39m
+          [36m</p>[39m
+          [36m<div>[39m
+            [36m<h3>[39m
+              [0mWhy this trade, why now?[0m
+            [36m</h3>[39m
+            [36m<p>[39m
+              [0mImproving earnings[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div>[39m
+            [36m<h3>[39m
+              [0mWhat would invalidate the thesis?[0m
+            [36m</h3>[39m
+            [36m<p>[39m
+              [0mThesis fails[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div>[39m
+            [36m<h3>[39m
+              [0mConviction[0m
+            [36m</h3>[39m
+            [36m<p>[39m
+              [0mUnanswered[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div>[39m
+            [36m<h3>[39m
+              [0mPrimary emotion[0m
+            [36m</h3>[39m
+            [36m<p>[39m
+              [0mcalm[0m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+        [36m<details[39m
+          [33mclass[39m=[32m"_card_d47682"[39m
+        [36m>[39m
+          [36m<summary>[39m
+            [0mView history[0m
+          [36m</summary>[39m
+          [36m<div>[39m
+            [36m<p>[39m
+              [0mConfirmed: [0m
+              [0m2026-10-18 23:00:54.48 America/New_York[0m
+            [36m</p>[39m
+            [36m<p>[39m
+              [0mSaved: [0m
+              [0m2026-10-18 23:00:54.487 America/New_York[0m
+            [36m</p>[39m
+            [36m<p>[39m
+              [0mRecorded Sequence: [0m
+              [0m1[0m
+            [36m</p>[39m
+            [36m<p>[39m
+              [0mPlan fact: [0m
+              [0me008dfe2-8c2a-4320-9a07-91b34ac7204f[0m
+            [36m</p>[39m
+            [36m<p>[39m
+              [0mVersion: [0m
+              [0med0f090c-c7ce-4114-ba39-7b0cbff5291b[0m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</details>[39m
+      [36m</main>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ tests/unit/d01-ui.test.tsx:35:19
+     33|     expect(screen.getByText('Improving earnings')).toBeTruthy();
+     34|     expect(screen.getByText('Plan Confirmation')).toBeTruthy();
+     35|     expect(screen.getByText('Calm')).toBeTruthy();
+       |                   ^
+     36|     expect(screen.queryByRole('button', { name: 'Record Execution' }))…
+     37|     cleanup(); f.store.close();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 skipped (7)
+      Tests  1 failed | 49 skipped (50)
+   Start at  23:00:53
+   Duration  855ms (environment 64%, tests 15%, import 11%, transform 10%, worker 1%)
+

@@ -1,0 +1,21 @@
+{
+  "sourceDigest": "564da40305d97f30220c30934108df6f446c8148b81aec8cb937389a1b0996f6",
+  "changedSinceChecks": [],
+  "expectedRelease": "0df453b26465fd0b7da9c2cdeb6f48331b793ef8e6e285d12422f0239924c261",
+  "actualRelease": "0df453b26465fd0b7da9c2cdeb6f48331b793ef8e6e285d12422f0239924c261",
+  "critic": "critic-05/report.md",
+  "localFindings": 0,
+  "nativePrimaryBrowser": "Google Chrome 155.0.8059.85",
+  "browserTests": {
+    "passed": 51,
+    "skipped": 0
+  },
+  "remainingHostEvidence": [
+    "OS installation and installed launch",
+    "native browser-chrome 200% zoom"
+  ],
+  "productionHTTPS": "UserDeferred",
+  "authorizedCapacityPolicy": "implementation/plan/d01-capacity-policy-revision.md",
+  "localPreview": "http://localhost:5174",
+  "upgrade": "Stage online, explicitly close every old app page, reopen; do not clear site data"
+}

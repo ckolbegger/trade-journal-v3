@@ -1,0 +1,10 @@
+[
+  {
+    "name": "B02 stale Catalog preserves draft and no writes",
+    "status": "PASS"
+  },
+  {
+    "name": "B02 native transaction abort after Plan before Journal",
+    "status": "PASS"
+  }
+]

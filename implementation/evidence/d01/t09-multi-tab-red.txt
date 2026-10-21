@@ -1,0 +1,51 @@
+
+> trade-journal-v3@0.1.0 test:browser
+> playwright test --project=webkit --grep=one tab cannot
+
+[WebServer] (node:307) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:308) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [webkit] › tests/browser/d01-update.spec.ts:73:1 › D1-B04 one tab cannot activate an update over another tab with an unsaved Plan (6.5s)
+
+
+  1) [webkit] › tests/browser/d01-update.spec.ts:73:1 › D1-B04 one tab cannot activate an update over another tab with an unsaved Plan 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('Close other Trade Journal tabs before reloading to update.')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('Close other Trade Journal tabs before reloading to update.') with timeout 5000ms
+      - waiting for getByText('Close other Trade Journal tabs before reloading to update.')
+        - waiting for navigation to finish...
+        - navigated to "http://localhost:5174/"
+
+
+      82 |     await expect(page.getByText('Update available', { exact: true })).toBeVisible({ timeout: 15000 });
+      83 |     await page.getByRole('button', { name: 'Reload to update' }).click();
+    > 84 |     await expect(page.getByText('Close other Trade Journal tabs before reloading to update.')).toBeVisible();
+         |                                                                                                ^
+      85 |     await expect(other.getByLabel('Stock symbol')).toHaveValue('XYZ');
+      86 |     expect(await other.evaluate(() => navigator.serviceWorker.controller?.scriptURL)).toBe(before);
+      87 |     await other.getByRole('button', { name: 'Confirm Plan' }).click();
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-update.spec.ts:84:96
+
+    Error Context: test-results/d01-update-D1-B04-one-tab--ed868-er-tab-with-an-unsaved-Plan-webkit/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/d01-update-D1-B04-one-tab--ed868-er-tab-with-an-unsaved-Plan-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/d01-update-D1-B04-one-tab--ed868-er-tab-with-an-unsaved-Plan-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [webkit] › tests/browser/d01-update.spec.ts:73:1 › D1-B04 one tab cannot activate an update over another tab with an unsaved Plan 

@@ -1,0 +1,65 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit --testNamePattern=recommend another browser
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-ui.test.tsx (13 tests | 1 failed | 12 skipped) 58ms
+   × should recommend another browser when startup is Unsupported without implying Workspace transfer 57ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-ui.test.tsx > should recommend another browser when startup is Unsupported without implying Workspace transfer
+TestingLibraryElementError: Unable to find an element with the text: /Try another browser/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<main[39m
+      [33mclass[39m=[32m"_startup_d47682"[39m
+    [36m>[39m
+      [36m<h1[39m
+        [33mtabindex[39m=[32m"-1"[39m
+      [36m>[39m
+        [0mUnsupported[0m
+      [36m</h1>[39m
+      [36m<p>[39m
+        [0mWe could not verify safe writing in this environment.[0m
+      [36m</p>[39m
+      [36m<ul>[39m
+        [36m<li[39m
+          [33mdata-issue[39m=[32m"capacity"[39m
+        [36m>[39m
+          [0mThis browser does not have the required available storage capacity.[0m
+        [36m</li>[39m
+      [36m</ul>[39m
+      [36m<button>[39m
+        [0mRetry startup[0m
+      [36m</button>[39m
+      [36m<p>[39m
+        [0mAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.[0m
+      [36m</p>[39m
+    [36m</main>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ tests/unit/d01-ui.test.tsx:224:17
+    222|   render(<App services={f.services} />);
+    223|   await screen.findByRole('heading', { name: 'Unsupported' });
+    224|   expect(screen.getByText(/Try another browser/)).toBeTruthy();
+       |                 ^
+    225|   expect(screen.getByText(/Another browser has separate storage and do…
+    226|   expect(screen.getByText(/Backup and Restore are not installed/)).toB…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 skipped (7)
+      Tests  1 failed | 56 skipped (57)
+   Start at  04:51:27
+   Duration  790ms (environment 81%, import 9%, transform 8%, tests 1%)
+

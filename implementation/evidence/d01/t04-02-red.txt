@@ -1,0 +1,40 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-workspace.test.ts -t should require a rules-based
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-workspace.test.ts (2 tests | 1 failed | 1 skipped) 12ms
+   × should require a rules-based time zone and preserve explicit instants 11ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-workspace.test.ts > should require a rules-based time zone and preserve explicit instants
+AssertionError: expected { status: 'Opened', …(3) } to match object { status: 'TimeZoneSelectionRequired' }
+(14 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "status": "TimeZoneSelectionRequired",
++   "status": "Opened",
+  }
+
+ ❯ tests/unit/d01-workspace.test.ts:22:69
+     20| it('should require a rules-based time zone and preserve explicit insta…
+     21|   const f = fixture();
+     22|   expect(await f.workspace.initialize({ openingInstant: instant })).to…
+       |                                                                     ^
+     23|   expect(await f.workspace.initialize({ openingInstant: instant, timeZ…
+     24|   expect(await f.workspace.initialize({ openingInstant: instant, timeZ…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 skipped (2)
+   Start at  21:00:51
+   Duration  322ms (environment 80%, transform 8%, import 7%, tests 5%, worker 1%)
+

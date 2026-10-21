@@ -1,0 +1,294 @@
+[
+  {
+    "transaction": [
+      "diagnostic",
+      "lifecycle",
+      "projections",
+      "roots",
+      "versions"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "diagnostic"
+    ],
+    "mode": "readwrite"
+  },
+  {
+    "transaction": [
+      "projections",
+      "roots"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "roots"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "lifecycle",
+      "projections",
+      "roots",
+      "versions"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "diagnostic"
+    ],
+    "mode": "readwrite"
+  },
+  {
+    "transaction": [
+      "projections",
+      "roots"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "roots"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "roots"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "diagnostic"
+    ],
+    "mode": "readwrite"
+  },
+  {
+    "transaction": [
+      "projections",
+      "roots"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "roots"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "lifecycle",
+      "projections",
+      "roots",
+      "versions"
+    ],
+    "mode": "readwrite"
+  },
+  {
+    "transaction": [
+      "lifecycle",
+      "roots",
+      "versions"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "diagnostic",
+      "lifecycle",
+      "roots",
+      "versions"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "diagnostic"
+    ],
+    "mode": "readwrite"
+  },
+  {
+    "transaction": [
+      "projections",
+      "roots"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "roots"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "roots"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "diagnostic",
+      "lifecycle",
+      "roots",
+      "versions"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "diagnostic"
+    ],
+    "mode": "readwrite"
+  },
+  {
+    "transaction": [
+      "diagnostic",
+      "lifecycle",
+      "roots",
+      "versions"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "projections",
+      "roots"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "roots"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "roots"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "diagnostic"
+    ],
+    "mode": "readwrite"
+  },
+  {
+    "transaction": [
+      "projections",
+      "roots"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "roots"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "lifecycle",
+      "projections",
+      "roots",
+      "versions"
+    ],
+    "mode": "readwrite"
+  },
+  {
+    "transaction": [
+      "diagnostic"
+    ],
+    "mode": "readwrite"
+  },
+  {
+    "transaction": [
+      "projections",
+      "roots"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "roots"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "roots"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "roots",
+      "versions"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "roots"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "versions"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "diagnostic"
+    ],
+    "mode": "readwrite"
+  },
+  {
+    "transaction": [
+      "projections",
+      "roots"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "roots"
+    ],
+    "mode": "readonly"
+  },
+  {
+    "transaction": [
+      "lifecycle",
+      "projections",
+      "roots",
+      "versions"
+    ],
+    "mode": "readwrite"
+  },
+  {
+    "op": "add",
+    "kind": "Plan"
+  },
+  {
+    "abortedNativeTransactionAt": "Plan"
+  },
+  {
+    "transaction": [
+      "diagnostic",
+      "lifecycle",
+      "roots",
+      "versions"
+    ],
+    "mode": "readonly"
+  }
+]

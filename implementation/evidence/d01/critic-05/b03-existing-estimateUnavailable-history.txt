@@ -1,0 +1,71 @@
+TRADE JOURNAL
+Trades
+New Plan
+Workspace
+
+AFTER-CLOSE JOURNAL · USD
+
+AAPL · Planned
+Check for application updates
+Recovery Only
+
+Reading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.
+
+Retry startup
+Storage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection
+
+Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.
+
+Review before continuing
+This browser does not have the required available storage capacity.
+Planned · Unfilled
+Frozen Plan Baseline
+
+Charles Schwab · Critic taxable · Long Stock
+
+Original Planned Risk · 1R
+$500.00
+Original Planned Reward
+$1000.00
+Planned reward/risk ratio
+2/1
+Intended entry
+$50 × 100 shares
+Stop · underlying price
+$45
+Target · underlying price
+$60
+
+No exposure has been entered.
+
+Plan Reflection
+
+Trade Anchor · Plan Confirmation
+
+Why this trade, why now?
+
+Independent critic: breakout after close.
+
+What would invalidate the thesis?
+
+A close below support.
+
+Conviction
+
+4
+
+Primary emotion
+
+Calm
+
+View history
+
+Confirmed: 2026-10-20 14:43:58.266 America/New_York
+
+Saved: 2026-10-20 14:43:58.331 America/New_York
+
+Recorded Sequence: 1
+
+Plan fact: c809b072-aff6-4c18-bc35-a9eac1077407
+
+Version: 85237aca-059a-4a72-8b23-83e3aab418d2

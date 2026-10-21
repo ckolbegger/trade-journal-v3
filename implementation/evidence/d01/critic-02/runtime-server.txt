@@ -1,0 +1,8 @@
+Command: npm run preview -- --host localhost --port 5174 --strictPort
+Initial sandbox attempt: EPERM ::1:5174 (core-transcript.txt also records sandbox browser abort).
+Escalated authorized local preview started successfully: Local http://localhost:5174/
+No application-server error output was emitted during the owned runtime.
+Stopped with Ctrl-C, exit130. lsof afterward found no listener on5174.
+Base offline-inventory SHA256 restored:02db1fc6662f56cb28cf4b17b683ea93e5483a6c5ef14f9101fb3f388ab97700
+Frozen specs/plans/stack/research git diff HEAD: empty.
+All own native browser contexts closed in finally blocks; isolated test profiles retained only under /private/tmp/critic02-*.

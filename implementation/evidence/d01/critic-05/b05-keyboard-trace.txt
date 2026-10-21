@@ -1,0 +1,266 @@
+[
+  {
+    "target": "Workspace time zone",
+    "tag": "INPUT",
+    "name": "Workspace time zone",
+    "outline": "solid"
+  },
+  {
+    "target": "Create Workspace",
+    "tag": "BUTTON",
+    "name": "Create Workspace",
+    "outline": "solid"
+  },
+  {
+    "target": "Institution name",
+    "tag": "INPUT",
+    "name": "Institution name",
+    "outline": "solid"
+  },
+  {
+    "target": "Save Institution",
+    "tag": "BUTTON",
+    "name": "Save Institution",
+    "outline": "solid"
+  },
+  {
+    "target": "Account name",
+    "tag": "INPUT",
+    "name": "Account name",
+    "outline": "solid"
+  },
+  {
+    "target": "Save Account",
+    "tag": "BUTTON",
+    "name": "Save Account",
+    "outline": "solid"
+  },
+  {
+    "target": "New Plan",
+    "tag": "BUTTON",
+    "name": "New Plan",
+    "outline": "solid"
+  },
+  {
+    "target": "Stock symbol",
+    "tag": "INPUT",
+    "name": "Stock symbol",
+    "outline": "solid"
+  },
+  {
+    "target": "Quantity (shares)",
+    "tag": "INPUT",
+    "name": "Quantity (shares)",
+    "outline": "solid"
+  },
+  {
+    "target": "Intended entry (USD)",
+    "tag": "INPUT",
+    "name": "Intended entry (USD)",
+    "outline": "solid"
+  },
+  {
+    "target": "Stop (underlying price, USD)",
+    "tag": "INPUT",
+    "name": "Stop (underlying price, USD)",
+    "outline": "solid"
+  },
+  {
+    "target": "Target (underlying price, USD)",
+    "tag": "INPUT",
+    "name": "Target (underlying price, USD)",
+    "outline": "solid"
+  },
+  {
+    "target": "Why this trade, why now?",
+    "tag": "TEXTAREA",
+    "name": "Why this trade, why now?",
+    "outline": "solid"
+  },
+  {
+    "target": "What would invalidate the thesis?",
+    "tag": "TEXTAREA",
+    "name": "What would invalidate the thesis?",
+    "outline": "solid"
+  },
+  {
+    "target": "Confirm Plan",
+    "tag": "BUTTON",
+    "name": "Confirm Plan",
+    "outline": "solid"
+  },
+  {
+    "target": "Stop (underlying price, USD)",
+    "tag": "INPUT",
+    "name": "Stop (underlying price, USD)",
+    "outline": "solid"
+  },
+  {
+    "target": "Confirm Plan",
+    "tag": "BUTTON",
+    "name": "Confirm Plan",
+    "outline": "solid"
+  },
+  {
+    "target": "View history",
+    "tag": "SUMMARY",
+    "name": "View history",
+    "outline": "solid"
+  },
+  {
+    "target": "Trades",
+    "tag": "BUTTON",
+    "name": "Trades",
+    "outline": "solid"
+  },
+  {
+    "target": "New Plan",
+    "tag": "BUTTON",
+    "name": "New Plan",
+    "outline": "solid"
+  },
+  {
+    "target": "Stock symbol",
+    "tag": "INPUT",
+    "name": "Stock symbol",
+    "outline": "solid"
+  },
+  {
+    "target": "Cancel",
+    "tag": "BUTTON",
+    "name": "Cancel",
+    "outline": "solid"
+  },
+  {
+    "target": "Workspace time zone",
+    "tag": "INPUT",
+    "name": "Workspace time zone",
+    "outline": "solid"
+  },
+  {
+    "target": "Create Workspace",
+    "tag": "BUTTON",
+    "name": "Create Workspace",
+    "outline": "solid"
+  },
+  {
+    "target": "Institution name",
+    "tag": "INPUT",
+    "name": "Institution name",
+    "outline": "solid"
+  },
+  {
+    "target": "Save Institution",
+    "tag": "BUTTON",
+    "name": "Save Institution",
+    "outline": "solid"
+  },
+  {
+    "target": "Account name",
+    "tag": "INPUT",
+    "name": "Account name",
+    "outline": "solid"
+  },
+  {
+    "target": "Save Account",
+    "tag": "BUTTON",
+    "name": "Save Account",
+    "outline": "solid"
+  },
+  {
+    "target": "New Plan",
+    "tag": "BUTTON",
+    "name": "New Plan",
+    "outline": "solid"
+  },
+  {
+    "target": "Stock symbol",
+    "tag": "INPUT",
+    "name": "Stock symbol",
+    "outline": "solid"
+  },
+  {
+    "target": "Quantity (shares)",
+    "tag": "INPUT",
+    "name": "Quantity (shares)",
+    "outline": "solid"
+  },
+  {
+    "target": "Intended entry (USD)",
+    "tag": "INPUT",
+    "name": "Intended entry (USD)",
+    "outline": "solid"
+  },
+  {
+    "target": "Stop (underlying price, USD)",
+    "tag": "INPUT",
+    "name": "Stop (underlying price, USD)",
+    "outline": "solid"
+  },
+  {
+    "target": "Target (underlying price, USD)",
+    "tag": "INPUT",
+    "name": "Target (underlying price, USD)",
+    "outline": "solid"
+  },
+  {
+    "target": "Why this trade, why now?",
+    "tag": "TEXTAREA",
+    "name": "Why this trade, why now?",
+    "outline": "solid"
+  },
+  {
+    "target": "What would invalidate the thesis?",
+    "tag": "TEXTAREA",
+    "name": "What would invalidate the thesis?",
+    "outline": "solid"
+  },
+  {
+    "target": "Confirm Plan",
+    "tag": "BUTTON",
+    "name": "Confirm Plan",
+    "outline": "solid"
+  },
+  {
+    "target": "Stop (underlying price, USD)",
+    "tag": "INPUT",
+    "name": "Stop (underlying price, USD)",
+    "outline": "solid"
+  },
+  {
+    "target": "Confirm Plan",
+    "tag": "BUTTON",
+    "name": "Confirm Plan",
+    "outline": "solid"
+  },
+  {
+    "target": "View history",
+    "tag": "SUMMARY",
+    "name": "View history",
+    "outline": "solid"
+  },
+  {
+    "target": "Trades",
+    "tag": "BUTTON",
+    "name": "Trades",
+    "outline": "solid"
+  },
+  {
+    "target": "New Plan",
+    "tag": "BUTTON",
+    "name": "New Plan",
+    "outline": "solid"
+  },
+  {
+    "target": "Stock symbol",
+    "tag": "INPUT",
+    "name": "Stock symbol",
+    "outline": "solid"
+  },
+  {
+    "target": "Cancel",
+    "tag": "BUTTON",
+    "name": "Cancel",
+    "outline": "solid"
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "id": "D1-I05",
+  "stage": "ready-benchmark",
+  "baseline": "db3580cdc1ee95b5056a4de6dc36430cdd71a421",
+  "sourceDigest": "295a26f48ceddf9342a793cc361068c1d3a53a982547739a5a3979fc71e3cf09",
+  "command": [
+    "npm",
+    "run",
+    "test:benchmark",
+    "--",
+    "d01-scale"
+  ],
+  "exit": 130,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:benchmark\n> playwright test --config playwright.benchmark.config.ts d01-scale\n\n\nRunning 1 test using 1 worker\n\nD1 command-created Plans: 1000; elapsed 8810 ms\nD1 command-created Plans: 2000; elapsed 17820 ms\nD1 command-created Plans: 3000; elapsed 27281 ms\nD1 command-created Plans: 4000; elapsed 37637 ms\nD1 command-created Plans: 5000; elapsed 47991 ms\nD1 command-created Plans: 6000; elapsed 58042 ms\nD1 command-created Plans: 7000; elapsed 67726 ms\nD1 command-created Plans: 8000; elapsed 77319 ms\nD1 command-created Plans: 9000; elapsed 86623 ms\n  ✘  1 [webkit] › tests/benchmark/d01-scale.spec.ts:8:1 › D1-I05 command-created 25000 Planned Trades, 50 cold and 50 warm offline trials (1.5m)\n\n\n  1) [webkit] › tests/benchmark/d01-scale.spec.ts:8:1 › D1-I05 command-created 25000 Planned Trades, 50 cold and 50 warm offline trials \n\n    Test was interrupted.\n\n    Error: page.evaluate: Target page, context or browser has been closed\n\n      11 |   await page.addScriptTag({ path: '.cache/browser-generator/generator.js' });\n      12 |   page.on('console', message => { if (message.text().startsWith('D1 command-created')) console.log(message.text()); });\n    > 13 |   const dataset = await page.evaluate(() => window.d1Evidence.generate(25000));\n         |                              ^\n      14 |   console.log('D1 dataset complete', dataset);\n      15 |   const before = await page.evaluate(() => window.d1Evidence.inspect());\n      16 |   expect(before.count).toBe(25000);\n        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/benchmark/d01-scale.spec.ts:13:30\n\n    Error Context: test-results/d01-scale-D1-I05-command-c-0bea5--and-50-warm-offline-trials-webkit/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/d01-scale-D1-I05-command-c-0bea5--and-50-warm-offline-trials-webkit/trace.zip\n    Usage:\n\n        npx playwright show-trace test-results/d01-scale-D1-I05-command-c-0bea5--and-50-warm-offline-trials-webkit/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  1 interrupted\n    [webkit] › tests/benchmark/d01-scale.spec.ts:8:1 › D1-I05 command-created 25000 Planned Trades, 50 cold and 50 warm offline trials \n",
+  "stderr": "[WebServer] (node:43816) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)\n(node:43834) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+}

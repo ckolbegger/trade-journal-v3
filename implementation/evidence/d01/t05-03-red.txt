@@ -1,0 +1,50 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-catalog.test.ts -t should resolve stable
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-catalog.test.ts (3 tests | 1 failed | 2 skipped) 15ms
+   × should resolve stable Account and Strategy under one snapshot and reject changed selection 15ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-catalog.test.ts > should resolve stable Account and Strategy under one snapshot and reject changed selection
+AssertionError: expected { status: 'NotImplemented' } to match object { status: 'Resolved', …(2) }
+
+- Expected
++ Received
+
+  {
+-   "catalogRevision": "965de81a-4ec9-4753-b831-c144785d4021",
+-   "records": [
+-     {
+-       "active": true,
+-       "id": "ed9a565b-e20f-43be-88b8-469d6408ef0c",
+-       "kind": "Account",
+-       "label": "Trading",
+-       "origin": "Trader",
+-       "parentId": "395eb1ea-2348-429c-8fc5-7653d698bd30",
+-       "version": "dcc5eb0d-3348-4796-8ff7-c7c53f8cbe80",
+-     },
+-     {
+-       "id": "long-stock",
+-       "label": "Long Stock",
+-     },
+-   ],
+-   "status": "Resolved",
++   "status": "NotImplemented",
+  }
+
+ ❯ tests/unit/d01-catalog.test.ts:44:150
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 skipped (3)
+   Start at  21:02:38
+   Duration  340ms (environment 74%, import 12%, transform 8%, tests 6%, worker 1%)
+

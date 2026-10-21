@@ -1,0 +1,39 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit --testNamePattern=aborted reference save
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-catalog.test.ts (5 tests | 1 failed | 4 skipped) 14ms
+   × should return StorageFailure and invalidate readiness after an aborted reference save 14ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-catalog.test.ts > should return StorageFailure and invalidate readiness after an aborted reference save
+QuotaExceededError: Injected reference abort
+ QuotaExceededError: Injected reference abort
+ ❯ Object.<anonymous> tests/unit/d01-catalog.test.ts:63:96
+     61|   const before = await f.store.versions.toArray();
+     62|   const root = await f.store.roots.get('active');
+     63|   f.store.versions.hook('creating', (_key, value) => { if (value.kind …
+       |                                                                                                ^
+     64|   expect(await f.catalog.save({ kind: 'Institution', label: 'Broker', …
+     65|   expect(f.runtime.current()).toMatchObject({ status: 'RuntimeNotWrita…
+ ❯ node_modules/dexie/src/hooks/hooks-middleware.ts:100:65
+ ❯ node_modules/dexie/src/hooks/hooks-middleware.ts:89:41
+ ❯ node_modules/dexie/src/helpers/promise.js:812:21
+ ❯ callListener node_modules/dexie/src/helpers/promise.js:495:11
+ ❯ endMicroTickScope node_modules/dexie/src/helpers/promise.js:544:17
+ ❯ Table._trans node_modules/dexie/src/classes/table/table.ts:119:24
+ ❯ Table.add node_modules/dexie/src/classes/table/table.ts:401:17
+ ❯ src/domain/reference-catalog/index.ts:25:33
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 skipped (7)
+      Tests  1 failed | 43 skipped (44)
+   Start at  22:46:56
+   Duration  542ms (environment 75%, transform 13%, import 11%, tests 1%, worker 1%)
+

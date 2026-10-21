@@ -1,0 +1,25 @@
+
+> trade-journal-v3@0.1.0 test:browser
+> playwright test --project=webkit --grep=native resource receipt|native transaction abort
+
+[WebServer] (node:14335) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:14338) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Native resource receipt {
+  M: 6585417728,
+  L: 6739,
+  C: 561220,
+  Q: 20615267904,
+  H: 16464237421.25,
+  quota: 20615843021,
+  usage: 575117,
+  method: 'SerializedActiveLowerBound'
+}
+  ✓  1 [webkit] › tests/browser/d01-resources.spec.ts:3:1 › D1-T03 native resource receipt accounts for stored bytes and complete cache growth (1.2s)
+  ✓  2 [webkit] › tests/browser/d01-ui.spec.ts:35:1 › D1-B02 native transaction abort preserves every participant and entered Plan (2.1s)
+
+  2 passed (4.1s)

@@ -1,0 +1,67 @@
+[
+  {
+    "name": "fresh-transaction",
+    "unchangedAfterFullyStoppedReopen": true,
+    "body": "Your device-local Workspace\n\nChoose a rules-based time zone. This journal stays in this browser on this device.\n\nWorkspace time zone\nCreate Workspace"
+  },
+  {
+    "name": "fresh-capacity",
+    "unchangedAfterFullyStoppedReopen": true,
+    "body": "Your device-local Workspace\n\nChoose a rules-based time zone. This journal stays in this browser on this device.\n\nWorkspace time zone\nCreate Workspace"
+  },
+  {
+    "name": "fresh-control",
+    "unchangedAfterFullyStoppedReopen": true,
+    "body": "Your device-local Workspace\n\nChoose a rules-based time zone. This journal stays in this browser on this device.\n\nWorkspace time zone\nCreate Workspace"
+  },
+  {
+    "name": "fresh-inventory",
+    "unchangedAfterFullyStoppedReopen": true,
+    "body": "Unsupported\n\nWe could not verify safe writing in this environment.\n\nThe offline application files are missing or damaged.\nRetry startup\n\nTry another browser that meets the readiness requirements.\n\nAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release."
+  },
+  {
+    "name": "fresh-transaction-capacity",
+    "unchangedAfterFullyStoppedReopen": true,
+    "body": "Your device-local Workspace\n\nChoose a rules-based time zone. This journal stays in this browser on this device.\n\nWorkspace time zone\nCreate Workspace"
+  },
+  {
+    "name": "fresh-estimateUnavailable",
+    "unchangedAfterFullyStoppedReopen": true,
+    "body": "Your device-local Workspace\n\nChoose a rules-based time zone. This journal stays in this browser on this device.\n\nWorkspace time zone\nCreate Workspace"
+  },
+  {
+    "name": "existing-transaction",
+    "unchangedAfterFullyStoppedReopen": true,
+    "body": "TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nPlanned Trades\nMSFT · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk\nAAPL · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk"
+  },
+  {
+    "name": "existing-capacity",
+    "unchangedAfterFullyStoppedReopen": true,
+    "body": "TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nPlanned Trades\nMSFT · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk\nAAPL · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk"
+  },
+  {
+    "name": "existing-control",
+    "unchangedAfterFullyStoppedReopen": true,
+    "body": "TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nPlanned Trades\nMSFT · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk\nAAPL · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk"
+  },
+  {
+    "name": "existing-inventory",
+    "unchangedAfterFullyStoppedReopen": true,
+    "body": "TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nRecovery Only\n\nReading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.\n\nRetry startup\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nReview before continuing\nThe offline application files are missing or damaged.\nPlanned Trades\nMSFT · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk\nAAPL · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk"
+  },
+  {
+    "name": "existing-transaction-capacity",
+    "unchangedAfterFullyStoppedReopen": true,
+    "body": "TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nPlanned Trades\nMSFT · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk\nAAPL · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk"
+  },
+  {
+    "name": "existing-estimateUnavailable",
+    "unchangedAfterFullyStoppedReopen": true,
+    "body": "TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nPlanned Trades\nMSFT · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk\nAAPL · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk"
+  },
+  {
+    "name": "existing-unreadable",
+    "unchangedAfterFullyStoppedReopen": true,
+    "body": "TRADE JOURNAL\nTrades\nNew Plan\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nPlanned Trades\nMSFT · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk\nAAPL · Planned\nUnfilled · $500.00 risk · $1000.00 reward · 2/1 reward/risk"
+  }
+]

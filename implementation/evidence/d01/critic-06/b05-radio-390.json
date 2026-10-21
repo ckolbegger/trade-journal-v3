@@ -1,0 +1,38 @@
+[
+  {
+    "label": "Unanswered",
+    "checked": false
+  },
+  {
+    "label": "Calm",
+    "checked": false
+  },
+  {
+    "label": "Eager",
+    "checked": true
+  },
+  {
+    "label": "Anxious",
+    "checked": false
+  },
+  {
+    "label": "FOMO",
+    "checked": false
+  },
+  {
+    "label": "Revenge",
+    "checked": false
+  },
+  {
+    "label": "Relieved",
+    "checked": false
+  },
+  {
+    "label": "Frustrated",
+    "checked": false
+  },
+  {
+    "label": "Other",
+    "checked": false
+  }
+]

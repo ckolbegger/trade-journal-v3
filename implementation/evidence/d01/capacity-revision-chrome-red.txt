@@ -1,0 +1,27 @@
+Unsupported
+
+We could not verify safe writing in this environment.
+
+This browser does not have the required available storage capacity.
+Retry startup
+
+Try another browser that meets the readiness requirements.
+
+Another browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.
+{
+  quota: 10739250452,
+  usage: 1832212,
+  usageDetails: {
+    caches: 1754565,
+    indexedDB: 73728,
+    serviceWorkerRegistrations: 3919
+  }
+}
+file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/[eval1]:3
+try { const page = await browser.newPage(); await page.goto('http://localhost:5174/'); await page.waitForFunction(() => document.querySelector('[data-issue]') || document.querySelector('input')); console.log(await page.locator('main').innerText()); console.log(await page.evaluate(() => navigator.storage.estimate())); if (!(await page.getByLabel('Workspace time zone').isVisible())) throw new Error('Fresh Chrome must allow D1 onboarding with its unmodified native quota'); } finally { await browser.close(); }
+                                                                                                                                                                                                                                                                                                                                                                                                      ^
+
+Error: Fresh Chrome must allow D1 onboarding with its unmodified native quota
+    at file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/[eval1]:3:391
+
+Node.js v26.12.0

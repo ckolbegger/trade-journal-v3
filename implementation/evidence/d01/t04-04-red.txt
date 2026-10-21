@@ -1,0 +1,32 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-workspace.test.ts -t should roll back metadata
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-workspace.test.ts (4 tests | 1 failed | 3 skipped) 10ms
+   × should roll back metadata and both seeds after storage failure and return SeedConflict 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-workspace.test.ts > should roll back metadata and both seeds after storage failure and return SeedConflict
+Error: SeedConflict
+ ❯ Table.<anonymous> tests/unit/d01-workspace.test.ts:45:112
+     43|   const original = f.store.versions.add.bind(f.store.versions);
+     44|   let calls = 0;
+     45|   vi.spyOn(f.store.versions, 'add').mockImplementation((...args) => { …
+       |                                                                                                                ^
+     46|   expect(await f.workspace.initialize({ openingInstant: instant, timeZ…
+     47|   expect(await f.store.roots.count()).toBe(0);
+ ❯ Journal.seedDefaults src/domain/journal/index.ts:22:33
+ ❯ src/application/workspace/index.ts:26:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 skipped (4)
+   Start at  21:01:09
+   Duration  336ms (environment 77%, import 11%, transform 8%, tests 4%, worker 1%)
+

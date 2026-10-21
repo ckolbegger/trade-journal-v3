@@ -1,0 +1,49 @@
+
+> trade-journal-v3@0.1.0 test:browser
+> playwright test --project=webkit --grep=native transaction abort
+
+[WebServer] (node:15674) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:15679) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [webkit] › tests/browser/d01-ui.spec.ts:35:1 › D1-B02 native transaction abort preserves every participant and entered Plan (6.3s)
+
+
+  1) [webkit] › tests/browser/d01-ui.spec.ts:35:1 › D1-B02 native transaction abort preserves every participant and entered Plan 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('Recovery Only', { exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('Recovery Only', { exact: true }) with timeout 5000ms
+      - waiting for getByText('Recovery Only', { exact: true })
+
+
+      57 |   await expect(page.getByRole('alert')).toContainText('Saving failed. Nothing was recorded.');
+      58 |   await expect(page.getByLabel('Stock symbol')).toHaveValue('XYZ');
+    > 59 |   await expect(page.getByText('Recovery Only', { exact: true })).toBeVisible();
+         |                                                                  ^
+      60 |   await expect(page.getByRole('button', { name: 'Confirm Plan' })).toBeDisabled();
+      61 |   expect(await snapshot()).toEqual(before);
+      62 |   await context.close();
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-ui.spec.ts:59:66
+
+    Error Context: test-results/d01-ui-D1-B02-native-trans-04926-articipant-and-entered-Plan-webkit/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/d01-ui-D1-B02-native-trans-04926-articipant-and-entered-Plan-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/d01-ui-D1-B02-native-trans-04926-articipant-and-entered-Plan-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [webkit] › tests/browser/d01-ui.spec.ts:35:1 › D1-B02 native transaction abort preserves every participant and entered Plan 

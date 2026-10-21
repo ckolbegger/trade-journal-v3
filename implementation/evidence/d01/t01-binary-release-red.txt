@@ -1,0 +1,26 @@
+{
+  first: '4dee795949c6500af1af0e34425391fc91c950cea3d6ac1b869845da8f0bda33',
+  second: '4dee795949c6500af1af0e34425391fc91c950cea3d6ac1b869845da8f0bda33'
+}
+node:internal/modules/run_main:111
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected "actual" to be strictly unequal to:
+
+'4dee795949c6500af1af0e34425391fc91c950cea3d6ac1b869845da8f0bda33'
+    at file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/[eval1]:10:105
+    at ModuleJob.run (node:internal/modules/esm/module_job:574:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async node:internal/modules/esm/loader:232:26
+    at async ModuleLoader.executeModuleJob (node:internal/modules/esm/loader:229:20)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:105:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: '4dee795949c6500af1af0e34425391fc91c950cea3d6ac1b869845da8f0bda33',
+  expected: '4dee795949c6500af1af0e34425391fc91c950cea3d6ac1b869845da8f0bda33',
+  operator: 'notStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v26.12.0

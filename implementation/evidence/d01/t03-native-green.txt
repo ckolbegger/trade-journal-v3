@@ -1,0 +1,19 @@
+
+> trade-journal-v3@0.1.0 test:browser
+> playwright test --project webkit --grep D1-B03 D1-I03
+
+[WebServer] (node:27147) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:27148) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures transaction (1.0s)
+  ✓  2 [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures capacity (805ms)
+  ✓  3 [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures control (6.2s)
+  ✓  4 [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures inventory (874ms)
+  ✓  5 [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures capacity+inventory (845ms)
+  ✓  6 [webkit] › tests/browser/d01-readiness.spec.ts:38:1 › D1-B03 D1-I03 native cache failure preserves Recovery Only reads and rejects next mutation (1.4s)
+
+  6 passed (11.9s)

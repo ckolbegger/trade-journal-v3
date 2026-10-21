@@ -1,0 +1,37 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-reads.test.ts -t should page a snapshot
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-reads.test.ts (3 tests | 1 failed | 2 skipped) 97ms
+   × should page a snapshot-bound Planned index in stable economic and sequence order 96ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-reads.test.ts > should page a snapshot-bound Planned index in stable economic and sequence order
+AssertionError: expected undefined to deeply equal Any<String>
+
+- Expected:
+Any<String>
+
++ Received:
+undefined
+
+ ❯ tests/unit/d01-reads.test.ts:35:28
+     33|   expect(first.items).toHaveLength(50);
+     34|   expect(first.items[0]?.trade.sequence).toBe(53);
+     35|   expect(first.nextCursor).toEqual(expect.any(String));
+       |                            ^
+     36|   const second = await views.browseTrades({ cursor: first.nextCursor }…
+     37|   if (second.status !== 'Ready') throw new Error('Page required');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 skipped (3)
+   Start at  21:08:08
+   Duration  422ms (environment 54%, tests 28%, import 9%, transform 9%, worker 1%)
+

@@ -1,0 +1,13 @@
+{
+  "sourceDigest": "b026eee2a66928fbbb8ceebee3fa47d94d0fb01f756b065edd0587149ae36dfc",
+  "changedSinceChecks": [],
+  "expectedRelease": "c61a00ab2f5941e47bf1b2b4436a779b74b40531b110fd4f9201adf864fef704",
+  "actualRelease": "c61a00ab2f5941e47bf1b2b4436a779b74b40531b110fd4f9201adf864fef704",
+  "critic": "critic-04/report.md",
+  "localFindings": 0,
+  "remainingHostEvidence": [
+    "OS installation and installed launch",
+    "native browser-chrome 200% zoom"
+  ],
+  "productionHTTPS": "UserDeferred"
+}

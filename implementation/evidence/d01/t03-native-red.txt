@@ -1,0 +1,201 @@
+
+> trade-journal-v3@0.1.0 test:browser
+> playwright test --project webkit --grep D1-B03 D1-I03
+
+[WebServer] (node:17038) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:17047) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures transaction (12.9s)
+(node:17427) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures capacity (12.8s)
+(node:17509) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  3 [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures control (10.2s)
+(node:17615) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  4 [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures inventory (801ms)
+  ✘  5 [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures capacity+inventory (5.8s)
+(node:17681) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  6 [webkit] › tests/browser/d01-readiness.spec.ts:38:1 › D1-B03 D1-I03 native cache failure preserves Recovery Only reads and rejects next mutation (6.3s)
+
+
+  1) [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures transaction 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: 'Unsupported', exact: true })
+    Expected: visible
+    Timeout: 12000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: 'Unsupported', exact: true }) with timeout 12000ms
+      - waiting for getByRole('heading', { name: 'Unsupported', exact: true })
+
+
+      25 |     await page.getByLabel('Workspace time zone').fill('UTC');
+      26 |     await page.getByRole('button', { name: 'Create Workspace' }).click();
+    > 27 |     await expect(page.getByRole('heading', { name: 'Unsupported', exact: true })).toBeVisible({ timeout: 12000 });
+         |                                                                                   ^
+      28 |     for (const failure of failures) await expect(page.getByText(failure, { exact: true })).toBeVisible();
+      29 |     if (failures.length === 1) await expect(page.locator('main li')).toHaveCount(1);
+      30 |     const root = await page.evaluate(() => new Promise<unknown>((resolve, reject) => {
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-readiness.spec.ts:27:83
+
+    Error Context: test-results/d01-readiness-D1-B03-D1-I0-0ae05-diness-failures-transaction-webkit/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/d01-readiness-D1-B03-D1-I0-0ae05-diness-failures-transaction-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/d01-readiness-D1-B03-D1-I0-0ae05-diness-failures-transaction-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures capacity 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: 'Unsupported', exact: true })
+    Expected: visible
+    Timeout: 12000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: 'Unsupported', exact: true }) with timeout 12000ms
+      - waiting for getByRole('heading', { name: 'Unsupported', exact: true })
+
+
+      25 |     await page.getByLabel('Workspace time zone').fill('UTC');
+      26 |     await page.getByRole('button', { name: 'Create Workspace' }).click();
+    > 27 |     await expect(page.getByRole('heading', { name: 'Unsupported', exact: true })).toBeVisible({ timeout: 12000 });
+         |                                                                                   ^
+      28 |     for (const failure of failures) await expect(page.getByText(failure, { exact: true })).toBeVisible();
+      29 |     if (failures.length === 1) await expect(page.locator('main li')).toHaveCount(1);
+      30 |     const root = await page.evaluate(() => new Promise<unknown>((resolve, reject) => {
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-readiness.spec.ts:27:83
+
+    Error Context: test-results/d01-readiness-D1-B03-D1-I0-4b321-readiness-failures-capacity-webkit/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/d01-readiness-D1-B03-D1-I0-4b321-readiness-failures-capacity-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/d01-readiness-D1-B03-D1-I0-4b321-readiness-failures-capacity-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures control 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('main li')
+    Expected: 1
+    Received: 2
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('main li') with timeout 5000ms
+      - waiting for locator('main li')
+        14 × locator resolved to 2 elements
+           - unexpected value "2"
+
+
+      27 |     await expect(page.getByRole('heading', { name: 'Unsupported', exact: true })).toBeVisible({ timeout: 12000 });
+      28 |     for (const failure of failures) await expect(page.getByText(failure, { exact: true })).toBeVisible();
+    > 29 |     if (failures.length === 1) await expect(page.locator('main li')).toHaveCount(1);
+         |                                                                      ^
+      30 |     const root = await page.evaluate(() => new Promise<unknown>((resolve, reject) => {
+      31 |       const request = indexedDB.open('trade-journal-v3');
+      32 |       request.onerror = () => reject(request.error);
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-readiness.spec.ts:29:70
+
+    Error Context: test-results/d01-readiness-D1-B03-D1-I0-aa148--readiness-failures-control-webkit/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/d01-readiness-D1-B03-D1-I0-aa148--readiness-failures-control-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/d01-readiness-D1-B03-D1-I0-aa148--readiness-failures-control-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures capacity+inventory 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('capacity', { exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('capacity', { exact: true }) with timeout 5000ms
+      - waiting for getByText('capacity', { exact: true })
+
+
+      26 |     await page.getByRole('button', { name: 'Create Workspace' }).click();
+      27 |     await expect(page.getByRole('heading', { name: 'Unsupported', exact: true })).toBeVisible({ timeout: 12000 });
+    > 28 |     for (const failure of failures) await expect(page.getByText(failure, { exact: true })).toBeVisible();
+         |                                                                                            ^
+      29 |     if (failures.length === 1) await expect(page.locator('main li')).toHaveCount(1);
+      30 |     const root = await page.evaluate(() => new Promise<unknown>((resolve, reject) => {
+      31 |       const request = indexedDB.open('trade-journal-v3');
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-readiness.spec.ts:28:92
+
+    Error Context: test-results/d01-readiness-D1-B03-D1-I0-cdb64-failures-capacity-inventory-webkit/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/d01-readiness-D1-B03-D1-I0-cdb64-failures-capacity-inventory-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/d01-readiness-D1-B03-D1-I0-cdb64-failures-capacity-inventory-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [webkit] › tests/browser/d01-readiness.spec.ts:38:1 › D1-B03 D1-I03 native cache failure preserves Recovery Only reads and rejects next mutation 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('Recovery Only', { exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('Recovery Only', { exact: true }) with timeout 5000ms
+      - waiting for getByText('Recovery Only', { exact: true })
+
+
+      48 |   });
+      49 |   await page.getByRole('button', { name: 'Confirm Plan' }).click();
+    > 50 |   await expect(page.getByText('Recovery Only', { exact: true })).toBeVisible();
+         |                                                                  ^
+      51 |   await expect(page.getByRole('button', { name: 'New Plan' })).toBeDisabled();
+      52 |   await page.getByRole('button', { name: 'Trades', exact: true }).click();
+      53 |   await page.getByRole('button', { name: /XYZ · Planned/ }).click();
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-readiness.spec.ts:50:66
+
+    Error Context: test-results/d01-readiness-D1-B03-D1-I0-11e8b-s-and-rejects-next-mutation-webkit/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/d01-readiness-D1-B03-D1-I0-11e8b-s-and-rejects-next-mutation-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/d01-readiness-D1-B03-D1-I0-11e8b-s-and-rejects-next-mutation-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5 failed
+    [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures transaction 
+    [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures capacity 
+    [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures control 
+    [webkit] › tests/browser/d01-readiness.spec.ts:4:3 › D1-B03 D1-I03 fresh native readiness failures capacity+inventory 
+    [webkit] › tests/browser/d01-readiness.spec.ts:38:1 › D1-B03 D1-I03 native cache failure preserves Recovery Only reads and rejects next mutation 
+  1 passed (50.6s)

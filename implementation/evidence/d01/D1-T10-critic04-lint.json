@@ -1,0 +1,14 @@
+{
+  "id": "D1-T10",
+  "stage": "critic04-lint",
+  "baseline": "db3580cdc1ee95b5056a4de6dc36430cdd71a421",
+  "sourceDigest": "b026eee2a66928fbbb8ceebee3fa47d94d0fb01f756b065edd0587149ae36dfc",
+  "command": [
+    "npm",
+    "run",
+    "lint"
+  ],
+  "exit": 0,
+  "stdout": "\n> trade-journal-v3@0.1.0 lint\n> eslint . --max-warnings 0\n\n",
+  "stderr": ""
+}

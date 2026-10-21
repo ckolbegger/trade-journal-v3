@@ -1,0 +1,53 @@
+[
+  {
+    "name": "chromium",
+    "version": "156.0.8078.4",
+    "text": "Unsupported\n\nWe could not verify safe writing in this environment.\n\nThis browser does not have the required available storage capacity.\nRetry startup\n\nAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.",
+    "native": {
+      "secure": true,
+      "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+      "estimate": {
+        "quota": 10739187337,
+        "usage": 1769097,
+        "usageDetails": {
+          "caches": 1757952,
+          "indexedDB": 7226,
+          "serviceWorkerRegistrations": 3919
+        }
+      },
+      "persisted": false
+    },
+    "snapshot": {
+      "trade-journal-v3": {
+        "diagnostic": [],
+        "lifecycle": [],
+        "projections": [],
+        "roots": [],
+        "versions": []
+      }
+    }
+  },
+  {
+    "name": "firefox",
+    "version": "157.0",
+    "text": "Unsupported\n\nWe could not verify safe writing in this environment.\n\nThis browser does not have the required available storage capacity.\nRetry startup\n\nAnother browser has separate storage and does not transfer this Workspace. Backup and Restore are not installed in this release.",
+    "native": {
+      "secure": true,
+      "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:157.0) Gecko/20100101 Firefox/157.0",
+      "estimate": {
+        "quota": 10737418240,
+        "usage": 798296
+      },
+      "persisted": false
+    },
+    "snapshot": {
+      "trade-journal-v3": {
+        "diagnostic": [],
+        "lifecycle": [],
+        "projections": [],
+        "roots": [],
+        "versions": []
+      }
+    }
+  }
+]

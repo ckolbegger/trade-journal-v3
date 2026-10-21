@@ -1,0 +1,3 @@
+main PAGEERROR InvalidStateError: Failed to execute 'abort' on 'IDBTransaction': The transaction is inactive or finished.
+    at abort (undefined:1:441)
+    at unknown (:1:441)

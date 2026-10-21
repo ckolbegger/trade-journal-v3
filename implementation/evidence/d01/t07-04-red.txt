@@ -1,0 +1,43 @@
+
+> trade-journal-v3@0.1.0 test:unit
+> vitest run --project unit tests/unit/d01-reads.test.ts -t should surface lifecycle
+
+
+ RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol
+
+ ❯ |unit| tests/unit/d01-reads.test.ts (4 tests | 1 failed | 3 skipped) 23ms
+   × should surface lifecycle disagreement without repairing authoritative records 23ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/d01-reads.test.ts > should surface lifecycle disagreement without repairing authoritative records
+AssertionError: expected { status: 'Ready', …(11) } to match object { status: 'IntegrityBlocked', …(1) }
+(38 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "findings": [
+-     "LifecycleDisagreement",
+-   ],
+-   "status": "IntegrityBlocked",
++   "status": "Ready",
+  }
+
+ ❯ tests/unit/d01-reads.test.ts:51:89
+     49|   await f.store.lifecycle.update(key, { lifecycle: 'Open' });
+     50|   const before = await f.store.lifecycle.get(key);
+     51|   expect(await new TradeViewsAndReporting(f.store).getTradeDetail(save…
+       |                                                                                         ^
+     52|   expect(await f.store.lifecycle.get(key)).toEqual(before);
+     53|   f.store.close();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 skipped (4)
+   Start at  21:08:28
+   Duration  370ms (environment 68%, transform 12%, import 11%, tests 8%, worker 1%)
+

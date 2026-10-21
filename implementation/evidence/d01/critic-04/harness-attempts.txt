@@ -1,0 +1,8 @@
+Initial preview in sandbox failed EPERM binding ::1:5174; authorized escalated strict preview then started successfully. Initial node_repl could not import .cjs and sandbox browser process aborted; actual review ran in own approved native Node process instead.
+Two exact-label/role selector attempts timed out (Conviction label and View history disclosure). Corrected to accessible combobox role and disclosure text; no product failure.
+Some immediate captures observed transient Saving/startup. Settled captures and explicit condition waits supersede them.
+Initial instance-level StorageManager override could disappear with wrapper lifetime; reliable prototype-level lower-quota override used for final simultaneous proof. Initial observed omission was harness state, not app defect.
+Initial Plan-stage abort was prevented by a still-stale Catalog form; page reloaded and verified native Plan stage reached on repeat. Initial Journal wrapper double-aborted; expected injected InvalidStateError retained; single-abort keyboard repeats passed.
+IntegrityBlocked heading is rendered without an intervening space; initial spaced heading locator timed out. Captured actual IntegrityBlocked view afterward.
+Initial Error fault targeted transaction arguments ineffectively; actual lifecycle cursor fault then produced verified Error. Its scan alone is counted. Durable observation under a deliberately broken read wrapper failed; clean/reloaded observer used instead.
+Native CUA selected pre-existing user Chrome window rather than own separate process; no native actions were sent to it and no unrelated profile/data changed.

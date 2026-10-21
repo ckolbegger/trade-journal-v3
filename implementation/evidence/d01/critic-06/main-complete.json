@@ -1,0 +1,1156 @@
+{
+  "status": "passed",
+  "state": {
+    "diagnostic": [],
+    "lifecycle": [
+      {
+        "key": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf:0070edb0-2199-4fd4-9156-0090e7ad8e0f",
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "tradeId": "0070edb0-2199-4fd4-9156-0090e7ad8e0f",
+        "lifecycle": "Planned",
+        "accountId": "8e6bff91-e180-4f72-90fa-749577bcf919",
+        "symbol": "K390",
+        "economicTime": "2026-10-21T01:03:00.748Z",
+        "economicOrder": "08641792544580748000000",
+        "sequence": 3,
+        "version": "558b9ae5-8c51-4cf9-894c-6c6542682604",
+        "revision": "ee27d82b-fb2f-4bab-9a52-7d717eeabdc2"
+      },
+      {
+        "key": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf:34fa7329-295a-44be-b166-709f3f366323",
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "tradeId": "34fa7329-295a-44be-b166-709f3f366323",
+        "lifecycle": "Planned",
+        "accountId": "8e6bff91-e180-4f72-90fa-749577bcf919",
+        "symbol": "K1440",
+        "economicTime": "2026-10-21T01:03:01.423Z",
+        "economicOrder": "08641792544581423000000",
+        "sequence": 4,
+        "version": "e579a4d0-1525-4997-80e2-e8f6d4fc50ea",
+        "revision": "be616e33-4b44-4819-a55c-59700d3fea56"
+      },
+      {
+        "key": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf:5650030d-41bf-46ea-b6f7-708fb1691e6c",
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "tradeId": "5650030d-41bf-46ea-b6f7-708fb1691e6c",
+        "lifecycle": "Planned",
+        "accountId": "8e6bff91-e180-4f72-90fa-749577bcf919",
+        "symbol": "AAPL",
+        "economicTime": "2026-10-21T01:02:58.494Z",
+        "economicOrder": "08641792544578494000000",
+        "sequence": 1,
+        "version": "83c372c0-461b-4cde-9129-52d29e2b2cb5",
+        "revision": "0d0f0a5e-e6c6-47b1-b595-97246654a1eb"
+      },
+      {
+        "key": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf:7cf5a96d-2544-4a69-b6e4-402d1b81ccb0",
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "tradeId": "7cf5a96d-2544-4a69-b6e4-402d1b81ccb0",
+        "lifecycle": "Planned",
+        "accountId": "8e6bff91-e180-4f72-90fa-749577bcf919",
+        "symbol": "OFFLINE",
+        "economicTime": "2026-10-21T01:03:02.444Z",
+        "economicOrder": "08641792544582444000000",
+        "sequence": 5,
+        "version": "654ca9cd-c33d-44b2-b83c-ba801772c2e5",
+        "revision": "73d7ee10-0d2c-4fd5-8209-57863b0d478a"
+      },
+      {
+        "key": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf:b7e3cbef-8db5-4789-b5ce-dcc042eebfe3",
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "tradeId": "b7e3cbef-8db5-4789-b5ce-dcc042eebfe3",
+        "lifecycle": "Planned",
+        "accountId": "8e6bff91-e180-4f72-90fa-749577bcf919",
+        "symbol": "NVDA",
+        "economicTime": "2026-10-21T01:02:59.694Z",
+        "economicOrder": "08641792544579694000000",
+        "sequence": 2,
+        "version": "7b493b9a-cbd2-4bc1-bf6c-6fd1d21ac708",
+        "revision": "a8dfd325-d673-410d-be89-476cf2591204"
+      }
+    ],
+    "projections": [
+      {
+        "key": "active-size:c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "value": {
+          "revision": "f1584b6f-b0bf-492f-9a66-2f049ca21fc0",
+          "serializedRowsBytes": 21141
+        }
+      }
+    ],
+    "roots": [
+      {
+        "key": "active",
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "revision": "f1584b6f-b0bf-492f-9a66-2f049ca21fc0",
+        "schema": 1,
+        "timeZone": "America/New_York",
+        "catalogRevision": "74fc3b59-7a0f-452d-8d0f-68bcf5a0dc32",
+        "definitionRevision": "plan-reflection-v1",
+        "commitOrdinal": 9,
+        "recordedSequence": 5
+      }
+    ],
+    "versions": [
+      {
+        "version": "29eb9960-6002-4803-9b0d-f5ad248ada19",
+        "id": "04bf1e42-20b2-4211-889b-7de868d3f10a",
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "kind": "JournalEntry",
+        "tradeId": "7cf5a96d-2544-4a69-b6e4-402d1b81ccb0",
+        "economicTime": "2026-10-21T01:03:02.444Z",
+        "saveTime": "2026-10-21T01:03:02.467Z",
+        "sequence": 5,
+        "commitOrdinal": 9,
+        "value": {
+          "id": "04bf1e42-20b2-4211-889b-7de868d3f10a",
+          "version": "29eb9960-6002-4803-9b0d-f5ad248ada19",
+          "definition": {
+            "id": "plan-reflection",
+            "revision": "plan-reflection-v1",
+            "label": "Plan Reflection",
+            "prompts": [
+              {
+                "id": "thesis",
+                "wording": "Why this trade, why now?",
+                "kind": "Text",
+                "required": true,
+                "role": "Thesis"
+              },
+              {
+                "id": "invalidation",
+                "wording": "What would invalidate the thesis?",
+                "kind": "Text",
+                "required": true,
+                "role": "Invalidation"
+              },
+              {
+                "id": "conviction",
+                "wording": "Conviction",
+                "kind": "Scale",
+                "required": false,
+                "minimum": 1,
+                "maximum": 5
+              },
+              {
+                "id": "emotion",
+                "wording": "Primary emotion",
+                "kind": "SingleSelect",
+                "required": false,
+                "options": [
+                  {
+                    "id": "calm",
+                    "label": "Calm"
+                  },
+                  {
+                    "id": "eager",
+                    "label": "Eager"
+                  },
+                  {
+                    "id": "anxious",
+                    "label": "Anxious"
+                  },
+                  {
+                    "id": "fomo",
+                    "label": "FOMO"
+                  },
+                  {
+                    "id": "revenge",
+                    "label": "Revenge"
+                  },
+                  {
+                    "id": "relieved",
+                    "label": "Relieved"
+                  },
+                  {
+                    "id": "frustrated",
+                    "label": "Frustrated"
+                  },
+                  {
+                    "id": "other",
+                    "label": "Other"
+                  }
+                ]
+              }
+            ]
+          },
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "7cf5a96d-2544-4a69-b6e4-402d1b81ccb0"
+          },
+          "origin": {
+            "kind": "Plan",
+            "factId": "1e449f5e-ad29-4921-abeb-f8e2ff8d1e2f"
+          },
+          "source": {
+            "id": "plan-confirmation",
+            "label": "Plan Confirmation"
+          },
+          "momentTime": "2026-10-21T01:03:02.444Z",
+          "firstAuthoredTime": "2026-10-21T01:03:02.467Z",
+          "saveTime": "2026-10-21T01:03:02.467Z",
+          "responses": {
+            "thesis": {
+              "kind": "Text",
+              "value": "Demand is holding above support."
+            },
+            "invalidation": {
+              "kind": "Text",
+              "value": "A sustained support break."
+            },
+            "conviction": {
+              "kind": "Unanswered"
+            },
+            "emotion": {
+              "kind": "Unanswered"
+            }
+          }
+        }
+      },
+      {
+        "version": "2cdd6174-9e5e-468c-825d-4378da4c74f6",
+        "id": "329f0ccc-be3d-401b-9d3c-2ddc5eab334d",
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "kind": "Institution",
+        "value": {
+          "id": "329f0ccc-be3d-401b-9d3c-2ddc5eab334d",
+          "version": "2cdd6174-9e5e-468c-825d-4378da4c74f6",
+          "kind": "Institution",
+          "label": "Concurrent Critic06",
+          "active": true,
+          "origin": "Trader"
+        },
+        "tradeId": "",
+        "economicTime": "2026-10-21T01:02:59.411Z",
+        "saveTime": "2026-10-21T01:02:59.411Z",
+        "sequence": 0,
+        "commitOrdinal": 5
+      },
+      {
+        "version": "558b9ae5-8c51-4cf9-894c-6c6542682604",
+        "id": "8080a991-34e6-4862-bd5e-213924deb9aa",
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "kind": "Plan",
+        "tradeId": "0070edb0-2199-4fd4-9156-0090e7ad8e0f",
+        "economicTime": "2026-10-21T01:03:00.748Z",
+        "saveTime": "2026-10-21T01:03:00.767Z",
+        "sequence": 3,
+        "commitOrdinal": 7,
+        "value": {
+          "tradeId": "0070edb0-2199-4fd4-9156-0090e7ad8e0f",
+          "revision": "ee27d82b-fb2f-4bab-9a52-7d717eeabdc2",
+          "planFactId": "8080a991-34e6-4862-bd5e-213924deb9aa",
+          "planVersionId": "558b9ae5-8c51-4cf9-894c-6c6542682604",
+          "plannedLegId": "4d51e580-cf4f-4d42-8c6d-3fba96d327aa",
+          "stopId": "9de0587f-d39f-4024-b22e-4fe85f8e68ce",
+          "targetId": "b17329b2-bc76-4ddc-918a-5467cabd00f1",
+          "accountId": "8e6bff91-e180-4f72-90fa-749577bcf919",
+          "strategyId": "long-stock",
+          "lifecycle": "Planned",
+          "plan": {
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "K390",
+              "currency": "USD"
+            },
+            "quantity": "100",
+            "entry": "50",
+            "stop": "45",
+            "target": "60",
+            "thesis": "Demand is holding above support.",
+            "invalidation": "A sustained support break."
+          },
+          "baseline": {
+            "risk": "500",
+            "oneR": "500",
+            "reward": "1000",
+            "ratio": {
+              "numerator": "2",
+              "denominator": "1"
+            },
+            "conditions": [
+              {
+                "kind": "Stop",
+                "price": "45",
+                "amount": "500"
+              },
+              {
+                "kind": "Target",
+                "price": "60",
+                "amount": "1000"
+              }
+            ]
+          },
+          "economicTime": "2026-10-21T01:03:00.748Z",
+          "saveTime": "2026-10-21T01:03:00.767Z",
+          "sequence": 3
+        }
+      },
+      {
+        "version": "654ca9cd-c33d-44b2-b83c-ba801772c2e5",
+        "id": "1e449f5e-ad29-4921-abeb-f8e2ff8d1e2f",
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "kind": "Plan",
+        "tradeId": "7cf5a96d-2544-4a69-b6e4-402d1b81ccb0",
+        "economicTime": "2026-10-21T01:03:02.444Z",
+        "saveTime": "2026-10-21T01:03:02.467Z",
+        "sequence": 5,
+        "commitOrdinal": 9,
+        "value": {
+          "tradeId": "7cf5a96d-2544-4a69-b6e4-402d1b81ccb0",
+          "revision": "73d7ee10-0d2c-4fd5-8209-57863b0d478a",
+          "planFactId": "1e449f5e-ad29-4921-abeb-f8e2ff8d1e2f",
+          "planVersionId": "654ca9cd-c33d-44b2-b83c-ba801772c2e5",
+          "plannedLegId": "c48a6b62-b702-4a19-b736-41e05e60d079",
+          "stopId": "68883724-3cba-412d-b89f-18ba53136124",
+          "targetId": "aaf21bbb-56bb-4549-ac06-a556bb02f5bf",
+          "accountId": "8e6bff91-e180-4f72-90fa-749577bcf919",
+          "strategyId": "long-stock",
+          "lifecycle": "Planned",
+          "plan": {
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "OFFLINE",
+              "currency": "USD"
+            },
+            "quantity": "100",
+            "entry": "50",
+            "stop": "45",
+            "target": "60",
+            "thesis": "Demand is holding above support.",
+            "invalidation": "A sustained support break."
+          },
+          "baseline": {
+            "risk": "500",
+            "oneR": "500",
+            "reward": "1000",
+            "ratio": {
+              "numerator": "2",
+              "denominator": "1"
+            },
+            "conditions": [
+              {
+                "kind": "Stop",
+                "price": "45",
+                "amount": "500"
+              },
+              {
+                "kind": "Target",
+                "price": "60",
+                "amount": "1000"
+              }
+            ]
+          },
+          "economicTime": "2026-10-21T01:03:02.444Z",
+          "saveTime": "2026-10-21T01:03:02.467Z",
+          "sequence": 5
+        }
+      },
+      {
+        "version": "6957b1ed-2573-4e40-acd4-afbea7c0cb4d",
+        "id": "dbbcb118-df9d-466d-87ad-abb408e3f5c2",
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "kind": "JournalEntry",
+        "tradeId": "b7e3cbef-8db5-4789-b5ce-dcc042eebfe3",
+        "economicTime": "2026-10-21T01:02:59.694Z",
+        "saveTime": "2026-10-21T01:02:59.718Z",
+        "sequence": 2,
+        "commitOrdinal": 6,
+        "value": {
+          "id": "dbbcb118-df9d-466d-87ad-abb408e3f5c2",
+          "version": "6957b1ed-2573-4e40-acd4-afbea7c0cb4d",
+          "definition": {
+            "id": "plan-reflection",
+            "revision": "plan-reflection-v1",
+            "label": "Plan Reflection",
+            "prompts": [
+              {
+                "id": "thesis",
+                "wording": "Why this trade, why now?",
+                "kind": "Text",
+                "required": true,
+                "role": "Thesis"
+              },
+              {
+                "id": "invalidation",
+                "wording": "What would invalidate the thesis?",
+                "kind": "Text",
+                "required": true,
+                "role": "Invalidation"
+              },
+              {
+                "id": "conviction",
+                "wording": "Conviction",
+                "kind": "Scale",
+                "required": false,
+                "minimum": 1,
+                "maximum": 5
+              },
+              {
+                "id": "emotion",
+                "wording": "Primary emotion",
+                "kind": "SingleSelect",
+                "required": false,
+                "options": [
+                  {
+                    "id": "calm",
+                    "label": "Calm"
+                  },
+                  {
+                    "id": "eager",
+                    "label": "Eager"
+                  },
+                  {
+                    "id": "anxious",
+                    "label": "Anxious"
+                  },
+                  {
+                    "id": "fomo",
+                    "label": "FOMO"
+                  },
+                  {
+                    "id": "revenge",
+                    "label": "Revenge"
+                  },
+                  {
+                    "id": "relieved",
+                    "label": "Relieved"
+                  },
+                  {
+                    "id": "frustrated",
+                    "label": "Frustrated"
+                  },
+                  {
+                    "id": "other",
+                    "label": "Other"
+                  }
+                ]
+              }
+            ]
+          },
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "b7e3cbef-8db5-4789-b5ce-dcc042eebfe3"
+          },
+          "origin": {
+            "kind": "Plan",
+            "factId": "c24eeec1-4dd5-4879-8a76-51b308df08ee"
+          },
+          "source": {
+            "id": "plan-confirmation",
+            "label": "Plan Confirmation"
+          },
+          "momentTime": "2026-10-21T01:02:59.694Z",
+          "firstAuthoredTime": "2026-10-21T01:02:59.718Z",
+          "saveTime": "2026-10-21T01:02:59.718Z",
+          "responses": {
+            "thesis": {
+              "kind": "Text",
+              "value": "Demand is holding above support."
+            },
+            "invalidation": {
+              "kind": "Text",
+              "value": "A sustained support break."
+            },
+            "conviction": {
+              "kind": "Unanswered"
+            },
+            "emotion": {
+              "kind": "Unanswered"
+            }
+          }
+        }
+      },
+      {
+        "version": "7b493b9a-cbd2-4bc1-bf6c-6fd1d21ac708",
+        "id": "c24eeec1-4dd5-4879-8a76-51b308df08ee",
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "kind": "Plan",
+        "tradeId": "b7e3cbef-8db5-4789-b5ce-dcc042eebfe3",
+        "economicTime": "2026-10-21T01:02:59.694Z",
+        "saveTime": "2026-10-21T01:02:59.718Z",
+        "sequence": 2,
+        "commitOrdinal": 6,
+        "value": {
+          "tradeId": "b7e3cbef-8db5-4789-b5ce-dcc042eebfe3",
+          "revision": "a8dfd325-d673-410d-be89-476cf2591204",
+          "planFactId": "c24eeec1-4dd5-4879-8a76-51b308df08ee",
+          "planVersionId": "7b493b9a-cbd2-4bc1-bf6c-6fd1d21ac708",
+          "plannedLegId": "233009ca-29f9-4838-8548-a85d59179174",
+          "stopId": "75809c33-73ff-4211-ad69-8fb939a3f521",
+          "targetId": "c9b79299-91ac-4f47-9395-53d11051f4cd",
+          "accountId": "8e6bff91-e180-4f72-90fa-749577bcf919",
+          "strategyId": "long-stock",
+          "lifecycle": "Planned",
+          "plan": {
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "NVDA",
+              "currency": "USD"
+            },
+            "quantity": "100",
+            "entry": "50",
+            "stop": "45",
+            "target": "60",
+            "thesis": "Demand is holding above support.",
+            "invalidation": "A sustained support break."
+          },
+          "baseline": {
+            "risk": "500",
+            "oneR": "500",
+            "reward": "1000",
+            "ratio": {
+              "numerator": "2",
+              "denominator": "1"
+            },
+            "conditions": [
+              {
+                "kind": "Stop",
+                "price": "45",
+                "amount": "500"
+              },
+              {
+                "kind": "Target",
+                "price": "60",
+                "amount": "1000"
+              }
+            ]
+          },
+          "economicTime": "2026-10-21T01:02:59.694Z",
+          "saveTime": "2026-10-21T01:02:59.718Z",
+          "sequence": 2
+        }
+      },
+      {
+        "version": "83c372c0-461b-4cde-9129-52d29e2b2cb5",
+        "id": "f802280f-46a6-4167-9ec7-0fcae64d7d6a",
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "kind": "Plan",
+        "tradeId": "5650030d-41bf-46ea-b6f7-708fb1691e6c",
+        "economicTime": "2026-10-21T01:02:58.494Z",
+        "saveTime": "2026-10-21T01:02:58.519Z",
+        "sequence": 1,
+        "commitOrdinal": 4,
+        "value": {
+          "tradeId": "5650030d-41bf-46ea-b6f7-708fb1691e6c",
+          "revision": "0d0f0a5e-e6c6-47b1-b595-97246654a1eb",
+          "planFactId": "f802280f-46a6-4167-9ec7-0fcae64d7d6a",
+          "planVersionId": "83c372c0-461b-4cde-9129-52d29e2b2cb5",
+          "plannedLegId": "5b456a52-95e9-431c-9268-8f0a78ff9a57",
+          "stopId": "6d5266ad-9d1e-4b4d-af6d-408c685970cf",
+          "targetId": "c44825f7-1482-4bf8-86d4-388f49b9a7f7",
+          "accountId": "8e6bff91-e180-4f72-90fa-749577bcf919",
+          "strategyId": "long-stock",
+          "lifecycle": "Planned",
+          "plan": {
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "AAPL",
+              "currency": "USD"
+            },
+            "quantity": "100",
+            "entry": "50",
+            "stop": "45",
+            "target": "60",
+            "thesis": "Demand is holding above support.",
+            "invalidation": "A sustained support break."
+          },
+          "baseline": {
+            "risk": "500",
+            "oneR": "500",
+            "reward": "1000",
+            "ratio": {
+              "numerator": "2",
+              "denominator": "1"
+            },
+            "conditions": [
+              {
+                "kind": "Stop",
+                "price": "45",
+                "amount": "500"
+              },
+              {
+                "kind": "Target",
+                "price": "60",
+                "amount": "1000"
+              }
+            ]
+          },
+          "economicTime": "2026-10-21T01:02:58.494Z",
+          "saveTime": "2026-10-21T01:02:58.519Z",
+          "sequence": 1
+        }
+      },
+      {
+        "version": "a2f87046-1fa4-4058-b2a4-09b841370291",
+        "id": "93a35cae-0553-421b-b56e-3e4798da704d",
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "kind": "JournalEntry",
+        "tradeId": "0070edb0-2199-4fd4-9156-0090e7ad8e0f",
+        "economicTime": "2026-10-21T01:03:00.748Z",
+        "saveTime": "2026-10-21T01:03:00.767Z",
+        "sequence": 3,
+        "commitOrdinal": 7,
+        "value": {
+          "id": "93a35cae-0553-421b-b56e-3e4798da704d",
+          "version": "a2f87046-1fa4-4058-b2a4-09b841370291",
+          "definition": {
+            "id": "plan-reflection",
+            "revision": "plan-reflection-v1",
+            "label": "Plan Reflection",
+            "prompts": [
+              {
+                "id": "thesis",
+                "wording": "Why this trade, why now?",
+                "kind": "Text",
+                "required": true,
+                "role": "Thesis"
+              },
+              {
+                "id": "invalidation",
+                "wording": "What would invalidate the thesis?",
+                "kind": "Text",
+                "required": true,
+                "role": "Invalidation"
+              },
+              {
+                "id": "conviction",
+                "wording": "Conviction",
+                "kind": "Scale",
+                "required": false,
+                "minimum": 1,
+                "maximum": 5
+              },
+              {
+                "id": "emotion",
+                "wording": "Primary emotion",
+                "kind": "SingleSelect",
+                "required": false,
+                "options": [
+                  {
+                    "id": "calm",
+                    "label": "Calm"
+                  },
+                  {
+                    "id": "eager",
+                    "label": "Eager"
+                  },
+                  {
+                    "id": "anxious",
+                    "label": "Anxious"
+                  },
+                  {
+                    "id": "fomo",
+                    "label": "FOMO"
+                  },
+                  {
+                    "id": "revenge",
+                    "label": "Revenge"
+                  },
+                  {
+                    "id": "relieved",
+                    "label": "Relieved"
+                  },
+                  {
+                    "id": "frustrated",
+                    "label": "Frustrated"
+                  },
+                  {
+                    "id": "other",
+                    "label": "Other"
+                  }
+                ]
+              }
+            ]
+          },
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "0070edb0-2199-4fd4-9156-0090e7ad8e0f"
+          },
+          "origin": {
+            "kind": "Plan",
+            "factId": "8080a991-34e6-4862-bd5e-213924deb9aa"
+          },
+          "source": {
+            "id": "plan-confirmation",
+            "label": "Plan Confirmation"
+          },
+          "momentTime": "2026-10-21T01:03:00.748Z",
+          "firstAuthoredTime": "2026-10-21T01:03:00.767Z",
+          "saveTime": "2026-10-21T01:03:00.767Z",
+          "responses": {
+            "thesis": {
+              "kind": "Text",
+              "value": "Demand is holding above support."
+            },
+            "invalidation": {
+              "kind": "Text",
+              "value": "A sustained support break."
+            },
+            "conviction": {
+              "kind": "Unanswered"
+            },
+            "emotion": {
+              "kind": "SingleSelect",
+              "value": "eager"
+            }
+          }
+        }
+      },
+      {
+        "version": "a6df222e-d04b-41a4-b240-26d610c65635",
+        "id": "64f71231-4f0c-47df-927c-dcfa5e0f85d3",
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "kind": "JournalEntry",
+        "tradeId": "5650030d-41bf-46ea-b6f7-708fb1691e6c",
+        "economicTime": "2026-10-21T01:02:58.494Z",
+        "saveTime": "2026-10-21T01:02:58.519Z",
+        "sequence": 1,
+        "commitOrdinal": 4,
+        "value": {
+          "id": "64f71231-4f0c-47df-927c-dcfa5e0f85d3",
+          "version": "a6df222e-d04b-41a4-b240-26d610c65635",
+          "definition": {
+            "id": "plan-reflection",
+            "revision": "plan-reflection-v1",
+            "label": "Plan Reflection",
+            "prompts": [
+              {
+                "id": "thesis",
+                "wording": "Why this trade, why now?",
+                "kind": "Text",
+                "required": true,
+                "role": "Thesis"
+              },
+              {
+                "id": "invalidation",
+                "wording": "What would invalidate the thesis?",
+                "kind": "Text",
+                "required": true,
+                "role": "Invalidation"
+              },
+              {
+                "id": "conviction",
+                "wording": "Conviction",
+                "kind": "Scale",
+                "required": false,
+                "minimum": 1,
+                "maximum": 5
+              },
+              {
+                "id": "emotion",
+                "wording": "Primary emotion",
+                "kind": "SingleSelect",
+                "required": false,
+                "options": [
+                  {
+                    "id": "calm",
+                    "label": "Calm"
+                  },
+                  {
+                    "id": "eager",
+                    "label": "Eager"
+                  },
+                  {
+                    "id": "anxious",
+                    "label": "Anxious"
+                  },
+                  {
+                    "id": "fomo",
+                    "label": "FOMO"
+                  },
+                  {
+                    "id": "revenge",
+                    "label": "Revenge"
+                  },
+                  {
+                    "id": "relieved",
+                    "label": "Relieved"
+                  },
+                  {
+                    "id": "frustrated",
+                    "label": "Frustrated"
+                  },
+                  {
+                    "id": "other",
+                    "label": "Other"
+                  }
+                ]
+              }
+            ]
+          },
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "5650030d-41bf-46ea-b6f7-708fb1691e6c"
+          },
+          "origin": {
+            "kind": "Plan",
+            "factId": "f802280f-46a6-4167-9ec7-0fcae64d7d6a"
+          },
+          "source": {
+            "id": "plan-confirmation",
+            "label": "Plan Confirmation"
+          },
+          "momentTime": "2026-10-21T01:02:58.494Z",
+          "firstAuthoredTime": "2026-10-21T01:02:58.519Z",
+          "saveTime": "2026-10-21T01:02:58.519Z",
+          "responses": {
+            "thesis": {
+              "kind": "Text",
+              "value": "Demand is holding above support."
+            },
+            "invalidation": {
+              "kind": "Text",
+              "value": "A sustained support break."
+            },
+            "conviction": {
+              "kind": "Scale",
+              "value": "4"
+            },
+            "emotion": {
+              "kind": "SingleSelect",
+              "value": "calm"
+            }
+          }
+        }
+      },
+      {
+        "version": "beb7feb7-9b5f-48f2-9733-6781149f32ad",
+        "id": "90966ba4-4b28-4ddf-9c82-c35eedd5259b",
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "kind": "JournalEntry",
+        "tradeId": "34fa7329-295a-44be-b166-709f3f366323",
+        "economicTime": "2026-10-21T01:03:01.423Z",
+        "saveTime": "2026-10-21T01:03:01.434Z",
+        "sequence": 4,
+        "commitOrdinal": 8,
+        "value": {
+          "id": "90966ba4-4b28-4ddf-9c82-c35eedd5259b",
+          "version": "beb7feb7-9b5f-48f2-9733-6781149f32ad",
+          "definition": {
+            "id": "plan-reflection",
+            "revision": "plan-reflection-v1",
+            "label": "Plan Reflection",
+            "prompts": [
+              {
+                "id": "thesis",
+                "wording": "Why this trade, why now?",
+                "kind": "Text",
+                "required": true,
+                "role": "Thesis"
+              },
+              {
+                "id": "invalidation",
+                "wording": "What would invalidate the thesis?",
+                "kind": "Text",
+                "required": true,
+                "role": "Invalidation"
+              },
+              {
+                "id": "conviction",
+                "wording": "Conviction",
+                "kind": "Scale",
+                "required": false,
+                "minimum": 1,
+                "maximum": 5
+              },
+              {
+                "id": "emotion",
+                "wording": "Primary emotion",
+                "kind": "SingleSelect",
+                "required": false,
+                "options": [
+                  {
+                    "id": "calm",
+                    "label": "Calm"
+                  },
+                  {
+                    "id": "eager",
+                    "label": "Eager"
+                  },
+                  {
+                    "id": "anxious",
+                    "label": "Anxious"
+                  },
+                  {
+                    "id": "fomo",
+                    "label": "FOMO"
+                  },
+                  {
+                    "id": "revenge",
+                    "label": "Revenge"
+                  },
+                  {
+                    "id": "relieved",
+                    "label": "Relieved"
+                  },
+                  {
+                    "id": "frustrated",
+                    "label": "Frustrated"
+                  },
+                  {
+                    "id": "other",
+                    "label": "Other"
+                  }
+                ]
+              }
+            ]
+          },
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "34fa7329-295a-44be-b166-709f3f366323"
+          },
+          "origin": {
+            "kind": "Plan",
+            "factId": "2290a851-ec7b-43ef-b517-7da0aefd67d3"
+          },
+          "source": {
+            "id": "plan-confirmation",
+            "label": "Plan Confirmation"
+          },
+          "momentTime": "2026-10-21T01:03:01.423Z",
+          "firstAuthoredTime": "2026-10-21T01:03:01.434Z",
+          "saveTime": "2026-10-21T01:03:01.434Z",
+          "responses": {
+            "thesis": {
+              "kind": "Text",
+              "value": "Demand is holding above support."
+            },
+            "invalidation": {
+              "kind": "Text",
+              "value": "A sustained support break."
+            },
+            "conviction": {
+              "kind": "Unanswered"
+            },
+            "emotion": {
+              "kind": "SingleSelect",
+              "value": "eager"
+            }
+          }
+        }
+      },
+      {
+        "version": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf:long-stock-v1",
+        "id": "long-stock",
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "kind": "Strategy",
+        "value": {
+          "id": "long-stock",
+          "kind": "Strategy",
+          "label": "Long Stock",
+          "active": true,
+          "shape": {
+            "roles": [
+              {
+                "kind": "Stock",
+                "direction": "Long",
+                "relativeQuantity": "1"
+              }
+            ]
+          },
+          "origin": "Default"
+        },
+        "tradeId": "",
+        "economicTime": "2026-10-21T01:02:58.128Z",
+        "saveTime": "2026-10-21T01:02:58.128Z",
+        "sequence": 0,
+        "commitOrdinal": 1
+      },
+      {
+        "id": "plan-confirmation",
+        "version": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf:plan-confirmation-v1",
+        "kind": "Source",
+        "value": {
+          "id": "plan-confirmation",
+          "label": "Plan Confirmation"
+        },
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "tradeId": "",
+        "economicTime": "2026-10-21T01:02:58.128Z",
+        "saveTime": "2026-10-21T01:02:58.128Z",
+        "sequence": 0,
+        "commitOrdinal": 1
+      },
+      {
+        "id": "plan-reflection",
+        "version": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf:plan-reflection-v1",
+        "kind": "Definition",
+        "value": {
+          "id": "plan-reflection",
+          "revision": "plan-reflection-v1",
+          "label": "Plan Reflection",
+          "prompts": [
+            {
+              "id": "thesis",
+              "wording": "Why this trade, why now?",
+              "kind": "Text",
+              "required": true,
+              "role": "Thesis"
+            },
+            {
+              "id": "invalidation",
+              "wording": "What would invalidate the thesis?",
+              "kind": "Text",
+              "required": true,
+              "role": "Invalidation"
+            },
+            {
+              "id": "conviction",
+              "wording": "Conviction",
+              "kind": "Scale",
+              "required": false,
+              "minimum": 1,
+              "maximum": 5
+            },
+            {
+              "id": "emotion",
+              "wording": "Primary emotion",
+              "kind": "SingleSelect",
+              "required": false,
+              "options": [
+                {
+                  "id": "calm",
+                  "label": "Calm"
+                },
+                {
+                  "id": "eager",
+                  "label": "Eager"
+                },
+                {
+                  "id": "anxious",
+                  "label": "Anxious"
+                },
+                {
+                  "id": "fomo",
+                  "label": "FOMO"
+                },
+                {
+                  "id": "revenge",
+                  "label": "Revenge"
+                },
+                {
+                  "id": "relieved",
+                  "label": "Relieved"
+                },
+                {
+                  "id": "frustrated",
+                  "label": "Frustrated"
+                },
+                {
+                  "id": "other",
+                  "label": "Other"
+                }
+              ]
+            }
+          ]
+        },
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "tradeId": "",
+        "economicTime": "2026-10-21T01:02:58.128Z",
+        "saveTime": "2026-10-21T01:02:58.128Z",
+        "sequence": 0,
+        "commitOrdinal": 1
+      },
+      {
+        "version": "e579a4d0-1525-4997-80e2-e8f6d4fc50ea",
+        "id": "2290a851-ec7b-43ef-b517-7da0aefd67d3",
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "kind": "Plan",
+        "tradeId": "34fa7329-295a-44be-b166-709f3f366323",
+        "economicTime": "2026-10-21T01:03:01.423Z",
+        "saveTime": "2026-10-21T01:03:01.434Z",
+        "sequence": 4,
+        "commitOrdinal": 8,
+        "value": {
+          "tradeId": "34fa7329-295a-44be-b166-709f3f366323",
+          "revision": "be616e33-4b44-4819-a55c-59700d3fea56",
+          "planFactId": "2290a851-ec7b-43ef-b517-7da0aefd67d3",
+          "planVersionId": "e579a4d0-1525-4997-80e2-e8f6d4fc50ea",
+          "plannedLegId": "5554254f-034c-494a-abe4-d8bd224dc722",
+          "stopId": "f555eb09-0a53-4721-916f-1e7ac33e8282",
+          "targetId": "6dd651d2-4234-4a7a-8c3b-81a62a7b9d7f",
+          "accountId": "8e6bff91-e180-4f72-90fa-749577bcf919",
+          "strategyId": "long-stock",
+          "lifecycle": "Planned",
+          "plan": {
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "K1440",
+              "currency": "USD"
+            },
+            "quantity": "100",
+            "entry": "50",
+            "stop": "45",
+            "target": "60",
+            "thesis": "Demand is holding above support.",
+            "invalidation": "A sustained support break."
+          },
+          "baseline": {
+            "risk": "500",
+            "oneR": "500",
+            "reward": "1000",
+            "ratio": {
+              "numerator": "2",
+              "denominator": "1"
+            },
+            "conditions": [
+              {
+                "kind": "Stop",
+                "price": "45",
+                "amount": "500"
+              },
+              {
+                "kind": "Target",
+                "price": "60",
+                "amount": "1000"
+              }
+            ]
+          },
+          "economicTime": "2026-10-21T01:03:01.423Z",
+          "saveTime": "2026-10-21T01:03:01.434Z",
+          "sequence": 4
+        }
+      },
+      {
+        "version": "f2ad2c59-4aef-4899-94c0-b073d779fd9f",
+        "id": "8e6bff91-e180-4f72-90fa-749577bcf919",
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "kind": "Account",
+        "value": {
+          "id": "8e6bff91-e180-4f72-90fa-749577bcf919",
+          "version": "f2ad2c59-4aef-4899-94c0-b073d779fd9f",
+          "kind": "Account",
+          "label": "Critic06 Taxable",
+          "active": true,
+          "origin": "Trader",
+          "parentId": "ef72307a-8c9b-4953-917b-ec311636efd0"
+        },
+        "tradeId": "",
+        "economicTime": "2026-10-21T01:02:58.278Z",
+        "saveTime": "2026-10-21T01:02:58.278Z",
+        "sequence": 0,
+        "commitOrdinal": 3
+      },
+      {
+        "version": "f58bdb5d-b579-4bce-a450-f4ef8fe508db",
+        "id": "ef72307a-8c9b-4953-917b-ec311636efd0",
+        "generation": "c95cff0b-a2e1-4f9b-8933-4bdd6c4815cf",
+        "kind": "Institution",
+        "value": {
+          "id": "ef72307a-8c9b-4953-917b-ec311636efd0",
+          "version": "f58bdb5d-b579-4bce-a450-f4ef8fe508db",
+          "kind": "Institution",
+          "label": "Critic06 Brokerage",
+          "active": true,
+          "origin": "Trader"
+        },
+        "tradeId": "",
+        "economicTime": "2026-10-21T01:02:58.229Z",
+        "saveTime": "2026-10-21T01:02:58.229Z",
+        "sequence": 0,
+        "commitOrdinal": 2
+      }
+    ]
+  }
+}

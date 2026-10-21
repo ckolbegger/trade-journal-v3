@@ -1,0 +1,28 @@
+{
+  "name": "first-timezone",
+  "violations": [],
+  "incomplete": [],
+  "passes": [
+    "aria-hidden-body",
+    "button-name",
+    "color-contrast",
+    "document-title",
+    "empty-heading",
+    "form-field-multiple-labels",
+    "heading-order",
+    "html-has-lang",
+    "html-lang-valid",
+    "label-title-only",
+    "label",
+    "landmark-main-is-top-level",
+    "landmark-no-duplicate-main",
+    "landmark-one-main",
+    "landmark-unique",
+    "meta-viewport-large",
+    "meta-viewport",
+    "nested-interactive",
+    "page-has-heading-one",
+    "region",
+    "tabindex"
+  ]
+}

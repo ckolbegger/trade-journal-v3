@@ -1,0 +1,21 @@
+import {chromium, firefox, webkit} from '/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright-core/index.mjs';
+import {createInterface} from 'node:readline';
+import fs from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const base='/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol';
+const out=base+'/implementation/evidence/d01/critic-05';
+const url='http://localhost:5174';
+let ctx,p,browser, snapshot;
+const log=async(name,v)=>fs.writeFile(out+'/'+name+'.txt',typeof v==='string'?v:JSON.stringify(v,null,2));
+const launch=async(profile='main',opts={})=>{ctx=await chromium.launchPersistentContext('/private/tmp/critic05-'+profile,{channel:'chrome',headless:true,viewport:{width:1440,height:1000},...opts});p=ctx.pages()[0]??await ctx.newPage();p.on('console',m=>fs.appendFile(out+'/console.txt',m.type()+': '+m.text()+'\n'));p.on('pageerror',e=>fs.appendFile(out+'/console.txt','PAGEERROR '+e+'\n'));return ctx;};
+const settle=async()=>{await p.waitForFunction(()=>!document.body.innerText.includes('Verifying startup'),{timeout:20000});};
+const go=async()=>{await p.goto(url);await settle();};
+const shot=async(name)=>{await p.screenshot({path:out+'/'+name+'.png',fullPage:true});await log(name,await p.locator('body').innerText());};
+const bytes=async()=>p.evaluate(async()=>{let db=await new Promise((r,j)=>{let q=indexedDB.open('trade-journal-v3');q.onsuccess=()=>r(q.result);q.onerror=()=>j(q.error);});const names=['roots','versions','lifecycle'];let tx=db.transaction(names,'readonly');const res={};await Promise.all(names.map(async n=>res[n]=await new Promise((r,j)=>{let q=tx.objectStore(n).getAll();q.onsuccess=()=>r(q.result);q.onerror=()=>j(q.error);})));db.close();return JSON.stringify(res);});
+const click=async(name)=>p.getByRole('button',{name,exact:true}).click();
+const fill=async(label,value)=>p.getByLabel(label,{exact:true}).fill(value);
+const plan=async(symbol='C05')=>{await click('New Plan');for(const [k,v] of Object.entries({'Stock symbol':symbol,'Quantity (shares)':'100','Intended entry (USD)':'50','Stop (underlying price, USD)':'45','Target (underlying price, USD)':'60','Why this trade, why now?':'Independent critic: breakout after close.','What would invalidate the thesis?':'A close below support.'}))await fill(k,v);};
+const inventory=async()=>p.evaluate(async()=>{const keys=await caches.keys();let result=[];for(const name of keys){const c=await caches.open(name);let response=await c.match('/offline-inventory.json');if(!response)continue;const inv=await response.json();const rows=[];for(const a of inv.assets){const r=await c.match(a.url);const data=r?await r.arrayBuffer():new ArrayBuffer(0);const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',data)),v=>v.toString(16).padStart(2,'0')).join('');rows.push({...a,actualBytes:data.byteLength,actualHash:hash,valid:data.byteLength===a.bytes&&hash===a.sha256});}result.push({name,release:inv.releaseId,rows});}return result;});
+const rl=createInterface({input:process.stdin,output:process.stdout,terminal:false});
+console.log('CRITIC05_READY');
+for await(const line of rl){try{const result=await eval('(async()=>{'+line+'})()');console.log('RESULT',JSON.stringify(result));}catch(e){console.log('ERROR',e.stack);}}

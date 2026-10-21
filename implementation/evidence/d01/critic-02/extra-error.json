@@ -1,0 +1,4 @@
+{
+  "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert.ok(lastMutation>=0)\n",
+  "stack": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert.ok(lastMutation>=0)\n\n    at file:///private/tmp/critic02-extra.mjs:3:603"
+}

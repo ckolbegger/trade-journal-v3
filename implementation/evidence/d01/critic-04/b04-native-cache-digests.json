@@ -1,0 +1,100 @@
+{
+  "inventory": {
+    "version": 1,
+    "releaseId": "8edc2fc8876a07aea9177871c1b4fc424f990a76d4b1f129251554e1e32f4d5c",
+    "assets": [
+      {
+        "url": "/assets/index-D5SmvdM2.js",
+        "bytes": 556700,
+        "sha256": "b92f606f6c7e7a9cbeec78e4d83dca3e35e80f81db5ce9e94c3e4d9e3ad4b1de"
+      },
+      {
+        "url": "/assets/index-Ukg-5B9v.css",
+        "bytes": 2898,
+        "sha256": "a2168dbf5e6e8e5c495a0e2c0f0058e968fbb9009df4ea06d74071873b52811c"
+      },
+      {
+        "url": "/capabilities.json",
+        "bytes": 1290,
+        "sha256": "c794601af60e01f2658b04cb2dfd9f3c9cefca172879b6330d143de30320e09a"
+      },
+      {
+        "url": "/icon-192.png",
+        "bytes": 3409,
+        "sha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9"
+      },
+      {
+        "url": "/icon-512.png",
+        "bytes": 12236,
+        "sha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457"
+      },
+      {
+        "url": "/icon.svg",
+        "bytes": 180,
+        "sha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9"
+      },
+      {
+        "url": "/index.html",
+        "bytes": 446,
+        "sha256": "74819ae1543ce92b90b8e1651f0a3cd5dc0a7c8d3ee4b37a62fdbe840ece567a"
+      },
+      {
+        "url": "/manifest.webmanifest",
+        "bytes": 416,
+        "sha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd"
+      },
+      {
+        "url": "/sw.js",
+        "bytes": 3919,
+        "sha256": "ae072d7e508200ce11a529de766d67a5a91f4890993226836ffb2a7666d4e98b"
+      }
+    ]
+  },
+  "verified": [
+    {
+      "url": "/assets/index-D5SmvdM2.js",
+      "bytes": 556700,
+      "pass": true
+    },
+    {
+      "url": "/assets/index-Ukg-5B9v.css",
+      "bytes": 2898,
+      "pass": true
+    },
+    {
+      "url": "/capabilities.json",
+      "bytes": 1290,
+      "pass": true
+    },
+    {
+      "url": "/icon-192.png",
+      "bytes": 3409,
+      "pass": true
+    },
+    {
+      "url": "/icon-512.png",
+      "bytes": 12236,
+      "pass": true
+    },
+    {
+      "url": "/icon.svg",
+      "bytes": 180,
+      "pass": true
+    },
+    {
+      "url": "/index.html",
+      "bytes": 446,
+      "pass": true
+    },
+    {
+      "url": "/manifest.webmanifest",
+      "bytes": 416,
+      "pass": true
+    },
+    {
+      "url": "/sw.js",
+      "bytes": 3919,
+      "pass": true
+    }
+  ]
+}

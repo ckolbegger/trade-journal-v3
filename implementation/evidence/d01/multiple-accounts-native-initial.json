@@ -1,0 +1,9 @@
+{
+  "browser": "155.0.8059.85",
+  "options": [
+    "Retirement · Account test broker",
+    "Taxable · Account test broker"
+  ],
+  "result": "Two Accounts at same Institution saved through native production UI and retained after reload",
+  "profile": "/var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/d1-multiple-accounts-zi5cWt"
+}
