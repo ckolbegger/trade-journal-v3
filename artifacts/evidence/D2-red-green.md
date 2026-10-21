@@ -513,8 +513,10 @@ in the same runs.
 
 **What happened after it, in this same session.** T13–T20 landed (records below) and the deliverable
 was closed and tagged `deepseek-v41-flash-D2` (`b35a7b9`) and
-`deepseek-v41-flash-D2-tdd-behavior-enforcement` (`e748e55`). Those two tags mark the deliverable
-**before** the D2 remediation and are **not** its final state. Deviation D-001
+`deepseek-v41-flash-D2-tdd-behavior-enforcement` (`e748e55`). At the time of this checkpoint those two
+tags marked the deliverable **before** the D2 remediation and were **not** its final state; the
+delivery tag was later moved onto the remediation tip (see "Record correction — the D2 delivery tag
+moved" at the end of this file). Deviation D-001
 (`plan/freeze-2026-10-19.md`, freeze revision 2) then reopened D2 to add T21 and T22, whose record is
 the final section of this file. The former "Not started (8 of 20)" table and "What a successor must
 not do" warnings no longer described the delivered code — they are superseded by the T13–T20 and
@@ -1355,6 +1357,34 @@ provisional block measures **277px on one line**, with no one-character column.
 
 **D2 is complete.** The gate is closed at 26 entries, the deliverable's tasks are T1–T22 with T21 and
 T22 implemented here, and every command in the handoff's §6 exits 0 (R1–R9 and the per-commit table
-above). The `deepseek-v41-flash-D2` and `deepseek-v41-flash-D2-tdd-behavior-enforcement` tags still
-mark the deliverable *before* this remediation; the remediation's tip is the commit that carries this
-record.
+above). At the user's direction `deepseek-v41-flash-D2` was moved onto this remediation's tip — the
+commit that carries this record — because the remediation *is* D2's completion (see "Record
+correction — the D2 delivery tag moved"). `deepseek-v41-flash-D2-tdd-behavior-enforcement` remains on
+`e748e55`, where it marks a specific lesson rather than the deliverable.
+
+### Record correction — the D2 delivery tag moved
+
+At the user's direction, `deepseek-v41-flash-D2` was **moved** from `b35a7b9` — the commit it marked
+when D2 first closed — onto the tip of the D2 remediation, the commit that carries this record. The
+stated reason: the remediation *is* D2's completion, so the delivery milestone belongs on the tree
+that contains T21 and T22, not on the tree that preceded them.
+
+`deepseek-v41-flash-D2-tdd-behavior-enforcement` (`e748e55`) was **not** moved. It marks a specific
+lesson (how to reach a valid red, including a stub that throws) rather than the deliverable, and
+moving it would erase that marker.
+
+What this changes, and what it does not:
+
+- The two statements earlier in this file that both tags mark the deliverable *before* the remediation
+  are superseded by this section. The `deepseek-v41-flash-D2` half is no longer current; the
+  `-tdd-behavior-enforcement` half remains true.
+- **No history was rewritten.** `b35a7b9` is still in the branch; only the tag ref moved, and the move
+  was pushed as a tag update. Any record that cites `deepseek-v41-flash-D2 → b35a7b9` — including
+  `plan/freeze-2026-10-19.md` §5, which describes the state at that moment — remains a correct
+  statement *about that moment*.
+- No plan file changed, so the freeze manifest was not re-stamped and still verifies at 11 × `OK`.
+
+| Ref | Before | After |
+|---|---|---|
+| `deepseek-v41-flash-D2` | `b35a7b9` (first close of the deliverable) | the remediation tip, which carries this record |
+| `deepseek-v41-flash-D2-tdd-behavior-enforcement` | `e748e55` | `e748e55` (unchanged) |
