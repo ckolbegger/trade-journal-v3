@@ -1,32 +1,13 @@
-import type { MutationGuard, StorageFailure } from '../mutation-guard.ts';
+import type { StorageFailure } from '../mutation-guard.ts';
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
-import type { Clock, Instant } from '../../domain/time/index.ts';
-import {
-  assessPlan,
-  derive,
-  type DerivedTradeState,
-  type LifecycleState,
-  type PlanInput,
-  type TradeAnalysisRecord,
-} from '../../domain/trade-analysis/index.ts';
-import type { AnswerInput, EntryProjection, Journal } from '../../modules/journal/index.ts';
-import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
-import type { TradeRecord } from '../../modules/trade-record/index.ts';
-import {
-  beginSemanticTransaction,
-  type BindingCheck,
-  type Persistence,
-  type WorkspaceSnapshotBinding,
-} from '../../persistence/index.ts';
+import type { Instant } from '../../domain/time/index.ts';
+import { assessPlan, derive, type PlanInput } from '../../domain/trade-analysis/index.ts';
+import type { AnswerInput } from '../../modules/journal/index.ts';
+import { recordPositionChange, type PositionChangeCommand, type PositionChangeResult } from './record-position-change.ts';
+import { beginSemanticTransaction, type BindingCheck, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
+import type { TradeMutationSuccess, TradeWorkflowsDeps, WorkflowIssue } from './types.ts';
 
-export interface TradeWorkflowsDeps {
-  readonly persistence: Persistence;
-  readonly catalog: ReferenceCatalog;
-  readonly journal: Journal;
-  readonly tradeRecord: TradeRecord;
-  readonly clock: Clock;
-  readonly guard: MutationGuard;
-}
+export type { TradeMutationSuccess, TradeWorkflowsDeps, WorkflowIssue } from './types.ts';
 
 export interface ConfirmPlanCommand {
   readonly accountId: string;
@@ -38,32 +19,6 @@ export interface ConfirmPlanCommand {
   readonly plan: Omit<PlanInput, never>;
   // The completed Plan Reflection against the exact definition revision shown.
   readonly reflection: { readonly definitionId: string; readonly answers: Readonly<Record<string, AnswerInput>> };
-}
-
-// The common accepted result of every Trade mutation (Trade Workflows, "Common command rules"):
-// enough to present the saved outcome without reading the changed Trade back.
-export interface TradeMutationSuccess {
-  readonly receipt: {
-    readonly tradeId: string;
-    readonly factRevision: number;
-    readonly binding: WorkspaceSnapshotBinding;
-    readonly createdFactIds: readonly string[];
-    readonly lifecycleTransitions: readonly { readonly tradeId: string; readonly from: LifecycleState | null; readonly to: LifecycleState }[];
-    readonly entryId: string;
-  };
-  readonly postCommit: {
-    readonly trade: TradeAnalysisRecord;
-    readonly derivation: DerivedTradeState;
-    readonly entry: EntryProjection;
-  };
-  // Advisory: views that may now differ, for optional later reads only.
-  readonly affected: readonly { readonly scope: 'TradeList'; readonly lifecycle: LifecycleState }[];
-}
-
-export interface WorkflowIssue {
-  readonly source: 'ReferenceCatalog' | 'Journal' | 'TradeAnalysis' | 'TradeWorkflows';
-  readonly field?: string;
-  readonly code: string;
 }
 
 export type ConfirmPlanResult =
@@ -82,6 +37,7 @@ export type ConfirmPlanResult =
 
 export interface TradeWorkflows {
   confirmPlan(command: ConfirmPlanCommand): Promise<ConfirmPlanResult>;
+  recordPositionChange(command: PositionChangeCommand): Promise<PositionChangeResult>;
 }
 
 function unchangedReference(name: string, id: string, recordRevision: number): BindingCheck {
@@ -97,6 +53,7 @@ export function createTradeWorkflows(deps: TradeWorkflowsDeps): TradeWorkflows {
   return {
     // Readiness is rerun immediately before the mutation (D1 A4).
     confirmPlan: (command) => deps.guard.run('TradeWorkflows.confirmPlan', () => confirmPlan(command)),
+    recordPositionChange: (command) => deps.guard.run('TradeWorkflows.recordPositionChange', () => recordPositionChange(deps, command)),
   };
 
   async function confirmPlan(command: ConfirmPlanCommand): Promise<ConfirmPlanResult> {

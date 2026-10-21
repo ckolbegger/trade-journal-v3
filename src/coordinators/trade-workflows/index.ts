@@ -1,1 +1,2 @@
 export { createTradeWorkflows, type ConfirmPlanCommand, type ConfirmPlanResult, type TradeMutationSuccess, type WorkflowIssue, type TradeWorkflows, type TradeWorkflowsDeps } from './trade-workflows.ts';
+export type { DeviationReconciliationItem, EntryChange, PositionChangeCommand, PositionChangeMember, PositionChangeResult, PositionChangeSuccess, UninstalledVariant } from './record-position-change.ts';
