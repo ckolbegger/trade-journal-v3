@@ -1,0 +1,78 @@
+
+> trade-journal-v3@0.0.0 test:e2e
+> npm run build:faults && npm run build:releases && playwright test e2e/d1
+
+
+> trade-journal-v3@0.0.0 build:faults
+> vite build --mode faults --outDir dist-faults
+
+vite v8.3.2 building client environment for faults...
+transforming...
+✓ 96 modules transformed.
+rendering chunks...
+computing gzip size...
+dist-faults/index.html                   0.50 kB │ gzip:   0.30 kB
+dist-faults/assets/index-DCQ3XogC.css    3.54 kB │ gzip:   1.31 kB
+dist-faults/assets/faults-ChjcxTL3.js    0.95 kB │ gzip:   0.51 kB
+dist-faults/assets/index-iVxb1WIL.js   395.79 kB │ gzip: 125.13 kB
+
+✓ built in 347ms
+
+> trade-journal-v3@0.0.0 build:releases
+> node tools/build-releases.ts
+
+build:releases OK: v1, v2, v2-corrupt in /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/dist-releases; v2-corrupt alters /assets/index-DCQ3XogC.css
+
+Running 27 tests using 1 worker
+
+  ✓   1 [chromium] › e2e/d1/identity.spec.ts:6:5 › B1.1 identity and Writable tab › should serve a complete manifest and digest-valid inventory and reach Writable with all four checks passing (1.5s)
+  ✓   2 [chromium] › e2e/d1/identity.spec.ts:6:5 › B1.1 identity and Writable tab › should serve a complete manifest and digest-valid inventory and reach Writable with all four checks passing under an unknown user agent (806ms)
+  ✓   3 [chromium] › e2e/d1/integrity-blocked.spec.ts:6:3 › B1.8 Integrity Blocked › should block a root at version 99 created before launch, offering only Retry and leaving the root untouched (578ms)
+  ✓   4 [chromium] › e2e/d1/integrity-blocked.spec.ts:38:3 › B1.8 Integrity Blocked › should block a pointer whose Workspace database was deleted, keeping the pointer and creating no new Workspace (781ms)
+  ✘   5 [chromium] › e2e/d1/no-save.spec.ts:20:3 › B1.14 nothing is saved without Save › should store no Entry, Trade, draft, or Web Storage value after typing, resizing, leaving, and restarting (1.3s)
+  ✓   6 [chromium] › e2e/d1/offline.spec.ts:4:3 › B1.4 offline cold restart › should open Writable without a network, confirm a second Plan and add an Account, and keep both across another offline restart (2.2s)
+  ✓   7 [chromium] › e2e/d1/onboarding.spec.ts:5:3 › onboarding after a partly failed attempt (critic-2) › should show the protection warning on first run and onboarding, and reuse an Institution saved without its Account after a reload (814ms)
+  ✓   8 [chromium] › e2e/d1/plan.spec.ts:7:3 › B1.2 onboarding and first Plan › should show the Plan, 1R, and reflection after relaunch, with one Trade, one Entry, and Planned in the index (1.5s)
+  ✓   9 [chromium] › e2e/d1/plan.spec.ts:35:3 › B1.3 kill after commit › should keep the complete Plan, with its Entry, after the browser process is killed once the confirmation renders (1.5s)
+  ✓  10 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly diagnostic, with Retry and the another-browser recommendation, creating no Workspace (523ms)
+  ✓  11 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly capacity, with Retry and the another-browser recommendation, creating no Workspace (531ms)
+  ✓  12 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly control, with Retry and the another-browser recommendation, creating no Workspace (501ms)
+  ✓  13 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly inventory, with Retry and the another-browser recommendation, creating no Workspace (548ms)
+  ✓  14 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly diagnostic and capacity, with Retry and the another-browser recommendation, creating no Workspace (529ms)
+  ✓  15 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly control and inventory, with Retry and the another-browser recommendation, creating no Workspace (552ms)
+  ✓  16 [chromium] › e2e/d1/readiness.spec.ts:25:3 › B1.7 protection is advisory › should stay Writable with the warning and durability action while unprotected, and report the request honestly (987ms)
+  ✓  17 [chromium] › e2e/d1/recovery-only.spec.ts:4:3 › B1.6 Recovery Only matrix (existing Workspace, faults build) › should open Recovery Only with the failed checks for each fault set, keeping the Plan readable and the stores unchanged (4.5s)
+  ✓  18 [chromium] › e2e/d1/responsive-a11y.spec.ts:33:3 › B1.15 responsive and accessible › should switch layout at 960 px with the route and entered values intact (989ms)
+  ✓  19 [chromium] › e2e/d1/responsive-a11y.spec.ts:57:3 › B1.15 responsive and accessible › should report no WCAG 2.1 AA violations in any D1 view state (4.4s)
+  ✓  20 [chromium] › e2e/d1/responsive-a11y.spec.ts:134:3 › B1.15 responsive and accessible › should complete onboarding and a Plan with the keyboard only, with visible focus throughout (851ms)
+  ✓  21 [chromium] › e2e/d1/runtime-failure.spec.ts:5:5 › B1.9 mid-session failure (faults build) › should explain RuntimeNotWritable, keep the form values, and switch to Recovery Only when inventory starts failing before Confirm (937ms)
+  ✓  22 [chromium] › e2e/d1/runtime-failure.spec.ts:5:5 › B1.9 mid-session failure (faults build) › should explain RuntimeNotWritable, keep the form values, and switch to Recovery Only when diagnostic starts failing before Confirm (912ms)
+  ✓  23 [chromium] › e2e/d1/update.spec.ts:42:3 › B1.10 update with unsaved work › should notify only once v2 is waiting, defer Reload while the form is unsaved, then activate v2 with the Workspace unchanged (3.6s)
+  ✓  24 [chromium] › e2e/d1/update.spec.ts:74:3 › B1.11 corrupt update › should show no notice, keep v1 in control, and leave no v2 cache when the update fails verification (2.5s)
+  ✓  25 [chromium] › e2e/d1/update.spec.ts:90:3 › B1.12 offline keeps the installed release › should show no notice offline and keep v1 running and Writable (2.5s)
+  ✓  26 [chromium] › e2e/d1/update.spec.ts:111:3 › B1.13 two tabs, one unsaved › should explain in the clean tab that another tab has unsaved work, keeping Reload disabled until that form is cancelled (2.6s)
+  ✓  27 [chromium] › e2e/d1/update.spec.ts:133:3 › B1.13 two tabs, the clean one opened after the form became unsaved (critic-1) › should defer Reload and explain in a tab opened later, where "Check for updates" reports the waiting update once (2.8s)
+
+
+  1) [chromium] › e2e/d1/no-save.spec.ts:20:3 › B1.14 nothing is saved without Save › should store no Entry, Trade, draft, or Web Storage value after typing, resizing, leaving, and restarting 
+
+    Error: expect(received).not.toContain(expected) // indexOf
+
+    Expected substring: not "317"
+    Received string:        "{\"tj-root\":{\"version\":1,\"stores\":{\"diagnostics\":[],\"pointer\":[{\"key\":\"current\",\"databaseName\":\"tj-ws-c208ed53-8fad-48ab-8050-afbb14fcbcb4\"}]},\"indexes\":{}},\"tj-ws-c208ed53-8fad-48ab-8050-afbb14fcbcb4\":{\"version\":1,\"stores\":{\"catalog\":[{\"id\":\"5e195836-35b2-4973-8df8-63c17ef148a2\",\"kind\":\"Strategy\",\"label\":\"Long Stock\",\"normalizedLabel\":\"long stock\",\"active\":true,\"origin\":\"Seeded\",\"recordRevision\":1,\"productKey\":\"strategy.long-stock\",\"shape\":{\"roles\":[{\"side\":\"Long\",\"instrument\":\"Stock\",\"ratio\":1}]},\"revision\":1},{\"id\":\"8b65798f-a016-457d-bda1-3aed2bc67e9b\",\"label\":\"Fidelity\",\"normalizedLabel\":\"fidelity\",\"active\":true,\"origin\":\"Trader\",\"recordRevision\":1,\"kind\":\"Institution\",\"revision\":2},{\"id\":\"eeef460a-7747-4da7-bef2-d172dece457d\",\"label\":\"Roth IRA\",\"normalizedLabel\":\"roth ira\",\"active\":true,\"origin\":\"Trader\",\"recordRevision\":1,\"kind\":\"Account\",\"institutionId\":\"8b65798f-a016-457d-bda1-3aed2bc67e9b\",\"revision\":3}],\"journalDefinitions\":[{\"id\":\"bad21aeb-76ec-477b-9964-4d53171e3bd6\",\"entryTypeKey\":\"entry-type.plan-reflection\",\"revisionNumber\":1,\"prompts\":[{\"id\":\"prompt.plan-reflection.thesis\",\"kind\":\"Text\",\"text\":\"Why this trade, why now?\",\"required\":true,\"role\":\"Thesis\"},{\"id\":\"prompt.plan-reflection.invalidation\",\"kind\":\"Text\",\"text\":\"What would invalidate the thesis?\",\"required\":true,\"role\":\"Invalidation\"},{\"id\":\"prompt.plan-reflection.conviction\",\"kind\":\"Scale\",\"text\":\"Conviction\",\"required\":false,\"min\":1,\"max\":5},{\"id\":\"prompt.plan-reflection.primary-emotion\",\"kind\":\"SingleSelect\",\"text\":\"Primary emotion\",\"required\":false,\"options\":[{\"id\":\"option.plan-reflection.primary-emotion.calm\",\"label\":\"Calm\"},{\"id\":\"option.plan-reflection.primary-emotion.eager\",\"label\":\"Eager\"},{\"id\":\"option.plan-reflection.primary-emotion.anxious\",\"label\":\"Anxious\"},{\"id\":\"option.plan-reflection.primary-emotion.fomo\",\"label\":\"FOMO\"},{\"id\":\"option.plan-reflection.primary-emotion.revenge\",\"label\":\"Revenge\"},{\"id\":\"option.plan-reflection.primary-emotion.relieved\",\"label\":\"Relieved\"},{\"id\":\"option.plan-reflection.primary-emotion.frustrated\",\"label\":\"Frustrated\"},{\"id\":\"option.plan-reflection.primary-emotion.other\",\"label\":\"Other\"}]}],\"revision\":1}],\"journalEntries\":[],\"journalTypes\":[{\"id\":\"entry-type.plan-reflection\",\"kind\":\"EntryType\",\"productKey\":\"entry-type.plan-reflection\",\"label\":\"Plan Reflection\",\"revision\":1},{\"id\":\"source.plan-confirmation\",\"kind\":\"Source\",\"productKey\":\"source.plan-confirmation\",\"label\":\"Plan Confirmation\",\"revision\":1}],\"meta\":[{\"key\":\"catalog\",\"catalogRevision\":3,\"revision\":3},{\"key\":\"content\",\"contentRevision\":3},{\"key\":\"journal\",\"journalRevision\":1,\"revision\":1},{\"key\":\"schema\",\"schemaVersion\":1},{\"key\":\"settings\",\"timeZone\":\"America/New_York\",\"settingsRevision\":1,\"revision\":1}],\"trades\":[]},\"indexes\":{\"journalEntries.byAnchorTrade\":[],\"journalEntries.byObligation\":[],\"trades.byLifecycle\":[]}}}{\"local\":{},\"session\":{}}"
+
+      44 |     expect(workspace).toEqual(before);
+      45 |     const everything = JSON.stringify(probed) + (await webStorage(again));
+    > 46 |     for (const value of Object.values(TYPED)) expect(everything).not.toContain(value);
+         |                                                                      ^
+      47 |     await relaunched.close();
+      48 |   });
+      49 | });
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/no-save.spec.ts:46:70
+
+    Error Context: test-results/d1-no-save-B1-14-nothing-i-79857-zing-leaving-and-restarting-chromium/error-context.md
+
+  1 failed
+    [chromium] › e2e/d1/no-save.spec.ts:20:3 › B1.14 nothing is saved without Save › should store no Entry, Trade, draft, or Web Storage value after typing, resizing, leaving, and restarting 
+  26 passed (43.0s)
+EXIT 1
