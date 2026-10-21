@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
-import type { NarrativeAnswer, PlannedTradeDetail } from '../../app/types.ts';
+import type { NarrativeAnswer, PlannedTradeDetail, TradeDetailView } from '../../app/types.ts';
 import { parseDecimal } from '../../domain/values/index.ts';
 import { localTime, money, ratio } from '../format.ts';
 
@@ -12,7 +12,7 @@ export interface TradeDetailProps {
 
 type DetailState =
   | { readonly kind: 'Loading' }
-  | { readonly kind: 'Ready'; readonly view: PlannedTradeDetail }
+  | { readonly kind: 'Ready'; readonly view: TradeDetailView }
   | { readonly kind: 'NotFound' }
   | { readonly kind: 'Error' };
 
@@ -117,7 +117,7 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
           <dd className="number">{ratio(view.baseline.rewardRiskRatio)}</dd>
         </dl>
       </section>
-      {entry && (
+      {entry && 'responses' in entry && (
         <section className="card" aria-labelledby="reflection-heading">
           <h2 id="reflection-heading">{entry.entryType}</h2>
           <dl>

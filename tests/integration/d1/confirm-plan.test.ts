@@ -16,6 +16,8 @@ describe('I1.3 confirm a Plan', () => {
     const again = await restart(app, d);
     const detail = await again.TradeViewsAndReporting.getTradeDetail({ tradeId: receipt.tradeId });
     if (detail.kind !== 'Ready') throw new Error(`detail: ${detail.kind}`);
+    // A Planned Trade's Detail keeps D1's form (D2 T2.7).
+    if ('positionChanges' in detail.view) throw new Error('expected the Planned form of Detail');
     const view = detail.view;
     expect(view.tradeId).toBe(postCommit.trade.tradeId);
     expect(view.factRevision).toBe(postCommit.trade.factRevision);

@@ -1,1 +1,1 @@
-export { createTradeViews, type PlannedTradeDetail, type PlannedTradeItem, type TradeDetailRequest, type ReadViewResult, type TradeBrowseRequest, type TradeViews, type TradeViewsDeps, type ViewBinding } from './trade-views.ts';
+export { createTradeViews, type OpenTradeDetail, type OpenTradeItem, type PlannedTradeDetail, type PlannedTradeItem, type TradeBrowseItem, type TradeBrowseView, type TradeDetailView, type TradeDetailRequest, type ReadViewResult, type TradeBrowseRequest, type TradeViews, type TradeViewsDeps, type ViewBinding } from './trade-views.ts';
