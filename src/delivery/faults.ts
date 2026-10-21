@@ -1,6 +1,9 @@
-// Faults build only (D1 T1.27): fails any subset of the four readiness checks at the host-port
-// boundary. Everything above the port is production code. The production bundle never imports
-// this module; `verify:no-fault-hooks` proves the marker below and `__tjFaults` are absent there.
+// Faults build only (D1 T1.27, D2 T2.16): fails any subset of the four readiness checks at the
+// host-port boundary, and acts at the migration stage boundaries. Everything above the port and
+// every migration stage (copying, validation, activation) is production code. The production
+// bundle never imports this module; `verify:no-fault-hooks` proves the marker below and
+// `__tjFaults` are absent there.
+import type { MigrationStageHooks } from '../coordinators/workspace/index.ts';
 import type { HostPort } from './host.ts';
 import type { ReadinessCheckName } from './runtime-not-writable.ts';
 
@@ -8,9 +11,23 @@ export const FAULT_HOOK_MARKER = 'tj-fault-hooks-v1';
 
 const CHECKS: readonly ReadinessCheckName[] = ['diagnostic', 'capacity', 'control', 'inventory'];
 
+// migration:validate: validation reports one more issue. migration:activate: the root flip
+// transaction aborts. migration:hold: the migrator waits before activating until release().
+export type MigrationFault = 'migration:validate' | 'migration:activate' | 'migration:hold';
+export const MIGRATION_FAULTS: readonly MigrationFault[] = ['migration:validate', 'migration:activate', 'migration:hold'];
+
+export type FaultName = ReadinessCheckName | MigrationFault;
+const FAULTS: readonly FaultName[] = [...CHECKS, ...MIGRATION_FAULTS];
+
 declare global {
   interface Window {
-    __tjFaults?: { readonly marker: string; set(checks: readonly ReadinessCheckName[]): void };
+    __tjFaults?: {
+      readonly marker: string;
+      // Replaces the active faults.
+      set(faults: readonly FaultName[]): void;
+      // Lets a migrator held by migration:hold continue to activation.
+      release(): void;
+    };
   }
 }
 
@@ -29,31 +46,42 @@ const emptyCaches = {
   open: () => Promise.reject(new Error('injected fault')),
 } as unknown as CacheStorage;
 
-function parse(list: string | null): Set<ReadinessCheckName> {
-  const names = (list ?? '').split(',').map((s) => s.trim());
-  return new Set(CHECKS.filter((check) => names.includes(check)));
-}
+const only = (names: readonly string[]) => new Set(FAULTS.filter((fault) => names.includes(fault)));
 
-// Wraps the real host: the failing set comes from `?faults=` at launch and changes mid-session
-// through `window.__tjFaults.set([...])`.
-export function faultyHost(real: HostPort): HostPort {
-  let failing = parse(new URLSearchParams(window.location.search).get('faults'));
+let active: Set<FaultName> | undefined;
+let releaseHold: () => void = () => undefined;
+let held: Promise<void> = new Promise((resolve) => (releaseHold = resolve));
+
+// The active faults: `?faults=` at launch, then `window.__tjFaults.set([...])` mid-session.
+function faults(): Set<FaultName> {
+  if (active) return active;
+  active = only((new URLSearchParams(window.location.search).get('faults') ?? '').split(',').map((s) => s.trim()));
   window.__tjFaults = {
     marker: FAULT_HOOK_MARKER,
-    set(checks) {
-      failing = new Set(CHECKS.filter((check) => checks.includes(check)));
+    set(names) {
+      active = only(names);
+    },
+    release() {
+      releaseHold();
+      held = new Promise((resolve) => (releaseHold = resolve));
     },
   };
+  return active;
+}
+
+// Wraps the real host: each failing readiness check fails at the port.
+export function faultyHost(real: HostPort): HostPort {
+  faults();
   return {
     get indexedDB() {
-      return failing.has('diagnostic') ? failingFactory : real.indexedDB;
+      return faults().has('diagnostic') ? failingFactory : real.indexedDB;
     },
     get caches() {
-      return failing.has('inventory') ? emptyCaches : real.caches;
+      return faults().has('inventory') ? emptyCaches : real.caches;
     },
     get estimate() {
       const estimate = real.estimate;
-      if (!failing.has('capacity') || !estimate) return estimate;
+      if (!faults().has('capacity') || !estimate) return estimate;
       // The real usage, with no quota beyond it.
       return async () => {
         const { usage = 0 } = await estimate();
@@ -66,6 +94,19 @@ export function faultyHost(real: HostPort): HostPort {
     get persist() {
       return real.persist;
     },
-    controllerRelease: () => (failing.has('control') ? Promise.resolve(null) : real.controllerRelease()),
+    controllerRelease: () => (faults().has('control') ? Promise.resolve(null) : real.controllerRelease()),
+  };
+}
+
+// The migration stage-boundary hooks, each acting only while its fault is active.
+export function migrationFaults(): MigrationStageHooks {
+  faults();
+  return {
+    validated: (issues) =>
+      faults().has('migration:validate') ? [...issues, { code: 'UnknownAccount', tradeId: 'fault-injected', accountId: 'fault-injected' }] : issues,
+    beforeActivate: () => (faults().has('migration:hold') ? held : Promise.resolve()),
+    activating: () => {
+      if (faults().has('migration:activate')) throw new Error('injected fault: migration:activate');
+    },
   };
 }

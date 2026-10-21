@@ -27,6 +27,7 @@ const MIGRATION_ISSUES: Record<MigrationIssue['code'], string> = {
   DuplicateFactIdentity: 'A Trade records the same fact identity twice.',
   UnknownAnchorTrade: 'A reflection belongs to a Trade that does not exist.',
   IncoherentFacts: "A Trade's recorded facts cannot be replayed.",
+  ActivationFailed: 'The final step that makes the converted copy your journal could not be saved.',
 };
 
 export function explainMigrationIssue(issue: MigrationIssue): string {

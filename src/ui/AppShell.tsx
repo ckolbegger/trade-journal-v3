@@ -53,18 +53,25 @@ export function AppShell({ facade, screens, notices, onRetry = () => window.loca
   // While initialize converts an older stored schema (D2 A31).
   const [migrating, setMigrating] = useState(false);
   // The last conversion attempt's failure: the old data is unchanged and nothing is Ready.
-  const [blocked, setBlocked] = useState<Pick<MigrationBlocked, 'issues'> | undefined>();
+  const [blocked, setBlocked] = useState<Pick<MigrationBlocked, 'stage' | 'issues'> | undefined>();
 
   // Retry is calling initialize again, which reruns the migration.
   const migrate = useCallback(() => {
     setMigrating(true);
-    void facade.Workspace.initialize({}).then((result) => {
-      setMigrating(false);
-      setBlocked(result.kind === 'MigrationBlocked' ? result : undefined);
-      if (result.kind === 'Opened') setStatus(result.status);
-      // Any other outcome (readiness changed meanwhile): show what the Workspace now reports.
-      else if (result.kind !== 'MigrationBlocked') void facade.Workspace.getStatus().then(setStatus);
-    });
+    void facade.Workspace.initialize({}).then(
+      (result) => {
+        setMigrating(false);
+        setBlocked(result.kind === 'MigrationBlocked' ? result : undefined);
+        if (result.kind === 'Opened') setStatus(result.status);
+        // Any other outcome (readiness changed meanwhile): show what the Workspace now reports.
+        else if (result.kind !== 'MigrationBlocked') void facade.Workspace.getStatus().then(setStatus);
+      },
+      // An unexpected failure: show what the Workspace now reports, never the updating message.
+      () => {
+        setMigrating(false);
+        void facade.Workspace.getStatus().then(setStatus);
+      },
+    );
   }, [facade]);
 
   useEffect(() => {
@@ -101,7 +108,11 @@ export function AppShell({ facade, screens, notices, onRetry = () => window.loca
     return (
       <main className="gate">
         <h1>Your journal could not be converted to this release</h1>
-        <p>Checking the converted copy found these problems, so it was discarded:</p>
+        <p>
+          {failedMigration.stage === 'Activate'
+            ? 'The conversion could not finish, so the converted copy was discarded:'
+            : 'Checking the converted copy found these problems, so it was discarded:'}
+        </p>
         <ul>
           {failedMigration.issues.map((issue, index) => (
             <li key={index}>{explainMigrationIssue(issue)}</li>

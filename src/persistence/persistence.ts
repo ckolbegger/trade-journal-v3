@@ -156,8 +156,9 @@ export interface Persistence {
   // Produces the candidate's private fields, stores, and indexes from its authoritative records.
   rebuildCandidate(candidate: string): Promise<void>;
   // In one root transaction: points the root at the candidate, removes its candidate entry, and
-  // lists the database it replaces as retired (D2 A30).
-  activateCandidate(candidate: string, retired: string): Promise<void>;
+  // lists the database it replaces as retired (D2 A30). `inFlip` runs inside that transaction
+  // after its writes; a throw aborts it. Aborted: the pointer still names `retired`.
+  activateCandidate(candidate: string, retired: string, inFlip?: () => void): Promise<{ readonly kind: 'Activated' | 'Aborted' }>;
   // A database's content revision and record count per store, read without changing it.
   describeDatabase(databaseName: string): Promise<DatabaseDescription>;
   // Deletes every listed candidate and retired database the pointer does not name. Only a holder
@@ -250,7 +251,19 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
     const root = await openDatabase(deps.indexedDB, ROOT_DATABASE, ROOT_VERSION, upgradeRoot);
     try {
       const tx = root.transaction('pointer', 'readwrite', { durability: 'strict' });
-      const result = await work(tx.store);
+      let result: T;
+      try {
+        result = await work(tx.store);
+      } catch (error) {
+        // Writes already issued must not commit.
+        try {
+          tx.abort();
+        } catch {
+          // Already aborted by the failed request.
+        }
+        await tx.done.catch(() => undefined);
+        throw error;
+      }
       await tx.done;
       return result;
     } finally {
@@ -379,18 +392,24 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
       return { databaseName };
     },
 
-    async activateCandidate(candidate, retired) {
-      await inRoot(async (store) => {
-        const [candidates, retiredNames] = await Promise.all([listed(store, CANDIDATES_KEY), listed(store, RETIRED_KEY)]);
-        await Promise.all([
-          store.put({ key: POINTER_KEY, databaseName: candidate }),
-          store.put({ key: CANDIDATES_KEY, databaseNames: candidates.filter((n) => n !== candidate) }),
-          store.put({ key: RETIRED_KEY, databaseNames: [...retiredNames, retired] }),
-        ]);
-      });
+    async activateCandidate(candidate, retired, inFlip) {
+      try {
+        await inRoot(async (store) => {
+          const [candidates, retiredNames] = await Promise.all([listed(store, CANDIDATES_KEY), listed(store, RETIRED_KEY)]);
+          await Promise.all([
+            store.put({ key: POINTER_KEY, databaseName: candidate }),
+            store.put({ key: CANDIDATES_KEY, databaseNames: candidates.filter((n) => n !== candidate) }),
+            store.put({ key: RETIRED_KEY, databaseNames: [...retiredNames, retired] }),
+          ]);
+          inFlip?.();
+        });
+      } catch {
+        return { kind: 'Aborted' };
+      }
       await closeOwnConnection();
       current = candidate;
       await deleteListed(candidate);
+      return { kind: 'Activated' };
     },
 
     async discardCandidate(candidate) {

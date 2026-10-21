@@ -343,6 +343,37 @@ describe('migration startup states', () => {
     expect(facade.Workspace.initialize).not.toHaveBeenCalled();
   });
 
+  it('should explain an aborted activation in Migration Blocked, saying the conversion could not finish and the data is unchanged', async () => {
+    const facade = facadeDouble({ status: awaitingMigration });
+    vi.mocked(facade.Workspace.initialize).mockResolvedValueOnce({
+      kind: 'MigrationBlocked',
+      stage: 'Activate',
+      issues: [{ code: 'ActivationFailed' }],
+      fromVersion: 1,
+      toVersion: 2,
+      unchangedData: { databaseName: 'tj-ws-1', contentRevision: 7, counts: { trades: 2 } },
+      recoveryActions: [{ action: 'Retry', explanation: 'Retry the conversion.' }],
+    });
+    renderShell(facade);
+    expect(await screen.findByRole('heading', { name: /your journal could not be converted to this release/i })).toBeTruthy();
+    expect(screen.getByText(/the conversion could not finish, so the converted copy was discarded/i)).toBeTruthy();
+    expect(screen.queryByText(/checking the converted copy found these problems/i)).toBeNull();
+    expect(screen.getAllByRole('listitem').map((li) => li.textContent)).toEqual([expect.stringMatching(/makes the converted copy your journal could not be saved/i) as string]);
+    expect(screen.getByText('Your data is unchanged.')).toBeTruthy();
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual(['Retry']);
+  });
+
+  it('should re-read getStatus instead of staying on the updating message when initialize rejects during migration', async () => {
+    const facade = facadeDouble({ status: awaitingMigration });
+    vi.mocked(facade.Workspace.initialize).mockRejectedValueOnce(new Error('activation failed'));
+    renderShell(facade);
+    expect(await screen.findByRole('heading', { name: /this release must convert your journal before you can use it/i })).toBeTruthy();
+    expect(screen.queryByText(/updating your journal to this release/i)).toBeNull();
+    expect(facade.Workspace.getStatus).toHaveBeenCalledTimes(2);
+    expect(facade.Workspace.initialize).toHaveBeenCalledTimes(1);
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual(['Retry']);
+  });
+
   it('should show the D1 Updated in another tab message, keeping on-screen form values, when the session is superseded by a version change', async () => {
     const facade = facadeDouble();
     vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue({

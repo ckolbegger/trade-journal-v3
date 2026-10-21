@@ -319,3 +319,30 @@ Run 2026-10-21 14:24 EDT on commit `1330a4e` (the only uncommitted files were th
 | Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.15-checks.txt` |
 
 Failures: none.
+
+## T2.16 Fault build: migration stages
+
+`src/delivery/faults.ts` (faults build only) adds `migrationFaults()`, passed by `src/main.tsx` as `ApplicationDeps.migrationHooks` (carried by `compose.ts` into Workspace; production passes none). Faults act only at the migration stage boundaries; copying, validation, activation and every view stay production code.
+
+- `migration:validate`: the `validated` hook adds one issue (`UnknownAccount`, Trade and Account `fault-injected`) to the real validators' issues, so the migration returns `MigrationBlocked` at stage `Validate`.
+- `migration:activate`: the `activating` hook throws inside the real root flip transaction, after its writes; `inRoot` now aborts the transaction on any error from its work, so nothing commits. `activateCandidate` returns `Aborted`, and the migration discards the candidate and returns `MigrationBlocked` at stage `Activate` with issue `ActivationFailed`.
+- `migration:hold`: `beforeActivate` waits until `window.__tjFaults.release()`.
+- `window.__tjFaults.set([...])` now accepts readiness checks and migration fault names; `release()` frees a held migrator (and arms a fresh hold for any later attempt).
+- `verify:no-fault-hooks` also searches the production `dist/` for each migration fault name.
+
+| Command | Result |
+|---|---|
+| `npm run build:faults && npm run verify:no-fault-hooks` | exit 0: `dist-faults/assets/faults-BkuDJYOz.js 1.47 kB`; `verify:no-fault-hooks OK: …/dist has no fault hooks` |
+| `npm run build && npm run verify:release` | exit 0: `OK …/dist: release 864961122ffa3153bb2e6b78121ab29d9cafb6e8271feb015b541d5c95dc7966, 6 assets` |
+| `npm run verify:no-fault-hooks -- dist-faults` (negative control) | exit 1: `FAIL fault hook in production build: assets/faults-BkuDJYOz.js:` for `tj-fault-hooks-v1`, `__tjFaults`, `migration:validate`, `migration:activate`, `migration:hold` |
+
+Hook behaviour against a real v1 migration (a throwaway Node test, not committed: the v1 fixture on `fake-indexeddb`, `window` stubbed with `?faults=migration:validate`, hooks from `migrationFaults()`):
+
+```text
+?faults=migration:validate -> {"kind":"MigrationBlocked","stage":"Validate","issues":[{"code":"UnknownAccount","tradeId":"fault-injected","accountId":"fault-injected"}]}
+__tjFaults.set(['migration:activate']) -> {"kind":"MigrationBlocked","stage":"Activate","issues":[{"code":"ActivationFailed"}]} ; databases: tj-root,tj-ws-fx-0003
+__tjFaults.set(['migration:hold']) -> settled after 200 ms: false
+__tjFaults.release() -> Opened
+```
+
+The browser cases that use these faults (B2.4, B2.6) belong to T2.23.

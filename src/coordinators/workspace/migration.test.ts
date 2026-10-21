@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { dumpAll, testStack } from '../../../tests/support/stack.ts';
 import { loadDump, viewsOf, type WorkspaceDump } from '../../../tools/fixtures/workspace-fixture.ts';
 import { createTradeViews } from '../trade-views/index.ts';
-import { createWorkspace } from './index.ts';
+import { createWorkspace, type MigrationStageHooks } from './index.ts';
 
 const V1_DUMP = JSON.parse(readFileSync('tests/fixtures/workspace-v1/dump.json', 'utf8')) as WorkspaceDump;
 const V1_DATABASE = 'tj-ws-fx-0003';
@@ -16,11 +16,11 @@ type MutableDump = {
 };
 
 // A device holding the v1 fixture, optionally edited before the release opens it.
-async function v1Stack(edit?: (dump: MutableDump) => void) {
+async function v1Stack(edit?: (dump: MutableDump) => void, migrationHooks?: MigrationStageHooks) {
   const dump = structuredClone(V1_DUMP);
   edit?.(dump as unknown as MutableDump);
   const stack = await testStack(await loadDump(dump), dump.asOf);
-  const workspace = createWorkspace({ ...stack, host: stack.testHost.host, releaseId: stack.testHost.releaseId });
+  const workspace = createWorkspace({ ...stack, host: stack.testHost.host, releaseId: stack.testHost.releaseId, migrationHooks });
   return { ...stack, workspace, views: () => viewsOf({ TradeViewsAndReporting: createTradeViews(stack) }) };
 }
 
@@ -178,6 +178,43 @@ describe('migration failure AC-REST-004', () => {
       }),
     );
     expect(await workspace.getStatus()).toEqual(expect.objectContaining({ kind: 'Ready', schemaVersion: 2 }));
+  });
+});
+
+describe('activation failure', () => {
+  it('should return MigrationBlocked at the Activate stage with unchanged-data evidence, leaving the old stores equal and no candidate, when the root flip transaction aborts', async () => {
+    // The hook throws inside the real root flip transaction, which aborts it.
+    let abort = true;
+    const { workspace, factory } = await v1Stack(undefined, {
+      activating() {
+        if (abort) throw new Error('flip aborted');
+      },
+    });
+    const before = (await dumpAll(factory))[V1_DATABASE];
+    const blocked = await workspace.initialize({});
+    expect(blocked).toEqual({
+      kind: 'MigrationBlocked',
+      stage: 'Activate',
+      issues: [{ code: 'ActivationFailed' }],
+      fromVersion: 1,
+      toVersion: 2,
+      unchangedData: {
+        databaseName: V1_DATABASE,
+        contentRevision: 11,
+        counts: { catalog: 6, journalDefinitions: 1, journalEntries: 5, journalTypes: 2, meta: 5, trades: 5 },
+      },
+      recoveryActions: [{ action: 'Retry', explanation: expect.any(String) as string }],
+    });
+    const after = await dumpAll(factory);
+    expect(after[V1_DATABASE]).toEqual(before);
+    expect(Object.keys(after).sort()).toEqual(['tj-root', V1_DATABASE]);
+    expect(after['tj-root']!['pointer']).toEqual(
+      expect.arrayContaining([{ key: 'current', databaseName: V1_DATABASE }, { key: 'candidates', databaseNames: [] }]),
+    );
+    expect(await workspace.getStatus()).toEqual(expect.objectContaining({ kind: 'MigrationBlocked', stage: 'Activate' }));
+    // Retry once the flip can commit migrates as usual.
+    abort = false;
+    expect((await workspace.initialize({})).kind).toBe('Opened');
   });
 });
 

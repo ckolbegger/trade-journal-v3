@@ -1,7 +1,7 @@
 import { createMutationGuard } from '../coordinators/mutation-guard.ts';
 import { createTradeViews, type TradeBrowseRequest, type TradeDetailRequest } from '../coordinators/trade-views/index.ts';
 import { createTradeWorkflows, type PositionChangeCommand } from '../coordinators/trade-workflows/index.ts';
-import { createWorkspace, installedCapabilities } from '../coordinators/workspace/index.ts';
+import { createWorkspace, installedCapabilities, type MigrationStageHooks } from '../coordinators/workspace/index.ts';
 import type { HostPort } from '../delivery/host.ts';
 import { createReadinessSession, evaluateReadiness, type CapacityRequirement, type ReadinessSession } from '../delivery/readiness.ts';
 import { toRuntimeNotWritable } from '../delivery/write-gate.ts';
@@ -21,6 +21,8 @@ export interface ApplicationDeps {
   // The Workspace lifecycle lock: the Web Locks API in the browser, the disclosed in-process lock
   // in Node (D2 section 6.0).
   readonly locks: LifecycleLock;
+  // Migration stage-boundary hooks: only the faults build supplies them (D2 T2.16).
+  readonly migrationHooks?: MigrationStageHooks;
 }
 
 // The single application facade used by the UI and by the Node integration suite. It exposes
@@ -51,7 +53,7 @@ export async function createApplication(deps: ApplicationDeps) {
   const catalog = createReferenceCatalog({ persistence, ids: deps.ids });
   const journal = createJournal({ persistence, ids: deps.ids, clock: deps.clock });
   const tradeRecord = createTradeRecord({ persistence, ids: deps.ids });
-  const workspace = createWorkspace({ persistence, session, catalog, journal, host: deps.host, ids: deps.ids, clock: deps.clock, releaseId: deps.releaseId, locks: deps.locks });
+  const workspace = createWorkspace({ persistence, session, catalog, journal, host: deps.host, ids: deps.ids, clock: deps.clock, releaseId: deps.releaseId, locks: deps.locks, migrationHooks: deps.migrationHooks });
   const tradeWorkflows = createTradeWorkflows({ persistence, catalog, journal, tradeRecord, clock: deps.clock, guard });
   const tradeViews = createTradeViews({ persistence, catalog, journal, tradeRecord });
 

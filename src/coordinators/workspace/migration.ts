@@ -32,10 +32,15 @@ import {
 } from '../../persistence/index.ts';
 import type { WorkspaceStore } from '../../persistence/index.ts';
 
-// The stage a migration stopped at: only validation blocks in D2.
-export type MigrationStage = 'Validate';
+// The stage a migration stopped at: validation, or the root flip that activates the candidate.
+export type MigrationStage = 'Validate' | 'Activate';
 
-export type MigrationIssue = CatalogSectionIssue | JournalSectionIssue | TradeSectionIssue;
+// The root flip transaction aborted, so the pointer still names the old database.
+export interface ActivationIssue {
+  readonly code: 'ActivationFailed';
+}
+
+export type MigrationIssue = CatalogSectionIssue | JournalSectionIssue | TradeSectionIssue | ActivationIssue;
 
 // A repaired disagreement as the receipt lists it: stored versus expected, exact values as decimals.
 export interface MigrationRepair {
@@ -63,6 +68,8 @@ export interface MigrationStageHooks {
   readonly validated?: (issues: readonly MigrationIssue[]) => readonly MigrationIssue[];
   // Runs immediately before activation, for example to hold the migrator there.
   readonly beforeActivate?: () => Promise<void>;
+  // Runs inside the root flip transaction after its writes; a throw aborts the flip.
+  readonly activating?: () => void;
 }
 
 export interface MigrationDeps {
@@ -138,19 +145,21 @@ export async function migrate(deps: MigrationDeps, source: string, fromVersion: 
   const journal = await validateJournal(records);
   const trades = await validateTrades(records, { accountIds: catalog.references.accountIds, anchorTradeIds: journal.references.anchorTradeIds });
   const found = [...catalog.issues, ...journal.issues, ...trades.issues];
-  const issues = deps.migrationHooks?.validated?.(found) ?? found;
-  if (issues.length > 0) {
+  // Failure discards the candidate; the old database is left exactly as it was.
+  const block = async (stage: MigrationStage, issues: readonly MigrationIssue[]): Promise<MigrationBlocked> => {
     await persistence.discardCandidate(candidate);
     return {
       kind: 'MigrationBlocked',
-      stage: 'Validate',
+      stage,
       issues,
       fromVersion,
       toVersion: SCHEMA_VERSION,
       unchangedData: await persistence.describeDatabase(source),
       recoveryActions: [{ action: 'Retry', explanation: 'Your journal could not be converted to this release. Your data is unchanged.' }],
     };
-  }
+  };
+  const issues = deps.migrationHooks?.validated?.(found) ?? found;
+  if (issues.length > 0) return block('Validate', issues);
 
   // Repair: coherent disagreements are written as the facts imply and disclosed (P7).
   const repairs = new Map(trades.repairs.map((r) => [r.tradeId, r]));
@@ -167,7 +176,8 @@ export async function migrate(deps: MigrationDeps, source: string, fromVersion: 
 
   await persistence.rebuildCandidate(candidate);
   await deps.migrationHooks?.beforeActivate?.();
-  await persistence.activateCandidate(candidate, source);
+  const activation = await persistence.activateCandidate(candidate, source, deps.migrationHooks?.activating);
+  if (activation.kind === 'Aborted') return block('Activate', [{ code: 'ActivationFailed' }]);
   return {
     kind: 'Migrated',
     receipt: {

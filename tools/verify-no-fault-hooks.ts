@@ -1,15 +1,15 @@
 // npm run verify:no-fault-hooks [dir]: the production build (default dist/) contains neither the
-// fault-hook marker nor `__tjFaults` (D1 T1.27).
+// fault-hook marker, `__tjFaults`, nor any migration fault name (D1 T1.27, D2 T2.16).
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { FAULT_HOOK_MARKER } from '../src/delivery/faults.ts';
+import { FAULT_HOOK_MARKER, MIGRATION_FAULTS } from '../src/delivery/faults.ts';
 import { listFiles } from './release.ts';
 
 const dir = path.resolve(process.argv[2] ?? 'dist');
 const found: string[] = [];
 for (const file of await listFiles(dir)) {
   const text = await readFile(path.join(dir, file), 'latin1');
-  for (const needle of [FAULT_HOOK_MARKER, '__tjFaults']) if (text.includes(needle)) found.push(`${file}: ${needle}`);
+  for (const needle of [FAULT_HOOK_MARKER, '__tjFaults', ...MIGRATION_FAULTS]) if (text.includes(needle)) found.push(`${file}: ${needle}`);
 }
 if (found.length > 0) {
   for (const f of found) console.error(`FAIL fault hook in production build: ${f}`);

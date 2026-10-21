@@ -39,8 +39,9 @@ async function start(container: HTMLElement) {
     });
   });
 
-  // Only the faults build (T1.27) reaches the fault hooks; production builds drop this branch.
-  const host = import.meta.env.MODE === 'faults' ? (await import('./delivery/faults.ts')).faultyHost(browserHost()) : browserHost();
+  // Only the faults build (T1.27, T2.16) reaches the fault hooks; production builds drop this branch.
+  const faults = import.meta.env.MODE === 'faults' ? await import('./delivery/faults.ts') : undefined;
+  const host = faults ? faults.faultyHost(browserHost()) : browserHost();
   const app = await createApplication({
     indexedDB: window.indexedDB,
     host,
@@ -49,6 +50,7 @@ async function start(container: HTMLElement) {
     releaseId: RELEASE_ID,
     capacityRequirement: CAPACITY_REQUIREMENT,
     locks: createWebLocksLifecycleLock(navigator.locks),
+    migrationHooks: faults?.migrationFaults(),
   });
   const facade = {
     Workspace: app.Workspace,
