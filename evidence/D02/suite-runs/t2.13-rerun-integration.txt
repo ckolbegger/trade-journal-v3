@@ -1,0 +1,29 @@
+
+ RUN  v4.1.11 /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5
+
+ ✓ |integration| tests/integration/d1/responses.test.ts > I1.2 onboarding > should return Institution and Account records equal to those read after restart at the returned revisions, and reach ReadyForTradePlanning 27ms
+ ✓ |integration| tests/integration/d1/confirm-plan-rejected.test.ts > I1.4 rejection writes nothing > should return one rejection listing the Stop above entry, the blank Thesis, and the two-leg shape, with every store unchanged 30ms
+ ✓ |integration| tests/integration/d1/initialize.test.ts > I1.1 fresh initialization > should go from InitializationRequired to Opened needing an Institution and Account, then reopen Ready in the same zone with the seeds added once 27ms
+ ✓ |integration| tests/integration/d1/initialize.test.ts > I1.9 concurrent first run > should leave exactly one Workspace database and one pointer when two applications initialize at once, both Opened on it 6ms
+ ✓ |integration| tests/integration/d1/rebuild.test.ts > I1.11 rebuild equivalence > should give equal normalized views after every IndexedDB index is dropped and recreated through the migration path 44ms
+ ✓ |integration| tests/integration/d1/confirm-plan.test.ts > I1.3 confirm a Plan > should return the Trade, derivation, and Entry equal to the Detail read after restart, with one durable Trade, Planned index entry, and Entry in one commit 35ms
+ ✓ |integration| tests/integration/d1/confirm-plan.test.ts > I1.5 atomic commit > should change no store when the last write of a set spanning trades, journalEntries, and meta fails with a real ConstraintError 6ms
+ ✓ |integration| tests/integration/d1/confirm-plan.test.ts > I1.5 atomic commit > should commit confirmPlan's trades, journalEntries, and meta writes in one readwrite transaction 6ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.6 write gate at both boundaries > should refuse initialize, both Catalog creates, confirmPlan, and a direct Persistence.commit with RuntimeNotWritable while the inventory check fails, changing nothing 31ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.7 readiness failures before a Workspace exists > should report Unsupported naming exactly diagnostic, refuse initialize, and create no Workspace 5ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.7 readiness failures before a Workspace exists > should report Unsupported naming exactly capacity, refuse initialize, and create no Workspace 2ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.7 readiness failures before a Workspace exists > should report Unsupported naming exactly control, refuse initialize, and create no Workspace 1ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.7 readiness failures before a Workspace exists > should report Unsupported naming exactly inventory, refuse initialize, and create no Workspace 1ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.7 readiness failures before a Workspace exists > should report Unsupported naming exactly diagnostic and capacity, refuse initialize, and create no Workspace 3ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.7 readiness failures before a Workspace exists > should report Unsupported naming exactly control and inventory, refuse initialize, and create no Workspace 1ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.8 Integrity Blocked > should block a root at a newer version without creating a Workspace or touching the root 1ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.8 Integrity Blocked > should block a pointer naming a missing Workspace database without creating one or touching the root 1ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.8 Integrity Blocked > should keep readiness Writable and return IntegrityBlocked with recovery actions for a Workspace of an unknown schema version 2ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.10 mid-session failure > should refuse confirmPlan once the inventory check starts failing, move to RecoveryOnly, change nothing, and keep reads Ready 10ms
+
+ Test Files  6 passed (6)
+      Tests  19 passed (19)
+   Start at  14:09:52
+   Duration  256ms (transform 417ms, setup 103ms, import 557ms, tests 244ms, environment 0ms)
+
+EXIT 0

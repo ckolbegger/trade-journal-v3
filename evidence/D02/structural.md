@@ -276,3 +276,20 @@ No D1 assertion was removed or weakened.
 | Before (T2.13 cumulative run) | `npm run test:e2e` | 20 failed, 7 passed (`suite-runs/t2.13-browser.txt`) |
 | After | `npm run test:e2e` | `27 passed (42.5s)`, exit 0 |
 | Checks | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | 4 of 4 exit 0 |
+
+## Cumulative run after T2.13
+
+Run 2026-10-21 14:04 EDT on commit `19eaaf8`, Node v26.12.0. Unit `Test Files 37 passed (37)`, `Tests 326 passed (326)`; Node integration `Test Files 6 passed (6)`, `Tests 19 passed (19)`; static and verification checks 11 of 11 exit 0. **Browser (Chromium) `npm run test:e2e`: 20 failed, 7 passed (2.1m), exit 1** (`suite-runs/t2.13-browser.txt`). Every failure timed out waiting for `No planned trades yet` at `/`, because T2.13 made the Open tab the default (A32); reproduced in the main session with `npx playwright test e2e/d1/plan.spec.ts -g "B1.2"` (1 failed). The fix was delegated to a fresh subagent (`171441b`, heading "Fix after T2.13" above), with no production change.
+
+## Cumulative run after T2.13-RERUN
+
+Run 2026-10-21 14:09 EDT on commit `171441b` (the only uncommitted files were this run's own outputs and the untracked older handoff note), Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 37 passed (37)`, `Tests 326 passed (326)`, exit 0 | `suite-runs/t2.13-rerun-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 6 passed (6)`, `Tests 19 passed (19)`, exit 0 | `suite-runs/t2.13-rerun-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `27 passed (41.1s)`, exit 0 | `suite-runs/t2.13-rerun-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.13-rerun-checks.txt` |
+
+Failures: none.

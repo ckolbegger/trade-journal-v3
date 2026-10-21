@@ -1,0 +1,650 @@
+
+> trade-journal-v3@0.0.0 test:e2e
+> npm run build:faults && npm run build:releases && playwright test e2e/d1
+
+
+> trade-journal-v3@0.0.0 build:faults
+> vite build --mode faults --outDir dist-faults
+
+vite v8.3.2 building client environment for faults...
+transforming...
+✓ 108 modules transformed.
+rendering chunks...
+computing gzip size...
+dist-faults/index.html                   0.50 kB │ gzip:   0.30 kB
+dist-faults/assets/index-DY67T--S.css    3.95 kB │ gzip:   1.39 kB
+dist-faults/assets/faults-ChjcxTL3.js    0.95 kB │ gzip:   0.51 kB
+dist-faults/assets/index-DPLe__FE.js   437.41 kB │ gzip: 136.09 kB
+
+✓ built in 95ms
+
+> trade-journal-v3@0.0.0 build:releases
+> node tools/build-releases.ts
+
+build:releases OK: v1, v2, v2-corrupt in /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/dist-releases; v2-corrupt alters /assets/index-DY67T--S.css
+
+Running 27 tests using 1 worker
+
+  ✘   1 [chromium] › e2e/d1/identity.spec.ts:6:5 › B1.1 identity and Writable tab › should serve a complete manifest and digest-valid inventory and reach Writable with all four checks passing (6.1s)
+  ✘   2 [chromium] › e2e/d1/identity.spec.ts:6:5 › B1.1 identity and Writable tab › should serve a complete manifest and digest-valid inventory and reach Writable with all four checks passing under an unknown user agent (5.5s)
+  ✓   3 [chromium] › e2e/d1/integrity-blocked.spec.ts:6:3 › B1.8 Integrity Blocked › should block a root at version 99 created before launch, offering only Retry and leaving the root untouched (603ms)
+  ✘   4 [chromium] › e2e/d1/integrity-blocked.spec.ts:38:3 › B1.8 Integrity Blocked › should block a pointer whose Workspace database was deleted, keeping the pointer and creating no new Workspace (5.5s)
+  ✘   5 [chromium] › e2e/d1/no-save.spec.ts:50:3 › B1.14 nothing is saved without Save › should store no Entry, Trade, draft, or Web Storage value after typing, resizing, leaving, and restarting (5.5s)
+  ✘   6 [chromium] › e2e/d1/offline.spec.ts:4:3 › B1.4 offline cold restart › should open Writable without a network, confirm a second Plan and add an Account, and keep both across another offline restart (5.5s)
+  ✘   7 [chromium] › e2e/d1/onboarding.spec.ts:5:3 › onboarding after a partly failed attempt (critic-2) › should show the protection warning on first run and onboarding, and reuse an Institution saved without its Account after a reload (5.6s)
+  ✘   8 [chromium] › e2e/d1/plan.spec.ts:7:3 › B1.2 onboarding and first Plan › should show the Plan, 1R, and reflection after relaunch, with one Trade, one Entry, and Planned in the index (5.5s)
+  ✘   9 [chromium] › e2e/d1/plan.spec.ts:35:3 › B1.3 kill after commit › should keep the complete Plan, with its Entry, after the browser process is killed once the confirmation renders (5.6s)
+  ✓  10 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly diagnostic, with Retry and the another-browser recommendation, creating no Workspace (503ms)
+  ✓  11 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly capacity, with Retry and the another-browser recommendation, creating no Workspace (509ms)
+  ✓  12 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly control, with Retry and the another-browser recommendation, creating no Workspace (523ms)
+  ✓  13 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly inventory, with Retry and the another-browser recommendation, creating no Workspace (512ms)
+  ✓  14 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly diagnostic and capacity, with Retry and the another-browser recommendation, creating no Workspace (615ms)
+  ✓  15 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly control and inventory, with Retry and the another-browser recommendation, creating no Workspace (1.0s)
+  ✘  16 [chromium] › e2e/d1/readiness.spec.ts:25:3 › B1.7 protection is advisory › should stay Writable with the warning and durability action while unprotected, and report the request honestly (5.5s)
+  ✘  17 [chromium] › e2e/d1/recovery-only.spec.ts:4:3 › B1.6 Recovery Only matrix (existing Workspace, faults build) › should open Recovery Only with the failed checks for each fault set, keeping the Plan readable and the stores unchanged (5.5s)
+  ✘  18 [chromium] › e2e/d1/responsive-a11y.spec.ts:33:3 › B1.15 responsive and accessible › should switch layout at 960 px with the route and entered values intact (5.5s)
+  ✘  19 [chromium] › e2e/d1/responsive-a11y.spec.ts:57:3 › B1.15 responsive and accessible › should report no WCAG 2.1 AA violations in any D1 view state (6.1s)
+  ✘  20 [chromium] › e2e/d1/responsive-a11y.spec.ts:134:3 › B1.15 responsive and accessible › should complete onboarding and a Plan with the keyboard only, with visible focus throughout (5.5s)
+  ✘  21 [chromium] › e2e/d1/runtime-failure.spec.ts:5:5 › B1.9 mid-session failure (faults build) › should explain RuntimeNotWritable, keep the form values, and switch to Recovery Only when inventory starts failing before Confirm (5.6s)
+  ✘  22 [chromium] › e2e/d1/runtime-failure.spec.ts:5:5 › B1.9 mid-session failure (faults build) › should explain RuntimeNotWritable, keep the form values, and switch to Recovery Only when diagnostic starts failing before Confirm (5.5s)
+  ✘  23 [chromium] › e2e/d1/update.spec.ts:42:3 › B1.10 update with unsaved work › should notify only once v2 is waiting, defer Reload while the form is unsaved, then activate v2 with the Workspace unchanged (5.6s)
+  ✘  24 [chromium] › e2e/d1/update.spec.ts:74:3 › B1.11 corrupt update › should show no notice, keep v1 in control, and leave no v2 cache when the update fails verification (5.5s)
+  ✘  25 [chromium] › e2e/d1/update.spec.ts:90:3 › B1.12 offline keeps the installed release › should show no notice offline and keep v1 running and Writable (5.5s)
+  ✘  26 [chromium] › e2e/d1/update.spec.ts:111:3 › B1.13 two tabs, one unsaved › should explain in the clean tab that another tab has unsaved work, keeping Reload disabled until that form is cancelled (5.5s)
+  ✘  27 [chromium] › e2e/d1/update.spec.ts:133:3 › B1.13 two tabs, the clean one opened after the form became unsaved (critic-1) › should defer Reload and explain in a tab opened later, where "Check for updates" reports the waiting update once (5.5s)
+
+
+  1) [chromium] › e2e/d1/identity.spec.ts:6:5 › B1.1 identity and Writable tab › should serve a complete manifest and digest-valid inventory and reach Writable with all four checks passing 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('No planned trades yet')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('No planned trades yet') with timeout 5000ms
+      - waiting for getByText('No planned trades yet')
+
+
+       at d1/support.ts:120
+
+      118 |   await page.getByLabel('Account').fill(account);
+      119 |   await page.getByRole('button', { name: 'Save and continue' }).click();
+    > 120 |   await expect(page.getByText('No planned trades yet')).toBeVisible();
+          |                                                         ^
+      121 | }
+      122 |
+      123 | export interface PlanValues {
+        at onboard (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:120:57)
+        at onboardedPage (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:170:3)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/identity.spec.ts:12:20
+
+    Error Context: test-results/d1-identity-B1-1-identity--1b473-ith-all-four-checks-passing-chromium/error-context.md
+
+  2) [chromium] › e2e/d1/identity.spec.ts:6:5 › B1.1 identity and Writable tab › should serve a complete manifest and digest-valid inventory and reach Writable with all four checks passing under an unknown user agent 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('No planned trades yet')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('No planned trades yet') with timeout 5000ms
+      - waiting for getByText('No planned trades yet')
+
+
+       at d1/support.ts:120
+
+      118 |   await page.getByLabel('Account').fill(account);
+      119 |   await page.getByRole('button', { name: 'Save and continue' }).click();
+    > 120 |   await expect(page.getByText('No planned trades yet')).toBeVisible();
+          |                                                         ^
+      121 | }
+      122 |
+      123 | export interface PlanValues {
+        at onboard (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:120:57)
+        at onboardedPage (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:170:3)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/identity.spec.ts:12:20
+
+    Error Context: test-results/d1-identity-B1-1-identity--3fa6f-under-an-unknown-user-agent-chromium/error-context.md
+
+  3) [chromium] › e2e/d1/integrity-blocked.spec.ts:38:3 › B1.8 Integrity Blocked › should block a pointer whose Workspace database was deleted, keeping the pointer and creating no new Workspace 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('No planned trades yet')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('No planned trades yet') with timeout 5000ms
+      - waiting for getByText('No planned trades yet')
+
+
+       at d1/support.ts:120
+
+      118 |   await page.getByLabel('Account').fill(account);
+      119 |   await page.getByRole('button', { name: 'Save and continue' }).click();
+    > 120 |   await expect(page.getByText('No planned trades yet')).toBeVisible();
+          |                                                         ^
+      121 | }
+      122 |
+      123 | export interface PlanValues {
+        at onboard (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:120:57)
+        at onboardedPage (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:170:3)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/integrity-blocked.spec.ts:41:18
+
+    Error Context: test-results/d1-integrity-blocked-B1-8--aa1c3-d-creating-no-new-Workspace-chromium/error-context.md
+
+  4) [chromium] › e2e/d1/no-save.spec.ts:50:3 › B1.14 nothing is saved without Save › should store no Entry, Trade, draft, or Web Storage value after typing, resizing, leaving, and restarting 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('No planned trades yet')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('No planned trades yet') with timeout 5000ms
+      - waiting for getByText('No planned trades yet')
+
+
+       at d1/support.ts:120
+
+      118 |   await page.getByLabel('Account').fill(account);
+      119 |   await page.getByRole('button', { name: 'Save and continue' }).click();
+    > 120 |   await expect(page.getByText('No planned trades yet')).toBeVisible();
+          |                                                         ^
+      121 | }
+      122 |
+      123 | export interface PlanValues {
+        at onboard (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:120:57)
+        at onboardedPage (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:170:3)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/no-save.spec.ts:53:18
+
+    Error Context: test-results/d1-no-save-B1-14-nothing-i-79857-zing-leaving-and-restarting-chromium/error-context.md
+
+  5) [chromium] › e2e/d1/offline.spec.ts:4:3 › B1.4 offline cold restart › should open Writable without a network, confirm a second Plan and add an Account, and keep both across another offline restart 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('No planned trades yet')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('No planned trades yet') with timeout 5000ms
+      - waiting for getByText('No planned trades yet')
+
+
+       at d1/support.ts:120
+
+      118 |   await page.getByLabel('Account').fill(account);
+      119 |   await page.getByRole('button', { name: 'Save and continue' }).click();
+    > 120 |   await expect(page.getByText('No planned trades yet')).toBeVisible();
+          |                                                         ^
+      121 | }
+      122 |
+      123 | export interface PlanValues {
+        at onboard (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:120:57)
+        at onboardedPage (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:170:3)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/offline.spec.ts:6:23
+
+    Error Context: test-results/d1-offline-B1-4-offline-co-14f3e-oss-another-offline-restart-chromium/error-context.md
+
+  6) [chromium] › e2e/d1/onboarding.spec.ts:5:3 › onboarding after a partly failed attempt (critic-2) › should show the protection warning on first run and onboarding, and reuse an Institution saved without its Account after a reload 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('No planned trades yet')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('No planned trades yet') with timeout 5000ms
+      - waiting for getByText('No planned trades yet')
+
+
+      22 |     await page.getByLabel('Account').fill('Individual');
+      23 |     await page.getByRole('button', { name: 'Save and continue' }).click();
+    > 24 |     await expect(page.getByText('No planned trades yet')).toBeVisible();
+         |                                                           ^
+      25 |     const catalog = workspaceOf(await probe(page))!.stores['catalog'] as { kind: string; label: string }[];
+      26 |     expect(catalog.filter((r) => r.kind === 'Institution').map((r) => r.label)).toEqual(['Schwab']);
+      27 |     await context.close();
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/onboarding.spec.ts:24:59
+
+    Error Context: test-results/d1-onboarding-onboarding-a-e8540--its-Account-after-a-reload-chromium/error-context.md
+
+  7) [chromium] › e2e/d1/plan.spec.ts:7:3 › B1.2 onboarding and first Plan › should show the Plan, 1R, and reflection after relaunch, with one Trade, one Entry, and Planned in the index 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('No planned trades yet')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('No planned trades yet') with timeout 5000ms
+      - waiting for getByText('No planned trades yet')
+
+
+       at d1/support.ts:120
+
+      118 |   await page.getByLabel('Account').fill(account);
+      119 |   await page.getByRole('button', { name: 'Save and continue' }).click();
+    > 120 |   await expect(page.getByText('No planned trades yet')).toBeVisible();
+          |                                                         ^
+      121 | }
+      122 |
+      123 | export interface PlanValues {
+        at onboard (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:120:57)
+        at onboardedPage (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:170:3)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/plan.spec.ts:10:18
+
+    Error Context: test-results/d1-plan-B1-2-onboarding-an-4e708-ry-and-Planned-in-the-index-chromium/error-context.md
+
+  8) [chromium] › e2e/d1/plan.spec.ts:35:3 › B1.3 kill after commit › should keep the complete Plan, with its Entry, after the browser process is killed once the confirmation renders 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('No planned trades yet')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('No planned trades yet') with timeout 5000ms
+      - waiting for getByText('No planned trades yet')
+
+
+       at d1/support.ts:120
+
+      118 |   await page.getByLabel('Account').fill(account);
+      119 |   await page.getByRole('button', { name: 'Save and continue' }).click();
+    > 120 |   await expect(page.getByText('No planned trades yet')).toBeVisible();
+          |                                                         ^
+      121 | }
+      122 |
+      123 | export interface PlanValues {
+        at onboard (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:120:57)
+        at onboardedPage (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:170:3)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/plan.spec.ts:39:20
+
+    Error Context: test-results/d1-plan-B1-3-kill-after-co-ab4eb-ce-the-confirmation-renders-chromium/error-context.md
+
+  9) [chromium] › e2e/d1/readiness.spec.ts:25:3 › B1.7 protection is advisory › should stay Writable with the warning and durability action while unprotected, and report the request honestly 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('No planned trades yet')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('No planned trades yet') with timeout 5000ms
+      - waiting for getByText('No planned trades yet')
+
+
+       at d1/support.ts:120
+
+      118 |   await page.getByLabel('Account').fill(account);
+      119 |   await page.getByRole('button', { name: 'Save and continue' }).click();
+    > 120 |   await expect(page.getByText('No planned trades yet')).toBeVisible();
+          |                                                         ^
+      121 | }
+      122 |
+      123 | export interface PlanValues {
+        at onboard (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:120:57)
+        at onboardedPage (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:170:3)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/readiness.spec.ts:28:18
+
+    Error Context: test-results/d1-readiness-B1-7-protecti-0874b-report-the-request-honestly-chromium/error-context.md
+
+  10) [chromium] › e2e/d1/recovery-only.spec.ts:4:3 › B1.6 Recovery Only matrix (existing Workspace, faults build) › should open Recovery Only with the failed checks for each fault set, keeping the Plan readable and the stores unchanged 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('No planned trades yet')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('No planned trades yet') with timeout 5000ms
+      - waiting for getByText('No planned trades yet')
+
+
+       at d1/support.ts:120
+
+      118 |   await page.getByLabel('Account').fill(account);
+      119 |   await page.getByRole('button', { name: 'Save and continue' }).click();
+    > 120 |   await expect(page.getByText('No planned trades yet')).toBeVisible();
+          |                                                         ^
+      121 | }
+      122 |
+      123 | export interface PlanValues {
+        at onboard (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:120:57)
+        at onboardedPage (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:170:3)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/recovery-only.spec.ts:8:19
+
+    Error Context: test-results/d1-recovery-only-B1-6-Reco-280f7-le-and-the-stores-unchanged-chromium/error-context.md
+
+  11) [chromium] › e2e/d1/responsive-a11y.spec.ts:33:3 › B1.15 responsive and accessible › should switch layout at 960 px with the route and entered values intact 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('No planned trades yet')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('No planned trades yet') with timeout 5000ms
+      - waiting for getByText('No planned trades yet')
+
+
+       at d1/support.ts:120
+
+      118 |   await page.getByLabel('Account').fill(account);
+      119 |   await page.getByRole('button', { name: 'Save and continue' }).click();
+    > 120 |   await expect(page.getByText('No planned trades yet')).toBeVisible();
+          |                                                         ^
+      121 | }
+      122 |
+      123 | export interface PlanValues {
+        at onboard (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:120:57)
+        at onboardedPage (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:170:3)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/responsive-a11y.spec.ts:36:18
+
+    Error Context: test-results/d1-responsive-a11y-B1-15-r-0231e-e-and-entered-values-intact-chromium/error-context.md
+
+  12) [chromium] › e2e/d1/responsive-a11y.spec.ts:57:3 › B1.15 responsive and accessible › should report no WCAG 2.1 AA violations in any D1 view state 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('No planned trades yet')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('No planned trades yet') with timeout 5000ms
+      - waiting for getByText('No planned trades yet')
+
+
+       at d1/support.ts:120
+
+      118 |   await page.getByLabel('Account').fill(account);
+      119 |   await page.getByRole('button', { name: 'Save and continue' }).click();
+    > 120 |   await expect(page.getByText('No planned trades yet')).toBeVisible();
+          |                                                         ^
+      121 | }
+      122 |
+      123 | export interface PlanValues {
+        at onboard (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:120:57)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/responsive-a11y.spec.ts:70:5
+
+    Error Context: test-results/d1-responsive-a11y-B1-15-r-a8092-ations-in-any-D1-view-state-chromium/error-context.md
+
+  13) [chromium] › e2e/d1/responsive-a11y.spec.ts:134:3 › B1.15 responsive and accessible › should complete onboarding and a Plan with the keyboard only, with visible focus throughout 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('No planned trades yet')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('No planned trades yet') with timeout 5000ms
+      - waiting for getByText('No planned trades yet')
+
+
+      147 |     await page.keyboard.type('Roth IRA');
+      148 |     await page.keyboard.press('Enter');
+    > 149 |     await expect(page.getByText('No planned trades yet')).toBeVisible();
+          |                                                           ^
+      150 |
+      151 |     await tabTo(page, nav(page).getByRole('link', { name: 'New Plan' }));
+      152 |     await page.keyboard.press('Enter');
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/responsive-a11y.spec.ts:149:59
+
+    Error Context: test-results/d1-responsive-a11y-B1-15-r-7e536-th-visible-focus-throughout-chromium/error-context.md
+
+  14) [chromium] › e2e/d1/runtime-failure.spec.ts:5:5 › B1.9 mid-session failure (faults build) › should explain RuntimeNotWritable, keep the form values, and switch to Recovery Only when inventory starts failing before Confirm 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('No planned trades yet')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('No planned trades yet') with timeout 5000ms
+      - waiting for getByText('No planned trades yet')
+
+
+       at d1/support.ts:120
+
+      118 |   await page.getByLabel('Account').fill(account);
+      119 |   await page.getByRole('button', { name: 'Save and continue' }).click();
+    > 120 |   await expect(page.getByText('No planned trades yet')).toBeVisible();
+          |                                                         ^
+      121 | }
+      122 |
+      123 | export interface PlanValues {
+        at onboard (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:120:57)
+        at onboardedPage (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:170:3)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/runtime-failure.spec.ts:8:20
+
+    Error Context: test-results/d1-runtime-failure-B1-9-mi-0e6f9-arts-failing-before-Confirm-chromium/error-context.md
+
+  15) [chromium] › e2e/d1/runtime-failure.spec.ts:5:5 › B1.9 mid-session failure (faults build) › should explain RuntimeNotWritable, keep the form values, and switch to Recovery Only when diagnostic starts failing before Confirm 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('No planned trades yet')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('No planned trades yet') with timeout 5000ms
+      - waiting for getByText('No planned trades yet')
+
+
+       at d1/support.ts:120
+
+      118 |   await page.getByLabel('Account').fill(account);
+      119 |   await page.getByRole('button', { name: 'Save and continue' }).click();
+    > 120 |   await expect(page.getByText('No planned trades yet')).toBeVisible();
+          |                                                         ^
+      121 | }
+      122 |
+      123 | export interface PlanValues {
+        at onboard (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:120:57)
+        at onboardedPage (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:170:3)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/runtime-failure.spec.ts:8:20
+
+    Error Context: test-results/d1-runtime-failure-B1-9-mi-4dfdf-arts-failing-before-Confirm-chromium/error-context.md
+
+  16) [chromium] › e2e/d1/update.spec.ts:42:3 › B1.10 update with unsaved work › should notify only once v2 is waiting, defer Reload while the form is unsaved, then activate v2 with the Workspace unchanged 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('No planned trades yet')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('No planned trades yet') with timeout 5000ms
+      - waiting for getByText('No planned trades yet')
+
+
+       at d1/support.ts:120
+
+      118 |   await page.getByLabel('Account').fill(account);
+      119 |   await page.getByRole('button', { name: 'Save and continue' }).click();
+    > 120 |   await expect(page.getByText('No planned trades yet')).toBeVisible();
+          |                                                         ^
+      121 | }
+      122 |
+      123 | export interface PlanValues {
+        at onboard (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:120:57)
+        at onboardedPage (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:170:3)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/update.spec.ts:45:18
+
+    Error Context: test-results/d1-update-B1-10-update-wit-16f90-ith-the-Workspace-unchanged-chromium/error-context.md
+
+  17) [chromium] › e2e/d1/update.spec.ts:74:3 › B1.11 corrupt update › should show no notice, keep v1 in control, and leave no v2 cache when the update fails verification 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('No planned trades yet')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('No planned trades yet') with timeout 5000ms
+      - waiting for getByText('No planned trades yet')
+
+
+       at d1/support.ts:120
+
+      118 |   await page.getByLabel('Account').fill(account);
+      119 |   await page.getByRole('button', { name: 'Save and continue' }).click();
+    > 120 |   await expect(page.getByText('No planned trades yet')).toBeVisible();
+          |                                                         ^
+      121 | }
+      122 |
+      123 | export interface PlanValues {
+        at onboard (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:120:57)
+        at onboardedPage (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:170:3)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/update.spec.ts:77:18
+
+    Error Context: test-results/d1-update-B1-11-corrupt-up-09d25-e-update-fails-verification-chromium/error-context.md
+
+  18) [chromium] › e2e/d1/update.spec.ts:90:3 › B1.12 offline keeps the installed release › should show no notice offline and keep v1 running and Writable 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('No planned trades yet')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('No planned trades yet') with timeout 5000ms
+      - waiting for getByText('No planned trades yet')
+
+
+       at d1/support.ts:120
+
+      118 |   await page.getByLabel('Account').fill(account);
+      119 |   await page.getByRole('button', { name: 'Save and continue' }).click();
+    > 120 |   await expect(page.getByText('No planned trades yet')).toBeVisible();
+          |                                                         ^
+      121 | }
+      122 |
+      123 | export interface PlanValues {
+        at onboard (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:120:57)
+        at onboardedPage (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:170:3)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/update.spec.ts:93:18
+
+    Error Context: test-results/d1-update-B1-12-offline-ke-ab73c-eep-v1-running-and-Writable-chromium/error-context.md
+
+  19) [chromium] › e2e/d1/update.spec.ts:111:3 › B1.13 two tabs, one unsaved › should explain in the clean tab that another tab has unsaved work, keeping Reload disabled until that form is cancelled 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('No planned trades yet')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('No planned trades yet') with timeout 5000ms
+      - waiting for getByText('No planned trades yet')
+
+
+       at d1/support.ts:120
+
+      118 |   await page.getByLabel('Account').fill(account);
+      119 |   await page.getByRole('button', { name: 'Save and continue' }).click();
+    > 120 |   await expect(page.getByText('No planned trades yet')).toBeVisible();
+          |                                                         ^
+      121 | }
+      122 |
+      123 | export interface PlanValues {
+        at onboard (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:120:57)
+        at onboardedPage (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:170:3)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/update.spec.ts:114:21
+
+    Error Context: test-results/d1-update-B1-13-two-tabs-o-2f978-ntil-that-form-is-cancelled-chromium/error-context.md
+
+  20) [chromium] › e2e/d1/update.spec.ts:133:3 › B1.13 two tabs, the clean one opened after the form became unsaved (critic-1) › should defer Reload and explain in a tab opened later, where "Check for updates" reports the waiting update once 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('No planned trades yet')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('No planned trades yet') with timeout 5000ms
+      - waiting for getByText('No planned trades yet')
+
+
+       at d1/support.ts:120
+
+      118 |   await page.getByLabel('Account').fill(account);
+      119 |   await page.getByRole('button', { name: 'Save and continue' }).click();
+    > 120 |   await expect(page.getByText('No planned trades yet')).toBeVisible();
+          |                                                         ^
+      121 | }
+      122 |
+      123 | export interface PlanValues {
+        at onboard (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:120:57)
+        at onboardedPage (/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/support.ts:170:3)
+        at /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/e2e/d1/update.spec.ts:136:21
+
+    Error Context: test-results/d1-update-B1-13-two-tabs-t-93f21-rts-the-waiting-update-once-chromium/error-context.md
+
+  20 failed
+    [chromium] › e2e/d1/identity.spec.ts:6:5 › B1.1 identity and Writable tab › should serve a complete manifest and digest-valid inventory and reach Writable with all four checks passing 
+    [chromium] › e2e/d1/identity.spec.ts:6:5 › B1.1 identity and Writable tab › should serve a complete manifest and digest-valid inventory and reach Writable with all four checks passing under an unknown user agent 
+    [chromium] › e2e/d1/integrity-blocked.spec.ts:38:3 › B1.8 Integrity Blocked › should block a pointer whose Workspace database was deleted, keeping the pointer and creating no new Workspace 
+    [chromium] › e2e/d1/no-save.spec.ts:50:3 › B1.14 nothing is saved without Save › should store no Entry, Trade, draft, or Web Storage value after typing, resizing, leaving, and restarting 
+    [chromium] › e2e/d1/offline.spec.ts:4:3 › B1.4 offline cold restart › should open Writable without a network, confirm a second Plan and add an Account, and keep both across another offline restart 
+    [chromium] › e2e/d1/onboarding.spec.ts:5:3 › onboarding after a partly failed attempt (critic-2) › should show the protection warning on first run and onboarding, and reuse an Institution saved without its Account after a reload 
+    [chromium] › e2e/d1/plan.spec.ts:7:3 › B1.2 onboarding and first Plan › should show the Plan, 1R, and reflection after relaunch, with one Trade, one Entry, and Planned in the index 
+    [chromium] › e2e/d1/plan.spec.ts:35:3 › B1.3 kill after commit › should keep the complete Plan, with its Entry, after the browser process is killed once the confirmation renders 
+    [chromium] › e2e/d1/readiness.spec.ts:25:3 › B1.7 protection is advisory › should stay Writable with the warning and durability action while unprotected, and report the request honestly 
+    [chromium] › e2e/d1/recovery-only.spec.ts:4:3 › B1.6 Recovery Only matrix (existing Workspace, faults build) › should open Recovery Only with the failed checks for each fault set, keeping the Plan readable and the stores unchanged 
+    [chromium] › e2e/d1/responsive-a11y.spec.ts:33:3 › B1.15 responsive and accessible › should switch layout at 960 px with the route and entered values intact 
+    [chromium] › e2e/d1/responsive-a11y.spec.ts:57:3 › B1.15 responsive and accessible › should report no WCAG 2.1 AA violations in any D1 view state 
+    [chromium] › e2e/d1/responsive-a11y.spec.ts:134:3 › B1.15 responsive and accessible › should complete onboarding and a Plan with the keyboard only, with visible focus throughout 
+    [chromium] › e2e/d1/runtime-failure.spec.ts:5:5 › B1.9 mid-session failure (faults build) › should explain RuntimeNotWritable, keep the form values, and switch to Recovery Only when inventory starts failing before Confirm 
+    [chromium] › e2e/d1/runtime-failure.spec.ts:5:5 › B1.9 mid-session failure (faults build) › should explain RuntimeNotWritable, keep the form values, and switch to Recovery Only when diagnostic starts failing before Confirm 
+    [chromium] › e2e/d1/update.spec.ts:42:3 › B1.10 update with unsaved work › should notify only once v2 is waiting, defer Reload while the form is unsaved, then activate v2 with the Workspace unchanged 
+    [chromium] › e2e/d1/update.spec.ts:74:3 › B1.11 corrupt update › should show no notice, keep v1 in control, and leave no v2 cache when the update fails verification 
+    [chromium] › e2e/d1/update.spec.ts:90:3 › B1.12 offline keeps the installed release › should show no notice offline and keep v1 running and Writable 
+    [chromium] › e2e/d1/update.spec.ts:111:3 › B1.13 two tabs, one unsaved › should explain in the clean tab that another tab has unsaved work, keeping Reload disabled until that form is cancelled 
+    [chromium] › e2e/d1/update.spec.ts:133:3 › B1.13 two tabs, the clean one opened after the form became unsaved (critic-1) › should defer Reload and explain in a tab opened later, where "Check for updates" reports the waiting update once 
+  7 passed (2.1m)
+EXIT 1
