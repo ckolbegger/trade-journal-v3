@@ -40,3 +40,16 @@ Run 2026-10-20 21:09 EDT on commit `ecc2294` at the user's request (the only unc
 | Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.2-rerun-checks.txt` |
 
 Failures: none. B1.14 passed this time, consistent with the earlier failure being the identity-substring flake.
+
+## Cumulative run after the B1.14 flake fix
+
+Run 2026-10-20 21:16 EDT on commit `50b68e3` (the fix itself is `98e730b`, recorded in `evidence/D01/structural.md`; the only uncommitted files were this run's own outputs and the untracked older handoff note), Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 26 passed (26)`, `Tests 230 passed (230)`, exit 0 | `suite-runs/b1.14-fix-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 6 passed (6)`, `Tests 19 passed (19)`, exit 0 | `suite-runs/b1.14-fix-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `27 passed (40.9s)`, exit 0 | `suite-runs/b1.14-fix-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/b1.14-fix-checks.txt` |
+
+Failures: none.
