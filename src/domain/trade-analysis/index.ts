@@ -11,11 +11,17 @@ export {
 } from './plan.ts';
 export {
   derive,
+  type CalculationResult,
   type DerivationResult,
   type DerivedTradeState,
+  type EntryFlag,
+  type EntryQuality,
+  type EntryQualityFigures,
+  type EntryResolution,
   type ExecutionFact,
   type IncoherentFacts,
   type InstrumentPosition,
+  type LegFulfillment,
   type OpenLot,
   type PositionChangeFact,
   type LifecycleAgreement,

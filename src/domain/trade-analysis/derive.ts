@@ -68,6 +68,40 @@ export interface InstrumentPosition {
   readonly openLots: readonly OpenLot[];
 }
 
+// One independently useful calculation (Trade Analysis, shared values); reasons are stable codes.
+export type CalculationResult<T, Reason extends string = string> =
+  | { readonly kind: 'Value'; readonly value: T }
+  | { readonly kind: 'NotApplicable'; readonly reason: Reason };
+
+// D2's Entry Resolution Point: the Position Change at which the entry window resolves (A23).
+export type EntryResolution = { readonly kind: 'Unresolved' } | { readonly kind: 'Resolved'; readonly positionChangeId: string };
+
+// Entry Quality over the entry window's opening Executions (A24), each figure its own result.
+export interface EntryQualityFigures {
+  readonly averageEntry: CalculationResult<Rational>;
+  readonly windowQuantity: CalculationResult<Rational>;
+  readonly windowFees: CalculationResult<Rational>;
+  readonly actualInitialRisk: CalculationResult<Rational>;
+  readonly actualInitialReward: CalculationResult<Rational>;
+  readonly riskInPlanR: CalculationResult<Rational>;
+  readonly slippage: CalculationResult<Rational>;
+  readonly sizeRatio: CalculationResult<Rational>;
+  readonly plannedRewardRisk: CalculationResult<Rational>;
+  readonly actualRewardRisk: CalculationResult<Rational, EntryFlag>;
+  readonly flags: readonly EntryFlag[];
+}
+
+// An average entry at or beyond a boundary: the actual reward/risk ratio is then not applicable.
+export type EntryFlag = 'EntryAtOrBeyondStop' | 'EntryAtOrBeyondTarget';
+
+export type EntryQuality = CalculationResult<EntryQualityFigures, 'EntryNotResolved'>;
+
+// D2's per-leg fulfillment (A25); Not Entered and Not Verifiable arrive with later variants.
+export interface LegFulfillment {
+  readonly plannedLegId: string;
+  readonly fulfillment: 'Unfilled' | 'PartiallyFilled' | 'FilledAsPlanned' | 'FilledWithDeviation';
+}
+
 export interface DerivedTradeState {
   readonly kind: 'Derived';
   readonly tradeId: string;
@@ -80,6 +114,9 @@ export interface DerivedTradeState {
   // Every opening Execution's actual fee, each counted once.
   readonly fees: { readonly incurredOpening: Rational };
   readonly baseline: PlanBaseline;
+  readonly entryResolution: EntryResolution;
+  readonly entryQuality: EntryQuality;
+  readonly legFulfillment: readonly LegFulfillment[];
 }
 
 // Facts that cannot be replayed are a typed rejection naming each fact, never a number.
@@ -141,6 +178,89 @@ function factOrder(a: Ordered, b: Ordered): number {
   return Temporal.Instant.compare(a.economicTime, b.economicTime) || a.recordedSequence - b.recordedSequence;
 }
 
+// The entry window opens with the first Position Change and resolves at the first one, in Fact
+// Order, after which every Planned Leg's entered quantity reaches its planned quantity (A23). The
+// window holds every Execution of the Position Changes up to and including the resolving one.
+function entryWindowOf(record: TradeAnalysisRecord): { resolution: EntryResolution; window: ExecutionFact[] } {
+  const entered = new Map<string, Rational>();
+  const window: ExecutionFact[] = [];
+  for (const pc of [...record.positionChanges].sort(factOrder)) {
+    for (const e of pc.executions) {
+      const leg = e.intent.plannedLegId;
+      entered.set(leg, (entered.get(leg) ?? Rational.of(0n)).add(decimal(e.quantity)));
+      window.push(e);
+    }
+    const filled = record.plan.legs.every((leg) => (entered.get(leg.factId)?.compare(decimal(leg.quantity)) ?? -1) >= 0);
+    if (filled) return { resolution: { kind: 'Resolved', positionChangeId: pc.factId }, window };
+  }
+  return { resolution: { kind: 'Unresolved' }, window };
+}
+
+const value = (v: Rational) => ({ kind: 'Value', value: v }) as const;
+const total = (executions: readonly ExecutionFact[], of: (e: ExecutionFact) => Rational) =>
+  executions.reduce((sum, e) => sum.add(of(e)), Rational.of(0n));
+
+// Uses the Stop and Target effective at the Entry Resolution Point: before D17, the Plan's single
+// original ones (D1 A1).
+function entryQualityOf(
+  resolution: EntryResolution,
+  window: readonly ExecutionFact[],
+  plan: TradeAnalysisRecord['plan'],
+  baseline: PlanBaseline,
+): EntryQuality {
+  if (resolution.kind === 'Unresolved') return { kind: 'NotApplicable', reason: 'EntryNotResolved' };
+  const zero = Rational.of(0n);
+  const quantity = total(window, (e) => decimal(e.quantity));
+  const cost = total(window, (e) => decimal(e.quantity).mul(decimal(e.price)));
+  const fees = total(window, (e) => decimal(e.fee));
+  const average = cost.div(quantity);
+  const stop = decimal(plan.stops[0]!.price);
+  const target = decimal(plan.targets[0]!.price);
+  const flags: EntryFlag[] = [];
+  if (average.compare(stop) <= 0) flags.push('EntryAtOrBeyondStop');
+  if (average.compare(target) >= 0) flags.push('EntryAtOrBeyondTarget');
+  const nonnegative = (r: Rational) => (r.compare(zero) > 0 ? r : zero);
+  const risk = nonnegative(quantity.mul(average.sub(stop))).add(fees);
+  const reward = nonnegative(quantity.mul(target.sub(average))).sub(fees);
+  const leg = plan.legs[0]!;
+  return {
+    kind: 'Value',
+    value: {
+      averageEntry: value(average),
+      windowQuantity: value(quantity),
+      windowFees: value(fees),
+      actualInitialRisk: value(risk),
+      actualInitialReward: value(reward),
+      riskInPlanR: value(risk.div(baseline.oneR)),
+      slippage: value(average.sub(decimal(leg.intendedEntry)).mul(quantity)),
+      sizeRatio: value(quantity.div(decimal(leg.quantity))),
+      plannedRewardRisk: value(baseline.rewardRiskRatio),
+      actualRewardRisk: flags[0] ? { kind: 'NotApplicable', reason: flags[0] } : value(reward.div(risk)),
+      flags,
+    },
+  };
+}
+
+function legFulfillmentOf(plan: TradeAnalysisRecord['plan'], facts: readonly ExecutionFact[]): LegFulfillment[] {
+  return plan.legs.map((leg) => {
+    const entered = total(
+      facts.filter((e) => e.intent.plannedLegId === leg.factId),
+      (e) => decimal(e.quantity),
+    );
+    const versusPlan = entered.compare(decimal(leg.quantity));
+    // Entered quantity above plan is Entry Size excess, a Deviation on the leg (A25, P4).
+    const fulfillment: LegFulfillment['fulfillment'] =
+      entered.compare(Rational.of(0n)) === 0
+        ? 'Unfilled'
+        : versusPlan < 0
+          ? 'PartiallyFilled'
+          : versusPlan === 0
+            ? 'FilledAsPlanned'
+            : 'FilledWithDeviation';
+    return { plannedLegId: leg.factId, fulfillment };
+  });
+}
+
 export function derive(input: TradeDerivationInput): DerivationResult {
   const { record } = input;
   const findings = incoherence(record);
@@ -152,6 +272,8 @@ export function derive(input: TradeDerivationInput): DerivationResult {
     )
     .sort(factOrder);
   const positions = positionsOf(facts);
+  const entry = entryWindowOf(record);
+  const baseline = frozenBaseline(record.plan);
   // Effective facts that leave nonzero exposure make the Trade Open; none leave it Planned.
   const expectedLifecycle: LifecycleState = positions.length > 0 ? 'Open' : 'Planned';
   return {
@@ -166,6 +288,9 @@ export function derive(input: TradeDerivationInput): DerivationResult {
     facts,
     positions,
     fees: { incurredOpening: facts.reduce((sum, e) => sum.add(decimal(e.fee)), Rational.of(0n)) },
-    baseline: frozenBaseline(record.plan),
+    baseline,
+    entryResolution: entry.resolution,
+    entryQuality: entryQualityOf(entry.resolution, entry.window, record.plan, baseline),
+    legFulfillment: legFulfillmentOf(record.plan, facts),
   };
 }
