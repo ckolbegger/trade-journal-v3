@@ -542,3 +542,16 @@ Failures: none.
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
 
 **Cold p95: 88.8 ms (budget 2,500 ms). Warm p95: 43.5 ms (budget 1,500 ms).** Earlier development runs of the same harness gave cold 86.9 / 87.9 ms and warm 42.9 / 44.5 ms.
+
+## Cumulative run after T2.21
+
+Run 2026-10-21 18:28 EDT on commit `c0a7ff8` (the only uncommitted files were this run's own outputs and the untracked older handoff note), Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 37 passed (37)`, `Tests 340 passed (340)`, exit 0 | `suite-runs/t2.21-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 7 passed (7)`, `Tests 20 passed (20)`, exit 0 | `suite-runs/t2.21-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `27 passed (40.2s)`, exit 0 | `suite-runs/t2.21-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.21-checks.txt` |
+
+Failures: none.
