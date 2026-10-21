@@ -8,6 +8,7 @@ node_modules/
 dist/
 dist-releases/
 dist-faults/
+dist-bench/
 build/
 out/
 *.tsbuildinfo

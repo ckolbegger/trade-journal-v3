@@ -23,6 +23,9 @@ export interface ApplicationDeps {
   readonly locks: LifecycleLock;
   // Migration stage-boundary hooks: only the faults build supplies them (D2 T2.16).
   readonly migrationHooks?: MigrationStageHooks;
+  // Only the bench build's generator supplies this (D2 T2.20): while it returns true, mutations
+  // skip the per-mutation readiness recheck (D1 A4).
+  readonly skipMutationRecheck?: () => boolean;
 }
 
 // The single application facade used by the UI and by the Node integration suite. It exposes
@@ -49,7 +52,7 @@ export async function createApplication(deps: ApplicationDeps) {
   );
   holder.session = session;
 
-  const guard = createMutationGuard(session);
+  const guard = createMutationGuard(session, deps.skipMutationRecheck);
   const catalog = createReferenceCatalog({ persistence, ids: deps.ids });
   const journal = createJournal({ persistence, ids: deps.ids, clock: deps.clock });
   const tradeRecord = createTradeRecord({ persistence, ids: deps.ids });

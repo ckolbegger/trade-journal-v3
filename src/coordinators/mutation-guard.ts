@@ -19,11 +19,13 @@ export interface MutationGuard {
 // (design overview, "Expected domain failures").
 const UNGATED = new Set(['Workspace.requestDurability']);
 
-export function createMutationGuard(session: ReadinessSession): MutationGuard {
+// `skipRecheck` is supplied only by the bench build's generator (D2 T2.20, section 6.0): while it
+// returns true, the session's current readiness stands in for the per-mutation recheck.
+export function createMutationGuard(session: ReadinessSession, skipRecheck?: () => boolean): MutationGuard {
   return {
     async run(operation, mutation) {
       if (UNGATED.has(operation)) return mutation();
-      const refusal = toRuntimeNotWritable(await session.recheck());
+      const refusal = toRuntimeNotWritable(skipRecheck?.() ? session.current() : await session.recheck());
       if (refusal) return refusal;
       try {
         return await mutation();

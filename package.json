@@ -21,6 +21,8 @@
     "serve:releases": "node tools/release-server.ts",
     "build:faults": "vite build --mode faults --outDir dist-faults",
     "verify:no-fault-hooks": "node tools/verify-no-fault-hooks.ts",
+    "build:bench": "vite build --mode bench --outDir dist-bench",
+    "bench:generate": "node tools/bench-generate.ts",
     "preview:faults": "vite preview --outDir dist-faults",
     "measure:capacity": "node tools/measure-capacity.ts",
     "verify:capacity": "node tools/verify-capacity.ts",

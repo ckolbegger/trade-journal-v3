@@ -24,6 +24,8 @@ if (!root) throw new Error('Missing #root element');
 root.dataset.release = RELEASE_ID;
 
 async function start(container: HTMLElement) {
+  // Only the bench build (D2 T2.20) installs the dataset generator; production builds drop this branch.
+  if (import.meta.env.MODE === 'bench') (await import('./app/bench-generator.ts')).installBenchGenerator();
   const registration = await navigator.serviceWorker.register('/sw.js');
   const updates = createReleaseUpdateController({
     registration,

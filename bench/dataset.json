@@ -1,0 +1,35 @@
+{
+  "generatorVersion": 1,
+  "schemaVersion": 2,
+  "seed": 20211011,
+  "clockStart": "2021-10-11T13:00:00Z",
+  "timeZone": "America/New_York",
+  "origin": "http://localhost:5181",
+  "buildDir": "dist-bench",
+  "benchRelease": "91101607b8f6f4b60b0939fb52811a1f02f746cc103eaf3556f08da0e6e04bfc",
+  "counts": {
+    "trades": 25000,
+    "openTrades": 200,
+    "plannedTrades": 24800,
+    "positionChanges": 400,
+    "executions": 800,
+    "planReflectionEntries": 25000,
+    "positionChangeReflectionEntries": 320,
+    "positionChangeReflectionDeclines": 80,
+    "institutions": 3,
+    "accounts": 6,
+    "strategies": 1
+  },
+  "generationMs": 34707,
+  "generatedAt": "2026-10-21T19:01:35.395Z",
+  "engine": "chromium 153.0.8010.12",
+  "host": {
+    "platform": "darwin",
+    "release": "25.6.0",
+    "arch": "arm64",
+    "cpu": "Apple M4 Max",
+    "cores": 16
+  },
+  "profileDir": ".cache/bench/profile",
+  "expectedOpenRows": "bench/expected-open-rows.json"
+}

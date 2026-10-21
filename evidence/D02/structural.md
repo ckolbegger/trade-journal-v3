@@ -487,3 +487,31 @@ Run 2026-10-21 14:49 EDT on commit `068e249` (the only uncommitted files were th
 | Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.19-checks.txt` |
 
 Failures: none.
+
+## T2.20 Deterministic benchmark generator and bench build
+
+**Bench build.** `npm run build:bench` is `vite build --mode bench --outDir dist-bench`. Only in that mode does `src/main.tsx` import `src/app/bench-generator.ts`, which installs `window.__tjBench.generate()` (the generator entry point; marker `tj-bench-generator-v1`). The generator creates its own application through `createApplication` (the production facade) on the real browser host, release identity, capacity requirement and Web Locks, with seeded identities (mulberry32, seed 20211011, version-4-shaped) and a clock that starts at 2021-10-11T13:00:00Z and moves forward with the generated Economic Times (five minutes after each). It passes the new optional `ApplicationDeps.skipMutationRecheck`, which returns true only while the generator runs; `createMutationGuard` then uses the session's current readiness instead of rerunning readiness (D1 A4). Production passes nothing, so the guard always rechecks there (an inert optional parameter, like T2.16's `migrationHooks`).
+
+**Dataset (plan section 1.3).** 1,260 weekday sessions from 2021-10-11 (to 2026-08); about 20 Plans per session from 13:45Z at 15-minute steps. Every 125th Trade from the 62nd is opened (200, spread over five years), with 1–3 Position Changes (pattern 1, 2, 3, 2) on the following sessions at 19:30Z, each with 1–3 Executions (same pattern), totalling to 10/10, 6/10, 10/10, 12/10 or 10/10 of the planned quantity (40 Entering, 40 with an Entry Size Excess). Every fifth Position Change Reflection is a Decline. 3 Institutions with 2 Accounts each; Long Stock.
+
+**Generator run.** `npm run bench:generate` (`tools/bench-generate.ts`) reuses the cached profile when its stamp (`.cache/bench/profile/tj-bench.json`, written last) matches the generator version (`BENCH_GENERATOR_VERSION` in `src/app/bench.ts`) and `SCHEMA_VERSION`; otherwise it deletes the profile, serves `dist-bench/` with the release harness server on `http://localhost:5181`, waits for the service worker to control the page, runs the generator in Chromium (Playwright persistent context), reloads and reads the rendered "Open Trades" table, unregisters every service worker and deletes every cache, then reopens the profile on a blank page of the same origin to confirm none remain.
+
+Outputs:
+- Cached profile: `.cache/bench/profile` (about 47 MB; git-ignored through `.cache/`). `dist-bench/` is git-ignored too.
+- `bench/dataset.json` (committed, provenance): generator and schema versions, seed, clock start, time zone, origin, bench release identity, counts, generation time, engine, host.
+- `bench/expected-open-rows.json` (committed, for T2.21): the "Open Trades" table headers and 200 rows of cell text in display order, plus the 200 `browseTrades({ lifecycle: 'Open' })` items (bigints written as decimal strings), with the generator and schema versions.
+
+| Command | Result |
+|---|---|
+| `npm run build:bench && npm run bench:generate` (first, no profile) | `bench:generate: no cached profile; generating for generator 1, schema 2`; `bench:generate: profile has 0 service-worker registrations, 0 caches, databases tj-root, tj-ws-1d1eee39-d350-4dfa-bdcd-46aa5ed8a778`; `bench:generate OK: {"trades":25000,"openTrades":200,"plannedTrades":24800,"positionChanges":400,"executions":800,"planReflectionEntries":25000,"positionChangeReflectionEntries":320,"positionChangeReflectionDeclines":80,"institutions":3,"accounts":6,"strategies":1} in 34701 ms`, exit 0 (whole command 35.6 s) |
+| `npm run build:bench && npm run bench:generate` (second) | `bench:generate OK: reusing the cached profile …/.cache/bench/profile (generator 1, schema 2)`, exit 0 |
+| stamp changed to generator 0, then `npm run bench:generate` | `cached profile is generator 0, schema 2; regenerating for generator 1, schema 2`; same counts in 34271 ms; `cmp` of `bench/expected-open-rows.json` with the first run's copy: identical (same Workspace database name, so identities are deterministic too) |
+| stamp changed to schema 1, then `npm run bench:generate` | `cached profile is generator 1, schema 1; regenerating for generator 1, schema 2`; same counts in 34707 ms; expected rows identical |
+| `npm run bench:generate` again | reusing the cached profile, exit 0 |
+| `npm run build && npm run verify:no-fault-hooks` | `verify:no-fault-hooks OK: …/dist has no fault or bench hooks` (the check now also searches for `tj-bench-generator-v1` and `__tjBench`) |
+| `npm run verify:no-fault-hooks -- dist-bench` | exit 1: `assets/bench-generator-DR5l-QSb.js: tj-bench-generator-v1`, `… __tjBench`, so the search finds the generator where it exists |
+| file lists of `dist/` and `dist-bench/` compared | dist-bench adds only `assets/bench-generator-*.js`; the main chunk differs by the bench branch (449.00 kB versus 449.20 kB); every other file name is the same |
+| `npx vitest run src/coordinators/mutation-guard.test.ts` | 4 passed |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
+
+Generation rate: 25,000 Plans and 400 Position Changes in about 34.5 s on an Apple M4 Max (Chromium 153.0.8010.12), about 1.4 ms per mutation.
