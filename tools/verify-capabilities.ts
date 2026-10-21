@@ -4,6 +4,7 @@ import { IDBFactory } from 'fake-indexeddb';
 import { createApplication, facadeOperations } from '../src/app/compose.ts';
 import { ROUTES } from '../src/app/routes.ts';
 import { fixedClock } from '../src/domain/time/index.ts';
+import { createInProcessLifecycleLock } from '../src/persistence/index.ts';
 import { nodeTestHost } from '../tests/support/node-test-host.ts';
 import { TEST_CAPACITY } from '../tests/support/stack.ts';
 import { sequentialIds } from '../tests/support/workspace.ts';
@@ -20,6 +21,7 @@ const app = await createApplication({
   ids: sequentialIds(),
   releaseId: testHost.releaseId,
   capacityRequirement: TEST_CAPACITY,
+  locks: createInProcessLifecycleLock(),
 });
 
 const problems: string[] = [];

@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { createApplication } from './app/compose.ts';
+import { createWebLocksLifecycleLock } from './persistence/index.ts';
 import { randomIds, systemClock } from './app/system.ts';
 import { browserHost } from './delivery/browser-host.ts';
 import { CAPACITY_REQUIREMENT } from './delivery/capacity.ts';
@@ -46,6 +47,7 @@ async function start(container: HTMLElement) {
     ids: randomIds,
     releaseId: RELEASE_ID,
     capacityRequirement: CAPACITY_REQUIREMENT,
+    locks: createWebLocksLifecycleLock(navigator.locks),
   });
   const facade = {
     Workspace: app.Workspace,

@@ -9,7 +9,7 @@ import type { Clock } from '../domain/time/index.ts';
 import { createJournal } from '../modules/journal/index.ts';
 import { createReferenceCatalog } from '../modules/reference-catalog/index.ts';
 import { createTradeRecord } from '../modules/trade-record/index.ts';
-import { createPersistence, type IdGenerator } from '../persistence/index.ts';
+import { createPersistence, type IdGenerator, type LifecycleLock } from '../persistence/index.ts';
 
 export interface ApplicationDeps {
   readonly indexedDB: IDBFactory;
@@ -18,6 +18,9 @@ export interface ApplicationDeps {
   readonly ids: IdGenerator;
   readonly releaseId: string;
   readonly capacityRequirement: CapacityRequirement;
+  // The Workspace lifecycle lock: the Web Locks API in the browser, the disclosed in-process lock
+  // in Node (D2 section 6.0).
+  readonly locks: LifecycleLock;
 }
 
 // The single application facade used by the UI and by the Node integration suite. It exposes
@@ -48,7 +51,7 @@ export async function createApplication(deps: ApplicationDeps) {
   const catalog = createReferenceCatalog({ persistence, ids: deps.ids });
   const journal = createJournal({ persistence, ids: deps.ids, clock: deps.clock });
   const tradeRecord = createTradeRecord({ persistence, ids: deps.ids });
-  const workspace = createWorkspace({ persistence, session, catalog, journal, host: deps.host, ids: deps.ids, clock: deps.clock, releaseId: deps.releaseId });
+  const workspace = createWorkspace({ persistence, session, catalog, journal, host: deps.host, ids: deps.ids, clock: deps.clock, releaseId: deps.releaseId, locks: deps.locks });
   const tradeWorkflows = createTradeWorkflows({ persistence, catalog, journal, tradeRecord, clock: deps.clock, guard });
   const tradeViews = createTradeViews({ persistence, catalog, journal, tradeRecord });
 

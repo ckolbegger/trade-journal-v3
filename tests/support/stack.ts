@@ -7,7 +7,7 @@ import { fixedClock } from '../../src/domain/time/index.ts';
 import { createJournal } from '../../src/modules/journal/index.ts';
 import { createReferenceCatalog } from '../../src/modules/reference-catalog/index.ts';
 import { createTradeRecord } from '../../src/modules/trade-record/index.ts';
-import { createPersistence } from '../../src/persistence/index.ts';
+import { createInProcessLifecycleLock, createPersistence } from '../../src/persistence/index.ts';
 import { nodeTestHost } from './node-test-host.ts';
 import { sequentialIds } from './workspace.ts';
 
@@ -44,6 +44,7 @@ export async function testStack(factory = new IDBFactory(), now = '2026-10-12T14
     persistence,
     ids,
     clock,
+    locks: createInProcessLifecycleLock(),
     catalog: createReferenceCatalog({ persistence, ids }),
     journal: createJournal({ persistence, ids, clock }),
     tradeRecord: createTradeRecord({ persistence, ids }),

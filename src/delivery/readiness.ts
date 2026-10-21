@@ -182,7 +182,11 @@ export async function evaluateReadiness(input: ReadinessInput): Promise<Readines
     if (!result.passed) failures.push({ check, reason: result.reason });
   }
   if (failures.length === 0) return { outcome: 'Writable', failures, protection, checks, rootInspection: input.rootInspection };
-  if (unreadable) return { outcome: 'Unsupported', workspaceStatus: 'IntegrityBlocked', failures, protection, checks, rootInspection: input.rootInspection };
+  // An unreadable root, or a Workspace this release must first migrate (D2 P6), is never treated
+  // as empty or as readable.
+  if (unreadable || input.rootInspection.kind === 'OlderSchema') {
+    return { outcome: 'Unsupported', workspaceStatus: 'IntegrityBlocked', failures, protection, checks, rootInspection: input.rootInspection };
+  }
   // A readable existing Workspace stays readable: Recovery Only, never Unsupported.
   if (input.rootInspection.kind === 'KnownWorkspace') {
     return { outcome: 'RecoveryOnly', workspaceStatus: 'RecoveryOnly', failures, protection, checks, rootInspection: input.rootInspection };

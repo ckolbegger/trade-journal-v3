@@ -121,7 +121,8 @@ describe('I1.8 Integrity Blocked', () => {
     expect((await app.Workspace.getStatus()).readiness.outcome).toBe('Writable');
     const result = await app.Workspace.initialize({ timeZone: 'America/New_York' });
     expect(result).toEqual(
-      expect.objectContaining({ kind: 'IntegrityBlocked', reason: 'UnknownSchemaVersion', recoveryActions: expect.arrayContaining([expect.anything()]) as unknown }),
+      // A schema newer than the release is reported as such from D2 (T2.10).
+      expect.objectContaining({ kind: 'IntegrityBlocked', reason: 'UnsupportedNewerSchema', recoveryActions: expect.arrayContaining([expect.anything()]) as unknown }),
     );
     expect(await dumpAll(d.factory)).toEqual(before);
   });

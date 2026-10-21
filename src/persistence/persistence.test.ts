@@ -130,7 +130,8 @@ describe('root inspection', () => {
 
     factory = new IDBFactory();
     await seedRoot('tj-ws-b');
-    await seedWorkspace('tj-ws-b', { key: 'schema', schemaVersion: 7 });
+    // Neither a schema this release migrates from nor a newer one.
+    await seedWorkspace('tj-ws-b', { key: 'schema', schemaVersion: 0 });
     expect(await persistence().inspectRoot()).toEqual({
       kind: 'Invalid',
       databaseName: 'tj-ws-b',

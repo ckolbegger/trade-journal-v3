@@ -1,6 +1,6 @@
 import { derive, type LifecycleAgreement, type LifecycleState, type PlanBaseline, type TradeAnalysisRecord } from '../../domain/trade-analysis/index.ts';
 import type { Rational } from '../../domain/values/index.ts';
-import type { Journal, NarrativeEntry } from '../../modules/journal/index.ts';
+import type { Journal, NarrativeEntry, NarrativeItem } from '../../modules/journal/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { BrowseRecord, TradeRecord, TradeSummary } from '../../modules/trade-record/index.ts';
 import type { Persistence, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
@@ -80,6 +80,13 @@ export interface TradeViews {
   getTradeDetail(request: TradeDetailRequest): Promise<ReadViewResult<PlannedTradeDetail>>;
 }
 
+// A narrative Entry in D1's Detail shape: the item kind is the narrative's discriminator only.
+function withoutKind(item: Extract<NarrativeItem, { kind: 'Entry' }>): NarrativeEntry {
+  const entry: Record<string, unknown> = { ...item };
+  delete entry['kind'];
+  return entry as unknown as NarrativeEntry;
+}
+
 export function createTradeViews(deps: TradeViewsDeps): TradeViews {
   // The current Workspace binding with the Catalog and Journal revisions, from one snapshot.
   async function currentBinding(): Promise<ViewBinding> {
@@ -154,8 +161,8 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
               institution: resolved['account']?.institution?.label ?? '',
             },
             // A Planned Trade has no Position Change, so its narrative holds Entries only; T2.7's
-            // Open Detail carries declines too.
-            journal: narrative.items.filter((item) => item.kind === 'Entry'),
+            // Open Detail carries declines too. Entries keep D1's Detail shape, without the item kind.
+            journal: narrative.items.flatMap((item) => (item.kind === 'Entry' ? [withoutKind(item)] : [])),
           },
         };
       });

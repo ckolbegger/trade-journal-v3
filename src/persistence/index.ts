@@ -3,6 +3,7 @@ export {
   type BindingCheck,
   type CommitResult,
   type CreateWorkspaceResult,
+  type DatabaseDescription,
   type IdGenerator,
   type Persistence,
   type PersistenceDeps,
@@ -27,3 +28,5 @@ export {
 export { rebuildPrivateState } from './rebuild.ts';
 export type { RecordSource, SectionRecord } from './record-source.ts';
 export { createInProcessLifecycleLock, createWebLocksLifecycleLock, type LifecycleLock } from './lifecycle-lock.ts';
+export { migrationChain } from './migrations/index.ts';
+export { SCHEMA_VERSION } from './schema.ts';

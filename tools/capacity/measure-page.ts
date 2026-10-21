@@ -2,6 +2,7 @@
 // production application facade on the engine's real IndexedDB and reports the storage growth.
 // Readiness inputs come from NodeTestHost (no service worker here); storage is the real engine's.
 import { createApplication } from '../../src/app/compose.ts';
+import { createWebLocksLifecycleLock } from '../../src/persistence/index.ts';
 import { randomIds } from '../../src/app/system.ts';
 import { fixedClock } from '../../src/domain/time/index.ts';
 import { nodeTestHost } from '../../tests/support/node-test-host.ts';
@@ -37,6 +38,7 @@ async function measure(plans: number) {
     ids: randomIds,
     releaseId: testHost.releaseId,
     capacityRequirement: READINESS_CAPACITY,
+    locks: createWebLocksLifecycleLock(navigator.locks),
   });
   await app.Workspace.initialize({ timeZone: 'America/New_York' });
   const institution = await app.ReferenceCatalog.save({ kind: 'CreateInstitution', label: 'Fidelity' });

@@ -29,7 +29,10 @@ describe('initialize', () => {
           readiness: expect.objectContaining({ outcome: 'Writable' }) as unknown,
           seeds: {
             catalog: { manifestVersion: 1, additions: ['strategy.long-stock'] },
-            journal: { manifestVersion: 1, additions: ['entry-type.plan-reflection', 'source.plan-confirmation'] },
+            journal: {
+              manifestVersion: 2,
+              additions: ['entry-type.plan-reflection', 'entry-type.position-change-reflection', 'source.plan-confirmation', 'source.position-change'],
+            },
           },
         },
       }),
@@ -43,8 +46,8 @@ describe('initialize', () => {
     );
     // Every seeded record was written by the one creating transaction (content revision 1).
     expect(stored?.['catalog']).toEqual([expect.objectContaining({ productKey: 'strategy.long-stock', revision: 1 })]);
-    expect(stored?.['journalTypes']).toHaveLength(2);
-    expect(stored?.['journalDefinitions']).toEqual([expect.objectContaining({ revision: 1 })]);
+    expect(stored?.['journalTypes']).toHaveLength(4);
+    expect(stored?.['journalDefinitions']).toEqual([expect.objectContaining({ revision: 1 }), expect.objectContaining({ revision: 1 })]);
   });
 
   it('should reject an invalid zone with InvalidTimeZone and write nothing', async () => {
@@ -68,7 +71,7 @@ describe('initialize', () => {
           fresh: false,
           seeds: {
             catalog: { manifestVersion: 1, additions: [] },
-            journal: { manifestVersion: 1, additions: [] },
+            journal: { manifestVersion: 2, additions: [] },
           },
         }) as unknown,
       }),
@@ -145,7 +148,8 @@ describe('initialize', () => {
       put(db, 'pointer', { key: 'current', databaseName: 'tj-ws-future' }),
     );
     await raw('tj-ws-future', 1, (db) => db.createObjectStore('meta', { keyPath: 'key' }), (db) =>
-      put(db, 'meta', { key: 'schema', schemaVersion: 7 }),
+      // Neither a schema this release migrates from nor a newer one.
+      put(db, 'meta', { key: 'schema', schemaVersion: 0 }),
     );
     const { workspace } = await workspaceStack(factory);
     const before = await dumpAll(factory);

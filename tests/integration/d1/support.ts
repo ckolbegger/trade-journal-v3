@@ -2,6 +2,7 @@
 // on fake-indexeddb and NodeTestHost, called through facade operations only.
 import { IDBFactory } from 'fake-indexeddb';
 import { createApplication, type Application } from '../../../src/app/compose.ts';
+import { createInProcessLifecycleLock, type LifecycleLock } from '../../../src/persistence/index.ts';
 import { fixedClock } from '../../../src/domain/time/index.ts';
 import type { ConfirmPlanCommand } from '../../../src/coordinators/trade-workflows/index.ts';
 import { nodeTestHost, type NodeTestHost } from '../../support/node-test-host.ts';
@@ -17,11 +18,13 @@ export interface Device {
   readonly factory: IDBFactory;
   readonly testHost: NodeTestHost;
   readonly ids: { next(): string };
+  // One profile's lifecycle lock, shared by every application on it (in-process, D2 section 6.0).
+  readonly locks: LifecycleLock;
 }
 
 export async function device(): Promise<Device> {
   const factory = new IDBFactory();
-  return { factory, testHost: await nodeTestHost(factory), ids: sequentialIds('id') };
+  return { factory, testHost: await nodeTestHost(factory), ids: sequentialIds('id'), locks: createInProcessLifecycleLock() };
 }
 
 export function launch(d: Device): Promise<Application> {
@@ -32,6 +35,7 @@ export function launch(d: Device): Promise<Application> {
     ids: d.ids,
     releaseId: d.testHost.releaseId,
     capacityRequirement: TEST_CAPACITY,
+    locks: d.locks,
   });
 }
 

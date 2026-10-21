@@ -344,7 +344,7 @@ describe('lifecycle lock', () => {
         try {
           const inspection = await p.inspectRoot();
           if (inspection.kind === 'KnownWorkspace') return { activated: false, databaseName: inspection.databaseName };
-          if (inspection.kind !== 'Invalid') throw new Error(`unexpected ${inspection.kind}`);
+          if (inspection.kind !== 'OlderSchema') throw new Error(`unexpected ${inspection.kind}`);
           const { databaseName } = await p.createCandidate();
           await p.copySnapshot(inspection.databaseName, databaseName, identity);
           await p.activateCandidate(databaseName, inspection.databaseName);

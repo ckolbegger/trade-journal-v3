@@ -5,6 +5,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
+import { sequentialIds } from '../tests/support/workspace.ts';
 import { FIXTURES_DIR, launchOn, loadDump, viewsOf, type WorkspaceDump } from './fixtures/workspace-fixture.ts';
 
 const problems: string[] = [];
@@ -18,7 +19,15 @@ for (const name of fixtures) {
     problems.push(`${name}: schema ${dump.schemaVersion} is newer than this release's ${SCHEMA_VERSION}`);
     continue;
   }
-  const app = await launchOn(await loadDump(dump), dump.asOf);
+  // Identities the release mints here (a migration's seeds and candidate) must not repeat the
+  // fixture's own `fx-` identities.
+  const app = await launchOn(await loadDump(dump), dump.asOf, sequentialIds('verify'));
+  // Opening runs any migration an older fixture needs (D2 T2.10).
+  const opened = await app.Workspace.initialize({});
+  if (opened.kind !== 'Opened') {
+    problems.push(`${name}: initialize is ${opened.kind}, not Opened`);
+    continue;
+  }
   const status = await app.Workspace.getStatus();
   if (status.kind !== 'Ready') {
     problems.push(`${name}: getStatus is ${status.kind}, not Ready`);
@@ -31,4 +40,4 @@ if (problems.length > 0) {
   for (const p of problems) console.error(`FAIL ${p}`);
   process.exit(1);
 }
-console.log(`verify:fixtures OK: ${fixtures.join(', ')} open Ready at schema ${SCHEMA_VERSION} with views equal to their snapshots`);
+console.log(`verify:fixtures OK: ${fixtures.join(', ')} open (migrating where older) Ready at schema ${SCHEMA_VERSION} with views equal to their snapshots`);

@@ -12,3 +12,4 @@ export {
   type WorkspaceStatus,
 } from './workspace.ts';
 export { installedCapabilities, type InstalledCapabilityManifest } from './capabilities.ts';
+export type { MigrationBlocked, MigrationIssue, MigrationReceipt, MigrationRepair, MigrationStage, MigrationStageHooks } from './migration.ts';

@@ -8,6 +8,7 @@ import type {
   ExecutionFact,
   ExpectedDeviation,
   IntegrityFinding,
+  RecordedDeviation,
   RecordedDeviationVersion,
   LifecycleState,
   PlannedLegInput,
@@ -121,6 +122,50 @@ function actionsMatch(prepared: Extract<PrepareTradeChangeResult, { kind: 'Prepa
     if (canonicalJson(fingerprint) !== canonicalJson(occurrence.versions.at(-1)!.fingerprint)) return false;
   }
   return accounted.size === recorded.size;
+}
+
+// The recorded occurrences after Trade Analysis's Deviation actions (D2 A26): Create appends a new
+// occurrence with an identity from `ids`, NewVersion and Supersede append a version, and Retain
+// changes nothing. `durable` maps candidate references to the identities assigned at apply.
+export function applyDeviationActions(
+  recorded: readonly RecordedDeviation[],
+  actions: readonly DeviationAction[],
+  ids: IdGenerator,
+  durable: (id: string) => string = (id) => id,
+): RecordedDeviation[] {
+  const version = (o: ExpectedDeviation): RecordedDeviationVersion => ({
+    fingerprint: { ...o.fingerprint, positionChangeId: durable(o.fingerprint.positionChangeId) },
+    type: o.type,
+    form: o.form,
+    quantityAbovePlan: decimalText(o.quantityAbovePlan),
+    causingPositionChangeId: durable(o.causingPositionChangeId),
+    economicTime: o.economicTime,
+    status: 'Active',
+  });
+  const deviations = [...recorded];
+  const append = (occurrenceId: string, next: (latest: RecordedDeviationVersion) => RecordedDeviationVersion) => {
+    const i = deviations.findIndex((d) => d.occurrenceId === occurrenceId);
+    const versions = deviations[i]!.versions;
+    deviations[i] = { occurrenceId, versions: [...versions, next(versions[versions.length - 1]!)] };
+  };
+  for (const action of actions) {
+    if (action.kind === 'Create') deviations.push({ occurrenceId: ids.next(), versions: [version(action.occurrence)] });
+    else if (action.kind === 'NewVersion') append(action.occurrenceId, () => version(action.occurrence));
+    else if (action.kind === 'Supersede') append(action.occurrenceId, (latest) => ({ ...latest, status: 'Superseded', reason: action.reason }));
+  }
+  return deviations;
+}
+
+// A stored Trade with a disagreement repaired (P7): the expected lifecycle and the Deviation actions
+// that bring its recorded occurrences to the expected ones. Migration and Restore apply it to a
+// candidate; its facts are untouched.
+export function repairedDocument(
+  document: TradeDocument,
+  repair: { readonly expectedLifecycle: LifecycleState; readonly deviationActions: readonly DeviationAction[] },
+  ids: IdGenerator,
+): TradeDocument {
+  const deviations = applyDeviationActions(document.deviations ?? [], repair.deviationActions, ids);
+  return { ...document, lifecycle: repair.expectedLifecycle, ...(deviations.length > 0 && { deviations }) };
 }
 
 export type TradeRecordApplyResult = { readonly kind: 'ReconciliationMismatch' } | Staged;
@@ -292,26 +337,7 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
         versions: fact.versions.map((v) => ({ ...v, value: { ...v.value, memberIds: v.value.memberIds.map(durable) } })),
       };
     });
-    const version = (o: ExpectedDeviation): RecordedDeviationVersion => ({
-      fingerprint: { ...o.fingerprint, positionChangeId: durable(o.fingerprint.positionChangeId) },
-      type: o.type,
-      form: o.form,
-      quantityAbovePlan: decimalText(o.quantityAbovePlan),
-      causingPositionChangeId: durable(o.causingPositionChangeId),
-      economicTime: o.economicTime,
-      status: 'Active',
-    });
-    const deviations = [...(before.deviations ?? [])];
-    const append = (occurrenceId: string, next: (latest: RecordedDeviationVersion) => RecordedDeviationVersion) => {
-      const i = deviations.findIndex((d) => d.occurrenceId === occurrenceId);
-      const versions = deviations[i]!.versions;
-      deviations[i] = { occurrenceId, versions: [...versions, next(versions[versions.length - 1]!)] };
-    };
-    for (const action of deviationActions) {
-      if (action.kind === 'Create') deviations.push({ occurrenceId: deps.ids.next(), versions: [version(action.occurrence)] });
-      else if (action.kind === 'NewVersion') append(action.occurrenceId, () => version(action.occurrence));
-      else if (action.kind === 'Supersede') append(action.occurrenceId, (latest) => ({ ...latest, status: 'Superseded', reason: action.reason }));
-    }
+    const deviations = applyDeviationActions(before.deviations ?? [], deviationActions, deps.ids, durable);
     const document: TradeDocument = { ...candidate, lifecycle: expectedLifecycle, facts, deviations };
     // Applies only to the FactRevision it was prepared from.
     tx.require({

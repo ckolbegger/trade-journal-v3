@@ -6,6 +6,7 @@ import '../../tests/setup/idb-globals.ts';
 import { IDBFactory } from 'fake-indexeddb';
 import { createApplication, type Application } from '../../src/app/compose.ts';
 import { fixedClock } from '../../src/domain/time/index.ts';
+import { createInProcessLifecycleLock } from '../../src/persistence/index.ts';
 import { nodeTestHost } from '../../tests/support/node-test-host.ts';
 import { TEST_CAPACITY } from '../../tests/support/stack.ts';
 import { sequentialIds } from '../../tests/support/workspace.ts';
@@ -100,6 +101,7 @@ export async function launchOn(factory: IDBFactory, asOf: string, ids = sequenti
     ids,
     releaseId: testHost.releaseId,
     capacityRequirement: TEST_CAPACITY,
+    locks: createInProcessLifecycleLock(),
   });
 }
 
@@ -118,7 +120,7 @@ function normalize(value: unknown): unknown {
 }
 
 // The normalized Planned list and every Detail; bindings are opaque revision tokens and omitted.
-export async function viewsOf(app: Application): Promise<unknown> {
+export async function viewsOf(app: Pick<Application, 'TradeViewsAndReporting'>): Promise<unknown> {
   const list = await app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Planned' });
   if (list.kind !== 'Ready') throw new Error(`browseTrades: ${list.kind}`);
   const details = [];

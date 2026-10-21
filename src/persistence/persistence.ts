@@ -1,6 +1,8 @@
 import type { IDBPDatabase, IDBPObjectStore } from 'idb';
 import type { RuntimeNotWritable } from '../delivery/runtime-not-writable.ts';
 import { deleteDatabase, openDatabase } from './idb.ts';
+import { rebuildPrivateState } from './rebuild.ts';
+import type { RecordSource } from './record-source.ts';
 import {
   POINTER_KEY,
   PRIVATE_STORES,
@@ -47,8 +49,10 @@ export type RootInspection =
   | {
       readonly kind: 'Invalid';
       readonly databaseName: string;
-      readonly reason: 'MissingMeta' | 'UnknownSchemaVersion';
+      readonly reason: 'MissingMeta' | 'UnknownSchemaVersion' | 'UnsupportedNewerSchema';
     }
+  // A Workspace at an earlier schema this release migrates from (D2 A30): never read until migrated.
+  | { readonly kind: 'OlderSchema'; readonly databaseName: string; readonly schemaVersion: number }
   | {
       readonly kind: 'KnownWorkspace';
       readonly databaseName: string;
@@ -61,6 +65,12 @@ export type RootInspection =
 export interface WorkspaceSnapshotBinding {
   readonly databaseName: string;
   readonly contentRevision: number;
+}
+
+export interface DatabaseDescription {
+  readonly databaseName: string;
+  readonly contentRevision: number;
+  readonly counts: Readonly<Record<string, number>>;
 }
 
 export interface StoreRecord {
@@ -137,10 +147,23 @@ export interface Persistence {
   // Bumps the source database's IndexedDB version, closing every other connection to it, then
   // copies its authoritative stores in one readonly snapshot through `transform` into the
   // candidate. Private stores are never copied: the private rebuild produces them (D2 A30, A139).
-  copySnapshot(source: string, candidate: string, transform: RecordTransform): Promise<void>;
+  // Returns how many records of each store were copied.
+  copySnapshot(source: string, candidate: string, transform: RecordTransform): Promise<{ readonly counts: Readonly<Record<string, number>> }>;
+  // The candidate's records, store by store in bounded batches, for the section validators.
+  candidateSource(candidate: string): RecordSource;
+  // Writes records into the candidate (seed additions, repairs) at its content revision 1.
+  putCandidateRecords(candidate: string, records: readonly StoreRecord[]): Promise<void>;
+  // Produces the candidate's private fields, stores, and indexes from its authoritative records.
+  rebuildCandidate(candidate: string): Promise<void>;
   // In one root transaction: points the root at the candidate, removes its candidate entry, and
   // lists the database it replaces as retired (D2 A30).
   activateCandidate(candidate: string, retired: string): Promise<void>;
+  // A database's content revision and record count per store, read without changing it.
+  describeDatabase(databaseName: string): Promise<DatabaseDescription>;
+  // Deletes every listed candidate and retired database the pointer does not name. Only a holder
+  // of the lifecycle lock calls it while the pointer names an older schema, since another tab may
+  // be copying into a listed candidate (D2 A30).
+  discardAbandoned(): Promise<readonly string[]>;
   // Deletes the candidate and its entry; the database it was copied from and the pointer are
   // untouched.
   discardCandidate(candidate: string): Promise<void>;
@@ -169,6 +192,9 @@ interface NameListRecord {
   readonly key: typeof CANDIDATES_KEY | typeof RETIRED_KEY;
   readonly databaseNames: readonly string[];
 }
+
+// Records per batch when a validator reads a candidate (D8 A140).
+const CANDIDATE_BATCH_SIZE = 500;
 
 // Meta records owned by persistence, never copied between Workspace databases.
 const PERSISTENCE_META_KEYS: ReadonlySet<string> = new Set(['schema', 'content']);
@@ -250,6 +276,19 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
       deleted.push(...names);
     }
     return deleted;
+  }
+
+  // Puts records into a database that nothing reads yet, at content revision 1, in one transaction.
+  async function putRecords(databaseName: string, records: readonly StoreRecord[]): Promise<void> {
+    if (records.length === 0) return;
+    const db = await openDatabase(deps.indexedDB, databaseName, undefined);
+    try {
+      const tx = db.transaction([...new Set(records.map((r) => r.store))], 'readwrite', { durability: 'strict' });
+      for (const { store, value } of records) void tx.objectStore(store).put({ ...value, revision: 1 });
+      await tx.done;
+    } finally {
+      db.close();
+    }
   }
 
   return {
@@ -389,17 +428,57 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
         bumped.close();
       }
       // The candidate already holds its own schema version and content revision.
-      const target = await openDatabase(deps.indexedDB, candidate, undefined);
+      const copied = records.map(transform);
+      await putRecords(candidate, copied);
+      const counts: Record<string, number> = {};
+      for (const { store } of copied) counts[store] = (counts[store] ?? 0) + 1;
+      return { counts };
+    },
+
+    candidateSource(candidate) {
+      return {
+        async *batches(store) {
+          const db = await openDatabase(deps.indexedDB, candidate, undefined);
+          try {
+            let after: IDBValidKey | undefined;
+            for (;;) {
+              const range = after === undefined ? undefined : IDBKeyRange.lowerBound(after, true);
+              const batch = (await db.getAll(store, range, CANDIDATE_BATCH_SIZE)) as Record<string, unknown>[];
+              if (batch.length === 0) return;
+              yield batch;
+              after = batch[batch.length - 1]![WORKSPACE_KEY_PATHS[store]] as IDBValidKey;
+            }
+          } finally {
+            db.close();
+          }
+        },
+      };
+    },
+
+    putCandidateRecords: (candidate, records) => putRecords(candidate, records),
+
+    async describeDatabase(databaseName) {
+      const db = await openDatabase(deps.indexedDB, databaseName, undefined);
       try {
-        const copied = records.map(transform);
-        if (copied.length === 0) return;
-        const tx = target.transaction([...new Set(copied.map((r) => r.store))], 'readwrite', { durability: 'strict' });
-        for (const { store, value } of copied) void tx.objectStore(store).put({ ...value, revision: 1 });
+        const stores = Array.from(db.objectStoreNames);
+        const tx = db.transaction(stores, 'readonly');
+        const [content, ...sizes] = await Promise.all([
+          tx.objectStore('meta').get('content') as Promise<ContentRecord>,
+          ...stores.map((store) => tx.objectStore(store).count()),
+        ]);
         await tx.done;
+        return { databaseName, contentRevision: content.contentRevision, counts: Object.fromEntries(stores.map((store, i) => [store, sizes[i]!])) };
       } finally {
-        target.close();
+        db.close();
       }
     },
+
+    async discardAbandoned() {
+      const pointer = (await inRoot((store) => store.get(POINTER_KEY))) as PointerRecord | undefined;
+      return deleteListed(pointer?.databaseName ?? '');
+    },
+
+    rebuildCandidate: (candidate) => rebuildPrivateState(deps.indexedDB, candidate),
 
     async createWorkspace(initialRecords) {
       const refusal = deps.writeGate.current();
@@ -459,7 +538,14 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
           schema = undefined;
         }
         if (!schema) return { kind: 'Invalid', databaseName: pointer.databaseName, reason: 'MissingMeta' };
-        if (schema.schemaVersion !== SCHEMA_VERSION) {
+        const version = schema.schemaVersion;
+        if (Number.isInteger(version) && version >= 1 && version < SCHEMA_VERSION) {
+          return { kind: 'OlderSchema', databaseName: pointer.databaseName, schemaVersion: version };
+        }
+        if (Number.isInteger(version) && version > SCHEMA_VERSION) {
+          return { kind: 'Invalid', databaseName: pointer.databaseName, reason: 'UnsupportedNewerSchema' };
+        }
+        if (version !== SCHEMA_VERSION) {
           return { kind: 'Invalid', databaseName: pointer.databaseName, reason: 'UnknownSchemaVersion' };
         }
       } finally {

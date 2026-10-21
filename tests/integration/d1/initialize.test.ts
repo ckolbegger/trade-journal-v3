@@ -26,7 +26,8 @@ describe('I1.1 fresh initialization', () => {
     const stores = workspaceStores(await dumpAll(d.factory));
     const strategies = (stores['catalog'] as { kind: string; productKey?: string }[]).filter((r) => r.kind === 'Strategy');
     expect(strategies.map((s) => s.productKey)).toEqual(['strategy.long-stock']);
-    expect((stores['journalDefinitions'] as { entryTypeKey?: string }[]).length).toBe(1);
+    // One definition per seeded Entry Type: Plan Reflection and, from D2, Position Change Reflection.
+    expect((stores['journalDefinitions'] as { entryTypeKey?: string }[]).length).toBe(2);
   });
 });
 

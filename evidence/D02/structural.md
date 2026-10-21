@@ -150,3 +150,16 @@ Run 2026-10-21 12:58 EDT on commit `0733f71` (the only uncommitted files were th
 | Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 10 of 11 exit 0 | `suite-runs/t2.9-checks.txt` |
 
 Failures: one, the expected `verify:fixtures` failure (`FAIL workspace-v1: getStatus is IntegrityBlocked, not Ready`) that T2.10 clears. No other failure.
+
+## T2.10 `verify:fixtures` opens older fixtures through `initialize`
+
+D1's T1.31 row says `verify:fixtures` checks that migration succeeds after a later schema change. Two minimal changes to `tools/verify-fixtures.ts`, and none to `tests/fixtures/workspace-v1/`:
+
+- It calls `Workspace.initialize({})` before `getStatus`, failing the fixture unless the result is `Opened`, so an older dump migrates first.
+- It launches with `sequentialIds('verify')` instead of `launchOn`'s default `fx` prefix, because the migration mints new identities (the Position Change Reflection definition, the candidate database name) and the fixture's own identities use the `fx-` prefix; a repeated identity overwrote the fixture's Plan Reflection definition.
+
+`tools/fixtures/workspace-fixture.ts` also passes the in-process lifecycle lock to `createApplication`, and `viewsOf` accepts any object with `TradeViewsAndReporting` (type-only), so the Workspace migration test reuses it.
+
+| Command | Result |
+|---|---|
+| `npm run verify:fixtures` | exit 0: `verify:fixtures OK: workspace-v1 open (migrating where older) Ready at schema 2 with views equal to their snapshots` |
