@@ -555,3 +555,34 @@ Run 2026-10-21 18:28 EDT on commit `c0a7ff8` (the only uncommitted files were th
 | Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.21-checks.txt` |
 
 Failures: none.
+
+## T2.22 Node mock-free integration suite
+
+**Suite.** `tests/integration/d2/` follows D1's conventions (plan section 6.1): `createApplication({ indexedDB, host: NodeTestHost, clock, ids, locks: createInProcessLifecycleLock() })`, facade operations only, "restart" is a new application on the same factory, "unchanged" is `dumpAll` of every store. `support.ts` holds the device (factory, host, fixed clock at 2026-10-12 17:00 New York, sequential identities, one in-process lock), the reference Trade (Plan 09:00, PC1 10:00 60 @ 50.10, PC2 11:00 40 @ 50.30, PC3 14:00 20 @ 51.00, fees 1.00) built through `confirmPlan` and `recordPositionChange`, the T2.2 Entry Quality figures, the v1 fixture loader (`loadDump`, identities prefixed `mig`), and the raw writer used only while no application is open. Files are named for the acceptance-matrix filters where one file can serve: `migration` (I2.1–I2.4), `open-position` (I2.5), `scale-in` (I2.6), `entry-quality` (I2.6 for AC-CALC-001: the reference Trade and a 200-share Plan, 1R $500), `rejections` (I2.7), `integrity` (I2.8 a, b), `integrity-incoherent` (I2.8 c), `earlier-dated` (I2.9), `write-gate` (I2.10), `rebuild` (I2.11), `seed` (I2.12). `query-count.test.ts` (T2.21) is unchanged and still imports the D1 support module.
+
+**Interruption points (I2.3).** The stopped application gets a factory wrapper whose named call throws, as if the process ended there; every step before it is production code, and the restart uses the plain factory. (a) The copy is one transaction, so the two states an interruption can leave are both run: the candidate's second open (listed and created, before the copy commits) and its third open (listed and copied, before seeding and validation). (b) The `deleteDatabase` of the old database after the root flip.
+
+**Readings.** Obligation and Entry counts in I2.5 and I2.6 count Position Change Reflection records only (Plan Reflections have their own since T2.5). I2.7's Sell is a separate command returning `VariantNotInstalled{variants:['Sell']}` (T2.6 and A18 return it before any other check), while the other four invalid inputs are one command whose six issues come back together.
+
+| Case | File | Result |
+|---|---|---|
+| I2.1 Migrate the v1 fixture | `migration.test.ts` | pass |
+| I2.2 Migration failure and retry | `migration.test.ts` | pass |
+| I2.3 Interrupted migration (a, two stop points; b) | `migration.test.ts` | pass (3 tests) |
+| I2.4 Concurrent migration | `migration.test.ts` | pass |
+| I2.5 Open a position | `open-position.test.ts` | pass |
+| I2.6 Scale-in, Entry Quality, Entry Size | `scale-in.test.ts`, `entry-quality.test.ts` | pass (3 tests) |
+| I2.7 Rejections write nothing | `rejections.test.ts` | pass |
+| I2.8 Integrity disagreement (a), (b) | `integrity.test.ts` | pass (2 tests) |
+| I2.8 Integrity disagreement (c) | `integrity-incoherent.test.ts` | **fails, not committed**: `Error: incoherent` thrown by `getTradeDetail` (`src/coordinators/trade-views/trade-views.ts:284`); handed to a fix task, which commits the test with the fix |
+| I2.9 Earlier-dated entry | `earlier-dated.test.ts` | pass |
+| I2.10 Write gate | `write-gate.test.ts` | pass |
+| I2.11 Rebuild equivalence | `rebuild.test.ts` | pass |
+| I2.12 Fresh initialization at schema 2 | `seed.test.ts` | pass |
+
+| Command | Result |
+|---|---|
+| `npm run test:integration` (with the uncommitted I2.8 c file present) | `Test Files 1 failed | 17 passed (18)`, `Tests 1 failed | 37 passed (38)`; the one failure is I2.8 (c), `Error: incoherent` at `trade-views.ts:284:47` |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
+
+D1's section 6.1 cases (I1.1–I1.11) all pass in the same run.
