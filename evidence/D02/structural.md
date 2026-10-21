@@ -163,3 +163,18 @@ D1's T1.31 row says `verify:fixtures` checks that migration succeeds after a lat
 | Command | Result |
 |---|---|
 | `npm run verify:fixtures` | exit 0: `verify:fixtures OK: workspace-v1 open (migrating where older) Ready at schema 2 with views equal to their snapshots` |
+
+## Cumulative run after T2.10
+
+Run 2026-10-21 13:13 EDT on commit `101bf8c` (the only uncommitted files were this run's own outputs and the untracked older handoff note), Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 34 passed (34)`, `Tests 292 passed (292)`, exit 0 | `suite-runs/t2.10-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 6 passed (6)`, `Tests 19 passed (19)`, exit 0 | `suite-runs/t2.10-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `27 passed (43.3s)`, exit 0 | `suite-runs/t2.10-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.10-checks.txt` |
+
+Failures: none. `verify:fixtures` passes again: the v1 fixture migrates to schema 2 (T2.10), which clears the expected failure carried since T2.8.
+
+**Implementation decision (T2.10, recorded 2026-10-21).** A30 says retired and abandoned candidate databases are deleted "after the flip and on every later root inspection". While the pointer still names an older schema, an unlocked launch inspection could delete a candidate another tab is copying into, so in that state abandoned candidates are deleted only under the `tj-lifecycle` lock, by `persistence.discardAbandoned()` just before a migration creates its candidate. Once the pointer names the current schema, every inspection cleans them, as T2.8 built. This is a reading of A30's "later" (after the flip), not a deviation.
