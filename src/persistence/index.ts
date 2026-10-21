@@ -25,4 +25,5 @@ export {
   type SemanticTransaction,
 } from './semantic-transaction.ts';
 export { rebuildPrivateState } from './rebuild.ts';
+export type { RecordSource, SectionRecord } from './record-source.ts';
 export { createInProcessLifecycleLock, createWebLocksLifecycleLock, type LifecycleLock } from './lifecycle-lock.ts';

@@ -1,2 +1,3 @@
 export { analysisInputOf, createTradeRecord, summaryOf, type BrowseRecord, type GetTradeRecordRequest, type GetTradeRecordResult, type TradeSummary, type TradeRecordPage, type TradeRecordQuery, type DerivedTradeReconciliation, type PrepareTradeChangeResult, type TradeRecordApplyResult, type TradeRecord, type TradeRecordDeps } from './trade-record.ts';
+export { validateSection, type TradeSectionIssue, type TradeSectionReferences, type TradeSectionRepair, type TradeSectionValidation } from './section.ts';
 export type { ConfirmPlanChange, ExecutionFactValue, FactValue, PlanFactValue, PositionChangeChange, PositionChangeFactValue, TradeDocument, TradeFact } from './records.ts';
