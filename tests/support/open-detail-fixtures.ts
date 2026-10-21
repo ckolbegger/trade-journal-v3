@@ -1,6 +1,13 @@
 // Open Trade Detail fixtures for the UI tests: D2's reference Trade (breakdown, section 4), derived by
 // Trade Analysis so every figure is the one the coordinator would show.
-import type { NarrativeItem, OpenTradeDetail, PositionChangeFact, RecordedDeviation } from '../../src/app/types.ts';
+import type {
+  IncoherentFactFinding,
+  IncoherentTradeDetail,
+  NarrativeItem,
+  OpenTradeDetail,
+  PositionChangeFact,
+  RecordedDeviation,
+} from '../../src/app/types.ts';
 import { derive, type TradeAnalysisRecord } from '../../src/domain/trade-analysis/index.ts';
 import { LEG_ID, referenceRecord } from '../../src/domain/trade-analysis/reference-trade.ts';
 import { plannedDetail } from './views-fixtures.ts';
@@ -64,6 +71,26 @@ export function openDetailOf(positionChanges: readonly PositionChangeFact[], opt
     deviations: record.recordedDeviations ?? [],
     findings: derived.findings,
     journal: options.journal ?? [],
+  };
+}
+
+// The Detail of a Trade whose recorded facts cannot be replayed: only stored values and the findings.
+export function incoherentDetailOf(
+  positionChanges: readonly PositionChangeFact[],
+  findings: readonly IncoherentFactFinding[],
+  journal: readonly NarrativeItem[] = [],
+): IncoherentTradeDetail {
+  const open = openDetailOf([]);
+  return {
+    tradeId: open.tradeId,
+    factRevision: open.factRevision,
+    plan: open.plan,
+    lifecycle: { stored: 'Open' },
+    labels: open.labels,
+    recordedPositionChanges: positionChanges,
+    deviations: [],
+    findings,
+    journal,
   };
 }
 

@@ -40,6 +40,9 @@ export type {
 
 // Trade Views and Reporting: the Planned and Open lists and Trade Detail.
 export type {
+  IncoherentFactFinding,
+  IncoherentOpenTradeItem,
+  IncoherentTradeDetail,
   OpenTradeDetail,
   OpenTradeItem,
   PlannedTradeDetail,

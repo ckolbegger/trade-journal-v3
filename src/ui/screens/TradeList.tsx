@@ -1,7 +1,7 @@
 import { useEffect, useState, type KeyboardEvent } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
-import type { OpenTradeItem, PlannedTradeItem } from '../../app/types.ts';
+import type { IncoherentOpenTradeItem, OpenTradeItem, PlannedTradeItem } from '../../app/types.ts';
 import { localTime, money, quantity, ratio } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 
@@ -124,7 +124,7 @@ function OpenList({
       </section>
     );
   }
-  const items = state.items as readonly OpenTradeItem[];
+  const items = state.items as readonly (OpenTradeItem | IncoherentOpenTradeItem)[];
   if (items.length === 0) {
     return (
       <section className="card empty">
@@ -163,27 +163,33 @@ function OpenList({
           </tr>
         </thead>
         <tbody>
-          {items.map((item) => (
-            <tr key={item.tradeId}>
-              <td>
-                <Link to={`/trades/${item.tradeId}`}>{item.underlying}</Link>
-              </td>
-              <td>{item.strategy}</td>
-              <td>{`${item.institution} — ${item.account}`}</td>
-              <td className="number">{`${quantity(item.openQuantity)} of ${quantity(item.plannedQuantity)}`}</td>
-              <td className="number">{item.averageOpenCost.kind === 'Value' ? money(item.averageOpenCost.value) : 'Not applicable'}</td>
-              <td className="number">{money(item.incurredFees)}</td>
-              <td>{item.entryStatus}</td>
-              <td className="number">{item.deviationCount}</td>
-              <td>
-                {/* Text, not colour alone, carries the meaning. */}
-                <span className={item.integrity === 'Agrees' ? 'badge' : 'badge warning'}>
-                  {item.integrity === 'Agrees' ? 'Records agree' : 'Records disagree'}
-                </span>
-              </td>
-              <td>{localTime(item.lastActivity, timeZone)}</td>
-            </tr>
-          ))}
+          {items.map((item) => {
+            // Facts that cannot be replayed leave the Position and entry figures unavailable, never a number.
+            const derived = 'openQuantity' in item ? item : undefined;
+            return (
+              <tr key={item.tradeId}>
+                <td>
+                  <Link to={`/trades/${item.tradeId}`}>{item.underlying}</Link>
+                </td>
+                <td>{item.strategy}</td>
+                <td>{`${item.institution} — ${item.account}`}</td>
+                <td className="number">{derived ? `${quantity(derived.openQuantity)} of ${quantity(item.plannedQuantity)}` : 'Unavailable'}</td>
+                <td className="number">
+                  {!derived ? 'Unavailable' : derived.averageOpenCost.kind === 'Value' ? money(derived.averageOpenCost.value) : 'Not applicable'}
+                </td>
+                <td className="number">{derived ? money(derived.incurredFees) : 'Unavailable'}</td>
+                <td>{derived ? derived.entryStatus : 'Unavailable'}</td>
+                <td className="number">{item.deviationCount}</td>
+                <td>
+                  {/* Text, not colour alone, carries the meaning. */}
+                  <span className={item.integrity === 'Agrees' ? 'badge' : 'badge warning'}>
+                    {item.integrity === 'Agrees' ? 'Records agree' : 'Records disagree'}
+                  </span>
+                </td>
+                <td>{localTime(item.lastActivity, timeZone)}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

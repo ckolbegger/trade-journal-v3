@@ -4,6 +4,7 @@ import {
   type DerivedTradeState,
   type EntryQuality,
   type EntryResolution,
+  type IncoherentFacts,
   type InstrumentPosition,
   type IntegrityFinding,
   type LegFulfillment,
@@ -71,7 +72,16 @@ export interface OpenTradeItem {
   readonly lastActivity: string;
 }
 
-export type TradeBrowseItem<L extends 'Planned' | 'Open'> = L extends 'Open' ? OpenTradeItem : PlannedTradeItem;
+// An Open Trade whose recorded facts cannot be replayed (AC-LIFE-003): its Position and entry figures
+// are unavailable rather than shown as numbers, and its records disagree.
+export interface IncoherentOpenTradeItem extends Omit<
+  OpenTradeItem,
+  'openQuantity' | 'averageOpenCost' | 'incurredFees' | 'entryStatus' | 'integrity'
+> {
+  readonly integrity: 'Disagrees';
+}
+
+export type TradeBrowseItem<L extends 'Planned' | 'Open'> = L extends 'Open' ? OpenTradeItem | IncoherentOpenTradeItem : PlannedTradeItem;
 
 export interface TradeBrowseView<L extends 'Planned' | 'Open'> {
   readonly items: readonly TradeBrowseItem<L>[];
@@ -137,7 +147,22 @@ export interface OpenTradeDetail extends Omit<PlannedTradeDetail, 'journal'> {
   readonly journal: readonly NarrativeItem[];
 }
 
-export type TradeDetailView = PlannedTradeDetail | OpenTradeDetail;
+// A recorded fact that cannot be replayed, named with the reason (AC-LIFE-003).
+export type IncoherentFactFinding = IncoherentFacts['findings'][number];
+
+// The Detail of a Trade whose recorded facts cannot be replayed (AC-LIFE-003): its Plan, stored
+// lifecycle, labels, recorded Position Changes, recorded Deviations, and narrative, with the findings.
+// Nothing is derived, so it has no Baseline, lifecycle agreement, Position, entry, or fulfillment.
+export interface IncoherentTradeDetail extends Omit<PlannedTradeDetail, 'journal' | 'lifecycle' | 'baseline'> {
+  readonly lifecycle: { readonly stored: LifecycleState };
+  // As stored: without a replay there is no Fact Order.
+  readonly recordedPositionChanges: readonly PositionChangeFact[];
+  readonly deviations: readonly RecordedDeviation[];
+  readonly findings: readonly IncoherentFactFinding[];
+  readonly journal: readonly NarrativeItem[];
+}
+
+export type TradeDetailView = PlannedTradeDetail | OpenTradeDetail | IncoherentTradeDetail;
 
 export interface TradeViews {
   // Generic in the lifecycle, so each caller receives its lifecycle's item form, and a caller
@@ -177,6 +202,10 @@ function decimal(text: string): Rational {
 
 const sum = (values: readonly Rational[]) => values.reduce((a, b) => a.add(b), Rational.of(0n));
 
+// Active recorded Deviation occurrences.
+const activeDeviations = (analysis: TradeAnalysisRecord) =>
+  (analysis.recordedDeviations ?? []).filter((d) => d.versions.at(-1)?.status === 'Active').length;
+
 // Entering until the Entry Resolution Point, then Resolved (D2 A23).
 const entryStatusOf = (derived: DerivedTradeState) => (derived.entryResolution.kind === 'Resolved' ? 'Resolved' : 'Entering');
 
@@ -195,8 +224,20 @@ function openItem(summary: TradeSummary, analysis: TradeAnalysisRecord, derived:
         : { kind: 'Value', value: sum(lots.map((l) => l.quantity.mul(l.price))).div(openQuantity) },
     incurredFees: derived.fees.incurredOpening,
     entryStatus: entryStatusOf(derived),
-    deviationCount: (analysis.recordedDeviations ?? []).filter((d) => d.versions.at(-1)?.status === 'Active').length,
+    deviationCount: activeDeviations(analysis),
     integrity: derived.findings.length === 0 ? 'Agrees' : 'Disagrees',
+    lastActivity: summary.lastActivity ?? summary.planTime,
+  };
+}
+
+function incoherentItem(summary: TradeSummary, analysis: TradeAnalysisRecord, labels: Labels): IncoherentOpenTradeItem {
+  return {
+    tradeId: summary.tradeId,
+    underlying: summary.underlying,
+    ...labels,
+    plannedQuantity: sum(analysis.plan.legs.map((l) => decimal(l.quantity))),
+    deviationCount: activeDeviations(analysis),
+    integrity: 'Disagrees',
     lastActivity: summary.lastActivity ?? summary.planTime,
   };
 }
@@ -281,10 +322,9 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const narrative = await deps.journal.query({ scope: 'TradeNarrative', tradeId: request.tradeId });
         // Derived once and reused for every figure in the view.
         const derived = derive({ record: analysis });
-        if (derived.kind !== 'Derived') throw new Error('incoherent');
         const resolved = labels.kind === 'Resolved' ? labels.resolved : {};
         const { plan } = analysis;
-        const planned: Omit<PlannedTradeDetail, 'journal'> = {
+        const stored: Omit<IncoherentTradeDetail, 'lifecycle' | 'recordedPositionChanges' | 'deviations' | 'findings' | 'journal'> = {
           tradeId: analysis.tradeId,
           factRevision: analysis.factRevision,
           plan: {
@@ -296,13 +336,28 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
             stops: plan.stops,
             targets: plan.targets,
           },
-          lifecycle: { stored: analysis.storedLifecycle, agreement: derived.agreement },
-          baseline: derived.baseline,
           labels: {
             strategy: resolved['strategy']?.label ?? '',
             account: resolved['account']?.label ?? '',
             institution: resolved['account']?.institution?.label ?? '',
           },
+        };
+        // Facts that cannot be replayed are surfaced with their findings, never repaired or computed.
+        if (derived.kind === 'IncoherentFacts') {
+          const view: IncoherentTradeDetail = {
+            ...stored,
+            lifecycle: { stored: analysis.storedLifecycle },
+            recordedPositionChanges: analysis.positionChanges,
+            deviations: analysis.recordedDeviations ?? [],
+            findings: derived.findings,
+            journal: narrative.items,
+          };
+          return { binding, view };
+        }
+        const planned: Omit<PlannedTradeDetail, 'journal'> = {
+          ...stored,
+          lifecycle: { stored: analysis.storedLifecycle, agreement: derived.agreement },
+          baseline: derived.baseline,
         };
         // A Trade that is Planned by both its stored lifecycle and its facts keeps D1's Detail, whose
         // narrative holds Entries only, without the item kind; any other Trade gets the Open form.
@@ -343,8 +398,14 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const items = records.map(({ summary, analysis }) => {
           // Each Trade on the page is derived once.
           const derived = derive({ record: analysis });
+          if (request.lifecycle === 'Open') {
+            return derived.kind === 'Derived'
+              ? openItem(summary, analysis, derived, labelsOf(summary))
+              : incoherentItem(summary, analysis, labelsOf(summary));
+          }
+          // A Planned item's Baseline needs a replay; Planned Trades with incoherent facts are not yet surfaced.
           if (derived.kind !== 'Derived') throw new Error('incoherent');
-          return request.lifecycle === 'Open' ? openItem(summary, analysis, derived, labelsOf(summary)) : plannedItem(summary, derived, labelsOf(summary));
+          return plannedItem(summary, derived, labelsOf(summary));
         }) as TradeBrowseItem<L>[];
         return { view: { items, ...(page.nextCursor ? { nextCursor: page.nextCursor } : {}) }, binding: page.binding };
       });

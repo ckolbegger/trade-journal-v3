@@ -586,3 +586,16 @@ Failures: none.
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
 
 D1's section 6.1 cases (I1.1–I1.11) all pass in the same run.
+
+## I2.8 (c) fix
+
+Suite failure: when `derive` returned `IncoherentFacts`, `getTradeDetail` and the Open `browseTrades` threw, so one incoherent Trade broke its Detail and the whole Open page. AC-LIFE-003 says normal reads "surface or block"; the plan's I2.8 row requires Ready with the findings, so reads now surface.
+
+Decision:
+
+- **Detail.** `TradeDetailView` gains a third form, `IncoherentTradeDetail`: the stored Plan, stored lifecycle (`lifecycle: { stored }`, no agreement), labels, `recordedPositionChanges` (as stored; with no replay there is no Fact Order), recorded `deviations`, `findings: IncoherentFactFinding[]` (exactly Trade Analysis's `{ factId, reason }`, the same findings `recordPositionChange` returns in `IntegrityDisagreement`), and the whole narrative. It has no Baseline, Position, fees, entry status, Entry Resolution, Entry Quality or fulfillment, because each needs a replay and a number must never be invented (trade-analysis spec, "A caller must not convert either class into a plausible number"). The brief suggested widening `OpenTradeDetail.findings`; a separate form was chosen instead so the coherent Open and Planned shapes (and so `verify:fixtures` and the bench expected rows) stay byte-for-byte unchanged. The field is named `recordedPositionChanges`, not `positionChanges`, so the existing `'positionChanges' in view` checks still select only the derived Open form.
+- **List.** The Open item union adds `IncoherentOpenTradeItem`: `OpenTradeItem` without `openQuantity`, `averageOpenCost`, `incurredFees` and `entryStatus`, with `integrity: 'Disagrees'`. Planned quantity, Deviation count (recorded) and last activity stay, as they come from stored records.
+- **UI.** Trade Detail shows the "Records disagree" region with a table "Facts that cannot be replayed" (Record, Problem; for example "Execution at 2026-10-12 11:00", "Names a Planned Leg that is not in the Plan"), the sentence that the Position, entry and fulfillment figures are unavailable, then the Plan, Position Changes and Journal; the Plan Baseline region shows only when the view has a Baseline. The Open list shows "Unavailable" in the Quantity, Average cost, Fees and Entry cells and "Records disagree" in Integrity.
+- **Not changed.** A Planned-list item still needs a replayed Baseline, so `browseTrades({ lifecycle: 'Planned' })` still throws for a Trade stored as Planned whose facts are incoherent (not in I2.8's cases; an incoherent Trade with Position Changes is stored Open by every write path). The incoherent Detail still offers "Record entry" while Writable; saving returns `IntegrityDisagreement`.
+
+Verification: `npm run test:integration` 38 passed; `npx vitest run src/coordinators/trade-views src/ui/screens` passed; `npm run verify:fixtures` views equal; `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` exit 0.

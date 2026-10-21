@@ -168,6 +168,32 @@ describe('Open list', () => {
     expect([other[3], other[4], other[6], other[7], other[8]]).toEqual(['120.5 of 100', 'Not applicable', 'Resolved', '2', 'Records disagree']);
     expect(within(second!).getByText('Records disagree').className).toMatch(/badge/);
   });
+
+  it('should show an Open Trade whose facts cannot be replayed with Records disagree and its Position and entry figures as Unavailable', async () => {
+    const { tradeId, underlying, strategy, account, institution, plannedQuantity, deviationCount, lastActivity } = openItem;
+    const incoherent = { tradeId, underlying, strategy, account, institution, plannedQuantity, deviationCount, integrity: 'Disagrees', lastActivity };
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeViewsAndReporting.browseTrades).mockResolvedValue(readyPage([incoherent]));
+    renderOpen(facade);
+    const table = await screen.findByRole('table', { name: 'Open Trades' });
+    const [, row] = within(table).getAllByRole('row');
+    expect(
+      within(row!)
+        .getAllByRole('cell')
+        .map((c) => c.textContent),
+    ).toEqual([
+      'ABC',
+      'Long Stock',
+      'Fidelity — Roth IRA',
+      'Unavailable',
+      'Unavailable',
+      'Unavailable',
+      'Unavailable',
+      '0',
+      'Records disagree',
+      '2026-10-13 10:00',
+    ]);
+  });
 });
 
 describe('Planned list', () => {

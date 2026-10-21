@@ -116,6 +116,7 @@ describe('browseTrades: Open', () => {
     if (result.kind !== 'Ready') throw new Error(`expected Ready, got ${result.kind}`);
     expect(result.view.items.map((i) => i.tradeId)).toEqual([resolved.tradeId, entering.tradeId]);
     const [first, second] = result.view.items;
+    if (!(first && 'openQuantity' in first && second && 'openQuantity' in second)) throw new Error('expected derived Open items');
     expect(second).toEqual({
       tradeId: entering.tradeId,
       underlying: 'XYZ',

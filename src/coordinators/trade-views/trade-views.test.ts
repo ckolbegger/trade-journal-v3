@@ -110,6 +110,7 @@ describe('getTradeDetail: Planned', () => {
     const result = await stack.views.getTradeDetail({ tradeId });
     if (result.kind !== 'Ready') throw new Error(`expected Ready, got ${result.kind}`);
     const { view } = result;
+    if ('findings' in view) throw new Error('expected the Planned form of Detail');
     expect(view.plan).toEqual({
       underlying: 'XYZ',
       planTime: '2026-10-12T13:30:00Z',

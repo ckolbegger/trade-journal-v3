@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import {
   execution,
+  incoherentDetailOf,
   openDetailOf,
   PC1,
   PC2,
@@ -255,6 +256,39 @@ describe('Open Trade Detail', () => {
         }),
       ),
     ).toEqual([['Entry Size Deviation, Position Change at 2026-10-12 14:00', '15 shares', '20 shares']]);
+  });
+
+  it('should show the Records disagree region naming each fact that cannot be replayed, with the Plan, recorded Position Changes and Journal but no derived figures, when the facts are incoherent', async () => {
+    renderView(
+      incoherentDetailOf(
+        [PC1, PC2],
+        [
+          { factId: 'ex-2', reason: 'UnknownPlannedLeg' },
+          { factId: 'ex-1', reason: 'NonpositiveQuantity' },
+        ],
+        [pc1Reflection, pc2Decline],
+      ),
+    );
+    const panel = await screen.findByRole('region', { name: 'Records disagree' });
+    expect(rowsOf(within(panel).getByRole('table', { name: 'Facts that cannot be replayed' }))).toEqual([
+      ['Execution at 2026-10-12 11:00', 'Names a Planned Leg that is not in the Plan'],
+      ['Execution at 2026-10-12 10:00', 'Quantity is not positive'],
+    ]);
+    expect(within(panel).getByText('Viewing this Trade does not change its records.')).toBeTruthy();
+    expect(within(panel).getByText(/position, entry, and fulfillment figures are unavailable/i)).toBeTruthy();
+    expect(screen.getByText('Open', { selector: '.badge' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Plan' })).toBeTruthy();
+    const changes = screen.getByRole('region', { name: 'Position Changes' });
+    expect(within(changes).getAllByRole('table', { name: 'Executions' }).map(rowsOf)).toEqual([
+      [['2026-10-12 10:00', 'Buy', 'XYZ', '60', '$50.10', '$1.00']],
+      [['2026-10-12 11:00', 'Buy', 'XYZ', '40', '$50.30', '$1.00']],
+    ]);
+    expect(within(screen.getByRole('region', { name: 'Journal' })).getByText('Reflection declined')).toBeTruthy();
+    // The narrative is the Journal section's alone, as in the Open form.
+    expect(screen.queryByRole('region', { name: 'Position Change Reflection' })).toBeNull();
+    for (const derived of ['Plan Baseline', 'Position', 'Entry Quality', 'Planned-Leg Fulfillment', 'Deviations']) {
+      expect(screen.queryByRole('region', { name: derived })).toBeNull();
+    }
   });
 
   it('should offer Record entry only while Writable', async () => {

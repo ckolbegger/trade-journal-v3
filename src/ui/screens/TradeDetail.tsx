@@ -1,7 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
-import type { CalculationResult, IntegrityFinding, NarrativeAnswer, OpenTradeDetail, PlannedTradeDetail, TradeDetailView } from '../../app/types.ts';
+import type {
+  CalculationResult,
+  IncoherentFactFinding,
+  IncoherentTradeDetail,
+  IntegrityFinding,
+  NarrativeAnswer,
+  NarrativeItem,
+  OpenTradeDetail,
+  PlannedTradeDetail,
+  PositionChangeFact,
+  TradeDetailView,
+} from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { decimalMoney as price, localTime, money, quantity, ratio } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
@@ -92,6 +103,7 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
         )}
       </header>
       {'positionChanges' in view && view.findings.length > 0 && <IntegrityPanel view={view} timeZone={timeZone} />}
+      {'recordedPositionChanges' in view && <IncoherentPanel view={view} timeZone={timeZone} />}
       <section className="card" aria-labelledby="plan-heading">
         <h2 id="plan-heading">Plan</h2>
         <dl>
@@ -109,19 +121,27 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
           <dd>{`${view.labels.institution} — ${view.labels.account}`}</dd>
         </dl>
       </section>
-      <section className="card" aria-labelledby="baseline-heading">
-        <h2 id="baseline-heading">Plan Baseline</h2>
-        <dl>
-          <dt>1R (original risk)</dt>
-          <dd className="number">{money(view.baseline.oneR)}</dd>
-          <dt>Original reward</dt>
-          <dd className="number">{money(view.baseline.originalPlannedReward)}</dd>
-          <dt>Reward : risk</dt>
-          <dd className="number">{ratio(view.baseline.rewardRiskRatio)}</dd>
-        </dl>
-      </section>
+      {'baseline' in view && (
+        <section className="card" aria-labelledby="baseline-heading">
+          <h2 id="baseline-heading">Plan Baseline</h2>
+          <dl>
+            <dt>1R (original risk)</dt>
+            <dd className="number">{money(view.baseline.oneR)}</dd>
+            <dt>Original reward</dt>
+            <dd className="number">{money(view.baseline.originalPlannedReward)}</dd>
+            <dt>Reward : risk</dt>
+            <dd className="number">{ratio(view.baseline.rewardRiskRatio)}</dd>
+          </dl>
+        </section>
+      )}
       {'positionChanges' in view && <OpenSections view={view} timeZone={timeZone} />}
-      {!('positionChanges' in view) && entry && 'responses' in entry && (
+      {'recordedPositionChanges' in view && (
+        <>
+          <PositionChangesSection positionChanges={view.recordedPositionChanges} timeZone={timeZone} />
+          <JournalSection journal={view.journal} timeZone={timeZone} />
+        </>
+      )}
+      {!('findings' in view) && entry && 'responses' in entry && (
         <section className="card" aria-labelledby="reflection-heading">
           <h2 id="reflection-heading">{entry.entryType}</h2>
           <dl>
@@ -190,57 +210,70 @@ function OpenSections({ view, timeZone }: { readonly view: OpenTradeDetail; read
           </table>
         </div>
       </section>
-      <section className="card" aria-labelledby="changes-heading">
-        <h2 id="changes-heading">Position Changes</h2>
-        {view.positionChanges.map((change) => (
-          <section key={change.factId} aria-labelledby={`change-${change.factId}`}>
-            <h3 id={`change-${change.factId}`}>{`Position Change at ${localTime(change.economicTime, timeZone)}`}</h3>
-            <div
-              className="table-scroll"
-              role="region"
-              aria-label={`Executions, Position Change at ${localTime(change.economicTime, timeZone)}`}
-              tabIndex={0}
-            >
-              <table className="trades">
-                <caption>Executions</caption>
-                <thead>
-                  <tr>
-                    <th scope="col">Economic time</th>
-                    <th scope="col">Action</th>
-                    <th scope="col">Instrument</th>
-                    <th scope="col" className="number">
-                      Quantity
-                    </th>
-                    <th scope="col" className="number">
-                      Price
-                    </th>
-                    <th scope="col" className="number">
-                      Fee
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {change.executions.map((e) => (
-                    <tr key={e.factId}>
-                      <td>{localTime(e.economicTime, timeZone)}</td>
-                      <td>{e.action}</td>
-                      <td>{e.instrument.symbol}</td>
-                      <td className="number">{e.quantity}</td>
-                      <td className="number">{price(e.price)}</td>
-                      <td className="number">{price(e.fee)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        ))}
-      </section>
+      <PositionChangesSection positionChanges={view.positionChanges} timeZone={timeZone} />
       <EntryQualitySection view={view} timeZone={timeZone} />
       <FulfillmentSection view={view} />
       <DeviationsSection view={view} timeZone={timeZone} />
-      <JournalSection view={view} timeZone={timeZone} />
+      <JournalSection journal={view.journal} timeZone={timeZone} />
     </>
+  );
+}
+
+// The recorded Position Changes, each with its Executions.
+function PositionChangesSection({
+  positionChanges,
+  timeZone,
+}: {
+  readonly positionChanges: readonly PositionChangeFact[];
+  readonly timeZone: string;
+}) {
+  return (
+    <section className="card" aria-labelledby="changes-heading">
+      <h2 id="changes-heading">Position Changes</h2>
+      {positionChanges.map((change) => (
+        <section key={change.factId} aria-labelledby={`change-${change.factId}`}>
+          <h3 id={`change-${change.factId}`}>{`Position Change at ${localTime(change.economicTime, timeZone)}`}</h3>
+          <div
+            className="table-scroll"
+            role="region"
+            aria-label={`Executions, Position Change at ${localTime(change.economicTime, timeZone)}`}
+            tabIndex={0}
+          >
+            <table className="trades">
+              <caption>Executions</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Economic time</th>
+                  <th scope="col">Action</th>
+                  <th scope="col">Instrument</th>
+                  <th scope="col" className="number">
+                    Quantity
+                  </th>
+                  <th scope="col" className="number">
+                    Price
+                  </th>
+                  <th scope="col" className="number">
+                    Fee
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {change.executions.map((e) => (
+                  <tr key={e.factId}>
+                    <td>{localTime(e.economicTime, timeZone)}</td>
+                    <td>{e.action}</td>
+                    <td>{e.instrument.symbol}</td>
+                    <td className="number">{e.quantity}</td>
+                    <td className="number">{price(e.price)}</td>
+                    <td className="number">{price(e.fee)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ))}
+    </section>
   );
 }
 
@@ -340,14 +373,56 @@ function IntegrityPanel({ view, timeZone }: { readonly view: OpenTradeDetail; re
   );
 }
 
+const UNREPLAYABLE: Record<IncoherentFactFinding['reason'], string> = {
+  UnknownPlannedLeg: 'Names a Planned Leg that is not in the Plan',
+  NonpositiveQuantity: 'Quantity is not positive',
+  DuplicateFactId: 'Shares its identity with another fact',
+};
+
+// Recorded facts that cannot be replayed (AC-LIFE-003): each named with its problem. Nothing is
+// derived from them, so no Position, entry, or fulfillment figure is shown.
+function IncoherentPanel({ view, timeZone }: { readonly view: IncoherentTradeDetail; readonly timeZone: string }) {
+  const changes = view.recordedPositionChanges;
+  const record = (factId: string) => {
+    const change = changes.find((c) => c.factId === factId);
+    if (change) return `Position Change at ${localTime(change.economicTime, timeZone)}`;
+    const execution = changes.flatMap((c) => c.executions).find((e) => e.factId === factId);
+    return execution ? `Execution at ${localTime(execution.economicTime, timeZone)}` : factId;
+  };
+  return (
+    <section className="card integrity" aria-labelledby="integrity-heading">
+      <h2 id="integrity-heading">Records disagree</h2>
+      <p>Viewing this Trade does not change its records.</p>
+      <p>These recorded facts cannot be replayed, so the Position, entry, and fulfillment figures are unavailable.</p>
+      <table className="trades">
+        <caption>Facts that cannot be replayed</caption>
+        <thead>
+          <tr>
+            <th scope="col">Record</th>
+            <th scope="col">Problem</th>
+          </tr>
+        </thead>
+        <tbody>
+          {view.findings.map((finding, index) => (
+            <tr key={index}>
+              <td>{record(finding.factId)}</td>
+              <td>{UNREPLAYABLE[finding.reason]}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+  );
+}
+
 // The Trade's narrative: each saved Entry with the Prompt and option labels saved with it, and each
 // decline with its reason, at its moment time.
-function JournalSection({ view, timeZone }: { readonly view: OpenTradeDetail; readonly timeZone: string }) {
+function JournalSection({ journal, timeZone }: { readonly journal: readonly NarrativeItem[]; readonly timeZone: string }) {
   return (
     <section className="card" aria-labelledby="journal-heading">
       <h2 id="journal-heading">Journal</h2>
       <ul className="narrative">
-        {view.journal.map((item) => (
+        {journal.map((item) => (
           <li key={item.id}>
             <h3>{item.entryType}</h3>
             <p>{`${item.source} at ${localTime(item.momentTime, timeZone)}`}</p>
