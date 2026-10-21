@@ -11,6 +11,8 @@ This session **implements D2, "Open a Long Stock position"**, under the frozen p
 
 D2's task breakdown is approved and part of the frozen plan. T2.1 was the first task; section 7 names the next one.
 
+**Starting a session.** The user starts a session with one prompt: *"Read plan/D02-handoff.md and follow it."* Run the location checks in section 1, do the reading in section 2, and then **start the next task in section 7 at once**, without stopping to report that the reading is done. Continue task by task through the browser-critic gate and the `claude-opus-5.5-d2` tag, stopping only for the conditions in section 5, "Running a whole deliverable".
+
 ## 1. Confirm the location before anything else
 
 The repository hosts several independent implementations of the same spec, each in its own git worktree under `worktrees/`. This work belongs **only** to:
@@ -128,7 +130,30 @@ TDD logging helper: `.claude/scripts/tdd.sh`, committed. The `tdd-task` agent (`
 - Check every user proposal against the spec. If one conflicts, quote the passages, offer the closest compliant design, and let the user choose.
 - Prefer derived values over specialist estimates from the trader (decision 31). Answer "do we need this machinery?" questions directly and honestly.
 - Don't plan far ahead of working code (decision 40).
-- The user ends sessions when the context grows large. After each finished task, commit it, then update section 7 of this note with where D2 stands.
+- After each finished task, commit it, record its cumulative run, update section 7 of this note with where D2 stands, commit that, and **start the next task**.
+
+### Running a whole deliverable
+
+The goal is to complete D2 from one prompt (user's direction, 2026-10-21). Stop and ask the user **only** when:
+1. a location check in section 1 fails;
+2. the work needs a deviation from `specs/` or the frozen plan, or exposes a spec or plan ambiguity (the kickoff requires approval for these);
+3. a suite failure or critic defect can't be fixed by a fresh subagent without such a deviation;
+4. a fresh critic agent or a browser can't be provided (never self-certify).
+
+Everything else continues without the user:
+- **Implementation-level decisions:** make them with the recommendation you would have offered, and record them in the evidence and in section 7.
+- **Suite failures:** reproduce each with one targeted run, delegate the fix to a fresh subagent (failing test first), and rerun the suite.
+- **First-run passes:** log them with their mutation check, list them under section 7's open questions, and report them at the end. They don't stop the session.
+- **Critic defects:** handle them as section 3 describes, then spawn a fresh critic until one passes.
+- **Context growth:** compaction is automatic. Section 7, updated after every task, is the recovery point.
+
+When the gate passes, tag `claude-opus-5.5-d2` locally. Then stop with a final report:
+- tasks and commits;
+- every flagged item;
+- decisions made along the way;
+- the acceptance rows ready to be marked `covered`. Ask before marking them, as for D1.
+
+Never push.
 
 ## 6. Out of scope
 

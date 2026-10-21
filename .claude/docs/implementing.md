@@ -38,8 +38,10 @@ Delegate every implementation task to its own fresh `tdd-task` subagent (`.claud
 2. Send the complete cumulative run to the `suite-runner` subagent (`.claude/agents/suite-runner.md`), passing `evidence/D<nn>` and a run label. Never run the full suite in the main session, and don't rerun it to check the runner's work. A failing run comes back as named failures; reproduce each with a single targeted run in the main session, then delegate its fix to a fresh subagent.
 3. Record the returned table in `evidence/D<nn>/structural.md`.
 4. Update the handoff's progress section and commit.
-5. Bring any flagged item, such as a first-run pass, to the user.
+5. Add any flagged item, such as a first-run pass, to the handoff's open questions for the final report, then start the next task. A deliverable runs from one prompt to its gate: the session stops only for the conditions the handoff lists under "Running a whole deliverable".
 
 ## Writing the next deliverable's handoff
 
-Give its reading list in the form above, naming the sections to read, and name this file in it.
+Give its reading list in the form above, naming the sections to read, and name this file in it. Carry over two parts of the current handoff:
+- the "Starting a session" paragraph, with its one-line prompt (*"Read plan/D<nn>-handoff.md and follow it."*), so the session reads and then starts the first task without stopping;
+- the "Running a whole deliverable" stop conditions.
