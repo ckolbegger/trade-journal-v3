@@ -515,3 +515,16 @@ Outputs:
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
 
 Generation rate: 25,000 Plans and 400 Position Changes in about 34.5 s on an Apple M4 Max (Chromium 153.0.8010.12), about 1.4 ms per mutation.
+
+## Cumulative run after T2.20
+
+Run 2026-10-21 18:21 EDT on commit `9821261` (the only uncommitted files were this run's own outputs and the untracked older handoff note), Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 37 passed (37)`, `Tests 340 passed (340)`, exit 0 | `suite-runs/t2.20-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 6 passed (6)`, `Tests 19 passed (19)`, exit 0 | `suite-runs/t2.20-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `27 passed (40.9s)`, exit 0 | `suite-runs/t2.20-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.20-checks.txt` |
+
+Failures: none.
