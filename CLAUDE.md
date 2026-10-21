@@ -82,4 +82,20 @@ I'm always open to ideas on better ways to do things. Please don't hesitate to s
   - Start a new deliverable's `tdd-log.md` first, with a note that its rows are single-case runs. The helper refuses to run without it.
   - Avoid parentheses and quotes in test names, which break `-t` filtering.
   - It writes only red and green rows. Append first-run-pass notes, user decisions, and the refactor row to the log yourself.
-- Single-case TDD runs stay in the main session. A PreToolUse hook (`.claude/hooks/filter-test-output.sh`) cuts their output to failures and the summary and saves the full log; put `CLAUDE_FULL_OUTPUT=1` in a command to see everything.
+- **Delegate every implementation task to its own fresh subagent**, so the main session's context holds briefs and summaries, not code, edits, or test output. This applies to every behavioral and structural task. The only exceptions are the cumulative runs, which go to `suite-runner`, and the browser-critic gate, which has its own fresh-critic rules.
+  - One `general-purpose` subagent per task, never one per case. Run tasks one at a time, in task-graph order.
+  - The main session does the start-of-deliverable reading. It writes each brief from that reading, without opening the task's code itself. The brief gives:
+    - the task ID;
+    - the breakdown section to read in full, and any assumptions or decisions it relies on;
+    - the files and modules the task builds on;
+    - any `specs/` ranges it needs;
+    - the rules: run each case red then green with `tdd.sh`; on a first-run pass, do a mutation check, log a flagged note, and continue, never fabricating a red; do the refactor step separately; commit the task with the co-author line; never push; stop after this task.
+  - The subagent stops and reports, without changing anything, when the work would need a deviation from `specs/` or the frozen plan.
+  - The subagent returns:
+    - its commit hash;
+    - a one-line red and green result for each case;
+    - its first-run passes, with their mutation checks;
+    - any deviations or questions;
+    - the public types it added or changed, for later briefs.
+  - The main session then reviews that summary without re-reading the code, sends the cumulative run to `suite-runner`, records it in `structural.md`, updates the handoff, and brings any flagged item to the user.
+- Single-case TDD runs happen inside the task's subagent. A PreToolUse hook (`.claude/hooks/filter-test-output.sh`) cuts their output to failures and the summary and saves the full log; put `CLAUDE_FULL_OUTPUT=1` in a command to see everything.
