@@ -440,3 +440,16 @@ Disclosed limits:
 - Measured Executions stand in for the whole mature count of 200,000 "Executions and settlement facts" until D7 measures settlement facts.
 - Measured Entries and declines stand in for the whole 100,000 Position Change Reflection outcomes until D5 adds Debt.
 - The six kinds listed above remain allowances.
+
+## Cumulative run after T2.18
+
+Run 2026-10-21 14:45 EDT on commit `bae4262` (the only uncommitted files were this run's own outputs and the untracked older handoff note), Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 37 passed (37)`, `Tests 340 passed (340)`, exit 0 | `suite-runs/t2.18-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 6 passed (6)`, `Tests 19 passed (19)`, exit 0 | `suite-runs/t2.18-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `27 passed (42.9s)`, exit 0 | `suite-runs/t2.18-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.18-checks.txt` |
+
+Failures: none.
