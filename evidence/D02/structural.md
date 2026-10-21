@@ -377,3 +377,16 @@ How `d1` is built (A34): `tools/build-releases.ts` resolves the tag `claude-opus
 `verify:releases` now also runs `verify:release` on d1 and d2, requires v1, v2, d1 and d2 to have four distinct identities, and reads each release's schema version from what its bundle writes to the Workspace schema meta record (`` key:`schema`,schemaVersion:N ``, exactly one per bundle): d1 1, d2 2. Negative control: replacing `dist-releases/d1` with a copy of d2 made it fail with `FAIL releases share an identity …` and `FAIL d1: reports schema 2, expected 1`.
 
 Switching: in Playwright, `startReleaseServer({ root: process.cwd(), release: 'dist-releases/d1' })`, then `server.use('dist-releases/d2')` or `server.use('dist-faults')`. For the critic, `npm run serve:releases -- d1` starts on d1 (default v1) with the project folder as root; keys 1 v1, 2 v2, 3 v2-corrupt, 4 d1, 5 d2, f dist-faults (needs `npm run build:faults` first), q quit. Smoke-checked: the server returned d1's, d2's and the faults build's identities in turn on one origin, and the keypresses 4, 5, f switched the served folder.
+
+## Cumulative run after T2.17
+
+Run 2026-10-21 14:36 EDT on commit `a154d80` (the only uncommitted files were this run's own outputs and the untracked older handoff note), Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 37 passed (37)`, `Tests 340 passed (340)`, exit 0 | `suite-runs/t2.17-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 6 passed (6)`, `Tests 19 passed (19)`, exit 0 | `suite-runs/t2.17-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `27 passed (43.9s)`, exit 0 | `suite-runs/t2.17-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.17-checks.txt` |
+
+Failures: none.
