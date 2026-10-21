@@ -98,3 +98,16 @@ verify:capacity OK: required quota 1632309534 = 3 × 544103178, schema 2
 | Required quota (3 × M) | 1,646,103,699 bytes | 1,632,309,534 bytes |
 
 `src/delivery/capacity-basis.json` now names `schemaVersion: 2`. The small drop is measurement variance in Chromium's `estimate()` usage, not a schema effect: the measured record shapes are unchanged at schema 2 (the new index stays empty for Planned Trades without `activityDesc`, and the new stores hold nothing yet).
+
+## Cumulative run after T2.8
+
+Run 2026-10-20 23:20 EDT on commit `7b16aaa` (the only uncommitted files were this run's own outputs and the untracked older handoff note), Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 28 passed (28)`, `Tests 251 passed (251)`, exit 0 | `suite-runs/t2.8-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 6 passed (6)`, `Tests 19 passed (19)`, exit 0 | `suite-runs/t2.8-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `27 passed (42.4s)`, exit 0 | `suite-runs/t2.8-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 10 of 11 exit 0 | `suite-runs/t2.8-checks.txt` |
+
+Failures: one, **expected and agreed with the user on 2026-10-20**. `npm run verify:fixtures` exits 1 with `FAIL workspace-v1: getStatus is IntegrityBlocked, not Ready`: T2.8 set `SCHEMA_VERSION` to 2, and this release cannot open the frozen v1 fixture until T2.10 adds migration. The fixture and the tool are unchanged. T2.10 owns the fix; nothing is pushed until it passes. Any other failure is a real one.
