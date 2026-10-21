@@ -474,3 +474,16 @@ Built: `tools/fixtures-freeze.ts` builds D1's content through the facade (initia
 | `npm run fixtures:freeze -- --schema 2` again | `fixtures:freeze: tests/fixtures/workspace-v2 exists; committed fixtures are never regenerated`, exit 1 |
 | `git diff --stat -- tests/fixtures/workspace-v1` | empty: the v1 fixture is unchanged |
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
+
+## Cumulative run after T2.19
+
+Run 2026-10-21 14:49 EDT on commit `068e249` (the only uncommitted files were this run's own outputs and the untracked older handoff note), Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 37 passed (37)`, `Tests 340 passed (340)`, exit 0 | `suite-runs/t2.19-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 6 passed (6)`, `Tests 19 passed (19)`, exit 0 | `suite-runs/t2.19-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `27 passed (43.1s)`, exit 0 | `suite-runs/t2.19-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.19-checks.txt` |
+
+Failures: none.
