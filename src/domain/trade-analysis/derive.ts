@@ -42,10 +42,22 @@ export interface TradeAnalysisRecord {
     readonly targets: readonly (ConditionInput & { readonly factId: string })[];
   };
   readonly positionChanges: readonly PositionChangeFact[];
+  // Recorded Deviation occurrences, authoritative in Trade Record; absent means none recorded.
+  readonly recordedDeviations?: readonly RecordedDeviation[];
+}
+
+// A prepared candidate's canonical digest and the before-state record: the reconciliation is bound
+// to the digest and to the before-state's stored lifecycle and recorded occurrences, which the
+// candidate leaves unchanged until it is applied.
+export interface CandidateBinding {
+  readonly digest: string;
+  readonly before: TradeAnalysisRecord;
 }
 
 export interface TradeDerivationInput {
   readonly record: TradeAnalysisRecord;
+  // Present when record is a prepared candidate.
+  readonly candidate?: CandidateBinding;
 }
 
 // Agreement between stored and expected Lifecycle State; a disagreement is reported, never repaired.
@@ -102,6 +114,107 @@ export interface LegFulfillment {
   readonly fulfillment: 'Unfilled' | 'PartiallyFilled' | 'FilledAsPlanned' | 'FilledWithDeviation';
 }
 
+// Identifies one Entry Size (Excess) occurrence: the Planned Leg and the Position Change that
+// raised its open quantity above plan (P4).
+export interface DeviationFingerprint {
+  readonly tradeId: string;
+  readonly plannedLegId: string;
+  readonly positionChangeId: string;
+}
+
+// A deterministic fact-only Deviation the facts imply (A26's version, without its status).
+export interface ExpectedDeviation {
+  readonly fingerprint: DeviationFingerprint;
+  readonly type: 'EntrySize';
+  readonly form: 'Excess';
+  readonly quantityAbovePlan: Rational;
+  readonly causingPositionChangeId: string;
+  readonly economicTime: Instant;
+}
+
+// A structured integrity finding: stored state that disagrees with what the facts imply. Analysis
+// reports it and never repairs it.
+export type IntegrityFinding =
+  | Extract<LifecycleAgreement, { kind: 'LifecycleDisagreement' }>
+  | {
+      readonly kind: 'DeviationMissing';
+      readonly fingerprint: DeviationFingerprint;
+      readonly expected: ExpectedDeviation;
+    }
+  | {
+      readonly kind: 'DeviationQuantityDisagreement';
+      readonly fingerprint: DeviationFingerprint;
+      readonly occurrenceId: string;
+      readonly recorded: Rational;
+      readonly expected: Rational;
+    }
+  | {
+      readonly kind: 'DeviationUnexpected';
+      readonly fingerprint: DeviationFingerprint;
+      readonly occurrenceId: string;
+    };
+
+// One version of a recorded occurrence (A26): supersession appends a Superseded version.
+export type RecordedDeviationVersion = {
+  readonly fingerprint: DeviationFingerprint;
+  readonly type: 'EntrySize';
+  readonly form: 'Excess';
+  readonly quantityAbovePlan: string;
+  readonly causingPositionChangeId: string;
+  readonly economicTime: Instant;
+} & ({ readonly status: 'Active' } | { readonly status: 'Superseded'; readonly reason: 'NoLongerExpected' });
+
+// A recorded Deviation occurrence: a stable occurrence identity with its version list (A26).
+export interface RecordedDeviation {
+  readonly occurrenceId: string;
+  readonly versions: readonly RecordedDeviationVersion[];
+}
+
+// What applying the candidate must do to each recorded occurrence, by fingerprint (A26).
+export type DeviationAction =
+  | { readonly kind: 'Create'; readonly occurrence: ExpectedDeviation }
+  | {
+      readonly kind: 'Retain';
+      readonly occurrenceId: string;
+      readonly fingerprint: DeviationFingerprint;
+    }
+  | {
+      readonly kind: 'NewVersion';
+      readonly occurrenceId: string;
+      readonly occurrence: ExpectedDeviation;
+    }
+  | {
+      readonly kind: 'Supersede';
+      readonly occurrenceId: string;
+      readonly fingerprint: DeviationFingerprint;
+      readonly reason: 'NoLongerExpected';
+    };
+
+// Trade Analysis's expected state for one exact candidate, which Trade Record's apply requires.
+export interface DerivedTradeReconciliation {
+  readonly candidateDigest: string;
+  readonly expectedLifecycle: LifecycleState;
+  readonly deviationActions: readonly DeviationAction[];
+  // Where the before-state's stored lifecycle or recorded occurrences disagreed with its own
+  // coherent facts: repaired by applying the candidate and disclosed (P7).
+  readonly repairs: readonly IntegrityFinding[];
+  // What the change itself does to expected state, from the before facts to the candidate's.
+  readonly effects: readonly ChangeEffect[];
+}
+
+export type ChangeEffect =
+  | {
+      readonly kind: 'LifecycleTransition';
+      readonly from: LifecycleState;
+      readonly to: LifecycleState;
+    }
+  | {
+      readonly kind: 'DeviationChange';
+      readonly fingerprint: DeviationFingerprint;
+      readonly from: Rational | null;
+      readonly to: Rational | null;
+    };
+
 export interface DerivedTradeState {
   readonly kind: 'Derived';
   readonly tradeId: string;
@@ -117,6 +230,10 @@ export interface DerivedTradeState {
   readonly entryResolution: EntryResolution;
   readonly entryQuality: EntryQuality;
   readonly legFulfillment: readonly LegFulfillment[];
+  readonly deviations: readonly ExpectedDeviation[];
+  readonly findings: readonly IntegrityFinding[];
+  // Present when a candidate binding was supplied.
+  readonly reconciliation?: DerivedTradeReconciliation;
 }
 
 // Facts that cannot be replayed are a typed rejection naming each fact, never a number.
@@ -241,24 +358,178 @@ function entryQualityOf(
   };
 }
 
-function legFulfillmentOf(plan: TradeAnalysisRecord['plan'], facts: readonly ExecutionFact[]): LegFulfillment[] {
+function legFulfillmentOf(
+  plan: TradeAnalysisRecord['plan'],
+  facts: readonly ExecutionFact[],
+  deviations: readonly ExpectedDeviation[],
+): LegFulfillment[] {
   return plan.legs.map((leg) => {
     const entered = total(
       facts.filter((e) => e.intent.plannedLegId === leg.factId),
       (e) => decimal(e.quantity),
     );
-    const versusPlan = entered.compare(decimal(leg.quantity));
-    // Entered quantity above plan is Entry Size excess, a Deviation on the leg (A25, P4).
-    const fulfillment: LegFulfillment['fulfillment'] =
-      entered.compare(Rational.of(0n)) === 0
+    // Any active Entry Size occurrence on the leg is a Deviation (A25).
+    const fulfillment: LegFulfillment['fulfillment'] = deviations.some((d) => d.fingerprint.plannedLegId === leg.factId)
+      ? 'FilledWithDeviation'
+      : entered.compare(Rational.of(0n)) === 0
         ? 'Unfilled'
-        : versusPlan < 0
+        : entered.compare(decimal(leg.quantity)) < 0
           ? 'PartiallyFilled'
-          : versusPlan === 0
-            ? 'FilledAsPlanned'
-            : 'FilledWithDeviation';
+          : 'FilledAsPlanned';
     return { plannedLegId: leg.factId, fulfillment };
   });
+}
+
+// Entry Size excess (P4): one occurrence per Position Change that raises a Planned Leg's open
+// quantity above its planned quantity, carrying the quantity it added above plan.
+function deviationsOf(record: TradeAnalysisRecord): ExpectedDeviation[] {
+  return record.plan.legs.flatMap((leg) => {
+    const planned = decimal(leg.quantity);
+    let entered = Rational.of(0n);
+    return [...record.positionChanges].sort(factOrder).flatMap((pc): ExpectedDeviation[] => {
+      const before = entered;
+      for (const e of pc.executions) if (e.intent.plannedLegId === leg.factId) entered = entered.add(decimal(e.quantity));
+      const above = entered.sub(before.compare(planned) > 0 ? before : planned);
+      if (above.compare(Rational.of(0n)) <= 0) return [];
+      return [
+        {
+          fingerprint: {
+            tradeId: record.tradeId,
+            plannedLegId: leg.factId,
+            positionChangeId: pc.factId,
+          },
+          type: 'EntrySize',
+          form: 'Excess',
+          quantityAbovePlan: above,
+          causingPositionChangeId: pc.factId,
+          economicTime: pc.economicTime,
+        },
+      ];
+    });
+  });
+}
+
+const fingerprintKey = (f: DeviationFingerprint) => JSON.stringify([f.tradeId, f.plannedLegId, f.positionChangeId]);
+
+const latestVersion = (r: RecordedDeviation) => r.versions[r.versions.length - 1]!;
+
+// Pairs each expected occurrence with the recorded one of the same fingerprint, and returns the
+// recorded occurrences left unpaired.
+function matchOccurrences(expected: readonly ExpectedDeviation[], recorded: readonly RecordedDeviation[]) {
+  const unpaired = new Map(recorded.map((r) => [fingerprintKey(latestVersion(r).fingerprint), r]));
+  const pairs = expected.map((occurrence) => {
+    const key = fingerprintKey(occurrence.fingerprint);
+    const match = unpaired.get(key);
+    unpaired.delete(key);
+    return {
+      occurrence,
+      match: match && {
+        occurrenceId: match.occurrenceId,
+        version: latestVersion(match),
+      },
+    };
+  });
+  return {
+    pairs,
+    unpaired: [...unpaired.values()].map((r) => ({
+      occurrenceId: r.occurrenceId,
+      version: latestVersion(r),
+    })),
+  };
+}
+
+// Compares expected and active recorded occurrences by fingerprint.
+function deviationFindings(expected: readonly ExpectedDeviation[], recorded: readonly RecordedDeviation[]): IntegrityFinding[] {
+  const { pairs, unpaired } = matchOccurrences(expected, recorded);
+  const findings: IntegrityFinding[] = [];
+  for (const { occurrence, match } of pairs) {
+    if (match?.version.status !== 'Active') {
+      findings.push({
+        kind: 'DeviationMissing',
+        fingerprint: occurrence.fingerprint,
+        expected: occurrence,
+      });
+      continue;
+    }
+    const stored = decimal(match.version.quantityAbovePlan);
+    if (stored.compare(occurrence.quantityAbovePlan) !== 0)
+      findings.push({
+        kind: 'DeviationQuantityDisagreement',
+        fingerprint: occurrence.fingerprint,
+        occurrenceId: match.occurrenceId,
+        recorded: stored,
+        expected: occurrence.quantityAbovePlan,
+      });
+  }
+  for (const { occurrenceId, version } of unpaired)
+    if (version.status === 'Active')
+      findings.push({
+        kind: 'DeviationUnexpected',
+        fingerprint: version.fingerprint,
+        occurrenceId,
+      });
+  return findings;
+}
+
+// Create, retain, append a new version when an occurrence changed or returns, or supersede.
+function deviationActions(expected: readonly ExpectedDeviation[], recorded: readonly RecordedDeviation[]): DeviationAction[] {
+  const { pairs, unpaired } = matchOccurrences(expected, recorded);
+  return [
+    ...pairs.map(({ occurrence, match }): DeviationAction => {
+      if (!match) return { kind: 'Create', occurrence };
+      const unchanged =
+        match.version.status === 'Active' && decimal(match.version.quantityAbovePlan).compare(occurrence.quantityAbovePlan) === 0;
+      return unchanged
+        ? {
+            kind: 'Retain',
+            occurrenceId: match.occurrenceId,
+            fingerprint: occurrence.fingerprint,
+          }
+        : { kind: 'NewVersion', occurrenceId: match.occurrenceId, occurrence };
+    }),
+    ...unpaired.map(({ occurrenceId, version }): DeviationAction =>
+      version.status === 'Active'
+        ? {
+            kind: 'Supersede',
+            occurrenceId,
+            fingerprint: version.fingerprint,
+            reason: 'NoLongerExpected',
+          }
+        : { kind: 'Retain', occurrenceId, fingerprint: version.fingerprint },
+    ),
+  ];
+}
+
+// The change's own effects: expected state before the change versus after it.
+function changeEffects(before: DerivedTradeState, lifecycle: LifecycleState, deviations: readonly ExpectedDeviation[]): ChangeEffect[] {
+  const effects: ChangeEffect[] = [];
+  if (before.expectedLifecycle !== lifecycle)
+    effects.push({
+      kind: 'LifecycleTransition',
+      from: before.expectedLifecycle,
+      to: lifecycle,
+    });
+  const prior = new Map(before.deviations.map((d) => [fingerprintKey(d.fingerprint), d]));
+  for (const d of deviations) {
+    const key = fingerprintKey(d.fingerprint);
+    const from = prior.get(key)?.quantityAbovePlan ?? null;
+    prior.delete(key);
+    if (from?.compare(d.quantityAbovePlan) !== 0)
+      effects.push({
+        kind: 'DeviationChange',
+        fingerprint: d.fingerprint,
+        from,
+        to: d.quantityAbovePlan,
+      });
+  }
+  for (const d of prior.values())
+    effects.push({
+      kind: 'DeviationChange',
+      fingerprint: d.fingerprint,
+      from: d.quantityAbovePlan,
+      to: null,
+    });
+  return effects;
 }
 
 export function derive(input: TradeDerivationInput): DerivationResult {
@@ -276,21 +547,41 @@ export function derive(input: TradeDerivationInput): DerivationResult {
   const baseline = frozenBaseline(record.plan);
   // Effective facts that leave nonzero exposure make the Trade Open; none leave it Planned.
   const expectedLifecycle: LifecycleState = positions.length > 0 ? 'Open' : 'Planned';
+  const deviations = deviationsOf(record);
+  const before = input.candidate && derive({ record: input.candidate.before });
+  if (before?.kind === 'IncoherentFacts') return before;
+  const agreement: LifecycleAgreement =
+    record.storedLifecycle === expectedLifecycle
+      ? { kind: 'Agrees' }
+      : {
+          kind: 'LifecycleDisagreement',
+          stored: record.storedLifecycle,
+          expected: expectedLifecycle,
+        };
   return {
     kind: 'Derived',
     tradeId: record.tradeId,
     factRevision: record.factRevision,
     expectedLifecycle,
-    agreement:
-      record.storedLifecycle === expectedLifecycle
-        ? { kind: 'Agrees' }
-        : { kind: 'LifecycleDisagreement', stored: record.storedLifecycle, expected: expectedLifecycle },
+    agreement,
     facts,
     positions,
     fees: { incurredOpening: facts.reduce((sum, e) => sum.add(decimal(e.fee)), Rational.of(0n)) },
     baseline,
     entryResolution: entry.resolution,
     entryQuality: entryQualityOf(entry.resolution, entry.window, record.plan, baseline),
-    legFulfillment: legFulfillmentOf(record.plan, facts),
+    legFulfillment: legFulfillmentOf(record.plan, facts, deviations),
+    deviations,
+    findings: [...(agreement.kind === 'Agrees' ? [] : [agreement]), ...deviationFindings(deviations, record.recordedDeviations ?? [])],
+    ...(input.candidate &&
+      before && {
+        reconciliation: {
+          candidateDigest: input.candidate.digest,
+          expectedLifecycle,
+          deviationActions: deviationActions(deviations, input.candidate.before.recordedDeviations ?? []),
+          repairs: before.findings,
+          effects: changeEffects(before, expectedLifecycle, deviations),
+        },
+      }),
   };
 }
