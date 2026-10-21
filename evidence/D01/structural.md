@@ -196,3 +196,15 @@ On 2026-10-19 the user approved moving the local tag `claude-opus-5.5-d1` from t
 Complete cumulative run after these changes (full outputs in `suite-runs/matrix-update-*.txt`): unit `Test Files 24 passed (24)`, `Tests 207 passed (207)`; integration `Test Files 6 passed (6)`, `Tests 19 passed (19)`; browser `27 passed (42.1s)`; static and verification checks 11 of 11 exit 0.
 
 At the user's direction the tag `claude-opus-5.5-d1` moved again, from `8dcefd3` to the commit that records this section, so the tag includes the covered statuses and the T1.17 decision. Still no fresh critic run; the code is unchanged apart from the Vitest project split.
+
+## B1.14 flake fix (2026-10-20)
+
+**Cause.** `e2e/d1/no-save.spec.ts` serialized every IndexedDB store and Web Storage into one string and checked `not.toContain` for each typed value. A random journal definition id, `bad21aeb-76ec-477b-9964-4d53171e3bd6`, contains `317`, the typed quantity, so the case failed although nothing had been saved (`trades` and `journalEntries` were empty).
+
+**Change (test only).** The store checks are unchanged: `trades` and `journalEntries` are empty and the workspace equals its pre-typing dump. The typed-value check now walks the dump's keys and leaves, parsing Web Storage strings that hold JSON. A leaf is a trace when it contains a free-text value (symbol, thesis, invalidation) or equals a numeric value (quantity, entry, stop, target) as a whole string or number. The failure lists each trace's path. The procedure in the D1 breakdown, section 6.2, is unchanged.
+
+**Verification.**
+
+1. Real save still caught: a temporary injection in the test, `localStorage.setItem('injected', JSON.stringify({ quantity: 317, id: 'bad21aeb-76ec-477b-9964-4d53171e3bd6' }))`, before the final assertion, run with `npx playwright test e2e/d1/no-save.spec.ts --project=chromium`, failed with exactly one trace, `$.webStorage.local.injected.quantity = 317 (typed "317")`; the UUID was not reported. The injection was then removed.
+2. `npx playwright test e2e/d1/no-save.spec.ts --project=chromium --repeat-each=10`: `10 passed (15.7s)`, exit 0.
+3. `npm run lint` exit 0; `npm run typecheck` exit 0.
