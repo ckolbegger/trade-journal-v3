@@ -1,3 +1,4 @@
+import type { MigrationIssue } from '../app/types.ts';
 import type { ReadinessFailure } from '../delivery/runtime-not-writable.ts';
 
 // Plain-language explanations of each Runtime Readiness check that failed.
@@ -12,4 +13,22 @@ export function explainFailure(failure: ReadinessFailure): string {
   if (failure.reason === 'ExistingRootUnreadable') return 'Existing journal storage in this browser could not be read.';
   if (failure.reason === 'SessionSuperseded') return 'This tab was updated in another tab.';
   return CHECKS[failure.check];
+}
+
+// Plain-language reasons a converted journal failed validation (D2 P6).
+const MIGRATION_ISSUES: Record<MigrationIssue['code'], string> = {
+  DuplicateIdentity: 'Two Institution or Account records share one identity.',
+  MissingParent: 'An Account names an Institution that does not exist.',
+  UnknownSeedKey: 'A default record names a product this release does not know.',
+  MissingDefinitionRevision: 'A Journal Entry names a form revision that does not exist.',
+  DuplicateObligationOutcome: 'One reflection has more than one recorded outcome.',
+  MissingAnchor: 'A reflection does not name the Trade it belongs to.',
+  UnknownAccount: 'A Trade names an Account that does not exist.',
+  DuplicateFactIdentity: 'A Trade records the same fact identity twice.',
+  UnknownAnchorTrade: 'A reflection belongs to a Trade that does not exist.',
+  IncoherentFacts: "A Trade's recorded facts cannot be replayed.",
+};
+
+export function explainMigrationIssue(issue: MigrationIssue): string {
+  return MIGRATION_ISSUES[issue.code];
 }

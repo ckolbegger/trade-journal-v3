@@ -1,9 +1,10 @@
-import { useEffect, useState, type ComponentType, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ComponentType, type ReactNode } from 'react';
 import { Link, Route, Routes } from 'react-router';
 import type { UiFacade } from '../app/compose.ts';
+import type { MigrationBlocked } from '../app/types.ts';
 import type { ReadinessFailure, RuntimeNotWritable } from '../delivery/runtime-not-writable.ts';
 import { isRouteInstalled, ROUTES } from '../app/routes.ts';
-import { explainFailure } from './readiness-copy.ts';
+import { explainFailure, explainMigrationIssue } from './readiness-copy.ts';
 import { RuntimeContext } from './runtime.tsx';
 import { FirstRun } from './screens/FirstRun.tsx';
 import { OnboardingAccount } from './screens/OnboardingAccount.tsx';
@@ -49,21 +50,67 @@ export function AppShell({ facade, screens, notices, onRetry = () => window.loca
   const [refusal, setRefusal] = useState<RuntimeNotWritable | undefined>();
   // The honest outcome of the trader's explicit durability request, if any.
   const [durability, setDurability] = useState<Awaited<ReturnType<UiFacade['Workspace']['requestDurability']>> | undefined>();
+  // While initialize converts an older stored schema (D2 A31).
+  const [migrating, setMigrating] = useState(false);
+  // The last conversion attempt's failure: the old data is unchanged and nothing is Ready.
+  const [blocked, setBlocked] = useState<Pick<MigrationBlocked, 'issues'> | undefined>();
+
+  // Retry is calling initialize again, which reruns the migration.
+  const migrate = useCallback(() => {
+    setMigrating(true);
+    void facade.Workspace.initialize({}).then((result) => {
+      setMigrating(false);
+      setBlocked(result.kind === 'MigrationBlocked' ? result : undefined);
+      if (result.kind === 'Opened') setStatus(result.status);
+      // Any other outcome (readiness changed meanwhile): show what the Workspace now reports.
+      else if (result.kind !== 'MigrationBlocked') void facade.Workspace.getStatus().then(setStatus);
+    });
+  }, [facade]);
 
   useEffect(() => {
     let current = true;
     void facade.Workspace.getStatus().then((next) => {
-      if (current) setStatus(next);
+      if (!current) return;
+      setStatus(next);
+      // An older schema under Writable readiness: this launch migrates it (D2 P6).
+      if (next.kind === 'IntegrityBlocked' && next.reason === 'AwaitingMigration' && next.readiness.outcome === 'Writable') {
+        migrate();
+      }
     });
     return () => {
       current = false;
     };
-  }, [facade]);
+  }, [facade, migrate]);
 
   if (!status) {
     return (
       <main className="startup">
         <p role="status">Checking that this browser can safely store your journal…</p>
+      </main>
+    );
+  }
+  if (migrating) {
+    return (
+      <main className="startup">
+        <p role="status">Updating your journal to this release…</p>
+      </main>
+    );
+  }
+  const failedMigration = blocked ?? (status.kind === 'MigrationBlocked' ? status : undefined);
+  if (failedMigration) {
+    return (
+      <main className="gate">
+        <h1>Your journal could not be converted to this release</h1>
+        <p>Checking the converted copy found these problems, so it was discarded:</p>
+        <ul>
+          {failedMigration.issues.map((issue, index) => (
+            <li key={index}>{explainMigrationIssue(issue)}</li>
+          ))}
+        </ul>
+        <p>Your data is unchanged.</p>
+        <button type="button" className="pill primary" onClick={migrate}>
+          Retry
+        </button>
       </main>
     );
   }
@@ -85,6 +132,27 @@ export function AppShell({ facade, screens, notices, onRetry = () => window.loca
     );
   }
 
+  // An older journal this release converts only under Writable readiness (D2 P6): never empty.
+  if (status.kind === 'IntegrityBlocked' && status.reason === 'AwaitingMigration') {
+    return (
+      <main className="gate">
+        <h1>This release must convert your journal before you can use it</h1>
+        <p>
+          Your journal was saved by an earlier release. This release converts your journal once this browser passes its
+          safety checks, and these checks failed:
+        </p>
+        <ul>
+          {status.failedChecks.map((failure) => (
+            <li key={failure.check}>{explainFailure(failure)}</li>
+          ))}
+        </ul>
+        <p>Your journal data is unchanged. Retry once the problem is fixed.</p>
+        <button type="button" className="pill primary" onClick={onRetry}>
+          Retry
+        </button>
+      </main>
+    );
+  }
   if (status.kind === 'IntegrityBlocked') {
     return (
       <main className="gate">

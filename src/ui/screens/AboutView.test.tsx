@@ -55,6 +55,12 @@ describe('About this release', () => {
     expect(within(capabilities).getByText(/Strategies: strategy.long-stock/)).toBeTruthy();
   });
 
+  it('should show the Workspace schema version next to the release identity', async () => {
+    render(<AboutView facade={facadeDouble({ status: { ...status, schemaVersion: 2 } })} updates={controller()} />);
+    const about = await screen.findByRole('region', { name: 'This release' });
+    expect(within(about).getByText('Schema version', { selector: 'dt' }).nextElementSibling?.textContent).toBe('2');
+  });
+
   it('should call registration.update when "Check for updates" is pressed and report "No update" or show the update notice', async () => {
     const quiet = new FakeRegistration();
     render(<AboutView facade={facadeDouble({ status })} updates={controller(quiet)} />);

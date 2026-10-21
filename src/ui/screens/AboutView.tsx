@@ -55,6 +55,8 @@ export function AboutView({ facade, updates }: AboutViewProps) {
           <dd>{MANIFEST_ID}</dd>
           <dt>Release</dt>
           <dd className="identity">{capabilities.releaseId}</dd>
+          <dt>Schema version</dt>
+          <dd className="number">{'schemaVersion' in status ? String(status.schemaVersion) : 'Unknown'}</dd>
           <dt>Offline assets</dt>
           <dd className="number">{inventory && 'assetCount' in inventory ? String(inventory.assetCount) : 'Unknown'}</dd>
           <dt>Storage protection</dt>

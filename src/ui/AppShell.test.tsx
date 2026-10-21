@@ -283,3 +283,102 @@ describe('responsive navigation', () => {
     expect(Array.from(nav.querySelectorAll('a')).map((a) => a.textContent)).toEqual(['Trades', 'Accounts', 'About']);
   });
 });
+
+describe('migration startup states', () => {
+  const base = { observedAt: '2026-10-12T14:05:00Z', installedCapabilities: facadeDouble().capabilities, protection: 'BestEffort' } as const;
+  // An older stored schema seen with Writable readiness: this launch converts it (D2 P6).
+  const awaitingMigration = { ...base, kind: 'IntegrityBlocked', readiness: writableReadiness, failedChecks: [], reason: 'AwaitingMigration' };
+
+  it('should show Updating your journal to this release with no data or controls while initialize is migrating', async () => {
+    const facade = facadeDouble({ status: awaitingMigration });
+    vi.mocked(facade.Workspace.initialize).mockReturnValue(new Promise(() => undefined));
+    renderShell(facade);
+    expect((await screen.findByText(/updating your journal to this release/i)).getAttribute('role')).toBe('status');
+    expect(facade.Workspace.initialize).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('navigation')).toBeNull();
+    expect(screen.queryAllByRole('button')).toEqual([]);
+    expect(screen.queryAllByRole('link')).toEqual([]);
+    expect(screen.queryByText('Trades screen')).toBeNull();
+  });
+
+  it('should render Migration Blocked with the reason, Your data is unchanged, and Retry, and no data navigation', async () => {
+    const facade = facadeDouble({ status: awaitingMigration });
+    vi.mocked(facade.Workspace.initialize)
+      .mockResolvedValueOnce({
+        kind: 'MigrationBlocked',
+        stage: 'Validate',
+        issues: [{ code: 'UnknownAccount', tradeId: 'trade-1', accountId: 'account-9' }],
+        fromVersion: 1,
+        toVersion: 2,
+        unchangedData: { databaseName: 'tj-ws-1', contentRevision: 7, counts: { trades: 2 } },
+        recoveryActions: [{ action: 'Retry', explanation: 'Retry the conversion.' }],
+      })
+      .mockResolvedValueOnce({ kind: 'Opened', status: readyStatus({ schemaVersion: 2 }) as never, receipt: {} as never });
+    renderShell(facade);
+    expect(await screen.findByRole('heading', { name: /your journal could not be converted to this release/i })).toBeTruthy();
+    expect(screen.getByText(/a trade names an account that does not exist/i)).toBeTruthy();
+    expect(screen.getByText('Your data is unchanged.')).toBeTruthy();
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual(['Retry']);
+    expect(screen.queryAllByRole('link')).toEqual([]);
+    expect(screen.queryByRole('navigation')).toBeNull();
+    expect(screen.queryByText('Trades screen')).toBeNull();
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(await screen.findByText('Trades screen')).toBeTruthy();
+    expect(facade.Workspace.initialize).toHaveBeenCalledTimes(2);
+  });
+
+  it('should render IntegrityBlocked AwaitingMigration explaining that this release must convert the journal once the browser passes its safety checks, with Retry', async () => {
+    const failedChecks = [{ check: 'control', reason: 'NoController' }];
+    const readiness = { ...writableReadiness, outcome: 'Unsupported', failures: failedChecks };
+    const facade = facadeDouble({ status: { ...awaitingMigration, readiness, failedChecks } });
+    renderShell(facade);
+    expect(await screen.findByRole('heading', { name: /this release must convert your journal before you can use it/i })).toBeTruthy();
+    expect(screen.getByText(/converts your journal once this browser passes its safety checks/i)).toBeTruthy();
+    expect(screen.getByText(/your journal data is unchanged/i)).toBeTruthy();
+    expect(screen.getAllByRole('listitem').map((li) => li.textContent)).toEqual([expect.stringMatching(/offline component is not in control/i) as string]);
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual(['Retry']);
+    expect(screen.queryByRole('navigation')).toBeNull();
+    expect(facade.Workspace.initialize).not.toHaveBeenCalled();
+  });
+
+  it('should show the D1 Updated in another tab message, keeping on-screen form values, when the session is superseded by a version change', async () => {
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue({
+      kind: 'RuntimeNotWritable',
+      runtimeReadiness: 'RecoveryOnly',
+      failedChecks: [{ check: 'control', reason: 'SessionSuperseded' }],
+      workspaceStatus: 'RecoveryOnly',
+      safeActions: [],
+    });
+    // An entry form that records a Position Change through the facade and reports the result.
+    function EntryFormStub() {
+      const runtime = useRuntime();
+      const [quantity, setQuantity] = useState('');
+      return (
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void facade.TradeWorkflows.recordPositionChange({} as never).then((result) => runtime.report(result));
+          }}
+        >
+          <label>
+            Quantity
+            <input value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+          </label>
+          <button type="submit">Save entry</button>
+        </form>
+      );
+    }
+    renderShell(facade, '/trades/trade-1/record-entry', { 'record-entry': EntryFormStub });
+    const user = userEvent.setup();
+    await user.type(await screen.findByLabelText('Quantity'), '60');
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    expect(await screen.findByRole('heading', { name: 'Updated in another tab: reload when ready' })).toBeTruthy();
+    expect(screen.getByText(/this tab can.t save any more/i)).toBeTruthy();
+    expect(screen.getByLabelText<HTMLInputElement>('Quantity').value).toBe('60');
+    expect(screen.getByRole('button', { name: 'Reload' })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: /read only: this browser can.t save right now/i })).toBeNull();
+  });
+});
