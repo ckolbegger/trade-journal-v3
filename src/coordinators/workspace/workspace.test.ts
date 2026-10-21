@@ -178,7 +178,7 @@ describe('getStatus', () => {
         }) as unknown,
       }) as unknown,
       protection: 'BestEffort',
-      schemaVersion: 1,
+      schemaVersion: 2,
       latestReceipt: opened.receipt,
     });
   });

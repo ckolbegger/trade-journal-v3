@@ -1,8 +1,9 @@
-import type { IDBPDatabase } from 'idb';
+import type { IDBPDatabase, IDBPObjectStore } from 'idb';
 import type { RuntimeNotWritable } from '../delivery/runtime-not-writable.ts';
 import { deleteDatabase, openDatabase } from './idb.ts';
 import {
   POINTER_KEY,
+  PRIVATE_STORES,
   WORKSPACE_KEY_PATHS,
   ROOT_DATABASE,
   ROOT_VERSION,
@@ -67,6 +68,9 @@ export interface StoreRecord {
   readonly value: Record<string, unknown>;
 }
 
+// A pure per-record transform from one schema's authoritative record to the next one's.
+export type RecordTransform = (record: StoreRecord) => StoreRecord;
+
 export type CreateWorkspaceResult =
   | RuntimeNotWritable
   | { readonly kind: 'Created'; readonly databaseName: string; readonly binding: WorkspaceSnapshotBinding }
@@ -126,6 +130,19 @@ export interface Persistence {
   inspectRoot(): Promise<RootInspection>;
   // Creates a Workspace holding the initial records, then makes it visible with one pointer write.
   createWorkspace(initialRecords: readonly StoreRecord[]): Promise<CreateWorkspaceResult>;
+  // Names a new candidate Workspace database in the root, then creates it empty at the current
+  // schema version. Nothing reads it until activation (D2 A30).
+  createCandidate(): Promise<{ readonly databaseName: string }>;
+  // Bumps the source database's IndexedDB version, closing every other connection to it, then
+  // copies its authoritative stores in one readonly snapshot through `transform` into the
+  // candidate. Private stores are never copied: the private rebuild produces them (D2 A30, A139).
+  copySnapshot(source: string, candidate: string, transform: RecordTransform): Promise<void>;
+  // In one root transaction: points the root at the candidate, removes its candidate entry, and
+  // lists the database it replaces as retired (D2 A30).
+  activateCandidate(candidate: string, retired: string): Promise<void>;
+  // Deletes the candidate and its entry; the database it was copied from and the pointer are
+  // untouched.
+  discardCandidate(candidate: string): Promise<void>;
   // Applies one semantic command's complete write set atomically, or nothing.
   commit(writeSet: WriteSet): Promise<CommitResult>;
   // Reads several stores in one readonly transaction bound to one content revision.
@@ -140,6 +157,31 @@ export interface Persistence {
 interface PointerRecord {
   readonly key: typeof POINTER_KEY;
   readonly databaseName: string;
+}
+
+// Root records beside the pointer, in the same store (D2 A30): candidates named before they are
+// created, and databases retired by an activation and not yet deleted.
+const CANDIDATES_KEY = 'candidates';
+const RETIRED_KEY = 'retired';
+
+interface NameListRecord {
+  readonly key: typeof CANDIDATES_KEY | typeof RETIRED_KEY;
+  readonly databaseNames: readonly string[];
+}
+
+// Meta records owned by persistence, never copied between Workspace databases.
+const PERSISTENCE_META_KEYS: ReadonlySet<string> = new Set(['schema', 'content']);
+
+function isAuthoritative(store: string): store is WorkspaceStore {
+  return store in WORKSPACE_KEY_PATHS && !PRIVATE_STORES.has(store as WorkspaceStore);
+}
+
+// Creates a Workspace database's stores and indexes at the current schema version, at content
+// revision 1.
+function initializeWorkspace(db: IDBDatabase, oldVersion: number, tx: IDBTransaction): void {
+  upgradeWorkspace(db, oldVersion);
+  tx.objectStore('meta').put({ key: 'schema', schemaVersion: SCHEMA_VERSION });
+  tx.objectStore('meta').put({ key: 'content', contentRevision: 1 });
 }
 
 interface SchemaRecord {
@@ -167,6 +209,46 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
       return db;
     });
     return connection;
+  }
+
+  // Closes this session's own Workspace connection without marking the session superseded.
+  async function closeOwnConnection(): Promise<void> {
+    const own = connection;
+    connection = undefined;
+    (await own)?.close();
+  }
+
+  // Runs one root readwrite transaction over the pointer store, which also holds the name lists.
+  async function inRoot<T>(work: (store: IDBPObjectStore<unknown, ['pointer'], 'pointer', 'readwrite'>) => Promise<T>): Promise<T> {
+    const root = await openDatabase(deps.indexedDB, ROOT_DATABASE, ROOT_VERSION, upgradeRoot);
+    try {
+      const tx = root.transaction('pointer', 'readwrite', { durability: 'strict' });
+      const result = await work(tx.store);
+      await tx.done;
+      return result;
+    } finally {
+      root.close();
+    }
+  }
+
+  async function listed(store: IDBPObjectStore<unknown, ['pointer'], 'pointer', 'readwrite'>, key: NameListRecord['key']) {
+    return ((await store.get(key)) as NameListRecord | undefined)?.databaseNames ?? [];
+  }
+
+  // Deletes every retired database and every listed candidate the pointer does not name, then
+  // removes each from its list, so an interrupted deletion is retried by the next call.
+  async function deleteListed(pointer: string): Promise<string[]> {
+    const deleted: string[] = [];
+    for (const key of [RETIRED_KEY, CANDIDATES_KEY] as const) {
+      const names = (await inRoot((store) => listed(store, key))).filter((name) => name !== pointer);
+      if (names.length === 0) continue;
+      for (const name of names) await deleteDatabase(deps.indexedDB, name);
+      await inRoot(async (store) => {
+        await store.put({ key, databaseNames: (await listed(store, key)).filter((n) => !names.includes(n)) });
+      });
+      deleted.push(...names);
+    }
+    return deleted;
   }
 
   return {
@@ -246,14 +328,84 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
       return { kind: 'Committed', binding: { databaseName: db.name, contentRevision }, revisions };
     },
 
+    async createCandidate() {
+      const databaseName = `${WORKSPACE_PREFIX}${deps.ids.next()}`;
+      // Listed first, so a candidate interrupted at any later point is known and cleaned up.
+      await inRoot(async (store) => {
+        await store.put({ key: CANDIDATES_KEY, databaseNames: [...(await listed(store, CANDIDATES_KEY)), databaseName] });
+      });
+      const candidate = await openDatabase(deps.indexedDB, databaseName, WORKSPACE_VERSION, initializeWorkspace);
+      candidate.close();
+      return { databaseName };
+    },
+
+    async activateCandidate(candidate, retired) {
+      await inRoot(async (store) => {
+        const [candidates, retiredNames] = await Promise.all([listed(store, CANDIDATES_KEY), listed(store, RETIRED_KEY)]);
+        await Promise.all([
+          store.put({ key: POINTER_KEY, databaseName: candidate }),
+          store.put({ key: CANDIDATES_KEY, databaseNames: candidates.filter((n) => n !== candidate) }),
+          store.put({ key: RETIRED_KEY, databaseNames: [...retiredNames, retired] }),
+        ]);
+      });
+      await closeOwnConnection();
+      current = candidate;
+      await deleteListed(candidate);
+    },
+
+    async discardCandidate(candidate) {
+      await deleteDatabase(deps.indexedDB, candidate);
+      await inRoot(async (store) => {
+        await store.put({ key: CANDIDATES_KEY, databaseNames: (await listed(store, CANDIDATES_KEY)).filter((n) => n !== candidate) });
+      });
+    },
+
+    async copySnapshot(source, candidate, transform) {
+      await closeOwnConnection();
+      // Opening at a higher version, with no store changes, makes every other connection close
+      // (D1's versionchange handling) before the snapshot is taken (the D1 amendment).
+      const probe = await openDatabase(deps.indexedDB, source, undefined);
+      const version = probe.version;
+      probe.close();
+      const bumped = await openDatabase(deps.indexedDB, source, version + 1);
+      let records: StoreRecord[];
+      try {
+        const stores = Array.from(bumped.objectStoreNames).filter(isAuthoritative);
+        const tx = bumped.transaction(stores, 'readonly');
+        const all = await Promise.all(stores.map((store) => tx.objectStore(store).getAll()));
+        await tx.done;
+        records = stores.flatMap((store, i) =>
+          (all[i] as Record<string, unknown>[])
+            .filter((value) => !(store === 'meta' && PERSISTENCE_META_KEYS.has(value['key'] as string)))
+            .map((stamped) => {
+              // The persistence write stamp is not an authoritative field.
+              const value = { ...stamped };
+              delete value['revision'];
+              return { store, value };
+            }),
+        );
+      } finally {
+        bumped.close();
+      }
+      // The candidate already holds its own schema version and content revision.
+      const target = await openDatabase(deps.indexedDB, candidate, undefined);
+      try {
+        const copied = records.map(transform);
+        if (copied.length === 0) return;
+        const tx = target.transaction([...new Set(copied.map((r) => r.store))], 'readwrite', { durability: 'strict' });
+        for (const { store, value } of copied) void tx.objectStore(store).put({ ...value, revision: 1 });
+        await tx.done;
+      } finally {
+        target.close();
+      }
+    },
+
     async createWorkspace(initialRecords) {
       const refusal = deps.writeGate.current();
       if (refusal) return refusal;
       const databaseName = `${WORKSPACE_PREFIX}${deps.ids.next()}`;
       const workspace = await openDatabase(deps.indexedDB, databaseName, WORKSPACE_VERSION, (db, oldVersion, tx) => {
-        upgradeWorkspace(db, oldVersion);
-        tx.objectStore('meta').put({ key: 'schema', schemaVersion: SCHEMA_VERSION });
-        tx.objectStore('meta').put({ key: 'content', contentRevision: 1 });
+        initializeWorkspace(db, oldVersion, tx);
         for (const { store, value } of initialRecords) tx.objectStore(store).put({ ...value, revision: 1 });
       });
       workspace.close();
@@ -314,7 +466,7 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
       }
       // Only once the pointer names a valid Workspace is any other Workspace-prefixed database
       // known to be an orphan: a leftover candidate, or a concurrent first run that lost.
-      const deletedOrphans: string[] = [];
+      const deletedOrphans = await deleteListed(pointer.databaseName);
       for (const { name } of await deps.indexedDB.databases()) {
         if (name?.startsWith(WORKSPACE_PREFIX) && name !== pointer.databaseName) {
           await deleteDatabase(deps.indexedDB, name);

@@ -66,3 +66,35 @@ Run 2026-10-20 22:42 EDT on commit `237c869` (the only uncommitted files were th
 | Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.3-checks.txt` |
 
 Failures: none.
+
+## T2.8 capacity re-measure at schema 2 (interim; T2.18 replaces allowances)
+
+Agreed added step of T2.8: `SCHEMA_VERSION` is now 2, so the capacity basis measured at schema 1 no longer verifies. Re-measured in Chromium through the application stack at schema 2 with the record kinds that exist now (Trades with their Plan Reflection Entries, Catalog records). The Position Change, Execution, and Position Change Reflection outcome allowances in `tools/capacity/profile.ts` are kept unchanged; T2.18 replaces them with measured bytes. The tool's checks were not changed.
+
+Before the re-measure:
+
+```text
+$ npm run verify:capacity
+FAIL basis measured at schema version 1, current is 2: run measure:capacity
+```
+
+Re-measure:
+
+```text
+$ npm run measure:capacity
+chromium 153.0.8010.12: {"plans":500,"usageBefore":147456,"usageAfter":1601536,"bytesPerTradeWithReflection":2908.16,"jsonBytesPerTradeWithReflection":2344.634,"overheadRatio":1.2403471074803145,"jsonBytesPerCatalogRecord":237.33333333333334}
+measure:capacity OK: M 544103178 bytes, required quota 1632309534 bytes
+
+$ npm run verify:capacity
+verify:capacity OK: required quota 1632309534 = 3 × 544103178, schema 2
+```
+
+| Figure | Schema 1 basis (2026-10-19) | Schema 2 basis (this run) |
+|---|---|---|
+| Engine | Chromium 153.0.8010.12 | Chromium 153.0.8010.12 |
+| Bytes per Trade with Plan Reflection | 2,932.736 | 2,908.16 |
+| Overhead ratio | 1.2508 | 1.2403 |
+| Projected Workspace M | 548,701,233 bytes | 544,103,178 bytes |
+| Required quota (3 × M) | 1,646,103,699 bytes | 1,632,309,534 bytes |
+
+`src/delivery/capacity-basis.json` now names `schemaVersion: 2`. The small drop is measurement variance in Chromium's `estimate()` usage, not a schema effect: the measured record shapes are unchanged at schema 2 (the new index stays empty for Planned Trades without `activityDesc`, and the new stores hold nothing yet).

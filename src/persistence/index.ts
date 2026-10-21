@@ -8,6 +8,7 @@ export {
   type PersistenceDeps,
   type ReadTransaction,
   type RecordRevision,
+  type RecordTransform,
   type Snapshot,
   type RootInspection,
   type StoreRecord,
@@ -24,3 +25,4 @@ export {
   type SemanticTransaction,
 } from './semantic-transaction.ts';
 export { rebuildPrivateState } from './rebuild.ts';
+export { createInProcessLifecycleLock, createWebLocksLifecycleLock, type LifecycleLock } from './lifecycle-lock.ts';

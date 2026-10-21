@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "measuredAt": "2026-10-19T07:45:40.613Z",
+  "schemaVersion": 2,
+  "measuredAt": "2026-10-21T03:19:21.116Z",
   "formula": "requiredQuotaBytes = 3 × projectedWorkspaceBytes (M); M = measured kinds + allowances × overheadRatio, largest engine",
   "profile": {
     "measured": {
@@ -79,13 +79,13 @@
       "version": "153.0.8010.12",
       "plans": 500,
       "usageBefore": 147456,
-      "usageAfter": 1613824,
-      "bytesPerTradeWithReflection": 2932.736,
+      "usageAfter": 1601536,
+      "bytesPerTradeWithReflection": 2908.16,
       "jsonBytesPerTradeWithReflection": 2344.634,
-      "overheadRatio": 1.2508289140224018,
+      "overheadRatio": 1.2403471074803145,
       "jsonBytesPerCatalogRecord": 237.33333333333334
     }
   ],
-  "projectedWorkspaceBytes": 548701233,
-  "requiredQuotaBytes": 1646103699
+  "projectedWorkspaceBytes": 544103178,
+  "requiredQuotaBytes": 1632309534
 }
