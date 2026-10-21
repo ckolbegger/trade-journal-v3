@@ -208,3 +208,27 @@ Run 2026-10-21 13:39 EDT on commit `a1a9ad0` (the only uncommitted files were th
 Failures: none.
 
 **Implementation decisions (T2.7, recorded 2026-10-21).** The Planned form of Detail is returned only when both stored and expected lifecycle are Planned; any other Trade gets the Open form (so a stored-Planned Trade with opening facts shows its disagreement). Deviation count counts recorded occurrences whose latest version is Active. Average open cost is the quantity-weighted Open Lot price, excluding fees. Three type-only edits outside T2.7's scope (`src/app/types.ts`, `TradeDetail.tsx`, a D1 integration test) keep typecheck at 0 until T2.11 and T2.14 replace them.
+
+## T2.11 Installed Capability Manifest and composition root
+
+Command: `npm run verify:capabilities`
+
+```text
+> trade-journal-v3@0.0.0 verify:capabilities
+> node tools/verify-capabilities.ts
+
+verify:capabilities OK: 12 operations, 3 variant-qualified, 7 routes, 2 Entry Types, schema 2, release 853915999821e451dab53a036014cc8b75c550437222e52b40765fad954a9b29
+```
+
+Result: exit 0. The manifest adds `TradeWorkflows.recordPositionChange` (variants `Opening`, `Increase`, `Stock`, `SingleTrade`, `Complete`, `Decline`), the `Open` variant of `TradeViewsAndReporting.browseTrades` and `TradeViewsAndReporting.getTradeDetail`, the Entry Type `entry-type.position-change-reflection`, and `schemaVersion: 2`. The facade exposes `TradeWorkflows.recordPositionChange`; the route map gains `record-entry` (`/trades/:tradeId/record-entry`), and the `trades` and `trade-detail` routes now name the lifecycle variants they present (Open and Planned).
+
+The verifier was extended for D2: a route may name the variants it presents, and the check fails when a route presents an absent variant, when an installed variant of a variant-qualified operation is presented by no route, when the manifest's schema version differs from the one this release writes, or when a declared Entry Type has no seeded definition in a fresh Workspace. Each new rule was confirmed to fail by a temporary edit, then restored:
+
+```text
+FAIL route trades presents absent variant TradeViewsAndReporting.browseTrades (Closed)
+FAIL installed variant TradeViewsAndReporting.browseTrades (Open) is not presented by any route
+FAIL manifest names schema version 1, but this release writes 2
+FAIL declared Entry Type entry-type.daily-review has no seeded definition
+```
+
+Interim screen: until T2.12 builds the Position Change form, `record-entry` renders the existing Trade Detail screen (`src/main.tsx`), so the app still runs. The Trades list and Detail routes keep D1's screens until T2.13 and T2.14.

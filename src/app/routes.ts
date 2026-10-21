@@ -5,6 +5,9 @@ export interface RouteDefinition {
   readonly path: string;
   readonly label: string;
   readonly requires: readonly string[];
+  // The variants of required operations this destination presents, such as the lifecycles a list
+  // or Detail shows. Every one must be installed, like the operations themselves.
+  readonly variants?: Readonly<Record<string, readonly string[]>>;
   // Shown in primary navigation (as opposed to reached from another screen).
   readonly navigation: boolean;
   // Offered while Recovery Only (reads only).
@@ -16,7 +19,9 @@ export const ROUTES = [
     id: 'trades',
     path: '/',
     label: 'Trades',
+    // The Open (default) and Planned tabs (D2 A32).
     requires: ['TradeViewsAndReporting.browseTrades'],
+    variants: { 'TradeViewsAndReporting.browseTrades': ['Open', 'Planned'] },
     navigation: true,
     readOnly: true,
   },
@@ -25,8 +30,22 @@ export const ROUTES = [
     path: '/trades/:tradeId',
     label: 'Trade',
     requires: ['TradeViewsAndReporting.getTradeDetail', 'Journal.query'],
+    variants: { 'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open'] },
     navigation: false,
     readOnly: true,
+  },
+  {
+    // "Record entry" on Planned and Open Trade Detail: one Position Change with its Position Change
+    // Reflection, completed or declined (D2 A33).
+    id: 'record-entry',
+    path: '/trades/:tradeId/record-entry',
+    label: 'Record entry',
+    requires: ['TradeWorkflows.recordPositionChange', 'TradeViewsAndReporting.getTradeDetail', 'Journal.getDefinitions'],
+    variants: {
+      'TradeWorkflows.recordPositionChange': ['Opening', 'Increase', 'Stock', 'SingleTrade', 'Complete', 'Decline'],
+    },
+    navigation: false,
+    readOnly: false,
   },
   {
     id: 'new-plan',
@@ -67,3 +86,11 @@ export const ROUTES = [
     readOnly: false,
   },
 ] as const satisfies readonly RouteDefinition[];
+
+// Whether a destination is offered: all its operations, and every variant it presents, are installed.
+export function isRouteInstalled(route: RouteDefinition, operations: Readonly<Record<string, readonly string[]>>): boolean {
+  return (
+    route.requires.every((op) => op in operations) &&
+    Object.entries(route.variants ?? {}).every(([op, variants]) => variants.every((v) => operations[op]?.includes(v)))
+  );
+}

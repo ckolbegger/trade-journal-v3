@@ -67,6 +67,10 @@ async function start(container: HTMLElement) {
     'trade-detail': function Detail() {
       return <TradeDetail facade={facade} timeZone={useZone()} />;
     },
+    // T2.12 builds the Position Change form; until then the route shows the Trade's Detail.
+    'record-entry': function RecordEntry() {
+      return <TradeDetail facade={facade} timeZone={useZone()} />;
+    },
     'new-plan': function NewPlan() {
       return <PlanForm facade={facade} timeZone={useZone()} now={now} onDirtyChange={setUnsaved} />;
     },

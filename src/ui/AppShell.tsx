@@ -2,7 +2,7 @@ import { useEffect, useState, type ComponentType, type ReactNode } from 'react';
 import { Link, Route, Routes } from 'react-router';
 import type { UiFacade } from '../app/compose.ts';
 import type { ReadinessFailure, RuntimeNotWritable } from '../delivery/runtime-not-writable.ts';
-import { ROUTES } from '../app/routes.ts';
+import { isRouteInstalled, ROUTES } from '../app/routes.ts';
 import { explainFailure } from './readiness-copy.ts';
 import { RuntimeContext } from './runtime.tsx';
 import { FirstRun } from './screens/FirstRun.tsx';
@@ -155,8 +155,7 @@ export function AppShell({ facade, screens, notices, onRetry = () => window.loca
   const failedChecks: readonly ReadinessFailure[] = refusal?.failedChecks ?? (status.kind === 'RecoveryOnly' ? status.failedChecks : []);
   // Routes stay those of the launch, so an open form keeps its values when writing stops.
   // Only destinations whose capabilities are all installed are reachable (AC-CAP-001).
-  const installed = new Set(Object.keys(facade.capabilities.operations));
-  const routes = ROUTES.filter((route) => route.requires.every((op) => installed.has(op)) && (launchedWritable || route.readOnly));
+  const routes = ROUTES.filter((route) => isRouteInstalled(route, facade.capabilities.operations) && (launchedWritable || route.readOnly));
   const navigation = routes.filter((route) => route.navigation && (writable || route.readOnly));
   const superseded = failedChecks.some((failure) => failure.reason === 'SessionSuperseded');
   const report = (result: { readonly kind: string }) => {

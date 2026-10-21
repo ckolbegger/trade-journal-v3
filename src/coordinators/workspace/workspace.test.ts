@@ -283,7 +283,7 @@ describe('requestDurability', () => {
 });
 
 describe('Installed Capability Manifest', () => {
-  it('should list exactly D1\'s public operations and variants, the Long Stock Strategy, the Plan Reflection Entry Type, no backup schema range, and no provider adapters, bound to the release identity', () => {
+  it('should list exactly the public operations and variants through D2, the Long Stock Strategy, the Plan Reflection and Position Change Reflection Entry Types, schema version 2, no backup schema range, and no provider adapters, bound to the release identity', () => {
     expect(installedCapabilities('release-1')).toEqual({
       releaseId: 'release-1',
       operations: {
@@ -296,11 +296,13 @@ describe('Installed Capability Manifest', () => {
         'Journal.getDefinitions': [],
         'Journal.query': ['TradeNarrative'],
         'TradeWorkflows.confirmPlan': ['LongStock'],
-        'TradeViewsAndReporting.browseTrades': ['Planned'],
-        'TradeViewsAndReporting.getTradeDetail': ['Planned'],
+        'TradeWorkflows.recordPositionChange': ['Opening', 'Increase', 'Stock', 'SingleTrade', 'Complete', 'Decline'],
+        'TradeViewsAndReporting.browseTrades': ['Planned', 'Open'],
+        'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open'],
       },
       strategies: ['strategy.long-stock'],
-      entryTypes: ['entry-type.plan-reflection'],
+      entryTypes: ['entry-type.plan-reflection', 'entry-type.position-change-reflection'],
+      schemaVersion: 2,
       backupSchemaRange: null,
       providerAdapters: [],
     });

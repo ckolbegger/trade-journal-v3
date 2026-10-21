@@ -1,3 +1,5 @@
+import { SCHEMA_VERSION } from '../../persistence/index.ts';
+
 // The Installed Capability Manifest: what this release installs, bound to its release identity.
 // It describes installed code, is not trader data, cannot be toggled, and is not restored.
 // Anything not yet delivered is absent rather than reported as Unavailable.
@@ -7,13 +9,15 @@ export interface InstalledCapabilityManifest {
   readonly operations: Readonly<Record<string, readonly string[]>>;
   readonly strategies: readonly string[];
   readonly entryTypes: readonly string[];
+  // The Workspace schema version this release writes; older versions migrate to it.
+  readonly schemaVersion: number;
   // No backup format is installed before D8.
   readonly backupSchemaRange: null;
   readonly providerAdapters: readonly string[];
 }
 
-// D1's capability set (implementation plan, D1 "Introduces").
-const D1_OPERATIONS: Readonly<Record<string, readonly string[]>> = {
+// The capability set through D2 (implementation plan, D1 and D2 "Introduces").
+const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   'Workspace.initialize': ['FreshWorkspace', 'ExistingWorkspace'],
   'Workspace.getStatus': [],
   'Workspace.requestDurability': [],
@@ -23,16 +27,20 @@ const D1_OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   'Journal.getDefinitions': [],
   'Journal.query': ['TradeNarrative'],
   'TradeWorkflows.confirmPlan': ['LongStock'],
-  'TradeViewsAndReporting.browseTrades': ['Planned'],
-  'TradeViewsAndReporting.getTradeDetail': ['Planned'],
+  // D2 A18: opening and increase Buys of a Stock serving its Planned Leg, every member in one
+  // Trade, with the Position Change Reflection completed or declined.
+  'TradeWorkflows.recordPositionChange': ['Opening', 'Increase', 'Stock', 'SingleTrade', 'Complete', 'Decline'],
+  'TradeViewsAndReporting.browseTrades': ['Planned', 'Open'],
+  'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open'],
 };
 
 export function installedCapabilities(releaseId: string): InstalledCapabilityManifest {
   return {
     releaseId,
-    operations: D1_OPERATIONS,
+    operations: OPERATIONS,
     strategies: ['strategy.long-stock'],
-    entryTypes: ['entry-type.plan-reflection'],
+    entryTypes: ['entry-type.plan-reflection', 'entry-type.position-change-reflection'],
+    schemaVersion: SCHEMA_VERSION,
     backupSchemaRange: null,
     providerAdapters: [],
   };

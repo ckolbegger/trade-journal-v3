@@ -1,6 +1,6 @@
 import { createMutationGuard } from '../coordinators/mutation-guard.ts';
-import { createTradeViews } from '../coordinators/trade-views/index.ts';
-import { createTradeWorkflows } from '../coordinators/trade-workflows/index.ts';
+import { createTradeViews, type TradeBrowseRequest, type TradeDetailRequest } from '../coordinators/trade-views/index.ts';
+import { createTradeWorkflows, type PositionChangeCommand } from '../coordinators/trade-workflows/index.ts';
 import { createWorkspace, installedCapabilities } from '../coordinators/workspace/index.ts';
 import type { HostPort } from '../delivery/host.ts';
 import { createReadinessSession, evaluateReadiness, type CapacityRequirement, type ReadinessSession } from '../delivery/readiness.ts';
@@ -72,10 +72,12 @@ export async function createApplication(deps: ApplicationDeps) {
     },
     TradeWorkflows: {
       confirmPlan: (command: Parameters<typeof tradeWorkflows.confirmPlan>[0]) => tradeWorkflows.confirmPlan(command),
+      recordPositionChange: (command: PositionChangeCommand) => tradeWorkflows.recordPositionChange(command),
     },
     TradeViewsAndReporting: {
-      browseTrades: (request: Parameters<typeof tradeViews.browseTrades>[0]) => tradeViews.browseTrades(request),
-      getTradeDetail: (request: Parameters<typeof tradeViews.getTradeDetail>[0]) => tradeViews.getTradeDetail(request),
+      // Generic in the lifecycle, so the Planned and Open forms are both typed (T2.11).
+      browseTrades: <L extends 'Planned' | 'Open'>(request: TradeBrowseRequest<L>) => tradeViews.browseTrades(request),
+      getTradeDetail: (request: TradeDetailRequest) => tradeViews.getTradeDetail(request),
     },
     capabilities: installedCapabilities(deps.releaseId),
     session,

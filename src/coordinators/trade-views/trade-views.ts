@@ -140,9 +140,9 @@ export interface OpenTradeDetail extends Omit<PlannedTradeDetail, 'journal'> {
 export type TradeDetailView = PlannedTradeDetail | OpenTradeDetail;
 
 export interface TradeViews {
-  // One overload per lifecycle, so each caller receives its lifecycle's item form.
-  browseTrades(request: TradeBrowseRequest<'Open'>): Promise<ReadViewResult<TradeBrowseView<'Open'>>>;
-  browseTrades(request: TradeBrowseRequest<'Planned'>): Promise<ReadViewResult<TradeBrowseView<'Planned'>>>;
+  // Generic in the lifecycle, so each caller receives its lifecycle's item form, and a caller
+  // holding either lifecycle (a tab switch) receives the union.
+  browseTrades<L extends 'Planned' | 'Open'>(request: TradeBrowseRequest<L>): Promise<ReadViewResult<TradeBrowseView<L>>>;
   getTradeDetail(request: TradeDetailRequest): Promise<ReadViewResult<TradeDetailView>>;
 }
 

@@ -17,6 +17,7 @@ function AccountsStub() {
 const screens: Screens = {
   trades: () => <p>Trades screen</p>,
   'trade-detail': () => <p>Trade detail</p>,
+  'record-entry': () => <p>Record entry form</p>,
   'new-plan': () => <p>New Plan form</p>,
   accounts: AccountsStub,
   about: () => <p>About screen</p>,
