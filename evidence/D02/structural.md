@@ -709,3 +709,4 @@ Figures from each critic's completion notice (the harness's own token count; com
 | Critic | Commit | Brief | Tokens | Tool calls | Duration | Defects |
 |---|---|---|---|---|---|---|
 | critic-1 | `2440e0f` | v1 | 141,559 | 44 | 9 min 18 s | 1 |
+| critic-2 | `40581f7` | v1 | 121,270 | 32 | 7 min 19 s | 2 |
