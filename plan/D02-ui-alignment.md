@@ -1,6 +1,6 @@
 # D2 follow-up: align the UI with the reference screenshots: task breakdown
 
-Status: **draft, awaiting the user's approval** (written 2026-10-24). Once approved it becomes plan revision 7 (decision 47), tagged `claude-opus-5.5-plan-r7`. The decisions in section 2 must be answered first. U1 and U7 were answered on 2026-10-24.
+Status: **draft, awaiting the user's approval** (written 2026-10-24). Once approved it becomes plan revision 7 (decision 47), tagged `claude-opus-5.5-plan-r7`. The decisions in section 2 must be answered first. U1, U2, U4, U5 and U7 were answered on 2026-10-24; U3 and U6 are still open.
 
 **Source.** The screenshot comparison made on 2026-10-24 against commit `404fda1`. It compared the 24 references in `specs/reference/ui-screenshots/` with screenshots of the built app at 390 and 1280 px (`test-results/screenshot-compare/shots/`, git-ignored). The report is saved in [evidence/D02/screenshot-comparison.md](../evidence/D02/screenshot-comparison.md).
 
@@ -20,7 +20,7 @@ The task IDs continue D2's numbering, T2.36–T2.55, so `tdd.sh` and the evidenc
 - no schema change;
 - no change to any committed fixture (`tests/fixtures/workspace-v1`, `workspace-v2`), the bench dataset or a backup content version.
 
-**No view-model shape changes for coherent Trades.** The v2 fixture snapshot compares every Planned and Open Detail and both lists, so `verify:fixtures` would fail. Every new presentation uses only values already in the view models. The one exception is T2.46 (decision U2), which adds a read-only operation instead of changing an existing view.
+**No view-model shape changes for coherent Trades.** The v2 fixture snapshot compares every Planned and Open Detail and both lists, so `verify:fixtures` would fail. Every new presentation uses only values already in the view models.
 
 **Accessible names stay stable.** Tests find controls by name. Any task that has to change a name or role says so and updates its tests in the same commit:
 
@@ -52,10 +52,10 @@ The task IDs continue D2's numbering, T2.36–T2.55, so `tdd.sh` and the evidenc
 | ID | Question | Recommendation | Alternative and cost |
 |---|---|---|---|
 | U1 | **Narrow Trades list:** cards, or the current table restyled with a scroll cue? | **Decided by the user 2026-10-24: the restyled scrolling table** (T2.40), after reviewing a phone mockup. One table at every width. On narrow: Underlying pinned on the left, the most useful columns first, and scroll shadows at the edges. The column set and order are settled during T2.40 (implementation decision I1). | Cards on narrow (rejected): closer to the reference, but a second rendering to keep equivalent, and churn in `narrow.spec.ts`. |
-| U2 | **New Plan live preview** of 1R, original reward and Reward : risk while typing? | **Include** (T2.46) through a new read-only facade operation that runs the same Trade Analysis derivation the Plan Baseline uses. The UI computes nothing (decision 31). | Skip it. The figures still appear after Confirm. Saves a facade operation and a capability-manifest entry. |
+| U2 | **New Plan live preview** of 1R, original reward and Reward : risk while typing? | **Decided by the user 2026-10-24: skip it.** The figures still appear after Confirm. T2.46 is withdrawn; its ID is kept so later IDs do not move. | Include it through a new read-only facade operation running the Plan Baseline derivation (rejected: a new operation and manifest entry for a convenience). |
 | U3 | **Detail Executions:** compact list rows instead of a table per Position Change? | **List rows** (T2.50). One row per Execution, "Buy 30 XYZ @ $50.00 · fee $0.50 · 10:00", grouped under each Position Change. Open Lots stays a table. | Restyled tables: no test churn, but the Detail stays long. |
-| U4 | **Stale validation issues:** clear a field's issue as soon as it is corrected? | **Yes, in both New Plan and Record entry** (T2.47). The summary stays while any issue remains. Today the issues stay until the next submit. | Keep issues until resubmit, which is the current D1/D2 behavior. |
-| U5 | **Contextual forms:** sheets and drawers, or routes? | **Keep dedicated routes**, which the contract allows, and add Trade context to Record entry (T2.52). | A sheet or drawer: a larger change to routing and focus management for no contract gain. |
+| U4 | **Stale validation issues:** clear a field's issue as soon as it is corrected? | **Decided by the user 2026-10-24: yes, in both New Plan and Record entry** (T2.47). The summary stays while any issue remains. Today the issues stay until the next submit. | Keep issues until resubmit, which is the current D1/D2 behavior. |
+| U5 | **Contextual forms:** sheets and drawers, or routes? | **Decided by the user 2026-10-24: keep dedicated routes**, which the contract allows, and add Trade context to Record entry (T2.52). | A sheet or drawer: a larger change to routing and focus management for no contract gain. |
 | U6 | **Icons:** how are navigation icons supplied? | **Inline SVG** in the source, marked `aria-hidden`. No new dependency (decision 42 pins packages). | An icon package needs a plan revision for the pin. |
 | U7 | **Trades header content** | **Decided 2026-10-24: `h1` "Trades" only.** No page-level New Plan button: the primary navigation already offers New Plan on every screen, at every width, and the Empty states offer it as their next action (ui-contract View states). No greeting and no count line: a total needs a count the paged read model does not provide. | A header New Plan button as in the reference (rejected as a duplicate of the navigation entry); a count for the current page only, which could mislead with Planned paging. |
 
@@ -85,7 +85,7 @@ Kinds:
 | T2.43 | Prompt chip groups | C Forms | S | T2.38 | `ui-alignment.spec.ts` (chips) |
 | T2.44 | Execution rows as panels in a grid | C | S | T2.43 | `ui-alignment.spec.ts` (entry form) |
 | T2.45 | New Plan grouped into cards | C | S | T2.43 | `ui-alignment.spec.ts` (plan form) |
-| T2.46 | Live Plan Baseline preview (U2) | C | B | T2.45 | facade operation and `PlanForm` |
+| T2.46 | *Withdrawn (U2 = skip)* | — | — | — | — |
 | T2.47 | Clear corrected issues (U4) | C | B | T2.45 | `PlanForm`, `PositionChangeForm` |
 | T2.48 | Detail back link | D Detail | B | T2.38 | `TradeDetail` |
 | T2.49 | Detail summary card | D | B | T2.42, T2.48 | `TradeDetail` |
@@ -159,31 +159,11 @@ describe("badge meanings")
 
 **Structural check:** add to `ui-alignment.spec.ts` that each tone's text and background reach 4.5:1 contrast, and that no tone uses the green or red tokens.
 
-### T2.46 Live Plan Baseline preview (only if U2 = include)
+### T2.46 Withdrawn
 
-**Seams:**
-1. A new read-only facade operation, for example `TradeViewsAndReporting.previewPlanBaseline(draft)`. It returns the Plan Baseline's `CalculationResult`s, or `Unavailable` with reasons, through the same Trade Analysis derivation `confirmPlan` uses. It does no storage I/O.
-2. `PlanForm`.
+Decision U2 (2026-10-24): no live Plan Baseline preview. No task.
 
-**Basis:** screenshot index ("Live result hierarchy only…"); decision 31 (derive, never estimate).
-
-```text
-describe("previewPlanBaseline")
-  it should return Unavailable naming the missing inputs while quantity, intended entry, Stop, or Target is incomplete
-  it should return 1R, original reward, and Reward : risk equal to the Plan Baseline confirmPlan stores for the same values
-  it should return Unavailable when the Stop is not below the intended entry for a Long Stock leg
-  it should read and write nothing (store dump and content revisions unchanged)
-describe("New Plan preview")
-  it should show the preview as Unavailable with what is missing until the risk fields are complete
-  it should show $250.00, $600.00, and 2.4 for the reference values and update when a value changes
-  it should make no mutating facade call while the preview updates
-```
-
-**Manifest and tests:**
-- Add the operation to the capability manifest. `verify:capabilities` must pass, and About will list it.
-- `tests/support/facade-double.ts` gains the operation.
-
-### T2.47 Clear corrected issues (only if U4 = yes)
+### T2.47 Clear corrected issues (U4)
 
 **Seams:** `PlanForm` and `PositionChangeForm`.
 
@@ -322,7 +302,7 @@ It re-runs C2.1, C2.5, C2.7, C2.10 and C2.11 from D2 section 7, then these flows
 |---|---|---|
 | CU.1 Shell | Visit Trades, New Plan, a Detail, Accounts and About at 390 and 1280. | The current page is marked visually and by `aria-current`. Wordmark at wide. Icons beside labels. The banner is compact, tinted and always present until protection. One left edge. 16 px gutters. |
 | CU.2 Trades | Empty and populated, both tabs, both widths; resize live; scroll the narrow table. | `h1` "Trades". New Plan is reachable from the navigation and from the Empty states, with no duplicate in the header. On narrow, Underlying stays pinned while the rest scrolls, the I1 columns come first, and every column is reachable. Tab and URL are kept across resize. |
-| CU.3 Forms | New Plan and Record entry: fill, cause issues, correct one field, decline, keyboard only. | Grouped cards. Chips read as selected without the radio dot, with visible focus. Execution panels in a grid. Corrected issues clear (U4). Preview figures match the confirmed Plan Baseline (U2). |
+| CU.3 Forms | New Plan and Record entry: fill, cause issues, correct one field, decline, keyboard only. | Grouped cards. Chips read as selected without the radio dot, with visible focus. Execution panels in a grid. Corrected issues clear (U4). |
 | CU.4 Detail | Planned, Open while entering, Open resolved, Open with an active Deviation, incoherent. | The summary card leads, with Stop and Target labelled and coloured. Execution rows are under Position Changes. Journal Entries show Entry Type, Anchor, labelled Source and time. The back link returns to the right tab. |
 | CU.5 Reference comparison | Compare each built screen with its reference pair. | No high-priority difference from the comparison remains. Every remaining difference is listed as screenshot-only, future, or specs-override. |
 
