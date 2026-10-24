@@ -810,3 +810,18 @@ Run 2026-10-21 13:26 EDT on commit `8443101` (the only uncommitted files were th
 Failures: none.
 
 After the test-file renames that make every section 8 command run as written (8443101); integration 39 (AC-RESP-001 split into d2/responses).
+
+## Cumulative run after T2.25
+
+Run 2026-10-24 17:14 EDT on commit `0c9d17f` (T2.25, F1: an incoherent Planned Trade is listed as disagreeing instead of breaking the Planned page), Node v26.12.0. Run label `t2.25`.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 37 passed (37)`, `Tests 346 passed (346)`, exit 0 | `suite-runs/t2.25-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 19 passed (19)`, `Tests 42 passed (42)`, exit 0 | `suite-runs/t2.25-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `49 passed (1.6m)`, exit 0 | `suite-runs/t2.25-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.25-checks.txt` |
+
+Failures: none. Integration rose from 39 to 42 (T2.25's three `browseTrades` cases); browser from 48 to 49 (the Planned-row case in `e2e/d2/integrity.spec.ts`).
+
+**T2.25 decision (implementation level, for the final report):** the incoherent Planned item (`IncoherentPlannedTradeItem`) omits `entryReadiness` as well as 1R, Original Planned Reward and Reward : risk, as the Open list's incoherent item omits `entryStatus`, because "Awaiting entry" would be false for a Trade with recorded Executions. The Entry cell therefore reads "Not available" beside the "Records disagree" badge.
