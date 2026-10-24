@@ -1,12 +1,12 @@
 # D2 follow-up: align the UI with the reference screenshots: task breakdown
 
-Status: **draft, awaiting the user's approval** (written 2026-10-24). Once approved it becomes plan revision 7 (decision 47), tagged `claude-opus-5.5-plan-r7`. The decisions in section 2 must be answered first.
+Status: **draft, awaiting the user's approval** (written 2026-10-24). Once approved it becomes plan revision 7 (decision 47), tagged `claude-opus-5.5-plan-r7`. The decisions in section 2 must be answered first. U1 and U7 were answered on 2026-10-24.
 
 **Source.** The screenshot comparison made on 2026-10-24 against commit `404fda1`. It compared the 24 references in `specs/reference/ui-screenshots/` with screenshots of the built app at 390 and 1280 px (`test-results/screenshot-compare/shots/`, git-ignored). The report is saved in [evidence/D02/screenshot-comparison.md](../evidence/D02/screenshot-comparison.md).
 
 **Position in the plan.** This batch follows the D2 follow-ups F1–F11 in [D2, section 11](D02-open-a-long-stock-position.md#11-deferred-follow-ups-plan-revision-6-decision-46) and runs **before D4's first task**. Two follow-ups merge into it:
 - **F8** (Migration Blocked gutter) becomes part of T2.38.
-- **F9** (narrow Open list) is replaced by T2.40 or T2.41, depending on decision U1.
+- **F9** (narrow Open list) is implemented by T2.40, the narrow scrolling table chosen under U1.
 
 The task IDs continue D2's numbering, T2.36–T2.55, so `tdd.sh` and the evidence files stay in `evidence/D02/`.
 
@@ -51,13 +51,19 @@ The task IDs continue D2's numbering, T2.36–T2.55, so `tdd.sh` and the evidenc
 
 | ID | Question | Recommendation | Alternative and cost |
 |---|---|---|---|
-| U1 | **Narrow Trades list:** cards, or the current table restyled with a scroll cue (F9 as written)? | **Cards on narrow, table on wide** (T2.40). Each card shows the same information as its row: symbol, badges, Strategy · Account · entry status, and the figures. Wide keeps the table, which is dense, sortable later, and what 21 browser row lookups use. | Restyled table plus cue (T2.41 only): less work and no test churn, but narrow stays a sideways-scrolling table, unlike the reference. |
+| U1 | **Narrow Trades list:** cards, or the current table restyled with a scroll cue? | **Decided by the user 2026-10-24: the restyled scrolling table** (T2.40), after reviewing a phone mockup. One table at every width. On narrow: Underlying pinned on the left, the most useful columns first, and scroll shadows at the edges. The column set and order are settled during T2.40 (implementation decision I1). | Cards on narrow (rejected): closer to the reference, but a second rendering to keep equivalent, and churn in `narrow.spec.ts`. |
 | U2 | **New Plan live preview** of 1R, original reward and Reward : risk while typing? | **Include** (T2.46) through a new read-only facade operation that runs the same Trade Analysis derivation the Plan Baseline uses. The UI computes nothing (decision 31). | Skip it. The figures still appear after Confirm. Saves a facade operation and a capability-manifest entry. |
 | U3 | **Detail Executions:** compact list rows instead of a table per Position Change? | **List rows** (T2.50). One row per Execution, "Buy 30 XYZ @ $50.00 · fee $0.50 · 10:00", grouped under each Position Change. Open Lots stays a table. | Restyled tables: no test churn, but the Detail stays long. |
 | U4 | **Stale validation issues:** clear a field's issue as soon as it is corrected? | **Yes, in both New Plan and Record entry** (T2.47). The summary stays while any issue remains. Today the issues stay until the next submit. | Keep issues until resubmit, which is the current D1/D2 behavior. |
 | U5 | **Contextual forms:** sheets and drawers, or routes? | **Keep dedicated routes**, which the contract allows, and add Trade context to Record entry (T2.52). | A sheet or drawer: a larger change to routing and focus management for no contract gain. |
 | U6 | **Icons:** how are navigation icons supplied? | **Inline SVG** in the source, marked `aria-hidden`. No new dependency (decision 42 pins packages). | An icon package needs a plan revision for the pin. |
-| U7 | **Trades header content** | `h1` "Trades" plus the primary New Plan action. **No greeting and no count line**: a total needs a count the paged read model does not provide. | A count for the current page only, which could mislead with Planned paging. |
+| U7 | **Trades header content** | **Decided 2026-10-24: `h1` "Trades" only.** No page-level New Plan button: the primary navigation already offers New Plan on every screen, at every width, and the Empty states offer it as their next action (ui-contract View states). No greeting and no count line: a total needs a count the paged read model does not provide. | A header New Plan button as in the reference (rejected as a duplicate of the navigation entry); a count for the current page only, which could mislead with Planned paging. |
+
+**Implementation decisions** (settled with the user during the named task, before it is committed):
+
+| ID | Question | Task | Starting proposal |
+|---|---|---|---|
+| I1 | **The column set and order of the Trades tables** on narrow, and whether wide uses the same order | T2.40 | **Open:** Underlying (pinned), Quantity, Integrity, Entry, Average cost, Strategy, Account, Fees, Deviations, Last activity. **Planned:** Underlying (pinned), 1R, Reward : risk, Entry readiness (with any disagreement badge), Plan time, Strategy, Account, Original reward. The T2.40 subagent stops with a rendered 320 px and 390 px capture of the proposal for the user, and implements the answer. Constraints: every column the table shows today stays available at every width (ui-contract Responsive, equivalent information); column names stay unchanged; at 320 px at least Underlying and one figure are visible without scrolling. |
 
 ---
 
@@ -72,8 +78,8 @@ Kinds:
 | T2.36 | Primary navigation: current page, wordmark, icons | A Shell | B | F1–F11 done | `AppShell` |
 | T2.37 | Navigation and durability-banner styling | A | S | T2.36 | `ui-alignment.spec.ts` (shell) |
 | T2.38 | One content column and side gutters (absorbs F8) | A | S | T2.37 | `ui-alignment.spec.ts` (layout) |
-| T2.39 | Trades page header and primary action | B Trades | B | T2.38 | `TradeList` |
-| T2.40 | Narrow Trades list as cards (U1 = cards) | B | B | T2.39 | `TradeList` with a width context |
+| T2.39 | Trades page heading | B Trades | B | T2.38 | `TradeList` |
+| T2.40 | Narrow Trades table: pinned Underlying, column order (I1), scroll shadows (U1; implements F9) | B | S | T2.39 | `ui-alignment.spec.ts` (narrow list) |
 | T2.41 | Wide Trades table styling | B | S | T2.39 | `ui-alignment.spec.ts` (list) |
 | T2.42 | Semantic badge tones | B | B | T2.38 | `Badge` component |
 | T2.43 | Prompt chip groups | C Forms | S | T2.38 | `ui-alignment.spec.ts` (chips) |
@@ -122,45 +128,20 @@ describe("primary navigation")
 - `e2e/d1/responsive-a11y.spec.ts` (focus outline on links) must stay green.
 - The Onboarding and Recovery Only navigation tests keep their link sets.
 
-### T2.39 Trades page header and primary action
+### T2.39 Trades page heading
 
 **Seam:** `TradeList` (`src/ui/screens/TradeList.test.tsx`).
 
-**Basis:** ui-contract Visual language (primary actions), Accessibility (a heading to land on after navigation, which T2.29/F5 relies on); decision U7.
+**Basis:** ui-contract Accessibility (a heading to land on after navigation, which T2.29/F5 relies on); decision U7.
 
 ```text
-describe("Trades header")
+describe("Trades heading")
   it should show an h1 "Trades" above the tabs in the Loading, Ready, Empty, and Error states of both tabs
-  it should offer a primary "New Plan" link to /plans/new under the heading while the runtime is Writable
-  it should not offer the New Plan action while Recovery Only
 ```
 
-**Test impact:**
-- `TradeList.test.tsx:217` uses an unscoped `getByRole('link', { name: 'New Plan' })` and must scope to the Empty state.
-- Browser tests already scope New Plan to `navigation "Primary"`.
-- Check every `getByRole('heading', { name: ... })` lookup for a partial match on "Trades".
+**Not added:** a page-level New Plan button (U7). New Plan stays in the primary navigation and in the Empty states.
 
-### T2.40 Narrow Trades list as cards (only if U1 = cards)
-
-**Seam:** `TradeList` with a width context. Expose the shell's existing `wide` value through `RuntimeContext` or a `useWide()` hook, so jsdom renders one layout at a time.
-
-**Basis:** ui-contract Responsive ("equivalent information, fields, actions"), Visual language (cards).
-
-```text
-describe("narrow Open list")
-  it should render each Open Trade as a list item whose link is named by the underlying, with Strategy · Account · entry status, the quantity "60 of 100", the average cost, the Deviation count, the integrity badge, and Last Activity
-  it should show exactly the values the wide table row shows for the same Trade
-describe("narrow Planned list")
-  it should render each Planned Trade as a list item with 1R, original reward, Reward : risk, entry readiness, and the disagreement badge when present
-describe("live switch")
-  it should switch between table and cards on resize while keeping the selected tab and the page
-```
-
-**Test impact:**
-- `e2e/d2/narrow.spec.ts`: the Open and Planned cases assert a scrolling table at 375/320. Change them to assert the card list and no page overflow.
-- The table name lookups at wide width are unchanged. That covers `support.ts` `openTradeFromOpenList` and the `runtime-failure` and `responsive-a11y` specs at 1280.
-- `responsive-a11y.spec.ts` runs axe on the Open list at narrow width as well. It must stay clean.
-- F9's check is superseded and recorded as such.
+**Test impact:** check every `getByRole('heading', { name: ... })` lookup for a partial match on "Trades".
 
 ### T2.42 Semantic badge tones
 
@@ -304,6 +285,7 @@ All measurements go in `e2e/d2/ui-alignment.spec.ts`, against `dist-faults` as t
 |---|---|---|
 | T2.37 Navigation and banner styling | Current link as an ink-filled pill with white text in the sidebar. Bottom bar shows each icon over a small label, with the current item bold or ink. The durability banner uses the warning ground and line (`.banner.warning` exists unused), with its text and button on one row at wide and compact at narrow. | Current link background is ink and text white. In the bottom bar each icon's box sits above its label's box. Banner background equals `--warning-ground`. Banner height ≤ 120 px at 390, and at 1280 the button's vertical centre lies within the text block. axe clean on Trades at both widths. `e2e/d1/responsive-a11y.spec.ts` focus checks pass. |
 | T2.38 One content column and side gutters (absorbs F8) | Banner, heading, tabs and cards share one left edge inside the content column. Every top-level card keeps a 16 px side gutter at narrow, including first run, onboarding and Migration Blocked. | At 1280 on Trades and on Open Detail, the left x of the banner, `h1`, tablist and first card are equal within 1 px. At 390 and 320, every `.card` on first run, onboarding, Migration Blocked, Trades and Detail has left ≥ 16 and right ≤ width − 16. No page overflow anywhere (`narrow.spec.ts` stays green). |
+| T2.40 Narrow Trades table (U1, I1; implements F9) | One table at every width. On narrow (below the 960 px layout switch): the Underlying column is pinned on the left (`position: sticky`) with its own background, a hairline, and a focus outline that is not clipped. Columns follow the order agreed under I1, applied with CSS only, so the order of cells in the markup and the column names are unchanged. Scroll shadows appear on the edges while columns lie off-screen. The region stays a named, focusable scroll area. Reference: the phone mockup reviewed on 2026-10-24. | At 390 and 320, for both "Open Trades" and "Planned Trades": after scrolling the region fully right, the Underlying cell's left edge is unchanged and the other cells have moved. Before any scrolling, the first visible columns are the I1 order's first columns. Column header texts equal today's set. No page overflow. A focused Underlying link shows its full outline. axe is clean. `narrow.spec.ts` stays green unchanged. At 1280 the order is whatever I1 decided for wide. |
 | T2.41 Wide Trades table styling | Small-caps 12.8 px muted headers that do not wrap. The symbol link is bold. Dates and badges do not wrap. | Every `th` in "Open Trades" and "Planned Trades" at 1280 is one line high (height ≤ 1.6 × line-height) and has uppercase or small-caps text. Badges in rows are one line high. The symbol link's font-weight is ≥ 600. |
 | T2.43 Prompt chip groups | Borderless fieldsets, with the legend as the small-caps label. Chips: the checked one ink-filled with white text, the native radio visually hidden but focusable, a visible focus ring on the chip (`:focus-within`). Applies to Plan Reflection and Position Change Reflection. | Checked chip's label background is ink, text white. The radio input is clipped (1 px or `clip-path`) yet focusable. A focused chip shows an outline of ≥ 2 px with ≥ 3:1 contrast. Fieldset border-style is none. `tabTo` (every-focus-visible) and axe pass. |
 | T2.44 Execution rows as panels | Each Execution fieldset is a tinted rounded panel (radius ≥ 10, no groove border) with a small-caps legend. Quantity, Price and Fee sit in three columns at wide and two at narrow; Economic Time has its own row. "Remove Execution N" becomes a text-style button with the same name. "Add Execution" is an outlined pill. | Fieldset border-style is not `groove` and border-radius ≥ 10 px. At 1280 the Quantity, Price and Fee inputs share a top y. At 390 Quantity and Price share a top y. Economic Time sits below them. All names are unchanged (the existing `fillRows` helper passes). |
@@ -316,7 +298,7 @@ All measurements go in `e2e/d2/ui-alignment.spec.ts`, against `dist-faults` as t
 ## 6. Browser suite
 
 - **New spec:** `e2e/d2/ui-alignment.spec.ts`, holding the S-task measurements.
-- **Changed specs:** `narrow.spec.ts` (T2.40), `open-position.spec.ts` and `durability.spec.ts` (T2.50), and any heading or text lookups that the summary card makes ambiguous (T2.49). Each change goes in the commit of the task that causes it, with the reason in the evidence.
+- **Changed specs:** `open-position.spec.ts` and `durability.spec.ts` (T2.50), and any heading or text lookups that the summary card makes ambiguous (T2.49). Each change goes in the commit of the task that causes it, with the reason in the evidence.
 - **Kept passing:**
   - every D1 and D2 browser case;
   - axe on every screen it already covers;
@@ -339,7 +321,7 @@ It re-runs C2.1, C2.5, C2.7, C2.10 and C2.11 from D2 section 7, then these flows
 | Flow | Actions | Pass condition |
 |---|---|---|
 | CU.1 Shell | Visit Trades, New Plan, a Detail, Accounts and About at 390 and 1280. | The current page is marked visually and by `aria-current`. Wordmark at wide. Icons beside labels. The banner is compact, tinted and always present until protection. One left edge. 16 px gutters. |
-| CU.2 Trades | Empty and populated, both tabs, both widths; resize live. | `h1` "Trades" and a New Plan action. U1's narrow layout shows every value the wide row shows. Tab and URL are kept across resize. |
+| CU.2 Trades | Empty and populated, both tabs, both widths; resize live; scroll the narrow table. | `h1` "Trades". New Plan is reachable from the navigation and from the Empty states, with no duplicate in the header. On narrow, Underlying stays pinned while the rest scrolls, the I1 columns come first, and every column is reachable. Tab and URL are kept across resize. |
 | CU.3 Forms | New Plan and Record entry: fill, cause issues, correct one field, decline, keyboard only. | Grouped cards. Chips read as selected without the radio dot, with visible focus. Execution panels in a grid. Corrected issues clear (U4). Preview figures match the confirmed Plan Baseline (U2). |
 | CU.4 Detail | Planned, Open while entering, Open resolved, Open with an active Deviation, incoherent. | The summary card leads, with Stop and Target labelled and coloured. Execution rows are under Position Changes. Journal Entries show Entry Type, Anchor, labelled Source and time. The back link returns to the right tab. |
 | CU.5 Reference comparison | Compare each built screen with its reference pair. | No high-priority difference from the comparison remains. Every remaining difference is listed as screenshot-only, future, or specs-override. |
