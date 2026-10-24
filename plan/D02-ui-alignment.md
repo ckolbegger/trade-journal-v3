@@ -1,6 +1,6 @@
 # D2 follow-up: align the UI with the reference screenshots: task breakdown
 
-Status: **draft, awaiting the user's approval** (written 2026-10-24). Once approved it becomes plan revision 7 (decision 47), tagged `claude-opus-5.5-plan-r7`. The decisions in section 2 must be answered first. All of U1–U7 were answered by the user on 2026-10-24.
+Status: **approved by the user on 2026-10-24 as plan revision 7 (decision 47)**, tagged `claude-opus-5.5-plan-r7`. All of U1–U7 were answered by the user on 2026-10-24. Implementation decisions I1 and I2 are settled with the user during T2.40 and T2.50.
 
 **Source.** The screenshot comparison made on 2026-10-24 against commit `404fda1`. It compared the 24 references in `specs/reference/ui-screenshots/` with screenshots of the built app at 390 and 1280 px (`test-results/screenshot-compare/shots/`, git-ignored). The report is saved in [evidence/D02/screenshot-comparison.md](../evidence/D02/screenshot-comparison.md).
 
@@ -47,7 +47,7 @@ The task IDs continue D2's numbering, T2.36–T2.55, so `tdd.sh` and the evidenc
 
 ---
 
-## 2. Decisions for approval
+## 2. Decisions
 
 | ID | Question | Recommendation | Alternative and cost |
 |---|---|---|---|
@@ -64,6 +64,7 @@ The task IDs continue D2's numbering, T2.36–T2.55, so `tdd.sh` and the evidenc
 | ID | Question | Task | Starting proposal |
 |---|---|---|---|
 | I1 | **The column set and order of the Trades tables** on narrow, and whether wide uses the same order | T2.40 | **Open:** Underlying (pinned), Quantity, Integrity, Entry, Average cost, Strategy, Account, Fees, Deviations, Last activity. **Planned:** Underlying (pinned), 1R, Reward : risk, Entry readiness (with any disagreement badge), Plan time, Strategy, Account, Original reward. The T2.40 subagent stops with a rendered 320 px and 390 px capture of the proposal for the user, and implements the answer. Constraints: every column the table shows today stays available at every width (ui-contract Responsive, equivalent information); column names stay unchanged; at 320 px at least Underlying and one figure are visible without scrolling. |
+| I2 | **The fields of a collapsed Execution row** and their order | T2.50 | Action, quantity, symbol, price, fee, Economic Time ("Buy 30 XYZ @ $50.00 · fee $0.50 · 2026-10-12 10:00"). The T2.50 subagent stops with a rendered 320 px and 1280 px capture of the proposal for the user, and implements the answer. Constraints: everything left out of the collapsed row appears in the expanded row, so no Execution value is lost; the collapsed row fits on one line at 390 px or wraps without clipping at 320 px. |
 
 ---
 
@@ -225,6 +226,7 @@ describe("summary card")
 - Collapsed row: "Buy 30 XYZ @ $50.00 · fee $0.50 · 2026-10-12 10:00".
 - Each row has a disclosure button (`aria-expanded`, `aria-controls`, a chevron icon from U6). Its accessible name names the Execution, for example "Details for Buy 30 XYZ at 10:00".
 - Expanded: the Instrument, the Economic Time, the Position Change it belongs to (its time and how many Executions it has), and that Position Change's reflection (the answers, or "Reflection declined" with its reason) or "No reflection".
+- The collapsed row's fields and order are implementation decision I2; the example above is the starting proposal.
 - Rows start collapsed. Expansion is view state only: it is not stored and is not put in the URL.
 - Only values already in the Detail view model are used. If the link from an Execution to its Position Change's reflection is not in the view model, the subagent stops and reports instead of changing the view shape.
 
