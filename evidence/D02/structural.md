@@ -795,3 +795,18 @@ The `bench:run` rerun rewrote `evidence/D02/bench.md`. That file was restored, s
 | Integration | `npm run test:integration` | Test Files 19 passed (19), Tests 39 passed (39): 38 before, plus the AC-RESP-001 split |
 | Browser | `npm run test:e2e` | 48 passed (1.6m), unchanged |
 | Static | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
+
+## Cumulative run after MATRIX-UPDATE
+
+Run 2026-10-21 13:26 EDT on commit `8443101` (the only uncommitted files were this run's own outputs and the untracked older handoff note), Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 37 passed (37)`, `Tests 345 passed (345)`, exit 0 | `suite-runs/matrix-update-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 19 passed (19)`, `Tests 39 passed (39)`, exit 0 | `suite-runs/matrix-update-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `48 passed (1.6m)`, exit 0 | `suite-runs/matrix-update-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/matrix-update-checks.txt` |
+
+Failures: none.
+
+After the test-file renames that make every section 8 command run as written (8443101); integration 39 (AC-RESP-001 split into d2/responses).
