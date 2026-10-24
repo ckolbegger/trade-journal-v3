@@ -1,0 +1,81 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 10508,
+    "input_tokens": 10420,
+    "output_tokens": 88,
+    "cache_read_tokens": 3840,
+    "elapsed": "9s"
+  },
+  "tool_calls": {
+    "total": 1,
+    "by_tool": {
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/ui/screens/PositionChangeForm.tsx",
+      "files": [
+        "src/ui/screens/PositionChangeForm.tsx"
+      ]
+    }
+  ],
+  "session_id": "3247df0b-913f-411e-a783-7154edff2d65",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3247df0b-913f-411e-a783-7154edff2d65",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "c96fbc8",
+      "resolved_base": "9b62f83af863a8363b688b38bca33a8d0814e817",
+      "resolved_head": "c96fbc8943d18495c616da725172f7201bbdd2c7",
+      "exact_range": "9b62f83af863a8363b688b38bca33a8d0814e817..c96fbc8943d18495c616da725172f7201bbdd2c7",
+      "source_artifact_sha256": "04b9b09848702b8c784dff358299eaff65d6640d5d6fc794a519c943f017f36b"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "e8c15d71cb798e17f5b4f815be21acffc1a9071398c093cd69cdc43d50d9caf3"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "e8c15d71cb798e17f5b4f815be21acffc1a9071398c093cd69cdc43d50d9caf3"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 9410
+  }
+}

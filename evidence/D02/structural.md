@@ -874,3 +874,42 @@ Failures: none. Unit rose from 346 to 349 (T2.26's three UI cases); browser from
 | Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.27-checks.txt` |
 
 Failures: none. Unit rose from 349 to 353 (T2.27's four cases); browser from 50 to 51 (the axe case on the entry form's Not Found and Error states).
+
+### Bug tasks from T2.27's ocr findings (user's direction 2026-10-24)
+
+The user directed both findings to be written up as bug tasks and fixed. Each goes to its own fresh `tdd-task` subagent, failing test first, through the `PositionChangeForm` seam (`src/ui/screens/PositionChangeForm.test.tsx`, test facade `tests/support/position-change-form-facade.ts`). Red and green rows go in `tdd-log.md` under the task IDs below. Neither changes a schema, fixture, view shape or public type.
+
+**T2.27-B1 Superseded load attempts are ignored** (finding 1, `PositionChangeForm.tsx:91`). The load effect has no cleanup or generation guard, so a callback from an earlier attempt still calls `setFailure` or `setView` after Retry.
+
+```text
+describe("Record entry load attempts")
+  it should keep the form loaded by Retry when the first attempt's definition load fails afterwards
+  it should ignore a late successful result from a superseded attempt, so the form shows the Retry attempt's Trade and definition
+```
+
+**T2.27-B2 Retry starts from a clean load** (finding 2, `PositionChangeForm.tsx:124`). Retry clears only `failure`, so the earlier attempt's `view` and `definition` stay and the form can render before the retried loads finish; `failure` is not reset when the Trade changes.
+
+```text
+describe("Record entry Retry")
+  it should show Loading, not the earlier attempt's Trade, after Retry until both retried loads finish
+  it should start from Loading with no carried-over failure when the route moves to another Trade
+```
+
+The second B2 case depends on whether the route remounts the form per Trade. If it already passes, it gets the mutation check and is flagged as a first-run pass.
+
+**ocr review of T2.27-B1** (`ocr-review` step): commit `9b62f83`, session `03d32f5a-6845-4206-816e-fe0992e14765`, model `gpt-6.1-sol`, 1 file reviewed (2 excluded: the test file and `tdd-log.md`), 0 comments. No findings. Raw output: `ocr/t2.27-b1-9b62f83.json`.
+
+**ocr review of T2.27-B2** (`ocr-review` step): commit `c96fbc8`, session `3247df0b-913f-411e-a783-7154edff2d65`, model `gpt-6.1-sol`, 1 file reviewed (the test file and `tdd-log.md` excluded), 0 comments. No findings. Raw output: `ocr/t2.27-b2-c96fbc8.json`.
+
+**T2.27-B2 notes (implementation level):** the route renders one element per route id with no key per Trade (`src/main.tsx`), so moving to another Trade keeps the form mounted; that is why case 2 had a genuine red. A change of `facade` or `tradeId` is caught during render through internal `loadingFor` state and clears `view`, `definition` and `failure`. Not reset on a Trade change: the entered rows, answers, the decline choice and reason, issues, and the conflict and recorded states.
+
+**Cumulative run after T2.27-B1 and T2.27-B2:** run 2026-10-24 17:49 EDT on commit `c96fbc8` (working tree carried only uncommitted evidence edits), Node v26.12.0. Run label `t2.27-b2`.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 37 passed (37)`, `Tests 357 passed (357)`, exit 0 | `suite-runs/t2.27-b2-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 19 passed (19)`, `Tests 42 passed (42)`, exit 0 | `suite-runs/t2.27-b2-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `51 passed (1.7m)`, exit 0 | `suite-runs/t2.27-b2-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.27-b2-checks.txt` |
+
+Failures: none. Unit rose from 353 to 357 (two cases each for T2.27-B1 and T2.27-B2).
