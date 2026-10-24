@@ -686,3 +686,18 @@ After the B2.13 fix (839fb0b); T2.23 suite commit 9cac498.
 ## critic-1 defect 1 fix
 
 At 375 and 320 px the Open list (`scrollWidth` 890) and the Open Trade Detail (596) scrolled the whole page sideways. Two causes, both CSS: the shell's grid items kept their content's minimum width, so a wide table widened `main` past the viewport even inside its `.table-scroll` region; and the description lists' `max-content` term column took the width of the longest term (a Prompt) on the Detail. Fix in `src/ui/app.css`: `.shell > * { min-width: 0; }`, and `dl` columns `fit-content(50%) minmax(0, 1fr)`. The two Records disagree tables ("Stored versus expected", "Facts that cannot be replayed") gained the same named, focusable `.table-scroll` region the other tables use; no existing name or region changed. New browser cases in `e2e/d2/narrow.spec.ts` (T2.24 rows in `tdd-log.md`) check `scrollWidth <= innerWidth` at both widths and that every table sits in a scroll container within the viewport. `npm run test:e2e` 44 passed; `src/ui` unit tests 72 passed; typecheck, `tsc6`, lint and `lint:deps` exit 0.
+
+## Cumulative run after T2.24-CRITIC1-FIX
+
+Run 2026-10-21 12:38 EDT on commit `e8735b0` (the only uncommitted files were this run's own outputs and the untracked older handoff note), Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 37 passed (37)`, `Tests 344 passed (344)`, exit 0 | `suite-runs/t2.24-critic1-fix-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 18 passed (18)`, `Tests 38 passed (38)`, exit 0 | `suite-runs/t2.24-critic1-fix-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `44 passed (1.5m)`, exit 0 | `suite-runs/t2.24-critic1-fix-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.24-critic1-fix-checks.txt` |
+
+Failures: none.
+
+After the critic-1 defect 1 fix (e8735b0).

@@ -1,0 +1,84 @@
+$ npm run typecheck
+
+> trade-journal-v3@0.0.0 typecheck
+> tsc
+
+EXIT 0
+$ npx tsc6 --noEmit
+EXIT 0
+$ npm run lint
+
+> trade-journal-v3@0.0.0 lint
+> eslint .
+
+EXIT 0
+$ npm run lint:deps
+
+> trade-journal-v3@0.0.0 lint:deps
+> node tools/lint-deps.ts
+
+
+✔ no dependency violations found (153 modules, 526 dependencies cruised)
+
+lint:deps OK (src)
+EXIT 0
+$ npm run build
+
+> trade-journal-v3@0.0.0 build
+> vite build
+
+vite v8.3.2 building client environment for production...
+transforming...
+✓ 107 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.50 kB │ gzip:   0.30 kB
+dist/assets/index-DbACLsjd.css    4.20 kB │ gzip:   1.47 kB
+dist/assets/index-Bla9otC7.js   451.59 kB │ gzip: 138.75 kB
+
+✓ built in 92ms
+EXIT 0
+$ npm run verify:release
+
+> trade-journal-v3@0.0.0 verify:release
+> node tools/verify-release.ts
+
+OK /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/dist: release 7587f71e8ae959938f0e5c0d878f279fdba1e685723b2db753e603db8bfa2dc8, 6 assets
+EXIT 0
+$ npm run verify:capabilities
+
+> trade-journal-v3@0.0.0 verify:capabilities
+> node tools/verify-capabilities.ts
+
+verify:capabilities OK: 12 operations, 3 variant-qualified, 7 routes, 2 Entry Types, schema 2, release 853915999821e451dab53a036014cc8b75c550437222e52b40765fad954a9b29
+EXIT 0
+$ npm run verify:releases
+
+> trade-journal-v3@0.0.0 verify:releases
+> node tools/verify-releases.ts
+
+verify:releases OK: v1 977ab0b2286ef57a82ec137ea0bcb6800b9d61a7c21204036a6aeb5c8d281c72, v2 5fb1bccde40fb6667951dbaed3326dc89c77f5da69816f1a9e495e764d89aa5f, v2-corrupt fails only on /assets/index-DbACLsjd.css, d1 9c8b5b3dac0bff4a2ddda1888ee01c8532b419da03ba1a9f080e4f0fc77dee78 schema 1, d2 2d15411fd12251e540c55762cb6e7ccaca52b529de318bbfdf7835ff5136c6c9 schema 2
+EXIT 0
+$ npm run verify:no-fault-hooks
+
+> trade-journal-v3@0.0.0 verify:no-fault-hooks
+> node tools/verify-no-fault-hooks.ts
+
+verify:no-fault-hooks OK: /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/dist has no fault or bench hooks
+EXIT 0
+$ npm run verify:capacity
+
+> trade-journal-v3@0.0.0 verify:capacity
+> node tools/verify-capacity.ts
+
+verify:capacity OK: required quota 1731485082 = 3 × 577161694, schema 2
+EXIT 0
+$ npm run verify:fixtures
+
+> trade-journal-v3@0.0.0 verify:fixtures
+> node tools/verify-fixtures.ts
+
+workspace-v1: schema 1, migrated to 2 into tj-ws-verify-0001, views equal
+workspace-v2: schema 2, opened without migration, views equal
+verify:fixtures OK: workspace-v1, workspace-v2 open Ready at schema 2 with views equal to their snapshots
+EXIT 0
