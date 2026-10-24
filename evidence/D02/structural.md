@@ -739,3 +739,18 @@ critic-2's minor observation "reloading the receipt at `/trades/<id>/record-entr
 Mechanism: on a `Recorded` result, `PositionChangeForm` sets the receipt in its own state (so the receipt still replaces the form in place, as T2.12 designed) and then calls `window.history.replaceState(window.history.state, '', '/trades/<id>')`. React Router's `BrowserRouter` listens only to `popstate` and its own navigations, so it does not re-render the Trade Detail over the receipt; the router's state object (its `idx` and key) is passed through unchanged, so its history index stays consistent. A reload then loads `/trades/<id>` (the Trade Detail), Back then Forward returns to that same Trade Detail entry, and "Back to the Trade" stays an ordinary router link that pushes the Trade Detail. Rejected, Conflict and refusal results never reach the replace, so the form, its values and its URL stay as they were. The dirty-form guard does not fire: the form reports `onDirtyChange(false)` as soon as the receipt is set (dirty is false once recorded), and no router navigation or unmount happens on save, so D1's update-waits-for-unsaved-form behavior is released exactly as before. The router-replace alternative (`navigate(..., { replace: true, state })`) was not used because it renders the Trade Detail route at once, which would have required the Detail to carry the receipt and changed T2.12's design.
 
 Cases: `e2e/d2/after-save.spec.ts` (browser: URL after save, reload, Back then Forward, one stored Position Change) and the `PositionChangeForm.test.tsx` case "should replace the entry form history entry with the Trade Detail URL once saved, …" (unit, under `BrowserRouter` in jsdom). Checks: `npx vitest run src/ui` 73 passed; `npm run test:e2e` 48 passed; typecheck, `tsc6`, lint and `lint:deps` exit 0.
+
+## Cumulative run after T2.24-RELOAD-FIX
+
+Run 2026-10-21 13:01 EDT on commit `968938c` (the only uncommitted files were this run's own outputs and the untracked older handoff note), Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 37 passed (37)`, `Tests 345 passed (345)`, exit 0 | `suite-runs/t2.24-reload-fix-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 18 passed (18)`, `Tests 38 passed (38)`, exit 0 | `suite-runs/t2.24-reload-fix-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `48 passed (1.6m)`, exit 0 | `suite-runs/t2.24-reload-fix-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.24-reload-fix-checks.txt` |
+
+Failures: none.
+
+After the critic-2 fixes (a7872a7) and the reload-after-save fix (968938c).
