@@ -1,6 +1,6 @@
 # D2 follow-up: align the UI with the reference screenshots: task breakdown
 
-Status: **draft, awaiting the user's approval** (written 2026-10-24). Once approved it becomes plan revision 7 (decision 47), tagged `claude-opus-5.5-plan-r7`. The decisions in section 2 must be answered first. U1, U2, U4, U5 and U7 were answered on 2026-10-24; U3 and U6 are still open.
+Status: **draft, awaiting the user's approval** (written 2026-10-24). Once approved it becomes plan revision 7 (decision 47), tagged `claude-opus-5.5-plan-r7`. The decisions in section 2 must be answered first. All of U1–U7 were answered by the user on 2026-10-24.
 
 **Source.** The screenshot comparison made on 2026-10-24 against commit `404fda1`. It compared the 24 references in `specs/reference/ui-screenshots/` with screenshots of the built app at 390 and 1280 px (`test-results/screenshot-compare/shots/`, git-ignored). The report is saved in [evidence/D02/screenshot-comparison.md](../evidence/D02/screenshot-comparison.md).
 
@@ -53,10 +53,10 @@ The task IDs continue D2's numbering, T2.36–T2.55, so `tdd.sh` and the evidenc
 |---|---|---|---|
 | U1 | **Narrow Trades list:** cards, or the current table restyled with a scroll cue? | **Decided by the user 2026-10-24: the restyled scrolling table** (T2.40), after reviewing a phone mockup. One table at every width. On narrow: Underlying pinned on the left, the most useful columns first, and scroll shadows at the edges. The column set and order are settled during T2.40 (implementation decision I1). | Cards on narrow (rejected): closer to the reference, but a second rendering to keep equivalent, and churn in `narrow.spec.ts`. |
 | U2 | **New Plan live preview** of 1R, original reward and Reward : risk while typing? | **Decided by the user 2026-10-24: skip it.** The figures still appear after Confirm. T2.46 is withdrawn; its ID is kept so later IDs do not move. | Include it through a new read-only facade operation running the Plan Baseline derivation (rejected: a new operation and manifest entry for a convenience). |
-| U3 | **Detail Executions:** compact list rows instead of a table per Position Change? | **List rows** (T2.50). One row per Execution, "Buy 30 XYZ @ $50.00 · fee $0.50 · 10:00", grouped under each Position Change. Open Lots stays a table. | Restyled tables: no test churn, but the Detail stays long. |
+| U3 | **Detail Executions:** compact list rows instead of a table per Position Change? | **Decided by the user 2026-10-24: one compact row per Execution, each with a disclosure button that expands its details** (T2.50). The Trade reads as its plan and then its Executions; a Position Change is not a primary heading. The expanded row names the Execution's Position Change and shows that Position Change's reflection. Open Lots stays a table. | A row per Position Change that expands to its Executions (rejected: the Position Change is not what the trader thinks in); restyled tables (rejected: the Detail stays long). |
 | U4 | **Stale validation issues:** clear a field's issue as soon as it is corrected? | **Decided by the user 2026-10-24: yes, in both New Plan and Record entry** (T2.47). The summary stays while any issue remains. Today the issues stay until the next submit. | Keep issues until resubmit, which is the current D1/D2 behavior. |
 | U5 | **Contextual forms:** sheets and drawers, or routes? | **Decided by the user 2026-10-24: keep dedicated routes**, which the contract allows, and add Trade context to Record entry (T2.52). | A sheet or drawer: a larger change to routing and focus management for no contract gain. |
-| U6 | **Icons:** how are navigation icons supplied? | **Inline SVG** in the source, marked `aria-hidden`. No new dependency (decision 42 pins packages). | An icon package needs a plan revision for the pin. |
+| U6 | **Icons:** how are navigation icons supplied? | **Decided by the user 2026-10-24: draw our own inline SVGs**, thin outline strokes in the reference's style, in one source module, marked `aria-hidden` beside a visible label. No new dependency. Covers the navigation icons (T2.36), the back arrow (T2.48) and the disclosure chevron (T2.50). | Copy an open-source set such as Lucide (more consistent as the set grows; carries a licence notice); an icon package (needs a plan revision for the pin, decision 42). Either can replace the drawn icons later without changing any test. |
 | U7 | **Trades header content** | **Decided 2026-10-24: `h1` "Trades" only.** No page-level New Plan button: the primary navigation already offers New Plan on every screen, at every width, and the Empty states offer it as their next action (ui-contract View states). No greeting and no count line: a total needs a count the paged read model does not provide. | A header New Plan button as in the reference (rejected as a duplicate of the navigation entry); a count for the current page only, which could mislead with Planned paging. |
 
 **Implementation decisions** (settled with the user during the named task, before it is committed):
@@ -89,7 +89,7 @@ Kinds:
 | T2.47 | Clear corrected issues (U4) | C | B | T2.45 | `PlanForm`, `PositionChangeForm` |
 | T2.48 | Detail back link | D Detail | B | T2.38 | `TradeDetail` |
 | T2.49 | Detail summary card | D | B | T2.42, T2.48 | `TradeDetail` |
-| T2.50 | Position Changes as Execution rows (U3) | D | B | T2.49 | `TradeDetail` |
+| T2.50 | Executions as expandable rows (U3) | D | B | T2.49 | `TradeDetail` |
 | T2.51 | Journal Entries with Entry Type, Anchor and Source | D | B | T2.42 | `TradeDetail` |
 | T2.52 | Record entry Trade context | D | B | T2.48 | `PositionChangeForm` |
 | T2.53 | Detail, receipt and Accounts styling | D | S | T2.49–T2.52 | `ui-alignment.spec.ts` (detail) |
@@ -211,21 +211,39 @@ describe("summary card")
 **Test impact:**
 - The existing Plan, Plan Baseline, Position and Entry Quality regions keep their names and values. The summary repeats key values, so any `getByText` that would now match twice must be scoped to its region. List those lookups in the evidence.
 
-### T2.50 Position Changes as Execution rows (only if U3 = list rows)
+### T2.50 Executions as expandable rows (U3)
 
 **Seam:** `TradeDetail`.
 
-**Basis:** ui-contract Trade presentation ("canonical headings and audit labels use Execution"; Position Change and Execution kept distinct).
+**Basis:**
+- Decision U3: the Trade reads as its plan and then its Executions. A Position Change is not a primary heading.
+- ui-contract Trade presentation: Position Change and Execution must stay distinguishable, and canonical labels use Execution. So each Execution's Position Change is named in its expanded details, and Executions that share one Position Change are marked as a group.
+- ui-contract Navigation: inline expansion is an allowed container.
+
+**Shape:**
+- One "Executions (n)" card in Fact Order.
+- Collapsed row: "Buy 30 XYZ @ $50.00 · fee $0.50 · 2026-10-12 10:00".
+- Each row has a disclosure button (`aria-expanded`, `aria-controls`, a chevron icon from U6). Its accessible name names the Execution, for example "Details for Buy 30 XYZ at 10:00".
+- Expanded: the Instrument, the Economic Time, the Position Change it belongs to (its time and how many Executions it has), and that Position Change's reflection (the answers, or "Reflection declined" with its reason) or "No reflection".
+- Rows start collapsed. Expansion is view state only: it is not stored and is not put in the URL.
+- Only values already in the Detail view model are used. If the link from an Execution to its Position Change's reflection is not in the view model, the subagent stops and reports instead of changing the view shape.
 
 ```text
-describe("Position Changes")
-  it should label the region "Position Changes (3)" with the count of Position Changes
-  it should head each Position Change with its Economic Time and its Execution count, in Fact Order
-  it should list each Execution as one row with its action, quantity, symbol, price, fee, and Economic Time, and no Executions table
+describe("Executions")
+  it should label the region "Executions (4)" with the count of Executions and list them in Fact Order
+  it should show each Execution collapsed as one row with action, quantity, symbol, price, fee, and Economic Time, with no Executions table and no Position Change headings
+  it should give each row a disclosure button named for its Execution, collapsed by default (aria-expanded false)
+  it should show the Instrument, Economic Time, and the Position Change with its Execution count when the row is expanded, and hide them again when it is collapsed
+  it should show the Position Change Reflection's answers in the expanded row of an Execution whose Position Change has one
+  it should show "Reflection declined" with the reason, or "No reflection", when the Position Change has a decline or no reflection
+  it should mark the Executions of a Position Change with several Executions as one group and show the shared reflection in each one's expanded row
+  it should toggle with Enter and Space and keep focus on the button
 ```
 
 **Test impact:**
-- The `Executions` table lookups in `e2e/d2/open-position.spec.ts`, `e2e/d2/durability.spec.ts` and `src/ui/screens/TradeDetail.test.tsx` move to the list.
+- The `Executions` table lookups in `e2e/d2/open-position.spec.ts`, `e2e/d2/durability.spec.ts` and `src/ui/screens/TradeDetail.test.tsx` move to the rows. Lookups of "Position Change at …" headings move to the expanded details.
+- Entry Quality's "Resolved at Position Change at …" and the Deviation text "caused by the Position Change at …" are unchanged.
+- The Journal region (T2.51) still lists every reflection Entry. The expanded row is a second, contextual view of the same Entry.
 - The "every table scrolls" check in `narrow.spec.ts` covers fewer tables.
 - Open Lots stays a table; fix its clipped header with `nowrap` and its scroll region.
 
@@ -303,7 +321,7 @@ It re-runs C2.1, C2.5, C2.7, C2.10 and C2.11 from D2 section 7, then these flows
 | CU.1 Shell | Visit Trades, New Plan, a Detail, Accounts and About at 390 and 1280. | The current page is marked visually and by `aria-current`. Wordmark at wide. Icons beside labels. The banner is compact, tinted and always present until protection. One left edge. 16 px gutters. |
 | CU.2 Trades | Empty and populated, both tabs, both widths; resize live; scroll the narrow table. | `h1` "Trades". New Plan is reachable from the navigation and from the Empty states, with no duplicate in the header. On narrow, Underlying stays pinned while the rest scrolls, the I1 columns come first, and every column is reachable. Tab and URL are kept across resize. |
 | CU.3 Forms | New Plan and Record entry: fill, cause issues, correct one field, decline, keyboard only. | Grouped cards. Chips read as selected without the radio dot, with visible focus. Execution panels in a grid. Corrected issues clear (U4). |
-| CU.4 Detail | Planned, Open while entering, Open resolved, Open with an active Deviation, incoherent. | The summary card leads, with Stop and Target labelled and coloured. Execution rows are under Position Changes. Journal Entries show Entry Type, Anchor, labelled Source and time. The back link returns to the right tab. |
+| CU.4 Detail | Planned, Open while entering, Open resolved, Open with an active Deviation, incoherent. | The summary card leads, with Stop and Target labelled and coloured. Executions are compact rows that expand, by mouse and keyboard, to show their Position Change and its reflection; Executions sharing a Position Change read as one group. Journal Entries show Entry Type, Anchor, labelled Source and time. The back link returns to the right tab. |
 | CU.5 Reference comparison | Compare each built screen with its reference pair. | No high-priority difference from the comparison remains. Every remaining difference is listed as screenshot-only, future, or specs-override. |
 
 **Defects:** each defect is handled as at the D2 gate: a failing test first, a fresh fix subagent, a rerun, then a new critic. Each report is saved as `evidence/D02/critic-<n>.md`, with a row in the critic-cost table.
