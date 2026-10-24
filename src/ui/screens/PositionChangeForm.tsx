@@ -45,6 +45,10 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   const navigate = useNavigate();
   const [view, setView] = useState<TradeDetailView | undefined>();
   const [definition, setDefinition] = useState<EntryDefinitionRecord | undefined>();
+  // A load that settled without a form to show; an unknown Trade outranks a failed definition load.
+  const [failure, setFailure] = useState<'NotFound' | 'Error' | undefined>();
+  // Retry counts attempts; each one reloads both the Trade and the definition in place.
+  const [attempt, setAttempt] = useState(0);
   const [answers, setAnswers] = useState<Answers>({});
   // Declining is the trader's explicit alternative to completing the reflection; answers already
   // given stay on screen in case they complete it after all.
@@ -72,13 +76,21 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   }, [conflict]);
 
   useEffect(() => {
-    void facade.TradeViewsAndReporting.getTradeDetail({ tradeId }).then((result) => {
-      if (result.kind === 'Ready') setView(result.view);
-    });
-    void facade.Journal.getDefinitions({ latestFor: 'entry-type.position-change-reflection' }).then((result) => {
-      if (result.kind === 'Found') setDefinition(result.definition);
-    });
-  }, [facade, tradeId]);
+    void facade.TradeViewsAndReporting.getTradeDetail({ tradeId }).then(
+      (result) => {
+        if (result.kind === 'Ready') setView(result.view);
+        else setFailure(result.kind === 'NotFound' ? 'NotFound' : 'Error');
+      },
+      () => setFailure('Error'),
+    );
+    void facade.Journal.getDefinitions({ latestFor: 'entry-type.position-change-reflection' }).then(
+      (result) => {
+        if (result.kind === 'Found') setDefinition(result.definition);
+        else setFailure((current) => current ?? 'Error');
+      },
+      () => setFailure((current) => current ?? 'Error'),
+    );
+  }, [facade, tradeId, attempt]);
 
   if (recorded) return <PositionChangeReceipt result={recorded} timeZone={timeZone} />;
   // A Trade whose facts cannot be replayed would refuse the save, so no form is offered.
@@ -88,6 +100,33 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
         <h1>Record entry</h1>
         <p>{INCOHERENT_ENTRY_NOTE}</p>
         <Link to={`/trades/${tradeId}`}>Back to the Trade</Link>
+      </section>
+    );
+  }
+  if (failure === 'NotFound') {
+    return (
+      <section className="card">
+        <h1>Trade not found</h1>
+        <p>No Trade with this identity exists in this journal.</p>
+        <Link to="/">Back to Trades</Link>
+      </section>
+    );
+  }
+  if (failure === 'Error') {
+    return (
+      <section className="card">
+        <h1>Record entry</h1>
+        <p>We couldn’t load this entry form. Nothing was changed.</p>
+        <button
+          type="button"
+          className="pill secondary"
+          onClick={() => {
+            setFailure(undefined);
+            setAttempt((n) => n + 1);
+          }}
+        >
+          Retry
+        </button>
       </section>
     );
   }

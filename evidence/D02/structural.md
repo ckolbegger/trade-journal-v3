@@ -844,3 +844,15 @@ Failures: none. Integration rose from 39 to 42 (T2.25's three `browseTrades` cas
 Failures: none. Unit rose from 346 to 349 (T2.26's three UI cases); browser from 49 to 50 (the incoherent-Detail case in `e2e/d2/integrity.spec.ts`).
 
 **T2.26 reading (implementation level):** "beside the Records disagree panel" is built as a paragraph inside that region, with the shared text `INCOHERENT_ENTRY_NOTE` ("New entries cannot be recorded for this Trade until its records agree."). The entry route checks the loaded Detail before loading the reflection definition and shows h1 "Record entry", that sentence, and "Back to the Trade"; it shows whether or not the session is Writable. No first-run passes.
+
+## T2.27
+
+**Structural check (axe on the entry form's Not Found and Error states).** The plan says "axe on the Not Found and Error states in the unit environment (as the D1 view-state tests do)". The D1 view-state axe checks run in the browser through `@axe-core/playwright`, and there is no unit-tier axe, so, as decided with the user on 2026-10-24, the check is one Chromium case in `e2e/d2/responsive-a11y.spec.ts`: "should report no WCAG 2.1 AA violations on the entry form Not Found and Error states". It uses the shared `expectAccessible` call (tags wcag2a, wcag2aa, wcag21a, wcag21aa).
+- Not Found: `/trades/no-such-trade/record-entry` on a healthy onboarded profile; asserts h1 "Trade not found" and the "Back to Trades" link, then zero violations.
+- Error: the B2.12 Open-list trigger (`writeIntegrityFixture` with `MissingMember`, a Position Change naming a missing Execution, so the Detail cannot be assembled) on the Reference Trade after one recorded entry; asserts "We couldn’t load this entry form. Nothing was changed." and the Retry button, then zero violations. No production fault hook was added. When F12's gap is fixed in D8, this case needs another trigger, as B2.12's does.
+
+| Command | Result |
+|---|---|
+| `npm run build:faults` | exit 0 |
+| `npx playwright test e2e/d2/responsive-a11y.spec.ts -g "Not Found and Error states"` | `1 passed`, exit 0 |
+| `npx playwright test e2e/d2/responsive-a11y.spec.ts` | `4 passed`, exit 0 |

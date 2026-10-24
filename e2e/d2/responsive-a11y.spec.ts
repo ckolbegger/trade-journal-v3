@@ -172,6 +172,32 @@ test.describe('B2.12 responsive and accessible', () => {
     await migrating.close();
   });
 
+  test('should report no WCAG 2.1 AA violations on the entry form Not Found and Error states', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await confirmReference(page);
+    const tradePath = new URL(page.url()).pathname;
+    await recordEntry(page, PC1);
+
+    await page.goto('/trades/no-such-trade/record-entry');
+    await expect(page.getByRole('heading', { name: 'Trade not found', level: 1 })).toBeVisible(READY);
+    await expect(page.getByRole('link', { name: 'Back to Trades' })).toBeVisible();
+    await expectAccessible(page, 'entry form Not Found');
+    await context.close();
+
+    // Error: a Position Change naming an Execution that does not exist, written before launch,
+    // so the Trade's Detail cannot be assembled (the trigger B2.12 uses for the Open list).
+    await writeIntegrityFixture(profile.dir, { kind: 'MissingMember', underlying: PLAN.symbol });
+    const failing = await profile.launch();
+    const errorPage = await firstPage(failing);
+    await errorPage.goto(`${tradePath}/record-entry`);
+    await expect(errorPage.getByText('We couldn’t load this entry form. Nothing was changed.')).toBeVisible(READY);
+    await expect(errorPage.getByRole('button', { name: 'Retry' })).toBeVisible();
+    await expectAccessible(errorPage, 'entry form Error');
+    await failing.close();
+  });
+
   test('should complete an entry with the keyboard only, with visible focus throughout', async ({ server, profile }) => {
     void server;
     const context = await profile.launch();

@@ -458,3 +458,62 @@ describe('Record entry route for an incoherent Trade', () => {
     expect(facade.TradeWorkflows.recordPositionChange).not.toHaveBeenCalled();
   });
 });
+
+describe('Record entry load states', () => {
+  it('should show Not Found, with a link to Trades, when getTradeDetail returns NotFound', async () => {
+    const facade = positionChangeFormFacade();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'NotFound' } as never);
+    renderForm(facade);
+    expect(await screen.findByRole('heading', { level: 1, name: 'Trade not found' })).toBeTruthy();
+    expect(screen.getByText('No Trade with this identity exists in this journal.')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Back to Trades' }).getAttribute('href')).toBe('/');
+    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Save entry' })).toBeNull();
+  });
+
+  it('should show an Error state with Retry when getTradeDetail returns Error or rejects', async () => {
+    for (const fail of [
+      (facade: UiFacade) => vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Error' } as never),
+      (facade: UiFacade) => vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockRejectedValue(new Error('store unavailable')),
+    ]) {
+      const facade = positionChangeFormFacade();
+      fail(facade);
+      renderForm(facade);
+      expect(await screen.findByText('We couldn’t load this entry form. Nothing was changed.')).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Retry' })).toBeTruthy();
+      expect(screen.queryByRole('status')).toBeNull();
+      expect(screen.queryByRole('heading', { name: 'Trade not found' })).toBeNull();
+      cleanup();
+    }
+  });
+
+  it('should show the Error state with Retry when the reflection definition cannot be loaded', async () => {
+    for (const fail of [
+      (facade: UiFacade) => vi.mocked(facade.Journal.getDefinitions).mockResolvedValue({ kind: 'NotFound' } as never),
+      (facade: UiFacade) => vi.mocked(facade.Journal.getDefinitions).mockRejectedValue(new Error('store unavailable')),
+    ]) {
+      const facade = positionChangeFormFacade();
+      fail(facade);
+      renderForm(facade);
+      expect(await screen.findByText('We couldn’t load this entry form. Nothing was changed.')).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Retry' })).toBeTruthy();
+      expect(screen.queryByRole('status')).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Save entry' })).toBeNull();
+      cleanup();
+    }
+  });
+
+  it('should load the form when Retry succeeds, without a page reload', async () => {
+    const facade = positionChangeFormFacade();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockRejectedValueOnce(new Error('store unavailable'));
+    vi.mocked(facade.Journal.getDefinitions).mockResolvedValueOnce({ kind: 'NotFound' } as never);
+    renderForm(facade);
+    const retry = await screen.findByRole('button', { name: 'Retry' });
+    await userEvent.setup().click(retry);
+    expect(await screen.findByRole('group', { name: 'Execution 1' })).toBeTruthy();
+    expect(screen.getByRole('radiogroup', { name: 'Decision mode' })).toBeTruthy();
+    expect(screen.queryByText('We couldn’t load this entry form. Nothing was changed.')).toBeNull();
+    expect(facade.TradeViewsAndReporting.getTradeDetail).toHaveBeenCalledTimes(2);
+    expect(facade.Journal.getDefinitions).toHaveBeenCalledTimes(2);
+  });
+});
