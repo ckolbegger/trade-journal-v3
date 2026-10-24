@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes } from 'react-router';
+import { BrowserRouter, MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { positionChangeFormFacade } from '../../../tests/support/position-change-form-facade.ts';
 import type { UiFacade } from '../../app/compose.ts';
@@ -351,6 +351,64 @@ describe('submission', () => {
     await user.click(screen.getByRole('button', { name: 'Save entry' }));
     await vi.waitFor(() => expect(report).toHaveBeenCalledWith(refusal));
     expect(within(row(1)).getByLabelText<HTMLInputElement>('Quantity').value).toBe('40');
+  });
+
+  it('should replace the entry form history entry with the Trade Detail URL once saved, keeping the receipt in place, and keep the URL after Conflict', async () => {
+    const facade = positionChangeFormFacade();
+    window.history.pushState(null, '', '/trades/trade-1/record-entry');
+    const length = window.history.length;
+    render(
+      <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
+        <BrowserRouter>
+          <Routes>
+            <Route
+              path="/trades/:tradeId/record-entry"
+              element={
+                <PositionChangeForm facade={facade} timeZone="America/New_York" now={() => '2026-10-12T14:05:00Z'} onDirtyChange={() => undefined} />
+              }
+            />
+            <Route path="/trades/:tradeId" element={<p>Trade Detail route</p>} />
+          </Routes>
+        </BrowserRouter>
+      </RuntimeContext.Provider>,
+    );
+    const user = userEvent.setup();
+    await fillRows(user, [['60', '50.10', '1.00', '2026-10-12T10:00']]);
+    await completeReflection(user);
+
+    // A Conflict keeps the form, its values and its URL.
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue({ kind: 'Conflict', changed: ['trade:trade-1'] } as never);
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    await screen.findByRole('region', { name: 'This Trade changed after you opened this form' });
+    expect(window.location.pathname).toBe('/trades/trade-1/record-entry');
+    expect(within(row(1)).getByLabelText<HTMLInputElement>('Quantity').value).toBe('60');
+
+    const execution = {
+      factId: 'ex-1',
+      economicTime: '2026-10-12T14:00:00Z',
+      recordedSequence: 2,
+      action: 'Buy',
+      instrument: { kind: 'Stock', symbol: 'XYZ' },
+      quantity: '60',
+      price: '50.10',
+      fee: '1.00',
+    };
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue({
+      kind: 'Recorded',
+      receipt: { tradeId: 'trade-1', createdFactIds: ['pc-1', 'ex-1'], deviationReconciliation: [], entryChanges: [], repairs: [] },
+      postCommit: {
+        trade: { positionChanges: [{ factId: 'pc-1', economicTime: '2026-10-12T14:00:00Z', recordedSequence: 1, executions: [execution] }] },
+        derivation: { entryQuality: { kind: 'NotApplicable' } },
+        reflection: { kind: 'Entry' },
+      },
+      affected: [],
+    } as never);
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    // The receipt replaces the form in place; the history entry now names the Trade, so a reload shows it.
+    expect(await screen.findByRole('region', { name: 'Entry recorded' })).toBeTruthy();
+    expect(window.location.pathname).toBe('/trades/trade-1');
+    expect(window.history.length).toBe(length);
+    expect(screen.queryByText('Trade Detail route')).toBeNull();
   });
 
   it('should make no call when cancelled or left, and register as unsaved while any value differs from its initial value', async () => {

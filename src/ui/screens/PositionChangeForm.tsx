@@ -125,7 +125,13 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
     report(result);
     setConflict(result.kind === 'Conflict');
     setIssues(result.kind === 'Rejected' ? describePositionChangeIssues(result.issues, rowKeys, definition) : []);
-    if (result.kind === 'Recorded') setRecorded(result);
+    if (result.kind === 'Recorded') {
+      setRecorded(result);
+      // The saved form's history entry becomes the Trade's, so reload, or Back then Forward, shows
+      // the Trade rather than a blank form. The router does not observe replaceState, so the
+      // receipt stays on screen in place; the router's state object is kept as it is.
+      window.history.replaceState(window.history.state, '', `/trades/${tradeId}`);
+    }
   };
 
   const { fieldError, describedBy, promptErrors } = fieldIssues(issues);
