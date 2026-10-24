@@ -63,6 +63,12 @@ a {
   grid-template-rows: auto auto auto 1fr auto;
 }
 
+/* A grid item's minimum width is its content's by default, so a wide table would widen the page;
+   at zero, a table scrolls inside its own container instead. */
+.shell > * {
+  min-width: 0;
+}
+
 .shell > .content {
   padding: 1rem;
   width: 100%;
@@ -301,9 +307,10 @@ table.trades td {
   border-bottom: 1px solid var(--line);
 }
 
+/* A long term (a Prompt, say) wraps within half the width rather than widening the page. */
 dl {
   display: grid;
-  grid-template-columns: max-content 1fr;
+  grid-template-columns: fit-content(50%) minmax(0, 1fr);
   gap: 0.35rem 1rem;
   margin: 0;
 }

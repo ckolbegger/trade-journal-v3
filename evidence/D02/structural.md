@@ -682,3 +682,7 @@ Run 2026-10-21 12:20 EDT on commit `839fb0b` (the only uncommitted files were th
 Failures: none.
 
 After the B2.13 fix (839fb0b); T2.23 suite commit 9cac498.
+
+## critic-1 defect 1 fix
+
+At 375 and 320 px the Open list (`scrollWidth` 890) and the Open Trade Detail (596) scrolled the whole page sideways. Two causes, both CSS: the shell's grid items kept their content's minimum width, so a wide table widened `main` past the viewport even inside its `.table-scroll` region; and the description lists' `max-content` term column took the width of the longest term (a Prompt) on the Detail. Fix in `src/ui/app.css`: `.shell > * { min-width: 0; }`, and `dl` columns `fit-content(50%) minmax(0, 1fr)`. The two Records disagree tables ("Stored versus expected", "Facts that cannot be replayed") gained the same named, focusable `.table-scroll` region the other tables use; no existing name or region changed. New browser cases in `e2e/d2/narrow.spec.ts` (T2.24 rows in `tdd-log.md`) check `scrollWidth <= innerWidth` at both widths and that every table sits in a scroll container within the viewport. `npm run test:e2e` 44 passed; `src/ui` unit tests 72 passed; typecheck, `tsc6`, lint and `lint:deps` exit 0.

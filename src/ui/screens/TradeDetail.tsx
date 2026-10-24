@@ -350,25 +350,27 @@ function IntegrityPanel({ view, timeZone }: { readonly view: OpenTradeDetail; re
     <section className="card integrity" aria-labelledby="integrity-heading">
       <h2 id="integrity-heading">Records disagree</h2>
       <p>Viewing this Trade does not change its records.</p>
-      <table className="trades">
-        <caption>Stored versus expected</caption>
-        <thead>
-          <tr>
-            <th scope="col">Record</th>
-            <th scope="col">Stored</th>
-            <th scope="col">Expected</th>
-          </tr>
-        </thead>
-        <tbody>
-          {view.findings.map((finding, index) => (
-            <tr key={index}>
-              {row(finding).map((cell, column) => (
-                <td key={column}>{cell}</td>
-              ))}
+      <div className="table-scroll" role="region" aria-label="Stored versus expected" tabIndex={0}>
+        <table className="trades">
+          <caption>Stored versus expected</caption>
+          <thead>
+            <tr>
+              <th scope="col">Record</th>
+              <th scope="col">Stored</th>
+              <th scope="col">Expected</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {view.findings.map((finding, index) => (
+              <tr key={index}>
+                {row(finding).map((cell, column) => (
+                  <td key={column}>{cell}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }
@@ -394,23 +396,25 @@ function IncoherentPanel({ view, timeZone }: { readonly view: IncoherentTradeDet
       <h2 id="integrity-heading">Records disagree</h2>
       <p>Viewing this Trade does not change its records.</p>
       <p>These recorded facts cannot be replayed, so the Position, entry, and fulfillment figures are unavailable.</p>
-      <table className="trades">
-        <caption>Facts that cannot be replayed</caption>
-        <thead>
-          <tr>
-            <th scope="col">Record</th>
-            <th scope="col">Problem</th>
-          </tr>
-        </thead>
-        <tbody>
-          {view.findings.map((finding, index) => (
-            <tr key={index}>
-              <td>{record(finding.factId)}</td>
-              <td>{UNREPLAYABLE[finding.reason]}</td>
+      <div className="table-scroll" role="region" aria-label="Facts that cannot be replayed" tabIndex={0}>
+        <table className="trades">
+          <caption>Facts that cannot be replayed</caption>
+          <thead>
+            <tr>
+              <th scope="col">Record</th>
+              <th scope="col">Problem</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {view.findings.map((finding, index) => (
+              <tr key={index}>
+                <td>{record(finding.factId)}</td>
+                <td>{UNREPLAYABLE[finding.reason]}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }
