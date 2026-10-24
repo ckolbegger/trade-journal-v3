@@ -3,13 +3,18 @@ import {
   backToTrade,
   confirmReference,
   expect,
+  BASE_URL,
+  fillPlan,
   firstPage,
+  onboard,
   onboardedPage,
+  openPlanned,
   PC1,
   PC2,
   PC3,
   READY,
   recordEntry,
+  startJournal,
   test,
   writeIntegrityFixture,
 } from './support.ts';
@@ -90,6 +95,80 @@ test.describe('critic-1 defect 1 narrow reflow', () => {
       await app.setViewportSize({ width, height: 800 });
       await expectReflowed(app, `disagreeing Open Detail at ${width}`);
     }
+    await context.close();
+  });
+});
+
+test.describe('critic-2 defects narrow reflow', () => {
+  test('should keep the Planned list page within 375 and 320 px with the table inside its own scroll region', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await confirmReference(page);
+    await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
+    await openPlanned(page);
+    await expect(page.getByRole('table', { name: 'Planned Trades' })).toBeVisible(READY);
+    for (const width of WIDTHS) {
+      await page.setViewportSize({ width, height: 800 });
+      await expectReflowed(page, `Planned list at ${width}`);
+      const region = page.getByRole('region', { name: 'Planned Trades' });
+      await expect(region.getByRole('table', { name: 'Planned Trades' })).toBeVisible();
+      const right = await region.evaluate((el) => el.getBoundingClientRect().right);
+      expect(right, `Planned Trades region within the viewport at ${width}`).toBeLessThanOrEqual(width);
+    }
+    await context.close();
+  });
+
+  test('should keep About within 375 and 320 px with its long identifiers wrapping', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'About' }).click();
+    await expect(page.getByRole('heading', { name: 'Installed capabilities' })).toBeVisible(READY);
+    for (const width of WIDTHS) {
+      await page.setViewportSize({ width, height: 800 });
+      await expectReflowed(page, `About at ${width}`);
+    }
+    await context.close();
+  });
+
+  // Guard (passed on first run): the remaining screens, measured while there.
+  test('should keep first run, onboarding, Accounts, the New Plan form and the Planned Detail within 375 and 320 px', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await firstPage(context);
+    // First run and onboarding come before the navigation exists, so their width is polled after each resize.
+    const expectPageWithin = async (view: string) => {
+      for (const width of WIDTHS) {
+        await page.setViewportSize({ width, height: 800 });
+        await expect
+          .poll(() => page.evaluate(() => document.documentElement.scrollWidth), { message: `${view} at ${width} page width` })
+          .toBeLessThanOrEqual(width);
+      }
+    };
+    const expectEachWidth = async (view: string) => {
+      for (const width of WIDTHS) {
+        await page.setViewportSize({ width, height: 800 });
+        await expectReflowed(page, `${view} at ${width}`);
+      }
+    };
+    await page.goto(`${BASE_URL}/`);
+    await expect(page.getByRole('heading', { name: 'Start your journal' })).toBeVisible(READY);
+    await expectPageWithin('first run');
+    await startJournal(page);
+    await expect(page.getByRole('heading', { name: 'Add your brokerage account' })).toBeVisible(READY);
+    await expectPageWithin('onboarding');
+    await onboard(page);
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+    await nav.getByRole('link', { name: 'Accounts' }).click();
+    await expect(page.getByRole('heading', { name: 'Accounts', level: 1 })).toBeVisible(READY);
+    await expectEachWidth('Accounts');
+    await nav.getByRole('link', { name: 'New Plan' }).click();
+    await fillPlan(page);
+    await expectEachWidth('New Plan form');
+    await page.getByRole('button', { name: 'Confirm Plan' }).click();
+    await expect(page.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
+    await expectEachWidth('Planned Detail');
     await context.close();
   });
 });

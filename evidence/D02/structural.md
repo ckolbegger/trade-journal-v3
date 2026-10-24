@@ -702,6 +702,10 @@ Failures: none.
 
 After the critic-1 defect 1 fix (e8735b0).
 
+## critic-2 defects fix
+
+Defect 1: at 375 and 320 px the Planned list scrolled the page sideways (`scrollWidth` 677). Since the critic-1 fix let the shell's grid items shrink (`.shell > * { min-width: 0 }`), only tables inside a `.table-scroll` region stay within the viewport, and the Planned table had none. Fix in `src/ui/screens/TradeList.tsx`: the Planned table now sits in the same named, focusable region the Open table uses (`role="region"`, `tabIndex={0}`, `aria-label="Planned Trades"`, equal to the caption); no D1 spec relied on the old structure, and the table's accessible name is unchanged. Defect 2: About was 386 px wide because "TradeViewsAndReporting.getTradeDetail (Planned, Open)" and "America/New_York" could not break. Fix in `src/ui/app.css`: `.about dd, .about li { overflow-wrap: anywhere; }`, so the values wrap in full and are never truncated. New browser cases in `e2e/d2/narrow.spec.ts` (T2.24 rows in `tdd-log.md`) for both defects, plus a guard case (it passed on its first run) that measures first run, onboarding, Accounts, the New Plan form and the Planned Detail at both widths; none of those overflowed. `npm run test:e2e` 47 passed; `src/ui` unit tests 72 passed; typecheck, `tsc6`, lint and `lint:deps` exit 0.
+
 ## Critic cost (measurement agreed with the user 2026-10-24)
 
 Figures from each critic's completion notice (the harness's own token count; comparable across critics, not a billing figure). Brief v1 = the critic writes all Playwright plumbing itself; brief v2 = `.claude/docs/critic-brief.md`, setup helpers from `e2e/d2/support.ts`. The after sample is critic-3 on the same flows (an extra measurement run if critic-2 passes; otherwise the next gate critic).

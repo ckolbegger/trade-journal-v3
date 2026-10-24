@@ -220,51 +220,54 @@ function PlannedList({ state, retry, timeZone }: ListProps & { readonly timeZone
     );
   }
   return (
-    <table className="trades">
-      <caption>Planned Trades</caption>
-      <thead>
-        <tr>
-          <th scope="col">Underlying</th>
-          <th scope="col">Strategy</th>
-          <th scope="col">Account</th>
-          <th scope="col">Plan time</th>
-          <th scope="col" className="number">
-            1R
-          </th>
-          <th scope="col" className="number">
-            Planned reward
-          </th>
-          <th scope="col" className="number">
-            Reward : risk
-          </th>
-          <th scope="col">Entry</th>
-        </tr>
-      </thead>
-      <tbody>
-        {items.map((item) => (
-          <tr key={item.tradeId}>
-            <td>
-              <Link to={`/trades/${item.tradeId}`}>{item.underlying}</Link>
-            </td>
-            <td>{item.strategy}</td>
-            <td>{`${item.institution} — ${item.account}`}</td>
-            <td>{localTime(item.planTime, timeZone)}</td>
-            <td className="number">{money(item.oneR)}</td>
-            <td className="number">{money(item.originalPlannedReward)}</td>
-            <td className="number">{ratio(item.rewardRiskRatio)}</td>
-            <td>
-              {item.entryReadiness}
-              {/* A disagreement is surfaced in the existing cell, so an agreeing row keeps D1's columns. */}
-              {item.integrity === 'Disagrees' && (
-                <>
-                  {' '}
-                  <span className="badge warning">Records disagree</span>
-                </>
-              )}
-            </td>
+    // Eight columns scroll inside their own focusable region on a narrow screen, never the page.
+    <div className="table-scroll" role="region" aria-label="Planned Trades" tabIndex={0}>
+      <table className="trades">
+        <caption>Planned Trades</caption>
+        <thead>
+          <tr>
+            <th scope="col">Underlying</th>
+            <th scope="col">Strategy</th>
+            <th scope="col">Account</th>
+            <th scope="col">Plan time</th>
+            <th scope="col" className="number">
+              1R
+            </th>
+            <th scope="col" className="number">
+              Planned reward
+            </th>
+            <th scope="col" className="number">
+              Reward : risk
+            </th>
+            <th scope="col">Entry</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {items.map((item) => (
+            <tr key={item.tradeId}>
+              <td>
+                <Link to={`/trades/${item.tradeId}`}>{item.underlying}</Link>
+              </td>
+              <td>{item.strategy}</td>
+              <td>{`${item.institution} — ${item.account}`}</td>
+              <td>{localTime(item.planTime, timeZone)}</td>
+              <td className="number">{money(item.oneR)}</td>
+              <td className="number">{money(item.originalPlannedReward)}</td>
+              <td className="number">{ratio(item.rewardRiskRatio)}</td>
+              <td>
+                {item.entryReadiness}
+                {/* A disagreement is surfaced in the existing cell, so an agreeing row keeps D1's columns. */}
+                {item.integrity === 'Disagrees' && (
+                  <>
+                    {' '}
+                    <span className="badge warning">Records disagree</span>
+                  </>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
