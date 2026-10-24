@@ -49,6 +49,18 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   const [failure, setFailure] = useState<'NotFound' | 'Error' | undefined>();
   // Retry counts attempts; each one reloads both the Trade and the definition in place.
   const [attempt, setAttempt] = useState(0);
+  // The route keeps this form mounted across Trades, so another Trade starts from a clean load.
+  const [loadingFor, setLoadingFor] = useState({ facade, tradeId });
+  // Retry and another Trade both show Loading until their own loads finish.
+  const clearLoad = () => {
+    setView(undefined);
+    setDefinition(undefined);
+    setFailure(undefined);
+  };
+  if (loadingFor.facade !== facade || loadingFor.tradeId !== tradeId) {
+    setLoadingFor({ facade, tradeId });
+    clearLoad();
+  }
   const [answers, setAnswers] = useState<Answers>({});
   // Declining is the trader's explicit alternative to completing the reflection; answers already
   // given stay on screen in case they complete it after all.
@@ -131,7 +143,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
           type="button"
           className="pill secondary"
           onClick={() => {
-            setFailure(undefined);
+            clearLoad();
             setAttempt((n) => n + 1);
           }}
         >

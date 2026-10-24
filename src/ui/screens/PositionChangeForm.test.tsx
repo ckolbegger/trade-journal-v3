@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { BrowserRouter, MemoryRouter, Route, Routes } from 'react-router';
+import { BrowserRouter, Link, MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { incoherentDetailOf, PC1 } from '../../../tests/support/open-detail-fixtures.ts';
 import { plannedDetail, positionChangeFormFacade, reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
@@ -603,5 +603,63 @@ describe('Record entry load attempts', () => {
         reflection: { kind: 'Decline', definitionId: 'def-pcr-2' },
       }),
     );
+  });
+});
+
+describe('Record entry Retry', () => {
+  it('should show Loading, not the earlier attempts Trade, after Retry until both retried loads finish', async () => {
+    const facade = positionChangeFormFacade();
+    // Attempt 1 loads the Trade but not the definition. Attempt 2's definition arrives first.
+    const retriedTrade = deferred<unknown>();
+    vi.mocked(facade.Journal.getDefinitions).mockRejectedValueOnce(new Error('store unavailable'));
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail)
+      .mockResolvedValueOnce({ kind: 'Ready', view: plannedDetail, binding: { databaseName: 'tj-ws-1', contentRevision: 7 } } as never)
+      .mockReturnValueOnce(retriedTrade.promise as never);
+    renderForm(facade);
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Retry' }));
+    await act(async () => {
+      await vi.mocked(facade.Journal.getDefinitions).mock.results[1]!.value;
+    });
+    expect(screen.getByRole('status').textContent).toBe('Loading the entry form…');
+    expect(screen.queryByRole('group', { name: 'Execution 1' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Entry' })).toBeNull();
+
+    retriedTrade.resolve({ kind: 'Ready', view: plannedDetail, binding: { databaseName: 'tj-ws-1', contentRevision: 7 } });
+    expect(await screen.findByRole('group', { name: 'Execution 1' })).toBeTruthy();
+    expect(screen.queryByRole('status')).toBeNull();
+  });
+
+  it('should start from Loading with no carried-over failure when the route moves to another Trade', async () => {
+    const facade = positionChangeFormFacade();
+    // The app keeps one route element mounted across Trades (AppShell has no per-Trade key).
+    const otherTrade = deferred<unknown>();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail)
+      .mockRejectedValueOnce(new Error('store unavailable'))
+      .mockReturnValueOnce(otherTrade.promise as never);
+    render(
+      <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
+        <MemoryRouter initialEntries={['/trades/trade-1/record-entry']}>
+          <Link to="/trades/trade-2/record-entry">Other Trade</Link>
+          <Routes>
+            <Route
+              path="/trades/:tradeId/record-entry"
+              element={
+                <PositionChangeForm facade={facade} timeZone="America/New_York" now={() => '2026-10-12T14:05:00Z'} onDirtyChange={() => undefined} />
+              }
+            />
+          </Routes>
+        </MemoryRouter>
+      </RuntimeContext.Provider>,
+    );
+    expect(await screen.findByText(ERROR_TEXT)).toBeTruthy();
+
+    await userEvent.setup().click(screen.getByRole('link', { name: 'Other Trade' }));
+    expect(facade.TradeViewsAndReporting.getTradeDetail).toHaveBeenLastCalledWith({ tradeId: 'trade-2' });
+    expect(screen.getByRole('status').textContent).toBe('Loading the entry form…');
+    expect(screen.queryByText(ERROR_TEXT)).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Retry' })).toBeNull();
+
+    otherTrade.resolve({ kind: 'Ready', view: { ...plannedDetail, tradeId: 'trade-2' }, binding: { databaseName: 'tj-ws-1', contentRevision: 7 } });
+    expect(await screen.findByRole('group', { name: 'Execution 1' })).toBeTruthy();
   });
 });
