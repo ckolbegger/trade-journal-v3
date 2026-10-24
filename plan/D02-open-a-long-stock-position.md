@@ -2,7 +2,7 @@
 
 Definition: [implementation plan, D2](implementation-plan.md#d2--open-a-long-stock-position). The definition (stories, capability set, introductions, acceptance claims) stays there and is not repeated here. D2 builds on D1's task identities, storage layout (A10), test tiers (decision 19), and harnesses ([D1 breakdown](D01-start-a-workspace-and-confirm-a-long-stock-plan.md)).
 
-Status: **draft, under review.** Decisions P4–P7 and the D1 amendment were agreed on 2026-10-11 (first section); P5–P7 are recorded as plan decisions 21–23. Everything else is written against them and the working assumptions listed below. References to D3 were changed to D4 on 2026-10-11, after D3 was merged into D4 (plan decision 24). Amended on 2026-10-11 during the D5 breakdown: T2.5's "reject Defer" case is replaced from D5 onward ([D5, section 1.2](D05-deferred-reflection-and-journal-debt.md#12-amendment-to-d2-agreed-2026-10-11-and-applied-to-d2s-t25)).
+Status: **draft, under review.** Decisions P4–P7 and the D1 amendment were agreed on 2026-10-11 (first section); P5–P7 are recorded as plan decisions 21–23. Everything else is written against them and the working assumptions listed below. References to D3 were changed to D4 on 2026-10-11, after D3 was merged into D4 (plan decision 24). Amended on 2026-10-11 during the D5 breakdown: T2.5's "reject Defer" case is replaced from D5 onward ([D5, section 1.2](D05-deferred-reflection-and-journal-debt.md#12-amendment-to-d2-agreed-2026-10-11-and-applied-to-d2s-t25)). Plan revision 6 (2026-10-24, decision 46) added section 11, deferred follow-ups F1–F12, after the D2 gate passed.
 
 ---
 
@@ -591,3 +591,42 @@ Status values: `planned`, `covered`, `intentionally not advertised`. All rows ar
 ## 10. Evidence recording
 
 As in D1, under `evidence/D02/`: `tdd-log.md` (red and green per case), `structural.md`, `provenance.md` (engine and OS versions, never an allowlist), `bench.md` (raw timings, percentile method, dataset provenance, environment), and `critic-<n>.md`, with each critic defect first reproduced by a failing test.
+
+---
+
+## 11. Deferred follow-ups (plan revision 6, decision 46)
+
+Added on 2026-10-24, after the D2 gate passed (tag `claude-opus-5.5-d2`), at the user's direction. The items come from the D2 implementation handoff's known gaps and from the critics' minor observations (`evidence/D02/critic-1.md` to `critic-3.md`). None of them failed a D2 pass condition, so the gate and the `covered` rows stand.
+
+**When and how.**
+- F1–F11 form a D2 follow-up batch, run **before D4's first task**, in the order listed. They use the D2 discipline:
+  - each item goes to a fresh `tdd-task` subagent, failing test first;
+  - each item ends with a complete cumulative run recorded in `evidence/D02/structural.md`;
+  - red and green rows go in `evidence/D02/tdd-log.md` under task IDs T2.25 to T2.35.
+- After the batch, one fresh browser critic re-runs C2.1, C2.6, C2.7, C2.10 and C2.11, plus the narrow-layout check, and saves its report as `evidence/D02/critic-<n>.md`. A defect it finds is handled as at the D2 gate.
+- The `claude-opus-5.5-d2` tag is not moved. D4's harness keeps building the previous release from it (D4 A50).
+- F12 is carried into D8 (D8 breakdown, status paragraph).
+
+**Durable compatibility.** None of F1–F12 changes the schema, the committed fixtures (`tests/fixtures/workspace-v1`, `workspace-v2`), the bench dataset, or any backup content version. The view shapes of coherent, agreeing Trades must stay exactly as they are, so `verify:fixtures` stays equal.
+
+**Affected scenarios:**
+- AC-LIFE-003 (F1, F2)
+- AC-UI-001 and AC-UI-002 (F3, F5, F6, F8, F9)
+- AC-RESP-001 and P5 disclosure (F7)
+- AC-CALC-001 display only (F10)
+- AC-REST-004's validation branch (F12, in D8)
+
+| Item | Task ID | What changes | Check (failing test first) |
+|---|---|---|---|
+| F1 Incoherent Planned Trade in the Planned list | T2.25 | `browseTrades({lifecycle:'Planned'})` throws when a Trade stored as Planned has facts that cannot be replayed, which breaks the whole Planned page. The page should read Ready and mark that item as disagreeing, as the Open list does since the I2.8 (c) fix. | Integration: an integrity fixture with an incoherent Planned Trade gives a Ready Planned page with that item marked and the content revision unchanged. Browser: the row shows "Records disagree". |
+| F2 Record entry on an incoherent Trade | T2.26 | The Detail of a Trade whose facts cannot be replayed still offers "Record entry", and saving returns `IntegrityDisagreement`. Do not offer the action there; explain why next to the "Records disagree" panel. | UI unit test and browser test: no Record entry link on an incoherent Detail, with the explanation shown; coherent Details are unchanged. |
+| F3 Entry form load failure | T2.27 | A failed Detail or definition load leaves the form on "Loading the entry form…" forever. It should show an Error state with Retry, or Not Found for an unknown Trade (AC-UI-002 view states). | UI unit tests for Error and Not Found; axe on both. |
+| F4 Saving again after a Conflict | T2.28 | After `Conflict`, the form keeps its stale FactRevision, so every later save conflicts until the form is reopened. Offer a way to load the current Trade state while keeping the entered values, then save against the new revision. | UI unit test and browser two-tab test: after the Conflict, refresh and save once more; one Position Change is recorded and the entered values are kept. |
+| F5 Focus after navigation | T2.29 | After keyboard navigation to Record entry, and after Save shows the receipt, focus lands on the body. Move focus to the new view's heading (ui-contract "logical focus after navigation"). | Browser test: `document.activeElement` is the heading in both cases. |
+| F6 Recovery Only on a direct entry-form link | T2.30 | `/trades/<id>/record-entry` while not Writable shows an empty main area. It should show a heading, a one-sentence explanation, and a link back to the Trade (no blank views). | Browser test with `?faults=inventory`. |
+| F7 Receipt discloses changed Deviations | T2.31 | An earlier-dated entry that changes an existing Entry Size occurrence (C2.6: 20 to 60 shares) is not mentioned on the receipt. Add the change to the receipt alongside the resolution-point and Entry Quality changes (P5). | UI unit test with the C2.6 data; browser check on the receipt text. |
+| F8 Migration Blocked gutter | T2.32 | At 320 px the Migration Blocked card runs edge to edge. Give it the standard 16 px side gutter. | Browser narrow test measuring the card's left and right inset. |
+| F9 Narrow Open list | T2.33 | At 320 px, quantity, cost, entry status and integrity sit off-screen, and the only cue is a clipped column edge. Add a visible horizontal-scroll cue, or a narrow-view column order that keeps quantity and integrity visible, within the UI contract. | Browser narrow test: the chosen cue or column order is present, and there is still no page-level overflow. |
+| F10 R-multiple decimals | T2.34 | "(1.3R)" appears beside "(1.08R)". Format R multiples with consistent decimal places, following the display-precision rule in `specs/` (look it up; if none is fixed, keep two). | Unit test of the formatter; existing receipt and Detail tests updated only for the format. |
+| F11 I2.5 test name | T2.35 | The I2.5 case in `tests/integration/d2/open-position.test.ts` still names the response check that moved to `d2/responses`. Rename it to what it checks. | `npm run test:integration -- d2/open-position` and `-- d2/responses` both still select and pass. |
+| F12 Section-validator gaps | carried to D8 | Three gaps found in T2.9: a Position Change naming a missing Execution makes `derive` throw; there is no duplicate tradeId or Entry-id check; there is no fact-version continuity check. Also, B2.12's Open-list Error state is triggered through the first gap, so it needs another trigger once that gap is fixed. | D8's validation cases (T8.6) cover each gap with a failing test first. |
