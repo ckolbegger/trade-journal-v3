@@ -76,20 +76,30 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   }, [conflict]);
 
   useEffect(() => {
+    // A superseded attempt (after Retry, or another Trade) settles without touching the form.
+    let superseded = false;
+    const live =
+      <T,>(settle: (value: T) => void) =>
+      (value: T) => {
+        if (!superseded) settle(value);
+      };
     void facade.TradeViewsAndReporting.getTradeDetail({ tradeId }).then(
-      (result) => {
+      live((result) => {
         if (result.kind === 'Ready') setView(result.view);
         else setFailure(result.kind === 'NotFound' ? 'NotFound' : 'Error');
-      },
-      () => setFailure('Error'),
+      }),
+      live(() => setFailure('Error')),
     );
     void facade.Journal.getDefinitions({ latestFor: 'entry-type.position-change-reflection' }).then(
-      (result) => {
+      live((result) => {
         if (result.kind === 'Found') setDefinition(result.definition);
         else setFailure((current) => current ?? 'Error');
-      },
-      () => setFailure((current) => current ?? 'Error'),
+      }),
+      live(() => setFailure((current) => current ?? 'Error')),
     );
+    return () => {
+      superseded = true;
+    };
   }, [facade, tradeId, attempt]);
 
   if (recorded) return <PositionChangeReceipt result={recorded} timeZone={timeZone} />;

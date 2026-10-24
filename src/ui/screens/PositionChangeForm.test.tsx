@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter, MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { incoherentDetailOf, PC1 } from '../../../tests/support/open-detail-fixtures.ts';
-import { positionChangeFormFacade } from '../../../tests/support/position-change-form-facade.ts';
+import { plannedDetail, positionChangeFormFacade, reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
@@ -515,5 +515,93 @@ describe('Record entry load states', () => {
     expect(screen.queryByText('We couldn’t load this entry form. Nothing was changed.')).toBeNull();
     expect(facade.TradeViewsAndReporting.getTradeDetail).toHaveBeenCalledTimes(2);
     expect(facade.Journal.getDefinitions).toHaveBeenCalledTimes(2);
+  });
+});
+
+// A promise the test settles by hand, to control when each load attempt finishes.
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}
+
+const ERROR_TEXT = 'We couldn’t load this entry form. Nothing was changed.';
+
+describe('Record entry load attempts', () => {
+  it('should keep the form loaded by Retry when the first attempts definition load fails afterwards', async () => {
+    const facade = positionChangeFormFacade();
+    const firstDefinition = deferred<never>();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockRejectedValueOnce(new Error('store unavailable'));
+    vi.mocked(facade.Journal.getDefinitions).mockReturnValueOnce(firstDefinition.promise);
+    renderForm(facade);
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Retry' }));
+    expect(await screen.findByRole('group', { name: 'Execution 1' })).toBeTruthy();
+
+    firstDefinition.reject(new Error('store unavailable'));
+    await act(async () => {
+      await firstDefinition.promise.catch(() => undefined);
+    });
+    expect(screen.queryByText(ERROR_TEXT)).toBeNull();
+    expect(screen.getByRole('group', { name: 'Execution 1' })).toBeTruthy();
+    expect(screen.getByRole('radiogroup', { name: 'Decision mode' })).toBeTruthy();
+  });
+  it('should ignore a late successful result from a superseded attempt, so the form shows the Retry attempts Trade and definition', async () => {
+    const facade = positionChangeFormFacade();
+    const user = userEvent.setup();
+    // Attempt 1: the Trade fails at once; its definition arrives late. Attempt 2: the definition
+    // fails at once; its Trade arrives late. Attempt 3 loads a newer Trade and definition revision.
+    const lateDefinition = deferred<unknown>();
+    const lateTrade = deferred<unknown>();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail)
+      .mockRejectedValueOnce(new Error('store unavailable'))
+      .mockReturnValueOnce(lateTrade.promise as never);
+    vi.mocked(facade.Journal.getDefinitions)
+      .mockReturnValueOnce(lateDefinition.promise as never)
+      .mockRejectedValueOnce(new Error('store unavailable'));
+    renderForm(facade);
+    await user.click(await screen.findByRole('button', { name: 'Retry' }));
+    expect(await screen.findByText(ERROR_TEXT)).toBeTruthy();
+
+    const leg = plannedDetail.plan.legs[0]!;
+    const newerTrade = {
+      ...plannedDetail,
+      factRevision: 2,
+      plan: { ...plannedDetail.plan, underlying: 'ABC', legs: [{ ...leg, instrument: { kind: 'Stock', symbol: 'ABC' } }] },
+    };
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({
+      kind: 'Ready',
+      view: newerTrade,
+      binding: { databaseName: 'tj-ws-1', contentRevision: 8 },
+    } as never);
+    vi.mocked(facade.Journal.getDefinitions).mockResolvedValue({
+      kind: 'Found',
+      definition: { ...reflectionDefinition, id: 'def-pcr-2', revisionNumber: 2 },
+    } as never);
+    // The second Retry starts attempt 3.
+    await user.click(await screen.findByRole('button', { name: 'Retry' }));
+    const terms = await screen.findByRole('region', { name: 'Entry' });
+    expect(within(terms).getByText('Long 100 shares of ABC')).toBeTruthy();
+
+    lateDefinition.resolve({ kind: 'Found', definition: reflectionDefinition });
+    lateTrade.resolve({ kind: 'Ready', view: plannedDetail, binding: { databaseName: 'tj-ws-1', contentRevision: 7 } });
+    await act(async () => {
+      await Promise.all([lateDefinition.promise, lateTrade.promise]);
+    });
+    expect(within(screen.getByRole('region', { name: 'Entry' })).getByText('Long 100 shares of ABC')).toBeTruthy();
+    expect(screen.queryByText('Long 100 shares of XYZ')).toBeNull();
+
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(rejected as never);
+    await user.click(screen.getByRole('checkbox', { name: 'Decline to reflect' }));
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    expect(facade.TradeWorkflows.recordPositionChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        trades: [{ tradeId: 'trade-1', expectedFactRevision: 2 }],
+        reflection: { kind: 'Decline', definitionId: 'def-pcr-2' },
+      }),
+    );
   });
 });
