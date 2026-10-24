@@ -831,3 +831,16 @@ Failures: none. Integration rose from 39 to 42 (T2.25's three `browseTrades` cas
 ## T2.26
 
 **ocr review of T2.26** (`ocr-review` step): commit `b3ffd8d`, session `2f5f880a-2ae5-40bb-83c9-8e1ef986e917`, model `gpt-6.1-sol`, 2 files reviewed (4 excluded), 0 comments. No findings. Raw output: `ocr/t2.26-b3ffd8d.json`. (T2.25's raw output is kept beside it as `ocr/t2.25-0c9d17f.json`.)
+
+**Cumulative run after T2.26:** run 2026-10-24 17:29 EDT on commit `b3ffd8d` (T2.26, F2: no Record entry on an incoherent Trade; explanation beside the "Records disagree" panel and on the entry route), Node v26.12.0. Run label `t2.26`.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 37 passed (37)`, `Tests 349 passed (349)`, exit 0 | `suite-runs/t2.26-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 19 passed (19)`, `Tests 42 passed (42)`, exit 0 | `suite-runs/t2.26-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `50 passed (1.7m)`, exit 0 | `suite-runs/t2.26-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.26-checks.txt` |
+
+Failures: none. Unit rose from 346 to 349 (T2.26's three UI cases); browser from 49 to 50 (the incoherent-Detail case in `e2e/d2/integrity.spec.ts`).
+
+**T2.26 reading (implementation level):** "beside the Records disagree panel" is built as a paragraph inside that region, with the shared text `INCOHERENT_ENTRY_NOTE` ("New entries cannot be recorded for this Trade until its records agree."). The entry route checks the loaded Detail before loading the reflection definition and shows h1 "Record entry", that sentence, and "Back to the Trade"; it shows whether or not the session is Writable. No first-run passes.
