@@ -827,3 +827,7 @@ Failures: none. Integration rose from 39 to 42 (T2.25's three `browseTrades` cas
 **T2.25 decision (implementation level, for the final report):** the incoherent Planned item (`IncoherentPlannedTradeItem`) omits `entryReadiness` as well as 1R, Original Planned Reward and Reward : risk, as the Open list's incoherent item omits `entryStatus`, because "Awaiting entry" would be false for a Trade with recorded Executions. The Entry cell therefore reads "Not available" beside the "Records disagree" badge.
 
 **ocr review of T2.25** (`ocr-review` step, user's direction 2026-10-24): commit `0c9d17f`, session `dca176fe-4f45-4b2e-a358-8788daa718d7`, model `gpt-6.1-sol`, 5 files reviewed (5 excluded: 4 test files by ocr's default path rule, and `tdd-log.md` as an unsupported type), 0 comments. No findings. ocr warned that the background file was 2,002 characters, over its recommended 2,000; the `ocr-review` agent now trims the background below that.
+
+## T2.26
+
+**ocr review of T2.26** (`ocr-review` step): commit `b3ffd8d`, session `2f5f880a-2ae5-40bb-83c9-8e1ef986e917`, model `gpt-6.1-sol`, 2 files reviewed (4 excluded), 0 comments. No findings. Raw output: `ocr/t2.26-b3ffd8d.json`. (T2.25's raw output is kept beside it as `ocr/t2.25-0c9d17f.json`.)

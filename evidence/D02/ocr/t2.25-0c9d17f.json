@@ -1,0 +1,126 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 87871,
+    "input_tokens": 86688,
+    "output_tokens": 1183,
+    "cache_read_tokens": 7680,
+    "elapsed": "44s"
+  },
+  "tool_calls": {
+    "total": 13,
+    "by_tool": {
+      "code_search": 4,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Trade view coordination, list UI, and end-to-end support",
+      "files": [
+        "e2e/d2/support.ts",
+        "src/app/types.ts",
+        "src/coordinators/trade-views/index.ts",
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/ui/screens/TradeList.tsx"
+      ]
+    }
+  ],
+  "session_id": "dca176fe-4f45-4b2e-a358-8788daa718d7",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "dca176fe-4f45-4b2e-a358-8788daa718d7",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "0c9d17f",
+      "resolved_base": "dbd8404a1e89a979fbd44a90651c96e39e226c1c",
+      "resolved_head": "0c9d17f820ca5df49bd99ecbccf1da9e5899ea02",
+      "exact_range": "dbd8404a1e89a979fbd44a90651c96e39e226c1c..0c9d17f820ca5df49bd99ecbccf1da9e5899ea02",
+      "source_artifact_sha256": "e2858148786b3a8549d7c3b64137ff870cc5a6b5fa34c77a1367f460d9c34f09"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "03305087f493c43c473009ae76919a3f1406cbe14fff7737a0abf254ad6a9f4b",
+          "path": "e2e/d2/support.ts",
+          "fingerprint": "1eac3f71e95823307e94008caf08344eadafddfe42132d2b0c150c6312345ded"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "8a8a9df11948b558497fc954f156999387fbc6836296ed87673f8b0e8cf344a8"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "f84c265eea28e3fe37f2648ab5cfc767f6080001ab297c3f8a575d6ecf9811ea"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "044470b94058c76e7722af3f94b54df568e291d1af77572bd1eba6b94493bd6d"
+        },
+        {
+          "item_id": "ceacc744b3a73aad01cea821c0c110bd82fac0e343550bba6f154f736e1a05e2",
+          "path": "src/coordinators/trade-views/index.ts",
+          "fingerprint": "34d22526125ec302491f17d25790e530ca2b85476c309055f72d13ce30bc07a9"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "03305087f493c43c473009ae76919a3f1406cbe14fff7737a0abf254ad6a9f4b",
+          "path": "e2e/d2/support.ts",
+          "fingerprint": "1eac3f71e95823307e94008caf08344eadafddfe42132d2b0c150c6312345ded"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "8a8a9df11948b558497fc954f156999387fbc6836296ed87673f8b0e8cf344a8"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "f84c265eea28e3fe37f2648ab5cfc767f6080001ab297c3f8a575d6ecf9811ea"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "044470b94058c76e7722af3f94b54df568e291d1af77572bd1eba6b94493bd6d"
+        },
+        {
+          "item_id": "ceacc744b3a73aad01cea821c0c110bd82fac0e343550bba6f154f736e1a05e2",
+          "path": "src/coordinators/trade-views/index.ts",
+          "fingerprint": "34d22526125ec302491f17d25790e530ca2b85476c309055f72d13ce30bc07a9"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 44166
+  }
+}
