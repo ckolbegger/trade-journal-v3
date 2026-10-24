@@ -614,3 +614,7 @@ Run 2026-10-21 11:55 EDT on commit `31a0578` (the only uncommitted files were th
 Failures: none.
 
 After the I2.8 (c) fix (31a0578); T2.22 suite commit 69f4c77.
+
+## I2.7 reading (settled with the user 2026-10-24)
+
+I2.7's "all issues together for the first five in one command" is read together with A18: a Sell returns `VariantNotInstalled` before any other check (as T2.6's case requires), so the Sell is sent as its own command, and the other four invalid inputs (before the Plan time, future time, quantity 0, blank required answers) are sent in one command that returns all six issues together. The user confirmed this reading.
