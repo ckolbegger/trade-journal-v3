@@ -913,3 +913,27 @@ The second B2 case depends on whether the route remounts the form per Trade. If 
 | Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.27-b2-checks.txt` |
 
 Failures: none. Unit rose from 353 to 357 (two cases each for T2.27-B1 and T2.27-B2).
+
+**T2.27-B3 Entered values reset on a Trade change** (user's direction 2026-10-24, from the T2.27-B2 notes). The route keeps `PositionChangeForm` mounted across Trades, and since T2.27-B2 a Trade change reloads the Trade but keeps the first Trade's entered rows, reflection answers, decline choice and reason, issues, and conflict and recorded states. A save could then send values entered for one Trade against another. Fresh `tdd-task` subagent, failing test first, through the `PositionChangeForm` seam.
+
+```text
+describe("Record entry on another Trade")
+  it should start the other Trade's form from its initial values: one Execution row with Economic Time now, no reflection answers, no decline or reason
+  it should show no issues, conflict, or receipt carried over from the previous Trade
+  it should report the form as not unsaved once it moves to the other Trade
+```
+
+**ocr review of T2.27-B3** (`ocr-review` step): commit `834189f`, session `dd2caa85-4498-469b-8fe3-9f2f23c83c09`, model `gpt-6.1-sol`, 1 file reviewed (2 excluded: the test file and `tdd-log.md`), 0 comments. No findings. Raw output: `ocr/t2.27-b3-834189f.json`.
+
+**T2.27-B3 notes (implementation level):** the entered values are reset in place, in B2's render-time `loadingFor` check, rather than by keying the form per Trade (`main.tsx` unchanged). On a `tradeId` change the rows become one blank row with Economic Time read from `now()` at that moment (also the new initial row), and answers, decline choice and reason, issues, conflict and receipt are cleared. Retry keeps entered values. A `facade`-only change still clears only the load, as in B2; the facade is composed once per application, so this is recorded rather than asked. First-run pass, flagged: case 3, "report the form as not unsaved once it moves to the other Trade", was already satisfied by case 1's reset through the existing `onDirtyChange` effect; mutation removing only `setDeclined(false)` from the reset gave `AssertionError: expected last "vi.fn()" call to have been called with [ false ]` (`tdd-log.md`).
+
+**Cumulative run after T2.27-B3:** run 2026-10-24 17:57 EDT on commit `834189f` (working tree carried only uncommitted evidence edits), Node v26.12.0. Run label `t2.27-b3`.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 37 passed (37)`, `Tests 360 passed (360)`, exit 0 | `suite-runs/t2.27-b3-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 19 passed (19)`, `Tests 42 passed (42)`, exit 0 | `suite-runs/t2.27-b3-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `51 passed (1.7m)`, exit 0 | `suite-runs/t2.27-b3-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.27-b3-checks.txt` |
+
+Failures: none. Unit rose from 357 to 360 (T2.27-B3's three cases).
