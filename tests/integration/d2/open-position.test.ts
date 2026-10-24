@@ -1,4 +1,4 @@
-// I2.5: opening a position with PC1 of the reference Trade (AC-POS-001, AC-LIFE-001, AC-RESP-001).
+// I2.5: opening a position with PC1 of the reference Trade (AC-POS-001, AC-LIFE-001). The AC-RESP-001 checks are in responses.test.ts.
 import { describe, expect, it } from 'vitest';
 import { complete, device, dumpAll, onboarded, PC1, confirmReference, readIndex, record, restart, workspaceStores } from './support.ts';
 
@@ -15,30 +15,6 @@ describe('I2.5 open a position', () => {
     const entry = postCommit.reflection.entry;
 
     const again = await restart(app, d);
-    const detail = await again.TradeViewsAndReporting.getTradeDetail({ tradeId });
-    if (detail.kind !== 'Ready' || !('positionChanges' in detail.view)) throw new Error('expected the Open form of Detail');
-    const view = detail.view;
-    expect(view.factRevision).toBe(receipt.factRevision);
-    expect(view.factRevision).toBe(postCommit.trade.factRevision);
-    expect(view.lifecycle).toEqual({ stored: postCommit.trade.storedLifecycle, agreement: postCommit.derivation.agreement });
-    expect(view.lifecycle).toEqual({ stored: 'Open', agreement: { kind: 'Agrees' } });
-    expect(view.positionChanges).toEqual(postCommit.trade.positionChanges);
-    expect(view.positions).toEqual(postCommit.derivation.positions);
-    expect(view.fees).toEqual(postCommit.derivation.fees);
-    expect(view.baseline).toEqual(postCommit.derivation.baseline);
-    expect(view.entryResolution).toEqual(postCommit.derivation.entryResolution);
-    expect(view.entryQuality).toEqual(postCommit.derivation.entryQuality);
-    expect(view.legFulfillment).toEqual(postCommit.derivation.legFulfillment);
-    expect(view.findings).toEqual(postCommit.derivation.findings);
-    expect(view.deviations).toEqual(postCommit.trade.recordedDeviations ?? []);
-    const narrativeEntry = view.journal.find((item) => item.id === entry.id);
-    expect(narrativeEntry && [narrativeEntry.kind, narrativeEntry.anchor, narrativeEntry.momentTime, narrativeEntry.authoredTime]).toEqual([
-      'Entry',
-      entry.anchor,
-      entry.momentTime,
-      entry.authoredTime,
-    ]);
-    expect(narrativeEntry?.kind === 'Entry' && narrativeEntry.responses).toHaveLength(entry.responses.length);
     expect(receipt.lifecycleTransitions).toEqual([{ tradeId, from: 'Planned', to: 'Open' }]);
 
     const open = await again.TradeViewsAndReporting.browseTrades({ lifecycle: 'Open' });

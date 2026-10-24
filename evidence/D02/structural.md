@@ -757,3 +757,41 @@ Run 2026-10-21 13:01 EDT on commit `968938c` (the only uncommitted files were th
 Failures: none.
 
 After the critic-2 fixes (a7872a7) and the reload-after-save fix (968938c).
+
+## Acceptance-matrix commands
+
+User direction 2026-10-24: every command in the section 8 table of the D2 breakdown must run as written. This was a test-file reorganization only, with no changes to `src/`, `specs/` or `plan/`. Test bodies were moved verbatim and case names kept.
+
+- `e2e/d2/update.spec.ts` was renamed to `e2e/d2/migration.spec.ts` with `git mv` (B2.3 to B2.6).
+- B2.8 moved from `e2e/d2/durability.spec.ts` to `e2e/d2/offline.spec.ts`. B2.9 and B2.10 moved to `e2e/d2/runtime-failure.spec.ts`. B2.7 stays in `durability.spec.ts`. Each file imports only what it uses.
+- I2.5's AC-RESP-001 checks (the `recordPositionChange` response equals the Detail read after restart) moved out of `tests/integration/d2/open-position.test.ts` into a new test in `tests/integration/d2/responses.test.ts`, "should return the Trade, derivation, and Entry equal to the Detail read after restart". It repeats I2.5's setup up to the restart. `open-position` keeps the receipt's lifecycle transition, the Open and Planned lists, and the store-dump and index checks. The split adds one integration test, so the total goes from 38 to 39.
+
+Run 2026-10-24, after `npm run build:faults`. Every command selected at least one test and exited 0.
+
+| Row | Command | Result |
+|---|---|---|
+| AC-POS-001, AC-LIFE-001 | `npm run test:integration -- d2/open-position` | Test Files 1 passed (1), Tests 1 passed (1) |
+| AC-POS-005 | `npm run test:integration -- d2/scale-in` | Test Files 1 passed (1), Tests 1 passed (1) |
+| AC-CALC-001 | `npm run test:integration -- d2/entry-quality` | Test Files 1 passed (1), Tests 2 passed (2) |
+| AC-LIFE-003 | `npm run test:integration -- d2/integrity` | Test Files 2 passed (2), Tests 3 passed (3) |
+| AC-REST-004 | `npm run test:integration -- d2/migration` | Test Files 1 passed (1), Tests 6 passed (6) |
+| AC-REST-004 | `npx playwright test e2e/d2/migration.spec.ts` | 4 passed (17.5s) |
+| AC-JOUR-001 | `npx playwright test e2e/d2/no-save.spec.ts` | 1 passed (2.1s) |
+| AC-JOUR-007 | `npm run test:integration -- d2/seed` | Test Files 1 passed (1), Tests 1 passed (1) |
+| AC-JOUR-005 | `npm run test:integration -- d2/rejections` | Test Files 1 passed (1), Tests 1 passed (1) |
+| AC-RESP-001 | `npm run test:integration -- d2/responses` | Test Files 1 passed (1), Tests 1 passed (1) |
+| AC-CAP-001 | `npm run verify:capabilities` | `verify:capabilities OK: 12 operations, 3 variant-qualified, 7 routes, 2 Entry Types, schema 2` |
+| AC-DEL-001 | `npx playwright test e2e/d2/offline.spec.ts` | 1 passed (3.1s) |
+| AC-DEL-004, AC-DEL-006 | `npx playwright test e2e/d2/runtime-failure.spec.ts` | 2 passed (3.4s) |
+| AC-DEL-003 | `npx playwright test -g "B2.3"` | 1 passed (4.5s) |
+| AC-UI-001, AC-UI-002 | `npx playwright test e2e/d2/responsive-a11y.spec.ts` | 3 passed (12.3s) |
+| AC-REBUILD-001 | `npm run test:integration -- d2/rebuild` | Test Files 1 passed (1), Tests 1 passed (1) |
+| AC-PERF-001 | `npm run bench:run` | `cold p95 96.5 ms (budget 2500), warm p95 43.2 ms (budget 1500)`, Open list 200 rows equal to expected, `bench:run OK` |
+
+The `bench:run` rerun rewrote `evidence/D02/bench.md`. That file was restored, so the recorded gate run stays in place. This rerun's summary is the row above.
+
+| Totals | Command | Result |
+|---|---|---|
+| Integration | `npm run test:integration` | Test Files 19 passed (19), Tests 39 passed (39): 38 before, plus the AC-RESP-001 split |
+| Browser | `npm run test:e2e` | 48 passed (1.6m), unchanged |
+| Static | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
