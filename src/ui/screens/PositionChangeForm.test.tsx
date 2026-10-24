@@ -663,3 +663,140 @@ describe('Record entry Retry', () => {
     expect(await screen.findByRole('group', { name: 'Execution 1' })).toBeTruthy();
   });
 });
+
+// The app keeps one route element mounted across Trades (AppShell has no per-Trade key), so the
+// links move the same form between trade-1 and trade-2. The clock is read on every call.
+function renderAcrossTrades(facade: UiFacade, clock: { now: string }, onDirtyChange: (dirty: boolean) => void = () => undefined) {
+  render(
+    <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
+      <MemoryRouter initialEntries={['/trades/trade-1/record-entry']}>
+        <Link to="/trades/trade-1/record-entry">First Trade</Link>
+        <Link to="/trades/trade-2/record-entry">Other Trade</Link>
+        <Routes>
+          <Route
+            path="/trades/:tradeId/record-entry"
+            element={<PositionChangeForm facade={facade} timeZone="America/New_York" now={() => clock.now} onDirtyChange={onDirtyChange} />}
+          />
+        </Routes>
+      </MemoryRouter>
+    </RuntimeContext.Provider>,
+  );
+}
+
+describe('Record entry on another Trade', () => {
+  it('should start the other Trades form from its initial values: one Execution row with Economic Time now, no reflection answers, no decline or reason', async () => {
+    const facade = positionChangeFormFacade();
+    const clock = { now: '2026-10-12T14:05:00Z' };
+    renderAcrossTrades(facade, clock);
+    const user = userEvent.setup();
+    await fillRows(user, [
+      ['30', '50.00', '0.50', '2026-10-12T10:00'],
+      ['30', '50.20', '0.50', '2026-10-12T10:01'],
+    ]);
+    await completeReflection(user);
+    await user.click(screen.getByRole('checkbox', { name: 'Decline to reflect' }));
+    await user.type(screen.getByLabelText('Reason for declining (optional)'), 'Rushed.');
+
+    clock.now = '2026-10-12T15:30:00Z';
+    await user.click(screen.getByRole('link', { name: 'Other Trade' }));
+    expect(await screen.findByRole('group', { name: 'Execution 1' })).toBeTruthy();
+    expect(facade.TradeViewsAndReporting.getTradeDetail).toHaveBeenLastCalledWith({ tradeId: 'trade-2' });
+    expect(screen.getAllByRole('group', { name: /^Execution \d+$/ })).toHaveLength(1);
+    for (const label of ['Quantity', 'Price', 'Fee']) expect(within(row(1)).getByLabelText<HTMLInputElement>(label).value).toBe('');
+    expect(within(row(1)).getByLabelText<HTMLInputElement>('Economic Time').value).toBe('2026-10-12T11:30');
+    expect(screen.getByRole<HTMLInputElement>('checkbox', { name: 'Decline to reflect' }).checked).toBe(false);
+    expect(screen.queryByLabelText('Reason for declining (optional)')).toBeNull();
+    for (const name of ['Decision mode', 'Primary emotion', 'Decision confidence']) {
+      expect(
+        within(screen.getByRole('radiogroup', { name }))
+          .getAllByRole<HTMLInputElement>('radio')
+          .filter((r) => r.checked),
+      ).toEqual([]);
+    }
+    expect(screen.getByLabelText<HTMLTextAreaElement>('Note').value).toBe('');
+    // Declining afterwards starts with an empty reason too.
+    await user.click(screen.getByRole('checkbox', { name: 'Decline to reflect' }));
+    expect(screen.getByLabelText<HTMLTextAreaElement>('Reason for declining (optional)').value).toBe('');
+  });
+
+  it('should show no issues, conflict, or receipt carried over from the previous Trade', async () => {
+    const facade = positionChangeFormFacade();
+    renderAcrossTrades(facade, { now: '2026-10-12T14:05:00Z' });
+    const user = userEvent.setup();
+    const save = async () => user.click(await screen.findByRole('button', { name: 'Save entry' }));
+    const move = async (name: string) => {
+      await user.click(screen.getByRole('link', { name }));
+      expect(await screen.findByRole('group', { name: 'Execution 1' })).toBeTruthy();
+    };
+
+    // Issues on trade-1 do not follow the form to trade-2.
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValueOnce({
+      ...rejected,
+      issues: [{ source: 'TradeWorkflows', member: 0, field: 'quantity', code: 'Required' }],
+    } as never);
+    await save();
+    expect(await screen.findByRole('region', { name: 'This entry can’t be saved yet' })).toBeTruthy();
+    await move('Other Trade');
+    expect(screen.queryByRole('region', { name: 'This entry can’t be saved yet' })).toBeNull();
+
+    // A Conflict on trade-2 does not follow the form back to trade-1.
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValueOnce({ kind: 'Conflict', changed: ['trade:trade-2'] } as never);
+    await save();
+    expect(await screen.findByRole('region', { name: 'This Trade changed after you opened this form' })).toBeTruthy();
+    await move('First Trade');
+    expect(screen.queryByRole('region', { name: 'This Trade changed after you opened this form' })).toBeNull();
+
+    // A receipt for trade-1 gives way to trade-2's form.
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValueOnce({
+      kind: 'Recorded',
+      receipt: { tradeId: 'trade-1', createdFactIds: ['pc-1', 'ex-1'], deviationReconciliation: [], entryChanges: [], repairs: [] },
+      postCommit: {
+        trade: {
+          positionChanges: [
+            {
+              factId: 'pc-1',
+              economicTime: '2026-10-12T14:00:00Z',
+              recordedSequence: 1,
+              executions: [
+                {
+                  factId: 'ex-1',
+                  economicTime: '2026-10-12T14:00:00Z',
+                  recordedSequence: 2,
+                  action: 'Buy',
+                  instrument: { kind: 'Stock', symbol: 'XYZ' },
+                  quantity: '60',
+                  price: '50.10',
+                  fee: '1.00',
+                },
+              ],
+            },
+          ],
+        },
+        derivation: { entryQuality: { kind: 'NotApplicable' } },
+        reflection: { kind: 'Entry' },
+      },
+      affected: [],
+    } as never);
+    await save();
+    expect(await screen.findByRole('region', { name: 'Entry recorded' })).toBeTruthy();
+    await move('Other Trade');
+    expect(screen.queryByRole('region', { name: 'Entry recorded' })).toBeNull();
+    expect(facade.TradeViewsAndReporting.getTradeDetail).toHaveBeenLastCalledWith({ tradeId: 'trade-2' });
+  });
+
+  it('should report the form as not unsaved once it moves to the other Trade', async () => {
+    const dirty = vi.fn();
+    renderAcrossTrades(positionChangeFormFacade(), { now: '2026-10-12T14:05:00Z' }, dirty);
+    const user = userEvent.setup();
+    await user.type(await within(await screen.findByRole('group', { name: 'Execution 1' })).findByLabelText('Quantity'), '30');
+    await user.click(screen.getByRole('checkbox', { name: 'Decline to reflect' }));
+    expect(dirty).toHaveBeenLastCalledWith(true);
+
+    await user.click(screen.getByRole('link', { name: 'Other Trade' }));
+    expect(await screen.findByRole('group', { name: 'Execution 1' })).toBeTruthy();
+    expect(dirty).toHaveBeenLastCalledWith(false);
+    // The other Trade's form registers as unsaved again once a value is entered there.
+    await user.type(within(row(1)).getByLabelText('Price'), '50');
+    expect(dirty).toHaveBeenLastCalledWith(true);
+  });
+});

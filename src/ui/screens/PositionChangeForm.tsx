@@ -57,10 +57,6 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
     setDefinition(undefined);
     setFailure(undefined);
   };
-  if (loadingFor.facade !== facade || loadingFor.tradeId !== tradeId) {
-    setLoadingFor({ facade, tradeId });
-    clearLoad();
-  }
   const [answers, setAnswers] = useState<Answers>({});
   // Declining is the trader's explicit alternative to completing the reflection; answers already
   // given stay on screen in case they complete it after all.
@@ -70,11 +66,27 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   const blankRow = (): Row => ({ key: nextKey.current++, quantity: '', price: '', fee: '', time: toWorkspaceLocal(now(), timeZone) });
   const [rows, setRows] = useState<readonly Row[]>(() => [blankRow()]);
   // The row as first shown; the form is unsaved while anything differs from it.
-  const [initialRow] = useState(() => rows[0]!);
+  const [initialRow, setInitialRow] = useState(() => rows[0]!);
   const [issues, setIssues] = useState<readonly FieldIssue[]>([]);
   const [recorded, setRecorded] = useState<Extract<PositionChangeResult, { kind: 'Recorded' }> | undefined>();
   // The Trade changed after the form loaded: nothing was saved, and the values stay for review.
   const [conflict, setConflict] = useState(false);
+  if (loadingFor.facade !== facade || loadingFor.tradeId !== tradeId) {
+    // Values entered for one Trade are never carried to another.
+    if (loadingFor.tradeId !== tradeId) {
+      const row = blankRow();
+      setRows([row]);
+      setInitialRow(row);
+      setAnswers({});
+      setDeclined(false);
+      setReason('');
+      setIssues([]);
+      setConflict(false);
+      setRecorded(undefined);
+    }
+    setLoadingFor({ facade, tradeId });
+    clearLoad();
+  }
   const values = (r: Row) => [r.quantity, r.price, r.fee, r.time].join('\u0000');
   const dirty =
     !recorded &&
