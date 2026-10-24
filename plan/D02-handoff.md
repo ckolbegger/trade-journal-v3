@@ -138,7 +138,8 @@ The goal is to complete D2 from one prompt (user's direction, 2026-10-21). Stop 
 1. a location check in section 1 fails;
 2. the work needs a deviation from `specs/` or the frozen plan, or exposes a spec or plan ambiguity (the kickoff requires approval for these);
 3. a suite failure or critic defect can't be fixed by a fresh subagent without such a deviation;
-4. a fresh critic agent or a browser can't be provided (never self-certify).
+4. a fresh critic agent or a browser can't be provided (never self-certify);
+5. a task's `ocr-review` run returns findings. Each task's implementation commit gets an `ocr-review` run (user's direction, 2026-10-24; `.claude/docs/implementing.md`, "After each task"). The user decides what to do with every finding, so report the table and wait. "No findings." doesn't stop the session.
 
 Everything else continues without the user:
 - **Implementation-level decisions:** make them with the recommendation you would have offered, and record them in the evidence and in section 7.

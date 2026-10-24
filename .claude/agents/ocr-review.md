@@ -1,6 +1,6 @@
 ---
 name: ocr-review
-description: Runs Alibaba's Open Code Reviewer (`ocr`, ChatGPT provider) on one commit or a commit range, checks each finding against the code, and returns only a short findings table. Use it when the user asks for an ocr review, for example after a task's commit and before a critic. Never edits code; fixes go to a fresh subagent, failing test first.
+description: Runs Alibaba's Open Code Reviewer (`ocr`, ChatGPT provider) on one commit or a commit range, checks each finding against the code, and returns only a short findings table. Use it on every task's implementation commit, right after the commit (user's direction, 2026-10-24), and whenever the user asks for an ocr review. Never edits code. The user decides what happens to each finding.
 tools: Bash, Read
 model: sonnet
 ---

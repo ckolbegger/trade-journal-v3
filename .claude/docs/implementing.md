@@ -35,10 +35,11 @@ Delegate every implementation task to its own fresh `tdd-task` subagent (`.claud
 ## After each task
 
 1. Review the returned summary without re-reading the code.
-2. Send the complete cumulative run to the `suite-runner` subagent (`.claude/agents/suite-runner.md`), passing `evidence/D<nn>` and a run label. Never run the full suite in the main session, and don't rerun it to check the runner's work. A failing run comes back as named failures; reproduce each with a single targeted run in the main session, then delegate its fix to a fresh subagent.
-3. Record the returned table in `evidence/D<nn>/structural.md`.
-4. Update the handoff's progress section and commit.
-5. Add any flagged item, such as a first-run pass, to the handoff's open questions for the final report, then start the next task. A deliverable runs from one prompt to its gate: the session stops only for the conditions the handoff lists under "Running a whole deliverable".
+2. Run the `ocr-review` subagent (`.claude/agents/ocr-review.md`) on the task's implementation commit, naming the task's breakdown section as background. It runs Alibaba's Open Code Reviewer on that commit's changes and returns a findings table. It can run in parallel with the cumulative run. Report the table to the user word for word, and record it in `evidence/D<nn>/structural.md` beside the task's cumulative run. The user decides what to do with each finding: don't fix, dismiss, or delegate any finding until they say. With findings, stop after recording the run and wait for the user's decision. With "No findings.", continue.
+3. Send the complete cumulative run to the `suite-runner` subagent (`.claude/agents/suite-runner.md`), passing `evidence/D<nn>` and a run label. Never run the full suite in the main session, and don't rerun it to check the runner's work. A failing run comes back as named failures; reproduce each with a single targeted run in the main session, then delegate its fix to a fresh subagent.
+4. Record the returned table in `evidence/D<nn>/structural.md`.
+5. Update the handoff's progress section and commit.
+6. Add any flagged item, such as a first-run pass, to the handoff's open questions for the final report, then start the next task. A deliverable runs from one prompt to its gate: the session stops only for the conditions the handoff lists under "Running a whole deliverable".
 
 ## Writing the next deliverable's handoff
 
