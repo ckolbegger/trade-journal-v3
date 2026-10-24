@@ -714,6 +714,9 @@ Figures from each critic's completion notice (the harness's own token count; com
 |---|---|---|---|---|---|---|
 | critic-1 | `2440e0f` | v1 | 141,559 | 44 | 9 min 18 s | 1 |
 | critic-2 | `40581f7` | v1 | 121,270 | 32 | 7 min 19 s | 2 |
+| critic-3 | `19971ed` | v2 | 136,644 | 50 | 9 min 45 s | 0 |
+
+Reading: no measurable saving from brief v2 in this sample. critic-3 sits between critic-1 and critic-2 on tokens and above both on tool calls and time; it also did more beyond the flows (axe at 1280 and 320, a B2.10 mid-form fault, narrow checks of six screens). With one sample per brief and a 14% spread between the two v1 runs, the difference is within noise.
 
 ## Cumulative run after T2.24-CRITIC2-FIX
 

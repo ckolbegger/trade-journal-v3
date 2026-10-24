@@ -1,0 +1,39 @@
+# D2 browser-critic report (critic-3)
+
+Fresh critic agent spawned 2026-10-24 at commit `19971ed`, after the critic-2 fixes and the reload-after-save fix, with the cumulative run fully green. This critic used brief v2 (`.claude/docs/critic-brief.md`): setup helpers from `e2e/d2/support.ts` for starting states and stored-state reads only; every flow action performed and judged by hand. Report saved in substance below; scratch scripts, logs, screenshots and profiles were in the git-ignored `test-results/critic-d2-3/`.
+
+## Header
+
+- 2026-10-24, 13:12 EDT. Commit `19971ed`. Node v26.12.0; Playwright 1.63.0; Chromium 153.0.8010.12 (channel `chromium`, America/New_York).
+- Servers: `npm run build && npm run preview` (production, 5175) for C2.1–C2.7, C2.11 and the narrow and axe checks; `npm run build:faults && npm run preview:faults` (5175) for C2.10; `npm run build:releases` then `startReleaseServer({ root: cwd, release: 'dist-releases/d1', port: 5175 })` for C2.8 (→ `dist-releases/d2`) and C2.9 (→ `dist-faults`, reloaded URL carrying `?faults=migration:validate`). All stopped (`pgrep` shows none).
+- No tracked file edited, no commit.
+- Helpers used for setup only (onboarding, `confirmReference`, D1 onboarding and Plans, `checkForUpdate`, `probe`); every Actions-column step performed by role and label. No helper failed.
+
+## Results
+
+| Flow | Status | Key observations |
+|---|---|---|
+| C2.1 First entry | PASS | Form "Record entry": Symbol XYZ, Action Buy, Planned Leg "Long 100 shares of XYZ" read-only; Execution 1 Quantity, Price, Fee, Economic Time (defaults to now). 60 @ 50.10, fee 1.00, 10:00, reflection completed. Receipt "Entry recorded / Buy 60 XYZ @ $50.10, fee $1.00 / Reflection saved." Detail "Long Stock · Open"; Position "60 shares of XYZ"; Opening fees $1.00; one Open Lots row (10:00, 60, $50.10, $1.00); "Entry not yet resolved: 60 of 100 entered"; "Partially filled". Open list "60 of 100, $50.10, $1.00, Entering, 0, Records agree, 2026-10-12 10:00"; Planned "No planned trades yet." |
+| C2.2 Complete the entry | PASS | 40 @ 50.30, fee 1.00, declined "In a meeting, no time." Receipt $50.18; "$270.00 (1.08R)"; $580.00; "2.15 (planned 2.4)"; $18.00; "Reflection declined: In a meeting, no time." Detail "Resolved at Position Change at 2026-10-12 11:00"; "1× planned quantity"; "Filled as planned"; narrative "Reflection declined / Reason: In a meeting, no time." |
+| C2.3 Oversize | PASS | 20 @ 51.00, fee 1.00. Receipt "Entry Size Deviation: 20 shares above plan, caused by this Position Change."; Entry Quality unchanged. After a full restart: "Filled with Deviation"; "Entry Size (Excess): 20 shares above plan, caused by the Position Change at 2026-10-12 14:00. Active"; Position 120; three Lots. Probe: Open, 3 Position Changes, 3 Executions, 1 Active EntrySize/Excess of 20, 2 reflection Entries, 1 decline. |
+| C2.4 Several fills, one decision | PASS | AAA: one Position Change, 30 @ 50.00 fee 0.50 (10:00) and 30 @ 50.20 fee 0.50 (10:05). Receipt both Buy lines and "Reflection saved."; Detail one "Position Change at 2026-10-12 10:00" with two Executions, two Lots, Position 60, one Position Change Reflection. |
+| C2.5 Validation | PASS | Execution 1 at 09:00 (Plan 09:30), Execution 2 in 2027, Execution 3 quantity 0, Decision mode blank, in one submission. Summary "This entry can't be saved yet" lists all four; each also at its field (`aria-invalid`, `aria-describedby`); values kept; focus on the summary. After reload BBB still Planned, 0 Position Changes, no new reflection Entry. |
+| C2.6 Earlier-dated entry (P5) | PASS | CCC 60 @ 50.00 at 10:00 and 60 @ 50.40 at 11:00 (resolved at 11:00, Excess 20); then 40 @ 49.90 at 10:30. Receipt "This entry moved the Entry Resolution Point to the Position Change at 2026-10-12 10:30." and "This entry changed Entry Quality."; $49.96 / $248.00 (0.99R) / $602.00 / 2.43 / −$4.00. Detail lists 10:00, 10:30, 11:00; resolved at 10:30; Excess re-derived to "60 shares above plan, caused by the Position Change at 2026-10-12 11:00". |
+| C2.7 Lists | PASS | Tablist opens on Open (`aria-selected`); CCC (11:00) before AAA (10:00); Planned shows BBB "Awaiting entry". A filled form on BBB (row, reflection, Note) abandoned by reload: form empty; probe BBB Planned, 0 Position Changes, Entries unchanged, 0 declines; Web Storage empty. |
+| C2.8 Update with migration | PASS | d1: XYZ and ABC confirmed; switch to d2; notice "An update is ready / Reload"; "Updating your journal to this release" observed, then Trades with XYZ and ABC under Planned; Record entry on XYZ (60 @ 50.10, declined) "Entry recorded"; About "Schema version 2"; probe new pointer target, old database gone, candidates []. |
+| C2.9 Migration Blocked | PASS | "Your journal could not be converted to this release / Checking the converted copy found these problems, so it was discarded: A Trade names an Account that does not exist. / Your data is unchanged. / Retry", no data navigation. Probe pointer unchanged, no candidate, old stores deep-equal. After `__tjFaults.set([])` and Retry, both Plans under Planned and an entry recorded. Also checked at 320 px. |
+| C2.10 Recovery Only | PASS | Open XYZ on the faults build, relaunched with `?faults=inventory`: "Read only: this browser can't save right now…" naming the failed check and the separate-storage message; Open list and full Detail readable; Record entry 0 links and 0 buttons; navigation Trades, Accounts, About; probe unchanged. Extra (B2.10): `__tjFaults.set(["inventory"])` mid-form then Save → read-only banner, values kept (Quantity 40), Save entry disabled, no Position Change written. |
+| C2.11 Offline, responsive, keyboard, About | PASS | Server killed: reload Writable; 60 @ 50.10 recorded and survived a further restart with the server down (probe 2 Position Changes, Open). Half-filled form (25 / 50.40, row 2 qty 15, Anxious, Note) resized 1280 → 375 → 320 → 1280 kept route and values; layout switches sidebar ↔ bottom nav with no page overflow. Keyboard-only entry through to "Entry recorded" with an outline on every focus. About: Schema 2; only D1 and D2 capabilities (`recordPositionChange (Opening, Increase, Stock, SingleTrade, Complete, Decline)`, browse and detail Planned and Open); Entry Types Plan and Position Change Reflection only. |
+| Narrow layout, 375 and 320 px | PASS | Open list, Planned list, Open Detail, entry form (empty, with errors, declined), receipt, Migration Blocked: no document-level horizontal overflow; wide tables (Open list 863 px; Open Lots and Executions 360–490 px) scroll inside `table-scroll`. Save entry clears the fixed bottom nav (815.9 vs 817.4 px at 320). axe (WCAG 2.1 AA) on the Open list, Detail, form and form-with-errors at 1280 and 320: no violations. |
+
+**Overall: PASS. Defects: none.**
+
+## Minor observations (not defects)
+
+1. Focus lands on BODY after opening Record entry by keyboard and after Save on the receipt; keyboard flow works, but focusing the new page's heading would better serve the UI contract's "logical focus after navigation".
+2. Recovery Only on a direct `/trades/<id>/record-entry?faults=inventory` link shows only the banner and navigation, with an empty main area (also noted by critic-1).
+3. C2.6's receipt does not mention the Entry Size occurrence changing from 20 to 60 shares (Detail shows it); P5 requires only the resolution point and Entry Quality (also noted by critics 1 and 2).
+4. The Migration Blocked card runs edge to edge at 320 px, without the roughly 16 px gutter of other views.
+5. At 320 px the Open list shows only Underlying, Strategy and Account without horizontal scrolling; the only cue is a clipped column edge.
+6. Ratio formatting drops trailing zeros ("$326.00 (1.3R)" beside "(1.08R)").
+7. Full-page screenshots draw the fixed navigation part-way down the page (screenshot artifact only; viewport rendering correct).
