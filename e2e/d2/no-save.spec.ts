@@ -1,13 +1,18 @@
 import type { Page } from '@playwright/test';
 import {
+  completeReflection,
   confirmReference,
   executionRow,
+  fillRows,
   expect,
   factsOf,
   firstPage,
   onboardedPage,
   openEntryForm,
+  PC2,
+  PC3,
   probe,
+  recordEntry,
   READY,
   reflectionEntriesOf,
   reflectionSection,
@@ -99,5 +104,48 @@ test.describe('B2.11 nothing saved without Save', () => {
     expect(workspace).toEqual(before);
     expect(traces({ indexedDB: probed, webStorage: await webStorage(again) })).toEqual([]);
     await relaunched.close();
+  });
+});
+
+test.describe('F4 saving again after a Conflict', () => {
+  test('should keep the entered values through Load the latest Trade and then record a second Position Change, one from each page', async ({
+    server,
+    profile,
+  }) => {
+    void server;
+    const context = await profile.launch();
+    const pageA = await onboardedPage(context);
+    await confirmReference(pageA);
+    const detail = pageA.url();
+    await openEntryForm(pageA);
+    await fillRows(pageA, PC3);
+    await completeReflection(pageA);
+
+    // Page B records an entry while page A's form is open.
+    const pageB = await context.newPage();
+    await pageB.goto(detail);
+    await recordEntry(pageB, PC2);
+
+    await pageA.getByRole('button', { name: 'Save entry' }).click();
+    const conflict = pageA.getByRole('region', { name: 'This Trade changed after you opened this form' });
+    await expect(conflict).toBeVisible(READY);
+    await conflict.getByRole('button', { name: 'Load the latest Trade' }).click();
+    const latest = pageA.getByRole('region', { name: 'Latest Trade' });
+    await expect(latest).toContainText('40 shares of XYZ');
+    await expect(conflict).toHaveCount(0);
+    const first = executionRow(pageA, 1);
+    await expect(first.getByLabel('Quantity')).toHaveValue(PC3[0]!.quantity);
+    await expect(first.getByLabel('Price')).toHaveValue(PC3[0]!.price);
+    await expect(first.getByLabel('Economic Time')).toHaveValue(PC3[0]!.time);
+
+    await pageA.getByRole('button', { name: 'Save entry' }).click();
+    await expect(pageA.getByRole('heading', { name: 'Entry recorded' })).toBeVisible(READY);
+    const workspace = workspaceOf(await probe(pageA))!;
+    const changes = factsOf(tradesOf(workspace)[0]!, 'PositionChange');
+    expect(changes).toHaveLength(2);
+    const quantities = factsOf(tradesOf(workspace)[0]!, 'Execution').map((fact) => fact.versions.at(-1)!.value['quantity']);
+    expect(quantities.sort()).toEqual(['20', '40']);
+    expect(reflectionEntriesOf(workspace)).toHaveLength(2);
+    await context.close();
   });
 });

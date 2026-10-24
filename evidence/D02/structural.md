@@ -937,3 +937,18 @@ describe("Record entry on another Trade")
 | Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.27-b3-checks.txt` |
 
 Failures: none. Unit rose from 357 to 360 (T2.27-B3's three cases).
+
+#### T2.28
+
+Browser case (`e2e/d2/no-save.spec.ts`, "F4 saving again after a Conflict"): two pages on one profile. Page B records an entry (PC2, 40 shares) while page A has the entry form open with PC3 (20 shares) entered. Page A saves, sees Conflict, chooses "Load the latest Trade", sees "Latest Trade" with "40 shares of XYZ" and its entered row unchanged, saves again; the probe shows two Position Changes, Execution quantities 20 and 40, and two reflection Entries.
+
+| Command | Result |
+|---|---|
+| `npm run build:faults` | built |
+| `npx playwright test e2e/d2/no-save.spec.ts` | 2 passed |
+
+Decisions (for the final report):
+- "Load the latest Trade" reloads only the Trade Detail through `getTradeDetail`; the definition stays. The form never shows Loading, the entered values are untouched.
+- On success the Conflict message is replaced by a "Latest Trade" region above the Entry card: "The latest Trade is loaded. Your values are kept below; review them against it before saving again." with a Position line ("40 shares of XYZ" for an Open Trade, "No Position yet" for a Planned one). The next save uses the reloaded FactRevision. The region clears on the next save result.
+- On failure (rejection or a non-Ready result) the Conflict message, button and values stay, with an alert "We couldn’t load the latest Trade. Your values are kept; try again."
+- A reload started before a Trade, facade or Retry change is ignored through an epoch counter bumped in the load effect cleanup. If the reloaded Trade is incoherent, the existing incoherent branch replaces the form.

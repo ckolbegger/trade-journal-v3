@@ -9,6 +9,7 @@ import type {
   TradeDetailView,
 } from '../../app/types.ts';
 import { fromWorkspaceLocal, toWorkspaceLocal } from '../../domain/time/index.ts';
+import { quantity } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { fieldIssues, IssueSummary } from './form-issues.tsx';
 import type { FieldIssue } from './plan-issues.ts';
@@ -71,6 +72,9 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   const [recorded, setRecorded] = useState<Extract<PositionChangeResult, { kind: 'Recorded' }> | undefined>();
   // The Trade changed after the form loaded: nothing was saved, and the values stay for review.
   const [conflict, setConflict] = useState(false);
+  // The Trade was read again after a Conflict; its current state shows above the kept values.
+  const [reloaded, setReloaded] = useState(false);
+  const [reloadFailed, setReloadFailed] = useState(false);
   if (loadingFor.facade !== facade || loadingFor.tradeId !== tradeId) {
     // Values entered for one Trade are never carried to another.
     if (loadingFor.tradeId !== tradeId) {
@@ -82,6 +86,8 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
       setReason('');
       setIssues([]);
       setConflict(false);
+      setReloaded(false);
+      setReloadFailed(false);
       setRecorded(undefined);
     }
     setLoadingFor({ facade, tradeId });
@@ -94,6 +100,25 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange]);
   // Leaving the form abandons it, so it no longer holds an update back.
   useEffect(() => () => onDirtyChange(false), [onDirtyChange]);
+  // Bumped whenever the load effect restarts, so a reload started for an earlier Trade or attempt settles unseen.
+  const loadEpoch = useRef(0);
+  // Conflict recovery reads the Trade again in place: the form and its values stay on screen.
+  const reloadTrade = () => {
+    const epoch = loadEpoch.current;
+    setReloadFailed(false);
+    void facade.TradeViewsAndReporting.getTradeDetail({ tradeId }).then(
+      (result) => {
+        if (epoch !== loadEpoch.current) return;
+        if (result.kind !== 'Ready') return setReloadFailed(true);
+        setView(result.view);
+        setConflict(false);
+        setReloaded(true);
+      },
+      () => {
+        if (epoch === loadEpoch.current) setReloadFailed(true);
+      },
+    );
+  };
   const conflictRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (conflict) conflictRef.current?.focus();
@@ -123,6 +148,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
     );
     return () => {
       superseded = true;
+      loadEpoch.current += 1;
     };
   }, [facade, tradeId, attempt]);
 
@@ -208,6 +234,8 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
     // A refusal to write switches the whole shell to read only; the form keeps its values.
     report(result);
     setConflict(result.kind === 'Conflict');
+    setReloaded(false);
+    setReloadFailed(false);
     setIssues(result.kind === 'Rejected' ? describePositionChangeIssues(result.issues, rowKeys, definition) : []);
     if (result.kind === 'Recorded') {
       setRecorded(result);
@@ -226,7 +254,27 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
       {conflict && (
         <section ref={conflictRef} tabIndex={-1} className="banner warning" aria-labelledby="entry-conflict-heading">
           <h2 id="entry-conflict-heading">This Trade changed after you opened this form</h2>
-          <p>Nothing was saved. Another entry was recorded for this Trade, so review the Trade before recording this one. Your values are kept below.</p>
+          <p>
+            Nothing was saved. Another entry was recorded for this Trade, so review the Trade before recording this one. Your values are kept below.
+          </p>
+          <button type="button" className="pill secondary" onClick={reloadTrade}>
+            Load the latest Trade
+          </button>
+          {reloadFailed && <p role="alert">We couldn’t load the latest Trade. Your values are kept; try again.</p>}
+        </section>
+      )}
+      {reloaded && (
+        <section className="banner" aria-labelledby="entry-latest-heading">
+          <h2 id="entry-latest-heading">Latest Trade</h2>
+          <p>The latest Trade is loaded. Your values are kept below; review them against it before saving again.</p>
+          <dl>
+            <dt>Position</dt>
+            <dd className="number">
+              {'positions' in view
+                ? view.positions.map((p) => `${quantity(p.quantity)} shares of ${p.instrument.symbol}`).join(', ')
+                : 'No Position yet'}
+            </dd>
+          </dl>
         </section>
       )}
       {/* A rejected entry moves focus to the summary of every issue. */}

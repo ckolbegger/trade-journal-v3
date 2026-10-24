@@ -3,7 +3,7 @@ import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter, Link, MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { incoherentDetailOf, PC1 } from '../../../tests/support/open-detail-fixtures.ts';
+import { incoherentDetailOf, openDetailOf, PC1 } from '../../../tests/support/open-detail-fixtures.ts';
 import { plannedDetail, positionChangeFormFacade, reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import { Rational } from '../../domain/values/index.ts';
@@ -798,5 +798,78 @@ describe('Record entry on another Trade', () => {
     // The other Trade's form registers as unsaved again once a value is entered there.
     await user.type(within(row(1)).getByLabelText('Price'), '50');
     expect(dirty).toHaveBeenLastCalledWith(true);
+  });
+});
+
+describe('after a Conflict', () => {
+  const conflict = { kind: 'Conflict', changed: ['trade:trade-1'] };
+  const latest = { kind: 'Ready', view: openDetailOf([PC1]), binding: { databaseName: 'tj-ws-1', contentRevision: 8 } };
+
+  async function conflicted(declineInstead = false) {
+    const facade = renderForm();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(conflict as never);
+    const user = userEvent.setup();
+    await fillRows(user, [
+      ['40', '50.30', '1.00', '2026-10-12T11:00'],
+      ['20', '50.40', '0.50', '2026-10-12T11:30'],
+    ]);
+    if (declineInstead) {
+      await user.click(screen.getByLabelText('Decline to reflect'));
+      await user.type(screen.getByLabelText('Reason for declining (optional)'), 'Nothing new.');
+    } else await completeReflection(user);
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    const message = await screen.findByRole('region', { name: 'This Trade changed after you opened this form' });
+    return { facade, user, message };
+  }
+
+  it('should offer Load the latest Trade in the Conflict message, keeping every entered Execution row, answer, decline and reason', async () => {
+    const { message } = await conflicted();
+    expect(within(message).getByRole('button', { name: 'Load the latest Trade' })).toBeTruthy();
+    expect(within(row(1)).getByLabelText<HTMLInputElement>('Quantity').value).toBe('40');
+    expect(within(row(2)).getByLabelText<HTMLInputElement>('Fee').value).toBe('0.50');
+    expect(screen.getByLabelText<HTMLTextAreaElement>('Note').value).toBe('Filled at the open.');
+    cleanup();
+    const declined = await conflicted(true);
+    expect(within(declined.message).getByRole('button', { name: 'Load the latest Trade' })).toBeTruthy();
+    expect(screen.getByLabelText<HTMLInputElement>('Decline to reflect').checked).toBe(true);
+    expect(screen.getByLabelText<HTMLTextAreaElement>('Reason for declining (optional)').value).toBe('Nothing new.');
+  });
+
+  it('should reload the Detail when chosen, so the next save uses the new FactRevision and records exactly one Position Change', async () => {
+    const { facade, user, message } = await conflicted();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue(latest as never);
+    await user.click(within(message).getByRole('button', { name: 'Load the latest Trade' }));
+    await vi.waitFor(() => expect(facade.TradeViewsAndReporting.getTradeDetail).toHaveBeenCalledTimes(2));
+    // The form never went back to Loading: the values stay on screen throughout.
+    await vi.waitFor(() => expect(screen.queryByRole('region', { name: 'This Trade changed after you opened this form' })).toBeNull());
+    expect(within(row(1)).getByLabelText<HTMLInputElement>('Quantity').value).toBe('40');
+    expect(facade.Journal.getDefinitions).toHaveBeenCalledTimes(1);
+
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockClear();
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    await vi.waitFor(() => expect(facade.TradeWorkflows.recordPositionChange).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(facade.TradeWorkflows.recordPositionChange).mock.calls[0]![0].trades).toEqual([{ tradeId: 'trade-1', expectedFactRevision: 3 }]);
+  });
+
+  it('should show the reloaded Trades changed figures above the kept values before the trader saves again', async () => {
+    const { facade, user, message } = await conflicted();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue(latest as never);
+    await user.click(within(message).getByRole('button', { name: 'Load the latest Trade' }));
+    const figures = await screen.findByRole('region', { name: 'Latest Trade' });
+    expect(within(figures).getByText('60 shares of XYZ')).toBeTruthy();
+    expect(screen.queryByRole('region', { name: 'This Trade changed after you opened this form' })).toBeNull();
+    const first = row(1);
+    expect(figures.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('should keep the Conflict message and the values when the reload itself fails', async () => {
+    const { facade, user, message } = await conflicted();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockRejectedValue(new Error('read failed'));
+    await user.click(within(message).getByRole('button', { name: 'Load the latest Trade' }));
+    expect(await screen.findByText(/couldn’t load the latest Trade/)).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'This Trade changed after you opened this form' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Load the latest Trade' })).toBeTruthy();
+    expect(within(row(1)).getByLabelText<HTMLInputElement>('Quantity').value).toBe('40');
+    expect(screen.getByLabelText<HTMLTextAreaElement>('Note').value).toBe('Filled at the open.');
   });
 });
