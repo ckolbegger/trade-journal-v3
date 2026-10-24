@@ -255,4 +255,17 @@ describe('Planned list', () => {
     ]);
     for (const numeric of [cells[4]!, cells[5]!, cells[6]!]) expect(numeric.className).toBe('number');
   });
+
+  it('should show the Records disagree badge in the Entry cell of a Planned item whose records disagree, with no added column', async () => {
+    const disagreeing = { ...plannedItem, tradeId: 'trade-2', underlying: 'ABC', integrity: 'Disagrees' };
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeViewsAndReporting.browseTrades).mockResolvedValue(readyPage([plannedItem, disagreeing]));
+    renderList(facade);
+    const table = await screen.findByRole('table', { name: 'Planned Trades' });
+    expect(within(table).getAllByRole('columnheader')).toHaveLength(8);
+    const [, agreeingRow, disagreeingRow] = within(table).getAllByRole('row');
+    expect(within(agreeingRow!).getAllByRole('cell').at(-1)!.textContent).toBe('Awaiting entry');
+    const entry = within(disagreeingRow!).getAllByRole('cell').at(-1)!;
+    expect(within(entry).getByText('Records disagree').className).toBe('badge warning');
+  });
 });

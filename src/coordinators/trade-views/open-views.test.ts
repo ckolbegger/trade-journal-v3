@@ -329,6 +329,16 @@ describe('integrity is surfaced, never repaired AC-LIFE-003', () => {
     expect(planned.view.findings).toEqual([disagreement]);
   });
 
+  it('should surface the disagreement on the Planned list item of an Open Trade stored as Planned, leaving an agreeing Planned item unchanged', async () => {
+    const stack = await disagreeingStack();
+    const agreeing = await stack.confirm('DEF');
+    const list = await stack.views.browseTrades({ lifecycle: 'Planned' });
+    if (list.kind !== 'Ready') throw new Error(`expected Ready, got ${list.kind}`);
+    const byId = new Map(list.view.items.map((i) => [i.tradeId, i]));
+    expect(byId.get(stack.planned.tradeId)).toEqual(expect.objectContaining({ integrity: 'Disagrees' }));
+    expect(byId.get(agreeing.tradeId)).not.toHaveProperty('integrity');
+  });
+
   it('should leave every content revision unchanged after reading a Trade with a disagreement', async () => {
     const stack = await disagreeingStack();
     const before = await dumpAll(stack.factory);

@@ -252,7 +252,16 @@ function PlannedList({ state, retry, timeZone }: ListProps & { readonly timeZone
             <td className="number">{money(item.oneR)}</td>
             <td className="number">{money(item.originalPlannedReward)}</td>
             <td className="number">{ratio(item.rewardRiskRatio)}</td>
-            <td>{item.entryReadiness}</td>
+            <td>
+              {item.entryReadiness}
+              {/* A disagreement is surfaced in the existing cell, so an agreeing row keeps D1's columns. */}
+              {item.integrity === 'Disagrees' && (
+                <>
+                  {' '}
+                  <span className="badge warning">Records disagree</span>
+                </>
+              )}
+            </td>
           </tr>
         ))}
       </tbody>

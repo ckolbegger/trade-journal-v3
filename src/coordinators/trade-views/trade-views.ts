@@ -48,6 +48,9 @@ export interface PlannedTradeItem {
   readonly rewardRiskRatio: Rational;
   // Recording an entry arrives in D2 (D1 A16).
   readonly entryReadiness: 'Awaiting entry';
+  // Present only when stored and expected records disagree (AC-LIFE-003), so an agreeing item keeps
+  // D1's shape exactly.
+  readonly integrity?: 'Disagrees';
 }
 
 // One Open Trade as the list presents it (D2 A32): factual Position and entry figures, no valuation
@@ -191,6 +194,7 @@ function plannedItem(summary: TradeSummary, derived: DerivedTradeState, labels: 
     originalPlannedReward: baseline.originalPlannedReward,
     rewardRiskRatio: baseline.rewardRiskRatio,
     entryReadiness: 'Awaiting entry',
+    ...(derived.findings.length > 0 && { integrity: 'Disagrees' as const }),
   };
 }
 

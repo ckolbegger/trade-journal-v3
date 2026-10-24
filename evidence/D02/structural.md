@@ -656,3 +656,14 @@ I2.7's "all issues together for the first five in one command" is read together 
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
 
 Every D1 section 6.2 case passes in the same run. Engines: Playwright 1.63.0, Chromium 153.0.8010.12, macOS 26.6.2.
+
+## B2.13 fix
+
+B2.13 failed because an Open Trade stored as Planned is listed under Planned (the lifecycle index keys on the stored lifecycle; I2.8 (a) asserts that placement and stays), and the Planned list item carried no integrity indicator. AC-LIFE-003 ("normal reads surface or block on the structured disagreement") requires every normal read to surface it, so the Planned item now does, as the Open item already did (T2.7).
+
+- `PlannedTradeItem` gains an optional `integrity?: 'Disagrees'`, set by `plannedItem()` only when `derived.findings` is non-empty. An agreeing item keeps D1's shape exactly, so the committed v1 and v2 fixture snapshots still compare equal (`npm run verify:fixtures`: views equal for both).
+- `PlannedList` shows the Open list's "Records disagree" badge (`badge warning`) inside the existing Entry cell, after "Awaiting entry". No column is added, so the D1 Planned table and its browser specs are unchanged for agreeing Trades.
+- `entryReadiness` stays "Awaiting entry". It describes the stored Planned lifecycle the list is filed under, and the badge beside it tells the trader that the records disagree; Detail's "Records disagree" panel shows stored Planned against expected Open.
+- Not covered: a Planned Trade whose facts are incoherent (not replayable) still throws in `browseTrades({lifecycle:'Planned'})`; that is a separate case left open.
+
+Verification: `npx playwright test e2e/d2/integrity.spec.ts -g "B2.13"` 1 passed (after `npm run build:faults`); `npm run test:e2e` 42 passed; `npx vitest run src/coordinators/trade-views src/ui` 88 passed; `npm run test:integration` 38 passed; typecheck, `tsc6`, lint and `lint:deps` exit 0.
