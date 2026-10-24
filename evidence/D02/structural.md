@@ -618,3 +618,41 @@ After the I2.8 (c) fix (31a0578); T2.22 suite commit 69f4c77.
 ## I2.7 reading (settled with the user 2026-10-24)
 
 I2.7's "all issues together for the first five in one command" is read together with A18: a Sell returns `VariantNotInstalled` before any other check (as T2.6's case requires), so the Sell is sent as its own command, and the other four invalid inputs (before the Plan time, future time, quantity 0, blank required answers) are sent in one command that returns all six issues together. The user confirmed this reading.
+
+## T2.23 Browser integration suite (Chromium)
+
+**Suite.** `e2e/d2/` runs against the built app on `localhost:5175` through D1's fixtures (`e2e/d1/support.ts`: the release harness server serving `dist-faults` by default, persistent Chromium profiles, the read-only probe). `e2e/d2/support.ts` adds the reference Plan with a fixed Plan time (2026-10-12 09:30 New York), the entry-form steps (row groups "Execution N", the Position Change Reflection's required answers, Decline with a reason), the D1-release onboarding and update steps (`checkForUpdate`, Reload from the notice), killable spawned Chromium processes, the integrity fixture writer, and the axe and keyboard helpers of D1's B1.15. `npm run test:e2e` now runs `e2e/d1 e2e/d2`.
+
+**Techniques, each changing no application behaviour.**
+
+- *Migration message (B2.3).* The message can show for a few milliseconds, so an init script's `MutationObserver` records whether its text was ever rendered; it only reads the DOM.
+- *Old tab during migration (B2.5).* With tab A's form unsaved, D1 disables Reload in every tab, so the race the D1 amendment closes (the update activating while tab A still holds unsaved values) is produced by tab B posting `{ type: 'ApplyUpdate' }` to the waiting worker: the message its Reload button sends. Tab B then reloads through its own `controllerchange` handler and migrates.
+- *Kills (B2.6, B2.7).* Chromium processes spawned with default features and killed with SIGKILL, relaunched the same way (D1's B1.3 lesson). Before each relaunch the browser's own saved session (`Default/Sessions`) is removed and its last exit marked clean in `Default/Preferences`: otherwise Chromium restored the killed tab, so B2.6's relaunch also reopened `/?faults=migration:hold` beside the case's page. Only browser profile files change, never the app's storage.
+- *Stored write stamps.* Comparisons of migrated records with the pre-update records leave out the persistence write stamp `revision`, which every database write assigns and the migration's copy therefore renumbers.
+- *Integrity fixture writer (B2.13 and B2.12's Error state).* Launches the profile with service workers blocked on a blank page of the app's origin, edits the current Workspace's raw `trades` record, and closes the browser before the case launches the app: never during a run (D2 section 6.0).
+- *Open list Loading (B2.12).* The page holds the Workspace's `trades` store behind a read-write transaction that only reads (`count()` repeated), so the Open read waits and "Loading open trades…" stays on screen for axe; releasing it renders the list. Nothing is written.
+- *Open list Error (B2.12).* The fixture writer adds a member identity with no Execution to the Trade's Position Change, so `browseTrades` rejects and the list shows its Error state. This relies on the known T2.9 gap (a Position Change naming a missing Execution makes `derive` throw rather than return `IncoherentFacts`); if a later fix surfaces that Trade as incoherent instead, this state needs another trigger.
+
+| Case | File | Result |
+|---|---|---|
+| B2.1 Open a position | `open-position.spec.ts` | pass |
+| B2.2 Scale-in and decline (Entry Quality: $50.18, $270.00 (1.08R), $580.00, 2.15 (planned 2.4), $18.00) | `open-position.spec.ts` | pass |
+| B2.3 Update from D1 with data | `update.spec.ts` | pass |
+| B2.4 Migration Blocked (faults build) | `update.spec.ts` | pass |
+| B2.5 Old tab during migration | `update.spec.ts` | pass |
+| B2.6 Kill during migration (faults build) | `update.spec.ts` | pass |
+| B2.7 Kill after commit | `durability.spec.ts` | pass |
+| B2.8 Offline cold restart | `durability.spec.ts` | pass |
+| B2.9 Recovery Only (faults build) | `durability.spec.ts` | pass |
+| B2.10 Mid-session failure (faults build) | `durability.spec.ts` | pass |
+| B2.11 Nothing saved without Save | `no-save.spec.ts` | pass |
+| B2.12 Responsive and accessible (resize, axe on the entry form with and without issues, receipt, Open list Empty, Loading, Ready, Error, Open Detail entering and resolved, migration views awaiting migration, Migration Blocked, migrating; keyboard-only entry) | `responsive-a11y.spec.ts` | pass (3 tests) |
+| B2.13 Integrity surfaced | `integrity.spec.ts` | **fails, not committed**: the Trade stored as Planned is listed under Planned, whose rows have no integrity badge (received row text `XYZLong StockFidelity — Roth IRA2026-10-12 09:30$250.00$600.002.4Awaiting entry`); the Detail panel and the unchanged probe pass. Production defect handed back to the main session. |
+
+| Command | Result |
+|---|---|
+| `npm run test:e2e` (with the uncommitted B2.13 file present) | `1 failed`, `41 passed (1.5m)`; the one failure is B2.13, `expect(locator).toContainText(expected) failed … Expected substring: "Records disagree"` |
+| `npx playwright test e2e/d2`, run twice more | `1 failed`, `14 passed` each time (B2.13 only) |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
+
+Every D1 section 6.2 case passes in the same run. Engines: Playwright 1.63.0, Chromium 153.0.8010.12, macOS 26.6.2.
