@@ -714,3 +714,22 @@ Figures from each critic's completion notice (the harness's own token count; com
 |---|---|---|---|---|---|---|
 | critic-1 | `2440e0f` | v1 | 141,559 | 44 | 9 min 18 s | 1 |
 | critic-2 | `40581f7` | v1 | 121,270 | 32 | 7 min 19 s | 2 |
+
+## Cumulative run after T2.24-CRITIC2-FIX
+
+Run 2026-10-21 12:53 EDT on commit `a7872a7` (the only uncommitted files were this run's own outputs and the untracked older handoff note), Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 37 passed (37)`, `Tests 344 passed (344)`, exit 0 | `suite-runs/t2.24-critic2-fix-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 18 passed (18)`, `Tests 38 passed (38)`, exit 0 | `suite-runs/t2.24-critic2-fix-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `47 passed (1.6m)`, exit 0 | `suite-runs/t2.24-critic2-fix-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.24-critic2-fix-checks.txt` |
+
+Failures: none.
+
+After the critic-2 defects fix (a7872a7).
+
+## Reload after save treated as a defect (user direction 2026-10-24)
+
+critic-2's minor observation "reloading the receipt at `/trades/<id>/record-entry` shows a blank Record entry form, which could invite a duplicate entry" is treated as a defect at the user's direction. Intended behavior: the receipt still replaces the form in place (T2.12), and the entry-form history entry is replaced once the save succeeds, so reload, or Back then Forward, lands on the Trade Detail, never on a blank form.
