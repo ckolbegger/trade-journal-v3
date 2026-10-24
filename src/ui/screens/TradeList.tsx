@@ -1,7 +1,7 @@
 import { useEffect, useState, type KeyboardEvent } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
-import type { IncoherentOpenTradeItem, OpenTradeItem, PlannedTradeItem } from '../../app/types.ts';
+import type { IncoherentOpenTradeItem, IncoherentPlannedTradeItem, OpenTradeItem, PlannedTradeItem } from '../../app/types.ts';
 import { localTime, money, quantity, ratio } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 
@@ -196,6 +196,8 @@ function OpenList({
   );
 }
 
+const NOT_AVAILABLE = 'Not available';
+
 function PlannedList({ state, retry, timeZone }: ListProps & { readonly timeZone: string }) {
   if (state.kind === 'Loading') return <p role="status">Loading planned trades…</p>;
   if (state.kind === 'Error') {
@@ -208,7 +210,7 @@ function PlannedList({ state, retry, timeZone }: ListProps & { readonly timeZone
       </section>
     );
   }
-  const items = state.items as readonly PlannedTradeItem[];
+  const items = state.items as readonly (PlannedTradeItem | IncoherentPlannedTradeItem)[];
   if (items.length === 0) {
     return (
       <section className="card empty">
@@ -243,29 +245,33 @@ function PlannedList({ state, retry, timeZone }: ListProps & { readonly timeZone
           </tr>
         </thead>
         <tbody>
-          {items.map((item) => (
-            <tr key={item.tradeId}>
-              <td>
-                <Link to={`/trades/${item.tradeId}`}>{item.underlying}</Link>
-              </td>
-              <td>{item.strategy}</td>
-              <td>{`${item.institution} — ${item.account}`}</td>
-              <td>{localTime(item.planTime, timeZone)}</td>
-              <td className="number">{money(item.oneR)}</td>
-              <td className="number">{money(item.originalPlannedReward)}</td>
-              <td className="number">{ratio(item.rewardRiskRatio)}</td>
-              <td>
-                {item.entryReadiness}
-                {/* A disagreement is surfaced in the existing cell, so an agreeing row keeps D1's columns. */}
-                {item.integrity === 'Disagrees' && (
-                  <>
-                    {' '}
-                    <span className="badge warning">Records disagree</span>
-                  </>
-                )}
-              </td>
-            </tr>
-          ))}
+          {items.map((item) => {
+            // Facts that cannot be replayed leave the Baseline figures and entry readiness not available, never a number.
+            const derived = 'oneR' in item ? item : undefined;
+            return (
+              <tr key={item.tradeId}>
+                <td>
+                  <Link to={`/trades/${item.tradeId}`}>{item.underlying}</Link>
+                </td>
+                <td>{item.strategy}</td>
+                <td>{`${item.institution} — ${item.account}`}</td>
+                <td>{localTime(item.planTime, timeZone)}</td>
+                <td className="number">{derived ? money(derived.oneR) : NOT_AVAILABLE}</td>
+                <td className="number">{derived ? money(derived.originalPlannedReward) : NOT_AVAILABLE}</td>
+                <td className="number">{derived ? ratio(derived.rewardRiskRatio) : NOT_AVAILABLE}</td>
+                <td>
+                  {derived ? derived.entryReadiness : NOT_AVAILABLE}
+                  {/* A disagreement is surfaced in the existing cell, so an agreeing row keeps D1's columns. */}
+                  {item.integrity === 'Disagrees' && (
+                    <>
+                      {' '}
+                      <span className="badge warning">Records disagree</span>
+                    </>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

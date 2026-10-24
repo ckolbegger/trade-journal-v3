@@ -261,7 +261,9 @@ export type FixtureEdit =
   // AC-LIFE-003 (B2.13): the Trade's stored lifecycle no longer matches its facts.
   | { readonly kind: 'StoredLifecycle'; readonly underlying: string; readonly lifecycle: string }
   // A Position Change naming an Execution that does not exist, so the Trade cannot be read at all.
-  | { readonly kind: 'MissingMember'; readonly underlying: string };
+  | { readonly kind: 'MissingMember'; readonly underlying: string }
+  // AC-LIFE-003 (T2.25): the first Execution serves a Planned Leg the Plan does not have, so the facts cannot be replayed.
+  | { readonly kind: 'UnknownPlannedLeg'; readonly underlying: string };
 
 // Edits raw stored records of the profile's current Workspace while the application is not
 // running: the browser is launched with service workers blocked on a blank page of the app's
@@ -287,11 +289,14 @@ export async function writeIntegrityFixture(dir: string, edit: FixtureEdit): Pro
     const trades = (await request(store.getAll())) as {
       underlying: string;
       lifecycle: string;
-      facts: { kind: string; versions: { value: { memberIds: string[] } }[] }[];
+      facts: { kind: string; versions: { value: { memberIds: string[]; intent: unknown } }[] }[];
     }[];
     const trade = trades.find((t) => t.underlying === change.underlying);
     if (!trade) throw new Error(`no stored Trade for ${change.underlying}`);
     if (change.kind === 'StoredLifecycle') trade.lifecycle = change.lifecycle;
+    else if (change.kind === 'UnknownPlannedLeg')
+      for (const version of trade.facts.find((f) => f.kind === 'Execution')!.versions)
+        version.value.intent = { kind: 'ServesPlannedLeg', plannedLegId: 'fixture-unknown-leg' };
     else trade.facts.find((f) => f.kind === 'PositionChange')!.versions[0]!.value.memberIds.push('fixture-missing-execution');
     await request(store.put(trade));
     await new Promise<void>((resolve, reject) => {

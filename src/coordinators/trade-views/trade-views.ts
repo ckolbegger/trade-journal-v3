@@ -84,7 +84,19 @@ export interface IncoherentOpenTradeItem extends Omit<
   readonly integrity: 'Disagrees';
 }
 
-export type TradeBrowseItem<L extends 'Planned' | 'Open'> = L extends 'Open' ? OpenTradeItem | IncoherentOpenTradeItem : PlannedTradeItem;
+// A Planned Trade whose recorded facts cannot be replayed (AC-LIFE-003): only its stored values are
+// listed; 1R, reward, Reward : risk, and entry readiness need a replay, so they are unavailable, and its
+// records disagree.
+export interface IncoherentPlannedTradeItem extends Omit<
+  PlannedTradeItem,
+  'oneR' | 'originalPlannedReward' | 'rewardRiskRatio' | 'entryReadiness' | 'integrity'
+> {
+  readonly integrity: 'Disagrees';
+}
+
+export type TradeBrowseItem<L extends 'Planned' | 'Open'> = L extends 'Open'
+  ? OpenTradeItem | IncoherentOpenTradeItem
+  : PlannedTradeItem | IncoherentPlannedTradeItem;
 
 export interface TradeBrowseView<L extends 'Planned' | 'Open'> {
   readonly items: readonly TradeBrowseItem<L>[];
@@ -196,6 +208,10 @@ function plannedItem(summary: TradeSummary, derived: DerivedTradeState, labels: 
     entryReadiness: 'Awaiting entry',
     ...(derived.findings.length > 0 && { integrity: 'Disagrees' as const }),
   };
+}
+
+function incoherentPlannedItem(summary: TradeSummary, labels: Labels): IncoherentPlannedTradeItem {
+  return { tradeId: summary.tradeId, underlying: summary.underlying, ...labels, planTime: summary.planTime, integrity: 'Disagrees' };
 }
 
 function decimal(text: string): Rational {
@@ -407,9 +423,8 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
               ? openItem(summary, analysis, derived, labelsOf(summary))
               : incoherentItem(summary, analysis, labelsOf(summary));
           }
-          // A Planned item's Baseline needs a replay; Planned Trades with incoherent facts are not yet surfaced.
-          if (derived.kind !== 'Derived') throw new Error('incoherent');
-          return plannedItem(summary, derived, labelsOf(summary));
+          // A Planned item's Baseline needs a replay; facts that cannot be replayed are surfaced, never repaired.
+          return derived.kind === 'Derived' ? plannedItem(summary, derived, labelsOf(summary)) : incoherentPlannedItem(summary, labelsOf(summary));
         }) as TradeBrowseItem<L>[];
         return { view: { items, ...(page.nextCursor ? { nextCursor: page.nextCursor } : {}) }, binding: page.binding };
       });

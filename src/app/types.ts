@@ -42,6 +42,7 @@ export type {
 export type {
   IncoherentFactFinding,
   IncoherentOpenTradeItem,
+  IncoherentPlannedTradeItem,
   IncoherentTradeDetail,
   OpenTradeDetail,
   OpenTradeItem,

@@ -50,6 +50,7 @@ describe('browseTrades: Planned', () => {
     if (result.kind !== 'Ready') throw new Error(`expected Ready, got ${result.kind}`);
     expect(result.view.items.map((i) => i.tradeId)).toEqual([newer, older]);
     const [item] = result.view.items;
+    if (!item || !('oneR' in item)) throw new Error('expected a coherent Planned item');
     expect(item).toEqual(
       expect.objectContaining({
         underlying: 'XYZ',

@@ -269,3 +269,30 @@ describe('Planned list', () => {
     expect(within(entry).getByText('Records disagree').className).toBe('badge warning');
   });
 });
+
+describe('Planned list row for an incoherent Trade', () => {
+  it('should show the row with Records disagree and Not available in each derived cell, linking to its Detail', async () => {
+    const { tradeId, underlying, strategy, account, institution, planTime } = plannedItem;
+    const incoherent = { tradeId: 'trade-2', underlying: 'ABC', strategy, account, institution, planTime, integrity: 'Disagrees' };
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeViewsAndReporting.browseTrades).mockResolvedValue(readyPage([plannedItem, incoherent]));
+    renderList(facade);
+    const table = await screen.findByRole('table', { name: 'Planned Trades' });
+    expect(within(table).getAllByRole('columnheader')).toHaveLength(8);
+    const [, agreeingRow, row] = within(table).getAllByRole('row');
+    expect(within(agreeingRow!).getByRole('link', { name: underlying }).getAttribute('href')).toBe(`/trades/${tradeId}`);
+    const cells = within(row!).getAllByRole('cell');
+    expect(cells.map((c) => c.textContent)).toEqual([
+      'ABC',
+      'Long Stock',
+      'Fidelity — Roth IRA',
+      '2026-10-12 09:30',
+      'Not available',
+      'Not available',
+      'Not available',
+      'Not available Records disagree',
+    ]);
+    expect(within(cells[7]!).getByText('Records disagree').className).toBe('badge warning');
+    expect(within(row!).getByRole('link', { name: 'ABC' }).getAttribute('href')).toBe('/trades/trade-2');
+  });
+});
