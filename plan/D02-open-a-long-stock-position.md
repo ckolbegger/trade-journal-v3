@@ -598,7 +598,7 @@ As in D1, under `evidence/D02/`: `tdd-log.md` (red and green per case), `structu
 
 Added on 2026-10-24, after the D2 gate passed (tag `claude-opus-5.5-d2`), at the user's direction. The items come from the D2 implementation handoff's known gaps and from the critics' minor observations (`evidence/D02/critic-1.md` to `critic-3.md`). None of them failed a D2 pass condition, so the gate and the `covered` rows stand.
 
-**When and how.**
+**When and how.** Task breakdowns for T2.25–T2.35 are in section 11.1.
 - F1–F11 form a D2 follow-up batch, run **before D4's first task**, in the order listed. They use the D2 discipline:
   - each item goes to a fresh `tdd-task` subagent, failing test first;
   - each item ends with a complete cumulative run recorded in `evidence/D02/structural.md`;
@@ -625,8 +625,150 @@ Added on 2026-10-24, after the D2 gate passed (tag `claude-opus-5.5-d2`), at the
 | F5 Focus after navigation | T2.29 | After keyboard navigation to Record entry, and after Save shows the receipt, focus lands on the body. Move focus to the new view's heading (ui-contract "logical focus after navigation"). | Browser test: `document.activeElement` is the heading in both cases. |
 | F6 Recovery Only on a direct entry-form link | T2.30 | `/trades/<id>/record-entry` while not Writable shows an empty main area. It should show a heading, a one-sentence explanation, and a link back to the Trade (no blank views). | Browser test with `?faults=inventory`. |
 | F7 Receipt discloses changed Deviations | T2.31 | An earlier-dated entry that changes an existing Entry Size occurrence (C2.6: 20 to 60 shares) is not mentioned on the receipt. Add the change to the receipt alongside the resolution-point and Entry Quality changes (P5). | UI unit test with the C2.6 data; browser check on the receipt text. |
-| F8 Migration Blocked gutter | T2.32 | At 320 px the Migration Blocked card runs edge to edge. Give it the standard 16 px side gutter. | Browser narrow test measuring the card's left and right inset. |
-| F9 Narrow Open list | T2.33 | At 320 px, quantity, cost, entry status and integrity sit off-screen, and the only cue is a clipped column edge. Add a visible horizontal-scroll cue, or a narrow-view column order that keeps quantity and integrity visible, within the UI contract. | Browser narrow test: the chosen cue or column order is present, and there is still no page-level overflow. |
+| F8 Migration Blocked gutter | T2.32, moved to T2.38 (revision 7) | At 320 px the Migration Blocked card runs edge to edge. Give it the standard 16 px side gutter. | Browser narrow test measuring the card's left and right inset. |
+| F9 Narrow Open list | T2.33, moved to T2.40 (revision 7) | At 320 px, quantity, cost, entry status and integrity sit off-screen, and the only cue is a clipped column edge. Add a visible horizontal-scroll cue, or a narrow-view column order that keeps quantity and integrity visible, within the UI contract. | Browser narrow test: the chosen cue or column order is present, and there is still no page-level overflow. |
 | F10 R-multiple decimals | T2.34 | "(1.3R)" appears beside "(1.08R)". Format R multiples with consistent decimal places, following the display-precision rule in `specs/` (look it up; if none is fixed, keep two). | Unit test of the formatter; existing receipt and Detail tests updated only for the format. |
 | F11 I2.5 test name | T2.35 | The I2.5 case in `tests/integration/d2/open-position.test.ts` still names the response check that moved to `d2/responses`. Rename it to what it checks. | `npm run test:integration -- d2/open-position` and `-- d2/responses` both still select and pass. |
 | F12 Section-validator gaps | carried to D8 | Three gaps found in T2.9: a Position Change naming a missing Execution makes `derive` throw; there is no duplicate tradeId or Entry-id check; there is no fact-version continuity check. Also, B2.12's Open-list Error state is triggered through the first gap, so it needs another trigger once that gap is fixed. | D8's validation cases (T8.6) cover each gap with a failing test first. |
+
+### 11.1 Task breakdowns for T2.25–T2.35
+
+Added on 2026-10-24 to complete plan revision 7, at the user's direction. The table above says what each item is and why. These sections give each task its seam, its basis, and its `it should` cases (behavioral) or exact measurements (structural). Cases are listed so each one adds behavior the earlier ones do not already require. Every task keeps the rules in "When and how" and "Durable compatibility" above.
+
+#### T2.25 Incoherent Planned Trade in the Planned list (F1)
+
+**Seam:** `TradeViewsAndReporting.browseTrades` (`src/coordinators/trade-views/trade-views.ts`), then `TradeList`.
+
+**Basis:** AC-LIFE-003 ("normal reads surface" a disagreement instead of failing); B2.13's reading; the I2.8 (c) fix that gave the Open list `IncoherentOpenTradeItem`.
+
+```text
+describe("browseTrades Planned with an incoherent Trade")
+  it should return Ready with the incoherent Trade as an item marked integrity Disagrees, and the other Planned items unchanged
+  it should give the incoherent item only stored values (symbol, Strategy, Account, Plan time) and no derived figures (1R, reward, Reward : risk show as unavailable)
+  it should leave the content revision and every store unchanged
+describe("Planned list row for an incoherent Trade")
+  it should show the row with "Records disagree" and "Not available" in each derived cell, linking to its Detail
+```
+
+**Tests:** integration in `tests/integration/d2/integrity-incoherent.test.ts`; browser in `e2e/d2/integrity.spec.ts`. The coherent Planned items' view shape is unchanged, so `verify:fixtures` stays equal.
+
+#### T2.26 No Record entry on an incoherent Trade (F2)
+
+**Seam:** `TradeDetail` (incoherent branch); the route guard for `/trades/<id>/record-entry`.
+
+**Basis:** AC-LIFE-003; ui-contract View states (no action that can only fail).
+
+```text
+describe("incoherent Trade Detail")
+  it should not offer Record entry on an IncoherentTradeDetail, while a coherent Open or Planned Detail still offers it
+  it should explain beside the "Records disagree" panel that new entries cannot be recorded until the records agree
+describe("Record entry route for an incoherent Trade")
+  it should show the same explanation and a link back to the Trade instead of the form, and make no recordPositionChange call
+```
+
+**Tests:** `src/ui/screens/TradeDetail.test.tsx`, `PositionChangeForm.test.tsx`; one browser case in `e2e/d2/integrity.spec.ts`.
+
+#### T2.27 Entry form load failure (F3)
+
+**Seam:** `PositionChangeForm` (its `getTradeDetail` and `getDefinitions` loads).
+
+**Basis:** ui-contract View states (Loading, Not Found, Error with recovery); AC-UI-002.
+
+```text
+describe("Record entry load states")
+  it should show Not Found, with a link to Trades, when getTradeDetail returns NotFound
+  it should show an Error state with Retry when getTradeDetail returns Error or rejects
+  it should show the Error state with Retry when the reflection definition cannot be loaded
+  it should load the form when Retry succeeds, without a page reload
+```
+
+**Structural check:** axe on the Not Found and Error states in the unit environment (as the D1 view-state tests do).
+
+#### T2.28 Saving again after a Conflict (F4)
+
+**Seam:** `PositionChangeForm` (its `conflict` state and the `view.factRevision` it saves against).
+
+**Basis:** AC-RESP-001 and the Conflict rule (nothing saved; values kept); ui-contract Forms (recovery without losing entered state).
+
+```text
+describe("after a Conflict")
+  it should offer "Load the latest Trade" in the Conflict message, keeping every entered Execution row, answer, decline and reason
+  it should reload the Detail when chosen, so the next save uses the new FactRevision and records exactly one Position Change
+  it should show the reloaded Trade's changed figures (for example its Position) above the kept values before the trader saves again
+  it should keep the Conflict message and the values when the reload itself fails
+```
+
+**Tests:** unit in `PositionChangeForm.test.tsx` with the facade double; one browser case in `e2e/d2/no-save.spec.ts` with two pages on one profile (save in page B, Conflict then reload then save in page A; the probe shows two Position Changes, one from each page).
+
+#### T2.29 Focus after navigation (F5)
+
+**Seam:** `PositionChangeForm` and `PositionChangeReceipt`.
+
+**Basis:** ui-contract Accessibility ("logical focus after navigation").
+
+```text
+describe("focus after navigation")
+  it should move focus to the "Record entry" heading when the form finishes loading
+  it should move focus to the "Entry recorded" heading when the receipt replaces the form
+  it should not move focus away from the summary after a rejected save (the existing rule stays)
+```
+
+**Tests:** unit cases above; a browser case in `e2e/d2/responsive-a11y.spec.ts` asserting `document.activeElement` by keyboard: Enter on "Record entry", then Enter on "Save entry".
+
+#### T2.30 Recovery Only on a direct entry-form link (F6)
+
+**Seam:** `AppShell` routing (the route filter at `routes`, which drops write routes when not launched Writable).
+
+**Basis:** ui-contract View states (no blank views); the Recovery Only rules (no authoritative writes).
+
+```text
+describe("write route while not Writable")
+  it should show a heading "Record entry isn't available", a one-sentence explanation that this browser can't save right now, and a link to the Trade, for /trades/<id>/record-entry
+  it should show the same view after a runtime refusal mid-session, without losing the read-only banner
+```
+
+**Tests:** unit in `AppShell.test.tsx`; browser in `e2e/d2/runtime-failure.spec.ts` on the faults build with `?faults=inventory`.
+
+#### T2.31 Receipt discloses changed Deviations (F7)
+
+**Seam:** `PositionChangeReceipt` (today it renders only `deviationReconciliation` actions of kind `Create`).
+
+**Basis:** P5 (the receipt discloses what an earlier-dated entry changed); AC-RESP-001 (rendered from the command's result alone).
+
+```text
+describe("receipt Deviation changes")
+  it should say "Entry Size Deviation changed: now 60 shares above plan (was 20), caused by the Position Change at 11:00" for a NewVersion action
+  it should say an Entry Size Deviation no longer applies for a Supersede action
+  it should say nothing for a Retain action
+```
+
+**Tests:** unit with the C2.6 data; the browser check of the C2.6 receipt text in `e2e/d2/open-position.spec.ts`. No result-shape change: the actions are already in `receipt.deviationReconciliation`.
+
+#### T2.32 Migration Blocked gutter (F8): moved to T2.38
+
+Plan revision 7 merges F8 into T2.38 (one content column and side gutters), which measures the 16 px gutter on every view, the Migration Blocked card included. T2.32 has no task of its own; its ID is kept so later IDs do not move.
+
+#### T2.33 Narrow Open list (F9): moved to T2.40
+
+Plan revision 7 (decision U1) implements F9 as T2.40, the narrow scrolling table with a pinned Underlying, scroll shadows and the column order settled under I1. T2.33 has no task of its own; its ID is kept so later IDs do not move. The post-batch critic's narrow check therefore still sees the current Open list and the Migration Blocked card as they are; F8 and F9 are judged at the UI-alignment critic gate (T2.55).
+
+#### T2.34 R-multiple decimals (F10)
+
+**Seam:** `src/ui/format.ts` (a new formatter for R multiples, used where `ratio` is followed by "R" in `TradeDetail` and `PositionChangeReceipt`).
+
+**Basis:** the display-precision rule in `specs/` (the task looks it up and cites it). If no precision is fixed for R multiples, two decimals.
+
+```text
+describe("R multiple format")
+  it should format an R multiple with exactly two decimals ("1.30R", "1.08R", "1.00R")
+  it should round half away from zero at the second decimal, matching money
+  it should leave Reward : risk and the other ratios as they are
+```
+
+**Test impact:** receipt and Detail tests change only where an R multiple loses or gains a trailing zero.
+
+#### T2.35 I2.5 test name (F11, structural)
+
+**Change:** rename the I2.5 case and the header comment in `tests/integration/d2/open-position.test.ts` to what they check (opening a position with PC1: Position, Open Lot, lifecycle), with no mention of the response checks now in `responses.test.ts`.
+
+**Verification:** `npm run test:integration -- d2/open-position` and `npm run test:integration -- d2/responses` each select their cases and pass; the integration total is unchanged (39); `grep -n "AC-RESP-001" tests/integration/d2/open-position.test.ts` finds nothing.
