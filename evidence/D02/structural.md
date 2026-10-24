@@ -856,3 +856,21 @@ Failures: none. Unit rose from 346 to 349 (T2.26's three UI cases); browser from
 | `npm run build:faults` | exit 0 |
 | `npx playwright test e2e/d2/responsive-a11y.spec.ts -g "Not Found and Error states"` | `1 passed`, exit 0 |
 | `npx playwright test e2e/d2/responsive-a11y.spec.ts` | `4 passed`, exit 0 |
+
+**ocr review of T2.27** (`ocr-review` step): commit `266d0c5`, session `d4537fc9-d2bb-4f23-a314-fa9222960126`, model `gpt-6.1-sol`, 1 file reviewed (4 excluded: the e2e spec, the unit test and two evidence docs), 2 comments. Raw output: `ocr/t2.27-266d0c5.json`. The user decides what happens to each finding; none is fixed or dismissed yet.
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | bug | `src/ui/screens/PositionChangeForm.tsx:91` | Results from a superseded load attempt aren't ignored. A late rejection of the first definition request can replace a working, retried form with Error. | Valid: the load effect has no cleanup or generation guard, so any callback from an earlier attempt still calls `setFailure` or `setView`. The `current ?? 'Error'` guard doesn't stop it, because `failure` is `undefined` again after Retry. The race needs a slow first request that fails after a successful Retry, so it is narrow. |
+| medium | bug | `src/ui/screens/PositionChangeForm.tsx:124` | Retry keeps the old `view` and `definition`. The form can render from the first attempt's Trade before the retried Trade load finishes. `failure` is also not reset when `tradeId` or `facade` changes. | Doubtful: the retained `view` is real, because Retry only clears `failure`. After a definition-only failure the form shows the earlier Trade, which was a successful load. The save carries `view.factRevision`, so a stale revision ends in the existing Conflict path rather than a wrong write. The `tradeId` reset is unlikely to matter if the route remounts the form, but I did not confirm that. Resetting `view` and `definition` on Retry would be a cheap hardening. |
+
+**Cumulative run after T2.27:** run 2026-10-24 17:39 EDT on commit `266d0c5` (T2.27, F3: entry form Not Found and Error-with-Retry states), Node v26.12.0. Run label `t2.27`.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 37 passed (37)`, `Tests 353 passed (353)`, exit 0 | `suite-runs/t2.27-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 19 passed (19)`, `Tests 42 passed (42)`, exit 0 | `suite-runs/t2.27-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `51 passed (1.7m)`, exit 0 | `suite-runs/t2.27-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.27-checks.txt` |
+
+Failures: none. Unit rose from 349 to 353 (T2.27's four cases); browser from 50 to 51 (the axe case on the entry form's Not Found and Error states).
