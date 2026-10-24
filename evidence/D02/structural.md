@@ -701,3 +701,11 @@ Run 2026-10-21 12:38 EDT on commit `e8735b0` (the only uncommitted files were th
 Failures: none.
 
 After the critic-1 defect 1 fix (e8735b0).
+
+## Critic cost (measurement agreed with the user 2026-10-24)
+
+Figures from each critic's completion notice (the harness's own token count; comparable across critics, not a billing figure). Brief v1 = the critic writes all Playwright plumbing itself; brief v2 = `.claude/docs/critic-brief.md`, setup helpers from `e2e/d2/support.ts`. The after sample is critic-3 on the same flows (an extra measurement run if critic-2 passes; otherwise the next gate critic).
+
+| Critic | Commit | Brief | Tokens | Tool calls | Duration | Defects |
+|---|---|---|---|---|---|---|
+| critic-1 | `2440e0f` | v1 | 141,559 | 44 | 9 min 18 s | 1 |

@@ -20,7 +20,7 @@ Before the deliverable's first task, create `evidence/D<nn>/tdd-log.md` with a n
 
 ## Delegating each task to `tdd-task`
 
-Delegate every implementation task to its own fresh `tdd-task` subagent (`.claude/agents/tdd-task.md`). This covers every behavioral and structural task. The only exceptions are the cumulative runs, which go to `suite-runner`, and the browser-critic gate, which has its own fresh-critic rules.
+Delegate every implementation task to its own fresh `tdd-task` subagent (`.claude/agents/tdd-task.md`). This covers every behavioral and structural task. The only exceptions are the cumulative runs, which go to `suite-runner`, and the browser-critic gate, which has its own fresh-critic rules; brief each critic from `.claude/docs/critic-brief.md`.
 
 - Use one subagent per task, never one per case. Run tasks one at a time, in task-graph order.
 - Write each brief from the reading, without opening the task's code. The brief gives:
