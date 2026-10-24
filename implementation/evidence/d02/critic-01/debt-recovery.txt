@@ -1,0 +1,54 @@
+TRADE JOURNAL
+Trades
+New Plan
+Journal Debt
+Workspace
+
+AFTER-CLOSE JOURNAL · USD
+
+Answer Journal Debt
+Check for application updates
+Recovery Only
+
+Reading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.
+
+Retry startup
+Storage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection
+
+Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.
+
+Review before continuing
+This browser does not have the required available storage capacity.
+Position Change Reflection
+
+Answer the original trigger-time form. This writing belongs to Trade 264c4f06-38cd-4807-95d5-ea7175a1a954, Position Change 9fe0b662-14e5-4ad9-a4b3-7c552ed46758.
+
+Source: Position Change · Moment: 2026-10-21T23:18:06.701Z · Due: 2026-10-21T23:18:06.701Z
+
+Debt outcome
+Answer reflection
+Decline owed reflection
+Decision mode
+As Planned
+Deliberate Adjustment
+Reactive
+Externally Imposed
+Primary emotion
+Calm
+Eager
+Anxious
+FOMO
+Revenge
+Relieved
+Frustrated
+Other
+Decision confidence
+Choose 1–5
+1
+2
+3
+4
+5
+Note (optional)
+Save Debt outcome
+Cancel

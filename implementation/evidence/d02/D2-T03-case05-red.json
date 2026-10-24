@@ -1,0 +1,17 @@
+{
+  "id": "D2-T03-case05",
+  "stage": "red",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "sourceDigest": "df39cd5b4803a8586821b9d8670a8a8f3ee5cb84b5e81c8f2b29f251f4a30d6f",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "--project",
+    "unit",
+    "tests/unit/d02-journal.test.ts"
+  ],
+  "exit": 1,
+  "stdout": "\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n ❯ |unit| tests/unit/d02-journal.test.ts (5 tests | 1 failed) 27ms\n   × rejects stale and competing completions without duplicating outcomes 5ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 4 passed (5)\n   Start at  13:25:28\n   Duration  348ms (environment 70%, import 11%, tests 10%, transform 8%, worker 1%)\n\n",
+  "stderr": "\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |unit| tests/unit/d02-journal.test.ts > rejects stale and competing completions without duplicating outcomes\nAssertionError: expected 'Saved' to be 'Conflict' // Object.is equality\n\nExpected: \"Conflict\"\nReceived: \"Saved\"\n\n ❯ tests/unit/d02-journal.test.ts:73:82\n\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n"
+}

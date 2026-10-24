@@ -1,0 +1,55 @@
+{
+  "releaseId": "2cceb94481214601e7a1d43f28b5008985956048b0f0040a2593c33e9fedc723",
+  "files": [
+    {
+      "file": "capabilities.json",
+      "sha256": "71878297c7953004d90c5841bc9ecd143fbb86a65c348e099c1d8f18a039ab91",
+      "bytes": 1992
+    },
+    {
+      "file": "icon-192.png",
+      "sha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+      "bytes": 3409
+    },
+    {
+      "file": "icon-512.png",
+      "sha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+      "bytes": 12236
+    },
+    {
+      "file": "icon.svg",
+      "sha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+      "bytes": 180
+    },
+    {
+      "file": "index.html",
+      "sha256": "f447124342978eb82b2ec4c423abe0ef637d8cdbdd47daae7c1eee3c620fb246",
+      "bytes": 446
+    },
+    {
+      "file": "manifest.webmanifest",
+      "sha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+      "bytes": 416
+    },
+    {
+      "file": "offline-inventory.json",
+      "sha256": "0701c98c75fd17d4a3ee7410418aff349eb4beda7159c3365fe255e457ad40ef",
+      "bytes": 1145
+    },
+    {
+      "file": "sw.js",
+      "sha256": "5e380d881d4e91405bff294673e4557645aa240bb4e9815442b0a3a1062d6bf5",
+      "bytes": 3935
+    },
+    {
+      "file": "assets/index-BZaGd-Wg.js",
+      "sha256": "c671ee9185a8ab01523048b4351c7f009ef2a3888ffa683f2d97efc2f6762926",
+      "bytes": 607568
+    },
+    {
+      "file": "assets/index-BiR8c3jK.css",
+      "sha256": "cfc6ba696c7b1b1c8f6deacce1aa5ec0cf5221a87c722c4452e10febe4a7dcf3",
+      "bytes": 3000
+    }
+  ]
+}

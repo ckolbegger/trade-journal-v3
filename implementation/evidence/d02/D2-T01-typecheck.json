@@ -1,0 +1,14 @@
+{
+  "id": "D2-T01",
+  "stage": "typecheck",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "sourceDigest": "88f8c9a1974e8094a49b3ff09a62f3af3c1a6137d52f003797af29204b0a63a5",
+  "command": [
+    "npm",
+    "run",
+    "typecheck"
+  ],
+  "exit": 1,
+  "stdout": "\n> trade-journal-v3@0.1.0 typecheck\n> node node_modules/@typescript/native/bin/tsc -b\n\nsrc/presentation/App.tsx(162,816): error TS2339: Property 'entryReadiness' does not exist on type '{ findings?: undefined; status: \"Derived\"; reconciliation: { candidateId: string; revision: string; digest: string; expectedLifecycle: \"Planned\"; }; baseline: Baseline; entryReadiness: \"Unfilled\"; ... 4 more ...; trade: TradeSnapshot; } | { ...; }'.\n  Property 'entryReadiness' does not exist on type '{ status: \"Derived\"; reconciliation: { candidateId: string; revision: string; digest: string; expectedLifecycle: \"Open\"; }; baseline: Baseline; quantity: string; grossBasis: string; ... 6 more ...; trade: TradeSnapshot; }'.\ntools/browser-generator.ts(40,83): error TS2339: Property 'entryReadiness' does not exist on type '{ status: \"IntegrityBlocked\"; findings: string[]; reconciliation?: undefined; baseline?: undefined; entryReadiness?: undefined; positions?: undefined; lotMatches?: undefined; deviations?: undefined; terminalDisposition?: undefined; trade: TradeSnapshot; } | { ...; } | { ...; }'.\n  Property 'entryReadiness' does not exist on type '{ status: \"Derived\"; reconciliation: { candidateId: string; revision: string; digest: string; expectedLifecycle: \"Open\"; }; baseline: Baseline; quantity: string; grossBasis: string; ... 6 more ...; trade: TradeSnapshot; }'.\n",
+  "stderr": ""
+}

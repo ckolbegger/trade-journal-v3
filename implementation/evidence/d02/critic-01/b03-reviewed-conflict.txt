@@ -1,0 +1,65 @@
+TRADE JOURNAL
+Trades
+New Plan
+Journal Debt
+Workspace
+
+AFTER-CLOSE JOURNAL · USD
+
+Opening
+Check for application updates
+Storage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection
+
+Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.
+
+This Trade is already Open. Your unsaved Executions have not been recorded. Cancel to inspect the saved Trade.
+
+One complete initial decision
+
+Frozen planned quantity: 100 shares.
+
+Enter every broker buy Execution for this decision. Together they must equal the frozen planned quantity. No facts or reflection are saved until you press Save.
+
+Position Change time (ISO 8601)
+Execution 1 · Buy CRITRACETWO
+Execution 1 quantity (shares)
+Execution 1 price (USD)
+Execution 1 fee (USD)
+Execution 1 time (ISO 8601)
+Remove Execution 1
+Execution 2 · Buy CRITRACETWO
+Execution 2 quantity (shares)
+Execution 2 price (USD)
+Execution 2 fee (USD)
+Execution 2 time (ISO 8601)
+Remove Execution 2
+Add Execution
+Position Change Reflection
+Reflection outcome
+Complete reflection now
+Defer reflection as Journal Debt
+Decline reflection
+Decision mode
+As Planned
+Deliberate Adjustment
+Reactive
+Externally Imposed
+Primary emotion
+Calm
+Eager
+Anxious
+FOMO
+Revenge
+Relieved
+Frustrated
+Other
+Decision confidence
+Choose 1–5
+1
+2
+3
+4
+5
+Note (optional)
+Save initial Position Change
+Cancel

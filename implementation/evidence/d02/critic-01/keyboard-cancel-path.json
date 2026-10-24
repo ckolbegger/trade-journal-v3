@@ -1,0 +1,346 @@
+[
+  {
+    "name": "New Plan",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "Confirm Plan",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Record initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Add Execution",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Add Execution",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Choose 1–512345",
+    "tag": "SELECT"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "Cancel",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Record initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Add Execution",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Save initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Answer reflection",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Choose 1–512345",
+    "tag": "SELECT"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "Cancel",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "New Plan",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "Confirm Plan",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Record initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Add Execution",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Add Execution",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Choose 1–512345",
+    "tag": "SELECT"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "Cancel",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Record initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Add Execution",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Save initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Answer reflection",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Choose 1–512345",
+    "tag": "SELECT"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "Cancel",
+    "tag": "BUTTON"
+  }
+]

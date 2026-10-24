@@ -1,0 +1,22 @@
+{
+  "id": "D2-T06-case01",
+  "stage": "green-attempt01",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "inputs": {
+    "implementation/plan/d02-implementation-baseline.md": "3f0042a94f5be932f0baaf8222b4a2da50b766a4036cd5d785b640f1b64892fb",
+    "implementation/plan/d02-initial-stock-entry.md": "f178999f16b99c3e961f4d2f63e55a5be6e86961d2b3c772e3f2614ccf3e62ec",
+    "implementation/plan/d01-capacity-policy-revision.md": "ba560d7d8eb724fb6f74cdc0f5990cccb650b733302836a120393256f273ed64",
+    "specs/evaluation/kickoff-prompt.md": "03c97d607bfd55e086b626a710a6475372320233c2e67ef8b5427016f85bc795"
+  },
+  "sourceDigest": "c4163f0506a8feaf635a0021fd92df734cd59615aa39ad3f07919abfe95b28f2",
+  "command": [
+    "npm",
+    "run",
+    "test:unit",
+    "--",
+    "--testNamePattern=records several Executions through"
+  ],
+  "exit": 0,
+  "stdout": "\n> trade-journal-v3@0.1.0 pretest:unit\n> node tools/build-d1-fixture.mjs\n\nvite v8.3.4 building client environment for production...\ntransforming...\n✓ 10 modules transformed.\nrendering chunks...\ncomputing gzip size...\n.cache/d1-fixture/d1-fixture.mjs  31.72 kB │ gzip: 8.31 kB\n\n✓ built in 14ms\n\n> trade-journal-v3@0.1.0 test:unit\n> vitest run --project unit --testNamePattern=records several Executions through\n\n\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n\n Test Files  1 passed | 12 skipped (13)\n      Tests  1 passed | 96 skipped (97)\n   Start at  13:35:21\n   Duration  949ms (environment 73%, transform 11%, import 10%, tests 5%)\n\n",
+  "stderr": ""
+}

@@ -1,0 +1,131 @@
+TRADE JOURNAL
+Trades
+New Plan
+Journal Debt
+Workspace
+
+AFTER-CLOSE JOURNAL · USD
+
+CRITONE · Open
+Check for application updates
+Storage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection
+
+Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.
+
+Open · Filled as Planned
+Frozen Plan Baseline
+
+Critic broker · Critic account · Long Stock
+
+Original Planned Risk · 1R
+$500.00
+Original Planned Reward
+$1000.00
+Planned reward/risk ratio
+2/1
+Intended entry
+$50 × 100 shares
+Stop · underlying price
+$45
+Target · underlying price
+$60
+Open Position
+Quantity
+100 shares
+Gross basis
+$5020.00
+Opening fees
+$3.00
+Weighted entry
+50.2 USD (exact 251/5)
+Actual entry risk
+$523.00
+Actual entry reward
+$977.00
+Actual entry reward/risk
+1.87 (exact 977/523)
+Entry Quality
+Below Plan
+Open Lots
+
+40 shares at $49 · opening fee $1.00
+
+60 shares at $51 · opening fee $2.00
+
+Position Change Reflection · Completed
+
+Completed
+
+Trade Anchor · Source Position Change · Position Change 64e25044-069d-4b07-b487-dea6c3e9a93a
+
+Plan Reflection
+
+Trade Anchor · Plan Confirmation
+
+Moment: 2026-10-21 19:14:09.213 America/New_York · First authored: 2026-10-21 19:14:09.237 America/New_York
+
+Why this trade, why now?
+
+Critic independent thesis
+
+What would invalidate the thesis?
+
+Below original stop
+
+Conviction
+
+Unanswered
+
+Primary emotion
+
+Unanswered
+
+Position Change Reflection
+
+Trade Anchor · Position Change
+
+Moment: 2026-10-21 19:14:09.412 America/New_York · First authored: 2026-10-21 19:14:09.745 America/New_York
+
+Decision mode
+
+As Planned
+
+Primary emotion
+
+Calm
+
+Decision confidence
+
+4
+
+Note
+
+Independent critic reflection
+
+View history
+
+Confirmed: 2026-10-21 19:14:09.213 America/New_York
+
+Saved: 2026-10-21 19:14:09.237 America/New_York
+
+Recorded Sequence: 1
+
+Plan fact: b75549cd-cd4b-4778-baf8-4017b5af06c8
+
+Version: 422a95b7-ae34-41a9-b0c4-0edb70765fac
+
+Confirmed: 2026-10-21 19:14:09.213 America/New_York
+
+Saved: 2026-10-21 19:14:09.237 America/New_York
+
+Recorded Sequence: 1
+
+Plan fact: b75549cd-cd4b-4778-baf8-4017b5af06c8
+
+Version: e89ccda3-b1c7-45fc-9c60-f287485e67e5
+
+Position Change: 64e25044-069d-4b07-b487-dea6c3e9a93a · 2026-10-21 19:14:09.412 America/New_York
+
+Execution de0e4536-2366-4cfe-af6e-d0bb0d87d066: 40 shares at $49, fee $1 · 2026-10-21 19:14:09.412 America/New_York · Saved 2026-10-21 19:14:09.745 America/New_York · Recorded Sequence 3
+
+Execution 96cebc21-f9df-4007-8c4e-e2bb1b269510: 60 shares at $51, fee $2 · 2026-10-21 19:14:09.412 America/New_York · Saved 2026-10-21 19:14:09.745 America/New_York · Recorded Sequence 4

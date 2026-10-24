@@ -1,0 +1,16 @@
+[
+  {
+    "name": "B03 shared-store conflict",
+    "time": "2026-10-21T23:16:20.532Z",
+    "expected": "one winner, preserved typed conflict, review recognizes already Open",
+    "observed": "Two pages in same persistent context, one saved, other retains two rows and reflection, disabled after review",
+    "status": "PASS"
+  },
+  {
+    "name": "B03 readiness",
+    "time": "2026-10-21T23:16:21.238Z",
+    "expected": "isolated native cache boundary failure blocks all authority, readable recovery, safe retry retains draft",
+    "observed": "all root/version/lifecycle deep equal under rejection; retry and exact draft save succeeded",
+    "status": "PASS"
+  }
+]

@@ -7,6 +7,7 @@
 :global(input:not([type=radio])), :global(select), :global(textarea) { display: block; width: 100%; border: 1px solid #777970; border-radius: 9px; padding: .6rem; margin-top: .3rem; background: white; color: #262820; }
 :global(label) { display: block; margin: 1rem 0; }
 :global(textarea) { min-height: 100px; resize: vertical; }
+:global(fieldset) { min-inline-size: 0; margin: 1rem 0; border: 1px solid #777970; border-radius: 9px; }
 :global(h1) { font-size: 1.8rem; line-height: 1.2; }
 :global(h2) { font-size: 1.15rem; }
 :global(h3) { font-size: .95rem; }
@@ -33,7 +34,7 @@
   .shell { display: block; }
   .shell nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 2; flex-direction: row; justify-content: space-around; gap: .4rem; padding: .65rem; border-top: 1px solid #d8d9ce; border-right: 0; background: #f6f4ed; }
   .shell nav strong { display: none; }
-  .shell nav button { font-size: .85rem; padding: .5rem .8rem; }
+  .shell nav button { min-width: 0; flex: 1; font-size: .8rem; padding: .5rem .3rem; }
   .shell main { padding: 1.2rem 1rem 6rem; }
   .card { padding: 1rem; }
   .card dl { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }

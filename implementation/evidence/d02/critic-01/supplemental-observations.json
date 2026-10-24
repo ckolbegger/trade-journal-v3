@@ -1,0 +1,16 @@
+[
+  {
+    "name": "B02 opening cancel",
+    "time": "2026-10-21T23:18:06.678Z",
+    "expected": "filled two-execution Complete draft survives ordinary navigation; Cancel then stopped offline launch saves nothing",
+    "observed": "Exact root/all versions/lifecycle equality before/after/reopened; Planned remains",
+    "status": "PASS"
+  },
+  {
+    "name": "B02/B03 Debt draft and recovery",
+    "time": "2026-10-21T23:18:08.103Z",
+    "expected": "navigation retains answers; readiness failure no write; safe retry saves; stopped offline authority same",
+    "observed": "original owed form retained, root/versions/lifecycle deep equality, successful Entry and settlement retained offline",
+    "status": "PASS"
+  }
+]

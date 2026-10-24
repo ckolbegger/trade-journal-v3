@@ -1,0 +1,43 @@
+TRADE JOURNAL
+Trades
+New Plan
+Journal Debt
+Workspace
+
+AFTER-CLOSE JOURNAL · USD
+
+Debt outcome
+Check for application updates
+Storage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection
+
+Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.
+
+Reflection completed. Journal Debt settled.
+
+Journal Debt settled
+
+Completed Entry · Source Position Change
+
+Trade Anchor 5e127b4b-8936-4a9e-9435-24376e6e6e0b · Position Change d357dafe-93f0-4041-b9af-bdce0018703b
+
+Original moment: 2026-10-21 19:14:10.831 America/New_York
+
+Saved: 2026-10-21 19:14:11.835 America/New_York
+
+Decision mode
+
+As Planned
+
+Primary emotion
+
+Calm
+
+Decision confidence
+
+4
+
+Note
+
+Independent critic reflection
+
+View Trade

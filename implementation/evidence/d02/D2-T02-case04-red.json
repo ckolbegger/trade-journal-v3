@@ -1,0 +1,16 @@
+{
+  "id": "D2-T02-case04",
+  "stage": "red",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "sourceDigest": "56894c10723d26ebcaf31aa25961f220934837ca89130ecd471b09e8d3c8cf43",
+  "command": [
+    "npm",
+    "run",
+    "test:unit",
+    "--",
+    "tests/unit/d02-analysis.test.ts"
+  ],
+  "exit": 1,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:unit\n> vitest run --project unit tests/unit/d02-analysis.test.ts\n\n\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n ❯ |unit| tests/unit/d02-analysis.test.ts (11 tests | 2 failed) 11ms\n   × should bind Planned reconciliation to the exact candidate and surface disagreement 2ms\n   × case04 records all exact served-leg mismatches once but rejects uncovered management 3ms\n\n Test Files  1 failed (1)\n      Tests  2 failed | 9 passed (11)\n   Start at  13:24:01\n   Duration  327ms (environment 80%, import 8%, transform 7%, tests 4%, worker 1%)\n\n",
+  "stderr": "\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |unit| tests/unit/d02-analysis.test.ts > should bind Planned reconciliation to the exact candidate and surface disagreement\nReferenceError: positions is not defined\n ❯ derive src/domain/trade-analysis/index.ts:78:259\n\n ❯ tests/unit/d01-analysis.test.ts:24:10\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯\n\n FAIL  |unit| tests/unit/d02-analysis.test.ts > case04 records all exact served-leg mismatches once but rejects uncovered management\nAssertionError: expected { status: 'Derived', …(13) } to match object { status: 'Derived', …(2) }\n(32 matching properties omitted from actual)\n\n- Expected\n+ Received\n\n  {\n-   \"deviations\": [\n-     {\n-       \"kind\": \"PlannedLegTerms\",\n-       \"mismatches\": [\n-         \"symbol\",\n-         \"currency\",\n-       ],\n-       \"plannedLegId\": \"leg\",\n-     },\n-   ],\n-   \"fulfillment\": \"FilledWithDeviation\",\n+   \"deviations\": [],\n    \"status\": \"Derived\",\n  }\n\n ❯ tests/unit/d02-analysis.test.ts:28:29\n\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯\n\n"
+}

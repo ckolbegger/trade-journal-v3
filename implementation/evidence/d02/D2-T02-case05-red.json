@@ -1,0 +1,16 @@
+{
+  "id": "D2-T02-case05",
+  "stage": "red",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "sourceDigest": "31905643e217e26a62652b0d36c351a03272a918b67daf4be9f2a9be3b233e76",
+  "command": [
+    "npm",
+    "run",
+    "test:unit",
+    "--",
+    "tests/unit/d02-analysis.test.ts"
+  ],
+  "exit": 1,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:unit\n> vitest run --project unit tests/unit/d02-analysis.test.ts\n\n\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n ❯ |unit| tests/unit/d02-analysis.test.ts (12 tests | 1 failed) 11ms\n   × case05 rejects every invalid decimal, incomplete quantity, instant and ownership without reconciliation 4ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 11 passed (12)\n   Start at  13:24:20\n   Duration  319ms (environment 79%, import 8%, transform 7%, tests 5%, worker 1%)\n\n",
+  "stderr": "\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |unit| tests/unit/d02-analysis.test.ts > case05 rejects every invalid decimal, incomplete quantity, instant and ownership without reconciliation\nAssertionError: expected { status: 'Derived', …(15) } to match object { status: 'IntegrityBlocked', …(1) }\n(35 matching properties omitted from actual)\n\n- Expected\n+ Received\n\n  {\n-   \"findings\": ArrayContaining [\n-     \"PositiveExecutionQuantityRequired\",\n-   ],\n-   \"status\": \"IntegrityBlocked\",\n+   \"status\": \"Derived\",\n  }\n\n ❯ tests/unit/d02-analysis.test.ts:34:31\n     32|   for (const value of ['0', '-1', 'NaN', 'Infinity', '', '1x']) {\n     33|     const candidate = openingCandidate(); candidate.opening!.execution…\n     34|     expect(derive(candidate)).toMatchObject({ status: 'IntegrityBlocke…\n       |                               ^\n     35|   }\n     36|   const candidate = openingCandidate(); const execution = candidate.op…\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n"
+}

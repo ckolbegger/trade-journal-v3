@@ -1,0 +1,86 @@
+Trades
+New Plan
+Journal Debt
+Workspace
+
+AFTER-CLOSE JOURNAL · USD
+
+KB390I · Open
+Check for application updates
+Storage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection
+
+Where your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.
+
+Initial Position Change saved. All Executions and the reflection outcome were recorded together.
+
+Open · Filled as Planned
+Frozen Plan Baseline
+
+Keyboard broker · Keyboard account · Long Stock
+
+Original Planned Risk · 1R
+$500.00
+Original Planned Reward
+$1000.00
+Planned reward/risk ratio
+2/1
+Intended entry
+$50 × 100 shares
+Stop · underlying price
+$45
+Target · underlying price
+$60
+Open Position
+Quantity
+100 shares
+Gross basis
+$5020.00
+Opening fees
+$3.00
+Weighted entry
+50.2 USD (exact 251/5)
+Actual entry risk
+$523.00
+Actual entry reward
+$977.00
+Actual entry reward/risk
+1.87 (exact 977/523)
+Entry Quality
+Below Plan
+Open Lots
+
+40 shares at $49 · opening fee $1.00
+
+60 shares at $51 · opening fee $2.00
+
+Position Change Reflection · Explicit decline
+
+Declined
+
+Trade Anchor · Source Position Change · Position Change 82ec6749-2ad0-45f1-9ba7-920b214d78ee
+
+Declined 2026-10-21 19:17:13.3 America/New_York
+
+Plan Reflection
+
+Trade Anchor · Plan Confirmation
+
+Moment: 2026-10-21 19:17:13.159 America/New_York · First authored: 2026-10-21 19:17:13.172 America/New_York
+
+Why this trade, why now?
+
+Keyboard thesis
+
+What would invalidate the thesis?
+
+Keyboard invalidation
+
+Conviction
+
+Unanswered
+
+Primary emotion
+
+Unanswered
+
+View history

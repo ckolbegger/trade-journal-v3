@@ -1,0 +1,16 @@
+{
+  "id": "D2-T01",
+  "stage": "migration-failures",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "sourceDigest": "e4544014c481098d44bf4b5e9747b7c78ac5527b39922bb2f147d8b08cb6a728",
+  "command": [
+    "npm",
+    "run",
+    "test:unit",
+    "--",
+    "--testNamePattern=migrat|activation abort|invalid populated"
+  ],
+  "exit": 0,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:unit\n> vitest run --project unit --testNamePattern=migrat|activation abort|invalid populated\n\n\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n\n Test Files  1 passed | 9 skipped (10)\n      Tests  4 passed | 80 skipped (84)\n   Start at  13:25:15\n   Duration  585ms (environment 75%, transform 12%, import 11%, tests 2%)\n\n",
+  "stderr": ""
+}

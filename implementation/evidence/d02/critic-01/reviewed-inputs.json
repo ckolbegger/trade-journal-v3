@@ -1,0 +1,191 @@
+{
+  "releaseId": "2cceb94481214601e7a1d43f28b5008985956048b0f0040a2593c33e9fedc723",
+  "sourceSnapshotDigest": "907d3332fe5164476fbd7d3e03d5d45ce54cc0d93eb103fe8f3a1db3f1180912",
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "bytes": 2434,
+      "sha256": "5975f71ece7e579907c6729321958fdc7672fdd64f5163313ccf60a303830840"
+    },
+    {
+      "path": "CLAUDE.md",
+      "bytes": 2434,
+      "sha256": "5975f71ece7e579907c6729321958fdc7672fdd64f5163313ccf60a303830840"
+    },
+    {
+      "path": "prompts/handoff-D2.md",
+      "bytes": 22469,
+      "sha256": "94e53d5c3f0ab1a937fbde54208b45fc130316dfc51f0469e892013ba1e6466f"
+    },
+    {
+      "path": "specs/README.md",
+      "bytes": 8399,
+      "sha256": "b15112e088744c5a4d4662138590aef4c47a99de2cf7dd7e9303f14e4957ab12"
+    },
+    {
+      "path": "specs/glossary.md",
+      "bytes": 25175,
+      "sha256": "e67b22ae5bb2f916798b281ab7c8bb33210d54f752d03ab2cea8a8e0af813de7"
+    },
+    {
+      "path": "specs/adr/0001-domain-facts-pure-analysis-and-coordinators.md",
+      "bytes": 1260,
+      "sha256": "16f207195e338257688eb28b40429a4bd0394cd085ea7cea79ce17c331b23336"
+    },
+    {
+      "path": "specs/adr/0002-semantic-command-atomicity.md",
+      "bytes": 1627,
+      "sha256": "1d4f70c5c8b98b3e7789741315fad9d6adb1b02a93f5c6931d3ab30b311d9f8b"
+    },
+    {
+      "path": "specs/adr/0003-authoritative-lifecycle-and-derived-disposition.md",
+      "bytes": 954,
+      "sha256": "799ec080645f9b65b9eeb632ab729de6c6841ee1206f6e11f81667044e954100"
+    },
+    {
+      "path": "specs/adr/0004-corrected-economic-history-with-visible-audit.md",
+      "bytes": 973,
+      "sha256": "13eabb7627b1b7e85358eb6083e1af5ef05b65b9dd090016004e55116a456345"
+    },
+    {
+      "path": "specs/adr/0005-journal-entry-and-journal-debt-are-separate.md",
+      "bytes": 909,
+      "sha256": "1df8e8b440a9ebb04d26be76998bcac22c043c311a73b7ad2c9e8ca111d14772"
+    },
+    {
+      "path": "specs/adr/0006-device-local-workspace-and-replace-only-restore.md",
+      "bytes": 937,
+      "sha256": "d519743a6ee2b509b0268d7c0e9c170df2254367577153ebaf8639308336283f"
+    },
+    {
+      "path": "specs/adr/0007-observed-valuation-and-expiration-payoff.md",
+      "bytes": 981,
+      "sha256": "3d5384617f6e8c2c1ed1ed7a2938049690034d35269d7d2d990022ba05bb00be"
+    },
+    {
+      "path": "specs/adr/0008-pwa-delivery-and-runtime-readiness.md",
+      "bytes": 3336,
+      "sha256": "cee19cf3d81d43e375c2b2a0487de6fa1dc26590eed89e6ea2051929cf65e8b1"
+    },
+    {
+      "path": "specs/adr/0009-advisory-storage-protection.md",
+      "bytes": 1870,
+      "sha256": "2f1896d5bc52a50c4507f8a675c83b2e63375740b20f2087bd12d0e4d58f7014"
+    },
+    {
+      "path": "specs/adr/0010-backup-download-verified-by-read-back.md",
+      "bytes": 1741,
+      "sha256": "6bf97df705716300cfa8a4212ce67f8c083929ea914a3540f1eabaf1dcb08d51"
+    },
+    {
+      "path": "specs/design/daily-review.md",
+      "bytes": 10430,
+      "sha256": "e9075f2c1bafa6c2d0e5ddb5890f2e1802dfc583a51041d3049b3527146851fa"
+    },
+    {
+      "path": "specs/design/delivery-contract.md",
+      "bytes": 15193,
+      "sha256": "b82dff4b3155d7c1aa07d069f9bfd6b48c8423d7f9be33dea00f30ef64808a3c"
+    },
+    {
+      "path": "specs/design/journal.md",
+      "bytes": 15584,
+      "sha256": "2d224fb58cbafb37be84f96f1ecac7acdf5d3ee4a4082846ec16514c5620f219"
+    },
+    {
+      "path": "specs/design/market-data.md",
+      "bytes": 10529,
+      "sha256": "045bea390cf96ca0b95779e9eb83908f7602e9d164f7fad492d5d7b14463702d"
+    },
+    {
+      "path": "specs/design/overview.md",
+      "bytes": 21976,
+      "sha256": "467a502a48d74a9f9d636ec7ba8438d465860a1d7093b8605c4512ec70149b9b"
+    },
+    {
+      "path": "specs/design/performance-analysis.md",
+      "bytes": 12052,
+      "sha256": "eaa2502cf5d41e6bf71effa29252d073f86206eab6f3be19cbc9c31bfc685579"
+    },
+    {
+      "path": "specs/design/reference-catalog.md",
+      "bytes": 9300,
+      "sha256": "9f57aeade5ac6c0e73ded970d46c7717089db3aacabc0f9ca59d816294f387f3"
+    },
+    {
+      "path": "specs/design/trade-analysis.md",
+      "bytes": 12390,
+      "sha256": "d0a695150eed83f2489afad88ad8eabb1f21e9bb827fa586cb02315e1009c664"
+    },
+    {
+      "path": "specs/design/trade-record.md",
+      "bytes": 10585,
+      "sha256": "e008e3a6ef2cdb2d7423ef70c010350f1809e9a159022cacf65eb01d02a17096"
+    },
+    {
+      "path": "specs/design/trade-views-and-reporting.md",
+      "bytes": 9774,
+      "sha256": "338af114420c819bb398845827194f568f0bfe06ec6ec761308400df86e10851"
+    },
+    {
+      "path": "specs/design/trade-workflows.md",
+      "bytes": 13636,
+      "sha256": "ef3dae9238d0f1472bf9e8ebf64d12506d30aad3690819f9436669f359199758"
+    },
+    {
+      "path": "specs/design/ui-contract.md",
+      "bytes": 12762,
+      "sha256": "3686d8298e5a50d599bd3616b171976a1a686706cca5567bbaac9a1702049c81"
+    },
+    {
+      "path": "specs/design/workspace.md",
+      "bytes": 16977,
+      "sha256": "2844ae5be439bc314bf3a4d332f15d74a0685ffd97546673d624812be41487d7"
+    },
+    {
+      "path": "specs/acceptance/acceptance-contract.md",
+      "bytes": 47232,
+      "sha256": "102f6a994f05a47e8976dff3b3979c245371ebfbf38ecf9341abc580e633eea9"
+    },
+    {
+      "path": "specs/evaluation/kickoff-prompt.md",
+      "bytes": 4815,
+      "sha256": "03c97d607bfd55e086b626a710a6475372320233c2e67ef8b5427016f85bc795"
+    },
+    {
+      "path": "implementation/plan/d01-long-stock-plan.md",
+      "bytes": 89560,
+      "sha256": "8924a313da61e89fa580144db1a150cb79cba4b0cc1afbb14278090fb8ff0afc"
+    },
+    {
+      "path": "implementation/plan/d01-capacity-policy-revision.md",
+      "bytes": 3448,
+      "sha256": "ba560d7d8eb724fb6f74cdc0f5990cccb650b733302836a120393256f273ed64"
+    },
+    {
+      "path": "implementation/plan/d02-initial-stock-entry.md",
+      "bytes": 19124,
+      "sha256": "f178999f16b99c3e961f4d2f63e55a5be6e86961d2b3c772e3f2614ccf3e62ec"
+    },
+    {
+      "path": "implementation/plan/d02-implementation-baseline.md",
+      "bytes": 7674,
+      "sha256": "3f0042a94f5be932f0baaf8222b4a2da50b766a4036cd5d785b640f1b64892fb"
+    },
+    {
+      "path": "implementation/plan/d02-capacity-evidence.md",
+      "bytes": 4610,
+      "sha256": "090ef5822f74e2a41ad10f7f33e6ab0290abdc56b80e49bde7d636fc953f413d"
+    },
+    {
+      "path": "implementation/delivery-plan.md",
+      "bytes": 92005,
+      "sha256": "811b49b60200ba43fca01cce9b1cc79bf36d11a41918f83fe5ab14d58cd55b33"
+    },
+    {
+      "path": "implementation/technology-stack.md",
+      "bytes": 7822,
+      "sha256": "c078489445a6cefdec797d295e3ad4e27a889468ade8c9b09d6840abdc9b6980"
+    }
+  ]
+}

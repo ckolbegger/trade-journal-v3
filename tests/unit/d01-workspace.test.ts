@@ -9,11 +9,11 @@ function fixture() {
   return { store, workspace: new Workspace(new Runtime(store, host)) };
 }
 describe('atomic initialized Workspace', () => {
-  it('should initialize only D1 seeds and return onboarding from the committed result', async () => {
+  it('should initialize installed D1 and D2 seeds and return onboarding from the committed result', async () => {
     const f = fixture();
     const result = await f.workspace.initialize({ openingInstant: instant, timeZone: 'America/New_York' });
-    expect(result).toMatchObject({ status: 'Opened', onboarding: 'NeedsInstitutionAndAccount', root: { timeZone: 'America/New_York', schema: 1 }, receipt: { fresh: true, seeds: ['long-stock', 'plan-reflection', 'plan-confirmation'] } });
-    expect((await f.store.versions.toArray()).map(row => row.kind).sort()).toEqual(['Definition', 'Source', 'Strategy']);
+    expect(result).toMatchObject({ status: 'Opened', onboarding: 'NeedsInstitutionAndAccount', root: { timeZone: 'America/New_York', schema: 2 }, receipt: { fresh: true, seeds: ['long-stock', 'plan-reflection', 'plan-confirmation', 'position-change-reflection', 'position-change'] } });
+    expect((await f.store.versions.toArray()).map(row => row.kind).sort()).toEqual(['Definition', 'Definition', 'Source', 'Source', 'Strategy']);
     f.store.close();
   });
 });
@@ -63,7 +63,7 @@ it('should reject unknown newer and integrity-invalid roots unchanged', async ()
 it('should publish complete generation and reject a stale generation before mutation', async () => {
   const f = fixture();
   const opened = await f.workspace.initialize({ openingInstant: instant, timeZone: 'UTC' });
-  expect(opened).toMatchObject({ status: 'Opened', receipt: { candidateSealed: true, authoritativeCount: 3 } });
+  expect(opened).toMatchObject({ status: 'Opened', receipt: { candidateSealed: true, authoritativeCount: 5 } });
   const before = await f.store.versions.toArray();
   expect(await f.workspace.runtime.mutate('retired-generation', () => Promise.reject(new Error('Must not run')))).toEqual({ status: 'Conflict', reason: 'GenerationChanged' });
   expect(await f.store.versions.toArray()).toEqual(before);
@@ -97,7 +97,7 @@ it('should bind an existing initialization receipt to the complete retained auth
   const { workspaceFixture } = await import('../fixtures');
   const f = await workspaceFixture();
   await f.workflows.confirmPlan(f.command);
-  expect(await f.workspace.initialize({ openingInstant: instant })).toMatchObject({ status: 'Opened', receipt: { fresh: false, authoritativeCount: 7 }, root: { recordedSequence: 1 } });
+  expect(await f.workspace.initialize({ openingInstant: instant })).toMatchObject({ status: 'Opened', receipt: { fresh: false, authoritativeCount: 9 }, root: { recordedSequence: 1 } });
   f.store.close();
 });
 it('should report integrity failure together with failed readiness instead of opening invalid recovery data', async () => {

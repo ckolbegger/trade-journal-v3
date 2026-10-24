@@ -1,0 +1,16 @@
+{
+  "id": "D2-T02-nonpositive-risk",
+  "stage": "red",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "sourceDigest": "94149ebbb96ca97bcff87bf815724f553f8e14e09382414d488cda7fa7f13bb9",
+  "command": [
+    "npm",
+    "run",
+    "test:unit",
+    "--",
+    "tests/unit/d02-analysis.test.ts"
+  ],
+  "exit": 1,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:unit\n> vitest run --project unit tests/unit/d02-analysis.test.ts\n\n\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n ❯ |unit| tests/unit/d02-analysis.test.ts (8 tests | 1 failed) 13ms\n   × case06 nonpositive actual entry risk preserves dollars and returns an unavailable ratio 4ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 7 passed (8)\n   Start at  13:25:55\n   Duration  356ms (environment 81%, import 7%, transform 7%, tests 5%, worker 1%)\n\n",
+  "stderr": "\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |unit| tests/unit/d02-analysis.test.ts > case06 nonpositive actual entry risk preserves dollars and returns an unavailable ratio\nAssertionError: expected { status: 'Derived', …(15) } to match object { status: 'Derived', …(1) }\n(31 matching properties omitted from actual)\n\n- Expected\n+ Received\n\n@@ -1,11 +1,11 @@\n  {\n    \"entryQuality\": {\n-     \"comparison\": \"Unavailable\",\n+     \"comparison\": \"AbovePlan\",\n      \"ratio\": {\n-       \"reason\": \"NonpositiveEntryRisk\",\n-       \"status\": \"Unavailable\",\n+       \"denominator\": \"0\",\n+       \"numerator\": \"1\",\n      },\n      \"reward\": \"1500\",\n      \"risk\": \"0\",\n      \"status\": \"Resolved\",\n    },\n\n ❯ tests/unit/d02-analysis.test.ts:70:31\n\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n"
+}

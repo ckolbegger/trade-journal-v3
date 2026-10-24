@@ -1,0 +1,31 @@
+{
+  "active": "<textarea style=\"\">Keyboard retained reflection</textarea>",
+  "rect": {
+    "x": 33,
+    "y": 898.453125,
+    "width": 324,
+    "height": 100,
+    "top": 898.453125,
+    "right": 357,
+    "bottom": 998.453125,
+    "left": 33
+  },
+  "nav": {
+    "x": 0,
+    "y": 921.84375,
+    "width": 390,
+    "height": 78.15625,
+    "top": 921.84375,
+    "right": 390,
+    "bottom": 1000,
+    "left": 0
+  },
+  "scrollWidth": 390,
+  "width": 390,
+  "groups": [
+    "Execution 1 · Buy KBFOCUS",
+    "Reflection outcome",
+    "Decision mode",
+    "Primary emotion"
+  ]
+}

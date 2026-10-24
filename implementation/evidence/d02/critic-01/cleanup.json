@@ -1,0 +1,14 @@
+{
+  "allOwnedContextsClosed": true,
+  "previewStopped": true,
+  "previewExit": 130,
+  "port": 5174,
+  "portFree": true,
+  "listenerCheck": "lsof -nP -iTCP:5174 -sTCP:LISTEN",
+  "listenerCheckOutput": "",
+  "listenerCheckExit": 1,
+  "ownedBrowserProcessCheckOutput": "",
+  "distChanged": false,
+  "distRestoration": "Not needed: no distribution file changed or swapped",
+  "releaseIdentityRecomputedUnchanged": "2cceb94481214601e7a1d43f28b5008985956048b0f0040a2593c33e9fedc723"
+}

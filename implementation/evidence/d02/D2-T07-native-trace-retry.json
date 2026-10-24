@@ -1,0 +1,22 @@
+{
+  "id": "D2-T07",
+  "stage": "native-trace-retry",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "inputs": {
+    "implementation/plan/d02-implementation-baseline.md": "3f0042a94f5be932f0baaf8222b4a2da50b766a4036cd5d785b640f1b64892fb",
+    "implementation/plan/d02-initial-stock-entry.md": "f178999f16b99c3e961f4d2f63e55a5be6e86961d2b3c772e3f2614ccf3e62ec",
+    "implementation/plan/d01-capacity-policy-revision.md": "ba560d7d8eb724fb6f74cdc0f5990cccb650b733302836a120393256f273ed64",
+    "specs/evaluation/kickoff-prompt.md": "03c97d607bfd55e086b626a710a6475372320233c2e67ef8b5427016f85bc795"
+  },
+  "sourceDigest": "5468842c1cf62253e238ff662f94e1a6393afc4d2b989765bbcfd59424d65273",
+  "command": [
+    "npm",
+    "run",
+    "test:browser",
+    "--",
+    "--grep=D2"
+  ],
+  "exit": 0,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:browser\n> playwright test --grep=D2\n\n\nRunning 12 tests using 1 worker\n\n  ✓   1 [chromium] › tests/browser/d02-opening.spec.ts:21:1 › D2-B01 complete two-Execution opening, native commit trace and fully stopped offline reopen (1.4s)\n  ✓   2 [chromium] › tests/browser/d02-opening.spec.ts:58:1 › D2-B02 Defer/Decline, original Debt answer/decline and cancelled facts (2.0s)\n  ✓   3 [chromium] › tests/browser/d02-opening.spec.ts:69:1 › D2-B03 same-store competing tabs preserve losing input and explicit conflict review (1.3s)\n  ✓   4 [chromium] › tests/browser/d02-opening.spec.ts:78:1 › D2-B04 accessible validation and live responsive preservation at 390/767/768/1440 (1.4s)\n  ✓   5 [firefox] › tests/browser/d02-opening.spec.ts:21:1 › D2-B01 complete two-Execution opening, native commit trace and fully stopped offline reopen (3.8s)\n  ✓   6 [firefox] › tests/browser/d02-opening.spec.ts:58:1 › D2-B02 Defer/Decline, original Debt answer/decline and cancelled facts (3.7s)\n  ✓   7 [firefox] › tests/browser/d02-opening.spec.ts:69:1 › D2-B03 same-store competing tabs preserve losing input and explicit conflict review (2.7s)\n  ✓   8 [firefox] › tests/browser/d02-opening.spec.ts:78:1 › D2-B04 accessible validation and live responsive preservation at 390/767/768/1440 (3.1s)\n  ✓   9 [webkit] › tests/browser/d02-opening.spec.ts:21:1 › D2-B01 complete two-Execution opening, native commit trace and fully stopped offline reopen (2.4s)\n  ✓  10 [webkit] › tests/browser/d02-opening.spec.ts:58:1 › D2-B02 Defer/Decline, original Debt answer/decline and cancelled facts (2.8s)\n  ✓  11 [webkit] › tests/browser/d02-opening.spec.ts:69:1 › D2-B03 same-store competing tabs preserve losing input and explicit conflict review (1.9s)\n  ✓  12 [webkit] › tests/browser/d02-opening.spec.ts:78:1 › D2-B04 accessible validation and live responsive preservation at 390/767/768/1440 (1.9s)\n\n  12 passed (29.8s)\n",
+  "stderr": "[WebServer] (node:46002) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)\n(node:46005) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:46104) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:46253) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+}

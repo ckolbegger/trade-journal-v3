@@ -1,0 +1,17 @@
+{
+  "id": "D2-T03-case01",
+  "stage": "green",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "sourceDigest": "fd726b5700c27cca563187ca8ca9033620463f65dbf2e98fef5c58c1be30b1ce",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "--project",
+    "unit",
+    "tests/unit/d02-journal.test.ts"
+  ],
+  "exit": 0,
+  "stdout": "\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n\n Test Files  1 passed (1)\n      Tests  1 passed (1)\n   Start at  13:23:48\n   Duration  339ms (environment 79%, import 12%, transform 8%, tests 1%, worker 1%)\n\n",
+  "stderr": ""
+}

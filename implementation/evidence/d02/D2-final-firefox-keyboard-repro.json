@@ -1,0 +1,26 @@
+{
+  "id": "D2-final",
+  "stage": "firefox-keyboard-repro",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "inputs": {
+    "implementation/plan/d02-implementation-baseline.md": "3f0042a94f5be932f0baaf8222b4a2da50b766a4036cd5d785b640f1b64892fb",
+    "implementation/plan/d02-initial-stock-entry.md": "f178999f16b99c3e961f4d2f63e55a5be6e86961d2b3c772e3f2614ccf3e62ec",
+    "implementation/plan/d01-capacity-policy-revision.md": "ba560d7d8eb724fb6f74cdc0f5990cccb650b733302836a120393256f273ed64",
+    "implementation/plan/d02-capacity-evidence.md": "2292e7d75e340723e383153b568021ac125f92e8d92879c2cf43258913d53065",
+    "specs/evaluation/kickoff-prompt.md": "03c97d607bfd55e086b626a710a6475372320233c2e67ef8b5427016f85bc795"
+  },
+  "sourceDigest": "b6c760f63ab17ea35ba20c39eab22f081a21783e08c5bb4fedfb12c03c5d0824",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "tests/browser/d01-ui.spec.ts",
+    "--project",
+    "firefox",
+    "--grep",
+    "keyboard"
+  ],
+  "exit": 1,
+  "stdout": "\nRunning 2 tests using 1 worker\n\n  ✘  1 [firefox] › tests/browser/d01-ui.spec.ts:74:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 390px (2.0s)\n  ✘  2 [firefox] › tests/browser/d01-ui.spec.ts:74:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 1440px (1.8s)\n\n\n  1) [firefox] › tests/browser/d01-ui.spec.ts:74:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 390px \n\n    Error: Control not reachable through the keyboard\n\n      12 |     await page.keyboard.press(page.context().browser()?.browserType().name() === 'webkit' ? 'Alt+Tab' : 'Tab');\n      13 |   }\n    > 14 |   throw new Error('Control not reachable through the keyboard');\n         |         ^\n      15 | }\n      16 | test('D1-B02 invalid input, catalog conflict and Cancel preserve input and write no Plan', async ({ page, context }) => {\n      17 |   await onboard(page); await fillPlan(page);\n        at tabTo (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-ui.spec.ts:14:9)\n        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-ui.spec.ts:88:5\n\n    Error Context: test-results/d01-ui-D1-B05-keyboard-onl-e2973-esize-zoom-and-axe-at-390px-firefox/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/d01-ui-D1-B05-keyboard-onl-e2973-esize-zoom-and-axe-at-390px-firefox/trace.zip\n    Usage:\n\n        npx playwright show-trace test-results/d01-ui-D1-B05-keyboard-onl-e2973-esize-zoom-and-axe-at-390px-firefox/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  2) [firefox] › tests/browser/d01-ui.spec.ts:74:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 1440px \n\n    Error: Control not reachable through the keyboard\n\n      12 |     await page.keyboard.press(page.context().browser()?.browserType().name() === 'webkit' ? 'Alt+Tab' : 'Tab');\n      13 |   }\n    > 14 |   throw new Error('Control not reachable through the keyboard');\n         |         ^\n      15 | }\n      16 | test('D1-B02 invalid input, catalog conflict and Cancel preserve input and write no Plan', async ({ page, context }) => {\n      17 |   await onboard(page); await fillPlan(page);\n        at tabTo (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-ui.spec.ts:14:9)\n        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d01-ui.spec.ts:88:5\n\n    Error Context: test-results/d01-ui-D1-B05-keyboard-onl-209d1-size-zoom-and-axe-at-1440px-firefox/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/d01-ui-D1-B05-keyboard-onl-209d1-size-zoom-and-axe-at-1440px-firefox/trace.zip\n    Usage:\n\n        npx playwright show-trace test-results/d01-ui-D1-B05-keyboard-onl-209d1-size-zoom-and-axe-at-1440px-firefox/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  2 failed\n    [firefox] › tests/browser/d01-ui.spec.ts:74:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 390px \n    [firefox] › tests/browser/d01-ui.spec.ts:74:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 1440px \n",
+  "stderr": "[WebServer] (node:2991) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)\n(node:2995) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:3028) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+}

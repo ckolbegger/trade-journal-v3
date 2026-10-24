@@ -1,0 +1,22 @@
+{
+  "id": "D2-T05-case03",
+  "stage": "red",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "inputs": {
+    "implementation/plan/d02-implementation-baseline.md": "3f0042a94f5be932f0baaf8222b4a2da50b766a4036cd5d785b640f1b64892fb",
+    "implementation/plan/d02-initial-stock-entry.md": "f178999f16b99c3e961f4d2f63e55a5be6e86961d2b3c772e3f2614ccf3e62ec",
+    "implementation/plan/d01-capacity-policy-revision.md": "ba560d7d8eb724fb6f74cdc0f5990cccb650b733302836a120393256f273ed64",
+    "specs/evaluation/kickoff-prompt.md": "03c97d607bfd55e086b626a710a6475372320233c2e67ef8b5427016f85bc795"
+  },
+  "sourceDigest": "bd6922aa53d503f93186d411175770210b7f3be8a04c7a4b9d1610dc3fee3733",
+  "command": [
+    "npm",
+    "run",
+    "test:unit",
+    "--",
+    "--testNamePattern=blocks lifecycle, lot"
+  ],
+  "exit": 1,
+  "stdout": "\n> trade-journal-v3@0.1.0 pretest:unit\n> node tools/build-d1-fixture.mjs\n\nvite v8.3.4 building client environment for production...\ntransforming...\n✓ 10 modules transformed.\nrendering chunks...\ncomputing gzip size...\n.cache/d1-fixture/d1-fixture.mjs  31.72 kB │ gzip: 8.31 kB\n\n✓ built in 14ms\n\n> trade-journal-v3@0.1.0 test:unit\n> vitest run --project unit --testNamePattern=blocks lifecycle, lot\n\n\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n ❯ |unit| tests/unit/d02-reads.test.ts (3 tests | 1 failed | 2 skipped) 31ms\n   × blocks lifecycle, lot and deviation disagreement without repairing any authority on read 31ms\n\n Test Files  1 failed | 11 skipped (12)\n      Tests  1 failed | 94 skipped (95)\n   Start at  13:32:26\n   Duration  596ms (environment 76%, transform 12%, import 11%, tests 1%, worker 1%)\n\n",
+  "stderr": "\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |unit| tests/unit/d02-reads.test.ts > blocks lifecycle, lot and deviation disagreement without repairing any authority on read\nAssertionError: expected { status: 'Ready', …(4) } to match object { status: 'IntegrityBlocked', …(1) }\n(5 matching properties omitted from actual)\n\n- Expected\n+ Received\n\n  {\n-   \"findings\": [\n-     \"LifecycleDisagreement\",\n-   ],\n-   \"status\": \"IntegrityBlocked\",\n+   \"status\": \"Ready\",\n  }\n\n ❯ tests/unit/d02-reads.test.ts:31:62\n     29|   await f.store.lifecycle.update(key, { lifecycle: 'Planned' });\n     30|   const before = await f.store.lifecycle.toArray();\n     31|   expect(await views.browseTrades({ lifecycle: 'Planned' })).toMatchOb…\n       |                                                              ^\n     32|   expect(await f.store.lifecycle.toArray()).toEqual(before);\n     33|   await f.store.lifecycle.update(key, { lifecycle: 'Open' });\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n"
+}

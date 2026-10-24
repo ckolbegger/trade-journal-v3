@@ -1,0 +1,16 @@
+{
+  "id": "D2-T02-agreement",
+  "stage": "red",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "sourceDigest": "f8f07915df20eec48ded93f58a1ce40f33c9faf297f1e09d07abb0804873c122",
+  "command": [
+    "npm",
+    "run",
+    "test:unit",
+    "--",
+    "tests/unit/d02-analysis.test.ts"
+  ],
+  "exit": 1,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:unit\n> vitest run --project unit tests/unit/d02-analysis.test.ts\n\n\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n ❯ |unit| tests/unit/d02-analysis.test.ts (7 tests | 1 failed) 12ms\n   × case05 agreement requires bound authoritative lifecycle, membership, lot links and deviations 4ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 6 passed (7)\n   Start at  13:25:21\n   Duration  332ms (environment 80%, import 8%, transform 7%, tests 5%, worker 1%)\n\n",
+  "stderr": "\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |unit| tests/unit/d02-analysis.test.ts > case05 agreement requires bound authoritative lifecycle, membership, lot links and deviations\nAssertionError: expected { status: 'Derived', …(15) } to match object { status: 'IntegrityBlocked', …(1) }\n(35 matching properties omitted from actual)\n\n- Expected\n+ Received\n\n  {\n-   \"findings\": [\n-     \"MissingOpeningAgreement\",\n-   ],\n-   \"status\": \"IntegrityBlocked\",\n+   \"status\": \"Derived\",\n  }\n\n ❯ tests/unit/d02-analysis.test.ts:60:29\n     58| it('case05 agreement requires bound authoritative lifecycle, membershi…\n     59|   const candidate = openingCandidate(); delete candidate.opening!.reco…\n     60|   expect(derive(candidate)).toMatchObject({ status: 'IntegrityBlocked'…\n       |                             ^\n     61|   expect(assessChange({ ...candidate, storedLifecycle: 'Planned' })).t…\n     62|   candidate.opening!.recordedAgreement = { factRevision: 'old', lotMat…\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n"
+}

@@ -1,0 +1,42 @@
+import { chromium } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import assert from 'node:assert/strict';
+const out = new URL('./',import.meta.url).pathname;
+const observations=[]; const consoles=[]; const profiles=out+'profile03';
+const write=async(name,data)=>fs.writeFile(out+name,JSON.stringify(data,null,2));
+let context;
+async function launch(offline=false){
+ context=await chromium.launchPersistentContext(profiles,{channel:'chrome',headless:true,viewport:{width:1440,height:1050},offline});
+ await context.addInitScript(()=>{
+  window.criticTrace=[];window.criticFault='';
+  const transact=IDBDatabase.prototype.transaction;
+  IDBDatabase.prototype.transaction=function(...args){
+   const tx=transact.apply(this,args); const rec={event:'entry',db:this.name,stores:[...tx.objectStoreNames],mode:tx.mode,time:performance.now()};window.criticTrace.push(rec);
+   tx.addEventListener('complete',()=>window.criticTrace.push({...rec,event:'complete',time:performance.now()}));
+   tx.addEventListener('abort',()=>window.criticTrace.push({...rec,event:'abort',time:performance.now()}));
+   return tx;
+  };
+  const match=Cache.prototype.match;
+  Cache.prototype.match=async function(...args){if(window.criticFault==='inventory')throw new Error('Critic isolated inventory boundary');return match.apply(this,args)};
+  const getAll=IDBObjectStore.prototype.getAll;
+  IDBObjectStore.prototype.getAll=function(...args){if(window.criticFault==='list'&&this.name==='lifecycle')throw new Error('Critic isolated list boundary');return getAll.apply(this,args)};
+  const estimate=navigator.storage.estimate.bind(navigator.storage);
+  navigator.storage.estimate=async()=>{if(window.criticBarrier)await new Promise(r=>window.releaseCriticBarrier=r);return estimate()};
+  new MutationObserver(()=>{const t=document.body?.innerText??'';for(const phrase of ['Initial Position Change saved.','Journal Debt settled.'])if(t.includes(phrase)&&!window.criticTrace.some(e=>e.event===phrase))window.criticTrace.push({event:phrase,time:performance.now()});}).observe(document,{subtree:true,childList:true});
+ });
+ context.on('page',bind);for(const p of context.pages())bind(p);
+ return context.pages()[0]??await context.newPage();
+}
+function bind(p){p.on('console',m=>consoles.push({type:m.type(),text:m.text()}));p.on('pageerror',e=>consoles.push({type:'pageerror',text:e.message}));}
+async function shot(p,name){await p.screenshot({path:out+name+'.png',fullPage:true});await fs.writeFile(out+name+'.txt',await p.locator('body').innerText());}
+async function obs(name,detail){observations.push({name,time:new Date().toISOString(),...detail});await write('b03-observations.json',observations);}
+async function snapshot(p,name){const value=await p.evaluate(async()=>{const names=await indexedDB.databases();const db=await new Promise((res,rej)=>{const r=indexedDB.open(names.find(n=>n.name&&!n.name.includes('workbox'))?.name);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});const tx=db.transaction(['roots','versions','lifecycle'],'readonly');const data=await Promise.all(['roots','versions','lifecycle'].map(s=>new Promise((res,rej)=>{const r=tx.objectStore(s).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})));db.close();return {databases:names,roots:data[0],versions:data[1],lifecycle:data[2]};});await write(name+'.json',value);return value;}
+async function click(p,name){await p.getByRole('button',{name,exact:true}).click();}
+async function plan(p,symbol){await click(p,'New Plan');for(const [name,value] of [['Stock symbol',symbol],['Quantity (shares)','100'],['Intended entry (USD)','50'],['Stop (underlying price, USD)','45'],['Target (underlying price, USD)','60'],['Why this trade, why now?','Critic independent thesis'],['What would invalidate the thesis?','Below original stop']])await p.getByLabel(name,{exact:true}).fill(value);await click(p,'Confirm Plan');await p.getByRole('heading',{name:symbol+' · Planned',exact:true}).waitFor();}
+async function opening(p,kind='Complete'){await click(p,'Record initial Position Change');await p.getByLabel('Execution 1 quantity (shares)',{exact:true}).fill('40');await p.getByLabel('Execution 1 price (USD)',{exact:true}).fill('49');await p.getByLabel('Execution 1 fee (USD)',{exact:true}).fill('1');await click(p,'Add Execution');await p.getByLabel('Execution 2 quantity (shares)',{exact:true}).fill('60');await p.getByLabel('Execution 2 price (USD)',{exact:true}).fill('51');await p.getByLabel('Execution 2 fee (USD)',{exact:true}).fill('2');await p.getByRole('radio',{name:kind==='Complete'?'Complete reflection now':kind==='Defer'?'Defer reflection as Journal Debt':'Decline reflection',exact:true}).check();if(kind==='Complete')await reflection(p);}
+async function reflection(p){await p.getByRole('radio',{name:'As Planned',exact:true}).check();await p.getByRole('radio',{name:'Calm',exact:true}).check();await p.getByRole('combobox',{name:/^Decision confidence/}).selectOption('4');await p.getByRole('textbox',{name:/^Note/}).fill('Independent critic reflection');}
+try{const offline=await launch();await offline.goto('http://localhost:5174');await plan(offline,'CRITRACETWO');const p2=await context.newPage();await p2.goto('http://localhost:5174');await p2.getByRole('button',{name:/^CRITRACETWO · Planned/}).click();await opening(offline,'Complete');await opening(p2,'Complete');const beforeRace=await snapshot(offline,'b03-before-race');await Promise.all([click(offline,'Save initial Position Change'),click(p2,'Save initial Position Change')]);await new Promise(r=>setTimeout(r,900));const pages=[offline,p2];const loser=(await offline.getByRole('heading',{name:'Review before continuing',exact:true}).count())?offline:p2;const winner=loser===offline?p2:offline;await shot(loser,'b03-conflict');assert.equal(await loser.getByLabel('Execution 2 quantity (shares)',{exact:true}).inputValue(),'60');await click(loser,'Review current Trade');await loser.getByText('This Trade is already Open. Your unsaved Executions have not been recorded. Cancel to inspect the saved Trade.',{exact:true}).waitFor();assert.match(await loser.locator('body').innerText(),/already Open/);assert(await loser.getByRole('button',{name:'Save initial Position Change',exact:true}).isDisabled());await shot(loser,'b03-reviewed-conflict');await snapshot(winner,'b03-after-race');await obs('B03 shared-store conflict',{expected:'one winner, preserved typed conflict, review recognizes already Open',observed:'Two pages in same persistent context, one saved, other retains two rows and reflection, disabled after review',status:'PASS'});await p2.close();
+ if(await offline.getByRole('button',{name:'Cancel',exact:true}).count())await click(offline,'Cancel');await plan(offline,'CRITRECOVER');await opening(offline,'Complete');const bef=await snapshot(offline,'b03-before-readiness');await offline.evaluate(()=>window.criticFault='inventory');await click(offline,'Save initial Position Change');await offline.getByRole('heading',{name:'Recovery Only',exact:true}).waitFor();await shot(offline,'b03-recovery');const after=await snapshot(offline,'b03-after-readiness');assert.deepEqual(after,bef);await offline.evaluate(()=>window.criticFault='');await click(offline,'Retry startup');await offline.getByRole('heading',{name:'Opening',exact:true}).waitFor();assert.equal(await offline.getByLabel('Execution 2 quantity (shares)',{exact:true}).inputValue(),'60');await click(offline,'Save initial Position Change');await offline.getByRole('heading',{name:'CRITRECOVER · Open',exact:true}).waitFor();await shot(offline,'b03-retry-success');await snapshot(offline,'b03-retry-success');await obs('B03 readiness',{expected:'isolated native cache boundary failure blocks all authority, readable recovery, safe retry retains draft',observed:'all root/version/lifecycle deep equal under rejection; retry and exact draft save succeeded',status:'PASS'});
+}catch(e){await write('b03-attempt-failure.json',{name:e.name,message:e.message,stack:e.stack});if(context?.pages()[0])await shot(context.pages()[0],'b03-attempt-failure');throw e;}finally{await context?.close();await write('b03-console.json',consoles)}

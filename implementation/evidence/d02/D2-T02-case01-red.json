@@ -1,0 +1,16 @@
+{
+  "id": "D2-T02-case01",
+  "stage": "red",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "sourceDigest": "9a93c7b1d1593c0b00e000830e14f1834a654b327f4e68ef249995ad3542cf2e",
+  "command": [
+    "npm",
+    "run",
+    "test:unit",
+    "--",
+    "tests/unit/d02-analysis.test.ts"
+  ],
+  "exit": 1,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:unit\n> vitest run --project unit tests/unit/d02-analysis.test.ts\n\n\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n ❯ |unit| tests/unit/d02-analysis.test.ts (8 tests | 1 failed) 8ms\n   ❯ complete Stock entry derivation (1)\n     × case01 derives complete opening quantity, gross basis and actual fees while retaining frozen 1R 4ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 7 passed (8)\n   Start at  13:23:15\n   Duration  306ms (environment 86%, transform 7%, tests 4%, import 3%, worker 1%)\n\n",
+  "stderr": "\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |unit| tests/unit/d02-analysis.test.ts > complete Stock entry derivation > case01 derives complete opening quantity, gross basis and actual fees while retaining frozen 1R\nAssertionError: expected { status: 'IntegrityBlocked', …(1) } to match object { status: 'Derived', …(6) }\n(1 matching property omitted from actual)\n\n- Expected\n+ Received\n\n  {\n-   \"baseline\": {\n-     \"oneR\": \"500\",\n-   },\n-   \"grossBasis\": \"5020\",\n-   \"openingFees\": \"3\",\n-   \"quantity\": \"100\",\n-   \"realizedResult\": {\n-     \"reason\": \"NoDisposal\",\n-     \"status\": \"NotApplicable\",\n-   },\n-   \"reconciliation\": {\n-     \"expectedLifecycle\": \"Open\",\n-   },\n-   \"status\": \"Derived\",\n+   \"status\": \"IntegrityBlocked\",\n  }\n\n ❯ tests/unit/d02-analysis.test.ts:13:40\n\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n"
+}

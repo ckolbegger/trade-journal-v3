@@ -1,0 +1,26 @@
+{
+  "id": "D2-final",
+  "stage": "firefox-keyboard-green",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "inputs": {
+    "implementation/plan/d02-implementation-baseline.md": "3f0042a94f5be932f0baaf8222b4a2da50b766a4036cd5d785b640f1b64892fb",
+    "implementation/plan/d02-initial-stock-entry.md": "f178999f16b99c3e961f4d2f63e55a5be6e86961d2b3c772e3f2614ccf3e62ec",
+    "implementation/plan/d01-capacity-policy-revision.md": "ba560d7d8eb724fb6f74cdc0f5990cccb650b733302836a120393256f273ed64",
+    "implementation/plan/d02-capacity-evidence.md": "2292e7d75e340723e383153b568021ac125f92e8d92879c2cf43258913d53065",
+    "specs/evaluation/kickoff-prompt.md": "03c97d607bfd55e086b626a710a6475372320233c2e67ef8b5427016f85bc795"
+  },
+  "sourceDigest": "fd2b39bb96397ebb827c7972c38a13e9f18863c934bd00633c4dfd92031bb381",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "tests/browser/d01-ui.spec.ts",
+    "--project",
+    "firefox",
+    "--grep",
+    "keyboard"
+  ],
+  "exit": 0,
+  "stdout": "\nRunning 2 tests using 1 worker\n\n  ✓  1 [firefox] › tests/browser/d01-ui.spec.ts:77:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 390px (2.5s)\n  ✓  2 [firefox] › tests/browser/d01-ui.spec.ts:77:3 › D1-B05 keyboard-only onboarding and Plan, live resize, zoom and axe at 1440px (2.5s)\n\n  2 passed (5.7s)\n",
+  "stderr": "[WebServer] (node:3313) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)\n(node:3318) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+}

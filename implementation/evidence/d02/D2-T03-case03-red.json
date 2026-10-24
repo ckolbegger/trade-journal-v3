@@ -1,0 +1,17 @@
+{
+  "id": "D2-T03-case03",
+  "stage": "red",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "sourceDigest": "0ddc8cdd766547405dd697eda292a5a4466445e90101f5969984f0a18bb761b2",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "--project",
+    "unit",
+    "tests/unit/d02-journal.test.ts"
+  ],
+  "exit": 1,
+  "stdout": "\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n ❯ |unit| tests/unit/d02-journal.test.ts (3 tests | 1 failed) 13ms\n   × records Decline distinctly from optional unanswered Note and Debt 4ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 2 passed (3)\n   Start at  13:24:25\n   Duration  341ms (environment 76%, import 11%, transform 8%, tests 5%, worker 1%)\n\n",
+  "stderr": "\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |unit| tests/unit/d02-journal.test.ts > records Decline distinctly from optional unanswered Note and Debt\nAssertionError: expected 'Outstanding' to be 'Declined' // Object.is equality\n\nExpected: \"Declined\"\nReceived: \"Outstanding\"\n\n ❯ tests/unit/d02-journal.test.ts:34:38\n     32|     if (prepared.status !== 'Prepared') throw new Error('Preparation f…\n     33|     const result = await store.transaction('rw', store.versions, () =>…\n     34|     expect(result.obligation.status).toBe(disposition.kind === 'Declin…\n       |                                      ^\n     35|     expect(result.obligation.debtId).toBeUndefined();\n     36|     if (disposition.kind === 'Complete') expect(result.entry?.response…\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n"
+}

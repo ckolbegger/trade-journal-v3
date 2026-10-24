@@ -1,4 +1,6 @@
+import type { Execution, OpeningAgreement, PositionChange } from '../trade-record/opening-types';
 import Decimal from 'decimal.js';
+import { Temporal } from '@js-temporal/polyfill';
 export interface PlanInput {
   instrument?: { kind: string; symbol: string; currency: string };
   quantity: string;
@@ -53,6 +55,12 @@ function ratio(numerator: string, denominator: string): { numerator: string; den
   n = n.div(a); d = d.div(a);
   return { numerator: n.toFixed(), denominator: d.toFixed() };
 }
+export interface OpeningInput {
+  plannedLegId: string;
+  positionChange: PositionChange;
+  executions: Execution[];
+  recordedAgreement?: OpeningAgreement;
+}
 export interface PlannedCandidate {
   candidateId: string;
   revision: string;
@@ -60,10 +68,12 @@ export interface PlannedCandidate {
   plan: PlanInput;
   storedLifecycle: string;
   exposureFacts: unknown[];
+  opening?: OpeningInput;
 }
 export function derive(candidate: PlannedCandidate) {
   const assessment = assessPlan(candidate.plan);
   if (assessment.status === 'Rejected') return { status: 'IntegrityBlocked' as const, findings: assessment.issues };
+  if (candidate.opening) return deriveOpening(candidate, assessment.baseline, candidate.opening);
   if (candidate.storedLifecycle !== 'Planned' || candidate.exposureFacts.length) return { status: 'IntegrityBlocked' as const, findings: ['LifecycleDisagreement'] };
   return { status: 'Derived' as const, reconciliation: { candidateId: candidate.candidateId, revision: candidate.revision, digest: candidate.digest, expectedLifecycle: 'Planned' as const }, baseline: assessment.baseline, entryReadiness: 'Unfilled' as const, positions: [], lotMatches: [], deviations: [], terminalDisposition: null };
 }
@@ -72,3 +82,75 @@ function parseDecimal(value: string): Decimal | undefined {
   if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(value)) return undefined;
   try { return new Decimal(value); } catch { return undefined; }
 }
+
+function exactEngine(values: string[]) {
+  return Decimal.clone({ precision: values.reduce((total, value) => { const decimal = new Decimal(value); return total + decimal.sd() + decimal.dp() + Math.abs(decimal.e); }, 32), rounding: Decimal.ROUND_HALF_EVEN });
+}
+function deriveOpening(candidate: PlannedCandidate, baseline: Baseline, opening: OpeningInput, verifyAgreement = true) {
+  const findings: string[] = [];
+  const change = opening.positionChange;
+  if (candidate.storedLifecycle !== 'Open') findings.push('LifecycleDisagreement');
+  if (candidate.exposureFacts.length) findings.push('UnexpectedExposureFacts');
+  if (change.tradeId !== candidate.candidateId || change.originTradeId !== candidate.candidateId) findings.push('PositionChangeOwnershipMismatch');
+  if (change.kind !== 'InitialStockEntry') findings.push('InitialStockEntryRequired');
+  if (!validInstant(change.economicTime) || !validInstant(change.saveTime)) findings.push('InvalidPositionChangeTime');
+  if (!Number.isSafeInteger(change.sequence) || change.sequence < 1) findings.push('InvalidRecordedSequence');
+  if (!opening.plannedLegId || !change.id || !change.version || !opening.executions.length) findings.push('OpeningIdentityRequired');
+  const ids = new Set<string>(); const sequences = new Set<number>([change.sequence]);
+  for (const execution of opening.executions) {
+    const quantity = parseDecimal(execution.quantity); const price = parseDecimal(execution.price); const fee = parseDecimal(execution.fee);
+    if (!quantity?.isFinite() || quantity.lte(0)) findings.push('PositiveExecutionQuantityRequired');
+    if (!price?.isFinite() || price.lt(0)) findings.push('NonnegativeExecutionPriceRequired');
+    if (!fee?.isFinite() || fee.lt(0)) findings.push('NonnegativeExecutionFeeRequired');
+    if (!validInstant(execution.economicTime) || !validInstant(execution.saveTime)) findings.push('InvalidExecutionTime');
+    if (execution.tradeId !== candidate.candidateId || execution.positionChangeId !== change.id) findings.push('ExecutionOwnershipMismatch');
+    if (execution.plannedLegId !== opening.plannedLegId) findings.push('PlannedLegIntentMismatch');
+    if (execution.action !== 'Buy') findings.push('BuyExecutionRequired');
+    if (execution.instrument.kind !== 'Stock' || !execution.instrument.symbol.trim() || !execution.instrument.currency.trim()) findings.push('ExactStockRequired');
+    if (!execution.id || !execution.version || ids.has(execution.id)) findings.push('DuplicateExecutionOwnership');
+    ids.add(execution.id);
+    if (!Number.isSafeInteger(execution.sequence) || execution.sequence < 1 || sequences.has(execution.sequence)) findings.push('InvalidRecordedSequence');
+    sequences.add(execution.sequence);
+  }
+  if (change.executionIds.length !== ids.size || new Set(change.executionIds).size !== ids.size || change.executionIds.some(id => !ids.has(id))) findings.push('PositionChangeMembershipMismatch');
+  if (findings.length) return { status: 'IntegrityBlocked' as const, findings: [...new Set(findings)] };
+
+  const Exact = exactEngine([candidate.plan.stop, candidate.plan.target, baseline.risk, baseline.reward, ...opening.executions.flatMap(execution => [execution.quantity, execution.price, execution.fee])]);
+  let quantity = new Exact(0); let grossBasis = new Exact(0); let fees = new Exact(0);
+  for (const execution of opening.executions) {
+    quantity = quantity.plus(execution.quantity);
+    grossBasis = grossBasis.plus(new Exact(execution.quantity).times(execution.price));
+    fees = fees.plus(execution.fee);
+  }
+  if (!quantity.eq(candidate.plan.quantity)) return { status: 'IntegrityBlocked' as const, findings: ['CompletePlannedQuantityRequired'] };
+  const risk = grossBasis.minus(quantity.times(candidate.plan.stop)).plus(fees).toFixed();
+  const reward = quantity.times(candidate.plan.target).minus(grossBasis).minus(fees).toFixed();
+  const comparison = new Exact(reward).times(baseline.risk).comparedTo(new Exact(risk).times(baseline.reward));
+  const mismatches = (['kind', 'symbol', 'currency'] as const).filter(key => opening.executions.some(execution => execution.instrument[key] !== candidate.plan.instrument?.[key]));
+  const deviations: OpeningAgreement['deviations'] = mismatches.length ? [{ kind: 'PlannedLegTerms', plannedLegId: opening.plannedLegId, mismatches }] : [];
+  const entryResolution = { positionChangeId: opening.positionChange.id, economicTime: opening.positionChange.economicTime };
+  const agreement = opening.recordedAgreement;
+  if (verifyAgreement && !agreement) return { status: 'IntegrityBlocked' as const, findings: ['MissingOpeningAgreement'] };
+  if (verifyAgreement && agreement && (agreement.factRevision !== candidate.revision || agreement.lotMatches.length !== 0 || agreement.entryResolution.positionChangeId !== entryResolution.positionChangeId || !validInstant(agreement.entryResolution.economicTime) || Temporal.Instant.compare(agreement.entryResolution.economicTime, entryResolution.economicTime) !== 0 || agreement.deviations.length !== deviations.length || agreement.deviations.some((deviation, index) => { const expected = deviations[index]; return !expected || deviation.kind !== expected.kind || deviation.plannedLegId !== expected.plannedLegId || deviation.mismatches.join(',') !== expected.mismatches.join(','); }))) return { status: 'IntegrityBlocked' as const, findings: ['OpeningAgreementDisagreement'] };
+  const fulfillment = deviations.length ? 'FilledWithDeviation' as const : 'FilledAsPlanned' as const;
+  const positions: { instrument: Execution['instrument']; quantity: string; lots: { openingId: string; quantity: string; price: string; openingFees: string; feePerShare: { numerator: string; denominator: string } }[] }[] = [];
+  for (const execution of [...opening.executions].sort((a, b) => Temporal.Instant.compare(a.economicTime, b.economicTime) || a.sequence - b.sequence)) {
+    let position = positions.find(item => item.instrument.kind === execution.instrument.kind && item.instrument.symbol === execution.instrument.symbol && item.instrument.currency === execution.instrument.currency);
+    if (!position) { position = { instrument: structuredClone(execution.instrument), quantity: '0', lots: [] }; positions.push(position); }
+    position.quantity = new Exact(position.quantity).plus(execution.quantity).toFixed();
+    position.lots.push({ openingId: execution.id, quantity: new Exact(execution.quantity).toFixed(), price: new Exact(execution.price).toFixed(), openingFees: new Exact(execution.fee).toFixed(), feePerShare: ratio(execution.fee, execution.quantity) });
+  }
+  return { status: 'Derived' as const, fulfillment, entryReadiness: fulfillment, weightedEntry: ratio(grossBasis.toFixed(), quantity.toFixed()), entryQuality: { status: 'Resolved' as const, comparison: new Exact(risk).lte(0) ? 'Unavailable' as const : comparison < 0 ? 'BelowPlan' as const : comparison > 0 ? 'AbovePlan' as const : 'AsPlanned' as const, risk, reward, ratio: new Exact(risk).lte(0) ? { status: 'Unavailable' as const, reason: 'NonpositiveEntryRisk' as const } : ratio(reward, risk) }, entryResolution: { positionChangeId: opening.positionChange.id, economicTime: opening.positionChange.economicTime }, reconciliation: { candidateId: candidate.candidateId, revision: candidate.revision, digest: candidate.digest, expectedLifecycle: 'Open' as const }, baseline, quantity: quantity.toFixed(), grossBasis: grossBasis.toFixed(), openingFees: fees.toFixed(), realizedResult: { status: 'NotApplicable' as const, reason: 'NoDisposal' as const }, positions, lotMatches: [], deviations, terminalDisposition: null };
+}
+
+export function assessChange(candidate: PlannedCandidate) {
+  if (candidate.storedLifecycle !== 'Planned' || !candidate.opening) return { status: 'Rejected' as const, issues: ['InitialStockEntryRequiresPlannedTrade'] };
+  const assessment = assessPlan(candidate.plan);
+  if (assessment.status === 'Rejected') return assessment;
+  const derivation = deriveOpening({ ...candidate, storedLifecycle: 'Open' }, assessment.baseline, candidate.opening, false);
+  if (derivation.status !== 'Derived') return { status: 'Rejected' as const, issues: derivation.findings };
+  if ('fulfillment' in derivation && derivation.fulfillment === 'FilledWithDeviation') return { status: 'Rejected' as const, issues: ['MissingManagementCoverage'] };
+  return { status: 'Accepted' as const, derivation };
+}
+
+function validInstant(value: string) { try { Temporal.Instant.from(value); return true; } catch { return false; } }

@@ -1,0 +1,21 @@
+{
+  "id": "D2-final",
+  "stage": "final-tooling-typecheck",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "inputs": {
+    "implementation/plan/d02-implementation-baseline.md": "3f0042a94f5be932f0baaf8222b4a2da50b766a4036cd5d785b640f1b64892fb",
+    "implementation/plan/d02-initial-stock-entry.md": "f178999f16b99c3e961f4d2f63e55a5be6e86961d2b3c772e3f2614ccf3e62ec",
+    "implementation/plan/d01-capacity-policy-revision.md": "ba560d7d8eb724fb6f74cdc0f5990cccb650b733302836a120393256f273ed64",
+    "implementation/plan/d02-capacity-evidence.md": "2292e7d75e340723e383153b568021ac125f92e8d92879c2cf43258913d53065",
+    "specs/evaluation/kickoff-prompt.md": "03c97d607bfd55e086b626a710a6475372320233c2e67ef8b5427016f85bc795"
+  },
+  "sourceDigest": "d40c30acd6115aa46cbd66e14958749f5774ab8e53805e5ee81f885bdf8be214",
+  "command": [
+    "npm",
+    "run",
+    "typecheck"
+  ],
+  "exit": 0,
+  "stdout": "\n> trade-journal-v3@0.1.0 typecheck\n> node node_modules/@typescript/native/bin/tsc -b\n\n",
+  "stderr": ""
+}

@@ -1,0 +1,16 @@
+{
+  "id": "D2-T02-case03",
+  "stage": "green",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "sourceDigest": "85396b8aec7b18d6d353eac5536c0a7c2709081cdb55bcfda3e0f37b5747ea3a",
+  "command": [
+    "npm",
+    "run",
+    "test:unit",
+    "--",
+    "tests/unit/d02-analysis.test.ts"
+  ],
+  "exit": 1,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:unit\n> vitest run --project unit tests/unit/d02-analysis.test.ts\n\n\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n ❯ |unit| tests/unit/d02-analysis.test.ts (10 tests | 1 failed) 7ms\n   × should bind Planned reconciliation to the exact candidate and surface disagreement 2ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 9 passed (10)\n   Start at  13:24:00\n   Duration  313ms (environment 81%, import 8%, transform 8%, tests 3%, worker 1%)\n\n",
+  "stderr": "\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |unit| tests/unit/d02-analysis.test.ts > should bind Planned reconciliation to the exact candidate and surface disagreement\nReferenceError: positions is not defined\n ❯ derive src/domain/trade-analysis/index.ts:78:259\n\n ❯ tests/unit/d01-analysis.test.ts:24:10\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n"
+}

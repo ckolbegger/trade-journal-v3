@@ -14,7 +14,7 @@ test('D1-I05 command-created 25000 Planned Trades, 50 cold and 50 warm offline t
   console.log('D1 dataset complete', dataset);
   const before = await page.evaluate(() => window.d1Evidence.inspect());
   expect(before.count).toBe(25000);
-  expect(dataset.counts).toEqual({ plans: 25000, entries: 25000, lifecycle: 25000, versions: 50005 });
+  expect(dataset.counts).toEqual({ plans: 25000, entries: 25000, lifecycle: 25000, versions: 50007 });
   await page.evaluate(() => window.d1Evidence.discardPrivateReceipts());
   expect(await page.evaluate(() => window.d1Evidence.inspect())).toEqual(before);
   const afterPrivateDiscard = await page.evaluate(() => window.d1Evidence.measure());
@@ -61,7 +61,7 @@ test('D1-I05 command-created 25000 Planned Trades, 50 cold and 50 warm offline t
   }
   const p95 = (values: number[]) => [...values].sort((a, b) => a - b)[Math.ceil(values.length * .95) - 1] ?? Infinity;
   const evidence = { dataset, before, afterPrivateDiscard, queries, browserName, browserVersion, environment: { platform: platform(), osRelease: release(), cpu: cpus()[0]?.model, memoryBytes: totalmem(), node: process.version }, source: '25,000 confirmPlan commands, native browser store; no executions or market observations', futureCapacityReserves: 'D1 plan budgets only; not fabricated domain records', cold, warm, percentile: 'nearest rank ceil(0.95*n)', coldP95: p95(cold), warmP95: p95(warm) };
-  await writeFile('implementation/evidence/d01/d01-benchmark.json', JSON.stringify(evidence, null, 2));
+  await writeFile('implementation/evidence/d02/d01-cumulative-benchmark.json', JSON.stringify(evidence, null, 2));
   expect(p95(cold)).toBeLessThanOrEqual(2500);
   expect(p95(warm)).toBeLessThanOrEqual(1500);
 });

@@ -1,0 +1,17 @@
+{
+  "id": "D2-T03-case04",
+  "stage": "red",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "sourceDigest": "cdef29dd66fae835a44ece6bc4cde4d6db18e5baa31807f29ad92c7979e05fcf",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "--project",
+    "unit",
+    "tests/unit/d02-journal.test.ts"
+  ],
+  "exit": 1,
+  "stdout": "\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n ❯ |unit| tests/unit/d02-journal.test.ts (4 tests | 1 failed) 15ms\n   × settles original-form Debt atomically with Entry or explicit decline and returns projections 4ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 3 passed (4)\n   Start at  13:25:05\n   Duration  332ms (environment 74%, import 11%, transform 8%, tests 6%, worker 1%)\n\n",
+  "stderr": "\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |unit| tests/unit/d02-journal.test.ts > settles original-form Debt atomically with Entry or explicit decline and returns projections\nAssertionError: expected 'NotFound' to be 'Saved' // Object.is equality\n\nExpected: \"Saved\"\nReceived: \"NotFound\"\n\n ❯ tests/unit/d02-journal.test.ts:56:27\n     54|     const { journal, obligation } = await debtFixture();\n     55|     const result = await journal.save({ kind: 'ResolveDebt', generatio…\n     56|     expect(result.status).toBe('Saved');\n       |                           ^\n     57|     if (result.status !== 'Saved') throw new Error('Save failed');\n     58|     expect(result.obligation.debtId).toBe(obligation.debtId);\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n"
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  },
+  {
+    "type": "pageerror",
+    "text": "Cache is not defined"
+  },
+  {
+    "type": "pageerror",
+    "text": "Cache is not defined"
+  },
+  {
+    "type": "pageerror",
+    "text": "Cache is not defined"
+  },
+  {
+    "type": "pageerror",
+    "text": "Cache is not defined"
+  },
+  {
+    "type": "pageerror",
+    "text": "Cache is not defined"
+  },
+  {
+    "type": "pageerror",
+    "text": "Cache is not defined"
+  },
+  {
+    "type": "pageerror",
+    "text": "Cache is not defined"
+  },
+  {
+    "type": "pageerror",
+    "text": "Cache is not defined"
+  },
+  {
+    "type": "trace",
+    "text": "Error: Critic isolated list read failure\n    at IDBIndex.openCursor (eval at evaluate (:370:30), <anonymous>:1:163)\n    at http://localhost:5174/assets/index-BZaGd-Wg.js:3:42881\n    at e (http://localhost:5174/assets/index-BZaGd-Wg.js:3:2859)\n    at new R (http://localhost:5174/assets/index-BZaGd-Wg.js:3:3147)\n    at Object.openCursor (http://localhost:5174/assets/index-BZaGd-Wg.js:3:42669)\n    at h.<computed> [as openCursor] (http://localhost:5174/assets/index-BZaGd-Wg.js:3:68228)\n    at Object.openCursor (http://localhost:5174/assets/index-BZaGd-Wg.js:3:61345)\n    at Nt (http://localhost:5174/assets/index-BZaGd-Wg.js:3:22744)\n    at Pt (http://localhost:5174/assets/index-BZaGd-Wg.js:3:23254)\n    at http://localhost:5174/assets/index-BZaGd-Wg.js:3:25304"
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "id": "D2-T07",
+  "stage": "native-first-enabled",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "inputs": {
+    "implementation/plan/d02-implementation-baseline.md": "3f0042a94f5be932f0baaf8222b4a2da50b766a4036cd5d785b640f1b64892fb",
+    "implementation/plan/d02-initial-stock-entry.md": "f178999f16b99c3e961f4d2f63e55a5be6e86961d2b3c772e3f2614ccf3e62ec",
+    "implementation/plan/d01-capacity-policy-revision.md": "ba560d7d8eb724fb6f74cdc0f5990cccb650b733302836a120393256f273ed64",
+    "specs/evaluation/kickoff-prompt.md": "03c97d607bfd55e086b626a710a6475372320233c2e67ef8b5427016f85bc795"
+  },
+  "sourceDigest": "c765477a81bfdee5388629f88bfcad2d46b1a43938802f2af93c012a5872c0c7",
+  "command": [
+    "npm",
+    "run",
+    "test:browser",
+    "--",
+    "--project=chromium",
+    "--grep=D2"
+  ],
+  "exit": 1,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:browser\n> playwright test --project=chromium --grep=D2\n\n\nRunning 4 tests using 1 worker\n\n  ✘  1 [chromium] › tests/browser/d02-opening.spec.ts:21:1 › D2-B01 complete two-Execution opening, native commit trace and fully stopped offline reopen (1.0s)\n  ✓  2 [chromium] › tests/browser/d02-opening.spec.ts:53:1 › D2-B02 Defer/Decline, original Debt answer/decline and cancelled facts (2.2s)\n  ✓  3 [chromium] › tests/browser/d02-opening.spec.ts:64:1 › D2-B03 same-store competing tabs preserve losing input and explicit conflict review (1.2s)\n  ✓  4 [chromium] › tests/browser/d02-opening.spec.ts:73:1 › D2-B04 accessible validation and live responsive preservation at 390/767/768/1440 (1.4s)\n\n\n  1) [chromium] › tests/browser/d02-opening.spec.ts:21:1 › D2-B01 complete two-Execution opening, native commit trace and fully stopped offline reopen \n\n    Error: expect(received).toEqual(expected) // deep equality\n\n    - Expected  - 1\n    + Received  + 1\n\n    @@ -2,8 +2,8 @@\n        \"PositionChange\",\n        \"Execution\",\n        \"Execution\",\n        \"Agreement\",\n        \"TradeState\",\n    -   \"JournalObligation\",\n        \"JournalEntry\",\n    +   \"JournalObligation\",\n      ]\n\n      41 |   const trace = await page.evaluate(() => window.d2Trace);\n      42 |   const write = trace.find(event => event.event === 'add' && event.kind === 'PositionChange'); if (!write) throw new Error('Native write trace required');\n    > 43 |   expect(trace.filter(event => event.transaction === write.transaction && event.event === 'add').map(event => event.kind)).toEqual(['PositionChange', 'Execution', 'Execution', 'Agreement', 'TradeState', 'JournalObligation', 'JournalEntry']);\n         |                                                                                                                            ^\n      44 |   const committed = trace.find(event => event.transaction === write.transaction && event.event === 'complete'); const rendered = trace.find(event => event.event === 'ui-success');\n      45 |   expect(committed).toBeTruthy(); expect(rendered).toBeTruthy(); expect(committed?.at).toBeLessThanOrEqual(rendered?.at ?? -1);\n      46 |   expect(trace.filter(event => event.event === 'begin' && event.mode === 'readonly' && event.stores?.includes('versions') && event.at > (committed?.at ?? Infinity))).toHaveLength(0);\n        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/browser/d02-opening.spec.ts:43:124\n\n    Error Context: test-results/d02-opening-D2-B01-complet-cc5af-ully-stopped-offline-reopen-chromium/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/d02-opening-D2-B01-complet-cc5af-ully-stopped-offline-reopen-chromium/trace.zip\n    Usage:\n\n        npx playwright show-trace test-results/d02-opening-D2-B01-complet-cc5af-ully-stopped-offline-reopen-chromium/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  1 failed\n    [chromium] › tests/browser/d02-opening.spec.ts:21:1 › D2-B01 complete two-Execution opening, native commit trace and fully stopped offline reopen \n  3 passed (6.9s)\n",
+  "stderr": "[WebServer] (node:45285) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)\n(node:45299) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:45317) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+}

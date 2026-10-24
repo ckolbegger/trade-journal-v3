@@ -1,0 +1,22 @@
+{
+  "id": "D2-blocked-upgrade",
+  "stage": "native-green",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "inputs": {
+    "implementation/plan/d02-implementation-baseline.md": "3f0042a94f5be932f0baaf8222b4a2da50b766a4036cd5d785b640f1b64892fb",
+    "implementation/plan/d02-initial-stock-entry.md": "f178999f16b99c3e961f4d2f63e55a5be6e86961d2b3c772e3f2614ccf3e62ec",
+    "implementation/plan/d01-capacity-policy-revision.md": "ba560d7d8eb724fb6f74cdc0f5990cccb650b733302836a120393256f273ed64",
+    "specs/evaluation/kickoff-prompt.md": "03c97d607bfd55e086b626a710a6475372320233c2e67ef8b5427016f85bc795"
+  },
+  "sourceDigest": "15a751f28db682d69c540d8d079b9303283941f76c9b0a701a7b121987942e41",
+  "command": [
+    "npm",
+    "run",
+    "test:browser",
+    "--",
+    "--grep=D2-I03 native blocked"
+  ],
+  "exit": 0,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:browser\n> playwright test --grep=D2-I03 native blocked\n\n\nRunning 3 tests using 1 worker\n\n  ✓  1 [chromium] › tests/browser/d02-migration.spec.ts:29:1 › D2-I03 native blocked physical upgrade rejects safely and retries after old connection closes (541ms)\n  ✓  2 [firefox] › tests/browser/d02-migration.spec.ts:29:1 › D2-I03 native blocked physical upgrade rejects safely and retries after old connection closes (1.6s)\n  ✓  3 [webkit] › tests/browser/d02-migration.spec.ts:29:1 › D2-I03 native blocked physical upgrade rejects safely and retries after old connection closes (894ms)\n\n  3 passed (4.2s)\n",
+  "stderr": "[WebServer] (node:63958) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)\n(node:63961) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:63984) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:64004) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+}

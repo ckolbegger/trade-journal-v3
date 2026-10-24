@@ -1,4 +1,5 @@
 import 'fake-indexeddb/auto';
+import { Journal } from '../../src/domain/journal';
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, waitFor, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -12,7 +13,7 @@ afterEach(cleanup);
 function fixture() {
   const store = new Store(`d1-${crypto.randomUUID()}`);
   const runtime = new Runtime(store, { check: () => Promise.resolve({ transaction: true, capacity: true, control: true, inventory: true, protection: 'BestEffort' }), requestDurability: () => Promise.resolve('BestEffort') });
-  const services: Services = { workspace: new Workspace(runtime), catalog: new ReferenceCatalog(store, runtime), workflows: new TradeWorkflows(runtime), views: new TradeViewsAndReporting(store) };
+  const services: Services = { workspace: new Workspace(runtime), catalog: new ReferenceCatalog(store, runtime), workflows: new TradeWorkflows(runtime), views: new TradeViewsAndReporting(store), journal: new Journal(store, runtime) };
   return { store, services };
 }
 describe('Long Stock Plan production UI', () => {
@@ -75,7 +76,7 @@ it('should keep recovery reads and history available while every mutation is dis
   const f = await workspaceFixture(); const user = userEvent.setup();
   await f.workflows.confirmPlan(f.command);
   vi.spyOn(f.runtime.host, 'check').mockResolvedValue({ transaction: true, capacity: false, control: true, inventory: false, protection: 'BestEffort' });
-  render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store) }} />);
+  render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store), journal: new Journal(f.store, f.runtime) }} />);
   expect(await screen.findByText('Recovery Only')).toBeTruthy();
   expect((screen.getByRole<HTMLButtonElement>('button', { name: 'New Plan' })).disabled).toBe(true);
   expect(await screen.findByRole('button', { name: /XYZ · Planned/ })).toBeTruthy();
@@ -100,7 +101,7 @@ it('should offer honest storage and installation guidance without disabling writ
 it('should keep update activation disabled while a retained Plan survives a reference save', async () => {
   const { workspaceFixture } = await import('../fixtures');
   const f = await workspaceFixture(); const user = userEvent.setup();
-  render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store) }} delivery={{ getUpdate: () => Promise.resolve({ available: true }), activateUpdate: () => Promise.resolve() }} />);
+  render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store), journal: new Journal(f.store, f.runtime) }} delivery={{ getUpdate: () => Promise.resolve({ available: true }), activateUpdate: () => Promise.resolve() }} />);
   await user.click(await screen.findByRole('button', { name: 'New Plan' }));
   await user.type(screen.getByLabelText('Stock symbol'), 'XYZ');
   await user.click(screen.getByRole('button', { name: 'Workspace' }));
@@ -117,7 +118,7 @@ it('should disable mutation controls when reference saving discovers failed read
   const { workspaceFixture } = await import('../fixtures');
   const { vi } = await import('vitest');
   const f = await workspaceFixture(); const user = userEvent.setup();
-  render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store) }} />);
+  render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store), journal: new Journal(f.store, f.runtime) }} />);
   await user.click(await screen.findByRole('button', { name: 'Workspace' }));
   await user.type(screen.getByLabelText('Institution name'), 'Second broker');
   vi.spyOn(f.runtime.host, 'check').mockResolvedValue({ transaction: true, capacity: false, control: true, inventory: true, protection: 'BestEffort' });
@@ -132,7 +133,7 @@ it('should show Loading rather than an empty view while a list read is pending',
   const { vi } = await import('vitest');
   const f = await workspaceFixture(); const user = userEvent.setup();
   const views = new TradeViewsAndReporting(f.store);
-  render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views }} />);
+  render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views, journal: new Journal(f.store, f.runtime) }} />);
   await screen.findByText('No confirmed Plans match this view.');
   let releaseRead = () => {};
   const pending = new Promise<void>(resolve => { releaseRead = resolve; });
@@ -148,7 +149,7 @@ it('should show Loading rather than an empty view while a list read is pending',
 it('should enter Recovery Only and retain a reference draft after a storage abort', async () => {
   const { workspaceFixture } = await import('../fixtures');
   const f = await workspaceFixture(); const user = userEvent.setup();
-  render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store) }} />);
+  render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store), journal: new Journal(f.store, f.runtime) }} />);
   await user.click(await screen.findByRole('button', { name: 'Workspace' }));
   await user.type(screen.getByLabelText('Institution name'), 'Second broker');
   const fault = (_key: unknown, row: { kind: string }) => { if (row.kind === 'Institution') throw new DOMException('Injected storage abort', 'QuotaExceededError'); };
@@ -165,7 +166,7 @@ it('should display retained instants in the Workspace time zone without changing
   const { workspaceFixture } = await import('../fixtures');
   const f = await workspaceFixture(); const user = userEvent.setup();
   await f.workflows.confirmPlan(f.command);
-  render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store) }} />);
+  render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store), journal: new Journal(f.store, f.runtime) }} />);
   await user.click(await screen.findByRole('button', { name: /XYZ · Planned/ }));
   await user.click(await screen.findByText('View history'));
   expect(screen.getByText('Confirmed: 2026-10-17 16:00:00 America/New_York')).toBeTruthy();
@@ -180,7 +181,7 @@ it('should distinguish same-named Accounts by their immutable Institution in Pla
   const institution = await f.catalog.save({ kind: 'Institution', label: 'Other broker', generation: root.generation, expectedCatalogRevision: root.catalogRevision });
   if (institution.status !== 'Saved') throw new Error('Institution required');
   await f.catalog.save({ kind: 'Account', label: 'Trading', parentId: institution.record.id, generation: root.generation, expectedCatalogRevision: institution.catalogRevision });
-  render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store) }} />);
+  render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store), journal: new Journal(f.store, f.runtime) }} />);
   await user.click(await screen.findByRole('button', { name: 'New Plan' }));
   expect(screen.getByRole('option', { name: 'Trading · Broker' })).toBeTruthy();
   expect(screen.getByRole('option', { name: 'Trading · Other broker' })).toBeTruthy();
@@ -189,7 +190,7 @@ it('should distinguish same-named Accounts by their immutable Institution in Pla
 it('should refresh conflicting reference bindings without losing the reference draft', async () => {
   const { workspaceFixture } = await import('../fixtures');
   const f = await workspaceFixture(); const user = userEvent.setup();
-  render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store) }} />);
+  render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store), journal: new Journal(f.store, f.runtime) }} />);
   await user.click(await screen.findByRole('button', { name: 'Workspace' }));
   await user.type(screen.getByLabelText('Institution name'), 'My new broker');
   const current = await f.catalog.query({ family: 'Institution' });
@@ -207,7 +208,7 @@ it('should show the frozen Plan Baseline and entry readiness in each Planned lis
   const { workspaceFixture } = await import('../fixtures');
   const f = await workspaceFixture();
   await f.workflows.confirmPlan(f.command);
-  render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store) }} />);
+  render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store), journal: new Journal(f.store, f.runtime) }} />);
   const row = await screen.findByRole('button', { name: /XYZ · Planned/ });
   expect(row.textContent).toContain('Unfilled');
   expect(row.textContent).toContain('$500.00 risk');
@@ -230,7 +231,7 @@ it('should distinguish update, recovery and storage advisory landmarks after a l
   const { workspaceFixture } = await import('../fixtures');
   const { vi } = await import('vitest');
   const f = await workspaceFixture(); const user = userEvent.setup();
-  render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store) }} delivery={{ getUpdate: () => Promise.resolve({ available: true }), activateUpdate: () => Promise.resolve() }} />);
+  render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store), journal: new Journal(f.store, f.runtime) }} delivery={{ getUpdate: () => Promise.resolve({ available: true }), activateUpdate: () => Promise.resolve() }} />);
   await user.click(await screen.findByRole('button', { name: 'Check for application updates' }));
   await screen.findByText('Update available');
   await user.click(await screen.findByRole('button', { name: 'Workspace' }));
@@ -266,7 +267,7 @@ it('should add a second Account at an existing Institution and retain both for P
   const { workspaceFixture } = await import('../fixtures');
   const f = await workspaceFixture(); const user = userEvent.setup();
   await f.workflows.confirmPlan(f.command);
-  const services = { workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store) };
+  const services = { workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store), journal: new Journal(f.store, f.runtime) };
   const view = render(<App services={services} />);
   await user.click(await screen.findByRole('button', { name: 'Workspace' }));
   await user.type(screen.getByLabelText('New Account name'), 'Retirement');

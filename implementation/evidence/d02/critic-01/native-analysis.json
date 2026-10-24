@@ -1,0 +1,137 @@
+[
+  {
+    "check": "B01 native complete and offline authority equivalence",
+    "status": "PASS",
+    "tradeId": "7c14b49b-4433-4679-9943-5225094874e9",
+    "executionIds": [
+      "de0e4536-2366-4cfe-af6e-d0bb0d87d066",
+      "96cebc21-f9df-4007-8c4e-e2bb1b269510"
+    ],
+    "sequences": [
+      3,
+      4
+    ],
+    "root": {
+      "key": "active",
+      "generation": "7c900a9f-cdc7-4bfd-b7ba-20dce8f971e5",
+      "revision": "2aa1e7ae-133f-41e8-aa8b-6a2a7533c842",
+      "schema": 2,
+      "recordCounts": {
+        "versions": 16,
+        "lifecycle": 1
+      },
+      "timeZone": "America/New_York",
+      "catalogRevision": "4eb3226a-2cce-4998-8044-caab102f1201",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 5,
+      "recordedSequence": 4
+    }
+  },
+  {
+    "check": "B02 original Debt snapshot and separate decline/no-placeholder Entry",
+    "status": "PASS",
+    "owedId": "d357dafe-93f0-4041-b9af-bdce0018703b:position-change-reflection",
+    "answeredEntryId": "db37ca06-ba6c-4584-824c-d47686988030"
+  },
+  {
+    "check": "B03 race one complete semantic append only",
+    "status": "PASS",
+    "beforeRoot": {
+      "key": "active",
+      "generation": "7c900a9f-cdc7-4bfd-b7ba-20dce8f971e5",
+      "revision": "54f18f96-4137-4a01-8e77-fe2e4e536252",
+      "schema": 2,
+      "recordCounts": {
+        "versions": 56,
+        "lifecycle": 6
+      },
+      "timeZone": "America/New_York",
+      "catalogRevision": "4eb3226a-2cce-4998-8044-caab102f1201",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 16,
+      "recordedSequence": 21
+    },
+    "afterRoot": {
+      "key": "active",
+      "generation": "7c900a9f-cdc7-4bfd-b7ba-20dce8f971e5",
+      "revision": "1e9e851d-ab9e-44c2-a9c1-f70f83d4eb68",
+      "schema": 2,
+      "recordCounts": {
+        "versions": 63,
+        "lifecycle": 6
+      },
+      "timeZone": "America/New_York",
+      "catalogRevision": "4eb3226a-2cce-4998-8044-caab102f1201",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 17,
+      "recordedSequence": 24
+    }
+  },
+  {
+    "check": "B03 readiness rejects without root/history/lifecycle/sequence change",
+    "status": "PASS"
+  },
+  {
+    "check": "B01 one semantic native transaction completed before rendered success without required readback",
+    "status": "PASS",
+    "commit": {
+      "event": "complete",
+      "db": "trade-journal-v3",
+      "stores": [
+        "lifecycle",
+        "projections",
+        "roots",
+        "versions"
+      ],
+      "mode": "readwrite",
+      "time": 1100.1999998092651
+    },
+    "uiSuccess": {
+      "event": "Initial Position Change saved.",
+      "time": 1102.2999997138977
+    }
+  },
+  {
+    "check": "Axe WCAG AA",
+    "status": "PASS",
+    "scans": [
+      {
+        "file": "axe-1440-form.json",
+        "violations": 0,
+        "incomplete": []
+      },
+      {
+        "file": "axe-1440-open.json",
+        "violations": 0,
+        "incomplete": []
+      },
+      {
+        "file": "axe-1440-validation.json",
+        "violations": 0,
+        "incomplete": []
+      },
+      {
+        "file": "axe-390-form.json",
+        "violations": 0,
+        "incomplete": [
+          "color-contrast"
+        ]
+      },
+      {
+        "file": "axe-390-open.json",
+        "violations": 0,
+        "incomplete": []
+      },
+      {
+        "file": "axe-390-validation.json",
+        "violations": 0,
+        "incomplete": []
+      },
+      {
+        "file": "axe-loading.json",
+        "violations": 0,
+        "incomplete": []
+      }
+    ]
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "id": "D2-T02-case02",
+  "stage": "red",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "sourceDigest": "3089f9a63d7537ca1d67d30153d3fd8bdace53b0e589ca78c9568fa547f9101e",
+  "command": [
+    "npm",
+    "run",
+    "test:unit",
+    "--",
+    "tests/unit/d02-analysis.test.ts"
+  ],
+  "exit": 1,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:unit\n> vitest run --project unit tests/unit/d02-analysis.test.ts\n\n\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n ❯ |unit| tests/unit/d02-analysis.test.ts (9 tests | 1 failed) 8ms\n   × case02 resolves actual risk/reward and weighted entry below the frozen ratio 4ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 8 passed (9)\n   Start at  13:23:29\n   Duration  327ms (environment 86%, transform 7%, tests 3%, import 3%, worker 1%)\n\n",
+  "stderr": "\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |unit| tests/unit/d02-analysis.test.ts > case02 resolves actual risk/reward and weighted entry below the frozen ratio\nAssertionError: expected { status: 'Derived', …(10) } to match object { weightedEntry: { …(2) }, …(2) }\n(22 matching properties omitted from actual)\n\n- Expected\n+ Received\n\n  {\n-   \"entryQuality\": {\n-     \"comparison\": \"BelowPlan\",\n+   \"baseline\": {\n+     \"conditions\": [\n+       {\n+         \"amount\": \"500\",\n+         \"kind\": \"Stop\",\n+         \"price\": \"45\",\n+       },\n+       {\n+         \"amount\": \"1000\",\n+         \"kind\": \"Target\",\n+         \"price\": \"60\",\n+       },\n+     ],\n+     \"oneR\": \"500\",\n      \"ratio\": {\n-       \"denominator\": \"523\",\n-       \"numerator\": \"977\",\n+       \"denominator\": \"1\",\n+       \"numerator\": \"2\",\n      },\n-     \"reward\": \"977\",\n-     \"risk\": \"523\",\n-     \"status\": \"Resolved\",\n+     \"reward\": \"1000\",\n+     \"risk\": \"500\",\n    },\n-   \"entryResolution\": {\n-     \"economicTime\": \"2026-10-21T14:00:00Z\",\n-     \"positionChangeId\": \"change\",\n+   \"deviations\": [],\n+   \"grossBasis\": \"5020\",\n+   \"lotMatches\": [],\n+   \"openingFees\": \"3\",\n+   \"positions\": [],\n+   \"quantity\": \"100\",\n+   \"realizedResult\": {\n+     \"reason\": \"NoDisposal\",\n+     \"status\": \"NotApplicable\",\n    },\n-   \"weightedEntry\": {\n-     \"denominator\": \"5\",\n-     \"numerator\": \"251\",\n+   \"reconciliation\": {\n+     \"candidateId\": \"trade\",\n+     \"digest\": \"digest\",\n+     \"expectedLifecycle\": \"Open\",\n+     \"revision\": \"r2\",\n    },\n+   \"status\": \"Derived\",\n+   \"terminalDisposition\": null,\n  }\n\n ❯ tests/unit/d02-analysis.test.ts:18:38\n\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n"
+}

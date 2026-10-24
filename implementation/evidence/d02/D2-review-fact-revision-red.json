@@ -1,0 +1,22 @@
+{
+  "id": "D2-review-fact-revision",
+  "stage": "red",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "inputs": {
+    "implementation/plan/d02-implementation-baseline.md": "3f0042a94f5be932f0baaf8222b4a2da50b766a4036cd5d785b640f1b64892fb",
+    "implementation/plan/d02-initial-stock-entry.md": "f178999f16b99c3e961f4d2f63e55a5be6e86961d2b3c772e3f2614ccf3e62ec",
+    "implementation/plan/d01-capacity-policy-revision.md": "ba560d7d8eb724fb6f74cdc0f5990cccb650b733302836a120393256f273ed64",
+    "specs/evaluation/kickoff-prompt.md": "03c97d607bfd55e086b626a710a6475372320233c2e67ef8b5427016f85bc795"
+  },
+  "sourceDigest": "9a35863a4f3e47a9fb573f2105445f3c859a4647d803317ab6e17ef864677bff",
+  "command": [
+    "npm",
+    "run",
+    "test:unit",
+    "--",
+    "--testNamePattern=rejects a stale authoritative lifecycle FactRevision"
+  ],
+  "exit": 1,
+  "stdout": "\n> trade-journal-v3@0.1.0 pretest:unit\n> node tools/build-d1-fixture.mjs\n\nvite v8.3.4 building client environment for production...\ntransforming...\n✓ 10 modules transformed.\nrendering chunks...\ncomputing gzip size...\n.cache/d1-fixture/d1-fixture.mjs  31.72 kB │ gzip: 8.31 kB\n\n✓ built in 14ms\n\n> trade-journal-v3@0.1.0 test:unit\n> vitest run --project unit --testNamePattern=rejects a stale authoritative lifecycle FactRevision\n\n\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n ❯ |unit| tests/unit/d02-reads.test.ts (5 tests | 1 failed | 4 skipped) 36ms\n   × rejects a stale authoritative lifecycle FactRevision consistently in detail and opening preparation 35ms\n\n Test Files  1 failed | 12 skipped (13)\n      Tests  1 failed | 102 skipped (103)\n   Start at  13:46:13\n   Duration  700ms (environment 74%, import 13%, transform 12%, tests 1%)\n\n",
+  "stderr": "\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |unit| tests/unit/d02-reads.test.ts > rejects a stale authoritative lifecycle FactRevision consistently in detail and opening preparation\nAssertionError: expected { status: 'Ready', …(23) } to match object { status: 'IntegrityBlocked', …(1) }\n(80 matching properties omitted from actual)\n\n- Expected\n+ Received\n\n  {\n-   \"findings\": [\n-     \"FactRevisionDisagreement\",\n-   ],\n-   \"status\": \"IntegrityBlocked\",\n+   \"status\": \"Ready\",\n  }\n\n ❯ tests/unit/d02-reads.test.ts:60:89\n     58|   await f.store.lifecycle.update(`${f.command.generation}:${saved.trad…\n     59|   const before = await f.store.lifecycle.toArray();\n     60|   expect(await new TradeViewsAndReporting(f.store).getTradeDetail(save…\n       |                                                                                         ^\n     61|   expect(await f.store.lifecycle.toArray()).toEqual(before);\n     62|   f.store.close();\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n"
+}

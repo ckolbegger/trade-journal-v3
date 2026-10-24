@@ -1,0 +1,16 @@
+{
+  "id": "D2-T01",
+  "stage": "migration-refinement",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "sourceDigest": "e5130c7eb9ea85114246779550df4c859f2dd07bd21ce5cf4e014d08b7c941b4",
+  "command": [
+    "npm",
+    "run",
+    "test:unit",
+    "--",
+    "--testNamePattern=migrat"
+  ],
+  "exit": 0,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:unit\n> vitest run --project unit --testNamePattern=migrat\n\n\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n\n Test Files  1 passed | 9 skipped (10)\n      Tests  2 passed | 78 skipped (80)\n   Start at  13:24:44\n   Duration  574ms (environment 75%, import 12%, transform 11%, tests 1%, worker 1%)\n\n",
+  "stderr": ""
+}

@@ -1,0 +1,28 @@
+{
+  "aria": "- heading \"One complete initial decision\" [level=2]\n- paragraph: \"Frozen planned quantity: 100 shares.\"\n- paragraph: Enter every broker buy Execution for this decision. Together they must equal the frozen planned quantity. No facts or reflection are saved until you press Save.\n- text: Position Change time (ISO 8601)\n- textbox \"Position Change time (ISO 8601)\": 2026-10-21T23:19:21.283Z\n- group \"Execution 1 · Buy KBCANCEL1440\":\n  - text: Execution 1 · Buy KBCANCEL1440 Execution 1 quantity (shares)\n  - textbox \"Execution 1 quantity (shares)\": \"40\"\n  - text: Execution 1 price (USD)\n  - textbox \"Execution 1 price (USD)\": \"49\"\n  - text: Execution 1 fee (USD)\n  - textbox \"Execution 1 fee (USD)\": \"1\"\n  - text: Execution 1 time (ISO 8601)\n  - textbox \"Execution 1 time (ISO 8601)\": 2026-10-21T23:19:21.283Z\n  - button \"Remove Execution 1\"\n- group \"Execution 2 · Buy KBCANCEL1440\":\n  - text: Execution 2 · Buy KBCANCEL1440 Execution 2 quantity (shares)\n  - textbox \"Execution 2 quantity (shares)\": \"30\"\n  - text: Execution 2 price (USD)\n  - textbox \"Execution 2 price (USD)\": \"51\"\n  - text: Execution 2 fee (USD)\n  - textbox \"Execution 2 fee (USD)\": \"1\"\n  - text: Execution 2 time (ISO 8601)\n  - textbox \"Execution 2 time (ISO 8601)\": 2026-10-21T23:19:21.283Z\n  - button \"Remove Execution 2\"\n- group \"Execution 3 · Buy KBCANCEL1440\":\n  - text: Execution 3 · Buy KBCANCEL1440 Execution 3 quantity (shares)\n  - textbox \"Execution 3 quantity (shares)\": \"30\"\n  - text: Execution 3 price (USD)\n  - textbox \"Execution 3 price (USD)\": \"51\"\n  - text: Execution 3 fee (USD)\n  - textbox \"Execution 3 fee (USD)\": \"1\"\n  - text: Execution 3 time (ISO 8601)\n  - textbox \"Execution 3 time (ISO 8601)\": 2026-10-21T23:19:21.283Z\n  - button \"Remove Execution 3\"\n- button \"Add Execution\"\n- heading \"Position Change Reflection\" [level=2]\n- group \"Reflection outcome\":\n  - text: Reflection outcome\n  - radio \"Complete reflection now\" [checked]\n  - text: Complete reflection now\n  - radio \"Defer reflection as Journal Debt\"\n  - text: Defer reflection as Journal Debt\n  - radio \"Decline reflection\"\n  - text: Decline reflection\n- group \"Decision mode\":\n  - text: Decision mode\n  - radio \"As Planned\" [checked]\n  - text: As Planned\n  - radio \"Deliberate Adjustment\"\n  - text: Deliberate Adjustment\n  - radio \"Reactive\"\n  - text: Reactive\n  - radio \"Externally Imposed\"\n  - text: Externally Imposed\n- group \"Primary emotion\":\n  - text: Primary emotion\n  - radio \"Calm\" [checked]\n  - text: Calm\n  - radio \"Eager\"\n  - text: Eager\n  - radio \"Anxious\"\n  - text: Anxious\n  - radio \"FOMO\"\n  - text: FOMO\n  - radio \"Revenge\"\n  - text: Revenge\n  - radio \"Relieved\"\n  - text: Relieved\n  - radio \"Frustrated\"\n  - text: Frustrated\n  - radio \"Other\"\n  - text: Other\n- text: Decision confidence\n- combobox \"Decision confidence\":\n  - option \"Choose 1–5\"\n  - option \"1\"\n  - option \"2\"\n  - option \"3\"\n  - option \"4\" [selected]\n  - option \"5\"\n- text: Note (optional)\n- textbox \"Note (optional)\": Keyboard retained reflection\n- button \"Save initial Position Change\"\n- button \"Cancel\"",
+  "geometry": {
+    "viewport": 1440,
+    "scroll": 1440,
+    "active": "<textarea style=\"\">Keyboard retained reflection</textarea>",
+    "rect": {
+      "x": 374.5,
+      "y": 739.890625,
+      "width": 906,
+      "height": 100,
+      "top": 739.890625,
+      "right": 1280.5,
+      "bottom": 839.890625,
+      "left": 374.5
+    },
+    "nav": {
+      "x": 0,
+      "y": -2376,
+      "width": 215,
+      "height": 3375.671875,
+      "top": -2376,
+      "right": 215,
+      "bottom": 999.671875,
+      "left": 0
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "name": "TimeoutError",
+  "message": "locator.inputValue: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('Note (optional)', { exact: true })\u001b[22m\n",
+  "stack": "locator.inputValue: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('Note (optional)', { exact: true })\u001b[22m\n\n    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/d02/critic-01/driver.mjs:43:291"
+}

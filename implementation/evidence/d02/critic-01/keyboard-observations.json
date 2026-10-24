@@ -1,0 +1,23 @@
+[
+  {
+    "name": "B04 keyboard 390",
+    "time": "2026-10-21T23:17:13.777Z",
+    "expected": "B01 Complete and B02 Defer, answer, immediate decline, owed decline through keyboard only",
+    "observed": "Tab, Enter, arrow keys and keyboard text; no focus/click/fill/selectOption used in this phase",
+    "status": "PASS"
+  },
+  {
+    "name": "B04 keyboard 1440",
+    "time": "2026-10-21T23:17:16.151Z",
+    "expected": "B01 Complete and B02 Defer, answer, immediate decline, owed decline through keyboard only",
+    "observed": "Tab, Enter, arrow keys and keyboard text; no focus/click/fill/selectOption used in this phase",
+    "status": "PASS"
+  },
+  {
+    "name": "B04 states",
+    "time": "2026-10-21T23:17:16.680Z",
+    "expected": "actual delayed Loading and separate list Error/retry",
+    "observed": "native estimate suspended with real eventual values; native IDB index read throw isolated to this profile; safe retry",
+    "status": "PASS"
+  }
+]

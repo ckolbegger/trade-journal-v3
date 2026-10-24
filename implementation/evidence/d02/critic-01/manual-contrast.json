@@ -1,0 +1,51 @@
+[
+  {
+    "name": "body",
+    "foreground": "#262820",
+    "background": "#f6f4ed",
+    "ratio": 13.564042431134796,
+    "minimum": 4.5
+  },
+  {
+    "name": "white card",
+    "foreground": "#262820",
+    "background": "#ffffff",
+    "ratio": 14.927628369442512,
+    "minimum": 4.5
+  },
+  {
+    "name": "primary button",
+    "foreground": "#ffffff",
+    "background": "#252820",
+    "ratio": 14.967535729780256,
+    "minimum": 4.5
+  },
+  {
+    "name": "warning",
+    "foreground": "#262820",
+    "background": "#fff6d8",
+    "ratio": 13.808682109812285,
+    "minimum": 4.5
+  },
+  {
+    "name": "input boundary",
+    "foreground": "#777970",
+    "background": "#ffffff",
+    "ratio": 4.417976822198212,
+    "minimum": 3
+  },
+  {
+    "name": "focus on card",
+    "foreground": "#4b64be",
+    "background": "#ffffff",
+    "ratio": 5.43256007208779,
+    "minimum": 3
+  },
+  {
+    "name": "focus on cream",
+    "foreground": "#4b64be",
+    "background": "#f6f4ed",
+    "ratio": 4.936314966034985,
+    "minimum": 3
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "id": "D2-T02-case06",
+  "stage": "red",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "sourceDigest": "222f944b105ecf907502b10deb589d269e1107f4a17c03ea2c2dfe64ae14a6dd",
+  "command": [
+    "npm",
+    "run",
+    "test:unit",
+    "--",
+    "tests/unit/d02-analysis.test.ts"
+  ],
+  "exit": 1,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:unit\n> vitest run --project unit tests/unit/d02-analysis.test.ts\n\n\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n ❯ |unit| tests/unit/d02-analysis.test.ts (13 tests | 1 failed) 13ms\n   × case06 preserves repeating weighted entry and fee shares with exact conservation and tiny ratio comparisons 4ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 12 passed (13)\n   Start at  13:24:49\n   Duration  324ms (environment 78%, import 8%, transform 8%, tests 5%, worker 1%)\n\n",
+  "stderr": "\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |unit| tests/unit/d02-analysis.test.ts > case06 preserves repeating weighted entry and fee shares with exact conservation and tiny ratio comparisons\nAssertionError: expected { status: 'Derived', …(15) } to match object { weightedEntry: { …(2) }, …(4) }\n(35 matching properties omitted from actual)\n\n- Expected\n+ Received\n\n@@ -8,21 +8,13 @@\n    \"openingFees\": \"1\",\n    \"positions\": [\n      {\n        \"lots\": [\n          {\n-           \"feePerShare\": {\n-             \"denominator\": \"1\",\n-             \"numerator\": \"0\",\n-           },\n            \"openingFees\": \"0\",\n          },\n          {\n-           \"feePerShare\": {\n-             \"denominator\": \"2\",\n-             \"numerator\": \"1\",\n-           },\n            \"openingFees\": \"1\",\n          },\n        ],\n      },\n    ],\n\n ❯ tests/unit/d02-analysis.test.ts:47:29\n\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n"
+}

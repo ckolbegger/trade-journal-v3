@@ -38,7 +38,7 @@ it('should preserve readable recovery and reject every mutation at persistence',
   f.set({ inventory: false });
   expect(await f.workspace.getStatus()).toMatchObject({ status: 'RuntimeNotWritable', runtimeReadiness: 'RecoveryOnly', workspaceStatus: 'RecoveryOnly', failedChecks: ['inventory'] });
   expect(await f.runtime.mutate(initialized.root.generation, () => Promise.reject(new Error('Must not run')))).toMatchObject({ status: 'RuntimeNotWritable' });
-  expect(await f.store.versions.count()).toBe(3);
+  expect(await f.store.versions.count()).toBe(5);
   f.store.close();
 });
 it('should block an unreadable possible root even when host checks pass', async () => {

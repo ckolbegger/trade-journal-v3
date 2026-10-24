@@ -1,0 +1,32 @@
+{
+  "moved": [
+    {
+      "original": "implementation/evidence/d02/critic-01/profile",
+      "path": "/private/tmp/d02-critic01-profile",
+      "owned": true,
+      "closedBeforeMove": true
+    },
+    {
+      "original": "implementation/evidence/d02/critic-01/profile02",
+      "path": "/private/tmp/d02-critic01-profile02",
+      "owned": true,
+      "closedBeforeMove": true
+    },
+    {
+      "original": "implementation/evidence/d02/critic-01/profile03",
+      "path": "/private/tmp/d02-critic01-profile03",
+      "owned": true,
+      "closedBeforeMove": true
+    },
+    {
+      "original": "implementation/evidence/d02/critic-01/profile-keyboard",
+      "path": "/private/tmp/d02-critic01-profile-keyboard",
+      "owned": true,
+      "closedBeforeMove": true
+    }
+  ],
+  "otherProfiles": [
+    "/private/tmp/d02-critic01-keyboard02",
+    "/private/tmp/d02-critic01-keyboard03"
+  ]
+}

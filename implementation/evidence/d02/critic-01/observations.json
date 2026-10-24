@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Empty",
+    "time": "2026-10-21T23:14:09.145Z",
+    "expected": "Successful empty Planned list",
+    "observed": [
+      "Planned Trades"
+    ],
+    "status": "PASS"
+  },
+  {
+    "name": "B01 complete opening",
+    "time": "2026-10-21T23:14:09.924Z",
+    "expected": "q100 basis5020 fees3 weighted251/5 risk523 reward977 frozen1R500 BelowPlan two Lots",
+    "observed": "TRADE JOURNAL\nTrades\nNew Plan\nJournal Debt\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nCRITONE · Open\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nWhere your browser offers installation, use Install or Add to Home Screen. This tab is usable after startup verification. Installation does not transfer or synchronize data.\n\nInitial Position Change saved. All Executions and the reflection outcome were recorded together.\n\nOpen · Filled as Planned\nFrozen Plan Baseline\n\nCritic broker · Critic account · Long Stock\n\nOriginal Planned Risk · 1R\n$500.00\nOriginal Planned Reward\n$1000.00\nPlanned reward/risk ratio\n2/1\nIntended entry\n$50 × 100 shares\nStop · underlying price\n$45\nTarget · underlying price\n$60\nOpen Position\nQuantity\n100 shares\nGross basis\n$5020.00\nOpening fees\n$3.00\nWeighted entry\n50.2 USD (exact 251/5)\nActual entry risk\n$523.00\nActual entry reward\n$977.00\nActual entry reward/risk\n1.87 (exact 977/523)\nEntry Quality\nBelow Plan\nOpen Lots\n\n40 shares at $49 · opening fee $1.00\n\n60 shares at $51 · opening fee $2.00\n\nPosition Change Reflection · Completed\n\nCompleted\n\nTrade Anchor · Source Position Change · Position Change 64e25044-069d-4b07-b487-dea6c3e9a93a\n\nPlan Reflection\n\nTrade Anchor · Plan Confirmation\n\nMoment: 2026-10-21 19:14:09.213 America/New_York · First authored: 2026-10-21 19:14:09.237 America/New_York\n\nWhy this trade, why now?\n\nCritic independent thesis\n\nWhat would invalidate the thesis?\n\nBelow original stop\n\nConviction\n\nUnanswered\n\nPrimary emotion\n\nUnanswered\n\nPosition Change Reflection\n\nTrade Anchor · Position Change\n\nMoment: 2026-10-21 19:14:09.412 America/New_York · First authored: 2026-10-21 19:14:09.745 America/New_York\n\nDecision mode\n\nAs Planned\n\nPrimary emotion\n\nCalm\n\nDecision confidence\n\n4\n\nNote\n\nIndependent critic reflection\n\nView history\n\nConfirmed: 2026-10-21 19:14:09.213 America/New_York\n\nSaved: 2026-10-21 19:14:09.237 America/New_York\n\nRecorded Sequence: 1\n\nPlan fact: b75549cd-cd4b-4778-baf8-4017b5af06c8\n\nVersion: 422a95b7-ae34-41a9-b0c4-0edb70765fac\n\nConfirmed: 2026-10-21 19:14:09.213 America/New_York\n\nSaved: 2026-10-21 19:14:09.237 America/New_York\n\nRecorded Sequence: 1\n\nPlan fact: b75549cd-cd4b-4778-baf8-4017b5af06c8\n\nVersion: e89ccda3-b1c7-45fc-9c60-f287485e67e5\n\nPosition Change: 64e25044-069d-4b07-b487-dea6c3e9a93a · 2026-10-21 19:14:09.412 America/New_York\n\nExecution de0e4536-2366-4cfe-af6e-d0bb0d87d066: 40 shares at $49, fee $1 · 2026-10-21 19:14:09.412 America/New_York · Saved 2026-10-21 19:14:09.745 America/New_York · Recorded Sequence 3\n\nExecution 96cebc21-f9df-4007-8c4e-e2bb1b269510: 60 shares at $51, fee $2 · 2026-10-21 19:14:09.412 America/New_York · Saved 2026-10-21 19:14:09.745 America/New_York · Recorded Sequence 4",
+    "status": "PASS"
+  },
+  {
+    "name": "B01 stopped offline",
+    "time": "2026-10-21T23:14:10.648Z",
+    "expected": "same profile native browser stopped then offline; exact authority unchanged",
+    "observed": "root, all versions and lifecycle deep equal",
+    "status": "PASS"
+  },
+  {
+    "name": "B02",
+    "time": "2026-10-21T23:14:12.377Z",
+    "expected": "Defer distinct Debt; immediate decline; original Debt answer and owed decline; unrelated debt does not block; cancel no write",
+    "observed": "All UI paths succeeded; complete authority snapshots retained",
+    "status": "PASS"
+  }
+]

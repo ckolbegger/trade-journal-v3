@@ -1,4 +1,4 @@
-import { Runtime, type Store, type Root } from '../../infrastructure/storage';
+import { addedRecords, Runtime, type Store, type Root } from '../../infrastructure/storage';
 export interface CatalogRecord {
   id: string; version: string; kind: string; label: string; active: boolean; origin: string; parentId?: string;
   shape?: { roles: { kind: string; direction: string; relativeQuantity: string }[] };
@@ -24,7 +24,7 @@ export class ReferenceCatalog {
       const saveTime = new Date().toISOString();
       await this.store.versions.add({ version, id: record.id, generation: root.generation, kind: command.kind, value: record, tradeId: '', economicTime: saveTime, saveTime, sequence: 0, commitOrdinal: root.commitOrdinal + 1 });
       const catalogRevision = crypto.randomUUID();
-      await this.store.roots.put({ ...root, revision: crypto.randomUUID(), catalogRevision, commitOrdinal: root.commitOrdinal + 1 });
+      await this.store.roots.put({ ...root, revision: crypto.randomUUID(), catalogRevision, recordCounts: addedRecords(root, 1), commitOrdinal: root.commitOrdinal + 1 });
       return { status: 'Saved' as const, record, catalogRevision, onboarding: command.kind === 'Account' ? 'ReadyForTradePlanning' : 'NeedsInstitutionAndAccount' };
     }); } catch {
       this.runtime.invalidate('transaction');
@@ -36,7 +36,7 @@ export class ReferenceCatalog {
       const root = await this.store.roots.get('active');
       if (!root) return { status: 'NotInitialized' as const, records: [] };
       const rows = await this.store.versions.where('[generation+kind]').equals([root.generation, request.family]).toArray();
-      return { status: 'Ready' as const, records: rows.map(row => ({ ...(row.value as Omit<CatalogRecord, 'version'>), version: row.version })).sort((a, b) => a.label.localeCompare(b.label) || a.id.localeCompare(b.id)), catalogRevision: root.catalogRevision, generation: root.generation };
+      return { status: 'Ready' as const, records: rows.map(row => ({ ...(row.value as Omit<CatalogRecord, 'version'>), version: (row.value as CatalogRecord).version ?? row.domainVersion ?? row.version })).sort((a, b) => a.label.localeCompare(b.label) || a.id.localeCompare(b.id)), catalogRevision: root.catalogRevision, generation: root.generation };
     });
   }
   async resolve(request: { ids: string[]; expectedCatalogRevision: string; use: 'NewSelection' | 'DisplayOnly' | 'RetainedReference' }) {

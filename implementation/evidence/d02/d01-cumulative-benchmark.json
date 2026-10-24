@@ -1,0 +1,2334 @@
+{
+  "dataset": {
+    "count": 25000,
+    "serializedBytes": 61919454,
+    "elapsedMs": 213876,
+    "samples": [
+      "b1eb6c96-60c2-4366-a75e-f16419426e60",
+      "9c34952c-1cd9-4cae-ad48-de534c4cac76",
+      "0d829aa2-983a-427d-9c05-f49f36045475"
+    ],
+    "storage": {
+      "quota": 20615843021,
+      "usage": 155402638
+    },
+    "readiness": {
+      "status": "Writable",
+      "protection": "BestEffort",
+      "epoch": 50003,
+      "capacityEvidence": {
+        "M": 553648128,
+        "L": 90518924,
+        "C": 634428,
+        "Q": 20460440325,
+        "H": 579704540,
+        "quota": 20615843021,
+        "usage": 155402696,
+        "method": "SerializedActiveLowerBound"
+      },
+      "workspaceStatus": "Ready",
+      "root": {
+        "key": "active",
+        "generation": "a38e50f4-e6de-4935-b213-43b4cac6b64e",
+        "revision": "f25f9175-25d0-4eb1-be3c-199b1d9c6874",
+        "schema": 2,
+        "recordCounts": {
+          "versions": 50007,
+          "lifecycle": 25000
+        },
+        "timeZone": "America/New_York",
+        "catalogRevision": "44f7f0b5-acbe-44e4-ab8c-627fcff8c2de",
+        "definitionRevision": "plan-reflection-v1",
+        "commitOrdinal": 25003,
+        "recordedSequence": 25000
+      },
+      "capabilities": {
+        "identity": "trade-journal-d2-v1",
+        "scope": "Exact Long Stock planning and one complete initial buy decision, with Position Change Reflection and Journal-only Debt resolution",
+        "operations": {
+          "Workspace": [
+            "initialize",
+            "getStatus",
+            "requestDurability"
+          ],
+          "ReferenceCatalog": [
+            "save.CreateInstitution",
+            "save.CreateAccount",
+            "query.Strategy",
+            "query.Institution",
+            "query.Account",
+            "resolve.NewSelection",
+            "resolve.DisplayOnly",
+            "resolve.RetainedReference"
+          ],
+          "TradeWorkflows": [
+            "confirmPlan",
+            "recordPositionChange.InitialStockEntry"
+          ],
+          "TradeAnalysis": [
+            "assessPlan.LongStock",
+            "derive.Planned",
+            "derive.OpenStock",
+            "assessChange.InitialStockEntry"
+          ],
+          "TradeRecord": [
+            "prepareChange.ConfirmPlan",
+            "applyPreparedChange.ConfirmPlan",
+            "getRecord",
+            "queryRecords.Planned",
+            "history",
+            "resolveAnchors.Trade",
+            "prepareChange.InitialStockEntry",
+            "applyPreparedChange.InitialStockEntry",
+            "queryRecords.Open",
+            "resolveAnchors.Execution"
+          ],
+          "Journal": [
+            "getDefinitions.PlanReflection",
+            "prepareEffects.PlanReflection",
+            "applyPreparedEffects.PlanReflection",
+            "query.TradeNarrative",
+            "getDefinitions.PositionChangeReflection",
+            "prepareEffects.PositionChangeReflection",
+            "applyPreparedEffects.PositionChangeReflection",
+            "query.ObligationsAndDebt",
+            "save.ResolveJournalOnlyDebt"
+          ],
+          "TradeViewsAndReporting": [
+            "browseTrades.Planned",
+            "getTradeDetail.Planned",
+            "browseTrades.Open",
+            "getTradeDetail.Open"
+          ]
+        },
+        "backupSchemaRanges": [],
+        "providerAdapters": [],
+        "calendarPolicy": {
+          "approvedRange": [
+            "2021-01-01",
+            "2028-12-31"
+          ],
+          "installedSessionOperations": []
+        },
+        "workspaceSchemas": {
+          "current": 2,
+          "supportedMigrationSources": [
+            1
+          ]
+        }
+      },
+      "storageMeasurement": {
+        "activeSerializedBytes": 90518924,
+        "method": "SerializedActiveLowerBound"
+      }
+    },
+    "counts": {
+      "plans": 25000,
+      "entries": 25000,
+      "lifecycle": 25000,
+      "versions": 50007
+    }
+  },
+  "before": {
+    "count": 25000,
+    "first": "0d829aa2-983a-427d-9c05-f49f36045475",
+    "detail": {
+      "status": "Ready",
+      "reconciliation": {
+        "candidateId": "eb099b37-9e1f-4985-a49b-87e6cf6ca76d",
+        "revision": "62df47cf-7786-49ca-81fc-e6771bb1c70b",
+        "digest": "{\"instrument\":{\"kind\":\"Stock\",\"currency\":\"USD\",\"symbol\":\"XYZ\"},\"quantity\":\"100\",\"entry\":\"50\",\"stop\":\"45\",\"target\":\"60\",\"thesis\":\"Deterministic D1 Plan 24999: earnings thesis\",\"invalidation\":\"Earnings evidence reverses for Plan 24999\"}",
+        "expectedLifecycle": "Planned"
+      },
+      "baseline": {
+        "risk": "500",
+        "oneR": "500",
+        "reward": "1000",
+        "ratio": {
+          "numerator": "2",
+          "denominator": "1"
+        },
+        "conditions": [
+          {
+            "kind": "Stop",
+            "price": "45",
+            "amount": "500"
+          },
+          {
+            "kind": "Target",
+            "price": "60",
+            "amount": "1000"
+          }
+        ]
+      },
+      "entryReadiness": "Unfilled",
+      "positions": [],
+      "lotMatches": [],
+      "deviations": [],
+      "terminalDisposition": null,
+      "trade": {
+        "tradeId": "0d829aa2-983a-427d-9c05-f49f36045475",
+        "revision": "62df47cf-7786-49ca-81fc-e6771bb1c70b",
+        "planFactId": "eb099b37-9e1f-4985-a49b-87e6cf6ca76d",
+        "planVersionId": "dacced8d-7039-436f-9b6e-395fe4854e48",
+        "plannedLegId": "efd1278b-f762-4999-99b4-c8a846a5c06d",
+        "stopId": "30255a70-2c91-4906-a560-beae85af8d88",
+        "targetId": "6071845d-09ec-4af9-adb3-723ee7999f4c",
+        "accountId": "116b84f0-cb21-4ebe-83cf-932d080c1922",
+        "strategyId": "long-stock",
+        "lifecycle": "Planned",
+        "plan": {
+          "instrument": {
+            "kind": "Stock",
+            "currency": "USD",
+            "symbol": "XYZ"
+          },
+          "quantity": "100",
+          "entry": "50",
+          "stop": "45",
+          "target": "60",
+          "thesis": "Deterministic D1 Plan 24999: earnings thesis",
+          "invalidation": "Earnings evidence reverses for Plan 24999"
+        },
+        "baseline": {
+          "risk": "500",
+          "oneR": "500",
+          "reward": "1000",
+          "ratio": {
+            "numerator": "2",
+            "denominator": "1"
+          },
+          "conditions": [
+            {
+              "kind": "Stop",
+              "price": "45",
+              "amount": "500"
+            },
+            {
+              "kind": "Target",
+              "price": "60",
+              "amount": "1000"
+            }
+          ]
+        },
+        "economicTime": "2025-10-18T00:00:00.000Z",
+        "saveTime": "2026-10-18T23:00:00Z",
+        "sequence": 25000
+      },
+      "entries": [
+        {
+          "id": "02043272-9d26-4685-b5de-fe344eab0f74",
+          "version": "54618e95-ba79-4d89-a9a3-4df713b7783d",
+          "definition": {
+            "id": "plan-reflection",
+            "revision": "plan-reflection-v1",
+            "label": "Plan Reflection",
+            "prompts": [
+              {
+                "id": "thesis",
+                "wording": "Why this trade, why now?",
+                "kind": "Text",
+                "required": true,
+                "role": "Thesis"
+              },
+              {
+                "id": "invalidation",
+                "wording": "What would invalidate the thesis?",
+                "kind": "Text",
+                "required": true,
+                "role": "Invalidation"
+              },
+              {
+                "id": "conviction",
+                "wording": "Conviction",
+                "kind": "Scale",
+                "required": false,
+                "minimum": 1,
+                "maximum": 5
+              },
+              {
+                "id": "emotion",
+                "wording": "Primary emotion",
+                "kind": "SingleSelect",
+                "required": false,
+                "options": [
+                  {
+                    "id": "calm",
+                    "label": "Calm"
+                  },
+                  {
+                    "id": "eager",
+                    "label": "Eager"
+                  },
+                  {
+                    "id": "anxious",
+                    "label": "Anxious"
+                  },
+                  {
+                    "id": "fomo",
+                    "label": "FOMO"
+                  },
+                  {
+                    "id": "revenge",
+                    "label": "Revenge"
+                  },
+                  {
+                    "id": "relieved",
+                    "label": "Relieved"
+                  },
+                  {
+                    "id": "frustrated",
+                    "label": "Frustrated"
+                  },
+                  {
+                    "id": "other",
+                    "label": "Other"
+                  }
+                ]
+              }
+            ]
+          },
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "0d829aa2-983a-427d-9c05-f49f36045475"
+          },
+          "origin": {
+            "kind": "Plan",
+            "factId": "eb099b37-9e1f-4985-a49b-87e6cf6ca76d"
+          },
+          "source": {
+            "id": "plan-confirmation",
+            "label": "Plan Confirmation"
+          },
+          "momentTime": "2025-10-18T00:00:00.000Z",
+          "firstAuthoredTime": "2026-10-18T23:00:00Z",
+          "saveTime": "2026-10-18T23:00:00Z",
+          "responses": {
+            "thesis": {
+              "kind": "Text",
+              "value": "Deterministic D1 Plan 24999: earnings thesis"
+            },
+            "invalidation": {
+              "kind": "Text",
+              "value": "Earnings evidence reverses for Plan 24999"
+            },
+            "conviction": {
+              "kind": "Scale",
+              "value": "5"
+            },
+            "emotion": {
+              "kind": "SingleSelect",
+              "value": "calm"
+            }
+          }
+        }
+      ],
+      "history": [
+        {
+          "tradeId": "0d829aa2-983a-427d-9c05-f49f36045475",
+          "revision": "62df47cf-7786-49ca-81fc-e6771bb1c70b",
+          "planFactId": "eb099b37-9e1f-4985-a49b-87e6cf6ca76d",
+          "planVersionId": "dacced8d-7039-436f-9b6e-395fe4854e48",
+          "plannedLegId": "efd1278b-f762-4999-99b4-c8a846a5c06d",
+          "stopId": "30255a70-2c91-4906-a560-beae85af8d88",
+          "targetId": "6071845d-09ec-4af9-adb3-723ee7999f4c",
+          "accountId": "116b84f0-cb21-4ebe-83cf-932d080c1922",
+          "strategyId": "long-stock",
+          "lifecycle": "Planned",
+          "plan": {
+            "instrument": {
+              "kind": "Stock",
+              "currency": "USD",
+              "symbol": "XYZ"
+            },
+            "quantity": "100",
+            "entry": "50",
+            "stop": "45",
+            "target": "60",
+            "thesis": "Deterministic D1 Plan 24999: earnings thesis",
+            "invalidation": "Earnings evidence reverses for Plan 24999"
+          },
+          "baseline": {
+            "risk": "500",
+            "oneR": "500",
+            "reward": "1000",
+            "ratio": {
+              "numerator": "2",
+              "denominator": "1"
+            },
+            "conditions": [
+              {
+                "kind": "Stop",
+                "price": "45",
+                "amount": "500"
+              },
+              {
+                "kind": "Target",
+                "price": "60",
+                "amount": "1000"
+              }
+            ]
+          },
+          "economicTime": "2025-10-18T00:00:00.000Z",
+          "saveTime": "2026-10-18T23:00:00Z",
+          "sequence": 25000
+        }
+      ],
+      "journal": {
+        "status": "Ready",
+        "generation": "a38e50f4-e6de-4935-b213-43b4cac6b64e",
+        "workspaceRevision": "f25f9175-25d0-4eb1-be3c-199b1d9c6874",
+        "obligations": [],
+        "obligationHistory": [],
+        "entries": [
+          {
+            "id": "02043272-9d26-4685-b5de-fe344eab0f74",
+            "version": "54618e95-ba79-4d89-a9a3-4df713b7783d",
+            "definition": {
+              "id": "plan-reflection",
+              "revision": "plan-reflection-v1",
+              "label": "Plan Reflection",
+              "prompts": [
+                {
+                  "id": "thesis",
+                  "wording": "Why this trade, why now?",
+                  "kind": "Text",
+                  "required": true,
+                  "role": "Thesis"
+                },
+                {
+                  "id": "invalidation",
+                  "wording": "What would invalidate the thesis?",
+                  "kind": "Text",
+                  "required": true,
+                  "role": "Invalidation"
+                },
+                {
+                  "id": "conviction",
+                  "wording": "Conviction",
+                  "kind": "Scale",
+                  "required": false,
+                  "minimum": 1,
+                  "maximum": 5
+                },
+                {
+                  "id": "emotion",
+                  "wording": "Primary emotion",
+                  "kind": "SingleSelect",
+                  "required": false,
+                  "options": [
+                    {
+                      "id": "calm",
+                      "label": "Calm"
+                    },
+                    {
+                      "id": "eager",
+                      "label": "Eager"
+                    },
+                    {
+                      "id": "anxious",
+                      "label": "Anxious"
+                    },
+                    {
+                      "id": "fomo",
+                      "label": "FOMO"
+                    },
+                    {
+                      "id": "revenge",
+                      "label": "Revenge"
+                    },
+                    {
+                      "id": "relieved",
+                      "label": "Relieved"
+                    },
+                    {
+                      "id": "frustrated",
+                      "label": "Frustrated"
+                    },
+                    {
+                      "id": "other",
+                      "label": "Other"
+                    }
+                  ]
+                }
+              ]
+            },
+            "anchor": {
+              "kind": "Trade",
+              "tradeId": "0d829aa2-983a-427d-9c05-f49f36045475"
+            },
+            "origin": {
+              "kind": "Plan",
+              "factId": "eb099b37-9e1f-4985-a49b-87e6cf6ca76d"
+            },
+            "source": {
+              "id": "plan-confirmation",
+              "label": "Plan Confirmation"
+            },
+            "momentTime": "2025-10-18T00:00:00.000Z",
+            "firstAuthoredTime": "2026-10-18T23:00:00Z",
+            "saveTime": "2026-10-18T23:00:00Z",
+            "responses": {
+              "thesis": {
+                "kind": "Text",
+                "value": "Deterministic D1 Plan 24999: earnings thesis"
+              },
+              "invalidation": {
+                "kind": "Text",
+                "value": "Earnings evidence reverses for Plan 24999"
+              },
+              "conviction": {
+                "kind": "Scale",
+                "value": "5"
+              },
+              "emotion": {
+                "kind": "SingleSelect",
+                "value": "calm"
+              }
+            }
+          }
+        ],
+        "declines": []
+      },
+      "anchorResolutions": {
+        "status": "Ready",
+        "workspaceRevision": "f25f9175-25d0-4eb1-be3c-199b1d9c6874",
+        "resolutions": [
+          {
+            "anchor": {
+              "kind": "Trade",
+              "tradeId": "0d829aa2-983a-427d-9c05-f49f36045475"
+            },
+            "status": "Effective",
+            "owningTradeId": "0d829aa2-983a-427d-9c05-f49f36045475"
+          }
+        ]
+      },
+      "binding": {
+        "generation": "a38e50f4-e6de-4935-b213-43b4cac6b64e",
+        "workspaceRevision": "f25f9175-25d0-4eb1-be3c-199b1d9c6874",
+        "catalogRevision": "44f7f0b5-acbe-44e4-ab8c-627fcff8c2de"
+      },
+      "openingDefinition": {
+        "id": "position-change-reflection",
+        "revision": "position-change-reflection-v1",
+        "label": "Position Change Reflection",
+        "prompts": [
+          {
+            "id": "decision-mode",
+            "wording": "Decision mode",
+            "kind": "SingleSelect",
+            "required": true,
+            "options": [
+              {
+                "id": "as-planned",
+                "label": "As Planned"
+              },
+              {
+                "id": "deliberate-adjustment",
+                "label": "Deliberate Adjustment"
+              },
+              {
+                "id": "reactive",
+                "label": "Reactive"
+              },
+              {
+                "id": "externally-imposed",
+                "label": "Externally Imposed"
+              }
+            ]
+          },
+          {
+            "id": "emotion",
+            "wording": "Primary emotion",
+            "kind": "SingleSelect",
+            "required": true,
+            "options": [
+              {
+                "id": "calm",
+                "label": "Calm"
+              },
+              {
+                "id": "eager",
+                "label": "Eager"
+              },
+              {
+                "id": "anxious",
+                "label": "Anxious"
+              },
+              {
+                "id": "fomo",
+                "label": "FOMO"
+              },
+              {
+                "id": "revenge",
+                "label": "Revenge"
+              },
+              {
+                "id": "relieved",
+                "label": "Relieved"
+              },
+              {
+                "id": "frustrated",
+                "label": "Frustrated"
+              },
+              {
+                "id": "other",
+                "label": "Other"
+              }
+            ]
+          },
+          {
+            "id": "confidence",
+            "wording": "Decision confidence",
+            "kind": "Scale",
+            "required": true,
+            "minimum": 1,
+            "maximum": 5
+          },
+          {
+            "id": "note",
+            "wording": "Note",
+            "kind": "Text",
+            "required": false
+          }
+        ]
+      },
+      "labels": {
+        "account": "Taxable",
+        "institution": "Fidelity",
+        "strategy": "Long Stock"
+      }
+    }
+  },
+  "afterPrivateDiscard": {
+    "status": "Writable",
+    "protection": "BestEffort",
+    "epoch": 1,
+    "capacityEvidence": {
+      "M": 553648128,
+      "L": 0,
+      "C": 634428,
+      "Q": 20460440267,
+      "H": 692853195,
+      "quota": 20615843021,
+      "usage": 155402754,
+      "method": "UnmeasuredConservative"
+    },
+    "workspaceStatus": "Ready",
+    "root": {
+      "key": "active",
+      "generation": "a38e50f4-e6de-4935-b213-43b4cac6b64e",
+      "revision": "f25f9175-25d0-4eb1-be3c-199b1d9c6874",
+      "schema": 2,
+      "recordCounts": {
+        "versions": 50007,
+        "lifecycle": 25000
+      },
+      "timeZone": "America/New_York",
+      "catalogRevision": "44f7f0b5-acbe-44e4-ab8c-627fcff8c2de",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 25003,
+      "recordedSequence": 25000
+    },
+    "capabilities": {
+      "identity": "trade-journal-d2-v1",
+      "scope": "Exact Long Stock planning and one complete initial buy decision, with Position Change Reflection and Journal-only Debt resolution",
+      "operations": {
+        "Workspace": [
+          "initialize",
+          "getStatus",
+          "requestDurability"
+        ],
+        "ReferenceCatalog": [
+          "save.CreateInstitution",
+          "save.CreateAccount",
+          "query.Strategy",
+          "query.Institution",
+          "query.Account",
+          "resolve.NewSelection",
+          "resolve.DisplayOnly",
+          "resolve.RetainedReference"
+        ],
+        "TradeWorkflows": [
+          "confirmPlan",
+          "recordPositionChange.InitialStockEntry"
+        ],
+        "TradeAnalysis": [
+          "assessPlan.LongStock",
+          "derive.Planned",
+          "derive.OpenStock",
+          "assessChange.InitialStockEntry"
+        ],
+        "TradeRecord": [
+          "prepareChange.ConfirmPlan",
+          "applyPreparedChange.ConfirmPlan",
+          "getRecord",
+          "queryRecords.Planned",
+          "history",
+          "resolveAnchors.Trade",
+          "prepareChange.InitialStockEntry",
+          "applyPreparedChange.InitialStockEntry",
+          "queryRecords.Open",
+          "resolveAnchors.Execution"
+        ],
+        "Journal": [
+          "getDefinitions.PlanReflection",
+          "prepareEffects.PlanReflection",
+          "applyPreparedEffects.PlanReflection",
+          "query.TradeNarrative",
+          "getDefinitions.PositionChangeReflection",
+          "prepareEffects.PositionChangeReflection",
+          "applyPreparedEffects.PositionChangeReflection",
+          "query.ObligationsAndDebt",
+          "save.ResolveJournalOnlyDebt"
+        ],
+        "TradeViewsAndReporting": [
+          "browseTrades.Planned",
+          "getTradeDetail.Planned",
+          "browseTrades.Open",
+          "getTradeDetail.Open"
+        ]
+      },
+      "backupSchemaRanges": [],
+      "providerAdapters": [],
+      "calendarPolicy": {
+        "approvedRange": [
+          "2021-01-01",
+          "2028-12-31"
+        ],
+        "installedSessionOperations": []
+      },
+      "workspaceSchemas": {
+        "current": 2,
+        "supportedMigrationSources": [
+          1
+        ]
+      }
+    },
+    "storageMeasurement": {
+      "activeSerializedBytes": 0,
+      "method": "UnmeasuredConservative"
+    }
+  },
+  "queries": [
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    },
+    {
+      "cold": {
+        "[generation+kind].count": {
+          "calls": 6,
+          "rows": 0
+        },
+        "[generation+lifecycle+economicOrder+sequence].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+tradeId].count": {
+          "calls": 2,
+          "rows": 0
+        },
+        "[generation+kind].getAll": {
+          "calls": 3,
+          "rows": 3
+        },
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      },
+      "warm": {
+        "[generation+lifecycle+economicOrder+sequence].openCursor": {
+          "calls": 1,
+          "rows": 51
+        }
+      }
+    }
+  ],
+  "browserName": "webkit",
+  "browserVersion": "27.2",
+  "environment": {
+    "platform": "darwin",
+    "osRelease": "25.6.0",
+    "cpu": "Apple M4 Max",
+    "memoryBytes": 68719476736,
+    "node": "v26.12.0"
+  },
+  "source": "25,000 confirmPlan commands, native browser store; no executions or market observations",
+  "futureCapacityReserves": "D1 plan budgets only; not fabricated domain records",
+  "cold": [
+    272.6143329999759,
+    262.35545800000546,
+    270.57600000000093,
+    253.18741700000828,
+    266.7270000000135,
+    252.36170799998217,
+    258.0252909999981,
+    264.6310420000227,
+    263.7112500000221,
+    257.9660830000066,
+    266.2071660000074,
+    253.40595899999607,
+    268.9392499999958,
+    254.68450000000303,
+    262.5321249999979,
+    269.258124999993,
+    274.54529199999524,
+    268.584165999986,
+    275.61483299999963,
+    269.37316699998337,
+    269.8500000000058,
+    262.46562499998254,
+    269.17070899999817,
+    249.47333399998024,
+    274.5685419999936,
+    252.49120799999218,
+    265.6365840000217,
+    271.52383299998473,
+    267.76779199999874,
+    271.56708400000934,
+    252.46179199998733,
+    263.52666599999066,
+    241.7564999999886,
+    272.4515829999873,
+    267.4439579999889,
+    368.56533399998443,
+    265.55966600001557,
+    263.1125410000095,
+    272.570624999993,
+    264.274333999987,
+    261.1870830000262,
+    256.53066700001364,
+    267.33145800000057,
+    264.3285420000029,
+    267.06233299997984,
+    263.1649590000161,
+    244.0468749999709,
+    259.0606249999837,
+    276.5749170000199,
+    264.7428749999963
+  ],
+  "warm": [
+    48.73816600002465,
+    49.27429099997971,
+    48.65316700001131,
+    51.87170800002059,
+    49.486040999996476,
+    52.64120899999398,
+    52.65091699999175,
+    49.63229100001627,
+    49.89904199997545,
+    47.93441700001131,
+    52.46374999999534,
+    75.58262500001001,
+    48.67833399999654,
+    49.20041700001457,
+    51.961416000005556,
+    38.0171669999836,
+    51.92958300001919,
+    49.915749999985565,
+    47.41879099997459,
+    50.36233299999731,
+    47.80720899999142,
+    47.82970900001237,
+    50.79629100000602,
+    52.371458000008715,
+    48.25500000000466,
+    64.38687499999651,
+    50.62620900000911,
+    49.879291999997804,
+    46.25487500001327,
+    79.43004199999268,
+    50.71183300000848,
+    52.462750000006054,
+    51.847374999983,
+    46.99558299998171,
+    50.410708000010345,
+    46.37412499997299,
+    75.46983299998101,
+    50.660541999997804,
+    48.912624999997206,
+    48.540500000002794,
+    50.36645800000406,
+    49.253333000000566,
+    59.75679099999252,
+    50.78195799997775,
+    49.835124999983236,
+    50.20629200001713,
+    80.5124590000487,
+    52.47195899998769,
+    48.51524999999674,
+    51.56308299995726
+  ],
+  "percentile": "nearest rank ceil(0.95*n)",
+  "coldP95": 275.61483299999963,
+  "warmP95": 75.58262500001001
+}

@@ -1,0 +1,164 @@
+{
+  "status": "D2 local implementation and available independent acceptance passed; external/procedural limits disclosed",
+  "at": "2026-10-21T23:11:15.327682+00:00",
+  "head": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "worktree": "/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol",
+  "releaseId": "2cceb94481214601e7a1d43f28b5008985956048b0f0040a2593c33e9fedc723",
+  "gates": {
+    "identity-frozen-lint": {
+      "record": "implementation/evidence/d02/D2-final-identity-frozen-lint.json",
+      "exit": 0,
+      "command": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "sourceDigest": "907d3332fe5164476fbd7d3e03d5d45ce54cc0d93eb103fe8f3a1db3f1180912"
+    },
+    "identity-frozen-build": {
+      "record": "implementation/evidence/d02/D2-final-identity-frozen-build.json",
+      "exit": 0,
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "sourceDigest": "907d3332fe5164476fbd7d3e03d5d45ce54cc0d93eb103fe8f3a1db3f1180912"
+    },
+    "identity-frozen-unit": {
+      "record": "implementation/evidence/d02/D2-final-identity-frozen-unit.json",
+      "exit": 0,
+      "command": [
+        "npm",
+        "run",
+        "test:unit"
+      ],
+      "sourceDigest": "907d3332fe5164476fbd7d3e03d5d45ce54cc0d93eb103fe8f3a1db3f1180912"
+    },
+    "identity-frozen-integration": {
+      "record": "implementation/evidence/d02/D2-final-identity-frozen-integration.json",
+      "exit": 0,
+      "command": [
+        "npm",
+        "run",
+        "test:integration"
+      ],
+      "sourceDigest": "907d3332fe5164476fbd7d3e03d5d45ce54cc0d93eb103fe8f3a1db3f1180912"
+    },
+    "identity-frozen-browser": {
+      "record": "implementation/evidence/d02/D2-final-identity-frozen-browser.json",
+      "exit": 0,
+      "command": [
+        "npm",
+        "run",
+        "test:browser"
+      ],
+      "sourceDigest": "907d3332fe5164476fbd7d3e03d5d45ce54cc0d93eb103fe8f3a1db3f1180912"
+    },
+    "identity-frozen-d2-scale": {
+      "record": "implementation/evidence/d02/D2-final-identity-frozen-d2-scale.json",
+      "exit": 0,
+      "command": [
+        "npm",
+        "run",
+        "test:benchmark:d2"
+      ],
+      "sourceDigest": "907d3332fe5164476fbd7d3e03d5d45ce54cc0d93eb103fe8f3a1db3f1180912"
+    },
+    "identity-frozen-d1-scale": {
+      "record": "implementation/evidence/d02/D2-final-identity-frozen-d1-scale.json",
+      "exit": 0,
+      "command": [
+        "npm",
+        "run",
+        "test:benchmark"
+      ],
+      "sourceDigest": "907d3332fe5164476fbd7d3e03d5d45ce54cc0d93eb103fe8f3a1db3f1180912"
+    }
+  },
+  "counts": {
+    "unit": 107,
+    "integration": 7,
+    "nativeBrowser": 93
+  },
+  "scale": {
+    "historicalPlans": 25000,
+    "sourceEnvelopes": 50005,
+    "sameHistoricalDigest": true,
+    "openTrades": 200,
+    "executions": 400,
+    "outstandingDebt": 33,
+    "migrationMs": 14372.46104199998,
+    "peakSampledUsedJSHeapBytes": 722808772,
+    "phases": {
+      "Planned": {
+        "coldTrials": 50,
+        "warmTrials": 50,
+        "coldP95": 1860.196041999996,
+        "warmP95": 116.94270800001686
+      },
+      "Open": {
+        "coldTrials": 50,
+        "warmTrials": 50,
+        "coldP95": 1860.0290000000386,
+        "warmP95": 528.122166999965
+      }
+    },
+    "inheritedWebkit": {
+      "coldP95": 275.61483299999963,
+      "warmP95": 75.58262500001001,
+      "browser": "27.2"
+    }
+  },
+  "distSha256": {
+    "assets/index-BZaGd-Wg.js": "c671ee9185a8ab01523048b4351c7f009ef2a3888ffa683f2d97efc2f6762926",
+    "assets/index-BiR8c3jK.css": "cfc6ba696c7b1b1c8f6deacce1aa5ec0cf5221a87c722c4452e10febe4a7dcf3",
+    "capabilities.json": "71878297c7953004d90c5841bc9ecd143fbb86a65c348e099c1d8f18a039ab91",
+    "icon-192.png": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+    "icon-512.png": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+    "icon.svg": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+    "index.html": "f447124342978eb82b2ec4c423abe0ef637d8cdbdd47daae7c1eee3c620fb246",
+    "manifest.webmanifest": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+    "offline-inventory.json": "0701c98c75fd17d4a3ee7410418aff349eb4beda7159c3365fe255e457ad40ef",
+    "sw.js": "5e380d881d4e91405bff294673e4557645aa240bb4e9815442b0a3a1062d6bf5"
+  },
+  "independentCritic": {
+    "status": "Passed available local B01\u2013B04; no blocking defect",
+    "report": "implementation/evidence/d02/critic-01/report.md",
+    "engine": "Installed Google Chrome 155.0.8059.85",
+    "axeScans": 7,
+    "axeViolations": 0,
+    "distributionHashesMatch": true,
+    "cleanup": "implementation/evidence/d02/critic-01/cleanup.json",
+    "observation": "Partial Note textarea overlap with fixed bottom navigation after wide-to-narrow resize; focus visible, scrollable and keyboard completion passed; retained unfixed usability observation"
+  },
+  "limits": [
+    "OS installation/standalone launch unverified",
+    "Native browser-chrome 200% zoom unverified; CSS zoom supplemental",
+    "Production HTTPS/deployment user-deferred",
+    "Migration measured about 723 MB peak used JavaScript heap; not total RSS or a low-memory-host guarantee",
+    "Per-behavior TDD process exceptions and early attempt-log retention gap documented in README.md",
+    "Independent critic retained a non-blocking partial Note overlap observation after live resize; see pending-verification.md"
+  ],
+  "delivery": {
+    "localOnly": true,
+    "committed": false,
+    "pushed": false,
+    "deployed": false,
+    "userBrowserDataModifiedByTests": false,
+    "previewRestored": true,
+    "previewURL": "http://localhost:5174/",
+    "previewSession": 89010
+  },
+  "completedAt": "2026-10-21T23:23:56.539301+00:00",
+  "reviews": {
+    "standards": {
+      "result": "No actionable finding",
+      "report": "implementation/evidence/d02/standards-review.md"
+    },
+    "spec": {
+      "result": "Stale lifecycle FactRevision finding fixed with retained Red/Green regression",
+      "report": "implementation/evidence/d02/spec-review.md"
+    }
+  }
+}

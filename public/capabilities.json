@@ -1,6 +1,6 @@
 {
-  "identity": "trade-journal-d1-v1",
-  "scope": "Exact Long Stock Plans with fixed underlying-price Stop and Target",
+  "identity": "trade-journal-d2-v1",
+  "scope": "Exact Long Stock planning and one complete initial buy decision, with Position Change Reflection and Journal-only Debt resolution",
   "operations": {
     "Workspace": [
       "initialize",
@@ -18,11 +18,14 @@
       "resolve.RetainedReference"
     ],
     "TradeWorkflows": [
-      "confirmPlan"
+      "confirmPlan",
+      "recordPositionChange.InitialStockEntry"
     ],
     "TradeAnalysis": [
       "assessPlan.LongStock",
-      "derive.Planned"
+      "derive.Planned",
+      "derive.OpenStock",
+      "assessChange.InitialStockEntry"
     ],
     "TradeRecord": [
       "prepareChange.ConfirmPlan",
@@ -30,17 +33,28 @@
       "getRecord",
       "queryRecords.Planned",
       "history",
-      "resolveAnchors.Trade"
+      "resolveAnchors.Trade",
+      "prepareChange.InitialStockEntry",
+      "applyPreparedChange.InitialStockEntry",
+      "queryRecords.Open",
+      "resolveAnchors.Execution"
     ],
     "Journal": [
       "getDefinitions.PlanReflection",
       "prepareEffects.PlanReflection",
       "applyPreparedEffects.PlanReflection",
-      "query.TradeNarrative"
+      "query.TradeNarrative",
+      "getDefinitions.PositionChangeReflection",
+      "prepareEffects.PositionChangeReflection",
+      "applyPreparedEffects.PositionChangeReflection",
+      "query.ObligationsAndDebt",
+      "save.ResolveJournalOnlyDebt"
     ],
     "TradeViewsAndReporting": [
       "browseTrades.Planned",
-      "getTradeDetail.Planned"
+      "getTradeDetail.Planned",
+      "browseTrades.Open",
+      "getTradeDetail.Open"
     ]
   },
   "backupSchemaRanges": [],
@@ -51,5 +65,11 @@
       "2028-12-31"
     ],
     "installedSessionOperations": []
+  },
+  "workspaceSchemas": {
+    "current": 2,
+    "supportedMigrationSources": [
+      1
+    ]
   }
 }

@@ -1,0 +1,16 @@
+{
+  "id": "D2-T02-agreement",
+  "stage": "green",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "sourceDigest": "82d9cae77e2a00311d4cea70dafe4b6bc17f8ac7137fd224cd271060a4f17d29",
+  "command": [
+    "npm",
+    "run",
+    "test:unit",
+    "--",
+    "tests/unit/d02-analysis.test.ts"
+  ],
+  "exit": 0,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:unit\n> vitest run --project unit tests/unit/d02-analysis.test.ts\n\n\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n\n Test Files  1 passed (1)\n      Tests  7 passed (7)\n   Start at  13:25:32\n   Duration  316ms (environment 80%, import 8%, transform 7%, tests 4%, worker 1%)\n\n",
+  "stderr": ""
+}

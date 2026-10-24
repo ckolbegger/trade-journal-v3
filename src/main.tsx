@@ -1,3 +1,4 @@
+import { Journal } from './domain/journal';
 import { createRoot } from 'react-dom/client';
 import { Store, Runtime } from './infrastructure/storage';
 import { BrowserHost } from './infrastructure/browser-host';
@@ -9,6 +10,6 @@ import { App } from './presentation/App';
 const store = new Store('trade-journal-v3');
 const host = new BrowserHost();
 const runtime = new Runtime(store, host);
-const services = { workspace: new Workspace(runtime), catalog: new ReferenceCatalog(store, runtime), workflows: new TradeWorkflows(runtime), views: new TradeViewsAndReporting(store) };
+const services = { workspace: new Workspace(runtime), catalog: new ReferenceCatalog(store, runtime), workflows: new TradeWorkflows(runtime), views: new TradeViewsAndReporting(store), journal: new Journal(store, runtime) };
 const root = document.getElementById('root');
 if (root) createRoot(root).render(<App services={services} delivery={host} />);

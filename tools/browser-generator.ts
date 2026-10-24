@@ -1,3 +1,4 @@
+import './d02-browser-generator';
 import { Store, Runtime } from '../src/infrastructure/storage';
 import { BrowserHost } from '../src/infrastructure/browser-host';
 import { Workspace } from '../src/application/workspace';

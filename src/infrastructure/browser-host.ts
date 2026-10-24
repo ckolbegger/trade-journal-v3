@@ -1,7 +1,8 @@
 import type { RuntimeHost, Store, HostChecks, CapacityEvidence } from './storage';
-// Installed D1 envelope: 25,000 Plans/reflections plus metadata and index overhead.
+// Installed D2 envelope: 25,000 Plans/reflections and 200 two-Execution Open Trades.
+// Measured budgets and provenance: implementation/plan/d02-capacity-evidence.md.
 // Future operations must preflight their own additional storage requirements.
-const installedBudget = 2 * (25000 * 4096 + 25000 * 4096 + 64 * 1024 * 1024);
+const installedBudget = 2 * (25000 * 4096 + 25000 * 4096 + 64 * 1024 * 1024 + 200 * 24576);
 export class BrowserHost implements RuntimeHost {
   private registration?: Promise<ServiceWorkerRegistration>;
   async check(store: Store): Promise<HostChecks> {
@@ -77,6 +78,9 @@ export class BrowserHost implements RuntimeHost {
   private async protection(): Promise<HostChecks['protection']> {
     try { return typeof navigator.storage.persisted === 'function' ? await navigator.storage.persisted() ? 'Protected' : 'BestEffort' : 'Unavailable'; }
     catch { return 'Unavailable'; }
+  }
+  async migrationCapacity(candidateBytes: number) {
+    try { const { quota, usage } = await navigator.storage.estimate(); return typeof quota === 'number' && typeof usage === 'number' && Number.isFinite(quota) && Number.isFinite(usage) && quota >= usage && quota - usage >= candidateBytes * 1.25; } catch { return false; }
   }
   async requestDurability(): Promise<HostChecks['protection']> {
     try { return typeof navigator.storage.persist === 'function' ? await navigator.storage.persist() ? 'Protected' : 'BestEffort' : 'Unavailable'; }

@@ -1,6 +1,6 @@
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 const [id, stage, command, ...args] = process.argv.slice(2);
 if (!id || !stage || !command) throw new Error('Usage: evidence.mjs ID STAGE COMMAND [ARGUMENTS]');
@@ -8,12 +8,22 @@ function files(path) { return readdirSync(path, { withFileTypes: true }).filter(
 const paths = [...files('src'), ...files('worker'), ...files('tests'), ...files('tools'), ...files('public'), ...readdirSync('.').filter(path => /\.config\.(ts|mjs)$/.test(path)), 'package.json', 'package-lock.json', 'tsconfig.json', 'index.html'].sort();
 const snapshot = Object.fromEntries(paths.map(path => [path, path.endsWith('.png') ? { encoding: 'base64', data: readFileSync(path).toString('base64') } : readFileSync(path, 'utf8')]));
 const digest = createHash('sha256').update(JSON.stringify(snapshot)).digest('hex');
-const directory = 'implementation/evidence/d01';
+const directory = id.startsWith('D2') ? 'implementation/evidence/d02' : 'implementation/evidence/d01';
 mkdirSync(`${directory}/source-snapshots`, { recursive: true });
 writeFileSync(`${directory}/source-snapshots/${digest}.json`, JSON.stringify(snapshot));
+const inputPaths = id.startsWith('D2') ? ['implementation/plan/d02-implementation-baseline.md', 'implementation/plan/d02-initial-stock-entry.md', 'implementation/plan/d01-capacity-policy-revision.md', 'implementation/plan/d02-capacity-evidence.md', 'specs/evaluation/kickoff-prompt.md'] : [];
+const inputs = Object.fromEntries(inputPaths.map(path => [path, createHash('sha256').update(readFileSync(path)).digest('hex')]));
 const baseline = spawnSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).stdout.trim();
-const result = spawnSync(command, args, { encoding: 'utf8', env: process.env, maxBuffer: 32 * 1024 * 1024 });
-const log = { id, stage, baseline, sourceDigest: digest, command: [command, ...args], exit: result.status, stdout: result.stdout, stderr: result.stderr, error: result.error?.message };
-writeFileSync(`${directory}/${id}-${stage}.json`, JSON.stringify(log, null, 2));
-process.stdout.write(result.stdout ?? ''); process.stderr.write(result.stderr ?? '');
+const result = await new Promise(resolve => {
+  const child = spawn(command, args, { env: process.env });
+  const stdout = []; const stderr = []; let error;
+  child.stdout.on('data', chunk => { stdout.push(chunk); process.stdout.write(chunk); });
+  child.stderr.on('data', chunk => { stderr.push(chunk); process.stderr.write(chunk); });
+  child.on('error', failure => { error = failure; });
+  child.on('close', status => resolve({ status, stdout: Buffer.concat(stdout).toString('utf8'), stderr: Buffer.concat(stderr).toString('utf8'), error }));
+});
+const log = { id, stage, baseline, inputs, sourceDigest: digest, command: [command, ...args], exit: result.status, stdout: result.stdout, stderr: result.stderr, error: result.error?.message };
+let output = `${directory}/${id}-${stage}.json`;
+for (let attempt = 2; existsSync(output); attempt++) output = `${directory}/${id}-${stage}-attempt${attempt}.json`;
+writeFileSync(output, JSON.stringify(log, null, 2));
 process.exit(result.status ?? 1);

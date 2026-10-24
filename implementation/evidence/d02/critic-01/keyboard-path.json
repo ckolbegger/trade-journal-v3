@@ -1,0 +1,770 @@
+[
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Create Workspace",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Add Institution",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Add Account",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "New Plan",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "Confirm Plan",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Record initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Save initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Add Execution",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Choose 1–512345",
+    "tag": "SELECT"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "Save initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "New Plan",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "Confirm Plan",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Record initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Add Execution",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Save initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Answer reflection",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Choose 1–512345",
+    "tag": "SELECT"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "Save Debt outcome",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "New Plan",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "Confirm Plan",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Record initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Add Execution",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Save initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "New Plan",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "Confirm Plan",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Record initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Add Execution",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Save initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Journal Debt",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Answer reflection",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "Save Debt outcome",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "New Plan",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "Confirm Plan",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Record initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Save initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Add Execution",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Choose 1–512345",
+    "tag": "SELECT"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "Save initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "New Plan",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "Confirm Plan",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Record initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Add Execution",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Save initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Answer reflection",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Choose 1–512345",
+    "tag": "SELECT"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "Save Debt outcome",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "New Plan",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "Confirm Plan",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Record initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Add Execution",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Save initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "New Plan",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "Confirm Plan",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Record initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Add Execution",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "Save initial Position Change",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Journal Debt",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Answer reflection",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "",
+    "tag": "INPUT"
+  },
+  {
+    "name": "",
+    "tag": "TEXTAREA"
+  },
+  {
+    "name": "Save Debt outcome",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Trades",
+    "tag": "BUTTON"
+  },
+  {
+    "name": "Retry list",
+    "tag": "BUTTON"
+  }
+]

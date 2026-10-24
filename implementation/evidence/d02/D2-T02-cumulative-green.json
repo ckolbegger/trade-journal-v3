@@ -1,0 +1,14 @@
+{
+  "id": "D2-T02-cumulative",
+  "stage": "green",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "sourceDigest": "adfbc937c13aa3cef7e952523ae5f643f5b4779015dd96b01f3fe3904db47667",
+  "command": [
+    "npm",
+    "run",
+    "test:unit"
+  ],
+  "exit": 0,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:unit\n> vitest run --project unit\n\n\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n\n Test Files  10 passed (10)\n      Tests  82 passed (82)\n   Start at  13:26:26\n   Duration  2.14s (environment 48%, tests 36%, transform 8%, import 7%)\n\n",
+  "stderr": ""
+}

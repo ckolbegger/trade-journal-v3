@@ -1,0 +1,86 @@
+[
+  {
+    "event": "entry",
+    "db": "trade-journal-v3",
+    "stores": [
+      "diagnostic"
+    ],
+    "mode": "readwrite",
+    "time": 962.3000001907349
+  },
+  {
+    "event": "complete",
+    "db": "trade-journal-v3",
+    "stores": [
+      "diagnostic"
+    ],
+    "mode": "readwrite",
+    "time": 977.7000002861023
+  },
+  {
+    "event": "entry",
+    "db": "trade-journal-v3",
+    "stores": [
+      "projections",
+      "roots"
+    ],
+    "mode": "readonly",
+    "time": 978.8000001907349
+  },
+  {
+    "event": "complete",
+    "db": "trade-journal-v3",
+    "stores": [
+      "projections",
+      "roots"
+    ],
+    "mode": "readonly",
+    "time": 979.0999999046326
+  },
+  {
+    "event": "entry",
+    "db": "trade-journal-v3",
+    "stores": [
+      "roots"
+    ],
+    "mode": "readonly",
+    "time": 979.0999999046326
+  },
+  {
+    "event": "entry",
+    "db": "trade-journal-v3",
+    "stores": [
+      "lifecycle",
+      "projections",
+      "roots",
+      "versions"
+    ],
+    "mode": "readwrite",
+    "time": 979.2000002861023
+  },
+  {
+    "event": "complete",
+    "db": "trade-journal-v3",
+    "stores": [
+      "roots"
+    ],
+    "mode": "readonly",
+    "time": 979.3000001907349
+  },
+  {
+    "event": "complete",
+    "db": "trade-journal-v3",
+    "stores": [
+      "lifecycle",
+      "projections",
+      "roots",
+      "versions"
+    ],
+    "mode": "readwrite",
+    "time": 980.8000001907349
+  },
+  {
+    "event": "Journal Debt settled.",
+    "time": 981.5999999046326
+  }
+]

@@ -1,0 +1,186 @@
+[
+  {
+    "event": "entry",
+    "db": "trade-journal-v3",
+    "stores": [
+      "diagnostic"
+    ],
+    "mode": "readwrite",
+    "time": 1073.9000000953674
+  },
+  {
+    "event": "complete",
+    "db": "trade-journal-v3",
+    "stores": [
+      "diagnostic"
+    ],
+    "mode": "readwrite",
+    "time": 1089.0999999046326
+  },
+  {
+    "event": "entry",
+    "db": "trade-journal-v3",
+    "stores": [
+      "projections",
+      "roots"
+    ],
+    "mode": "readonly",
+    "time": 1090.1999998092651
+  },
+  {
+    "event": "complete",
+    "db": "trade-journal-v3",
+    "stores": [
+      "projections",
+      "roots"
+    ],
+    "mode": "readonly",
+    "time": 1090.4000000953674
+  },
+  {
+    "event": "entry",
+    "db": "trade-journal-v3",
+    "stores": [
+      "roots"
+    ],
+    "mode": "readonly",
+    "time": 1090.4000000953674
+  },
+  {
+    "event": "entry",
+    "db": "trade-journal-v3",
+    "stores": [
+      "lifecycle",
+      "roots",
+      "versions"
+    ],
+    "mode": "readonly",
+    "time": 1090.5999999046326
+  },
+  {
+    "event": "complete",
+    "db": "trade-journal-v3",
+    "stores": [
+      "roots"
+    ],
+    "mode": "readonly",
+    "time": 1090.6999998092651
+  },
+  {
+    "event": "complete",
+    "db": "trade-journal-v3",
+    "stores": [
+      "lifecycle",
+      "roots",
+      "versions"
+    ],
+    "mode": "readonly",
+    "time": 1091.5
+  },
+  {
+    "event": "entry",
+    "db": "trade-journal-v3",
+    "stores": [
+      "diagnostic"
+    ],
+    "mode": "readwrite",
+    "time": 1092.2999997138977
+  },
+  {
+    "event": "complete",
+    "db": "trade-journal-v3",
+    "stores": [
+      "diagnostic"
+    ],
+    "mode": "readwrite",
+    "time": 1092.5999999046326
+  },
+  {
+    "event": "entry",
+    "db": "trade-journal-v3",
+    "stores": [
+      "projections",
+      "roots"
+    ],
+    "mode": "readonly",
+    "time": 1096.7999997138977
+  },
+  {
+    "event": "complete",
+    "db": "trade-journal-v3",
+    "stores": [
+      "projections",
+      "roots"
+    ],
+    "mode": "readonly",
+    "time": 1096.9000000953674
+  },
+  {
+    "event": "entry",
+    "db": "trade-journal-v3",
+    "stores": [
+      "roots"
+    ],
+    "mode": "readonly",
+    "time": 1097
+  },
+  {
+    "event": "entry",
+    "db": "trade-journal-v3",
+    "stores": [
+      "lifecycle",
+      "projections",
+      "roots",
+      "versions"
+    ],
+    "mode": "readwrite",
+    "time": 1097.0999999046326
+  },
+  {
+    "event": "complete",
+    "db": "trade-journal-v3",
+    "stores": [
+      "roots"
+    ],
+    "mode": "readonly",
+    "time": 1097.1999998092651
+  },
+  {
+    "event": "complete",
+    "db": "trade-journal-v3",
+    "stores": [
+      "lifecycle",
+      "projections",
+      "roots",
+      "versions"
+    ],
+    "mode": "readwrite",
+    "time": 1100.1999998092651
+  },
+  {
+    "event": "Initial Position Change saved.",
+    "time": 1102.2999997138977
+  },
+  {
+    "event": "entry",
+    "db": "trade-journal-v3",
+    "stores": [
+      "lifecycle",
+      "roots",
+      "versions"
+    ],
+    "mode": "readonly",
+    "time": 1264.5999999046326
+  },
+  {
+    "event": "complete",
+    "db": "trade-journal-v3",
+    "stores": [
+      "lifecycle",
+      "roots",
+      "versions"
+    ],
+    "mode": "readonly",
+    "time": 1265.9000000953674
+  }
+]

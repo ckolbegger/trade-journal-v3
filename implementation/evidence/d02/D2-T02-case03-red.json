@@ -1,0 +1,16 @@
+{
+  "id": "D2-T02-case03",
+  "stage": "red",
+  "baseline": "f36c52df0fdc101498067aaed1f5ffdc46185438",
+  "sourceDigest": "a6e7a70bd62cc9abca7c907797a9ec37446ba2a004c4f6a9fd9f3ab78d0513c0",
+  "command": [
+    "npm",
+    "run",
+    "test:unit",
+    "--",
+    "tests/unit/d02-analysis.test.ts"
+  ],
+  "exit": 1,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:unit\n> vitest run --project unit tests/unit/d02-analysis.test.ts\n\n\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n ❯ |unit| tests/unit/d02-analysis.test.ts (10 tests | 1 failed) 9ms\n   × case03 orders distinct Lots by economic instant and Recorded Sequence rather than input order 4ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 9 passed (10)\n   Start at  13:23:42\n   Duration  323ms (environment 86%, transform 7%, tests 4%, import 3%, worker 1%)\n\n",
+  "stderr": "\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |unit| tests/unit/d02-analysis.test.ts > case03 orders distinct Lots by economic instant and Recorded Sequence rather than input order\nAssertionError: expected { status: 'Derived', …(13) } to match object { positions: [ { …(3) } ] }\n(33 matching properties omitted from actual)\n\n- Expected\n+ Received\n\n  {\n-   \"positions\": [\n-     {\n-       \"instrument\": {\n-         \"currency\": \"USD\",\n-         \"kind\": \"Stock\",\n-         \"symbol\": \"XYZ\",\n-       },\n-       \"lots\": [\n-         {\n-           \"openingFees\": \"1\",\n-           \"openingId\": \"e1\",\n-           \"price\": \"49\",\n-           \"quantity\": \"40\",\n-         },\n-         {\n-           \"openingFees\": \"2\",\n-           \"openingId\": \"e2\",\n-           \"price\": \"51\",\n-           \"quantity\": \"60\",\n-         },\n-       ],\n-       \"quantity\": \"100\",\n-     },\n-   ],\n+   \"positions\": [],\n  }\n\n ❯ tests/unit/d02-analysis.test.ts:22:29\n\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n"
+}

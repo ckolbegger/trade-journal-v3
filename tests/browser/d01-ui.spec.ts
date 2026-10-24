@@ -7,9 +7,12 @@ async function tabTo(page: Page, target: Locator) {
   await expect(target).toBeEnabled();
   for (let i = 0; i < 50; i++) {
     if (await target.evaluate(element => element === document.activeElement)) return;
-    // WebKit on macOS follows the host's text-only Tab preference; Option-Tab
-    // traverses every native control without changing that system preference.
-    await page.keyboard.press(page.context().browser()?.browserType().name() === 'webkit' ? 'Alt+Tab' : 'Tab');
+    // Traverse toward the target rather than relying on browser-chrome wrapping.
+    // Firefox leaves the last page control focused when Tab enters browser chrome.
+    const backwards = await target.evaluate(element => Boolean(document.activeElement && document.activeElement !== document.body && (element.compareDocumentPosition(document.activeElement) & Node.DOCUMENT_POSITION_FOLLOWING)));
+    const key = backwards ? 'Shift+Tab' : 'Tab';
+    // Option-Tab includes every native control under macOS's text-only preference.
+    await page.keyboard.press(page.context().browser()?.browserType().name() === 'webkit' ? `Alt+${key}` : key);
   }
   throw new Error('Control not reachable through the keyboard');
 }

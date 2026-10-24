@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Keyboard Cancel 390",
+    "time": "2026-10-21T23:19:21.156Z",
+    "expected": "three rows and answers survive767/768; opening and Debt Cancel save nothing",
+    "observed": "keyboard-only all actions; exact authority equality and row3 retained",
+    "status": "PASS"
+  },
+  {
+    "name": "Keyboard Cancel 1440",
+    "time": "2026-10-21T23:19:21.890Z",
+    "expected": "three rows and answers survive767/768; opening and Debt Cancel save nothing",
+    "observed": "keyboard-only all actions; exact authority equality and row3 retained",
+    "status": "PASS"
+  }
+]
