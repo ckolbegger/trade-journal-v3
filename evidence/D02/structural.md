@@ -599,3 +599,18 @@ Decision:
 - **Not changed.** A Planned-list item still needs a replayed Baseline, so `browseTrades({ lifecycle: 'Planned' })` still throws for a Trade stored as Planned whose facts are incoherent (not in I2.8's cases; an incoherent Trade with Position Changes is stored Open by every write path). The incoherent Detail still offers "Record entry" while Writable; saving returns `IntegrityDisagreement`.
 
 Verification: `npm run test:integration` 38 passed; `npx vitest run src/coordinators/trade-views src/ui/screens` passed; `npm run verify:fixtures` views equal; `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` exit 0.
+
+## Cumulative run after T2.22
+
+Run 2026-10-21 11:55 EDT on commit `31a0578` (the only uncommitted files were this run's own outputs and the untracked older handoff note), Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 37 passed (37)`, `Tests 342 passed (342)`, exit 0 | `suite-runs/t2.22-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 18 passed (18)`, `Tests 38 passed (38)`, exit 0 | `suite-runs/t2.22-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `27 passed (44.0s)`, exit 0 | `suite-runs/t2.22-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.22-checks.txt` |
+
+Failures: none.
+
+After the I2.8 (c) fix (31a0578); T2.22 suite commit 69f4c77.
