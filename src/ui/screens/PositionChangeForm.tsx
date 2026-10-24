@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type {
   EntryDefinitionRecord,
@@ -15,6 +15,7 @@ import type { FieldIssue } from './plan-issues.ts';
 import { describePositionChangeIssues, rowField } from './position-change-issues.ts';
 import { PositionChangeReceipt } from './PositionChangeReceipt.tsx';
 import { ReflectionPrompts, type Answers } from './ReflectionPrompts.tsx';
+import { INCOHERENT_ENTRY_NOTE } from './TradeDetail.tsx';
 
 export interface PositionChangeFormProps {
   readonly facade: UiFacade;
@@ -80,6 +81,16 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   }, [facade, tradeId]);
 
   if (recorded) return <PositionChangeReceipt result={recorded} timeZone={timeZone} />;
+  // A Trade whose facts cannot be replayed would refuse the save, so no form is offered.
+  if (view && 'recordedPositionChanges' in view) {
+    return (
+      <section className="card">
+        <h1>Record entry</h1>
+        <p>{INCOHERENT_ENTRY_NOTE}</p>
+        <Link to={`/trades/${tradeId}`}>Back to the Trade</Link>
+      </section>
+    );
+  }
   if (!view || !definition) return <p role="status">Loading the entry form…</p>;
 
   const leg = view.plan.legs[0]!;

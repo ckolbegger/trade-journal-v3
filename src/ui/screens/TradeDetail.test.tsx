@@ -305,3 +305,26 @@ describe('Open Trade Detail', () => {
     }
   });
 });
+
+describe('incoherent Trade Detail', () => {
+  const incoherent = () => incoherentDetailOf([PC1], [{ factId: 'ex-1', reason: 'UnknownPlannedLeg' }]);
+
+  it('should not offer Record entry on an IncoherentTradeDetail, while a coherent Open or Planned Detail still offers it', async () => {
+    renderView(incoherent(), true);
+    await screen.findByRole('region', { name: 'Records disagree' });
+    expect(screen.queryByRole('link', { name: 'Record entry' })).toBeNull();
+    cleanup();
+
+    for (const view of [openDetailOf([PC1]), plannedDetail] as TradeDetailView[]) {
+      renderView(view, true);
+      expect((await screen.findByRole('link', { name: 'Record entry' })).getAttribute('href')).toBe('/trades/trade-1/record-entry');
+      cleanup();
+    }
+  });
+
+  it('should explain beside the Records disagree panel that new entries cannot be recorded until the records agree', async () => {
+    renderView(incoherent(), true);
+    const panel = await screen.findByRole('region', { name: 'Records disagree' });
+    expect(within(panel).getByText('New entries cannot be recorded for this Trade until its records agree.')).toBeTruthy();
+  });
+});

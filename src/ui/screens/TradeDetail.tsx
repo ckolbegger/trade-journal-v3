@@ -22,6 +22,9 @@ export interface TradeDetailProps {
   readonly timeZone: string;
 }
 
+// Why an incoherent Trade offers no Record entry; the entry route shows the same words.
+export const INCOHERENT_ENTRY_NOTE = 'New entries cannot be recorded for this Trade until its records agree.';
+
 type DetailState =
   | { readonly kind: 'Loading' }
   | { readonly kind: 'Ready'; readonly view: TradeDetailView }
@@ -95,8 +98,9 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
         <p>
           {view.labels.strategy} · <span className="badge">{view.lifecycle.stored}</span>
         </p>
-        {/* Recording an entry is an authoritative write, offered only while the runtime is Writable. */}
-        {writable && (
+        {/* Recording an entry is an authoritative write, offered only while the runtime is Writable and
+            the Trade's facts can be replayed; on incoherent facts it could only fail. */}
+        {writable && !('recordedPositionChanges' in view) && (
           <Link className="pill primary" to={`/trades/${view.tradeId}/record-entry`}>
             Record entry
           </Link>
@@ -396,6 +400,7 @@ function IncoherentPanel({ view, timeZone }: { readonly view: IncoherentTradeDet
       <h2 id="integrity-heading">Records disagree</h2>
       <p>Viewing this Trade does not change its records.</p>
       <p>These recorded facts cannot be replayed, so the Position, entry, and fulfillment figures are unavailable.</p>
+      <p>{INCOHERENT_ENTRY_NOTE}</p>
       <div className="table-scroll" role="region" aria-label="Facts that cannot be replayed" tabIndex={0}>
         <table className="trades">
           <caption>Facts that cannot be replayed</caption>

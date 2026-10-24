@@ -3,6 +3,7 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter, MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { incoherentDetailOf, PC1 } from '../../../tests/support/open-detail-fixtures.ts';
 import { positionChangeFormFacade } from '../../../tests/support/position-change-form-facade.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import { Rational } from '../../domain/values/index.ts';
@@ -438,5 +439,22 @@ describe('submission', () => {
     expect(dirty).toHaveBeenLastCalledWith(false);
     expect(facade.TradeWorkflows.recordPositionChange).not.toHaveBeenCalled();
     expect(facade.TradeWorkflows.confirmPlan).not.toHaveBeenCalled();
+  });
+});
+
+describe('Record entry route for an incoherent Trade', () => {
+  it('should show the same explanation and a link back to the Trade instead of the form, and make no recordPositionChange call', async () => {
+    const facade = positionChangeFormFacade();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({
+      kind: 'Ready',
+      view: incoherentDetailOf([PC1], [{ factId: 'ex-1', reason: 'UnknownPlannedLeg' }]),
+      binding: { databaseName: 'tj-ws-1', contentRevision: 7 },
+    } as never);
+    renderForm(facade);
+    expect(await screen.findByText('New entries cannot be recorded for this Trade until its records agree.')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Back to the Trade' }).getAttribute('href')).toBe('/trades/trade-1');
+    expect(screen.queryByRole('group', { name: 'Execution 1' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Save entry' })).toBeNull();
+    expect(facade.TradeWorkflows.recordPositionChange).not.toHaveBeenCalled();
   });
 });
