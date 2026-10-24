@@ -667,3 +667,18 @@ B2.13 failed because an Open Trade stored as Planned is listed under Planned (th
 - Not covered: a Planned Trade whose facts are incoherent (not replayable) still throws in `browseTrades({lifecycle:'Planned'})`; that is a separate case left open.
 
 Verification: `npx playwright test e2e/d2/integrity.spec.ts -g "B2.13"` 1 passed (after `npm run build:faults`); `npm run test:e2e` 42 passed; `npx vitest run src/coordinators/trade-views src/ui` 88 passed; `npm run test:integration` 38 passed; typecheck, `tsc6`, lint and `lint:deps` exit 0.
+
+## Cumulative run after T2.23
+
+Run 2026-10-21 12:20 EDT on commit `839fb0b` (the only uncommitted files were this run's own outputs and the untracked older handoff note), Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 37 passed (37)`, `Tests 344 passed (344)`, exit 0 | `suite-runs/t2.23-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 18 passed (18)`, `Tests 38 passed (38)`, exit 0 | `suite-runs/t2.23-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `42 passed (1.4m)`, exit 0 | `suite-runs/t2.23-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.23-checks.txt` |
+
+Failures: none.
+
+After the B2.13 fix (839fb0b); T2.23 suite commit 9cac498.
