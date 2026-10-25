@@ -100,11 +100,12 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange]);
   // Leaving the form abandons it, so it no longer holds an update back.
   useEffect(() => () => onDirtyChange(false), [onDirtyChange]);
-  // Bumped whenever the load effect restarts, so a reload started for an earlier Trade or attempt settles unseen.
+  // Bumped whenever the load effect restarts and by each reload and each save, so a reload started
+  // for an earlier Trade or attempt, or superseded by a newer reload or a save, settles unseen.
   const loadEpoch = useRef(0);
   // Conflict recovery reads the Trade again in place: the form and its values stay on screen.
   const reloadTrade = () => {
-    const epoch = loadEpoch.current;
+    const epoch = ++loadEpoch.current;
     setReloadFailed(false);
     void facade.TradeViewsAndReporting.getTradeDetail({ tradeId }).then(
       (result) => {
@@ -236,6 +237,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
     const reflection: ReflectionDisposition = declined
       ? { kind: 'Decline', definitionId: definition.id, ...(reason.trim() !== '' && { reason }) }
       : { kind: 'Complete', form: { definitionId: definition.id, answers } };
+    loadEpoch.current += 1;
     const result = await facade.TradeWorkflows.recordPositionChange({
       originTradeId: tradeId,
       trades: [{ tradeId, expectedFactRevision: view.factRevision }],

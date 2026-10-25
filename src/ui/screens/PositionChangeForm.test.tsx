@@ -867,6 +867,51 @@ describe('after a Conflict', () => {
     expect(figures.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
+  it('should ignore an earlier reload that answers after a later one', async () => {
+    const { facade, user, message } = await conflicted();
+    const earlier = deferred<unknown>();
+    const later = deferred<unknown>();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail)
+      .mockReturnValueOnce(earlier.promise as never)
+      .mockReturnValueOnce(later.promise as never);
+    const load = within(message).getByRole('button', { name: 'Load the latest Trade' });
+    await user.click(load);
+    await user.click(load);
+    later.resolve(latest);
+    const figures = await screen.findByRole('region', { name: 'Latest Trade' });
+    expect(within(figures).getByText('60 shares of XYZ')).toBeTruthy();
+
+    earlier.resolve({ kind: 'Ready', view: plannedDetail, binding: { databaseName: 'tj-ws-1', contentRevision: 7 } });
+    await act(async () => {
+      await earlier.promise;
+    });
+    expect(within(screen.getByRole('region', { name: 'Latest Trade' })).getByText('60 shares of XYZ')).toBeTruthy();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockClear();
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    await vi.waitFor(() => expect(facade.TradeWorkflows.recordPositionChange).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(facade.TradeWorkflows.recordPositionChange).mock.calls[0]![0].trades).toEqual([{ tradeId: 'trade-1', expectedFactRevision: 3 }]);
+  });
+
+  it('should ignore a reload that answers after a save', async () => {
+    const { facade, user, message } = await conflicted();
+    const pending = deferred<unknown>();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockReturnValueOnce(pending.promise as never);
+    await user.click(within(message).getByRole('button', { name: 'Load the latest Trade' }));
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    await vi.waitFor(() => expect(facade.TradeWorkflows.recordPositionChange).toHaveBeenCalledTimes(2));
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    pending.resolve(latest);
+    await act(async () => {
+      await pending.promise;
+    });
+    expect(screen.getByRole('region', { name: 'This Trade changed after you opened this form' })).toBeTruthy();
+    expect(screen.queryByRole('region', { name: 'Latest Trade' })).toBeNull();
+    expect(within(row(1)).getByLabelText<HTMLInputElement>('Quantity').value).toBe('40');
+  });
+
   it('should keep the Conflict message and the values when the reload itself fails', async () => {
     const { facade, user, message } = await conflicted();
     vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockRejectedValue(new Error('read failed'));

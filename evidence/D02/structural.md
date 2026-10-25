@@ -1007,3 +1007,18 @@ Bug from the ocr review of T2.29: the incoherent-Trade heading took focus only o
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
 
 Change: the `shown` condition in `PositionChangeForm.tsx` is now true for an incoherent Trade view alone, or for a view with the definition. The form heading rule and the Conflict in-place reload are unchanged.
+
+#### T2.28-B1
+
+Bug from the ocr review of T2.28: `reloadTrade` guarded late answers only with `loadEpoch`, which changed only when the load effect restarted. An earlier reload answering after a later one overwrote the newer view, and a reload answering after a save that returned a new Conflict cleared that Conflict.
+
+| Command | Result |
+|---|---|
+| red: `npx vitest run src/ui/screens/PositionChangeForm.test.tsx -t "should ignore an earlier reload that answers after a later one"` | failed: Latest Trade no longer showed "60 shares of XYZ" after the earlier reload answered (assertion) |
+| red: same file, `-t "should ignore a reload that answers after a save"` | failed: the Conflict message region was gone (assertion) |
+| green: both commands | 1 passed each |
+| `npx vitest run src/ui/screens/PositionChangeForm.test.tsx` | 31 passed |
+| `npx playwright test e2e/d2/no-save.spec.ts e2e/d2/responsive-a11y.spec.ts` | 6 passed |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
+
+Change: `loadEpoch` is also bumped by each reload and each save, so only the latest request may change the form; a superseded reload settles unseen.
