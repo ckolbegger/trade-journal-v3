@@ -1624,3 +1624,11 @@ Clear corrected issues (U4) on New Plan and Record entry: `IssueSummary` takes t
 | (question c) | both forms | Snapshot gating | Holds apart from the rows above |
 
 **Complete cumulative run after T2.47** (`suite-runner`, 2026-10-25 07:46 EDT, on `9c00b37`): Unit 41 files / 404 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 79 passed (2.5m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.47-*.txt`.
+
+#### T2.47-B1
+
+Issue clearing judged by the domain's rules: `InvalidPrice` clears only when entry, Stop and Target are all valid (the server issue names no field); `MissingInstrument` only for a symbol matching the domain rule; a whitespace-only Text answer stays unanswered; all three local-time codes clear once `fromWorkspaceLocal` succeeds; decimals parsed with `parseDecimal` and compared with `Rational.compare` (the client regex is gone); an issue whose Execution row was removed counts as corrected. Six cases, each red first (`tdd-log.md`); no first-run passes. Checks: `npx vitest run src` 410 passed; `build:faults` + `e2e/d1 e2e/d2` 79 passed.
+
+**ocr review of T2.47-B1** (`ocr-review` step): commit `6b1a875`, session `d60aa360-8407-43ff-ab7b-fbd8a1641351`, model `gpt-6.1-sol`, 3 files reviewed, 0 comments. No findings. Raw output: `ocr/t2.47-B1-6b1a875.json`.
+
+**Complete cumulative run after T2.47-B1** (`suite-runner`, 2026-10-25 07:56 EDT, on `6b1a875`): Unit 41 files / 410 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 79 passed (2.4m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.47-B1-*.txt`.
