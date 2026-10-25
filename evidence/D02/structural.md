@@ -1397,3 +1397,12 @@ Change: `src/ui/app.css` and `src/ui/screens/TradeList.tsx`. The table stays a n
 - Grep for the removed column names and for "Records agree", "Average cost", "Last activity", "Planned reward" and "Plan time" in `src`, `e2e` and `tests` found no other list lookup (the Detail's "Plan time" term and the New Plan form's "Plan time" label are unrelated).
 
 **Bench**: `npm run build:bench`, removed the git-ignored `.cache/bench/profile/tj-bench.json`, then `npm run bench:generate` (25,000 Trades, 39.8 s). `bench/expected-open-rows.json`: `headers` are now `Underlying, Trade, Net cost, Entry, Account` (were ten columns); the 200 `rows` have five cells each, for example `["HD", "Long 120 shares @ $300.97Net cost $36,118.83", "$36,118.83", "Resolved · 120 of 120", "Fidelity — Roth IRA"]` (the Trade cell's textContent joins the summary and the second line); `items` equal the committed ones (T2.58 had already regenerated them), `generatorVersion` is still 1 and `schemaVersion` 2. `bench/dataset.json`: only `benchRelease` (the new build hash), `generationMs` and `generatedAt` changed; counts and content are the same.
+
+## T2.40-B1
+
+Bug from the ocr review of 43b3b8a: the Trade cell's summary, badge and second line ran together ("...$50.10Records disagree").
+
+- Test: TradeList.test.tsx, "Trades table columns", "should separate the Trade cell's summary, badge and second line with a space" (exact cell textContent for an agreeing and a disagreeing coherent row). Red then green in tdd-log.md. Existing T2.40 assertions updated to the spaced text.
+- Fix: a space before the badge and before the second line in TradeCell; badge margin-left 0.5rem to 0.25rem.
+- Bench: `npm run build:bench`, removed `.cache/bench/profile/tj-bench.json`, `npm run bench:generate`. bench/expected-open-rows.json: 200 rows, only the Trade cell text changed (space before "Net cost"); bench/dataset.json: only benchRelease, generationMs, generatedAt changed; generatorVersion stays 1.
+- Checks: `npx vitest run src` 395 passed; typecheck, `npx tsc6 --noEmit`, lint, lint:deps, verify:capacity all exit 0; `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts e2e/d2/narrow.spec.ts e2e/d2/integrity.spec.ts e2e/d2/open-position.spec.ts` 29 passed. Grep of e2e and tests found no exact joined text.

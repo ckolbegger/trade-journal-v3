@@ -366,7 +366,8 @@ table.trades td:nth-child(2) {
 }
 
 table.trades .badge {
-  margin-left: 0.5rem;
+  /* A space already precedes the badge in the cell's text. */
+  margin-left: 0.25rem;
 }
 
 .trade-line {

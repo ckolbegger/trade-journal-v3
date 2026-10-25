@@ -185,9 +185,20 @@ function TradeCell({ text, disagrees, line }: { readonly text: string; readonly 
   return (
     <>
       <span>{text}</span>
-      {/* Text, not colour alone, carries the meaning; an agreeing row shows nothing. */}
-      {disagrees && <span className="badge warning">Records disagree</span>}
-      {line && <span className="trade-line">{line}</span>}
+      {/* Text, not colour alone, carries the meaning; an agreeing row shows nothing. The spaces keep
+          the cell's text and accessible name from running the parts together. */}
+      {disagrees && (
+        <>
+          {' '}
+          <span className="badge warning">Records disagree</span>
+        </>
+      )}
+      {line && (
+        <>
+          {' '}
+          <span className="trade-line">{line}</span>
+        </>
+      )}
     </>
   );
 }

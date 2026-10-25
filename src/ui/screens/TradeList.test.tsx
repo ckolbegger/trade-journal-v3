@@ -221,7 +221,7 @@ describe('Trades table columns', () => {
   it('should show the Trade cell summary text and, on a second line, Net cost 3,007.00 for Open or 1R 250.00 and Reward : risk 2.4 for Planned', async () => {
     const open = await openTable([openItem]);
     const openCell = within(within(open).getAllByRole('row')[1]!).getAllByRole('cell')[1]!;
-    expect(openCell.textContent).toBe('Long 60 shares @ $50.10Net cost $3,007.00');
+    expect(openCell.textContent).toBe('Long 60 shares @ $50.10 Net cost $3,007.00');
     expect(within(openCell).getByText('Long 60 shares @ $50.10')).toBeTruthy();
     expect(within(openCell).getByText('Net cost $3,007.00').className).toBe('trade-line');
     // The Net cost column carries the same figure for the wide layout.
@@ -230,8 +230,15 @@ describe('Trades table columns', () => {
 
     const planned = await plannedTable([plannedItem]);
     const plannedCell = within(within(planned).getAllByRole('row')[1]!).getAllByRole('cell')[1]!;
-    expect(plannedCell.textContent).toBe('Long 100 shares @ $50.00' + '1R $250.00 · Reward : risk 2.4');
+    expect(plannedCell.textContent).toBe('Long 100 shares @ $50.00 ' + '1R $250.00 · Reward : risk 2.4');
     expect(within(plannedCell).getByText('1R $250.00 · Reward : risk 2.4').className).toBe('trade-line');
+  });
+
+  it("should separate the Trade cell's summary, badge and second line with a space", async () => {
+    const open = await openTable([openItem, disagreeing]);
+    const [, agreeing, coherent] = within(open).getAllByRole('row');
+    expect(within(agreeing!).getAllByRole('cell')[1]!.textContent).toBe('Long 60 shares @ $50.10 Net cost $3,007.00');
+    expect(within(coherent!).getAllByRole('cell')[1]!.textContent).toBe('Long 60 shares @ $50.10 Records disagree Net cost $3,007.00');
   });
 
   it('should show Entering · 60 of 100 or Resolved · 120.5 of 100 in the Open Entry cell', async () => {
@@ -251,9 +258,9 @@ describe('Trades table columns', () => {
     expect(within(agreeing!).queryByText(/records (dis)?agree/i)).toBeNull();
     const coherentCell = within(coherent!).getAllByRole('cell')[1]!;
     expect(within(coherentCell).getByText('Records disagree').className).toBe('badge warning');
-    expect(coherentCell.textContent).toBe('Long 60 shares @ $50.10Records disagreeNet cost $3,007.00');
+    expect(coherentCell.textContent).toBe('Long 60 shares @ $50.10 Records disagree Net cost $3,007.00');
     const brokenCells = within(broken!).getAllByRole('cell');
-    expect(brokenCells[1]!.textContent).toBe('Not availableRecords disagree');
+    expect(brokenCells[1]!.textContent).toBe('Not available Records disagree');
     expect(within(brokenCells[1]!).getByText('Records disagree').className).toBe('badge warning');
     expect(brokenCells.map((c) => c.textContent).slice(2)).toEqual(['Not available', 'Not available', 'Fidelity — Roth IRA']);
     expect(within(broken!).getByRole('link', { name: 'GHI' }).getAttribute('href')).toBe('/trades/trade-4');
@@ -269,6 +276,6 @@ describe('Trades table columns', () => {
     expect(within(flaggedCells[1]!).getByText('Records disagree').className).toBe('badge warning');
     expect(flaggedCells[4]!.textContent).toBe('Awaiting entry');
     const lostCells = within(lost!).getAllByRole('cell');
-    expect(lostCells.map((c) => c.textContent)).toEqual(['JKL', 'Not availableRecords disagree', 'Not available', 'Not available', 'Not available', 'Fidelity — Roth IRA']);
+    expect(lostCells.map((c) => c.textContent)).toEqual(['JKL', 'Not available Records disagree', 'Not available', 'Not available', 'Not available', 'Fidelity — Roth IRA']);
   });
 });
