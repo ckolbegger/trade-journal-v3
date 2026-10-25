@@ -1,5 +1,6 @@
 import { toWorkspaceLocal } from '../domain/time/index.ts';
-import { formatDecimal, formatMoney, parseDecimal, type Rational } from '../domain/values/index.ts';
+import type { PlannedTradeItem } from '../app/types.ts';
+import { formatDecimal, formatMoney, parseDecimal, Rational } from '../domain/values/index.ts';
 
 // Presentation only. Values may arrive structurally cloned (navigation state), so only their
 // numerator and denominator fields are read.
@@ -22,3 +23,16 @@ export const quantity = (value: Rational): string => formatDecimal(value, 6).rep
 
 // An instant as a Workspace-local date and time.
 export const localTime = (instant: string, timeZone: string): string => toWorkspaceLocal(instant, timeZone).replace('T', ' ');
+
+// What a Trade holds as one short text (plan section 2a); the Underlying is its own column, so it is not here.
+export const tradeSummary = (summary: PlannedTradeItem['summary']): string =>
+  `${summary.direction} ${quantity(summary.quantity)} shares @ ${money(summary.price)}`;
+
+// Signed cost of the open exposure, with thousands separators: a debit as Money, a credit (negative)
+// as its magnitude then "credit".
+export const netCost = (value: Rational): string => {
+  const credit = value.numerator < 0n;
+  const [whole = '', cents = ''] = money(credit ? Rational.of(-value.numerator, value.denominator) : value).split('.');
+  const text = `${whole.replace(/\B(?=(\d{3})+$)/g, ',')}.${cents}`;
+  return credit ? `${text} credit` : text;
+};
