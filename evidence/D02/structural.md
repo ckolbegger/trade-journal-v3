@@ -1510,3 +1510,12 @@ Commands:
 | Names and roles (`fillRows`, whole d2 and responsive suites) | pass | pass |
 
 Change: `fieldset.execution-row` is a borderless tinted panel (`--neutral-ground`) and a grid, two columns, three from 640 px; its legend is the small-caps muted label used by T2.43; the fourth field and the Remove button span the row. "Remove Execution N" is a text-style button (no border, transparent, underlined, error colour). "Add Execution" keeps `pill secondary`, which is already the outlined pill. T2.43's `fieldset.choices` and `label.chip` rules are unchanged.
+
+**ocr review of T2.44** (`ocr-review` step): commit `e0ca94b`, session `a6c27e09-4955-4e69-93cc-15dcc5a90e92`, model `gpt-6.1-sol`, 1 file reviewed (`app.css`), 0 comments. Raw output: `ocr/t2.44-e0ca94b.json`. The main session asked the reviewer to judge two points from the code:
+
+| Severity | Location | Claim | Verdict |
+| --- | --- | --- | --- |
+| low | `app.css:331-339` | The Remove button's error-red text extends red beyond the ui-contract's reserved uses (signed results, Stop/Target, `ui-contract.md:20`) | Doubtful; bug task T2.44-B1 (ink or muted text) |
+| low | `app.css:325` | `.field:nth-of-type(4)` places Economic Time by `div` position and breaks silently if a `div` child is added or reordered | Doubtful; bug task T2.44-B1 (a class on the Economic Time field) |
+
+**Complete cumulative run after T2.44** (`suite-runner`, 2026-10-25 07:12 EDT, on `e0ca94b`; the first attempt stopped at the usage limit and was rerun from the start): Unit 41 files / 399 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 77 passed (2.4m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.44-*.txt`.
