@@ -18,7 +18,7 @@ import {
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
 import type { Journal, NarrativeEntry, NarrativeItem } from '../../modules/journal/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
-import type { BrowseRecord, TradeRecord, TradeSummary } from '../../modules/trade-record/index.ts';
+import type { BrowseRecord, TradeRecord, TradeSummary as RecordSummary } from '../../modules/trade-record/index.ts';
 import type { Persistence, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 
 export interface TradeViewsDeps {
@@ -35,6 +35,15 @@ export interface TradeBrowseRequest<L extends 'Planned' | 'Open' = 'Planned' | '
 
 export const BROWSE_PAGE_SIZE = 50;
 
+// What a Trade holds, structured so the UI formats it as one short text (plan section 2a). D2 has only
+// Long Stock; later deliverables add variants without changing this one. Never stored.
+export type TradeSummary = {
+  readonly kind: 'Stock';
+  readonly direction: 'Long';
+  readonly quantity: Rational;
+  readonly price: Rational;
+};
+
 // One Planned Trade as the list presents it.
 export interface PlannedTradeItem {
   readonly tradeId: string;
@@ -46,6 +55,8 @@ export interface PlannedTradeItem {
   readonly oneR: Rational;
   readonly originalPlannedReward: Rational;
   readonly rewardRiskRatio: Rational;
+  // The planned quantity at the intended entry.
+  readonly summary: TradeSummary;
   // Recording an entry arrives in D2 (D1 A16).
   readonly entryReadiness: 'Awaiting entry';
   // Present only when stored and expected records disagree (AC-LIFE-003), so an agreeing item keeps
@@ -66,6 +77,10 @@ export interface OpenTradeItem {
   readonly plannedQuantity: Rational;
   // Quantity-weighted Open Lot price, fees excluded.
   readonly averageOpenCost: CalculationResult<Rational, 'NoOpenQuantity'>;
+  // The open quantity at the average open cost; absent with no open quantity.
+  readonly summary?: TradeSummary;
+  // Signed cost of the open exposure, opening fees included (Trade Analysis).
+  readonly netCost: DerivedTradeState['netCost'];
   readonly incurredFees: Rational;
   readonly entryStatus: 'Entering' | 'Resolved';
   // Active recorded Deviation occurrences.
@@ -79,7 +94,7 @@ export interface OpenTradeItem {
 // are unavailable rather than shown as numbers, and its records disagree.
 export interface IncoherentOpenTradeItem extends Omit<
   OpenTradeItem,
-  'openQuantity' | 'averageOpenCost' | 'incurredFees' | 'entryStatus' | 'integrity'
+  'openQuantity' | 'averageOpenCost' | 'summary' | 'netCost' | 'incurredFees' | 'entryStatus' | 'integrity'
 > {
   readonly integrity: 'Disagrees';
 }
@@ -89,7 +104,7 @@ export interface IncoherentOpenTradeItem extends Omit<
 // records disagree.
 export interface IncoherentPlannedTradeItem extends Omit<
   PlannedTradeItem,
-  'oneR' | 'originalPlannedReward' | 'rewardRiskRatio' | 'entryReadiness' | 'integrity'
+  'oneR' | 'originalPlannedReward' | 'rewardRiskRatio' | 'summary' | 'entryReadiness' | 'integrity'
 > {
   readonly integrity: 'Disagrees';
 }
@@ -138,6 +153,8 @@ export interface PlannedTradeDetail {
   // Stored Lifecycle State and its independently derived agreement, shown as separate concepts.
   readonly lifecycle: { readonly stored: LifecycleState; readonly agreement: LifecycleAgreement };
   readonly baseline: PlanBaseline;
+  // The planned quantity at the intended entry (Planned form) or the open Position (Open form).
+  readonly summary?: TradeSummary;
   readonly labels: { readonly strategy: string; readonly account: string; readonly institution: string };
   readonly journal: readonly NarrativeEntry[];
 }
@@ -149,6 +166,7 @@ export interface OpenTradeDetail extends Omit<PlannedTradeDetail, 'journal'> {
   // Signed net quantity and Open Lots per Instrument.
   readonly positions: readonly InstrumentPosition[];
   readonly fees: DerivedTradeState['fees'];
+  readonly netCost: DerivedTradeState['netCost'];
   // Position Changes, and the Executions within each, in Fact Order.
   readonly positionChanges: readonly PositionChangeFact[];
   readonly entryStatus: 'Entering' | 'Resolved';
@@ -195,7 +213,25 @@ function withoutKind(item: Extract<NarrativeItem, { kind: 'Entry' }>): Narrative
 
 type Labels = { readonly strategy: string; readonly account: string; readonly institution: string };
 
-function plannedItem(summary: TradeSummary, derived: DerivedTradeState, labels: Labels): PlannedTradeItem {
+// The Plan's total quantity at its first Planned Leg's intended entry (D2 plans are one Long Stock leg).
+function plannedSummary(analysis: TradeAnalysisRecord): TradeSummary {
+  return {
+    kind: 'Stock',
+    direction: 'Long',
+    quantity: sum(analysis.plan.legs.map((l) => decimal(l.quantity))),
+    price: decimal(analysis.plan.legs[0]!.intendedEntry),
+  };
+}
+
+// The open quantity at the quantity-weighted Open Lot price, fees excluded; none without open quantity.
+function openSummary(derived: DerivedTradeState): TradeSummary | undefined {
+  const lots = derived.positions.flatMap((p) => p.openLots);
+  const quantity = sum(lots.map((l) => l.quantity));
+  if (quantity.compare(Rational.of(0n)) === 0) return undefined;
+  return { kind: 'Stock', direction: 'Long', quantity, price: sum(lots.map((l) => l.quantity.mul(l.price))).div(quantity) };
+}
+
+function plannedItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels): PlannedTradeItem {
   const { baseline } = derived;
   return {
     tradeId: summary.tradeId,
@@ -205,12 +241,13 @@ function plannedItem(summary: TradeSummary, derived: DerivedTradeState, labels: 
     oneR: baseline.oneR,
     originalPlannedReward: baseline.originalPlannedReward,
     rewardRiskRatio: baseline.rewardRiskRatio,
+    summary: plannedSummary(analysis),
     entryReadiness: 'Awaiting entry',
     ...(derived.findings.length > 0 && { integrity: 'Disagrees' as const }),
   };
 }
 
-function incoherentPlannedItem(summary: TradeSummary, labels: Labels): IncoherentPlannedTradeItem {
+function incoherentPlannedItem(summary: RecordSummary, labels: Labels): IncoherentPlannedTradeItem {
   return { tradeId: summary.tradeId, underlying: summary.underlying, ...labels, planTime: summary.planTime, integrity: 'Disagrees' };
 }
 
@@ -229,7 +266,9 @@ const activeDeviations = (analysis: TradeAnalysisRecord) =>
 // Entering until the Entry Resolution Point, then Resolved (D2 A23).
 const entryStatusOf = (derived: DerivedTradeState) => (derived.entryResolution.kind === 'Resolved' ? 'Resolved' : 'Entering');
 
-function openItem(summary: TradeSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels): OpenTradeItem {
+const optional = <K extends string, V>(key: K, value: V | undefined) => (value === undefined ? {} : ({ [key]: value } as Record<K, V>));
+
+function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels): OpenTradeItem {
   const lots = derived.positions.flatMap((p) => p.openLots);
   const openQuantity = sum(lots.map((l) => l.quantity));
   return {
@@ -242,6 +281,8 @@ function openItem(summary: TradeSummary, analysis: TradeAnalysisRecord, derived:
       openQuantity.compare(Rational.of(0n)) === 0
         ? { kind: 'NotApplicable', reason: 'NoOpenQuantity' }
         : { kind: 'Value', value: sum(lots.map((l) => l.quantity.mul(l.price))).div(openQuantity) },
+    ...optional('summary', openSummary(derived)),
+    netCost: derived.netCost,
     incurredFees: derived.fees.incurredOpening,
     entryStatus: entryStatusOf(derived),
     deviationCount: activeDeviations(analysis),
@@ -250,7 +291,7 @@ function openItem(summary: TradeSummary, analysis: TradeAnalysisRecord, derived:
   };
 }
 
-function incoherentItem(summary: TradeSummary, analysis: TradeAnalysisRecord, labels: Labels): IncoherentOpenTradeItem {
+function incoherentItem(summary: RecordSummary, analysis: TradeAnalysisRecord, labels: Labels): IncoherentOpenTradeItem {
   return {
     tradeId: summary.tradeId,
     underlying: summary.underlying,
@@ -281,6 +322,8 @@ function openDetail(
   return {
     ...planned,
     positions: derived.positions,
+    ...optional('summary', openSummary(derived)),
+    netCost: derived.netCost,
     fees: derived.fees,
     positionChanges: inFactOrder(analysis, derived),
     entryStatus: entryStatusOf(derived),
@@ -333,7 +376,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const summary = await deps.tradeRecord.getRecord({ tradeId: request.tradeId, projection: 'Summary' });
         const record = await deps.tradeRecord.getRecord({ tradeId: request.tradeId, projection: 'AnalysisInput' });
         if (summary.kind === 'NotFound' || record.kind === 'NotFound') return { notFound: true as const };
-        const s = (summary as { projection: TradeSummary }).projection;
+        const s = (summary as { projection: RecordSummary }).projection;
         const analysis = (record as { projection: TradeAnalysisRecord }).projection;
         const labels = await deps.catalog.resolve([
           { name: 'account', kind: 'Account', id: s.accountId, mode: 'DisplayOnly' },
@@ -383,7 +426,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         // narrative holds Entries only, without the item kind; any other Trade gets the Open form.
         const view: TradeDetailView =
           analysis.storedLifecycle === 'Planned' && derived.expectedLifecycle === 'Planned'
-            ? { ...planned, journal: narrative.items.flatMap((item) => (item.kind === 'Entry' ? [withoutKind(item)] : [])) }
+            ? { ...planned, summary: plannedSummary(analysis), journal: narrative.items.flatMap((item) => (item.kind === 'Entry' ? [withoutKind(item)] : [])) }
             : openDetail(planned, analysis, derived, narrative.items);
         return { binding, view };
       });
@@ -410,7 +453,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           })),
         );
         const label = (id: string) => (labels.kind === 'Resolved' ? labels.resolved[id] : undefined);
-        const labelsOf = (summary: TradeSummary) => ({
+        const labelsOf = (summary: RecordSummary) => ({
           strategy: label(summary.strategyId)?.label ?? '',
           account: label(summary.accountId)?.label ?? '',
           institution: label(summary.accountId)?.institution?.label ?? '',
@@ -424,7 +467,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
               : incoherentItem(summary, analysis, labelsOf(summary));
           }
           // A Planned item's Baseline needs a replay; facts that cannot be replayed are surfaced, never repaired.
-          return derived.kind === 'Derived' ? plannedItem(summary, derived, labelsOf(summary)) : incoherentPlannedItem(summary, labelsOf(summary));
+          return derived.kind === 'Derived' ? plannedItem(summary, analysis, derived, labelsOf(summary)) : incoherentPlannedItem(summary, labelsOf(summary));
         }) as TradeBrowseItem<L>[];
         return { view: { items, ...(page.nextCursor ? { nextCursor: page.nextCursor } : {}) }, binding: page.binding };
       });

@@ -62,6 +62,7 @@ export function openDetailOf(positionChanges: readonly PositionChangeFact[], opt
     lifecycle: { stored: record.storedLifecycle, agreement: derived.agreement },
     baseline: derived.baseline,
     positions: derived.positions,
+    netCost: derived.netCost,
     fees: derived.fees,
     positionChanges,
     entryStatus: derived.entryResolution.kind === 'Resolved' ? 'Resolved' : 'Entering',

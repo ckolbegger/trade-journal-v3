@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import type { IDBFactory } from 'fake-indexeddb';
 import { describe, expect, it } from 'vitest';
 import { dumpAll, testStack } from '../../../tests/support/stack.ts';
+import { compareSnapshot } from '../../../tools/fixtures/snapshot-compare.ts';
 import { loadDump, viewsOf, type WorkspaceDump } from '../../../tools/fixtures/workspace-fixture.ts';
 import { createTradeViews } from '../trade-views/index.ts';
 import { createWorkspace, type MigrationStageHooks } from './index.ts';
@@ -94,7 +95,8 @@ describe('migration from schema 1', () => {
   it('should leave the Planned list and every Trade Detail equal, apart from opaque revision tokens, to the v1 views', async () => {
     const { workspace, views } = await v1Stack();
     expect((await workspace.initialize({})).kind).toBe('Opened');
-    expect(await views()).toEqual(V1_VIEWS);
+    // Field by field over the snapshot's fields: the fields T2.58 adds (summary, netCost) are allowed.
+    expect(compareSnapshot(await views(), V1_VIEWS)).toEqual([]);
   });
 
   it('should return Opened existing with no migration on the next launch', async () => {

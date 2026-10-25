@@ -2,6 +2,7 @@
 import type { IDBFactory } from 'fake-indexeddb';
 import { describe, expect, it } from 'vitest';
 import type { Application } from '../../../src/app/compose.ts';
+import { compareSnapshot } from '../../../tools/fixtures/snapshot-compare.ts';
 import { viewsOf } from '../../../tools/fixtures/workspace-fixture.ts';
 import { currentDatabase, dumpAll, launch, rawUpdate, restart, V1_DATABASE, V1_VIEWS, v1Device, type Device } from './support.ts';
 
@@ -70,7 +71,7 @@ describe('I2.1 migrate the v1 fixture', () => {
     const again = await restart(app, d);
     const status = await again.Workspace.getStatus();
     expect(status.kind === 'Ready' && status.schemaVersion).toBe(2);
-    expect(await viewsOf(again, 1)).toEqual(V1_VIEWS);
+    expect(compareSnapshot(await viewsOf(again, 1), V1_VIEWS)).toEqual([]);
     // A second launch seeds nothing more.
     const second = await again.Workspace.initialize({});
     expect(second.kind === 'Opened' && [second.receipt.migration, second.receipt.seeds.journal.additions]).toEqual([undefined, []]);
@@ -197,7 +198,7 @@ describe('I2.3 interrupted migration', () => {
     expect(opened.kind === 'Opened' && opened.receipt.migration).toBeUndefined();
     expect(Object.keys(await dumpAll(d.factory)).sort()).toEqual(['tj-root', flipped]);
     expect(await pointerRecords(d.factory)).toEqual(expect.arrayContaining([{ key: 'retired', databaseNames: [] }]));
-    expect(await viewsOf(app, 1)).toEqual(V1_VIEWS);
+    expect(compareSnapshot(await viewsOf(app, 1), V1_VIEWS)).toEqual([]);
   });
 });
 

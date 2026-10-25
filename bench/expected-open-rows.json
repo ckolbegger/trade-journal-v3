@@ -2437,6 +2437,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "150487",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "3611883",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -2465,6 +2484,25 @@
         "value": {
           "numerator": "148241",
           "denominator": "525"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "84",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "148241",
+          "denominator": "525"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2372051",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -2497,6 +2535,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "131797",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "4481293",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -2525,6 +2582,25 @@
         "value": {
           "numerator": "12241",
           "denominator": "50"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "72",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "12241",
+          "denominator": "50"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1762769",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -2557,6 +2633,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "113031",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "791347",
+          "denominator": "50"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -2585,6 +2680,25 @@
         "value": {
           "numerator": "51821",
           "denominator": "250"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "51821",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "3524023",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -2617,6 +2731,25 @@
           "denominator": "72"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "144",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "13573",
+          "denominator": "72"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "135743",
+          "denominator": "5"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -2645,6 +2778,25 @@
         "value": {
           "numerator": "8487",
           "denominator": "50"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "8487",
+          "denominator": "50"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "59409",
+          "denominator": "5"
         }
       },
       "incurredFees": {
@@ -2677,6 +2829,25 @@
           "denominator": "2040"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "102",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "308003",
+          "denominator": "2040"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "154021",
+          "denominator": "10"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -2705,6 +2876,25 @@
         "value": {
           "numerator": "33051",
           "denominator": "250"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "33051",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "396677",
+          "denominator": "25"
         }
       },
       "incurredFees": {
@@ -2737,6 +2927,25 @@
           "denominator": "250"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "28369",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "794527",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -2764,6 +2973,25 @@
         "kind": "Value",
         "value": {
           "numerator": "9487",
+          "denominator": "100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "204",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "9487",
+          "denominator": "100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1935413",
           "denominator": "100"
         }
       },
@@ -2797,6 +3025,25 @@
           "denominator": "125"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "9514",
+          "denominator": "125"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "913539",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -2825,6 +3072,25 @@
         "value": {
           "numerator": "80267",
           "denominator": "1400"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "42",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "80267",
+          "denominator": "1400"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "60249",
+          "denominator": "25"
         }
       },
       "incurredFees": {
@@ -2857,6 +3123,25 @@
           "denominator": "250"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "9641",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "655783",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -2885,6 +3170,25 @@
         "value": {
           "numerator": "39979",
           "denominator": "100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "39979",
+          "denominator": "100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "959509",
+          "denominator": "20"
         }
       },
       "incurredFees": {
@@ -2917,6 +3221,25 @@
           "denominator": "2100"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "84",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "800167",
+          "denominator": "2100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "800232",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -2945,6 +3268,25 @@
         "value": {
           "numerator": "181127",
           "denominator": "500"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "181127",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "6158513",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -2977,6 +3319,25 @@
           "denominator": "800"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "72",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "274787",
+          "denominator": "800"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2473343",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -3005,6 +3366,25 @@
         "value": {
           "numerator": "32471",
           "denominator": "100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "32471",
+          "denominator": "100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "227297",
+          "denominator": "10"
         }
       },
       "incurredFees": {
@@ -3037,6 +3417,25 @@
           "denominator": "125"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "38244",
+          "denominator": "125"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "5201379",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -3065,6 +3464,25 @@
         "value": {
           "numerator": "4137131",
           "denominator": "14400"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "144",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "4137131",
+          "denominator": "14400"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "4137391",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -3097,6 +3515,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "134307",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1880493",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -3125,6 +3562,25 @@
         "value": {
           "numerator": "6246",
           "denominator": "25"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "102",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "6246",
+          "denominator": "25"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2548433",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -3157,6 +3613,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "115541",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2773179",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -3185,6 +3660,25 @@
         "value": {
           "numerator": "26538",
           "denominator": "125"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "26538",
+          "denominator": "125"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1486323",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -3217,6 +3711,25 @@
           "denominator": "5100"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "204",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "987023",
+          "denominator": "5100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "3948287",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -3245,6 +3758,25 @@
         "value": {
           "numerator": "4369",
           "denominator": "25"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "4369",
+          "denominator": "25"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "419437",
+          "denominator": "20"
         }
       },
       "incurredFees": {
@@ -3277,6 +3809,25 @@
           "denominator": "600"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "42",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "93601",
+          "denominator": "600"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "655467",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -3305,6 +3856,25 @@
         "value": {
           "numerator": "17153",
           "denominator": "125"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "17153",
+          "denominator": "125"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2333003",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -3337,6 +3907,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "59227",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "355427",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -3364,6 +3953,25 @@
         "kind": "Value",
         "value": {
           "numerator": "2492",
+          "denominator": "25"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "84",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "2492",
+          "denominator": "25"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "209328",
           "denominator": "25"
         }
       },
@@ -3397,6 +4005,25 @@
           "denominator": "125"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "10131",
+          "denominator": "125"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1378011",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -3425,6 +4052,25 @@
         "value": {
           "numerator": "49883",
           "denominator": "800"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "72",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "49883",
+          "denominator": "800"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "449207",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -3457,6 +4103,25 @@
           "denominator": "125"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "5448",
+          "denominator": "125"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "305283",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -3485,6 +4150,25 @@
         "value": {
           "numerator": "2481",
           "denominator": "100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "2481",
+          "denominator": "100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "84367",
+          "denominator": "20"
         }
       },
       "incurredFees": {
@@ -3517,6 +4201,25 @@
           "denominator": "3600"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "144",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "1389787",
+          "denominator": "3600"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "5559343",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -3545,6 +4248,25 @@
         "value": {
           "numerator": "183637",
           "denominator": "500"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "183637",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2571113",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -3577,6 +4299,25 @@
           "denominator": "3400"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "102",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "1184913",
+          "denominator": "3400"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1777467",
+          "denominator": "50"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -3605,6 +4346,25 @@
         "value": {
           "numerator": "32973",
           "denominator": "100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "32973",
+          "denominator": "100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "158273",
+          "denominator": "4"
         }
       },
       "incurredFees": {
@@ -3637,6 +4397,25 @@
           "denominator": "250"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "77743",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "544266",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -3665,6 +4444,25 @@
         "value": {
           "numerator": "1490189",
           "denominator": "5100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "204",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "1490189",
+          "denominator": "5100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "5960951",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -3697,6 +4495,25 @@
           "denominator": "20"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "5471",
+          "denominator": "20"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "164143",
+          "denominator": "5"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -3725,6 +4542,25 @@
         "value": {
           "numerator": "12743",
           "denominator": "50"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "42",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "12743",
+          "denominator": "50"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "267603",
+          "denominator": "25"
         }
       },
       "incurredFees": {
@@ -3757,6 +4593,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "118051",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "4013929",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -3785,6 +4640,25 @@
         "value": {
           "numerator": "54331",
           "denominator": "250"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "54331",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "652037",
+          "denominator": "25"
         }
       },
       "incurredFees": {
@@ -3817,6 +4691,25 @@
           "denominator": "2100"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "84",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "416963",
+          "denominator": "2100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1668047",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -3845,6 +4738,25 @@
         "value": {
           "numerator": "8989",
           "denominator": "50"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "8989",
+          "denominator": "50"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "122253",
+          "denominator": "4"
         }
       },
       "incurredFees": {
@@ -3877,6 +4789,25 @@
           "denominator": "7200"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "72",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "1159357",
+          "denominator": "7200"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "289888",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -3905,6 +4836,25 @@
         "value": {
           "numerator": "35561",
           "denominator": "250"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "35561",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "995903",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -3937,6 +4887,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "61737",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2099253",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -3965,6 +4934,25 @@
         "value": {
           "numerator": "1047",
           "denominator": "10"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "144",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "1047",
+          "denominator": "10"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "301549",
+          "denominator": "20"
         }
       },
       "incurredFees": {
@@ -3997,6 +4985,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "42971",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "300927",
+          "denominator": "50"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -4025,6 +5032,25 @@
         "value": {
           "numerator": "228931",
           "denominator": "3400"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "102",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "228931",
+          "denominator": "3400"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "171747",
+          "denominator": "25"
         }
       },
       "incurredFees": {
@@ -4057,6 +5083,25 @@
           "denominator": "250"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "12151",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "145877",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -4085,6 +5130,25 @@
         "value": {
           "numerator": "2983",
           "denominator": "100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "2983",
+          "denominator": "100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "20881",
+          "denominator": "10"
         }
       },
       "incurredFees": {
@@ -4117,6 +5181,25 @@
           "denominator": "5100"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "204",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "1994467",
+          "denominator": "5100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "7978063",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -4145,6 +5228,25 @@
         "value": {
           "numerator": "186147",
           "denominator": "500"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "186147",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1116947",
+          "denominator": "25"
         }
       },
       "incurredFees": {
@@ -4177,6 +5279,25 @@
           "denominator": "1400"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "42",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "494933",
+          "denominator": "1400"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "742497",
+          "denominator": "50"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -4205,6 +5326,25 @@
         "value": {
           "numerator": "1339",
           "denominator": "4"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "1339",
+          "denominator": "4"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1138163",
+          "denominator": "20"
         }
       },
       "incurredFees": {
@@ -4237,6 +5377,25 @@
           "denominator": "125"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "39499",
+          "denominator": "125"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "3792099",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -4265,6 +5424,25 @@
         "value": {
           "numerator": "624149",
           "denominator": "2100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "84",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "624149",
+          "denominator": "2100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2496791",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -4297,6 +5475,25 @@
           "denominator": "250"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "69611",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "4733743",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -4325,6 +5522,25 @@
         "value": {
           "numerator": "6497",
           "denominator": "25"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "72",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "6497",
+          "denominator": "25"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1871201",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -4357,6 +5573,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "120561",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "844057",
+          "denominator": "50"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -4385,6 +5620,25 @@
         "value": {
           "numerator": "27793",
           "denominator": "125"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "27793",
+          "denominator": "125"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "3780043",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -4417,6 +5671,25 @@
           "denominator": "1800"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "144",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "366433",
+          "denominator": "1800"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "732931",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -4445,6 +5718,25 @@
         "value": {
           "numerator": "924",
           "denominator": "5"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "924",
+          "denominator": "5"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "12936",
+          "denominator": "1"
         }
       },
       "incurredFees": {
@@ -4477,6 +5769,25 @@
           "denominator": "10200"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "102",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "1693627",
+          "denominator": "10200"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "846911",
+          "denominator": "50"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -4505,6 +5816,25 @@
         "value": {
           "numerator": "18408",
           "denominator": "125"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "18408",
+          "denominator": "125"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "441857",
+          "denominator": "25"
         }
       },
       "incurredFees": {
@@ -4537,6 +5867,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "64247",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "899653",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -4565,6 +5914,25 @@
         "value": {
           "numerator": "2743",
           "denominator": "25"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "204",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "2743",
+          "denominator": "25"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2238353",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -4597,6 +5965,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "45481",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1091739",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -4625,6 +6012,25 @@
         "value": {
           "numerator": "2528",
           "denominator": "35"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "42",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "2528",
+          "denominator": "35"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "60711",
+          "denominator": "20"
         }
       },
       "incurredFees": {
@@ -4657,6 +6063,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "26791",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "911089",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -4684,6 +6109,25 @@
         "kind": "Value",
         "value": {
           "numerator": "697",
+          "denominator": "20"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "697",
+          "denominator": "20"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "83653",
           "denominator": "20"
         }
       },
@@ -4717,6 +6161,25 @@
           "denominator": "2100"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "84",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "831793",
+          "denominator": "2100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "831858",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -4745,6 +6208,25 @@
         "value": {
           "numerator": "188657",
           "denominator": "500"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "188657",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "6414533",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -4777,6 +6259,25 @@
           "denominator": "160"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "72",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "57367",
+          "denominator": "160"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "103271",
+          "denominator": "4"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -4805,6 +6306,25 @@
         "value": {
           "numerator": "33977",
           "denominator": "100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "33977",
+          "denominator": "100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "237839",
+          "denominator": "10"
         }
       },
       "incurredFees": {
@@ -4837,6 +6357,25 @@
           "denominator": "250"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "80253",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "5457399",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -4865,6 +6404,25 @@
         "value": {
           "numerator": "544021",
           "denominator": "1800"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "144",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "544021",
+          "denominator": "1800"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1088107",
+          "denominator": "25"
         }
       },
       "incurredFees": {
@@ -4897,6 +6455,25 @@
           "denominator": "125"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "35433",
+          "denominator": "125"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1984443",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -4924,6 +6501,25 @@
         "kind": "Value",
         "value": {
           "numerator": "26469",
+          "denominator": "100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "102",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "26469",
+          "denominator": "100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2699903",
           "denominator": "100"
         }
       },
@@ -4957,6 +6553,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "122987",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2951883",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -4985,6 +6600,25 @@
         "value": {
           "numerator": "56841",
           "denominator": "250"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "56841",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1591743",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -5017,6 +6651,25 @@
           "denominator": "5100"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "204",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "1063829",
+          "denominator": "5100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "4255511",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -5045,6 +6698,25 @@
         "value": {
           "numerator": "9491",
           "denominator": "50"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "9491",
+          "denominator": "50"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "455581",
+          "denominator": "20"
         }
       },
       "incurredFees": {
@@ -5077,6 +6749,25 @@
           "denominator": "600"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "42",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "102637",
+          "denominator": "600"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "718719",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -5105,6 +6796,25 @@
         "value": {
           "numerator": "38071",
           "denominator": "250"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "38071",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2589023",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -5137,6 +6847,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "66757",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "400607",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -5165,6 +6894,25 @@
         "value": {
           "numerator": "5737",
           "denominator": "50"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "84",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "5737",
+          "denominator": "50"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "240954",
+          "denominator": "25"
         }
       },
       "incurredFees": {
@@ -5197,6 +6945,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "47991",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1631889",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -5225,6 +6992,25 @@
         "value": {
           "numerator": "61763",
           "denominator": "800"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "72",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "61763",
+          "denominator": "800"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "556127",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -5257,6 +7043,25 @@
           "denominator": "250"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "14619",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "409527",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -5285,6 +7090,25 @@
         "value": {
           "numerator": "3987",
           "denominator": "100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "3987",
+          "denominator": "100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "135571",
+          "denominator": "20"
         }
       },
       "incurredFees": {
@@ -5317,6 +7141,25 @@
           "denominator": "3600"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "144",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "76003",
+          "denominator": "3600"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "304207",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -5345,6 +7188,25 @@
         "value": {
           "numerator": "191167",
           "denominator": "500"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "191167",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2676533",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -5377,6 +7239,25 @@
           "denominator": "3400"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "102",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "1236117",
+          "denominator": "3400"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1854273",
+          "denominator": "50"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -5405,6 +7286,25 @@
         "value": {
           "numerator": "34479",
           "denominator": "100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "34479",
+          "denominator": "100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "827509",
+          "denominator": "20"
         }
       },
       "incurredFees": {
@@ -5437,6 +7337,25 @@
           "denominator": "125"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "40754",
+          "denominator": "125"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "570621",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -5465,6 +7384,25 @@
         "value": {
           "numerator": "313399",
           "denominator": "1020"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "204",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "313399",
+          "denominator": "1020"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "250727",
+          "denominator": "4"
         }
       },
       "incurredFees": {
@@ -5497,6 +7435,25 @@
           "denominator": "250"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "72121",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "865517",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -5525,6 +7482,25 @@
         "value": {
           "numerator": "26971",
           "denominator": "100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "42",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "26971",
+          "denominator": "100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "566391",
+          "denominator": "50"
         }
       },
       "incurredFees": {
@@ -5557,6 +7533,25 @@
           "denominator": "125"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "31369",
+          "denominator": "125"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "4266379",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -5585,6 +7580,25 @@
         "value": {
           "numerator": "2323",
           "denominator": "10"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "2323",
+          "denominator": "10"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "139393",
+          "denominator": "5"
         }
       },
       "incurredFees": {
@@ -5617,6 +7631,25 @@
           "denominator": "2100"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "84",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "448589",
+          "denominator": "2100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1794551",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -5645,6 +7678,25 @@
         "value": {
           "numerator": "4871",
           "denominator": "25"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "4871",
+          "denominator": "25"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "662469",
+          "denominator": "20"
         }
       },
       "incurredFees": {
@@ -5677,6 +7729,25 @@
           "denominator": "7200"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "72",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "1267789",
+          "denominator": "7200"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "316996",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -5705,6 +7776,25 @@
         "value": {
           "numerator": "19663",
           "denominator": "125"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "19663",
+          "denominator": "125"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1101323",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -5737,6 +7827,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "69267",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2355273",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -5765,6 +7874,25 @@
         "value": {
           "numerator": "2994",
           "denominator": "25"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "144",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "2994",
+          "denominator": "25"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1724609",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -5797,6 +7925,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "50501",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "353637",
+          "denominator": "50"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -5825,6 +7972,25 @@
         "value": {
           "numerator": "279561",
           "denominator": "3400"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "102",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "279561",
+          "denominator": "3400"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "419439",
+          "denominator": "50"
         }
       },
       "incurredFees": {
@@ -5857,6 +8023,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "31727",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "190427",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -5885,6 +8070,25 @@
         "value": {
           "numerator": "1117",
           "denominator": "25"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "1117",
+          "denominator": "25"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "15638",
+          "denominator": "5"
         }
       },
       "incurredFees": {
@@ -5917,6 +8121,25 @@
           "denominator": "20400"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "204",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "531391",
+          "denominator": "20400"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "265793",
+          "denominator": "50"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -5945,6 +8168,25 @@
         "value": {
           "numerator": "193677",
           "denominator": "500"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "193677",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1162127",
+          "denominator": "25"
         }
       },
       "incurredFees": {
@@ -5977,6 +8219,25 @@
           "denominator": "1400"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "42",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "516017",
+          "denominator": "1400"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "774123",
+          "denominator": "50"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -6005,6 +8266,25 @@
         "value": {
           "numerator": "34981",
           "denominator": "100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "34981",
+          "denominator": "100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1189367",
+          "denominator": "20"
         }
       },
       "incurredFees": {
@@ -6037,6 +8317,25 @@
           "denominator": "250"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "82763",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "3972819",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -6065,6 +8364,25 @@
         "value": {
           "numerator": "26231",
           "denominator": "84"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "84",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "26231",
+          "denominator": "84"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "524659",
+          "denominator": "20"
         }
       },
       "incurredFees": {
@@ -6097,6 +8415,25 @@
           "denominator": "125"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "36688",
+          "denominator": "125"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "4989763",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -6124,6 +8461,25 @@
         "kind": "Value",
         "value": {
           "numerator": "27473",
+          "denominator": "100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "72",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "27473",
+          "denominator": "100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1978121",
           "denominator": "100"
         }
       },
@@ -6157,6 +8513,25 @@
           "denominator": "250"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "63993",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "448016",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -6185,6 +8560,25 @@
         "value": {
           "numerator": "118597",
           "denominator": "500"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "118597",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "4032493",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -6217,6 +8611,25 @@
           "denominator": "14400"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "144",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "3147131",
+          "denominator": "14400"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "3147391",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -6245,6 +8658,25 @@
         "value": {
           "numerator": "9993",
           "denominator": "50"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "9993",
+          "denominator": "50"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "69951",
+          "denominator": "5"
         }
       },
       "incurredFees": {
@@ -6277,6 +8709,25 @@
           "denominator": "10200"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "102",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "1847239",
+          "denominator": "10200"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "923717",
+          "denominator": "50"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -6305,6 +8756,25 @@
         "value": {
           "numerator": "40581",
           "denominator": "250"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "40581",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "487037",
+          "denominator": "25"
         }
       },
       "incurredFees": {
@@ -6337,6 +8807,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "71777",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1005073",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -6365,6 +8854,25 @@
         "value": {
           "numerator": "6239",
           "denominator": "50"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "204",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "6239",
+          "denominator": "50"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2545577",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -6397,6 +8905,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "53011",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1272459",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -6425,6 +8952,25 @@
         "value": {
           "numerator": "122141",
           "denominator": "1400"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "42",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "122141",
+          "denominator": "1400"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "183309",
+          "denominator": "50"
         }
       },
       "incurredFees": {
@@ -6457,6 +9003,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "34237",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1164253",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -6485,6 +9050,25 @@
         "value": {
           "numerator": "497",
           "denominator": "10"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "497",
+          "denominator": "10"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "119293",
+          "denominator": "20"
         }
       },
       "incurredFees": {
@@ -6517,6 +9101,25 @@
           "denominator": "1050"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "84",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "32489",
+          "denominator": "1050"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "65043",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -6545,6 +9148,25 @@
         "value": {
           "numerator": "98083",
           "denominator": "250"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "98083",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "6669839",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -6577,6 +9199,25 @@
           "denominator": "800"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "72",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "298883",
+          "denominator": "800"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2690207",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -6605,6 +9246,25 @@
         "value": {
           "numerator": "35483",
           "denominator": "100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "35483",
+          "denominator": "100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "248381",
+          "denominator": "10"
         }
       },
       "incurredFees": {
@@ -6637,6 +9297,25 @@
           "denominator": "125"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "42009",
+          "denominator": "125"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "5713419",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -6665,6 +9344,25 @@
         "value": {
           "numerator": "571129",
           "denominator": "1800"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "144",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "571129",
+          "denominator": "1800"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1142323",
+          "denominator": "25"
         }
       },
       "incurredFees": {
@@ -6697,6 +9395,25 @@
           "denominator": "250"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "74631",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2089863",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -6725,6 +9442,25 @@
         "value": {
           "numerator": "1119",
           "denominator": "4"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "102",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "1119",
+          "denominator": "4"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "570703",
+          "denominator": "20"
         }
       },
       "incurredFees": {
@@ -6757,6 +9493,25 @@
           "denominator": "125"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "32624",
+          "denominator": "125"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "3132099",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -6785,6 +9540,25 @@
         "value": {
           "numerator": "121107",
           "denominator": "500"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "121107",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1695693",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -6817,6 +9591,25 @@
           "denominator": "1275"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "204",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "284891",
+          "denominator": "1275"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "4558451",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -6845,6 +9638,25 @@
         "value": {
           "numerator": "5122",
           "denominator": "25"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "5122",
+          "denominator": "25"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "98345",
+          "denominator": "4"
         }
       },
       "incurredFees": {
@@ -6877,6 +9689,25 @@
           "denominator": "600"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "42",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "111673",
+          "denominator": "600"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "781971",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -6905,6 +9736,25 @@
         "value": {
           "numerator": "20918",
           "denominator": "125"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "20918",
+          "denominator": "125"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2845043",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -6937,6 +9787,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "74287",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "445787",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -6964,6 +9833,25 @@
         "kind": "Value",
         "value": {
           "numerator": "649",
+          "denominator": "5"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "84",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "649",
+          "denominator": "5"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "54516",
           "denominator": "5"
         }
       },
@@ -6997,6 +9885,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "55521",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1887909",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -7025,6 +9932,25 @@
         "value": {
           "numerator": "73811",
           "denominator": "800"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "72",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "73811",
+          "denominator": "800"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "664559",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -7057,6 +9983,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "36747",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "514653",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -7085,6 +10030,25 @@
         "value": {
           "numerator": "1368",
           "denominator": "25"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "1368",
+          "denominator": "25"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "186061",
+          "denominator": "20"
         }
       },
       "incurredFees": {
@@ -7117,6 +10081,25 @@
           "denominator": "3600"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "144",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "129463",
+          "denominator": "3600"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "518047",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -7145,6 +10128,25 @@
         "value": {
           "numerator": "198613",
           "denominator": "500"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "198613",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2780777",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -7177,6 +10179,25 @@
           "denominator": "3400"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "102",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "1287181",
+          "denominator": "3400"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1930869",
+          "denominator": "50"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -7204,6 +10225,25 @@
         "kind": "Value",
         "value": {
           "numerator": "7197",
+          "denominator": "20"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "7197",
+          "denominator": "20"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "863653",
           "denominator": "20"
         }
       },
@@ -7237,6 +10277,25 @@
           "denominator": "250"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "85273",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "596976",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -7265,6 +10324,25 @@
         "value": {
           "numerator": "1643801",
           "denominator": "5100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "204",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "1643801",
+          "denominator": "5100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "6575399",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -7297,6 +10375,25 @@
           "denominator": "125"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "37943",
+          "denominator": "125"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "910697",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -7325,6 +10422,25 @@
         "value": {
           "numerator": "28477",
           "denominator": "100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "42",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "28477",
+          "denominator": "100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "598017",
+          "denominator": "50"
         }
       },
       "incurredFees": {
@@ -7357,6 +10473,25 @@
           "denominator": "250"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "66503",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "4522399",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -7385,6 +10520,25 @@
         "value": {
           "numerator": "123617",
           "denominator": "500"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "123617",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "741767",
+          "denominator": "25"
         }
       },
       "incurredFees": {
@@ -7417,6 +10571,25 @@
           "denominator": "1050"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "84",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "239887",
+          "denominator": "1050"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1919291",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -7445,6 +10618,25 @@
         "value": {
           "numerator": "20969",
           "denominator": "100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "20969",
+          "denominator": "100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "712959",
+          "denominator": "20"
         }
       },
       "incurredFees": {
@@ -7477,6 +10669,25 @@
           "denominator": "450"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "72",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "85939",
+          "denominator": "450"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1375219",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -7505,6 +10716,25 @@
         "value": {
           "numerator": "43091",
           "denominator": "250"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "43091",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1206743",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -7537,6 +10767,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "76797",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2611293",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -7565,6 +10814,25 @@
         "value": {
           "numerator": "6741",
           "denominator": "50"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "144",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "6741",
+          "denominator": "50"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1941473",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -7597,6 +10865,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "58031",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "406347",
+          "denominator": "50"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -7625,6 +10912,25 @@
         "value": {
           "numerator": "66153",
           "denominator": "680"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "102",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "66153",
+          "denominator": "680"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "99249",
+          "denominator": "10"
         }
       },
       "incurredFees": {
@@ -7657,6 +10963,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "39257",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "235607",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -7685,6 +11010,25 @@
         "value": {
           "numerator": "2987",
           "denominator": "50"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "2987",
+          "denominator": "50"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "20909",
+          "denominator": "5"
         }
       },
       "incurredFees": {
@@ -7717,6 +11061,25 @@
           "denominator": "1275"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "204",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "52252",
+          "denominator": "1275"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "836227",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -7745,6 +11108,25 @@
         "value": {
           "numerator": "5551",
           "denominator": "250"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "5551",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "66677",
+          "denominator": "25"
         }
       },
       "incurredFees": {
@@ -7777,6 +11159,25 @@
           "denominator": "140"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "42",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "53687",
+          "denominator": "140"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "322161",
+          "denominator": "20"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -7805,6 +11206,25 @@
         "value": {
           "numerator": "36487",
           "denominator": "100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "36487",
+          "denominator": "100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1240571",
+          "denominator": "20"
         }
       },
       "incurredFees": {
@@ -7837,6 +11257,25 @@
           "denominator": "125"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "43264",
+          "denominator": "125"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "4153539",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -7865,6 +11304,25 @@
         "value": {
           "numerator": "687401",
           "denominator": "2100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "84",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "687401",
+          "denominator": "2100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2749799",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -7897,6 +11355,25 @@
           "denominator": "250"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "77141",
+          "denominator": "250"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "5245783",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -7924,6 +11401,25 @@
         "kind": "Value",
         "value": {
           "numerator": "28979",
+          "denominator": "100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "72",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "28979",
+          "denominator": "100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2086553",
           "denominator": "100"
         }
       },
@@ -7957,6 +11453,25 @@
           "denominator": "125"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "33879",
+          "denominator": "125"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "474371",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -7985,6 +11500,25 @@
         "value": {
           "numerator": "126127",
           "denominator": "500"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "126127",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "4288513",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -8017,6 +11551,25 @@
           "denominator": "1800"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "144",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "420271",
+          "denominator": "1800"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "840607",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -8045,6 +11598,25 @@
         "value": {
           "numerator": "21471",
           "denominator": "100"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "21471",
+          "denominator": "100"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "150297",
+          "denominator": "10"
         }
       },
       "incurredFees": {
@@ -8077,6 +11649,25 @@
           "denominator": "10200"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "102",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "1998709",
+          "denominator": "10200"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "499726",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -8105,6 +11696,25 @@
         "value": {
           "numerator": "1773",
           "denominator": "10"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "1773",
+          "denominator": "10"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "106393",
+          "denominator": "5"
         }
       },
       "incurredFees": {
@@ -8137,6 +11747,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "79307",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1110493",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -8165,6 +11794,25 @@
         "value": {
           "numerator": "3496",
           "denominator": "25"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "204",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "3496",
+          "denominator": "25"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2852801",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -8197,6 +11845,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "60541",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1453179",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -8225,6 +11892,25 @@
         "value": {
           "numerator": "5729",
           "denominator": "56"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "42",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "5729",
+          "denominator": "56"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "42987",
+          "denominator": "10"
         }
       },
       "incurredFees": {
@@ -8257,6 +11943,25 @@
           "denominator": "500"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "41767",
+          "denominator": "500"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "1420273",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "39",
         "denominator": "20"
@@ -8285,6 +11990,25 @@
         "value": {
           "numerator": "1619",
           "denominator": "25"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "120",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "1619",
+          "denominator": "25"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "155437",
+          "denominator": "20"
         }
       },
       "incurredFees": {
@@ -8317,6 +12041,25 @@
           "denominator": "525"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "84",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "24151",
+          "denominator": "525"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "96669",
+          "denominator": "25"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -8345,6 +12088,25 @@
         "value": {
           "numerator": "3403",
           "denominator": "125"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "170",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "3403",
+          "denominator": "125"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "463003",
+          "denominator": "100"
         }
       },
       "incurredFees": {
@@ -8377,6 +12139,25 @@
           "denominator": "800"
         }
       },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "72",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "310763",
+          "denominator": "800"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "2797127",
+          "denominator": "100"
+        }
+      },
       "incurredFees": {
         "numerator": "13",
         "denominator": "5"
@@ -8405,6 +12186,25 @@
         "value": {
           "numerator": "9242",
           "denominator": "25"
+        }
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": {
+          "numerator": "70",
+          "denominator": "1"
+        },
+        "price": {
+          "numerator": "9242",
+          "denominator": "25"
+        }
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": {
+          "numerator": "129388",
+          "denominator": "5"
         }
       },
       "incurredFees": {

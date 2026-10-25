@@ -6,7 +6,7 @@
   "timeZone": "America/New_York",
   "origin": "http://localhost:5181",
   "buildDir": "dist-bench",
-  "benchRelease": "91101607b8f6f4b60b0939fb52811a1f02f746cc103eaf3556f08da0e6e04bfc",
+  "benchRelease": "2b53d54006730d839c4766c94b108d9b1e8ef5b540ed0fba61e98277bb9e2264",
   "counts": {
     "trades": 25000,
     "openTrades": 200,
@@ -20,8 +20,8 @@
     "accounts": 6,
     "strategies": 1
   },
-  "generationMs": 34707,
-  "generatedAt": "2026-10-21T19:01:35.395Z",
+  "generationMs": 39047,
+  "generatedAt": "2026-10-25T04:40:29.514Z",
   "engine": "chromium 153.0.8010.12",
   "host": {
     "platform": "darwin",
