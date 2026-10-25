@@ -18,7 +18,7 @@ import {
 } from '../../../tests/support/open-detail-fixtures.ts';
 import { plannedDetail } from '../../../tests/support/views-fixtures.ts';
 import type { UiFacade } from '../../app/compose.ts';
-import type { TradeDetailView } from '../../app/types.ts';
+import type { NarrativeItem, TradeDetailView } from '../../app/types.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { TradeDetail } from './TradeDetail.tsx';
 
@@ -195,7 +195,7 @@ describe('Open Trade Detail', () => {
         journal: [planReflection, pc1Reflection, pc2Decline],
       }),
     );
-    const journal = await screen.findByRole('region', { name: 'Journal' });
+    const journal = await screen.findByRole('region', { name: 'Journal (3)' });
     const items = within(journal).getAllByRole('listitem');
     expect(items.map((item) => within(item).getByRole('heading', { level: 3 }).textContent)).toEqual([
       'Plan Reflection',
@@ -204,15 +204,15 @@ describe('Open Trade Detail', () => {
     ]);
 
     const [, entry, decline] = items as [HTMLElement, HTMLElement, HTMLElement];
-    expect(within(entry).getByText('Position Change at 2026-10-12 10:00')).toBeTruthy();
+    expect(termValue(entry, 'Moment')).toBe('2026-10-12 10:00');
     expect(termValue(entry, 'Decision mode')).toBe('Planned');
     expect(termValue(entry, 'Primary emotion')).toBe('Calm');
     expect(termValue(entry, 'Decision confidence')).toBe('4');
     expect(termValue(entry, 'Note')).toBe('Not answered');
 
-    expect(within(decline).getByText('Position Change at 2026-10-12 11:00')).toBeTruthy();
+    expect(termValue(decline, 'Moment')).toBe('2026-10-12 11:00');
     expect(within(decline).getByText('Reflection declined')).toBeTruthy();
-    expect(within(decline).getByText('Reason: Same plan, second fill.')).toBeTruthy();
+    expect(termValue(decline, 'Reason')).toBe('Same plan, second fill.');
     // The narrative is the Journal section's alone: no separate Plan Reflection region.
     expect(screen.queryByRole('region', { name: 'Plan Reflection' })).toBeNull();
   });
@@ -279,7 +279,7 @@ describe('Open Trade Detail', () => {
         .getAllByRole('button')
         .map((b) => b.getAttribute('aria-labelledby')!.split(' ').map((id) => document.getElementById(id)!.textContent).join(' ')),
     ).toEqual(['Buy 60 XYZ @ $50.10 · 2026-10-12 10:00 details', 'Buy 40 XYZ @ $50.30 · 2026-10-12 11:00 details']);
-    expect(within(screen.getByRole('region', { name: 'Journal' })).getByText('Reflection declined')).toBeTruthy();
+    expect(within(screen.getByRole('region', { name: /^Journal/ })).getByText('Reflection declined')).toBeTruthy();
     // The narrative is the Journal section's alone, as in the Open form.
     expect(screen.queryByRole('region', { name: 'Position Change Reflection' })).toBeNull();
     for (const derived of ['Plan Baseline', 'Position', 'Entry Quality', 'Planned-Leg Fulfillment', 'Deviations']) {
@@ -331,7 +331,7 @@ describe('badge meanings', () => {
     const deviations = await screen.findByRole('region', { name: 'Deviations' });
     expect(within(deviations).getByText('Active').getAttribute('data-tone')).toBe('warning');
     expect(
-      within(screen.getByRole('region', { name: 'Journal' }))
+      within(screen.getByRole('region', { name: /^Journal/ }))
         .getByText('Reflection declined')
         .getAttribute('data-tone'),
     ).toBe('warning');
@@ -592,5 +592,52 @@ describe('Executions', () => {
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
     await user.keyboard('{Enter}');
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
+  });
+});
+
+describe('Journal entries', () => {
+  const planEntry: NarrativeItem = { kind: 'Entry', ...plannedDetail.journal[0] };
+
+  async function journalItems(journal: NarrativeItem[]) {
+    renderView(openDetailOf([PC1, PC2], { journal }));
+    const region = await screen.findByRole('region', { name: /^Journal/ });
+    return { region, items: within(region).getAllByRole('listitem') };
+  }
+
+  it('should show each Entry as its own item with the Entry Type as a badge, the Anchor, the Source labelled as Source, and the moment time', async () => {
+    const { items } = await journalItems([pc1Reflection]);
+    expect(items).toHaveLength(1);
+    const item = items[0]!;
+    expect(within(item).getByText('Position Change Reflection', { selector: '.badge' })).toBeTruthy();
+    expect(termValue(item, 'Anchor')).toBe('Trade XYZ');
+    expect(termValue(item, 'Source')).toBe('Position Change');
+    expect(termValue(item, 'Moment')).toBe('2026-10-12 10:00');
+    expect(termValue(item, 'Decision mode')).toBe('Planned');
+  });
+
+  it('should show the authored time as well when it differs from the moment time', async () => {
+    const same = { ...pc1Reflection, authoredTime: pc1Reflection.momentTime } as NarrativeItem;
+    const { items } = await journalItems([planEntry, same]);
+    const [differs, equal] = items as [HTMLElement, HTMLElement];
+    expect(termValue(differs, 'Authored')).toBe('2026-10-12 10:05');
+    expect(within(equal).queryByText('Authored', { selector: 'dt' })).toBeNull();
+  });
+
+  it('should show a decline with the warning badge Reflection declined, its reason or No reason given, its Anchor and Source', async () => {
+    const noReason = { ...pc2Decline, id: 'd-2', reason: undefined } as NarrativeItem;
+    const { items } = await journalItems([pc2Decline, noReason]);
+    const [withReason, without] = items as [HTMLElement, HTMLElement];
+    expect(within(withReason).getByText('Reflection declined').getAttribute('data-tone')).toBe('warning');
+    expect(termValue(withReason, 'Reason')).toBe('Same plan, second fill.');
+    expect(termValue(without, 'Reason')).toBe('No reason given');
+    for (const item of [withReason, without]) {
+      expect(termValue(item, 'Anchor')).toBe('Trade XYZ');
+      expect(termValue(item, 'Source')).toBe('Position Change');
+    }
+  });
+
+  it('should label the region with the number of items', async () => {
+    renderView(openDetailOf([PC1, PC2], { journal: [planEntry, pc1Reflection, pc2Decline] }));
+    expect(await screen.findByRole('region', { name: 'Journal (3)' })).toBeTruthy();
   });
 });

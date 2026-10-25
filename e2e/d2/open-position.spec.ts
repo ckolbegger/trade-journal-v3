@@ -82,9 +82,9 @@ test.describe('B2.2 scale-in and decline', () => {
       'Entry Size (Excess): 20 shares above plan, caused by the Position Change at 2026-10-12 14:00.',
     );
     await expect(region(page, 'Planned-Leg Fulfillment')).toContainText('Filled with Deviation');
-    const journal = region(page, 'Journal');
+    const journal = page.getByRole('region', { name: /^Journal \(\d+\)$/ });
     await expect(journal.getByText('Reflection declined')).toHaveCount(1);
-    await expect(journal).toContainText('Reason: Added into strength; reflecting later.');
+    await expect(journal).toContainText('Added into strength; reflecting later.');
     await context.close();
   });
 });

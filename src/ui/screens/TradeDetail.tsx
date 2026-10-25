@@ -166,7 +166,7 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
       {'recordedPositionChanges' in view && (
         <>
           <ExecutionsSection positionChanges={view.recordedPositionChanges} journal={view.journal} timeZone={timeZone} />
-          <JournalSection journal={view.journal} timeZone={timeZone} />
+          <JournalSection journal={view.journal} symbol={view.plan.underlying} timeZone={timeZone} />
         </>
       )}
       {!('findings' in view) && entry && 'responses' in entry && (
@@ -301,7 +301,7 @@ function OpenSections({ view, timeZone }: { readonly view: OpenTradeDetail; read
       <EntryQualitySection view={view} timeZone={timeZone} />
       <FulfillmentSection view={view} />
       <DeviationsSection view={view} timeZone={timeZone} />
-      <JournalSection journal={view.journal} timeZone={timeZone} />
+      <JournalSection journal={view.journal} symbol={view.plan.underlying} timeZone={timeZone} />
     </>
   );
 }
@@ -568,15 +568,30 @@ function IncoherentPanel({ view, timeZone }: { readonly view: IncoherentTradeDet
 
 // The Trade's narrative: each saved Entry with the Prompt and option labels saved with it, and each
 // decline with its reason, at its moment time.
-function JournalSection({ journal, timeZone }: { readonly journal: readonly NarrativeItem[]; readonly timeZone: string }) {
+function JournalSection({ journal, symbol, timeZone }: { readonly journal: readonly NarrativeItem[]; readonly symbol: string; readonly timeZone: string }) {
   return (
     <section className="card" aria-labelledby="journal-heading">
-      <h2 id="journal-heading">Journal</h2>
+      <h2 id="journal-heading">{`Journal (${journal.length})`}</h2>
       <ul className="narrative">
         {journal.map((item) => (
           <li key={item.id}>
-            <h3>{item.entryType}</h3>
-            <p>{`${item.source} at ${localTime(item.momentTime, timeZone)}`}</p>
+            <h3>
+              <Badge tone="neutral">{item.entryType}</Badge>
+            </h3>
+            <dl>
+              <dt>Anchor</dt>
+              <dd>{`Trade ${symbol}`}</dd>
+              <dt>Source</dt>
+              <dd>{item.source}</dd>
+              <dt>Moment</dt>
+              <dd>{localTime(item.momentTime, timeZone)}</dd>
+              {item.authoredTime !== item.momentTime && (
+                <>
+                  <dt>Authored</dt>
+                  <dd>{localTime(item.authoredTime, timeZone)}</dd>
+                </>
+              )}
+            </dl>
             {item.kind === 'Entry' ? (
               <dl>
                 {item.responses.map((response) => (
@@ -591,7 +606,10 @@ function JournalSection({ journal, timeZone }: { readonly journal: readonly Narr
                 <p>
                   <Badge tone="warning">Reflection declined</Badge>
                 </p>
-                {item.reason !== undefined && <p>{`Reason: ${item.reason}`}</p>}
+                <dl>
+                  <dt>Reason</dt>
+                  <dd>{item.reason ?? 'No reason given'}</dd>
+                </dl>
               </>
             )}
           </li>
