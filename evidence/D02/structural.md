@@ -1639,3 +1639,7 @@ Issue clearing judged by the domain's rules: `InvalidPrice` clears only when ent
 - Case 2: the link also shows in Loading, Not Found and Error states. Lifecycle is unknown there and no origin tab is carried in router state, so the target is `/` (the Open tab).
 - T2.29 heading focus: TradeDetail has no heading-focus code; nothing there moves focus, and all src tests stay green (412 passed).
 - Test impact: all e2e lookups of the "Trades" link (e2e/d1 no-save, responsive-a11y; e2e/d2 ui-alignment) are scoped to the Primary navigation; no edit needed. e2e/d1 and e2e/d2: 79 passed.
+
+**ocr review of T2.48** (`ocr-review` step): commit `7e09465`, session `859519a9-7216-4d82-876d-8c3fa6f5e888`, model `gpt-6.1-sol`, 3 files reviewed, 0 comments. No findings. The reviewer also confirmed from the code that `BackIcon` renders through the shared `Icon` (`aria-hidden="true"`, `focusable="false"`, no `<title>`), so the link's name is exactly "Back to Trades". Raw output: `ocr/t2.48-7e09465.json`.
+
+**Complete cumulative run after T2.48** (`suite-runner`, 2026-10-25 08:03 EDT, on `7e09465`): Unit 41 files / 412 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 79 passed (2.5m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.48-*.txt`.
