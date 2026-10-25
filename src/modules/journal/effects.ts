@@ -162,6 +162,8 @@ export interface NarrativeEntry {
   readonly anchor: { readonly kind: 'Trade'; readonly tradeId: string };
   readonly momentTime: Instant;
   readonly authoredTime: Instant;
+  // The Position Change whose reflection this is; absent on any other Entry.
+  readonly positionChangeId?: string;
   readonly responses: readonly { readonly prompt: string; readonly answer: NarrativeAnswer }[];
 }
 
@@ -174,6 +176,8 @@ export interface NarrativeDecline {
   readonly anchor: { readonly kind: 'Trade'; readonly tradeId: string };
   readonly momentTime: Instant;
   readonly authoredTime: Instant;
+  // The Position Change whose reflection was declined.
+  readonly positionChangeId?: string;
   readonly reason?: string;
 }
 

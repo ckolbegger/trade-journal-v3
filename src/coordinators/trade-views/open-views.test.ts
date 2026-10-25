@@ -257,6 +257,21 @@ describe('getTradeDetail: Open', () => {
     expect(view.journal[2]).toEqual(expect.objectContaining({ kind: 'Decline', reason: 'Missed the moment.' }));
   });
 
+  it('should carry the positionChangeId of its Position Change on a reflection Entry and a Decline, and none on other items', async () => {
+    const stack = await openStack();
+    const trade = await stack.confirm('XYZ');
+    const pc1 = await stack.enter(trade, PC1, '60', '50.10');
+    const pc2 = await stack.enter(trade, PC2, '40', '50.30', stack.decline('Missed the moment.'));
+
+    const result = await stack.views.getTradeDetail({ tradeId: trade.tradeId });
+    if (result.kind !== 'Ready' || !('positionChanges' in result.view)) throw new Error('expected the Open form of Detail');
+    expect(result.view.journal.map((item) => [item.kind, 'positionChangeId' in item ? item.positionChangeId : undefined])).toEqual([
+      ['Entry', undefined],
+      ['Entry', pc1],
+      ['Decline', pc2],
+    ]);
+  });
+
   it('should return the Planned form of Detail unchanged for a Planned Trade', async () => {
     const stack = await openStack();
     const trade = await stack.confirm('XYZ');

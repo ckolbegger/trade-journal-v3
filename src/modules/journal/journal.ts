@@ -69,6 +69,7 @@ interface StoredEntry {
   readonly anchor: { readonly kind: 'Trade'; readonly tradeId: string };
   readonly momentTime: string;
   readonly authoredTime: string;
+  readonly origin: { readonly kind: string; readonly factId: string };
   readonly versions: readonly {
     readonly definitionId: string;
     readonly responses: readonly { readonly promptId: string; readonly value: ResponseValue }[];
@@ -82,6 +83,7 @@ interface StoredDecline {
   readonly anchor: { readonly kind: 'Trade'; readonly tradeId: string };
   readonly momentTime: string;
   readonly authoredTime: string;
+  readonly origin: { readonly kind: string; readonly factId: string };
   readonly reason?: string;
 }
 
@@ -173,6 +175,7 @@ function narrativeEntry(
     anchor: entry.anchor,
     momentTime: entry.momentTime,
     authoredTime: entry.authoredTime,
+    ...(entry.origin.kind === 'PositionChange' ? { positionChangeId: entry.origin.factId } : {}),
     responses: version.responses.map(({ promptId, value }) => {
       const prompt = definition.prompts.find((p) => p.id === promptId)!;
       let answer: NarrativeAnswer;
@@ -311,6 +314,7 @@ export function createJournal(deps: JournalDeps): Journal {
             anchor: decline.anchor,
             momentTime: decline.momentTime,
             authoredTime: decline.authoredTime,
+            ...(decline.origin.kind === 'PositionChange' ? { positionChangeId: decline.origin.factId } : {}),
             ...(decline.reason === undefined ? {} : { reason: decline.reason }),
           }),
         ),

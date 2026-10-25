@@ -435,6 +435,7 @@ describe('query: Trade narrative', () => {
       anchor: { kind: 'Trade', tradeId: 'trade-1' },
       momentTime: '2026-10-12T14:00:00Z',
       authoredTime: '2026-10-12T15:05:00Z',
+      positionChangeId: 'pc-a',
       reason: 'Routine scale-in.',
     });
     expect(page.items[2]).toEqual({
@@ -445,6 +446,7 @@ describe('query: Trade narrative', () => {
       anchor: { kind: 'Trade', tradeId: 'trade-1' },
       momentTime: '2026-10-12T14:00:00Z',
       authoredTime: '2026-10-12T15:05:00Z',
+      positionChangeId: 'pc-b',
       responses: [
         { prompt: 'Decision mode', answer: { kind: 'Option', label: 'As Planned' } },
         { prompt: 'Primary emotion', answer: { kind: 'Option', label: 'Calm' } },
