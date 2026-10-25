@@ -1753,3 +1753,13 @@ Commands:
 - After: the same command gave 8 passed. `npx playwright test e2e/d1 e2e/d2` gave 88 passed.
 - Static: `npx vitest run src` 434 passed; `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` exit 0.
 - Lookups: none needed changing. The Execution row's accessible name is unchanged; the receipt row's text is unchanged.
+
+**ocr review of T2.51-B1** (`ocr-review` step): commit `489ad59`, session `43d23968-313c-4aab-9c85-ea48c036b2df`, model `gpt-6.1-sol`, 1 file reviewed, 0 comments, plus two main-session questions. Raw output: `ocr/t2.51-b1-489ad59.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| (question a) | `TradeDetail.tsx:576-621` | Output unchanged apart from the Authored condition (keys, decline branch, Moment row) | Holds |
+| (question b) | `format.ts:25`, `domain/time/local.ts:7-12` | `localTime` is locale-independent and takes the time zone explicitly, so equal instants format identically | Holds |
+| (reviewer note) | `TradeDetail.tsx` Journal | At a DST fall-back, an Authored an hour after Moment reads the same and is hidden | Dismissed for this task: shown, it would read the same as Moment. The missing offset is app-wide; listed for the final report |
+
+**Complete cumulative run after T2.51-B1** (`suite-runner`, 2026-10-25 09:29 EDT, on `489ad59`): Unit 41 files / 434 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 80 passed (2.5m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.51-b1-*.txt`.
