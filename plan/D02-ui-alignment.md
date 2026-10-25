@@ -384,7 +384,7 @@ describe("summary card")
 **Shape:**
 - One "Executions (n)" card in Fact Order.
 - Collapsed row (I2, answered 2026-10-25): "Buy 30 XYZ @ $50.00 · 2026-10-12 10:00", action, quantity, symbol, price and Economic Time. The fee is in the expanded details. The date and time never split across lines; the row may wrap at narrow widths without clipping.
-- Each row has a disclosure button (`aria-expanded`, `aria-controls`, a chevron icon from U6). Its accessible name names the Execution, for example "Details for Buy 30 XYZ at 10:00".
+- Each row has a disclosure button (`aria-expanded`, `aria-controls`, a chevron icon from U6). Its accessible name begins with the row's visible text and adds the action, for example "Buy 30 XYZ @ $50.00 · 2026-10-12 10:00, details" (WCAG 2.5.3 Label in Name; corrected 2026-10-25 after the T2.50 review, the earlier example "Details for Buy 30 XYZ at 10:00" did not contain the visible text).
 - Expanded: the Instrument, the Economic Time, the fee, the Position Change it belongs to (its time and how many Executions it has), and that Position Change's reflection (the answers, or "Reflection declined" with its reason) or "No reflection".
 - The collapsed row's fields and order were implementation decision I2, answered by the user on 2026-10-25 (above).
 - Rows start collapsed. Expansion is view state only: it is not stored and is not put in the URL.
