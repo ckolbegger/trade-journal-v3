@@ -14,7 +14,7 @@ import type {
   TradeDetailView,
 } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
-import { decimalMoney as price, localTime, money, quantity, ratio } from '../format.ts';
+import { decimalMoney as price, localTime, money, quantity, ratio, rMultiple } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 
 export interface TradeDetailProps {
@@ -486,7 +486,7 @@ function EntryQualitySection({ view, timeZone }: { readonly view: OpenTradeDetai
           <dt>Average entry</dt>
           <dd className="number">{shown(quality.value.averageEntry, money)}</dd>
           <dt>Actual initial risk</dt>
-          <dd className="number">{`${shown(quality.value.actualInitialRisk, money)} (${shown(quality.value.riskInPlanR, ratio)}R)`}</dd>
+          <dd className="number">{`${shown(quality.value.actualInitialRisk, money)} (${shown(quality.value.riskInPlanR, rMultiple)})`}</dd>
           <dt>Actual initial reward</dt>
           <dd className="number">{shown(quality.value.actualInitialReward, money)}</dd>
           <dt>Reward : risk</dt>

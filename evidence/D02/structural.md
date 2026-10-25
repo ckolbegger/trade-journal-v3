@@ -1119,3 +1119,11 @@ Copy decisions:
 **ocr review of T2.31** (`ocr-review` step): commit `0c6e140`, session `93233ed1-eb18-4b65-8fdb-f018d0cbb9ee`, model `gpt-6.1-sol`, 1 file reviewed (`PositionChangeReceipt.tsx`), 0 comments. No findings. Raw output: `ocr/t2.31-0c6e140.json`.
 
 **Complete cumulative run after T2.31** (`suite-runner`, 2026-10-24 22:18 EDT, on `0c6e140`): Unit 37 files / 376 tests passed; Node integration 19 / 42 passed; Browser (Chromium) 54 passed (1.7m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.31-*.txt`.
+
+#### T2.34 R-multiple decimals (F10)
+
+- Spec: `specs/design/ui-contract.md`, section "Numbers, availability, and graphs": "Exact values in read models remain unrounded; presentation rounding must not change classification or calculation." No file in `specs/` fixes a precision for R multiples, so the plan's two decimals apply. Rounding is `formatDecimal` (half away from zero, `src/domain/values/format.ts`), the same routine as `formatMoney`.
+- Seam: new `rMultiple(value)` in `src/ui/format.ts` (exactly two decimals plus "R"); used in `PositionChangeReceipt.tsx` and `TradeDetail.tsx` (Entry Quality). `ratio` is unchanged and still serves Reward : risk, planned Reward : risk, size ratio and the Planned list.
+- Red then green: case 1 red (TypeError: rMultiple is not a function), then green. Cases 2 and 3 were first-run passes with mutation checks, flagged in `tdd-log.md`.
+- Test impact: none. Every existing R multiple in tests is "1.08R" (TradeDetail.test.tsx, PositionChangeForm.test.tsx, e2e open-position and offline), which already has two decimals, so no expectation gained or lost a trailing zero. No test file was edited other than the new `src/ui/format.test.ts`.
+- Runs: `npx vitest run src/ui` 107 passed; `npm run build:faults` then `npx playwright test e2e/d2/open-position.spec.ts e2e/d2/offline.spec.ts` 4 passed; typecheck, tsc6, lint, lint:deps all exit 0.
