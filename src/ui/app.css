@@ -322,7 +322,7 @@ fieldset.execution-row legend {
   color: var(--muted);
 }
 
-fieldset.execution-row > .field:nth-of-type(4),
+fieldset.execution-row > .field-wide,
 fieldset.execution-row > button {
   grid-column: 1 / -1;
 }
@@ -332,7 +332,7 @@ fieldset.execution-row > button.pill {
   justify-self: start;
   border: none;
   background: transparent;
-  color: var(--error);
+  color: var(--muted);
   text-decoration: underline;
   padding: 0.6rem 0;
   margin: 0.25rem 0 0;

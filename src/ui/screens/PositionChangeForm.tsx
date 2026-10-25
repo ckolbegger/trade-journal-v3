@@ -308,7 +308,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
       {rows.map((row, index) => {
         const n = index + 1;
         const input = (name: keyof Omit<Row, 'key'>, label: string, type?: 'datetime-local', field: string = name) => (
-          <div className="field">
+          <div className={type ? 'field field-wide' : 'field'}>
             <label>
               {label}
               <input

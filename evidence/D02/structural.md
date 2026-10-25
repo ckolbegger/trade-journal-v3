@@ -1538,3 +1538,20 @@ Change: `@media (forced-colors: active)` in `src/ui/app.css`: `label.chip:has(in
 **ocr review of T2.43-B1** (`ocr-review` step): commit `c0df19d`, session `2b7820ab-fb58-4435-a973-6a9e76c98a20`, model `gpt-6.1-sol`, 1 file reviewed (`app.css`), 0 comments. No findings. Raw output: `ocr/t2.43-B1-c0df19d.json`. The focus-outline assertion was a first-run pass; its mutation check (`outline: none` in the forced-colors block: "focus outline style in forced colors") is in `065e34d`.
 
 **Complete cumulative run after T2.43-B1** (`suite-runner`, 2026-10-25 07:19 EDT, on `065e34d`): Unit 41 files / 399 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 78 passed (2.4m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.43-B1-*.txt`.
+
+## T2.44-B1 Ink Remove button and a class for Economic Time
+
+Bug from two Doubtful ocr points on `e0ca94b`. Measurement added first to the T2.44 describe in `e2e/d2/ui-alignment.spec.ts` (Remove Execution 2: computed colour is not the `--error` colour, contrast against the panel background at least 4.5, still underlined), against `dist-faults`. For point (b), the existing layout assertions (Economic Time below at 390, three shared tops at 1280) are the guard; it is a refactor, so they pass before and after, which is expected and is not a first-run pass.
+
+Commands:
+- Before: `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts -g T2.44` gave 1 failed (Remove button colour is not the error red).
+- After: same command, 1 passed. `npx playwright test e2e/d2/ui-alignment.spec.ts e2e/d2 e2e/d1/responsive-a11y.spec.ts`: 54 passed. `npx vitest run src/ui` 120 passed; typecheck, tsc6, lint, lint:deps exit 0.
+
+| Measurement | Before | After |
+| --- | --- | --- |
+| Remove button colour is not `--error` | fail (`--error`, #a3261b) | pass (`--muted`, #55524b) |
+| Remove button contrast on `--neutral-ground` >= 4.5 | pass (error red) | pass (muted on #ece7da, about 6.7) |
+| Remove button stays underlined | pass | pass |
+| Economic Time below Price at 390; three shared tops at 1280 | pass | pass (selected by `.field-wide`) |
+
+Change: `.execution-row > button.pill` uses `var(--muted)`; the Economic Time field wrapper in `PositionChangeForm.tsx` gets `field field-wide` and the CSS selects `fieldset.execution-row > .field-wide` instead of `.field:nth-of-type(4)`. Labels, names and roles are unchanged.

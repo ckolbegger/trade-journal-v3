@@ -743,7 +743,30 @@ test.describe('T2.44 execution rows as panels', () => {
     expect(narrow.price, 'Price top at 390').toBe(narrow.quantity);
     expect(narrow.time, 'Economic Time below at 390').toBeGreaterThan(narrow.price);
     expect(narrow.fee, 'Fee wraps below at 390').toBeGreaterThan(narrow.quantity);
-    await expect(page.getByRole('button', { name: 'Remove Execution 2' })).toBeVisible();
+    const remove = page.getByRole('button', { name: 'Remove Execution 2' });
+    await expect(remove).toBeVisible();
+    // Red and green are reserved for signed results and Stop/Target (ui-contract), so Remove is ink or muted text.
+    const look = await remove.evaluate((el) => {
+      const rgb = (v: string) => (v.match(/\d+(\.\d+)?/g) ?? []).slice(0, 3).map(Number);
+      const root = getComputedStyle(document.documentElement);
+      const probe = document.createElement('span');
+      probe.style.color = root.getPropertyValue('--error').trim();
+      document.body.append(probe);
+      const error = rgb(getComputedStyle(probe).color);
+      probe.remove();
+      return { colour: rgb(getComputedStyle(el).color), error, ground: rgb(getComputedStyle(el.parentElement as HTMLElement).backgroundColor), underline: getComputedStyle(el).textDecorationLine };
+    });
+    const lum = (rgb: number[]) => {
+      const [r, g, b] = rgb.map((v) => {
+        const c = v / 255;
+        return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+      }) as [number, number, number];
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const [hi, lo] = [lum(look.colour), lum(look.ground)].sort((x, y) => y - x) as [number, number];
+    expect(look.colour, 'Remove button colour is not the error red').not.toEqual(look.error);
+    expect((hi + 0.05) / (lo + 0.05), 'Remove button contrast on the panel').toBeGreaterThanOrEqual(4.5);
+    expect(look.underline, 'Remove button stays underlined').toContain('underline');
     await context.close();
   });
 });
