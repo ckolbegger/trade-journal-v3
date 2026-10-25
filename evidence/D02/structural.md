@@ -1710,3 +1710,13 @@ Commits: view amendment (reflection items carry their Position Change), then the
 - Reflection branches moved to `ExecutionReflection`.
 - `npx vitest run src`: 41 files, 427 passed. typecheck, `npx tsc6 --noEmit`, lint, lint:deps: exit 0.
 - `npm run build:faults && npx playwright test e2e/d1 e2e/d2`: 80 passed.
+
+**ocr review of T2.50-B1** (`ocr-review` step): commit `090eb06`, session `4952443b-bb68-4f72-a61f-d450c7c14f4b`, model `gpt-6.1-sol`, 2 files reviewed, 0 comments, plus three main-session questions. Raw output: `ocr/t2.50-b1-090eb06.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| (question a) | `TradeDetail.tsx:360-370` | The `aria-labelledby` name begins with the visible summary; the IDs are keyed on the Execution's `factId`, so they are unique when two Executions share a Position Change | Holds |
+| (question b) | `app.css:813-823` | `.visually-hidden` is the standard clip pattern; no horizontal overflow at 320 px | Holds (the nit, `position: relative` on the toggle, is not needed; dismissed) |
+| (question c) | `TradeDetail.tsx:310-335` | `ExecutionReflection` renders the same output as the old ternary in every branch | Holds |
+
+**Complete cumulative run after T2.50-B1** (`suite-runner`, 2026-10-25 09:07 EDT, on `090eb06`): Unit 41 files / 427 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 80 passed (2.4m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.50-b1-*.txt`.
