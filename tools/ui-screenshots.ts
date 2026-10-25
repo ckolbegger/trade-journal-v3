@@ -4,7 +4,7 @@
 // specs do, and drives the app through the e2e/d2/support.ts steps with a fixed clock.
 // It is not part of the e2e suite.
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import type { BrowserContext, Locator, Page } from '@playwright/test';
@@ -34,9 +34,10 @@ import { startReleaseServer } from './release-server.ts';
 
 const OUT = path.resolve('evidence/D02/ui-alignment');
 // Captures go under test-results/ (git-ignored, same filesystem as evidence/), so a killed run
-// leaves nothing untracked in evidence/; OUT is replaced only after a complete, verified run.
+// leaves nothing untracked in evidence/; OUT is overwritten only after a complete, verified run.
 const SCRATCH = path.resolve('test-results');
 let captureDir = OUT;
+let keepCapture = false;
 const WIDTHS = [
   { label: '390', width: 390, height: 844 },
   { label: '1280', width: 1280, height: 900 },
@@ -224,30 +225,28 @@ async function main(): Promise<void> {
     const pngs = files.filter((f) => f.endsWith('.png')).length;
     if (pngs !== SCREENS.length * WIDTHS.length) throw new Error(`expected ${SCREENS.length * WIDTHS.length} PNGs, wrote ${pngs}`);
     if (!files.includes('README.md')) throw new Error('no README written');
-    swapIn();
+    copyIn();
     console.log(`wrote ${pngs} PNGs and the README to ${path.relative('.', OUT)}`);
   } catch (error) {
-    if (!swapFailed) rmSync(captureDir, { recursive: true, force: true });
+    if (!keepCapture) rmSync(captureDir, { recursive: true, force: true });
     throw error;
   }
 }
 
-// Replaces OUT with captureDir. If the second rename fails, OUT is restored from the backup and
-// captureDir stays on disk, so no copy is lost.
-let swapFailed = false;
-function swapIn(): void {
-  const backup = path.join(SCRATCH, `ui-screenshots-backup-${process.pid}`);
-  const hadOut = existsSync(OUT);
-  if (hadOut) renameSync(OUT, backup);
+// Copies the checked capture over OUT, drops files the capture lacks, then removes the capture.
+// OUT is tracked in git, so git is the backup if the copy stops partway.
+function copyIn(): void {
   try {
-    renameSync(captureDir, OUT);
+    mkdirSync(OUT, { recursive: true });
+    const names = readdirSync(captureDir);
+    for (const name of names) copyFileSync(path.join(captureDir, name), path.join(OUT, name));
+    for (const name of readdirSync(OUT)) if (!names.includes(name)) rmSync(path.join(OUT, name), { recursive: true, force: true });
   } catch (error) {
-    swapFailed = true;
-    if (hadOut) renameSync(backup, OUT);
-    console.error(`could not move the capture into place; it is kept at ${captureDir}`);
+    keepCapture = true;
+    console.error(`copy into ${path.relative('.', OUT)} failed; the capture is at ${captureDir}, and the committed screenshots can be restored with: git checkout evidence/D02/ui-alignment`);
     throw error;
   }
-  if (hadOut) rmSync(backup, { recursive: true, force: true });
+  rmSync(captureDir, { recursive: true, force: true });
 }
 
 await main();
