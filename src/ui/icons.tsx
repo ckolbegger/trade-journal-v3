@@ -55,3 +55,10 @@ export const BackIcon = () => (
     <path d="M19 12H5M11 6l-6 6 6 6" />
   </Icon>
 );
+
+// Points down; the stylesheet turns it up while its row is expanded.
+export const ChevronIcon = () => (
+  <Icon>
+    <path d="M6 9l6 6 6-6" />
+  </Icon>
+);

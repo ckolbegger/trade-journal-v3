@@ -115,6 +115,7 @@ export const pc1Reflection: NarrativeItem = {
   anchor: { kind: 'Trade', tradeId: 'trade-1' },
   momentTime: '2026-10-12T14:00:00Z',
   authoredTime: '2026-10-12T14:02:00Z',
+  positionChangeId: 'pc-1',
   responses: [
     { prompt: 'Decision mode', answer: { kind: 'Option', label: 'Planned' } },
     { prompt: 'Primary emotion', answer: { kind: 'Option', label: 'Calm' } },
@@ -131,5 +132,6 @@ export const pc2Decline: NarrativeItem = {
   anchor: { kind: 'Trade', tradeId: 'trade-1' },
   momentTime: '2026-10-12T15:00:00Z',
   authoredTime: '2026-10-12T15:01:00Z',
+  positionChangeId: 'pc-2',
   reason: 'Same plan, second fill.',
 };

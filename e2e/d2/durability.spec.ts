@@ -41,7 +41,7 @@ test.describe('B2.7 kill after commit', () => {
       await page.goto(`${BASE_URL}/`);
       await openTradeFromOpenList(page);
       await expect(page.locator('header .badge')).toHaveText('Open');
-      await expect(region(page, 'Position Changes').getByRole('table', { name: 'Executions' }).locator('tbody tr')).toHaveCount(2);
+      await expect(region(page, 'Executions (2)').getByRole('button')).toHaveCount(2);
       await expect(region(page, 'Journal').getByRole('heading', { name: 'Position Change Reflection' })).toBeVisible();
 
       const workspace = workspaceOf(await probe(page))!;

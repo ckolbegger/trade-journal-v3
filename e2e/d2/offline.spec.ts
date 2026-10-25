@@ -39,10 +39,9 @@ test.describe('B2.8 offline cold restart', () => {
     await reopened.goto('/');
     await openTradeFromOpenList(reopened);
     await expect(region(reopened, 'Position')).toContainText('100 shares of XYZ');
-    await expect(region(reopened, 'Position Changes').getByRole('heading', { level: 3 })).toHaveText([
-      'Position Change at 2026-10-12 10:00',
-      'Position Change at 2026-10-12 11:00',
-    ]);
+    await expect(region(reopened, 'Executions (3)').getByRole('button')).toHaveCount(3);
+    await reopened.getByRole('button', { name: 'Details for Buy 40 XYZ at 11:00' }).click();
+    await expect(region(reopened, 'Executions (3)')).toContainText('2026-10-12 11:00 · 1 Execution');
     await expect(region(reopened, 'Entry Quality')).toContainText('$270.00 (1.08R)');
     await again.close();
   });

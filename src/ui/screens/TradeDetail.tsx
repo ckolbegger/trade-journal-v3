@@ -3,6 +3,7 @@ import { Link, useLocation, useParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type {
   CalculationResult,
+  ExecutionFact,
   IncoherentFactFinding,
   IncoherentTradeDetail,
   IntegrityFinding,
@@ -16,7 +17,7 @@ import type {
 import { Rational } from '../../domain/values/index.ts';
 import { Badge } from '../Badge.tsx';
 import { decimalMoney as price, localTime, money, netCost, quantity, ratio, rMultiple, tradeSummary } from '../format.ts';
-import { BackIcon } from '../icons.tsx';
+import { BackIcon, ChevronIcon } from '../icons.tsx';
 import { useRuntime } from '../runtime.tsx';
 
 export interface TradeDetailProps {
@@ -164,7 +165,7 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
       {'positionChanges' in view && <OpenSections view={view} timeZone={timeZone} />}
       {'recordedPositionChanges' in view && (
         <>
-          <PositionChangesSection positionChanges={view.recordedPositionChanges} timeZone={timeZone} />
+          <ExecutionsSection positionChanges={view.recordedPositionChanges} journal={view.journal} timeZone={timeZone} />
           <JournalSection journal={view.journal} timeZone={timeZone} />
         </>
       )}
@@ -265,7 +266,7 @@ function OpenSections({ view, timeZone }: { readonly view: OpenTradeDetail; read
         </dl>
         {/* Tables scroll inside their own focusable region on a narrow screen, never the page. */}
         <div className="table-scroll" role="region" aria-label="Open Lots" tabIndex={0}>
-          <table className="trades">
+          <table className="trades lots">
             <caption>Open Lots</caption>
             <thead>
               <tr>
@@ -296,7 +297,7 @@ function OpenSections({ view, timeZone }: { readonly view: OpenTradeDetail; read
           </table>
         </div>
       </section>
-      <PositionChangesSection positionChanges={view.positionChanges} timeZone={timeZone} />
+      <ExecutionsSection positionChanges={view.positionChanges} journal={view.journal} timeZone={timeZone} />
       <EntryQualitySection view={view} timeZone={timeZone} />
       <FulfillmentSection view={view} />
       <DeviationsSection view={view} timeZone={timeZone} />
@@ -305,60 +306,109 @@ function OpenSections({ view, timeZone }: { readonly view: OpenTradeDetail; read
   );
 }
 
-// The recorded Position Changes, each with its Executions.
-function PositionChangesSection({
+// One Execution as a compact row; its disclosure button is the only control. Expansion is view
+// state: it is neither stored nor put in the URL.
+function ExecutionRow({
+  execution: e,
+  change,
+  reflection,
+  timeZone,
+}: {
+  readonly execution: ExecutionFact;
+  readonly change: PositionChangeFact;
+  readonly reflection: NarrativeItem | undefined;
+  readonly timeZone: string;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const time = localTime(e.economicTime, timeZone);
+  const group = change.executions.length > 1;
+  const what = `${e.action} ${e.quantity} ${e.instrument.symbol}`;
+  return (
+    <li data-group={group ? change.factId : undefined}>
+      <button
+        type="button"
+        className="execution-toggle"
+        aria-expanded={expanded}
+        aria-controls={`execution-details-${e.factId}`}
+        aria-label={`Details for ${what} at ${time.slice(-5)}`}
+        onClick={() => setExpanded(!expanded)}
+      >
+        <span className="execution-summary">
+          {`${what} @ ${price(e.price)} · `}
+          <span className="nowrap">{time}</span>
+        </span>
+        <ChevronIcon />
+      </button>
+      {group && (
+        <span className="execution-group-mark">{`Same Position Change · ${change.executions.indexOf(e) + 1} of ${change.executions.length}`}</span>
+      )}
+      {expanded && (
+        <div id={`execution-details-${e.factId}`} className="execution-details">
+          <dl>
+            <dt>Instrument</dt>
+            <dd>{e.instrument.symbol}</dd>
+            <dt>Economic Time</dt>
+            <dd>{time}</dd>
+            <dt>Fee</dt>
+            <dd className="number">{price(e.fee)}</dd>
+            <dt>Position Change</dt>
+            <dd>{`${localTime(change.economicTime, timeZone)} · ${change.executions.length} ${change.executions.length === 1 ? 'Execution' : 'Executions'}`}</dd>
+          </dl>
+          <div className="execution-reflection">
+            {reflection?.kind === 'Entry' ? (
+              <>
+                <h3>{reflection.entryType}</h3>
+                <dl>
+                  {reflection.responses.map((response) => (
+                    <div key={response.prompt}>
+                      <dt>{response.prompt}</dt>
+                      <dd>{answerText(response.answer)}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </>
+            ) : reflection ? (
+              <>
+                <p>
+                  <Badge tone="warning">Reflection declined</Badge>
+                </p>
+                {reflection.reason !== undefined && <p>{`Reason: ${reflection.reason}`}</p>}
+              </>
+            ) : (
+              <p>No reflection</p>
+            )}
+          </div>
+        </div>
+      )}
+    </li>
+  );
+}
+
+// Every recorded Execution in Fact Order, one compact row each.
+function ExecutionsSection({
   positionChanges,
+  journal,
   timeZone,
 }: {
   readonly positionChanges: readonly PositionChangeFact[];
+  readonly journal: readonly NarrativeItem[];
   readonly timeZone: string;
 }) {
+  const executions = positionChanges.flatMap((change) => change.executions.map((execution) => ({ execution, change })));
   return (
-    <section className="card" aria-labelledby="changes-heading">
-      <h2 id="changes-heading">Position Changes</h2>
-      {positionChanges.map((change) => (
-        <section key={change.factId} aria-labelledby={`change-${change.factId}`}>
-          <h3 id={`change-${change.factId}`}>{`Position Change at ${localTime(change.economicTime, timeZone)}`}</h3>
-          <div
-            className="table-scroll"
-            role="region"
-            aria-label={`Executions, Position Change at ${localTime(change.economicTime, timeZone)}`}
-            tabIndex={0}
-          >
-            <table className="trades">
-              <caption>Executions</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Economic time</th>
-                  <th scope="col">Action</th>
-                  <th scope="col">Instrument</th>
-                  <th scope="col" className="number">
-                    Quantity
-                  </th>
-                  <th scope="col" className="number">
-                    Price
-                  </th>
-                  <th scope="col" className="number">
-                    Fee
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {change.executions.map((e) => (
-                  <tr key={e.factId}>
-                    <td>{localTime(e.economicTime, timeZone)}</td>
-                    <td>{e.action}</td>
-                    <td>{e.instrument.symbol}</td>
-                    <td className="number">{e.quantity}</td>
-                    <td className="number">{price(e.price)}</td>
-                    <td className="number">{price(e.fee)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      ))}
+    <section className="card" aria-labelledby="executions-heading">
+      <h2 id="executions-heading">{`Executions (${executions.length})`}</h2>
+      <ul className="executions">
+        {executions.map(({ execution, change }) => (
+          <ExecutionRow
+            key={execution.factId}
+            execution={execution}
+            change={change}
+            reflection={journal.find((item) => item.positionChangeId === change.factId)}
+            timeZone={timeZone}
+          />
+        ))}
+      </ul>
     </section>
   );
 }

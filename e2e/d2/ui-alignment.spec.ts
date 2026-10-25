@@ -814,3 +814,86 @@ test.describe('T2.45 New Plan grouped into cards', () => {
     await context.close();
   });
 });
+
+test.describe('T2.50 Executions as expandable rows', () => {
+  test('should stack the expanded labels above their values at 320, keep each row time on one line, and clip nothing', async ({
+    server,
+    profile,
+  }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await confirmReference(page);
+    await recordEntry(page, PC1);
+    await backToTrade(page);
+    const section = page.getByRole('region', { name: 'Executions (2)', exact: true });
+    await expect(section).toBeVisible(READY);
+    await section.getByRole('button', { name: 'Details for Buy 30 XYZ at 10:00' }).click();
+    await expect(section.getByRole('button', { name: 'Details for Buy 30 XYZ at 10:00' })).toHaveAttribute('aria-expanded', 'true');
+    const measure = () =>
+      section.evaluate((el) => {
+        const lineHeight = (node: Element) => Number.parseFloat(getComputedStyle(node).lineHeight);
+        const details = el.querySelector('.execution-details dl') as HTMLElement;
+        const pairs = [...details.querySelectorAll('dt')].map((dt) => ({
+          label: dt.textContent ?? '',
+          labelTop: dt.getBoundingClientRect().top,
+          valueTop: (dt.nextElementSibling as HTMLElement).getBoundingClientRect().top,
+        }));
+        const times = [...el.querySelectorAll('.execution-summary .nowrap')].map((span) => ({
+          height: span.getBoundingClientRect().height,
+          // An inline span's box is its glyph box; compare lines through its client rects.
+          lines: span.getClientRects().length,
+          lineHeight: lineHeight(span),
+        }));
+        const rows = [...el.querySelectorAll('li')].map((li) => ({
+          scrollWidth: li.scrollWidth,
+          clientWidth: li.clientWidth,
+          right: li.getBoundingClientRect().right,
+        }));
+        return { pairs, times, rows, pageScroll: document.documentElement.scrollWidth, inner: window.innerWidth };
+      });
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expect(page.locator('.shell')).toHaveAttribute('data-layout', width >= 640 ? 'wide' : 'narrow');
+      const m = await measure();
+      expect(m.pairs.length, `detail pairs at ${width}`).toBeGreaterThanOrEqual(4);
+      for (const pair of m.pairs) {
+        if (width < 640) expect(pair.labelTop, `${pair.label} label above its value at ${width}`).toBeLessThan(pair.valueTop);
+        else expect(pair.labelTop, `${pair.label} label beside its value at ${width}`).toBe(pair.valueTop);
+      }
+      for (const time of m.times) {
+        expect(time.lines, `time on one line at ${width}`).toBe(1);
+        expect(time.height, `time height at ${width}`).toBeLessThanOrEqual(1.6 * time.lineHeight);
+      }
+      for (const row of m.rows) {
+        expect(row.scrollWidth, `row not clipped at ${width}`).toBeLessThanOrEqual(row.clientWidth);
+        expect(row.right, `row within the viewport at ${width}`).toBeLessThanOrEqual(width);
+      }
+      expect(m.pageScroll, `page width at ${width}`).toBeLessThanOrEqual(m.inner);
+    }
+    // Open Lots keeps its table with no header cut off by the pinned first column.
+    await page.setViewportSize({ width: 320, height: 900 });
+    const headers = await page
+      .getByRole('table', { name: 'Open Lots' })
+      .evaluate((table) =>
+        [...table.querySelectorAll('th')].map((th) => ({
+          name: th.textContent ?? '',
+          scrollWidth: th.scrollWidth,
+          clientWidth: th.clientWidth,
+          lines: th.getClientRects().length,
+        })),
+      );
+    const opened = await page.getByRole('table', { name: 'Open Lots' }).evaluate((table) =>
+      [...table.querySelectorAll('tbody td:first-child')].map((td) => {
+        const style = getComputedStyle(td);
+        return {
+          height: td.getBoundingClientRect().height - Number.parseFloat(style.paddingTop) - Number.parseFloat(style.paddingBottom),
+          lineHeight: Number.parseFloat(style.lineHeight),
+        };
+      }),
+    );
+    for (const cell of opened) expect(cell.height, 'Opened date and time on one line').toBeLessThanOrEqual(1.6 * cell.lineHeight);
+    for (const th of headers) expect(th.scrollWidth, `${th.name} header not clipped`).toBeLessThanOrEqual(th.clientWidth);
+    await context.close();
+  });
+});

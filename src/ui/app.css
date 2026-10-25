@@ -700,3 +700,112 @@ ul.narrative > li + li {
 .summary-card .badge {
   margin-bottom: 0.5rem;
 }
+
+/* Trade Detail Executions: one compact row each, whose button toggles its details. The date and
+   time never split across lines; a long row wraps between its fields instead. */
+ul.executions {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+ul.executions > li {
+  border-top: 1px solid var(--line);
+}
+
+ul.executions > li:first-child {
+  border-top: 0;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.execution-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.execution-summary {
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.execution-toggle .icon {
+  flex: none;
+}
+
+.execution-toggle[aria-expanded='true'] .icon {
+  transform: rotate(180deg);
+}
+
+/* Executions of one Position Change share a rail on their left edge. */
+ul.executions > li[data-group] {
+  border-left: 3px solid var(--line);
+  padding-left: 0.75rem;
+}
+
+.execution-group-mark {
+  display: block;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.execution-details {
+  padding: 0.25rem 0 0.75rem;
+}
+
+.execution-details dl dt {
+  font-size: 0.9rem;
+}
+
+.execution-reflection {
+  margin-top: 0.75rem;
+}
+
+.execution-reflection h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+@media (max-width: 639.98px) {
+  /* A label stacks above its value, so neither shares a narrow line. */
+  .execution-details dl {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .execution-details dl dd {
+    margin-bottom: 0.4rem;
+  }
+}
+
+/* Open Lots keeps every header on one line; the region scrolls instead. */
+table.lots th,
+table.lots td {
+  white-space: nowrap;
+}
+
+/* The date and time is wider than the pinned column, so Open Lots does not pin it. */
+.table-scroll.lots-scroll {
+  --pin: 0px;
+}
+
+table.lots th:first-child,
+table.lots td:first-child {
+  position: static;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+}

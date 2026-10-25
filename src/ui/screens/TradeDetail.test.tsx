@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
@@ -105,7 +106,7 @@ const rowsOf = (table: HTMLElement) =>
     );
 
 describe('Open Trade Detail', () => {
-  it('should show lifecycle Open as text, Position, an Open Lots table, and Position Changes with their Executions in Fact Order', async () => {
+  it('should show lifecycle Open as text, Position, an Open Lots table, and Executions as rows in Fact Order', async () => {
     renderView(openDetailOf([PC1, PC2]));
     expect(await screen.findByRole('heading', { name: 'XYZ', level: 1 })).toBeTruthy();
     expect(screen.getByText('Open', { selector: '.badge' })).toBeTruthy();
@@ -121,19 +122,13 @@ describe('Open Trade Detail', () => {
     // Numbers are right-aligned in tabular numerals.
     expect(within(lots).getAllByText('$50.10')[0]!.className).toContain('number');
 
-    const changes = screen.getByRole('region', { name: 'Position Changes' });
+    const executions = screen.getByRole('region', { name: 'Executions (2)' });
     expect(
-      within(changes)
-        .getAllByRole('heading', { level: 3 })
-        .map((h) => h.textContent),
-    ).toEqual(['Position Change at 2026-10-12 10:00', 'Position Change at 2026-10-12 11:00']);
-    const executions = within(changes).getAllByRole('table', {
-      name: 'Executions',
-    });
-    expect(executions.map(rowsOf)).toEqual([
-      [['2026-10-12 10:00', 'Buy', 'XYZ', '60', '$50.10', '$1.00']],
-      [['2026-10-12 11:00', 'Buy', 'XYZ', '40', '$50.30', '$1.00']],
-    ]);
+      within(executions)
+        .getAllByRole('button')
+        .map((b) => b.getAttribute('aria-label')),
+    ).toEqual(['Details for Buy 60 XYZ at 10:00', 'Details for Buy 40 XYZ at 11:00']);
+    expect(screen.queryByRole('region', { name: 'Position Changes' })).toBeNull();
   });
 
   it('should show Entry Quality figures with units once resolved, and Entry not yet resolved: 60 of 100 entered before', async () => {
@@ -278,11 +273,12 @@ describe('Open Trade Detail', () => {
     expect(within(panel).getByText(/position, entry, and fulfillment figures are unavailable/i)).toBeTruthy();
     expect(screen.getByText('Open', { selector: '.badge' })).toBeTruthy();
     expect(screen.getByRole('region', { name: 'Plan' })).toBeTruthy();
-    const changes = screen.getByRole('region', { name: 'Position Changes' });
-    expect(within(changes).getAllByRole('table', { name: 'Executions' }).map(rowsOf)).toEqual([
-      [['2026-10-12 10:00', 'Buy', 'XYZ', '60', '$50.10', '$1.00']],
-      [['2026-10-12 11:00', 'Buy', 'XYZ', '40', '$50.30', '$1.00']],
-    ]);
+    const executions = screen.getByRole('region', { name: 'Executions (2)' });
+    expect(
+      within(executions)
+        .getAllByRole('button')
+        .map((b) => b.getAttribute('aria-label')),
+    ).toEqual(['Details for Buy 60 XYZ at 10:00', 'Details for Buy 40 XYZ at 11:00']);
     expect(within(screen.getByRole('region', { name: 'Journal' })).getByText('Reflection declined')).toBeTruthy();
     // The narrative is the Journal section's alone, as in the Open form.
     expect(screen.queryByRole('region', { name: 'Position Change Reflection' })).toBeNull();
@@ -334,7 +330,11 @@ describe('badge meanings', () => {
     renderView(openDetailOf([PC1, PC2, PC3], { recordedDeviations: [pc3Excess], journal: [pc2Decline] }));
     const deviations = await screen.findByRole('region', { name: 'Deviations' });
     expect(within(deviations).getByText('Active').getAttribute('data-tone')).toBe('warning');
-    expect(within(screen.getByRole('region', { name: 'Journal' })).getByText('Reflection declined').getAttribute('data-tone')).toBe('warning');
+    expect(
+      within(screen.getByRole('region', { name: 'Journal' }))
+        .getByText('Reflection declined')
+        .getAttribute('data-tone'),
+    ).toBe('warning');
   });
 
   it('should give the lifecycle badge the info tone', async () => {
@@ -456,5 +456,142 @@ describe('summary card', () => {
     expect(screen.queryByRole('region', { name: 'Summary' })).toBeNull();
     const regions = screen.getAllByRole('region').filter((r) => r.getAttribute('aria-label') === null || r.tagName === 'SECTION');
     expect(regions[0]).toBe(panel);
+  });
+});
+
+// PC4 holds two Executions at one Economic Time, so the Detail has four Executions in all.
+const PC4 = positionChange('pc-4', 7, [
+  execution('ex-4', '2026-10-12T19:00:00Z', 8, '10', '52.00', '0.50'),
+  execution('ex-5', '2026-10-12T19:00:00Z', 9, '5', '52.10', '0.25'),
+]);
+
+describe('Executions', () => {
+  it('should label the region Executions with its count of Executions and list them in Fact Order', async () => {
+    renderView(openDetailOf([PC1, PC2, PC4]));
+    const section = await screen.findByRole('region', { name: 'Executions (4)' });
+    const rows = within(section).getAllByRole('listitem');
+    expect(rows.map((row) => /Buy (\d+)/.exec(row.textContent ?? '')?.[1])).toEqual(['60', '40', '10', '5']);
+  });
+
+  it('should show each Execution collapsed as one row with action, quantity, symbol, price, and Economic Time with no fee, with no Executions table and no Position Change headings', async () => {
+    renderView(openDetailOf([PC1, PC2, PC4]));
+    const section = await screen.findByRole('region', { name: 'Executions (4)' });
+    const rows = within(section).getAllByRole('listitem');
+    expect(rows.map((row) => row.querySelector('.execution-summary')?.textContent)).toEqual([
+      'Buy 60 XYZ @ $50.10 · 2026-10-12 10:00',
+      'Buy 40 XYZ @ $50.30 · 2026-10-12 11:00',
+      'Buy 10 XYZ @ $52.00 · 2026-10-12 15:00',
+      'Buy 5 XYZ @ $52.10 · 2026-10-12 15:00',
+    ]);
+    // The fee is in the expanded details only.
+    expect(within(section).queryByText(/fee|\$1\.00|\$0\.50/i)).toBeNull();
+    expect(screen.queryByRole('table', { name: 'Executions' })).toBeNull();
+    expect(screen.queryByRole('heading', { level: 3, name: /^Position Change at/ })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Position Changes' })).toBeNull();
+  });
+
+  it('should give each row a disclosure button named for its Execution, collapsed by default with aria-expanded false', async () => {
+    renderView(openDetailOf([PC1, PC2, PC4]));
+    const section = await screen.findByRole('region', { name: 'Executions (4)' });
+    const buttons = within(section).getAllByRole('button');
+    expect(buttons.map((b) => b.getAttribute('aria-label') ?? b.textContent)).toEqual([
+      'Details for Buy 60 XYZ at 10:00',
+      'Details for Buy 40 XYZ at 11:00',
+      'Details for Buy 10 XYZ at 15:00',
+      'Details for Buy 5 XYZ at 15:00',
+    ]);
+    for (const button of buttons) {
+      expect(button.getAttribute('aria-expanded')).toBe('false');
+      expect(button.getAttribute('aria-controls')).toBeTruthy();
+      expect(button.querySelector('svg[aria-hidden="true"]')).toBeTruthy();
+    }
+    expect(new Set(buttons.map((b) => b.getAttribute('aria-controls'))).size).toBe(4);
+  });
+
+  it('should show the Instrument, Economic Time, fee, and the Position Change with its Execution count when the row is expanded, and hide them again when it is collapsed', async () => {
+    renderView(openDetailOf([PC1, PC2, PC4]));
+    await screen.findByRole('region', { name: 'Executions (4)' });
+    const toggle = screen.getByRole('button', { name: 'Details for Buy 10 XYZ at 15:00' });
+    expect(screen.queryByText('Instrument', { selector: 'dt' })).toBeNull();
+    fireEvent.click(toggle);
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    const details = document.getElementById(toggle.getAttribute('aria-controls')!)!;
+    expect(termValue(details, 'Instrument')).toBe('XYZ');
+    expect(termValue(details, 'Economic Time')).toBe('2026-10-12 15:00');
+    expect(termValue(details, 'Fee')).toBe('$0.50');
+    expect(termValue(details, 'Position Change')).toBe('2026-10-12 15:00 · 2 Executions');
+    fireEvent.click(toggle);
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(document.getElementById(toggle.getAttribute('aria-controls')!)).toBeNull();
+    // A Position Change with one Execution says so in the singular.
+    fireEvent.click(screen.getByRole('button', { name: 'Details for Buy 60 XYZ at 10:00' }));
+    expect(termValue(screen.getByRole('region', { name: 'Executions (4)' }), 'Position Change')).toBe('2026-10-12 10:00 · 1 Execution');
+  });
+
+  it("should show the Position Change Reflection's answers in the expanded row of an Execution whose Position Change has one", async () => {
+    renderView(openDetailOf([PC1, PC2, PC4], { journal: [pc1Reflection] }));
+    await screen.findByRole('region', { name: 'Executions (4)' });
+    const toggle = screen.getByRole('button', { name: 'Details for Buy 60 XYZ at 10:00' });
+    fireEvent.click(toggle);
+    const details = document.getElementById(toggle.getAttribute('aria-controls')!)!;
+    expect(within(details).getByText('Position Change Reflection')).toBeTruthy();
+    expect(termValue(details, 'Decision mode')).toBe('Planned');
+    expect(termValue(details, 'Primary emotion')).toBe('Calm');
+    expect(termValue(details, 'Decision confidence')).toBe('4');
+    expect(termValue(details, 'Note')).toBe('Not answered');
+  });
+
+  it('should show Reflection declined with the reason, or No reflection, when the Position Change has a decline or no reflection', async () => {
+    renderView(openDetailOf([PC1, PC2, PC4], { journal: [pc1Reflection, pc2Decline] }));
+    await screen.findByRole('region', { name: 'Executions (4)' });
+    const open = (name: string) => {
+      const toggle = screen.getByRole('button', { name });
+      fireEvent.click(toggle);
+      return document.getElementById(toggle.getAttribute('aria-controls')!)!;
+    };
+    const declined = open('Details for Buy 40 XYZ at 11:00');
+    expect(within(declined).getByText('Reflection declined')).toBeTruthy();
+    expect(within(declined).getByText('Reason: Same plan, second fill.')).toBeTruthy();
+    expect(within(declined).queryByText('No reflection')).toBeNull();
+    const none = open('Details for Buy 10 XYZ at 15:00');
+    expect(within(none).getByText('No reflection')).toBeTruthy();
+    expect(within(none).queryByText('Reflection declined')).toBeNull();
+  });
+
+  it('should mark the Executions of a Position Change with several Executions as one group and show the shared reflection in each ones expanded row', async () => {
+    const pc4Reflection = { ...pc1Reflection, id: 'e-4', positionChangeId: 'pc-4', momentTime: '2026-10-12T19:00:00Z' };
+    renderView(openDetailOf([PC1, PC2, PC4], { journal: [pc1Reflection, pc4Reflection] }));
+    const section = await screen.findByRole('region', { name: 'Executions (4)' });
+    const rows = within(section).getAllByRole('listitem');
+    expect(rows.map((row) => within(row).queryByText(/^Same Position Change/)?.textContent ?? null)).toEqual([
+      null,
+      null,
+      'Same Position Change · 1 of 2',
+      'Same Position Change · 2 of 2',
+    ]);
+    expect(rows[2]!.getAttribute('data-group')).toBe('pc-4');
+    expect(rows[3]!.getAttribute('data-group')).toBe('pc-4');
+    for (const row of rows.slice(2)) {
+      fireEvent.click(within(row).getByRole('button'));
+      expect(termValue(row, 'Decision mode')).toBe('Planned');
+    }
+  });
+
+  it('should toggle with Enter and Space and keep focus on the button', async () => {
+    const user = userEvent.setup();
+    renderView(openDetailOf([PC1, PC2, PC4]));
+    await screen.findByRole('region', { name: 'Executions (4)' });
+    const toggle = screen.getByRole('button', { name: 'Details for Buy 60 XYZ at 10:00' });
+    toggle.focus();
+    await user.keyboard('{Enter}');
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(document.activeElement).toBe(toggle);
+    await user.keyboard(' ');
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(toggle);
+    await user.keyboard(' ');
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    await user.keyboard('{Enter}');
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
   });
 });

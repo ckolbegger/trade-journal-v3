@@ -39,9 +39,10 @@ test.describe('B2.1 open a position', () => {
     await expect(again.locator('header .badge')).toHaveText('Open');
     await expect(region(again, 'Position')).toContainText('60 shares of XYZ');
     await expect(again.getByRole('table', { name: 'Open Lots' }).locator('tbody tr')).toHaveCount(2);
-    const changes = region(again, 'Position Changes');
-    await expect(changes.getByRole('heading', { level: 3 })).toHaveText(['Position Change at 2026-10-12 10:00']);
-    await expect(changes.getByRole('table', { name: 'Executions' }).locator('tbody tr')).toHaveCount(2);
+    const executions = region(again, 'Executions (2)');
+    await expect(executions.getByRole('button')).toHaveCount(2);
+    await executions.getByRole('button', { name: 'Details for Buy 30 XYZ at 10:00' }).click();
+    await expect(executions).toContainText('2026-10-12 10:00 · 2 Executions');
     await expect(region(again, 'Entry Quality')).toContainText('Entry not yet resolved: 60 of 100 entered');
 
     const workspace = workspaceOf(await probe(again))!;

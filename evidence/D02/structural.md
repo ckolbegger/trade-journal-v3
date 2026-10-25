@@ -1663,3 +1663,31 @@ Checks: `npx vitest run src tests` 467 passed; typecheck, `tsc6 --noEmit`, lint,
 **ocr review of T2.49** (`ocr-review` step): commit `d96f781`, session `977813ec-b042-422a-8053-ac303957c5fe`, model `gpt-6.1-sol`, 4 files reviewed, 0 comments. No findings. The reviewer also checked from the code: Stop and Target each carry a text label (colour only reinforces), and their contrast on the white card is 7.37:1 (`#a3261b`) and 6.55:1 (`#1d6b34`). Raw output: `ocr/t2.49-d96f781.json`.
 
 **Complete cumulative run after T2.49** (`suite-runner`, 2026-10-25 08:13 EDT, on `d96f781`; this also covers the full browser set the subagent did not rerun after scoping the two `$250.00` lookups): Unit 41 files / 418 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 79 passed (2.5m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.49-*.txt`.
+
+## T2.50 Executions as expandable rows (U3)
+
+Commits: view amendment (reflection items carry their Position Change), then the UI.
+
+**View amendment.** The Journal's narrative projection now adds `positionChangeId` (from the stored `origin.factId`, where the origin is a Position Change) to reflection Entry and Decline items; Plan Reflection items carry none. No storage or schema change; `npm run verify:fixtures` stays green with no snapshot regenerated. Case: `open-views.test.ts`, "should carry the positionChangeId of its Position Change on a reflection Entry and a Decline, and none on other items". The existing exact-shape assertions in `position-change-reflection.test.ts` gained the new field.
+
+**Cases (TradeDetail.test.tsx, describe Executions), each red then green in tdd-log.md:** region and count; collapsed row without fee; disclosure button; expanded details; reflection answers; declined or none; group marking; Enter and Space (first-run pass, flagged, mutation recorded in tdd-log.md).
+
+**Measurement** (`e2e/d2/ui-alignment.spec.ts`, T2.50, against dist-faults; red then green logged by hand):
+
+| Check | 320 px | 1280 px |
+| --- | --- | --- |
+| Expanded label vs value | label top above value top | label top equals value top (side by side) |
+| Row time span | one client rect, height within 1.6 x line-height | same |
+| Row clipping (scrollWidth vs clientWidth), right edge, page width | none | none |
+| Open Lots headers scrollWidth within clientWidth; Opened cell on one line (was 3 lines at 70.55 px, limit 37.12) | pass after unpinning the first column | not measured |
+
+**Test impact, every changed lookup:**
+- `TradeDetail.test.tsx`: Open Detail case, Position Changes heading list and Executions tables replaced by the Executions region and its button names; incoherent Detail case, Executions tables replaced the same way. Journal-region lookups of "Position Change at ..." unchanged (T2.51 owns them). Entry Quality and Deviation text unchanged.
+- `e2e/d2/open-position.spec.ts`: Position Changes heading and Executions table rows replaced by region "Executions (2)", two buttons, and the expanded "2026-10-12 10:00 · 2 Executions".
+- `e2e/d2/durability.spec.ts`: Executions table row count replaced by two row buttons in "Executions (2)".
+- `e2e/d2/offline.spec.ts`: two Position Change headings replaced by three row buttons and the expanded "· 1 Execution" of the 11:00 row.
+- `e2e/d2/after-save.spec.ts`: region "Position Changes" replaced by "Executions (2)".
+- `e2e/d2/narrow.spec.ts` unchanged and green; Open Lots remains a table.
+- `tests/support/open-detail-fixtures.ts`: pc1Reflection and pc2Decline gained `positionChangeId`.
+
+**Checks:** `npx vitest run src` 427 passed; `tests/integration` 49 passed; typecheck, `tsc6`, lint, lint:deps, verify:fixtures all exit 0; `npm run build:faults && npx playwright test e2e/d1 e2e/d2` 80 passed.
