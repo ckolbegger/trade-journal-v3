@@ -1131,3 +1131,19 @@ Copy decisions:
 **ocr review of T2.34** (`ocr-review` step): commit `88bcd26`, session `e44fd381-3ef1-434a-9196-a0da9d93d854`, model `gpt-6.1-sol`, 3 files reviewed (3 excluded), 0 comments. No findings. Raw output: `ocr/t2.34-88bcd26.json`.
 
 **Complete cumulative run after T2.34** (`suite-runner`, 2026-10-24 22:22 EDT, on `88bcd26`): Unit 38 files / 379 tests passed; Node integration 19 / 42 passed; Browser (Chromium) 54 passed (1.7m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.34-*.txt`.
+
+#### T2.35 I2.5 test name (F11)
+
+- Old case name: `should return the Trade, derivation, and Entry equal to the Detail read after restart, with the facts, Open index entry, Entry, and obligation durable, and the Trade absent from Planned`. Old header comment ended: `The AC-RESP-001 checks are in responses.test.ts.`
+- New case name: `should open the Trade with PC1 so that its Position, Open Lot, and lifecycle persist across restart, with the facts, Open index entry, Entry, and obligation stored, and the Trade absent from Planned`. New header: `I2.5: opening a position with PC1 of the reference Trade (AC-POS-001, AC-LIFE-001): the Position, Open Lot, and lifecycle read back after restart, and the stored facts, Open index entry, Entry, and obligation.` No assertion changed.
+
+| Command | Result |
+|---|---|
+| `npm run test:integration` (before the change) | 19 files / 42 tests passed |
+| `npm run test:integration -- d2/open-position` | 1 file, 1 test passed |
+| `npm run test:integration -- d2/responses` | 1 file, 1 test passed |
+| `npm run test:integration` (after) | 19 files / 42 tests passed, unchanged |
+| `grep -n "AC-RESP-001" tests/integration/d2/open-position.test.ts` | no output (exit 1) |
+| `npm run lint` | exit 0 |
+
+The plan's integration total of 39 is a stale figure (later tasks added tests); the before and after totals match at 42.
