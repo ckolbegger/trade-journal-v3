@@ -1,0 +1,173 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 5 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 5,
+    "total_tokens": 211370,
+    "input_tokens": 208509,
+    "output_tokens": 2861,
+    "cache_read_tokens": 21120,
+    "elapsed": "2m6s"
+  },
+  "tool_calls": {
+    "total": 28,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 8,
+      "file_read": 18
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/form-issues.tsx",
+      "content": "A whitespace-only Text answer is defined and different, so typing a space after a required-prompt rejection removes both errors even though Journal's isBlank() still considers the prompt unanswered. Require nonblank trimmed text before treating a Text answer as corrected; this affects both forms.",
+      "existing_code": "export const answerChanged = (before: Answers, now: Answers, promptId: string) =\u003e\n  now[promptId] !== undefined \u0026\u0026 JSON.stringify(now[promptId]) !== JSON.stringify(before[promptId]);",
+      "start_line": 64,
+      "end_line": 65,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/PlanForm.tsx",
+      "content": "InvalidPrice covers intended entry, every Stop, and every Target in assessPlan(), but is mapped to 'entry'. Consequently, fixing an invalid Stop/Target leaves this issue visible, while changing an already-valid entry hides it even if the offending Stop/Target remains invalid. Handle InvalidPrice against all submitted price fields (or supply precise field mappings) so it clears only once the invalid prices are corrected.",
+      "existing_code": "      case 'entry':\n        return changed('entry') \u0026\u0026 isPositiveDecimal(fields.entry);",
+      "start_line": 162,
+      "end_line": 163,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/PlanForm.tsx",
+      "content": "MissingInstrument also represents malformed symbols, not just empty ones: assessPlan() requires /^[A-Z][A-Z0-9.]{0,9}$/ after normalization. Changing a rejected symbol to another nonempty invalid value (for example, '!!!') currently clears the field error and summary line. Apply the domain symbol validation before marking this issue corrected.",
+      "existing_code": "      case 'symbol':\n        return changed('symbol') \u0026\u0026 fields.symbol.trim() !== '';",
+      "start_line": 158,
+      "end_line": 159,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/PositionChangeForm.tsx",
+      "content": "Local-time validation also returns `NonexistentLocalTime` and `AmbiguousLocalTime` for DST transitions. Those issues are produced by the same client-side submit check, but this condition never clears them after the trader selects a valid time. Allow all three local-time error codes to clear when conversion succeeds, while retaining server-only time issues until resubmission.",
+      "existing_code": "      if (name === 'economicTime') return issue.code === 'InvalidLocalTime' \u0026\u0026 row.time !== before.time \u0026\u0026 fromWorkspaceLocal(row.time, timeZone).ok;",
+      "start_line": 276,
+      "end_line": 276,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/PlanForm.tsx",
+      "content": "The domain compares prices using exact `Rational` values, but these Stop/Target checks convert them to floating-point numbers. Distinct valid six-place decimals can round to the same number (for example, `10000000000.000001` and `10000000000.000002`), leaving a corrected risk/target issue visible until resubmission. Parse and compare with the domain decimal utilities for both checks so clearing matches server validation.",
+      "existing_code": "        return (changed('stop') || changed('entry')) \u0026\u0026 isPositiveDecimal(fields.stop) \u0026\u0026 (issue.code !== 'NoPositiveRisk' || Number(fields.stop) \u003c entry);",
+      "start_line": 165,
+      "end_line": 165,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Plan and position change form issue handling",
+      "files": [
+        "src/ui/screens/PlanForm.tsx",
+        "src/ui/screens/PositionChangeForm.tsx",
+        "src/ui/screens/form-issues.tsx",
+        "src/ui/screens/plan-issues.ts",
+        "src/ui/screens/position-change-issues.ts"
+      ]
+    }
+  ],
+  "session_id": "a831fa68-dbfb-408d-b102-bd6e8e907b04",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a831fa68-dbfb-408d-b102-bd6e8e907b04",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "9c00b37",
+      "resolved_base": "91e0a4fda094cbb3d95632179abe06e5e882730e",
+      "resolved_head": "9c00b37f697446d654c6600aac3eaf22db050bf5",
+      "exact_range": "91e0a4fda094cbb3d95632179abe06e5e882730e..9c00b37f697446d654c6600aac3eaf22db050bf5",
+      "source_artifact_sha256": "45bef1a53bc71ff2a95a3575e2638b6040af654619d0fae3eb19727507613d43"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "47d2ee623375631ff846bce1809373f6cce5cfd9489a9630d3bb7a4fb23bff84"
+        },
+        {
+          "item_id": "65f33867831aeb054dd88dcf09a0d610354447756e080f06541a165045b74826",
+          "path": "src/ui/screens/position-change-issues.ts",
+          "fingerprint": "031ef3ea5c1acb209c70015c7171a9f045ddcbcae0d4642426aa846ab32f03b1"
+        },
+        {
+          "item_id": "6a87f2d2fe665c1b9f82975a7361db0ca3ea766350ff38440a1f8a76024a09bb",
+          "path": "src/ui/screens/form-issues.tsx",
+          "fingerprint": "231a982676ed50296663ab3407f839fde75ae51bf43c5591e7ccc62ed986853b"
+        },
+        {
+          "item_id": "89115e623ae75eecbc823b93f963a07513d9bb125dbac123317ba357016cd9cc",
+          "path": "src/ui/screens/plan-issues.ts",
+          "fingerprint": "c7e134785c98fce2c02575930de136a61e54e2ca989bbb07c3eb7513b53cc17f"
+        },
+        {
+          "item_id": "ba20b98bc1612e76f9501573d2ac8c4c304075cf175a8c30a7f5f00e002cef88",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "86b7333e2a8946de047b8374cd54396fad748ce2fb6bf2235eb8eb17b6d1632a"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "47d2ee623375631ff846bce1809373f6cce5cfd9489a9630d3bb7a4fb23bff84"
+        },
+        {
+          "item_id": "65f33867831aeb054dd88dcf09a0d610354447756e080f06541a165045b74826",
+          "path": "src/ui/screens/position-change-issues.ts",
+          "fingerprint": "031ef3ea5c1acb209c70015c7171a9f045ddcbcae0d4642426aa846ab32f03b1"
+        },
+        {
+          "item_id": "6a87f2d2fe665c1b9f82975a7361db0ca3ea766350ff38440a1f8a76024a09bb",
+          "path": "src/ui/screens/form-issues.tsx",
+          "fingerprint": "231a982676ed50296663ab3407f839fde75ae51bf43c5591e7ccc62ed986853b"
+        },
+        {
+          "item_id": "89115e623ae75eecbc823b93f963a07513d9bb125dbac123317ba357016cd9cc",
+          "path": "src/ui/screens/plan-issues.ts",
+          "fingerprint": "c7e134785c98fce2c02575930de136a61e54e2ca989bbb07c3eb7513b53cc17f"
+        },
+        {
+          "item_id": "ba20b98bc1612e76f9501573d2ac8c4c304075cf175a8c30a7f5f00e002cef88",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "86b7333e2a8946de047b8374cd54396fad748ce2fb6bf2235eb8eb17b6d1632a"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 126167
+  }
+}

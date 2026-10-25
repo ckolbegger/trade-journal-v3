@@ -1605,3 +1605,22 @@ Change: `PlanForm` wraps its controls in three `section.card` elements, each `ar
 | n/a | `app.css:347`, `PlanForm.tsx:147` | A field error under one Risk input could misalign the two-column rows | Wrong (dismissed): each error sits inside its own `div.field`, the grid uses `align-items: start` and `minmax(0, 1fr)`, so a taller cell only makes its row taller and paired inputs keep a shared top y |
 
 **Complete cumulative run after T2.45** (`suite-runner`, 2026-10-25 07:37 EDT, on `23a10eb`): Unit 41 files / 399 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 79 passed (2.5m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.45-*.txt`.
+
+#### T2.47
+
+Clear corrected issues (U4) on New Plan and Record entry: `IssueSummary` takes the submitted issues and a render-time `corrected` predicate, hides corrected lines, hides itself when none remain, and moves focus only when a new submit result arrives. The forms judge each client-judgeable issue against a snapshot of the submitted values; server-only issues stay until the next submit. Tests: five cases in `PlanForm.test.tsx` and `PositionChangeForm.test.tsx` (cases 2 and 3 first-run passes, mutation-checked; flagged in the handoff). Checks: `npx vitest run src` 404 passed; `build:faults` + `e2e/d1 e2e/d2` 79 passed.
+
+**ocr review of T2.47** (`ocr-review` step): commit `9c00b37`, session `a831fa68-dbfb-408d-b102-bd6e8e907b04`, model `gpt-6.1-sol`, 5 files reviewed, 5 comments, plus three main-session questions. Raw output: `ocr/t2.47-9c00b37.json`.
+
+| Severity | Location | Claim | Verdict |
+| --- | --- | --- | --- |
+| medium | `PlanForm.tsx:162` | `InvalidPrice` mapped to entry only; the domain raises it for entry, Stop or Target | Valid; T2.47-B1 |
+| medium | `PlanForm.tsx:158` | `MissingInstrument` clears on any non-empty symbol; the domain also rejects malformed symbols | Valid; T2.47-B1 |
+| medium | `form-issues.tsx:64` | A whitespace-only Text answer clears a required-prompt issue; the domain trims | Valid; T2.47-B1 |
+| medium | `PositionChangeForm.tsx:276` | `NonexistentLocalTime` and `AmbiguousLocalTime` never clear | Valid; T2.47-B1 |
+| low | `PlanForm.tsx:165` | Stop/Target compared with `Number`, the domain with exact `Rational` | Doubtful; T2.47-B1 (reuse `parseDecimal` and `Rational`) |
+| (question a) | `form-issues.tsx` | Client decimal checks restate the domain rule | Matches in effect; `domain/values` is importable from `src/ui`, so T2.47-B1 replaces the duplicated regex |
+| (question b) | `PositionChangeForm.tsx:268-282` | A removed Execution row's issue line can never clear (no dangling link) | Valid (minor); T2.47-B1 |
+| (question c) | both forms | Snapshot gating | Holds apart from the rows above |
+
+**Complete cumulative run after T2.47** (`suite-runner`, 2026-10-25 07:46 EDT, on `9c00b37`): Unit 41 files / 404 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 79 passed (2.5m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.47-*.txt`.
