@@ -1731,3 +1731,14 @@ Commits: view amendment (reflection items carry their Position Change), then the
 | (question d) | `TradeDetail.tsx:169, 304` | `view.plan.underlying` is required on every Detail branch, incoherent included | Holds |
 
 **Complete cumulative run after T2.51** (`suite-runner`, 2026-10-25 09:16 EDT, on `8e0253f`): Unit 41 files / 431 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 80 passed (2.4m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.51-*.txt`.
+
+**ocr review of T2.52** (`ocr-review` step): commit `659a2b2`, session `bc555914-a623-472f-b5d5-40e5f9dd8310`, model `gpt-6.1-sol`, 1 file reviewed, 0 comments, plus four main-session questions. Raw output: `ocr/t2.52-659a2b2.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| (question a) | `PositionChangeForm.tsx:303-304` | The entered quantity sums the view's net `positions[].quantity` with `Rational`; `legFulfillment` was suggested as a more direct source | Holds: `LegFulfillment` carries only a status, no quantity, and the Detail sums `positions` the same way (`TradeDetail.tsx:209, 636`) |
+| (question b) | `PositionChangeForm.tsx:303-306` | "Not entered yet" exactly on a Planned view; an Open view always has positions | Holds |
+| (question c) | `PositionChangeForm.tsx:294-297, 138-142` | The link before the h1 takes no initial focus (focus goes to the h1); heading order unchanged | Holds |
+| (question d) | `PositionChangeForm.tsx:298` | "Trade" is the only region with that name on the page | Holds (naming nit dismissed; it matches the New Plan "Trade" card of T2.45) |
+
+**Complete cumulative run after T2.52** (`suite-runner`, 2026-10-25 09:23 EDT, on `659a2b2`): Unit 41 files / 433 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 80 passed (2.4m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.52-*.txt`.
