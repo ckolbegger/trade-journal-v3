@@ -1826,3 +1826,15 @@ Review finding (valid, minor): in `tools/ui-screenshots.ts`, `profileAt(dir).lau
 | (question c) | `tools/ui-screenshots.ts:199-200` | The script deletes the committed `evidence/D02/ui-alignment` before capturing, so a failed run leaves it deleted or partial | Valid; T2.54-B2 |
 
 **Complete cumulative run after T2.54-B1** (`suite-runner`, 2026-10-25 10:14 EDT, on `0cd36c2`, covering T2.53, T2.53-B1, T2.53-B2, T2.54 and T2.54-B1): Unit 41 files / 435 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 88 passed (2.6m); static and verify checks 11 of 11 exit 0; then `npm run ui:screenshots` exit 0, 34 PNGs plus the README (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.54-b1-*.txt`.
+
+**T2.54-B2** (`a7e3488`, `tools/ui-screenshots.ts`): captures into a temporary sibling directory and replaces `evidence/D02/ui-alignment` only after the 34-PNG and README checks pass. Forced failure after the 5th capture: exit 1, `git status --short evidence/D02/ui-alignment` empty, no capture directory left, port 5175 free.
+
+**ocr review of T2.54-B2** (`ocr-review` step): commit `a7e3488`, session `a3121cbf-7b18-4110-95b0-450804a81e5b`, 1 file reviewed, 0 comments, plus three main-session questions. Raw output: `ocr/t2.54-b2-a7e3488.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| (question a) | `tools/ui-screenshots.ts:225-230` | `rmSync(OUT)` before `renameSync`: a rename failure loses both copies | Valid; T2.54-B3 |
+| (question b) | `tools/ui-screenshots.ts:204-219` | Release order context, profile directory, server kept | Holds |
+| (question c) | `.gitignore`, `tools/ui-screenshots.ts:202` | After a hard kill the capture directory sits untracked and unignored in `evidence/D02` | Valid; T2.54-B3 (capture under the ignored `test-results/`) |
+
+**Complete cumulative run after T2.54-B2** (`suite-runner`, 2026-10-25 10:19 EDT, on `a7e3488`): Unit 41 files / 435 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 88 passed (2.6m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` exit 0, 34 PNGs plus the README (re-renders reverted, no capture directory left). Failures: none. Outputs: `suite-runs/t2.54-b2-*.txt`.
