@@ -10,6 +10,8 @@
   --warning-ground: #fff4dd;
   --warning-line: #b26b00;
   --error: #a3261b;
+  --stop: #a3261b;
+  --target: #1d6b34;
   --info-ground: #e4edfa;
   --info-ink: #163b75;
   --info-line: #1f5fbf;
@@ -678,4 +680,23 @@ ul.narrative > li + li {
   align-items: center;
   gap: 0.375rem;
   margin-block-end: 0.5rem;
+}
+
+.summary-card .summary-text {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-align: left;
+}
+
+.summary-card .stop {
+  color: var(--stop);
+}
+
+.summary-card .target {
+  color: var(--target);
+}
+
+.summary-card .badge {
+  margin-bottom: 0.5rem;
 }

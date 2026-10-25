@@ -382,3 +382,79 @@ describe('back to the list', () => {
     expect(screen.getByRole('link', { name: 'Back to Trades' }).getAttribute('href')).toBe('/');
   });
 });
+
+describe('summary card', () => {
+  const summaryOf = () => screen.findByRole('region', { name: 'Summary' });
+
+  it('should lead the summary card with the Trade Summary text and on an Open Detail with Net cost', async () => {
+    renderView(plannedDetail);
+    const planned = await summaryOf();
+    expect(within(planned).getByText('Long 100 shares @ $50.00')).toBeTruthy();
+    expect(within(planned).queryByText('Net cost')).toBeNull();
+    cleanup();
+
+    renderView(openDetailOf([PC1]));
+    const open = await summaryOf();
+    expect(within(open).getByText('Long 60 shares @ $50.10')).toBeTruthy();
+    expect(termValue(open, 'Net cost')).toBe('$3,007.00');
+  });
+
+  it('should open a Planned Detail with a summary of Intended entry, Stop, and Target, each with its text label, plus 1R and Reward : risk', async () => {
+    renderView(plannedDetail);
+    const card = await summaryOf();
+    expect(termValue(card, 'Intended entry')).toBe('$50.00');
+    expect(termValue(card, 'Stop')).toBe('$47.50');
+    expect(termValue(card, 'Target')).toBe('$56.00');
+    expect(termValue(card, '1R')).toBe('$250.00');
+    expect(termValue(card, 'Reward : risk')).toBe('2.4');
+    expect(within(card).getByText('$50.00', { selector: 'dd' }).className).toContain('number');
+  });
+
+  it('should open an Open Detail with the Position quantity against plan, the entry status, opening fees, Stop, and Target', async () => {
+    renderView(openDetailOf([PC1, PC2, PC3]));
+    const card = await summaryOf();
+    expect(termValue(card, 'Quantity')).toBe('120 of 100 shares');
+    expect(termValue(card, 'Entry')).toBe('Resolved');
+    expect(termValue(card, 'Opening fees')).toBe('$3.00');
+    expect(termValue(card, 'Stop')).toBe('$47.50');
+    expect(termValue(card, 'Target')).toBe('$56.00');
+    expect(within(card).queryByText('Intended entry')).toBeNull();
+    cleanup();
+
+    renderView(openDetailOf([PC1]));
+    expect(termValue(await summaryOf(), 'Entry')).toBe('Entering');
+  });
+
+  it('should add the Average entry and Actual initial risk to the Open summary once the entry is resolved, and say Entry not yet resolved before', async () => {
+    renderView(openDetailOf([PC1, PC2]));
+    const resolved = await summaryOf();
+    expect(termValue(resolved, 'Average entry')).toBe('$50.18');
+    expect(termValue(resolved, 'Actual initial risk')).toBe('$270.00');
+    expect(within(resolved).queryByText('Entry not yet resolved')).toBeNull();
+    cleanup();
+
+    renderView(openDetailOf([PC1]));
+    const pending = await summaryOf();
+    expect(within(pending).getByText('Entry not yet resolved')).toBeTruthy();
+    expect(within(pending).queryByText('Average entry')).toBeNull();
+    expect(within(pending).queryByText('Actual initial risk')).toBeNull();
+  });
+
+  it('should show an active-Deviation badge in the Open summary when a recorded Deviation is Active', async () => {
+    renderView(openDetailOf([PC1, PC2, PC3], { recordedDeviations: [pc3Excess] }));
+    const card = await summaryOf();
+    expect(within(card).getByText('Deviation active').getAttribute('data-tone')).toBe('warning');
+    cleanup();
+
+    renderView(openDetailOf([PC1, PC2]));
+    expect(within(await summaryOf()).queryByText('Deviation active')).toBeNull();
+  });
+
+  it('should show no summary figures on an incoherent Detail, leaving the Records disagree panel first', async () => {
+    renderView(incoherentDetailOf([PC1, PC2], [{ factId: 'ex-1', reason: 'NonpositiveQuantity' }]));
+    const panel = await screen.findByRole('region', { name: 'Records disagree' });
+    expect(screen.queryByRole('region', { name: 'Summary' })).toBeNull();
+    const regions = screen.getAllByRole('region').filter((r) => r.getAttribute('aria-label') === null || r.tagName === 'SECTION');
+    expect(regions[0]).toBe(panel);
+  });
+});

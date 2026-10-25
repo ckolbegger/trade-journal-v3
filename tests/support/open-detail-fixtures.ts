@@ -8,6 +8,7 @@ import type {
   PositionChangeFact,
   RecordedDeviation,
 } from '../../src/app/types.ts';
+import { Rational } from '../../src/domain/values/index.ts';
 import { derive, type TradeAnalysisRecord } from '../../src/domain/trade-analysis/index.ts';
 import { LEG_ID, referenceRecord } from '../../src/domain/trade-analysis/reference-trade.ts';
 import { plannedDetail } from './views-fixtures.ts';
@@ -33,6 +34,15 @@ export const pc3Excess: RecordedDeviation = {
     },
   ],
 };
+
+// The open quantity at its quantity-weighted Open Lot price, as Trade Views builds it.
+function openSummary(positions: OpenTradeDetail['positions']): OpenTradeDetail['summary'] {
+  const lots = positions.flatMap((p) => p.openLots);
+  const total = lots.reduce((sum, l) => sum.add(l.quantity), Rational.of(0n));
+  const cost = lots.reduce((sum, l) => sum.add(l.quantity.mul(l.price)), Rational.of(0n));
+  if (total.compare(Rational.of(0n)) === 0) return undefined;
+  return { kind: 'Stock', direction: 'Long', quantity: total, price: cost.div(total) };
+}
 
 export interface OpenDetailOptions {
   readonly storedLifecycle?: TradeAnalysisRecord['storedLifecycle'];
@@ -61,6 +71,7 @@ export function openDetailOf(positionChanges: readonly PositionChangeFact[], opt
     },
     lifecycle: { stored: record.storedLifecycle, agreement: derived.agreement },
     baseline: derived.baseline,
+    summary: openSummary(derived.positions),
     positions: derived.positions,
     netCost: derived.netCost,
     fees: derived.fees,

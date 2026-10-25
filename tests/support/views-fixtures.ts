@@ -28,6 +28,7 @@ export const plannedDetail = {
     targets: [{ factId: 'f-4', kind: 'UnderlyingPrice', price: '56' }],
   },
   lifecycle: { stored: 'Planned', agreement: { kind: 'Agrees' } },
+  summary: { kind: 'Stock', direction: 'Long', quantity: Rational.of(100n), price: Rational.of(50n) },
   baseline: {
     originalPlannedRisk: Rational.of(250n),
     originalPlannedReward: Rational.of(600n),

@@ -15,7 +15,7 @@ import type {
 } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { Badge } from '../Badge.tsx';
-import { decimalMoney as price, localTime, money, quantity, ratio, rMultiple } from '../format.ts';
+import { decimalMoney as price, localTime, money, netCost, quantity, ratio, rMultiple, tradeSummary } from '../format.ts';
 import { BackIcon } from '../icons.tsx';
 import { useRuntime } from '../runtime.tsx';
 
@@ -128,6 +128,7 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
           </Link>
         )}
       </header>
+      {!('recordedPositionChanges' in view) && <SummaryCard view={view} />}
       {'positionChanges' in view && view.findings.length > 0 && <IntegrityPanel view={view} timeZone={timeZone} />}
       {'recordedPositionChanges' in view && <IncoherentPanel view={view} timeZone={timeZone} />}
       <section className="card" aria-labelledby="plan-heading">
@@ -181,6 +182,65 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
         </section>
       )}
     </article>
+  );
+}
+
+// The Trade at a glance, from values the Detail already holds. Stop and Target carry their colour
+// and always their label.
+function SummaryCard({ view }: { readonly view: PlannedTradeDetail | OpenTradeDetail }) {
+  const leg = view.plan.legs[0];
+  const stop = view.plan.stops[0];
+  const target = view.plan.targets[0];
+  return (
+    <section className="card summary-card" aria-label="Summary">
+      {view.summary && <p className="summary-text number">{tradeSummary(view.summary)}</p>}
+      {'deviations' in view && view.deviations.some((d) => d.versions.at(-1)?.status === 'Active') && <Badge tone="warning">Deviation active</Badge>}
+      <dl>
+        {'netCost' in view && view.netCost.kind === 'Value' && (
+          <>
+            <dt>Net cost</dt>
+            <dd className="number">{netCost(view.netCost.value)}</dd>
+          </>
+        )}
+        {'positionChanges' in view && (
+          <>
+            <dt>Quantity</dt>
+            <dd className="number">{`${quantity(view.positions.reduce((total, p) => total.add(p.quantity), Rational.of(0n)))} of ${leg?.quantity ?? ''} shares`}</dd>
+            <dt>Entry</dt>
+            <dd>{view.entryStatus}</dd>
+            <dt>Opening fees</dt>
+            <dd className="number">{money(view.fees.incurredOpening)}</dd>
+          </>
+        )}
+        {'positionChanges' in view && view.entryQuality.kind === 'Value' && (
+          <>
+            <dt>Average entry</dt>
+            <dd className="number">{shown(view.entryQuality.value.averageEntry, money)}</dd>
+            <dt>Actual initial risk</dt>
+            <dd className="number">{shown(view.entryQuality.value.actualInitialRisk, money)}</dd>
+          </>
+        )}
+        {!('positionChanges' in view) && (
+          <>
+            <dt>Intended entry</dt>
+            <dd className="number">{leg ? price(leg.intendedEntry) : ''}</dd>
+          </>
+        )}
+        <dt className="stop-label">Stop</dt>
+        <dd className="number stop">{stop ? price(stop.price) : ''}</dd>
+        <dt className="target-label">Target</dt>
+        <dd className="number target">{target ? price(target.price) : ''}</dd>
+        {!('positionChanges' in view) && (
+          <>
+            <dt>1R</dt>
+            <dd className="number">{money(view.baseline.oneR)}</dd>
+            <dt>Reward : risk</dt>
+            <dd className="number">{ratio(view.baseline.rewardRiskRatio)}</dd>
+          </>
+        )}
+      </dl>
+      {'positionChanges' in view && view.entryQuality.kind !== 'Value' && <p>Entry not yet resolved</p>}
+    </section>
   );
 }
 

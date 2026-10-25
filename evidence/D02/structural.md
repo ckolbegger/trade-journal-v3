@@ -1643,3 +1643,19 @@ Issue clearing judged by the domain's rules: `InvalidPrice` clears only when ent
 **ocr review of T2.48** (`ocr-review` step): commit `7e09465`, session `859519a9-7216-4d82-876d-8c3fa6f5e888`, model `gpt-6.1-sol`, 3 files reviewed, 0 comments. No findings. The reviewer also confirmed from the code that `BackIcon` renders through the shared `Icon` (`aria-hidden="true"`, `focusable="false"`, no `<title>`), so the link's name is exactly "Back to Trades". Raw output: `ocr/t2.48-7e09465.json`.
 
 **Complete cumulative run after T2.48** (`suite-runner`, 2026-10-25 08:03 EDT, on `7e09465`): Unit 41 files / 412 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 79 passed (2.5m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.48-*.txt`.
+
+## T2.49 Detail summary card
+
+Cases (all in `src/ui/screens/TradeDetail.test.tsx`, describe "summary card"), each red then green in `tdd-log.md`: Trade Summary text and Net cost; Planned Intended entry, Stop, Target, 1R, Reward : risk; Open quantity against plan ("120 of 100 shares"), Entry, Opening fees, Stop, Target; Average entry and Actual initial risk once resolved, "Entry not yet resolved" before; "Deviation active" warning badge; no card on an incoherent Detail (first-run pass, mutation recorded in the log).
+
+Choices:
+- `SummaryCard` is a `section.card.summary-card` named "Summary" (aria-label), after the h1 and back link and before every other region; the incoherent Detail has none, so the Records disagree panel is first.
+- Uses only Detail view values (`summary`, `netCost`, plan legs/stops/targets, baseline, positions, fees, entryStatus, entryQuality, deviations). Stop and Target values use new `--stop` / `--target` tokens and always carry the text labels. Figures use the `number` class (tabular numerals). The deviation badge uses `<Badge tone="warning">`.
+- Fixtures: `plannedDetail` gained `summary`; `openDetailOf` builds `summary` as Trade Views does (open quantity at weighted Open Lot price).
+
+Test-impact list (lookups the card made ambiguous):
+- `e2e/d1/plan.spec.ts` (line 24): `getByText('$250.00')` now matches the Summary 1R and Plan Baseline 1R; scoped to the Plan Baseline region.
+- `e2e/d1/responsive-a11y.spec.ts` (line 179): same lookup, same fix.
+- `src` unit tests and `tests`: no lookup became ambiguous (they are already region-scoped); all 467 pass. `e2e/d2` unaffected.
+
+Checks: `npx vitest run src tests` 467 passed; typecheck, `tsc6 --noEmit`, lint, lint:deps exit 0; `npm run build:faults && npx playwright test e2e/d1 e2e/d2` 77 passed, then the 2 failures above fixed and rerun green.

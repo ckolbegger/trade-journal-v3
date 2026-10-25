@@ -176,7 +176,7 @@ test.describe('B1.15 responsive and accessible', () => {
     await tabTo(page, page.getByRole('button', { name: 'Confirm Plan' }));
     await page.keyboard.press('Enter');
     await expect(page.getByRole('heading', { name: PLAN.symbol, level: 1 })).toBeVisible();
-    await expect(page.getByText('$250.00')).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Plan Baseline' }).getByText('$250.00')).toBeVisible();
     await context.close();
   });
 });
