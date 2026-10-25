@@ -342,3 +342,43 @@ describe('badge meanings', () => {
     expect((await screen.findByText('Open', { selector: '.badge' })).getAttribute('data-tone')).toBe('info');
   });
 });
+
+describe('back to the list', () => {
+  it('should show a Back to Trades link above the h1 that opens the Trades tab of the Trades stored lifecycle', async () => {
+    const open = facadeDouble();
+    vi.mocked(open.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: openDetailOf([PC1]), binding: {} } as never);
+    renderDetail(open);
+    const h1 = await screen.findByRole('heading', { level: 1 });
+    const link = screen.getByRole('link', { name: 'Back to Trades' });
+    expect(link.getAttribute('href')).toBe('/');
+    expect(link.compareDocumentPosition(h1) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    cleanup();
+
+    const planned = facadeDouble();
+    vi.mocked(planned.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: plannedDetail, binding: {} } as never);
+    renderDetail(planned);
+    await screen.findByRole('heading', { level: 1 });
+    expect(screen.getByRole('link', { name: 'Back to Trades' }).getAttribute('href')).toBe('/?lifecycle=Planned');
+  });
+
+  it('should show the link on Loading, Not Found, and Error states as well', async () => {
+    const loading = facadeDouble();
+    vi.mocked(loading.TradeViewsAndReporting.getTradeDetail).mockReturnValue(new Promise(() => {}));
+    renderDetail(loading);
+    expect(screen.getByRole('link', { name: 'Back to Trades' }).getAttribute('href')).toBe('/');
+    cleanup();
+
+    const missing = facadeDouble();
+    vi.mocked(missing.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'NotFound' });
+    renderDetail(missing);
+    await screen.findByRole('heading', { name: 'Trade not found' });
+    expect(screen.getByRole('link', { name: 'Back to Trades' }).getAttribute('href')).toBe('/');
+    cleanup();
+
+    const failing = facadeDouble();
+    vi.mocked(failing.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'ChangedDuringAssembly' });
+    renderDetail(failing);
+    await screen.findByText(/couldn’t load this trade/i);
+    expect(screen.getByRole('link', { name: 'Back to Trades' }).getAttribute('href')).toBe('/');
+  });
+});

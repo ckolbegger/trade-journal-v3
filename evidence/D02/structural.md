@@ -1632,3 +1632,10 @@ Issue clearing judged by the domain's rules: `InvalidPrice` clears only when ent
 **ocr review of T2.47-B1** (`ocr-review` step): commit `6b1a875`, session `d60aa360-8407-43ff-ab7b-fbd8a1641351`, model `gpt-6.1-sol`, 3 files reviewed, 0 comments. No findings. Raw output: `ocr/t2.47-B1-6b1a875.json`.
 
 **Complete cumulative run after T2.47-B1** (`suite-runner`, 2026-10-25 07:56 EDT, on `6b1a875`): Unit 41 files / 410 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 79 passed (2.4m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.47-B1-*.txt`.
+
+## T2.48 Detail back link
+
+- Case 1: "Back to Trades" link (router Link, arrow icon from icons.tsx) sits before the h1; Open goes to `/`, Planned to `/?lifecycle=Planned`.
+- Case 2: the link also shows in Loading, Not Found and Error states. Lifecycle is unknown there and no origin tab is carried in router state, so the target is `/` (the Open tab).
+- T2.29 heading focus: TradeDetail has no heading-focus code; nothing there moves focus, and all src tests stay green (412 passed).
+- Test impact: all e2e lookups of the "Trades" link (e2e/d1 no-save, responsive-a11y; e2e/d2 ui-alignment) are scoped to the Primary navigation; no edit needed. e2e/d1 and e2e/d2: 79 passed.

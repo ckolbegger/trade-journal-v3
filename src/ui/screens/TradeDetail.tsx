@@ -16,6 +16,7 @@ import type {
 import { Rational } from '../../domain/values/index.ts';
 import { Badge } from '../Badge.tsx';
 import { decimalMoney as price, localTime, money, quantity, ratio, rMultiple } from '../format.ts';
+import { BackIcon } from '../icons.tsx';
 import { useRuntime } from '../runtime.tsx';
 
 export interface TradeDetailProps {
@@ -37,6 +38,16 @@ function answerText(answer: NarrativeAnswer): string {
   if (answer.kind === 'Scale') return String(answer.value);
   if (answer.kind === 'Option') return answer.label;
   return 'Not answered';
+}
+
+// Returns to the Trades tab the Trade is listed under; where the lifecycle is unknown, the default tab.
+function BackToTrades({ lifecycle }: { readonly lifecycle?: string }) {
+  return (
+    <Link className="back-link" to={lifecycle === 'Planned' ? '/?lifecycle=Planned' : '/'}>
+      <BackIcon />
+      Back to Trades
+    </Link>
+  );
 }
 
 export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
@@ -67,10 +78,18 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
     if (!alreadyShown) request();
   }, [alreadyShown, request]);
 
-  if (state.kind === 'Loading') return <p role="status">Loading the Trade…</p>;
+  if (state.kind === 'Loading') {
+    return (
+      <>
+        <BackToTrades />
+        <p role="status">Loading the Trade…</p>
+      </>
+    );
+  }
   if (state.kind === 'NotFound') {
     return (
       <section className="card">
+        <BackToTrades />
         <h1>Trade not found</h1>
         <p>No Trade with this identity exists in this journal.</p>
       </section>
@@ -79,6 +98,7 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
   if (state.kind === 'Error') {
     return (
       <section className="card">
+        <BackToTrades />
         <p>We couldn’t load this trade. Nothing was changed.</p>
         <button type="button" className="pill secondary" onClick={retry}>
           Retry
@@ -95,6 +115,7 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
   return (
     <article className="trade-detail">
       <header>
+        <BackToTrades lifecycle={view.lifecycle.stored} />
         <h1>{view.plan.underlying}</h1>
         <p>
           {view.labels.strategy} · <Badge tone="info">{view.lifecycle.stored}</Badge>
