@@ -30,6 +30,10 @@ import {
   type Row,
 } from './support.ts';
 
+// The text of the focused element when it is an h1, else the element's tag.
+const activeHeading = (page: Page) =>
+  page.evaluate(() => (document.activeElement?.tagName === 'H1' ? document.activeElement.textContent : document.activeElement?.tagName));
+
 const nav = (page: Page) => page.getByRole('navigation', { name: 'Primary' });
 const openTab = (page: Page) => page.getByRole('tablist', { name: 'Trades by lifecycle' }).getByRole('tab', { name: 'Open' });
 const plannedTab = (page: Page) => page.getByRole('tablist', { name: 'Trades by lifecycle' }).getByRole('tab', { name: 'Planned' });
@@ -207,6 +211,8 @@ test.describe('B2.12 responsive and accessible', () => {
     await tabTo(page, page.getByRole('link', { name: 'Record entry' }));
     await page.keyboard.press('Enter');
     await expect(page.getByRole('heading', { name: 'Record entry', level: 1 })).toBeVisible();
+    // Focus follows the navigation: the new view's heading holds it, not the body.
+    await expect.poll(() => activeHeading(page)).toBe('Record entry');
     const row = executionRow(page, 1);
     for (const [label, value] of [
       ['Quantity', '60'],
@@ -233,6 +239,7 @@ test.describe('B2.12 responsive and accessible', () => {
     await tabTo(page, page.getByRole('button', { name: 'Save entry' }));
     await page.keyboard.press('Enter');
     await expect(page.getByRole('heading', { name: 'Entry recorded' })).toBeVisible();
+    await expect.poll(() => activeHeading(page)).toBe('Entry recorded');
 
     await tabTo(page, page.getByRole('link', { name: 'Back to the Trade' }));
     await page.keyboard.press('Enter');

@@ -965,3 +965,18 @@ Decisions (for the final report):
 | Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.28-checks.txt` |
 
 Failures: none. Unit rose from 360 to 364 (T2.28's four cases); browser from 51 to 52 (the two-page Conflict case in `no-save.spec.ts`).
+
+#### T2.29
+
+Browser case: the existing keyboard-only case in `e2e/d2/responsive-a11y.spec.ts` ("should complete an entry with the keyboard only, with visible focus throughout") now asserts `document.activeElement` is the h1 "Record entry" after Enter on the "Record entry" link, and the h1 "Entry recorded" after Enter on "Save entry".
+
+| Command | Result |
+|---|---|
+| `npm run build:faults` | built |
+| `npx playwright test e2e/d2/responsive-a11y.spec.ts e2e/d1/responsive-a11y.spec.ts` | 7 passed (D1 focus checks still green) |
+
+Decisions (for the final report):
+- Headings take `tabIndex={-1}` and focus through a ref; the visible focus style is the existing `:focus-visible` rule.
+- The form focuses its h1 "Record entry" each time a load ends with the Trade and definition both present: first load, Retry, and a Trade change (all pass through Loading). The incoherent-Trade branch uses the same heading ref. T2.28's in-place reload keeps both present, so it never refocuses; the Conflict message keeps its own focus. Error and Not Found states do not take focus.
+- The receipt focuses its h1 "Entry recorded" on mount.
+- Unit-test refactor: the receipt case's Recorded result moved into a shared `recordedResult()` helper so the receipt focus case reuses it.

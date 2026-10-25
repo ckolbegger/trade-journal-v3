@@ -140,6 +140,80 @@ const member = (quantity: string, price: string, fee: string, economicTime: stri
 
 const rejected = { kind: 'Rejected', issues: [], binding: { databaseName: 'tj-ws-1', contentRevision: 7 } };
 
+// The result the receipt cases save: a Recorded Position Change with Entry Quality, a Deviation and repairs.
+function recordedResult() {
+  const r = (numerator: bigint, denominator = 1n) => Rational.of(numerator, denominator);
+  const value = <T,>(v: T) => ({ kind: 'Value', value: v }) as const;
+  const execution = (factId: string, economicTime: string, quantity: string, price: string, recordedSequence: number) => ({
+    factId,
+    economicTime,
+    recordedSequence,
+    action: 'Buy',
+    instrument: { kind: 'Stock', symbol: 'XYZ' },
+    quantity,
+    price,
+    fee: '1.00',
+    intent: { kind: 'ServesPlannedLeg', plannedLegId: 'leg-1' },
+  });
+  const pc = (factId: string, economicTime: string, recordedSequence: number, executions: unknown[]) => ({ factId, economicTime, recordedSequence, executions });
+  const quality = value({
+    averageEntry: value(r(25090n, 500n)),
+    windowQuantity: value(r(100n)),
+    windowFees: value(r(2n)),
+    actualInitialRisk: value(r(270n)),
+    actualInitialReward: value(r(580n)),
+    riskInPlanR: value(r(27n, 25n)),
+    slippage: value(r(18n)),
+    sizeRatio: value(r(1n)),
+    plannedRewardRisk: value(r(12n, 5n)),
+    actualRewardRisk: value(r(58n, 27n)),
+    flags: [],
+  });
+  const fingerprint = { tradeId: 'trade-1', plannedLegId: 'leg-1', positionChangeId: 'pc-3' };
+  return {
+    kind: 'Recorded',
+    receipt: {
+      tradeId: 'trade-1',
+      factRevision: 4,
+      binding: { databaseName: 'tj-ws-1', contentRevision: 12 },
+      createdFactIds: ['pc-3', 'ex-3'],
+      lifecycleTransitions: [],
+      reflection: { kind: 'Decline', id: 'decline-1' },
+      deviationReconciliation: [
+        {
+          action: 'Create',
+          occurrenceId: 'dev-1',
+          version: { fingerprint, type: 'EntrySize', form: 'Excess', quantityAbovePlan: '20', causingPositionChangeId: 'pc-3', economicTime: '2026-10-12T18:00:00Z', status: 'Active' },
+        },
+      ],
+      entryChanges: [
+        { kind: 'EntryResolutionMoved', from: 'pc-2', to: 'pc-1' },
+        { kind: 'EntryQualityChanged', from: quality, to: quality },
+      ],
+      repairs: [
+        { kind: 'LifecycleDisagreement', stored: 'Planned', expected: 'Open' },
+        { kind: 'DeviationMissing', fingerprint, expected: {} },
+      ],
+    },
+    postCommit: {
+      trade: {
+        tradeId: 'trade-1',
+        factRevision: 4,
+        storedLifecycle: 'Open',
+        plan: {},
+        positionChanges: [
+          pc('pc-1', '2026-10-12T14:00:00Z', 1, [execution('ex-1', '2026-10-12T14:00:00Z', '60', '50.10', 2)]),
+          pc('pc-2', '2026-10-12T15:00:00Z', 3, [execution('ex-2', '2026-10-12T15:00:00Z', '40', '50.30', 4)]),
+          pc('pc-3', '2026-10-12T18:00:00Z', 5, [execution('ex-3', '2026-10-12T18:00:00Z', '20', '51.00', 6)]),
+        ],
+      },
+      derivation: { kind: 'Derived', entryResolution: { kind: 'Resolved', positionChangeId: 'pc-1' }, entryQuality: quality },
+      reflection: { kind: 'Decline', decline: { id: 'decline-1', reason: 'Nothing new to add.' } },
+    },
+    affected: [],
+  } as never;
+}
+
 describe('submission', () => {
   it('should submit one Position Change with every row, the expected FactRevision, the rendered definition revision, stable Prompt and Option identities, and the chosen disposition', async () => {
     const facade = renderForm();
@@ -229,76 +303,7 @@ describe('submission', () => {
 
   it('should render the saved Position Change, Entry Quality when resolved, any new Entry Size Deviation, and any repairs from the returned state alone, without a read call', async () => {
     const facade = renderForm();
-    const r = (numerator: bigint, denominator = 1n) => Rational.of(numerator, denominator);
-    const value = <T,>(v: T) => ({ kind: 'Value', value: v }) as const;
-    const execution = (factId: string, economicTime: string, quantity: string, price: string, recordedSequence: number) => ({
-      factId,
-      economicTime,
-      recordedSequence,
-      action: 'Buy',
-      instrument: { kind: 'Stock', symbol: 'XYZ' },
-      quantity,
-      price,
-      fee: '1.00',
-      intent: { kind: 'ServesPlannedLeg', plannedLegId: 'leg-1' },
-    });
-    const pc = (factId: string, economicTime: string, recordedSequence: number, executions: unknown[]) => ({ factId, economicTime, recordedSequence, executions });
-    const quality = value({
-      averageEntry: value(r(25090n, 500n)),
-      windowQuantity: value(r(100n)),
-      windowFees: value(r(2n)),
-      actualInitialRisk: value(r(270n)),
-      actualInitialReward: value(r(580n)),
-      riskInPlanR: value(r(27n, 25n)),
-      slippage: value(r(18n)),
-      sizeRatio: value(r(1n)),
-      plannedRewardRisk: value(r(12n, 5n)),
-      actualRewardRisk: value(r(58n, 27n)),
-      flags: [],
-    });
-    const fingerprint = { tradeId: 'trade-1', plannedLegId: 'leg-1', positionChangeId: 'pc-3' };
-    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue({
-      kind: 'Recorded',
-      receipt: {
-        tradeId: 'trade-1',
-        factRevision: 4,
-        binding: { databaseName: 'tj-ws-1', contentRevision: 12 },
-        createdFactIds: ['pc-3', 'ex-3'],
-        lifecycleTransitions: [],
-        reflection: { kind: 'Decline', id: 'decline-1' },
-        deviationReconciliation: [
-          {
-            action: 'Create',
-            occurrenceId: 'dev-1',
-            version: { fingerprint, type: 'EntrySize', form: 'Excess', quantityAbovePlan: '20', causingPositionChangeId: 'pc-3', economicTime: '2026-10-12T18:00:00Z', status: 'Active' },
-          },
-        ],
-        entryChanges: [
-          { kind: 'EntryResolutionMoved', from: 'pc-2', to: 'pc-1' },
-          { kind: 'EntryQualityChanged', from: quality, to: quality },
-        ],
-        repairs: [
-          { kind: 'LifecycleDisagreement', stored: 'Planned', expected: 'Open' },
-          { kind: 'DeviationMissing', fingerprint, expected: {} },
-        ],
-      },
-      postCommit: {
-        trade: {
-          tradeId: 'trade-1',
-          factRevision: 4,
-          storedLifecycle: 'Open',
-          plan: {},
-          positionChanges: [
-            pc('pc-1', '2026-10-12T14:00:00Z', 1, [execution('ex-1', '2026-10-12T14:00:00Z', '60', '50.10', 2)]),
-            pc('pc-2', '2026-10-12T15:00:00Z', 3, [execution('ex-2', '2026-10-12T15:00:00Z', '40', '50.30', 4)]),
-            pc('pc-3', '2026-10-12T18:00:00Z', 5, [execution('ex-3', '2026-10-12T18:00:00Z', '20', '51.00', 6)]),
-          ],
-        },
-        derivation: { kind: 'Derived', entryResolution: { kind: 'Resolved', positionChangeId: 'pc-1' }, entryQuality: quality },
-        reflection: { kind: 'Decline', decline: { id: 'decline-1', reason: 'Nothing new to add.' } },
-      },
-      affected: [],
-    } as never);
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(recordedResult());
     const user = userEvent.setup();
     await fillRows(user, [['20', '51.00', '1.00', '2026-10-12T14:00']]);
     await completeReflection(user);
@@ -871,5 +876,37 @@ describe('after a Conflict', () => {
     expect(screen.getByRole('button', { name: 'Load the latest Trade' })).toBeTruthy();
     expect(within(row(1)).getByLabelText<HTMLInputElement>('Quantity').value).toBe('40');
     expect(screen.getByLabelText<HTMLTextAreaElement>('Note').value).toBe('Filled at the open.');
+  });
+});
+
+describe('focus after navigation', () => {
+  it('should move focus to the Record entry heading when the form finishes loading', async () => {
+    renderForm();
+    const heading = await screen.findByRole('heading', { level: 1, name: 'Record entry' });
+    expect(document.activeElement).toBe(heading);
+  });
+
+  it('should move focus to the Entry recorded heading when the receipt replaces the form', async () => {
+    const facade = renderForm();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(recordedResult());
+    const user = userEvent.setup();
+    await fillRows(user, [['20', '51.00', '1.00', '2026-10-12T14:00']]);
+    await completeReflection(user);
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    const heading = await screen.findByRole('heading', { level: 1, name: 'Entry recorded' });
+    expect(document.activeElement).toBe(heading);
+  });
+
+  it('should not move focus away from the summary after a rejected save', async () => {
+    const facade = renderForm();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue({
+      ...rejected,
+      issues: [{ source: 'TradeWorkflows', member: 0, field: 'quantity', code: 'NotPositive' }],
+    } as never);
+    const user = userEvent.setup();
+    await fillRows(user, [['0', '51.00', '1.00', '2026-10-12T14:00']]);
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    const summary = await screen.findByRole('region', { name: 'This entry can’t be saved yet' });
+    expect(document.activeElement).toBe(summary);
   });
 });

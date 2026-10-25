@@ -124,6 +124,14 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
     if (conflict) conflictRef.current?.focus();
   }, [conflict]);
 
+  // Each load that ends in a form (or the incoherent note) moves focus to the view's heading; a
+  // reload in place after a Conflict keeps the form shown, so it never does.
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const shown = view !== undefined && definition !== undefined;
+  useEffect(() => {
+    if (shown) headingRef.current?.focus();
+  }, [shown]);
+
   useEffect(() => {
     // A superseded attempt (after Retry, or another Trade) settles without touching the form.
     let superseded = false;
@@ -157,7 +165,9 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   if (view && 'recordedPositionChanges' in view) {
     return (
       <section className="card">
-        <h1>Record entry</h1>
+        <h1 ref={headingRef} tabIndex={-1}>
+          Record entry
+        </h1>
         <p>{INCOHERENT_ENTRY_NOTE}</p>
         <Link to={`/trades/${tradeId}`}>Back to the Trade</Link>
       </section>
@@ -250,7 +260,9 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
 
   return (
     <form className="plan-form" noValidate onSubmit={(event) => void submit(event)}>
-      <h1>Record entry</h1>
+      <h1 ref={headingRef} tabIndex={-1}>
+        Record entry
+      </h1>
       {conflict && (
         <section ref={conflictRef} tabIndex={-1} className="banner warning" aria-labelledby="entry-conflict-heading">
           <h2 id="entry-conflict-heading">This Trade changed after you opened this form</h2>

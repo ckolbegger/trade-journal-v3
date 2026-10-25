@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 import type { IntegrityFinding, PositionChangeResult } from '../../app/types.ts';
 import { decimalMoney as price, localTime, money, ratio } from '../format.ts';
@@ -27,6 +28,9 @@ function repairText(finding: IntegrityFinding): string {
 // Position Change, Entry Quality once resolved, new Entry Size Deviations, what an earlier-dated
 // entry changed (P5), any repairs (P7), and the reflection outcome.
 export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceiptProps) {
+  // The receipt replaces the form in place, so focus moves to its heading when it appears.
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => headingRef.current?.focus(), []);
   const { receipt, postCommit } = result;
   const changes = postCommit.trade.positionChanges;
   const timeOf = (positionChangeId: string) => localTime(changes.find((c) => c.factId === positionChangeId)?.economicTime ?? '', timeZone);
@@ -41,7 +45,9 @@ export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceip
 
   return (
     <section className="card" aria-labelledby="receipt-heading">
-      <h1 id="receipt-heading">Entry recorded</h1>
+      <h1 id="receipt-heading" ref={headingRef} tabIndex={-1}>
+        Entry recorded
+      </h1>
       <section aria-labelledby="saved-change-heading">
         <h2 id="saved-change-heading">{`Position Change at ${localTime(saved.economicTime, timeZone)}`}</h2>
         <ul>
