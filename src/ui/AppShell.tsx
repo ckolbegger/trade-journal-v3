@@ -106,6 +106,9 @@ export function AppShell({ facade, screens, notices, onRetry = () => window.loca
     };
   }, [facade, migrate]);
 
+  // The open form is exempt only while the trader stays on the path where the refusal arrived.
+  if (refusedAt !== undefined && pathname !== refusedAt) setRefusedAt(undefined);
+
   if (!status) {
     return (
       <main className="startup">

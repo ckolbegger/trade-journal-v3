@@ -463,4 +463,38 @@ describe('write route while not Writable', () => {
     expect(screen.getByRole('link', { name: 'Back to the Trade' }).getAttribute('href')).toBe('/trades/trade-1');
     expect(screen.getByRole('heading', { name: /read only: this browser can.t save right now/i })).toBeTruthy();
   });
+
+  it("should show Record entry isn't available on returning to the entry form after leaving the page where the refusal arrived", async () => {
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeWorkflows.confirmPlan).mockResolvedValue({
+      kind: 'RuntimeNotWritable',
+      runtimeReadiness: 'RecoveryOnly',
+      failedChecks: [{ check: 'inventory', reason: 'InventoryInvalid' }],
+      workspaceStatus: 'RecoveryOnly',
+      safeActions: [],
+    });
+    function RefusingEntryStub() {
+      const runtime = useRuntime();
+      return (
+        <section>
+          <button type="button" onClick={() => void facade.TradeWorkflows.confirmPlan({} as never).then((result) => runtime.report(result))}>
+            Save entry
+          </button>
+          <Link to="/plans/new">Leave entry</Link>
+        </section>
+      );
+    }
+    function PlanStub() {
+      return <Link to="/trades/trade-1/record-entry">Return to entry</Link>;
+    }
+    renderShell(facade, '/trades/trade-1/record-entry', { 'record-entry': RefusingEntryStub, 'new-plan': PlanStub });
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Save entry' }));
+    await screen.findByRole('heading', { name: /read only: this browser can.t save right now/i });
+    expect(screen.getByRole('button', { name: 'Save entry' })).toBeTruthy();
+    await user.click(screen.getByRole('link', { name: 'Leave entry' }));
+    await user.click(await screen.findByRole('link', { name: 'Return to entry' }));
+    expect(await screen.findByRole('heading', { name: "Record entry isn't available" })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /read only: this browser can.t save right now/i })).toBeTruthy();
+  });
 });

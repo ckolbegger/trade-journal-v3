@@ -1051,4 +1051,16 @@ Browser case: `e2e/d2/runtime-failure.spec.ts` "should explain Record entry isn'
 Decisions (for the final report):
 - Heading h1 "Record entry isn't available"; sentence "This browser can't save right now, so an entry can't be recorded."; link "Back to the Trade" to `/trades/<id>` (same link text as the incoherent note). No focus behaviour added.
 - Case 2 resolution: the launch rule says an open form keeps its values after a refusal (B2.10), so the view replaces the form only when the entry route is reached after the refusal, not where the refusal arrived. AppShell remembers the first path a refusal came from (`refusedAt`); `record-entry` shows the unavailable view whenever not Writable and the current path differs from it.
-- Known edge: after a refusal arriving on a record-entry path, leaving and returning to that same path shows the (disabled) form again.
+- Known edge (fixed by T2.30-B1): after a refusal arriving on a record-entry path, leaving and returning to that same path showed the (disabled) form again.
+
+#### T2.30-B1
+
+Bug from the ocr review of T2.30: `refusedAt` was never cleared, so returning to the record-entry path where the refusal arrived mounted a fresh empty form. Fix: AppShell resets `refusedAt` as soon as `pathname` differs from it (state adjusted during render, since the lint rule forbids setState in an effect), so the exemption lasts only while the trader stays on that path.
+
+| Command | Result |
+|---|---|
+| `.claude/scripts/tdd.sh red T2.30-B1 src/ui/AppShell.test.tsx "should show Record entry isn't available on returning to the entry form after leaving the page where the refusal arrived"` | red: Unable to find role="heading" and name "Record entry isn't available" |
+| same, `green` | Tests 1 passed |
+| `npx vitest run src/ui/AppShell.test.tsx` | 21 passed (B2.10-style keeps-values case included) |
+| `npm run build:faults`, `npx playwright test e2e/d2/runtime-failure.spec.ts` | 3 passed |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
