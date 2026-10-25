@@ -1,0 +1,128 @@
+{
+  "status": "Automated gates passed; fresh independent critic pending",
+  "head": "11216bf0138e1dff372e9270afe5c935dfa1e984",
+  "sourceDigest": "f9697f14fee1e03b20f3f138a6fb8e41db68741191aec5b4818d45aab198c210",
+  "releaseId": "33cc2444e5d648b6fafc68d73011727ae4049bb656c469009133ce7c94b26bc1",
+  "gates": {
+    "final-lint-gate": {
+      "command": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "exit": 0,
+      "sourceDigest": "f9697f14fee1e03b20f3f138a6fb8e41db68741191aec5b4818d45aab198c210"
+    },
+    "final-unit-gate": {
+      "command": [
+        "npm",
+        "run",
+        "test:unit"
+      ],
+      "exit": 0,
+      "sourceDigest": "f9697f14fee1e03b20f3f138a6fb8e41db68741191aec5b4818d45aab198c210"
+    },
+    "final-integration-gate": {
+      "command": [
+        "npm",
+        "run",
+        "test:integration"
+      ],
+      "exit": 0,
+      "sourceDigest": "f9697f14fee1e03b20f3f138a6fb8e41db68741191aec5b4818d45aab198c210"
+    },
+    "final-typecheck-gate": {
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 0,
+      "sourceDigest": "f9697f14fee1e03b20f3f138a6fb8e41db68741191aec5b4818d45aab198c210"
+    },
+    "final-production-build": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "sourceDigest": "f9697f14fee1e03b20f3f138a6fb8e41db68741191aec5b4818d45aab198c210"
+    },
+    "T10-browser-exclusive-operation": {
+      "command": [
+        "npm",
+        "run",
+        "test:browser",
+        "--",
+        "--max-failures=3"
+      ],
+      "exit": 0,
+      "sourceDigest": "f9697f14fee1e03b20f3f138a6fb8e41db68741191aec5b4818d45aab198c210"
+    },
+    "T11-visual-complete-states": {
+      "command": [
+        "npm",
+        "run",
+        "test:visual"
+      ],
+      "exit": 0,
+      "sourceDigest": "f9697f14fee1e03b20f3f138a6fb8e41db68741191aec5b4818d45aab198c210"
+    },
+    "T11-d1-scale-gate": {
+      "command": [
+        "npm",
+        "run",
+        "test:benchmark"
+      ],
+      "exit": 0,
+      "sourceDigest": "f9697f14fee1e03b20f3f138a6fb8e41db68741191aec5b4818d45aab198c210"
+    },
+    "T11-d2-scale-gate": {
+      "command": [
+        "npm",
+        "run",
+        "test:benchmark:d2"
+      ],
+      "exit": 0,
+      "sourceDigest": "f9697f14fee1e03b20f3f138a6fb8e41db68741191aec5b4818d45aab198c210"
+    }
+  },
+  "counts": {
+    "unit": 119,
+    "integration": 7,
+    "nativeBrowser": 93,
+    "visualNative": 9
+  },
+  "distSha256": {
+    "index.html": "cbb4dbe68c1667bb470b785e4c89b610cd6ae8bba81b3bf7f1a803493fac291b",
+    "capabilities.json": "71878297c7953004d90c5841bc9ecd143fbb86a65c348e099c1d8f18a039ab91",
+    "icon-192.png": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+    "icon.svg": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+    "offline-inventory.json": "aedfe40e87bbf6b9339cb30967e02280d707cd28b5fb66dbe625fa77c3b2f504",
+    "manifest.webmanifest": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+    "sw.js": "b7ae284e2a7bd4adb4eefc9fbc10c1b7e6996d97087f4c02fd5eb9838cf45cb8",
+    "icon-512.png": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+    "fonts/LiberationSansNarrow-Bold.ttf": "8e5eb5090ef4a3143794c230b82f174f7f2fbbfcd6cb789ccfa1f90bf8795d54",
+    "fonts/Rubik-Bold.ttf": "b1c36dfcbc5fe5011c552c76725c84d989a71d56440e8bfbfa0cb68b593dbad6",
+    "fonts/LICENSE.txt": "f158372b957fb64f86bb9e5d9368c84e54c541bdd5d25bd3d4515a593c99cfed",
+    "fonts/Rubik-Regular.ttf": "bd1490f4314d27ca1ac5d8869fdda068852edd623318c9bee13e812b793b301b",
+    "assets/index-CBnB2S1N.js": "e453ec985bbd0ff19f6e2add3e35e9891f55d3e596ae6a42a4eb5de95ef188a8",
+    "assets/index-DyLbKIIF.css": "133ce1d69fab9f1d9aa2f18d0345838092e2f9e16936a284484b834a24f702f0"
+  },
+  "referenceBoard": "visual/T11-visual-complete-states-1792862353465/comparisons",
+  "baselineRelease": "before/recovered-cached-release.json",
+  "limits": [
+    "Native browser-chrome 200% zoom unverified; CSS zoom only supplemental",
+    "OS installation and standalone launch unverified",
+    "Production HTTPS/deployment user-deferred",
+    "Migration sampled used JS heap peak920718668 bytes; not RSS or a low-memory-device guarantee"
+  ],
+  "delivery": {
+    "localOnly": true,
+    "committed": false,
+    "pushed": false,
+    "deployed": false,
+    "traderBrowserDataTouched": false
+  }
+}

@@ -24,7 +24,7 @@ for (const mode of ['candidate-seed', 'candidate-validation', 'activation-abort'
   expect((afterFailure.lifecycle as LifecycleRow[]).filter(row => row.generation === before.root.generation)).toEqual(before.lifecycle);
   await page.evaluate(() => { window.d2MigrationFault = ''; });
   const retry = await page.evaluate(name => window.d2Evidence.migrateDatabase(name), name); expect(retry).toMatchObject({ status: 'Opened', root: { schema: 2 }, receipt: { migration: { sourceRows: 7, candidateRows: 9 } } });
-  await mkdir('implementation/evidence/d02/native', { recursive: true }); await writeFile(`implementation/evidence/d02/native/${browserName}-migration-${mode}.json`, JSON.stringify({ browser: context.browser()?.version(), before, failed, afterFailure, retry }, null, 2));
+  await mkdir(`implementation/evidence/bug-001/cumulative/${process.env.BUG001_EVIDENCE_RUN ?? 'manual'}/d02/native`, { recursive: true }); await writeFile(`implementation/evidence/bug-001/cumulative/${process.env.BUG001_EVIDENCE_RUN ?? 'manual'}/d02/native/${browserName}-migration-${mode}.json`, JSON.stringify({ browser: context.browser()?.version(), before, failed, afterFailure, retry }, null, 2));
 });
 test('D2-I03 native blocked physical upgrade rejects safely and retries after old connection closes', async ({ page, browserName, context }) => {
   const name = `d2-blocked-${crypto.randomUUID()}`; const before = await setup(page, name);
@@ -33,5 +33,5 @@ test('D2-I03 native blocked physical upgrade rejects safely and retries after ol
   const retained = await page.evaluate(() => new Promise<unknown>((resolve, reject) => { const db = window.d2MigrationBlocker; if (!db) { reject(new Error('Held connection missing')); return; } const tx = db.transaction('roots'); const read = tx.objectStore('roots').get('active'); tx.oncomplete = () => resolve(read.result as unknown); })); expect(retained).toEqual(before.root);
   await page.evaluate(() => { window.d2MigrationBlocker?.close(); delete window.d2MigrationBlocker; });
   const retry = await page.evaluate(name => window.d2Evidence.migrateDatabase(name), name); expect(retry).toMatchObject({ status: 'Opened', root: { schema: 2 } });
-  await mkdir('implementation/evidence/d02/native', { recursive: true }); await writeFile(`implementation/evidence/d02/native/${browserName}-migration-blocked.json`, JSON.stringify({ browser: context.browser()?.version(), before, failed, retained, retry }, null, 2));
+  await mkdir(`implementation/evidence/bug-001/cumulative/${process.env.BUG001_EVIDENCE_RUN ?? 'manual'}/d02/native`, { recursive: true }); await writeFile(`implementation/evidence/bug-001/cumulative/${process.env.BUG001_EVIDENCE_RUN ?? 'manual'}/d02/native/${browserName}-migration-blocked.json`, JSON.stringify({ browser: context.browser()?.version(), before, failed, retained, retry }, null, 2));
 });

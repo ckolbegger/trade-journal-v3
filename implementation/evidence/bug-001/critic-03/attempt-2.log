@@ -1,0 +1,74 @@
+
+> trade-journal-v3@0.1.0 preview
+> vite preview --host localhost --port 5174 --strictPort
+
+
+  ➜  Local:   http://localhost:5174/
+
+START B01 setup, real native readiness, invalid zone and catalog
+PASS B01 setup, real native readiness, invalid zone and catalog
+START B01/B03 Plan stages, validation, sole confirmation and original reflection
+PASS B01/B03 Plan stages, validation, sole confirmation and original reflection
+START B01 list geometry and B02 actual 10-share rejected blank row, resume and save
+PASS B01 list geometry and B02 actual 10-share rejected blank row, resume and save
+START B04 dialog keyboard, focus, inert backdrop, resize and long Note
+PASS B04 dialog keyboard, focus, inert backdrop, resize and long Note
+START B03 opening native failure matrix and safe retry
+PASS B03 opening native failure matrix and safe retry
+START B03 Defer no placeholder Entry, owed Cancel/Complete, native failures
+FAIL B03 Defer no placeholder Entry, owed Cancel/Complete, native failures Error: expect(locator).toContainText(expected) failed
+
+Locator: getByRole('dialog')
+Expected substring: "Outstanding Debt"
+Received string:    "TRADE JOURNALTrade Journal×Plan ReflectionTrade Anchor · Plan ConfirmationMoment: 2026-10-24 17:35:29.979 America/New_York · First authored: 2026-10-24 17:35:30.003 America/New_YorkWhy this trade, why now?Synthetic DEBT independent thesisWhat would invalidate the thesis?Independent risk invalidationConviction4Primary emotionCalmPosition Change Reflection · Journal DebtOutstanding · Due 2026-10-24 17:35:30.029 America/New_YorkTrade Anchor · Source Position Change · Position Change 6822bb64-7a86-427e-9462-dbf9e02fa244Moment: 2026-10-24 17:35:30.029 America/New_YorkAnswer reflection"
+Timeout: 5000ms
+
+Call log:
+  - Expect "toContainText" getByRole('dialog') with timeout 5000ms
+  - waiting for getByRole('dialog')
+    14 × locator resolved to <div role="dialog" tabindex="-1" aria-modal="true" class="_panel_c0icb_69" aria-label="Trade Journal">…</div>
+       - unexpected value "TRADE JOURNALTrade Journal×Plan ReflectionTrade Anchor · Plan ConfirmationMoment: 2026-10-24 17:35:29.979 America/New_York · First authored: 2026-10-24 17:35:30.003 America/New_YorkWhy this trade, why now?Synthetic DEBT independent thesisWhat would invalidate the thesis?Independent risk invalidationConviction4Primary emotionCalmPosition Change Reflection · Journal DebtOutstanding · Due 2026-10-24 17:35:30.029 America/New_YorkTrade Anchor · Source Position Change · Position Change 6822bb64-7a86-427e-9462-dbf9e02fa244Moment: 2026-10-24 17:35:30.029 America/New_YorkAnswer reflection"
+
+    at captureRawStack (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright-core/lib/coreBundle.js:9282:17)
+    at callMatcherAsStep (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13316:57)
+    at Object.toContainText (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13308:23)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/driver.mjs:44:393
+    at async run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/driver.mjs:21:125)
+    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/driver.mjs:44:2
+START B03 explicit opening Decline and owed Decline
+PASS B03 explicit opening Decline and owed Decline
+START B03 same native persistent store competing opening tabs
+PASS B03 same native persistent store competing opening tabs
+START B04 Loading, list Error, Recovery, Unsupported and Integrity states
+FAIL B04 Loading, list Error, Recovery, Unsupported and Integrity states Error: expect(locator).toBeVisible() failed
+
+Locator: getByRole('heading', { name: 'Loading', exact: true })
+Expected: visible
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+  - Expect "toBeVisible" getByRole('heading', { name: 'Loading', exact: true }) with timeout 5000ms
+  - waiting for getByRole('heading', { name: 'Loading', exact: true })
+
+    at captureRawStack (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright-core/lib/coreBundle.js:9282:17)
+    at callMatcherAsStep (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13316:57)
+    at Object.toBeVisible (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13308:23)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/driver.mjs:47:1062
+    at async run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/driver.mjs:21:125)
+    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/driver.mjs:47:2
+START B04 verified update deferred with open AND closed draft, activation and stopped offline
+FAIL B04 verified update deferred with open AND closed draft, activation and stopped offline Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: "bc44f5b7d8170a5dc90d8beead45afe6c62722a12f526f6a7ba94ce398aa69cf"
+Received: "749a0791565687c4c795c4a1dbfc8ce94b79c15f3a806aa202ffed8a8d9c52fb"
+
+Call Log:
+- Timeout 30000ms exceeded while waiting on the predicate
+    at captureRawStack (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright-core/lib/coreBundle.js:9282:17)
+    at callMatcherAsStep (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13316:57)
+    at Object.toBe (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13308:23)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/driver.mjs:48:1539
+    at async run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/driver.mjs:21:125)
+    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/driver.mjs:48:2
+FINISH [{"name":"B01 setup, real native readiness, invalid zone and catalog","status":"PASS"},{"name":"B01/B03 Plan stages, validation, sole confirmation and original reflection","status":"PASS"},{"name":"B01 list geometry and B02 actual 10-share rejected blank row, resume and save","status":"PASS"},{"name":"B04 dialog keyboard, focus, inert backdrop, resize and long Note","status":"PASS"},{"name":"B03 opening native failure matrix and safe retry","status":"PASS"},{"name":"B03 Defer no placeholder Entry, owed Cancel/Complete, native failures","status":"FAIL"},{"name":"B03 explicit opening Decline and owed Decline","status":"PASS"},{"name":"B03 same native persistent store competing opening tabs","status":"PASS"},{"name":"B04 Loading, list Error, Recovery, Unsupported and Integrity states","status":"FAIL"},{"name":"B04 verified update deferred with open AND closed draft, activation and stopped offline","status":"FAIL"}] restored true

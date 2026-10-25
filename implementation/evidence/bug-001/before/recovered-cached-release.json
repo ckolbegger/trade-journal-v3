@@ -1,0 +1,59 @@
+{
+  "method": "Read original isolated baseline profile offline after capture; no newly built release loaded",
+  "cached": [
+    {
+      "name": "trade-journal-release-2cceb94481214601e7a1d43f28b5008985956048b0f0040a2593c33e9fedc723",
+      "inventory": {
+        "version": 1,
+        "releaseId": "2cceb94481214601e7a1d43f28b5008985956048b0f0040a2593c33e9fedc723",
+        "assets": [
+          {
+            "url": "/assets/index-BZaGd-Wg.js",
+            "bytes": 607568,
+            "sha256": "c671ee9185a8ab01523048b4351c7f009ef2a3888ffa683f2d97efc2f6762926"
+          },
+          {
+            "url": "/assets/index-BiR8c3jK.css",
+            "bytes": 3000,
+            "sha256": "cfc6ba696c7b1b1c8f6deacce1aa5ec0cf5221a87c722c4452e10febe4a7dcf3"
+          },
+          {
+            "url": "/capabilities.json",
+            "bytes": 1992,
+            "sha256": "71878297c7953004d90c5841bc9ecd143fbb86a65c348e099c1d8f18a039ab91"
+          },
+          {
+            "url": "/icon-192.png",
+            "bytes": 3409,
+            "sha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9"
+          },
+          {
+            "url": "/icon-512.png",
+            "bytes": 12236,
+            "sha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457"
+          },
+          {
+            "url": "/icon.svg",
+            "bytes": 180,
+            "sha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9"
+          },
+          {
+            "url": "/index.html",
+            "bytes": 446,
+            "sha256": "f447124342978eb82b2ec4c423abe0ef637d8cdbdd47daae7c1eee3c620fb246"
+          },
+          {
+            "url": "/manifest.webmanifest",
+            "bytes": 416,
+            "sha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd"
+          },
+          {
+            "url": "/sw.js",
+            "bytes": 3935,
+            "sha256": "5e380d881d4e91405bff294673e4557645aa240bb4e9815442b0a3a1062d6bf5"
+          }
+        ]
+      }
+    }
+  ]
+}

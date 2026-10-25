@@ -1,0 +1,37 @@
+[
+  {
+    "key": "initial",
+    "inside": true,
+    "tag": "DIV",
+    "scroll": 0,
+    "overflow": 0
+  },
+  {
+    "key": "Tab",
+    "inside": true,
+    "tag": "DIV",
+    "scroll": 0,
+    "overflow": 0
+  },
+  {
+    "key": "Shift+Tab",
+    "inside": true,
+    "tag": "DIV",
+    "scroll": 0,
+    "overflow": 0
+  },
+  {
+    "key": "PageUp",
+    "inside": true,
+    "tag": "DIV",
+    "scroll": 0,
+    "overflow": 0
+  },
+  {
+    "key": "PageDown",
+    "inside": true,
+    "tag": "DIV",
+    "scroll": 0,
+    "overflow": 0
+  }
+]

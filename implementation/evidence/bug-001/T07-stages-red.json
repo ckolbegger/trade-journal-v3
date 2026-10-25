@@ -1,0 +1,26 @@
+{
+  "id": "T07-stages",
+  "stage": "red",
+  "baseline": "11216bf0138e1dff372e9270afe5c935dfa1e984",
+  "inputs": {
+    "implementation/plan/bug-001-ui-mockup-fidelity.md": "665d3755a281db3d5296e418dde193fece16b56a30ecaf4da920375c9882e750",
+    "implementation/plan/bug-001-baseline.md": "a97ec7f5daed2eaa4bc1eb9031d04ecd9836ff029716f67a609ef862137b32db",
+    "implementation/plan/d02-implementation-baseline.md": "3f0042a94f5be932f0baaf8222b4a2da50b766a4036cd5d785b640f1b64892fb",
+    "implementation/plan/d02-initial-stock-entry.md": "f178999f16b99c3e961f4d2f63e55a5be6e86961d2b3c772e3f2614ccf3e62ec",
+    "implementation/plan/d01-capacity-policy-revision.md": "ba560d7d8eb724fb6f74cdc0f5990cccb650b733302836a120393256f273ed64",
+    "implementation/plan/d02-capacity-evidence.md": "090ef5822f74e2a41ad10f7f33e6ab0290abdc56b80e49bde7d636fc953f413d",
+    "specs/evaluation/kickoff-prompt.md": "03c97d607bfd55e086b626a710a6475372320233c2e67ef8b5427016f85bc795"
+  },
+  "sourceDigest": "971770b3349d40afb968db0d2729365edcf5bbfae73fafdca77e202684d0b6f2",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "--project",
+    "unit",
+    "tests/unit/bug001-ui.test.tsx"
+  ],
+  "exit": 1,
+  "stdout": "\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n ❯ |unit| tests/unit/bug001-ui.test.tsx (8 tests | 1 failed) 1024ms\n   × moves Plan stages without writing facts or losing the chosen instrument and reflection 38ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 7 passed (8)\n   Start at  12:53:10\n   Duration  1.48s (tests 73%, environment 14%, transform 6%, import 6%)\n\n",
+  "stderr": "\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |unit| tests/unit/bug001-ui.test.tsx > moves Plan stages without writing facts or losing the chosen instrument and reflection\nAssertionError: expected <input aria-required=\"true\" …(3)></input> to be null\n\n- Expected:\nnull\n\n+ Received:\n<input\n  aria-invalid=\"false\"\n  aria-required=\"true\"\n  inputmode=\"decimal\"\n  value=\"\"\n/>\n\n ❯ tests/unit/bug001-ui.test.tsx:112:56\n    110|   await user.click(await screen.findByRole('button', { name: 'New Plan…\n    111|   await user.type(screen.getByLabelText('Stock symbol'), 'XYZ');\n    112|   expect(screen.queryByLabelText('Quantity (shares)')).toBeNull();\n       |                                                        ^\n    113|   const before = await f.store.versions.toArray();\n    114|   await user.click(screen.getByRole('button', { name: 'Next: Plan and …\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n"
+}

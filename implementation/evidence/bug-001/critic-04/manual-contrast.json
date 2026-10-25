@@ -1,0 +1,71 @@
+{
+  "method": "Independent recomputation from inspected current App.module.css color tokens; screenshot review plus axe; inactive controls excluded",
+  "pairs": [
+    {
+      "name": "body-white",
+      "foreground": "#161713",
+      "background": "#ffffff",
+      "ratio": 18.009
+    },
+    {
+      "name": "body-cream",
+      "foreground": "#161713",
+      "background": "#f4f1eb",
+      "ratio": 15.975
+    },
+    {
+      "name": "label",
+      "foreground": "#514f46",
+      "background": "#ffffff",
+      "ratio": 8.214
+    },
+    {
+      "name": "muted-white",
+      "foreground": "#625f55",
+      "background": "#ffffff",
+      "ratio": 6.388
+    },
+    {
+      "name": "muted-cream",
+      "foreground": "#625f55",
+      "background": "#f4f1eb",
+      "ratio": 5.667
+    },
+    {
+      "name": "warning",
+      "foreground": "#51441f",
+      "background": "#fff5d9",
+      "ratio": 8.793
+    },
+    {
+      "name": "badge",
+      "foreground": "#4e5045",
+      "background": "#efeee7",
+      "ratio": 7.06
+    },
+    {
+      "name": "primary",
+      "foreground": "#ffffff",
+      "background": "#10110d",
+      "ratio": 18.953
+    },
+    {
+      "name": "input-boundary",
+      "foreground": "#8b887f",
+      "background": "#ffffff",
+      "ratio": 3.544
+    },
+    {
+      "name": "focus-white",
+      "foreground": "#4b64be",
+      "background": "#ffffff",
+      "ratio": 5.433
+    },
+    {
+      "name": "focus-cream",
+      "foreground": "#4b64be",
+      "background": "#f4f1eb",
+      "ratio": 4.819
+    }
+  ]
+}

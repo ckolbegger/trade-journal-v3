@@ -1,0 +1,23 @@
+{
+  "id": "T10-build",
+  "stage": "first",
+  "baseline": "11216bf0138e1dff372e9270afe5c935dfa1e984",
+  "inputs": {
+    "implementation/plan/bug-001-ui-mockup-fidelity.md": "665d3755a281db3d5296e418dde193fece16b56a30ecaf4da920375c9882e750",
+    "implementation/plan/bug-001-baseline.md": "a97ec7f5daed2eaa4bc1eb9031d04ecd9836ff029716f67a609ef862137b32db",
+    "implementation/plan/d02-implementation-baseline.md": "3f0042a94f5be932f0baaf8222b4a2da50b766a4036cd5d785b640f1b64892fb",
+    "implementation/plan/d02-initial-stock-entry.md": "f178999f16b99c3e961f4d2f63e55a5be6e86961d2b3c772e3f2614ccf3e62ec",
+    "implementation/plan/d01-capacity-policy-revision.md": "ba560d7d8eb724fb6f74cdc0f5990cccb650b733302836a120393256f273ed64",
+    "implementation/plan/d02-capacity-evidence.md": "090ef5822f74e2a41ad10f7f33e6ab0290abdc56b80e49bde7d636fc953f413d",
+    "specs/evaluation/kickoff-prompt.md": "03c97d607bfd55e086b626a710a6475372320233c2e67ef8b5427016f85bc795"
+  },
+  "sourceDigest": "e7c724987bbc2ec04f7e4b7e9ad62ee45d842077ca497d1b9db431ff6873a230",
+  "command": [
+    "npm",
+    "run",
+    "build"
+  ],
+  "exit": 0,
+  "stdout": "\n> trade-journal-v3@0.1.0 build\n> npm run typecheck && vite build && node tools/inventory.mjs\n\n\n> trade-journal-v3@0.1.0 typecheck\n> node node_modules/@typescript/native/bin/tsc -b\n\nvite v8.3.4 building client environment for production...\ntransforming...\n✓ 37 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/manifest.webmanifest         0.41 kB\ndist/index.html                   0.44 kB │ gzip:   0.29 kB\ndist/assets/index-B9lSS6HZ.css    9.17 kB │ gzip:   2.57 kB\ndist/assets/index-BTUEvFo0.js   614.67 kB │ gzip: 185.88 kB\n\n✓ built in 114ms\n\nPWA v2.0.0\nBuilding worker/sw.ts service worker (\"es\" format)...\nvite v8.3.4 building client environment for production...\ntransforming...\n✓ 2 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/sw.mjs  2.83 kB │ gzip: 1.31 kB\n\n✓ built in 7ms\n\nPWA v2.0.0\nmode      injectManifest\nformat:   es\nprecache  16 entries (1009.92 KiB)\nfiles generated\n  dist/sw.js\nInventoried 13 emitted assets with SHA-256 digests\n",
+  "stderr": "\n WARN  inlineDynamicImports option is deprecated, please use codeSplitting: false instead.\n\n[plugin builtin:vite-reporter] \n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+}

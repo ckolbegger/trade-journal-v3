@@ -1,0 +1,27 @@
+{
+  "id": "T12-latest-list",
+  "stage": "red",
+  "baseline": "11216bf0138e1dff372e9270afe5c935dfa1e984",
+  "inputs": {
+    "implementation/plan/bug-001-ui-mockup-fidelity.md": "665d3755a281db3d5296e418dde193fece16b56a30ecaf4da920375c9882e750",
+    "implementation/plan/bug-001-baseline.md": "a97ec7f5daed2eaa4bc1eb9031d04ecd9836ff029716f67a609ef862137b32db",
+    "implementation/plan/d02-implementation-baseline.md": "3f0042a94f5be932f0baaf8222b4a2da50b766a4036cd5d785b640f1b64892fb",
+    "implementation/plan/d02-initial-stock-entry.md": "f178999f16b99c3e961f4d2f63e55a5be6e86961d2b3c772e3f2614ccf3e62ec",
+    "implementation/plan/d01-capacity-policy-revision.md": "ba560d7d8eb724fb6f74cdc0f5990cccb650b733302836a120393256f273ed64",
+    "implementation/plan/d02-capacity-evidence.md": "090ef5822f74e2a41ad10f7f33e6ab0290abdc56b80e49bde7d636fc953f413d",
+    "specs/evaluation/kickoff-prompt.md": "03c97d607bfd55e086b626a710a6475372320233c2e67ef8b5427016f85bc795"
+  },
+  "sourceDigest": "e23cd60b18b4e4682d590dd8fd94d75fe198a9786285bf1c2f8dcd57d7243929",
+  "command": [
+    "npm",
+    "run",
+    "test:unit",
+    "--",
+    "tests/unit/bug001-ui.test.tsx",
+    "-t",
+    "keeps the latest lifecycle list"
+  ],
+  "exit": 1,
+  "stdout": "\n> trade-journal-v3@0.1.0 pretest:unit\n> node tools/build-d1-fixture.mjs\n\nvite v8.3.4 building client environment for production...\ntransforming...\n✓ 10 modules transformed.\nrendering chunks...\ncomputing gzip size...\n.cache/d1-fixture/d1-fixture.mjs  31.72 kB │ gzip: 8.31 kB\n\n✓ built in 16ms\n\n> trade-journal-v3@0.1.0 test:unit\n> vitest run --project unit tests/unit/bug001-ui.test.tsx -t keeps the latest lifecycle list\n\n\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n ❯ |unit| tests/unit/bug001-ui.test.tsx (14 tests | 1 failed | 13 skipped) 128ms\n   × keeps the latest lifecycle list when an older Planned read finishes after Open 128ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 13 skipped (14)\n   Start at  18:11:48\n   Duration  853ms (environment 52%, import 19%, tests 17%, transform 13%)\n\n",
+  "stderr": "\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |unit| tests/unit/bug001-ui.test.tsx > keeps the latest lifecycle list when an older Planned read finishes after Open\nAssertionError: expected <button data-symbol=\"XY\">…(2)</button> to be null\n\n- Expected:\nnull\n\n+ Received:\n<button\n  data-symbol=\"XY\"\n>\n  <strong>\n    XYZ\n     · \n    Planned\n  </strong>\n   \n  <span>\n    Trading\n     · \n    Long Stock\n     · \n    Unfilled\n     · \n    $500.00\n     risk · \n    $1000.00\n     reward · \n    2\n    /\n    1\n     reward/risk\n  </span>\n</button>\n\n ❯ tests/unit/bug001-ui.test.tsx:227:69\n    225|     await act(async () => { release(); await delayed; });\n    226|     expect(screen.getByRole('button', { name: 'Open' }).getAttribute('…\n    227|     expect(screen.queryByRole('button', { name: /XYZ · Planned/ })).to…\n       |                                                                     ^\n    228|     expect(screen.getByRole('button', { name: /XYZ · Open/ })).toBeTru…\n    229|   } finally { release(); }\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n"
+}

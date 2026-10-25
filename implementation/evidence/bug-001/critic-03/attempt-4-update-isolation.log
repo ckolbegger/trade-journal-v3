@@ -1,0 +1,20 @@
+
+> trade-journal-v3@0.1.0 preview
+> vite preview --host localhost --port 5174 --strictPort
+
+
+  ➜  Local:   http://localhost:5174/
+
+START B01 setup, real native readiness, invalid zone and catalog
+PASS B01 setup, real native readiness, invalid zone and catalog
+START B04 verified update deferred with open AND closed draft, activation and stopped offline
+FAIL B04 verified update deferred with open AND closed draft, activation and stopped offline worker.evaluate: TypeError: c.url is not a function
+    at eval (eval at evaluate (:370:30), <anonymous>:1:113)
+    at Array.map (<anonymous>)
+    at eval (eval at evaluate (:370:30), <anonymous>:1:90)
+    at async <anonymous>:396:30
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/update-isolation.mjs:48:1603
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/update-isolation.mjs:48:1560
+    at async run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/update-isolation.mjs:21:206)
+    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/update-isolation.mjs:48:2
+FINISH [{"name":"B01 setup, real native readiness, invalid zone and catalog","status":"PASS"},{"name":"B04 verified update deferred with open AND closed draft, activation and stopped offline","status":"FAIL"}] restored true

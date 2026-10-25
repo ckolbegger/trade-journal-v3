@@ -1,0 +1,28 @@
+
+> trade-journal-v3@0.1.0 preview
+> vite preview --host localhost --port 5174 --strictPort
+
+
+  ➜  Local:   http://localhost:5174/
+
+START B03 independent real opening Decline, then Trade Journal outcome visibility
+FAIL B03 independent real opening Decline, then Trade Journal outcome visibility Error: expect(locator).toContainText(expected) failed
+
+Locator: getByRole('dialog')
+Expected substring: "Explicit decline"
+Received string:    "TRADE JOURNALTrade Journal×Plan ReflectionTrade Anchor · Plan ConfirmationMoment: 2026-10-24 17:11:51.242 America/New_York · First authored: 2026-10-24 17:11:51.27 America/New_YorkWhy this trade, why now?Synthetic DECL independent thesisWhat would invalidate the thesis?Independent risk invalidationConviction4Primary emotionCalm"
+Timeout: 5000ms
+
+Call log:
+  - Expect "toContainText" getByRole('dialog') with timeout 5000ms
+  - waiting for getByRole('dialog')
+    14 × locator resolved to <div role="dialog" tabindex="-1" aria-modal="true" class="_panel_c0icb_69" aria-label="Trade Journal">…</div>
+       - unexpected value "TRADE JOURNALTrade Journal×Plan ReflectionTrade Anchor · Plan ConfirmationMoment: 2026-10-24 17:11:51.242 America/New_York · First authored: 2026-10-24 17:11:51.27 America/New_YorkWhy this trade, why now?Synthetic DECL independent thesisWhat would invalidate the thesis?Independent risk invalidationConviction4Primary emotionCalm"
+
+    at captureRawStack (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright-core/lib/coreBundle.js:9282:17)
+    at callMatcherAsStep (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13316:57)
+    at Object.toContainText (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13308:23)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-02/driver.mjs:45:41
+    at async run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-02/driver.mjs:21:125)
+    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-02/driver.mjs:38:2
+FINISH [{"name":"B03 independent real opening Decline, then Trade Journal outcome visibility","status":"FAIL"}] unchanged dist true

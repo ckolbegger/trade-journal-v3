@@ -16,6 +16,8 @@ export async function onboard(page: Page) {
 }
 export async function fillPlan(page: Page) {
   await page.getByRole('button', { name: 'New Plan' }).click();
+  const next = page.getByRole('button', { name: 'Next: Plan and reflection' });
+  if (await next.isVisible()) await next.click();
   for (const [label, value] of [['Stock symbol', 'XYZ'], ['Quantity (shares)', '100'], ['Intended entry (USD)', '50'], ['Stop (underlying price, USD)', '45'], ['Target (underlying price, USD)', '60'], ['Why this trade, why now?', 'Improving earnings'], ['What would invalidate the thesis?', 'Thesis fails']]) await page.getByLabel(label).fill(value);
 }
 export async function confirmPlan(page: Page) {

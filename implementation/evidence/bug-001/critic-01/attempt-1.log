@@ -1,0 +1,79 @@
+
+> trade-journal-v3@0.1.0 preview
+> vite preview --host localhost --port 5174 --strictPort
+
+
+  ➜  Local:   http://localhost:5174/
+
+START B01 setup, real native readiness, invalid zone and catalog
+PASS B01 setup, real native readiness, invalid zone and catalog
+START B01/B03 Plan stages, validation, sole confirmation and original reflection
+PASS B01/B03 Plan stages, validation, sole confirmation and original reflection
+START B01 list geometry and B02 actual 10-share rejected blank row, resume and save
+FAIL B01 list geometry and B02 actual 10-share rejected blank row, resume and save Error: expect(locator).toContainText(expected) failed
+
+Locator: getByRole('dialog')
+Expected substring: "Independent synthetic TEN"
+Received string:    "TRADE JOURNALTrade Journal×Plan ReflectionTrade Anchor · Plan ConfirmationMoment: 2026-10-24 13:42:30.902 America/New_York · First authored: 2026-10-24 13:42:30.929 America/New_YorkWhy this trade, why now?Synthetic TEN independent thesisWhat would invalidate the thesis?Independent risk invalidationConviction4Primary emotionCalmPosition Change ReflectionTrade Anchor · Position ChangeMoment: 2026-10-24 13:42:32.152 America/New_York · First authored: 2026-10-24 13:42:35.003 America/New_YorkDecision modeAs PlannedPrimary emotionCalmDecision confidence4NoteIndependent synthetic note"
+Timeout: 5000ms
+
+Call log:
+  - Expect "toContainText" getByRole('dialog') with timeout 5000ms
+  - waiting for getByRole('dialog')
+    14 × locator resolved to <div role="dialog" tabindex="-1" aria-modal="true" class="_panel_c0icb_69" aria-label="Trade Journal">…</div>
+       - unexpected value "TRADE JOURNALTrade Journal×Plan ReflectionTrade Anchor · Plan ConfirmationMoment: 2026-10-24 13:42:30.902 America/New_York · First authored: 2026-10-24 13:42:30.929 America/New_YorkWhy this trade, why now?Synthetic TEN independent thesisWhat would invalidate the thesis?Independent risk invalidationConviction4Primary emotionCalmPosition Change ReflectionTrade Anchor · Position ChangeMoment: 2026-10-24 13:42:32.152 America/New_York · First authored: 2026-10-24 13:42:35.003 America/New_YorkDecision modeAs PlannedPrimary emotionCalmDecision confidence4NoteIndependent synthetic note"
+
+    at captureRawStack (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright-core/lib/coreBundle.js:9282:17)
+    at callMatcherAsStep (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13316:57)
+    at Object.toContainText (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13308:23)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:40:3099
+    at async run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:21:125)
+    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:40:2
+START B04 dialog keyboard, focus, inert backdrop, resize and long Note
+FAIL B04 dialog keyboard, focus, inert backdrop, resize and long Note locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('button', { name: 'New Plan', exact: true })[22m
+
+    at makePlan (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:28:97)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:41:95
+    at run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:21:131)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:41:8
+START B03 opening native failure matrix and safe retry
+FAIL B03 opening native failure matrix and safe retry locator.click: Target page, context or browser has been closed
+Call log:
+[2m  - waiting for getByRole('button', { name: /Record initial Position Change|Continue unsaved entry/ })[22m
+
+    at opening (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:29:139)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:42:79
+    at run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:21:131)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:42:8
+START B03 Defer no placeholder Entry, owed Cancel/Complete, native failures
+FAIL B03 Defer no placeholder Entry, owed Cancel/Complete, native failures locator.click: Target page, context or browser has been closed
+    at makePlan (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:28:97)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:43:100
+    at run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:21:131)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:43:8
+START B03 explicit opening Decline and owed Decline
+FAIL B03 explicit opening Decline and owed Decline locator.click: Target page, context or browser has been closed
+    at makePlan (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:28:97)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:44:76
+    at run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:21:131)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:44:8
+START B03 same native persistent store competing opening tabs
+FAIL B03 same native persistent store competing opening tabs locator.click: Target page, context or browser has been closed
+    at makePlan (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:28:97)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:45:86
+    at run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:21:131)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:45:8
+START B04 Loading, list Error, Recovery, Unsupported and Integrity states
+FAIL B04 Loading, list Error, Recovery, Unsupported and Integrity states page.evaluate: Target page, context or browser has been closed
+    at authority (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:26:43)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:46:106
+    at run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:21:131)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:46:8
+START B04 verified update deferred with open AND closed draft, activation and stopped offline
+FAIL B04 verified update deferred with open AND closed draft, activation and stopped offline locator.click: Target page, context or browser has been closed
+    at makePlan (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:28:97)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:47:118
+    at run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:21:131)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:47:8

@@ -1,0 +1,3 @@
+# Preserve whitespace in generated failure captures and the upstream font license.
+implementation/evidence/bug-001/**/error-context.md -whitespace
+public/fonts/LICENSE.txt -whitespace

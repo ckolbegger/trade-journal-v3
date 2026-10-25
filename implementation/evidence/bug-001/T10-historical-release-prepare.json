@@ -1,0 +1,22 @@
+{
+  "id": "T10-historical-release",
+  "stage": "prepare",
+  "baseline": "11216bf0138e1dff372e9270afe5c935dfa1e984",
+  "inputs": {
+    "implementation/plan/bug-001-ui-mockup-fidelity.md": "665d3755a281db3d5296e418dde193fece16b56a30ecaf4da920375c9882e750",
+    "implementation/plan/bug-001-baseline.md": "a97ec7f5daed2eaa4bc1eb9031d04ecd9836ff029716f67a609ef862137b32db",
+    "implementation/plan/d02-implementation-baseline.md": "3f0042a94f5be932f0baaf8222b4a2da50b766a4036cd5d785b640f1b64892fb",
+    "implementation/plan/d02-initial-stock-entry.md": "f178999f16b99c3e961f4d2f63e55a5be6e86961d2b3c772e3f2614ccf3e62ec",
+    "implementation/plan/d01-capacity-policy-revision.md": "ba560d7d8eb724fb6f74cdc0f5990cccb650b733302836a120393256f273ed64",
+    "implementation/plan/d02-capacity-evidence.md": "090ef5822f74e2a41ad10f7f33e6ab0290abdc56b80e49bde7d636fc953f413d",
+    "specs/evaluation/kickoff-prompt.md": "03c97d607bfd55e086b626a710a6475372320233c2e67ef8b5427016f85bc795"
+  },
+  "sourceDigest": "aac42673bbd89cd30e40db8c5ffda180f5eb6a6dc3563c248bdd54f1cf9a0974",
+  "command": [
+    "node",
+    "tools/build-d1-release.mjs"
+  ],
+  "exit": 1,
+  "stdout": "vite v8.3.4 building client environment for production...\ntransforming...\n✓ 31 modules transformed.\nrendering chunks...\ncomputing gzip size...\n../d1-release/manifest.webmanifest         0.41 kB\n../d1-release/index.html                   0.44 kB │ gzip:   0.29 kB\n../d1-release/assets/index-Ukg-5B9v.css    2.89 kB │ gzip:   1.08 kB\n../d1-release/assets/index-CCnwudzB.js   557.26 kB │ gzip: 172.42 kB\n\n✓ built in 89ms\n\nPWA v2.0.0\nBuilding worker/sw.ts service worker (\"es\" format)...\nvite v8.3.4 building client environment for production...\ntransforming...\n✓ 2 modules transformed.\nrendering chunks...\ncomputing gzip size...\n../d1-release/sw.mjs  2.83 kB │ gzip: 1.31 kB\n\n✓ built in 9ms\n\nPWA v2.0.0\nmode      injectManifest\nformat:   es\nprecache  13 entries (565.71 KiB)\nfiles generated\n  ../d1-release/sw.js\n",
+  "stderr": "\n(!) outDir /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/.cache/d1-release is not inside project root and will not be emptied.\nUse --emptyOutDir to override.\n\n[plugin builtin:vite-reporter] \n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n\n WARN  inlineDynamicImports option is deprecated, please use codeSplitting: false instead.\n\nfile:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/.cache/d1-release-source/tools/inventory.mjs:25\nif (expected.size !== assets.length - 1) throw new Error('Precache inventory has unexpected assets');\n                                               ^\n\nError: Precache inventory has unexpected assets\n    at file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/.cache/d1-release-source/tools/inventory.mjs:25:48\n\nNode.js v26.12.0\nnode:internal/errors:999\n  const err = new Error(message);\n              ^\n\nError: Command failed: /opt/homebrew/Cellar/node/26.12.0/bin/node tools/inventory.mjs\n    at genericNodeError (node:internal/errors:999:15)\n    at wrappedFn (node:internal/errors:544:14)\n    at checkExecSyncError (node:child_process:990:11)\n    at execFileSync (node:child_process:1026:15)\n    at file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tools/build-d1-release.mjs:14:1\n    at #evaluateSync (node:internal/modules/esm/module_job:702:24)\n    at ModuleJobSync.runSync (node:internal/modules/esm/module_job:717:43)\n    at node:internal/modules/esm/loader:383:11\n    at TracingChannel.traceSync (node:diagnostics_channel:557:14)\n    at ModuleLoader.importForEntryPoint (node:internal/modules/esm/loader:372:21) {\n  status: 1,\n  signal: null,\n  output: [ null, null, null ],\n  pid: 92393,\n  stdout: null,\n  stderr: null\n}\n\nNode.js v26.12.0\n"
+}

@@ -27,6 +27,7 @@ describe('Long Stock Plan production UI', () => {
     await user.type(await screen.findByLabelText('New Account name'), 'Taxable');
     await user.click(screen.getByRole('button', { name: 'Add Account' }));
     await user.click(await screen.findByRole('button', { name: 'New Plan' }));
+  if (screen.queryByRole('button', { name: 'Next: Plan and reflection' })) await user.click(screen.getByRole('button', { name: 'Next: Plan and reflection' }));
     for (const [label, value] of [['Stock symbol', 'XYZ'], ['Quantity (shares)', '100'], ['Intended entry (USD)', '50'], ['Stop (underlying price, USD)', '45'], ['Target (underlying price, USD)', '60'], ['Why this trade, why now?', 'Improving earnings'], ['What would invalidate the thesis?', 'Thesis fails']]) await user.type(screen.getByLabelText(label), value);
     await user.click(screen.getByLabelText('Calm'));
     await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
@@ -49,6 +50,7 @@ it('should preserve entered values through validation, navigation and a catalog 
   await f.services.catalog.save({ kind: 'Account', label: 'Trading', parentId: institution.record.id, generation: catalog.generation, expectedCatalogRevision: institution.catalogRevision });
   render(<App services={f.services} />);
   await user.click(await screen.findByRole('button', { name: 'New Plan' }));
+  if (screen.queryByRole('button', { name: 'Next: Plan and reflection' })) await user.click(screen.getByRole('button', { name: 'Next: Plan and reflection' }));
   await user.type(screen.getByLabelText('Stock symbol'), 'XYZ');
   await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
   expect(await screen.findByRole('alert')).toBeTruthy();
@@ -57,6 +59,7 @@ it('should preserve entered values through validation, navigation and a catalog 
   expect(screen.getByLabelText('Quantity (shares)').getAttribute('aria-invalid')).toBe('true');
   await user.click(screen.getByRole('button', { name: 'Workspace' }));
   await user.click(screen.getByRole('button', { name: 'New Plan' }));
+  if (screen.queryByRole('button', { name: 'Next: Plan and reflection' })) await user.click(screen.getByRole('button', { name: 'Next: Plan and reflection' }));
   expect((screen.getByLabelText<HTMLInputElement>('Stock symbol')).value).toBe('XYZ');
   for (const [label, value] of [['Quantity (shares)', '100'], ['Intended entry (USD)', '50'], ['Stop (underlying price, USD)', '45'], ['Target (underlying price, USD)', '60'], ['Why this trade, why now?', 'Thesis'], ['What would invalidate the thesis?', 'Invalidation']]) await user.type(screen.getByLabelText(label), value);
   const current = await f.services.catalog.query({ family: 'Institution' });
@@ -95,6 +98,7 @@ it('should offer honest storage and installation guidance without disabling writ
   await user.click(screen.getByRole('button', { name: 'Request storage protection' }));
   expect(await screen.findByText('The host did not grant stronger storage protection.')).toBeTruthy();
   expect((screen.getByRole<HTMLButtonElement>('button', { name: 'Add Institution' })).disabled).toBe(false);
+  await user.click(screen.getByRole('button', { name: 'Workspace' }));
   expect(screen.getByText(/Add to Home Screen/)).toBeTruthy();
   cleanup(); f.store.close();
 });
@@ -103,6 +107,7 @@ it('should keep update activation disabled while a retained Plan survives a refe
   const f = await workspaceFixture(); const user = userEvent.setup();
   render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store), journal: new Journal(f.store, f.runtime) }} delivery={{ getUpdate: () => Promise.resolve({ available: true }), activateUpdate: () => Promise.resolve() }} />);
   await user.click(await screen.findByRole('button', { name: 'New Plan' }));
+  if (screen.queryByRole('button', { name: 'Next: Plan and reflection' })) await user.click(screen.getByRole('button', { name: 'Next: Plan and reflection' }));
   await user.type(screen.getByLabelText('Stock symbol'), 'XYZ');
   await user.click(screen.getByRole('button', { name: 'Workspace' }));
   await user.type(screen.getByLabelText('Institution name'), 'Second broker');
@@ -111,6 +116,7 @@ it('should keep update activation disabled while a retained Plan survives a refe
   await user.click(screen.getByRole('button', { name: 'Check for application updates' }));
   expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Reload to update' }).disabled).toBe(true);
   await user.click(screen.getByRole('button', { name: 'New Plan' }));
+  if (screen.queryByRole('button', { name: 'Next: Plan and reflection' })) await user.click(screen.getByRole('button', { name: 'Next: Plan and reflection' }));
   expect(screen.getByLabelText<HTMLInputElement>('Stock symbol').value).toBe('XYZ');
   cleanup(); f.store.close();
 });
@@ -183,6 +189,7 @@ it('should distinguish same-named Accounts by their immutable Institution in Pla
   await f.catalog.save({ kind: 'Account', label: 'Trading', parentId: institution.record.id, generation: root.generation, expectedCatalogRevision: institution.catalogRevision });
   render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store), journal: new Journal(f.store, f.runtime) }} />);
   await user.click(await screen.findByRole('button', { name: 'New Plan' }));
+  if (screen.queryByRole('button', { name: 'Next: Plan and reflection' })) await user.click(screen.getByRole('button', { name: 'Next: Plan and reflection' }));
   expect(screen.getByRole('option', { name: 'Trading · Broker' })).toBeTruthy();
   expect(screen.getByRole('option', { name: 'Trading · Other broker' })).toBeTruthy();
   cleanup(); f.store.close();
@@ -232,7 +239,8 @@ it('should distinguish update, recovery and storage advisory landmarks after a l
   const { vi } = await import('vitest');
   const f = await workspaceFixture(); const user = userEvent.setup();
   render(<App services={{ workspace: f.workspace, catalog: f.catalog, workflows: f.workflows, views: new TradeViewsAndReporting(f.store), journal: new Journal(f.store, f.runtime) }} delivery={{ getUpdate: () => Promise.resolve({ available: true }), activateUpdate: () => Promise.resolve() }} />);
-  await user.click(await screen.findByRole('button', { name: 'Check for application updates' }));
+  await user.click(await screen.findByRole('button', { name: 'Workspace' }));
+  await user.click(screen.getByRole('button', { name: 'Check for application updates' }));
   await screen.findByText('Update available');
   await user.click(await screen.findByRole('button', { name: 'Workspace' }));
   await user.type(screen.getByLabelText('Institution name'), 'Another broker');
@@ -279,6 +287,7 @@ it('should add a second Account at an existing Institution and retain both for P
   view.unmount();
   render(<App services={services} />);
   await user.click(await screen.findByRole('button', { name: 'New Plan' }));
+  if (screen.queryByRole('button', { name: 'Next: Plan and reflection' })) await user.click(screen.getByRole('button', { name: 'Next: Plan and reflection' }));
   expect(screen.getByRole('option', { name: 'Trading · Broker' })).toBeTruthy();
   expect(screen.getByRole('option', { name: 'Retirement · Broker' })).toBeTruthy();
   cleanup(); f.store.close();

@@ -1,0 +1,23 @@
+{
+  "id": "T11-visual",
+  "stage": "complete-states",
+  "baseline": "11216bf0138e1dff372e9270afe5c935dfa1e984",
+  "inputs": {
+    "implementation/plan/bug-001-ui-mockup-fidelity.md": "665d3755a281db3d5296e418dde193fece16b56a30ecaf4da920375c9882e750",
+    "implementation/plan/bug-001-baseline.md": "a97ec7f5daed2eaa4bc1eb9031d04ecd9836ff029716f67a609ef862137b32db",
+    "implementation/plan/d02-implementation-baseline.md": "3f0042a94f5be932f0baaf8222b4a2da50b766a4036cd5d785b640f1b64892fb",
+    "implementation/plan/d02-initial-stock-entry.md": "f178999f16b99c3e961f4d2f63e55a5be6e86961d2b3c772e3f2614ccf3e62ec",
+    "implementation/plan/d01-capacity-policy-revision.md": "ba560d7d8eb724fb6f74cdc0f5990cccb650b733302836a120393256f273ed64",
+    "implementation/plan/d02-capacity-evidence.md": "090ef5822f74e2a41ad10f7f33e6ab0290abdc56b80e49bde7d636fc953f413d",
+    "specs/evaluation/kickoff-prompt.md": "03c97d607bfd55e086b626a710a6475372320233c2e67ef8b5427016f85bc795"
+  },
+  "sourceDigest": "f9697f14fee1e03b20f3f138a6fb8e41db68741191aec5b4818d45aab198c210",
+  "command": [
+    "npm",
+    "run",
+    "test:visual"
+  ],
+  "exit": 0,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:visual\n> playwright test --config playwright.visual.config.ts\n\n\nRunning 9 tests using 1 worker\n\n  ✓  1 [chromium] › tests/visual/bug001.spec.ts:8:39 › reference board, modal keyboard and rejected draft journey at 1440 (12.9s)\n  ✓  2 [chromium] › tests/visual/bug001.spec.ts:8:39 › reference board, modal keyboard and rejected draft journey at 814 (12.7s)\n  ✓  3 [chromium] › tests/visual/bug001.spec.ts:8:39 › reference board, modal keyboard and rejected draft journey at 390 (12.8s)\n  ✓  4 [chromium] › tests/visual/bug001.spec.ts:75:39 › density, Loading, Error and protective states at 1440 (3.5s)\n  ✓  5 [chromium] › tests/visual/bug001.spec.ts:75:39 › density, Loading, Error and protective states at 814 (3.4s)\n  ✓  6 [chromium] › tests/visual/bug001.spec.ts:75:39 › density, Loading, Error and protective states at 390 (3.5s)\n  ✓  7 [chromium] › tests/visual/bug001.spec.ts:115:39 › Unsupported remains prominent at 1440 (575ms)\n  ✓  8 [chromium] › tests/visual/bug001.spec.ts:115:39 › Unsupported remains prominent at 814 (584ms)\n  ✓  9 [chromium] › tests/visual/bug001.spec.ts:115:39 › Unsupported remains prominent at 390 (585ms)\n\n  9 passed (51.3s)\n",
+  "stderr": "[WebServer] (node:5754) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)\n(node:5757) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+}

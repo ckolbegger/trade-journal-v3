@@ -1,0 +1,133 @@
+{
+  "stamp": 1792876288953,
+  "sourceDigest": "f9697f14fee1e03b20f3f138a6fb8e41db68741191aec5b4818d45aab198c210",
+  "inventory": {
+    "version": 1,
+    "releaseId": "33cc2444e5d648b6fafc68d73011727ae4049bb656c469009133ce7c94b26bc1",
+    "assets": [
+      {
+        "url": "/assets/index-CBnB2S1N.js",
+        "bytes": 615919,
+        "sha256": "e453ec985bbd0ff19f6e2add3e35e9891f55d3e596ae6a42a4eb5de95ef188a8"
+      },
+      {
+        "url": "/assets/index-DyLbKIIF.css",
+        "bytes": 9865,
+        "sha256": "133ce1d69fab9f1d9aa2f18d0345838092e2f9e16936a284484b834a24f702f0"
+      },
+      {
+        "url": "/capabilities.json",
+        "bytes": 1992,
+        "sha256": "71878297c7953004d90c5841bc9ecd143fbb86a65c348e099c1d8f18a039ab91"
+      },
+      {
+        "url": "/fonts/LICENSE.txt",
+        "bytes": 4355,
+        "sha256": "f158372b957fb64f86bb9e5d9368c84e54c541bdd5d25bd3d4515a593c99cfed"
+      },
+      {
+        "url": "/fonts/LiberationSansNarrow-Bold.ttf",
+        "bytes": 110260,
+        "sha256": "8e5eb5090ef4a3143794c230b82f174f7f2fbbfcd6cb789ccfa1f90bf8795d54"
+      },
+      {
+        "url": "/fonts/Rubik-Bold.ttf",
+        "bytes": 140396,
+        "sha256": "b1c36dfcbc5fe5011c552c76725c84d989a71d56440e8bfbfa0cb68b593dbad6"
+      },
+      {
+        "url": "/fonts/Rubik-Regular.ttf",
+        "bytes": 136624,
+        "sha256": "bd1490f4314d27ca1ac5d8869fdda068852edd623318c9bee13e812b793b301b"
+      },
+      {
+        "url": "/icon-192.png",
+        "bytes": 3409,
+        "sha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9"
+      },
+      {
+        "url": "/icon-512.png",
+        "bytes": 12236,
+        "sha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457"
+      },
+      {
+        "url": "/icon.svg",
+        "bytes": 180,
+        "sha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9"
+      },
+      {
+        "url": "/index.html",
+        "bytes": 446,
+        "sha256": "cbb4dbe68c1667bb470b785e4c89b610cd6ae8bba81b3bf7f1a803493fac291b"
+      },
+      {
+        "url": "/manifest.webmanifest",
+        "bytes": 416,
+        "sha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd"
+      },
+      {
+        "url": "/sw.js",
+        "bytes": 4386,
+        "sha256": "b7ae284e2a7bd4adb4eefc9fbc10c1b7e6996d97087f4c02fd5eb9838cf45cb8"
+      }
+    ]
+  },
+  "distBefore": {
+    "index.html": "cbb4dbe68c1667bb470b785e4c89b610cd6ae8bba81b3bf7f1a803493fac291b",
+    "capabilities.json": "71878297c7953004d90c5841bc9ecd143fbb86a65c348e099c1d8f18a039ab91",
+    "icon-192.png": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+    "icon.svg": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+    "offline-inventory.json": "aedfe40e87bbf6b9339cb30967e02280d707cd28b5fb66dbe625fa77c3b2f504",
+    "manifest.webmanifest": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+    "sw.js": "b7ae284e2a7bd4adb4eefc9fbc10c1b7e6996d97087f4c02fd5eb9838cf45cb8",
+    "icon-512.png": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+    "fonts/LiberationSansNarrow-Bold.ttf": "8e5eb5090ef4a3143794c230b82f174f7f2fbbfcd6cb789ccfa1f90bf8795d54",
+    "fonts/Rubik-Bold.ttf": "b1c36dfcbc5fe5011c552c76725c84d989a71d56440e8bfbfa0cb68b593dbad6",
+    "fonts/LICENSE.txt": "f158372b957fb64f86bb9e5d9368c84e54c541bdd5d25bd3d4515a593c99cfed",
+    "fonts/Rubik-Regular.ttf": "bd1490f4314d27ca1ac5d8869fdda068852edd623318c9bee13e812b793b301b",
+    "assets/index-CBnB2S1N.js": "e453ec985bbd0ff19f6e2add3e35e9891f55d3e596ae6a42a4eb5de95ef188a8",
+    "assets/index-DyLbKIIF.css": "133ce1d69fab9f1d9aa2f18d0345838092e2f9e16936a284484b834a24f702f0"
+  },
+  "host": {
+    "node": "v26.12.0",
+    "platform": "darwin",
+    "release": "25.6.0",
+    "cpu": "Apple M4 Max"
+  },
+  "results": [],
+  "consoleLines": [
+    {
+      "type": "server-out",
+      "text": "\n> trade-journal-v3@0.1.0 preview\n> vite preview --host localhost --port 5174 --strictPort\n\n"
+    },
+    {
+      "type": "server-err",
+      "text": "error when starting preview server:\nError: listen EPERM: operation not permitted ::1:5174\n    at Server.setupListenHandle [as _listen2] (node:net:2368:21)\n    at listenInCluster (node:net:2499:12)\n    at GetAddrInfoReqWrap.callback (node:net:2728:7)\n    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:134:8) {\n  code: 'EPERM',\n  errno: -1,\n  syscall: 'listen',\n  address: '::1',\n  port: 5174\n}\n"
+    }
+  ],
+  "observedSourceDigest": "f9697f14fee1e03b20f3f138a6fb8e41db68741191aec5b4818d45aab198c210",
+  "command": [
+    "node",
+    "implementation/evidence/bug-001/critic-02/driver.mjs"
+  ],
+  "profile": "/var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/bug001-independent-critic02-oSWdH4",
+  "fatal": "browserType.launchPersistentContext: Target page, context or browser has been closed\nBrowser logs:\n\n<launching> /Users/ckolbegger/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,NetworkTimeServiceQuerying,AimEnabled,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=/var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/bug001-independent-critic02-oSWdH4 --remote-debugging-pipe about:blank\n<launched> pid=872\n[pid=872][err] [1024/171139.366803:ERROR:base/power_monitor/thermal_state_observer_mac.mm:122] ThermalStateObserverMac unable to register to power notifications. Result: 9\n[pid=872][err] [1024/171139.367903:ERROR:net/dns/dns_config_service_posix.cc:139] DNS config watch failed to start.\n[pid=872][err] [1024/171139.368400:FATAL:base/apple/mach_port_rendezvous_mac.cc:159] Check failed: kr == KERN_SUCCESS. bootstrap_check_in org.chromium.Chromium.MachPortRendezvousServer.872: Permission denied (1100)\nCall log:\n\u001b[2m  - <launching> /Users/ckolbegger/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,NetworkTimeServiceQuerying,AimEnabled,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=/var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/bug001-independent-critic02-oSWdH4 --remote-debugging-pipe about:blank\u001b[22m\n\u001b[2m  - <launched> pid=872\u001b[22m\n\u001b[2m  - [pid=872][err] [1024/171139.366803:ERROR:base/power_monitor/thermal_state_observer_mac.mm:122] ThermalStateObserverMac unable to register to power notifications. Result: 9\u001b[22m\n\u001b[2m  - [pid=872][err] [1024/171139.367903:ERROR:net/dns/dns_config_service_posix.cc:139] DNS config watch failed to start.\u001b[22m\n\u001b[2m  - [pid=872][err] [1024/171139.368400:FATAL:base/apple/mach_port_rendezvous_mac.cc:159] Check failed: kr == KERN_SUCCESS. bootstrap_check_in org.chromium.Chromium.MachPortRendezvousServer.872: Permission denied (1100)\u001b[22m\n\u001b[2m  - [pid=872] <gracefully close start>\u001b[22m\n\u001b[2m  - [pid=872] <kill>\u001b[22m\n\u001b[2m  - [pid=872] <will force kill>\u001b[22m\n\u001b[2m  - [pid=872] exception while trying to kill process: Error: kill EPERM\u001b[22m\n\u001b[2m  - [pid=872] <process did exit: exitCode=null, signal=SIGTRAP>\u001b[22m\n\u001b[2m  - [pid=872] starting temporary directories cleanup\u001b[22m\n\u001b[2m  - [pid=872] finished temporary directories cleanup\u001b[22m\n\u001b[2m  - [pid=872] <gracefully close end>\u001b[22m\n\n    at async launch (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-02/driver.mjs:23:51)\n    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-02/driver.mjs:37:104",
+  "distAfter": {
+    "index.html": "cbb4dbe68c1667bb470b785e4c89b610cd6ae8bba81b3bf7f1a803493fac291b",
+    "capabilities.json": "71878297c7953004d90c5841bc9ecd143fbb86a65c348e099c1d8f18a039ab91",
+    "icon-192.png": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+    "icon.svg": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+    "offline-inventory.json": "aedfe40e87bbf6b9339cb30967e02280d707cd28b5fb66dbe625fa77c3b2f504",
+    "manifest.webmanifest": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+    "sw.js": "b7ae284e2a7bd4adb4eefc9fbc10c1b7e6996d97087f4c02fd5eb9838cf45cb8",
+    "icon-512.png": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+    "fonts/LiberationSansNarrow-Bold.ttf": "8e5eb5090ef4a3143794c230b82f174f7f2fbbfcd6cb789ccfa1f90bf8795d54",
+    "fonts/Rubik-Bold.ttf": "b1c36dfcbc5fe5011c552c76725c84d989a71d56440e8bfbfa0cb68b593dbad6",
+    "fonts/LICENSE.txt": "f158372b957fb64f86bb9e5d9368c84e54c541bdd5d25bd3d4515a593c99cfed",
+    "fonts/Rubik-Regular.ttf": "bd1490f4314d27ca1ac5d8869fdda068852edd623318c9bee13e812b793b301b",
+    "assets/index-CBnB2S1N.js": "e453ec985bbd0ff19f6e2add3e35e9891f55d3e596ae6a42a4eb5de95ef188a8",
+    "assets/index-DyLbKIIF.css": "133ce1d69fab9f1d9aa2f18d0345838092e2f9e16936a284484b834a24f702f0"
+  },
+  "finished": "2026-10-24T21:11:40.043Z",
+  "pageErrors": []
+}

@@ -158,6 +158,52 @@ backup/verification from D6, Restore from D17, reconstruction, accessibility and
 relevant scale behavior. The
 later full fixture is not permission to lose data or miss latency targets earlier.
 
+## Bug stories for installed capabilities
+
+### BUG-001 — Restore mockup fidelity and make saved versus draft state clear
+
+Added 2026-10-24 following trader testing of D2. **Status: implemented and verified
+locally, 2026-10-25; approved live-tab update applied.** Independent visual and
+functional acceptance and final scale qualification passed; see the
+[BUG-001 evidence](evidence/bug-001/README.md). The installed D1/D2 experience was
+repaired before D3; the numbered capability roadmap remains unchanged.
+
+**Story:** As a trader, I want the installed app to closely match the mockups and
+clearly distinguish unsaved input from recorded Executions, so that I can recognize
+the intended workflows and know whether my Trade is Planned or Open.
+
+**Observed bug:** The installed app diverges from the references in navigation,
+density, typography, Trade rows, detail hierarchy and contextual forms. An execution
+draft retains entered values and offers “Remove Execution” even after a failed
+Save, while Trade Detail still says Planned. A second blank draft row produces
+generic errors without identifying that row, making retained input appear saved.
+Functional and accessibility checks did not establish visual fidelity or sufficient
+save-state clarity.
+
+**Trader decisions, 2026-10-24:** Cover **all installed D1/D2 screens**. Closely match
+the references' composition, typography, spacing, compact cards, desktop drawers
+and narrow-screen sheets. Retain Trade Journal branding, required D2 fields and
+all existing data/readiness/atomicity safeguards. Future capabilities visible in
+the prototype remain out of scope.
+
+**Outcome:** Reference-aligned navigation, Planned/Open lists, Trade Detail, Plan
+creation, opening execution entry, Journal/Debt and Workspace/onboarding; clear
+Draft / Saving / Nothing saved / Saved states; row-specific blank-field errors;
+accessible contextual forms and equivalent narrow/wide behavior. The completed
+repair still operates through the existing production commands and durable store.
+It is not a standalone theme or component-library release.
+
+**Acceptance:** Compare the running app with each applicable reference at matched
+viewport sizes; independently exercise complete D1/D2 flows, including the blank
+second-execution regression, original Debt forms, conflict/recovery, offline and
+safe update behavior. Visual acceptance is an explicit gate in addition to
+functional/accessibility tests. Preserve data and expose no D3+ controls.
+
+See [BUG-001 detailed task breakdown](plan/bug-001-ui-mockup-fidelity.md) for the
+screen/reference map, concrete changes, dependency graph, TDD cases, real-stack
+tests, visual comparison procedure and fresh independent critic gate. Planning
+authorization does not authorize implementing the repair or deployment.
+
 ## Ordered vertical deliverables
 
 ### 1. Confirm and retain a Long Stock plan

@@ -1,0 +1,254 @@
+{
+  "status": "Implementation, independent acceptance, final qualification and approved live update completed locally",
+  "head": "11216bf0138e1dff372e9270afe5c935dfa1e984",
+  "sourceDigest": "4f341c4308fbd1ee263c97a141975499a88f7248386be5e4cdd0af92a58d744c",
+  "releaseId": "4d8cb5fc0da7a335f886c3dd28c967baee50ea3987b0b5eea89117ebb98a6188",
+  "gates": {
+    "list-lint-gate": {
+      "command": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "exit": 0,
+      "sourceDigest": "4f341c4308fbd1ee263c97a141975499a88f7248386be5e4cdd0af92a58d744c"
+    },
+    "list-unit-gate": {
+      "command": [
+        "npm",
+        "run",
+        "test:unit"
+      ],
+      "exit": 0,
+      "sourceDigest": "4f341c4308fbd1ee263c97a141975499a88f7248386be5e4cdd0af92a58d744c"
+    },
+    "list-integration-gate": {
+      "command": [
+        "npm",
+        "run",
+        "test:integration"
+      ],
+      "exit": 0,
+      "sourceDigest": "4f341c4308fbd1ee263c97a141975499a88f7248386be5e4cdd0af92a58d744c"
+    },
+    "list-typecheck-gate": {
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 0,
+      "sourceDigest": "4f341c4308fbd1ee263c97a141975499a88f7248386be5e4cdd0af92a58d744c"
+    },
+    "list-production-build": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "sourceDigest": "4f341c4308fbd1ee263c97a141975499a88f7248386be5e4cdd0af92a58d744c"
+    },
+    "list-visual-gate": {
+      "command": [
+        "npm",
+        "run",
+        "test:visual"
+      ],
+      "exit": 0,
+      "sourceDigest": "4f341c4308fbd1ee263c97a141975499a88f7248386be5e4cdd0af92a58d744c"
+    },
+    "list-browser-gate": {
+      "command": [
+        "npm",
+        "run",
+        "test:browser",
+        "--",
+        "--max-failures=3"
+      ],
+      "exit": 0,
+      "sourceDigest": "4f341c4308fbd1ee263c97a141975499a88f7248386be5e4cdd0af92a58d744c"
+    },
+    "qualification-d1-scale-gate": {
+      "command": [
+        "npm",
+        "run",
+        "test:benchmark"
+      ],
+      "exit": 0,
+      "sourceDigest": "4f341c4308fbd1ee263c97a141975499a88f7248386be5e4cdd0af92a58d744c"
+    },
+    "qualification-d2-scale-gate": {
+      "command": [
+        "npm",
+        "run",
+        "test:benchmark:d2"
+      ],
+      "exit": 0,
+      "sourceDigest": "4f341c4308fbd1ee263c97a141975499a88f7248386be5e4cdd0af92a58d744c"
+    },
+    "post-critic-identity": {
+      "command": [
+        "node",
+        "--input-type=module",
+        "-e",
+        "import { readFileSync, readdirSync } from \"node:fs\"; import { createHash } from \"node:crypto\"; import assert from \"node:assert/strict\"; const r=JSON.parse(readFileSync(\"implementation/evidence/bug-001/final-local-verification.json\",\"utf8\")); const files=p=>readdirSync(p,{withFileTypes:true}).flatMap(e=>e.isDirectory()?files(`${p}/${e.name}`):[`${p}/${e.name}`]); const actual=Object.fromEntries(files(\"dist\").sort().map(p=>[p.slice(5),createHash(\"sha256\").update(readFileSync(p)).digest(\"hex\")])); assert.deepEqual(actual,r.distSha256); assert.equal(JSON.parse(readFileSync(\"dist/offline-inventory.json\",\"utf8\")).releaseId,r.releaseId); const policy=JSON.parse(readFileSync(\"implementation/evidence/bug-001/gate-policy-revision.json\",\"utf8\")); for(const [p,sha] of Object.entries(policy.documents)) assert.equal(createHash(\"sha256\").update(readFileSync(p)).digest(\"hex\"),sha); console.log(\"Exact reviewed distribution and approved policy documents unchanged.\");"
+      ],
+      "exit": 0,
+      "sourceDigest": "4f341c4308fbd1ee263c97a141975499a88f7248386be5e4cdd0af92a58d744c"
+    },
+    "final-source-identity": {
+      "command": [
+        "node",
+        "--input-type=module",
+        "-e",
+        "import { readFileSync, readdirSync } from \"node:fs\"; import { createHash } from \"node:crypto\"; import assert from \"node:assert/strict\"; const r=JSON.parse(readFileSync(\"implementation/evidence/bug-001/final-local-verification.json\",\"utf8\")); const files=p=>readdirSync(p,{withFileTypes:true}).flatMap(e=>e.isDirectory()?files(`${p}/${e.name}`):[`${p}/${e.name}`]); assert.deepEqual(Object.fromEntries(files(\"dist\").sort().map(p=>[p.slice(5),createHash(\"sha256\").update(readFileSync(p)).digest(\"hex\")])),r.distSha256); console.log(\"Final accepted distribution restored exactly.\");"
+      ],
+      "exit": 0,
+      "sourceDigest": "4f341c4308fbd1ee263c97a141975499a88f7248386be5e4cdd0af92a58d744c"
+    }
+  },
+  "counts": {
+    "unit": 121,
+    "integration": 7,
+    "nativeBrowser": 93,
+    "visualNative": 9
+  },
+  "distSha256": {
+    "assets/index-BA-QDq5G.js": "8448111893d3c43e136b0454abaa3c7428483f45878fb9905e551b3a066b7f50",
+    "assets/index-DyLbKIIF.css": "133ce1d69fab9f1d9aa2f18d0345838092e2f9e16936a284484b834a24f702f0",
+    "capabilities.json": "71878297c7953004d90c5841bc9ecd143fbb86a65c348e099c1d8f18a039ab91",
+    "fonts/LICENSE.txt": "f158372b957fb64f86bb9e5d9368c84e54c541bdd5d25bd3d4515a593c99cfed",
+    "fonts/LiberationSansNarrow-Bold.ttf": "8e5eb5090ef4a3143794c230b82f174f7f2fbbfcd6cb789ccfa1f90bf8795d54",
+    "fonts/Rubik-Bold.ttf": "b1c36dfcbc5fe5011c552c76725c84d989a71d56440e8bfbfa0cb68b593dbad6",
+    "fonts/Rubik-Regular.ttf": "bd1490f4314d27ca1ac5d8869fdda068852edd623318c9bee13e812b793b301b",
+    "icon-192.png": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+    "icon-512.png": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+    "icon.svg": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+    "index.html": "fb46c9149aeff3604dfbbc78e994614e8aee8b7749e15ae04822ed5d0193aaad",
+    "manifest.webmanifest": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+    "offline-inventory.json": "cf7d32c90618514d22b810bb58ff8b4c6fc4eba12378a6e3246f721081d6c429",
+    "sw.js": "1bf35740b14a67a61a0632a0b92868d7d9d01f53d6c1f8d21e130493d5519521"
+  },
+  "referenceBoard": "visual/list-visual-gate-1792879965508/comparisons",
+  "baselineRelease": "before/recovered-cached-release.json",
+  "limits": [
+    "Native browser-chrome 200% zoom unverified; CSS zoom only supplemental",
+    "OS installation and standalone launch unverified",
+    "Production HTTPS/deployment user-deferred",
+    "Migration sampled used JS heap peak722884964 bytes; not RSS or a low-memory-device guarantee"
+  ],
+  "delivery": {
+    "localOnly": true,
+    "committed": false,
+    "pushed": false,
+    "deployed": false,
+    "preview": {
+      "url": "http://localhost:5174",
+      "releaseId": "4d8cb5fc0da7a335f886c3dd28c967baee50ea3987b0b5eea89117ebb98a6188",
+      "pid": 32983,
+      "ownerPid": 32978,
+      "verifiedAt": "2026-10-25T05:51:48.633Z",
+      "verified": true
+    },
+    "liveTabActivation": {
+      "status": "Applied",
+      "date": "2026-10-25",
+      "authorization": "Apply the verified update",
+      "origin": "http://localhost:5174",
+      "flow": "Application Check for updates then Reload to update",
+      "bothTabsReportedNoRetainedDrafts": true,
+      "redundantCleanTabClosed": true,
+      "observedScript": "/assets/index-BA-QDq5G.js",
+      "acceptedReleaseId": "4d8cb5fc0da7a335f886c3dd28c967baee50ea3987b0b5eea89117ebb98a6188",
+      "startupVerificationCompleted": true,
+      "existingOpenTradeAndRecordedExecutionVisible": true,
+      "financialSaveOrDiscardSubmitted": false,
+      "siteDataCleared": false,
+      "proofImageOutsideRepository": "/private/tmp/bug001-applied-update.jpg"
+    },
+    "tradingRecordsEdited": false,
+    "liveBrowserAccessedWithApproval": true,
+    "verificationTimeSnapshot": true,
+    "subsequentCommitPushAuthorization": {
+      "date": "2026-10-25",
+      "request": "Go ahead with the commit and push for BUG-001",
+      "record": "publication-notes.md",
+      "actualDelivery": "Git history and remote branch"
+    }
+  },
+  "priorCritics": {
+    "critic-01": "Interrupted by usage limit without verdict; raw evidence retained",
+    "critic-02": "Functional FAIL; P2 Journal omitted explicit decline; report retained; genuine T12-decline-red regression then minimal Green",
+    "critic-03": "Functional FAIL; pending Save loses keyboard focus/scroll; genuine T12-busy-focus-red regression then minimal Green",
+    "critic-04": "Visual PASS; functional FAIL; stale Planned response replaces selected Open; genuine T12-latest-list-red then Green"
+  },
+  "repairRegression": [
+    "T12-decline-red.json",
+    "T12-decline-green.json",
+    "T12-busy-focus-red.json",
+    "T12-busy-focus-green.json",
+    "T12-latest-list-red.json",
+    "T12-latest-list-green.json"
+  ],
+  "priorSnapshotBenchmarks": {
+    "D1": {
+      "coldP95": 271.08312500000466,
+      "warmP95": 93.17754100001184
+    },
+    "D2": {
+      "Planned": {
+        "coldP95": 1855.406290999963,
+        "warmP95": 124.38925000000745
+      },
+      "Open": {
+        "coldP95": 1858.1915420000441,
+        "warmP95": 554.852082999947
+      }
+    },
+    "migrationElapsedMs": 14470.72524999996,
+    "sampledUsedHeapPeakBytes": 722868068
+  },
+  "scaleQualification": {
+    "status": "Passed after independent acceptance on unchanged frozen source/build",
+    "correctnessGates": "Full cumulative correctness gates retained from same unchanged accepted snapshot; not repeated without source changes",
+    "date": "2026-10-25"
+  },
+  "approvedPolicy": "gate-policy-revision.json",
+  "benchmarks": {
+    "D1": {
+      "coldP95": 868.3976250000414,
+      "warmP95": 84.87750000000233
+    },
+    "D2": {
+      "Planned": {
+        "coldP95": 1863.498957999982,
+        "warmP95": 129.21770899998955
+      },
+      "Open": {
+        "coldP95": 1864.2865829999791,
+        "warmP95": 535.9895409999881
+      }
+    },
+    "migrationElapsedMs": 16182.861207999988,
+    "sampledUsedHeapPeakBytes": 722884964,
+    "rawRecords": [
+      "cumulative/qualification-d1-scale-gate-1792906460029/d02/d01-cumulative-benchmark.json",
+      "cumulative/qualification-d2-scale-gate-1792906811728/d02/d02-benchmark.json"
+    ]
+  },
+  "independentAcceptance": {
+    "critic": "critic-05",
+    "visual": "PASS",
+    "functional": "PASS",
+    "report": "critic-05/report.md",
+    "reportSha256": "8d4ea349c321a3dd5c39e713cb66101c0085bfb00ecc5d43a9011cc27a587fa6",
+    "mainRun": "critic-05/run-1792880526306.json",
+    "supplement": "critic-05/run-1792906258410.json"
+  },
+  "completionDocumentSha256": {
+    "implementation/delivery-plan.md": "bab49a8d467039478c74cf082fa908dcb78862b04b938f3331191b39b81734b1",
+    "implementation/evidence/bug-001/README.md": "a23ce9d5d4385c58bd386c14665d7a22ce28ed078d72d014c370e38bb1f7d056",
+    "implementation/evidence/bug-001/pending-verification.md": "3f0980114d435dd14c08ae87fb1f9e71b4687a6a21860a8081e49ee6a91105d2"
+  }
+}

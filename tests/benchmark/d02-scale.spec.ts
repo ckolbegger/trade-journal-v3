@@ -38,13 +38,13 @@ test('D2-T07 25000 historical command-created Plans, native staged migration, 20
     clearInterval(sample); sample = undefined;
     await page.addScriptTag({ path: '.cache/browser-generator/generator.js' });
     const migrated = await page.evaluate(() => window.d2Evidence.d1Digest()); expect(migrated.digest).toBe(source.digest); expect(migrated.root.schema).toBe(2);
-    await writeFile('implementation/evidence/d02/d02-migration-scale.json', JSON.stringify({ source, migrated, d1, migrationElapsedMs, heap }, null, 2));
+    await writeFile(`implementation/evidence/bug-001/cumulative/${process.env.BUG001_EVIDENCE_RUN ?? 'manual'}/d02/d02-migration-scale.json`, JSON.stringify({ source, migrated, d1, migrationElapsedMs, heap }, null, 2));
     await context.close();
     const phases: Record<string, unknown> = {};
     for (const phase of ['Planned', 'Open'] as const) {
       if (phase === 'Open') {
         const population = await playwright.chromium.launchPersistentContext(profilePath, { headless: true, baseURL });
-        try { const actor = await population.newPage(); await actor.goto('/'); await expect(actor.locator('ul li button')).toHaveCount(50); await actor.addScriptTag({ path: '.cache/browser-generator/generator.js' }); const opened = await actor.evaluate(() => window.d2Evidence.openDataset(200)); expect(opened.counts.Execution).toBe(400); expect(opened.counts.PositionChange).toBe(200); const before = await actor.evaluate(() => window.d2Evidence.inspectOpen()); expect(before.items).toHaveLength(200); expect(before.debt).toHaveLength(33); await actor.evaluate(() => window.d1Evidence.discardPrivateReceipts()); expect(await actor.evaluate(() => window.d2Evidence.inspectOpen())).toEqual(before); await writeFile('implementation/evidence/d02/d02-scale-population.json', JSON.stringify({ opened, before }, null, 2)); } finally { await population.close(); }
+        try { const actor = await population.newPage(); await actor.goto('/'); await expect(actor.locator('ul li button')).toHaveCount(50); await actor.addScriptTag({ path: '.cache/browser-generator/generator.js' }); const opened = await actor.evaluate(() => window.d2Evidence.openDataset(200)); expect(opened.counts.Execution).toBe(400); expect(opened.counts.PositionChange).toBe(200); const before = await actor.evaluate(() => window.d2Evidence.inspectOpen()); expect(before.items).toHaveLength(200); expect(before.debt).toHaveLength(33); await actor.evaluate(() => window.d1Evidence.discardPrivateReceipts()); expect(await actor.evaluate(() => window.d2Evidence.inspectOpen())).toEqual(before); await writeFile(`implementation/evidence/bug-001/cumulative/${process.env.BUG001_EVIDENCE_RUN ?? 'manual'}/d02/d02-scale-population.json`, JSON.stringify({ opened, before }, null, 2)); } finally { await population.close(); }
       }
       const cold: number[] = []; const warm: number[] = []; const storage: unknown[] = [];
       for (let trial = 0; trial < 50; trial++) {
@@ -60,9 +60,9 @@ test('D2-T07 25000 historical command-created Plans, native staged migration, 20
         console.log(`D2 ${phase} trial ${trial + 1}: cold ${cold.at(-1)} ms warm ${warm.at(-1)} ms`);
       }
       phases[phase] = { cold, warm, storage, coldP95: p95(cold), warmP95: p95(warm) };
-      await writeFile(`implementation/evidence/d02/d02-${phase.toLowerCase()}-scale-trials.json`, JSON.stringify(phases[phase], null, 2));
+      await writeFile(`implementation/evidence/bug-001/cumulative/${process.env.BUG001_EVIDENCE_RUN ?? 'manual'}/d02/d02-${phase.toLowerCase()}-scale-trials.json`, JSON.stringify(phases[phase], null, 2));
       expect(p95(cold)).toBeLessThanOrEqual(2500); expect(p95(warm)).toBeLessThanOrEqual(1500);
     }
-    await writeFile('implementation/evidence/d02/d02-benchmark.json', JSON.stringify({ source, migrated, d1, migrationElapsedMs, heap, phases, profilePath, environment: { platform: platform(), os: release(), cpu: cpus()[0]?.model, memory: totalmem(), node: process.version }, provenance: 'Historical D1 commands under original release; normal verified D2 update; native generation migration; current D2 opening commands; stopped isolated Chromium and offline launches; nearest-rank percentiles. Open warm includes UI first page plus exhaustive 200-Trade public read.' }, null, 2));
+    await writeFile(`implementation/evidence/bug-001/cumulative/${process.env.BUG001_EVIDENCE_RUN ?? 'manual'}/d02/d02-benchmark.json`, JSON.stringify({ source, migrated, d1, migrationElapsedMs, heap, phases, profilePath, environment: { platform: platform(), os: release(), cpu: cpus()[0]?.model, memory: totalmem(), node: process.version }, provenance: 'Historical D1 commands under original release; normal verified D2 update; native generation migration; current D2 opening commands; stopped isolated Chromium and offline launches; nearest-rank percentiles. Open warm includes UI first page plus exhaustive 200-Trade public read.' }, null, 2));
   } finally { if (sample) clearInterval(sample); await rm('dist', { recursive: true, force: true }); await cp(backup, 'dist', { recursive: true }); }
 });

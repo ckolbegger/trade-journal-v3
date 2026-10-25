@@ -1,0 +1,58 @@
+
+> trade-journal-v3@0.1.0 preview
+> vite preview --host localhost --port 5174 --strictPort
+
+
+  ➜  Local:   http://localhost:5174/
+
+START B01 setup, real native readiness, invalid zone and catalog
+PASS B01 setup, real native readiness, invalid zone and catalog
+START B01/B03 Plan stages, validation, sole confirmation and original reflection
+PASS B01/B03 Plan stages, validation, sole confirmation and original reflection
+START B01 list geometry and B02 actual 10-share rejected blank row, resume and save
+PASS B01 list geometry and B02 actual 10-share rejected blank row, resume and save
+START B04 dialog keyboard, focus, inert backdrop, resize and long Note
+PASS B04 dialog keyboard, focus, inert backdrop, resize and long Note
+START B03 opening native failure matrix and safe retry
+PASS B03 opening native failure matrix and safe retry
+START B03 Defer no placeholder Entry, owed Cancel/Complete, native failures
+PASS B03 Defer no placeholder Entry, owed Cancel/Complete, native failures
+START B03 explicit opening Decline and owed Decline
+FAIL B03 explicit opening Decline and owed Decline Error: expect(locator).toContainText(expected) failed
+
+Locator: getByRole('dialog')
+Expected substring: "Declined"
+Received string:    "TRADE JOURNALTrade Journal×Plan ReflectionTrade Anchor · Plan ConfirmationMoment: 2026-10-24 13:44:12.498 America/New_York · First authored: 2026-10-24 13:44:12.527 America/New_YorkWhy this trade, why now?Synthetic DECL independent thesisWhat would invalidate the thesis?Independent risk invalidationConviction4Primary emotionCalm"
+Timeout: 5000ms
+
+Call log:
+  - Expect "toContainText" getByRole('dialog') with timeout 5000ms
+  - waiting for getByRole('dialog')
+    14 × locator resolved to <div role="dialog" tabindex="-1" aria-modal="true" class="_panel_c0icb_69" aria-label="Trade Journal">…</div>
+       - unexpected value "TRADE JOURNALTrade Journal×Plan ReflectionTrade Anchor · Plan ConfirmationMoment: 2026-10-24 13:44:12.498 America/New_York · First authored: 2026-10-24 13:44:12.527 America/New_YorkWhy this trade, why now?Synthetic DECL independent thesisWhat would invalidate the thesis?Independent risk invalidationConviction4Primary emotionCalm"
+
+    at captureRawStack (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright-core/lib/coreBundle.js:9282:17)
+    at callMatcherAsStep (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13316:57)
+    at Object.toContainText (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13308:23)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:44:371
+    at async run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:21:125)
+    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:44:2
+START B03 same native persistent store competing opening tabs
+PASS B03 same native persistent store competing opening tabs
+START B04 Loading, list Error, Recovery, Unsupported and Integrity states
+FAIL B04 Loading, list Error, Recovery, Unsupported and Integrity states locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('button', { name: 'Workspace', exact: true })[22m
+
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:46:1037
+    at async run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:21:125)
+    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:46:2
+START B04 verified update deferred with open AND closed draft, activation and stopped offline
+FAIL B04 verified update deferred with open AND closed draft, activation and stopped offline page.waitForEvent: Timeout 30000ms exceeded while waiting for event "load"
+=========================== logs ===========================
+waiting for event "load"
+============================================================
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:47:1343
+    at async run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:21:125)
+    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-01/driver.mjs:47:2
+FINISH [{"name":"B01 setup, real native readiness, invalid zone and catalog","status":"PASS"},{"name":"B01/B03 Plan stages, validation, sole confirmation and original reflection","status":"PASS"},{"name":"B01 list geometry and B02 actual 10-share rejected blank row, resume and save","status":"PASS"},{"name":"B04 dialog keyboard, focus, inert backdrop, resize and long Note","status":"PASS"},{"name":"B03 opening native failure matrix and safe retry","status":"PASS"},{"name":"B03 Defer no placeholder Entry, owed Cancel/Complete, native failures","status":"PASS"},{"name":"B03 explicit opening Decline and owed Decline","status":"FAIL"},{"name":"B03 same native persistent store competing opening tabs","status":"PASS"},{"name":"B04 Loading, list Error, Recovery, Unsupported and Integrity states","status":"FAIL"},{"name":"B04 verified update deferred with open AND closed draft, activation and stopped offline","status":"FAIL"}] restored true

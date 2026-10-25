@@ -1,0 +1,354 @@
+{
+  "stamp": 1792879841011,
+  "sourceDigest": "6158c98e22f94ad752e40e3e149cfa272f910abb0605a89eee99705cdcccf849",
+  "inventory": {
+    "version": 1,
+    "releaseId": "825fa371a65315cba0fde10e41d4a8b3779c641e9d35a70b3abc760e9ea77d39",
+    "assets": [
+      {
+        "url": "/assets/index-CY99_oI7.js",
+        "bytes": 616826,
+        "sha256": "4ed40a969f0e9d0babda5b1434481a3f744751ad872186c63f0aea886302a101"
+      },
+      {
+        "url": "/assets/index-DyLbKIIF.css",
+        "bytes": 9865,
+        "sha256": "133ce1d69fab9f1d9aa2f18d0345838092e2f9e16936a284484b834a24f702f0"
+      },
+      {
+        "url": "/capabilities.json",
+        "bytes": 1992,
+        "sha256": "71878297c7953004d90c5841bc9ecd143fbb86a65c348e099c1d8f18a039ab91"
+      },
+      {
+        "url": "/fonts/LICENSE.txt",
+        "bytes": 4355,
+        "sha256": "f158372b957fb64f86bb9e5d9368c84e54c541bdd5d25bd3d4515a593c99cfed"
+      },
+      {
+        "url": "/fonts/LiberationSansNarrow-Bold.ttf",
+        "bytes": 110260,
+        "sha256": "8e5eb5090ef4a3143794c230b82f174f7f2fbbfcd6cb789ccfa1f90bf8795d54"
+      },
+      {
+        "url": "/fonts/Rubik-Bold.ttf",
+        "bytes": 140396,
+        "sha256": "b1c36dfcbc5fe5011c552c76725c84d989a71d56440e8bfbfa0cb68b593dbad6"
+      },
+      {
+        "url": "/fonts/Rubik-Regular.ttf",
+        "bytes": 136624,
+        "sha256": "bd1490f4314d27ca1ac5d8869fdda068852edd623318c9bee13e812b793b301b"
+      },
+      {
+        "url": "/icon-192.png",
+        "bytes": 3409,
+        "sha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9"
+      },
+      {
+        "url": "/icon-512.png",
+        "bytes": 12236,
+        "sha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457"
+      },
+      {
+        "url": "/icon.svg",
+        "bytes": 180,
+        "sha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9"
+      },
+      {
+        "url": "/index.html",
+        "bytes": 446,
+        "sha256": "4eaa019bc1a531940322a1b67757d186b9a1508ae1ea8eb0afbae186a2c604dc"
+      },
+      {
+        "url": "/manifest.webmanifest",
+        "bytes": 416,
+        "sha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd"
+      },
+      {
+        "url": "/sw.js",
+        "bytes": 4386,
+        "sha256": "af0b3b501f0f96b3a2048254491948928accbea1893b2d5a94b4d290a4785ab7"
+      }
+    ]
+  },
+  "distBefore": {
+    "assets/index-CY99_oI7.js": "4ed40a969f0e9d0babda5b1434481a3f744751ad872186c63f0aea886302a101",
+    "assets/index-DyLbKIIF.css": "133ce1d69fab9f1d9aa2f18d0345838092e2f9e16936a284484b834a24f702f0",
+    "capabilities.json": "71878297c7953004d90c5841bc9ecd143fbb86a65c348e099c1d8f18a039ab91",
+    "fonts/LICENSE.txt": "f158372b957fb64f86bb9e5d9368c84e54c541bdd5d25bd3d4515a593c99cfed",
+    "fonts/LiberationSansNarrow-Bold.ttf": "8e5eb5090ef4a3143794c230b82f174f7f2fbbfcd6cb789ccfa1f90bf8795d54",
+    "fonts/Rubik-Bold.ttf": "b1c36dfcbc5fe5011c552c76725c84d989a71d56440e8bfbfa0cb68b593dbad6",
+    "fonts/Rubik-Regular.ttf": "bd1490f4314d27ca1ac5d8869fdda068852edd623318c9bee13e812b793b301b",
+    "icon-192.png": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+    "icon-512.png": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+    "icon.svg": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+    "index.html": "4eaa019bc1a531940322a1b67757d186b9a1508ae1ea8eb0afbae186a2c604dc",
+    "manifest.webmanifest": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+    "offline-inventory.json": "68262f91e62fd36828977e74717fa8556d9e134b5b2dc4b9b743467bbee956b7",
+    "sw.js": "af0b3b501f0f96b3a2048254491948928accbea1893b2d5a94b4d290a4785ab7"
+  },
+  "host": {
+    "node": "v26.12.0",
+    "platform": "darwin",
+    "release": "25.6.0",
+    "cpu": "Apple M4 Max"
+  },
+  "results": [
+    {
+      "name": "FOCUSED B03 secondary native state and ordered Debt conflict",
+      "started": "2026-10-24T22:10:41.322Z",
+      "details": {
+        "scenes": [
+          {
+            "geometry": {
+              "width": 1440,
+              "dpr": 1,
+              "scrollY": 743,
+              "viewportHeight": 1000,
+              "scrollWidth": 1440,
+              "nav": {
+                "x": 0,
+                "y": -743,
+                "width": 240,
+                "height": 1837.28125,
+                "top": -743,
+                "right": 240,
+                "bottom": 1094.28125,
+                "left": 0
+              },
+              "main": {
+                "x": 406,
+                "y": -743,
+                "width": 868,
+                "height": 1837.28125,
+                "top": -743,
+                "right": 1274,
+                "bottom": 1094.28125,
+                "left": 406
+              },
+              "panel": {
+                "x": 976,
+                "y": 24,
+                "width": 440,
+                "height": 952,
+                "top": 24,
+                "right": 1416,
+                "bottom": 976,
+                "left": 976
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": [],
+            "bodyText": "Trade Journal\n⌂Trades\n+New Plan\n▤Journal Debt\n⚙Workspace\n‹ Back to Trades\n\nAFTER-CLOSE JOURNAL · USD\n\nSTALEDEBT · Open\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\nOpen Position\nQuantity\n10 shares\nGross basis\n$500.00\nOpening fees\n$0.25\nWeighted entry\n50 USD (exact 50/1)\nActual entry risk\n$50.25\nActual entry reward\n$99.75\nActual entry reward/risk\n1.99 (exact 133/67)\nEntry Quality\nBelow Plan\nOpen Lots\n\n10 shares at $50 · opening fee $0.25\n\nOpen · Filled as Planned\nFrozen Plan Baseline\n\nORIGINAL PLANNED RISK · 1R\n$50.00\n\nORIGINAL PLANNED REWARD\n$100.00\n\nREWARD / RISK\n2/1\n\nIndependent synthetic brokerage · Independent taxable · Long Stock\n\nIntended entry\n$50 × 10 shares\nStop · underlying price\n$45\nTarget · underlying price\n$60\nRecorded Executions\nExecution 1 · Recorded · Buy STALEDEBT\n\n10 shares × $50 · Fee $0.25\n\nEconomic Time: 2026-10-24 18:09:11.983 America/New_York\nPosition Change Reflection · Journal Debt\n\nOutstanding · Due 2026-10-24 18:09:11.983 America/New_York\n\nTrade Anchor · Source Position Change · Position Change 1e48fb3f-5c26-4bcd-9c84-c04e7d313116\n\nAnswer reflection\nPlan Reflection\n\nTrade Anchor · Plan Confirmation\n\nMoment: 2026-10-24 18:09:11.883 America/New_York · First authored: 2026-10-24 18:09:11.908 America/New_York\n\nWhy this trade, why now?\n\nSynthetic STALEDEBT independent thesis\n\nWhat would invalidate the thesis?\n\nIndependent risk invalidation\n\nConviction\n\n4\n\nPrimary emotion\n\nCalm\n\nView Trade Journal\nView history\n\nTRADE JOURNAL\n\nAnswer Journal Debt\n×\nReview before continuing\n\nNothing saved. Your draft is preserved.\n\nThe Workspace changed. Review current references before confirming again.\nReview current Debt\nPosition Change Reflection\n\nAnswer the original trigger-time form. This writing belongs to Trade 1861bfa0-8ee3-4b76-9e96-c7e86d9d9be3, Position Change 1e48fb3f-5c26-4bcd-9c84-c04e7d313116.\n\nSource: Position Change · Moment: 2026-10-24T22:09:11.983Z · Due: 2026-10-24T22:09:11.983Z\n\nOwed reflection\nDebt outcome\nAnswer reflection\nDecline owed reflection\nDecision mode\nAs Planned\nDeliberate Adjustment\nReactive\nExternally Imposed\nPrimary emotion\nCalm\nEager\nAnxious\nFOMO\nRevenge\nRelieved\nFrustrated\nOther\nDecision confidence\nChoose 1–5\n1\n2\n3\n4\n5\nNote (optional)\nSave Debt outcome\nCancel"
+          },
+          {
+            "geometry": {
+              "width": 814,
+              "dpr": 1,
+              "scrollY": 743,
+              "viewportHeight": 1000,
+              "scrollWidth": 814,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 814,
+                "height": 57,
+                "top": 943,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 167,
+                "y": -743,
+                "width": 480,
+                "height": 2039.0625,
+                "top": -743,
+                "right": 647,
+                "bottom": 1296.0625,
+                "left": 167
+              },
+              "panel": {
+                "x": 0,
+                "y": 24,
+                "width": 814,
+                "height": 976,
+                "top": 24,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": [],
+            "bodyText": "⌂\nTrades\n+\nNew Plan\n▤\nJournal Debt\n⚙\nWorkspace\n‹ Back to Trades\n\nAFTER-CLOSE JOURNAL · USD\n\nSTALEDEBT · Open\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\nOpen Position\nQuantity\n10 shares\nGross basis\n$500.00\nOpening fees\n$0.25\nWeighted entry\n50 USD (exact 50/1)\nActual entry risk\n$50.25\nActual entry reward\n$99.75\nActual entry reward/risk\n1.99 (exact 133/67)\nEntry Quality\nBelow Plan\nOpen Lots\n\n10 shares at $50 · opening fee $0.25\n\nOpen · Filled as Planned\nFrozen Plan Baseline\n\nORIGINAL PLANNED RISK · 1R\n$50.00\n\nORIGINAL PLANNED REWARD\n$100.00\n\nREWARD / RISK\n2/1\n\nIndependent synthetic brokerage · Independent taxable · Long Stock\n\nIntended entry\n$50 × 10 shares\nStop · underlying price\n$45\nTarget · underlying price\n$60\nRecorded Executions\nExecution 1 · Recorded · Buy STALEDEBT\n\n10 shares × $50 · Fee $0.25\n\nEconomic Time: 2026-10-24 18:09:11.983 America/New_York\nPosition Change Reflection · Journal Debt\n\nOutstanding · Due 2026-10-24 18:09:11.983 America/New_York\n\nTrade Anchor · Source Position Change · Position Change 1e48fb3f-5c26-4bcd-9c84-c04e7d313116\n\nAnswer reflection\nPlan Reflection\n\nTrade Anchor · Plan Confirmation\n\nMoment: 2026-10-24 18:09:11.883 America/New_York · First authored: 2026-10-24 18:09:11.908 America/New_York\n\nWhy this trade, why now?\n\nSynthetic STALEDEBT independent thesis\n\nWhat would invalidate the thesis?\n\nIndependent risk invalidation\n\nConviction\n\n4\n\nPrimary emotion\n\nCalm\n\nView Trade Journal\nView history\n\nTRADE JOURNAL\n\nAnswer Journal Debt\n×\nReview before continuing\n\nNothing saved. Your draft is preserved.\n\nThe Workspace changed. Review current references before confirming again.\nReview current Debt\nPosition Change Reflection\n\nAnswer the original trigger-time form. This writing belongs to Trade 1861bfa0-8ee3-4b76-9e96-c7e86d9d9be3, Position Change 1e48fb3f-5c26-4bcd-9c84-c04e7d313116.\n\nSource: Position Change · Moment: 2026-10-24T22:09:11.983Z · Due: 2026-10-24T22:09:11.983Z\n\nOwed reflection\nDebt outcome\nAnswer reflection\nDecline owed reflection\nDecision mode\nAs Planned\nDeliberate Adjustment\nReactive\nExternally Imposed\nPrimary emotion\nCalm\nEager\nAnxious\nFOMO\nRevenge\nRelieved\nFrustrated\nOther\nDecision confidence\nChoose 1–5\n1\n2\n3\n4\n5\nNote (optional)\nSave Debt outcome\nCancel"
+          },
+          {
+            "geometry": {
+              "width": 390,
+              "dpr": 1,
+              "scrollY": 743,
+              "viewportHeight": 1000,
+              "scrollWidth": 390,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 390,
+                "height": 57,
+                "top": 943,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 0,
+                "y": -743,
+                "width": 390,
+                "height": 2196.15625,
+                "top": -743,
+                "right": 390,
+                "bottom": 1453.15625,
+                "left": 0
+              },
+              "panel": {
+                "x": 0,
+                "y": 24,
+                "width": 390,
+                "height": 976,
+                "top": 24,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": [],
+            "bodyText": "⌂\nTrades\n+\nNew Plan\n▤\nJournal Debt\n⚙\nWorkspace\n‹ Back to Trades\n\nAFTER-CLOSE JOURNAL · USD\n\nSTALEDEBT · Open\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\nOpen Position\nQuantity\n10 shares\nGross basis\n$500.00\nOpening fees\n$0.25\nWeighted entry\n50 USD (exact 50/1)\nActual entry risk\n$50.25\nActual entry reward\n$99.75\nActual entry reward/risk\n1.99 (exact 133/67)\nEntry Quality\nBelow Plan\nOpen Lots\n\n10 shares at $50 · opening fee $0.25\n\nOpen · Filled as Planned\nFrozen Plan Baseline\n\nORIGINAL PLANNED RISK · 1R\n$50.00\n\nORIGINAL PLANNED REWARD\n$100.00\n\nREWARD / RISK\n2/1\n\nIndependent synthetic brokerage · Independent taxable · Long Stock\n\nIntended entry\n$50 × 10 shares\nStop · underlying price\n$45\nTarget · underlying price\n$60\nRecorded Executions\nExecution 1 · Recorded · Buy STALEDEBT\n\n10 shares × $50 · Fee $0.25\n\nEconomic Time: 2026-10-24 18:09:11.983 America/New_York\nPosition Change Reflection · Journal Debt\n\nOutstanding · Due 2026-10-24 18:09:11.983 America/New_York\n\nTrade Anchor · Source Position Change · Position Change 1e48fb3f-5c26-4bcd-9c84-c04e7d313116\n\nAnswer reflection\nPlan Reflection\n\nTrade Anchor · Plan Confirmation\n\nMoment: 2026-10-24 18:09:11.883 America/New_York · First authored: 2026-10-24 18:09:11.908 America/New_York\n\nWhy this trade, why now?\n\nSynthetic STALEDEBT independent thesis\n\nWhat would invalidate the thesis?\n\nIndependent risk invalidation\n\nConviction\n\n4\n\nPrimary emotion\n\nCalm\n\nView Trade Journal\nView history\n\nTRADE JOURNAL\n\nAnswer Journal Debt\n×\nReview before continuing\n\nNothing saved. Your draft is preserved.\n\nThe Workspace changed. Review current references before confirming again.\nReview current Debt\nPosition Change Reflection\n\nAnswer the original trigger-time form. This writing belongs to Trade 1861bfa0-8ee3-4b76-9e96-c7e86d9d9be3, Position Change 1e48fb3f-5c26-4bcd-9c84-c04e7d313116.\n\nSource: Position Change · Moment: 2026-10-24T22:09:11.983Z · Due: 2026-10-24T22:09:11.983Z\n\nOwed reflection\nDebt outcome\nAnswer reflection\nDecline owed reflection\nDecision mode\nAs Planned\nDeliberate Adjustment\nReactive\nExternally Imposed\nPrimary emotion\nCalm\nEager\nAnxious\nFOMO\nRevenge\nRelieved\nFrustrated\nOther\nDecision confidence\nChoose 1–5\n1\n2\n3\n4\n5\nNote (optional)\nSave Debt outcome\nCancel"
+          }
+        ],
+        "unchanged": true,
+        "observations": [
+          {
+            "n": 0,
+            "body": "Trade Journal\n⌂Trades\n+New Plan\n▤Journal Debt\n⚙Workspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\nOpen Trades\nPlanned\nOpen\nDENSE51 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE50 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE49 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE48 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE47 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE46 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE45 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE44 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE43 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE42 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE41 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE40 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE39 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE38 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE37 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE36 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE35 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE34 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE33 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE32 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE31 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE30 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE29 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE28 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE27 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE26 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE25 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE24 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE23 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE22 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE21 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE20 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE19 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE18 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE17 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE16 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE15 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE14 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE13 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE12 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE11 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE10 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE09 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE08 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE07 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE06 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE05 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE04 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE03 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE02 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nNext 50 Trades"
+          },
+          {
+            "n": 1,
+            "body": "Trade Journal\n⌂Trades\n+New Plan\n▤Journal Debt\n⚙Workspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\nOpen Trades\nPlanned\nOpen\nSTALEDEBT · Open\n10 shares · $0.25 opening fees · Entry Quality: Below Plan"
+          },
+          {
+            "n": 2,
+            "body": "Trade Journal\n⌂Trades\n+New Plan\n▤Journal Debt\n⚙Workspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\nOpen Trades\nPlanned\nOpen\nSTALEDEBT · Open\n10 shares · $0.25 opening fees · Entry Quality: Below Plan"
+          },
+          {
+            "n": 3,
+            "body": "Trade Journal\n⌂Trades\n+New Plan\n▤Journal Debt\n⚙Workspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\nOpen Trades\nPlanned\nOpen\nSTALEDEBT · Open\n10 shares · $0.25 opening fees · Entry Quality: Below Plan"
+          },
+          {
+            "n": 4,
+            "body": "Trade Journal\n⌂Trades\n+New Plan\n▤Journal Debt\n⚙Workspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\nOpen Trades\nPlanned\nOpen\nSTALEDEBT · Open\n10 shares · $0.25 opening fees · Entry Quality: Below Plan"
+          }
+        ]
+      },
+      "status": "PASS"
+    }
+  ],
+  "consoleLines": [
+    {
+      "type": "server-out",
+      "text": "\n> trade-journal-v3@0.1.0 preview\n> vite preview --host localhost --port 5174 --strictPort\n\n"
+    },
+    {
+      "type": "server-out",
+      "text": "  ➜  Local:   http://localhost:5174/\n"
+    }
+  ],
+  "observedSourceDigest": "6158c98e22f94ad752e40e3e149cfa272f910abb0605a89eee99705cdcccf849",
+  "command": [
+    "node",
+    "implementation/evidence/bug-001/critic-04/driver.mjs"
+  ],
+  "profile": "/var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/bug001-independent-critic04-kGbgEQ",
+  "browser": "156.0.8078.4",
+  "navigationProbes": [
+    {
+      "n": 0,
+      "body": "Trade Journal\n⌂Trades\n+New Plan\n▤Journal Debt\n⚙Workspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\nOpen Trades\nPlanned\nOpen\nDENSE51 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE50 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE49 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE48 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE47 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE46 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE45 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE44 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE43 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE42 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE41 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE40 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE39 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE38 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE37 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE36 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE35 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE34 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE33 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE32 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE31 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE30 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE29 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE28 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE27 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE26 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE25 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE24 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE23 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE22 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE21 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE20 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE19 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE18 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE17 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE16 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE15 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE14 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE13 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE12 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE11 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE10 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE09 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE08 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE07 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE06 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE05 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE04 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE03 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nDENSE02 · Planned\nIndependent taxable · Long Stock · Unfilled · $50.00 risk · $100.00 reward · 2/1 reward/risk\nNext 50 Trades"
+    },
+    {
+      "n": 1,
+      "body": "Trade Journal\n⌂Trades\n+New Plan\n▤Journal Debt\n⚙Workspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\nOpen Trades\nPlanned\nOpen\nSTALEDEBT · Open\n10 shares · $0.25 opening fees · Entry Quality: Below Plan"
+    },
+    {
+      "n": 2,
+      "body": "Trade Journal\n⌂Trades\n+New Plan\n▤Journal Debt\n⚙Workspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\nOpen Trades\nPlanned\nOpen\nSTALEDEBT · Open\n10 shares · $0.25 opening fees · Entry Quality: Below Plan"
+    },
+    {
+      "n": 3,
+      "body": "Trade Journal\n⌂Trades\n+New Plan\n▤Journal Debt\n⚙Workspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\nOpen Trades\nPlanned\nOpen\nSTALEDEBT · Open\n10 shares · $0.25 opening fees · Entry Quality: Below Plan"
+    },
+    {
+      "n": 4,
+      "body": "Trade Journal\n⌂Trades\n+New Plan\n▤Journal Debt\n⚙Workspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\nOpen Trades\nPlanned\nOpen\nSTALEDEBT · Open\n10 shares · $0.25 opening fees · Entry Quality: Below Plan"
+    }
+  ],
+  "distAfter": {
+    "assets/index-CY99_oI7.js": "4ed40a969f0e9d0babda5b1434481a3f744751ad872186c63f0aea886302a101",
+    "assets/index-DyLbKIIF.css": "133ce1d69fab9f1d9aa2f18d0345838092e2f9e16936a284484b834a24f702f0",
+    "capabilities.json": "71878297c7953004d90c5841bc9ecd143fbb86a65c348e099c1d8f18a039ab91",
+    "fonts/LICENSE.txt": "f158372b957fb64f86bb9e5d9368c84e54c541bdd5d25bd3d4515a593c99cfed",
+    "fonts/LiberationSansNarrow-Bold.ttf": "8e5eb5090ef4a3143794c230b82f174f7f2fbbfcd6cb789ccfa1f90bf8795d54",
+    "fonts/Rubik-Bold.ttf": "b1c36dfcbc5fe5011c552c76725c84d989a71d56440e8bfbfa0cb68b593dbad6",
+    "fonts/Rubik-Regular.ttf": "bd1490f4314d27ca1ac5d8869fdda068852edd623318c9bee13e812b793b301b",
+    "icon-192.png": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+    "icon-512.png": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+    "icon.svg": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+    "index.html": "4eaa019bc1a531940322a1b67757d186b9a1508ae1ea8eb0afbae186a2c604dc",
+    "manifest.webmanifest": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+    "offline-inventory.json": "68262f91e62fd36828977e74717fa8556d9e134b5b2dc4b9b743467bbee956b7",
+    "sw.js": "af0b3b501f0f96b3a2048254491948928accbea1893b2d5a94b4d290a4785ab7"
+  },
+  "portFree": true,
+  "finished": "2026-10-24T22:10:46.982Z",
+  "pageErrors": []
+}

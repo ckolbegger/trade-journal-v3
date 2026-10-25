@@ -1,0 +1,10 @@
+
+> trade-journal-v3@0.1.0 preview
+> vite preview --host localhost --port 5174 --strictPort
+
+
+  ➜  Local:   http://localhost:5174/
+
+START FOCUSED B03 secondary native state and ordered Debt conflict
+PASS FOCUSED B03 secondary native state and ordered Debt conflict
+FINISH [{"name":"FOCUSED B03 secondary native state and ordered Debt conflict","status":"PASS"}] restored true

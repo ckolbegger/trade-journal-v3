@@ -1,0 +1,40 @@
+
+> trade-journal-v3@0.1.0 preview
+> vite preview --host localhost --port 5174 --strictPort
+
+
+  ➜  Local:   http://localhost:5174/
+
+START B01 setup, real native readiness, invalid zone and catalog
+PASS B01 setup, real native readiness, invalid zone and catalog
+START B01/B03 Plan stages, validation, sole confirmation and original reflection
+PASS B01/B03 Plan stages, validation, sole confirmation and original reflection
+START B01 list geometry and B02 actual 10-share rejected blank row, resume and save
+PASS B01 list geometry and B02 actual 10-share rejected blank row, resume and save
+START B04 dialog keyboard, focus, inert backdrop, resize and long Note
+PASS B04 dialog keyboard, focus, inert backdrop, resize and long Note
+START B03 opening native failure matrix and safe retry
+PASS B03 opening native failure matrix and safe retry
+START B03 Defer no placeholder Entry, owed Cancel/Complete, native failures
+PASS B03 Defer no placeholder Entry, owed Cancel/Complete, native failures
+START B03 explicit opening Decline and owed Decline
+PASS B03 explicit opening Decline and owed Decline
+START B03 same native persistent store competing opening tabs
+PASS B03 same native persistent store competing opening tabs
+START B04 Loading, list Error, Recovery, Unsupported and Integrity states
+PASS B04 Loading, list Error, Recovery, Unsupported and Integrity states
+START B04 verified update deferred with open AND closed draft, activation and stopped offline
+FAIL B04 verified update deferred with open AND closed draft, activation and stopped offline Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: "bc44f5b7d8170a5dc90d8beead45afe6c62722a12f526f6a7ba94ce398aa69cf"
+Received: "749a0791565687c4c795c4a1dbfc8ce94b79c15f3a806aa202ffed8a8d9c52fb"
+
+Call Log:
+- Timeout 30000ms exceeded while waiting on the predicate
+    at captureRawStack (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright-core/lib/coreBundle.js:9282:17)
+    at callMatcherAsStep (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13316:57)
+    at Object.toBe (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13308:23)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/driver.mjs:48:1610
+    at async run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/driver.mjs:21:125)
+    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/driver.mjs:48:2
+FINISH [{"name":"B01 setup, real native readiness, invalid zone and catalog","status":"PASS"},{"name":"B01/B03 Plan stages, validation, sole confirmation and original reflection","status":"PASS"},{"name":"B01 list geometry and B02 actual 10-share rejected blank row, resume and save","status":"PASS"},{"name":"B04 dialog keyboard, focus, inert backdrop, resize and long Note","status":"PASS"},{"name":"B03 opening native failure matrix and safe retry","status":"PASS"},{"name":"B03 Defer no placeholder Entry, owed Cancel/Complete, native failures","status":"PASS"},{"name":"B03 explicit opening Decline and owed Decline","status":"PASS"},{"name":"B03 same native persistent store competing opening tabs","status":"PASS"},{"name":"B04 Loading, list Error, Recovery, Unsupported and Integrity states","status":"PASS"},{"name":"B04 verified update deferred with open AND closed draft, activation and stopped offline","status":"FAIL"}] restored true

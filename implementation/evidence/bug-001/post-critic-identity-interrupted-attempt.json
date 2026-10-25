@@ -1,0 +1,6 @@
+{
+  "classification": "Evidence-driver invocation error; not a product Red",
+  "command": "node tools/bug001-evidence.mjs post-critic identity node --input-type=module - with heredoc",
+  "exit": 130,
+  "reason": "Wrapper does not forward stdin; interrupted owned invocation; corrected -e invocation passed"
+}

@@ -1,0 +1,24 @@
+
+> trade-journal-v3@0.1.0 preview
+> vite preview --host localhost --port 5174 --strictPort
+
+
+  ➜  Local:   http://localhost:5174/
+
+START B01 setup, real native readiness, invalid zone and catalog
+PASS B01 setup, real native readiness, invalid zone and catalog
+START SUPPLEMENT B01 density 10/50/pagination and long labels
+PASS SUPPLEMENT B01 density 10/50/pagination and long labels
+START SUPPLEMENT B03 shared native Debt stale settlement
+FAIL SUPPLEMENT B03 shared native Debt stale settlement locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('button', { name: /STALEDEBT · Open/ })[22m
+
+    at navigateTrade (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-04/supplement.mjs:41:254)
+    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-04/supplement.mjs:61:437
+    at async run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-04/supplement.mjs:21:197)
+    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-04/supplement.mjs:61:2
+FATAL Error: Acceptance stopped after SUPPLEMENT B03 shared native Debt stale settlement
+    at run (file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-04/supplement.mjs:21:465)
+    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-04/supplement.mjs:61:2
+FINISH [{"name":"B01 setup, real native readiness, invalid zone and catalog","status":"PASS"},{"name":"SUPPLEMENT B01 density 10/50/pagination and long labels","status":"PASS"},{"name":"SUPPLEMENT B03 shared native Debt stale settlement","status":"FAIL"}] restored true

@@ -1,0 +1,23 @@
+{
+  "id": "T11-visual",
+  "stage": "attempt03",
+  "baseline": "11216bf0138e1dff372e9270afe5c935dfa1e984",
+  "inputs": {
+    "implementation/plan/bug-001-ui-mockup-fidelity.md": "665d3755a281db3d5296e418dde193fece16b56a30ecaf4da920375c9882e750",
+    "implementation/plan/bug-001-baseline.md": "a97ec7f5daed2eaa4bc1eb9031d04ecd9836ff029716f67a609ef862137b32db",
+    "implementation/plan/d02-implementation-baseline.md": "3f0042a94f5be932f0baaf8222b4a2da50b766a4036cd5d785b640f1b64892fb",
+    "implementation/plan/d02-initial-stock-entry.md": "f178999f16b99c3e961f4d2f63e55a5be6e86961d2b3c772e3f2614ccf3e62ec",
+    "implementation/plan/d01-capacity-policy-revision.md": "ba560d7d8eb724fb6f74cdc0f5990cccb650b733302836a120393256f273ed64",
+    "implementation/plan/d02-capacity-evidence.md": "090ef5822f74e2a41ad10f7f33e6ab0290abdc56b80e49bde7d636fc953f413d",
+    "specs/evaluation/kickoff-prompt.md": "03c97d607bfd55e086b626a710a6475372320233c2e67ef8b5427016f85bc795"
+  },
+  "sourceDigest": "aac42673bbd89cd30e40db8c5ffda180f5eb6a6dc3563c248bdd54f1cf9a0974",
+  "command": [
+    "npm",
+    "run",
+    "test:visual"
+  ],
+  "exit": 1,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:visual\n> playwright test --config playwright.visual.config.ts\n\n\nRunning 3 tests using 1 worker\n\n  ✓  1 [chromium] › tests/visual/bug001.spec.ts:8:39 › reference board, modal keyboard and rejected draft journey at 1440 (10.9s)\n  ✘  2 [chromium] › tests/visual/bug001.spec.ts:8:39 › reference board, modal keyboard and rejected draft journey at 814 (6.7s)\nTesting stopped early after 1 maximum allowed failures.\n\n\n  1) [chromium] › tests/visual/bug001.spec.ts:8:39 › reference board, modal keyboard and rejected draft journey at 814 \n\n    Error: expect(received).toBeLessThanOrEqual(expected)\n\n    Expected: <= 843\n    Received:    1030.984375\n\n      56 |     await expect(dialog).toHaveCount(1);\n      57 |     const note = await page.getByLabel('Note (optional)').boundingBox(); const footer = await page.getByRole('button', { name: 'Save opening entry' }).boundingBox();\n    > 58 |     expect(note?.y).toBeGreaterThanOrEqual(0); expect((note?.y ?? 0) + (note?.height ?? 0)).toBeLessThanOrEqual(footer?.y ?? 0);\n         |                                                                                             ^\n      59 |   }\n      60 |   await page.getByRole('button', { name: 'Cancel', exact: true }).focus(); await page.keyboard.press('Tab'); await expect(page.getByRole('button', { name: 'Close opening entry' })).toBeFocused();\n      61 |   await page.keyboard.press('Shift+Tab'); await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();\n        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/visual/bug001.spec.ts:58:93\n\n    Error Context: test-results/bug001-visual/bug001-reference-board-mod-7152e-jected-draft-journey-at-814-chromium/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/bug001-visual/bug001-reference-board-mod-7152e-jected-draft-journey-at-814-chromium/trace.zip\n    Usage:\n\n        npx playwright show-trace test-results/bug001-visual/bug001-reference-board-mod-7152e-jected-draft-journey-at-814-chromium/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  1 failed\n    [chromium] › tests/visual/bug001.spec.ts:8:39 › reference board, modal keyboard and rejected draft journey at 814 \n  1 did not run\n  1 passed (18.9s)\n  1 error was not a part of any test, see above for details\n",
+  "stderr": "[WebServer] (node:91516) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)\n(node:91517) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+}

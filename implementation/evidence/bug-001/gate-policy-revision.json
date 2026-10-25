@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-24",
+  "authorization": [
+    "Fast iteration: focused checks and critic; one final scale qualification after fixes settle (Recommended)",
+    "Please go ahead and make that revision"
+  ],
+  "scope": "BUG-001 remaining repair/acceptance cadence; thresholds/populations/provenance unchanged",
+  "documents": {
+    "implementation/plan/bug-001-ui-mockup-fidelity.md": "ac814bed6262a0f9db5fb3807bd6e0689e8005aca19b20d828f483c6e8df566e",
+    "prompts/handoff-BUG-001.md": "a5a3fb0c47f4e23b4041816575e5b07dd5d4bb961639426f925f78217bde86be"
+  }
+}

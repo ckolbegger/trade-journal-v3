@@ -1,0 +1,170 @@
+{
+  "specs/reference/ui-screenshots/proto-position-detail-planned.png": {
+    "size": [
+      1018,
+      1875
+    ],
+    "sha256": "fb5d8a2cd10b6e94b2c601c92492ac9b72353ce7206e847e5b146a1be09866cd"
+  },
+  "specs/reference/ui-screenshots/proto-journal-timeline.png": {
+    "size": [
+      1018,
+      2499
+    ],
+    "sha256": "1910a7ef1cc735ad4c30f356243e857ebd260100ce45bb2d7906d7f7a815326d"
+  },
+  "specs/reference/ui-screenshots/proto-position-detail-spread-desktop.png": {
+    "size": [
+      1800,
+      1625
+    ],
+    "sha256": "a0d2f14bcda50f64eea4120ea614be0fb5a6c010a3a4bf6c1ead80f166738097"
+  },
+  "specs/reference/ui-screenshots/proto-position-journal.png": {
+    "size": [
+      1018,
+      2499
+    ],
+    "sha256": "a431214e9e0e9049bd258ef5ea7d7f35f2874651f24dd971fb795fb195b4e813"
+  },
+  "specs/reference/ui-screenshots/proto-entry-composer.png": {
+    "size": [
+      1018,
+      2499
+    ],
+    "sha256": "3e00a4b450bba519e02bc09b427755dc05a009fc4adb9c31070281c2114de6a9"
+  },
+  "specs/reference/ui-screenshots/proto-add-fill.png": {
+    "size": [
+      1018,
+      2499
+    ],
+    "sha256": "7f866152c0c91246b5cb5e1f45195d9a8f38efa0f8379c1d310e06586ec771c7"
+  },
+  "specs/reference/ui-screenshots/proto-new-plan-step2-filled.png": {
+    "size": [
+      1018,
+      1875
+    ],
+    "sha256": "07f8cdfdece76bd2795d6eaaa3a8e0c4bfcae8f15ab766f9fbab27d33188d31b"
+  },
+  "specs/reference/ui-screenshots/proto-position-detail-planned-desktop.png": {
+    "size": [
+      1800,
+      1875
+    ],
+    "sha256": "a3f8509e848b3c864d19433375873b86c3f771aea8c609184a81fbac1493f371"
+  },
+  "specs/reference/ui-screenshots/proto-position-journal-desktop.png": {
+    "size": [
+      1800,
+      1125
+    ],
+    "sha256": "be0a61eb9373562b250414e0619ceef6deb08c96f65f074759fa3916cafc0970"
+  },
+  "specs/reference/ui-screenshots/proto-position-detail-stock-desktop.png": {
+    "size": [
+      1800,
+      1625
+    ],
+    "sha256": "08e44baa3002686882c55628369bc287eefa72546a2d8ef211a1c16a0a8a9049"
+  },
+  "specs/reference/ui-screenshots/proto-home-desktop.png": {
+    "size": [
+      1800,
+      1025
+    ],
+    "sha256": "7c18fb8d296b0bd82002515d4a34089b8009e966188a74b649d74f724983ed1e"
+  },
+  "specs/reference/ui-screenshots/proto-new-plan-step2.png": {
+    "size": [
+      1018,
+      1875
+    ],
+    "sha256": "22a709cf0570cbb8be7585047b4d015f442dcc3bbd52f20ee1dc1972c3a3f7b8"
+  },
+  "specs/reference/ui-screenshots/proto-new-plan-step1.png": {
+    "size": [
+      1018,
+      2499
+    ],
+    "sha256": "18ac18e003dc24c9802826a1289ac2238ca795117c8a7472524f004af9a83005"
+  },
+  "specs/reference/ui-screenshots/proto-home.png": {
+    "size": [
+      1018,
+      2499
+    ],
+    "sha256": "d3155b569293796cceecb212a757c68664da8f54fc632cc19697d2ded920b0e3"
+  },
+  "specs/reference/ui-screenshots/proto-stats-desktop.png": {
+    "size": [
+      1800,
+      2200
+    ],
+    "sha256": "e070eff8e28310b227fe4f2838e77b5da548d1f843ad77910c25c8c2bd3a37c6"
+  },
+  "specs/reference/ui-screenshots/proto-position-detail-spread.png": {
+    "size": [
+      1018,
+      2499
+    ],
+    "sha256": "fa394b415ee88e55ca9f1f917f7f59f15d212485d97a19a824acab40741b2204"
+  },
+  "specs/reference/ui-screenshots/proto-new-plan-step1-desktop.png": {
+    "size": [
+      1800,
+      1563
+    ],
+    "sha256": "65f9bee698b02b12d56faf6494770119f5e2f3ef540b591605d3c9b779458dab"
+  },
+  "specs/reference/ui-screenshots/proto-stats.png": {
+    "size": [
+      1018,
+      2500
+    ],
+    "sha256": "d9bcac0f2062130d1a937e033ee69b2c4f0a0d4ea603a7dffa0065d7e0e14fa2"
+  },
+  "specs/reference/ui-screenshots/proto-position-detail-stock.png": {
+    "size": [
+      1018,
+      2499
+    ],
+    "sha256": "079869028608f4e4296f5298da134269eca8c418ae556fc8a7c7691f18f768ff"
+  },
+  "specs/reference/ui-screenshots/proto-new-plan-step2-filled-desktop.png": {
+    "size": [
+      1800,
+      1875
+    ],
+    "sha256": "216978be26dee704961508815f8715e59fdfef921c2d99dae6085f16aea5f14c"
+  },
+  "specs/reference/ui-screenshots/proto-entry-composer-desktop.png": {
+    "size": [
+      1800,
+      1125
+    ],
+    "sha256": "6162caeee31ac1d804878c249fac0f3671c2a4d49a9faf0a650a5edaed5360d9"
+  },
+  "specs/reference/ui-screenshots/proto-new-plan-step2-desktop.png": {
+    "size": [
+      1800,
+      1750
+    ],
+    "sha256": "1afe96ace5bd60b80fc08907a0f47081f7173cf4f57a776cf712801aa7188e36"
+  },
+  "specs/reference/ui-screenshots/proto-add-fill-desktop.png": {
+    "size": [
+      1800,
+      1125
+    ],
+    "sha256": "79728b1d3243a8bb184b1426fee3d457f9da976c348a68f9db65b3b8fecedc2e"
+  },
+  "specs/reference/ui-screenshots/proto-journal-timeline-desktop.png": {
+    "size": [
+      1800,
+      2438
+    ],
+    "sha256": "3dc1cd1bdec060f6902858e07fc58dcbbccbe6bbec6369c7c6923ba178ea8cde"
+  }
+}

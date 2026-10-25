@@ -1,0 +1,12 @@
+
+> trade-journal-v3@0.1.0 preview
+> vite preview --host localhost --port 5174 --strictPort
+
+
+  ➜  Local:   http://localhost:5174/
+
+START B01 setup, real native readiness, invalid zone and catalog
+PASS B01 setup, real native readiness, invalid zone and catalog
+START B01 actual Workspace, install help, distinct Accounts and lifecycle Empty
+PASS B01 actual Workspace, install help, distinct Accounts and lifecycle Empty
+FINISH [{"name":"B01 setup, real native readiness, invalid zone and catalog","status":"PASS"},{"name":"B01 actual Workspace, install help, distinct Accounts and lifecycle Empty","status":"PASS"}] restored true

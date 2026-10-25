@@ -1,0 +1,26 @@
+{
+  "id": "T11-close-visible",
+  "stage": "red",
+  "baseline": "11216bf0138e1dff372e9270afe5c935dfa1e984",
+  "inputs": {
+    "implementation/plan/bug-001-ui-mockup-fidelity.md": "665d3755a281db3d5296e418dde193fece16b56a30ecaf4da920375c9882e750",
+    "implementation/plan/bug-001-baseline.md": "a97ec7f5daed2eaa4bc1eb9031d04ecd9836ff029716f67a609ef862137b32db",
+    "implementation/plan/d02-implementation-baseline.md": "3f0042a94f5be932f0baaf8222b4a2da50b766a4036cd5d785b640f1b64892fb",
+    "implementation/plan/d02-initial-stock-entry.md": "f178999f16b99c3e961f4d2f63e55a5be6e86961d2b3c772e3f2614ccf3e62ec",
+    "implementation/plan/d01-capacity-policy-revision.md": "ba560d7d8eb724fb6f74cdc0f5990cccb650b733302836a120393256f273ed64",
+    "implementation/plan/d02-capacity-evidence.md": "090ef5822f74e2a41ad10f7f33e6ab0290abdc56b80e49bde7d636fc953f413d",
+    "specs/evaluation/kickoff-prompt.md": "03c97d607bfd55e086b626a710a6475372320233c2e67ef8b5427016f85bc795"
+  },
+  "sourceDigest": "446df13d6a62517dbd6121869253d69196feaba55377c738e329b0469747f326",
+  "command": [
+    "npm",
+    "run",
+    "test:visual",
+    "--",
+    "--grep",
+    "at 1440"
+  ],
+  "exit": 1,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:visual\n> playwright test --config playwright.visual.config.ts --grep at 1440\n\n\nRunning 1 test using 1 worker\n\n  ✘  1 [chromium] › tests/visual/bug001.spec.ts:8:39 › reference board, modal keyboard and rejected draft journey at 1440 (13.5s)\nTesting stopped early after 1 maximum allowed failures.\n\n\n  1) [chromium] › tests/visual/bug001.spec.ts:8:39 › reference board, modal keyboard and rejected draft journey at 1440 \n\n    Error: expect(received).toBe(expected) // Object.is equality\n\n    Expected: true\n    Received: false\n\n    Call Log:\n    - Timeout 5000ms exceeded while waiting on the predicate\n\n      59 |   await page.getByRole('button', { name: 'Cancel', exact: true }).focus(); await page.keyboard.press('Tab'); await expect(page.getByRole('button', { name: 'Close opening entry' })).toBeFocused();\n      60 |   await page.keyboard.press('Shift+Tab'); await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();\n    > 61 |   await expect.poll(async () => { const close = await page.getByRole('button', { name: 'Close opening entry' }).boundingBox(); return !!close && close.y >= 24 && close.y + close.height <= 900; }).toBe(true);\n         |                                                                                                                                                                                                     ^\n      62 |   await capture('opening-filled');\n      63 |   await page.getByRole('button', { name: 'Save opening entry' }).click(); await expect(page.getByRole('heading', { name: 'XYZ · Open' })).toBeVisible(); await capture('open-detail'); await page.getByRole('button', { name: 'Trades', exact: true }).click(); await page.getByRole('button', { name: 'Open', exact: true }).click(); await capture('open-list'); await page.getByRole('button', { name: /XYZ · Open/ }).click();\n      64 |   await page.getByRole('button', { name: 'View Trade Journal' }).click(); await capture('trade-journal'); await page.getByRole('button', { name: 'Close trade journal' }).click();\n        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/visual/bug001.spec.ts:61:197\n\n    Error Context: test-results/bug001-visual/bug001-reference-board-mod-e96d3-ected-draft-journey-at-1440-chromium/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/bug001-visual/bug001-reference-board-mod-e96d3-ected-draft-journey-at-1440-chromium/trace.zip\n    Usage:\n\n        npx playwright show-trace test-results/bug001-visual/bug001-reference-board-mod-e96d3-ected-draft-journey-at-1440-chromium/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  1 failed\n    [chromium] › tests/visual/bug001.spec.ts:8:39 › reference board, modal keyboard and rejected draft journey at 1440 \n  1 error was not a part of any test, see above for details\n",
+  "stderr": "[WebServer] (node:97863) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)\n(node:97869) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+}

@@ -89,11 +89,12 @@ for (const width of [390, 1440]) {
     await tabTo(page, page.getByLabel('New Account name')); await page.keyboard.type('Taxable');
     await tabTo(page, page.getByRole('button', { name: 'Add Account' })); await page.keyboard.press('Enter');
     await tabTo(page, page.getByRole('button', { name: 'New Plan' })); await page.keyboard.press('Enter');
+    await tabTo(page, page.getByRole('button', { name: 'Next: Plan and reflection' })); await page.keyboard.press('Enter');
     for (const [label, value] of [['Stock symbol', 'XYZ'], ['Quantity (shares)', '100'], ['Intended entry (USD)', '50'], ['Stop (underlying price, USD)', '45'], ['Target (underlying price, USD)', '60'], ['Why this trade, why now?', 'Improving earnings'], ['What would invalidate the thesis?', 'Thesis fails']]) { await tabTo(page, page.getByLabel(label)); await page.keyboard.type(value); }
     for (const liveWidth of [767, 768, width]) {
       await page.setViewportSize({ width: liveWidth, height: 900 });
       await expect(page.getByLabel('Stock symbol')).toHaveValue('XYZ');
-      expect(await page.getByRole('navigation').evaluate(element => getComputedStyle(element).position)).toBe(liveWidth < 768 ? 'fixed' : 'static');
+      expect(await page.getByRole('navigation').evaluate(element => getComputedStyle(element).position)).toBe(liveWidth < 1024 ? 'fixed' : 'static');
     }
     await page.evaluate(() => { document.documentElement.style.zoom = '2'; });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
@@ -103,7 +104,7 @@ for (const width of [390, 1440]) {
       if (!bounds) throw new Error('Navigation action must be rendered');
       expect(bounds.x).toBeGreaterThanOrEqual(0);
       expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
-      if (width < 768) {
+      if (width < 1024) {
         expect(bounds.y).toBeGreaterThanOrEqual(0);
         expect(bounds.y + bounds.height).toBeLessThanOrEqual(900);
       }

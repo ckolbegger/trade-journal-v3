@@ -1,0 +1,23 @@
+{
+  "id": "T11-visual",
+  "stage": "attempt01",
+  "baseline": "11216bf0138e1dff372e9270afe5c935dfa1e984",
+  "inputs": {
+    "implementation/plan/bug-001-ui-mockup-fidelity.md": "665d3755a281db3d5296e418dde193fece16b56a30ecaf4da920375c9882e750",
+    "implementation/plan/bug-001-baseline.md": "a97ec7f5daed2eaa4bc1eb9031d04ecd9836ff029716f67a609ef862137b32db",
+    "implementation/plan/d02-implementation-baseline.md": "3f0042a94f5be932f0baaf8222b4a2da50b766a4036cd5d785b640f1b64892fb",
+    "implementation/plan/d02-initial-stock-entry.md": "f178999f16b99c3e961f4d2f63e55a5be6e86961d2b3c772e3f2614ccf3e62ec",
+    "implementation/plan/d01-capacity-policy-revision.md": "ba560d7d8eb724fb6f74cdc0f5990cccb650b733302836a120393256f273ed64",
+    "implementation/plan/d02-capacity-evidence.md": "090ef5822f74e2a41ad10f7f33e6ab0290abdc56b80e49bde7d636fc953f413d",
+    "specs/evaluation/kickoff-prompt.md": "03c97d607bfd55e086b626a710a6475372320233c2e67ef8b5427016f85bc795"
+  },
+  "sourceDigest": "8b34922a74aaa318acf7d66ec0c1fd1c9b40e2531e7b1326d858565e93d92908",
+  "command": [
+    "npm",
+    "run",
+    "test:visual"
+  ],
+  "exit": 130,
+  "stdout": "\n> trade-journal-v3@0.1.0 test:visual\n> playwright test --config playwright.visual.config.ts\n\n\nRunning 3 tests using 1 worker\n\n  ✘  1 [chromium] › tests/visual/bug001.spec.ts:8:39 › reference board, modal keyboard and rejected draft journey at 1440 (1.7m)\n\n\n  1) [chromium] › tests/visual/bug001.spec.ts:8:39 › reference board, modal keyboard and rejected draft journey at 1440 \n\n    Test was interrupted.\n\n    Error: locator.click: Target page, context or browser has been closed\n    Call log:\n      - waiting for getByRole('button', { name: 'Workspace', exact: true })\n\n\n      22 |   // Onboard uses this same native profile; no root, readiness or coordinator substitution.\n      23 |   await onboard(page); await capture('empty');\n    > 24 |   await page.getByRole('button', { name: 'Workspace', exact: true }).click(); await capture('workspace');\n         |                                                                      ^\n      25 |   await page.getByRole('button', { name: 'New Plan', exact: true }).click(); await capture('plan-stage1-blank');\n      26 |   await page.getByLabel('Stock symbol').fill('XYZ'); await page.getByRole('button', { name: 'Next: Plan and reflection' }).click(); await capture('plan-stage2-blank');\n      27 |   await page.getByRole('button', { name: 'Cancel', exact: true }).click();\n        at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/tests/visual/bug001.spec.ts:24:70\n\n    Error Context: test-results/bug001-visual/bug001-reference-board-mod-e96d3-ected-draft-journey-at-1440-chromium/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/bug001-visual/bug001-reference-board-mod-e96d3-ected-draft-journey-at-1440-chromium/trace.zip\n    Usage:\n\n        npx playwright show-trace test-results/bug001-visual/bug001-reference-board-mod-e96d3-ected-draft-journey-at-1440-chromium/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  1 interrupted\n    [chromium] › tests/visual/bug001.spec.ts:8:39 › reference board, modal keyboard and rejected draft journey at 1440 \n  2 did not run\n",
+  "stderr": "[WebServer] (node:88114) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)\n(node:88116) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+}

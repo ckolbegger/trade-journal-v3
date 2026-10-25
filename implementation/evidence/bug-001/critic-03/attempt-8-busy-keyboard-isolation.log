@@ -1,0 +1,76 @@
+
+> trade-journal-v3@0.1.0 preview
+> vite preview --host localhost --port 5174 --strictPort
+
+
+  ➜  Local:   http://localhost:5174/
+
+START B01 setup, real native readiness, invalid zone and catalog
+PASS B01 setup, real native readiness, invalid zone and catalog
+START B04 keyboard-only Plan, two Executions, pending Save and Complete
+FAIL B04 keyboard-only Plan, two Executions, pending Save and Complete Error: expect(received).toEqual(expected) // deep equality
+
+- Expected  -  1
++ Received  + 52
+
+- Array []
++ Array [
++   Object {
++     "description": "Ensure elements that have scrollable content are accessible by keyboard in Safari",
++     "help": "Scrollable region must have keyboard access",
++     "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/scrollable-region-focusable?application=playwright",
++     "id": "scrollable-region-focusable",
++     "impact": "serious",
++     "nodes": Array [
++       Object {
++         "all": Array [],
++         "any": Array [
++           Object {
++             "data": null,
++             "id": "focusable-content",
++             "impact": "serious",
++             "message": "Element should have focusable content",
++             "relatedNodes": Array [],
++           },
++           Object {
++             "data": null,
++             "id": "focusable-element",
++             "impact": "serious",
++             "message": "Element should be focusable",
++             "relatedNodes": Array [],
++           },
++         ],
++         "failureSummary": "Fix any of the following:
++   Element should have focusable content
++   Element should be focusable",
++         "html": "<div role=\"dialog\" aria-modal=\"true\" aria-label=\"Opening entry\" tabindex=\"-1\" class=\"_panel_c0icb_69\">",
++         "impact": "serious",
++         "none": Array [],
++         "target": Array [
++           "._panel_c0icb_69",
++         ],
++       },
++     ],
++     "tags": Array [
++       "cat.keyboard",
++       "wcag2a",
++       "wcag211",
++       "wcag213",
++       "TTv5",
++       "TT4.a",
++       "EN-301-549",
++       "EN-9.2.1.1",
++       "EN-9.2.1.3",
++       "RGAAv4",
++       "RGAA-7.3.2",
++     ],
++   },
++ ]
+    at captureRawStack (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright-core/lib/coreBundle.js:9282:17)
+    at callMatcherAsStep (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13316:57)
+    at Object.toEqual (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13308:23)
+    at snap (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/busy-keyboard-isolation.mjs:26:1239)
+    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/busy-keyboard-isolation.mjs:53:2884
+    at async run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/busy-keyboard-isolation.mjs:21:204)
+    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/busy-keyboard-isolation.mjs:53:2
+FINISH [{"name":"B01 setup, real native readiness, invalid zone and catalog","status":"PASS"},{"name":"B04 keyboard-only Plan, two Executions, pending Save and Complete","status":"FAIL"}] restored true

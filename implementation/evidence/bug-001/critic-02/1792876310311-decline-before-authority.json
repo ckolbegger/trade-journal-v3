@@ -1,0 +1,485 @@
+{
+  "roots": [
+    {
+      "key": "active",
+      "generation": "1f130b90-5a36-403a-8b21-1a7efb761a6e",
+      "revision": "b7d05d0a-e733-44f1-a479-6e9300fefd1d",
+      "schema": 2,
+      "recordCounts": {
+        "versions": 9,
+        "lifecycle": 1
+      },
+      "timeZone": "America/New_York",
+      "catalogRevision": "b7ba6924-9c42-48cb-9dfe-cbfbf0eb06c9",
+      "definitionRevision": "plan-reflection-v1",
+      "commitOrdinal": 4,
+      "recordedSequence": 1
+    }
+  ],
+  "versions": [
+    {
+      "version": "1f130b90-5a36-403a-8b21-1a7efb761a6e:long-stock-v1",
+      "id": "long-stock",
+      "generation": "1f130b90-5a36-403a-8b21-1a7efb761a6e",
+      "kind": "Strategy",
+      "value": {
+        "id": "long-stock",
+        "kind": "Strategy",
+        "label": "Long Stock",
+        "active": true,
+        "shape": {
+          "roles": [
+            {
+              "kind": "Stock",
+              "direction": "Long",
+              "relativeQuantity": "1"
+            }
+          ]
+        },
+        "origin": "Default"
+      },
+      "tradeId": "",
+      "economicTime": "2026-10-24T21:11:50.948Z",
+      "saveTime": "2026-10-24T21:11:50.948Z",
+      "sequence": 0,
+      "commitOrdinal": 1
+    },
+    {
+      "id": "plan-confirmation",
+      "version": "1f130b90-5a36-403a-8b21-1a7efb761a6e:plan-confirmation-v1",
+      "kind": "Source",
+      "value": {
+        "id": "plan-confirmation",
+        "label": "Plan Confirmation"
+      },
+      "generation": "1f130b90-5a36-403a-8b21-1a7efb761a6e",
+      "tradeId": "",
+      "economicTime": "2026-10-24T21:11:50.948Z",
+      "saveTime": "2026-10-24T21:11:50.948Z",
+      "sequence": 0,
+      "commitOrdinal": 1
+    },
+    {
+      "id": "plan-reflection",
+      "version": "1f130b90-5a36-403a-8b21-1a7efb761a6e:plan-reflection-v1",
+      "kind": "Definition",
+      "value": {
+        "id": "plan-reflection",
+        "revision": "plan-reflection-v1",
+        "label": "Plan Reflection",
+        "prompts": [
+          {
+            "id": "thesis",
+            "wording": "Why this trade, why now?",
+            "kind": "Text",
+            "required": true,
+            "role": "Thesis"
+          },
+          {
+            "id": "invalidation",
+            "wording": "What would invalidate the thesis?",
+            "kind": "Text",
+            "required": true,
+            "role": "Invalidation"
+          },
+          {
+            "id": "conviction",
+            "wording": "Conviction",
+            "kind": "Scale",
+            "required": false,
+            "minimum": 1,
+            "maximum": 5
+          },
+          {
+            "id": "emotion",
+            "wording": "Primary emotion",
+            "kind": "SingleSelect",
+            "required": false,
+            "options": [
+              {
+                "id": "calm",
+                "label": "Calm"
+              },
+              {
+                "id": "eager",
+                "label": "Eager"
+              },
+              {
+                "id": "anxious",
+                "label": "Anxious"
+              },
+              {
+                "id": "fomo",
+                "label": "FOMO"
+              },
+              {
+                "id": "revenge",
+                "label": "Revenge"
+              },
+              {
+                "id": "relieved",
+                "label": "Relieved"
+              },
+              {
+                "id": "frustrated",
+                "label": "Frustrated"
+              },
+              {
+                "id": "other",
+                "label": "Other"
+              }
+            ]
+          }
+        ]
+      },
+      "generation": "1f130b90-5a36-403a-8b21-1a7efb761a6e",
+      "tradeId": "",
+      "economicTime": "2026-10-24T21:11:50.948Z",
+      "saveTime": "2026-10-24T21:11:50.948Z",
+      "sequence": 0,
+      "commitOrdinal": 1
+    },
+    {
+      "id": "position-change-reflection",
+      "version": "1f130b90-5a36-403a-8b21-1a7efb761a6e:position-change-reflection-v1",
+      "kind": "Definition",
+      "value": {
+        "id": "position-change-reflection",
+        "revision": "position-change-reflection-v1",
+        "label": "Position Change Reflection",
+        "prompts": [
+          {
+            "id": "decision-mode",
+            "wording": "Decision mode",
+            "kind": "SingleSelect",
+            "required": true,
+            "options": [
+              {
+                "id": "as-planned",
+                "label": "As Planned"
+              },
+              {
+                "id": "deliberate-adjustment",
+                "label": "Deliberate Adjustment"
+              },
+              {
+                "id": "reactive",
+                "label": "Reactive"
+              },
+              {
+                "id": "externally-imposed",
+                "label": "Externally Imposed"
+              }
+            ]
+          },
+          {
+            "id": "emotion",
+            "wording": "Primary emotion",
+            "kind": "SingleSelect",
+            "required": true,
+            "options": [
+              {
+                "id": "calm",
+                "label": "Calm"
+              },
+              {
+                "id": "eager",
+                "label": "Eager"
+              },
+              {
+                "id": "anxious",
+                "label": "Anxious"
+              },
+              {
+                "id": "fomo",
+                "label": "FOMO"
+              },
+              {
+                "id": "revenge",
+                "label": "Revenge"
+              },
+              {
+                "id": "relieved",
+                "label": "Relieved"
+              },
+              {
+                "id": "frustrated",
+                "label": "Frustrated"
+              },
+              {
+                "id": "other",
+                "label": "Other"
+              }
+            ]
+          },
+          {
+            "id": "confidence",
+            "wording": "Decision confidence",
+            "kind": "Scale",
+            "required": true,
+            "minimum": 1,
+            "maximum": 5
+          },
+          {
+            "id": "note",
+            "wording": "Note",
+            "kind": "Text",
+            "required": false
+          }
+        ]
+      },
+      "generation": "1f130b90-5a36-403a-8b21-1a7efb761a6e",
+      "tradeId": "",
+      "economicTime": "2026-10-24T21:11:50.948Z",
+      "saveTime": "2026-10-24T21:11:50.948Z",
+      "sequence": 0,
+      "commitOrdinal": 1
+    },
+    {
+      "id": "position-change",
+      "version": "1f130b90-5a36-403a-8b21-1a7efb761a6e:position-change-v1",
+      "kind": "Source",
+      "value": {
+        "id": "position-change",
+        "label": "Position Change"
+      },
+      "generation": "1f130b90-5a36-403a-8b21-1a7efb761a6e",
+      "tradeId": "",
+      "economicTime": "2026-10-24T21:11:50.948Z",
+      "saveTime": "2026-10-24T21:11:50.948Z",
+      "sequence": 0,
+      "commitOrdinal": 1
+    },
+    {
+      "version": "9585a147-1fc2-4e3c-a4b1-98988dd1371f",
+      "id": "ecb6814c-bbdd-421c-aad5-88b713c41f05",
+      "generation": "1f130b90-5a36-403a-8b21-1a7efb761a6e",
+      "kind": "JournalEntry",
+      "tradeId": "9b4eade4-746f-44e5-a71b-59f81303a0d6",
+      "economicTime": "2026-10-24T21:11:51.242Z",
+      "saveTime": "2026-10-24T21:11:51.270Z",
+      "sequence": 1,
+      "commitOrdinal": 4,
+      "value": {
+        "id": "ecb6814c-bbdd-421c-aad5-88b713c41f05",
+        "version": "9585a147-1fc2-4e3c-a4b1-98988dd1371f",
+        "definition": {
+          "id": "plan-reflection",
+          "revision": "plan-reflection-v1",
+          "label": "Plan Reflection",
+          "prompts": [
+            {
+              "id": "thesis",
+              "wording": "Why this trade, why now?",
+              "kind": "Text",
+              "required": true,
+              "role": "Thesis"
+            },
+            {
+              "id": "invalidation",
+              "wording": "What would invalidate the thesis?",
+              "kind": "Text",
+              "required": true,
+              "role": "Invalidation"
+            },
+            {
+              "id": "conviction",
+              "wording": "Conviction",
+              "kind": "Scale",
+              "required": false,
+              "minimum": 1,
+              "maximum": 5
+            },
+            {
+              "id": "emotion",
+              "wording": "Primary emotion",
+              "kind": "SingleSelect",
+              "required": false,
+              "options": [
+                {
+                  "id": "calm",
+                  "label": "Calm"
+                },
+                {
+                  "id": "eager",
+                  "label": "Eager"
+                },
+                {
+                  "id": "anxious",
+                  "label": "Anxious"
+                },
+                {
+                  "id": "fomo",
+                  "label": "FOMO"
+                },
+                {
+                  "id": "revenge",
+                  "label": "Revenge"
+                },
+                {
+                  "id": "relieved",
+                  "label": "Relieved"
+                },
+                {
+                  "id": "frustrated",
+                  "label": "Frustrated"
+                },
+                {
+                  "id": "other",
+                  "label": "Other"
+                }
+              ]
+            }
+          ]
+        },
+        "anchor": {
+          "kind": "Trade",
+          "tradeId": "9b4eade4-746f-44e5-a71b-59f81303a0d6"
+        },
+        "origin": {
+          "kind": "Plan",
+          "factId": "6f578b25-ae08-4f44-a3c4-08cb389131b4"
+        },
+        "source": {
+          "id": "plan-confirmation",
+          "label": "Plan Confirmation"
+        },
+        "momentTime": "2026-10-24T21:11:51.242Z",
+        "firstAuthoredTime": "2026-10-24T21:11:51.270Z",
+        "saveTime": "2026-10-24T21:11:51.270Z",
+        "responses": {
+          "thesis": {
+            "kind": "Text",
+            "value": "Synthetic DECL independent thesis"
+          },
+          "invalidation": {
+            "kind": "Text",
+            "value": "Independent risk invalidation"
+          },
+          "conviction": {
+            "kind": "Scale",
+            "value": "4"
+          },
+          "emotion": {
+            "kind": "SingleSelect",
+            "value": "calm"
+          }
+        }
+      }
+    },
+    {
+      "version": "c9f3da07-805b-4c99-a239-bc48c6f219a4",
+      "id": "066d190f-b963-4264-8505-289a3810e135",
+      "generation": "1f130b90-5a36-403a-8b21-1a7efb761a6e",
+      "kind": "Institution",
+      "value": {
+        "id": "066d190f-b963-4264-8505-289a3810e135",
+        "version": "c9f3da07-805b-4c99-a239-bc48c6f219a4",
+        "kind": "Institution",
+        "label": "Critic Two synthetic institution",
+        "active": true,
+        "origin": "Trader"
+      },
+      "tradeId": "",
+      "economicTime": "2026-10-24T21:11:51.043Z",
+      "saveTime": "2026-10-24T21:11:51.043Z",
+      "sequence": 0,
+      "commitOrdinal": 2
+    },
+    {
+      "version": "d5e41f69-8016-49e0-bb61-2409d80431e7",
+      "id": "d6427037-77b2-4d60-b498-19e5f78e1fb4",
+      "generation": "1f130b90-5a36-403a-8b21-1a7efb761a6e",
+      "kind": "Account",
+      "value": {
+        "id": "d6427037-77b2-4d60-b498-19e5f78e1fb4",
+        "version": "d5e41f69-8016-49e0-bb61-2409d80431e7",
+        "kind": "Account",
+        "label": "Critic Two synthetic account",
+        "active": true,
+        "origin": "Trader",
+        "parentId": "066d190f-b963-4264-8505-289a3810e135"
+      },
+      "tradeId": "",
+      "economicTime": "2026-10-24T21:11:51.092Z",
+      "saveTime": "2026-10-24T21:11:51.092Z",
+      "sequence": 0,
+      "commitOrdinal": 3
+    },
+    {
+      "version": "e76007db-2371-41a6-8c6b-1e93fae8cac2",
+      "id": "6f578b25-ae08-4f44-a3c4-08cb389131b4",
+      "generation": "1f130b90-5a36-403a-8b21-1a7efb761a6e",
+      "kind": "Plan",
+      "tradeId": "9b4eade4-746f-44e5-a71b-59f81303a0d6",
+      "economicTime": "2026-10-24T21:11:51.242Z",
+      "saveTime": "2026-10-24T21:11:51.270Z",
+      "sequence": 1,
+      "commitOrdinal": 4,
+      "value": {
+        "tradeId": "9b4eade4-746f-44e5-a71b-59f81303a0d6",
+        "revision": "fe4e5de7-7909-4117-9c1f-cc74134f5d57",
+        "planFactId": "6f578b25-ae08-4f44-a3c4-08cb389131b4",
+        "planVersionId": "e76007db-2371-41a6-8c6b-1e93fae8cac2",
+        "plannedLegId": "3b4526b5-f6c1-4f54-a88c-17664911f4a2",
+        "stopId": "38c5081a-944e-4993-853d-a6a1c259c846",
+        "targetId": "08a2ba93-f729-40a4-8ce1-f55e90c0ef4e",
+        "accountId": "d6427037-77b2-4d60-b498-19e5f78e1fb4",
+        "strategyId": "long-stock",
+        "lifecycle": "Planned",
+        "plan": {
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "DECL",
+            "currency": "USD"
+          },
+          "quantity": "10",
+          "entry": "50",
+          "stop": "45",
+          "target": "60",
+          "thesis": "Synthetic DECL independent thesis",
+          "invalidation": "Independent risk invalidation"
+        },
+        "baseline": {
+          "risk": "50",
+          "oneR": "50",
+          "reward": "100",
+          "ratio": {
+            "numerator": "2",
+            "denominator": "1"
+          },
+          "conditions": [
+            {
+              "kind": "Stop",
+              "price": "45",
+              "amount": "50"
+            },
+            {
+              "kind": "Target",
+              "price": "60",
+              "amount": "100"
+            }
+          ]
+        },
+        "economicTime": "2026-10-24T21:11:51.242Z",
+        "saveTime": "2026-10-24T21:11:51.270Z",
+        "sequence": 1
+      }
+    }
+  ],
+  "lifecycle": [
+    {
+      "key": "1f130b90-5a36-403a-8b21-1a7efb761a6e:9b4eade4-746f-44e5-a71b-59f81303a0d6",
+      "generation": "1f130b90-5a36-403a-8b21-1a7efb761a6e",
+      "tradeId": "9b4eade4-746f-44e5-a71b-59f81303a0d6",
+      "lifecycle": "Planned",
+      "accountId": "d6427037-77b2-4d60-b498-19e5f78e1fb4",
+      "symbol": "DECL",
+      "economicTime": "2026-10-24T21:11:51.242Z",
+      "economicOrder": "08641792876311242000000",
+      "sequence": 1,
+      "version": "e76007db-2371-41a6-8c6b-1e93fae8cac2",
+      "revision": "fe4e5de7-7909-4117-9c1f-cc74134f5d57"
+    }
+  ]
+}

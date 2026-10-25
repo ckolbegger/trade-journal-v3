@@ -1,0 +1,527 @@
+{
+  "stamp": 1792877916967,
+  "sourceDigest": "682f21e4f77151620270ebf258d822b2bd350fb2a455271c2da7ba447e31d8bd",
+  "inventory": {
+    "version": 1,
+    "releaseId": "749a0791565687c4c795c4a1dbfc8ce94b79c15f3a806aa202ffed8a8d9c52fb",
+    "assets": [
+      {
+        "url": "/assets/index-DZ0sdt-Y.js",
+        "bytes": 616760,
+        "sha256": "225bb72f0b77f9d676c4e4ff7d93d3ca4d9c9fa660e7f12e57e564f4b7ba5788"
+      },
+      {
+        "url": "/assets/index-DyLbKIIF.css",
+        "bytes": 9865,
+        "sha256": "133ce1d69fab9f1d9aa2f18d0345838092e2f9e16936a284484b834a24f702f0"
+      },
+      {
+        "url": "/capabilities.json",
+        "bytes": 1992,
+        "sha256": "71878297c7953004d90c5841bc9ecd143fbb86a65c348e099c1d8f18a039ab91"
+      },
+      {
+        "url": "/fonts/LICENSE.txt",
+        "bytes": 4355,
+        "sha256": "f158372b957fb64f86bb9e5d9368c84e54c541bdd5d25bd3d4515a593c99cfed"
+      },
+      {
+        "url": "/fonts/LiberationSansNarrow-Bold.ttf",
+        "bytes": 110260,
+        "sha256": "8e5eb5090ef4a3143794c230b82f174f7f2fbbfcd6cb789ccfa1f90bf8795d54"
+      },
+      {
+        "url": "/fonts/Rubik-Bold.ttf",
+        "bytes": 140396,
+        "sha256": "b1c36dfcbc5fe5011c552c76725c84d989a71d56440e8bfbfa0cb68b593dbad6"
+      },
+      {
+        "url": "/fonts/Rubik-Regular.ttf",
+        "bytes": 136624,
+        "sha256": "bd1490f4314d27ca1ac5d8869fdda068852edd623318c9bee13e812b793b301b"
+      },
+      {
+        "url": "/icon-192.png",
+        "bytes": 3409,
+        "sha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9"
+      },
+      {
+        "url": "/icon-512.png",
+        "bytes": 12236,
+        "sha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457"
+      },
+      {
+        "url": "/icon.svg",
+        "bytes": 180,
+        "sha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9"
+      },
+      {
+        "url": "/index.html",
+        "bytes": 446,
+        "sha256": "d0feb739219affc1eaccd71f36c0e650241aea790fb87ec2d8d12a597fa9d46f"
+      },
+      {
+        "url": "/manifest.webmanifest",
+        "bytes": 416,
+        "sha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd"
+      },
+      {
+        "url": "/sw.js",
+        "bytes": 4386,
+        "sha256": "9e6cfa56ff301de61c18aeaa58f7e7e8c40588e77fd656501652954e0e55adab"
+      }
+    ]
+  },
+  "distBefore": {
+    "assets/index-DZ0sdt-Y.js": "225bb72f0b77f9d676c4e4ff7d93d3ca4d9c9fa660e7f12e57e564f4b7ba5788",
+    "assets/index-DyLbKIIF.css": "133ce1d69fab9f1d9aa2f18d0345838092e2f9e16936a284484b834a24f702f0",
+    "capabilities.json": "71878297c7953004d90c5841bc9ecd143fbb86a65c348e099c1d8f18a039ab91",
+    "fonts/LICENSE.txt": "f158372b957fb64f86bb9e5d9368c84e54c541bdd5d25bd3d4515a593c99cfed",
+    "fonts/LiberationSansNarrow-Bold.ttf": "8e5eb5090ef4a3143794c230b82f174f7f2fbbfcd6cb789ccfa1f90bf8795d54",
+    "fonts/Rubik-Bold.ttf": "b1c36dfcbc5fe5011c552c76725c84d989a71d56440e8bfbfa0cb68b593dbad6",
+    "fonts/Rubik-Regular.ttf": "bd1490f4314d27ca1ac5d8869fdda068852edd623318c9bee13e812b793b301b",
+    "icon-192.png": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+    "icon-512.png": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+    "icon.svg": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+    "index.html": "d0feb739219affc1eaccd71f36c0e650241aea790fb87ec2d8d12a597fa9d46f",
+    "manifest.webmanifest": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+    "offline-inventory.json": "f85d3b4116b6166e169b648d2a2602f496aef639452d3304f7dd941c8c349bb1",
+    "sw.js": "9e6cfa56ff301de61c18aeaa58f7e7e8c40588e77fd656501652954e0e55adab"
+  },
+  "host": {
+    "node": "v26.12.0",
+    "platform": "darwin",
+    "release": "25.6.0",
+    "cpu": "Apple M4 Max"
+  },
+  "results": [
+    {
+      "name": "B01 setup, real native readiness, invalid zone and catalog",
+      "started": "2026-10-24T21:38:37.283Z",
+      "details": {
+        "setup": [
+          {
+            "geometry": {
+              "width": 1440,
+              "dpr": 1,
+              "scrollWidth": 1440,
+              "main": {
+                "x": 480,
+                "y": 100,
+                "width": 480,
+                "height": 324.390625,
+                "top": 100,
+                "right": 960,
+                "bottom": 424.390625,
+                "left": 480
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": [],
+            "bodyText": "Your device-local Workspace\n\nChoose a rules-based time zone. This journal stays in this browser on this device.\n\nWorkspace time zone\nCreate Workspace"
+          },
+          {
+            "geometry": {
+              "width": 814,
+              "dpr": 1,
+              "scrollWidth": 814,
+              "main": {
+                "x": 167,
+                "y": 100,
+                "width": 480,
+                "height": 324.390625,
+                "top": 100,
+                "right": 647,
+                "bottom": 424.390625,
+                "left": 167
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": [],
+            "bodyText": "Your device-local Workspace\n\nChoose a rules-based time zone. This journal stays in this browser on this device.\n\nWorkspace time zone\nCreate Workspace"
+          },
+          {
+            "geometry": {
+              "width": 390,
+              "dpr": 1,
+              "scrollWidth": 390,
+              "main": {
+                "x": 0,
+                "y": 100,
+                "width": 390,
+                "height": 324.390625,
+                "top": 100,
+                "right": 390,
+                "bottom": 424.390625,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": [],
+            "bodyText": "Your device-local Workspace\n\nChoose a rules-based time zone. This journal stays in this browser on this device.\n\nWorkspace time zone\nCreate Workspace"
+          }
+        ],
+        "ws": [
+          {
+            "geometry": {
+              "width": 1440,
+              "dpr": 1,
+              "scrollWidth": 1440,
+              "nav": {
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 1000,
+                "top": 0,
+                "right": 240,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 406,
+                "y": 0,
+                "width": 868,
+                "height": 1000,
+                "top": 0,
+                "right": 1274,
+                "bottom": 1000,
+                "left": 406
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": [],
+            "bodyText": "Trade Journal\n⌂Trades\n+New Plan\n▤Journal Debt\n⚙Workspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nAccount saved. You can now confirm a Plan.\n\nPlanned Trades\nPlanned\nOpen\n\nNo confirmed Plans match this view."
+          },
+          {
+            "geometry": {
+              "width": 814,
+              "dpr": 1,
+              "scrollWidth": 814,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 814,
+                "height": 57,
+                "top": 943,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 167,
+                "y": 0,
+                "width": 480,
+                "height": 458.296875,
+                "top": 0,
+                "right": 647,
+                "bottom": 458.296875,
+                "left": 167
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": [],
+            "bodyText": "⌂\nTrades\n+\nNew Plan\n▤\nJournal Debt\n⚙\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nAccount saved. You can now confirm a Plan.\n\nPlanned Trades\nPlanned\nOpen\n\nNo confirmed Plans match this view."
+          },
+          {
+            "geometry": {
+              "width": 390,
+              "dpr": 1,
+              "scrollWidth": 390,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 390,
+                "height": 57,
+                "top": 943,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 474.6875,
+                "top": 0,
+                "right": 390,
+                "bottom": 474.6875,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": [],
+            "bodyText": "⌂\nTrades\n+\nNew Plan\n▤\nJournal Debt\n⚙\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nAccount saved. You can now confirm a Plan.\n\nPlanned Trades\nPlanned\nOpen\n\nNo confirmed Plans match this view."
+          }
+        ],
+        "empty": [
+          {
+            "geometry": {
+              "width": 1440,
+              "dpr": 1,
+              "scrollWidth": 1440,
+              "nav": {
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 1000,
+                "top": 0,
+                "right": 240,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 406,
+                "y": 0,
+                "width": 868,
+                "height": 1000,
+                "top": 0,
+                "right": 1274,
+                "bottom": 1000,
+                "left": 406
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": [],
+            "bodyText": "Trade Journal\n⌂Trades\n+New Plan\n▤Journal Debt\n⚙Workspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nAccount saved. You can now confirm a Plan.\n\nPlanned Trades\nPlanned\nOpen\n\nNo confirmed Plans match this view."
+          },
+          {
+            "geometry": {
+              "width": 814,
+              "dpr": 1,
+              "scrollWidth": 814,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 814,
+                "height": 57,
+                "top": 943,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 167,
+                "y": 0,
+                "width": 480,
+                "height": 458.296875,
+                "top": 0,
+                "right": 647,
+                "bottom": 458.296875,
+                "left": 167
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": [],
+            "bodyText": "⌂\nTrades\n+\nNew Plan\n▤\nJournal Debt\n⚙\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nAccount saved. You can now confirm a Plan.\n\nPlanned Trades\nPlanned\nOpen\n\nNo confirmed Plans match this view."
+          },
+          {
+            "geometry": {
+              "width": 390,
+              "dpr": 1,
+              "scrollWidth": 390,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 390,
+                "height": 57,
+                "top": 943,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 474.6875,
+                "top": 0,
+                "right": 390,
+                "bottom": 474.6875,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": [],
+            "bodyText": "⌂\nTrades\n+\nNew Plan\n▤\nJournal Debt\n⚙\nWorkspace\n\nAFTER-CLOSE JOURNAL · USD\n\nTrades\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nAccount saved. You can now confirm a Plan.\n\nPlanned Trades\nPlanned\nOpen\n\nNo confirmed Plans match this view."
+          }
+        ],
+        "ready": {
+          "secure": true,
+          "control": "http://localhost:5174/sw.js",
+          "caches": [
+            "trade-journal-release-749a0791565687c4c795c4a1dbfc8ce94b79c15f3a806aa202ffed8a8d9c52fb"
+          ],
+          "estimate": {
+            "quota": 10739782894,
+            "usage": 2364654,
+            "usageDetails": {
+              "caches": 2351872,
+              "indexedDB": 8396,
+              "serviceWorkerRegistrations": 4386
+            }
+          }
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "B04 verified update deferred with open AND closed draft, activation and stopped offline",
+      "started": "2026-10-24T21:38:39.216Z",
+      "status": "FAIL",
+      "error": "worker.evaluate: TypeError: c.url is not a function\n    at eval (eval at evaluate (:370:30), <anonymous>:1:113)\n    at Array.map (<anonymous>)\n    at eval (eval at evaluate (:370:30), <anonymous>:1:90)\n    at async <anonymous>:396:30\n    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/update-isolation.mjs:48:1603\n    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/update-isolation.mjs:48:1560\n    at async run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/update-isolation.mjs:21:206)\n    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/update-isolation.mjs:48:2"
+    }
+  ],
+  "consoleLines": [
+    {
+      "type": "server-out",
+      "text": "\n> trade-journal-v3@0.1.0 preview\n> vite preview --host localhost --port 5174 --strictPort\n\n"
+    },
+    {
+      "type": "server-out",
+      "text": "  ➜  Local:   http://localhost:5174/\n"
+    }
+  ],
+  "observedSourceDigest": "682f21e4f77151620270ebf258d822b2bd350fb2a455271c2da7ba447e31d8bd",
+  "command": [
+    "node",
+    "implementation/evidence/bug-001/critic-03/driver.mjs"
+  ],
+  "profile": "/var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/bug001-independent-critic03-iipi8X",
+  "browser": "156.0.8078.4",
+  "distAfter": {
+    "assets/index-DZ0sdt-Y.js": "225bb72f0b77f9d676c4e4ff7d93d3ca4d9c9fa660e7f12e57e564f4b7ba5788",
+    "assets/index-DyLbKIIF.css": "133ce1d69fab9f1d9aa2f18d0345838092e2f9e16936a284484b834a24f702f0",
+    "capabilities.json": "71878297c7953004d90c5841bc9ecd143fbb86a65c348e099c1d8f18a039ab91",
+    "fonts/LICENSE.txt": "f158372b957fb64f86bb9e5d9368c84e54c541bdd5d25bd3d4515a593c99cfed",
+    "fonts/LiberationSansNarrow-Bold.ttf": "8e5eb5090ef4a3143794c230b82f174f7f2fbbfcd6cb789ccfa1f90bf8795d54",
+    "fonts/Rubik-Bold.ttf": "b1c36dfcbc5fe5011c552c76725c84d989a71d56440e8bfbfa0cb68b593dbad6",
+    "fonts/Rubik-Regular.ttf": "bd1490f4314d27ca1ac5d8869fdda068852edd623318c9bee13e812b793b301b",
+    "icon-192.png": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+    "icon-512.png": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+    "icon.svg": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+    "index.html": "d0feb739219affc1eaccd71f36c0e650241aea790fb87ec2d8d12a597fa9d46f",
+    "manifest.webmanifest": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+    "offline-inventory.json": "f85d3b4116b6166e169b648d2a2602f496aef639452d3304f7dd941c8c349bb1",
+    "sw.js": "9e6cfa56ff301de61c18aeaa58f7e7e8c40588e77fd656501652954e0e55adab"
+  },
+  "portFree": true,
+  "finished": "2026-10-24T21:38:41.734Z",
+  "pageErrors": []
+}

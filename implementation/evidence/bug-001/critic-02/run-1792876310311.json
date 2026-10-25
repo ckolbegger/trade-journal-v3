@@ -1,0 +1,142 @@
+{
+  "stamp": 1792876310311,
+  "sourceDigest": "f9697f14fee1e03b20f3f138a6fb8e41db68741191aec5b4818d45aab198c210",
+  "inventory": {
+    "version": 1,
+    "releaseId": "33cc2444e5d648b6fafc68d73011727ae4049bb656c469009133ce7c94b26bc1",
+    "assets": [
+      {
+        "url": "/assets/index-CBnB2S1N.js",
+        "bytes": 615919,
+        "sha256": "e453ec985bbd0ff19f6e2add3e35e9891f55d3e596ae6a42a4eb5de95ef188a8"
+      },
+      {
+        "url": "/assets/index-DyLbKIIF.css",
+        "bytes": 9865,
+        "sha256": "133ce1d69fab9f1d9aa2f18d0345838092e2f9e16936a284484b834a24f702f0"
+      },
+      {
+        "url": "/capabilities.json",
+        "bytes": 1992,
+        "sha256": "71878297c7953004d90c5841bc9ecd143fbb86a65c348e099c1d8f18a039ab91"
+      },
+      {
+        "url": "/fonts/LICENSE.txt",
+        "bytes": 4355,
+        "sha256": "f158372b957fb64f86bb9e5d9368c84e54c541bdd5d25bd3d4515a593c99cfed"
+      },
+      {
+        "url": "/fonts/LiberationSansNarrow-Bold.ttf",
+        "bytes": 110260,
+        "sha256": "8e5eb5090ef4a3143794c230b82f174f7f2fbbfcd6cb789ccfa1f90bf8795d54"
+      },
+      {
+        "url": "/fonts/Rubik-Bold.ttf",
+        "bytes": 140396,
+        "sha256": "b1c36dfcbc5fe5011c552c76725c84d989a71d56440e8bfbfa0cb68b593dbad6"
+      },
+      {
+        "url": "/fonts/Rubik-Regular.ttf",
+        "bytes": 136624,
+        "sha256": "bd1490f4314d27ca1ac5d8869fdda068852edd623318c9bee13e812b793b301b"
+      },
+      {
+        "url": "/icon-192.png",
+        "bytes": 3409,
+        "sha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9"
+      },
+      {
+        "url": "/icon-512.png",
+        "bytes": 12236,
+        "sha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457"
+      },
+      {
+        "url": "/icon.svg",
+        "bytes": 180,
+        "sha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9"
+      },
+      {
+        "url": "/index.html",
+        "bytes": 446,
+        "sha256": "cbb4dbe68c1667bb470b785e4c89b610cd6ae8bba81b3bf7f1a803493fac291b"
+      },
+      {
+        "url": "/manifest.webmanifest",
+        "bytes": 416,
+        "sha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd"
+      },
+      {
+        "url": "/sw.js",
+        "bytes": 4386,
+        "sha256": "b7ae284e2a7bd4adb4eefc9fbc10c1b7e6996d97087f4c02fd5eb9838cf45cb8"
+      }
+    ]
+  },
+  "distBefore": {
+    "index.html": "cbb4dbe68c1667bb470b785e4c89b610cd6ae8bba81b3bf7f1a803493fac291b",
+    "capabilities.json": "71878297c7953004d90c5841bc9ecd143fbb86a65c348e099c1d8f18a039ab91",
+    "icon-192.png": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+    "icon.svg": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+    "offline-inventory.json": "aedfe40e87bbf6b9339cb30967e02280d707cd28b5fb66dbe625fa77c3b2f504",
+    "manifest.webmanifest": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+    "sw.js": "b7ae284e2a7bd4adb4eefc9fbc10c1b7e6996d97087f4c02fd5eb9838cf45cb8",
+    "icon-512.png": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+    "fonts/LiberationSansNarrow-Bold.ttf": "8e5eb5090ef4a3143794c230b82f174f7f2fbbfcd6cb789ccfa1f90bf8795d54",
+    "fonts/Rubik-Bold.ttf": "b1c36dfcbc5fe5011c552c76725c84d989a71d56440e8bfbfa0cb68b593dbad6",
+    "fonts/LICENSE.txt": "f158372b957fb64f86bb9e5d9368c84e54c541bdd5d25bd3d4515a593c99cfed",
+    "fonts/Rubik-Regular.ttf": "bd1490f4314d27ca1ac5d8869fdda068852edd623318c9bee13e812b793b301b",
+    "assets/index-CBnB2S1N.js": "e453ec985bbd0ff19f6e2add3e35e9891f55d3e596ae6a42a4eb5de95ef188a8",
+    "assets/index-DyLbKIIF.css": "133ce1d69fab9f1d9aa2f18d0345838092e2f9e16936a284484b834a24f702f0"
+  },
+  "host": {
+    "node": "v26.12.0",
+    "platform": "darwin",
+    "release": "25.6.0",
+    "cpu": "Apple M4 Max"
+  },
+  "results": [
+    {
+      "name": "B03 independent real opening Decline, then Trade Journal outcome visibility",
+      "started": "2026-10-24T21:11:50.643Z",
+      "status": "FAIL",
+      "error": "Error: expect(locator).toContainText(expected) failed\n\nLocator: getByRole('dialog')\nExpected substring: \"Explicit decline\"\nReceived string:    \"TRADE JOURNALTrade Journal×Plan ReflectionTrade Anchor · Plan ConfirmationMoment: 2026-10-24 17:11:51.242 America/New_York · First authored: 2026-10-24 17:11:51.27 America/New_YorkWhy this trade, why now?Synthetic DECL independent thesisWhat would invalidate the thesis?Independent risk invalidationConviction4Primary emotionCalm\"\nTimeout: 5000ms\n\nCall log:\n  - Expect \"toContainText\" getByRole('dialog') with timeout 5000ms\n  - waiting for getByRole('dialog')\n    14 × locator resolved to <div role=\"dialog\" tabindex=\"-1\" aria-modal=\"true\" class=\"_panel_c0icb_69\" aria-label=\"Trade Journal\">…</div>\n       - unexpected value \"TRADE JOURNALTrade Journal×Plan ReflectionTrade Anchor · Plan ConfirmationMoment: 2026-10-24 17:11:51.242 America/New_York · First authored: 2026-10-24 17:11:51.27 America/New_YorkWhy this trade, why now?Synthetic DECL independent thesisWhat would invalidate the thesis?Independent risk invalidationConviction4Primary emotionCalm\"\n\n    at captureRawStack (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright-core/lib/coreBundle.js:9282:17)\n    at callMatcherAsStep (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13316:57)\n    at Object.toContainText (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13308:23)\n    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-02/driver.mjs:45:41\n    at async run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-02/driver.mjs:21:125)\n    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-02/driver.mjs:38:2"
+    }
+  ],
+  "consoleLines": [
+    {
+      "type": "server-out",
+      "text": "\n> trade-journal-v3@0.1.0 preview\n> vite preview --host localhost --port 5174 --strictPort\n\n"
+    },
+    {
+      "type": "server-out",
+      "text": "  ➜  Local:   http://localhost:5174/\n"
+    }
+  ],
+  "observedSourceDigest": "f9697f14fee1e03b20f3f138a6fb8e41db68741191aec5b4818d45aab198c210",
+  "command": [
+    "node",
+    "implementation/evidence/bug-001/critic-02/driver.mjs"
+  ],
+  "profile": "/var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/bug001-independent-critic02-i5LRIa",
+  "browser": "156.0.8078.4",
+  "detailOutcomeText": "Trade Journal\n⌂Trades\n+New Plan\n▤Journal Debt\n⚙Workspace\n‹ Back to Trades\n\nAFTER-CLOSE JOURNAL · USD\n\nDECL · Open\nCheck for application updates\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\n\nOpening entry saved · 1 Executions\n\nOpen Position\nQuantity\n10 shares\nGross basis\n$500.00\nOpening fees\n$0.25\nWeighted entry\n50 USD (exact 50/1)\nActual entry risk\n$50.25\nActual entry reward\n$99.75\nActual entry reward/risk\n1.99 (exact 133/67)\nEntry Quality\nBelow Plan\nOpen Lots\n\n10 shares at $50 · opening fee $0.25\n\nOpen · Filled as Planned\nFrozen Plan Baseline\n\nORIGINAL PLANNED RISK · 1R\n$50.00\n\nORIGINAL PLANNED REWARD\n$100.00\n\nREWARD / RISK\n2/1\n\nCritic Two synthetic institution · Critic Two synthetic account · Long Stock\n\nIntended entry\n$50 × 10 shares\nStop · underlying price\n$45\nTarget · underlying price\n$60\nRecorded Executions\nExecution 1 · Recorded · Buy DECL\n\n10 shares × $50 · Fee $0.25\n\nEconomic Time: 2026-10-24 17:11:51.359 America/New_York\nPosition Change Reflection · Explicit decline\n\nDeclined\n\nTrade Anchor · Source Position Change · Position Change 79c2bee2-6445-4e49-9618-3da2d1d0d29a\n\nDeclined 2026-10-24 17:11:51.461 America/New_York · Independent explicit decline evidence\n\nPlan Reflection\n\nTrade Anchor · Plan Confirmation\n\nMoment: 2026-10-24 17:11:51.242 America/New_York · First authored: 2026-10-24 17:11:51.27 America/New_York\n\nWhy this trade, why now?\n\nSynthetic DECL independent thesis\n\nWhat would invalidate the thesis?\n\nIndependent risk invalidation\n\nConviction\n\n4\n\nPrimary emotion\n\nCalm\n\nView Trade Journal\nView history",
+  "journalDialogText": "TRADE JOURNAL\n\nTrade Journal\n×\nPlan Reflection\n\nTrade Anchor · Plan Confirmation\n\nMoment: 2026-10-24 17:11:51.242 America/New_York · First authored: 2026-10-24 17:11:51.27 America/New_York\n\nWhy this trade, why now?\n\nSynthetic DECL independent thesis\n\nWhat would invalidate the thesis?\n\nIndependent risk invalidation\n\nConviction\n\n4\n\nPrimary emotion\n\nCalm",
+  "distAfter": {
+    "index.html": "cbb4dbe68c1667bb470b785e4c89b610cd6ae8bba81b3bf7f1a803493fac291b",
+    "capabilities.json": "71878297c7953004d90c5841bc9ecd143fbb86a65c348e099c1d8f18a039ab91",
+    "icon-192.png": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+    "icon.svg": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+    "offline-inventory.json": "aedfe40e87bbf6b9339cb30967e02280d707cd28b5fb66dbe625fa77c3b2f504",
+    "manifest.webmanifest": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+    "sw.js": "b7ae284e2a7bd4adb4eefc9fbc10c1b7e6996d97087f4c02fd5eb9838cf45cb8",
+    "icon-512.png": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+    "fonts/LiberationSansNarrow-Bold.ttf": "8e5eb5090ef4a3143794c230b82f174f7f2fbbfcd6cb789ccfa1f90bf8795d54",
+    "fonts/Rubik-Bold.ttf": "b1c36dfcbc5fe5011c552c76725c84d989a71d56440e8bfbfa0cb68b593dbad6",
+    "fonts/LICENSE.txt": "f158372b957fb64f86bb9e5d9368c84e54c541bdd5d25bd3d4515a593c99cfed",
+    "fonts/Rubik-Regular.ttf": "bd1490f4314d27ca1ac5d8869fdda068852edd623318c9bee13e812b793b301b",
+    "assets/index-CBnB2S1N.js": "e453ec985bbd0ff19f6e2add3e35e9891f55d3e596ae6a42a4eb5de95ef188a8",
+    "assets/index-DyLbKIIF.css": "133ce1d69fab9f1d9aa2f18d0345838092e2f9e16936a284484b834a24f702f0"
+  },
+  "finished": "2026-10-24T21:11:58.390Z",
+  "pageErrors": []
+}

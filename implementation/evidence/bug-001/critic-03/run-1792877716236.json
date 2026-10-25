@@ -1,0 +1,2627 @@
+{
+  "stamp": 1792877716236,
+  "sourceDigest": "682f21e4f77151620270ebf258d822b2bd350fb2a455271c2da7ba447e31d8bd",
+  "inventory": {
+    "version": 1,
+    "releaseId": "749a0791565687c4c795c4a1dbfc8ce94b79c15f3a806aa202ffed8a8d9c52fb",
+    "assets": [
+      {
+        "url": "/assets/index-DZ0sdt-Y.js",
+        "bytes": 616760,
+        "sha256": "225bb72f0b77f9d676c4e4ff7d93d3ca4d9c9fa660e7f12e57e564f4b7ba5788"
+      },
+      {
+        "url": "/assets/index-DyLbKIIF.css",
+        "bytes": 9865,
+        "sha256": "133ce1d69fab9f1d9aa2f18d0345838092e2f9e16936a284484b834a24f702f0"
+      },
+      {
+        "url": "/capabilities.json",
+        "bytes": 1992,
+        "sha256": "71878297c7953004d90c5841bc9ecd143fbb86a65c348e099c1d8f18a039ab91"
+      },
+      {
+        "url": "/fonts/LICENSE.txt",
+        "bytes": 4355,
+        "sha256": "f158372b957fb64f86bb9e5d9368c84e54c541bdd5d25bd3d4515a593c99cfed"
+      },
+      {
+        "url": "/fonts/LiberationSansNarrow-Bold.ttf",
+        "bytes": 110260,
+        "sha256": "8e5eb5090ef4a3143794c230b82f174f7f2fbbfcd6cb789ccfa1f90bf8795d54"
+      },
+      {
+        "url": "/fonts/Rubik-Bold.ttf",
+        "bytes": 140396,
+        "sha256": "b1c36dfcbc5fe5011c552c76725c84d989a71d56440e8bfbfa0cb68b593dbad6"
+      },
+      {
+        "url": "/fonts/Rubik-Regular.ttf",
+        "bytes": 136624,
+        "sha256": "bd1490f4314d27ca1ac5d8869fdda068852edd623318c9bee13e812b793b301b"
+      },
+      {
+        "url": "/icon-192.png",
+        "bytes": 3409,
+        "sha256": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9"
+      },
+      {
+        "url": "/icon-512.png",
+        "bytes": 12236,
+        "sha256": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457"
+      },
+      {
+        "url": "/icon.svg",
+        "bytes": 180,
+        "sha256": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9"
+      },
+      {
+        "url": "/index.html",
+        "bytes": 446,
+        "sha256": "d0feb739219affc1eaccd71f36c0e650241aea790fb87ec2d8d12a597fa9d46f"
+      },
+      {
+        "url": "/manifest.webmanifest",
+        "bytes": 416,
+        "sha256": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd"
+      },
+      {
+        "url": "/sw.js",
+        "bytes": 4386,
+        "sha256": "9e6cfa56ff301de61c18aeaa58f7e7e8c40588e77fd656501652954e0e55adab"
+      }
+    ]
+  },
+  "distBefore": {
+    "assets/index-DZ0sdt-Y.js": "225bb72f0b77f9d676c4e4ff7d93d3ca4d9c9fa660e7f12e57e564f4b7ba5788",
+    "assets/index-DyLbKIIF.css": "133ce1d69fab9f1d9aa2f18d0345838092e2f9e16936a284484b834a24f702f0",
+    "capabilities.json": "71878297c7953004d90c5841bc9ecd143fbb86a65c348e099c1d8f18a039ab91",
+    "fonts/LICENSE.txt": "f158372b957fb64f86bb9e5d9368c84e54c541bdd5d25bd3d4515a593c99cfed",
+    "fonts/LiberationSansNarrow-Bold.ttf": "8e5eb5090ef4a3143794c230b82f174f7f2fbbfcd6cb789ccfa1f90bf8795d54",
+    "fonts/Rubik-Bold.ttf": "b1c36dfcbc5fe5011c552c76725c84d989a71d56440e8bfbfa0cb68b593dbad6",
+    "fonts/Rubik-Regular.ttf": "bd1490f4314d27ca1ac5d8869fdda068852edd623318c9bee13e812b793b301b",
+    "icon-192.png": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+    "icon-512.png": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+    "icon.svg": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+    "index.html": "d0feb739219affc1eaccd71f36c0e650241aea790fb87ec2d8d12a597fa9d46f",
+    "manifest.webmanifest": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+    "offline-inventory.json": "f85d3b4116b6166e169b648d2a2602f496aef639452d3304f7dd941c8c349bb1",
+    "sw.js": "9e6cfa56ff301de61c18aeaa58f7e7e8c40588e77fd656501652954e0e55adab"
+  },
+  "host": {
+    "node": "v26.12.0",
+    "platform": "darwin",
+    "release": "25.6.0",
+    "cpu": "Apple M4 Max"
+  },
+  "results": [
+    {
+      "name": "B01 setup, real native readiness, invalid zone and catalog",
+      "started": "2026-10-24T21:35:16.571Z",
+      "details": {
+        "setup": [
+          {
+            "geometry": {
+              "width": 1440,
+              "dpr": 1,
+              "scrollWidth": 1440,
+              "main": {
+                "x": 480,
+                "y": 100,
+                "width": 480,
+                "height": 324.390625,
+                "top": 100,
+                "right": 960,
+                "bottom": 424.390625,
+                "left": 480
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 814,
+              "dpr": 1,
+              "scrollWidth": 814,
+              "main": {
+                "x": 167,
+                "y": 100,
+                "width": 480,
+                "height": 324.390625,
+                "top": 100,
+                "right": 647,
+                "bottom": 424.390625,
+                "left": 167
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 390,
+              "dpr": 1,
+              "scrollWidth": 390,
+              "main": {
+                "x": 0,
+                "y": 100,
+                "width": 390,
+                "height": 324.390625,
+                "top": 100,
+                "right": 390,
+                "bottom": 424.390625,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": []
+          }
+        ],
+        "ws": [
+          {
+            "geometry": {
+              "width": 1440,
+              "dpr": 1,
+              "scrollWidth": 1440,
+              "nav": {
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 1000,
+                "top": 0,
+                "right": 240,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 406,
+                "y": 0,
+                "width": 868,
+                "height": 1000,
+                "top": 0,
+                "right": 1274,
+                "bottom": 1000,
+                "left": 406
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 814,
+              "dpr": 1,
+              "scrollWidth": 814,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 814,
+                "height": 57,
+                "top": 943,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 167,
+                "y": 0,
+                "width": 480,
+                "height": 458.296875,
+                "top": 0,
+                "right": 647,
+                "bottom": 458.296875,
+                "left": 167
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 390,
+              "dpr": 1,
+              "scrollWidth": 390,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 390,
+                "height": 57,
+                "top": 943,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 474.6875,
+                "top": 0,
+                "right": 390,
+                "bottom": 474.6875,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": []
+          }
+        ],
+        "empty": [
+          {
+            "geometry": {
+              "width": 1440,
+              "dpr": 1,
+              "scrollWidth": 1440,
+              "nav": {
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 1000,
+                "top": 0,
+                "right": 240,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 406,
+                "y": 0,
+                "width": 868,
+                "height": 1000,
+                "top": 0,
+                "right": 1274,
+                "bottom": 1000,
+                "left": 406
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 814,
+              "dpr": 1,
+              "scrollWidth": 814,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 814,
+                "height": 57,
+                "top": 943,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 167,
+                "y": 0,
+                "width": 480,
+                "height": 458.296875,
+                "top": 0,
+                "right": 647,
+                "bottom": 458.296875,
+                "left": 167
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 390,
+              "dpr": 1,
+              "scrollWidth": 390,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 390,
+                "height": 57,
+                "top": 943,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 474.6875,
+                "top": 0,
+                "right": 390,
+                "bottom": 474.6875,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": []
+          }
+        ],
+        "ready": {
+          "secure": true,
+          "control": "http://localhost:5174/sw.js",
+          "caches": [
+            "trade-journal-release-749a0791565687c4c795c4a1dbfc8ce94b79c15f3a806aa202ffed8a8d9c52fb"
+          ],
+          "estimate": {
+            "quota": 10739782894,
+            "usage": 2364654,
+            "usageDetails": {
+              "caches": 2351872,
+              "indexedDB": 8396,
+              "serviceWorkerRegistrations": 4386
+            }
+          }
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "B01/B03 Plan stages, validation, sole confirmation and original reflection",
+      "started": "2026-10-24T21:35:18.522Z",
+      "details": {
+        "s1": [
+          {
+            "geometry": {
+              "width": 1440,
+              "dpr": 1,
+              "scrollWidth": 1440,
+              "nav": {
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 1000,
+                "top": 0,
+                "right": 240,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 406,
+                "y": 0,
+                "width": 868,
+                "height": 1000,
+                "top": 0,
+                "right": 1274,
+                "bottom": 1000,
+                "left": 406
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 814,
+              "dpr": 1,
+              "scrollWidth": 814,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 814,
+                "height": 57,
+                "top": 943,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 167,
+                "y": 0,
+                "width": 480,
+                "height": 688.796875,
+                "top": 0,
+                "right": 647,
+                "bottom": 688.796875,
+                "left": 167
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 390,
+              "dpr": 1,
+              "scrollWidth": 390,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 390,
+                "height": 57,
+                "top": 943,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 705.1875,
+                "top": 0,
+                "right": 390,
+                "bottom": 705.1875,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": []
+          }
+        ],
+        "filled1": [
+          {
+            "geometry": {
+              "width": 1440,
+              "dpr": 1,
+              "scrollWidth": 1440,
+              "nav": {
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 1000,
+                "top": 0,
+                "right": 240,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 406,
+                "y": 0,
+                "width": 868,
+                "height": 1000,
+                "top": 0,
+                "right": 1274,
+                "bottom": 1000,
+                "left": 406
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 814,
+              "dpr": 1,
+              "scrollWidth": 814,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 814,
+                "height": 57,
+                "top": 943,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 167,
+                "y": 0,
+                "width": 480,
+                "height": 688.796875,
+                "top": 0,
+                "right": 647,
+                "bottom": 688.796875,
+                "left": 167
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 390,
+              "dpr": 1,
+              "scrollWidth": 390,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 390,
+                "height": 57,
+                "top": 943,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 705.1875,
+                "top": 0,
+                "right": 390,
+                "bottom": 705.1875,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": []
+          }
+        ],
+        "s2": [
+          {
+            "geometry": {
+              "width": 1440,
+              "dpr": 1,
+              "scrollWidth": 1440,
+              "nav": {
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 1386.890625,
+                "top": 0,
+                "right": 240,
+                "bottom": 1386.890625,
+                "left": 0
+              },
+              "main": {
+                "x": 406,
+                "y": 0,
+                "width": 868,
+                "height": 1386.890625,
+                "top": 0,
+                "right": 1274,
+                "bottom": 1386.890625,
+                "left": 406
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 814,
+              "dpr": 1,
+              "scrollWidth": 814,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 814,
+                "height": 57,
+                "top": 943,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 167,
+                "y": 0,
+                "width": 480,
+                "height": 1445.390625,
+                "top": 0,
+                "right": 647,
+                "bottom": 1445.390625,
+                "left": 167
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 390,
+              "dpr": 1,
+              "scrollWidth": 390,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 390,
+                "height": 57,
+                "top": 943,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 1549.78125,
+                "top": 0,
+                "right": 390,
+                "bottom": 1549.78125,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": []
+          }
+        ],
+        "validation": [
+          {
+            "geometry": {
+              "width": 1440,
+              "dpr": 1,
+              "scrollWidth": 1440,
+              "nav": {
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 1572.6875,
+                "top": 0,
+                "right": 240,
+                "bottom": 1572.6875,
+                "left": 0
+              },
+              "main": {
+                "x": 406,
+                "y": 0,
+                "width": 868,
+                "height": 1572.6875,
+                "top": 0,
+                "right": 1274,
+                "bottom": 1572.6875,
+                "left": 406
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 814,
+              "dpr": 1,
+              "scrollWidth": 814,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 814,
+                "height": 57,
+                "top": 943,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 167,
+                "y": 0,
+                "width": 480,
+                "height": 1631.1875,
+                "top": 0,
+                "right": 647,
+                "bottom": 1631.1875,
+                "left": 167
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 390,
+              "dpr": 1,
+              "scrollWidth": 390,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 390,
+                "height": 57,
+                "top": 943,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 1735.578125,
+                "top": 0,
+                "right": 390,
+                "bottom": 1735.578125,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "unloaded"
+                }
+              ]
+            },
+            "violations": []
+          }
+        ],
+        "detail": [
+          {
+            "geometry": {
+              "width": 1440,
+              "dpr": 1,
+              "scrollWidth": 1440,
+              "nav": {
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 1183.390625,
+                "top": 0,
+                "right": 240,
+                "bottom": 1183.390625,
+                "left": 0
+              },
+              "main": {
+                "x": 406,
+                "y": 0,
+                "width": 868,
+                "height": 1183.390625,
+                "top": 0,
+                "right": 1274,
+                "bottom": 1183.390625,
+                "left": 406
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 814,
+              "dpr": 1,
+              "scrollWidth": 814,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 814,
+                "height": 57,
+                "top": 943,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 167,
+                "y": 0,
+                "width": 480,
+                "height": 1316.78125,
+                "top": 0,
+                "right": 647,
+                "bottom": 1316.78125,
+                "left": 167
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 390,
+              "dpr": 1,
+              "scrollWidth": 390,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 390,
+                "height": 57,
+                "top": 943,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 1437.46875,
+                "top": 0,
+                "right": 390,
+                "bottom": 1437.46875,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          }
+        ]
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "B01 list geometry and B02 actual 10-share rejected blank row, resume and save",
+      "started": "2026-10-24T21:35:21.689Z",
+      "details": {
+        "list": [
+          {
+            "geometry": {
+              "width": 1440,
+              "dpr": 1,
+              "scrollWidth": 1440,
+              "nav": {
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 1000,
+                "top": 0,
+                "right": 240,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 406,
+                "y": 0,
+                "width": 868,
+                "height": 1000,
+                "top": 0,
+                "right": 1274,
+                "bottom": 1000,
+                "left": 406
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 814,
+              "dpr": 1,
+              "scrollWidth": 814,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 814,
+                "height": 57,
+                "top": 943,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 167,
+                "y": 0,
+                "width": 480,
+                "height": 492.796875,
+                "top": 0,
+                "right": 647,
+                "bottom": 492.796875,
+                "left": 167
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 390,
+              "dpr": 1,
+              "scrollWidth": 390,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 390,
+                "height": 57,
+                "top": 943,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 509.1875,
+                "top": 0,
+                "right": 390,
+                "bottom": 509.1875,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          }
+        ],
+        "blank": [
+          {
+            "geometry": {
+              "width": 1440,
+              "dpr": 1,
+              "scrollWidth": 1440,
+              "nav": {
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 1150.390625,
+                "top": 0,
+                "right": 240,
+                "bottom": 1150.390625,
+                "left": 0
+              },
+              "main": {
+                "x": 406,
+                "y": 0,
+                "width": 868,
+                "height": 1150.390625,
+                "top": 0,
+                "right": 1274,
+                "bottom": 1150.390625,
+                "left": 406
+              },
+              "panel": {
+                "x": 976,
+                "y": 24,
+                "width": 440,
+                "height": 952,
+                "top": 24,
+                "right": 1416,
+                "bottom": 976,
+                "left": 976
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 814,
+              "dpr": 1,
+              "scrollWidth": 814,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 814,
+                "height": 57,
+                "top": 943,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 167,
+                "y": 0,
+                "width": 480,
+                "height": 1283.78125,
+                "top": 0,
+                "right": 647,
+                "bottom": 1283.78125,
+                "left": 167
+              },
+              "panel": {
+                "x": 0,
+                "y": 24,
+                "width": 814,
+                "height": 976,
+                "top": 24,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 390,
+              "dpr": 1,
+              "scrollWidth": 390,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 390,
+                "height": 57,
+                "top": 943,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 1404.46875,
+                "top": 0,
+                "right": 390,
+                "bottom": 1404.46875,
+                "left": 0
+              },
+              "panel": {
+                "x": 0,
+                "y": 24,
+                "width": 390,
+                "height": 976,
+                "top": 24,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          }
+        ],
+        "rejected": [
+          {
+            "geometry": {
+              "width": 1440,
+              "dpr": 1,
+              "scrollWidth": 1440,
+              "nav": {
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 1150.390625,
+                "top": 0,
+                "right": 240,
+                "bottom": 1150.390625,
+                "left": 0
+              },
+              "main": {
+                "x": 406,
+                "y": 0,
+                "width": 868,
+                "height": 1150.390625,
+                "top": 0,
+                "right": 1274,
+                "bottom": 1150.390625,
+                "left": 406
+              },
+              "panel": {
+                "x": 976,
+                "y": 24,
+                "width": 440,
+                "height": 952,
+                "top": 24,
+                "right": 1416,
+                "bottom": 976,
+                "left": 976
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 814,
+              "dpr": 1,
+              "scrollWidth": 814,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 814,
+                "height": 57,
+                "top": 943,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 167,
+                "y": 0,
+                "width": 480,
+                "height": 1283.78125,
+                "top": 0,
+                "right": 647,
+                "bottom": 1283.78125,
+                "left": 167
+              },
+              "panel": {
+                "x": 0,
+                "y": 24,
+                "width": 814,
+                "height": 976,
+                "top": 24,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 390,
+              "dpr": 1,
+              "scrollWidth": 390,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 390,
+                "height": 57,
+                "top": 943,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 1404.46875,
+                "top": 0,
+                "right": 390,
+                "bottom": 1404.46875,
+                "left": 0
+              },
+              "panel": {
+                "x": 0,
+                "y": 24,
+                "width": 390,
+                "height": 976,
+                "top": 24,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          }
+        ],
+        "retained": [
+          {
+            "geometry": {
+              "width": 1440,
+              "dpr": 1,
+              "scrollWidth": 1440,
+              "nav": {
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 1150.390625,
+                "top": 0,
+                "right": 240,
+                "bottom": 1150.390625,
+                "left": 0
+              },
+              "main": {
+                "x": 406,
+                "y": 0,
+                "width": 868,
+                "height": 1150.390625,
+                "top": 0,
+                "right": 1274,
+                "bottom": 1150.390625,
+                "left": 406
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 814,
+              "dpr": 1,
+              "scrollWidth": 814,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 814,
+                "height": 57,
+                "top": 943,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 167,
+                "y": 0,
+                "width": 480,
+                "height": 1283.78125,
+                "top": 0,
+                "right": 647,
+                "bottom": 1283.78125,
+                "left": 167
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 390,
+              "dpr": 1,
+              "scrollWidth": 390,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 390,
+                "height": 57,
+                "top": 943,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 1404.46875,
+                "top": 0,
+                "right": 390,
+                "bottom": 1404.46875,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          }
+        ],
+        "filled": [
+          {
+            "geometry": {
+              "width": 1440,
+              "dpr": 1,
+              "scrollWidth": 1440,
+              "nav": {
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 1150.390625,
+                "top": 0,
+                "right": 240,
+                "bottom": 1150.390625,
+                "left": 0
+              },
+              "main": {
+                "x": 406,
+                "y": 0,
+                "width": 868,
+                "height": 1150.390625,
+                "top": 0,
+                "right": 1274,
+                "bottom": 1150.390625,
+                "left": 406
+              },
+              "panel": {
+                "x": 976,
+                "y": 24,
+                "width": 440,
+                "height": 952,
+                "top": 24,
+                "right": 1416,
+                "bottom": 976,
+                "left": 976
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 814,
+              "dpr": 1,
+              "scrollWidth": 814,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 814,
+                "height": 57,
+                "top": 943,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 167,
+                "y": 0,
+                "width": 480,
+                "height": 1283.78125,
+                "top": 0,
+                "right": 647,
+                "bottom": 1283.78125,
+                "left": 167
+              },
+              "panel": {
+                "x": 0,
+                "y": 24,
+                "width": 814,
+                "height": 976,
+                "top": 24,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 390,
+              "dpr": 1,
+              "scrollWidth": 390,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 390,
+                "height": 57,
+                "top": 943,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 1404.46875,
+                "top": 0,
+                "right": 390,
+                "bottom": 1404.46875,
+                "left": 0
+              },
+              "panel": {
+                "x": 0,
+                "y": 24,
+                "width": 390,
+                "height": 976,
+                "top": 24,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          }
+        ],
+        "detail": [
+          {
+            "geometry": {
+              "width": 1440,
+              "dpr": 1,
+              "scrollWidth": 1440,
+              "nav": {
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 2213.078125,
+                "top": 0,
+                "right": 240,
+                "bottom": 2213.078125,
+                "left": 0
+              },
+              "main": {
+                "x": 406,
+                "y": 0,
+                "width": 868,
+                "height": 2213.078125,
+                "top": 0,
+                "right": 1274,
+                "bottom": 2213.078125,
+                "left": 406
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 814,
+              "dpr": 1,
+              "scrollWidth": 814,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 814,
+                "height": 57,
+                "top": 943,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 167,
+                "y": 0,
+                "width": 480,
+                "height": 2388.46875,
+                "top": 0,
+                "right": 647,
+                "bottom": 2388.46875,
+                "left": 167
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 390,
+              "dpr": 1,
+              "scrollWidth": 390,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 390,
+                "height": 57,
+                "top": 943,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 2545.765625,
+                "top": 0,
+                "right": 390,
+                "bottom": 2545.765625,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          }
+        ],
+        "journal": [
+          {
+            "geometry": {
+              "width": 1440,
+              "dpr": 1,
+              "scrollWidth": 1440,
+              "nav": {
+                "x": 0,
+                "y": -1546,
+                "width": 240,
+                "height": 2590.078125,
+                "top": -1546,
+                "right": 240,
+                "bottom": 1044.078125,
+                "left": 0
+              },
+              "main": {
+                "x": 406,
+                "y": -1546,
+                "width": 868,
+                "height": 2590.078125,
+                "top": -1546,
+                "right": 1274,
+                "bottom": 1044.078125,
+                "left": 406
+              },
+              "panel": {
+                "x": 976,
+                "y": 24,
+                "width": 440,
+                "height": 952,
+                "top": 24,
+                "right": 1416,
+                "bottom": 976,
+                "left": 976
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 814,
+              "dpr": 1,
+              "scrollWidth": 814,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 814,
+                "height": 57,
+                "top": 943,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 167,
+                "y": -1546,
+                "width": 480,
+                "height": 2828.46875,
+                "top": -1546,
+                "right": 647,
+                "bottom": 1282.46875,
+                "left": 167
+              },
+              "panel": {
+                "x": 0,
+                "y": 24,
+                "width": 814,
+                "height": 976,
+                "top": 24,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 390,
+              "dpr": 1,
+              "scrollWidth": 390,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 390,
+                "height": 57,
+                "top": 943,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 0,
+                "y": -1546,
+                "width": 390,
+                "height": 3195.765625,
+                "top": -1546,
+                "right": 390,
+                "bottom": 1649.765625,
+                "left": 0
+              },
+              "panel": {
+                "x": 0,
+                "y": 24,
+                "width": 390,
+                "height": 976,
+                "top": 24,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          }
+        ],
+        "openList": [
+          {
+            "geometry": {
+              "width": 1440,
+              "dpr": 1,
+              "scrollWidth": 1440,
+              "nav": {
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 1000,
+                "top": 0,
+                "right": 240,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 406,
+                "y": 0,
+                "width": 868,
+                "height": 1000,
+                "top": 0,
+                "right": 1274,
+                "bottom": 1000,
+                "left": 406
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 814,
+              "dpr": 1,
+              "scrollWidth": 814,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 814,
+                "height": 57,
+                "top": 943,
+                "right": 814,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 167,
+                "y": 0,
+                "width": 480,
+                "height": 511.296875,
+                "top": 0,
+                "right": 647,
+                "bottom": 511.296875,
+                "left": 167
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          },
+          {
+            "geometry": {
+              "width": 390,
+              "dpr": 1,
+              "scrollWidth": 390,
+              "nav": {
+                "x": 0,
+                "y": 943,
+                "width": 390,
+                "height": 57,
+                "top": 943,
+                "right": 390,
+                "bottom": 1000,
+                "left": 0
+              },
+              "main": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 542.1875,
+                "top": 0,
+                "right": 390,
+                "bottom": 542.1875,
+                "left": 0
+              },
+              "fonts": [
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "Journal",
+                  "status": "loaded"
+                },
+                {
+                  "family": "JournalCondensed",
+                  "status": "loaded"
+                }
+              ]
+            },
+            "violations": []
+          }
+        ],
+        "row": {
+          "x": 430,
+          "y": 277.796875,
+          "width": 820,
+          "height": 70
+        },
+        "beforeDigest": "44492b39b45e7032147a27e885fe2f2a9e00d3925d9173631ce4578daa3258b2",
+        "afterDigest": "e11c37b74c9641811def83c938d8b4bf453c8ba55fa0f98cfcd3a86d8e8b4f1a"
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "B04 dialog keyboard, focus, inert backdrop, resize and long Note",
+      "started": "2026-10-24T21:35:27.072Z",
+      "details": [
+        {
+          "width": 1023,
+          "note": {
+            "x": 21,
+            "y": 775.1875,
+            "width": 981,
+            "height": 82
+          },
+          "footer": {
+            "x": 21,
+            "y": 922.6875,
+            "width": 160.75,
+            "height": 44
+          }
+        },
+        {
+          "width": 1024,
+          "note": {
+            "x": 581,
+            "y": 751.1875,
+            "width": 398,
+            "height": 82
+          },
+          "footer": {
+            "x": 581,
+            "y": 898.6875,
+            "width": 160.75,
+            "height": 44
+          }
+        },
+        {
+          "width": 767,
+          "note": {
+            "x": 21,
+            "y": 775.1875,
+            "width": 725,
+            "height": 82
+          },
+          "footer": {
+            "x": 21,
+            "y": 922.6875,
+            "width": 160.75,
+            "height": 44
+          }
+        },
+        {
+          "width": 768,
+          "note": {
+            "x": 21,
+            "y": 775.1875,
+            "width": 726,
+            "height": 82
+          },
+          "footer": {
+            "x": 21,
+            "y": 922.6875,
+            "width": 160.75,
+            "height": 44
+          }
+        },
+        {
+          "width": 390,
+          "note": {
+            "x": 21,
+            "y": 775.1875,
+            "width": 348,
+            "height": 82
+          },
+          "footer": {
+            "x": 21,
+            "y": 922.6875,
+            "width": 160.75,
+            "height": 44
+          }
+        },
+        {
+          "width": 814,
+          "note": {
+            "x": 21,
+            "y": 775.1875,
+            "width": 772,
+            "height": 82
+          },
+          "footer": {
+            "x": 21,
+            "y": 922.6875,
+            "width": 160.75,
+            "height": 44
+          }
+        },
+        {
+          "width": 1440,
+          "note": {
+            "x": 997,
+            "y": 751.1875,
+            "width": 398,
+            "height": 82
+          },
+          "footer": {
+            "x": 997,
+            "y": 898.6875,
+            "width": 160.75,
+            "height": 44
+          }
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "B03 opening native failure matrix and safe retry",
+      "started": "2026-10-24T21:35:28.132Z",
+      "details": [
+        {
+          "fault": "abort",
+          "unchanged": true,
+          "visibleText": "⌂\nTrades\n+\nNew Plan\n▤\nJournal Debt\n⚙\nWorkspace\n‹ Back to Trades\n\nAFTER-CLOSE JOURNAL · USD\n\nKEY · Planned\nCheck for application updates\nRecovery Only\n\nReading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.\n\nRetry startup\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\nPlanned · Unfilled\nFrozen Plan Baseline\n\nORIGINAL PLANNED RISK · 1R\n$50.00\n\nORIGINAL PLANNED REWARD\n$100.00\n\nREWARD / RISK\n2/1\n\nIndependent synthetic brokerage · Independent taxable · Long Stock\n\nIntended entry\n$50 × 10 shares\nStop · underlying price\n$45\nTarget · underlying price\n$60\n\nNo exposure has been entered.\n\nUnsaved entry draft\n\nContinue unsaved entry\nPlan Reflection\n\nTrade Anchor · Plan Confirmation\n\nMoment: 2026-10-24 17:35:27.179 America/New_York · First authored: 2026-10-24 17:35:27.205 America/New_York\n\nWhy this trade, why now?\n\nSynthetic KEY independent thesis\n\nWhat would invalidate the thesis?\n\nIndependent risk invalidation\n\nConviction\n\n4\n\nPrimary emotion\n\nCalm\n\nView Trade Journal\nView history\n\nTRADE JOURNAL\n\nOpening entry\n×\nRecovery Only\n\nReading and history remain available; writing is disabled. Your draft is preserved.\n\nRetry startup\nReview before continuing\n\nNothing saved. Your draft is preserved.\n\nSaving failed. Nothing was recorded. Your entered values are preserved. Retry startup before saving again.\nUnsaved entry draft\nOne complete initial decision\n\nFrozen planned quantity: 10 shares.\n\nEnter every broker buy Execution for this decision. Together they must equal the frozen planned quantity. No facts or reflection are saved until you press Save.\n\nOpening Executions and reflection\nPosition Change time (ISO 8601)\nExecution 1 · Buy KEY · Unsaved\nExecution 1 quantity (shares)\nExecution 1 price (USD)\nExecution 1 fee (USD)\nExecution 1 time (ISO 8601)\nAdd another execution\nPosition Change Reflection\nReflection outcome\nComplete reflection now\nDefer reflection as Journal Debt\nDecline reflection\nDecision mode\nAs Planned\nDeliberate Adjustment\nReactive\nExternally Imposed\nPrimary emotion\nCalm\nEager\nAnxious\nFOMO\nRevenge\nRelieved\nFrustrated\nOther\nDecision confidence\nChoose 1–5\n1\n2\n3\n4\n5\nNote (optional)\n\nAll Executions and the reflection outcome save together.\n\nSave opening entry\nCancel"
+        },
+        {
+          "fault": "diagnostic",
+          "unchanged": true,
+          "visibleText": "⌂\nTrades\n+\nNew Plan\n▤\nJournal Debt\n⚙\nWorkspace\n‹ Back to Trades\n\nAFTER-CLOSE JOURNAL · USD\n\nKEY · Planned\nCheck for application updates\nRecovery Only\n\nReading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.\n\nRetry startup\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\nPlanned · Unfilled\nFrozen Plan Baseline\n\nORIGINAL PLANNED RISK · 1R\n$50.00\n\nORIGINAL PLANNED REWARD\n$100.00\n\nREWARD / RISK\n2/1\n\nIndependent synthetic brokerage · Independent taxable · Long Stock\n\nIntended entry\n$50 × 10 shares\nStop · underlying price\n$45\nTarget · underlying price\n$60\n\nNo exposure has been entered.\n\nUnsaved entry draft\n\nContinue unsaved entry\nPlan Reflection\n\nTrade Anchor · Plan Confirmation\n\nMoment: 2026-10-24 17:35:27.179 America/New_York · First authored: 2026-10-24 17:35:27.205 America/New_York\n\nWhy this trade, why now?\n\nSynthetic KEY independent thesis\n\nWhat would invalidate the thesis?\n\nIndependent risk invalidation\n\nConviction\n\n4\n\nPrimary emotion\n\nCalm\n\nView Trade Journal\nView history\n\nTRADE JOURNAL\n\nOpening entry\n×\nRecovery Only\n\nReading and history remain available; writing is disabled. Your draft is preserved.\n\nRetry startup\nReview before continuing\n\nNothing saved. Your draft is preserved.\n\nBrowser storage could not complete a test transaction.\nUnsaved entry draft\nOne complete initial decision\n\nFrozen planned quantity: 10 shares.\n\nEnter every broker buy Execution for this decision. Together they must equal the frozen planned quantity. No facts or reflection are saved until you press Save.\n\nOpening Executions and reflection\nPosition Change time (ISO 8601)\nExecution 1 · Buy KEY · Unsaved\nExecution 1 quantity (shares)\nExecution 1 price (USD)\nExecution 1 fee (USD)\nExecution 1 time (ISO 8601)\nAdd another execution\nPosition Change Reflection\nReflection outcome\nComplete reflection now\nDefer reflection as Journal Debt\nDecline reflection\nDecision mode\nAs Planned\nDeliberate Adjustment\nReactive\nExternally Imposed\nPrimary emotion\nCalm\nEager\nAnxious\nFOMO\nRevenge\nRelieved\nFrustrated\nOther\nDecision confidence\nChoose 1–5\n1\n2\n3\n4\n5\nNote (optional)\n\nAll Executions and the reflection outcome save together.\n\nSave opening entry\nCancel"
+        },
+        {
+          "fault": "capacity",
+          "unchanged": true,
+          "visibleText": "⌂\nTrades\n+\nNew Plan\n▤\nJournal Debt\n⚙\nWorkspace\n‹ Back to Trades\n\nAFTER-CLOSE JOURNAL · USD\n\nKEY · Planned\nCheck for application updates\nRecovery Only\n\nReading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.\n\nRetry startup\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\nPlanned · Unfilled\nFrozen Plan Baseline\n\nORIGINAL PLANNED RISK · 1R\n$50.00\n\nORIGINAL PLANNED REWARD\n$100.00\n\nREWARD / RISK\n2/1\n\nIndependent synthetic brokerage · Independent taxable · Long Stock\n\nIntended entry\n$50 × 10 shares\nStop · underlying price\n$45\nTarget · underlying price\n$60\n\nNo exposure has been entered.\n\nUnsaved entry draft\n\nContinue unsaved entry\nPlan Reflection\n\nTrade Anchor · Plan Confirmation\n\nMoment: 2026-10-24 17:35:27.179 America/New_York · First authored: 2026-10-24 17:35:27.205 America/New_York\n\nWhy this trade, why now?\n\nSynthetic KEY independent thesis\n\nWhat would invalidate the thesis?\n\nIndependent risk invalidation\n\nConviction\n\n4\n\nPrimary emotion\n\nCalm\n\nView Trade Journal\nView history\n\nTRADE JOURNAL\n\nOpening entry\n×\nRecovery Only\n\nReading and history remain available; writing is disabled. Your draft is preserved.\n\nRetry startup\nReview before continuing\n\nNothing saved. Your draft is preserved.\n\nThis browser does not have the required available storage capacity.\nUnsaved entry draft\nOne complete initial decision\n\nFrozen planned quantity: 10 shares.\n\nEnter every broker buy Execution for this decision. Together they must equal the frozen planned quantity. No facts or reflection are saved until you press Save.\n\nOpening Executions and reflection\nPosition Change time (ISO 8601)\nExecution 1 · Buy KEY · Unsaved\nExecution 1 quantity (shares)\nExecution 1 price (USD)\nExecution 1 fee (USD)\nExecution 1 time (ISO 8601)\nAdd another execution\nPosition Change Reflection\nReflection outcome\nComplete reflection now\nDefer reflection as Journal Debt\nDecline reflection\nDecision mode\nAs Planned\nDeliberate Adjustment\nReactive\nExternally Imposed\nPrimary emotion\nCalm\nEager\nAnxious\nFOMO\nRevenge\nRelieved\nFrustrated\nOther\nDecision confidence\nChoose 1–5\n1\n2\n3\n4\n5\nNote (optional)\n\nAll Executions and the reflection outcome save together.\n\nSave opening entry\nCancel"
+        },
+        {
+          "fault": "cache",
+          "unchanged": true,
+          "visibleText": "⌂\nTrades\n+\nNew Plan\n▤\nJournal Debt\n⚙\nWorkspace\n‹ Back to Trades\n\nAFTER-CLOSE JOURNAL · USD\n\nKEY · Planned\nCheck for application updates\nRecovery Only\n\nReading and history remain available; writing is disabled. Another browser has separate storage. Backup and Restore are not installed in this release.\n\nRetry startup\nStorage is Best Effort. This browser may clear your data. Backup is not installed until a later release. Request storage protection\nPlanned · Unfilled\nFrozen Plan Baseline\n\nORIGINAL PLANNED RISK · 1R\n$50.00\n\nORIGINAL PLANNED REWARD\n$100.00\n\nREWARD / RISK\n2/1\n\nIndependent synthetic brokerage · Independent taxable · Long Stock\n\nIntended entry\n$50 × 10 shares\nStop · underlying price\n$45\nTarget · underlying price\n$60\n\nNo exposure has been entered.\n\nUnsaved entry draft\n\nContinue unsaved entry\nPlan Reflection\n\nTrade Anchor · Plan Confirmation\n\nMoment: 2026-10-24 17:35:27.179 America/New_York · First authored: 2026-10-24 17:35:27.205 America/New_York\n\nWhy this trade, why now?\n\nSynthetic KEY independent thesis\n\nWhat would invalidate the thesis?\n\nIndependent risk invalidation\n\nConviction\n\n4\n\nPrimary emotion\n\nCalm\n\nView Trade Journal\nView history\n\nTRADE JOURNAL\n\nOpening entry\n×\nRecovery Only\n\nReading and history remain available; writing is disabled. Your draft is preserved.\n\nRetry startup\nReview before continuing\n\nNothing saved. Your draft is preserved.\n\nThe offline application files are missing or damaged.\nUnsaved entry draft\nOne complete initial decision\n\nFrozen planned quantity: 10 shares.\n\nEnter every broker buy Execution for this decision. Together they must equal the frozen planned quantity. No facts or reflection are saved until you press Save.\n\nOpening Executions and reflection\nPosition Change time (ISO 8601)\nExecution 1 · Buy KEY · Unsaved\nExecution 1 quantity (shares)\nExecution 1 price (USD)\nExecution 1 fee (USD)\nExecution 1 time (ISO 8601)\nAdd another execution\nPosition Change Reflection\nReflection outcome\nComplete reflection now\nDefer reflection as Journal Debt\nDecline reflection\nDecision mode\nAs Planned\nDeliberate Adjustment\nReactive\nExternally Imposed\nPrimary emotion\nCalm\nEager\nAnxious\nFOMO\nRevenge\nRelieved\nFrustrated\nOther\nDecision confidence\nChoose 1–5\n1\n2\n3\n4\n5\nNote (optional)\n\nAll Executions and the reflection outcome save together.\n\nSave opening entry\nCancel"
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "B03 Defer no placeholder Entry, owed Cancel/Complete, native failures",
+      "started": "2026-10-24T21:35:29.860Z",
+      "status": "FAIL",
+      "error": "Error: expect(locator).toContainText(expected) failed\n\nLocator: getByRole('dialog')\nExpected substring: \"Outstanding Debt\"\nReceived string:    \"TRADE JOURNALTrade Journal×Plan ReflectionTrade Anchor · Plan ConfirmationMoment: 2026-10-24 17:35:29.979 America/New_York · First authored: 2026-10-24 17:35:30.003 America/New_YorkWhy this trade, why now?Synthetic DEBT independent thesisWhat would invalidate the thesis?Independent risk invalidationConviction4Primary emotionCalmPosition Change Reflection · Journal DebtOutstanding · Due 2026-10-24 17:35:30.029 America/New_YorkTrade Anchor · Source Position Change · Position Change 6822bb64-7a86-427e-9462-dbf9e02fa244Moment: 2026-10-24 17:35:30.029 America/New_YorkAnswer reflection\"\nTimeout: 5000ms\n\nCall log:\n  - Expect \"toContainText\" getByRole('dialog') with timeout 5000ms\n  - waiting for getByRole('dialog')\n    14 × locator resolved to <div role=\"dialog\" tabindex=\"-1\" aria-modal=\"true\" class=\"_panel_c0icb_69\" aria-label=\"Trade Journal\">…</div>\n       - unexpected value \"TRADE JOURNALTrade Journal×Plan ReflectionTrade Anchor · Plan ConfirmationMoment: 2026-10-24 17:35:29.979 America/New_York · First authored: 2026-10-24 17:35:30.003 America/New_YorkWhy this trade, why now?Synthetic DEBT independent thesisWhat would invalidate the thesis?Independent risk invalidationConviction4Primary emotionCalmPosition Change Reflection · Journal DebtOutstanding · Due 2026-10-24 17:35:30.029 America/New_YorkTrade Anchor · Source Position Change · Position Change 6822bb64-7a86-427e-9462-dbf9e02fa244Moment: 2026-10-24 17:35:30.029 America/New_YorkAnswer reflection\"\n\n    at captureRawStack (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright-core/lib/coreBundle.js:9282:17)\n    at callMatcherAsStep (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13316:57)\n    at Object.toContainText (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13308:23)\n    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/driver.mjs:44:393\n    at async run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/driver.mjs:21:125)\n    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/driver.mjs:44:2"
+    },
+    {
+      "name": "B03 explicit opening Decline and owed Decline",
+      "started": "2026-10-24T21:35:35.264Z",
+      "details": [
+        {
+          "geometry": {
+            "width": 1440,
+            "dpr": 1,
+            "scrollWidth": 1440,
+            "nav": {
+              "x": 0,
+              "y": 0,
+              "width": 240,
+              "height": 1000,
+              "top": 0,
+              "right": 240,
+              "bottom": 1000,
+              "left": 0
+            },
+            "main": {
+              "x": 406,
+              "y": 0,
+              "width": 868,
+              "height": 1000,
+              "top": 0,
+              "right": 1274,
+              "bottom": 1000,
+              "left": 406
+            },
+            "fonts": [
+              {
+                "family": "Journal",
+                "status": "loaded"
+              },
+              {
+                "family": "Journal",
+                "status": "loaded"
+              },
+              {
+                "family": "JournalCondensed",
+                "status": "unloaded"
+              }
+            ]
+          },
+          "violations": []
+        },
+        {
+          "geometry": {
+            "width": 814,
+            "dpr": 1,
+            "scrollWidth": 814,
+            "nav": {
+              "x": 0,
+              "y": 943,
+              "width": 814,
+              "height": 57,
+              "top": 943,
+              "right": 814,
+              "bottom": 1000,
+              "left": 0
+            },
+            "main": {
+              "x": 167,
+              "y": 0,
+              "width": 480,
+              "height": 588.296875,
+              "top": 0,
+              "right": 647,
+              "bottom": 588.296875,
+              "left": 167
+            },
+            "fonts": [
+              {
+                "family": "Journal",
+                "status": "loaded"
+              },
+              {
+                "family": "Journal",
+                "status": "loaded"
+              },
+              {
+                "family": "JournalCondensed",
+                "status": "unloaded"
+              }
+            ]
+          },
+          "violations": []
+        },
+        {
+          "geometry": {
+            "width": 390,
+            "dpr": 1,
+            "scrollWidth": 390,
+            "nav": {
+              "x": 0,
+              "y": 943,
+              "width": 390,
+              "height": 57,
+              "top": 943,
+              "right": 390,
+              "bottom": 1000,
+              "left": 0
+            },
+            "main": {
+              "x": 0,
+              "y": 0,
+              "width": 390,
+              "height": 667.6875,
+              "top": 0,
+              "right": 390,
+              "bottom": 667.6875,
+              "left": 0
+            },
+            "fonts": [
+              {
+                "family": "Journal",
+                "status": "loaded"
+              },
+              {
+                "family": "Journal",
+                "status": "loaded"
+              },
+              {
+                "family": "JournalCondensed",
+                "status": "unloaded"
+              }
+            ]
+          },
+          "violations": []
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "name": "B03 same native persistent store competing opening tabs",
+      "started": "2026-10-24T21:35:37.207Z",
+      "details": {
+        "text": "TRADE JOURNAL\n\nOpening entry\n×\nReview before continuing\n\nNothing saved. Your draft is preserved.\n\nThe Workspace changed. Review current references before confirming again.\nThis Trade changed in another tab. Review the current Trade before saving again.\nReview current Trade\nUnsaved entry draft\nOne complete initial decision\n\nFrozen planned quantity: 10 shares.\n\nEnter every broker buy Execution for this decision. Together they must equal the frozen planned quantity. No facts or reflection are saved until you press Save.\n\nOpening Executions and reflection\nPosition Change time (ISO 8601)\nExecution 1 · Buy RACE · Unsaved\nExecution 1 quantity (shares)\nExecution 1 price (USD)\nExecution 1 fee (USD)\nExecution 1 time (ISO 8601)\nAdd another execution\nPosition Change Reflection\nReflection outcome\nComplete reflection now\nDefer reflection as Journal Debt\nDecline reflection\nDecline reason (optional)\n\nAll Executions and the reflection outcome save together.\n\nSave opening entry\nCancel",
+        "authorityUnchanged": true
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "B04 Loading, list Error, Recovery, Unsupported and Integrity states",
+      "started": "2026-10-24T21:35:38.457Z",
+      "status": "FAIL",
+      "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('heading', { name: 'Loading', exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" getByRole('heading', { name: 'Loading', exact: true }) with timeout 5000ms\n  - waiting for getByRole('heading', { name: 'Loading', exact: true })\n\n    at captureRawStack (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright-core/lib/coreBundle.js:9282:17)\n    at callMatcherAsStep (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13316:57)\n    at Object.toBeVisible (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13308:23)\n    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/driver.mjs:47:1062\n    at async run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/driver.mjs:21:125)\n    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/driver.mjs:47:2"
+    },
+    {
+      "name": "B04 verified update deferred with open AND closed draft, activation and stopped offline",
+      "started": "2026-10-24T21:35:44.095Z",
+      "status": "FAIL",
+      "error": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"bc44f5b7d8170a5dc90d8beead45afe6c62722a12f526f6a7ba94ce398aa69cf\"\nReceived: \"749a0791565687c4c795c4a1dbfc8ce94b79c15f3a806aa202ffed8a8d9c52fb\"\n\nCall Log:\n- Timeout 30000ms exceeded while waiting on the predicate\n    at captureRawStack (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright-core/lib/coreBundle.js:9282:17)\n    at callMatcherAsStep (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13316:57)\n    at Object.toBe (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13308:23)\n    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/driver.mjs:48:1539\n    at async run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/driver.mjs:21:125)\n    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-03/driver.mjs:48:2"
+    }
+  ],
+  "consoleLines": [
+    {
+      "type": "server-out",
+      "text": "\n> trade-journal-v3@0.1.0 preview\n> vite preview --host localhost --port 5174 --strictPort\n\n"
+    },
+    {
+      "type": "server-out",
+      "text": "  ➜  Local:   http://localhost:5174/\n"
+    },
+    {
+      "type": "trace",
+      "text": "r",
+      "url": "http://localhost:5174/"
+    },
+    {
+      "type": "trace",
+      "text": "r",
+      "url": "http://localhost:5174/"
+    }
+  ],
+  "observedSourceDigest": "682f21e4f77151620270ebf258d822b2bd350fb2a455271c2da7ba447e31d8bd",
+  "command": [
+    "node",
+    "implementation/evidence/bug-001/critic-03/driver.mjs"
+  ],
+  "profile": "/var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/bug001-independent-critic03-402MET",
+  "browser": "156.0.8078.4",
+  "distAfter": {
+    "assets/index-DZ0sdt-Y.js": "225bb72f0b77f9d676c4e4ff7d93d3ca4d9c9fa660e7f12e57e564f4b7ba5788",
+    "assets/index-DyLbKIIF.css": "133ce1d69fab9f1d9aa2f18d0345838092e2f9e16936a284484b834a24f702f0",
+    "capabilities.json": "71878297c7953004d90c5841bc9ecd143fbb86a65c348e099c1d8f18a039ab91",
+    "fonts/LICENSE.txt": "f158372b957fb64f86bb9e5d9368c84e54c541bdd5d25bd3d4515a593c99cfed",
+    "fonts/LiberationSansNarrow-Bold.ttf": "8e5eb5090ef4a3143794c230b82f174f7f2fbbfcd6cb789ccfa1f90bf8795d54",
+    "fonts/Rubik-Bold.ttf": "b1c36dfcbc5fe5011c552c76725c84d989a71d56440e8bfbfa0cb68b593dbad6",
+    "fonts/Rubik-Regular.ttf": "bd1490f4314d27ca1ac5d8869fdda068852edd623318c9bee13e812b793b301b",
+    "icon-192.png": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+    "icon-512.png": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+    "icon.svg": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+    "index.html": "d0feb739219affc1eaccd71f36c0e650241aea790fb87ec2d8d12a597fa9d46f",
+    "manifest.webmanifest": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+    "offline-inventory.json": "f85d3b4116b6166e169b648d2a2602f496aef639452d3304f7dd941c8c349bb1",
+    "sw.js": "9e6cfa56ff301de61c18aeaa58f7e7e8c40588e77fd656501652954e0e55adab"
+  },
+  "portFree": true,
+  "finished": "2026-10-24T21:36:16.040Z",
+  "pageErrors": []
+}

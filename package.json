@@ -19,7 +19,8 @@
     "test:browser": "playwright test",
     "test:benchmark": "playwright test --config playwright.benchmark.config.ts",
     "pretest:unit": "node tools/build-d1-fixture.mjs",
-    "test:benchmark:d2": "playwright test --config playwright.d02-benchmark.config.ts"
+    "test:benchmark:d2": "playwright test --config playwright.d02-benchmark.config.ts",
+    "test:visual": "playwright test --config playwright.visual.config.ts"
   },
   "dependencies": {
     "@js-temporal/polyfill": "0.5.1",

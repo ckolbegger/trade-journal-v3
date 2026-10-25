@@ -1,0 +1,147 @@
+{
+  "status": "Critic04 list race repaired; iteration gates passed; fresh critic05 then final scale qualification pending",
+  "head": "11216bf0138e1dff372e9270afe5c935dfa1e984",
+  "sourceDigest": "4f341c4308fbd1ee263c97a141975499a88f7248386be5e4cdd0af92a58d744c",
+  "releaseId": "4d8cb5fc0da7a335f886c3dd28c967baee50ea3987b0b5eea89117ebb98a6188",
+  "gates": {
+    "list-lint-gate": {
+      "command": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "exit": 0,
+      "sourceDigest": "4f341c4308fbd1ee263c97a141975499a88f7248386be5e4cdd0af92a58d744c"
+    },
+    "list-unit-gate": {
+      "command": [
+        "npm",
+        "run",
+        "test:unit"
+      ],
+      "exit": 0,
+      "sourceDigest": "4f341c4308fbd1ee263c97a141975499a88f7248386be5e4cdd0af92a58d744c"
+    },
+    "list-integration-gate": {
+      "command": [
+        "npm",
+        "run",
+        "test:integration"
+      ],
+      "exit": 0,
+      "sourceDigest": "4f341c4308fbd1ee263c97a141975499a88f7248386be5e4cdd0af92a58d744c"
+    },
+    "list-typecheck-gate": {
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 0,
+      "sourceDigest": "4f341c4308fbd1ee263c97a141975499a88f7248386be5e4cdd0af92a58d744c"
+    },
+    "list-production-build": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "sourceDigest": "4f341c4308fbd1ee263c97a141975499a88f7248386be5e4cdd0af92a58d744c"
+    },
+    "list-visual-gate": {
+      "command": [
+        "npm",
+        "run",
+        "test:visual"
+      ],
+      "exit": 0,
+      "sourceDigest": "4f341c4308fbd1ee263c97a141975499a88f7248386be5e4cdd0af92a58d744c"
+    },
+    "list-browser-gate": {
+      "command": [
+        "npm",
+        "run",
+        "test:browser",
+        "--",
+        "--max-failures=3"
+      ],
+      "exit": 0,
+      "sourceDigest": "4f341c4308fbd1ee263c97a141975499a88f7248386be5e4cdd0af92a58d744c"
+    }
+  },
+  "counts": {
+    "unit": 121,
+    "integration": 7,
+    "nativeBrowser": 93,
+    "visualNative": 9
+  },
+  "distSha256": {
+    "assets/index-BA-QDq5G.js": "8448111893d3c43e136b0454abaa3c7428483f45878fb9905e551b3a066b7f50",
+    "assets/index-DyLbKIIF.css": "133ce1d69fab9f1d9aa2f18d0345838092e2f9e16936a284484b834a24f702f0",
+    "capabilities.json": "71878297c7953004d90c5841bc9ecd143fbb86a65c348e099c1d8f18a039ab91",
+    "fonts/LICENSE.txt": "f158372b957fb64f86bb9e5d9368c84e54c541bdd5d25bd3d4515a593c99cfed",
+    "fonts/LiberationSansNarrow-Bold.ttf": "8e5eb5090ef4a3143794c230b82f174f7f2fbbfcd6cb789ccfa1f90bf8795d54",
+    "fonts/Rubik-Bold.ttf": "b1c36dfcbc5fe5011c552c76725c84d989a71d56440e8bfbfa0cb68b593dbad6",
+    "fonts/Rubik-Regular.ttf": "bd1490f4314d27ca1ac5d8869fdda068852edd623318c9bee13e812b793b301b",
+    "icon-192.png": "50ebf32e31e2f173a38ada9e08596457ad43387c2024bdd11a16d09acea579f9",
+    "icon-512.png": "248fa95a70fb3fb09af56ac775043aa157e22aaa9e37bf2e18cd88f8ff12b457",
+    "icon.svg": "b412fd501b617cf46cb5c8ddc894ea791ab9cbe4072ce3dea799946b984440c9",
+    "index.html": "fb46c9149aeff3604dfbbc78e994614e8aee8b7749e15ae04822ed5d0193aaad",
+    "manifest.webmanifest": "21d912f817801aa8e415220e93f2f31cf504517a7daa53900a25be2a45c05dbd",
+    "offline-inventory.json": "cf7d32c90618514d22b810bb58ff8b4c6fc4eba12378a6e3246f721081d6c429",
+    "sw.js": "1bf35740b14a67a61a0632a0b92868d7d9d01f53d6c1f8d21e130493d5519521"
+  },
+  "referenceBoard": "visual/list-visual-gate-1792879965508/comparisons",
+  "baselineRelease": "before/recovered-cached-release.json",
+  "limits": [
+    "Native browser-chrome 200% zoom unverified; CSS zoom only supplemental",
+    "OS installation and standalone launch unverified",
+    "Production HTTPS/deployment user-deferred",
+    "Migration sampled used JS heap peak722868068 bytes; not RSS or a low-memory-device guarantee"
+  ],
+  "delivery": {
+    "localOnly": true,
+    "committed": false,
+    "pushed": false,
+    "deployed": false,
+    "traderBrowserDataTouched": false
+  },
+  "priorCritics": {
+    "critic-01": "Interrupted by usage limit without verdict; raw evidence retained",
+    "critic-02": "Functional FAIL; P2 Journal omitted explicit decline; report retained; genuine T12-decline-red regression then minimal Green",
+    "critic-03": "Functional FAIL; pending Save loses keyboard focus/scroll; genuine T12-busy-focus-red regression then minimal Green",
+    "critic-04": "Visual PASS; functional FAIL; stale Planned response replaces selected Open; genuine T12-latest-list-red then Green"
+  },
+  "repairRegression": [
+    "T12-decline-red.json",
+    "T12-decline-green.json",
+    "T12-busy-focus-red.json",
+    "T12-busy-focus-green.json",
+    "T12-latest-list-red.json",
+    "T12-latest-list-green.json"
+  ],
+  "priorSnapshotBenchmarks": {
+    "D1": {
+      "coldP95": 271.08312500000466,
+      "warmP95": 93.17754100001184
+    },
+    "D2": {
+      "Planned": {
+        "coldP95": 1855.406290999963,
+        "warmP95": 124.38925000000745
+      },
+      "Open": {
+        "coldP95": 1858.1915420000441,
+        "warmP95": 554.852082999947
+      }
+    },
+    "migrationElapsedMs": 14470.72524999996,
+    "sampledUsedHeapPeakBytes": 722868068
+  },
+  "scaleQualification": {
+    "status": "Pending after fresh critic acceptance per trader-approved cadence",
+    "priorSnapshotRecord": "pre-list-repair-verification.json"
+  },
+  "approvedPolicy": "gate-policy-revision.json"
+}

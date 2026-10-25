@@ -1,0 +1,16 @@
+{
+  "status": "Applied",
+  "date": "2026-10-25",
+  "authorization": "Apply the verified update",
+  "origin": "http://localhost:5174",
+  "flow": "Application Check for updates then Reload to update",
+  "bothTabsReportedNoRetainedDrafts": true,
+  "redundantCleanTabClosed": true,
+  "observedScript": "/assets/index-BA-QDq5G.js",
+  "acceptedReleaseId": "4d8cb5fc0da7a335f886c3dd28c967baee50ea3987b0b5eea89117ebb98a6188",
+  "startupVerificationCompleted": true,
+  "existingOpenTradeAndRecordedExecutionVisible": true,
+  "financialSaveOrDiscardSubmitted": false,
+  "siteDataCleared": false,
+  "proofImageOutsideRepository": "/private/tmp/bug001-applied-update.jpg"
+}

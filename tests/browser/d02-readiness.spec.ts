@@ -26,8 +26,8 @@ for (const flow of ['Opening', 'Debt'] as const) test(`D2-B03 ${flow} native rea
     };
   });
   await onboard(page); await confirmPlan(page); await fillOpening(page, 'Defer');
-  if (flow === 'Debt') { await page.getByRole('button', { name: 'Save initial Position Change' }).click(); await page.getByRole('button', { name: 'Answer reflection' }).click(); await page.getByLabel('As Planned', { exact: true }).check(); await page.getByLabel('Calm', { exact: true }).check(); await page.getByLabel('Decision confidence').selectOption('4'); }
-  const saveName = flow === 'Opening' ? 'Save initial Position Change' : 'Save Debt outcome';
+  if (flow === 'Debt') { await page.getByRole('button', { name: 'Save opening entry' }).click(); await page.getByRole('button', { name: 'Answer reflection' }).click(); await page.getByLabel('As Planned', { exact: true }).check(); await page.getByLabel('Calm', { exact: true }).check(); await page.getByLabel('Decision confidence').selectOption('4'); }
+  const saveName = flow === 'Opening' ? 'Save opening entry' : 'Save Debt outcome';
   const before = await authority(page); const results: unknown[] = [];
   for (const fault of ['transaction', 'capacity', 'control', 'inventory', 'capacity+control', 'missing-estimate', 'abort']) {
     if (fault === 'inventory') await page.evaluate(async () => {
@@ -49,5 +49,5 @@ for (const flow of ['Opening', 'Debt'] as const) test(`D2-B03 ${flow} native rea
   await page.evaluate(() => { window.d2Fault = ''; }); expect(await authority(page)).toEqual(before); results.push({ fault: 'unreadable', unchanged: true });
   await page.getByRole('button', { name: 'Retry startup' }).click(); await expect(page.getByRole('button', { name: saveName })).toBeEnabled();
   await page.getByRole('button', { name: saveName }).click(); await expect(page.getByRole('heading', { name: flow === 'Opening' ? 'XYZ · Open' : 'Journal Debt settled', exact: true })).toBeVisible();
-  await mkdir('implementation/evidence/d02/native', { recursive: true }); await writeFile(`implementation/evidence/d02/native/${browserName}-${flow.toLowerCase()}-failure-matrix.json`, JSON.stringify({ browser: context.browser()?.version(), before, results, after: await authority(page), quota: await page.evaluate(() => navigator.storage.estimate()) }, null, 2));
+  await mkdir(`implementation/evidence/bug-001/cumulative/${process.env.BUG001_EVIDENCE_RUN ?? 'manual'}/d02/native`, { recursive: true }); await writeFile(`implementation/evidence/bug-001/cumulative/${process.env.BUG001_EVIDENCE_RUN ?? 'manual'}/d02/native/${browserName}-${flow.toLowerCase()}-failure-matrix.json`, JSON.stringify({ browser: context.browser()?.version(), before, results, after: await authority(page), quota: await page.evaluate(() => navigator.storage.estimate()) }, null, 2));
 });

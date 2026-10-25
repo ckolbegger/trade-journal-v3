@@ -1,0 +1,59 @@
+
+> trade-journal-v3@0.1.0 preview
+> vite preview --host localhost --port 5174 --strictPort
+
+
+  ➜  Local:   http://localhost:5174/
+
+START B01 setup, real native readiness, invalid zone and catalog
+PASS B01 setup, real native readiness, invalid zone and catalog
+START B01/B03 Plan stages, validation, sole confirmation and original reflection
+PASS B01/B03 Plan stages, validation, sole confirmation and original reflection
+START B01 list geometry and B02 actual 10-share rejected blank row, resume and save
+PASS B01 list geometry and B02 actual 10-share rejected blank row, resume and save
+START B02 fully stopped native offline opening authority equality
+PASS B02 fully stopped native offline opening authority equality
+START B04 dialog keyboard, focus, inert backdrop, resize and long Note
+PASS B04 dialog keyboard, focus, inert backdrop, resize and long Note
+START B03 opening native failure matrix and safe retry
+PASS B03 opening native failure matrix and safe retry
+START B03 Defer no placeholder Entry, owed Cancel/Complete, native failures
+PASS B03 Defer no placeholder Entry, owed Cancel/Complete, native failures
+START B03 explicit opening Decline and owed Decline
+PASS B03 explicit opening Decline and owed Decline
+START B03 same native persistent store competing opening tabs
+PASS B03 same native persistent store competing opening tabs
+START B04 keyboard-only Plan, two Executions, pending Save and Complete
+PASS B04 keyboard-only Plan, two Executions, pending Save and Complete
+START B04 Loading, list Error, Recovery, Unsupported and Integrity states
+PASS B04 Loading, list Error, Recovery, Unsupported and Integrity states
+START SUPPLEMENT B01 density 10/50/pagination and long labels
+PASS SUPPLEMENT B01 density 10/50/pagination and long labels
+START SUPPLEMENT B03 shared native Debt stale settlement
+PASS SUPPLEMENT B03 shared native Debt stale settlement
+START B04 density rapid navigation owns lifecycle at all widths
+PASS B04 density rapid navigation owns lifecycle at all widths
+START B04 verified update deferred with open AND closed draft, activation and stopped offline
+FAIL B04 verified update deferred with open AND closed draft, activation and stopped offline Error: expect(locator).toBeEnabled() failed
+
+Locator:  getByRole('button', { name: 'Reload to update' })
+Expected: enabled
+Received: disabled
+Timeout:  5000ms
+
+Call log:
+  - Expect "toBeEnabled" getByRole('button', { name: 'Reload to update' }) with timeout 5000ms
+  - waiting for getByRole('button', { name: 'Reload to update' })
+    14 × locator resolved to <button disabled>Reload to update</button>
+       - unexpected value "disabled"
+
+    at captureRawStack (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright-core/lib/coreBundle.js:9282:17)
+    at callMatcherAsStep (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13316:57)
+    at Object.toBeEnabled (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/node_modules/playwright/lib/matchers/expect.js:13308:23)
+    at /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-05/driver.mjs:62:1432
+    at async run (/Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-05/driver.mjs:21:125)
+    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-05/driver.mjs:62:2
+FATAL Error: Acceptance stopped after B04 verified update deferred with open AND closed draft, activation and stopped offline
+    at run (file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-05/driver.mjs:21:393)
+    at async file:///Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol/implementation/evidence/bug-001/critic-05/driver.mjs:62:2
+FINISH [{"name":"B01 setup, real native readiness, invalid zone and catalog","status":"PASS"},{"name":"B01/B03 Plan stages, validation, sole confirmation and original reflection","status":"PASS"},{"name":"B01 list geometry and B02 actual 10-share rejected blank row, resume and save","status":"PASS"},{"name":"B02 fully stopped native offline opening authority equality","status":"PASS"},{"name":"B04 dialog keyboard, focus, inert backdrop, resize and long Note","status":"PASS"},{"name":"B03 opening native failure matrix and safe retry","status":"PASS"},{"name":"B03 Defer no placeholder Entry, owed Cancel/Complete, native failures","status":"PASS"},{"name":"B03 explicit opening Decline and owed Decline","status":"PASS"},{"name":"B03 same native persistent store competing opening tabs","status":"PASS"},{"name":"B04 keyboard-only Plan, two Executions, pending Save and Complete","status":"PASS"},{"name":"B04 Loading, list Error, Recovery, Unsupported and Integrity states","status":"PASS"},{"name":"SUPPLEMENT B01 density 10/50/pagination and long labels","status":"PASS"},{"name":"SUPPLEMENT B03 shared native Debt stale settlement","status":"PASS"},{"name":"B04 density rapid navigation owns lifecycle at all widths","status":"PASS"},{"name":"B04 verified update deferred with open AND closed draft, activation and stopped offline","status":"FAIL"}] restored true

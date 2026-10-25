@@ -43,3 +43,6 @@ playwright-report/
 
 # Worktrees (each is its own checkout; not nested-tracked)
 worktrees/
+
+# BUG-001 raw Playwright files are retained in the evidence archive.
+implementation/evidence/bug-001/**/.playwright-artifacts-*/

@@ -1,0 +1,26 @@
+{
+  "id": "T02-case01",
+  "stage": "green",
+  "baseline": "11216bf0138e1dff372e9270afe5c935dfa1e984",
+  "inputs": {
+    "implementation/plan/bug-001-ui-mockup-fidelity.md": "665d3755a281db3d5296e418dde193fece16b56a30ecaf4da920375c9882e750",
+    "implementation/plan/bug-001-baseline.md": "a97ec7f5daed2eaa4bc1eb9031d04ecd9836ff029716f67a609ef862137b32db",
+    "implementation/plan/d02-implementation-baseline.md": "3f0042a94f5be932f0baaf8222b4a2da50b766a4036cd5d785b640f1b64892fb",
+    "implementation/plan/d02-initial-stock-entry.md": "f178999f16b99c3e961f4d2f63e55a5be6e86961d2b3c772e3f2614ccf3e62ec",
+    "implementation/plan/d01-capacity-policy-revision.md": "ba560d7d8eb724fb6f74cdc0f5990cccb650b733302836a120393256f273ed64",
+    "implementation/plan/d02-capacity-evidence.md": "090ef5822f74e2a41ad10f7f33e6ab0290abdc56b80e49bde7d636fc953f413d",
+    "specs/evaluation/kickoff-prompt.md": "03c97d607bfd55e086b626a710a6475372320233c2e67ef8b5427016f85bc795"
+  },
+  "sourceDigest": "b774ea3f4bc3ceb21d3a2d67a598795d774890cbb998afbc12a9a240027520d6",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "--project",
+    "unit",
+    "tests/unit/bug001-ui.test.tsx"
+  ],
+  "exit": 1,
+  "stdout": "\n RUN  v5.0.3 /Users/ckolbegger/src/trade-journal-v3/worktrees/codex-gpt-6.1-sol\n\n ❯ |unit| tests/unit/bug001-ui.test.tsx (1 test | 1 failed) 166ms\n   × labels retained rows and removal as unsaved while authoritative Trade stays Planned 166ms\n\n Test Files  1 failed (1)\n      Tests  1 failed (1)\n   Start at  12:47:19\n   Duration  560ms (environment 36%, tests 34%, import 15%, transform 14%)\n\n",
+  "stderr": "\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |unit| tests/unit/bug001-ui.test.tsx > labels retained rows and removal as unsaved while authoritative Trade stays Planned\nAssertionError: expected [ undefined ] to deeply equal [ 'Planned' ]\n\n- Expected\n+ Received\n\n  [\n-   \"Planned\",\n+   undefined,\n  ]\n\n ❯ tests/unit/bug001-ui.test.tsx:27:69\n     25|   expect(screen.getAllByText(/Execution \\d · Buy XYZ · Unsaved/)).toHa…\n     26|   expect(screen.getByRole('button', { name: 'Remove draft row 2' })).t…\n     27|   expect((await f.store.lifecycle.toArray()).map(row => row.state)).to…\n       |                                                                     ^\n     28|   cleanup(); f.store.close();\n     29| });\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n"
+}
