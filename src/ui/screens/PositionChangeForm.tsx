@@ -307,8 +307,8 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
       </section>
       {rows.map((row, index) => {
         const n = index + 1;
-        const input = (name: keyof Omit<Row, 'key'>, label: string, type?: 'datetime-local', field: string = name) => (
-          <div className={type ? 'field field-wide' : 'field'}>
+        const input = (name: keyof Omit<Row, 'key'>, label: string, type?: 'datetime-local', field: string = name, wide = false) => (
+          <div className={wide ? 'field field-wide' : 'field'}>
             <label>
               {label}
               <input
@@ -328,7 +328,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
             {input('quantity', 'Quantity')}
             {input('price', 'Price')}
             {input('fee', 'Fee')}
-            {input('time', 'Economic Time', 'datetime-local', 'economicTime')}
+            {input('time', 'Economic Time', 'datetime-local', 'economicTime', true)}
             {rows.length > 1 && (
               <button type="button" className="pill secondary" onClick={() => setRows((current) => current.filter((r) => r.key !== row.key))}>
                 {`Remove Execution ${n}`}

@@ -1563,3 +1563,13 @@ Change: `.execution-row > button.pill` uses `var(--muted)`; the Economic Time fi
 | low | `PositionChangeForm.tsx:311` | `input()` adds `field-wide` whenever a `type` is passed, so a later typed field would silently become full-width | Valid (minor); bug task T2.44-B2 (an explicit option) |
 
 **Complete cumulative run after T2.44-B1** (`suite-runner`, 2026-10-25 07:25 EDT, on `fd6b68b`): Unit 41 files / 399 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 78 passed (2.4m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.44-B1-*.txt`.
+
+## T2.44-B2
+
+Refactor, no behaviour change: `input()` in `src/ui/screens/PositionChangeForm.tsx` takes an explicit trailing `wide = false` argument; only the Economic Time call passes `true`. Rendered markup unchanged.
+
+| Check | Before | After |
+|---|---|---|
+| `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts -g T2.44` | 1 passed | 1 passed |
+| `npx vitest run src/ui` | 13 files, 120 tests passed | 13 files, 120 tests passed |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | n/a | all exit 0 |
