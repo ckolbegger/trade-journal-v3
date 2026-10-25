@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 29969,
+    "input_tokens": 29519,
+    "output_tokens": 450,
+    "cache_read_tokens": 9600,
+    "elapsed": "35s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/AppShell.tsx",
+      "content": "This calls a state setter during render, contrary to the review's explicit prohibition on render-phase side effects. The guard prevents an infinite loop, but React still has to discard this render and render AppShell again when leaving the refusal path. Move the cleanup into a useEffect keyed by pathname and refusedAt; the existing pathname comparison in the route selection already prevents the exemption from applying on another path.",
+      "suggestion_code": "  useEffect(() =\u003e {\n    if (refusedAt !== undefined \u0026\u0026 pathname !== refusedAt) setRefusedAt(undefined);\n  }, [pathname, refusedAt]);",
+      "existing_code": "  if (refusedAt !== undefined \u0026\u0026 pathname !== refusedAt) setRefusedAt(undefined);",
+      "start_line": 110,
+      "end_line": 110,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/ui/AppShell.tsx",
+      "files": [
+        "src/ui/AppShell.tsx"
+      ]
+    }
+  ],
+  "session_id": "f27c4896-e762-43d4-af77-791923383f30",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "f27c4896-e762-43d4-af77-791923383f30",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "e65cbb6",
+      "resolved_base": "0c06ab58924fb96433ddd9bdccc2cd3c8183d855",
+      "resolved_head": "e65cbb66d3801ab263dc11865e9bcdd02239f6d3",
+      "exact_range": "0c06ab58924fb96433ddd9bdccc2cd3c8183d855..e65cbb66d3801ab263dc11865e9bcdd02239f6d3",
+      "source_artifact_sha256": "cb74e6e1d78b6c33e015f55a961e5ad83b535c3143ef89b0a6870c7133895be8"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "5ccaeb92f4806e16ddead87c5dd5f75bf54f01cff9128e5dc88a04daf3e538bc"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "5ccaeb92f4806e16ddead87c5dd5f75bf54f01cff9128e5dc88a04daf3e538bc"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 34579
+  }
+}

@@ -1053,6 +1053,15 @@ Decisions (for the final report):
 - Case 2 resolution: the launch rule says an open form keeps its values after a refusal (B2.10), so the view replaces the form only when the entry route is reached after the refusal, not where the refusal arrived. AppShell remembers the first path a refusal came from (`refusedAt`); `record-entry` shows the unavailable view whenever not Writable and the current path differs from it.
 - Known edge (fixed by T2.30-B1): after a refusal arriving on a record-entry path, leaving and returning to that same path showed the (disabled) form again.
 
+**ocr review of T2.30** (`ocr-review` step): commit `0c06ab5`, session `4acf20ac-ab10-42c7-b637-c58a811c4414`, model `gpt-6.1-sol`, 1 file reviewed, 2 comments. Raw output: `ocr/t2.30-0c06ab5.json`.
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | bug | `src/ui/AppShell.tsx:296` | `refusedAt` is never cleared, so after leaving and returning to the entry path where the refusal arrived, a fresh form mounts instead of the unavailable view | Valid: contradicts T2.30 case 2 once the original form is unmounted. Turned into bug task T2.30-B1. |
+| low | maintainability | `src/ui/AppShell.tsx:46` | `RECORD_ENTRY_PATH` repeats the record-entry path defined in `ROUTES` | Doubtful: a tidy-up, not a defect. Turned into bug task T2.30-B2. |
+
+**Complete cumulative run after T2.30** (`suite-runner`, 2026-10-24 22:07 EDT, on `0c06ab5`): Unit 37 files / 372 tests passed; Node integration 19 / 42 passed; Browser (Chromium) 53 passed (1.7m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.30-*.txt`.
+
 #### T2.30-B1
 
 Bug from the ocr review of T2.30: `refusedAt` was never cleared, so returning to the record-entry path where the refusal arrived mounted a fresh empty form. Fix: AppShell resets `refusedAt` as soon as `pathname` differs from it (state adjusted during render, since the lint rule forbids setState in an effect), so the exemption lasts only while the trader stays on that path.
@@ -1076,3 +1085,13 @@ Maintainability tidy-up from the ocr review of T2.30 (Doubtful): `RECORD_ENTRY_P
 | `npm run build:faults`, `npx playwright test e2e/d2/runtime-failure.spec.ts` | 3 passed |
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
 | `grep -rn "record-entry" src \| grep -v "\.test\."` | the path literal `/trades/:tradeId/record-entry` appears only in `src/app/routes.ts:41`; other hits are the route id (`main.tsx`, `AppShell.tsx`) and a concrete link template `/trades/${id}/record-entry` in `TradeDetail.tsx:104` (a different string, out of scope) |
+
+**ocr review of T2.30-B1** (`ocr-review` step): commit `e65cbb6`, session `f27c4896-e762-43d4-af77-791923383f30`, model `gpt-6.1-sol`, 1 file reviewed, 1 comment. Raw output: `ocr/t2.30-b1-e65cbb6.json`.
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| low | maintainability | `src/ui/AppShell.tsx:111` | `setRefusedAt` during render is a render-phase side effect; move it into a `useEffect` | Wrong, dismissed: the guarded reset during render is React's documented pattern for state derived from other values and settles after one extra render; an effect would render the stale form once on return, and the repo's `react-hooks/set-state-in-effect` lint rule rejects it. |
+
+**ocr review of T2.30-B2** (`ocr-review` step): commit `aacd703`, session `b0e4f3b9-bbec-4964-af81-aa7d4156b680`, model `gpt-6.1-sol`, 1 file reviewed, 0 comments. No findings. Raw output: `ocr/t2.30-b2-aacd703.json`.
+
+**Complete cumulative run after T2.30-B1 and T2.30-B2** (`suite-runner`, 2026-10-24 22:13 EDT, on `aacd703` plus the uncommitted evidence): Unit 37 files / 373 tests passed; Node integration 19 / 42 passed; Browser (Chromium) 53 passed (1.7m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.30-b2-*.txt`.
