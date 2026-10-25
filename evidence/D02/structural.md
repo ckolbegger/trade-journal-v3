@@ -952,3 +952,16 @@ Decisions (for the final report):
 - On success the Conflict message is replaced by a "Latest Trade" region above the Entry card: "The latest Trade is loaded. Your values are kept below; review them against it before saving again." with a Position line ("40 shares of XYZ" for an Open Trade, "No Position yet" for a Planned one). The next save uses the reloaded FactRevision. The region clears on the next save result.
 - On failure (rejection or a non-Ready result) the Conflict message, button and values stay, with an alert "We couldn’t load the latest Trade. Your values are kept; try again."
 - A reload started before a Trade, facade or Retry change is ignored through an epoch counter bumped in the load effect cleanup. If the reloaded Trade is incoherent, the existing incoherent branch replaces the form.
+
+**ocr review of T2.28** (`ocr-review` step): commit `d623a46`, session `014024a0-94e2-4f0d-af23-43c35d5415f9`, model `gpt-6.1-sol`, 0 of 1 files reviewed, no comments: the provider refused the call with `subscription_sharing_usage_limit_exceeded`. **Pending:** at the user's direction (2026-10-24), T2.29 proceeds, and T2.28 and T2.29 are both reviewed once the usage limit resets (9:55 pm).
+
+**Cumulative run after T2.28:** run 2026-10-24 18:26 EDT on commit `d623a46`, Node v26.12.0. Run label `t2.28`.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 37 passed (37)`, `Tests 364 passed (364)`, exit 0 | `suite-runs/t2.28-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 19 passed (19)`, `Tests 42 passed (42)`, exit 0 | `suite-runs/t2.28-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `52 passed (1.7m)`, exit 0 | `suite-runs/t2.28-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.28-checks.txt` |
+
+Failures: none. Unit rose from 360 to 364 (T2.28's four cases); browser from 51 to 52 (the two-page Conflict case in `no-save.spec.ts`).
