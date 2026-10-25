@@ -1659,3 +1659,7 @@ Test-impact list (lookups the card made ambiguous):
 - `src` unit tests and `tests`: no lookup became ambiguous (they are already region-scoped); all 467 pass. `e2e/d2` unaffected.
 
 Checks: `npx vitest run src tests` 467 passed; typecheck, `tsc6 --noEmit`, lint, lint:deps exit 0; `npm run build:faults && npx playwright test e2e/d1 e2e/d2` 77 passed, then the 2 failures above fixed and rerun green.
+
+**ocr review of T2.49** (`ocr-review` step): commit `d96f781`, session `977813ec-b042-422a-8053-ac303957c5fe`, model `gpt-6.1-sol`, 4 files reviewed, 0 comments. No findings. The reviewer also checked from the code: Stop and Target each carry a text label (colour only reinforces), and their contrast on the white card is 7.37:1 (`#a3261b`) and 6.55:1 (`#1d6b34`). Raw output: `ocr/t2.49-d96f781.json`.
+
+**Complete cumulative run after T2.49** (`suite-runner`, 2026-10-25 08:13 EDT, on `d96f781`; this also covers the full browser set the subagent did not rerun after scoping the two `$250.00` lookups): Unit 41 files / 418 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 79 passed (2.5m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.49-*.txt`.
