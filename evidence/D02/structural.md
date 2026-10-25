@@ -1763,3 +1763,11 @@ Commands:
 | (reviewer note) | `TradeDetail.tsx` Journal | At a DST fall-back, an Authored an hour after Moment reads the same and is hidden | Dismissed for this task: shown, it would read the same as Moment. The missing offset is app-wide; listed for the final report |
 
 **Complete cumulative run after T2.51-B1** (`suite-runner`, 2026-10-25 09:29 EDT, on `489ad59`): Unit 41 files / 434 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 80 passed (2.5m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.51-b1-*.txt`.
+
+#### T2.54
+
+Reference-pair screenshots. `npm run ui:screenshots` (`tools/ui-screenshots.ts`) builds `dist-faults`, serves it with the release harness server as the e2e specs do, drives one fresh profile through the `e2e/d2/support.ts` steps (America/New_York, Playwright clock and native `Temporal.Now` fixed at 2026-10-12 16:00 -04:00), and captures 17 screens at 390x844 and 1280x900 into `evidence/D02/ui-alignment/`, with a generated README pairing each with its reference. Page captures are full page; 11-reflection and 15-journal are element captures. The comparison report names the screens only as 01-first-launch through 17-about, so the 17 were chosen from its per-screen sections (list in the README). No helper was added to `support.ts`.
+
+- Command: `npm run ui:screenshots`; exit code 0 (run four times); output `wrote 34 PNGs and the README to evidence/D02/ui-alignment`; 34 PNGs plus `README.md`, 3.2 MB.
+- Determinism: two consecutive runs gave byte-identical files except three 1280 px captures (04, 06, 09), which differ by pixel noise only. Authored times in the Journal read 2026-10-12 on every run.
+- Static: `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` exit 0; `npx vitest run src` 434 passed.

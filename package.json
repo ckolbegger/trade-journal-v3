@@ -30,7 +30,8 @@
     "test:integration": "vitest run --project integration",
     "test:e2e": "npm run build:faults && npm run build:releases && playwright test e2e/d1 e2e/d2",
     "fixtures:freeze": "node tools/fixtures-freeze.ts",
-    "verify:fixtures": "node tools/verify-fixtures.ts"
+    "verify:fixtures": "node tools/verify-fixtures.ts",
+    "ui:screenshots": "node tools/ui-screenshots.ts"
   },
   "dependencies": {
     "@noble/hashes": "2.4.0",
