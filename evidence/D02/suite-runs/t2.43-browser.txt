@@ -1,0 +1,107 @@
+
+> trade-journal-v3@0.0.0 test:e2e
+> npm run build:faults && npm run build:releases && playwright test e2e/d1 e2e/d2
+
+
+> trade-journal-v3@0.0.0 build:faults
+> vite build --mode faults --outDir dist-faults
+
+vite v8.3.2 building client environment for faults...
+transforming...
+✓ 110 modules transformed.
+rendering chunks...
+computing gzip size...
+dist-faults/index.html                   0.50 kB │ gzip:   0.30 kB
+dist-faults/assets/index-IPmVGa_d.css    7.46 kB │ gzip:   2.27 kB
+dist-faults/assets/faults-BkuDJYOz.js    1.47 kB │ gzip:   0.73 kB
+dist-faults/assets/index-DgviQFko.js   457.51 kB │ gzip: 140.50 kB
+
+✓ built in 96ms
+
+> trade-journal-v3@0.0.0 build:releases
+> node tools/build-releases.ts
+
+build:releases: d1 reused from /var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-release-d1-402b94835793 (claude-opus-5.5-d1 at 402b94835793587df2d10de1f3564e276843618b)
+build:releases OK: v1, v2, v2-corrupt, d1, d2 in /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/dist-releases; v2-corrupt alters /assets/index-IPmVGa_d.css
+
+Running 76 tests using 1 worker
+
+  ✓   1 [chromium] › e2e/d1/identity.spec.ts:6:5 › B1.1 identity and Writable tab › should serve a complete manifest and digest-valid inventory and reach Writable with all four checks passing (1.5s)
+  ✓   2 [chromium] › e2e/d1/identity.spec.ts:6:5 › B1.1 identity and Writable tab › should serve a complete manifest and digest-valid inventory and reach Writable with all four checks passing under an unknown user agent (866ms)
+  ✓   3 [chromium] › e2e/d1/integrity-blocked.spec.ts:6:3 › B1.8 Integrity Blocked › should block a root at version 99 created before launch, offering only Retry and leaving the root untouched (572ms)
+  ✓   4 [chromium] › e2e/d1/integrity-blocked.spec.ts:38:3 › B1.8 Integrity Blocked › should block a pointer whose Workspace database was deleted, keeping the pointer and creating no new Workspace (769ms)
+  ✓   5 [chromium] › e2e/d1/no-save.spec.ts:50:3 › B1.14 nothing is saved without Save › should store no Entry, Trade, draft, or Web Storage value after typing, resizing, leaving, and restarting (1.5s)
+  ✓   6 [chromium] › e2e/d1/offline.spec.ts:4:3 › B1.4 offline cold restart › should open Writable without a network, confirm a second Plan and add an Account, and keep both across another offline restart (2.5s)
+  ✓   7 [chromium] › e2e/d1/onboarding.spec.ts:5:3 › onboarding after a partly failed attempt (critic-2) › should show the protection warning on first run and onboarding, and reuse an Institution saved without its Account after a reload (920ms)
+  ✓   8 [chromium] › e2e/d1/plan.spec.ts:7:3 › B1.2 onboarding and first Plan › should show the Plan, 1R, and reflection after relaunch, with one Trade, one Entry, and Planned in the index (1.4s)
+  ✓   9 [chromium] › e2e/d1/plan.spec.ts:37:3 › B1.3 kill after commit › should keep the complete Plan, with its Entry, after the browser process is killed once the confirmation renders (1.5s)
+  ✓  10 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly diagnostic, with Retry and the another-browser recommendation, creating no Workspace (618ms)
+  ✓  11 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly capacity, with Retry and the another-browser recommendation, creating no Workspace (488ms)
+  ✓  12 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly control, with Retry and the another-browser recommendation, creating no Workspace (498ms)
+  ✓  13 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly inventory, with Retry and the another-browser recommendation, creating no Workspace (514ms)
+  ✓  14 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly diagnostic and capacity, with Retry and the another-browser recommendation, creating no Workspace (495ms)
+  ✓  15 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly control and inventory, with Retry and the another-browser recommendation, creating no Workspace (521ms)
+  ✓  16 [chromium] › e2e/d1/readiness.spec.ts:25:3 › B1.7 protection is advisory › should stay Writable with the warning and durability action while unprotected, and report the request honestly (1.1s)
+  ✓  17 [chromium] › e2e/d1/recovery-only.spec.ts:4:3 › B1.6 Recovery Only matrix (existing Workspace, faults build) › should open Recovery Only with the failed checks for each fault set, keeping the Plan readable and the stores unchanged (4.6s)
+  ✓  18 [chromium] › e2e/d1/responsive-a11y.spec.ts:33:3 › B1.15 responsive and accessible › should switch layout at 960 px with the route and entered values intact (896ms)
+  ✓  19 [chromium] › e2e/d1/responsive-a11y.spec.ts:57:3 › B1.15 responsive and accessible › should report no WCAG 2.1 AA violations in any D1 view state (4.6s)
+  ✓  20 [chromium] › e2e/d1/responsive-a11y.spec.ts:135:3 › B1.15 responsive and accessible › should complete onboarding and a Plan with the keyboard only, with visible focus throughout (879ms)
+  ✓  21 [chromium] › e2e/d1/runtime-failure.spec.ts:5:5 › B1.9 mid-session failure (faults build) › should explain RuntimeNotWritable, keep the form values, and switch to Recovery Only when inventory starts failing before Confirm (947ms)
+  ✓  22 [chromium] › e2e/d1/runtime-failure.spec.ts:5:5 › B1.9 mid-session failure (faults build) › should explain RuntimeNotWritable, keep the form values, and switch to Recovery Only when diagnostic starts failing before Confirm (967ms)
+  ✓  23 [chromium] › e2e/d1/update.spec.ts:42:3 › B1.10 update with unsaved work › should notify only once v2 is waiting, defer Reload while the form is unsaved, then activate v2 with the Workspace unchanged (3.7s)
+  ✓  24 [chromium] › e2e/d1/update.spec.ts:74:3 › B1.11 corrupt update › should show no notice, keep v1 in control, and leave no v2 cache when the update fails verification (2.5s)
+  ✓  25 [chromium] › e2e/d1/update.spec.ts:90:3 › B1.12 offline keeps the installed release › should show no notice offline and keep v1 running and Writable (2.5s)
+  ✓  26 [chromium] › e2e/d1/update.spec.ts:111:3 › B1.13 two tabs, one unsaved › should explain in the clean tab that another tab has unsaved work, keeping Reload disabled until that form is cancelled (2.6s)
+  ✓  27 [chromium] › e2e/d1/update.spec.ts:133:3 › B1.13 two tabs, the clean one opened after the form became unsaved (critic-1) › should defer Reload and explain in a tab opened later, where "Check for updates" reports the waiting update once (2.9s)
+  ✓  28 [chromium] › e2e/d2/after-save.spec.ts:14:3 › reload after save › should replace the entry form history entry with the Trade Detail once saved, so reload, Back and Forward never show the form (1.3s)
+  ✓  29 [chromium] › e2e/d2/durability.spec.ts:23:3 › B2.7 kill after commit › should keep the Position Change, its Executions, lifecycle Open, and the reflection after the browser is killed once the result renders (1.8s)
+  ✓  30 [chromium] › e2e/d2/integrity.spec.ts:18:3 › B2.13 integrity surfaced › should show the integrity panel in Detail and the badge in the list for an Open Trade stored as Planned, writing nothing after viewing (2.3s)
+  ✓  31 [chromium] › e2e/d2/integrity.spec.ts:57:3 › Planned list row for an incoherent Trade › should show the row with Records disagree and Not available in each derived cell, linking to its Detail (5.9s)
+  ✓  32 [chromium] › e2e/d2/integrity.spec.ts:91:3 › incoherent Trade Detail › should not offer Record entry on an incoherent Detail, explain why beside the Records disagree panel, and show the same explanation on the entry route (2.7s)
+  ✓  33 [chromium] › e2e/d2/migration.spec.ts:47:3 › B2.3 update from D1 with data › should show the migration message, then list both Plans under Planned with Record entry working and About at schema 2, on a new database with the old one gone (4.1s)
+  ✓  34 [chromium] › e2e/d2/migration.spec.ts:86:3 › B2.4 Migration Blocked (faults build) › should show Migration Blocked with "Your data is unchanged" and Retry, leave the old stores unchanged with no candidate, and show the Plans after the fault is cleared and Retry pressed (3.8s)
+  ✓  35 [chromium] › e2e/d2/migration.spec.ts:122:3 › B2.5 old tab during migration › should show "Updated in another tab" in the old tab with its values on screen, return RuntimeNotWritable on Confirm, and write nothing to the old database after the snapshot (3.7s)
+  ✓  36 [chromium] › e2e/d2/migration.spec.ts:170:3 › B2.6 kill during migration (faults build) › should complete the migration on relaunch without faults, with the pre-update data and no candidate database (4.8s)
+  ✓  37 [chromium] › e2e/d2/narrow.spec.ts:51:3 › critic-1 defect 1 narrow reflow › should keep the Open list page within 375 and 320 px with the table scrolling inside its own region (1.4s)
+  ✓  38 [chromium] › e2e/d2/narrow.spec.ts:69:3 › critic-1 defect 1 narrow reflow › should keep the Open Trade Detail within 375 and 320 px with every table inside a scroll container (2.8s)
+  ✓  39 [chromium] › e2e/d2/narrow.spec.ts:103:3 › critic-2 defects narrow reflow › should keep the Planned list page within 375 and 320 px with the table inside its own scroll region (1.3s)
+  ✓  40 [chromium] › e2e/d2/narrow.spec.ts:122:3 › critic-2 defects narrow reflow › should keep About within 375 and 320 px with its long identifiers wrapping (860ms)
+  ✓  41 [chromium] › e2e/d2/narrow.spec.ts:136:3 › critic-2 defects narrow reflow › should keep first run, onboarding, Accounts, the New Plan form and the Planned Detail within 375 and 320 px (1.2s)
+  ✓  42 [chromium] › e2e/d2/no-save.spec.ts:62:3 › B2.11 nothing saved without Save › should store no Position Change, Entry, decline, draft, or Web Storage value after filling rows and the reflection, resizing, leaving, and restarting (1.8s)
+  ✓  43 [chromium] › e2e/d2/no-save.spec.ts:111:3 › F4 saving again after a Conflict › should keep the entered values through Load the latest Trade and then record a second Position Change, one from each page (1.8s)
+  ✓  44 [chromium] › e2e/d2/offline.spec.ts:18:3 › B2.8 offline cold restart › should open Writable offline, record PC2, and keep it across another offline restart (2.7s)
+  ✓  45 [chromium] › e2e/d2/open-position.spec.ts:24:3 › B2.1 open a position › should show Open, Position 60, two Lots, one Position Change with two Executions, and 60 of 100 after relaunch, with one Position Change, two Executions, and one Entry stored (1.8s)
+  ✓  46 [chromium] › e2e/d2/open-position.spec.ts:58:3 › B2.2 scale-in and decline › should show Entry Quality, an Entry Size Deviation of 20 naming its causing Position Change, and the declined reflection in the narrative (1.8s)
+  ✓  47 [chromium] › e2e/d2/open-position.spec.ts:92:3 › C2.6 earlier-dated entry (P5) › should say on the receipt that the Entry Size Deviation changed from 20 to 60 shares above plan, caused by the Position Change at 11:00 (1.8s)
+  ✓  48 [chromium] › e2e/d2/responsive-a11y.spec.ts:58:3 › B2.12 responsive and accessible › should keep three Execution rows and the reflection answers through 390 px and back, switching layout at 960 px (1.3s)
+  ✓  49 [chromium] › e2e/d2/responsive-a11y.spec.ts:90:3 › B2.12 responsive and accessible › should report no WCAG 2.1 AA violations on the entry form, the Open list in every state, the Open Detail, and the migration views (9.6s)
+  ✓  50 [chromium] › e2e/d2/responsive-a11y.spec.ts:179:3 › B2.12 responsive and accessible › should report no WCAG 2.1 AA violations on the entry form Not Found and Error states (2.7s)
+  ✓  51 [chromium] › e2e/d2/responsive-a11y.spec.ts:205:3 › B2.12 responsive and accessible › should complete an entry with the keyboard only, with visible focus throughout (1.2s)
+  ✓  52 [chromium] › e2e/d2/runtime-failure.spec.ts:22:3 › B2.9 Recovery Only (faults build) › should keep the Open list and Detail readable with no Record entry, and leave the stores unchanged (1.9s)
+  ✓  53 [chromium] › e2e/d2/runtime-failure.spec.ts:47:3 › F6 direct entry-form link (faults build) › should explain Record entry isn't available on a direct link while Recovery Only, with a link back to the Trade (1.5s)
+  ✓  54 [chromium] › e2e/d2/runtime-failure.spec.ts:69:3 › B2.10 mid-session failure (faults build) › should explain RuntimeNotWritable, keep the entry form values, and record no Position Change (1.2s)
+  ✓  55 [chromium] › e2e/d2/ui-alignment.spec.ts:31:3 › T2.36-B1 bottom navigation fit › should keep every bottom bar link inside the viewport with no horizontal overflow in the bar (829ms)
+  ✓  56 [chromium] › e2e/d2/ui-alignment.spec.ts:65:3 › T2.37 navigation and durability banner › should fill the current sidebar link with ink and white text (826ms)
+  ✓  57 [chromium] › e2e/d2/ui-alignment.spec.ts:87:3 › T2.37 navigation and durability banner › should stack each bottom bar icon above its label (881ms)
+  ✓  58 [chromium] › e2e/d2/ui-alignment.spec.ts:110:5 › T2.37 navigation and durability banner › should style the durability banner with the warning ground and keep it compact at 390 (1.1s)
+  ✓  59 [chromium] › e2e/d2/ui-alignment.spec.ts:110:5 › T2.37 navigation and durability banner › should style the durability banner with the warning ground and keep it compact at 1280 (992ms)
+  ✓  60 [chromium] › e2e/d2/ui-alignment.spec.ts:150:5 › T2.37-B1 durability banner before the shell renders › should keep the storage banner compact with the warning ground on first run at 390 (594ms)
+  ✓  61 [chromium] › e2e/d2/ui-alignment.spec.ts:150:5 › T2.37-B1 durability banner before the shell renders › should keep the storage banner compact with the warning ground on account onboarding at 390 (668ms)
+  ✓  62 [chromium] › e2e/d2/ui-alignment.spec.ts:200:3 › T2.38 one content column and side gutters › should keep the banner, heading, tabs and first card on one left edge on Trades and Open Detail at 1280 (1.4s)
+  ✓  63 [chromium] › e2e/d2/ui-alignment.spec.ts:232:5 › T2.38 one content column and side gutters › should keep a 16 px gutter on first run and onboarding at 390 (665ms)
+  ✓  64 [chromium] › e2e/d2/ui-alignment.spec.ts:245:5 › T2.38 one content column and side gutters › should keep a 16 px gutter on Trades and Open Detail at 390 (1.4s)
+  ✓  65 [chromium] › e2e/d2/ui-alignment.spec.ts:232:5 › T2.38 one content column and side gutters › should keep a 16 px gutter on first run and onboarding at 320 (616ms)
+  ✓  66 [chromium] › e2e/d2/ui-alignment.spec.ts:245:5 › T2.38 one content column and side gutters › should keep a 16 px gutter on Trades and Open Detail at 320 (1.4s)
+  ✓  67 [chromium] › e2e/d2/ui-alignment.spec.ts:260:3 › T2.38 one content column and side gutters › should keep a 16 px gutter on Migration Blocked at 390 and 320 (3.7s)
+  ✓  68 [chromium] › e2e/d2/ui-alignment.spec.ts:425:5 › T2.40 Trades tables › should pin Underlying, keep Underlying and Trade in view and show each figure once in both tables at 390 (2.9s)
+  ✓  69 [chromium] › e2e/d2/ui-alignment.spec.ts:425:5 › T2.40 Trades tables › should pin Underlying, keep Underlying and Trade in view and show each figure once in both tables at 320 (2.8s)
+  ✓  70 [chromium] › e2e/d2/ui-alignment.spec.ts:425:5 › T2.40 Trades tables › should pin Underlying, keep Underlying and Trade in view and show each figure once in both tables at 1280 (2.8s)
+  ✓  71 [chromium] › e2e/d2/ui-alignment.spec.ts:438:5 › T2.40 Trades tables › should keep a Records disagree badge inside the viewport with the Trade cell at 390 (3.7s)
+  ✓  72 [chromium] › e2e/d2/ui-alignment.spec.ts:438:5 › T2.40 Trades tables › should keep a Records disagree badge inside the viewport with the Trade cell at 320 (3.8s)
+  ✓  73 [chromium] › e2e/d2/ui-alignment.spec.ts:469:3 › T2.41 wide Trades table styling › should show one-line uppercase headers, a bold symbol link and right-aligned tabular figures at 1280 (2.2s)
+  ✓  74 [chromium] › e2e/d2/ui-alignment.spec.ts:515:3 › T2.41 wide Trades table styling › should keep a Records disagree badge and dates on one line in a wide row (2.3s)
+  ✓  75 [chromium] › e2e/d2/ui-alignment.spec.ts:540:3 › T2.42 semantic badge tones › should give every tone text that reaches 4.5:1 on its background and use neither the green nor the red tokens (763ms)
+  ✓  76 [chromium] › e2e/d2/ui-alignment.spec.ts:661:3 › T2.43 prompt chip groups › should render prompt chips as borderless groups with an ink checked chip and a visible focus ring on New Plan and Record entry (1.8s)
+
+  76 passed (2.5m)
+EXIT 0

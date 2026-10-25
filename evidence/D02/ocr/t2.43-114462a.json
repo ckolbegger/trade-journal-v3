@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 63495,
+    "input_tokens": 62803,
+    "output_tokens": 692,
+    "cache_read_tokens": 19200,
+    "elapsed": "48s"
+  },
+  "tool_calls": {
+    "total": 10,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/app.css",
+      "content": "In Windows High Contrast / forced-colors mode, the browser replaces these background, text, and border colors, so checked and unchecked chips become visually identical. Because the native input is now transparent, its checked indicator is also unavailable (including for “Decline to reflect”). Add a forced-colors fallback that restores a visible native input or uses a non-color selection indicator so users can still see the selected value.",
+      "existing_code": "label.chip:has(input:checked) {\n  background: var(--ink);\n  border-color: var(--ink);\n  color: #ffffff;\n}",
+      "start_line": 332,
+      "end_line": 336,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/ui/app.css",
+      "files": [
+        "src/ui/app.css"
+      ]
+    }
+  ],
+  "session_id": "55ff525a-92a1-4e54-9f23-c650b9acf555",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "55ff525a-92a1-4e54-9f23-c650b9acf555",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "114462a",
+      "resolved_base": "efe5be52ef3f0be480482375c28c19181edfb76b",
+      "resolved_head": "114462aedcd8c9d771e46d51ae3574d5e8de200a",
+      "exact_range": "efe5be52ef3f0be480482375c28c19181edfb76b..114462aedcd8c9d771e46d51ae3574d5e8de200a",
+      "source_artifact_sha256": "5a70eb949704a2b2b033f7b44c54e4096cba6723e3c11a44915ea611b62c19ba"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "21b6dcae82b557d9392abce8ce522450e5bc0a5e3704129a16b9c778b58a2f9a"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "21b6dcae82b557d9392abce8ce522450e5bc0a5e3704129a16b9c778b58a2f9a"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 47583
+  }
+}

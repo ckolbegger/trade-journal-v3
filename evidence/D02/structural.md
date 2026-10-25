@@ -1482,3 +1482,11 @@ Commands:
 | `tabTo` reaches the radio with a focus ring; axe | pass | pass |
 
 Change: `fieldset.choices` is borderless; its legend is a small-caps, muted label (0.8rem, 600, 0.04em). `label.chip:has(input:checked)` is ink with white text; the radio is 1 px, transparent and centred in the chip (a `clip-path` radio made Playwright's `check()` fail with "label intercepts pointer events", and existing specs check Reflection radios by label); `label.chip:focus-within` draws the ring. Labels, names and roles are unchanged.
+
+**ocr review of T2.43** (`ocr-review` step): commit `114462a`, session `55ff525a-92a1-4e54-9f23-c650b9acf555`, model `gpt-6.1-sol`, 1 file reviewed (`app.css`), 1 comment. Raw output: `ocr/t2.43-114462a.json`.
+
+| Severity | Location | Claim | Verdict |
+| --- | --- | --- | --- |
+| medium | `app.css:332-336` | In forced-colors mode the checked and unchecked chips look identical: the checked state is background and text colour only, and the native radio is `opacity: 0` | Valid (no `forced-colors` rule exists); bug task T2.43-B1, run after T2.44 because both touch `app.css` and `ui-alignment.spec.ts` |
+
+**Complete cumulative run after T2.43** (`suite-runner`, 2026-10-25 01:33 EDT, on `114462a`): Unit 41 files / 399 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 76 passed (2.5m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.43-*.txt`.
