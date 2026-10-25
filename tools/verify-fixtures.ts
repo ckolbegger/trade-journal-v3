@@ -1,11 +1,13 @@
 // npm run verify:fixtures: every committed Workspace fixture opens with the current release and
 // presents views equal to its committed snapshot (D1 T1.31). A fixture at the current schema opens
-// Ready without migrating; an older one migrates to the current schema first (D2 T2.19).
+// Ready without migrating; an older one migrates to the current schema first (D2 T2.19). Equal means
+// field by field over the fields the snapshot holds; a field the current release adds is allowed and
+// its defined value is asserted elsewhere (D4 A51, brought forward by D2 T2.56, plan revision 8).
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { isDeepStrictEqual } from 'node:util';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
 import { sequentialIds } from '../tests/support/workspace.ts';
+import { compareSnapshot } from './fixtures/snapshot-compare.ts';
 import { FIXTURES_DIR, launchOn, loadDump, viewsOf, type WorkspaceDump } from './fixtures/workspace-fixture.ts';
 
 const problems: string[] = [];
@@ -44,8 +46,9 @@ for (const name of fixtures) {
     continue;
   }
   const views = await viewsOf(app, dump.schemaVersion);
-  if (!isDeepStrictEqual(views, expected)) {
-    problems.push(`${name}: views differ from expected-views.json`);
+  const differences = compareSnapshot(views, expected);
+  if (differences.length > 0) {
+    problems.push(`${name}: views differ from expected-views.json at ${differences.join(', ')}`);
     continue;
   }
   verified.push(`${name}: schema ${dump.schemaVersion}, ${migration ? `migrated to ${migration.toVersion} into ${migration.databaseName}` : 'opened without migration'}, views equal`);

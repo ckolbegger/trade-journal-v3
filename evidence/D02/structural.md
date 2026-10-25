@@ -1302,3 +1302,11 @@ Commands: `npm run build:faults` then `npx playwright test e2e/d2/ui-alignment.s
 **ocr review of T2.39** (`ocr-review` step): commit `1a64e6f`, session `7462965e-34c6-4bb2-aaf3-b7215a7d2931`, model `gpt-6.1-sol`, 1 file reviewed (`TradeList.tsx`), 0 comments. No findings. Raw output: `ocr/t2.39-1a64e6f.json`.
 
 **Complete cumulative run after T2.39** (`suite-runner`, 2026-10-24 23:11 EDT, on `1a64e6f`): Unit 38 files / 384 tests passed; Node integration 19 / 42 passed; Browser (Chromium) 67 passed (2.1m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.39-*.txt`.
+
+#### T2.56
+
+`verify:fixtures` compares each committed snapshot with the current views field by field over the fields the snapshot holds (D4 A51 brought forward; revision 8). New exported `compareSnapshot(views, snapshot)` in `tools/fixtures/snapshot-compare.ts` returns the path of each difference (for example `open[2].averageOpenCost.value`; an array length mismatch reads `open (length 3, snapshot 2)`); `tools/verify-fixtures.ts` uses it and its messages and flow are otherwise unchanged. D4's T4.29 reuses it.
+
+Test location: the unit project collects `src/**` only, so tools tests are not in `npx vitest run src`. The test is `tests/integration/d2/snapshot-compare.test.ts` (5 cases), collected by the Node integration project the cumulative run includes. Red and green rows are in `tdd-log.md`.
+
+Commands: `npm run verify:fixtures` printed `workspace-v1: schema 1, migrated to 2 ..., views equal`, `workspace-v2: schema 2, opened without migration, views equal`, and `verify:fixtures OK` (exit 0). `npx vitest run tests/integration/d2/snapshot-compare.test.ts` 5 passed.
