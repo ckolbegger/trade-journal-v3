@@ -2,7 +2,7 @@
 import { act, cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
-import { MemoryRouter } from 'react-router';
+import { Link, MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble, readyStatus, writableReadiness } from '../../tests/support/facade-double.ts';
 import type { UiFacade } from '../app/compose.ts';
@@ -411,5 +411,56 @@ describe('migration startup states', () => {
     expect(screen.getByLabelText<HTMLInputElement>('Quantity').value).toBe('60');
     expect(screen.getByRole('button', { name: 'Reload' })).toBeTruthy();
     expect(screen.queryByRole('heading', { name: /read only: this browser can.t save right now/i })).toBeNull();
+  });
+});
+
+describe('write route while not Writable', () => {
+  const recoveryStatus = {
+    kind: 'RecoveryOnly',
+    observedAt: '2026-10-12T14:05:00Z',
+    installedCapabilities: facadeDouble().capabilities,
+    readiness: writableReadiness,
+    protection: 'BestEffort',
+    failedChecks: [{ check: 'inventory', reason: 'InventoryMissing' }],
+    binding: { databaseName: 'tj-ws-1', contentRevision: 3 },
+    timeZone: 'America/New_York',
+  };
+
+  it("should show a heading Record entry isn't available, an explanation that this browser can't save right now, and a link to the Trade, for a direct record-entry link", async () => {
+    renderShell(facadeDouble({ status: recoveryStatus }), '/trades/trade-1/record-entry');
+    expect(await screen.findByRole('heading', { name: "Record entry isn't available" })).toBeTruthy();
+    expect(screen.getByText("This browser can't save right now, so an entry can't be recorded.")).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Back to the Trade' }).getAttribute('href')).toBe('/trades/trade-1');
+    expect(screen.queryByText('Record entry form')).toBeNull();
+  });
+
+  it('should show the same view after a runtime refusal mid-session, without losing the read-only banner', async () => {
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeWorkflows.confirmPlan).mockResolvedValue({
+      kind: 'RuntimeNotWritable',
+      runtimeReadiness: 'RecoveryOnly',
+      failedChecks: [{ check: 'inventory', reason: 'InventoryInvalid' }],
+      workspaceStatus: 'RecoveryOnly',
+      safeActions: [],
+    });
+    function RefusingPlanStub() {
+      const runtime = useRuntime();
+      return (
+        <section>
+          <button type="button" onClick={() => void facade.TradeWorkflows.confirmPlan({} as never).then((result) => runtime.report(result))}>
+            Confirm Plan
+          </button>
+          <Link to="/trades/trade-1/record-entry">Go to entry</Link>
+        </section>
+      );
+    }
+    renderShell(facade, '/plans/new', { 'new-plan': RefusingPlanStub });
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Confirm Plan' }));
+    await screen.findByRole('heading', { name: /read only: this browser can.t save right now/i });
+    await user.click(screen.getByRole('link', { name: 'Go to entry' }));
+    expect(await screen.findByRole('heading', { name: "Record entry isn't available" })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Back to the Trade' }).getAttribute('href')).toBe('/trades/trade-1');
+    expect(screen.getByRole('heading', { name: /read only: this browser can.t save right now/i })).toBeTruthy();
   });
 });

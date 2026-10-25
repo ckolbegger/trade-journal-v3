@@ -1036,3 +1036,19 @@ Change: `loadEpoch` is also bumped by each reload and each save, so only the lat
 **ocr review of T2.28-B1** (`ocr-review` step): commit `feb3c1a`, session `ccfde2e9-23e2-4c9a-a034-0f22716ba412`, model `gpt-6.1-sol`, 1 file reviewed (test and evidence files excluded), 0 comments. No findings. Raw output: `ocr/t2.28-b1-feb3c1a.json`.
 
 **Complete cumulative run after T2.29-B1 and T2.28-B1** (`suite-runner`, 2026-10-24 22:01 EDT, on `feb3c1a` plus the uncommitted ocr evidence): Unit 37 files / 370 tests passed; Node integration 19 files / 42 tests passed; Browser (Chromium) 52 passed (1.7m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.28-b1-*.txt`.
+
+#### T2.30
+
+Browser case: `e2e/d2/runtime-failure.spec.ts` "should explain Record entry isn't available on a direct link while Recovery Only, with a link back to the Trade": a seeded Trade, then `page.goto('/trades/<id>/record-entry?faults=inventory')`.
+
+| Command | Result |
+|---|---|
+| `npm run build:faults` | built |
+| `npx playwright test e2e/d2/runtime-failure.spec.ts` | 3 passed |
+| `npx vitest run src/ui/AppShell.test.tsx` | 20 passed |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
+
+Decisions (for the final report):
+- Heading h1 "Record entry isn't available"; sentence "This browser can't save right now, so an entry can't be recorded."; link "Back to the Trade" to `/trades/<id>` (same link text as the incoherent note). No focus behaviour added.
+- Case 2 resolution: the launch rule says an open form keeps its values after a refusal (B2.10), so the view replaces the form only when the entry route is reached after the refusal, not where the refusal arrived. AppShell remembers the first path a refusal came from (`refusedAt`); `record-entry` shows the unavailable view whenever not Writable and the current path differs from it.
+- Known edge: after a refusal arriving on a record-entry path, leaving and returning to that same path shows the (disabled) form again.

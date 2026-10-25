@@ -43,6 +43,28 @@ test.describe('B2.9 Recovery Only (faults build)', () => {
   });
 });
 
+test.describe('F6 direct entry-form link (faults build)', () => {
+  test("should explain Record entry isn't available on a direct link while Recovery Only, with a link back to the Trade", async ({ server, profile }) => {
+    void server;
+    const setup = await profile.launch();
+    const first = await onboardedPage(setup);
+    await confirmReference(first);
+    const tradeId = new URL(first.url()).pathname.split('/')[2]!;
+    await setup.close();
+
+    const context = await profile.launch();
+    const page = await firstPage(context);
+    await page.goto(`/trades/${tradeId}/record-entry?faults=inventory`);
+    await expect(page.getByRole('region', { name: "Read only: this browser can't save right now" })).toBeVisible(READY);
+    await expect(page.getByRole('heading', { level: 1, name: "Record entry isn't available" })).toBeVisible();
+    await expect(page.getByText("This browser can't save right now, so an entry can't be recorded.")).toBeVisible();
+    await page.getByRole('link', { name: 'Back to the Trade' }).click();
+    await expect(page).toHaveURL(new RegExp(`/trades/${tradeId}$`));
+    await expect(page.getByRole('heading', { name: "Record entry isn't available" })).toHaveCount(0);
+    await context.close();
+  });
+});
+
 test.describe('B2.10 mid-session failure (faults build)', () => {
   test('should explain RuntimeNotWritable, keep the entry form values, and record no Position Change', async ({ server, profile }) => {
     void server;

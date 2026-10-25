@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ComponentType, type ReactNode } from 'react';
-import { Link, Route, Routes } from 'react-router';
+import { Link, Route, Routes, useLocation, useParams } from 'react-router';
 import type { UiFacade } from '../app/compose.ts';
 import type { MigrationBlocked } from '../app/types.ts';
 import type { ReadinessFailure, RuntimeNotWritable } from '../delivery/runtime-not-writable.ts';
@@ -43,11 +43,28 @@ function useWide(): boolean {
 }
 
 // The application shell: nothing is offered until Runtime Readiness has been established.
+const RECORD_ENTRY_PATH = '/trades/:tradeId/record-entry';
+
+// A direct link to the entry form while this browser can't save: say so instead of a blank view.
+function RecordEntryUnavailable() {
+  const { tradeId } = useParams();
+  return (
+    <section className="card">
+      <h1>Record entry isn't available</h1>
+      <p>This browser can't save right now, so an entry can't be recorded.</p>
+      <Link to={`/trades/${tradeId}`}>Back to the Trade</Link>
+    </section>
+  );
+}
+
 export function AppShell({ facade, screens, notices, onRetry = () => window.location.reload() }: AppShellProps) {
   const [status, setStatus] = useState<Status | undefined>();
   const wide = useWide();
   // A refusal from a mutation during the session, which overrides the launch status.
   const [refusal, setRefusal] = useState<RuntimeNotWritable | undefined>();
+  // Where the refusal arrived, so the form open there keeps its values (see `routes` below).
+  const { pathname } = useLocation();
+  const [refusedAt, setRefusedAt] = useState<string | undefined>();
   // The honest outcome of the trader's explicit durability request, if any.
   const [durability, setDurability] = useState<Awaited<ReturnType<UiFacade['Workspace']['requestDurability']>> | undefined>();
   // While initialize converts an older stored schema (D2 A31).
@@ -238,7 +255,10 @@ export function AppShell({ facade, screens, notices, onRetry = () => window.loca
   const navigation = routes.filter((route) => route.navigation && (writable || route.readOnly));
   const superseded = failedChecks.some((failure) => failure.reason === 'SessionSuperseded');
   const report = (result: { readonly kind: string }) => {
-    if (result.kind === 'RuntimeNotWritable') setRefusal(result as RuntimeNotWritable);
+    if (result.kind === 'RuntimeNotWritable') {
+      setRefusal(result as RuntimeNotWritable);
+      setRefusedAt((at) => at ?? pathname);
+    }
   };
 
   return (
@@ -271,8 +291,12 @@ export function AppShell({ facade, screens, notices, onRetry = () => window.loca
           <Routes>
             {routes.map((route) => {
               const Screen = screens[route.id];
-              return <Route key={route.id} path={route.path} element={<Screen />} />;
+              // The entry form stays only where it was open when writing stopped; reaching it afterwards,
+              // or by a direct link while not Writable, shows why it is unavailable.
+              const element = route.id === 'record-entry' && !writable && pathname !== refusedAt ? <RecordEntryUnavailable /> : <Screen />;
+              return <Route key={route.id} path={route.path} element={element} />;
             })}
+            {!launchedWritable && <Route path={RECORD_ENTRY_PATH} element={<RecordEntryUnavailable />} />}
           </Routes>
         </main>
         <nav aria-label="Primary" className="nav" data-placement={wide ? 'sidebar' : 'bottom'}>
