@@ -1326,3 +1326,11 @@ Net cost from `derive`: `DerivedTradeState.netCost: CalculationResult<Rational, 
 **ocr review of T2.57** (`ocr-review` step): commit `bd34653`, session `67f7659b-adff-4571-83fa-88ff46ea04ca`, model `gpt-6.1-sol`, 1 file reviewed (`derive.ts`), 0 comments. No findings. Raw output: `ocr/t2.57-bd34653.json`.
 
 **Complete cumulative run after T2.57** (`suite-runner`, 2026-10-25 00:33 EDT, on `bd34653`): Unit 39 files / 387 tests passed; Node integration 20 / 47 passed; Browser (Chromium) 67 passed (2.1m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.57-*.txt`.
+
+## T2.58-B1
+
+Refactor, no behavior change: `openItem` calls `openSummary(derived)` once and derives `openQuantity`, `averageOpenCost` and `summary` from it.
+
+- `npx vitest run src/coordinators tests/integration/d2/trade-summary.test.ts` before: 9 files, 76 tests passed. After: 9 files, 76 tests passed.
+- `npm run verify:fixtures` after: OK (workspace-v1, workspace-v2).
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`: exit 0.

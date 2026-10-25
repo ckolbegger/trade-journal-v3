@@ -269,19 +269,15 @@ const entryStatusOf = (derived: DerivedTradeState) => (derived.entryResolution.k
 const optional = <K extends string, V>(key: K, value: V | undefined) => (value === undefined ? {} : ({ [key]: value } as Record<K, V>));
 
 function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels): OpenTradeItem {
-  const lots = derived.positions.flatMap((p) => p.openLots);
-  const openQuantity = sum(lots.map((l) => l.quantity));
+  const open = openSummary(derived);
   return {
     tradeId: summary.tradeId,
     underlying: summary.underlying,
     ...labels,
-    openQuantity,
+    openQuantity: open?.quantity ?? Rational.of(0n),
     plannedQuantity: sum(analysis.plan.legs.map((l) => decimal(l.quantity))),
-    averageOpenCost:
-      openQuantity.compare(Rational.of(0n)) === 0
-        ? { kind: 'NotApplicable', reason: 'NoOpenQuantity' }
-        : { kind: 'Value', value: sum(lots.map((l) => l.quantity.mul(l.price))).div(openQuantity) },
-    ...optional('summary', openSummary(derived)),
+    averageOpenCost: open ? { kind: 'Value', value: open.price } : { kind: 'NotApplicable', reason: 'NoOpenQuantity' },
+    ...optional('summary', open),
     netCost: derived.netCost,
     incurredFees: derived.fees.incurredOpening,
     entryStatus: entryStatusOf(derived),
