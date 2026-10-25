@@ -356,3 +356,20 @@ ul.narrative > li + li {
   margin-top: 0.75rem;
   padding-top: 0.75rem;
 }
+
+/* Navigation icons and the wide-sidebar wordmark. */
+.shell > .nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.shell > .nav .icon {
+  flex: none;
+}
+
+.shell > .nav .wordmark {
+  font-weight: 700;
+  font-size: 1.15rem;
+  padding: 0 0.8rem 1rem;
+}

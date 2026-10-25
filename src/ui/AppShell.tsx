@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState, type ComponentType, type ReactNode } from 'react';
-import { Link, Route, Routes, useLocation, useParams } from 'react-router';
+import { Link, matchPath, Route, Routes, useLocation, useParams } from 'react-router';
 import type { UiFacade } from '../app/compose.ts';
 import type { MigrationBlocked } from '../app/types.ts';
 import type { ReadinessFailure, RuntimeNotWritable } from '../delivery/runtime-not-writable.ts';
 import { isRouteInstalled, ROUTES } from '../app/routes.ts';
 import { explainFailure, explainMigrationIssue } from './readiness-copy.ts';
+import { AboutIcon, AccountsIcon, NewPlanIcon, TradesIcon } from './icons.tsx';
 import { RuntimeContext } from './runtime.tsx';
 import { FirstRun } from './screens/FirstRun.tsx';
 import { OnboardingAccount } from './screens/OnboardingAccount.tsx';
@@ -40,6 +41,19 @@ function useWide(): boolean {
     return () => window.removeEventListener('resize', update);
   }, []);
   return wide;
+}
+
+const NAV_ICONS: Partial<Record<RouteId, ComponentType>> = {
+  trades: TradesIcon,
+  'new-plan': NewPlanIcon,
+  accounts: AccountsIcon,
+  about: AboutIcon,
+};
+
+// The primary-navigation destination a location belongs to: a Trade's own pages sit under Trades.
+function navigationOwner(pathname: string): RouteId | undefined {
+  const route = ROUTES.find((candidate) => matchPath({ path: candidate.path, end: true }, pathname));
+  return route?.id === 'trade-detail' || route?.id === 'record-entry' ? 'trades' : route?.id;
 }
 
 // The application shell: nothing is offered until Runtime Readiness has been established.
@@ -304,11 +318,16 @@ export function AppShell({ facade, screens, notices, onRetry = () => window.loca
           </Routes>
         </main>
         <nav aria-label="Primary" className="nav" data-placement={wide ? 'sidebar' : 'bottom'}>
-          {navigation.map((route) => (
-            <Link key={route.id} to={route.path}>
-              {route.label}
-            </Link>
-          ))}
+          {wide && <span className="wordmark">Trade Journal</span>}
+          {navigation.map((route) => {
+            const NavIcon = NAV_ICONS[route.id];
+            return (
+              <Link key={route.id} to={route.path} aria-current={navigationOwner(pathname) === route.id ? 'page' : undefined}>
+                {NavIcon && <NavIcon />}
+                {route.label}
+              </Link>
+            );
+          })}
         </nav>
       </div>
     </RuntimeContext.Provider>

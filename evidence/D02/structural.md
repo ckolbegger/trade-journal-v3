@@ -1176,3 +1176,15 @@ The plan's integration total of 39 is a stale figure (later tasks added tests); 
 **Review of T2.35-B1:** commit `e7249bf` changes only the test file, which ocr never selects (as for T2.35), so no ocr run. The main session checked the new title and comment against the assertions (lines 18–41: the receipt's Planned to Open transition, Open and not Planned after restart, the PositionChange and Execution facts, the Open index entry, the Entry, the obligation): every clause matches an assertion.
 
 **Complete cumulative run after T2.35-B1** (`suite-runner`, 2026-10-24 22:28 EDT, on `e7249bf` plus the uncommitted evidence): Unit 38 files / 379 tests passed; Node integration 19 / 42 passed; Browser (Chromium) 54 passed (1.7m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.35-b1-*.txt`. This ends the T2.25–T2.35 follow-up batch.
+
+#### T2.36 Primary navigation: current page, wordmark, icons
+
+- Red then green for all four cases in `src/ui/AppShell.test.tsx` (describe "primary navigation"); no first-run passes.
+- Decisions: `aria-current` is computed from `matchPath` over `ROUTES` in `navigationOwner` (Trade Detail and Record entry map to Trades), on plain `Link`s rather than `NavLink`, because `NavLink` can't mark Trades current on a child path. The wordmark is a `span.wordmark` rendered as the first child of the nav, only when wide, so it sits outside the links and absent in the bottom bar. Icons live in `src/ui/icons.tsx` (shared `Icon` wrapper with `aria-hidden`, 1.5 stroke; later tasks add the back arrow and chevron there). Minimal CSS in `app.css` for icon/label alignment and the wordmark; pill and bottom-bar styling is left to T2.37.
+
+| Command | Result |
+|---|---|
+| `npx vitest run src/ui/AppShell.test.tsx` | 25 passed |
+| `npm run build:faults` | exit 0 |
+| `npx playwright test e2e/d1/responsive-a11y.spec.ts e2e/d2/responsive-a11y.spec.ts e2e/d2/narrow.spec.ts e2e/d2/runtime-failure.spec.ts` | 15 passed |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |

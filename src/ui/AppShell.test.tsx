@@ -284,6 +284,60 @@ describe('responsive navigation', () => {
   });
 });
 
+describe('primary navigation', () => {
+  const links = (nav: HTMLElement) => Array.from(nav.querySelectorAll('a'));
+
+  it('should mark the link of the current route, and only that link, with aria-current page in both the sidebar and the bottom bar', async () => {
+    for (const width of [1280, 390]) {
+      window.innerWidth = width;
+      renderShell(facadeDouble(), '/accounts');
+      const nav = await screen.findByRole('navigation', { name: 'Primary' });
+      expect(links(nav).map((a) => [a.textContent, a.getAttribute('aria-current')])).toEqual([
+        ['Trades', null],
+        ['New Plan', null],
+        ['Accounts', 'page'],
+        ['About', null],
+      ]);
+      cleanup();
+    }
+  });
+
+  it('should mark Trades as current on a Trade Detail and on Record entry', async () => {
+    for (const path of ['/trades/t1', '/trades/t1/record-entry']) {
+      renderShell(facadeDouble(), path);
+      const nav = await screen.findByRole('navigation', { name: 'Primary' });
+      expect(links(nav).filter((a) => a.getAttribute('aria-current') === 'page').map((a) => a.textContent)).toEqual(['Trades']);
+      cleanup();
+    }
+  });
+
+  it('should show the product name Trade Journal at the top of the wide sidebar, outside the link list', async () => {
+    window.innerWidth = 1280;
+    renderShell();
+    const nav = await screen.findByRole('navigation', { name: 'Primary' });
+    const name = screen.getByText('Trade Journal');
+    expect(nav.contains(name)).toBe(true);
+    expect(name.closest('a')).toBeNull();
+    expect(nav.firstElementChild).toBe(name);
+    cleanup();
+    window.innerWidth = 390;
+    renderShell();
+    await screen.findByRole('navigation', { name: 'Primary' });
+    expect(screen.queryByText('Trade Journal')).toBeNull();
+  });
+
+  it('should render an icon beside every label with aria-hidden, leaving every link accessible name unchanged', async () => {
+    renderShell();
+    const nav = await screen.findByRole('navigation', { name: 'Primary' });
+    for (const link of links(nav)) {
+      const icon = link.querySelector('svg');
+      expect(icon?.getAttribute('aria-hidden')).toBe('true');
+    }
+    expect(screen.getAllByRole('link').map((a) => a.textContent)).toEqual(['Trades', 'New Plan', 'Accounts', 'About']);
+    expect(screen.getByRole('link', { name: 'New Plan' })).toBeTruthy();
+  });
+});
+
 describe('migration startup states', () => {
   const base = { observedAt: '2026-10-12T14:05:00Z', installedCapabilities: facadeDouble().capabilities, protection: 'BestEffort' } as const;
   // An older stored schema seen with Writable readiness: this launch converts it (D2 P6).
