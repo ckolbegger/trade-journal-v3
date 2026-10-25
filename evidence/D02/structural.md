@@ -1318,3 +1318,11 @@ Commands: `npm run verify:fixtures` printed `workspace-v1: schema 1, migrated to
 **ocr review of T2.56** (`ocr-review` step): commit `fee10d5`, session `ceae310c-a56d-4417-a9ec-80abadf16c4d`, model `gpt-6.1-sol`, 1 file reviewed (`verify-fixtures.ts`), 0 comments. No findings. ocr did not select `tools/fixtures/snapshot-compare.ts`; checked by hand by the main session: no defect (a top-level type mismatch reports an empty path, which the committed snapshot cannot produce). Raw output: `ocr/t2.56-fee10d5.json`.
 
 **Complete cumulative run after T2.56** (`suite-runner`, 2026-10-25 00:27 EDT, on `fee10d5`): Unit 38 files / 384 tests passed; Node integration 20 / 47 passed; Browser (Chromium) 67 passed (2.1m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.56-*.txt`.
+
+#### T2.57
+
+Net cost from `derive`: `DerivedTradeState.netCost: CalculationResult<Rational, 'NoOpenQuantity'>`, the exact sum over Open Lots of quantity × price plus the unconsumed opening fee; `NotApplicable(NoOpenQuantity)` with no Lots. Test `src/domain/trade-analysis/net-cost.test.ts` (3007, 5020, Planned). The plan's case 2 figure was corrected from 5034.00 to 5020.00 (`c61cc2a`). Cases 2 and 3 were shown red by mutation only (flagged in the handoff).
+
+**ocr review of T2.57** (`ocr-review` step): commit `bd34653`, session `67f7659b-adff-4571-83fa-88ff46ea04ca`, model `gpt-6.1-sol`, 1 file reviewed (`derive.ts`), 0 comments. No findings. Raw output: `ocr/t2.57-bd34653.json`.
+
+**Complete cumulative run after T2.57** (`suite-runner`, 2026-10-25 00:33 EDT, on `bd34653`): Unit 39 files / 387 tests passed; Node integration 20 / 47 passed; Browser (Chromium) 67 passed (2.1m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.57-*.txt`.
