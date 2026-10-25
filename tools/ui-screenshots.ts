@@ -4,7 +4,7 @@
 // specs do, and drives the app through the e2e/d2/support.ts steps with a fixed clock.
 // It is not part of the e2e suite.
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import type { BrowserContext, Locator, Page } from '@playwright/test';
@@ -33,8 +33,9 @@ import {
 import { startReleaseServer } from './release-server.ts';
 
 const OUT = path.resolve('evidence/D02/ui-alignment');
-// Captures go here, beside OUT so the final rename stays on one filesystem; OUT is replaced only
-// after a complete run.
+// Captures go under test-results/ (git-ignored, same filesystem as evidence/), so a killed run
+// leaves nothing untracked in evidence/; OUT is replaced only after a complete, verified run.
+const SCRATCH = path.resolve('test-results');
 let captureDir = OUT;
 const WIDTHS = [
   { label: '390', width: 390, height: 844 },
@@ -199,7 +200,8 @@ async function drive(context: BrowserContext): Promise<void> {
 
 async function main(): Promise<void> {
   run('npm', ['run', 'build:faults']);
-  captureDir = mkdtempSync(`${OUT}-capture-`);
+  mkdirSync(SCRATCH, { recursive: true });
+  captureDir = mkdtempSync(path.join(SCRATCH, 'ui-screenshots-'));
   try {
     const server = await startReleaseServer({ root: process.cwd(), release: 'dist-faults' });
     try {
@@ -222,13 +224,30 @@ async function main(): Promise<void> {
     const pngs = files.filter((f) => f.endsWith('.png')).length;
     if (pngs !== SCREENS.length * WIDTHS.length) throw new Error(`expected ${SCREENS.length * WIDTHS.length} PNGs, wrote ${pngs}`);
     if (!files.includes('README.md')) throw new Error('no README written');
-    rmSync(OUT, { recursive: true, force: true });
-    renameSync(captureDir, OUT);
+    swapIn();
     console.log(`wrote ${pngs} PNGs and the README to ${path.relative('.', OUT)}`);
   } catch (error) {
-    rmSync(captureDir, { recursive: true, force: true });
+    if (!swapFailed) rmSync(captureDir, { recursive: true, force: true });
     throw error;
   }
+}
+
+// Replaces OUT with captureDir. If the second rename fails, OUT is restored from the backup and
+// captureDir stays on disk, so no copy is lost.
+let swapFailed = false;
+function swapIn(): void {
+  const backup = path.join(SCRATCH, `ui-screenshots-backup-${process.pid}`);
+  const hadOut = existsSync(OUT);
+  if (hadOut) renameSync(OUT, backup);
+  try {
+    renameSync(captureDir, OUT);
+  } catch (error) {
+    swapFailed = true;
+    if (hadOut) renameSync(backup, OUT);
+    console.error(`could not move the capture into place; it is kept at ${captureDir}`);
+    throw error;
+  }
+  if (hadOut) rmSync(backup, { recursive: true, force: true });
 }
 
 await main();
