@@ -2,7 +2,7 @@
 
 Status: **approved by the user on 2026-10-24 as plan revision 7 (decision 47)**, tagged `claude-opus-5.5-plan-r7`. All of U1–U7 were answered by the user on 2026-10-24. Implementation decisions I1 and I2 are settled with the user during T2.40 and T2.50.
 
-**Plan revision 8 (decision 48), proposed 2026-10-25 at the user's direction during T2.40:** I1 is answered by a new design, the **Trade column**: one short description of what the Trade holds, built from a structured Trade Summary in the read model, beside a separate Underlying column, with a Net cost figure. Section 2a holds the design, from Long Stock now through single-leg (D7) and multi-leg (D10) options. It adds tasks T2.56–T2.59, rewrites T2.40, and amends T2.41, T2.49 and T2.55. It lifts this batch's "no view-model shape change" rule for exactly two derived fields, `summary` and `netCost` (section 1).
+**Plan revision 8 (decision 48), requested and approved by the user on 2026-10-25 during T2.40, tagged `claude-opus-5.5-plan-r8`:** I1 is answered by a new design, the **Trade column**: one short description of what the Trade holds, built from a structured Trade Summary in the read model, beside a separate Underlying column, with a Net cost figure. Section 2a holds the design, from Long Stock now through single-leg (D7) and multi-leg (D10) options. It adds tasks T2.56–T2.59, rewrites T2.40, and amends T2.41, T2.49 and T2.55. It lifts this batch's "no view-model shape change" rule for exactly two derived fields, `summary` and `netCost` (section 1).
 
 **Source.** The screenshot comparison made on 2026-10-24 against commit `404fda1`. It compared the 24 references in `specs/reference/ui-screenshots/` with screenshots of the built app at 390 and 1280 px (`test-results/screenshot-compare/shots/`, git-ignored). The report is saved in [evidence/D02/screenshot-comparison.md](../evidence/D02/screenshot-comparison.md).
 
@@ -113,6 +113,7 @@ Underlying stays its own first column, the pinned one on narrow, and keeps the l
 - **Fees** are inside Net cost and itemised on the Detail.
 - **Last activity** still orders the Open list (A32, the cursor order), and the Detail shows it.
 - **Deviations** are listed on the Detail. A count is spec-optional on a list (trade-views: lists "may show" Deviation indicators), and the spec's `browseTrades` filters have no Deviation dimension. A "has an active Deviation" filter would therefore be a product addition beyond the spec, and it is not planned.
+- **Planned reward and Plan time** leave the Planned table by the same rule (the user's direction, 2026-10-25): the Original Planned Reward is in the Detail's Plan Baseline, and Plan time still orders the Planned list and is on the Detail.
 - **Integrity** cannot become a filter only. AC-LIFE-003 requires normal reads to surface a disagreement, so a trader must see it without looking for it. It becomes a "Records disagree" text badge in the Trade cell, at every width, shown only on a disagreeing row. An agreeing row shows nothing, where today every row says "Records agree".
 
 The cell order in the markup is the visual order. The I1 proposal's CSS-only reordering is dropped, since the columns change anyway.
@@ -120,7 +121,7 @@ The cell order in the markup is the visual order. The I1 proposal's CSS-only reo
 | Table | Wide (≥ 960 px), in order | Narrow (< 960 px) |
 |---|---|---|
 | Open (D2) | Underlying · Trade · Net cost · Entry · Account | Underlying (pinned) · Trade, two lines (below) · then Entry and Account, scrolling |
-| Planned (D2) | Underlying · Trade · 1R · Reward : risk · Planned reward · Entry · Plan time · Account | Underlying (pinned) · Trade, two lines · then Entry, Plan time, Account, Planned reward, scrolling |
+| Planned (D2) | Underlying · Trade · 1R · Reward : risk · Entry · Account | Underlying (pinned) · Trade, two lines · then Entry and Account, scrolling |
 | Open from D4 | adds **P&L** (Current Marked Trade P&L) after Net cost. D4's risk and reward figures stay on the Detail and in the Review, not as list columns. | adds P&L to the Trade cell's second line |
 | Closed (D6) | Underlying · Trade · Realized P&L · Realized R · then D6 A95's other columns | Underlying (pinned) · Trade, two lines (Realized P&L and R) |
 
@@ -288,7 +289,7 @@ The option and structure texts are tested where their variants arrive (D7, D10).
 ```text
 describe("Trades table columns")
   it should show the Open columns in order Underlying, Trade, Net cost, Entry, Account, with Underlying a link named by the symbol, and no Fees, Integrity, Deviations or Last activity column
-  it should show the Planned columns in order Underlying, Trade, 1R, Reward : risk, Planned reward, Entry, Plan time, Account
+  it should show the Planned columns in order Underlying, Trade, 1R, Reward : risk, Entry, Account, with no Planned reward or Plan time column
   it should show the Trade cell's summary text and, on a second line, "Net cost $3,007.00" (Open) or "1R $250.00 · Reward : risk 2.4" (Planned)
   it should show "Entering · 60 of 100" or "Resolved · 120 of 100" in the Open Entry cell
   it should show a "Records disagree" badge in the Trade cell of a disagreeing row (coherent with findings, or incoherent with "Not available" as its Trade text), and no integrity badge on an agreeing row
