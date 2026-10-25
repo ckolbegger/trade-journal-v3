@@ -1298,3 +1298,7 @@ Trades page heading: `TradeList` renders one `<h1>Trades</h1>` above the tablist
 Test impact (grep of every heading lookup in `src`, `e2e`, `tests`): the only partial match on "Trades" was `e2e/d1/update.spec.ts` (B1.13), `getByRole('heading', { name: /Trades|Planned/ }).or(getByText('No planned trades yet'))`, which now matches both the h1 and the Empty text (strict-mode violation); changed to `.or(...).first()`. "Trade not found" lookups do not match "Trades". `e2e/d2/ui-alignment.spec.ts`: the Trades 1280 expectation now requires `h1` among the keys with banner, tablist and card (and removed the "arrives with T2.39" comment).
 
 Commands: `npm run build:faults` then `npx playwright test e2e/d2/ui-alignment.spec.ts e2e/d2/narrow.spec.ts e2e/d1 e2e/d2/responsive-a11y.spec.ts` gave 49 passed (Trades h1 within 1 px of banner at 1280). `npx vitest run src/ui` 112 passed.
+
+**ocr review of T2.39** (`ocr-review` step): commit `1a64e6f`, session `7462965e-34c6-4bb2-aaf3-b7215a7d2931`, model `gpt-6.1-sol`, 1 file reviewed (`TradeList.tsx`), 0 comments. No findings. Raw output: `ocr/t2.39-1a64e6f.json`.
+
+**Complete cumulative run after T2.39** (`suite-runner`, 2026-10-24 23:11 EDT, on `1a64e6f`): Unit 38 files / 384 tests passed; Node integration 19 / 42 passed; Browser (Chromium) 67 passed (2.1m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.39-*.txt`.
