@@ -1,0 +1,81 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 8676,
+    "input_tokens": 8585,
+    "output_tokens": 91,
+    "cache_read_tokens": 3840,
+    "elapsed": "8s"
+  },
+  "tool_calls": {
+    "total": 2,
+    "by_tool": {
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "tools/verify-fixtures.ts",
+      "files": [
+        "tools/verify-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "ceae310c-a56d-4417-a9ec-80abadf16c4d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "ceae310c-a56d-4417-a9ec-80abadf16c4d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "fee10d5",
+      "resolved_base": "4637840648bfc34a63640783c80ddc98ac67e2fc",
+      "resolved_head": "fee10d5516c3e09045f585c5850756cbc2274bf6",
+      "exact_range": "4637840648bfc34a63640783c80ddc98ac67e2fc..fee10d5516c3e09045f585c5850756cbc2274bf6",
+      "source_artifact_sha256": "01c081df1ba5ee167e0f03cc9c94b2f58fd124a7d6d1095c1a42fe7a6d0e7d7a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "8ce87f8a73f8a4627d9c0cc173b9fcf6befcd9709c44c120ef136169c5a71ac0",
+          "path": "tools/verify-fixtures.ts",
+          "fingerprint": "872c0163cf64acfa63f3228a320b2b982f6c961a3ae6e7eb7d7473b3463af3b2"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "8ce87f8a73f8a4627d9c0cc173b9fcf6befcd9709c44c120ef136169c5a71ac0",
+          "path": "tools/verify-fixtures.ts",
+          "fingerprint": "872c0163cf64acfa63f3228a320b2b982f6c961a3ae6e7eb7d7473b3463af3b2"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 8427
+  }
+}

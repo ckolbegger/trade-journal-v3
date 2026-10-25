@@ -1310,3 +1310,11 @@ Commands: `npm run build:faults` then `npx playwright test e2e/d2/ui-alignment.s
 Test location: the unit project collects `src/**` only, so tools tests are not in `npx vitest run src`. The test is `tests/integration/d2/snapshot-compare.test.ts` (5 cases), collected by the Node integration project the cumulative run includes. Red and green rows are in `tdd-log.md`.
 
 Commands: `npm run verify:fixtures` printed `workspace-v1: schema 1, migrated to 2 ..., views equal`, `workspace-v2: schema 2, opened without migration, views equal`, and `verify:fixtures OK` (exit 0). `npx vitest run tests/integration/d2/snapshot-compare.test.ts` 5 passed.
+
+#### T2.56
+
+`verify:fixtures` field rule (D4 A51 brought forward by plan revision 8): new `tools/fixtures/snapshot-compare.ts` (`compareSnapshot(views, snapshot, path)` returns difference paths; fields only in the current views are allowed; arrays item by item with equal lengths), used by `tools/verify-fixtures.ts`. Test `tests/integration/d2/snapshot-compare.test.ts` (four cases, first-run passes, each mutation-checked; flagged in the handoff).
+
+**ocr review of T2.56** (`ocr-review` step): commit `fee10d5`, session `ceae310c-a56d-4417-a9ec-80abadf16c4d`, model `gpt-6.1-sol`, 1 file reviewed (`verify-fixtures.ts`), 0 comments. No findings. ocr did not select `tools/fixtures/snapshot-compare.ts`; checked by hand by the main session: no defect (a top-level type mismatch reports an empty path, which the committed snapshot cannot produce). Raw output: `ocr/t2.56-fee10d5.json`.
+
+**Complete cumulative run after T2.56** (`suite-runner`, 2026-10-25 00:27 EDT, on `fee10d5`): Unit 38 files / 384 tests passed; Node integration 20 / 47 passed; Browser (Chromium) 67 passed (2.1m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.56-*.txt`.
