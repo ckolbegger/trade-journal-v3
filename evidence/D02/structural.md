@@ -1458,3 +1458,7 @@ Commands:
 - `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts -g T2.42` (red before CSS: neutral contrast 1.22; green after).
 - `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts e2e/d2/narrow.spec.ts e2e/d2/integrity.spec.ts e2e/d2/responsive-a11y.spec.ts`: 33 passed.
 - `npx vitest run src`: 399 passed; typecheck, tsc6, lint, lint:deps clean.
+
+**ocr review of T2.42** (`ocr-review` step): commit `b89dac5`, session `674bb7bc-125a-4fe9-bdbb-46d26be290f4`, model `gpt-6.1-sol`, 4 files reviewed, 0 comments. No findings. Raw output: `ocr/t2.42-b89dac5.json`.
+
+**Complete cumulative run after T2.42** (`suite-runner`, 2026-10-25 01:23 EDT, on `b89dac5`): Unit 41 files / 399 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 75 passed (2.4m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.42-*.txt`.
