@@ -1,0 +1,81 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 16413,
+    "input_tokens": 16245,
+    "output_tokens": 168,
+    "cache_read_tokens": 5760,
+    "elapsed": "11s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/ui/app.css",
+      "files": [
+        "src/ui/app.css"
+      ]
+    }
+  ],
+  "session_id": "af25d147-7b63-4e20-8e2b-c61f31c8b7a5",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "af25d147-7b63-4e20-8e2b-c61f31c8b7a5",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "2f0bc81",
+      "resolved_base": "e7c3747c25b3056d0b7cfac6ddc261a1ef94c8a8",
+      "resolved_head": "2f0bc817135c4927ee6650f39b3c629ad6e0024b",
+      "exact_range": "e7c3747c25b3056d0b7cfac6ddc261a1ef94c8a8..2f0bc817135c4927ee6650f39b3c629ad6e0024b",
+      "source_artifact_sha256": "8741bef0b95f8ff0f54afd27b68fec22225c2a08a0ff01d72bc74240f729d175"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "5d4ed1198857b2afdb693847dad553997689421288b2d39ce571337750e3ad85"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "5d4ed1198857b2afdb693847dad553997689421288b2d39ce571337750e3ad85"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 10952
+  }
+}

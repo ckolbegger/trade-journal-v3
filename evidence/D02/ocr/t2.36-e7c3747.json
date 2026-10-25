@@ -1,0 +1,115 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 76435,
+    "input_tokens": 75235,
+    "output_tokens": 1200,
+    "cache_read_tokens": 11520,
+    "elapsed": "49s"
+  },
+  "tool_calls": {
+    "total": 10,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/app.css",
+      "content": "The bottom bar still uses a single, non-wrapping flex row with 0.8rem horizontal padding on each link. Adding a non-shrinking 20px icon and an 8px gap to all four links makes their combined minimum widths exceed narrow viewports such as 390px (even if “New Plan” wraps). The links consequently overflow the bar, leaving navigation content and focus outlines outside the viewport. Add a narrow-layout treatment, such as stacking each icon above its label and reducing horizontal padding, and cover the four-link bar with a viewport-fit assertion.",
+      "existing_code": ".shell \u003e .nav a {\n  display: inline-flex;\n  align-items: center;\n  gap: 0.5rem;\n}",
+      "start_line": 361,
+      "end_line": 365,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/AppShell.tsx",
+        "src/ui/app.css",
+        "src/ui/icons.tsx"
+      ]
+    }
+  ],
+  "session_id": "8bf6055b-5691-4b9e-a584-3935f03860e6",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "8bf6055b-5691-4b9e-a584-3935f03860e6",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "e7c3747",
+      "resolved_base": "d3b8418318cb7d6f456142cc472a624100d6a791",
+      "resolved_head": "e7c3747c25b3056d0b7cfac6ddc261a1ef94c8a8",
+      "exact_range": "d3b8418318cb7d6f456142cc472a624100d6a791..e7c3747c25b3056d0b7cfac6ddc261a1ef94c8a8",
+      "source_artifact_sha256": "eeca1e084c50a464ec2b93d8a088ba84ba05ff85e20d4e789f0f4d166976bade"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "8486b732aaeef260c9f24351f2f3659742498effb3d54db3984f1067c42bfa48"
+        },
+        {
+          "item_id": "13dbc2c8cca9f0d3104cffe3086788f771b1be30692657b8f13c232b7450b436",
+          "path": "src/ui/icons.tsx",
+          "fingerprint": "319a8fa4fb38789b8092bd2d5606661de41a7b728d4fbd11a4267dfb15c2886e"
+        },
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "e7507cb2848f87482574649b848fcc618d69b0239fd7c593b873f73df18317b4"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "8486b732aaeef260c9f24351f2f3659742498effb3d54db3984f1067c42bfa48"
+        },
+        {
+          "item_id": "13dbc2c8cca9f0d3104cffe3086788f771b1be30692657b8f13c232b7450b436",
+          "path": "src/ui/icons.tsx",
+          "fingerprint": "319a8fa4fb38789b8092bd2d5606661de41a7b728d4fbd11a4267dfb15c2886e"
+        },
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "e7507cb2848f87482574649b848fcc618d69b0239fd7c593b873f73df18317b4"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 49423
+  }
+}

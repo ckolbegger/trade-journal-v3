@@ -1189,6 +1189,14 @@ The plan's integration total of 39 is a stale figure (later tasks added tests); 
 | `npx playwright test e2e/d1/responsive-a11y.spec.ts e2e/d2/responsive-a11y.spec.ts e2e/d2/narrow.spec.ts e2e/d2/runtime-failure.spec.ts` | 15 passed |
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
 
+**ocr review of T2.36** (`ocr-review` step): commit `e7c3747`, session `8bf6055b-5691-4b9e-a584-3935f03860e6`, model `gpt-6.1-sol`, 3 files reviewed, 1 comment. Raw output: `ocr/t2.36-e7c3747.json`.
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | bug | `src/ui/app.css:361-365` | The four-link bottom bar is a single non-wrapping row; the 20 px icon and gap per link may push links past a 390 px viewport | Valid (estimated about 420 px needed against about 374 px); `narrow.spec.ts` checks only document width. Turned into bug task T2.36-B1, which reproduced it (About's right edge at 425.3 px at 390). |
+
+**Complete cumulative run after T2.36** (`suite-runner`, 2026-10-24 22:42 EDT, on `e7c3747`): Unit 38 files / 383 tests passed; Node integration 19 / 42 passed; Browser (Chromium) 54 passed (1.7m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.36-*.txt`.
+
 #### T2.36-B1 Bottom navigation bar fit on narrow screens
 
 - Finding (ocr, Valid): after T2.36 added a 20 px icon and gap beside each label, the single non-wrapping bottom-bar row was wider than a phone viewport; `narrow.spec.ts` only checks the document scroll width, which the fixed bar does not affect.
@@ -1201,3 +1209,7 @@ The plan's integration total of 39 is a stale figure (later tasks added tests); 
 | `npx playwright test e2e/d2/ui-alignment.spec.ts e2e/d2/narrow.spec.ts e2e/d1/responsive-a11y.spec.ts e2e/d2/responsive-a11y.spec.ts` | 13 passed |
 | `npx vitest run src/ui/AppShell.test.tsx` | 25 passed |
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
+
+**ocr review of T2.36-B1** (`ocr-review` step): commit `2f0bc81`, session `af25d147-7b63-4e20-8e2b-c61f31c8b7a5`, model `gpt-6.1-sol`, 1 file reviewed (`app.css`), 0 comments. No findings. Raw output: `ocr/t2.36-b1-2f0bc81.json`.
+
+**Complete cumulative run after T2.36-B1** (`suite-runner`, 2026-10-24 22:48 EDT, on `2f0bc81` plus the uncommitted evidence): Unit 38 files / 383 tests passed; Node integration 19 / 42 passed; Browser (Chromium) 55 passed (1.7m; `npm run test:e2e` picks up `e2e/d2/ui-alignment.spec.ts`); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.36-b1-*.txt`.
