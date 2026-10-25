@@ -126,8 +126,8 @@ describe('Open Trade Detail', () => {
     expect(
       within(executions)
         .getAllByRole('button')
-        .map((b) => b.getAttribute('aria-label')),
-    ).toEqual(['Details for Buy 60 XYZ at 10:00', 'Details for Buy 40 XYZ at 11:00']);
+        .map((b) => b.getAttribute('aria-labelledby')!.split(' ').map((id) => document.getElementById(id)!.textContent).join(' ')),
+    ).toEqual(['Buy 60 XYZ @ $50.10 · 2026-10-12 10:00 details', 'Buy 40 XYZ @ $50.30 · 2026-10-12 11:00 details']);
     expect(screen.queryByRole('region', { name: 'Position Changes' })).toBeNull();
   });
 
@@ -277,8 +277,8 @@ describe('Open Trade Detail', () => {
     expect(
       within(executions)
         .getAllByRole('button')
-        .map((b) => b.getAttribute('aria-label')),
-    ).toEqual(['Details for Buy 60 XYZ at 10:00', 'Details for Buy 40 XYZ at 11:00']);
+        .map((b) => b.getAttribute('aria-labelledby')!.split(' ').map((id) => document.getElementById(id)!.textContent).join(' ')),
+    ).toEqual(['Buy 60 XYZ @ $50.10 · 2026-10-12 10:00 details', 'Buy 40 XYZ @ $50.30 · 2026-10-12 11:00 details']);
     expect(within(screen.getByRole('region', { name: 'Journal' })).getByText('Reflection declined')).toBeTruthy();
     // The narrative is the Journal section's alone, as in the Open form.
     expect(screen.queryByRole('region', { name: 'Position Change Reflection' })).toBeNull();
@@ -494,12 +494,11 @@ describe('Executions', () => {
     renderView(openDetailOf([PC1, PC2, PC4]));
     const section = await screen.findByRole('region', { name: 'Executions (4)' });
     const buttons = within(section).getAllByRole('button');
-    expect(buttons.map((b) => b.getAttribute('aria-label') ?? b.textContent)).toEqual([
-      'Details for Buy 60 XYZ at 10:00',
-      'Details for Buy 40 XYZ at 11:00',
-      'Details for Buy 10 XYZ at 15:00',
-      'Details for Buy 5 XYZ at 15:00',
-    ]);
+    // Label in Name: the accessible name begins with the row's visible text.
+    const visible = buttons.map((b) => b.querySelector('.execution-summary')!.textContent);
+    expect(visible.map((v) => v.slice(0, 10))).toEqual(['Buy 60 XYZ', 'Buy 40 XYZ', 'Buy 10 XYZ', 'Buy 5 XYZ ']);
+    for (const text of visible) expect(within(section).getByRole('button', { name: `${text} details` })).toBeTruthy();
+    expect(buttons.every((b) => !b.hasAttribute('aria-label'))).toBe(true);
     for (const button of buttons) {
       expect(button.getAttribute('aria-expanded')).toBe('false');
       expect(button.getAttribute('aria-controls')).toBeTruthy();
@@ -511,7 +510,7 @@ describe('Executions', () => {
   it('should show the Instrument, Economic Time, fee, and the Position Change with its Execution count when the row is expanded, and hide them again when it is collapsed', async () => {
     renderView(openDetailOf([PC1, PC2, PC4]));
     await screen.findByRole('region', { name: 'Executions (4)' });
-    const toggle = screen.getByRole('button', { name: 'Details for Buy 10 XYZ at 15:00' });
+    const toggle = screen.getByRole('button', { name: /^Buy 10 XYZ @ .* 15:00 details$/ });
     expect(screen.queryByText('Instrument', { selector: 'dt' })).toBeNull();
     fireEvent.click(toggle);
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
@@ -524,14 +523,14 @@ describe('Executions', () => {
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
     expect(document.getElementById(toggle.getAttribute('aria-controls')!)).toBeNull();
     // A Position Change with one Execution says so in the singular.
-    fireEvent.click(screen.getByRole('button', { name: 'Details for Buy 60 XYZ at 10:00' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Buy 60 XYZ @ .* 10:00 details$/ }));
     expect(termValue(screen.getByRole('region', { name: 'Executions (4)' }), 'Position Change')).toBe('2026-10-12 10:00 · 1 Execution');
   });
 
   it("should show the Position Change Reflection's answers in the expanded row of an Execution whose Position Change has one", async () => {
     renderView(openDetailOf([PC1, PC2, PC4], { journal: [pc1Reflection] }));
     await screen.findByRole('region', { name: 'Executions (4)' });
-    const toggle = screen.getByRole('button', { name: 'Details for Buy 60 XYZ at 10:00' });
+    const toggle = screen.getByRole('button', { name: /^Buy 60 XYZ @ .* 10:00 details$/ });
     fireEvent.click(toggle);
     const details = document.getElementById(toggle.getAttribute('aria-controls')!)!;
     expect(within(details).getByText('Position Change Reflection')).toBeTruthy();
@@ -544,16 +543,16 @@ describe('Executions', () => {
   it('should show Reflection declined with the reason, or No reflection, when the Position Change has a decline or no reflection', async () => {
     renderView(openDetailOf([PC1, PC2, PC4], { journal: [pc1Reflection, pc2Decline] }));
     await screen.findByRole('region', { name: 'Executions (4)' });
-    const open = (name: string) => {
+    const open = (name: RegExp) => {
       const toggle = screen.getByRole('button', { name });
       fireEvent.click(toggle);
       return document.getElementById(toggle.getAttribute('aria-controls')!)!;
     };
-    const declined = open('Details for Buy 40 XYZ at 11:00');
+    const declined = open(/^Buy 40 XYZ @ .* 11:00 details$/);
     expect(within(declined).getByText('Reflection declined')).toBeTruthy();
     expect(within(declined).getByText('Reason: Same plan, second fill.')).toBeTruthy();
     expect(within(declined).queryByText('No reflection')).toBeNull();
-    const none = open('Details for Buy 10 XYZ at 15:00');
+    const none = open(/^Buy 10 XYZ @ .* 15:00 details$/);
     expect(within(none).getByText('No reflection')).toBeTruthy();
     expect(within(none).queryByText('Reflection declined')).toBeNull();
   });
@@ -581,7 +580,7 @@ describe('Executions', () => {
     const user = userEvent.setup();
     renderView(openDetailOf([PC1, PC2, PC4]));
     await screen.findByRole('region', { name: 'Executions (4)' });
-    const toggle = screen.getByRole('button', { name: 'Details for Buy 60 XYZ at 10:00' });
+    const toggle = screen.getByRole('button', { name: /^Buy 60 XYZ @ .* 10:00 details$/ });
     toggle.focus();
     await user.keyboard('{Enter}');
     expect(toggle.getAttribute('aria-expanded')).toBe('true');

@@ -828,8 +828,8 @@ test.describe('T2.50 Executions as expandable rows', () => {
     await backToTrade(page);
     const section = page.getByRole('region', { name: 'Executions (2)', exact: true });
     await expect(section).toBeVisible(READY);
-    await section.getByRole('button', { name: 'Details for Buy 30 XYZ at 10:00' }).click();
-    await expect(section.getByRole('button', { name: 'Details for Buy 30 XYZ at 10:00' })).toHaveAttribute('aria-expanded', 'true');
+    await section.getByRole('button', { name: /^Buy 30 XYZ @ .* 10:00 details$/ }).click();
+    await expect(section.getByRole('button', { name: /^Buy 30 XYZ @ .* 10:00 details$/ })).toHaveAttribute('aria-expanded', 'true');
     const measure = () =>
       section.evaluate((el) => {
         const lineHeight = (node: Element) => Number.parseFloat(getComputedStyle(node).lineHeight);
@@ -894,6 +894,9 @@ test.describe('T2.50 Executions as expandable rows', () => {
     );
     for (const cell of opened) expect(cell.height, 'Opened date and time on one line').toBeLessThanOrEqual(1.6 * cell.lineHeight);
     for (const th of headers) expect(th.scrollWidth, `${th.name} header not clipped`).toBeLessThanOrEqual(th.clientWidth);
+    // Open Lots pins nothing, so its scroll shadow must start at the table edge, not inside it.
+    const pin = await page.getByRole('region', { name: 'Open Lots', exact: true }).evaluate((el) => getComputedStyle(el).getPropertyValue('--pin').trim());
+    expect(pin, 'Open Lots pin width').toBe('0px');
     await context.close();
   });
 });

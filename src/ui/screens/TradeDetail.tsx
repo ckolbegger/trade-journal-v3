@@ -265,7 +265,7 @@ function OpenSections({ view, timeZone }: { readonly view: OpenTradeDetail; read
           <dd className="number">{money(view.fees.incurredOpening)}</dd>
         </dl>
         {/* Tables scroll inside their own focusable region on a narrow screen, never the page. */}
-        <div className="table-scroll" role="region" aria-label="Open Lots" tabIndex={0}>
+        <div className="table-scroll lots-scroll" role="region" aria-label="Open Lots" tabIndex={0}>
           <table className="trades lots">
             <caption>Open Lots</caption>
             <thead>
@@ -306,6 +306,34 @@ function OpenSections({ view, timeZone }: { readonly view: OpenTradeDetail; read
   );
 }
 
+// The Reflection on an Execution's Position Change: its answers, the decline, or none.
+function ExecutionReflection({ reflection }: { readonly reflection: NarrativeItem | undefined }) {
+  if (reflection === undefined) return <p>No reflection</p>;
+  if (reflection.kind === 'Entry') {
+    return (
+      <>
+        <h3>{reflection.entryType}</h3>
+        <dl>
+          {reflection.responses.map((response) => (
+            <div key={response.prompt}>
+              <dt>{response.prompt}</dt>
+              <dd>{answerText(response.answer)}</dd>
+            </div>
+          ))}
+        </dl>
+      </>
+    );
+  }
+  return (
+    <>
+      <p>
+        <Badge tone="warning">Reflection declined</Badge>
+      </p>
+      {reflection.reason !== undefined && <p>{`Reason: ${reflection.reason}`}</p>}
+    </>
+  );
+}
+
 // One Execution as a compact row; its disclosure button is the only control. Expansion is view
 // state: it is neither stored nor put in the URL.
 function ExecutionRow({
@@ -330,12 +358,15 @@ function ExecutionRow({
         className="execution-toggle"
         aria-expanded={expanded}
         aria-controls={`execution-details-${e.factId}`}
-        aria-label={`Details for ${what} at ${time.slice(-5)}`}
+        aria-labelledby={`execution-summary-${e.factId} execution-hint-${e.factId}`}
         onClick={() => setExpanded(!expanded)}
       >
-        <span className="execution-summary">
+        <span id={`execution-summary-${e.factId}`} className="execution-summary">
           {`${what} @ ${price(e.price)} · `}
           <span className="nowrap">{time}</span>
+        </span>
+        <span id={`execution-hint-${e.factId}`} className="visually-hidden">
+          details
         </span>
         <ChevronIcon />
       </button>
@@ -355,28 +386,7 @@ function ExecutionRow({
             <dd>{`${localTime(change.economicTime, timeZone)} · ${change.executions.length} ${change.executions.length === 1 ? 'Execution' : 'Executions'}`}</dd>
           </dl>
           <div className="execution-reflection">
-            {reflection?.kind === 'Entry' ? (
-              <>
-                <h3>{reflection.entryType}</h3>
-                <dl>
-                  {reflection.responses.map((response) => (
-                    <div key={response.prompt}>
-                      <dt>{response.prompt}</dt>
-                      <dd>{answerText(response.answer)}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </>
-            ) : reflection ? (
-              <>
-                <p>
-                  <Badge tone="warning">Reflection declined</Badge>
-                </p>
-                {reflection.reason !== undefined && <p>{`Reason: ${reflection.reason}`}</p>}
-              </>
-            ) : (
-              <p>No reflection</p>
-            )}
+            <ExecutionReflection reflection={reflection} />
           </div>
         </div>
       )}

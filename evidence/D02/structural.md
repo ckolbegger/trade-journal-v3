@@ -1702,3 +1702,11 @@ Commits: view amendment (reflection items carry their Position Change), then the
 | (question b) | `journal.ts:178, 317`; `TradeDetail.tsx:407` | `positionChangeId` only on Position Change reflections; a Plan Reflection never matches an Execution | Holds (match by key) |
 
 **Complete cumulative run after T2.50** (`suite-runner`, 2026-10-25 08:50 EDT, on `60d8b8f`): Unit 41 files / 427 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 80 passed (2.5m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.50-*.txt`.
+
+## T2.50-B1 (fix for review of ce50e09..60d8b8f)
+
+- Label in Name: execution row button uses `aria-labelledby` (visible summary + visually hidden "details"); `aria-label` removed. Lookups updated: TradeDetail.test.tsx (several), e2e/d2/open-position.spec.ts, e2e/d2/offline.spec.ts, e2e/d2/ui-alignment.spec.ts.
+- Open Lots wrapper gained `lots-scroll`; Playwright T2.50 asserts `--pin` is 0px at 320 (red: Received "5rem"; green after the class).
+- Reflection branches moved to `ExecutionReflection`.
+- `npx vitest run src`: 41 files, 427 passed. typecheck, `npx tsc6 --noEmit`, lint, lint:deps: exit 0.
+- `npm run build:faults && npx playwright test e2e/d1 e2e/d2`: 80 passed.
