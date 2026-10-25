@@ -389,3 +389,53 @@ ul.narrative > li + li {
   font-size: 1.15rem;
   padding: 0 0.8rem 1rem;
 }
+
+/* Current navigation item: an ink-filled pill with white text in the sidebar; bold ink in the bottom bar. */
+.shell[data-layout='wide'] > .nav a[aria-current='page'] {
+  background: var(--ink);
+  color: #ffffff;
+  border-radius: 999px;
+}
+
+.shell:not([data-layout='wide']) > .nav a[aria-current='page'] {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+/* Durability banner: warning ground, text and button on one row, compact at narrow. */
+.banner.durability {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+}
+
+.banner.durability .banner-text {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.banner.durability p {
+  margin: 0;
+}
+
+.banner.durability p + p {
+  margin-top: 0.25rem;
+}
+
+.banner.durability .pill {
+  flex: none;
+}
+
+.shell:not([data-layout='wide']) .banner.durability {
+  padding: 0.5rem 0.75rem;
+  margin: 0.5rem 1rem;
+  font-size: 0.8125rem;
+}
+
+.shell:not([data-layout='wide']) .banner.durability .pill {
+  max-width: 7.5rem;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8125rem;
+  line-height: 1.2;
+}

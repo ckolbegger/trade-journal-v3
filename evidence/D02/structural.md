@@ -1213,3 +1213,24 @@ The plan's integration total of 39 is a stale figure (later tasks added tests); 
 **ocr review of T2.36-B1** (`ocr-review` step): commit `2f0bc81`, session `af25d147-7b63-4e20-8e2b-c61f31c8b7a5`, model `gpt-6.1-sol`, 1 file reviewed (`app.css`), 0 comments. No findings. Raw output: `ocr/t2.36-b1-2f0bc81.json`.
 
 **Complete cumulative run after T2.36-B1** (`suite-runner`, 2026-10-24 22:48 EDT, on `2f0bc81` plus the uncommitted evidence): Unit 38 files / 383 tests passed; Node integration 19 / 42 passed; Browser (Chromium) 55 passed (1.7m; `npm run test:e2e` picks up `e2e/d2/ui-alignment.spec.ts`); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.36-b1-*.txt`.
+
+#### T2.37
+
+Navigation and durability-banner styling. Measurements added to `e2e/d2/ui-alignment.spec.ts` (describe "T2.37 navigation and durability banner"), run against `dist-faults`.
+
+Commands:
+
+- Before: `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts -g T2.37` (current build, measurements only) gave 3 failed, 1 passed.
+- After: `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts` gave 5 passed.
+- Also green after: `e2e/d1/responsive-a11y.spec.ts`, `e2e/d2/responsive-a11y.spec.ts`, `e2e/d2/narrow.spec.ts`, `e2e/d1/readiness.spec.ts`, `e2e/d1/recovery-only.spec.ts`, `e2e/d1/runtime-failure.spec.ts`, `e2e/d2/durability.spec.ts` (27 + 1 passed; D1 has no durability spec of that name, the D1 banner cases are in readiness, recovery-only and runtime-failure); `npx vitest run src/ui` 111 passed; typecheck, `tsc6`, lint, lint:deps exit 0.
+
+| Measurement | Before | After |
+| --- | --- | --- |
+| Current sidebar link background / text (1280) | transparent `rgba(0, 0, 0, 0)` (fail) | `--ink` rgb(28, 27, 25), text white (pass) |
+| Bottom bar icon box above label box (390) | already passed (from T2.36-B1) | passes |
+| Banner background vs `--warning-ground` | rgb(255, 255, 255) vs rgb(255, 244, 221) at 390 and 1280 (fail) | equal at both widths |
+| Banner height at 390 (limit 120) | 189.9 px (the failing assertion came first; value read separately) | 93.4 px |
+| Button vertical centre vs text block at 1280 | centre 115.4, text 49 to 72.2 (outside) | centre 60.2, text 37 to 83.4 (inside) |
+| axe on Trades at 390 and 1280 | not reached before the failing assertion | clean at both |
+
+Markup change: the unprotected-storage banner is now `banner warning durability` (was `banner notice`; accessible name "Storage protection", text and button name unchanged) with its paragraphs wrapped in a `banner-text` div. The "will now keep your data" status line stays `banner notice`. Current item: ink pill in the sidebar, bold ink in the bottom bar.
