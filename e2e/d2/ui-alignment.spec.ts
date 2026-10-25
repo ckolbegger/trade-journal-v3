@@ -26,6 +26,15 @@ import {
   writeIntegrityFixture,
 } from './support.ts';
 
+// AppShell switches its data-layout at WIDE_LAYOUT_MIN_WIDTH (src/ui/AppShell.tsx); importing that
+// module would pull React into the e2e runner, so the value is repeated here.
+const WIDE_LAYOUT_MIN_WIDTH = 960;
+
+// The shell sets data-layout after the viewport change; measuring before it switches gives the old layout.
+async function expectLayout(page: Page, width: number): Promise<void> {
+  await expect(page.locator('.shell')).toHaveAttribute('data-layout', width >= WIDE_LAYOUT_MIN_WIDTH ? 'wide' : 'narrow');
+}
+
 const WIDTHS = [390, 320] as const;
 
 test.describe('T2.36-B1 bottom navigation fit', () => {
@@ -806,7 +815,7 @@ test.describe('T2.45 New Plan grouped into cards', () => {
     for (const width of [1280, 390]) {
       await page.setViewportSize({ width, height: 900 });
       // The shell re-lays out on its own media query after the resize; wait for it before measuring.
-      await expect(page.locator('.shell')).toHaveAttribute('data-layout', width >= 640 ? 'wide' : 'narrow');
+      await expectLayout(page, width);
       const t = await tops();
       expect(t.entry, `Intended entry top at ${width}`).toBe(t.quantity);
       expect(t.target, `Target top at ${width}`).toBe(t.stop);
@@ -855,7 +864,7 @@ test.describe('T2.50 Executions as expandable rows', () => {
       });
     for (const width of [320, 1280]) {
       await page.setViewportSize({ width, height: 900 });
-      await expect(page.locator('.shell')).toHaveAttribute('data-layout', width >= 640 ? 'wide' : 'narrow');
+      await expectLayout(page, width);
       const m = await measure();
       expect(m.pairs.length, `detail pairs at ${width}`).toBeGreaterThanOrEqual(4);
       for (const pair of m.pairs) {
@@ -949,6 +958,7 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
     await openTradeWithJournal(page);
     for (const width of [390, 1280]) {
       await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+      await expectLayout(page, width);
       const figures = await page.getByRole('region', { name: 'Summary', exact: true }).locator('dd').evaluateAll((els) =>
         els.map((el) => {
           const s = getComputedStyle(el);
@@ -997,12 +1007,14 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
       );
     for (const [name, count] of [['Plan Baseline', 3], ['Entry Quality', 7]] as const) {
       await page.setViewportSize({ width: 1280, height: 900 });
+      await expectLayout(page, 1280);
       const wide = await rowsOf(name);
       expect(wide.length, `${name} rows`).toBe(count);
       for (const row of wide) expect(row.width, `${name} row ${row.text} width at 1280`).toBeLessThanOrEqual(480.5);
       expect(new Set(wide.map((r) => r.left)).size, `${name} columns at 1280`).toBe(2);
       expect(wide[1]!.top, `${name} second row beside the first at 1280`).toBe(wide[0]!.top);
       await page.setViewportSize({ width: 390, height: 844 });
+      await expectLayout(page, 390);
       const narrow = await rowsOf(name);
       expect(new Set(narrow.map((r) => r.left)).size, `${name} columns at 390`).toBe(1);
     }
@@ -1018,6 +1030,7 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
     await expect(section).toBeVisible(READY);
     for (const width of [390, 1280]) {
       await page.setViewportSize({ width, height: 900 });
+      await expectLayout(page, width);
       const rows = await section.locator('dl > div').evaluateAll((els) =>
         els.map((el) => {
           const dt = el.querySelector('dt')!.getBoundingClientRect();
@@ -1047,7 +1060,7 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
     const section = page.getByRole('region', { name: 'Executions (3)', exact: true });
     for (const width of [390, 1280]) {
       await page.setViewportSize({ width, height: 900 });
-      await expect(page.locator('.shell')).toHaveAttribute('data-layout', width >= 640 ? 'wide' : 'narrow');
+      await expectLayout(page, width);
       const tint = await tokenColour(page, '--tint');
       const rows = await section.locator('ul.executions > li').evaluateAll((els) =>
         els.map((el) => {
@@ -1084,11 +1097,12 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
     const receipt = page.getByRole('region', { name: 'Entry recorded', exact: true });
     for (const width of [390, 1280]) {
       await page.setViewportSize({ width, height: 900 });
+      await expectLayout(page, width);
       const tint = await tokenColour(page, '--tint');
       const rows = await receipt.locator('ul.executions > li').evaluateAll((els) =>
         els.map((el) => {
           const money = el.querySelector('.execution-money') as HTMLElement;
-          return { ground: getComputedStyle(el).backgroundColor, align: getComputedStyle(money).textAlign, moneyRight: money.getBoundingClientRect().right, right: el.getBoundingClientRect().right, text: el.textContent };
+          return { ground: getComputedStyle(el).backgroundColor, align: getComputedStyle(money).textAlign, moneyRight: money.getBoundingClientRect().right, right: el.getBoundingClientRect().right - parseFloat(getComputedStyle(el).paddingRight), text: el.textContent };
         }),
       );
       expect(rows.length, `receipt rows at ${width}`).toBe(2);
@@ -1096,7 +1110,7 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
       for (const row of rows) {
         expect(row.ground, `receipt row ground at ${width}`).toBe(tint);
         expect(row.align, `receipt money alignment at ${width}`).toBe('right');
-        expect(row.right - row.moneyRight, `receipt money flush right at ${width}`).toBeLessThanOrEqual(20);
+        expect(row.right - row.moneyRight, `receipt money flush right at ${width}`).toBeLessThanOrEqual(1);
       }
       const link = receipt.getByRole('link', { name: 'Back to the Trade' });
       const look = await link.evaluate((el) => {
@@ -1122,6 +1136,7 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
     await expect(page.getByRole('listitem').filter({ hasText: 'Second account' })).toBeVisible(READY);
     for (const width of [390, 1280]) {
       await page.setViewportSize({ width, height: 900 });
+      await expectLayout(page, width);
       const rows = await page.locator('.accounts ul > li').evaluateAll((els) =>
         els.map((el) => {
           const s = getComputedStyle(el);
@@ -1150,7 +1165,7 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
       for (const width of [320, 390, 1280]) {
         await page.setViewportSize({ width, height: 900 });
         // The shell re-lays out on its own media query after the resize; wait for it before measuring.
-        await expect(page.locator('.shell')).toHaveAttribute('data-layout', width >= 640 ? 'wide' : 'narrow');
+        await expectLayout(page, width);
         if (width < 1280) await overflow(`${state} at ${width}`);
         if (axe) await expectAccessible(page, `${state} at ${width}`);
       }
