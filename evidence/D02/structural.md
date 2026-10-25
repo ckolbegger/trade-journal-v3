@@ -1443,3 +1443,7 @@ Commands:
 | Figure cells `tabular-nums` | pass (existing `.number`) | pass |
 
 Change: headers get 0.8rem, 600, uppercase, 0.04em tracking, muted, left (right for `th.number`); the symbol link is 700; the badge is `nowrap`. At 960 px and wider only: `--pin` is 7rem so "UNDERLYING" fits on one line, and headers and the columns after the Trade column are `white-space: nowrap` (dates and Entry text do not wrap). Below 960 px the pin stays 5rem, so the T2.40 fit at 320 is unchanged.
+
+**ocr review of T2.41** (`ocr-review` step): commit `8e58d1f`, session `adb63d82-ecbc-4dc0-9ec3-6c4afb13c7ae`, model `gpt-6.1-sol`, 1 file reviewed (`app.css`), 0 comments. No findings. Raw output: `ocr/t2.41-8e58d1f.json`.
+
+**Complete cumulative run after T2.41** (`suite-runner`, 2026-10-25 01:16 EDT, on `8e58d1f`): Unit 40 files / 395 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 74 passed (2.4m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.41-*.txt`.
