@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 9383,
+    "input_tokens": 9242,
+    "output_tokens": 141,
+    "cache_read_tokens": 3840,
+    "elapsed": "12s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/app.css",
+        "src/ui/screens/PositionChangeForm.tsx"
+      ]
+    }
+  ],
+  "session_id": "08cd7762-6d79-4652-8667-8287b3a83485",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "08cd7762-6d79-4652-8667-8287b3a83485",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "fd6b68b",
+      "resolved_base": "390c70aad1021379e77a25df05bc6aa847c9c9cf",
+      "resolved_head": "fd6b68bc41879de3e77a84e06544be7575a3e14b",
+      "exact_range": "390c70aad1021379e77a25df05bc6aa847c9c9cf..fd6b68bc41879de3e77a84e06544be7575a3e14b",
+      "source_artifact_sha256": "be7507571bc22137470b489037609d003766099f21c674ecb7443add7859e2c9"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "c74e0bd5aa391d85966b398db1a8f8d39f61c0d4e9849360501d43988f8f8971"
+        },
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "5c5664a1aa41634da291cebab68a00a3b481c6b3c66f5dbf0d77d922217db779"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "c74e0bd5aa391d85966b398db1a8f8d39f61c0d4e9849360501d43988f8f8971"
+        },
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "5c5664a1aa41634da291cebab68a00a3b481c6b3c66f5dbf0d77d922217db779"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 12416
+  }
+}

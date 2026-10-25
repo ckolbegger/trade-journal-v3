@@ -1555,3 +1555,11 @@ Commands:
 | Economic Time below Price at 390; three shared tops at 1280 | pass | pass (selected by `.field-wide`) |
 
 Change: `.execution-row > button.pill` uses `var(--muted)`; the Economic Time field wrapper in `PositionChangeForm.tsx` gets `field field-wide` and the CSS selects `fieldset.execution-row > .field-wide` instead of `.field:nth-of-type(4)`. Labels, names and roles are unchanged.
+
+**ocr review of T2.44-B1** (`ocr-review` step): commit `fd6b68b`, session `08cd7762-6d79-4652-8667-8287b3a83485`, model `gpt-6.1-sol`, 2 files reviewed (`app.css`, `PositionChangeForm.tsx`), 0 comments. Raw output: `ocr/t2.44-B1-fd6b68b.json`. The main session asked the reviewer to judge one point:
+
+| Severity | Location | Claim | Verdict |
+| --- | --- | --- | --- |
+| low | `PositionChangeForm.tsx:311` | `input()` adds `field-wide` whenever a `type` is passed, so a later typed field would silently become full-width | Valid (minor); bug task T2.44-B2 (an explicit option) |
+
+**Complete cumulative run after T2.44-B1** (`suite-runner`, 2026-10-25 07:25 EDT, on `fd6b68b`): Unit 41 files / 399 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 78 passed (2.4m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.44-B1-*.txt`.
