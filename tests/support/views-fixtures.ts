@@ -11,6 +11,7 @@ export const plannedItem = {
   oneR: Rational.of(250n),
   originalPlannedReward: Rational.of(600n),
   rewardRiskRatio: Rational.of(12n, 5n),
+  summary: { kind: 'Stock', direction: 'Long', quantity: Rational.of(100n), price: Rational.of(50n) },
   entryReadiness: 'Awaiting entry',
 } as const;
 
@@ -64,6 +65,9 @@ export const openItem = {
   openQuantity: Rational.of(60n),
   plannedQuantity: Rational.of(100n),
   averageOpenCost: { kind: 'Value', value: Rational.of(501n, 10n) },
+  summary: { kind: 'Stock', direction: 'Long', quantity: Rational.of(60n), price: Rational.of(501n, 10n) },
+  // 60 x 50.10 plus the $1.00 fee.
+  netCost: { kind: 'Value', value: Rational.of(3007n) },
   incurredFees: Rational.of(1n),
   entryStatus: 'Entering',
   deviationCount: 0,

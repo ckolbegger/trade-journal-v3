@@ -75,7 +75,7 @@ test.describe('Planned list row for an incoherent Trade', () => {
     await openPlanned(app);
     const table = app.getByRole('table', { name: 'Planned Trades' });
     const row = table.getByRole('row', { name: /XYZ/ });
-    await expect(row.getByRole('cell')).toHaveText([/XYZ/, /.+/, /.+/, /.+/, 'Not available', 'Not available', 'Not available', /Records disagree/]);
+    await expect(row.getByRole('cell')).toHaveText([/XYZ/, /^Not available.*Records disagree/, 'Not available', 'Not available', 'Not available', /.+/]);
     // The agreeing Planned Trade keeps its figures.
     await expect(table.getByRole('row', { name: /ABC/ })).not.toContainText('Not available');
 

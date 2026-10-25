@@ -1359,3 +1359,41 @@ Refactor, no behavior change: `openItem` calls `openSummary(derived)` once and d
 **ocr review of T2.59** (`ocr-review` step): commit `b8c2826`, session `e90e79c9-b706-41c6-a82b-059d27b525c8`, model `gpt-6.1-sol`, 1 file reviewed (`format.ts`), 0 comments. No findings. Raw output: `ocr/t2.59-b8c2826.json`.
 
 **Complete cumulative run after T2.59** (`suite-runner`, 2026-10-25 00:49 EDT, on `b8c2826`): Unit 40 files / 394 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 67 passed (2.1m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.59-*.txt`.
+
+#### T2.40
+
+Trades tables, structural part (revision 8; implements F9). Measurements added first to `e2e/d2/ui-alignment.spec.ts` (describe "T2.40 Trades tables"), run against `dist-faults` at 390, 320 and 1280 for both "Open Trades" and "Planned Trades", then the CSS written. Two Open and two Planned Trades are seeded; a second case stores two Open Trades as Planned (one with its facts replayable, one not) so both "Records disagree" badges sit in the Planned table at 390 and 320. The "accessibility tree" check counts a figure in `locator.ariaSnapshot()` of the first body row, ignoring the row's own line, whose name repeats the row's text.
+
+Commands:
+
+- Before: markup and view-model in place, CSS not yet: `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts -g T2.40` gave 3 failed (390, 320, 1280), 2 passed (the badge cases, flagged in `tdd-log.md` with a mutation).
+- After: `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts -g T2.40` gave 5 passed. The whole of `e2e/d1` and `e2e/d2` gave 72 passed in the first full run, plus the `e2e/d1/plan.spec.ts` fix listed below (rerun with `narrow.spec.ts`: 7 passed).
+- Static: `npx vitest run src` 394 passed, `npx vitest run tests/integration` 49 passed, `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run verify:capacity` exit 0.
+
+| Measurement | Before (no CSS) | After |
+| --- | --- | --- |
+| Open at 390 and 320, "Net cost" header and cells | `display: table-cell` (fail; expected `none`) | `none`; the second line is `display: block` |
+| Planned at 390 and 320, "1R" and "Reward : risk" headers and cells | not reached (Open failed first) | `none`; second line `block` |
+| Open and Planned at 1280, second line | `inline` (fail; expected `none`) | `none`; the moved columns are `table-cell` |
+| Underlying and Trade cells, with the second line and badge, inside the viewport before scrolling at 390 and 320 | not reached | pass (Underlying 5rem + Trade min-width 12.5rem = 280 px fits the 288 px region at 320) |
+| Underlying left edge after scrolling fully right | not reached | unchanged on every row; the last cell has moved left |
+| Underlying cell | not pinned | `position: sticky`, own card background, 1 px right hairline; region background carries the scroll shadows (`radial-gradient`) |
+| Each figure in the accessibility tree, Open and Planned, at 390, 320 and 1280 | not reached | exactly once |
+| Focused Underlying link, full outline | not reached | style not `none`; at least 5 px room left, top and bottom inside the region |
+| Page overflow at 390, 320 and 1280 | none | none |
+| axe (WCAG 2.1 A and AA) on both tables at 390, 320 and 1280, and with badges at 390 and 320 | not reached | clean |
+| `e2e/d2/narrow.spec.ts` | green | green, unchanged |
+
+Change: `src/ui/app.css` and `src/ui/screens/TradeList.tsx`. The table stays a native table (no grid or `order`): markup order is visual order. `.wide-only` (Net cost, 1R, Reward : risk header and cells) is `display: none` below 960 px; `.trade-line` (the second line) is `display: none` from 960 px. Columns after the Trade column are `white-space: nowrap` on narrow so the region scrolls.
+
+**Test impact** (every lookup of a removed column or of cell text changed in this commit):
+
+- `src/ui/screens/TradeList.test.tsx`: the Open "quantity as 60 of 100, average cost, fees ..." case, the incoherent Open row case, the Planned columns case, the Planned "badge in the Entry cell" case and the incoherent Planned row case are replaced by the five "Trades table columns" cases; the `timeZone` prop is gone from the renders. The other cases (tabs, heading, states) are unchanged.
+- `tests/support/views-fixtures.ts`: `plannedItem` gains `summary`, `openItem` gains `summary` and `netCost` (the T2.58 fields the cell reads). `TradeDetail.test.tsx` and `open-detail-fixtures.ts` also import these fixtures and needed no change.
+- `src/ui/screens/TradeList.tsx` and `src/main.tsx`: `TradeList` no longer takes `timeZone` (no time is listed any more).
+- `e2e/d2/integrity.spec.ts` ("Planned list row for an incoherent Trade"): the cell list is now `XYZ`, `Not available` plus `Records disagree` in the Trade cell, three `Not available` cells, and the Account.
+- `e2e/d1/plan.spec.ts` (B1.2): after clicking the row's link it now waits for the Detail heading before `getByText('$250.00')`. The earlier wait on the text "Planned" was satisfied by the list's own Planned tab, and the list row now carries "$250.00" twice (second line and 1R cell), so the strict lookup raced the navigation.
+- `e2e/d2/runtime-failure.spec.ts` (row `toContainText('60 of 100')`) and `e2e/d2/open-position.spec.ts` (Detail text "60 of 100 entered") needed no change: the Entry cell reads "Entering · 60 of 100", which still contains the text, and the Detail is untouched. `narrow.spec.ts` needed no change: it names no removed column. `tools/bench-generate.ts` reads headers and cells generically.
+- Grep for the removed column names and for "Records agree", "Average cost", "Last activity", "Planned reward" and "Plan time" in `src`, `e2e` and `tests` found no other list lookup (the Detail's "Plan time" term and the New Plan form's "Plan time" label are unrelated).
+
+**Bench**: `npm run build:bench`, removed the git-ignored `.cache/bench/profile/tj-bench.json`, then `npm run bench:generate` (25,000 Trades, 39.8 s). `bench/expected-open-rows.json`: `headers` are now `Underlying, Trade, Net cost, Entry, Account` (were ten columns); the 200 `rows` have five cells each, for example `["HD", "Long 120 shares @ $300.97Net cost $36,118.83", "$36,118.83", "Resolved · 120 of 120", "Fidelity — Roth IRA"]` (the Trade cell's textContent joins the summary and the second line); `items` equal the committed ones (T2.58 had already regenerated them), `generatorVersion` is still 1 and `schemaVersion` 2. `bench/dataset.json`: only `benchRelease` (the new build hash), `generationMs` and `generatedAt` changed; counts and content are the same.

@@ -18,6 +18,8 @@ test.describe('B1.2 onboarding and first Plan', () => {
     await expect(row).toBeVisible(READY);
     await expect(row).toContainText('$250.00');
     await row.getByRole('link', { name: 'XYZ' }).click();
+    // Wait for the Detail: the list's own tab is also named Planned and its row also carries the 1R figure.
+    await expect(again.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
     await expect(again.getByText('Planned', { exact: true })).toBeVisible();
     await expect(again.getByText('$250.00')).toBeVisible();
     await expect(again.getByText('Breakout above the 50-day on volume.')).toBeVisible();

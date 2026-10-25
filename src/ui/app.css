@@ -302,13 +302,35 @@ label.chip input {
 
 .table-scroll {
   overflow-x: auto;
+  --pin: 5rem;
+  --shadow: rgba(28, 27, 25, 0.28);
+  /* The card ground lives here, under the table, so scroll shadows can be drawn over it. A local
+     cover hides each shadow until the region has scrolled that way; the left pair sits beside the
+     pinned Underlying column. */
+  background-color: var(--card);
+  border-radius: var(--radius);
+  background-image:
+    linear-gradient(to right, var(--card) 30%, transparent),
+    linear-gradient(to left, var(--card) 30%, transparent),
+    radial-gradient(farthest-side at 0 50%, var(--shadow), transparent),
+    radial-gradient(farthest-side at 100% 50%, var(--shadow), transparent);
+  background-repeat: no-repeat;
+  background-position:
+    var(--pin) 0,
+    100% 0,
+    var(--pin) 0,
+    100% 0;
+  background-size:
+    2.5rem 100%,
+    2.5rem 100%,
+    0.9rem 100%,
+    0.9rem 100%;
+  background-attachment: local, local, scroll, scroll;
 }
 
 table.trades {
   width: 100%;
   border-collapse: collapse;
-  background: var(--card);
-  border-radius: var(--radius);
 }
 
 table.trades caption {
@@ -321,6 +343,54 @@ table.trades th,
 table.trades td {
   padding: 0.6rem;
   border-bottom: 1px solid var(--line);
+}
+
+/* Underlying is pinned on the left with its own ground and a hairline, so scrolled cells pass beneath it. */
+table.trades th:first-child,
+table.trades td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  width: var(--pin);
+  min-width: var(--pin);
+  max-width: var(--pin);
+  overflow-wrap: anywhere;
+  background: var(--card);
+  border-right: 1px solid var(--line);
+}
+
+/* The Trade cell: summary text, badges, then a second line of key figures that only a narrow screen shows. */
+table.trades th:nth-child(2),
+table.trades td:nth-child(2) {
+  min-width: 12.5rem;
+}
+
+table.trades .badge {
+  margin-left: 0.5rem;
+}
+
+.trade-line {
+  display: block;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+@media (max-width: 959.98px) {
+  /* The figures live in the Trade cell's second line here, so their columns are not in the tree twice. */
+  table.trades .wide-only {
+    display: none;
+  }
+
+  /* The remaining columns scroll beside the pinned two. */
+  table.trades td:nth-child(n + 3) {
+    white-space: nowrap;
+  }
+}
+
+@media (min-width: 960px) {
+  .trade-line {
+    display: none;
+  }
 }
 
 /* A long term (a Prompt, say) wraps within half the width rather than widening the page. */

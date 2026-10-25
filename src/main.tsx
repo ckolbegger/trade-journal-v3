@@ -67,7 +67,7 @@ async function start(container: HTMLElement) {
   const setUnsaved = (unsaved: boolean) => updates.setUnsaved(unsaved);
   const screens: Screens = {
     trades: function Trades() {
-      return <TradeList facade={facade} timeZone={useZone()} />;
+      return <TradeList facade={facade} />;
     },
     'trade-detail': function Detail() {
       return <TradeDetail facade={facade} timeZone={useZone()} />;

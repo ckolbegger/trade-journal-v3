@@ -2,12 +2,11 @@ import { useEffect, useState, type KeyboardEvent } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { IncoherentOpenTradeItem, IncoherentPlannedTradeItem, OpenTradeItem, PlannedTradeItem } from '../../app/types.ts';
-import { localTime, money, quantity, ratio } from '../format.ts';
+import { money, netCost, quantity, ratio, tradeSummary } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 
 export interface TradeListProps {
   readonly facade: UiFacade;
-  readonly timeZone: string;
 }
 
 // Only the lifecycles this release can produce (A32); Open is the default.
@@ -19,7 +18,7 @@ type ListState = { readonly kind: 'Loading' } | { readonly kind: 'Ready'; readon
 // The Trades view: lifecycle tabs over one list each, with Loading, Ready, Empty, and Error kept
 // distinct: never a false Empty while loading or after a failure. The selected tab lives in the
 // URL, so it survives navigation to a Trade and back.
-export function TradeList({ facade, timeZone }: TradeListProps) {
+export function TradeList({ facade }: TradeListProps) {
   const [params, setParams] = useSearchParams();
   const lifecycle: Lifecycle = params.get('lifecycle') === 'Planned' ? 'Planned' : 'Open';
   // Every request gets its own key, so a result is shown only for the request that asked for it.
@@ -79,9 +78,9 @@ export function TradeList({ facade, timeZone }: TradeListProps) {
       </div>
       <div role="tabpanel" id={`panel-${lifecycle}`} aria-labelledby={`tab-${lifecycle}`}>
         {lifecycle === 'Open' ? (
-          <OpenList state={state} retry={() => setAttempt((n) => n + 1)} showPlanned={() => select('Planned')} timeZone={timeZone} />
+          <OpenList state={state} retry={() => setAttempt((n) => n + 1)} showPlanned={() => select('Planned')} />
         ) : (
-          <PlannedList state={state} retry={() => setAttempt((n) => n + 1)} timeZone={timeZone} />
+          <PlannedList state={state} retry={() => setAttempt((n) => n + 1)} />
         )}
       </div>
     </section>
@@ -104,10 +103,8 @@ function OpenList({
   state,
   retry,
   showPlanned,
-  timeZone,
 }: ListProps & {
   readonly showPlanned: () => void;
-  readonly timeZone: string;
 }) {
   const { writable } = useRuntime();
   useEffect(() => {
@@ -137,30 +134,19 @@ function OpenList({
     );
   }
   return (
-    // Ten columns scroll inside their own focusable region on a narrow screen, never the page.
+    // The columns scroll inside their own focusable region on a narrow screen (Underlying pinned), never the page.
     <div className="table-scroll" role="region" aria-label="Open Trades" tabIndex={0}>
       <table className="trades">
         <caption>Open Trades</caption>
         <thead>
           <tr>
             <th scope="col">Underlying</th>
-            <th scope="col">Strategy</th>
-            <th scope="col">Account</th>
-            <th scope="col" className="number">
-              Quantity
-            </th>
-            <th scope="col" className="number">
-              Average cost
-            </th>
-            <th scope="col" className="number">
-              Fees
+            <th scope="col">Trade</th>
+            <th scope="col" className="number wide-only">
+              Net cost
             </th>
             <th scope="col">Entry</th>
-            <th scope="col" className="number">
-              Deviations
-            </th>
-            <th scope="col">Integrity</th>
-            <th scope="col">Last activity</th>
+            <th scope="col">Account</th>
           </tr>
         </thead>
         <tbody>
@@ -172,22 +158,16 @@ function OpenList({
                 <td>
                   <Link to={`/trades/${item.tradeId}`}>{item.underlying}</Link>
                 </td>
-                <td>{item.strategy}</td>
-                <td>{`${item.institution} — ${item.account}`}</td>
-                <td className="number">{derived ? `${quantity(derived.openQuantity)} of ${quantity(item.plannedQuantity)}` : 'Unavailable'}</td>
-                <td className="number">
-                  {!derived ? 'Unavailable' : derived.averageOpenCost.kind === 'Value' ? money(derived.averageOpenCost.value) : 'Not applicable'}
-                </td>
-                <td className="number">{derived ? money(derived.incurredFees) : 'Unavailable'}</td>
-                <td>{derived ? derived.entryStatus : 'Unavailable'}</td>
-                <td className="number">{item.deviationCount}</td>
                 <td>
-                  {/* Text, not colour alone, carries the meaning. */}
-                  <span className={item.integrity === 'Agrees' ? 'badge' : 'badge warning'}>
-                    {item.integrity === 'Agrees' ? 'Records agree' : 'Records disagree'}
-                  </span>
+                  <TradeCell
+                    disagrees={item.integrity === 'Disagrees'}
+                    text={derived?.summary ? tradeSummary(derived.summary) : NOT_AVAILABLE}
+                    line={derived && derived.netCost.kind === 'Value' ? `Net cost ${netCost(derived.netCost.value)}` : undefined}
+                  />
                 </td>
-                <td>{localTime(item.lastActivity, timeZone)}</td>
+                <td className="number wide-only">{derived && derived.netCost.kind === 'Value' ? netCost(derived.netCost.value) : NOT_AVAILABLE}</td>
+                <td>{derived ? `${derived.entryStatus} · ${quantity(derived.openQuantity)} of ${quantity(item.plannedQuantity)}` : NOT_AVAILABLE}</td>
+                <td>{`${item.institution} — ${item.account}`}</td>
               </tr>
             );
           })}
@@ -199,7 +179,20 @@ function OpenList({
 
 const NOT_AVAILABLE = 'Not available';
 
-function PlannedList({ state, retry, timeZone }: ListProps & { readonly timeZone: string }) {
+// The Trade cell: the summary text, then on a narrow screen a second line with the figures whose
+// columns are hidden there (plan section 2a). The wide layout hides the line instead.
+function TradeCell({ text, disagrees, line }: { readonly text: string; readonly disagrees: boolean; readonly line: string | undefined }) {
+  return (
+    <>
+      <span>{text}</span>
+      {/* Text, not colour alone, carries the meaning; an agreeing row shows nothing. */}
+      {disagrees && <span className="badge warning">Records disagree</span>}
+      {line && <span className="trade-line">{line}</span>}
+    </>
+  );
+}
+
+function PlannedList({ state, retry }: ListProps) {
   if (state.kind === 'Loading') return <p role="status">Loading planned trades…</p>;
   if (state.kind === 'Error') {
     return (
@@ -223,26 +216,22 @@ function PlannedList({ state, retry, timeZone }: ListProps & { readonly timeZone
     );
   }
   return (
-    // Eight columns scroll inside their own focusable region on a narrow screen, never the page.
+    // The columns scroll inside their own focusable region on a narrow screen (Underlying pinned), never the page.
     <div className="table-scroll" role="region" aria-label="Planned Trades" tabIndex={0}>
       <table className="trades">
         <caption>Planned Trades</caption>
         <thead>
           <tr>
             <th scope="col">Underlying</th>
-            <th scope="col">Strategy</th>
-            <th scope="col">Account</th>
-            <th scope="col">Plan time</th>
-            <th scope="col" className="number">
+            <th scope="col">Trade</th>
+            <th scope="col" className="number wide-only">
               1R
             </th>
-            <th scope="col" className="number">
-              Planned reward
-            </th>
-            <th scope="col" className="number">
+            <th scope="col" className="number wide-only">
               Reward : risk
             </th>
             <th scope="col">Entry</th>
+            <th scope="col">Account</th>
           </tr>
         </thead>
         <tbody>
@@ -254,22 +243,17 @@ function PlannedList({ state, retry, timeZone }: ListProps & { readonly timeZone
                 <td>
                   <Link to={`/trades/${item.tradeId}`}>{item.underlying}</Link>
                 </td>
-                <td>{item.strategy}</td>
-                <td>{`${item.institution} — ${item.account}`}</td>
-                <td>{localTime(item.planTime, timeZone)}</td>
-                <td className="number">{derived ? money(derived.oneR) : NOT_AVAILABLE}</td>
-                <td className="number">{derived ? money(derived.originalPlannedReward) : NOT_AVAILABLE}</td>
-                <td className="number">{derived ? ratio(derived.rewardRiskRatio) : NOT_AVAILABLE}</td>
                 <td>
-                  {derived ? derived.entryReadiness : NOT_AVAILABLE}
-                  {/* A disagreement is surfaced in the existing cell, so an agreeing row keeps D1's columns. */}
-                  {item.integrity === 'Disagrees' && (
-                    <>
-                      {' '}
-                      <span className="badge warning">Records disagree</span>
-                    </>
-                  )}
+                  <TradeCell
+                    disagrees={item.integrity === 'Disagrees'}
+                    text={derived ? tradeSummary(derived.summary) : NOT_AVAILABLE}
+                    line={derived ? `1R ${money(derived.oneR)} · Reward : risk ${ratio(derived.rewardRiskRatio)}` : undefined}
+                  />
                 </td>
+                <td className="number wide-only">{derived ? money(derived.oneR) : NOT_AVAILABLE}</td>
+                <td className="number wide-only">{derived ? ratio(derived.rewardRiskRatio) : NOT_AVAILABLE}</td>
+                <td>{derived ? derived.entryReadiness : NOT_AVAILABLE}</td>
+                <td>{`${item.institution} — ${item.account}`}</td>
               </tr>
             );
           })}

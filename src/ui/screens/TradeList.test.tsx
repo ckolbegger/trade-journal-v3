@@ -14,7 +14,7 @@ afterEach(cleanup);
 function renderList(facade: UiFacade, entry = '/?lifecycle=Planned') {
   render(
     <MemoryRouter initialEntries={[entry]}>
-      <TradeList facade={facade} timeZone="America/New_York" />
+      <TradeList facade={facade} />
     </MemoryRouter>,
   );
 }
@@ -70,7 +70,7 @@ function renderOpen(facade: UiFacade, writable = true) {
   render(
     <RuntimeContext.Provider value={{ writable, report: () => undefined }}>
       <MemoryRouter initialEntries={['/']}>
-        <TradeList facade={facade} timeZone="America/New_York" />
+        <TradeList facade={facade} />
       </MemoryRouter>
     </RuntimeContext.Provider>,
   );
@@ -150,76 +150,6 @@ describe('Open list', () => {
     expect(await screen.findByText(/no open trades/i)).toBeTruthy();
     expect(marks('tj:open-list-ready')).toBe(3);
   });
-
-  it('should show quantity as 60 of 100, average cost, fees, entry status, Deviation count, an integrity badge with text, and Last Activity in the Workspace zone, with numbers right-aligned in tabular numerals', async () => {
-    const disagreeing = {
-      ...openItem,
-      tradeId: 'trade-3',
-      underlying: 'DEF',
-      openQuantity: Rational.of(241n, 2n),
-      averageOpenCost: { kind: 'NotApplicable', reason: 'NoOpenQuantity' },
-      entryStatus: 'Resolved',
-      deviationCount: 2,
-      integrity: 'Disagrees',
-    };
-    const facade = facadeDouble();
-    vi.mocked(facade.TradeViewsAndReporting.browseTrades).mockResolvedValue(readyPage([openItem, disagreeing]));
-    renderOpen(facade);
-    const table = await screen.findByRole('table', { name: 'Open Trades' });
-    expect(
-      within(table)
-        .getAllByRole('columnheader')
-        .map((h) => h.textContent),
-    ).toEqual(['Underlying', 'Strategy', 'Account', 'Quantity', 'Average cost', 'Fees', 'Entry', 'Deviations', 'Integrity', 'Last activity']);
-    const [, first, second] = within(table).getAllByRole('row');
-    const cells = within(first!).getAllByRole('cell');
-    expect(cells.map((c) => c.textContent)).toEqual([
-      'ABC',
-      'Long Stock',
-      'Fidelity — Roth IRA',
-      '60 of 100',
-      '$50.10',
-      '$1.00',
-      'Entering',
-      '0',
-      'Records agree',
-      '2026-10-13 10:00',
-    ]);
-    for (const numeric of [cells[3]!, cells[4]!, cells[5]!, cells[7]!]) expect(numeric.className).toBe('number');
-    expect(within(first!).getByRole('link', { name: 'ABC' }).getAttribute('href')).toBe('/trades/trade-2');
-
-    const other = within(second!)
-      .getAllByRole('cell')
-      .map((c) => c.textContent);
-    expect([other[3], other[4], other[6], other[7], other[8]]).toEqual(['120.5 of 100', 'Not applicable', 'Resolved', '2', 'Records disagree']);
-    expect(within(second!).getByText('Records disagree').className).toMatch(/badge/);
-  });
-
-  it('should show an Open Trade whose facts cannot be replayed with Records disagree and its Position and entry figures as Unavailable', async () => {
-    const { tradeId, underlying, strategy, account, institution, plannedQuantity, deviationCount, lastActivity } = openItem;
-    const incoherent = { tradeId, underlying, strategy, account, institution, plannedQuantity, deviationCount, integrity: 'Disagrees', lastActivity };
-    const facade = facadeDouble();
-    vi.mocked(facade.TradeViewsAndReporting.browseTrades).mockResolvedValue(readyPage([incoherent]));
-    renderOpen(facade);
-    const table = await screen.findByRole('table', { name: 'Open Trades' });
-    const [, row] = within(table).getAllByRole('row');
-    expect(
-      within(row!)
-        .getAllByRole('cell')
-        .map((c) => c.textContent),
-    ).toEqual([
-      'ABC',
-      'Long Stock',
-      'Fidelity — Roth IRA',
-      'Unavailable',
-      'Unavailable',
-      'Unavailable',
-      'Unavailable',
-      '0',
-      'Records disagree',
-      '2026-10-13 10:00',
-    ]);
-  });
 });
 
 describe('Planned list', () => {
@@ -252,73 +182,93 @@ describe('Planned list', () => {
     screen.getByRole('button', { name: 'Retry' }).click();
     expect(await screen.findByText(/no planned trades yet/i)).toBeTruthy();
   });
-
-  it('should show underlying, Strategy, Account, Plan time in the Workspace zone, 1R, Original Planned Reward, and ratio, right-aligned with tabular numerals and units', async () => {
-    const facade = facadeDouble();
-    vi.mocked(facade.TradeViewsAndReporting.browseTrades).mockResolvedValue({ kind: 'Ready', view: { items: [plannedItem] }, binding: {} } as never);
-    renderList(facade);
-    const table = await screen.findByRole('table', { name: 'Planned Trades' });
-    expect(within(table).getAllByRole('columnheader').map((h) => h.textContent)).toEqual([
-      'Underlying',
-      'Strategy',
-      'Account',
-      'Plan time',
-      '1R',
-      'Planned reward',
-      'Reward : risk',
-      'Entry',
-    ]);
-    const cells = within(within(table).getAllByRole('row')[1]!).getAllByRole('cell');
-    expect(cells.map((c) => c.textContent)).toEqual([
-      'XYZ',
-      'Long Stock',
-      'Fidelity — Roth IRA',
-      '2026-10-12 09:30',
-      '$250.00',
-      '$600.00',
-      '2.4',
-      'Awaiting entry',
-    ]);
-    for (const numeric of [cells[4]!, cells[5]!, cells[6]!]) expect(numeric.className).toBe('number');
-  });
-
-  it('should show the Records disagree badge in the Entry cell of a Planned item whose records disagree, with no added column', async () => {
-    const disagreeing = { ...plannedItem, tradeId: 'trade-2', underlying: 'ABC', integrity: 'Disagrees' };
-    const facade = facadeDouble();
-    vi.mocked(facade.TradeViewsAndReporting.browseTrades).mockResolvedValue(readyPage([plannedItem, disagreeing]));
-    renderList(facade);
-    const table = await screen.findByRole('table', { name: 'Planned Trades' });
-    expect(within(table).getAllByRole('columnheader')).toHaveLength(8);
-    const [, agreeingRow, disagreeingRow] = within(table).getAllByRole('row');
-    expect(within(agreeingRow!).getAllByRole('cell').at(-1)!.textContent).toBe('Awaiting entry');
-    const entry = within(disagreeingRow!).getAllByRole('cell').at(-1)!;
-    expect(within(entry).getByText('Records disagree').className).toBe('badge warning');
-  });
 });
 
-describe('Planned list row for an incoherent Trade', () => {
-  it('should show the row with Records disagree and Not available in each derived cell, linking to its Detail', async () => {
-    const { tradeId, underlying, strategy, account, institution, planTime } = plannedItem;
-    const incoherent = { tradeId: 'trade-2', underlying: 'ABC', strategy, account, institution, planTime, integrity: 'Disagrees' };
+describe('Trades table columns', () => {
+  const disagreeing = { ...openItem, tradeId: 'trade-3', underlying: 'DEF', openQuantity: Rational.of(241n, 2n), entryStatus: 'Resolved', integrity: 'Disagrees' };
+
+  async function openTable(items: readonly unknown[]) {
     const facade = facadeDouble();
-    vi.mocked(facade.TradeViewsAndReporting.browseTrades).mockResolvedValue(readyPage([plannedItem, incoherent]));
+    vi.mocked(facade.TradeViewsAndReporting.browseTrades).mockResolvedValue(readyPage(items));
+    renderOpen(facade);
+    return screen.findByRole('table', { name: 'Open Trades' });
+  }
+
+  async function plannedTable(items: readonly unknown[]) {
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeViewsAndReporting.browseTrades).mockResolvedValue(readyPage(items));
     renderList(facade);
-    const table = await screen.findByRole('table', { name: 'Planned Trades' });
-    expect(within(table).getAllByRole('columnheader')).toHaveLength(8);
-    const [, agreeingRow, row] = within(table).getAllByRole('row');
-    expect(within(agreeingRow!).getByRole('link', { name: underlying }).getAttribute('href')).toBe(`/trades/${tradeId}`);
-    const cells = within(row!).getAllByRole('cell');
-    expect(cells.map((c) => c.textContent)).toEqual([
-      'ABC',
-      'Long Stock',
-      'Fidelity — Roth IRA',
-      '2026-10-12 09:30',
-      'Not available',
-      'Not available',
-      'Not available',
-      'Not available Records disagree',
-    ]);
-    expect(within(cells[7]!).getByText('Records disagree').className).toBe('badge warning');
-    expect(within(row!).getByRole('link', { name: 'ABC' }).getAttribute('href')).toBe('/trades/trade-2');
+    return screen.findByRole('table', { name: 'Planned Trades' });
+  }
+
+  it('should show the Open columns in order Underlying, Trade, Net cost, Entry, Account, with Underlying a link named by the symbol, and no Fees, Integrity, Deviations or Last activity column', async () => {
+    const table = await openTable([openItem]);
+    expect(within(table).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Underlying', 'Trade', 'Net cost', 'Entry', 'Account']);
+    const row = within(table).getAllByRole('row')[1]!;
+    expect(within(row).getAllByRole('cell')).toHaveLength(5);
+    expect(within(row).getAllByRole('cell')[0]!.textContent).toBe('ABC');
+    expect(within(row).getByRole('link', { name: 'ABC' }).getAttribute('href')).toBe('/trades/trade-2');
+  });
+
+  it('should show the Planned columns in order Underlying, Trade, 1R, Reward : risk, Entry, Account, with no Planned reward or Plan time column', async () => {
+    const table = await plannedTable([plannedItem]);
+    expect(within(table).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Underlying', 'Trade', '1R', 'Reward : risk', 'Entry', 'Account']);
+    const row = within(table).getAllByRole('row')[1]!;
+    expect(within(row).getAllByRole('cell')).toHaveLength(6);
+    expect(within(row).getByRole('link', { name: 'XYZ' }).getAttribute('href')).toBe('/trades/trade-1');
+  });
+
+  it('should show the Trade cell summary text and, on a second line, Net cost 3,007.00 for Open or 1R 250.00 and Reward : risk 2.4 for Planned', async () => {
+    const open = await openTable([openItem]);
+    const openCell = within(within(open).getAllByRole('row')[1]!).getAllByRole('cell')[1]!;
+    expect(openCell.textContent).toBe('Long 60 shares @ $50.10Net cost $3,007.00');
+    expect(within(openCell).getByText('Long 60 shares @ $50.10')).toBeTruthy();
+    expect(within(openCell).getByText('Net cost $3,007.00').className).toBe('trade-line');
+    // The Net cost column carries the same figure for the wide layout.
+    expect(within(within(open).getAllByRole('row')[1]!).getAllByRole('cell')[2]!.textContent).toBe('$3,007.00');
+    cleanup();
+
+    const planned = await plannedTable([plannedItem]);
+    const plannedCell = within(within(planned).getAllByRole('row')[1]!).getAllByRole('cell')[1]!;
+    expect(plannedCell.textContent).toBe('Long 100 shares @ $50.00' + '1R $250.00 · Reward : risk 2.4');
+    expect(within(plannedCell).getByText('1R $250.00 · Reward : risk 2.4').className).toBe('trade-line');
+  });
+
+  it('should show Entering · 60 of 100 or Resolved · 120.5 of 100 in the Open Entry cell', async () => {
+    const table = await openTable([openItem, disagreeing]);
+    const [, entering, resolved] = within(table).getAllByRole('row');
+    expect(within(entering!).getAllByRole('cell')[3]!.textContent).toBe('Entering · 60 of 100');
+    expect(within(resolved!).getAllByRole('cell')[3]!.textContent).toBe('Resolved · 120.5 of 100');
+  });
+
+  it('should show a Records disagree badge in the Trade cell of a disagreeing row, coherent or incoherent, and none on an agreeing row', async () => {
+    const { tradeId, underlying, strategy, account, institution, plannedQuantity, deviationCount, lastActivity } = openItem;
+    const incoherent = { tradeId: 'trade-4', underlying: 'GHI', strategy, account, institution, plannedQuantity, deviationCount, integrity: 'Disagrees', lastActivity };
+    const open = await openTable([openItem, disagreeing, incoherent]);
+    const [, agreeing, coherent, broken] = within(open).getAllByRole('row');
+    expect(tradeId).toBe('trade-2');
+    expect(underlying).toBe('ABC');
+    expect(within(agreeing!).queryByText(/records (dis)?agree/i)).toBeNull();
+    const coherentCell = within(coherent!).getAllByRole('cell')[1]!;
+    expect(within(coherentCell).getByText('Records disagree').className).toBe('badge warning');
+    expect(coherentCell.textContent).toBe('Long 60 shares @ $50.10Records disagreeNet cost $3,007.00');
+    const brokenCells = within(broken!).getAllByRole('cell');
+    expect(brokenCells[1]!.textContent).toBe('Not availableRecords disagree');
+    expect(within(brokenCells[1]!).getByText('Records disagree').className).toBe('badge warning');
+    expect(brokenCells.map((c) => c.textContent).slice(2)).toEqual(['Not available', 'Not available', 'Fidelity — Roth IRA']);
+    expect(within(broken!).getByRole('link', { name: 'GHI' }).getAttribute('href')).toBe('/trades/trade-4');
+    cleanup();
+
+    const disagreeingPlanned = { ...plannedItem, tradeId: 'trade-5', underlying: 'DEF', integrity: 'Disagrees' };
+    const { planTime } = plannedItem;
+    const incoherentPlanned = { tradeId: 'trade-6', underlying: 'JKL', strategy, account, institution, planTime, integrity: 'Disagrees' };
+    const planned = await plannedTable([plannedItem, disagreeingPlanned, incoherentPlanned]);
+    const [, ok, flagged, lost] = within(planned).getAllByRole('row');
+    expect(within(ok!).queryByText('Records disagree')).toBeNull();
+    const flaggedCells = within(flagged!).getAllByRole('cell');
+    expect(within(flaggedCells[1]!).getByText('Records disagree').className).toBe('badge warning');
+    expect(flaggedCells[4]!.textContent).toBe('Awaiting entry');
+    const lostCells = within(lost!).getAllByRole('cell');
+    expect(lostCells.map((c) => c.textContent)).toEqual(['JKL', 'Not availableRecords disagree', 'Not available', 'Not available', 'Not available', 'Fidelity — Roth IRA']);
   });
 });
