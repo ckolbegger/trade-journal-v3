@@ -1,0 +1,58 @@
+{
+  "status": "skipped",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review skipped: no items were selected.",
+  "summary": {
+    "files_reviewed": 0,
+    "comments": 0,
+    "total_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "elapsed": "0s"
+  },
+  "tool_calls": {
+    "total": 0,
+    "by_tool": {},
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "session_id": "85d75e47-36f1-407f-bb98-de04848e9100",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "85d75e47-36f1-407f-bb98-de04848e9100",
+    "operation": "review",
+    "terminal_state": "skipped",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "6392b41",
+      "resolved_base": "bcc89a21631453aad53600e05a1bb17c82afc1a6",
+      "resolved_head": "6392b41493a632dbdf8cbcb531833305511898cb",
+      "exact_range": "bcc89a21631453aad53600e05a1bb17c82afc1a6..6392b41493a632dbdf8cbcb531833305511898cb",
+      "source_artifact_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "9fdb460b0c4c59b70c87948c9188d99b097f5536ab43afea12ce4b102c4f9862",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [],
+      "completed": [],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 82
+  }
+}

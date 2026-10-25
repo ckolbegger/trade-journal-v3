@@ -1148,6 +1148,14 @@ Copy decisions:
 
 The plan's integration total of 39 is a stale figure (later tasks added tests); the before and after totals match at 42.
 
+**ocr review of T2.35** (`ocr-review` step): commit `6392b41`, session `85d75e47-36f1-407f-bb98-de04848e9100`, model `gpt-6.1-sol`, 0 files reviewed (2 excluded: the test file by ocr's default path rule, `structural.md` by type); status "skipped" ("no items were selected"), and no flag includes an excluded test file. Raw output: `ocr/t2.35-6392b41.json`. The `ocr-review` agent checked the rename by hand instead:
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| low | naming/accuracy | `tests/integration/d2/open-position.test.ts:1`, `:8` | The title and comment say the Position, Open Lot and lifecycle persist, but no assertion reads a Position or Open Lot | Valid: the wording came from the plan's T2.35 parenthetical; the plan's intent is "what they check". Turned into bug task T2.35-B1. |
+
+**Complete cumulative run after T2.35** (`suite-runner`, 2026-10-24 22:25 EDT, on `6392b41`): Unit 38 files / 379 tests passed; Node integration 19 / 42 passed; Browser (Chromium) 54 passed (1.7m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.35-*.txt`.
+
 #### T2.35-B1 I2.5 case name claimed more than it asserts
 
 - Finding (Valid, minor; from a manual check because ocr excludes test files): the T2.35 title and header comment of `tests/integration/d2/open-position.test.ts` said the Position, Open Lot, and lifecycle persist or are read back after restart, but no assertion reads a Position or Open Lot. The case checks the Planned to Open transition on the receipt, `browseTrades` Open and Planned after restart, the stored Position Change and Execution facts, the Open index entry, the Entry, and the obligation. The plan's T2.35 parenthetical wording overstated the checks; the plan's instruction to name the case "to what they check" governs.
@@ -1163,3 +1171,7 @@ The plan's integration total of 39 is a stale figure (later tasks added tests); 
 | `grep -n "AC-RESP-001" tests/integration/d2/open-position.test.ts` | no output (exit 1) |
 | `grep -n "Open Lot" tests/integration/d2/open-position.test.ts` | no output (exit 1) |
 | `npm run lint` | exit 0 |
+
+**Review of T2.35-B1:** commit `e7249bf` changes only the test file, which ocr never selects (as for T2.35), so no ocr run. The main session checked the new title and comment against the assertions (lines 18–41: the receipt's Planned to Open transition, Open and not Planned after restart, the PositionChange and Execution facts, the Open index entry, the Entry, the obligation): every clause matches an assertion.
+
+**Complete cumulative run after T2.35-B1** (`suite-runner`, 2026-10-24 22:28 EDT, on `e7249bf` plus the uncommitted evidence): Unit 38 files / 379 tests passed; Node integration 19 / 42 passed; Browser (Chromium) 54 passed (1.7m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.35-b1-*.txt`. This ends the T2.25–T2.35 follow-up batch.
