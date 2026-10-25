@@ -1742,3 +1742,14 @@ Commits: view amendment (reflection items carry their Position Change), then the
 | (question d) | `PositionChangeForm.tsx:298` | "Trade" is the only region with that name on the page | Holds (naming nit dismissed; it matches the New Plan "Trade" card of T2.45) |
 
 **Complete cumulative run after T2.52** (`suite-runner`, 2026-10-25 09:23 EDT, on `659a2b2`): Unit 41 files / 433 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 80 passed (2.4m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.52-*.txt`.
+
+#### T2.53
+
+Detail, receipt and Accounts styling. Measurements added first to `e2e/d2/ui-alignment.spec.ts` (describe "T2.53 Detail, receipt and Accounts styling", eight cases), run against `dist-faults`. The Detail is an Open Trade with three Executions (PC1 and PC2) and Journal items including a decline. Colours are read through `getComputedStyle`; `--tint` was added as `#f3efe6` (it did not exist before; Execution fieldsets in the form keep `--neutral-ground`). Changes: summary `dd` at 1.125rem, 700, tabular; Plan Baseline and Entry Quality as `dl.figure-grid` of row wrappers (a `Figure` component), two columns of at most 480 px from 960 px; Plan Reflection answers as `dl.answers` (prompt above answer, hairline between); Detail Execution rows on `--tint` with the price in a right-aligned `.execution-money` span and the time on its own line; the receipt rows reuse that style (`ul.executions`, `li.execution-line`); "Back to the Trade" is `pill primary` (still a link); Accounts lists as `ul.rows`.
+
+Commands:
+
+- Before: `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts -g T2.53` gave 7 failed, 1 passed (Stop and Target, flagged in `tdd-log.md` with a mutation); the overflow and axe case had no valid red (flagged, two mutations).
+- After: the same command gave 8 passed. `npx playwright test e2e/d1 e2e/d2` gave 88 passed.
+- Static: `npx vitest run src` 434 passed; `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` exit 0.
+- Lookups: none needed changing. The Execution row's accessible name is unchanged; the receipt row's text is unchanged.

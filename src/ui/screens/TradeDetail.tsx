@@ -152,13 +152,10 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
       {'baseline' in view && (
         <section className="card" aria-labelledby="baseline-heading">
           <h2 id="baseline-heading">Plan Baseline</h2>
-          <dl>
-            <dt>1R (original risk)</dt>
-            <dd className="number">{money(view.baseline.oneR)}</dd>
-            <dt>Original reward</dt>
-            <dd className="number">{money(view.baseline.originalPlannedReward)}</dd>
-            <dt>Reward : risk</dt>
-            <dd className="number">{ratio(view.baseline.rewardRiskRatio)}</dd>
+          <dl className="figure-grid">
+            <Figure term="1R (original risk)">{money(view.baseline.oneR)}</Figure>
+            <Figure term="Original reward">{money(view.baseline.originalPlannedReward)}</Figure>
+            <Figure term="Reward : risk">{ratio(view.baseline.rewardRiskRatio)}</Figure>
           </dl>
         </section>
       )}
@@ -172,7 +169,7 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
       {!('findings' in view) && entry && 'responses' in entry && (
         <section className="card" aria-labelledby="reflection-heading">
           <h2 id="reflection-heading">{entry.entryType}</h2>
-          <dl>
+          <dl className="answers">
             {entry.responses.map((response) => (
               <div key={response.prompt}>
                 <dt>{response.prompt}</dt>
@@ -183,6 +180,16 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
         </section>
       )}
     </article>
+  );
+}
+
+// One label and value in a figure grid; a row never grows wider than its cap (app.css).
+function Figure({ term, plain, children }: { readonly term: string; readonly plain?: boolean; readonly children: string }) {
+  return (
+    <div>
+      <dt>{term}</dt>
+      <dd className={plain ? undefined : 'number'}>{children}</dd>
+    </div>
   );
 }
 
@@ -362,7 +369,10 @@ function ExecutionRow({
         onClick={() => setExpanded(!expanded)}
       >
         <span id={`execution-summary-${e.factId}`} className="execution-summary">
-          {`${what} @ ${price(e.price)} · `}
+          {/* The spaces between the spans keep the name "Buy 60 XYZ @ $50.10 · time": inline spans trim their own. */}
+          <span className="execution-what">{`${what} @`}</span>{' '}
+          <span className="execution-money number">{price(e.price)}</span>{' '}
+          <span className="visually-hidden">·</span>{' '}
           <span className="nowrap">{time}</span>
         </span>
         <span id={`execution-hint-${e.factId}`} className="visually-hidden">
@@ -644,21 +654,16 @@ function EntryQualitySection({ view, timeZone }: { readonly view: OpenTradeDetai
     <section className="card" aria-labelledby="entry-quality-heading">
       <h2 id="entry-quality-heading">Entry Quality</h2>
       {quality.kind === 'Value' ? (
-        <dl>
-          <dt>Resolved at</dt>
-          <dd>{resolvedAt ? `Position Change at ${localTime(resolvedAt.economicTime, timeZone)}` : ''}</dd>
-          <dt>Average entry</dt>
-          <dd className="number">{shown(quality.value.averageEntry, money)}</dd>
-          <dt>Actual initial risk</dt>
-          <dd className="number">{`${shown(quality.value.actualInitialRisk, money)} (${shown(quality.value.riskInPlanR, rMultiple)})`}</dd>
-          <dt>Actual initial reward</dt>
-          <dd className="number">{shown(quality.value.actualInitialReward, money)}</dd>
-          <dt>Reward : risk</dt>
-          <dd className="number">{`${shown(quality.value.actualRewardRisk, ratio)} (planned ${shown(quality.value.plannedRewardRisk, ratio)})`}</dd>
-          <dt>Slippage</dt>
-          <dd className="number">{shown(quality.value.slippage, money)}</dd>
-          <dt>Size</dt>
-          <dd className="number">{`${shown(quality.value.sizeRatio, ratio)}× planned quantity`}</dd>
+        <dl className="figure-grid">
+          <Figure term="Resolved at" plain>
+            {resolvedAt ? `Position Change at ${localTime(resolvedAt.economicTime, timeZone)}` : ''}
+          </Figure>
+          <Figure term="Average entry">{shown(quality.value.averageEntry, money)}</Figure>
+          <Figure term="Actual initial risk">{`${shown(quality.value.actualInitialRisk, money)} (${shown(quality.value.riskInPlanR, rMultiple)})`}</Figure>
+          <Figure term="Actual initial reward">{shown(quality.value.actualInitialReward, money)}</Figure>
+          <Figure term="Reward : risk">{`${shown(quality.value.actualRewardRisk, ratio)} (planned ${shown(quality.value.plannedRewardRisk, ratio)})`}</Figure>
+          <Figure term="Slippage">{shown(quality.value.slippage, money)}</Figure>
+          <Figure term="Size">{`${shown(quality.value.sizeRatio, ratio)}× planned quantity`}</Figure>
         </dl>
       ) : (
         <p>{`Entry not yet resolved: ${quantity(entered)} of ${planned} entered`}</p>

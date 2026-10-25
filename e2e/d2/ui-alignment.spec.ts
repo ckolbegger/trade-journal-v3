@@ -14,6 +14,7 @@ import {
   openEntryForm,
   openPlanned,
   PC1,
+  PC2,
   PLAN,
   READY,
   recordEntry,
@@ -897,6 +898,274 @@ test.describe('T2.50 Executions as expandable rows', () => {
     // Open Lots pins nothing, so its scroll shadow must start at the table edge, not inside it.
     const pin = await page.getByRole('region', { name: 'Open Lots', exact: true }).evaluate((el) => getComputedStyle(el).getPropertyValue('--pin').trim());
     expect(pin, 'Open Lots pin width').toBe('0px');
+    await context.close();
+  });
+});
+
+// ---- T2.53 Detail, receipt and Accounts styling --------------------------------------------
+
+const channels = (css: string): number[] => (css.match(/\d+(\.\d+)?/g) ?? []).slice(0, 3).map(Number);
+const luminance = (c: number[]): number => {
+  const [r, g, b] = c.map((v) => {
+    const s = v / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  }) as [number, number, number];
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const contrastOf = (a: number[], b: number[]): number => {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x) as [number, number];
+  return (hi + 0.05) / (lo + 0.05);
+};
+// A token's computed colour, read through a probe so the test never copies the hex.
+const tokenColour = (page: Page, token: string, property: 'color' | 'backgroundColor' = 'backgroundColor'): Promise<string> =>
+  page.evaluate(
+    ([name, prop]) => {
+      const probe = document.createElement('span');
+      probe.style[prop as 'color'] = `var(${name})`;
+      document.body.append(probe);
+      const value = getComputedStyle(probe)[prop as 'color'];
+      probe.remove();
+      return value;
+    },
+    [token, property] as const,
+  );
+
+// An Open Trade with two Position Changes (the second declines its Reflection), so the Detail has
+// Executions, Plan Baseline, Entry Quality and Journal items including a decline.
+async function openTradeWithJournal(page: Page): Promise<void> {
+  await confirmReference(page);
+  await recordEntry(page, PC1);
+  await backToTrade(page);
+  await recordEntry(page, PC2, { decline: true });
+  await backToTrade(page);
+  await expect(page.getByRole('region', { name: 'Entry Quality', exact: true })).toBeVisible(READY);
+}
+
+test.describe('T2.53 Detail, receipt and Accounts styling', () => {
+  test('should set the summary card figures at 18 px or more, bold and tabular', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await openTradeWithJournal(page);
+    for (const width of [390, 1280]) {
+      await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+      const figures = await page.getByRole('region', { name: 'Summary', exact: true }).locator('dd').evaluateAll((els) =>
+        els.map((el) => {
+          const s = getComputedStyle(el);
+          return { text: el.textContent ?? '', size: parseFloat(s.fontSize), weight: Number(s.fontWeight), numeric: s.fontVariantNumeric };
+        }),
+      );
+      expect(figures.length, `summary figures at ${width}`).toBeGreaterThanOrEqual(5);
+      for (const f of figures) {
+        expect(f.size, `${f.text} font size at ${width}`).toBeGreaterThanOrEqual(18);
+        expect(f.weight, `${f.text} weight at ${width}`).toBeGreaterThanOrEqual(600);
+        expect(f.numeric, `${f.text} numerals at ${width}`).toContain('tabular-nums');
+      }
+    }
+    await context.close();
+  });
+
+  test('should show Stop and Target with their labels in colours that reach 4.5:1 on white', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await openTradeWithJournal(page);
+    const summary = page.getByRole('region', { name: 'Summary', exact: true });
+    const white = channels(await tokenColour(page, '--card'));
+    for (const [label, token] of [['Stop', '--stop'], ['Target', '--target']] as const) {
+      const term = summary.locator('dt', { hasText: new RegExp(`^${label}$`) });
+      await expect(term, `${label} label`).toBeVisible();
+      const value = term.locator('xpath=following-sibling::dd[1]');
+      const colour = channels(await value.evaluate((el) => getComputedStyle(el).color));
+      expect(colour, `${label} uses its token`).toEqual(channels(await tokenColour(page, token, 'color')));
+      expect(contrastOf(colour, white), `${label} contrast on white`).toBeGreaterThanOrEqual(4.5);
+    }
+    await context.close();
+  });
+
+  test('should lay Plan Baseline and Entry Quality out as a two-column figure grid at 1280 with no row wider than 480 px', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await openTradeWithJournal(page);
+    const rowsOf = (name: string) =>
+      page.getByRole('region', { name, exact: true }).locator('dl > div').evaluateAll((els) =>
+        els.map((el) => {
+          const box = el.getBoundingClientRect();
+          return { text: el.textContent ?? '', left: Math.round(box.left), top: Math.round(box.top), width: box.width };
+        }),
+      );
+    for (const [name, count] of [['Plan Baseline', 3], ['Entry Quality', 7]] as const) {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      const wide = await rowsOf(name);
+      expect(wide.length, `${name} rows`).toBe(count);
+      for (const row of wide) expect(row.width, `${name} row ${row.text} width at 1280`).toBeLessThanOrEqual(480.5);
+      expect(new Set(wide.map((r) => r.left)).size, `${name} columns at 1280`).toBe(2);
+      expect(wide[1]!.top, `${name} second row beside the first at 1280`).toBe(wide[0]!.top);
+      await page.setViewportSize({ width: 390, height: 844 });
+      const narrow = await rowsOf(name);
+      expect(new Set(narrow.map((r) => r.left)).size, `${name} columns at 390`).toBe(1);
+    }
+    await context.close();
+  });
+
+  test('should show Plan Reflection answers as prose sections with hairline dividers', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await confirmReference(page);
+    const section = page.getByRole('region', { name: 'Plan Reflection', exact: true });
+    await expect(section).toBeVisible(READY);
+    for (const width of [390, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      const rows = await section.locator('dl > div').evaluateAll((els) =>
+        els.map((el) => {
+          const dt = el.querySelector('dt')!.getBoundingClientRect();
+          const dd = el.querySelector('dd')!.getBoundingClientRect();
+          const s = getComputedStyle(el);
+          return { dtBottom: dt.bottom, ddTop: dd.top, ddLeft: dd.left, dtLeft: dt.left, border: parseFloat(s.borderTopWidth), style: s.borderTopStyle };
+        }),
+      );
+      expect(rows.length, `answers at ${width}`).toBeGreaterThanOrEqual(3);
+      rows.forEach((row, index) => {
+        expect(row.ddTop, `answer ${index} below its prompt at ${width}`).toBeGreaterThanOrEqual(row.dtBottom - 1);
+        expect(row.ddLeft, `answer ${index} aligned with its prompt at ${width}`).toBe(row.dtLeft);
+        if (index > 0) {
+          expect(row.border, `divider above answer ${index} at ${width}`).toBeGreaterThanOrEqual(1);
+          expect(row.style, `divider style at ${width}`).toBe('solid');
+        }
+      });
+    }
+    await context.close();
+  });
+
+  test('should put each Execution row on the tint with its money right-aligned', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await openTradeWithJournal(page);
+    const section = page.getByRole('region', { name: 'Executions (3)', exact: true });
+    for (const width of [390, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      const tint = await tokenColour(page, '--tint');
+      const rows = await section.locator('ul.executions > li').evaluateAll((els) =>
+        els.map((el) => {
+          const money = el.querySelector<HTMLElement>('.execution-money');
+          const summary = el.querySelector<HTMLElement>('.execution-summary');
+          const what = el.querySelector<HTMLElement>('.execution-what');
+          return {
+            ground: getComputedStyle(el).backgroundColor,
+            align: money ? getComputedStyle(money).textAlign : '',
+            moneyRight: money?.getBoundingClientRect().right ?? Number.NaN,
+            summaryRight: summary?.getBoundingClientRect().right ?? Number.NaN,
+            moneyLeft: money?.getBoundingClientRect().left ?? Number.NaN,
+            whatRight: what?.getBoundingClientRect().right ?? Number.NaN,
+          };
+        }),
+      );
+      expect(rows.length, `rows at ${width}`).toBe(3);
+      for (const row of rows) {
+        expect(row.ground, `row ground at ${width}`).toBe(tint);
+        expect(row.align, `money alignment at ${width}`).toBe('right');
+        expect(Math.abs(row.moneyRight - row.summaryRight), `money flush right at ${width}`).toBeLessThanOrEqual(1);
+        expect(row.moneyLeft, `money after the action text at ${width}`).toBeGreaterThanOrEqual(row.whatRight);
+      }
+    }
+    await context.close();
+  });
+
+  test('should style the receipt rows as Execution rows and Back to the Trade as an ink pill link', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await confirmReference(page);
+    await recordEntry(page, PC1);
+    const receipt = page.getByRole('region', { name: 'Entry recorded', exact: true });
+    for (const width of [390, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      const tint = await tokenColour(page, '--tint');
+      const rows = await receipt.locator('ul.executions > li').evaluateAll((els) =>
+        els.map((el) => {
+          const money = el.querySelector('.execution-money') as HTMLElement;
+          return { ground: getComputedStyle(el).backgroundColor, align: getComputedStyle(money).textAlign, moneyRight: money.getBoundingClientRect().right, right: el.getBoundingClientRect().right, text: el.textContent };
+        }),
+      );
+      expect(rows.length, `receipt rows at ${width}`).toBe(2);
+      expect(rows[0]!.text, 'receipt row text').toMatch(/^Buy 30 XYZ @ \$50\.00, fee \$0\.50$/);
+      for (const row of rows) {
+        expect(row.ground, `receipt row ground at ${width}`).toBe(tint);
+        expect(row.align, `receipt money alignment at ${width}`).toBe('right');
+        expect(row.right - row.moneyRight, `receipt money flush right at ${width}`).toBeLessThanOrEqual(20);
+      }
+      const link = receipt.getByRole('link', { name: 'Back to the Trade' });
+      const look = await link.evaluate((el) => {
+        const s = getComputedStyle(el);
+        return { background: s.backgroundColor, colour: s.color, radius: parseFloat(s.borderTopLeftRadius) };
+      });
+      expect(look.background, `link background at ${width}`).toBe(await tokenColour(page, '--ink'));
+      expect(look.colour, `link text at ${width}`).toBe('rgb(255, 255, 255)');
+      expect(look.radius, `link radius at ${width}`).toBeGreaterThanOrEqual(20);
+    }
+    await context.close();
+  });
+
+  test('should list Accounts as rows with no bullets', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Accounts' }).click();
+    await expect(page.getByRole('heading', { name: 'Accounts', level: 1 })).toBeVisible(READY);
+    await page.getByRole('button', { name: 'Add Account' }).click();
+    await page.getByLabel('Account name').fill('Second account');
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect(page.getByRole('listitem').filter({ hasText: 'Second account' })).toBeVisible(READY);
+    for (const width of [390, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      const rows = await page.locator('.accounts ul > li').evaluateAll((els) =>
+        els.map((el) => {
+          const s = getComputedStyle(el);
+          const list = getComputedStyle(el.parentElement!);
+          return { listStyle: s.listStyleType, indent: parseFloat(list.paddingInlineStart), border: parseFloat(s.borderTopWidth), height: el.getBoundingClientRect().height };
+        }),
+      );
+      expect(rows.length, `Account rows at ${width}`).toBeGreaterThanOrEqual(2);
+      for (const row of rows) {
+        expect(row.listStyle, `bullet at ${width}`).toBe('none');
+        expect(row.indent, `list indent at ${width}`).toBe(0);
+        expect(row.border, `row divider at ${width}`).toBeGreaterThanOrEqual(1);
+        expect(row.height, `row height at ${width}`).toBeGreaterThanOrEqual(40);
+      }
+    }
+    await context.close();
+  });
+
+  test('should not overflow at 320 and 390 and stay axe clean on the Detail, the receipt and Accounts', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    const overflow = (state: string) =>
+      page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth).then((extra) => expect(extra, `page overflow on ${state}`).toBeLessThanOrEqual(0));
+    const eachWidth = async (state: string, axe = true) => {
+      for (const width of [320, 390, 1280]) {
+        await page.setViewportSize({ width, height: 900 });
+        // The shell re-lays out on its own media query after the resize; wait for it before measuring.
+        await expect(page.locator('.shell')).toHaveAttribute('data-layout', width >= 640 ? 'wide' : 'narrow');
+        if (width < 1280) await overflow(`${state} at ${width}`);
+        if (axe) await expectAccessible(page, `${state} at ${width}`);
+      }
+    };
+    await confirmReference(page);
+    await recordEntry(page, PC1);
+    await eachWidth('receipt');
+    await backToTrade(page);
+    await recordEntry(page, PC2, { decline: true });
+    await backToTrade(page);
+    await expect(page.getByRole('region', { name: 'Journal (3)', exact: true })).toBeVisible(READY);
+    await page.getByRole('region', { name: 'Executions (3)', exact: true }).getByRole('button', { name: /^Buy 30 XYZ @ .* 10:00 details$/ }).click();
+    await eachWidth('Detail');
+    await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Accounts' }).click();
+    await expect(page.getByRole('heading', { name: 'Accounts', level: 1 })).toBeVisible(READY);
+    await eachWidth('Accounts');
     await context.close();
   });
 });

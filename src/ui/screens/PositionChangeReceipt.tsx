@@ -66,9 +66,12 @@ export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceip
       </h1>
       <section aria-labelledby="saved-change-heading">
         <h2 id="saved-change-heading">{`Position Change at ${localTime(saved.economicTime, timeZone)}`}</h2>
-        <ul>
+        <ul className="executions">
           {saved.executions.map((e) => (
-            <li key={e.factId}>{`${e.action} ${e.quantity} ${e.instrument.symbol} @ ${price(e.price)}, fee ${price(e.fee)}`}</li>
+            <li key={e.factId} className="execution-line">
+              <span className="execution-what">{`${e.action} ${e.quantity} ${e.instrument.symbol} @`}</span>{' '}
+              <span className="execution-money number">{`${price(e.price)}, fee ${price(e.fee)}`}</span>
+            </li>
           ))}
         </ul>
       </section>
@@ -121,7 +124,7 @@ export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceip
           ? 'Reflection saved.'
           : `Reflection declined${reflection.decline.reason ? `: ${reflection.decline.reason}` : '.'}`}
       </p>
-      <Link to={`/trades/${receipt.tradeId}`}>Back to the Trade</Link>
+      <Link className="pill primary" to={`/trades/${receipt.tradeId}`}>Back to the Trade</Link>
     </section>
   );
 }

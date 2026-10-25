@@ -87,7 +87,7 @@ export function AccountsView({ facade }: AccountsViewProps) {
       {institutions.map((institution) => (
         <section key={institution.id} className="card" aria-labelledby={`institution-${institution.id}`}>
           <h2 id={`institution-${institution.id}`}>{institution.label}</h2>
-          <ul>
+          <ul className="rows">
             {accounts
               .filter((account) => account.institutionId === institution.id)
               .map((account) => (

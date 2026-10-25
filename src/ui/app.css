@@ -16,6 +16,7 @@
   --info-ink: #163b75;
   --info-line: #1f5fbf;
   --neutral-ground: #ece7da;
+  --tint: #f3efe6;
   --radius: 14px;
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   color: var(--ink);
@@ -697,6 +698,13 @@ ul.narrative > li + li {
   color: var(--target);
 }
 
+/* Summary figures: large, bold, tabular. */
+.summary-card dd {
+  font-size: 1.125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
 .summary-card .badge {
   margin-bottom: 0.5rem;
 }
@@ -710,11 +718,14 @@ ul.executions {
 }
 
 ul.executions > li {
-  border-top: 1px solid var(--line);
+  background: var(--tint);
+  border-radius: 10px;
+  padding: 0 0.75rem;
+  margin-top: 0.5rem;
 }
 
 ul.executions > li:first-child {
-  border-top: 0;
+  margin-top: 0;
 }
 
 .nowrap {
@@ -737,8 +748,34 @@ ul.executions > li:first-child {
   cursor: pointer;
 }
 
+/* The action text on the left, the money flush right, the time on its own line. */
 .execution-summary {
+  flex: 1 1 0;
   min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.execution-summary .nowrap {
+  flex-basis: 100%;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.execution-money {
+  margin-left: auto;
+  font-weight: 600;
+}
+
+/* The receipt reuses the row: no disclosure, the money after the action text. */
+ul.executions > li.execution-line {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  column-gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -753,7 +790,6 @@ ul.executions > li:first-child {
 /* Executions of one Position Change share a rail on their left edge. */
 ul.executions > li[data-group] {
   border-left: 3px solid var(--line);
-  padding-left: 0.75rem;
 }
 
 .execution-group-mark {
@@ -789,6 +825,76 @@ ul.executions > li[data-group] {
   .execution-details dl dd {
     margin-bottom: 0.4rem;
   }
+}
+
+/* Plan Baseline and Entry Quality: label and value rows, two columns when the card is wide, each row
+   capped at 480 px. */
+dl.figure-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 480px);
+  gap: 0.35rem 2rem;
+}
+
+@media (min-width: 960px) {
+  dl.figure-grid {
+    grid-template-columns: repeat(2, minmax(0, 480px));
+  }
+}
+
+dl.figure-grid > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+dl.figure-grid dd {
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+/* Plan Reflection: each answer a prose section under its prompt, divided by a hairline. */
+dl.answers {
+  display: block;
+}
+
+dl.answers > div {
+  display: block;
+  padding: 0.75rem 0;
+}
+
+dl.answers > div + div {
+  border-top: 1px solid var(--line);
+}
+
+dl.answers > div:first-child {
+  padding-top: 0;
+}
+
+dl.answers dt {
+  font-size: 0.9rem;
+}
+
+dl.answers dd {
+  margin-top: 0.15rem;
+  overflow-wrap: anywhere;
+}
+
+/* Accounts: one row each, divided by hairlines. */
+ul.rows {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.5rem;
+}
+
+ul.rows > li {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  border-top: 1px solid var(--line);
+  overflow-wrap: anywhere;
 }
 
 /* Open Lots keeps every header on one line; the region scrolls instead. */
