@@ -133,12 +133,28 @@ a {
   margin: 1rem;
 }
 
+/* Standalone cards keep a 16 px gutter on each side at any width. */
 .startup,
 .gate,
 .first-run,
 .onboarding {
+  width: calc(100% - 2rem);
   max-width: 640px;
   margin: 2rem auto;
+}
+
+/* One content column: a banner outside the content box takes the content's inner width and
+   centres, so it shares its left edge; blocks inside the content take their gutter from the
+   content's padding, not from a margin of their own. */
+.banner {
+  width: calc(min(100%, 960px) - 2rem);
+  margin-inline: auto;
+}
+
+.content .card,
+.content .banner {
+  width: auto;
+  margin-inline: 0;
 }
 
 .banner.warning {
@@ -431,7 +447,7 @@ ul.narrative > li + li {
 @media (max-width: 959.98px) {
   .banner.durability {
     padding: 0.5rem 0.75rem;
-    margin: 0.5rem 1rem;
+    margin-block: 0.5rem;
     font-size: 0.8125rem;
   }
 

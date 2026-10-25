@@ -1,5 +1,25 @@
 // UI alignment measurements (plan D02-ui-alignment section 3): browser measurements against dist-faults.
-import { BASE_URL, expect, expectAccessible, firstPage, onboardedPage, startJournal, test } from './support.ts';
+import type { Page } from '@playwright/test';
+import {
+  BASE_URL,
+  backToTrade,
+  checkForUpdate,
+  confirmD1Plan,
+  confirmReference,
+  expect,
+  expectAccessible,
+  firstPage,
+  onboardedD1Page,
+  onboardedPage,
+  PC1,
+  PLAN,
+  READY,
+  recordEntry,
+  reloadFromNotice,
+  SECOND_PLAN,
+  startJournal,
+  test,
+} from './support.ts';
 
 const WIDTHS = [390, 320] as const;
 
@@ -145,4 +165,109 @@ test.describe('T2.37-B1 durability banner before the shell renders', () => {
       await context.close();
     });
   }
+});
+
+// ---- T2.38 one content column and side gutters (absorbs F8) ----------------------------------
+
+const GUTTER = 16;
+// Trades has no .card when it lists rows; its table region is the top-level block there.
+const CARDS = '.card, .first-run, .onboarding, .gate, .table-scroll';
+
+// Every top-level card keeps a 16 px side gutter and the page does not scroll sideways.
+async function expectGutters(page: Page, view: string, width: number): Promise<void> {
+  await page.setViewportSize({ width, height: 844 });
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.scrollWidth), { message: `${view} at ${width} page width` })
+    .toBeLessThanOrEqual(width);
+  const cards = await page.evaluate((selector) => {
+    return [...document.querySelectorAll(selector)].map((el) => {
+      const box = el.getBoundingClientRect();
+      return { name: el.getAttribute('aria-label') ?? el.querySelector('h1, h2')?.textContent ?? el.className, left: box.left, right: box.right };
+    });
+  }, CARDS);
+  expect(cards.length, `${view} has a card at ${width}`).toBeGreaterThan(0);
+  for (const card of cards) {
+    expect(card.left, `${view} "${card.name}" left at ${width}`).toBeGreaterThanOrEqual(GUTTER);
+    expect(card.right, `${view} "${card.name}" right at ${width}`).toBeLessThanOrEqual(width - GUTTER);
+  }
+}
+
+test.describe('T2.38 one content column and side gutters', () => {
+  test('should keep the banner, heading, tabs and first card on one left edge on Trades and Open Detail at 1280', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await confirmReference(page);
+    await recordEntry(page, PC1);
+    await backToTrade(page);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await expect(page.getByRole('navigation', { name: 'Primary' })).toHaveAttribute('data-placement', 'sidebar');
+    const lefts = (): Promise<Record<string, number>> =>
+      page.evaluate(() => {
+        const left = (selector: string) => document.querySelector(selector)?.getBoundingClientRect().left;
+        const found: Record<string, number | undefined> = {
+          banner: left('.banner'),
+          h1: left('main h1'),
+          tablist: left('[role="tablist"]'),
+          card: left('main .card, main .table-scroll'),
+        };
+        return Object.fromEntries(Object.entries(found).filter(([, x]) => x !== undefined)) as Record<string, number>;
+      });
+    // The Trades h1 arrives with T2.39; until then the heading is measured where one exists.
+    const detail = await lefts();
+    expect(Object.keys(detail).sort(), 'Open Detail elements').toEqual(['banner', 'card', 'h1']);
+    for (const [name, x] of Object.entries(detail)) expect.soft(Math.abs(x - detail['banner']!), `Detail ${name} left ${JSON.stringify(detail)}`).toBeLessThanOrEqual(1);
+    await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
+    await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
+    const trades = await lefts();
+    expect(Object.keys(trades), 'Trades elements').toEqual(expect.arrayContaining(['banner', 'tablist', 'card']));
+    for (const [name, x] of Object.entries(trades)) expect.soft(Math.abs(x - trades['banner']!), `Trades ${name} left ${JSON.stringify(trades)}`).toBeLessThanOrEqual(1);
+    await context.close();
+  });
+
+  for (const width of WIDTHS) {
+    test(`should keep a 16 px gutter on first run and onboarding at ${width}`, async ({ server, profile }) => {
+      void server;
+      const context = await profile.launch();
+      const page = await firstPage(context);
+      await page.goto(BASE_URL);
+      await expect(page.getByRole('heading', { name: 'Start your journal' })).toBeVisible(READY);
+      await expectGutters(page, 'first run', width);
+      await startJournal(page);
+      await expect(page.getByRole('heading', { name: 'Add your brokerage account' })).toBeVisible(READY);
+      await expectGutters(page, 'onboarding', width);
+      await context.close();
+    });
+
+    test(`should keep a 16 px gutter on Trades and Open Detail at ${width}`, async ({ server, profile }) => {
+      void server;
+      const context = await profile.launch();
+      const page = await onboardedPage(context);
+      await confirmReference(page);
+      await recordEntry(page, PC1);
+      await backToTrade(page);
+      await expectGutters(page, 'Open Detail', width);
+      await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
+      await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
+      await expectGutters(page, 'Trades', width);
+      await context.close();
+    });
+  }
+
+  test('should keep a 16 px gutter on Migration Blocked at 390 and 320', async ({ server, profile }) => {
+    server.use('dist-releases/d1');
+    const context = await profile.launch();
+    const page = await onboardedD1Page(context);
+    await confirmD1Plan(page, PLAN);
+    await confirmD1Plan(page, SECOND_PLAN);
+    // The D1 release ignores the parameter; the update's Reload keeps it, so the faults build launches with it.
+    await page.goto('/?faults=migration:validate');
+    await expect(page.getByRole('row', { name: /ABC/ })).toBeVisible(READY);
+    server.use('dist-faults');
+    expect(await checkForUpdate(page)).toEqual({ waiting: 'installed' });
+    await reloadFromNotice(page);
+    await expect(page.getByRole('heading', { name: 'Your journal could not be converted to this release' })).toBeVisible(READY);
+    for (const width of WIDTHS) await expectGutters(page, 'Migration Blocked', width);
+    await context.close();
+  });
 });

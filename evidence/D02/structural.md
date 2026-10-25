@@ -1262,3 +1262,27 @@ Also green after: `e2e/d1` first-run/onboarding/responsive specs, `e2e/d2/narrow
 **ocr review of T2.37-B1** (`ocr-review` step): commit `439a863`, session `2aa2d15b-5020-416e-b95a-059325a895e5`, model `gpt-6.1-sol`, 1 file reviewed (`app.css`), 0 comments. No findings. Raw output: `ocr/t2.37-b1-439a863.json`.
 
 **Complete cumulative run after T2.37-B1** (`suite-runner`, 2026-10-24 22:58 EDT, on `439a863` plus the uncommitted evidence): Unit 38 files / 383 tests passed; Node integration 19 / 42 passed; Browser (Chromium) 61 passed (1.9m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.37-b1-*.txt`.
+
+#### T2.38
+
+One content column and side gutters (absorbs F8). Measurements added to `e2e/d2/ui-alignment.spec.ts` (describe "T2.38 one content column and side gutters"), run against `dist-faults`. Migration Blocked is reached as `e2e/d2/migration.spec.ts` does (D1 release with two Plans, `?faults=migration:validate`, faults build, Reload). "Card" is `.card`, the standalone `.first-run`, `.onboarding`, `.gate`, and the Trades `.table-scroll` region (Trades has no `.card` while it lists rows). The Trades `h1` arrives with T2.39, so the 1280 check measures the `h1` where one exists (Open Detail).
+
+Commands:
+
+- Before: `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts -g T2.38` on the unchanged CSS gave 4 failed, 2 passed.
+- After: `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts` gave 13 passed.
+- Also green after: `e2e/d2/narrow.spec.ts`, `e2e/d2/migration.spec.ts`, `e2e/d1/responsive-a11y.spec.ts`, `e2e/d2/responsive-a11y.spec.ts`, `e2e/d1/readiness.spec.ts`, `e2e/d1/recovery-only.spec.ts` (37 passed with ui-alignment); `npx vitest run src/ui` 111 passed; typecheck, `tsc6`, lint, lint:deps exit 0.
+
+| Measurement | Before | After |
+| --- | --- | --- |
+| Open Detail at 1280, left x of banner / `h1` / first card | 236 / 286 / 302 (fail) | equal within 1 px |
+| Trades at 1280, left x of banner / tablist / first card | 236 / 286 / 286 (banner 50 px off; fail) | equal within 1 px |
+| First run at 390 and 320, card left | 0 (fail; needs >= 16) | >= 16, right <= width - 16 |
+| Onboarding at 390 and 320 | not reached (first run failed first) | passes |
+| Migration Blocked at 390 (320 not reached), `.gate` left | 0 (fail) | passes at 390 and 320 |
+| Trades and Open Detail at 390 and 320 | already passed | passes |
+| Page overflow (all views) | none | none |
+
+Change: CSS only, `src/ui/app.css`. `.banner` takes `calc(min(100%, 960px) - 2rem)` and centres, so it shares the content box's inner left edge; blocks inside `.content` (`.card`, `.banner`) lose their own side margin and take the gutter from the content padding, which removes the extra 16 px that put cards right of the heading and tabs. The standalone `.startup`, `.gate`, `.first-run` and `.onboarding` cards use `width: calc(100% - 2rem)` with the 640 px cap, so they keep a 16 px gutter on narrow. The compact narrow banner margin is now `0.5rem auto` in effect (`margin-block` only). No markup or view-model change.
+
+This closes F8 (Migration Blocked card edge to edge at 320 px): it now has the 16 px gutter at 390 and 320.
