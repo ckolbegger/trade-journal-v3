@@ -1720,3 +1720,14 @@ Commits: view amendment (reflection items carry their Position Change), then the
 | (question c) | `TradeDetail.tsx:310-335` | `ExecutionReflection` renders the same output as the old ternary in every branch | Holds |
 
 **Complete cumulative run after T2.50-B1** (`suite-runner`, 2026-10-25 09:07 EDT, on `090eb06`): Unit 41 files / 427 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 80 passed (2.4m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.50-b1-*.txt`.
+
+**ocr review of T2.51** (`ocr-review` step): commit `8e0253f`, session `ee1ee150-2221-4f21-83d1-8e190f89ab96`, model `gpt-6.1-sol`, 1 file reviewed (4 excluded), 0 comments, plus four main-session questions. Raw output: `ocr/t2.51-8e0253f.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| (question a) | `TradeDetail.tsx:588` | Authored shows when `authoredTime !== momentTime`, a raw string compare. Instants seconds apart, or one instant written two ways, give an Authored row that reads the same as Moment | Doubtful; T2.51-B1 (show Authored only when its displayed time differs from the displayed Moment) |
+| (question b) | `TradeDetail.tsx:574` | "Journal (n)" counts the same array that is rendered, declines included | Holds |
+| (question c) | `TradeDetail.tsx:577-579` | The Badge is a plain span, so the heading's name is the Entry Type text | Holds (code reading; axe coverage of a Detail with Journal items to be confirmed at T2.53/T2.55) |
+| (question d) | `TradeDetail.tsx:169, 304` | `view.plan.underlying` is required on every Detail branch, incoherent included | Holds |
+
+**Complete cumulative run after T2.51** (`suite-runner`, 2026-10-25 09:16 EDT, on `8e0253f`): Unit 41 files / 431 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 80 passed (2.4m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.51-*.txt`.
