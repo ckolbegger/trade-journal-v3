@@ -11,6 +11,7 @@ import {
   firstPage,
   onboardedD1Page,
   onboardedPage,
+  openEntryForm,
   openPlanned,
   PC1,
   PLAN,
@@ -590,6 +591,83 @@ test.describe('T2.42 semantic badge tones', () => {
       }
     }
     expect(new Set(tones.map((t) => t.ground.join())).size, 'the three tones differ').toBeGreaterThan(1);
+    await context.close();
+  });
+});
+
+test.describe('T2.43 prompt chip groups', () => {
+  const lum = (rgb: number[]) => {
+    const [r, g, b] = rgb.map((v) => {
+      const c = v / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    }) as [number, number, number];
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const ratio = (a: number[], b: number[]) => {
+    const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x) as [number, number];
+    return (hi + 0.05) / (lo + 0.05);
+  };
+
+  // Measures the first radio group of a form: fieldset rule, hidden radio, checked chip, focused chip.
+  async function measureChips(page: Page, form: string) {
+    const group = page.getByRole('radiogroup').first();
+    const radio = group.locator('input[type="radio"]').first();
+    await radio.check();
+    const checked = await group.locator('label.chip').first().evaluate((label) => {
+      const s = getComputedStyle(label);
+      const ink = getComputedStyle(document.documentElement).getPropertyValue('--ink').trim();
+      const probe = document.createElement('span');
+      probe.style.color = ink;
+      document.body.append(probe);
+      const inkRgb = getComputedStyle(probe).color;
+      probe.remove();
+      return { background: s.backgroundColor, color: s.color, inkRgb };
+    });
+    expect(checked.background, `${form} checked chip background`).toBe(checked.inkRgb);
+    expect(checked.color, `${form} checked chip text`).toBe('rgb(255, 255, 255)');
+    const fieldset = await group.evaluate((el) => getComputedStyle(el).borderTopStyle);
+    expect(fieldset, `${form} fieldset border-style`).toBe('none');
+    const hidden = await radio.evaluate((el) => {
+      const box = el.getBoundingClientRect();
+      const s = getComputedStyle(el);
+      return { width: box.width, height: box.height, clipPath: s.clipPath, position: s.position };
+    });
+    const clipped = (hidden.width <= 1 && hidden.height <= 1) || hidden.clipPath !== 'none';
+    expect(clipped, `${form} radio clipped (${JSON.stringify(hidden)})`).toBe(true);
+    await page.locator('h1').click();
+    await tabTo(page, radio);
+    const chip = group.locator('label.chip').first();
+    const ring = await chip.evaluate((label) => {
+      const parse = (css: string) => (css.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
+      const s = getComputedStyle(label);
+      let el: HTMLElement | null = label.parentElement;
+      let ground = [255, 255, 255];
+      while (el) {
+        const bg = getComputedStyle(el).backgroundColor;
+        if (!bg.startsWith('rgba(0, 0, 0, 0')) {
+          ground = parse(bg);
+          break;
+        }
+        el = el.parentElement;
+      }
+      return { width: parseFloat(s.outlineWidth), style: s.outlineStyle, colour: parse(s.outlineColor), ground };
+    });
+    expect(ring.style, `${form} chip outline style`).not.toBe('none');
+    expect(ring.width, `${form} chip outline width`).toBeGreaterThanOrEqual(2);
+    expect(ratio(ring.colour, ring.ground), `${form} chip outline contrast`).toBeGreaterThanOrEqual(3);
+    await expectAccessible(page, `${form} chips`);
+  }
+
+  test('should render prompt chips as borderless groups with an ink checked chip and a visible focus ring on New Plan and Record entry', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'New Plan' }).click();
+    await expect(page.getByRole('heading', { name: 'New Plan', level: 1 })).toBeVisible(READY);
+    await measureChips(page, 'New Plan');
+    await confirmReference(page);
+    await openEntryForm(page);
+    await measureChips(page, 'Record entry');
     await context.close();
   });
 });

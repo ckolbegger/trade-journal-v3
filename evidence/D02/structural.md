@@ -1462,3 +1462,23 @@ Commands:
 **ocr review of T2.42** (`ocr-review` step): commit `b89dac5`, session `674bb7bc-125a-4fe9-bdbb-46d26be290f4`, model `gpt-6.1-sol`, 4 files reviewed, 0 comments. No findings. Raw output: `ocr/t2.42-b89dac5.json`.
 
 **Complete cumulative run after T2.42** (`suite-runner`, 2026-10-25 01:23 EDT, on `b89dac5`): Unit 41 files / 399 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 75 passed (2.4m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.42-*.txt`.
+
+## T2.43 Prompt chip groups
+
+Measurements added first to `e2e/d2/ui-alignment.spec.ts` (describe "T2.43 prompt chip groups"), run against `dist-faults` on both New Plan (Plan Reflection) and Record entry (Position Change Reflection), then the CSS written (`src/ui/app.css` only; no markup change).
+
+Commands:
+- Before: `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts -g T2.43` gave 1 failed. To list every failing measurement the assertions were made `expect.soft` for one run, then restored.
+- After: same command, 1 passed. With `e2e/d2/ui-alignment.spec.ts e2e/d1 e2e/d2/responsive-a11y.spec.ts e2e/d2/open-position.spec.ts`: 56 passed.
+- Static: `npx vitest run src/ui` 120 passed; typecheck, tsc6, lint, lint:deps exit 0.
+
+| Measurement (both forms) | Before | After |
+| --- | --- | --- |
+| Checked chip background is ink (rgb 28, 27, 25) | fail (transparent) | pass |
+| Checked chip text is white | fail (ink) | pass |
+| Fieldset border-style | fail (`solid`) | `none` |
+| Radio clipped | fail (13 x 13 px, static) | pass (1 x 1 px, opacity 0, centred in the chip; still focusable) |
+| Focused chip outline | fail (`none` on the label) | 3px solid `--focus`, offset 2px, via `:focus-within`; contrast with the ground at least 3:1 |
+| `tabTo` reaches the radio with a focus ring; axe | pass | pass |
+
+Change: `fieldset.choices` is borderless; its legend is a small-caps, muted label (0.8rem, 600, 0.04em). `label.chip:has(input:checked)` is ink with white text; the radio is 1 px, transparent and centred in the chip (a `clip-path` radio made Playwright's `check()` fail with "label intercepts pointer events", and existing specs check Reflection radios by label); `label.chip:focus-within` draws the ring. Labels, names and roles are unchanged.
