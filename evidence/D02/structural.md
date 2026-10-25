@@ -1127,3 +1127,7 @@ Copy decisions:
 - Red then green: case 1 red (TypeError: rMultiple is not a function), then green. Cases 2 and 3 were first-run passes with mutation checks, flagged in `tdd-log.md`.
 - Test impact: none. Every existing R multiple in tests is "1.08R" (TradeDetail.test.tsx, PositionChangeForm.test.tsx, e2e open-position and offline), which already has two decimals, so no expectation gained or lost a trailing zero. No test file was edited other than the new `src/ui/format.test.ts`.
 - Runs: `npx vitest run src/ui` 107 passed; `npm run build:faults` then `npx playwright test e2e/d2/open-position.spec.ts e2e/d2/offline.spec.ts` 4 passed; typecheck, tsc6, lint, lint:deps all exit 0.
+
+**ocr review of T2.34** (`ocr-review` step): commit `88bcd26`, session `e44fd381-3ef1-434a-9196-a0da9d93d854`, model `gpt-6.1-sol`, 3 files reviewed (3 excluded), 0 comments. No findings. Raw output: `ocr/t2.34-88bcd26.json`.
+
+**Complete cumulative run after T2.34** (`suite-runner`, 2026-10-24 22:22 EDT, on `88bcd26`): Unit 38 files / 379 tests passed; Node integration 19 / 42 passed; Browser (Chromium) 54 passed (1.7m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.34-*.txt`.
