@@ -427,15 +427,18 @@ ul.narrative > li + li {
   flex: none;
 }
 
-.shell:not([data-layout='wide']) .banner.durability {
-  padding: 0.5rem 0.75rem;
-  margin: 0.5rem 1rem;
-  font-size: 0.8125rem;
-}
+/* Keyed to the width, not the shell, so it also applies on first run and onboarding (no shell yet). */
+@media (max-width: 959.98px) {
+  .banner.durability {
+    padding: 0.5rem 0.75rem;
+    margin: 0.5rem 1rem;
+    font-size: 0.8125rem;
+  }
 
-.shell:not([data-layout='wide']) .banner.durability .pill {
-  max-width: 7.5rem;
-  padding: 0.3rem 0.75rem;
-  font-size: 0.8125rem;
-  line-height: 1.2;
+  .banner.durability .pill {
+    max-width: 7.5rem;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.8125rem;
+    line-height: 1.2;
+  }
 }

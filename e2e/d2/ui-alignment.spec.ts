@@ -1,5 +1,5 @@
 // UI alignment measurements (plan D02-ui-alignment section 3): browser measurements against dist-faults.
-import { expect, expectAccessible, onboardedPage, test } from './support.ts';
+import { BASE_URL, expect, expectAccessible, firstPage, onboardedPage, startJournal, test } from './support.ts';
 
 const WIDTHS = [390, 320] as const;
 
@@ -116,6 +116,32 @@ test.describe('T2.37 navigation and durability banner', () => {
         expect(measured.buttonCentre).toBeLessThanOrEqual(measured.textBottom);
       }
       await expectAccessible(page, `Trades at ${width}`);
+      await context.close();
+    });
+  }
+});
+
+test.describe('T2.37-B1 durability banner before the shell renders', () => {
+  for (const stage of ['first run', 'account onboarding'] as const) {
+    test(`should keep the storage banner compact with the warning ground on ${stage} at 390`, async ({ server, profile }) => {
+      void server;
+      const context = await profile.launch();
+      const page = await firstPage(context);
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto(BASE_URL);
+      if (stage === 'account onboarding') await startJournal(page);
+      const banner = page.getByRole('region', { name: 'Storage protection' });
+      await expect(banner).toBeVisible();
+      const measured = await banner.evaluate((el) => {
+        const probe = document.createElement('span');
+        probe.style.color = getComputedStyle(document.documentElement).getPropertyValue('--warning-ground').trim();
+        document.body.append(probe);
+        const ground = getComputedStyle(probe).color;
+        probe.remove();
+        return { background: getComputedStyle(el).backgroundColor, ground, height: el.getBoundingClientRect().height };
+      });
+      expect(measured.background).toBe(measured.ground);
+      expect(measured.height, `banner height on ${stage}`).toBeLessThanOrEqual(120);
       await context.close();
     });
   }

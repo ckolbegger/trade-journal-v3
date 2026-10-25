@@ -1234,3 +1234,19 @@ Commands:
 | axe on Trades at 390 and 1280 | not reached before the failing assertion | clean at both |
 
 Markup change: the unprotected-storage banner is now `banner warning durability` (was `banner notice`; accessible name "Storage protection", text and button name unchanged) with its paragraphs wrapped in a `banner-text` div. The "will now keep your data" status line stays `banner notice`. Current item: ink pill in the sidebar, bold ink in the bottom bar.
+
+#### T2.37-B1
+
+Finding (ocr review of 23fc26c, Valid): the compact banner rules were keyed to `.shell:not([data-layout='wide'])`, but AppShell renders the storage banner outside any `.shell` on first run and account onboarding, so it got the flex row without the compact padding, font and button cap.
+
+Fix: the compact rules are now in `@media (max-width: 959.98px)` (the 960 px layout switch, `WIDE_LAYOUT_MIN_WIDTH`), so they apply wherever the banner renders. Wide layout and Trades are unchanged.
+
+Commands: `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts` (new describe "T2.37-B1 durability banner before the shell renders").
+
+| Measurement | Before | After |
+| --- | --- | --- |
+| Banner height at 390, first run (limit 120) | 567.3 px | passes (<= 120) |
+| Banner height at 390, account onboarding (limit 120) | 567.3 px | passes (<= 120) |
+| Banner background vs `--warning-ground` | equal | equal |
+
+Also green after: `e2e/d1` first-run/onboarding/responsive specs, `e2e/d2/narrow.spec.ts`, `e2e/d2/responsive-a11y.spec.ts`, lint, lint:deps.
