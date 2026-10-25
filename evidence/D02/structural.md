@@ -1064,3 +1064,15 @@ Bug from the ocr review of T2.30: `refusedAt` was never cleared, so returning to
 | `npx vitest run src/ui/AppShell.test.tsx` | 21 passed (B2.10-style keeps-values case included) |
 | `npm run build:faults`, `npx playwright test e2e/d2/runtime-failure.spec.ts` | 3 passed |
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
+
+#### T2.30-B2
+
+Maintainability tidy-up from the ocr review of T2.30 (Doubtful): `RECORD_ENTRY_PATH` in `src/ui/AppShell.tsx` repeated the record-entry path literal. It is now `ROUTES.find((route) => route.id === 'record-entry')!.path`, since the route filter drops the write route when not Writable. No behaviour change.
+
+| Command | Result |
+|---|---|
+| `npx vitest run src/ui/AppShell.test.tsx` before the change | 21 passed |
+| `npx vitest run src/ui/AppShell.test.tsx` after the change | 21 passed |
+| `npm run build:faults`, `npx playwright test e2e/d2/runtime-failure.spec.ts` | 3 passed |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
+| `grep -rn "record-entry" src \| grep -v "\.test\."` | the path literal `/trades/:tradeId/record-entry` appears only in `src/app/routes.ts:41`; other hits are the route id (`main.tsx`, `AppShell.tsx`) and a concrete link template `/trades/${id}/record-entry` in `TradeDetail.tsx:104` (a different string, out of scope) |

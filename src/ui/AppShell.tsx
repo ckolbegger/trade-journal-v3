@@ -43,7 +43,8 @@ function useWide(): boolean {
 }
 
 // The application shell: nothing is offered until Runtime Readiness has been established.
-const RECORD_ENTRY_PATH = '/trades/:tradeId/record-entry';
+// The route filter drops the write route when not Writable, so the fallback takes its path from ROUTES.
+const RECORD_ENTRY_PATH = ROUTES.find((route) => route.id === 'record-entry')!.path;
 
 // A direct link to the entry form while this browser can't save: say so instead of a blank view.
 function RecordEntryUnavailable() {
