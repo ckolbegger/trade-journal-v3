@@ -226,6 +226,9 @@ export interface DerivedTradeState {
   readonly positions: readonly InstrumentPosition[];
   // Every opening Execution's actual fee, each counted once.
   readonly fees: { readonly incurredOpening: Rational };
+  // Signed cost of the remaining open exposure: quantity x price over the Open Lots plus their unconsumed
+  // opening fees (D4's C + F). Stock only until options add a multiplier.
+  readonly netCost: CalculationResult<Rational, 'NoOpenQuantity'>;
   readonly baseline: PlanBaseline;
   readonly entryResolution: EntryResolution;
   readonly entryQuality: EntryQuality;
@@ -269,6 +272,13 @@ function decimal(text: string): Rational {
   const parsed = parseDecimal(text);
   if (!parsed.ok) throw new Error(`Invalid stored decimal: ${text}`);
   return parsed.value;
+}
+
+function netCostOf(positions: readonly InstrumentPosition[]): DerivedTradeState['netCost'] {
+  const lots = positions.flatMap((p) => p.openLots);
+  if (lots.length === 0) return { kind: 'NotApplicable', reason: 'NoOpenQuantity' };
+  const total = lots.reduce((sum, l) => sum.add(l.quantity.mul(l.price)).add(l.unconsumedOpeningFee), Rational.of(0n));
+  return { kind: 'Value', value: total };
 }
 
 // Each opening Execution creates one Open Lot holding its whole fee (D2 A22).
@@ -567,6 +577,7 @@ export function derive(input: TradeDerivationInput): DerivationResult {
     facts,
     positions,
     fees: { incurredOpening: facts.reduce((sum, e) => sum.add(decimal(e.fee)), Rational.of(0n)) },
+    netCost: netCostOf(positions),
     baseline,
     entryResolution: entry.resolution,
     entryQuality: entryQualityOf(entry.resolution, entry.window, record.plan, baseline),
