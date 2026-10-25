@@ -1020,3 +1020,62 @@ describe('focus after navigation', () => {
     expect(document.activeElement).toBe(summary);
   });
 });
+
+describe('Record entry issues', () => {
+  const description = (element: HTMLElement) => document.getElementById(element.getAttribute('aria-describedby') ?? '')?.textContent;
+  const reject = (facade: UiFacade, issues: readonly object[]) =>
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue({ ...rejected, issues } as never);
+
+  it('should remove an Execution fields issue and its summary line once that field is edited to a valid value, but keep a server issue until the next submit', async () => {
+    const facade = renderForm();
+    reject(facade, [
+      { source: 'TradeWorkflows', member: 0, field: 'quantity', code: 'NotPositive' },
+      { source: 'TradeWorkflows', member: 0, field: 'economicTime', code: 'EconomicTimeBeforePlan' },
+    ]);
+    const user = userEvent.setup();
+    await fillRows(user, [['0', '50.00', '0.50', '2026-10-12T08:00']]);
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    const summary = await screen.findByRole('region', { name: 'This entry can’t be saved yet' });
+    const lines = () => within(summary).queryAllByRole('listitem').map((li) => li.textContent);
+    expect(lines()).toHaveLength(2);
+    const quantity = within(row(1)).getByLabelText('Quantity');
+    expect(description(quantity)).toMatch(/quantity greater than zero/);
+
+    // Still not a quantity: the issue stays.
+    await user.type(quantity, 'x');
+    expect(description(quantity)).toMatch(/quantity greater than zero/);
+    await user.clear(quantity);
+    await user.type(quantity, '30');
+    expect(quantity.getAttribute('aria-describedby')).toBeNull();
+    expect(quantity.getAttribute('aria-invalid')).toBeNull();
+    expect(lines()).toEqual(['Execution 1: the Economic Time cannot be before the Plan time.']);
+    expect(facade.TradeWorkflows.recordPositionChange).toHaveBeenCalledTimes(1);
+
+    // Whether the Economic Time is before the Plan time is the server's to say, so editing it clears nothing.
+    const time = within(row(1)).getByLabelText('Economic Time');
+    await user.clear(time);
+    await user.type(time, '2026-10-12T12:00');
+    expect(lines()).toEqual(['Execution 1: the Economic Time cannot be before the Plan time.']);
+    expect(description(time)).toMatch(/before the Plan time/);
+  });
+
+  it('should keep a Journal prompts issue until that prompt is answered', async () => {
+    const facade = renderForm();
+    reject(facade, [{ source: 'Journal', field: 'prompt.position-change-reflection.decision-mode', code: 'RequiredAnswerMissing' }]);
+    const user = userEvent.setup();
+    await fillRows(user, [['30', '50.00', '0.50', '2026-10-12T10:00']]);
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    const summary = await screen.findByRole('region', { name: 'This entry can’t be saved yet' });
+    const mode = screen.getByRole('radiogroup', { name: 'Decision mode' });
+
+    // Other edits, and another prompt's answer, leave it.
+    await user.type(within(row(1)).getByLabelText('Fee'), '1');
+    await user.click(within(screen.getByRole('radiogroup', { name: 'Primary emotion' })).getByLabelText('Calm'));
+    expect(within(summary).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Answer “Decision mode”.']);
+    expect(description(mode)).toMatch(/Answer/);
+
+    await user.click(within(mode).getByLabelText('Reactive'));
+    expect(screen.queryByRole('region', { name: 'This entry can’t be saved yet' })).toBeNull();
+    expect(mode.getAttribute('aria-describedby')).toBeNull();
+  });
+});

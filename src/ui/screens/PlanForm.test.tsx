@@ -235,3 +235,79 @@ describe('submission', () => {
     expect(dirty).toHaveBeenLastCalledWith(true);
   });
 });
+
+describe('New Plan issues', () => {
+  const analysis = (code: string) => ({ source: 'TradeAnalysis', code });
+  const rejection = (issues: readonly object[]) =>
+    ({ kind: 'Rejected', binding: { databaseName: 'tj-ws-1', contentRevision: 4 }, issues }) as never;
+  const described = (element: HTMLElement) => document.getElementById(element.getAttribute('aria-describedby') ?? '')?.textContent;
+
+  it('should remove a field issue and its summary line once that field is edited to a valid value, without submitting, but keep a server issue until the next submit', async () => {
+    const facade = renderForm();
+    vi.mocked(facade.TradeWorkflows.confirmPlan).mockResolvedValue(
+      rejection([analysis('MissingStop'), { source: 'ReferenceCatalog', field: 'accountId', code: 'AccountNotSelectable' }]),
+    );
+    const user = await fillPlan();
+    await user.clear(screen.getByLabelText('Stop'));
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    const summary = await screen.findByRole('region', { name: 'This Plan can’t be confirmed yet' });
+    expect(within(summary).getAllByRole('listitem')).toHaveLength(2);
+    const stop = screen.getByLabelText('Stop');
+    expect(described(stop)).toMatch(/enter a stop/i);
+
+    // An edit that is still not a price leaves the issue.
+    await user.type(stop, 'x');
+    expect(described(stop)).toMatch(/enter a stop/i);
+    await user.clear(stop);
+    await user.type(stop, '47.50');
+    expect(stop.getAttribute('aria-describedby')).toBeNull();
+    expect(stop.getAttribute('aria-invalid')).toBeNull();
+    expect(within(summary).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Choose an available Account and Strategy.']);
+    expect(facade.TradeWorkflows.confirmPlan).toHaveBeenCalledTimes(1);
+
+    // The server's issue about the Account is not re-checked by the form: it waits for the next submit.
+    await user.selectOptions(screen.getByLabelText('Account'), 'acct-1');
+    expect(within(summary).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Choose an available Account and Strategy.']);
+  });
+
+  it('should keep the summary, with the remaining issues, while any issue remains, and remove it when none remain', async () => {
+    const facade = renderForm();
+    vi.mocked(facade.TradeWorkflows.confirmPlan).mockResolvedValue(
+      rejection([analysis('MissingStop'), analysis('MissingTarget'), { source: 'Journal', field: 'prompt.plan-reflection.thesis', code: 'RequiredAnswerMissing' }]),
+    );
+    const user = await fillPlan();
+    await user.clear(screen.getByLabelText('Stop'));
+    await user.clear(screen.getByLabelText('Target'));
+    await user.clear(screen.getByLabelText('Why this trade, why now?'));
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    const summary = await screen.findByRole('region', { name: 'This Plan can’t be confirmed yet' });
+    const lines = () => within(summary).queryAllByRole('listitem').map((li) => li.textContent);
+    expect(lines()).toEqual(['Enter a Stop.', 'Enter a Target.', 'Answer “Why this trade, why now?”.']);
+
+    await user.type(screen.getByLabelText('Stop'), '47.50');
+    expect(lines()).toEqual(['Enter a Target.', 'Answer “Why this trade, why now?”.']);
+    await user.type(screen.getByLabelText('Target'), '56.00');
+    expect(lines()).toEqual(['Answer “Why this trade, why now?”.']);
+    await user.type(screen.getByLabelText('Why this trade, why now?'), 'B');
+    expect(screen.queryByRole('region', { name: 'This Plan can’t be confirmed yet' })).toBeNull();
+    expect(screen.getByLabelText('Why this trade, why now?').getAttribute('aria-describedby')).toBeNull();
+  });
+
+  it('should not move focus when an issue clears', async () => {
+    const facade = renderForm();
+    vi.mocked(facade.TradeWorkflows.confirmPlan).mockResolvedValue(rejection([analysis('MissingStop'), analysis('MissingTarget')]));
+    const user = await fillPlan();
+    await user.clear(screen.getByLabelText('Stop'));
+    await user.clear(screen.getByLabelText('Target'));
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    const summary = await screen.findByRole('region', { name: 'This Plan can’t be confirmed yet' });
+    expect(document.activeElement).toBe(summary);
+
+    const stop = screen.getByLabelText('Stop');
+    await user.type(stop, '47.50');
+    expect(document.activeElement).toBe(stop);
+    await user.click(screen.getByLabelText('Symbol'));
+    await user.type(screen.getByLabelText('Target'), '56.00');
+    expect(document.activeElement).toBe(screen.getByLabelText('Target'));
+  });
+});

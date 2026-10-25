@@ -29,11 +29,15 @@ export function describePositionChangeIssues(
   rowKeys: readonly number[],
   definition: EntryDefinitionRecord,
 ): FieldIssue[] {
-  return issues.map((issue): FieldIssue => {
+  return issues.map((issue): FieldIssue => ({ ...describeIssue(issue, rowKeys, definition), code: issue.code }));
+}
+
+function describeIssue(issue: Issue & { readonly member?: number }, rowKeys: readonly number[], definition: EntryDefinitionRecord): FieldIssue {
+  {
     if (issue.member !== undefined) {
       return { field: rowField(rowKeys[issue.member]!, issue.field ?? ''), message: `Execution ${issue.member + 1}: ${memberMessage(issue)}` };
     }
     if (issue.code === 'ReasonTooLong') return { field: 'reason', message: 'Keep the reason for declining to 500 characters or fewer.' };
     return describeJournalIssue(issue, definition);
-  });
+  }
 }

@@ -5,7 +5,7 @@ import { fromWorkspaceLocal, toWorkspaceLocal } from '../../domain/time/index.ts
 import type { EntryDefinitionRecord } from '../../app/types.ts';
 import { useRuntime } from '../runtime.tsx';
 import { confirmedDetail } from './confirmed-detail.ts';
-import { fieldIssues, IssueSummary } from './form-issues.tsx';
+import { answerChanged, fieldIssues, isPositiveDecimal, IssueSummary } from './form-issues.tsx';
 import { describeIssues, type FieldIssue } from './plan-issues.ts';
 import { ReflectionPrompts, type Answers } from './ReflectionPrompts.tsx';
 
@@ -68,6 +68,8 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
   }));
   const set = (name: keyof Fields) => (value: string) => setFields((f) => ({ ...f, [name]: value }));
   const [issues, setIssues] = useState<readonly FieldIssue[]>([]);
+  // The values the issues were reported against, to tell which the trader has since corrected.
+  const [reported, setReported] = useState<{ readonly fields: Fields; readonly answers: Answers } | undefined>();
   // The values as first shown; the form is unsaved while anything differs from them.
   const [initial, setInitial] = useState<Fields | undefined>();
   const dirty = initial !== undefined && (JSON.stringify(fields) !== JSON.stringify(initial) || Object.keys(answers).length > 0);
@@ -130,7 +132,10 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
     });
     // A refusal switches the whole shell to Recovery Only; the form keeps its values.
     report(result);
-    if (result.kind === 'Rejected') setIssues(describeIssues(result.issues, definition));
+    if (result.kind === 'Rejected') {
+      setIssues(describeIssues(result.issues, definition));
+      setReported({ fields, answers });
+    }
     if (result.kind === 'Confirmed') {
       const confirmed = confirmedDetail(result, definition, {
         strategy: strategy?.name ?? '',
@@ -143,7 +148,28 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
 
   if (!accounts || !definition) return <p role="status">Loading the Plan form…</p>;
 
-  const { fieldError, describedBy, promptErrors } = fieldIssues(issues);
+  // Only what the form can judge from the values themselves clears on edit; the server's other
+  // issues (the chosen Account, the Plan time) stay until the next submit.
+  const corrected = (issue: FieldIssue) => {
+    if (!reported) return false;
+    const changed = (name: keyof Fields) => fields[name] !== reported.fields[name];
+    const entry = Number(fields.entry);
+    switch (issue.field) {
+      case 'symbol':
+        return changed('symbol') && fields.symbol.trim() !== '';
+      case 'quantity':
+        return changed('quantity') && isPositiveDecimal(fields.quantity);
+      case 'entry':
+        return changed('entry') && isPositiveDecimal(fields.entry);
+      case 'stop':
+        return (changed('stop') || changed('entry')) && isPositiveDecimal(fields.stop) && (issue.code !== 'NoPositiveRisk' || Number(fields.stop) < entry);
+      case 'target':
+        return (changed('target') || changed('entry')) && isPositiveDecimal(fields.target) && (issue.code !== 'TargetNotBeyondEntry' || Number(fields.target) > entry);
+      default:
+        return definition.prompts.some((p) => p.id === issue.field) && answerChanged(reported.answers, answers, issue.field);
+    }
+  };
+  const { fieldError, describedBy, promptErrors } = fieldIssues(issues.filter((issue) => !corrected(issue)));
   const input = (name: keyof Fields, label: string, inputMode?: 'decimal') => (
     <div className="field">
       <label>
@@ -158,7 +184,7 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
     <form className="plan-form" noValidate onSubmit={(event) => void submit(event)}>
       <h1>New Plan</h1>
       {/* A rejected confirmation moves focus to the summary of every issue. */}
-      <IssueSummary id="plan-issues-heading" heading="This Plan can’t be confirmed yet" issues={issues} />
+      <IssueSummary id="plan-issues-heading" heading="This Plan can’t be confirmed yet" issues={issues} corrected={corrected} />
       <section className="card" aria-labelledby="plan-trade-heading">
         <h2 id="plan-trade-heading">Trade</h2>
         <label>

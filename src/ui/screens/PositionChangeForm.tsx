@@ -11,7 +11,7 @@ import type {
 import { fromWorkspaceLocal, toWorkspaceLocal } from '../../domain/time/index.ts';
 import { quantity } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
-import { fieldIssues, IssueSummary } from './form-issues.tsx';
+import { answerChanged, fieldIssues, isNonNegativeDecimal, isPositiveDecimal, IssueSummary } from './form-issues.tsx';
 import type { FieldIssue } from './plan-issues.ts';
 import { describePositionChangeIssues, rowField } from './position-change-issues.ts';
 import { PositionChangeReceipt } from './PositionChangeReceipt.tsx';
@@ -69,6 +69,8 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   // The row as first shown; the form is unsaved while anything differs from it.
   const [initialRow, setInitialRow] = useState(() => rows[0]!);
   const [issues, setIssues] = useState<readonly FieldIssue[]>([]);
+  // The values the issues were reported against, to tell which the trader has since corrected.
+  const [reported, setReported] = useState<{ readonly rows: readonly Row[]; readonly answers: Answers } | undefined>();
   const [recorded, setRecorded] = useState<Extract<PositionChangeResult, { kind: 'Recorded' }> | undefined>();
   // The Trade changed after the form loaded: nothing was saved, and the values stay for review.
   const [conflict, setConflict] = useState(false);
@@ -85,6 +87,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
       setDeclined(false);
       setReason('');
       setIssues([]);
+      setReported(undefined);
       setConflict(false);
       setReloaded(false);
       setReloadFailed(false);
@@ -219,6 +222,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
     const instants = times.flatMap((time) => (time.ok ? [time.instant] : []));
     if (timeIssues.length > 0) {
       setIssues(describePositionChangeIssues(timeIssues, rowKeys, definition));
+      setReported({ rows, answers });
       return;
     }
     const members = rows.map(
@@ -250,6 +254,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
     setReloaded(false);
     setReloadFailed(false);
     setIssues(result.kind === 'Rejected' ? describePositionChangeIssues(result.issues, rowKeys, definition) : []);
+    setReported({ rows, answers });
     if (result.kind === 'Recorded') {
       setRecorded(result);
       // The saved form's history entry becomes the Trade's, so reload, or Back then Forward, shows
@@ -259,7 +264,23 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
     }
   };
 
-  const { fieldError, describedBy, promptErrors } = fieldIssues(issues);
+  // Only what the form can judge from the values themselves clears on edit; the server's other
+  // issues (an Economic Time before the Plan time, the reason's length) stay until the next save.
+  const corrected = (issue: FieldIssue) => {
+    if (!reported) return false;
+    const row = rows.find((r) => issue.field.startsWith(`row-${r.key}-`));
+    if (row) {
+      const name = issue.field.slice(`row-${row.key}-`.length);
+      const before = reported.rows.find((r) => r.key === row.key);
+      if (!before) return false;
+      if (name === 'economicTime') return issue.code === 'InvalidLocalTime' && row.time !== before.time && fromWorkspaceLocal(row.time, timeZone).ok;
+      if (name === 'quantity' || name === 'price') return row[name] !== before[name] && isPositiveDecimal(row[name]);
+      if (name === 'fee') return row.fee !== before.fee && isNonNegativeDecimal(row.fee);
+      return false;
+    }
+    return definition.prompts.some((p) => p.id === issue.field) && answerChanged(reported.answers, answers, issue.field);
+  };
+  const { fieldError, describedBy, promptErrors } = fieldIssues(issues.filter((issue) => !corrected(issue)));
 
   return (
     <form className="plan-form" noValidate onSubmit={(event) => void submit(event)}>
@@ -293,7 +314,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
         </section>
       )}
       {/* A rejected entry moves focus to the summary of every issue. */}
-      <IssueSummary id="entry-issues-heading" heading="This entry can’t be saved yet" issues={issues} />
+      <IssueSummary id="entry-issues-heading" heading="This entry can’t be saved yet" issues={issues} corrected={corrected} />
       <section className="card" aria-labelledby="entry-terms-heading">
         <h2 id="entry-terms-heading">Entry</h2>
         <dl>
