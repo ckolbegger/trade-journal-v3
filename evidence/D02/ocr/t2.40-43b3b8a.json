@@ -1,0 +1,144 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 0,
+    "total_tokens": 142739,
+    "input_tokens": 141119,
+    "output_tokens": 1620,
+    "cache_read_tokens": 11520,
+    "elapsed": "1m0s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_search": 4,
+      "file_find": 2,
+      "file_read": 8,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Benchmark dataset and expected open-row results",
+      "files": [
+        "bench/dataset.json",
+        "bench/expected-open-rows.json"
+      ]
+    },
+    {
+      "label": "Trade list UI, application integration, and view fixtures",
+      "files": [
+        "src/main.tsx",
+        "src/ui/app.css",
+        "src/ui/screens/TradeList.tsx",
+        "tests/support/views-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "6fd6381b-a8cb-4aaa-a9f0-ce598bac3ee4",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "6fd6381b-a8cb-4aaa-a9f0-ce598bac3ee4",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "43b3b8a",
+      "resolved_base": "402d41c5a15d1977cf7680f5dbb34b370b9a9a63",
+      "resolved_head": "43b3b8a24cac6ffbf254fc3e0a3bc1c5d5ab7380",
+      "exact_range": "402d41c5a15d1977cf7680f5dbb34b370b9a9a63..43b3b8a24cac6ffbf254fc3e0a3bc1c5d5ab7380",
+      "source_artifact_sha256": "540744e4da3f64b1daa975106144227da56c9035155480f3ce7990e94650af28"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "915c257cd597919c84197c0bd85be2639c602c9158d48cab3578a765a92376fc"
+        },
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "9739569510c62ad0028d37658434b44720f7a0674498c16eb0c2fcb76977fcc5"
+        },
+        {
+          "item_id": "463770c2dcb73189aa3c0e5b2dbf0837834dce08931d2753c00dce9d35dc5181",
+          "path": "bench/expected-open-rows.json",
+          "fingerprint": "c0fb10cf1f2f31f63d8ebe1dac8691f445f2274827af029a29ce231533d2106e"
+        },
+        {
+          "item_id": "aa3e4a72f80298efe28fad403901f85f2118b945cd9d7aa4046cd1684288de51",
+          "path": "bench/dataset.json",
+          "fingerprint": "cf452bcbc5446f6f0460ec80b68257ea21ffed1731be72f9fe51460adb0aae58"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "d8eb8adf24ad970a4c6aecb230be53cc9541b883f2f5c66aa7702690d53a332e"
+        },
+        {
+          "item_id": "c9e9f246e500244763618c2c1915221226e1263a66329b573fc1c56ca5b14e79",
+          "path": "tests/support/views-fixtures.ts",
+          "fingerprint": "381a8ded6287b5f2e772f6577aaf85c54f26d4b97d567fab2cc6ed12bddb1af6"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "915c257cd597919c84197c0bd85be2639c602c9158d48cab3578a765a92376fc"
+        },
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "9739569510c62ad0028d37658434b44720f7a0674498c16eb0c2fcb76977fcc5"
+        },
+        {
+          "item_id": "463770c2dcb73189aa3c0e5b2dbf0837834dce08931d2753c00dce9d35dc5181",
+          "path": "bench/expected-open-rows.json",
+          "fingerprint": "c0fb10cf1f2f31f63d8ebe1dac8691f445f2274827af029a29ce231533d2106e"
+        },
+        {
+          "item_id": "aa3e4a72f80298efe28fad403901f85f2118b945cd9d7aa4046cd1684288de51",
+          "path": "bench/dataset.json",
+          "fingerprint": "cf452bcbc5446f6f0460ec80b68257ea21ffed1731be72f9fe51460adb0aae58"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "d8eb8adf24ad970a4c6aecb230be53cc9541b883f2f5c66aa7702690d53a332e"
+        },
+        {
+          "item_id": "c9e9f246e500244763618c2c1915221226e1263a66329b573fc1c56ca5b14e79",
+          "path": "tests/support/views-fixtures.ts",
+          "fingerprint": "381a8ded6287b5f2e772f6577aaf85c54f26d4b97d567fab2cc6ed12bddb1af6"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 59691
+  }
+}

@@ -1398,7 +1398,15 @@ Change: `src/ui/app.css` and `src/ui/screens/TradeList.tsx`. The table stays a n
 
 **Bench**: `npm run build:bench`, removed the git-ignored `.cache/bench/profile/tj-bench.json`, then `npm run bench:generate` (25,000 Trades, 39.8 s). `bench/expected-open-rows.json`: `headers` are now `Underlying, Trade, Net cost, Entry, Account` (were ten columns); the 200 `rows` have five cells each, for example `["HD", "Long 120 shares @ $300.97Net cost $36,118.83", "$36,118.83", "Resolved · 120 of 120", "Fidelity — Roth IRA"]` (the Trade cell's textContent joins the summary and the second line); `items` equal the committed ones (T2.58 had already regenerated them), `generatorVersion` is still 1 and `schemaVersion` 2. `bench/dataset.json`: only `benchRelease` (the new build hash), `generationMs` and `generatedAt` changed; counts and content are the same.
 
-## T2.40-B1
+**ocr review of T2.40** (`ocr-review` step): commit `43b3b8a`, session `6fd6381b-a8cb-4aaa-a9f0-ce598bac3ee4`, model `gpt-6.1-sol`, 6 files reviewed (`TradeList.tsx`, `app.css`, `main.tsx`, `views-fixtures.ts`, both bench files), 0 comments. Raw output: `ocr/t2.40-43b3b8a.json`. The main session also asked the reviewer to judge one point from the code:
+
+| Severity | Location | Claim | Verdict |
+| --- | --- | --- | --- |
+| low | `TradeList.tsx:184-192`, `app.css` | The Trade cell's summary, inline-block badge and second line are sibling spans with no whitespace, so the cell's text and accessible name run together ("…@ $50.10Records disagree") | Valid for the badge, Doubtful for the block second line; bug task T2.40-B1 |
+
+**Complete cumulative run after T2.40** (`suite-runner`, 2026-10-25 01:04 EDT, on `43b3b8a` plus an uncommitted handoff edit): Unit 40 files / 394 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 72 passed (2.3m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.40-*.txt`.
+
+#### T2.40-B1
 
 Bug from the ocr review of 43b3b8a: the Trade cell's summary, badge and second line ran together ("...$50.10Records disagree").
 
@@ -1406,3 +1414,7 @@ Bug from the ocr review of 43b3b8a: the Trade cell's summary, badge and second l
 - Fix: a space before the badge and before the second line in TradeCell; badge margin-left 0.5rem to 0.25rem.
 - Bench: `npm run build:bench`, removed `.cache/bench/profile/tj-bench.json`, `npm run bench:generate`. bench/expected-open-rows.json: 200 rows, only the Trade cell text changed (space before "Net cost"); bench/dataset.json: only benchRelease, generationMs, generatedAt changed; generatorVersion stays 1.
 - Checks: `npx vitest run src` 395 passed; typecheck, `npx tsc6 --noEmit`, lint, lint:deps, verify:capacity all exit 0; `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts e2e/d2/narrow.spec.ts e2e/d2/integrity.spec.ts e2e/d2/open-position.spec.ts` 29 passed. Grep of e2e and tests found no exact joined text.
+
+**ocr review of T2.40-B1** (`ocr-review` step): commit `6409358`, session `d03a528b-d7a0-4b01-8247-f71433bacace`, model `gpt-6.1-sol`, 4 files reviewed (`TradeList.tsx`, `app.css`, both bench files), 0 comments. No findings. Raw output: `ocr/t2.40-B1-6409358.json`.
+
+**Complete cumulative run after T2.40-B1** (`suite-runner`, 2026-10-25 01:10 EDT, on `6409358` plus uncommitted evidence and handoff edits): Unit 40 files / 395 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 72 passed (2.3m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.40-B1-*.txt`.

@@ -1,0 +1,119 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 44589,
+    "input_tokens": 44327,
+    "output_tokens": 262,
+    "cache_read_tokens": 5760,
+    "elapsed": "12s"
+  },
+  "tool_calls": {
+    "total": 2,
+    "by_tool": {
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Benchmark dataset and expected open-row results",
+      "files": [
+        "bench/dataset.json",
+        "bench/expected-open-rows.json"
+      ]
+    },
+    {
+      "label": "Trade list UI and styling",
+      "files": [
+        "src/ui/app.css",
+        "src/ui/screens/TradeList.tsx"
+      ]
+    }
+  ],
+  "session_id": "d03a528b-d7a0-4b01-8247-f71433bacace",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "d03a528b-d7a0-4b01-8247-f71433bacace",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "6409358",
+      "resolved_base": "43b3b8a24cac6ffbf254fc3e0a3bc1c5d5ab7380",
+      "resolved_head": "6409358ed706475419db399a668d7989433b5d20",
+      "exact_range": "43b3b8a24cac6ffbf254fc3e0a3bc1c5d5ab7380..6409358ed706475419db399a668d7989433b5d20",
+      "source_artifact_sha256": "75c00f084005f84c4a0133dc9643a147e61dfdce7a13651aeedbf66ba4dff1ef"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "c0d399ec7e17c65d1cd18d266d6dd027b2a3c3fd58fb35ab7ef27274a28211b9"
+        },
+        {
+          "item_id": "463770c2dcb73189aa3c0e5b2dbf0837834dce08931d2753c00dce9d35dc5181",
+          "path": "bench/expected-open-rows.json",
+          "fingerprint": "40932afcb6c4e2217790baa449613f93f61f2f54e2f08756fc53c4c4e778f51b"
+        },
+        {
+          "item_id": "aa3e4a72f80298efe28fad403901f85f2118b945cd9d7aa4046cd1684288de51",
+          "path": "bench/dataset.json",
+          "fingerprint": "0a72d7033576e853c20c7fa53e5d0923a157ad7fafe88bd5201911e52b11aa8a"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "cd5a6ab65c3b3b0dc09eee0435dd54f6eeeb925755c31946382b41b9d4c552b6"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "c0d399ec7e17c65d1cd18d266d6dd027b2a3c3fd58fb35ab7ef27274a28211b9"
+        },
+        {
+          "item_id": "463770c2dcb73189aa3c0e5b2dbf0837834dce08931d2753c00dce9d35dc5181",
+          "path": "bench/expected-open-rows.json",
+          "fingerprint": "40932afcb6c4e2217790baa449613f93f61f2f54e2f08756fc53c4c4e778f51b"
+        },
+        {
+          "item_id": "aa3e4a72f80298efe28fad403901f85f2118b945cd9d7aa4046cd1684288de51",
+          "path": "bench/dataset.json",
+          "fingerprint": "0a72d7033576e853c20c7fa53e5d0923a157ad7fafe88bd5201911e52b11aa8a"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "cd5a6ab65c3b3b0dc09eee0435dd54f6eeeb925755c31946382b41b9d4c552b6"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 11759
+  }
+}
