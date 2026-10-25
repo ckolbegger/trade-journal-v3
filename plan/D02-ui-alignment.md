@@ -2,6 +2,8 @@
 
 Status: **approved by the user on 2026-10-24 as plan revision 7 (decision 47)**, tagged `claude-opus-5.5-plan-r7`. All of U1–U7 were answered by the user on 2026-10-24. Implementation decisions I1 and I2 are settled with the user during T2.40 and T2.50.
 
+**Plan revision 8 (decision 48), proposed 2026-10-25 at the user's direction during T2.40:** I1 is answered by a new design, the **Trade column**: one short description of what the Trade holds, built from a structured Trade Summary in the read model, beside a separate Underlying column, with a Net cost figure. Section 2a holds the design, from Long Stock now through single-leg (D7) and multi-leg (D10) options. It adds tasks T2.56–T2.59, rewrites T2.40, and amends T2.41, T2.49 and T2.55. It lifts this batch's "no view-model shape change" rule for exactly two derived fields, `summary` and `netCost` (section 1).
+
 **Source.** The screenshot comparison made on 2026-10-24 against commit `404fda1`. It compared the 24 references in `specs/reference/ui-screenshots/` with screenshots of the built app at 390 and 1280 px (`test-results/screenshot-compare/shots/`, git-ignored). The report is saved in [evidence/D02/screenshot-comparison.md](../evidence/D02/screenshot-comparison.md).
 
 **Position in the plan.** This batch follows the D2 follow-ups F1–F11 in [D2, section 11](D02-open-a-long-stock-position.md#11-deferred-follow-ups-plan-revision-6-decision-46) and runs **before D4's first task**. Two follow-ups merge into it:
@@ -18,9 +20,9 @@ The task IDs continue D2's numbering, T2.36–T2.55, so `tdd.sh` and the evidenc
 
 **Durable compatibility.** This is a presentation batch:
 - no schema change;
-- no change to any committed fixture (`tests/fixtures/workspace-v1`, `workspace-v2`), the bench dataset or a backup content version.
+- no change to any committed fixture (`tests/fixtures/workspace-v1`, `workspace-v2`), the bench dataset or a backup content version. The bench's expected rendered rows and items (`bench/expected-open-rows.json`) are regenerated for the new columns and fields (T2.58, T2.40); the dataset itself is unchanged.
 
-**No view-model shape changes for coherent Trades.** The v2 fixture snapshot compares every Planned and Open Detail and both lists, so `verify:fixtures` would fail. Every new presentation uses only values already in the view models.
+**View-model shape: two additive derived fields only (revision 8).** Every new presentation uses only values already in the view models, except two fields added by T2.58: `summary` (a structured Trade Summary on Planned and Open list items and Details) and `netCost` (on Open list items and the Open Detail). Both are derived on read, never stored. No existing field changes. Because the committed v2 snapshot does not contain them, T2.56 first brings forward D4's A51 rule: `verify:fixtures` requires every field a snapshot contains to be equal, and every later field to have its defined value. The defined values of `summary` and `netCost` for the v1 and v2 fixtures are asserted exactly by T2.58's integration case.
 
 **Accessible names stay stable.** Tests find controls by name. Any task that has to change a name or role says so and updates its tests in the same commit:
 
@@ -51,7 +53,7 @@ The task IDs continue D2's numbering, T2.36–T2.55, so `tdd.sh` and the evidenc
 
 | ID | Question | Recommendation | Alternative and cost |
 |---|---|---|---|
-| U1 | **Narrow Trades list:** cards, or the current table restyled with a scroll cue? | **Decided by the user 2026-10-24: the restyled scrolling table** (T2.40), after reviewing a phone mockup. One table at every width. On narrow: Underlying pinned on the left, the most useful columns first, and scroll shadows at the edges. The column set and order are settled during T2.40 (implementation decision I1). | Cards on narrow (rejected): closer to the reference, but a second rendering to keep equivalent, and churn in `narrow.spec.ts`. |
+| U1 | **Narrow Trades list:** cards, or the current table restyled with a scroll cue? | **Decided by the user 2026-10-24: the restyled scrolling table** (T2.40), after reviewing a phone mockup. One table at every width. On narrow: Underlying pinned on the left, the most useful columns first, and scroll shadows at the edges. The column set and order are settled during T2.40 (implementation decision I1). **Revision 8:** the pinned column stays Underlying, and the Trade column sits beside it (section 2a). | Cards on narrow (rejected): closer to the reference, but a second rendering to keep equivalent, and churn in `narrow.spec.ts`. |
 | U2 | **New Plan live preview** of 1R, original reward and Reward : risk while typing? | **Decided by the user 2026-10-24: skip it.** The figures still appear after Confirm. T2.46 is withdrawn; its ID is kept so later IDs do not move. | Include it through a new read-only facade operation running the Plan Baseline derivation (rejected: a new operation and manifest entry for a convenience). |
 | U3 | **Detail Executions:** compact list rows instead of a table per Position Change? | **Decided by the user 2026-10-24: one compact row per Execution, each with a disclosure button that expands its details** (T2.50). The Trade reads as its plan and then its Executions; a Position Change is not a primary heading. The expanded row names the Execution's Position Change and shows that Position Change's reflection. Open Lots stays a table. | A row per Position Change that expands to its Executions (rejected: the Position Change is not what the trader thinks in); restyled tables (rejected: the Detail stays long). |
 | U4 | **Stale validation issues:** clear a field's issue as soon as it is corrected? | **Decided by the user 2026-10-24: yes, in both New Plan and Record entry** (T2.47). The summary stays while any issue remains. Today the issues stay until the next submit. | Keep issues until resubmit, which is the current D1/D2 behavior. |
@@ -63,8 +65,74 @@ The task IDs continue D2's numbering, T2.36–T2.55, so `tdd.sh` and the evidenc
 
 | ID | Question | Task | Starting proposal |
 |---|---|---|---|
-| I1 | **The column set and order of the Trades tables** on narrow, and whether wide uses the same order | T2.40 | **Open:** Underlying (pinned), Quantity, Integrity, Entry, Average cost, Strategy, Account, Fees, Deviations, Last activity. **Planned:** Underlying (pinned), 1R, Reward : risk, Entry readiness (with any disagreement badge), Plan time, Strategy, Account, Original reward. The T2.40 subagent stops with a rendered 320 px and 390 px capture of the proposal for the user, and implements the answer. Constraints: every column the table shows today stays available at every width (ui-contract Responsive, equivalent information); column names stay unchanged; at 320 px at least Underlying and one figure are visible without scrolling. |
+| I1 | **The column set and order of the Trades tables** on narrow, and whether wide uses the same order. **Answered by the user on 2026-10-25 with the Trade column (revision 8, section 2a)**; the proposal below is kept as history. | T2.40 | **Open:** Underlying (pinned), Quantity, Integrity, Entry, Average cost, Strategy, Account, Fees, Deviations, Last activity. **Planned:** Underlying (pinned), 1R, Reward : risk, Entry readiness (with any disagreement badge), Plan time, Strategy, Account, Original reward. The T2.40 subagent stops with a rendered 320 px and 390 px capture of the proposal for the user, and implements the answer. Constraints: every column the table shows today stays available at every width (ui-contract Responsive, equivalent information); column names stay unchanged; at 320 px at least Underlying and one figure are visible without scrolling. |
 | I2 | **The fields of a collapsed Execution row** and their order | T2.50 | Action, quantity, symbol, price, fee, Economic Time ("Buy 30 XYZ @ $50.00 · fee $0.50 · 2026-10-12 10:00"). The T2.50 subagent stops with a rendered 320 px and 1280 px capture of the proposal for the user, and implements the answer. Constraints: everything left out of the collapsed row appears in the expanded row, so no Execution value is lost; the collapsed row fits on one line at 390 px or wraps without clipping at 320 px. |
+
+---
+
+## 2a. The Trade column and Net cost (plan revision 8, decision 48)
+
+Settled with the user on 2026-10-25, replacing the I1 proposal. A column per figure cannot describe a four-leg structure, but one short text can, from one Long Stock position to an Iron Condor. The design is fixed now, through D10, so that every later deliverable extends it rather than reshaping the Trades tables again.
+
+### The Trade Summary (read model)
+
+Trade Views attaches a structured `summary: TradeSummary` to every list item and Detail of a coherent Trade. It is assembled from values Trade Analysis already derives (the open Position, or for a Planned Trade the Plan's Planned Legs) and the current Catalog Strategy label (trade-views, "Labels and navigation"). It is never stored. An incoherent Trade has no summary; its Trade cell reads "Not available", like its other derived cells.
+
+The type is a discriminated union that later deliverables extend without changing earlier variants:
+
+| Variant | Deliverable | Fields | Text, as the UI formats it |
+|---|---|---|---|
+| `Stock` | D2 (T2.58) | `direction: 'Long'` (D2 has no short stock), `quantity` (shares), `price` | "Long 60 shares @ $50.10" |
+| `Option` (one contract) | D7 | `direction: 'Long' \| 'Short'`, `contracts`, `expiration`, `strike`, `right: 'Call' \| 'Put'` | "Long 1 Nov 20 $300 Call", "Short 2 Dec 18 $45 Put" |
+| `Structure` (a multi-leg shape that matches its Strategy) | D10 | `direction`, `quantity` (contracts per leg), `expirations`, `strikes` (ascending), `strategyLabel` | "Short 1 Nov 20 $240/$250/$320/$330 Iron Condor" |
+| `Legs` (a Position that no longer matches its Strategy's shape, after legging out or Unplanned Exposure) | D10 | one `Stock` or `Option` per open leg | "Long 1 Jan 21 $250 Call, Short 1 Nov 20 $300 Call" |
+
+Rules that hold for every variant:
+- **Which quantity and price.**
+  - Planned: the Plan's planned quantity and intended entry.
+  - Open: the remaining open quantity and the quantity-weighted Open Lot price (fees excluded, the existing Average cost).
+  - Closed (D6): the entered quantity and its average entry price, so the row says what was traded.
+- **Price in the text.** Only `Stock` shows "@ price", per share. An option's premium is carried by Net cost, so the option variants do not repeat it.
+- **Direction of a structure.** It comes from the Strategy's shape: a credit-collecting shape (Iron Condor, credit verticals, Cash-Secured Put) is Short, and a debit shape is Long. D10's breakdown confirms the mapping for each seeded multi-leg Strategy.
+- **Expiration text.** "Nov 20", plus a two-digit year ("Jan 21 '28") when the expiration is not in the current year of the Workspace time zone.
+- **Left to D10's breakdown** (starting proposals): a structure with two expirations (PMCC: "Long 1 Jan 21 '28 $250 / Short 1 Nov 20 $300 PMCC") and a stock-and-option combination (Covered Call: "Long 100 shares + Short 1 Nov 20 $55 Covered Call").
+
+Exact values stay unrounded in the read model. The UI formats the summary with one function, `tradeSummary(summary)` in `src/ui/format.ts` (T2.59), used by every list and by the Detail summary card.
+
+### Net cost
+
+`netCost` is the signed cost of the remaining open exposure: the sum of quantity × price × multiplier over the Open Lots (positive for long Lots, negative for short), plus their unconsumed opening fees. It is the `C + F` of D4's A41 and D7's A109, so D4's marked P&L is Net cost subtracted from the market value. Trade Analysis's `derive` returns it as its own Calculation Result (T2.57), unavailable as `NoOpenQuantity` with no open Lots. It is a factual figure, not a valuation, so it is shown from D2 on, with no Mark.
+
+The UI shows a debit as "$3,007.00" and a credit as "$212.00 credit" (ui-contract: show sign where ambiguity is possible). Only debits occur before D7.
+
+### The Trades tables
+
+Underlying stays its own first column, the pinned one on narrow, and keeps the link to the Detail: its accessible name stays the symbol, so `openTradeFromOpenList` and every row lookup keep working. Strategy, Quantity and Average cost leave the Open table, because the Trade column carries them. The planned quantity moves into the Entry cell ("Entering · 60 of 100", "Resolved · 120 of 100"), so no Open value is lost.
+
+The cell order in the markup is the visual order. The I1 proposal's CSS-only reordering is dropped, since the columns change anyway.
+
+| Table | Wide (≥ 960 px), in order | Narrow (< 960 px) |
+|---|---|---|
+| Open (D2) | Underlying · Trade · Net cost · Entry · Integrity · Deviations · Account · Fees · Last activity | Underlying (pinned) · Trade, two lines (below) · then Entry, Integrity, Deviations, Account, Fees, Last activity, scrolling |
+| Planned (D2) | Underlying · Trade · 1R · Reward : risk · Planned reward · Entry · Plan time · Account | Underlying (pinned) · Trade, two lines · then Entry, Plan time, Account, Planned reward, scrolling |
+| Open from D4 | adds **P&L** (Current Marked Trade P&L) after Net cost, then D4's risk and reward columns | adds P&L to the Trade cell's second line |
+| Closed (D6) | Underlying · Trade · Realized P&L · Realized R · then D6 A95's other columns | Underlying (pinned) · Trade, two lines (Realized P&L and R) |
+
+**Two-line Trade cell on narrow.** The first line is the summary text. The second line holds the row's key figures: Open "Net cost $3,007.00" (from D4 "· P&L +$84.00", or "Mark missing" text in its place), and Planned "1R $250.00 · Reward : risk 2.4". It also holds a "Records disagree" badge when the records disagree. From D4 it also holds the "Stop breached", "Target reached" and "Mark missing" text badges. At 320 px the row's identity, its money figures and its attention status are therefore all visible without scrolling.
+
+The columns whose values that second line carries (Net cost, P&L, 1R, Reward : risk) are hidden on narrow, and the second line is hidden on wide, both with `display: none`. Each value is therefore in the accessibility tree exactly once at each width, and the same information is present at both widths (ui-contract Responsive). It is one table row per Trade, with two lines inside one cell, not two table rows, so row semantics and `getByRole('row')` lookups stay as they are.
+
+### Sorting
+
+The Underlying and Trade columns are what the trader will sort by: the Trade column sorts by Strategy, then Underlying. Sorting is a `browseTrades` request option (spec: "fixed factual sorts"), not a client-side reorder of one page. It needs an index per sort, so it is **not** built in this batch. It is added to D22 (Trade filters), which already owns the Strategy and Underlying filters; decision 48 records it there.
+
+### What later deliverables inherit (amendments recorded by revision 8)
+
+- **D4:** T4.23 places P&L after Net cost on wide, and puts P&L and the Mark and condition badges on the Trade cell's second line on narrow. T4.18 adds nothing for the summary.
+- **D6:** A95 and T6.16/T6.18 use Underlying · Trade (the entered summary) in place of symbol and Strategy.
+- **D7:** A119 and T7.16/T7.23 add the `Option` variant and use the Trade column in place of "the contract label and Strategy" on rows. The Detail header shows the same text.
+- **D10:** adds the `Structure` and `Legs` variants, the shape-to-direction mapping, and the PMCC and Covered Call texts.
+- **D22:** adds the Underlying and Strategy sorts to `browseTrades`.
 
 ---
 
@@ -80,8 +148,12 @@ Kinds:
 | T2.37 | Navigation and durability-banner styling | A | S | T2.36 | `ui-alignment.spec.ts` (shell) |
 | T2.38 | One content column and side gutters (absorbs F8) | A | S | T2.37 | `ui-alignment.spec.ts` (layout) |
 | T2.39 | Trades page heading | B Trades | B | T2.38 | `TradeList` |
-| T2.40 | Narrow Trades table: pinned Underlying, column order (I1), scroll shadows (U1; implements F9) | B | S | T2.39 | `ui-alignment.spec.ts` (narrow list) |
-| T2.41 | Wide Trades table styling | B | S | T2.39 | `ui-alignment.spec.ts` (list) |
+| T2.56 | `verify:fixtures` compares the fields each snapshot holds (D4 A51 brought forward; revision 8) | B | S | T2.39 | `verify:fixtures` |
+| T2.57 | Net cost from `derive` (revision 8) | B | B | T2.56 | `TradeAnalysis.derive` |
+| T2.58 | Trade Summary and Net cost on list items and Details (revision 8) | B | B | T2.57 | `TradeViewsAndReporting` |
+| T2.59 | `tradeSummary` text format (revision 8) | B | B | T2.58 | `format.ts` |
+| T2.40 | Trades tables: Underlying and Trade columns, two-line narrow cell, pinned Underlying, scroll shadows (U1, I1 by revision 8; implements F9) | B | B then S | T2.59 | `TradeList`, then `ui-alignment.spec.ts` (narrow list) |
+| T2.41 | Wide Trades table styling | B | S | T2.40 | `ui-alignment.spec.ts` (list) |
 | T2.42 | Semantic badge tones | B | B | T2.38 | `Badge` component |
 | T2.43 | Prompt chip groups | C Forms | S | T2.38 | `ui-alignment.spec.ts` (chips) |
 | T2.44 | Execution rows as panels in a grid | C | S | T2.43 | `ui-alignment.spec.ts` (entry form) |
@@ -89,7 +161,7 @@ Kinds:
 | T2.46 | *Withdrawn (U2 = skip)* | — | — | — | — |
 | T2.47 | Clear corrected issues (U4) | C | B | T2.45 | `PlanForm`, `PositionChangeForm` |
 | T2.48 | Detail back link | D Detail | B | T2.38 | `TradeDetail` |
-| T2.49 | Detail summary card | D | B | T2.42, T2.48 | `TradeDetail` |
+| T2.49 | Detail summary card | D | B | T2.42, T2.48, T2.59 | `TradeDetail` |
 | T2.50 | Executions as expandable rows (U3) | D | B | T2.49 | `TradeDetail` |
 | T2.51 | Journal Entries with Entry Type, Anchor and Source | D | B | T2.42 | `TradeDetail` |
 | T2.52 | Record entry Trade context | D | B | T2.48 | `PositionChangeForm` |
@@ -99,7 +171,7 @@ Kinds:
 
 **Ordering:**
 - Batches run A → B → C → D.
-- Within a batch, tasks run in the listed order.
+- Within a batch, tasks run in the listed order. In batch B that is T2.39, T2.56, T2.57, T2.58, T2.59, T2.40, T2.41 (revision 8).
 - T2.42 and T2.51 have no dependence on batch B or C beyond T2.38, and may move earlier if convenient.
 - Each task ends with a complete cumulative run through `suite-runner`, recorded in `evidence/D02/structural.md`.
 
@@ -143,6 +215,84 @@ describe("Trades heading")
 **Not added:** a page-level New Plan button (U7). New Plan stays in the primary navigation and in the Empty states.
 
 **Test impact:** check every `getByRole('heading', { name: ... })` lookup for a partial match on "Trades".
+
+### T2.56 `verify:fixtures` compares the fields each snapshot holds (structural, revision 8)
+
+**Change:** bring D4's A51 rule forward. `verify:fixtures` compares each committed snapshot with the current views field by field over the fields the snapshot contains, recursively, with arrays compared item by item and their lengths equal. A field the current release adds is allowed, and its defined value is asserted elsewhere: T2.58's integration case does it for `summary` and `netCost`. D4's T4.29 then reuses the rule instead of writing it.
+
+**Verification:**
+- A unit test of the comparison (`tools/fixtures/`):
+  - an added field passes;
+  - a changed, removed or reordered snapshot field fails, naming its path;
+  - an extra or missing array item fails.
+- `npm run verify:fixtures` still passes on `workspace-v1` and `workspace-v2` before T2.58.
+
+### T2.57 Net cost from `derive` (revision 8)
+
+**Seam:** `TradeAnalysis.derive` (`src/domain/trade-analysis/`).
+
+**Basis:** section 2a "Net cost"; D4 A41's `C + F`; trade-analysis (fees allocated lot-aware, the unconsumed opening fee stays with the Open Lot).
+
+```text
+describe("Net cost")
+  it should return Net cost as the sum of quantity × price over the Open Lots plus their opening fees, exactly (60 @ 50.10 with fee 1.00 is 3007.00)
+  it should sum across the Lots of several Position Changes, including an earlier-dated one (60 @ 50.10, 40 @ 50.30, fees 1.00 each: 5034.00)
+  it should return Net cost Unavailable(NoOpenQuantity) for a Planned Trade with no Lots
+```
+
+### T2.58 Trade Summary and Net cost on list items and Details (revision 8)
+
+**Seam:** `TradeViewsAndReporting.browseTrades` and `getTradeDetail`, then the integration suite.
+
+**Basis:** section 2a "The Trade Summary"; trade-views "Labels and navigation" (current labels); AC-RESP-001 (the receipt's post-commit views carry the same fields).
+
+```text
+describe("Trade Summary")
+  it should give each Planned item and Planned Detail summary Stock, Long, the planned quantity, and the intended entry
+  it should give each Open item and Open Detail summary Stock, Long, the open quantity, and the average open cost, with netCost from derive
+  it should give an incoherent Planned or Open item and Detail no summary and no netCost
+  it should keep every other field of every item and Detail unchanged
+```
+
+**Integration:** a case in `tests/integration/d2/` opens the `workspace-v2` fixture and asserts the exact `summary` and `netCost` of CSCO, KO and PFE and of each Planned Trade. That case is the "defined value" T2.56's rule relies on. `verify:fixtures` stays green.
+
+**Bench:** regenerate the `items` of `bench/expected-open-rows.json` with `npm run bench:generate`. The dataset is unchanged, so `generatorVersion` stays 1. Record the diff's summary in the evidence.
+
+### T2.59 `tradeSummary` text format (revision 8)
+
+**Seam:** `src/ui/format.ts` (`format.test.ts`).
+
+```text
+describe("Trade Summary text")
+  it should format a Stock summary as "Long 60 shares @ $50.10", using the money format for the price
+  it should keep a fractional share quantity exact ("Long 12.5 shares @ $40.00")
+  it should format a Net cost debit as "$3,007.00" and a credit as "$212.00 credit"
+```
+
+The option and structure texts are tested where their variants arrive (D7, D10).
+
+### T2.40 Trades tables: Underlying and Trade columns (behavioral part; revision 8)
+
+**Seam:** `TradeList` (`TradeList.test.tsx`). The structural part (pinned column, scroll shadows, measurements) is in section 5.
+
+**Basis:** section 2a "The Trades tables"; ui-contract Responsive (equivalent information), Accessibility.
+
+```text
+describe("Trades table columns")
+  it should show the Open columns in order Underlying, Trade, Net cost, Entry, Integrity, Deviations, Account, Fees, Last activity, with Underlying a link named by the symbol
+  it should show the Planned columns in order Underlying, Trade, 1R, Reward : risk, Planned reward, Entry, Plan time, Account
+  it should show the Trade cell's summary text and, on a second line, "Net cost $3,007.00" (Open) or "1R $250.00 · Reward : risk 2.4" (Planned)
+  it should show "Entering · 60 of 100" or "Resolved · 120 of 100" in the Open Entry cell
+  it should show the "Records disagree" badge on the Trade cell's second line, and "Not available" as the Trade text, for an incoherent row
+```
+
+The narrow/wide hiding (`display: none`) is CSS, measured in section 5.
+
+**Test impact:**
+- Every lookup of the "Strategy", "Quantity" or "Average cost" column, or of cell text such as "60 of 100" in the Open list, changes in this commit. That covers `TradeList.test.tsx` and e2e checks such as `open-position.spec.ts` and the C2.1 browser case. List each one in the evidence.
+- `narrow.spec.ts` keeps its assertions. If one names a removed column, it changes here, with the reason.
+- `bench/expected-open-rows.json`: regenerate `headers` and `rows` for the new cells.
+- The uncommitted T2.40 work from before revision 8 (CSS reordering by `order`) is discarded. Its grid and sticky-column technique may be reused.
 
 ### T2.42 Semantic badge tones
 
@@ -198,10 +348,11 @@ describe("back to the list")
 
 **Seam:** `TradeDetail`, fixtures in `tests/support/open-detail-fixtures.ts`.
 
-**Basis:** ui-contract Visual language (Stop/Target colour; tabular numerals; "Color never carries meaning alone"), Trade presentation (concepts stay distinct). Use only values already in the Detail view.
+**Basis:** ui-contract Visual language (Stop/Target colour; tabular numerals; "Color never carries meaning alone"), Trade presentation (concepts stay distinct). Use only values already in the Detail view, including T2.58's `summary` and `netCost`.
 
 ```text
 describe("summary card")
+  it should lead the summary card with the Trade Summary text ("Long 100 shares @ $50.00" Planned, "Long 60 shares @ $50.10" Open), and on an Open Detail with Net cost (revision 8)
   it should open a Planned Detail with a summary of Intended entry, Stop, and Target, each with its text label, plus 1R and Reward : risk
   it should open an Open Detail with the Position quantity against plan ("120 of 100 shares"), the entry status, opening fees, Stop, and Target
   it should add the Average entry and Actual initial risk to the Open summary once the entry is resolved, and say "Entry not yet resolved" before
@@ -285,8 +436,8 @@ All measurements go in `e2e/d2/ui-alignment.spec.ts`, against `dist-faults` as t
 |---|---|---|
 | T2.37 Navigation and banner styling | Current link as an ink-filled pill with white text in the sidebar. Bottom bar shows each icon over a small label, with the current item bold or ink. The durability banner uses the warning ground and line (`.banner.warning` exists unused), with its text and button on one row at wide and compact at narrow. | Current link background is ink and text white. In the bottom bar each icon's box sits above its label's box. Banner background equals `--warning-ground`. Banner height ≤ 120 px at 390, and at 1280 the button's vertical centre lies within the text block. axe clean on Trades at both widths. `e2e/d1/responsive-a11y.spec.ts` focus checks pass. |
 | T2.38 One content column and side gutters (absorbs F8) | Banner, heading, tabs and cards share one left edge inside the content column. Every top-level card keeps a 16 px side gutter at narrow, including first run, onboarding and Migration Blocked. | At 1280 on Trades and on Open Detail, the left x of the banner, `h1`, tablist and first card are equal within 1 px. At 390 and 320, every `.card` on first run, onboarding, Migration Blocked, Trades and Detail has left ≥ 16 and right ≤ width − 16. No page overflow anywhere (`narrow.spec.ts` stays green). |
-| T2.40 Narrow Trades table (U1, I1; implements F9) | One table at every width. On narrow (below the 960 px layout switch): the Underlying column is pinned on the left (`position: sticky`) with its own background, a hairline, and a focus outline that is not clipped. Columns follow the order agreed under I1, applied with CSS only, so the order of cells in the markup and the column names are unchanged. Scroll shadows appear on the edges while columns lie off-screen. The region stays a named, focusable scroll area. Reference: the phone mockup reviewed on 2026-10-24. | At 390 and 320, for both "Open Trades" and "Planned Trades": after scrolling the region fully right, the Underlying cell's left edge is unchanged and the other cells have moved. Before any scrolling, the first visible columns are the I1 order's first columns. Column header texts equal today's set. No page overflow. A focused Underlying link shows its full outline. axe is clean. `narrow.spec.ts` stays green unchanged. At 1280 the order is whatever I1 decided for wide. |
-| T2.41 Wide Trades table styling | Small-caps 12.8 px muted headers that do not wrap. The symbol link is bold. Dates and badges do not wrap. | Every `th` in "Open Trades" and "Planned Trades" at 1280 is one line high (height ≤ 1.6 × line-height) and has uppercase or small-caps text. Badges in rows are one line high. The symbol link's font-weight is ≥ 600. |
+| T2.40 Trades tables, structural part (U1, I1 by revision 8; implements F9) | One table at every width, in the column order of section 2a. On narrow (below the 960 px layout switch): the Underlying column is pinned on the left (`position: sticky`) with its own background, a hairline, and a focus outline that is not clipped. The Trade cell shows its second line, and the Net cost (Open) or 1R and Reward : risk (Planned) columns are hidden; on wide the reverse. Scroll shadows appear on the edges while columns lie off-screen. The region stays a named, focusable scroll area. | At 390 and 320, for both "Open Trades" and "Planned Trades": the Underlying and Trade cells, including the second line and any badge, lie fully inside the viewport before any scrolling. After scrolling the region fully right, the Underlying cell's left edge is unchanged and the other cells have moved. The hidden columns' headers and cells are `display: none` on narrow, and the second line is `display: none` at 1280. Each figure appears exactly once in the accessibility tree at each width. No page overflow. A focused Underlying link shows its full outline. axe is clean at 320, 390 and 1280. `narrow.spec.ts` stays green. |
+| T2.41 Wide Trades table styling | Small-caps 12.8 px muted headers that do not wrap. The symbol link is bold. Dates and badges do not wrap. Net cost and the other figures are right-aligned in tabular numerals. | Every `th` in "Open Trades" and "Planned Trades" at 1280 is one line high (height ≤ 1.6 × line-height) and has uppercase or small-caps text. Badges in rows are one line high. The symbol link's font-weight is ≥ 600. |
 | T2.43 Prompt chip groups | Borderless fieldsets, with the legend as the small-caps label. Chips: the checked one ink-filled with white text, the native radio visually hidden but focusable, a visible focus ring on the chip (`:focus-within`). Applies to Plan Reflection and Position Change Reflection. | Checked chip's label background is ink, text white. The radio input is clipped (1 px or `clip-path`) yet focusable. A focused chip shows an outline of ≥ 2 px with ≥ 3:1 contrast. Fieldset border-style is none. `tabTo` (every-focus-visible) and axe pass. |
 | T2.44 Execution rows as panels | Each Execution fieldset is a tinted rounded panel (radius ≥ 10, no groove border) with a small-caps legend. Quantity, Price and Fee sit in three columns at wide and two at narrow; Economic Time has its own row. "Remove Execution N" becomes a text-style button with the same name. "Add Execution" is an outlined pill. | Fieldset border-style is not `groove` and border-radius ≥ 10 px. At 1280 the Quantity, Price and Fee inputs share a top y. At 390 Quantity and Price share a top y. Economic Time sits below them. All names are unchanged (the existing `fillRows` helper passes). |
 | T2.45 New Plan grouped into cards | Three cards with small-caps headings: **Trade** (Account, Strategy, Symbol, Plan time), **Risk** (Quantity, Intended entry, Stop, Target, as a two-column grid) and **Plan Reflection** (its prompts and chips). Labels are unchanged. | Three regions named Trade, Risk and Plan Reflection hold exactly those controls. At 1280, Stop and Target share a top y, as do Quantity and Intended entry. At 390 the Risk inputs are two per row. `fillPlan`, `confirmPlan` and the D1 Plan specs pass. |
@@ -298,7 +449,7 @@ All measurements go in `e2e/d2/ui-alignment.spec.ts`, against `dist-faults` as t
 ## 6. Browser suite
 
 - **New spec:** `e2e/d2/ui-alignment.spec.ts`, holding the S-task measurements.
-- **Changed specs:** `open-position.spec.ts` and `durability.spec.ts` (T2.50), and any heading or text lookups that the summary card makes ambiguous (T2.49). Each change goes in the commit of the task that causes it, with the reason in the evidence.
+- **Changed specs:** `open-position.spec.ts` and `durability.spec.ts` (T2.50), any heading or text lookups that the summary card makes ambiguous (T2.49), and Open-list column and cell lookups (T2.40, revision 8). Each change goes in the commit of the task that causes it, with the reason in the evidence.
 - **Kept passing:**
   - every D1 and D2 browser case;
   - axe on every screen it already covers;
@@ -321,7 +472,7 @@ It re-runs C2.1, C2.5, C2.7, C2.10 and C2.11 from D2 section 7, then these flows
 | Flow | Actions | Pass condition |
 |---|---|---|
 | CU.1 Shell | Visit Trades, New Plan, a Detail, Accounts and About at 390 and 1280. | The current page is marked visually and by `aria-current`. Wordmark at wide. Icons beside labels. The banner is compact, tinted and always present until protection. One left edge. 16 px gutters. |
-| CU.2 Trades | Empty and populated, both tabs, both widths; resize live; scroll the narrow table. | `h1` "Trades". New Plan is reachable from the navigation and from the Empty states, with no duplicate in the header. On narrow, Underlying stays pinned while the rest scrolls, the I1 columns come first, and every column is reachable. Tab and URL are kept across resize. |
+| CU.2 Trades | Empty and populated, both tabs, both widths; resize live; scroll the narrow table. | `h1` "Trades". New Plan is reachable from the navigation and from the Empty states, with no duplicate in the header. On narrow, Underlying stays pinned while the rest scrolls, and Underlying and the two-line Trade cell are fully visible at 320 without scrolling. Every column's information is reachable. The Trade text reads as section 2a's format, and Net cost matches the Detail. Tab and URL are kept across resize. |
 | CU.3 Forms | New Plan and Record entry: fill, cause issues, correct one field, decline, keyboard only. | Grouped cards. Chips read as selected without the radio dot, with visible focus. Execution panels in a grid. Corrected issues clear (U4). |
 | CU.4 Detail | Planned, Open while entering, Open resolved, Open with an active Deviation, incoherent. | The summary card leads, with Stop and Target labelled and coloured. Executions are compact rows that expand, by mouse and keyboard, to show their Position Change and its reflection; Executions sharing a Position Change read as one group. Journal Entries show Entry Type, Anchor, labelled Source and time. The back link returns to the right tab. |
 | CU.5 Reference comparison | Compare each built screen with its reference pair. | No high-priority difference from the comparison remains. Every remaining difference is listed as screenshot-only, future, or specs-override. |

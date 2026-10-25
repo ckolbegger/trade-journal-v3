@@ -414,6 +414,8 @@ describe("submission")
 
 ### T6.18 UI: Closed tab and list
 
+**Amended by plan revision 8 (decision 48):** A95's "symbol, Strategy" become the Underlying and Trade columns. The Closed row's Trade Summary describes what was traded: the entered quantity at its average entry price ("Long 100 shares @ $50.18"). T6.16 adds that summary to Closed items and Details. On narrow, the Trade cell's second line carries Realized P&L and Realized R, and those columns are hidden there (D02-ui-alignment.md, section 2a).
+
 Seam: `TradeList` with a facade test double.
 
 ```text

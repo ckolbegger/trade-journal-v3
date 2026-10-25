@@ -470,6 +470,8 @@ describe("chart and textual equivalent (A114, AC-UI-002)")
   it should mark the value at expiration at the latest close on the Current chart and state it as "If XYZ is at 52.00 at expiration: −$401.30", and render NotApplicable views as text naming the reason, with no chart
 ```
 
+**Amended by plan revision 8 (decision 48), applies to A119, T7.16 and T7.23:** rows use the Trade column in place of "the contract label and Strategy". T7.16 adds the Trade Summary's `Option` variant (`direction`, `contracts`, `expiration`, `strike`, `right`), and T7.23 its text ("Long 1 Nov 20 $300 Call", "Short 2 Dec 18 $45 Put", a two-digit year when the expiration is outside the current year). Net cost carries the premium, and a credit shows as "$212.00 credit". The Detail header shows the same text (D02-ui-alignment.md, section 2a).
+
 ### T7.23 UI: option lists and Trade Detail
 
 Seam: `TradeList` and `TradeDetail` with a facade test double.

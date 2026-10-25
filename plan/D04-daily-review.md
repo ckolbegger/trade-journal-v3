@@ -566,6 +566,8 @@ describe("Action form (AC-REV-003)")
 
 ### T4.23 UI: Open list figures
 
+**Amended by plan revision 8 (decision 48):** the Open table keeps D2's Underlying and Trade columns. On wide, **P&L** (Current Marked Trade P&L) comes right after Net cost, followed by the risk and reward columns. On narrow, P&L and the Mark and condition badges ("Mark missing", "Stop breached", "Target reached") go on the Trade cell's second line after Net cost, and their columns are hidden there (D02-ui-alignment.md, section 2a). T4.29 reuses the `verify:fixtures` field rule built by D2's T2.56 instead of writing A51's comparison.
+
 Seam: `TradeList` with a facade test double.
 
 ```text
