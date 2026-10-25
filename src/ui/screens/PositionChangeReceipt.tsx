@@ -41,6 +41,22 @@ export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceip
   const shown = (r: { readonly kind: string; readonly value?: unknown }, format: (v: never) => string) =>
     r.kind === 'Value' ? format(r.value as never) : 'Not applicable';
   const created = receipt.deviationReconciliation.filter((d) => d.action === 'Create');
+  // An earlier-dated entry can change or end an existing occurrence (P5); Retain says nothing.
+  const recorded = postCommit.trade.recordedDeviations ?? [];
+  const deviationChanges = receipt.deviationReconciliation.flatMap((d) => {
+    if (d.action === 'NewVersion') {
+      const was = recorded.find((r) => r.occurrenceId === d.occurrenceId)?.versions.at(-2);
+      return [
+        {
+          key: d.occurrenceId,
+          text: `Entry Size Deviation changed: now ${d.version.quantityAbovePlan} shares above plan${was ? ` (was ${was.quantityAbovePlan})` : ''}, caused by ${
+            d.version.causingPositionChangeId === savedId ? 'this Position Change' : `the Position Change at ${timeOf(d.version.causingPositionChangeId)}`
+          }.`,
+        },
+      ];
+    }
+    return d.action === 'Supersede' ? [{ key: d.occurrenceId, text: 'Entry Size Deviation no longer applies.' }] : [];
+  });
   const reflection = postCommit.reflection;
 
   return (
@@ -79,6 +95,9 @@ export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceip
             d.version.causingPositionChangeId === savedId ? 'this Position Change' : `the Position Change at ${timeOf(d.version.causingPositionChangeId)}`
           }.`}
         </p>
+      ))}
+      {deviationChanges.map((c) => (
+        <p key={c.key}>{c.text}</p>
       ))}
       {receipt.entryChanges.map((change) => (
         <p key={change.kind}>

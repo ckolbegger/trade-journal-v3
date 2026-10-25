@@ -9,6 +9,7 @@ import type { UiFacade } from '../../app/compose.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { PositionChangeForm } from './PositionChangeForm.tsx';
+import { PositionChangeReceipt } from './PositionChangeReceipt.tsx';
 
 afterEach(cleanup);
 
@@ -444,6 +445,57 @@ describe('submission', () => {
     expect(dirty).toHaveBeenLastCalledWith(false);
     expect(facade.TradeWorkflows.recordPositionChange).not.toHaveBeenCalled();
     expect(facade.TradeWorkflows.confirmPlan).not.toHaveBeenCalled();
+  });
+});
+
+// The C2.6 receipt: PC2 (11:00 New York) had 20 shares above plan; the earlier-dated entry makes it 60.
+function earlierDatedReceipt(action: 'NewVersion' | 'Supersede' | 'Retain') {
+  const result = recordedResult() as unknown as {
+    receipt: { deviationReconciliation: unknown[]; entryChanges: unknown[]; repairs: unknown[] };
+    postCommit: { trade: Record<string, unknown> };
+  };
+  const fingerprint = { tradeId: 'trade-1', plannedLegId: 'leg-1', positionChangeId: 'pc-2' };
+  const version = (quantityAbovePlan: string, status: unknown) => ({
+    fingerprint,
+    type: 'EntrySize',
+    form: 'Excess',
+    quantityAbovePlan,
+    causingPositionChangeId: 'pc-2',
+    economicTime: '2026-10-12T15:00:00Z',
+    ...(status as object),
+  });
+  const versions =
+    action === 'NewVersion'
+      ? [version('20', { status: 'Active' }), version('60', { status: 'Active' })]
+      : action === 'Supersede'
+        ? [version('20', { status: 'Active' }), version('20', { status: 'Superseded', reason: 'NoLongerExpected' })]
+        : [version('20', { status: 'Active' })];
+  result.receipt.deviationReconciliation = [{ action, occurrenceId: 'dev-2', version: versions.at(-1) }];
+  result.receipt.entryChanges = [];
+  result.receipt.repairs = [];
+  result.postCommit.trade.recordedDeviations = [{ occurrenceId: 'dev-2', versions }];
+  render(
+    <MemoryRouter>
+      <PositionChangeReceipt result={result as never} timeZone="America/New_York" />
+    </MemoryRouter>,
+  );
+  return screen.getByRole('region', { name: 'Entry recorded' });
+}
+
+describe('receipt Deviation changes', () => {
+  it('should say Entry Size Deviation changed to 60 shares above plan, was 20, caused by the Position Change at 11:00, for a NewVersion action', () => {
+    const receipt = earlierDatedReceipt('NewVersion');
+    expect(within(receipt).getByText('Entry Size Deviation changed: now 60 shares above plan (was 20), caused by the Position Change at 2026-10-12 11:00.')).toBeTruthy();
+  });
+
+  it('should say an Entry Size Deviation no longer applies for a Supersede action', () => {
+    const receipt = earlierDatedReceipt('Supersede');
+    expect(within(receipt).getByText('Entry Size Deviation no longer applies.')).toBeTruthy();
+  });
+
+  it('should say nothing for a Retain action', () => {
+    const receipt = earlierDatedReceipt('Retain');
+    expect(within(receipt).queryByText(/Entry Size Deviation/)).toBeNull();
   });
 });
 

@@ -1095,3 +1095,23 @@ Maintainability tidy-up from the ocr review of T2.30 (Doubtful): `RECORD_ENTRY_P
 **ocr review of T2.30-B2** (`ocr-review` step): commit `aacd703`, session `b0e4f3b9-bbec-4964-af81-aa7d4156b680`, model `gpt-6.1-sol`, 1 file reviewed, 0 comments. No findings. Raw output: `ocr/t2.30-b2-aacd703.json`.
 
 **Complete cumulative run after T2.30-B1 and T2.30-B2** (`suite-runner`, 2026-10-24 22:13 EDT, on `aacd703` plus the uncommitted evidence): Unit 37 files / 373 tests passed; Node integration 19 / 42 passed; Browser (Chromium) 53 passed (1.7m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.30-b2-*.txt`.
+
+#### T2.31
+
+Receipt discloses changed Deviations (F7). `PositionChangeReceipt` now prints a line for each NewVersion and Supersede action in `receipt.deviationReconciliation`, and nothing for Retain. No result-shape change: the "was" quantity is the occurrence's previous version in `postCommit.trade.recordedDeviations`.
+
+| Command | Result |
+|---|---|
+| `tdd.sh red` NewVersion and Supersede cases (`src/ui/screens/PositionChangeForm.test.tsx`) | red: Unable to find an element with the expected text (both) |
+| `tdd.sh red` Retain case | passed on first run (flagged; mutation widening the filter to non-Create actions failed with `expected <p></p> to be null`) |
+| `tdd.sh green` all three | Tests 1 passed each |
+| `npx playwright test e2e/d2/open-position.spec.ts` before `npm run build:faults` (new C2.6 case) | 1 failed (stale build, no Deviation line), 2 passed |
+| `npm run build:faults`, `npx playwright test e2e/d2/open-position.spec.ts` | 3 passed |
+| `npx vitest run src/ui/screens/PositionChangeForm.test.tsx` | 34 passed |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
+
+Copy decisions:
+- NewVersion: `Entry Size Deviation changed: now 60 shares above plan (was 20), caused by the Position Change at 2026-10-12 11:00.` Same time format as the Create line (the plan's bare "11:00" is shorthand). "this Position Change" replaces the clause when the saved change is the cause. The `(was N)` part is dropped if the previous version is absent.
+- Supersede: `Entry Size Deviation no longer applies.`
+- Retain: no text.
+- The browser check is a new case, "C2.6 earlier-dated entry (P5)", in `e2e/d2/open-position.spec.ts`: no earlier-dated case existed there. It uses PC1 (60), a 60-share fill at 11:00, then 40 at 10:30.

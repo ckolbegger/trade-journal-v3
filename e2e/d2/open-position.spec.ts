@@ -87,3 +87,29 @@ test.describe('B2.2 scale-in and decline', () => {
     await context.close();
   });
 });
+
+test.describe('C2.6 earlier-dated entry (P5)', () => {
+  test('should say on the receipt that the Entry Size Deviation changed from 20 to 60 shares above plan, caused by the Position Change at 11:00', async ({
+    server,
+    profile,
+  }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await confirmReference(page);
+    await recordEntry(page, PC1);
+    await backToTrade(page);
+    await recordEntry(page, [{ quantity: '60', price: '50.30', fee: '1.00', time: '2026-10-12T11:00' }]);
+    await backToTrade(page);
+    await expect(region(page, 'Deviations')).toContainText('Entry Size (Excess): 20 shares above plan');
+
+    await recordEntry(page, [{ quantity: '40', price: '50.15', fee: '1.00', time: '2026-10-12T10:30' }]);
+    const receipt = region(page, 'Entry recorded');
+    await expect(receipt).toContainText(
+      'Entry Size Deviation changed: now 60 shares above plan (was 20), caused by the Position Change at 2026-10-12 11:00.',
+    );
+    await expect(receipt).toContainText('This entry moved the Entry Resolution Point to the Position Change at 2026-10-12 10:30.');
+    await expect(receipt).toContainText('This entry changed Entry Quality.');
+    await context.close();
+  });
+});
