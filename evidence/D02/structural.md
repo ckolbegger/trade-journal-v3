@@ -1286,3 +1286,7 @@ Commands:
 Change: CSS only, `src/ui/app.css`. `.banner` takes `calc(min(100%, 960px) - 2rem)` and centres, so it shares the content box's inner left edge; blocks inside `.content` (`.card`, `.banner`) lose their own side margin and take the gutter from the content padding, which removes the extra 16 px that put cards right of the heading and tabs. The standalone `.startup`, `.gate`, `.first-run` and `.onboarding` cards use `width: calc(100% - 2rem)` with the 640 px cap, so they keep a 16 px gutter on narrow. The compact narrow banner margin is now `0.5rem auto` in effect (`margin-block` only). No markup or view-model change.
 
 This closes F8 (Migration Blocked card edge to edge at 320 px): it now has the 16 px gutter at 390 and 320.
+
+**ocr review of T2.38** (`ocr-review` step): commit `8641704`, session `74e56af7-2d66-456c-a1a6-1c260e702107`, model `gpt-6.1-sol`, 1 file reviewed (`app.css`; the spec and `structural.md` excluded), 0 comments. No findings. Raw output: `ocr/t2.38-8641704.json`.
+
+**Complete cumulative run after T2.38** (`suite-runner`, 2026-10-24 23:04 EDT, on `8641704`): Unit 38 files / 383 tests passed; Node integration 19 / 42 passed; Browser (Chromium) 67 passed (2.0m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.38-*.txt`.
