@@ -328,3 +328,17 @@ describe('incoherent Trade Detail', () => {
     expect(within(panel).getByText('New entries cannot be recorded for this Trade until its records agree.')).toBeTruthy();
   });
 });
+
+describe('badge meanings', () => {
+  it('should give an Active Deviation and Reflection declined the warning tone', async () => {
+    renderView(openDetailOf([PC1, PC2, PC3], { recordedDeviations: [pc3Excess], journal: [pc2Decline] }));
+    const deviations = await screen.findByRole('region', { name: 'Deviations' });
+    expect(within(deviations).getByText('Active').getAttribute('data-tone')).toBe('warning');
+    expect(within(screen.getByRole('region', { name: 'Journal' })).getByText('Reflection declined').getAttribute('data-tone')).toBe('warning');
+  });
+
+  it('should give the lifecycle badge the info tone', async () => {
+    renderView(openDetailOf([PC1, PC2]));
+    expect((await screen.findByText('Open', { selector: '.badge' })).getAttribute('data-tone')).toBe('info');
+  });
+});

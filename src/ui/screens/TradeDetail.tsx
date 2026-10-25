@@ -14,6 +14,7 @@ import type {
   TradeDetailView,
 } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
+import { Badge } from '../Badge.tsx';
 import { decimalMoney as price, localTime, money, quantity, ratio, rMultiple } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 
@@ -96,7 +97,7 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
       <header>
         <h1>{view.plan.underlying}</h1>
         <p>
-          {view.labels.strategy} · <span className="badge">{view.lifecycle.stored}</span>
+          {view.labels.strategy} · <Badge tone="info">{view.lifecycle.stored}</Badge>
         </p>
         {/* Recording an entry is an authoritative write, offered only while the runtime is Writable and
             the Trade's facts can be replayed; on incoherent facts it could only fail. */}
@@ -323,7 +324,7 @@ function DeviationsSection({ view, timeZone }: { readonly view: OpenTradeDetail;
             return (
               <li key={occurrence.occurrenceId}>
                 {`Entry Size (Excess): ${current.quantityAbovePlan} shares above plan, caused by the Position Change at ${timeOf(current.causingPositionChangeId)}.`}{' '}
-                <span className="badge">{current.status}</span>
+                <Badge tone={current.status === 'Active' ? 'warning' : 'neutral'}>{current.status}</Badge>
               </li>
             );
           })}
@@ -447,7 +448,7 @@ function JournalSection({ journal, timeZone }: { readonly journal: readonly Narr
             ) : (
               <>
                 <p>
-                  <span className="badge">Reflection declined</span>
+                  <Badge tone="warning">Reflection declined</Badge>
                 </p>
                 {item.reason !== undefined && <p>{`Reason: ${item.reason}`}</p>}
               </>

@@ -1447,3 +1447,14 @@ Change: headers get 0.8rem, 600, uppercase, 0.04em tracking, muted, left (right 
 **ocr review of T2.41** (`ocr-review` step): commit `8e58d1f`, session `adb63d82-ecbc-4dc0-9ec3-6c4afb13c7ae`, model `gpt-6.1-sol`, 1 file reviewed (`app.css`), 0 comments. No findings. Raw output: `ocr/t2.41-8e58d1f.json`.
 
 **Complete cumulative run after T2.41** (`suite-runner`, 2026-10-25 01:16 EDT, on `8e58d1f`): Unit 40 files / 395 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 74 passed (2.4m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.41-*.txt`.
+
+## T2.42 Semantic badge tones
+
+Tones (CSS `.badge[data-tone=...]` in `src/ui/app.css`, set by `src/ui/Badge.tsx`): neutral (ink on #ece7da), info (#163b75 on #e4edfa, border #1f5fbf), warning (ink on #fff4dd, border #b26b00). None uses the green or red tokens (`--error` and hue checks on text, ground and border).
+
+Contrast measured: neutral 13.94:1, info 9.28:1, warning 15.77:1 (all at least 4.5:1).
+
+Commands:
+- `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts -g T2.42` (red before CSS: neutral contrast 1.22; green after).
+- `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts e2e/d2/narrow.spec.ts e2e/d2/integrity.spec.ts e2e/d2/responsive-a11y.spec.ts`: 33 passed.
+- `npx vitest run src`: 399 passed; typecheck, tsc6, lint, lint:deps clean.

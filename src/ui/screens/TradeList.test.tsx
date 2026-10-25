@@ -248,6 +248,14 @@ describe('Trades table columns', () => {
     expect(within(resolved!).getAllByRole('cell')[3]!.textContent).toBe('Resolved · 120.5 of 100');
   });
 
+  describe('badge meanings', () => {
+    it('should give a Records disagree badge the warning tone', async () => {
+      const open = await openTable([openItem, disagreeing]);
+      const [, , flagged] = within(open).getAllByRole('row');
+      expect(within(flagged!).getByText('Records disagree').getAttribute('data-tone')).toBe('warning');
+    });
+  });
+
   it('should show a Records disagree badge in the Trade cell of a disagreeing row, coherent or incoherent, and none on an agreeing row', async () => {
     const { tradeId, underlying, strategy, account, institution, plannedQuantity, deviationCount, lastActivity } = openItem;
     const incoherent = { tradeId: 'trade-4', underlying: 'GHI', strategy, account, institution, plannedQuantity, deviationCount, integrity: 'Disagrees', lastActivity };
@@ -257,11 +265,11 @@ describe('Trades table columns', () => {
     expect(underlying).toBe('ABC');
     expect(within(agreeing!).queryByText(/records (dis)?agree/i)).toBeNull();
     const coherentCell = within(coherent!).getAllByRole('cell')[1]!;
-    expect(within(coherentCell).getByText('Records disagree').className).toBe('badge warning');
+    expect(within(coherentCell).getByText('Records disagree').className).toBe('badge');
     expect(coherentCell.textContent).toBe('Long 60 shares @ $50.10 Records disagree Net cost $3,007.00');
     const brokenCells = within(broken!).getAllByRole('cell');
     expect(brokenCells[1]!.textContent).toBe('Not available Records disagree');
-    expect(within(brokenCells[1]!).getByText('Records disagree').className).toBe('badge warning');
+    expect(within(brokenCells[1]!).getByText('Records disagree').className).toBe('badge');
     expect(brokenCells.map((c) => c.textContent).slice(2)).toEqual(['Not available', 'Not available', 'Fidelity — Roth IRA']);
     expect(within(broken!).getByRole('link', { name: 'GHI' }).getAttribute('href')).toBe('/trades/trade-4');
     cleanup();
@@ -273,7 +281,7 @@ describe('Trades table columns', () => {
     const [, ok, flagged, lost] = within(planned).getAllByRole('row');
     expect(within(ok!).queryByText('Records disagree')).toBeNull();
     const flaggedCells = within(flagged!).getAllByRole('cell');
-    expect(within(flaggedCells[1]!).getByText('Records disagree').className).toBe('badge warning');
+    expect(within(flaggedCells[1]!).getByText('Records disagree').className).toBe('badge');
     expect(flaggedCells[4]!.textContent).toBe('Awaiting entry');
     const lostCells = within(lost!).getAllByRole('cell');
     expect(lostCells.map((c) => c.textContent)).toEqual(['JKL', 'Not available Records disagree', 'Not available', 'Not available', 'Not available', 'Fidelity — Roth IRA']);

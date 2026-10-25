@@ -534,3 +534,62 @@ test.describe('T2.41 wide Trades table styling', () => {
     await context.close();
   });
 });
+
+test.describe('T2.42 semantic badge tones', () => {
+  test('should give every tone text that reaches 4.5:1 on its background and use neither the green nor the red tokens', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    const tones = await page.evaluate(() => {
+      const parse = (css: string) => (css.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
+      const root = getComputedStyle(document.documentElement);
+      const probe = document.createElement('span');
+      probe.style.color = root.getPropertyValue('--error');
+      document.body.append(probe);
+      const errorRgb = parse(getComputedStyle(probe).color);
+      probe.remove();
+      return ['neutral', 'info', 'warning'].map((tone) => {
+        const el = document.createElement('span');
+        el.className = 'badge';
+        el.dataset.tone = tone;
+        el.textContent = tone;
+        document.body.append(el);
+        const s = getComputedStyle(el);
+        const out = { tone, text: parse(s.color), ground: parse(s.backgroundColor), border: parse(s.borderTopColor), errorRgb };
+        el.remove();
+        return out;
+      });
+    });
+    const lum = (rgb: number[]) => {
+      const [r, g, b] = rgb.map((v) => {
+        const c = v / 255;
+        return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+      }) as [number, number, number];
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const ratio = (a: number[], b: number[]) => {
+      const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x) as [number, number];
+      return (hi + 0.05) / (lo + 0.05);
+    };
+    const hue = (rgb: number[]) => {
+      const [r, g, b] = rgb.map((v) => v / 255) as [number, number, number];
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      const d = max - min;
+      if (d === 0 || d / (1 - Math.abs(max + min - 1)) < 0.3) return null;
+      const h = max === r ? ((g - b) / d + 6) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+      return h * 60;
+    };
+    for (const t of tones) {
+      expect(ratio(t.text, t.ground), `${t.tone} contrast`).toBeGreaterThanOrEqual(4.5);
+      for (const [part, rgb] of [['text', t.text], ['ground', t.ground], ['border', t.border]] as const) {
+        expect(rgb, `${t.tone} ${part} is not the error red`).not.toEqual(t.errorRgb);
+        const h = hue(rgb);
+        const reserved = h !== null && (h <= 15 || h >= 345 || (h >= 75 && h <= 165));
+        expect(reserved, `${t.tone} ${part} hue ${h} is neither red nor green`).toBe(false);
+      }
+    }
+    expect(new Set(tones.map((t) => t.ground.join())).size, 'the three tones differ').toBeGreaterThan(1);
+    await context.close();
+  });
+});

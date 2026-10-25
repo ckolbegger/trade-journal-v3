@@ -10,6 +10,10 @@
   --warning-ground: #fff4dd;
   --warning-line: #b26b00;
   --error: #a3261b;
+  --info-ground: #e4edfa;
+  --info-ink: #163b75;
+  --info-line: #1f5fbf;
+  --neutral-ground: #ece7da;
   --radius: 14px;
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   color: var(--ink);
@@ -171,10 +175,23 @@ a {
   font-weight: 600;
 }
 
-/* Text carries the meaning; the warning colours only reinforce it. */
-.badge.warning {
+/* Text carries the meaning; the tone colours only reinforce it. Green and red stay reserved for
+   signed results and Stop/Target, so no tone uses them. */
+.badge[data-tone='neutral'] {
+  background: var(--neutral-ground);
+  color: var(--ink);
+}
+
+.badge[data-tone='info'] {
+  background: var(--info-ground);
+  border-color: var(--info-line);
+  color: var(--info-ink);
+}
+
+.badge[data-tone='warning'] {
   background: var(--warning-ground);
   border-color: var(--warning-line);
+  color: var(--ink);
 }
 
 /* Lifecycle tabs. */

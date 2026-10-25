@@ -2,6 +2,7 @@ import { useEffect, useState, type KeyboardEvent } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { IncoherentOpenTradeItem, IncoherentPlannedTradeItem, OpenTradeItem, PlannedTradeItem } from '../../app/types.ts';
+import { Badge } from '../Badge.tsx';
 import { money, netCost, quantity, ratio, tradeSummary } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 
@@ -190,7 +191,7 @@ function TradeCell({ text, disagrees, line }: { readonly text: string; readonly 
       {disagrees && (
         <>
           {' '}
-          <span className="badge warning">Records disagree</span>
+          <Badge tone="warning">Records disagree</Badge>
         </>
       )}
       {line && (
