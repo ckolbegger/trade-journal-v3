@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { EntryDefinitionRecord } from '../../app/types.ts';
 import type { FieldIssue } from './plan-issues.ts';
+import { parseDecimal, Rational } from '../../domain/values/index.ts';
 import type { Answers } from './ReflectionPrompts.tsx';
 
 export interface IssueSummaryProps {
@@ -55,11 +56,25 @@ export function fieldIssues(issues: readonly FieldIssue[]) {
   };
 }
 
-// Prices and quantities are decimals with at most 6 places (the same shape the server accepts).
-const DECIMAL = /^\d+(\.\d{1,6})?$/;
-export const isPositiveDecimal = (text: string) => DECIMAL.test(text.trim()) && Number(text) > 0;
-export const isNonNegativeDecimal = (text: string) => DECIMAL.test(text.trim());
+// The decimal a text field holds, judged as the submit step and the domain judge it (trimmed, at most
+// 6 places); undefined when it is not one. The comparisons use exact Rational values.
+export function positiveDecimal(text: string): Rational | undefined {
+  const parsed = parseDecimal(text.trim(), { positive: true });
+  return parsed.ok ? parsed.value : undefined;
+}
+export function nonNegativeDecimal(text: string): Rational | undefined {
+  const parsed = parseDecimal(text.trim());
+  return parsed.ok && parsed.value.compare(Rational.of(0n)) >= 0 ? parsed.value : undefined;
+}
+
+// The symbol rule of the domain's Plan assessment (SYMBOL in src/domain/trade-analysis/plan.ts, which the UI may not import).
+const SYMBOL = /^[A-Z][A-Z0-9.]{0,9}$/;
+export const isValidSymbol = (text: string) => SYMBOL.test(text.trim().toUpperCase());
 
 // Whether a Prompt now has an answer that differs from the one it had when the issue was reported.
-export const answerChanged = (before: Answers, now: Answers, promptId: string) =>
-  now[promptId] !== undefined && JSON.stringify(now[promptId]) !== JSON.stringify(before[promptId]);
+// A Text answer that is blank after trimming is no answer, as in the Journal's rule.
+export const answerChanged = (before: Answers, now: Answers, promptId: string) => {
+  const answer = now[promptId];
+  if (answer === undefined || (answer.kind === 'Text' && answer.text.trim() === '')) return false;
+  return JSON.stringify(answer) !== JSON.stringify(before[promptId]);
+};

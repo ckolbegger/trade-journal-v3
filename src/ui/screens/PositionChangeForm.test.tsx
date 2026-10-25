@@ -1078,4 +1078,34 @@ describe('Record entry issues', () => {
     expect(screen.queryByRole('region', { name: 'This entry can’t be saved yet' })).toBeNull();
     expect(mode.getAttribute('aria-describedby')).toBeNull();
   });
+
+  it('should clear a local-time issue once the Economic Time resolves to one instant', async () => {
+    const facade = renderForm();
+    const user = userEvent.setup();
+    await fillRows(user, [['30', '50.00', '0.50', '2026-03-08T02:30']]);
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    await screen.findByRole('region', { name: 'This entry can’t be saved yet' });
+    const time = within(row(1)).getByLabelText('Economic Time');
+    expect(description(time)).toMatch(/Economic Time/);
+    await user.clear(time);
+    await user.type(time, '2026-11-01T01:30');
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    expect(description(time)).toMatch(/Economic Time/);
+    await user.clear(time);
+    await user.type(time, '2026-11-01T03:30');
+    expect(time.getAttribute('aria-describedby')).toBeNull();
+    expect(screen.queryByRole('region', { name: 'This entry can’t be saved yet' })).toBeNull();
+    expect(facade.TradeWorkflows.recordPositionChange).not.toHaveBeenCalled();
+  });
+
+  it('should treat an issue whose Execution row was removed as corrected', async () => {
+    const facade = renderForm();
+    reject(facade, [{ source: 'TradeWorkflows', member: 1, field: 'quantity', code: 'NotPositive' }]);
+    const user = userEvent.setup();
+    await fillRows(user, [['30', '50.00', '0.50', '2026-10-12T10:00'], ['0', '50.00', '0.50', '2026-10-12T10:30']]);
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    await screen.findByRole('region', { name: 'This entry can’t be saved yet' });
+    await user.click(screen.getByRole('button', { name: 'Remove Execution 2' }));
+    expect(screen.queryByRole('region', { name: 'This entry can’t be saved yet' })).toBeNull();
+  });
 });

@@ -310,4 +310,72 @@ describe('New Plan issues', () => {
     await user.type(screen.getByLabelText('Target'), '56.00');
     expect(document.activeElement).toBe(screen.getByLabelText('Target'));
   });
+
+  it('should clear an InvalidPrice issue only when the entry, Stop and Target are all valid prices', async () => {
+    const facade = renderForm();
+    vi.mocked(facade.TradeWorkflows.confirmPlan).mockResolvedValue(rejection([analysis('InvalidPrice')]));
+    const user = await fillPlan();
+    await user.clear(screen.getByLabelText('Stop'));
+    await user.type(screen.getByLabelText('Stop'), 'abc');
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    await screen.findByRole('region', { name: 'This Plan can’t be confirmed yet' });
+    const entry = screen.getByLabelText('Intended entry');
+    expect(described(entry)).toMatch(/prices greater than zero/i);
+
+    // The entry alone is valid, but the Stop still is not a price.
+    await user.type(entry, '1');
+    expect(described(entry)).toMatch(/prices greater than zero/i);
+    await user.clear(screen.getByLabelText('Stop'));
+    await user.type(screen.getByLabelText('Stop'), '47.50');
+    expect(entry.getAttribute('aria-describedby')).toBeNull();
+  });
+
+  it('should clear a MissingInstrument issue only when the symbol matches the symbol rule', async () => {
+    const facade = renderForm();
+    vi.mocked(facade.TradeWorkflows.confirmPlan).mockResolvedValue(rejection([analysis('MissingInstrument')]));
+    const user = await fillPlan();
+    await user.clear(screen.getByLabelText('Symbol'));
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    await screen.findByRole('region', { name: 'This Plan can’t be confirmed yet' });
+    const symbol = screen.getByLabelText('Symbol');
+    await user.type(symbol, '1X');
+    expect(described(symbol)).toMatch(/stock symbol/i);
+    await user.clear(symbol);
+    await user.type(symbol, 'brk.b');
+    expect(symbol.getAttribute('aria-describedby')).toBeNull();
+  });
+
+  it('should keep a required Prompt issue while a Text answer is only whitespace', async () => {
+    const facade = renderForm();
+    vi.mocked(facade.TradeWorkflows.confirmPlan).mockResolvedValue(
+      rejection([{ source: 'Journal', field: 'prompt.plan-reflection.thesis', code: 'RequiredAnswerMissing' }]),
+    );
+    const user = await fillPlan();
+    await user.clear(screen.getByLabelText('Why this trade, why now?'));
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    await screen.findByRole('region', { name: 'This Plan can’t be confirmed yet' });
+    await user.type(screen.getByLabelText('Why this trade, why now?'), '   ');
+    expect(screen.getByRole('region', { name: 'This Plan can’t be confirmed yet' })).toBeTruthy();
+    await user.type(screen.getByLabelText('Why this trade, why now?'), 'B');
+    expect(screen.queryByRole('region', { name: 'This Plan can’t be confirmed yet' })).toBeNull();
+  });
+
+  it('should compare the Stop and entry as exact decimals, not floating point numbers', async () => {
+    const facade = renderForm();
+    vi.mocked(facade.TradeWorkflows.confirmPlan).mockResolvedValue(rejection([analysis('NoPositiveRisk')]));
+    const user = await fillPlan();
+    for (const [label, value] of [['Intended entry', '10000000000.000002'], ['Stop', '10000000000.000003']] as const) {
+      await user.clear(screen.getByLabelText(label));
+      await user.type(screen.getByLabelText(label), value);
+    }
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    await screen.findByRole('region', { name: 'This Plan can’t be confirmed yet' });
+    const stop = screen.getByLabelText('Stop');
+    await user.clear(stop);
+    await user.type(stop, '10000000000.000001');
+    expect(stop.getAttribute('aria-describedby')).toBeNull();
+    await user.clear(stop);
+    await user.type(stop, '10000000000.000002');
+    expect(described(stop)).toMatch(/below the intended entry/i);
+  });
 });

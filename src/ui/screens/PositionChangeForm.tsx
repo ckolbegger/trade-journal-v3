@@ -11,7 +11,7 @@ import type {
 import { fromWorkspaceLocal, toWorkspaceLocal } from '../../domain/time/index.ts';
 import { quantity } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
-import { answerChanged, fieldIssues, isNonNegativeDecimal, isPositiveDecimal, IssueSummary } from './form-issues.tsx';
+import { answerChanged, fieldIssues, IssueSummary, nonNegativeDecimal, positiveDecimal } from './form-issues.tsx';
 import type { FieldIssue } from './plan-issues.ts';
 import { describePositionChangeIssues, rowField } from './position-change-issues.ts';
 import { PositionChangeReceipt } from './PositionChangeReceipt.tsx';
@@ -38,6 +38,8 @@ interface Row {
 
 // At most 20 Executions per Position Change (D2 A18).
 const MAX_ROWS = 20;
+// The codes fromWorkspaceLocal can fail with: the form judges all of them itself.
+const LOCAL_TIME_CODES = new Set(['InvalidLocalTime', 'NonexistentLocalTime', 'AmbiguousLocalTime']);
 
 // One Position Change on the Trade's single Planned Leg: Buy rows of the Plan's Stock (D2 A18, A33).
 export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: PositionChangeFormProps) {
@@ -269,13 +271,15 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   const corrected = (issue: FieldIssue) => {
     if (!reported) return false;
     const row = rows.find((r) => issue.field.startsWith(`row-${r.key}-`));
+    // A removed row's issue can never be fixed, so it counts as corrected.
+    if (!row && issue.field.startsWith('row-')) return true;
     if (row) {
       const name = issue.field.slice(`row-${row.key}-`.length);
       const before = reported.rows.find((r) => r.key === row.key);
       if (!before) return false;
-      if (name === 'economicTime') return issue.code === 'InvalidLocalTime' && row.time !== before.time && fromWorkspaceLocal(row.time, timeZone).ok;
-      if (name === 'quantity' || name === 'price') return row[name] !== before[name] && isPositiveDecimal(row[name]);
-      if (name === 'fee') return row.fee !== before.fee && isNonNegativeDecimal(row.fee);
+      if (name === 'economicTime') return LOCAL_TIME_CODES.has(issue.code ?? '') && row.time !== before.time && fromWorkspaceLocal(row.time, timeZone).ok;
+      if (name === 'quantity' || name === 'price') return row[name] !== before[name] && positiveDecimal(row[name]) !== undefined;
+      if (name === 'fee') return row.fee !== before.fee && nonNegativeDecimal(row.fee) !== undefined;
       return false;
     }
     return definition.prompts.some((p) => p.id === issue.field) && answerChanged(reported.answers, answers, issue.field);

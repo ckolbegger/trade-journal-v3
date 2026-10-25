@@ -5,7 +5,7 @@ import { fromWorkspaceLocal, toWorkspaceLocal } from '../../domain/time/index.ts
 import type { EntryDefinitionRecord } from '../../app/types.ts';
 import { useRuntime } from '../runtime.tsx';
 import { confirmedDetail } from './confirmed-detail.ts';
-import { answerChanged, fieldIssues, isPositiveDecimal, IssueSummary } from './form-issues.tsx';
+import { answerChanged, fieldIssues, isValidSymbol, IssueSummary, positiveDecimal } from './form-issues.tsx';
 import { describeIssues, type FieldIssue } from './plan-issues.ts';
 import { ReflectionPrompts, type Answers } from './ReflectionPrompts.tsx';
 
@@ -153,18 +153,22 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
   const corrected = (issue: FieldIssue) => {
     if (!reported) return false;
     const changed = (name: keyof Fields) => fields[name] !== reported.fields[name];
-    const entry = Number(fields.entry);
+    const entry = positiveDecimal(fields.entry);
+    const stop = positiveDecimal(fields.stop);
+    const target = positiveDecimal(fields.target);
     switch (issue.field) {
       case 'symbol':
-        return changed('symbol') && fields.symbol.trim() !== '';
+        return changed('symbol') && isValidSymbol(fields.symbol);
       case 'quantity':
-        return changed('quantity') && isPositiveDecimal(fields.quantity);
+        return changed('quantity') && positiveDecimal(fields.quantity) !== undefined;
       case 'entry':
-        return changed('entry') && isPositiveDecimal(fields.entry);
+        // InvalidPrice does not say which price was wrong, so it clears when all three are valid.
+        if (issue.code === 'InvalidPrice') return (changed('entry') || changed('stop') || changed('target')) && !!entry && !!stop && !!target;
+        return changed('entry') && !!entry;
       case 'stop':
-        return (changed('stop') || changed('entry')) && isPositiveDecimal(fields.stop) && (issue.code !== 'NoPositiveRisk' || Number(fields.stop) < entry);
+        return (changed('stop') || changed('entry')) && !!stop && (issue.code !== 'NoPositiveRisk' || (!!entry && stop.compare(entry) < 0));
       case 'target':
-        return (changed('target') || changed('entry')) && isPositiveDecimal(fields.target) && (issue.code !== 'TargetNotBeyondEntry' || Number(fields.target) > entry);
+        return (changed('target') || changed('entry')) && !!target && (issue.code !== 'TargetNotBeyondEntry' || (!!entry && target.compare(entry) > 0));
       default:
         return definition.prompts.some((p) => p.id === issue.field) && answerChanged(reported.answers, answers, issue.field);
     }
