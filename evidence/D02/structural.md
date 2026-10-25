@@ -1534,3 +1534,7 @@ Commands:
 | Focused chip outline | pass (3px solid) | pass (3px solid CanvasText) |
 
 Change: `@media (forced-colors: active)` in `src/ui/app.css`: `label.chip:has(input:checked)` uses `Highlight` background and border with `HighlightText` text and `forced-color-adjust: none`; `label.chip:focus-within` keeps its 3px outline in `CanvasText`.
+
+**ocr review of T2.43-B1** (`ocr-review` step): commit `c0df19d`, session `2b7820ab-fb58-4435-a973-6a9e76c98a20`, model `gpt-6.1-sol`, 1 file reviewed (`app.css`), 0 comments. No findings. Raw output: `ocr/t2.43-B1-c0df19d.json`. The focus-outline assertion was a first-run pass; its mutation check (`outline: none` in the forced-colors block: "focus outline style in forced colors") is in `065e34d`.
+
+**Complete cumulative run after T2.43-B1** (`suite-runner`, 2026-10-25 07:19 EDT, on `065e34d`): Unit 41 files / 399 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 78 passed (2.4m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.43-B1-*.txt`.
