@@ -4,7 +4,7 @@
 // specs do, and drives the app through the e2e/d2/support.ts steps with a fixed clock.
 // It is not part of the e2e suite.
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import type { BrowserContext, Locator, Page } from '@playwright/test';
@@ -33,6 +33,9 @@ import {
 import { startReleaseServer } from './release-server.ts';
 
 const OUT = path.resolve('evidence/D02/ui-alignment');
+// Captures go here, beside OUT so the final rename stays on one filesystem; OUT is replaced only
+// after a complete run.
+let captureDir = OUT;
 const WIDTHS = [
   { label: '390', width: 390, height: 844 },
   { label: '1280', width: 1280, height: 900 },
@@ -81,7 +84,7 @@ async function shoot(page: Page, name: string, target?: Locator): Promise<void> 
       const active = document.activeElement;
       if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement) active.blur();
     });
-    const file = path.join(OUT, `${name}-${label}.png`);
+    const file = path.join(captureDir, `${name}-${label}.png`);
     if (target) await target.screenshot({ path: file, animations: 'disabled' });
     else await page.screenshot({ path: file, fullPage: true, animations: 'disabled' });
   }
@@ -196,29 +199,36 @@ async function drive(context: BrowserContext): Promise<void> {
 
 async function main(): Promise<void> {
   run('npm', ['run', 'build:faults']);
-  rmSync(OUT, { recursive: true, force: true });
-  mkdirSync(OUT, { recursive: true });
-  const server = await startReleaseServer({ root: process.cwd(), release: 'dist-faults' });
+  captureDir = mkdtempSync(`${OUT}-capture-`);
   try {
-    const dir = mkdtempSync(path.join(tmpdir(), 'ui-screenshots-'));
+    const server = await startReleaseServer({ root: process.cwd(), release: 'dist-faults' });
     try {
-      const context = await profileAt(dir).launch({ width: 390 });
+      const dir = mkdtempSync(path.join(tmpdir(), 'ui-screenshots-'));
       try {
-        await drive(context);
+        const context = await profileAt(dir).launch({ width: 390 });
+        try {
+          await drive(context);
+        } finally {
+          await context.close();
+        }
       } finally {
-        await context.close();
+        rmSync(dir, { recursive: true, force: true });
       }
     } finally {
-      rmSync(dir, { recursive: true, force: true });
+      await server.close();
     }
-  } finally {
-    await server.close();
+    writeFileSync(path.join(captureDir, 'README.md'), readme());
+    const files = readdirSync(captureDir);
+    const pngs = files.filter((f) => f.endsWith('.png')).length;
+    if (pngs !== SCREENS.length * WIDTHS.length) throw new Error(`expected ${SCREENS.length * WIDTHS.length} PNGs, wrote ${pngs}`);
+    if (!files.includes('README.md')) throw new Error('no README written');
+    rmSync(OUT, { recursive: true, force: true });
+    renameSync(captureDir, OUT);
+    console.log(`wrote ${pngs} PNGs and the README to ${path.relative('.', OUT)}`);
+  } catch (error) {
+    rmSync(captureDir, { recursive: true, force: true });
+    throw error;
   }
-  writeFileSync(path.join(OUT, 'README.md'), readme());
-  const files = readdirSync(OUT);
-  const pngs = files.filter((f) => f.endsWith('.png')).length;
-  console.log(`wrote ${pngs} PNGs and ${files.includes('README.md') ? 'the README' : 'no README'} to ${path.relative('.', OUT)}`);
-  if (pngs !== SCREENS.length * WIDTHS.length) throw new Error(`expected ${SCREENS.length * WIDTHS.length} PNGs, wrote ${pngs}`);
 }
 
 await main();
