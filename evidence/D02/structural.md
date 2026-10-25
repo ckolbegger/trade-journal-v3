@@ -1235,6 +1235,14 @@ Commands:
 
 Markup change: the unprotected-storage banner is now `banner warning durability` (was `banner notice`; accessible name "Storage protection", text and button name unchanged) with its paragraphs wrapped in a `banner-text` div. The "will now keep your data" status line stays `banner notice`. Current item: ink pill in the sidebar, bold ink in the bottom bar.
 
+**ocr review of T2.37** (`ocr-review` step): commit `23fc26c`, session `eafe94ac-76e0-4d24-b57f-4cabc8530953`, model `gpt-6.1-sol`, 2 files reviewed (2 excluded), 1 comment. Raw output: `ocr/t2.37-23fc26c.json`.
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | bug | `src/ui/app.css:430` | The compact banner rules match only inside `.shell:not([data-layout='wide'])`, but the banner also renders before the shell on first run and onboarding, where it is not compact at 390 px | Valid: `protectionWarning` renders bare before `FirstRun` and `OnboardingAccount`. Turned into bug task T2.37-B1, which measured 567.3 px there. |
+
+**Complete cumulative run after T2.37** (`suite-runner`, 2026-10-24 22:53 EDT, on `23fc26c`): Unit 38 files / 383 tests passed; Node integration 19 / 42 passed; Browser (Chromium) 59 passed (1.8m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.37-*.txt`.
+
 #### T2.37-B1
 
 Finding (ocr review of 23fc26c, Valid): the compact banner rules were keyed to `.shell:not([data-layout='wide'])`, but AppShell renders the storage banner outside any `.shell` on first run and account onboarding, so it got the flex row without the compact padding, font and button cap.
@@ -1250,3 +1258,7 @@ Commands: `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.
 | Banner background vs `--warning-ground` | equal | equal |
 
 Also green after: `e2e/d1` first-run/onboarding/responsive specs, `e2e/d2/narrow.spec.ts`, `e2e/d2/responsive-a11y.spec.ts`, lint, lint:deps.
+
+**ocr review of T2.37-B1** (`ocr-review` step): commit `439a863`, session `2aa2d15b-5020-416e-b95a-059325a895e5`, model `gpt-6.1-sol`, 1 file reviewed (`app.css`), 0 comments. No findings. Raw output: `ocr/t2.37-b1-439a863.json`.
+
+**Complete cumulative run after T2.37-B1** (`suite-runner`, 2026-10-24 22:58 EDT, on `439a863` plus the uncommitted evidence): Unit 38 files / 383 tests passed; Node integration 19 / 42 passed; Browser (Chromium) 61 passed (1.9m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.37-b1-*.txt`.
