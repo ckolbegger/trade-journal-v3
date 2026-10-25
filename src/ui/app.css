@@ -385,6 +385,21 @@ label.chip:focus-within {
   outline-offset: 2px;
 }
 
+/* Forced colors override backgrounds, so the checked chip needs system colors to stay distinct. */
+@media (forced-colors: active) {
+  label.chip:has(input:checked) {
+    forced-color-adjust: none;
+    background: Highlight;
+    border-color: Highlight;
+    color: HighlightText;
+  }
+
+  label.chip:focus-within {
+    outline: 3px solid CanvasText;
+    outline-offset: 2px;
+  }
+}
+
 /* Numbers: right-aligned tabular figures. */
 .number {
   text-align: right;

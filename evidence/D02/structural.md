@@ -1519,3 +1519,18 @@ Change: `fieldset.execution-row` is a borderless tinted panel (`--neutral-ground
 | low | `app.css:325` | `.field:nth-of-type(4)` places Economic Time by `div` position and breaks silently if a `div` child is added or reordered | Doubtful; bug task T2.44-B1 (a class on the Economic Time field) |
 
 **Complete cumulative run after T2.44** (`suite-runner`, 2026-10-25 07:12 EDT, on `e0ca94b`; the first attempt stopped at the usage limit and was rerun from the start): Unit 41 files / 399 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 77 passed (2.4m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.44-*.txt`.
+
+## T2.43-B1 Checked chip in forced colors
+
+Bug from the ocr finding on `114462a` (checked chip shown only by background and text colour). Measurement added first to `e2e/d2/ui-alignment.spec.ts` (describe "T2.43-B1 prompt chips in forced colors"), with `page.emulateMedia({ forcedColors: 'active' })` on New Plan, against `dist-faults`.
+
+Commands:
+- Before: `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts -g T2.43-B1` gave 1 failed. A first version that compared raw computed background-color passed before the fix and was replaced (see tdd-log).
+- After: same command, 1 passed. `npx playwright test e2e/d2/ui-alignment.spec.ts e2e/d1 e2e/d2/responsive-a11y.spec.ts`: 55 passed. `npx vitest run src/ui` 120 passed; typecheck, tsc6, lint, lint:deps exit 0.
+
+| Measurement (forced colors active) | Before | After |
+| --- | --- | --- |
+| Checked vs unchecked chip: shown background, border, outline | fail (identical: white, 1px black, no outline) | pass (checked chip is Highlight) |
+| Focused chip outline | pass (3px solid) | pass (3px solid CanvasText) |
+
+Change: `@media (forced-colors: active)` in `src/ui/app.css`: `label.chip:has(input:checked)` uses `Highlight` background and border with `HighlightText` text and `forced-color-adjust: none`; `label.chip:focus-within` keeps its 3px outline in `CanvasText`.

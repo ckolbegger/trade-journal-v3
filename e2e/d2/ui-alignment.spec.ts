@@ -672,6 +672,40 @@ test.describe('T2.43 prompt chip groups', () => {
   });
 });
 
+test.describe('T2.43-B1 prompt chips in forced colors', () => {
+  test('should distinguish a checked chip from an unchecked chip and keep the focus ring in forced colors', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await page.emulateMedia({ forcedColors: 'active' });
+    await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'New Plan' }).click();
+    await expect(page.getByRole('heading', { name: 'New Plan', level: 1 })).toBeVisible(READY);
+    const group = page.getByRole('radiogroup').first();
+    const radio = group.locator('input[type="radio"]').first();
+    await radio.check();
+    await page.locator('h1').click();
+    const look = (label: Element) => {
+      const s = getComputedStyle(label);
+      // A transparent chip shows the first opaque ancestor, so a Canvas-coloured checked chip looks the same.
+      let el: Element | null = label;
+      while (el && getComputedStyle(el).backgroundColor.endsWith(', 0)')) el = el.parentElement;
+      const shown = el ? getComputedStyle(el).backgroundColor : 'none';
+      return [shown, s.borderTopWidth, s.borderTopColor, s.outlineStyle, s.outlineWidth, s.outlineColor].join('|');
+    };
+    const checked = await group.locator('label.chip').first().evaluate(look);
+    const unchecked = await group.locator('label.chip').nth(1).evaluate(look);
+    expect(checked, 'checked and unchecked chips differ in forced colors').not.toBe(unchecked);
+    await tabTo(page, radio);
+    const ring = await group.locator('label.chip').first().evaluate((label) => {
+      const s = getComputedStyle(label);
+      return { style: s.outlineStyle, width: parseFloat(s.outlineWidth) };
+    });
+    expect(ring.style, 'focus outline style in forced colors').not.toBe('none');
+    expect(ring.width, 'focus outline width in forced colors').toBeGreaterThanOrEqual(2);
+    await context.close();
+  });
+});
+
 test.describe('T2.44 execution rows as panels', () => {
   test('should render each Execution as a rounded panel with Quantity, Price and Fee in a grid and Economic Time on its own row', async ({ server, profile }) => {
     void server;
