@@ -953,7 +953,11 @@ Decisions (for the final report):
 - On failure (rejection or a non-Ready result) the Conflict message, button and values stay, with an alert "We couldn’t load the latest Trade. Your values are kept; try again."
 - A reload started before a Trade, facade or Retry change is ignored through an epoch counter bumped in the load effect cleanup. If the reloaded Trade is incoherent, the existing incoherent branch replaces the form.
 
-**ocr review of T2.28** (`ocr-review` step): commit `d623a46`, session `014024a0-94e2-4f0d-af23-43c35d5415f9`, model `gpt-6.1-sol`, 0 of 1 files reviewed, no comments: the provider refused the call with `subscription_sharing_usage_limit_exceeded`. **Pending:** at the user's direction (2026-10-24), T2.29 proceeds, and T2.28 and T2.29 are both reviewed once the usage limit resets (9:55 pm).
+**ocr review of T2.28** (`ocr-review` step): commit `d623a46`. A first attempt (session `014024a0-94e2-4f0d-af23-43c35d5415f9`) was refused with `subscription_sharing_usage_limit_exceeded`; at the user's direction (2026-10-24) T2.29 went ahead and both were reviewed after the 9:55 pm reset. The review: session `dc74218f-0f4a-4e82-817d-182f83fd10b8`, model `gpt-6.1-sol`, 1 file reviewed (4 not selected), 1 comment. Raw output: `ocr/t2.28-d623a46.json`.
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | bug | `src/ui/screens/PositionChangeForm.tsx:107` | `reloadTrade` guards late answers only with `loadEpoch`, which changes only when the load effect restarts, so an overlapping reload or a save returning a new Conflict can be overwritten by a late reload answer | Doubtful: the race is real (the button is never disabled and a save does not invalidate a pending reload), but nothing is saved against a stale revision; the trader can see a stale Position or lose the newer Conflict message. Turned into bug task T2.28-B1. |
 
 **Cumulative run after T2.28:** run 2026-10-24 18:26 EDT on commit `d623a46`, Node v26.12.0. Run label `t2.28`.
 
@@ -981,7 +985,11 @@ Decisions (for the final report):
 - The receipt focuses its h1 "Entry recorded" on mount.
 - Unit-test refactor: the receipt case's Recorded result moved into a shared `recordedResult()` helper so the receipt focus case reuses it.
 
-**ocr review of T2.29:** pending with T2.28's, until the ocr provider's usage limit resets (user's direction 2026-10-24).
+**ocr review of T2.29** (`ocr-review` step): commit `c1c16c0`, session `75b0defb-a239-4019-aafc-499a0d1bdf23`, model `gpt-6.1-sol`, 2 files reviewed (4 excluded), 1 comment. Raw output: `ocr/t2.29-c1c16c0.json`.
+
+| Severity | Category | Location | Claim | Assessment |
+|---|---|---|---|---|
+| medium | bug | `src/ui/screens/PositionChangeForm.tsx:130` | `shown` requires the definition too, so the incoherent-Trade heading, which renders as soon as the view arrives, is not focused when the definition load fails, and is focused late when it is slow | Valid: the incoherent branch renders before the failure and definition checks. Turned into bug task T2.29-B1. |
 
 **Cumulative run after T2.29:** run 2026-10-24 20:22 EDT on commit `c1c16c0`, Node v26.12.0. Run label `t2.29`.
 
@@ -1022,3 +1030,9 @@ Bug from the ocr review of T2.28: `reloadTrade` guarded late answers only with `
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
 
 Change: `loadEpoch` is also bumped by each reload and each save, so only the latest request may change the form; a superseded reload settles unseen.
+
+**ocr review of T2.29-B1** (`ocr-review` step): commit `9bb096f`, session `f9e9f9d8-f6f7-4081-a64b-a778ffd524f3`, model `gpt-6.1-sol`, 1 file reviewed (3 excluded: the test file, `structural.md` and `tdd-log.md`), 0 comments. No findings. Raw output: `ocr/t2.29-b1-9bb096f.json`.
+
+**ocr review of T2.28-B1** (`ocr-review` step): commit `feb3c1a`, session `ccfde2e9-23e2-4c9a-a034-0f22716ba412`, model `gpt-6.1-sol`, 1 file reviewed (test and evidence files excluded), 0 comments. No findings. Raw output: `ocr/t2.28-b1-feb3c1a.json`.
+
+**Complete cumulative run after T2.29-B1 and T2.28-B1** (`suite-runner`, 2026-10-24 22:01 EDT, on `feb3c1a` plus the uncommitted ocr evidence): Unit 37 files / 370 tests passed; Node integration 19 files / 42 tests passed; Browser (Chromium) 52 passed (1.7m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.28-b1-*.txt`.

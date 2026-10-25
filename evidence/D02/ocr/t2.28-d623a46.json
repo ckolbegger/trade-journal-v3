@@ -1,0 +1,94 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 92565,
+    "input_tokens": 91313,
+    "output_tokens": 1252,
+    "cache_read_tokens": 17280,
+    "elapsed": "1m1s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_find": 2,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/PositionChangeForm.tsx",
+      "content": "Reloads on this form all capture the same epoch: it changes only when the initial-load effect is cleaned up. Since the reload button and Save entry remain enabled, two reloads can overlap, or a save can return another Conflict while a reload is pending. A late response can then overwrite a newer view/factRevision or clear that subsequent Conflict without showing the actual latest state. Give each recovery request its own generation and invalidate pending recovery responses on a new save, or serialize reload/save operations. Add a deferred-response test for these orderings.",
+      "existing_code": "    const epoch = loadEpoch.current;\n    setReloadFailed(false);",
+      "start_line": 107,
+      "end_line": 108,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/ui/screens/PositionChangeForm.tsx",
+      "files": [
+        "src/ui/screens/PositionChangeForm.tsx"
+      ]
+    }
+  ],
+  "session_id": "dc74218f-0f4a-4e82-817d-182f83fd10b8",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "dc74218f-0f4a-4e82-817d-182f83fd10b8",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "d623a46",
+      "resolved_base": "788a7da1095b21806fb9575d502d33786d1f592f",
+      "resolved_head": "d623a46ae017e02ff4309c1798cd6b20bf6b1a2b",
+      "exact_range": "788a7da1095b21806fb9575d502d33786d1f592f..d623a46ae017e02ff4309c1798cd6b20bf6b1a2b",
+      "source_artifact_sha256": "f16772e501aae31b0af8ac3e3f897c6cd49ec95737d3f8e4585cb60e97851f4c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "60b63e3313e725ab528d8af981e1c5ff176051726d923f197a217ad373629679"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "60b63e3313e725ab528d8af981e1c5ff176051726d923f197a217ad373629679"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 61328
+  }
+}

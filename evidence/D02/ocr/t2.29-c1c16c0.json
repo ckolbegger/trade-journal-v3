@@ -1,0 +1,103 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 39677,
+    "input_tokens": 39232,
+    "output_tokens": 445,
+    "cache_read_tokens": 9600,
+    "elapsed": "26s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/PositionChangeForm.tsx",
+      "content": "The incoherent-Trade branch renders its heading as soon as `view` arrives, without requiring `definition`, but this focus condition waits for both. If the definition request fails, that visible heading is never focused; if it is slow, focus can move unexpectedly after the user has already started navigating the note. Derive `shown` from the actual rendering conditions, allowing an incoherent view to trigger focus independently of the definition request.",
+      "existing_code": "  const shown = view !== undefined \u0026\u0026 definition !== undefined;",
+      "start_line": 130,
+      "end_line": 130,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/PositionChangeForm.tsx",
+        "src/ui/screens/PositionChangeReceipt.tsx"
+      ]
+    }
+  ],
+  "session_id": "75b0defb-a239-4019-aafc-499a0d1bdf23",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "75b0defb-a239-4019-aafc-499a0d1bdf23",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "c1c16c0",
+      "resolved_base": "311e8d96a6fa36d5aeae79dbd18d8e9bd82f249f",
+      "resolved_head": "c1c16c0ce318d201339257b36850c2e4b4e82e8e",
+      "exact_range": "311e8d96a6fa36d5aeae79dbd18d8e9bd82f249f..c1c16c0ce318d201339257b36850c2e4b4e82e8e",
+      "source_artifact_sha256": "5d0a6212726d4e6c8eb04f89928dfd6707021f62b0d50f6960a2108754c67719"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "c638b40c0697cc009aaf3a395ab274277880d3465df1cda3a42dc9429e8710af"
+        },
+        {
+          "item_id": "3b19891a8713f43c2aa08f50a42cf3abbe4d166f7d44b7ccfe76ba2b19a154b8",
+          "path": "src/ui/screens/PositionChangeReceipt.tsx",
+          "fingerprint": "491a0d31de77a6bb74051e883055c3fcd3b073a9fe204563c81962ce007d2b17"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "c638b40c0697cc009aaf3a395ab274277880d3465df1cda3a42dc9429e8710af"
+        },
+        {
+          "item_id": "3b19891a8713f43c2aa08f50a42cf3abbe4d166f7d44b7ccfe76ba2b19a154b8",
+          "path": "src/ui/screens/PositionChangeReceipt.tsx",
+          "fingerprint": "491a0d31de77a6bb74051e883055c3fcd3b073a9fe204563c81962ce007d2b17"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 26066
+  }
+}
