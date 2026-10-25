@@ -1311,10 +1311,6 @@ Test location: the unit project collects `src/**` only, so tools tests are not i
 
 Commands: `npm run verify:fixtures` printed `workspace-v1: schema 1, migrated to 2 ..., views equal`, `workspace-v2: schema 2, opened without migration, views equal`, and `verify:fixtures OK` (exit 0). `npx vitest run tests/integration/d2/snapshot-compare.test.ts` 5 passed.
 
-#### T2.56
-
-`verify:fixtures` field rule (D4 A51 brought forward by plan revision 8): new `tools/fixtures/snapshot-compare.ts` (`compareSnapshot(views, snapshot, path)` returns difference paths; fields only in the current views are allowed; arrays item by item with equal lengths), used by `tools/verify-fixtures.ts`. Test `tests/integration/d2/snapshot-compare.test.ts` (four cases, first-run passes, each mutation-checked; flagged in the handoff).
-
 **ocr review of T2.56** (`ocr-review` step): commit `fee10d5`, session `ceae310c-a56d-4417-a9ec-80abadf16c4d`, model `gpt-6.1-sol`, 1 file reviewed (`verify-fixtures.ts`), 0 comments. No findings. ocr did not select `tools/fixtures/snapshot-compare.ts`; checked by hand by the main session: no defect (a top-level type mismatch reports an empty path, which the committed snapshot cannot produce). Raw output: `ocr/t2.56-fee10d5.json`.
 
 **Complete cumulative run after T2.56** (`suite-runner`, 2026-10-25 00:27 EDT, on `fee10d5`): Unit 38 files / 384 tests passed; Node integration 20 / 47 passed; Browser (Chromium) 67 passed (2.1m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.56-*.txt`.
@@ -1327,10 +1323,31 @@ Net cost from `derive`: `DerivedTradeState.netCost: CalculationResult<Rational, 
 
 **Complete cumulative run after T2.57** (`suite-runner`, 2026-10-25 00:33 EDT, on `bd34653`): Unit 39 files / 387 tests passed; Node integration 20 / 47 passed; Browser (Chromium) 67 passed (2.1m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.57-*.txt`.
 
-## T2.58-B1
+#### T2.58
+
+Trade Summary and Net cost on list items and Details: view type `TradeSummary = { kind: 'Stock'; direction: 'Long'; quantity; price }` (exported from trade-views; the stored-record summary import is aliased `RecordSummary`). Planned items and Details carry `summary` (planned quantity, first leg's intended entry); Open items and Details carry `summary` (open quantity, fee-excluded weighted Lot price; omitted with no open quantity, unreachable in D2) and `netCost` from derive; incoherent items and Details carry neither. Tests: `src/coordinators/trade-views/trade-summary.test.ts` (4 cases; cases 3 and 4 first-run passes, mutation-checked), `tests/integration/d2/trade-summary.test.ts` (2 cases on `workspace-v2`, first-run passes, mutation-checked: Open price from the first Lot). Existing tests updated for the added fields; three v1 snapshot comparisons in the migration tests now use `compareSnapshot` (T2.56's field rule).
+
+Integration arithmetic (`workspace-v2`, all Buys, fee 1.00 each): CSCO 60 @ 50.10 + 40 @ 50.30 + 20 @ 51.00 = 120 shares, average 3019/60, Net cost 6038 + 3 = 6041; KO 100 shares, average 2509/50, Net cost 5020; PFE 60 @ 50.10, Net cost 3007. Planned: AAPL 50 @ 228.4, MSFT 30 @ 415.1, NVDA 120 @ 131.25, COST 10 @ 905, BRK.B 25 @ 462.75; no `netCost` on Planned.
+
+Bench: `bench:generate` reuses its cached profile when the stamp matches, so the agent ran `build:bench`, removed the gitignored `.cache/bench/profile/tj-bench.json`, and regenerated. `generatorVersion` 1, `schemaVersion` 2; `headers` and `rows` identical (200 rows); every `items` entry gained `summary` and `netCost`, no existing key changed. `bench/dataset.json` changed only in provenance (`benchRelease`, `generationMs`, `generatedAt`); dataset content unchanged.
+
+**ocr review of T2.58** (`ocr-review` step): commit `10861b6`, session `c564c338-9f1e-466d-9f52-ccb607082d4e`, model `gpt-6.1-sol`, 4 files reviewed (`trade-views.ts`, both bench files, `open-detail-fixtures.ts`), 1 comment. Raw output: `ocr/t2.58-10861b6.json`.
+
+| Severity | Location | Claim | Verdict |
+| --- | --- | --- | --- |
+| low | `trade-views.ts:227` | `openSummary` repeats `openItem`'s Lot flattening, quantity sum and weighted price; the two could drift | Valid; bug task T2.58-B1 |
+
+**Complete cumulative run after T2.58** (`suite-runner`, 2026-10-25 00:42 EDT, on `10861b6`): Unit 40 files / 391 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 67 passed (2.0m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.58-*.txt`.
+
+#### T2.58-B1
+
 
 Refactor, no behavior change: `openItem` calls `openSummary(derived)` once and derives `openQuantity`, `averageOpenCost` and `summary` from it.
 
 - `npx vitest run src/coordinators tests/integration/d2/trade-summary.test.ts` before: 9 files, 76 tests passed. After: 9 files, 76 tests passed.
 - `npm run verify:fixtures` after: OK (workspace-v1, workspace-v2).
 - `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`: exit 0.
+
+**ocr review of T2.58-B1** (`ocr-review` step): commit `29a439c`, session `0659d4b4-e4e5-4fae-925e-86af2a5416ec`, 1 file reviewed (`trade-views.ts`), 0 comments. No findings. Raw output: `ocr/t2.58-B1-29a439c.json`.
+
+**Complete cumulative run after T2.58-B1** (`suite-runner`, 2026-10-25 00:45 EDT, on `29a439c` plus uncommitted evidence edits): Unit 40 files / 391 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 67 passed (2.0m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.58-B1-*.txt`.

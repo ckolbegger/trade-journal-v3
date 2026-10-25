@@ -1,0 +1,126 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 447298,
+    "input_tokens": 445926,
+    "output_tokens": 1372,
+    "cache_read_tokens": 13440,
+    "elapsed": "1m0s"
+  },
+  "tool_calls": {
+    "total": 12,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 6,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/trade-views/trade-views.ts",
+      "content": "`openSummary` repeats the lot flattening, quantity sum, zero-quantity check, and weighted-price calculation already performed by `openItem`, so each Open browse row now computes those values twice. Extract a shared open-exposure calculation (or construct the summary from the existing `openQuantity` and `averageOpenCost`) so the summary and numeric fields cannot drift apart as the calculation evolves.",
+      "existing_code": "function openSummary(derived: DerivedTradeState): TradeSummary | undefined {\n  const lots = derived.positions.flatMap((p) =\u003e p.openLots);\n  const quantity = sum(lots.map((l) =\u003e l.quantity));",
+      "start_line": 227,
+      "end_line": 229,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Trade view open-row behavior, fixtures, and benchmark expectations",
+      "files": [
+        "bench/dataset.json",
+        "bench/expected-open-rows.json",
+        "src/coordinators/trade-views/trade-views.ts",
+        "tests/support/open-detail-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "c564c338-9f1e-466d-9f52-ccb607082d4e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c564c338-9f1e-466d-9f52-ccb607082d4e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "10861b6",
+      "resolved_base": "55404416d8571613cb90d773cf7dea9603c51fc3",
+      "resolved_head": "10861b63f82697972c8129cce623068ae0c1bfe7",
+      "exact_range": "55404416d8571613cb90d773cf7dea9603c51fc3..10861b63f82697972c8129cce623068ae0c1bfe7",
+      "source_artifact_sha256": "4fc63a985bb7be3e9d1e568b1c9970f09c26b25ab28d2c049ec1939bf4020d2b"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "5aedf27ad08e423a87ca805c4f3dd1a0a915eb90d6500843df53df2a5a72ea2e"
+        },
+        {
+          "item_id": "463770c2dcb73189aa3c0e5b2dbf0837834dce08931d2753c00dce9d35dc5181",
+          "path": "bench/expected-open-rows.json",
+          "fingerprint": "d46ef4ea07bdb46e93d2b386f3a298fc1de16ce39bb1e5f1ccb9db0d82e63882"
+        },
+        {
+          "item_id": "751cfcaab7a5f97af3fd3f54b18520951be6a69dbe6fc0905dda4b53eb1ee309",
+          "path": "tests/support/open-detail-fixtures.ts",
+          "fingerprint": "2d387f8cc6fc1df48b13a3f5f440368b7c458883db17f04d29825f7682f4e4d7"
+        },
+        {
+          "item_id": "aa3e4a72f80298efe28fad403901f85f2118b945cd9d7aa4046cd1684288de51",
+          "path": "bench/dataset.json",
+          "fingerprint": "35c891d380826a68a49df4a8491304785a719f4c9a38baa9c805785ae230feaa"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "5aedf27ad08e423a87ca805c4f3dd1a0a915eb90d6500843df53df2a5a72ea2e"
+        },
+        {
+          "item_id": "463770c2dcb73189aa3c0e5b2dbf0837834dce08931d2753c00dce9d35dc5181",
+          "path": "bench/expected-open-rows.json",
+          "fingerprint": "d46ef4ea07bdb46e93d2b386f3a298fc1de16ce39bb1e5f1ccb9db0d82e63882"
+        },
+        {
+          "item_id": "751cfcaab7a5f97af3fd3f54b18520951be6a69dbe6fc0905dda4b53eb1ee309",
+          "path": "tests/support/open-detail-fixtures.ts",
+          "fingerprint": "2d387f8cc6fc1df48b13a3f5f440368b7c458883db17f04d29825f7682f4e4d7"
+        },
+        {
+          "item_id": "aa3e4a72f80298efe28fad403901f85f2118b945cd9d7aa4046cd1684288de51",
+          "path": "bench/dataset.json",
+          "fingerprint": "35c891d380826a68a49df4a8491304785a719f4c9a38baa9c805785ae230feaa"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 60347
+  }
+}
