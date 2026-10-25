@@ -463,3 +463,74 @@ test.describe('T2.40 Trades tables', () => {
     });
   }
 });
+
+test.describe('T2.41 wide Trades table styling', () => {
+  test('should show one-line uppercase headers, a bold symbol link and right-aligned tabular figures at 1280', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await seedTrades(page);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    for (const tab of TABS) {
+      if (tab === 'Planned') await openPlanned(page);
+      await expect(page.getByRole('table', { name: `${tab} Trades` })).toBeVisible(READY);
+      const styled = await page.getByRole('region', { name: `${tab} Trades` }).evaluate((region) => {
+        const lineHeight = (el: Element) => {
+          const s = getComputedStyle(el);
+          return Number.isNaN(parseFloat(s.lineHeight)) ? 1.2 * parseFloat(s.fontSize) : parseFloat(s.lineHeight);
+        };
+        const headers = [...region.querySelectorAll('th')].map((th) => {
+          const s = getComputedStyle(th);
+          return {
+            name: th.textContent ?? '',
+            // Content height (without the cell padding and rule) over the line-height: one line is 1, a wrapped header 2 or more.
+            ratio: (th.getBoundingClientRect().height - parseFloat(s.paddingTop) - parseFloat(s.paddingBottom) - parseFloat(s.borderBottomWidth)) / lineHeight(th),
+            upper: s.textTransform === 'uppercase' || s.fontVariantCaps === 'small-caps' || s.fontVariantCaps === 'all-small-caps',
+            fontSize: s.fontSize,
+          };
+        });
+        const link = getComputedStyle(region.querySelector('tbody td a')!);
+        const figures = [...region.querySelectorAll('th.number, td.number')].map((c) => {
+          const s = getComputedStyle(c);
+          return { align: s.textAlign, numeric: s.fontVariantNumeric };
+        });
+        return { headers, weight: Number(link.fontWeight), figures };
+      });
+      for (const h of styled.headers) {
+        expect(h.ratio, `${tab} header ${h.name} one line`).toBeLessThanOrEqual(1.6);
+        expect(h.upper, `${tab} header ${h.name} uppercase or small-caps`).toBe(true);
+        expect(h.fontSize, `${tab} header ${h.name} size`).toBe('12.8px');
+      }
+      expect(styled.weight, `${tab} symbol link weight`).toBeGreaterThanOrEqual(600);
+      expect(styled.figures.length, `${tab} figure cells`).toBeGreaterThan(0);
+      for (const f of styled.figures) {
+        expect(f.align, `${tab} figure align`).toBe('right');
+        expect(f.numeric, `${tab} figure numerals`).toContain('tabular-nums');
+      }
+    }
+    await context.close();
+  });
+
+  test('should keep a Records disagree badge and dates on one line in a wide row', async ({ server, profile }) => {
+    void server;
+    const setup = await profile.launch();
+    const page = await onboardedPage(setup);
+    await confirmReference(page, { ...PLAN, symbol: 'ABC' });
+    await recordEntry(page, PC1);
+    await setup.close();
+    await writeIntegrityFixture(profile.dir, { kind: 'StoredLifecycle', underlying: 'ABC', lifecycle: 'Planned' });
+    const context = await profile.launch();
+    const app = await firstPage(context);
+    await app.setViewportSize({ width: 1280, height: 900 });
+    await app.goto('/?lifecycle=Planned');
+    await expect(app.getByRole('table', { name: 'Planned Trades' })).toBeVisible(READY);
+    const badge = await app.getByRole('region', { name: 'Planned Trades' }).evaluate((region) => {
+      const el = region.querySelector('.badge')!;
+      const s = getComputedStyle(el);
+      return { height: el.getBoundingClientRect().height, line: parseFloat(s.lineHeight) || 1.2 * parseFloat(s.fontSize), nowrap: s.whiteSpace };
+    });
+    expect(badge.height, 'badge one line').toBeLessThanOrEqual(badge.line * 1.6);
+    expect(badge.nowrap, 'badge white-space').toBe('nowrap');
+    await context.close();
+  });
+});

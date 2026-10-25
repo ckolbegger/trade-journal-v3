@@ -365,7 +365,26 @@ table.trades td:nth-child(2) {
   min-width: 12.5rem;
 }
 
+/* Headers: small, muted, uppercase labels; figure columns align their header with the figures. */
+table.trades th {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-align: left;
+}
+
+table.trades th.number {
+  text-align: right;
+}
+
+table.trades td a {
+  font-weight: 700;
+}
+
 table.trades .badge {
+  white-space: nowrap;
   /* A space already precedes the badge in the cell's text. */
   margin-left: 0.25rem;
 }
@@ -391,6 +410,16 @@ table.trades .badge {
 @media (min-width: 960px) {
   .trade-line {
     display: none;
+  }
+
+  /* Room for the Underlying header on one line, and dates and badges never wrap. */
+  .table-scroll {
+    --pin: 7rem;
+  }
+
+  table.trades th,
+  table.trades td:nth-child(n + 3) {
+    white-space: nowrap;
   }
 }
 

@@ -1418,3 +1418,28 @@ Bug from the ocr review of 43b3b8a: the Trade cell's summary, badge and second l
 **ocr review of T2.40-B1** (`ocr-review` step): commit `6409358`, session `d03a528b-d7a0-4b01-8247-f71433bacace`, model `gpt-6.1-sol`, 4 files reviewed (`TradeList.tsx`, `app.css`, both bench files), 0 comments. No findings. Raw output: `ocr/t2.40-B1-6409358.json`.
 
 **Complete cumulative run after T2.40-B1** (`suite-runner`, 2026-10-25 01:10 EDT, on `6409358` plus uncommitted evidence and handoff edits): Unit 40 files / 395 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 72 passed (2.3m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.40-B1-*.txt`.
+
+#### T2.41
+
+Wide Trades table styling. Measurements added first to `e2e/d2/ui-alignment.spec.ts` (describe "T2.41 wide Trades table styling"), run against `dist-faults` at 1280, then the CSS written (`src/ui/app.css` only; no markup change).
+
+Commands:
+
+- Before (CSS unchanged): `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts -g T2.41` gave 2 failed (headers: Underlying wrapped to two lines; badge white-space `normal`). To list every failing measurement the assertions were made `expect.soft` for one run, then restored.
+- After: same command, 2 passed. With `e2e/d2/narrow.spec.ts`, `e2e/d2/responsive-a11y.spec.ts`, `e2e/d1/responsive-a11y.spec.ts`: 32 passed.
+- Static: `npx vitest run src/ui` 116 passed, `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` exit 0.
+
+"One line high" is measured as the th's content height (height minus padding and rule) over its computed line-height, at most 1.6: the plan's raw th height over line-height cannot pass with the 0.6rem cell padding (a one-line header is already about 2.0 times the line-height), so the padding is excluded.
+
+| Measurement at 1280 (Open and Planned) | Before | After |
+| --- | --- | --- |
+| Every `th` one line (content height / line-height <= 1.6) | fail, all 11 headers 1.98 (Underlying wraps in the 5rem pinned cell, stretching the row) | pass |
+| Every `th` uppercase | fail (`none`), 11 of 11 | `uppercase` |
+| `th` font size | 16px | 12.8px, weight 600, muted |
+| Symbol link font-weight | 400 | 700 |
+| Badge white-space | `normal` | `nowrap` (one line high) |
+| Badge one line high | pass (first-run pass, mutation-checked) | pass |
+| Figure cells (Net cost, 1R, Reward : risk, header and cells) `text-align: right` | pass (existing `.number`; first-run pass, mutation-checked) | pass |
+| Figure cells `tabular-nums` | pass (existing `.number`) | pass |
+
+Change: headers get 0.8rem, 600, uppercase, 0.04em tracking, muted, left (right for `th.number`); the symbol link is 700; the badge is `nowrap`. At 960 px and wider only: `--pin` is 7rem so "UNDERLYING" fits on one line, and headers and the columns after the Trade column are `white-space: nowrap` (dates and Entry text do not wrap). Below 960 px the pin stays 5rem, so the T2.40 fit at 320 is unchanged.
