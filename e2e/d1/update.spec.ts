@@ -114,7 +114,7 @@ test.describe('B1.13 two tabs, one unsaved', () => {
     const editing = await onboardedPage(context);
     const clean = await context.newPage();
     await clean.goto(PLANNED);
-    await expect(clean.getByRole('heading', { name: /Trades|Planned/ }).or(clean.getByText('No planned trades yet'))).toBeVisible(READY);
+    await expect(clean.getByRole('heading', { name: /Trades|Planned/ }).or(clean.getByText('No planned trades yet')).first()).toBeVisible(READY);
     await openNewPlan(editing);
     await fillPlan(editing);
 

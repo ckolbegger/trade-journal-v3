@@ -78,6 +78,32 @@ function renderOpen(facade: UiFacade, writable = true) {
 
 const marks = (name: string) => performance.getEntriesByName(name, 'mark').length;
 
+describe('Trades heading', () => {
+  it('should show an h1 Trades above the tabs in the Loading, Ready, Empty, and Error states of both tabs', async () => {
+    const states = {
+      Loading: () => new Promise<never>(() => undefined),
+      Ready: (lifecycle: string) => Promise.resolve(readyPage([lifecycle === 'Open' ? openItem : plannedItem])),
+      Empty: () => Promise.resolve(readyPage([])),
+      Error: () => Promise.reject(new Error('down')),
+    };
+    for (const lifecycle of ['Open', 'Planned']) {
+      for (const [name, respond] of Object.entries(states)) {
+        const facade = facadeDouble();
+        vi.mocked(facade.TradeViewsAndReporting.browseTrades).mockImplementation(() => respond(lifecycle));
+        renderList(facade, `/?lifecycle=${lifecycle}`);
+        if (name === 'Ready') await screen.findByRole('table');
+        if (name === 'Empty') await screen.findByText(/no (open|planned) trades/i);
+        if (name === 'Error') await screen.findByText(/couldn.t load/i);
+        const headings = screen.getAllByRole('heading', { level: 1 });
+        expect(headings.map((h) => h.textContent), `${lifecycle} ${name}`).toEqual(['Trades']);
+        const tablist = screen.getByRole('tablist', { name: 'Trades by lifecycle' });
+        expect(headings[0]!.compareDocumentPosition(tablist) & Node.DOCUMENT_POSITION_FOLLOWING, `${lifecycle} ${name} order`).toBeTruthy();
+        cleanup();
+      }
+    }
+  });
+});
+
 describe('Open list', () => {
   beforeEach(() => performance.clearMarks());
 

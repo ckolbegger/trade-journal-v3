@@ -59,6 +59,7 @@ export function TradeList({ facade, timeZone }: TradeListProps) {
 
   return (
     <section>
+      <h1>Trades</h1>
       <div role="tablist" aria-label="Trades by lifecycle" className="tabs" onKeyDown={moveBetweenTabs}>
         {LIFECYCLES.map((l) => (
           <button

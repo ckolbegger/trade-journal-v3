@@ -213,14 +213,13 @@ test.describe('T2.38 one content column and side gutters', () => {
         };
         return Object.fromEntries(Object.entries(found).filter(([, x]) => x !== undefined)) as Record<string, number>;
       });
-    // The Trades h1 arrives with T2.39; until then the heading is measured where one exists.
     const detail = await lefts();
     expect(Object.keys(detail).sort(), 'Open Detail elements').toEqual(['banner', 'card', 'h1']);
     for (const [name, x] of Object.entries(detail)) expect.soft(Math.abs(x - detail['banner']!), `Detail ${name} left ${JSON.stringify(detail)}`).toBeLessThanOrEqual(1);
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
     await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
     const trades = await lefts();
-    expect(Object.keys(trades), 'Trades elements').toEqual(expect.arrayContaining(['banner', 'tablist', 'card']));
+    expect(Object.keys(trades), 'Trades elements').toEqual(expect.arrayContaining(['banner', 'h1', 'tablist', 'card']));
     for (const [name, x] of Object.entries(trades)) expect.soft(Math.abs(x - trades['banner']!), `Trades ${name} left ${JSON.stringify(trades)}`).toBeLessThanOrEqual(1);
     await context.close();
   });

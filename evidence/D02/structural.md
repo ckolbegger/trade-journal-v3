@@ -1290,3 +1290,11 @@ This closes F8 (Migration Blocked card edge to edge at 320 px): it now has the 1
 **ocr review of T2.38** (`ocr-review` step): commit `8641704`, session `74e56af7-2d66-456c-a1a6-1c260e702107`, model `gpt-6.1-sol`, 1 file reviewed (`app.css`; the spec and `structural.md` excluded), 0 comments. No findings. Raw output: `ocr/t2.38-8641704.json`.
 
 **Complete cumulative run after T2.38** (`suite-runner`, 2026-10-24 23:04 EDT, on `8641704`): Unit 38 files / 383 tests passed; Node integration 19 / 42 passed; Browser (Chromium) 67 passed (2.0m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.38-*.txt`.
+
+#### T2.39
+
+Trades page heading: `TradeList` renders one `<h1>Trades</h1>` above the tablist, outside the state-specific panels, so it shows in Loading, Ready, Empty, and Error on both tabs. No CSS change was needed; no page-level New Plan button (U7). Heading focus (T2.29) untouched.
+
+Test impact (grep of every heading lookup in `src`, `e2e`, `tests`): the only partial match on "Trades" was `e2e/d1/update.spec.ts` (B1.13), `getByRole('heading', { name: /Trades|Planned/ }).or(getByText('No planned trades yet'))`, which now matches both the h1 and the Empty text (strict-mode violation); changed to `.or(...).first()`. "Trade not found" lookups do not match "Trades". `e2e/d2/ui-alignment.spec.ts`: the Trades 1280 expectation now requires `h1` among the keys with banner, tablist and card (and removed the "arrives with T2.39" comment).
+
+Commands: `npm run build:faults` then `npx playwright test e2e/d2/ui-alignment.spec.ts e2e/d2/narrow.spec.ts e2e/d1 e2e/d2/responsive-a11y.spec.ts` gave 49 passed (Trades h1 within 1 px of banner at 1280). `npx vitest run src/ui` 112 passed.
