@@ -623,6 +623,13 @@ describe('Journal entries', () => {
     expect(within(equal).queryByText('Authored', { selector: 'dt' })).toBeNull();
   });
 
+  it('should not show the authored time when it reads the same as the moment time', async () => {
+    const moment = new Date(pc1Reflection.momentTime);
+    const seconds = { ...pc1Reflection, authoredTime: new Date(moment.getTime() + 30_000).toISOString() } as NarrativeItem;
+    const { items } = await journalItems([seconds]);
+    expect(within(items[0]!).queryByText('Authored', { selector: 'dt' })).toBeNull();
+  });
+
   it('should show a decline with the warning badge Reflection declined, its reason or No reason given, its Anchor and Source', async () => {
     const noReason = { ...pc2Decline, id: 'd-2', reason: undefined } as NarrativeItem;
     const { items } = await journalItems([pc2Decline, noReason]);

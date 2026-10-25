@@ -573,7 +573,10 @@ function JournalSection({ journal, symbol, timeZone }: { readonly journal: reado
     <section className="card" aria-labelledby="journal-heading">
       <h2 id="journal-heading">{`Journal (${journal.length})`}</h2>
       <ul className="narrative">
-        {journal.map((item) => (
+        {journal.map((item) => {
+          const moment = localTime(item.momentTime, timeZone);
+          const authored = localTime(item.authoredTime, timeZone);
+          return (
           <li key={item.id}>
             <h3>
               <Badge tone="neutral">{item.entryType}</Badge>
@@ -584,11 +587,11 @@ function JournalSection({ journal, symbol, timeZone }: { readonly journal: reado
               <dt>Source</dt>
               <dd>{item.source}</dd>
               <dt>Moment</dt>
-              <dd>{localTime(item.momentTime, timeZone)}</dd>
-              {item.authoredTime !== item.momentTime && (
+              <dd>{moment}</dd>
+              {authored !== moment && (
                 <>
                   <dt>Authored</dt>
-                  <dd>{localTime(item.authoredTime, timeZone)}</dd>
+                  <dd>{authored}</dd>
                 </>
               )}
             </dl>
@@ -613,7 +616,8 @@ function JournalSection({ journal, symbol, timeZone }: { readonly journal: reado
               </>
             )}
           </li>
-        ))}
+          );
+        })}
       </ul>
     </section>
   );
