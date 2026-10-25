@@ -1115,3 +1115,7 @@ Copy decisions:
 - Supersede: `Entry Size Deviation no longer applies.`
 - Retain: no text.
 - The browser check is a new case, "C2.6 earlier-dated entry (P5)", in `e2e/d2/open-position.spec.ts`: no earlier-dated case existed there. It uses PC1 (60), a 60-share fill at 11:00, then 40 at 10:30.
+
+**ocr review of T2.31** (`ocr-review` step): commit `0c6e140`, session `93233ed1-eb18-4b65-8fdb-f018d0cbb9ee`, model `gpt-6.1-sol`, 1 file reviewed (`PositionChangeReceipt.tsx`), 0 comments. No findings. Raw output: `ocr/t2.31-0c6e140.json`.
+
+**Complete cumulative run after T2.31** (`suite-runner`, 2026-10-24 22:18 EDT, on `0c6e140`): Unit 37 files / 376 tests passed; Node integration 19 / 42 passed; Browser (Chromium) 54 passed (1.7m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.31-*.txt`.
