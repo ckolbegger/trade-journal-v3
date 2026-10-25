@@ -1,11 +1,11 @@
-// I2.5: opening a position with PC1 of the reference Trade (AC-POS-001, AC-LIFE-001): the Position, Open Lot, and lifecycle read back after restart, and the stored facts, Open index entry, Entry, and obligation.
+// I2.5: opening a position with PC1 of the reference Trade (AC-POS-001, AC-LIFE-001): the Planned to Open transition on the receipt, the Trade listed as Open and not Planned after restart, and the stored Position Change and Execution facts, Open index entry, Entry, and obligation.
 import { describe, expect, it } from 'vitest';
 import { complete, device, dumpAll, onboarded, PC1, confirmReference, readIndex, record, restart, workspaceStores } from './support.ts';
 
 type StoredTrade = { tradeId: string; lifecycle: string; facts: { factId: string; kind: string; versions: unknown[] }[] };
 
 describe('I2.5 open a position', () => {
-  it('should open the Trade with PC1 so that its Position, Open Lot, and lifecycle persist across restart, with the facts, Open index entry, Entry, and obligation stored, and the Trade absent from Planned', async () => {
+  it('should open the Trade with PC1, listing it as Open and not Planned after restart, with its Position Change and Execution facts, Open index entry, Entry, and obligation stored', async () => {
     const d = await device();
     const app = await onboarded(d);
     const tradeId = await confirmReference(app);

@@ -1147,3 +1147,19 @@ Copy decisions:
 | `npm run lint` | exit 0 |
 
 The plan's integration total of 39 is a stale figure (later tasks added tests); the before and after totals match at 42.
+
+#### T2.35-B1 I2.5 case name claimed more than it asserts
+
+- Finding (Valid, minor; from a manual check because ocr excludes test files): the T2.35 title and header comment of `tests/integration/d2/open-position.test.ts` said the Position, Open Lot, and lifecycle persist or are read back after restart, but no assertion reads a Position or Open Lot. The case checks the Planned to Open transition on the receipt, `browseTrades` Open and Planned after restart, the stored Position Change and Execution facts, the Open index entry, the Entry, and the obligation. The plan's T2.35 parenthetical wording overstated the checks; the plan's instruction to name the case "to what they check" governs.
+- Old case name: `should open the Trade with PC1 so that its Position, Open Lot, and lifecycle persist across restart, with the facts, Open index entry, Entry, and obligation stored, and the Trade absent from Planned`
+- New case name: `should open the Trade with PC1, listing it as Open and not Planned after restart, with its Position Change and Execution facts, Open index entry, Entry, and obligation stored`
+- Header comment now: `...the Planned to Open transition on the receipt, the Trade listed as Open and not Planned after restart, and the stored Position Change and Execution facts, Open index entry, Entry, and obligation.` No assertion changed.
+
+| Command | Result |
+|---|---|
+| `npm run test:integration -- d2/open-position` | 1 file, 1 test passed |
+| `npm run test:integration -- d2/responses` | 1 file, 1 test passed |
+| `npm run test:integration` | 19 files / 42 tests passed |
+| `grep -n "AC-RESP-001" tests/integration/d2/open-position.test.ts` | no output (exit 1) |
+| `grep -n "Open Lot" tests/integration/d2/open-position.test.ts` | no output (exit 1) |
+| `npm run lint` | exit 0 |
