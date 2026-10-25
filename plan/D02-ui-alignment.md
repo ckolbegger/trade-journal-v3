@@ -66,7 +66,7 @@ The task IDs continue D2's numbering, T2.36–T2.55, so `tdd.sh` and the evidenc
 | ID | Question | Task | Starting proposal |
 |---|---|---|---|
 | I1 | **The column set and order of the Trades tables** on narrow, and whether wide uses the same order. **Answered by the user on 2026-10-25 with the Trade column (revision 8, section 2a)**; the proposal below is kept as history. | T2.40 | **Open:** Underlying (pinned), Quantity, Integrity, Entry, Average cost, Strategy, Account, Fees, Deviations, Last activity. **Planned:** Underlying (pinned), 1R, Reward : risk, Entry readiness (with any disagreement badge), Plan time, Strategy, Account, Original reward. The T2.40 subagent stops with a rendered 320 px and 390 px capture of the proposal for the user, and implements the answer. Constraints: every column the table shows today stays available at every width (ui-contract Responsive, equivalent information); column names stay unchanged; at 320 px at least Underlying and one figure are visible without scrolling. |
-| I2 | **The fields of a collapsed Execution row** and their order | T2.50 | Action, quantity, symbol, price, fee, Economic Time ("Buy 30 XYZ @ $50.00 · fee $0.50 · 2026-10-12 10:00"). The T2.50 subagent stops with a rendered 320 px and 1280 px capture of the proposal for the user, and implements the answer. Constraints: everything left out of the collapsed row appears in the expanded row, so no Execution value is lost; the collapsed row fits on one line at 390 px or wraps without clipping at 320 px. |
+| I2 | **The fields of a collapsed Execution row** and their order | T2.50 | Action, quantity, symbol, price, fee, Economic Time ("Buy 30 XYZ @ $50.00 · fee $0.50 · 2026-10-12 10:00"). The T2.50 subagent stops with a rendered 320 px and 1280 px capture of the proposal for the user, and implements the answer. Constraints: everything left out of the collapsed row appears in the expanded row, so no Execution value is lost; the collapsed row fits on one line at 390 px or wraps without clipping at 320 px. **Answered by the user on 2026-10-25:** action first, without the fee ("Buy 30 XYZ @ $50.00 · 2026-10-12 10:00"); the fee is "noise, not signal" in the row and appears in the expanded details. The date and time do not split across lines. Captures of the starting proposal showed it wraps at 390 px (two lines) and at 320 px (three, splitting the date from its time). |
 
 ---
 
@@ -383,19 +383,19 @@ describe("summary card")
 
 **Shape:**
 - One "Executions (n)" card in Fact Order.
-- Collapsed row: "Buy 30 XYZ @ $50.00 · fee $0.50 · 2026-10-12 10:00".
+- Collapsed row (I2, answered 2026-10-25): "Buy 30 XYZ @ $50.00 · 2026-10-12 10:00", action, quantity, symbol, price and Economic Time. The fee is in the expanded details. The date and time never split across lines; the row may wrap at narrow widths without clipping.
 - Each row has a disclosure button (`aria-expanded`, `aria-controls`, a chevron icon from U6). Its accessible name names the Execution, for example "Details for Buy 30 XYZ at 10:00".
-- Expanded: the Instrument, the Economic Time, the Position Change it belongs to (its time and how many Executions it has), and that Position Change's reflection (the answers, or "Reflection declined" with its reason) or "No reflection".
-- The collapsed row's fields and order are implementation decision I2; the example above is the starting proposal.
+- Expanded: the Instrument, the Economic Time, the fee, the Position Change it belongs to (its time and how many Executions it has), and that Position Change's reflection (the answers, or "Reflection declined" with its reason) or "No reflection".
+- The collapsed row's fields and order were implementation decision I2, answered by the user on 2026-10-25 (above).
 - Rows start collapsed. Expansion is view state only: it is not stored and is not put in the URL.
-- Only values already in the Detail view model are used. If the link from an Execution to its Position Change's reflection is not in the view model, the subagent stops and reports instead of changing the view shape.
+- Only values already in the Detail view model are used, with one amendment approved by the user on 2026-10-25: the Detail view's Journal Entry and Decline items carry the `positionChangeId` of the Position Change whose reflection they are (the key the Journal already stores for the obligation), so an expanded row finds its reflection by key, not by matching times. Matching by Economic Time was rejected because two Position Changes may share one. It is an added field, so `verify:fixtures` stays green under T2.56's rule.
 
 ```text
 describe("Executions")
   it should label the region "Executions (4)" with the count of Executions and list them in Fact Order
-  it should show each Execution collapsed as one row with action, quantity, symbol, price, fee, and Economic Time, with no Executions table and no Position Change headings
+  it should show each Execution collapsed as one row with action, quantity, symbol, price, and Economic Time (no fee), with no Executions table and no Position Change headings
   it should give each row a disclosure button named for its Execution, collapsed by default (aria-expanded false)
-  it should show the Instrument, Economic Time, and the Position Change with its Execution count when the row is expanded, and hide them again when it is collapsed
+  it should show the Instrument, Economic Time, fee, and the Position Change with its Execution count when the row is expanded, and hide them again when it is collapsed
   it should show the Position Change Reflection's answers in the expanded row of an Execution whose Position Change has one
   it should show "Reflection declined" with the reason, or "No reflection", when the Position Change has a decline or no reflection
   it should mark the Executions of a Position Change with several Executions as one group and show the shared reflection in each one's expanded row
