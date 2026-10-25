@@ -368,6 +368,22 @@ ul.narrative > li + li {
   flex: none;
 }
 
+/* Bottom bar: each icon over its label, links sharing the width equally so four fit at 320 px. */
+.shell:not([data-layout='wide']) > .nav {
+  padding: 0.25rem;
+}
+
+.shell:not([data-layout='wide']) > .nav a {
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.15rem;
+  padding: 0.3rem 0.25rem;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
 .shell > .nav .wordmark {
   font-weight: 700;
   font-size: 1.15rem;

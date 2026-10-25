@@ -1188,3 +1188,16 @@ The plan's integration total of 39 is a stale figure (later tasks added tests); 
 | `npm run build:faults` | exit 0 |
 | `npx playwright test e2e/d1/responsive-a11y.spec.ts e2e/d2/responsive-a11y.spec.ts e2e/d2/narrow.spec.ts e2e/d2/runtime-failure.spec.ts` | 15 passed |
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
+
+#### T2.36-B1 Bottom navigation bar fit on narrow screens
+
+- Finding (ocr, Valid): after T2.36 added a 20 px icon and gap beside each label, the single non-wrapping bottom-bar row was wider than a phone viewport; `narrow.spec.ts` only checks the document scroll width, which the fixed bar does not affect.
+- Red: new `e2e/d2/ui-alignment.spec.ts` case (390x844 and 320 wide, on Trades: every Primary link inside the viewport, bar scrollWidth within clientWidth). Measured before: the About link's right edge was 425.3 px at a 390 px viewport. Failure: `About right at 390 ... Expected: <= 390, Received: 425.328125`. (`tdd.sh` runs vitest only, so the red and green rows were written by hand.)
+- Green: CSS only in `src/ui/app.css`, narrow layout only: each bottom-bar link is a column (icon over label), `flex: 1 1 0` so the four share the width equally, compact padding, 0.8rem label. The current-item styling and the banner are left to T2.37. The case passes at 390 and 320.
+
+| Command | Result |
+|---|---|
+| `npm run build:faults` | exit 0 |
+| `npx playwright test e2e/d2/ui-alignment.spec.ts e2e/d2/narrow.spec.ts e2e/d1/responsive-a11y.spec.ts e2e/d2/responsive-a11y.spec.ts` | 13 passed |
+| `npx vitest run src/ui/AppShell.test.tsx` | 25 passed |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
