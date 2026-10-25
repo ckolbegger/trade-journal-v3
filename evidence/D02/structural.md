@@ -980,3 +980,16 @@ Decisions (for the final report):
 - The form focuses its h1 "Record entry" each time a load ends with the Trade and definition both present: first load, Retry, and a Trade change (all pass through Loading). The incoherent-Trade branch uses the same heading ref. T2.28's in-place reload keeps both present, so it never refocuses; the Conflict message keeps its own focus. Error and Not Found states do not take focus.
 - The receipt focuses its h1 "Entry recorded" on mount.
 - Unit-test refactor: the receipt case's Recorded result moved into a shared `recordedResult()` helper so the receipt focus case reuses it.
+
+**ocr review of T2.29:** pending with T2.28's, until the ocr provider's usage limit resets (user's direction 2026-10-24).
+
+**Cumulative run after T2.29:** run 2026-10-24 20:22 EDT on commit `c1c16c0`, Node v26.12.0. Run label `t2.29`.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 37 passed (37)`, `Tests 367 passed (367)`, exit 0 | `suite-runs/t2.29-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 19 passed (19)`, `Tests 42 passed (42)`, exit 0 | `suite-runs/t2.29-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `52 passed (1.7m)`, exit 0 | `suite-runs/t2.29-browser.txt` |
+| Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.29-checks.txt` |
+
+Failures: none. Unit rose from 364 to 367 (T2.29's three cases); the browser case extends the existing keyboard-only case, so the browser count is unchanged.
