@@ -1771,3 +1771,9 @@ Reference-pair screenshots. `npm run ui:screenshots` (`tools/ui-screenshots.ts`)
 - Command: `npm run ui:screenshots`; exit code 0 (run four times); output `wrote 34 PNGs and the README to evidence/D02/ui-alignment`; 34 PNGs plus `README.md`, 3.2 MB.
 - Determinism: two consecutive runs gave byte-identical files except three 1280 px captures (04, 06, 09), which differ by pixel noise only. Authored times in the Journal read 2026-10-12 on every run.
 - Static: `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` exit 0; `npx vitest run src` 434 passed.
+
+## T2.53-B1 money flush right, name equals visible text
+
+Defect 1 (cumulative run on f021f3a, `ui-alignment.spec.ts:1042`, `money flush right at 390`, 15.03): reproduced in isolation with `--repeat-each=10` (5 of 10 failed, always the 390 pass, the first resize from the default 1280 viewport). Cause: test timing. The case measured immediately after `setViewportSize`, before the shell's `data-layout` had switched to narrow; the CSS is right. Fix: the test now waits for `.shell` `data-layout` to equal wide or narrow for the width, as the overflow case does (no timeout or retry). After the fix: `--repeat-each=10` 10 passed, twice, and the full `npm run test:e2e` 88 passed.
+
+Defect 2 (WCAG 2.5.3 Label in Name): removed the visually hidden dot between price and time in the Execution summary, so the button's accessible name is the visible text plus " details" ("Buy 60 XYZ @ $50.10 2026-10-12 10:00 details"). Red/green in `tdd-log.md`. Screenshots regenerated: the Detail PNGs are unchanged (nothing visible changed); the script also re-rendered three unrelated PNGs (09 record-entry 1280, 17 about 1280 and 390), which were reverted as noise.

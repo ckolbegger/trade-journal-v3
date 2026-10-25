@@ -127,7 +127,7 @@ describe('Open Trade Detail', () => {
       within(executions)
         .getAllByRole('button')
         .map((b) => b.getAttribute('aria-labelledby')!.split(' ').map((id) => document.getElementById(id)!.textContent).join(' ')),
-    ).toEqual(['Buy 60 XYZ @ $50.10 · 2026-10-12 10:00 details', 'Buy 40 XYZ @ $50.30 · 2026-10-12 11:00 details']);
+    ).toEqual(['Buy 60 XYZ @ $50.10 2026-10-12 10:00 details', 'Buy 40 XYZ @ $50.30 2026-10-12 11:00 details']);
     expect(screen.queryByRole('region', { name: 'Position Changes' })).toBeNull();
   });
 
@@ -278,7 +278,7 @@ describe('Open Trade Detail', () => {
       within(executions)
         .getAllByRole('button')
         .map((b) => b.getAttribute('aria-labelledby')!.split(' ').map((id) => document.getElementById(id)!.textContent).join(' ')),
-    ).toEqual(['Buy 60 XYZ @ $50.10 · 2026-10-12 10:00 details', 'Buy 40 XYZ @ $50.30 · 2026-10-12 11:00 details']);
+    ).toEqual(['Buy 60 XYZ @ $50.10 2026-10-12 10:00 details', 'Buy 40 XYZ @ $50.30 2026-10-12 11:00 details']);
     expect(within(screen.getByRole('region', { name: /^Journal/ })).getByText('Reflection declined')).toBeTruthy();
     // The narrative is the Journal section's alone, as in the Open form.
     expect(screen.queryByRole('region', { name: 'Position Change Reflection' })).toBeNull();
@@ -473,15 +473,22 @@ describe('Executions', () => {
     expect(rows.map((row) => /Buy (\d+)/.exec(row.textContent ?? '')?.[1])).toEqual(['60', '40', '10', '5']);
   });
 
+  it('should name each Execution row button exactly as its visible text followed by details', async () => {
+    renderView(openDetailOf([PC1, PC2, PC4]));
+    const section = await screen.findByRole('region', { name: 'Executions (4)' });
+    expect(within(section).getByRole('button', { name: 'Buy 60 XYZ @ $50.10 2026-10-12 10:00 details' })).toBeTruthy();
+    expect(within(section).getByRole('button', { name: 'Buy 40 XYZ @ $50.30 2026-10-12 11:00 details' })).toBeTruthy();
+  });
+
   it('should show each Execution collapsed as one row with action, quantity, symbol, price, and Economic Time with no fee, with no Executions table and no Position Change headings', async () => {
     renderView(openDetailOf([PC1, PC2, PC4]));
     const section = await screen.findByRole('region', { name: 'Executions (4)' });
     const rows = within(section).getAllByRole('listitem');
     expect(rows.map((row) => row.querySelector('.execution-summary')?.textContent)).toEqual([
-      'Buy 60 XYZ @ $50.10 · 2026-10-12 10:00',
-      'Buy 40 XYZ @ $50.30 · 2026-10-12 11:00',
-      'Buy 10 XYZ @ $52.00 · 2026-10-12 15:00',
-      'Buy 5 XYZ @ $52.10 · 2026-10-12 15:00',
+      'Buy 60 XYZ @ $50.10 2026-10-12 10:00',
+      'Buy 40 XYZ @ $50.30 2026-10-12 11:00',
+      'Buy 10 XYZ @ $52.00 2026-10-12 15:00',
+      'Buy 5 XYZ @ $52.10 2026-10-12 15:00',
     ]);
     // The fee is in the expanded details only.
     expect(within(section).queryByText(/fee|\$1\.00|\$0\.50/i)).toBeNull();

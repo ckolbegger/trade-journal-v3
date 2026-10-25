@@ -1047,6 +1047,7 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
     const section = page.getByRole('region', { name: 'Executions (3)', exact: true });
     for (const width of [390, 1280]) {
       await page.setViewportSize({ width, height: 900 });
+      await expect(page.locator('.shell')).toHaveAttribute('data-layout', width >= 640 ? 'wide' : 'narrow');
       const tint = await tokenColour(page, '--tint');
       const rows = await section.locator('ul.executions > li').evaluateAll((els) =>
         els.map((el) => {
