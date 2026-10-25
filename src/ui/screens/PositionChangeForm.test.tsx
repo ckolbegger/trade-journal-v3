@@ -1109,3 +1109,42 @@ describe('Record entry issues', () => {
     expect(screen.queryByRole('region', { name: 'This entry can’t be saved yet' })).toBeNull();
   });
 });
+
+describe('entry context', () => {
+  it('should show the Trades symbol, Strategy, stored lifecycle, and 60 of 100 shares entered or Not entered yet above the form', async () => {
+    const planned = renderForm();
+    const context = await screen.findByRole('region', { name: 'Trade' });
+    expect(within(context).getByText('XYZ')).toBeTruthy();
+    expect(within(context).getByText('Long Stock')).toBeTruthy();
+    expect(within(context).getByText('Planned')).toBeTruthy();
+    expect(within(context).getByText('Not entered yet')).toBeTruthy();
+    const form = screen.getByRole('group', { name: 'Execution 1' });
+    expect(context.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(planned.TradeWorkflows.recordPositionChange).not.toHaveBeenCalled();
+    cleanup();
+
+    const facade = positionChangeFormFacade();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({
+      kind: 'Ready',
+      view: openDetailOf([PC1]),
+      binding: { databaseName: 'tj-ws-1', contentRevision: 7 },
+    } as never);
+    renderForm(facade);
+    const open = await screen.findByRole('region', { name: 'Trade' });
+    expect(within(open).getByText('Open')).toBeTruthy();
+    expect(within(open).getByText('60 of 100 shares entered')).toBeTruthy();
+  });
+
+  it('should offer Back to the Trade at the top that leaves without saving or calling the facade', async () => {
+    const facade = renderForm();
+    const link = await screen.findByRole('link', { name: 'Back to the Trade' });
+    expect(link.getAttribute('href')).toBe('/trades/trade-1');
+    const heading = screen.getByRole('heading', { level: 1, name: 'Record entry' });
+    expect(link.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const user = userEvent.setup();
+    await user.type(within(row(1)).getByLabelText('Quantity'), '30');
+    await user.click(link);
+    expect(await screen.findByText('Trade Detail route')).toBeTruthy();
+    expect(facade.TradeWorkflows.recordPositionChange).not.toHaveBeenCalled();
+  });
+});

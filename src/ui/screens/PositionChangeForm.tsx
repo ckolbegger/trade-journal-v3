@@ -9,6 +9,8 @@ import type {
   TradeDetailView,
 } from '../../app/types.ts';
 import { fromWorkspaceLocal, toWorkspaceLocal } from '../../domain/time/index.ts';
+import { Rational } from '../../domain/values/index.ts';
+import { Badge } from '../Badge.tsx';
 import { quantity } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { answerChanged, fieldIssues, IssueSummary, nonNegativeDecimal, positiveDecimal } from './form-issues.tsx';
@@ -288,9 +290,21 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
 
   return (
     <form className="plan-form" noValidate onSubmit={(event) => void submit(event)}>
+      {/* Leaving records nothing; entered values are never saved as a draft. */}
+      <Link to={`/trades/${tradeId}`}>Back to the Trade</Link>
       <h1 ref={headingRef} tabIndex={-1}>
         Record entry
       </h1>
+      <section className="card" aria-label="Trade">
+        <p>
+          <strong>{view.plan.underlying}</strong> · <span>{view.labels.strategy}</span> · <Badge tone="info">{view.lifecycle.stored}</Badge>
+        </p>
+        <p className="number">
+          {'positions' in view
+            ? `${quantity(view.positions.reduce((total, p) => total.add(p.quantity), Rational.of(0n)))} of ${leg.quantity} shares entered`
+            : 'Not entered yet'}
+        </p>
+      </section>
       {conflict && (
         <section ref={conflictRef} tabIndex={-1} className="banner warning" aria-labelledby="entry-conflict-heading">
           <h2 id="entry-conflict-heading">This Trade changed after you opened this form</h2>
