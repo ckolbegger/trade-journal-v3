@@ -1789,3 +1789,40 @@ Review finding (valid, minor): in `tools/ui-screenshots.ts`, `profileAt(dir).lau
 - `npm run ui:screenshots`: wrote 34 PNGs and the README, exit 0. Six 1280 and 390 PNGs re-rendered as pixel noise (04, 06, 09, 14, 17 at 1280; 17 at 390) and were reverted; no PNG is committed.
 - Forced failure (temporary `throw new Error('forced launch failure')` just before `launch()`, with a probe printing the temp dir and whether the server answered): the probe printed `FORCED port open: true`, the run exited with `Error: forced launch failure`, afterwards no `ui-screenshots-*` directory remained in the temp dir and `http://127.0.0.1:5175/` no longer answered (server closed). The throw and probe were removed. Note: the script deletes `evidence/D02/ui-alignment` on start, so the forced run emptied it; restored with `git checkout`.
 - Static: typecheck, `npx tsc6 --noEmit`, lint, lint:deps exit 0. Full `npm run test:e2e`: 88 passed.
+
+**ocr review of T2.53** (`ocr-review` step): commit `f021f3a`, session `941b239d-8541-4826-a03f-28d5870571cf`, model `gpt-6.1-sol`, 4 files reviewed, 0 comments, plus four main-session questions. Raw output: `ocr/t2.53-f021f3a.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| (question a) | `TradeDetail.tsx:371-376`, `app.css:920` | A visually hidden "·" between price and time means the name no longer contains the visible text as one run (WCAG 2.5.3, strict reading) | Valid; T2.53-B1 |
+| (question b) | `PositionChangeReceipt.tsx:69-74, 127`, `app.css:36-43` | Receipt text unchanged; "Back to the Trade" still a link with the global focus outline | Holds |
+| (question c) | `TradeDetail.tsx:155-158, 186-194` | `Figure` gives valid dl > div > dt + dd | Holds |
+| (question d) | `app.css:702-896` | No new rule leaks to other screens | Holds |
+
+**Complete cumulative run after T2.53** (`suite-runner`, 2026-10-25 09:45 EDT, on `d82cce4`, the evidence commit on `f021f3a`): Unit 434 passed; Node integration 49 passed; Browser 1 failed, 87 passed — `ui-alignment.spec.ts:1042` "money flush right at 390", expected <= 1, received 15.03; checks 11 of 11 exit 0. Outputs: `suite-runs/t2.53-*.txt`. The failure went to T2.53-B1 (test measured before the narrow layout settled).
+
+**ocr review of T2.54** (`ocr-review` step): commit `662b1d2`, session `da71857a-5e7d-4114-921b-657075a55a3e`, 2 files reviewed (PNGs excluded), 1 comment. Raw output: `ocr/t2.54-662b1d2.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| ocr comment / (question b) | `tools/ui-screenshots.ts:122, 203-205` | `launch()` outside the `try`, and a throwing `context.close()`, skip the server and temp-dir cleanup | Valid (minor; the port is freed with the process, a temp dir can leak); T2.54-B1 |
+| (question a) | `src/app/system.ts:6` | The `Temporal.Now` override covers the only member the app uses (`instant`) | Holds |
+| (question c) | README vs `specs/reference/ui-screenshots/index.md` | Each screen maps to the reference index.md describes | Holds (05 and 10/11 pairings loose but defensible) |
+| (question d) | `tools/ui-screenshots.ts:6-33` | Erasable TypeScript, `.ts` imports, no `src` internals | Holds |
+
+**ocr review of T2.53-B1** (`ocr-review` step): commit `31e1cde`, session `ebc069d2-674a-4992-9f7e-53c1494a8961`, 1 file reviewed, 0 comments, plus two main-session questions. Raw output: `ocr/t2.53-b1-31e1cde.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| (question a) | `ui-alignment.spec.ts:809, 858, 1050, 1153` | The layout waits use a 640 px cutoff; the shell switches at `WIDE_LAYOUT_MIN_WIDTH = 960` | Doubtful (no effect at the widths measured); fixed in T2.53-B2 |
+| (question b) | `TradeDetail.tsx:372-376` | `{' '}` keeps word boundaries between action, price and time in text and name | Holds |
+
+**ocr review of T2.53-B2 and T2.54-B1** (`ocr-review` step): range `3fcb7e1^..0cd36c2`, session `aa0d16b6-9d4a-4bc9-a1a9-a22e2e683e4a`, 1 file reviewed, 0 comments, plus three main-session questions. Raw output: `ocr/t2.53-b2-t2.54-b1-3fcb7e1-0cd36c2.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| (question a) | `ui-alignment.spec.ts:1105` | The content-edge measurement subtracts the computed `padding-right`; a padding change cannot make it vacuous | Holds |
+| (question b) | `tools/ui-screenshots.ts:116-222` | Every resource released exactly once on every path; drive body unchanged | Holds |
+| (question c) | `tools/ui-screenshots.ts:199-200` | The script deletes the committed `evidence/D02/ui-alignment` before capturing, so a failed run leaves it deleted or partial | Valid; T2.54-B2 |
+
+**Complete cumulative run after T2.54-B1** (`suite-runner`, 2026-10-25 10:14 EDT, on `0cd36c2`, covering T2.53, T2.53-B1, T2.53-B2, T2.54 and T2.54-B1): Unit 41 files / 435 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 88 passed (2.6m); static and verify checks 11 of 11 exit 0; then `npm run ui:screenshots` exit 0, 34 PNGs plus the README (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.54-b1-*.txt`.

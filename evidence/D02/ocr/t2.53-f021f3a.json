@@ -1,0 +1,116 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 136963,
+    "input_tokens": 135720,
+    "output_tokens": 1243,
+    "cache_read_tokens": 24064,
+    "elapsed": "1m27s"
+  },
+  "tool_calls": {
+    "total": 13,
+    "by_tool": {
+      "code_search": 3,
+      "file_find": 1,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "UI styling and account, position receipt, and trade detail screen updates",
+      "files": [
+        "src/ui/app.css",
+        "src/ui/screens/AccountsView.tsx",
+        "src/ui/screens/PositionChangeReceipt.tsx",
+        "src/ui/screens/TradeDetail.tsx"
+      ]
+    }
+  ],
+  "session_id": "941b239d-8541-4826-a03f-28d5870571cf",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "941b239d-8541-4826-a03f-28d5870571cf",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f021f3a",
+      "resolved_base": "2dcb206f5dccbf29e32753885e476688eb05245a",
+      "resolved_head": "f021f3aa1d17ba96657b06e946e83766dcbd5adb",
+      "exact_range": "2dcb206f5dccbf29e32753885e476688eb05245a..f021f3aa1d17ba96657b06e946e83766dcbd5adb",
+      "source_artifact_sha256": "575c0aee8e05ca010287325158b7e6a78d362ba349b4e4463b3e514f5d5640fc"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "00ad6288c7256c9d2776d754768264e4415a8a999d1caeddbb27e485c9982290"
+        },
+        {
+          "item_id": "3b19891a8713f43c2aa08f50a42cf3abbe4d166f7d44b7ccfe76ba2b19a154b8",
+          "path": "src/ui/screens/PositionChangeReceipt.tsx",
+          "fingerprint": "66b18095dd9dc9af44981becde9383f8dc337ed579e16139249a74edfec96802"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "7cc4b1377d93a61595d3804cb26ea63573b7d6ab0969fa7ef7ccc11beda37362"
+        },
+        {
+          "item_id": "e4ea847301042fa058b097109a4632057a445286266fbdb2371320631ac4ef7e",
+          "path": "src/ui/screens/AccountsView.tsx",
+          "fingerprint": "e948daa2bf980337c9471e55965295ab4a6ee0e6aded5d0b3291e9482cdfdc83"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "00ad6288c7256c9d2776d754768264e4415a8a999d1caeddbb27e485c9982290"
+        },
+        {
+          "item_id": "3b19891a8713f43c2aa08f50a42cf3abbe4d166f7d44b7ccfe76ba2b19a154b8",
+          "path": "src/ui/screens/PositionChangeReceipt.tsx",
+          "fingerprint": "66b18095dd9dc9af44981becde9383f8dc337ed579e16139249a74edfec96802"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "7cc4b1377d93a61595d3804cb26ea63573b7d6ab0969fa7ef7ccc11beda37362"
+        },
+        {
+          "item_id": "e4ea847301042fa058b097109a4632057a445286266fbdb2371320631ac4ef7e",
+          "path": "src/ui/screens/AccountsView.tsx",
+          "fingerprint": "e948daa2bf980337c9471e55965295ab4a6ee0e6aded5d0b3291e9482cdfdc83"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 86684
+  }
+}

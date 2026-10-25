@@ -1,0 +1,111 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 132295,
+    "input_tokens": 130776,
+    "output_tokens": 1519,
+    "cache_read_tokens": 21120,
+    "elapsed": "1m25s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_find": 1,
+      "file_read": 9,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tools/ui-screenshots.ts",
+      "content": "Resource acquisition happens before the cleanup guard. If `profileAt(dir).launch()` rejects (for example, when the Playwright browser is not installed), neither the started server nor the temporary profile directory is cleaned up. Also, a rejection from `context.close()` skips the remaining cleanup. Put server/profile/browser acquisition inside a guarded lifecycle and use nested `finally` blocks so each acquired resource is released even if another cleanup step fails.",
+      "existing_code": "  const context = await profileAt(dir).launch({ width: 390 });\n  try {",
+      "start_line": 122,
+      "end_line": 123,
+      "category": "bug",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "package.json",
+      "files": [
+        "package.json"
+      ]
+    },
+    {
+      "label": "tools/ui-screenshots.ts",
+      "files": [
+        "tools/ui-screenshots.ts"
+      ]
+    }
+  ],
+  "session_id": "da71857a-5e7d-4114-921b-657075a55a3e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "da71857a-5e7d-4114-921b-657075a55a3e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "662b1d2",
+      "resolved_base": "d82cce4f057f49aff8c1c59846a962814f763861",
+      "resolved_head": "662b1d2406ad3e099452ce2d711d266fdd98db91",
+      "exact_range": "d82cce4f057f49aff8c1c59846a962814f763861..662b1d2406ad3e099452ce2d711d266fdd98db91",
+      "source_artifact_sha256": "f4e86af6b537fab2b906890f0ded37ff599eb3a813c35f97101c554ea7d0bdc4"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "c55d73221b278ddcd57b69153100d249db2aeb44db675d13462fa383079871ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "b943067c61329605e5f0398305aa1254229546ede6c112e391c13ac04352d98b",
+          "path": "tools/ui-screenshots.ts",
+          "fingerprint": "e4c600831c0b1bde188df5630e16f7cc2d003a8641cf478e71cf2a38e2f45c4b"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "de9e58ace723f0656c11e42b299a74eb86755caba5663c702ab3eef99c1436ac"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "b943067c61329605e5f0398305aa1254229546ede6c112e391c13ac04352d98b",
+          "path": "tools/ui-screenshots.ts",
+          "fingerprint": "e4c600831c0b1bde188df5630e16f7cc2d003a8641cf478e71cf2a38e2f45c4b"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "de9e58ace723f0656c11e42b299a74eb86755caba5663c702ab3eef99c1436ac"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 85373
+  }
+}
