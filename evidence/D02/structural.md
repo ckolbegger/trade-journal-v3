@@ -993,3 +993,17 @@ Decisions (for the final report):
 | Static and verification checks (11 commands) | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run build`, `npm run verify:release`, `npm run verify:capabilities`, `npm run verify:releases`, `npm run verify:no-fault-hooks`, `npm run verify:capacity`, `npm run verify:fixtures` | 11 of 11 exit 0 | `suite-runs/t2.29-checks.txt` |
 
 Failures: none. Unit rose from 364 to 367 (T2.29's three cases); the browser case extends the existing keyboard-only case, so the browser count is unchanged.
+
+#### T2.29-B1
+
+Bug from the ocr review of T2.29: the incoherent-Trade heading took focus only once the definition had loaded, so a failed or pending definition load left it unfocused.
+
+| Command | Result |
+|---|---|
+| red: `npx vitest run src/ui/screens/PositionChangeForm.test.tsx -t "Record entry heading of the incoherent note when the definition load fails"` | failed: expected body to be the h1 (assertion) |
+| green: same command | 1 passed |
+| `npx vitest run src/ui/screens/PositionChangeForm.test.tsx` | 29 passed |
+| `npx playwright test e2e/d2/no-save.spec.ts e2e/d2/responsive-a11y.spec.ts` | 6 passed |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
+
+Change: the `shown` condition in `PositionChangeForm.tsx` is now true for an incoherent Trade view alone, or for a view with the definition. The form heading rule and the Conflict in-place reload are unchanged.

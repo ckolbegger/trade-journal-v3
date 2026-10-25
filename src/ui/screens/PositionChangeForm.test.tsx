@@ -886,6 +886,19 @@ describe('focus after navigation', () => {
     expect(document.activeElement).toBe(heading);
   });
 
+  it('should move focus to the Record entry heading of the incoherent note when the definition load fails', async () => {
+    const facade = positionChangeFormFacade();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({
+      kind: 'Ready',
+      view: incoherentDetailOf([PC1], [{ factId: 'ex-1', reason: 'UnknownPlannedLeg' }]),
+      binding: { databaseName: 'tj-ws-1', contentRevision: 7 },
+    } as never);
+    vi.mocked(facade.Journal.getDefinitions).mockRejectedValue(new Error('store unavailable'));
+    renderForm(facade);
+    const heading = await screen.findByRole('heading', { level: 1, name: 'Record entry' });
+    await vi.waitFor(() => expect(document.activeElement).toBe(heading));
+  });
+
   it('should move focus to the Entry recorded heading when the receipt replaces the form', async () => {
     const facade = renderForm();
     vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(recordedResult());
