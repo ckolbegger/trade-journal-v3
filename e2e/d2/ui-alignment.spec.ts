@@ -671,3 +671,45 @@ test.describe('T2.43 prompt chip groups', () => {
     await context.close();
   });
 });
+
+test.describe('T2.44 execution rows as panels', () => {
+  test('should render each Execution as a rounded panel with Quantity, Price and Fee in a grid and Economic Time on its own row', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await confirmReference(page);
+    await openEntryForm(page);
+    await page.getByRole('button', { name: 'Add Execution' }).click();
+    const row = page.getByRole('group', { name: 'Execution 1', exact: true });
+    const panel = await row.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { style: s.borderTopStyle, radius: parseFloat(s.borderTopLeftRadius) };
+    });
+    expect(panel.style, 'fieldset border-style').not.toBe('groove');
+    expect(panel.radius, 'fieldset border-radius').toBeGreaterThanOrEqual(10);
+    // One synchronous read after a frame, so a scroll or reflow cannot land between the four boxes.
+    const tops = () =>
+      row.evaluate(
+        (el) =>
+          new Promise<{ quantity: number; price: number; fee: number; time: number }>((resolve) =>
+            requestAnimationFrame(() => {
+              const top = (label: string) =>
+                [...el.querySelectorAll('label')].find((l) => l.firstChild?.textContent === label)?.querySelector('input')?.getBoundingClientRect().top ?? Number.NaN;
+              resolve({ quantity: top('Quantity'), price: top('Price'), fee: top('Fee'), time: top('Economic Time') });
+            }),
+          ),
+      );
+    await page.setViewportSize({ width: 1280, height: 900 });
+    const wide = await tops();
+    expect(wide.price, 'Price top at 1280').toBe(wide.quantity);
+    expect(wide.fee, 'Fee top at 1280').toBe(wide.quantity);
+    expect(wide.time, 'Economic Time below at 1280').toBeGreaterThan(wide.quantity);
+    await page.setViewportSize({ width: 390, height: 844 });
+    const narrow = await tops();
+    expect(narrow.price, 'Price top at 390').toBe(narrow.quantity);
+    expect(narrow.time, 'Economic Time below at 390').toBeGreaterThan(narrow.price);
+    expect(narrow.fee, 'Fee wraps below at 390').toBeGreaterThan(narrow.quantity);
+    await expect(page.getByRole('button', { name: 'Remove Execution 2' })).toBeVisible();
+    await context.close();
+  });
+});

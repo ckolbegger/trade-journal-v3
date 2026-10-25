@@ -1490,3 +1490,23 @@ Change: `fieldset.choices` is borderless; its legend is a small-caps, muted labe
 | medium | `app.css:332-336` | In forced-colors mode the checked and unchecked chips look identical: the checked state is background and text colour only, and the native radio is `opacity: 0` | Valid (no `forced-colors` rule exists); bug task T2.43-B1, run after T2.44 because both touch `app.css` and `ui-alignment.spec.ts` |
 
 **Complete cumulative run after T2.43** (`suite-runner`, 2026-10-25 01:33 EDT, on `114462a`): Unit 41 files / 399 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 76 passed (2.5m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.43-*.txt`.
+
+## T2.44 Execution rows as panels
+
+Measurements added first to `e2e/d2/ui-alignment.spec.ts` (describe "T2.44 execution rows as panels"), run against `dist-faults` on the Record entry form with two Executions, then the CSS written (`src/ui/app.css` only; no markup change, since `.field:nth-of-type(4)` spans the Economic Time row).
+
+Commands:
+- Before: `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts -g T2.44` gave 1 failed. A soft-assertion run listed every failing measurement, then the assertions were restored.
+- After: same command, 1 passed. `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts e2e/d2 e2e/d1/responsive-a11y.spec.ts`: 53 passed.
+- Static: `npx vitest run src/ui` 120 passed; typecheck, tsc6, lint, lint:deps exit 0.
+
+| Measurement | Before | After |
+| --- | --- | --- |
+| Fieldset border-style | fail (`groove`) | `none` |
+| Fieldset border-radius | fail (0 px) | 14 px (`--radius`) |
+| 1280: Quantity, Price, Fee share a top y | fail (412.4 / 495.6 / 578.8) | pass (three columns) |
+| 390: Quantity and Price share a top y | fail (401.4 / 484.6) | pass (two columns) |
+| 390: Economic Time below Price, Fee below Quantity | pass | pass (full-width row) |
+| Names and roles (`fillRows`, whole d2 and responsive suites) | pass | pass |
+
+Change: `fieldset.execution-row` is a borderless tinted panel (`--neutral-ground`) and a grid, two columns, three from 640 px; its legend is the small-caps muted label used by T2.43; the fourth field and the Remove button span the row. "Remove Execution N" is a text-style button (no border, transparent, underlined, error colour). "Add Execution" keeps `pill secondary`, which is already the outlined pill. T2.43's `fieldset.choices` and `label.chip` rules are unchanged.

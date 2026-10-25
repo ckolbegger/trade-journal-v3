@@ -299,6 +299,51 @@ fieldset.choices legend {
   color: var(--muted);
 }
 
+/* Execution rows: a tinted rounded panel; Quantity, Price and Fee in two columns, three when wide. */
+fieldset.execution-row {
+  border: none;
+  border-radius: var(--radius);
+  background: var(--neutral-ground);
+  padding: 0.75rem 1rem 1rem;
+  margin: 0.75rem 0;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 0.75rem;
+  align-items: start;
+}
+
+fieldset.execution-row legend {
+  padding: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+fieldset.execution-row > .field:nth-of-type(4),
+fieldset.execution-row > button {
+  grid-column: 1 / -1;
+}
+
+/* Remove Execution reads as text, not a pill. */
+fieldset.execution-row > button.pill {
+  justify-self: start;
+  border: none;
+  background: transparent;
+  color: var(--error);
+  text-decoration: underline;
+  padding: 0.6rem 0;
+  margin: 0.25rem 0 0;
+}
+
+@media (min-width: 640px) {
+  fieldset.execution-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 label.chip {
   display: inline-flex;
   align-items: center;
