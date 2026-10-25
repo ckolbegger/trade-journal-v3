@@ -1573,3 +1573,7 @@ Refactor, no behaviour change: `input()` in `src/ui/screens/PositionChangeForm.t
 | `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts -g T2.44` | 1 passed | 1 passed |
 | `npx vitest run src/ui` | 13 files, 120 tests passed | 13 files, 120 tests passed |
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | n/a | all exit 0 |
+
+**ocr review of T2.44-B2** (`ocr-review` step): commit `76724a3`, session `59f1aee8-fe94-402c-82a9-0ad2df5dd08b`, model `gpt-6.1-sol`, 1 file reviewed (`PositionChangeForm.tsx`), 0 comments. No findings. Raw output: `ocr/t2.44-B2-76724a3.json`.
+
+**Complete cumulative run after T2.44-B2** (`suite-runner`, 2026-10-25 07:29 EDT, on `76724a3`): Unit 41 files / 399 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 78 passed (2.5m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.44-B2-*.txt`.
