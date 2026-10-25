@@ -1577,3 +1577,23 @@ Refactor, no behaviour change: `input()` in `src/ui/screens/PositionChangeForm.t
 **ocr review of T2.44-B2** (`ocr-review` step): commit `76724a3`, session `59f1aee8-fe94-402c-82a9-0ad2df5dd08b`, model `gpt-6.1-sol`, 1 file reviewed (`PositionChangeForm.tsx`), 0 comments. No findings. Raw output: `ocr/t2.44-B2-76724a3.json`.
 
 **Complete cumulative run after T2.44-B2** (`suite-runner`, 2026-10-25 07:29 EDT, on `76724a3`): Unit 41 files / 399 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 78 passed (2.5m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.44-B2-*.txt`.
+
+## T2.45 New Plan grouped into cards
+
+Measurements added first to `e2e/d2/ui-alignment.spec.ts` (describe "T2.45 New Plan grouped into cards"), run against `dist-faults`, then `PlanForm` markup and one CSS rule.
+
+Commands:
+- Before: `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts -g T2.45` gave 1 failed (timeout waiting for the region named Trade).
+- After: same command, 1 passed. `npm run build:faults && npx playwright test e2e/d2/ui-alignment.spec.ts e2e/d1 e2e/d2/responsive-a11y.spec.ts e2e/d2/narrow.spec.ts`: 61 passed.
+- Static: `npx vitest run src/ui` 120 passed; typecheck, tsc6, lint, lint:deps exit 0.
+
+| Measurement | Before | After |
+| --- | --- | --- |
+| Region Trade holds Account, Strategy, Symbol, Plan time | fail (no region) | pass |
+| Region Risk holds Quantity, Intended entry, Stop, Target | fail (no region) | pass |
+| Region Plan Reflection holds both text prompts and the chips | fail (no region) | pass |
+| 1280: Quantity and Intended entry share a top y; Stop and Target share a top y, below | not reached | pass |
+| 390: same, two inputs per row | not reached | pass |
+| `fillPlan`, `confirmPlan`, D1 Plan specs, narrow and responsive-a11y | pass | pass |
+
+Change: `PlanForm` wraps its controls in three `section.card` elements, each `aria-labelledby` an `h2` (Trade, Risk, Plan Reflection; the existing small-caps `h2` style). Risk inputs sit in `div.risk-grid` (two columns at any width). Labels, names, roles and entry order are unchanged. No existing heading lookup became ambiguous, so none was changed.

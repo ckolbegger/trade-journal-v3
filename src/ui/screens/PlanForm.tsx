@@ -159,36 +159,47 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
       <h1>New Plan</h1>
       {/* A rejected confirmation moves focus to the summary of every issue. */}
       <IssueSummary id="plan-issues-heading" heading="This Plan can’t be confirmed yet" issues={issues} />
-      <label>
-        Account
-        <select value={fields.accountId} onChange={(e) => set('accountId')(e.target.value)}>
-          {accounts.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Strategy
-        <select value={fields.strategyId} onChange={(e) => set('strategyId')(e.target.value)}>
-          {strategies.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      {input('symbol', 'Symbol')}
-      {input('quantity', 'Quantity', 'decimal')}
-      {input('entry', 'Intended entry', 'decimal')}
-      {input('stop', 'Stop', 'decimal')}
-      {input('target', 'Target', 'decimal')}
-      <label>
-        Plan time
-        <input type="datetime-local" value={fields.planTime} onChange={(e) => set('planTime')(e.target.value)} />
-      </label>
-      <ReflectionPrompts definition={definition} answers={answers} onChange={setAnswers} errors={promptErrors(definition)} />
+      <section className="card" aria-labelledby="plan-trade-heading">
+        <h2 id="plan-trade-heading">Trade</h2>
+        <label>
+          Account
+          <select value={fields.accountId} onChange={(e) => set('accountId')(e.target.value)}>
+            {accounts.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Strategy
+          <select value={fields.strategyId} onChange={(e) => set('strategyId')(e.target.value)}>
+            {strategies.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        {input('symbol', 'Symbol')}
+        <label>
+          Plan time
+          <input type="datetime-local" value={fields.planTime} onChange={(e) => set('planTime')(e.target.value)} />
+        </label>
+      </section>
+      <section className="card" aria-labelledby="plan-risk-heading">
+        <h2 id="plan-risk-heading">Risk</h2>
+        <div className="risk-grid">
+          {input('quantity', 'Quantity', 'decimal')}
+          {input('entry', 'Intended entry', 'decimal')}
+          {input('stop', 'Stop', 'decimal')}
+          {input('target', 'Target', 'decimal')}
+        </div>
+      </section>
+      <section className="card" aria-labelledby="plan-reflection-heading">
+        <h2 id="plan-reflection-heading">Plan Reflection</h2>
+        <ReflectionPrompts definition={definition} answers={answers} onChange={setAnswers} errors={promptErrors(definition)} />
+      </section>
       <button type="submit" className="pill primary" disabled={!writable}>
         Confirm Plan
       </button>

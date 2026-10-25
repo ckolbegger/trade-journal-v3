@@ -770,3 +770,47 @@ test.describe('T2.44 execution rows as panels', () => {
     await context.close();
   });
 });
+
+test.describe('T2.45 New Plan grouped into cards', () => {
+  test('should group the New Plan controls into Trade, Risk and Plan Reflection cards with a two-column Risk grid', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'New Plan' }).click();
+    await expect(page.getByRole('heading', { name: 'New Plan' })).toBeVisible(READY);
+    const controls = (name: string) =>
+      page.getByRole('region', { name, exact: true }).evaluate((el) =>
+        [...el.querySelectorAll('input, select, textarea')].map((c) => {
+          const label = (c as HTMLInputElement).labels?.[0]?.firstChild?.textContent?.trim();
+          return c.getAttribute('type') === 'radio' ? `radio:${c.getAttribute('name')}` : label;
+        }),
+      );
+    expect(await controls('Trade'), 'Trade controls').toEqual(['Account', 'Strategy', 'Symbol', 'Plan time']);
+    expect(await controls('Risk'), 'Risk controls').toEqual(['Quantity', 'Intended entry', 'Stop', 'Target']);
+    const reflection = await controls('Plan Reflection');
+    expect(reflection.filter((c) => !c?.startsWith('radio:')), 'Plan Reflection text prompts').toEqual(['Why this trade, why now?', 'What would invalidate the thesis?']);
+    expect(reflection.some((c) => c?.startsWith('radio:')), 'Plan Reflection chips').toBe(true);
+    const risk = page.getByRole('region', { name: 'Risk', exact: true });
+    const tops = () =>
+      risk.evaluate(
+        (el) =>
+          new Promise<{ quantity: number; entry: number; stop: number; target: number }>((resolve) =>
+            requestAnimationFrame(() => {
+              const top = (label: string) =>
+                [...el.querySelectorAll('label')].find((l) => l.firstChild?.textContent === label)?.querySelector('input')?.getBoundingClientRect().top ?? Number.NaN;
+              resolve({ quantity: top('Quantity'), entry: top('Intended entry'), stop: top('Stop'), target: top('Target') });
+            }),
+          ),
+      );
+    for (const width of [1280, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      // The shell re-lays out on its own media query after the resize; wait for it before measuring.
+      await expect(page.locator('.shell')).toHaveAttribute('data-layout', width >= 640 ? 'wide' : 'narrow');
+      const t = await tops();
+      expect(t.entry, `Intended entry top at ${width}`).toBe(t.quantity);
+      expect(t.target, `Target top at ${width}`).toBe(t.stop);
+      expect(t.stop, `Stop row below Quantity row at ${width}`).toBeGreaterThan(t.quantity);
+    }
+    await context.close();
+  });
+});
