@@ -1,0 +1,82 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 27440,
+    "input_tokens": 27108,
+    "output_tokens": 332,
+    "cache_read_tokens": 9600,
+    "elapsed": "20s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_search": 4,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/ui/format.ts",
+      "files": [
+        "src/ui/format.ts"
+      ]
+    }
+  ],
+  "session_id": "e90e79c9-b706-41c6-a82b-059d27b525c8",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e90e79c9-b706-41c6-a82b-059d27b525c8",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "b8c2826",
+      "resolved_base": "70fd2a797a254571aea92efdcec009a1c434b167",
+      "resolved_head": "b8c2826d111767ee3d73039b2b085ee02bb013c6",
+      "exact_range": "70fd2a797a254571aea92efdcec009a1c434b167..b8c2826d111767ee3d73039b2b085ee02bb013c6",
+      "source_artifact_sha256": "a3605377c6f0a4bafc1e2b00c5798a0c2ddf1f0b20ca9325d751433c3feabb9b"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "ba5fbb04fca03ff1953f3df04141a6756ee49b97455790da564dbc547ad53e17",
+          "path": "src/ui/format.ts",
+          "fingerprint": "a777a612222d375c81ab23b85e7ef082492eaf6e95cc8d7843d9121a2445973d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "ba5fbb04fca03ff1953f3df04141a6756ee49b97455790da564dbc547ad53e17",
+          "path": "src/ui/format.ts",
+          "fingerprint": "a777a612222d375c81ab23b85e7ef082492eaf6e95cc8d7843d9121a2445973d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 20201
+  }
+}

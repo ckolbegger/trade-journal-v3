@@ -1351,3 +1351,11 @@ Refactor, no behavior change: `openItem` calls `openSummary(derived)` once and d
 **ocr review of T2.58-B1** (`ocr-review` step): commit `29a439c`, session `0659d4b4-e4e5-4fae-925e-86af2a5416ec`, 1 file reviewed (`trade-views.ts`), 0 comments. No findings. Raw output: `ocr/t2.58-B1-29a439c.json`.
 
 **Complete cumulative run after T2.58-B1** (`suite-runner`, 2026-10-25 00:45 EDT, on `29a439c` plus uncommitted evidence edits): Unit 40 files / 391 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 67 passed (2.0m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.58-B1-*.txt`.
+
+#### T2.59
+
+`tradeSummary(summary)` ("Long 60 shares @ $50.10") and `netCost(value)` ("$3,007.00"; a negative value as "$212.00 credit") in `src/ui/format.ts`; three cases in `format.test.ts` (the fractional-quantity case a first-run pass, mutation-checked with `formatDecimal(quantity, 0)`). `money` has no thousands separator, so `netCost` groups the whole part itself; other Money figures stay ungrouped (noted for the final report).
+
+**ocr review of T2.59** (`ocr-review` step): commit `b8c2826`, session `e90e79c9-b706-41c6-a82b-059d27b525c8`, model `gpt-6.1-sol`, 1 file reviewed (`format.ts`), 0 comments. No findings. Raw output: `ocr/t2.59-b8c2826.json`.
+
+**Complete cumulative run after T2.59** (`suite-runner`, 2026-10-25 00:49 EDT, on `b8c2826`): Unit 40 files / 394 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 67 passed (2.1m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.59-*.txt`.
