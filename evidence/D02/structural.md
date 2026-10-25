@@ -1691,3 +1691,14 @@ Commits: view amendment (reflection items carry their Position Change), then the
 - `tests/support/open-detail-fixtures.ts`: pc1Reflection and pc2Decline gained `positionChangeId`.
 
 **Checks:** `npx vitest run src` 427 passed; `tests/integration` 49 passed; typecheck, `tsc6`, lint, lint:deps, verify:fixtures all exit 0; `npm run build:faults && npx playwright test e2e/d1 e2e/d2` 80 passed.
+
+**ocr review of T2.50** (`ocr-review` step): range `ce50e09^..60d8b8f`, session `1ab24a47-a5b4-4bc3-8870-326199d8630d`, model `gpt-6.1-sol`, 6 files reviewed, 2 comments, plus two main-session questions. Raw output: `ocr/t2.50-ce50e09-60d8b8f.json`.
+
+| Severity | Location | Claim | Verdict |
+| --- | --- | --- | --- |
+| medium (cosmetic) | `app.css:801` | `.table-scroll.lots-scroll { --pin: 0px }` never matches: the Open Lots wrapper lacks `lots-scroll`, so the left scroll shadow sits 5–7rem inside the table | Valid; T2.50-B1 |
+| low | `TradeDetail.tsx:370` | Nested ternary in `ExecutionRow`'s reflection rendering | Valid (style); T2.50-B1 |
+| (question a) | `TradeDetail.tsx:326` | The row button's `aria-label` "Details for Buy 30 XYZ at 10:00" does not contain the visible text (WCAG 2.5.3 Label in Name) | Valid; the plan's example name was wrong and was corrected in `171796b`; T2.50-B1 |
+| (question b) | `journal.ts:178, 317`; `TradeDetail.tsx:407` | `positionChangeId` only on Position Change reflections; a Plan Reflection never matches an Execution | Holds (match by key) |
+
+**Complete cumulative run after T2.50** (`suite-runner`, 2026-10-25 08:50 EDT, on `60d8b8f`): Unit 41 files / 427 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 80 passed (2.5m); static and verify checks 11 of 11 exit 0. Failures: none. Outputs: `suite-runs/t2.50-*.txt`.

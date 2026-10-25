@@ -1,0 +1,62 @@
+
+ RUN  v4.1.11 /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5
+
+ ✓ |integration| tests/integration/d2/open-position.test.ts > I2.5 open a position > should open the Trade with PC1, listing it as Open and not Planned after restart, with its Position Change and Execution facts, Open index entry, Entry, and obligation stored 57ms
+ ✓ |integration| tests/integration/d2/write-gate.test.ts > I2.10 write gate > should return RuntimeNotWritable from recordPositionChange and from a direct Persistence.commit with every store unchanged, and keep the Open list and Detail readable 64ms
+ ✓ |integration| tests/integration/d1/rebuild.test.ts > I1.11 rebuild equivalence > should give equal normalized views after every IndexedDB index is dropped and recreated through the migration path 71ms
+ ✓ |integration| tests/integration/d2/scale-in.test.ts > I2.6 scale-in, Entry Quality, Entry Size > should resolve Entry Quality at PC2 with the T2.2 figures, keep it after PC3, and hold one Entry Size occurrence of 20 for PC3, FilledWithDeviation, one decline, and three obligations 72ms
+ ✓ |integration| tests/integration/d2/trade-summary.test.ts > Trade Summary and Net cost on workspace-v2 > should give CSCO, KO and PFE their open quantity, average open cost, and Net cost, on the list and the Detail 50ms
+ ✓ |integration| tests/integration/d2/trade-summary.test.ts > Trade Summary and Net cost on workspace-v2 > should give each Planned Trade its planned quantity and intended entry, and no Net cost, on the list and the Detail 24ms
+ ✓ |integration| tests/integration/d2/earlier-dated.test.ts > I2.9 earlier-dated entry (P5) > should move the Entry Resolution Point to PC-early, recompute Entry Quality over PC1 and PC-early, version PC2s occurrence to 60, and disclose both changes 73ms
+ ✓ |integration| tests/integration/d2/rejections.test.ts > I2.7 rejections write nothing > should reject the invalid members and blank answers together, a Sell as VariantNotInstalled, and a repeat as Conflict, with the stores unchanged except for the one accepted submission 78ms
+ ✓ |integration| tests/integration/d1/confirm-plan.test.ts > I1.3 confirm a Plan > should return the Trade, derivation, and Entry equal to the Detail read after restart, with one durable Trade, Planned index entry, and Entry in one commit 48ms
+ ✓ |integration| tests/integration/d1/confirm-plan.test.ts > I1.5 atomic commit > should change no store when the last write of a set spanning trades, journalEntries, and meta fails with a real ConstraintError 16ms
+ ✓ |integration| tests/integration/d1/confirm-plan.test.ts > I1.5 atomic commit > should commit confirmPlan's trades, journalEntries, and meta writes in one readwrite transaction 18ms
+ ✓ |integration| tests/integration/d2/entry-quality.test.ts > I2.6 Entry Quality and 1R (AC-CALC-001) > should keep 1R and the Entry Quality resolved at PC2 unchanged after PC3 and a restart, for the reference Trade 77ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.6 write gate at both boundaries > should refuse initialize, both Catalog creates, confirmPlan, and a direct Persistence.commit with RuntimeNotWritable while the inventory check fails, changing nothing 43ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.7 readiness failures before a Workspace exists > should report Unsupported naming exactly diagnostic, refuse initialize, and create no Workspace 7ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.7 readiness failures before a Workspace exists > should report Unsupported naming exactly capacity, refuse initialize, and create no Workspace 4ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.7 readiness failures before a Workspace exists > should report Unsupported naming exactly control, refuse initialize, and create no Workspace 4ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.7 readiness failures before a Workspace exists > should report Unsupported naming exactly inventory, refuse initialize, and create no Workspace 3ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.7 readiness failures before a Workspace exists > should report Unsupported naming exactly diagnostic and capacity, refuse initialize, and create no Workspace 6ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.7 readiness failures before a Workspace exists > should report Unsupported naming exactly control and inventory, refuse initialize, and create no Workspace 2ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.8 Integrity Blocked > should block a root at a newer version without creating a Workspace or touching the root 3ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.8 Integrity Blocked > should block a pointer naming a missing Workspace database without creating one or touching the root 4ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.8 Integrity Blocked > should keep readiness Writable and return IntegrityBlocked with recovery actions for a Workspace of an unknown schema version 5ms
+ ✓ |integration| tests/integration/d1/readiness.test.ts > I1.10 mid-session failure > should refuse confirmPlan once the inventory check starts failing, move to RecoveryOnly, change nothing, and keep reads Ready 19ms
+ ✓ |integration| tests/integration/d2/rebuild.test.ts > I2.11 rebuild equivalence > should give equal Open list and Details after rebuildPrivateState, with journalObligations and byLifecycleActivity rebuilt identical 106ms
+ ✓ |integration| tests/integration/d2/entry-quality.test.ts > I2.6 Entry Quality and 1R (AC-CALC-001) > should keep 1R and the Entry Quality resolved at PC2 unchanged after PC3 and a restart, for a 200-share Plan 29ms
+ ✓ |integration| tests/integration/d2/integrity.test.ts > I2.8 integrity disagreement (AC-LIFE-003) > a: should read a stored Planned lifecycle with the finding and no write, then commit the next Position Change and list the lifecycle repair 71ms
+ ✓ |integration| tests/integration/d2/integrity.test.ts > I2.8 integrity disagreement (AC-LIFE-003) > b: should read a deleted Entry Size occurrence as missing with no write, then commit the next Position Change and list the occurrence repair 42ms
+ ✓ |integration| tests/integration/d2/integrity-incoherent.test.ts > I2.8 integrity disagreement (AC-LIFE-003) > c: should read an Execution naming an unknown Planned Leg as Ready with the findings and no write, then reject the next Position Change with IntegrityDisagreement and an unchanged dump 65ms
+ ✓ |integration| tests/integration/d2/integrity-incoherent.test.ts > browseTrades Planned with an incoherent Trade > should return Ready with the incoherent Trade as an item marked integrity Disagrees, and the other Planned items unchanged 28ms
+ ✓ |integration| tests/integration/d2/integrity-incoherent.test.ts > browseTrades Planned with an incoherent Trade > should give the incoherent item only stored values, symbol, Strategy, Account and Plan time, and no derived figures, so 1R, reward and Reward : risk show as unavailable 20ms
+ ✓ |integration| tests/integration/d2/integrity-incoherent.test.ts > browseTrades Planned with an incoherent Trade > should leave the content revision and every store unchanged 16ms
+ ✓ |integration| tests/integration/d2/migration.test.ts > I2.1 migrate the v1 fixture > should open with the migration receipt, then after restart be Ready at schema 2 with the fixture views, the reflection seeded once, and only the new database 72ms
+ ✓ |integration| tests/integration/d2/migration.test.ts > I2.2 migration failure and retry > should block naming the unknown Account, leave the old stores and no candidate, never be Ready, then migrate on Retry and be Ready after restart 28ms
+ ✓ |integration| tests/integration/d2/migration.test.ts > I2.3 interrupted migration > a: should delete a candidate stopped listed and created, before the copy commits, rerun the migration, and equal I2.1 39ms
+ ✓ |integration| tests/integration/d2/snapshot-compare.test.ts > compareSnapshot > should accept a field the current views add 1ms
+ ✓ |integration| tests/integration/d2/snapshot-compare.test.ts > compareSnapshot > should name the path of a changed snapshot field 0ms
+ ✓ |integration| tests/integration/d2/snapshot-compare.test.ts > compareSnapshot > should name the path of a removed snapshot field 0ms
+ ✓ |integration| tests/integration/d2/snapshot-compare.test.ts > compareSnapshot > should name the path of reordered array items 0ms
+ ✓ |integration| tests/integration/d2/snapshot-compare.test.ts > compareSnapshot > should fail an extra or missing array item 0ms
+ ✓ |integration| tests/integration/d2/migration.test.ts > I2.3 interrupted migration > a: should delete a candidate stopped listed and copied, before seeding and validation, rerun the migration, and equal I2.1 35ms
+ ✓ |integration| tests/integration/d2/migration.test.ts > I2.3 interrupted migration > b: should delete the retired database stopped after the flip and open Ready without migrating again 15ms
+ ✓ |integration| tests/integration/d2/migration.test.ts > I2.4 concurrent migration > should run one migration when two applications initialize at once, both Opened on the same schema-2 database 10ms
+ ✓ |integration| tests/integration/d1/initialize.test.ts > I1.1 fresh initialization > should go from InitializationRequired to Opened needing an Institution and Account, then reopen Ready in the same zone with the seeds added once 26ms
+ ✓ |integration| tests/integration/d1/initialize.test.ts > I1.9 concurrent first run > should leave exactly one Workspace database and one pointer when two applications initialize at once, both Opened on it 7ms
+ ✓ |integration| tests/integration/d2/responses.test.ts > I2.5 open a position, AC-RESP-001 responses > should return the Trade, derivation, and Entry equal to the Detail read after restart 38ms
+ ✓ |integration| tests/integration/d1/responses.test.ts > I1.2 onboarding > should return Institution and Account records equal to those read after restart at the returned revisions, and reach ReadyForTradePlanning 27ms
+ ✓ |integration| tests/integration/d1/confirm-plan-rejected.test.ts > I1.4 rejection writes nothing > should return one rejection listing the Stop above entry, the blank Thesis, and the two-leg shape, with every store unchanged 30ms
+ ✓ |integration| tests/integration/d2/seed.test.ts > I2.12 fresh initialization at schema 2 > should create schema 2 directly with Journal seed manifest v2 and both reflection types, and no migration in the receipt 23ms
+stdout | tests/integration/d2/query-count.test.ts > T2.21 query count: the Open list > reads one page with one getAll on trades of count 201, and the same requests with 1,000 or 2,000 Planned Trades
+query-count: Open page requests [{"on":"store","store":"meta","method":"get"},{"on":"store","store":"meta","method":"get"},{"on":"index","store":"trades","index":"byLifecycleActivity","method":"getAll","count":201},{"on":"store","store":"meta","method":"get"},{"on":"store","store":"meta","method":"get"},{"on":"store","store":"catalog","method":"getAll"},{"on":"store","store":"meta","method":"get"},{"on":"store","store":"meta","method":"get"},{"on":"store","store":"meta","method":"get"}]
+
+ ✓ |integration| tests/integration/d2/query-count.test.ts > T2.21 query count: the Open list > reads one page with one getAll on trades of count 201, and the same requests with 1,000 or 2,000 Planned Trades 2868ms
+
+ Test Files  21 passed (21)
+      Tests  49 passed (49)
+   Start at  08:50:29
+   Duration  3.17s (transform 1.23s, setup 305ms, import 2.02s, tests 4.36s, environment 1ms)
+
+EXIT 0

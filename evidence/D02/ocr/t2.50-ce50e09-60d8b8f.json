@@ -1,0 +1,164 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 2,
+    "total_tokens": 156886,
+    "input_tokens": 154818,
+    "output_tokens": 2068,
+    "cache_read_tokens": 24960,
+    "elapsed": "1m35s"
+  },
+  "tool_calls": {
+    "total": 20,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 5,
+      "file_read": 12,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/app.css",
+      "content": "The Open Lots wrapper still has only `className=\"table-scroll\"`, so this override never matches. Since the new `.lots` rules remove the sticky first column, the left scroll shadow is now drawn 5rem (7rem on desktop) inside the scrolling content rather than at its edge. Add `lots-scroll` to the Open Lots wrapper so its shadow offset is reset along with the column positioning.",
+      "existing_code": ".table-scroll.lots-scroll {\n  --pin: 0px;\n}",
+      "start_line": 801,
+      "end_line": 803,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/TradeDetail.tsx",
+      "content": "This Entry/Decline/missing-reflection rendering uses a nested ternary, which the supplied code-quality rules explicitly prohibit. Extract the reflection rendering into a helper or component with explicit branches for the three states.",
+      "existing_code": "            ) : reflection ? (",
+      "start_line": 370,
+      "end_line": 370,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Journal state and effects",
+      "files": [
+        "src/modules/journal/effects.ts",
+        "src/modules/journal/journal.ts"
+      ]
+    },
+    {
+      "label": "Trade detail UI, styling, icons, and fixtures",
+      "files": [
+        "src/ui/app.css",
+        "src/ui/icons.tsx",
+        "src/ui/screens/TradeDetail.tsx",
+        "tests/support/open-detail-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "1ab24a47-a5b4-4bc3-8870-326199d8630d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1ab24a47-a5b4-4bc3-8870-326199d8630d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "ce50e09^",
+      "requested_head": "60d8b8f",
+      "resolved_base": "84159b4a420176f9d037800b76465084f3268a33",
+      "resolved_head": "60d8b8f38eed46fc13e66a7c3cdbcbaf0144ed78",
+      "exact_range": "84159b4a420176f9d037800b76465084f3268a33..60d8b8f38eed46fc13e66a7c3cdbcbaf0144ed78",
+      "source_artifact_sha256": "a966006928445b7f248f74c592b4ffd22f3a0f3f3ac9b342af918eee9469527b"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "4bef282ec0dc6c7cd0fa2bf6f5db680b17ce8a78b337af77eba2134fd8d9a3f5",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "6a4e140ed2174ecab3b916cb2c73666f82dbde3144cc42999435fbbd9d83910b"
+        },
+        {
+          "item_id": "58f90b0c895dbe51446108a31c4944ff469cd5e706201d69a66145568db7c701",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "e08a096c09b92be6078d119c2845bd32686e584b222cd91fc9638f8c94cbf619"
+        },
+        {
+          "item_id": "5b4924226d674d5735d81f79232ed2888af254046d9c58d51a19994096f8105c",
+          "path": "tests/support/open-detail-fixtures.ts",
+          "fingerprint": "549b26a72386185ed0f34382a3f032b42862a5e07a79b2e0064e30d03ced7530"
+        },
+        {
+          "item_id": "73b33e1dc5042f7be4b45914e72e4256f5b0a4fa77b31039ca46a90b6df9b03b",
+          "path": "src/ui/icons.tsx",
+          "fingerprint": "da798267fd616f6b45f3fbaf008af33ec49122c6dc1d13d4ee7ad2a4f7290684"
+        },
+        {
+          "item_id": "aa02a05b4881073ca1bb3f85ff78ad8713a1b6996978e8ecdf490c815750997f",
+          "path": "src/ui/app.css",
+          "fingerprint": "fe866154468ba169d38e2aff8c879ee5eb18c2c57297c6d02b5401c6fbca8060"
+        },
+        {
+          "item_id": "c12460eec349327b1106d72a2d41a292b5a1cb901e9d9d34a84393626d3b867b",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "ee5cc96699c3c8e97ad36e1f21d289fd80c690941a9bf59172d486d23a1bdc79"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "4bef282ec0dc6c7cd0fa2bf6f5db680b17ce8a78b337af77eba2134fd8d9a3f5",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "6a4e140ed2174ecab3b916cb2c73666f82dbde3144cc42999435fbbd9d83910b"
+        },
+        {
+          "item_id": "58f90b0c895dbe51446108a31c4944ff469cd5e706201d69a66145568db7c701",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "e08a096c09b92be6078d119c2845bd32686e584b222cd91fc9638f8c94cbf619"
+        },
+        {
+          "item_id": "5b4924226d674d5735d81f79232ed2888af254046d9c58d51a19994096f8105c",
+          "path": "tests/support/open-detail-fixtures.ts",
+          "fingerprint": "549b26a72386185ed0f34382a3f032b42862a5e07a79b2e0064e30d03ced7530"
+        },
+        {
+          "item_id": "73b33e1dc5042f7be4b45914e72e4256f5b0a4fa77b31039ca46a90b6df9b03b",
+          "path": "src/ui/icons.tsx",
+          "fingerprint": "da798267fd616f6b45f3fbaf008af33ec49122c6dc1d13d4ee7ad2a4f7290684"
+        },
+        {
+          "item_id": "aa02a05b4881073ca1bb3f85ff78ad8713a1b6996978e8ecdf490c815750997f",
+          "path": "src/ui/app.css",
+          "fingerprint": "fe866154468ba169d38e2aff8c879ee5eb18c2c57297c6d02b5401c6fbca8060"
+        },
+        {
+          "item_id": "c12460eec349327b1106d72a2d41a292b5a1cb901e9d9d34a84393626d3b867b",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "ee5cc96699c3c8e97ad36e1f21d289fd80c690941a9bf59172d486d23a1bdc79"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 95488
+  }
+}
