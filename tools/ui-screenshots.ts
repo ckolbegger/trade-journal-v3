@@ -7,7 +7,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import type { Locator, Page } from '@playwright/test';
+import type { BrowserContext, Locator, Page } from '@playwright/test';
 import {
   BASE_URL,
   PC1,
@@ -113,96 +113,106 @@ function readme(): string {
   ].join('\n');
 }
 
+async function drive(context: BrowserContext): Promise<void> {
+  // Installed before any navigation so every document starts on the fixed clock.
+  await context.clock.install({ time: FIXED_NOW });
+  await context.clock.setFixedTime(FIXED_NOW);
+  // Chromium ships a native Temporal, which the app uses and the Playwright clock does not fake.
+  await context.addInitScript((now: string) => {
+    const T = (globalThis as unknown as { Temporal?: { Now: object; Instant: { from(s: string): { toZonedDateTimeISO(tz: string): unknown } } } }).Temporal;
+    if (!T) return;
+    const instant = () => T.Instant.from(now);
+    const zone = () => new Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const at = (tz: string | undefined) => instant().toZonedDateTimeISO(tz ?? zone()) as Record<string, () => unknown>;
+    Object.defineProperties(T.Now, {
+      instant: { value: instant, configurable: true },
+      zonedDateTimeISO: { value: (tz?: string) => at(tz), configurable: true },
+      plainDateTimeISO: { value: (tz?: string) => at(tz)['toPlainDateTime']!(), configurable: true },
+      plainDateISO: { value: (tz?: string) => at(tz)['toPlainDate']!(), configurable: true },
+      plainTimeISO: { value: (tz?: string) => at(tz)['toPlainTime']!(), configurable: true },
+    });
+  }, FIXED_NOW);
+  const page = context.pages()[0] ?? (await context.newPage());
+  await page.goto(`${BASE_URL}/`);
+  await expect(page.getByRole('heading', { name: 'Start your journal' })).toBeVisible(READY);
+  await shoot(page, '01-first-launch');
+  await startJournal(page);
+  await expect(page.getByRole('heading', { name: 'Add your brokerage account' })).toBeVisible(READY);
+  await shoot(page, '02-onboarding');
+  await onboard(page);
+  await page.getByRole('tablist', { name: 'Trades by lifecycle' }).getByRole('tab', { name: 'Open' }).click();
+  await shoot(page, '03-trades-empty');
+
+  await nav(page).getByRole('link', { name: 'New Plan' }).click();
+  await expect(page.getByRole('heading', { name: 'New Plan' })).toBeVisible(READY);
+  await shoot(page, '04-new-plan');
+  await page.getByRole('button', { name: 'Confirm Plan' }).click();
+  await expect(page.getByRole('region', { name: 'This Plan can’t be confirmed yet' })).toBeVisible();
+  await shoot(page, '05-new-plan-errors');
+  await fillPlan(page, PLAN);
+  await page.getByLabel('Plan time').fill(PLAN_TIME);
+  await shoot(page, '06-new-plan-filled');
+  await page.getByRole('button', { name: 'Confirm Plan' }).click();
+  await expect(page.getByRole('heading', { name: PLAN.symbol, level: 1 })).toBeVisible(READY);
+  await shoot(page, '07-detail-planned');
+  await nav(page).getByRole('link', { name: 'Trades' }).click();
+  await page.getByRole('tablist', { name: 'Trades by lifecycle' }).getByRole('tab', { name: 'Planned' }).click();
+  await expect(page.getByRole('table', { name: 'Planned Trades' })).toBeVisible(READY);
+  await shoot(page, '08-trades-planned');
+  await page.getByRole('table', { name: 'Planned Trades' }).getByRole('link', { name: PLAN.symbol }).click();
+  await expect(page.getByRole('heading', { name: PLAN.symbol, level: 1 })).toBeVisible(READY);
+
+  await openEntryForm(page);
+  await shoot(page, '09-record-entry');
+  await fillRows(page, PC1);
+  await expect(executionRow(page, 2)).toBeVisible();
+  await shoot(page, '10-record-entry-filled');
+  await completeReflection(page);
+  await shoot(page, '11-reflection', reflectionSection(page));
+  await page.getByRole('button', { name: 'Save entry' }).click();
+  await expect(page.getByRole('heading', { name: 'Entry recorded' })).toBeVisible();
+  await shoot(page, '12-receipt');
+  await backToTrade(page);
+  await recordEntry(page, PC2, { decline: true });
+  await backToTrade(page);
+  await recordEntry(page, PC3);
+  await nav(page).getByRole('link', { name: 'Trades' }).click();
+  await page.getByRole('tablist', { name: 'Trades by lifecycle' }).getByRole('tab', { name: 'Open' }).click();
+  await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
+  await shoot(page, '13-trades-open');
+  await openTradeFromOpenList(page);
+  const journal = page.getByRole('region', { name: /^Journal \(\d+\)$/ });
+  await expect(journal).toBeVisible(READY);
+  await shoot(page, '14-detail-open');
+  await shoot(page, '15-journal', journal);
+
+  await nav(page).getByRole('link', { name: 'Accounts' }).click();
+  await expect(page.getByRole('heading', { name: 'Accounts' })).toBeVisible(READY);
+  await shoot(page, '16-accounts');
+  await nav(page).getByRole('link', { name: 'About' }).click(READY);
+  await expect(page.getByRole('heading', { name: 'About' }).first()).toBeVisible(READY);
+  await shoot(page, '17-about');
+}
+
 async function main(): Promise<void> {
   run('npm', ['run', 'build:faults']);
   rmSync(OUT, { recursive: true, force: true });
   mkdirSync(OUT, { recursive: true });
   const server = await startReleaseServer({ root: process.cwd(), release: 'dist-faults' });
-  const dir = mkdtempSync(path.join(tmpdir(), 'ui-screenshots-'));
-  const context = await profileAt(dir).launch({ width: 390 });
   try {
-    // Installed before any navigation so every document starts on the fixed clock.
-    await context.clock.install({ time: FIXED_NOW });
-    await context.clock.setFixedTime(FIXED_NOW);
-    // Chromium ships a native Temporal, which the app uses and the Playwright clock does not fake.
-    await context.addInitScript((now: string) => {
-      const T = (globalThis as unknown as { Temporal?: { Now: object; Instant: { from(s: string): { toZonedDateTimeISO(tz: string): unknown } } } }).Temporal;
-      if (!T) return;
-      const instant = () => T.Instant.from(now);
-      const zone = () => new Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const at = (tz: string | undefined) => instant().toZonedDateTimeISO(tz ?? zone()) as Record<string, () => unknown>;
-      Object.defineProperties(T.Now, {
-        instant: { value: instant, configurable: true },
-        zonedDateTimeISO: { value: (tz?: string) => at(tz), configurable: true },
-        plainDateTimeISO: { value: (tz?: string) => at(tz)['toPlainDateTime']!(), configurable: true },
-        plainDateISO: { value: (tz?: string) => at(tz)['toPlainDate']!(), configurable: true },
-        plainTimeISO: { value: (tz?: string) => at(tz)['toPlainTime']!(), configurable: true },
-      });
-    }, FIXED_NOW);
-    const page = context.pages()[0] ?? (await context.newPage());
-    await page.goto(`${BASE_URL}/`);
-    await expect(page.getByRole('heading', { name: 'Start your journal' })).toBeVisible(READY);
-    await shoot(page, '01-first-launch');
-    await startJournal(page);
-    await expect(page.getByRole('heading', { name: 'Add your brokerage account' })).toBeVisible(READY);
-    await shoot(page, '02-onboarding');
-    await onboard(page);
-    await page.getByRole('tablist', { name: 'Trades by lifecycle' }).getByRole('tab', { name: 'Open' }).click();
-    await shoot(page, '03-trades-empty');
-
-    await nav(page).getByRole('link', { name: 'New Plan' }).click();
-    await expect(page.getByRole('heading', { name: 'New Plan' })).toBeVisible(READY);
-    await shoot(page, '04-new-plan');
-    await page.getByRole('button', { name: 'Confirm Plan' }).click();
-    await expect(page.getByRole('region', { name: 'This Plan can’t be confirmed yet' })).toBeVisible();
-    await shoot(page, '05-new-plan-errors');
-    await fillPlan(page, PLAN);
-    await page.getByLabel('Plan time').fill(PLAN_TIME);
-    await shoot(page, '06-new-plan-filled');
-    await page.getByRole('button', { name: 'Confirm Plan' }).click();
-    await expect(page.getByRole('heading', { name: PLAN.symbol, level: 1 })).toBeVisible(READY);
-    await shoot(page, '07-detail-planned');
-    await nav(page).getByRole('link', { name: 'Trades' }).click();
-    await page.getByRole('tablist', { name: 'Trades by lifecycle' }).getByRole('tab', { name: 'Planned' }).click();
-    await expect(page.getByRole('table', { name: 'Planned Trades' })).toBeVisible(READY);
-    await shoot(page, '08-trades-planned');
-    await page.getByRole('table', { name: 'Planned Trades' }).getByRole('link', { name: PLAN.symbol }).click();
-    await expect(page.getByRole('heading', { name: PLAN.symbol, level: 1 })).toBeVisible(READY);
-
-    await openEntryForm(page);
-    await shoot(page, '09-record-entry');
-    await fillRows(page, PC1);
-    await expect(executionRow(page, 2)).toBeVisible();
-    await shoot(page, '10-record-entry-filled');
-    await completeReflection(page);
-    await shoot(page, '11-reflection', reflectionSection(page));
-    await page.getByRole('button', { name: 'Save entry' }).click();
-    await expect(page.getByRole('heading', { name: 'Entry recorded' })).toBeVisible();
-    await shoot(page, '12-receipt');
-    await backToTrade(page);
-    await recordEntry(page, PC2, { decline: true });
-    await backToTrade(page);
-    await recordEntry(page, PC3);
-    await nav(page).getByRole('link', { name: 'Trades' }).click();
-    await page.getByRole('tablist', { name: 'Trades by lifecycle' }).getByRole('tab', { name: 'Open' }).click();
-    await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
-    await shoot(page, '13-trades-open');
-    await openTradeFromOpenList(page);
-    const journal = page.getByRole('region', { name: /^Journal \(\d+\)$/ });
-    await expect(journal).toBeVisible(READY);
-    await shoot(page, '14-detail-open');
-    await shoot(page, '15-journal', journal);
-
-    await nav(page).getByRole('link', { name: 'Accounts' }).click();
-    await expect(page.getByRole('heading', { name: 'Accounts' })).toBeVisible(READY);
-    await shoot(page, '16-accounts');
-    await nav(page).getByRole('link', { name: 'About' }).click(READY);
-    await expect(page.getByRole('heading', { name: 'About' }).first()).toBeVisible(READY);
-    await shoot(page, '17-about');
+    const dir = mkdtempSync(path.join(tmpdir(), 'ui-screenshots-'));
+    try {
+      const context = await profileAt(dir).launch({ width: 390 });
+      try {
+        await drive(context);
+      } finally {
+        await context.close();
+      }
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   } finally {
-    await context.close();
     await server.close();
-    rmSync(dir, { recursive: true, force: true });
   }
   writeFileSync(path.join(OUT, 'README.md'), readme());
   const files = readdirSync(OUT);
