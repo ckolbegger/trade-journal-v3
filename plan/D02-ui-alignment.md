@@ -245,7 +245,7 @@ describe("Trades heading")
 ```text
 describe("Net cost")
   it should return Net cost as the sum of quantity × price over the Open Lots plus their opening fees, exactly (60 @ 50.10 with fee 1.00 is 3007.00)
-  it should sum across the Lots of several Position Changes, including an earlier-dated one (60 @ 50.10, 40 @ 50.30, fees 1.00 each: 5034.00)
+  it should sum across the Lots of several Position Changes, including an earlier-dated one (60 @ 50.10, 40 @ 50.30, fees 1.00 each: 5020.00)
   it should return Net cost Unavailable(NoOpenQuantity) for a Planned Trade with no Lots
 ```
 
