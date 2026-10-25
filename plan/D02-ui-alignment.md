@@ -44,7 +44,7 @@ The task IDs continue D2's numbering, T2.36–T2.55, so `tdd.sh` and the evidenc
 - **Contrast:** dark control borders stay, for 3:1 non-text contrast.
 - **Buttons:** fully pill-shaped primary buttons stay, as the contract says.
 - **About:** keeps its "Installed capabilities" list (C1.11, C2.11). It may be restyled, but not removed.
-- **Trades list:** keeps per-row integrity status.
+- **Trades list:** surfaces an integrity disagreement on its row (AC-LIFE-003). Revision 8: as a "Records disagree" badge in the Trade cell, not as a column.
 - **New Plan:** stays one page while the catalog has one Strategy. Step-1 Strategy cards wait for D7.
 
 ---
@@ -107,18 +107,26 @@ The UI shows a debit as "$3,007.00" and a credit as "$212.00 credit" (ui-contrac
 
 ### The Trades tables
 
-Underlying stays its own first column, the pinned one on narrow, and keeps the link to the Detail: its accessible name stays the symbol, so `openTradeFromOpenList` and every row lookup keep working. Strategy, Quantity and Average cost leave the Open table, because the Trade column carries them. The planned quantity moves into the Entry cell ("Entering · 60 of 100", "Resolved · 120 of 100"), so no Open value is lost.
+Underlying stays its own first column, the pinned one on narrow, and keeps the link to the Detail: its accessible name stays the symbol, so `openTradeFromOpenList` and every row lookup keep working. Strategy, Quantity and Average cost leave the Open table, because the Trade column carries them. The planned quantity moves into the Entry cell ("Entering · 60 of 100", "Resolved · 120 of 100").
+
+**Only the columns a trader scans by stay in the list** (the user's direction, 2026-10-25). Fees, Integrity, Deviations and Last activity leave the Open table, and each value stays reachable elsewhere:
+- **Fees** are inside Net cost and itemised on the Detail.
+- **Last activity** still orders the Open list (A32, the cursor order), and the Detail shows it.
+- **Deviations** are listed on the Detail. A count is spec-optional on a list (trade-views: lists "may show" Deviation indicators), and the spec's `browseTrades` filters have no Deviation dimension. A "has an active Deviation" filter would therefore be a product addition beyond the spec, and it is not planned.
+- **Integrity** cannot become a filter only. AC-LIFE-003 requires normal reads to surface a disagreement, so a trader must see it without looking for it. It becomes a "Records disagree" text badge in the Trade cell, at every width, shown only on a disagreeing row. An agreeing row shows nothing, where today every row says "Records agree".
 
 The cell order in the markup is the visual order. The I1 proposal's CSS-only reordering is dropped, since the columns change anyway.
 
 | Table | Wide (≥ 960 px), in order | Narrow (< 960 px) |
 |---|---|---|
-| Open (D2) | Underlying · Trade · Net cost · Entry · Integrity · Deviations · Account · Fees · Last activity | Underlying (pinned) · Trade, two lines (below) · then Entry, Integrity, Deviations, Account, Fees, Last activity, scrolling |
+| Open (D2) | Underlying · Trade · Net cost · Entry · Account | Underlying (pinned) · Trade, two lines (below) · then Entry and Account, scrolling |
 | Planned (D2) | Underlying · Trade · 1R · Reward : risk · Planned reward · Entry · Plan time · Account | Underlying (pinned) · Trade, two lines · then Entry, Plan time, Account, Planned reward, scrolling |
-| Open from D4 | adds **P&L** (Current Marked Trade P&L) after Net cost, then D4's risk and reward columns | adds P&L to the Trade cell's second line |
+| Open from D4 | adds **P&L** (Current Marked Trade P&L) after Net cost. D4's risk and reward figures stay on the Detail and in the Review, not as list columns. | adds P&L to the Trade cell's second line |
 | Closed (D6) | Underlying · Trade · Realized P&L · Realized R · then D6 A95's other columns | Underlying (pinned) · Trade, two lines (Realized P&L and R) |
 
-**Two-line Trade cell on narrow.** The first line is the summary text. The second line holds the row's key figures: Open "Net cost $3,007.00" (from D4 "· P&L +$84.00", or "Mark missing" text in its place), and Planned "1R $250.00 · Reward : risk 2.4". It also holds a "Records disagree" badge when the records disagree. From D4 it also holds the "Stop breached", "Target reached" and "Mark missing" text badges. At 320 px the row's identity, its money figures and its attention status are therefore all visible without scrolling.
+**Attention badges in the Trade cell, at every width.** After the summary text, the Trade cell shows text badges only when they apply: "Records disagree" in D2, and from D4 "Stop breached", "Target reached" and "Mark missing".
+
+**Two-line Trade cell on narrow.** The first line is the summary text with its badges. The second line holds the row's key figures: Open "Net cost $3,007.00" (from D4 "· P&L +$84.00", or "Mark missing" in its place), and Planned "1R $250.00 · Reward : risk 2.4". At 320 px the row's identity, its money figures and its attention status are therefore all visible without scrolling.
 
 The columns whose values that second line carries (Net cost, P&L, 1R, Reward : risk) are hidden on narrow, and the second line is hidden on wide, both with `display: none`. Each value is therefore in the accessibility tree exactly once at each width, and the same information is present at both widths (ui-contract Responsive). It is one table row per Trade, with two lines inside one cell, not two table rows, so row semantics and `getByRole('row')` lookups stay as they are.
 
@@ -279,11 +287,11 @@ The option and structure texts are tested where their variants arrive (D7, D10).
 
 ```text
 describe("Trades table columns")
-  it should show the Open columns in order Underlying, Trade, Net cost, Entry, Integrity, Deviations, Account, Fees, Last activity, with Underlying a link named by the symbol
+  it should show the Open columns in order Underlying, Trade, Net cost, Entry, Account, with Underlying a link named by the symbol, and no Fees, Integrity, Deviations or Last activity column
   it should show the Planned columns in order Underlying, Trade, 1R, Reward : risk, Planned reward, Entry, Plan time, Account
   it should show the Trade cell's summary text and, on a second line, "Net cost $3,007.00" (Open) or "1R $250.00 · Reward : risk 2.4" (Planned)
   it should show "Entering · 60 of 100" or "Resolved · 120 of 100" in the Open Entry cell
-  it should show the "Records disagree" badge on the Trade cell's second line, and "Not available" as the Trade text, for an incoherent row
+  it should show a "Records disagree" badge in the Trade cell of a disagreeing row (coherent with findings, or incoherent with "Not available" as its Trade text), and no integrity badge on an agreeing row
 ```
 
 The narrow/wide hiding (`display: none`) is CSS, measured in section 5.
