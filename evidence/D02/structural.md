@@ -1838,3 +1838,18 @@ Review finding (valid, minor): in `tools/ui-screenshots.ts`, `profileAt(dir).lau
 | (question c) | `.gitignore`, `tools/ui-screenshots.ts:202` | After a hard kill the capture directory sits untracked and unignored in `evidence/D02` | Valid; T2.54-B3 (capture under the ignored `test-results/`) |
 
 **Complete cumulative run after T2.54-B2** (`suite-runner`, 2026-10-25 10:19 EDT, on `a7e3488`): Unit 41 files / 435 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 88 passed (2.6m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` exit 0, 34 PNGs plus the README (re-renders reverted, no capture directory left). Failures: none. Outputs: `suite-runs/t2.54-b2-*.txt`.
+
+**T2.54-B3** (`9976d88`, `tools/ui-screenshots.ts`): the capture directory moves to the git-ignored `test-results/`, and `swapIn()` renames OUT to a backup, the capture to OUT, then removes the backup, restoring the backup if the second rename fails. Forced drive failure and forced swap failure both left `git status --short evidence/D02/ui-alignment` empty and port 5175 free.
+
+**ocr review of T2.54-B3** (`ocr-review` step): commit `9976d88`, session `3ac59c86-1b4a-4eb0-996b-3a65d206fe6d`, 1 file reviewed, 0 comments, plus three main-session questions. Raw output: `ocr/t2.54-b3-9976d88.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| (question b) | `tools/ui-screenshots.ts:239-241` | A stale same-pid backup makes step 1 fail | Valid (nothing lost); T2.54-B4 |
+| (question a) | `tools/ui-screenshots.ts:246-247` | A failed restore prints no path | Valid (nothing lost; OUT is in git); T2.54-B4 |
+| (question a) | `tools/ui-screenshots.ts:250` | A failed step 3 prints no backup path | Valid, minor; T2.54-B4 |
+| (question c) | `tools/ui-screenshots.ts:205-221` | Release order kept | Holds |
+
+Main-session decision: the third round of swap hardening showed the backup itself was the source of the edge cases. T2.54-B4 removes it: copy the checked capture in, with git as the backup and the recovery command printed on failure. Further hardening of this tool stops there, since any remaining failure is recoverable from git.
+
+**Complete cumulative run after T2.54-B3** (`suite-runner`, 2026-10-25 10:24 EDT, on `9976d88`): Unit 41 files / 435 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 88 passed (2.6m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` exit 0, 34 PNGs plus the README (re-renders reverted, no capture directory left). Failures: none. Outputs: `suite-runs/t2.54-b3-*.txt`.
