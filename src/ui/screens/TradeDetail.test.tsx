@@ -35,6 +35,16 @@ function renderDetail(facade: UiFacade, path = '/trades/trade-1') {
 }
 
 describe('Trade Detail', () => {
+  it('should render the Detail summary Trade text through the shared at-price component so the at sign stays with its price', async () => {
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: plannedDetail, binding: {} } as never);
+    renderDetail(facade);
+    const card = await screen.findByRole('region', { name: 'Summary' });
+    const text = card.querySelector('.summary-text')!;
+    expect(text.textContent).toBe('Long 100 shares @ $50.00');
+    expect(text.querySelector('.nowrap')?.textContent).toBe('@ $50.00');
+  });
+
   it('should show the Plan, Planned Leg, Stop, Target, Plan Baseline, 1R, the "Planned" lifecycle as text (not only colour), and the Plan Reflection with its snapshot prompt labels', async () => {
     const facade = facadeDouble();
     vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: plannedDetail, binding: {} } as never);
@@ -391,13 +401,13 @@ describe('summary card', () => {
   it('should lead the summary card with the Trade Summary text and on an Open Detail with Net cost', async () => {
     renderView(plannedDetail);
     const planned = await summaryOf();
-    expect(within(planned).getByText('Long 100 shares @ $50.00')).toBeTruthy();
+    expect(planned.querySelector('.summary-text')?.textContent).toBe('Long 100 shares @ $50.00');
     expect(within(planned).queryByText('Net cost')).toBeNull();
     cleanup();
 
     renderView(openDetailOf([PC1]));
     const open = await summaryOf();
-    expect(within(open).getByText('Long 60 shares @ $50.10')).toBeTruthy();
+    expect(open.querySelector('.summary-text')?.textContent).toBe('Long 60 shares @ $50.10');
     expect(termValue(open, 'Net cost')).toBe('$3,007.00');
   });
 

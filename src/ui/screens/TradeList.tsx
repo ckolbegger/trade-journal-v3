@@ -4,6 +4,7 @@ import type { UiFacade } from '../../app/compose.ts';
 import type { IncoherentOpenTradeItem, IncoherentPlannedTradeItem, OpenTradeItem, PlannedTradeItem } from '../../app/types.ts';
 import { PageTitle } from '../PageTitle.tsx';
 import { Badge } from '../Badge.tsx';
+import { TradeText } from '../TradeText.tsx';
 import { money, netCost, quantity, ratio, tradeSummary } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 
@@ -180,18 +181,6 @@ function OpenList({
 }
 
 const NOT_AVAILABLE = 'Not available';
-
-// The "@" stays with its price when the text wraps.
-function TradeText({ text }: { readonly text: string }) {
-  const at = text.indexOf('@ ');
-  if (at < 0) return <span>{text}</span>;
-  return (
-    <span>
-      {text.slice(0, at)}
-      <span className="nowrap">{text.slice(at)}</span>
-    </span>
-  );
-}
 
 // The Trade cell: the summary text, then on a narrow screen a second line with the figures whose
 // columns are hidden there (plan section 2a). The wide layout hides the line instead.

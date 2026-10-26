@@ -1538,6 +1538,43 @@ test.describe('T2.62 line breaks', () => {
     });
   }
 
+  // T2.65-B1: the Detail summary card's Trade text breaks like the Trades cells' (prices over $1,000 are the widest).
+  test('should keep "@" with its price in the Detail summary card Trade text at 320, 340 and 390', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    const planned = { ...PLAN, symbol: 'PLN', quantity: '1000', entry: '1500', stop: '1400', target: '1700' };
+    const open = { ...PLAN, symbol: 'OPN', quantity: '100', entry: '1234', stop: '1200', target: '1300' };
+    const rows = [
+      { quantity: '60', price: '1234.50', fee: '0.50', time: '2026-10-12T10:00' },
+      { quantity: '40', price: '1240.00', fee: '0.50', time: '2026-10-12T10:01' },
+    ];
+    await confirmReference(page, planned);
+    await confirmReference(page, open);
+    await recordEntry(page, rows);
+    await backToTrade(page, 'OPN');
+    const checks = [
+      ['Open', 'Long 100 shares @ $1,236.70'],
+      ['Planned', 'Long 1000 shares @ $1,500.00'],
+    ] as const;
+    const summary = page.getByRole('region', { name: 'Summary', exact: true }).locator('.summary-text');
+    for (const [kind, expected] of checks) {
+      if (kind === 'Planned') {
+        await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
+        await openPlanned(page);
+        await page.getByRole('table', { name: 'Planned Trades' }).getByRole('link', { name: 'PLN' }).click(READY);
+        await expect(page.getByRole('heading', { name: 'PLN', level: 1 })).toBeVisible();
+      }
+      for (const width of [320, 340, 390]) {
+        await page.setViewportSize({ width, height: 844 });
+        await expectLayout(page, width);
+        await expect(summary).toHaveText(expected);
+        expectAtWithPrice(await atPairs(summary), `${kind} summary Trade text at ${width}`);
+      }
+    }
+    await context.close();
+  });
+
   // Right edges (cell, its descendants) of the pinned and Trade cells against the scroll region's client box, before any scrolling.
   const insideRegion = (page: Page, tab: (typeof TABS)[number]) =>
     page.getByRole('region', { name: `${tab} Trades` }).evaluate((region) => {

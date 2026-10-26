@@ -18,6 +18,7 @@ import { Rational } from '../../domain/values/index.ts';
 import { PageTitle } from '../PageTitle.tsx';
 import { Badge } from '../Badge.tsx';
 import { WithSecondLine } from '../SecondLine.tsx';
+import { TradeText } from '../TradeText.tsx';
 import { decimalMoney as price, localTime, money, netCost, quantity, ratio, rMultiple, tradeSummary } from '../format.ts';
 import { BackIcon, ChevronIcon } from '../icons.tsx';
 import { useRuntime } from '../runtime.tsx';
@@ -197,7 +198,7 @@ function SummaryCard({ view }: { readonly view: PlannedTradeDetail | OpenTradeDe
   const target = view.plan.targets[0];
   return (
     <section className="card summary-card" aria-label="Summary">
-      {view.summary && <p className="summary-text number">{tradeSummary(view.summary)}</p>}
+      {view.summary && <p className="summary-text number"><TradeText text={tradeSummary(view.summary)} /></p>}
       {'deviations' in view && view.deviations.some((d) => d.versions.at(-1)?.status === 'Active') && <Badge tone="warning">Deviation active</Badge>}
       <dl className="figure-grid">
         {'netCost' in view && view.netCost.kind === 'Value' && <Figure term="Net cost">{netCost(view.netCost.value)}</Figure>}
