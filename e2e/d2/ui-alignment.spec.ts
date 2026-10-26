@@ -8,6 +8,7 @@ import {
   confirmReference,
   expect,
   expectAccessible,
+  fillPlan,
   firstPage,
   onboardedD1Page,
   onboardedPage,
@@ -1278,6 +1279,24 @@ test.describe('T2.55-B4 narrow Net cost on an incoherent Open row', () => {
       else expect(tree, `no second line at ${width}`).not.toContain('Net cost');
       // Wide: the Net cost cell itself reads Not available.
       if (width >= WIDE_LAYOUT_MIN_WIDTH) await expect(row.locator('td').nth(2)).toHaveText('Not available');
+      await context.close();
+    });
+  }
+});
+
+test.describe('T2.55-B5 price issues on the field that fails', () => {
+  for (const blank of ['Stop', 'Target'] as const) {
+    test(`should mark a blank ${blank}, not the valid Intended entry, after Confirm Plan`, async ({ server, profile }) => {
+      void server;
+      const context = await profile.launch();
+      const page = await onboardedPage(context);
+      await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'New Plan' }).click();
+      await fillPlan(page, { ...PLAN, [blank.toLowerCase()]: '' });
+      await page.getByRole('button', { name: 'Confirm Plan' }).click();
+      await expect(page.getByRole('region', { name: 'This Plan can’t be confirmed yet' })).toBeVisible(READY);
+      await expect(page.getByLabel(blank)).toHaveAttribute('aria-invalid', 'true');
+      await expect(page.getByLabel(blank)).toHaveAccessibleDescription(/price greater than zero/);
+      await expect(page.getByLabel('Intended entry')).not.toHaveAttribute('aria-invalid', 'true');
       await context.close();
     });
   }

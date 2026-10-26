@@ -311,23 +311,48 @@ describe('New Plan issues', () => {
     expect(document.activeElement).toBe(screen.getByLabelText('Target'));
   });
 
-  it('should clear an InvalidPrice issue only when the entry, Stop and Target are all valid prices', async () => {
+  it.each([['Stop'], ['Target']])('should attach the price issue to a blank %s, not to the valid Intended entry', async (blank) => {
+    const facade = renderForm();
+    vi.mocked(facade.TradeWorkflows.confirmPlan).mockResolvedValue(rejection([analysis('InvalidPrice')]));
+    const user = await fillPlan();
+    await user.clear(screen.getByLabelText(blank));
+    await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
+    await screen.findByRole('region', { name: 'This Plan can’t be confirmed yet' });
+    const field = screen.getByLabelText(blank);
+    expect(field.getAttribute('aria-invalid')).toBe('true');
+    expect(described(field)).toMatch(/price greater than zero/i);
+    for (const other of ['Intended entry', 'Stop', 'Target'].filter((name) => name !== blank)) {
+      expect(screen.getByLabelText(other).getAttribute('aria-invalid')).toBeNull();
+      expect(screen.getByLabelText(other).getAttribute('aria-describedby')).toBeNull();
+    }
+    // One summary line for the one failing field.
+    expect(within(screen.getByRole('region', { name: 'This Plan can’t be confirmed yet' })).getAllByRole('listitem')).toHaveLength(1);
+  });
+
+  it('should attach the price issue to every price that fails, and clear each as its own price becomes valid', async () => {
     const facade = renderForm();
     vi.mocked(facade.TradeWorkflows.confirmPlan).mockResolvedValue(rejection([analysis('InvalidPrice')]));
     const user = await fillPlan();
     await user.clear(screen.getByLabelText('Stop'));
-    await user.type(screen.getByLabelText('Stop'), 'abc');
+    await user.clear(screen.getByLabelText('Target'));
+    await user.type(screen.getByLabelText('Target'), 'abc');
     await user.click(screen.getByRole('button', { name: 'Confirm Plan' }));
     await screen.findByRole('region', { name: 'This Plan can’t be confirmed yet' });
-    const entry = screen.getByLabelText('Intended entry');
-    expect(described(entry)).toMatch(/prices greater than zero/i);
+    const [entry, stop, target] = ['Intended entry', 'Stop', 'Target'].map((name) => screen.getByLabelText(name));
+    expect(entry!.getAttribute('aria-invalid')).toBeNull();
+    expect(described(stop!)).toMatch(/Stop price greater than zero/);
+    expect(described(target!)).toMatch(/Target price greater than zero/);
 
-    // The entry alone is valid, but the Stop still is not a price.
-    await user.type(entry, '1');
-    expect(described(entry)).toMatch(/prices greater than zero/i);
-    await user.clear(screen.getByLabelText('Stop'));
-    await user.type(screen.getByLabelText('Stop'), '47.50');
-    expect(entry.getAttribute('aria-describedby')).toBeNull();
+    // The Stop alone is corrected: its issue goes, the Target's stays with the summary.
+    await user.type(stop!, '47.50');
+    expect(stop!.getAttribute('aria-describedby')).toBeNull();
+    expect(stop!.getAttribute('aria-invalid')).toBeNull();
+    expect(described(target!)).toMatch(/Target price greater than zero/);
+    expect(within(screen.getByRole('region', { name: 'This Plan can’t be confirmed yet' })).getAllByRole('listitem')).toHaveLength(1);
+    await user.clear(target!);
+    await user.type(target!, '56.00');
+    expect(target!.getAttribute('aria-describedby')).toBeNull();
+    expect(screen.queryByRole('region', { name: 'This Plan can’t be confirmed yet' })).toBeNull();
   });
 
   it('should clear a MissingInstrument issue only when the symbol matches the symbol rule', async () => {

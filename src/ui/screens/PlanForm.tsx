@@ -133,7 +133,13 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
     // A refusal switches the whole shell to Recovery Only; the form keeps its values.
     report(result);
     if (result.kind === 'Rejected') {
-      setIssues(describeIssues(result.issues, definition));
+      setIssues(
+        describeIssues(
+          result.issues,
+          definition,
+          (['entry', 'stop', 'target'] as const).filter((name) => !positiveDecimal(fields[name])),
+        ),
+      );
       setReported({ fields, answers });
     }
     if (result.kind === 'Confirmed') {
@@ -162,8 +168,6 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
       case 'quantity':
         return changed('quantity') && positiveDecimal(fields.quantity) !== undefined;
       case 'entry':
-        // InvalidPrice does not say which price was wrong, so it clears when all three are valid.
-        if (issue.code === 'InvalidPrice') return (changed('entry') || changed('stop') || changed('target')) && !!entry && !!stop && !!target;
         return changed('entry') && !!entry;
       case 'stop':
         return (changed('stop') || changed('entry')) && !!stop && (issue.code !== 'NoPositiveRisk' || (!!entry && stop.compare(entry) < 0));
