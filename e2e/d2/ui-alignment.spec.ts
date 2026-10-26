@@ -1187,7 +1187,9 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
     await context.close();
   });
 
-  test('should put each Execution row on the tint with its money right-aligned', async ({ server, profile }) => {
+  // U9(d) (T2.62) replaced the right-aligned money with one phrase, so this asserts the tint only; the price
+  // placement is measured under T2.62 line breaks.
+  test('should put each Execution row on the tint', async ({ server, profile }) => {
     void server;
     const context = await profile.launch();
     const page = await onboardedPage(context);
@@ -1197,28 +1199,9 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
       await page.setViewportSize({ width, height: 900 });
       await expectLayout(page, width);
       const tint = await tokenColour(page, '--tint');
-      const rows = await section.locator('ul.executions > li').evaluateAll((els) =>
-        els.map((el) => {
-          const money = el.querySelector<HTMLElement>('.execution-money');
-          const summary = el.querySelector<HTMLElement>('.execution-summary');
-          const what = el.querySelector<HTMLElement>('.execution-what');
-          return {
-            ground: getComputedStyle(el).backgroundColor,
-            align: money ? getComputedStyle(money).textAlign : '',
-            moneyRight: money?.getBoundingClientRect().right ?? Number.NaN,
-            summaryRight: summary?.getBoundingClientRect().right ?? Number.NaN,
-            moneyLeft: money?.getBoundingClientRect().left ?? Number.NaN,
-            whatRight: what?.getBoundingClientRect().right ?? Number.NaN,
-          };
-        }),
-      );
-      expect(rows.length, `rows at ${width}`).toBe(3);
-      for (const row of rows) {
-        expect(row.ground, `row ground at ${width}`).toBe(tint);
-        expect(row.align, `money alignment at ${width}`).toBe('right');
-        expect(Math.abs(row.moneyRight - row.summaryRight), `money flush right at ${width}`).toBeLessThanOrEqual(1);
-        expect(row.moneyLeft, `money after the action text at ${width}`).toBeGreaterThanOrEqual(row.whatRight);
-      }
+      const grounds = await section.locator('ul.executions > li').evaluateAll((els) => els.map((el) => getComputedStyle(el).backgroundColor));
+      expect(grounds.length, `rows at ${width}`).toBe(3);
+      for (const ground of grounds) expect(ground, `row ground at ${width}`).toBe(tint);
     }
     await context.close();
   });
@@ -1236,17 +1219,12 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
       const tint = await tokenColour(page, '--tint');
       const rows = await receipt.locator('ul.executions > li').evaluateAll((els) =>
         els.map((el) => {
-          const money = el.querySelector('.execution-money') as HTMLElement;
-          return { ground: getComputedStyle(el).backgroundColor, align: getComputedStyle(money).textAlign, moneyRight: money.getBoundingClientRect().right, right: el.getBoundingClientRect().right - parseFloat(getComputedStyle(el).paddingRight), text: el.textContent };
+          return { ground: getComputedStyle(el).backgroundColor, text: el.textContent };
         }),
       );
       expect(rows.length, `receipt rows at ${width}`).toBe(2);
       expect(rows[0]!.text, 'receipt row text').toMatch(/^Buy 30 XYZ @ \$50\.00, fee \$0\.50$/);
-      for (const row of rows) {
-        expect(row.ground, `receipt row ground at ${width}`).toBe(tint);
-        expect(row.align, `receipt money alignment at ${width}`).toBe('right');
-        expect(row.right - row.moneyRight, `receipt money flush right at ${width}`).toBeLessThanOrEqual(1);
-      }
+      for (const row of rows) expect(row.ground, `receipt row ground at ${width}`).toBe(tint);
       const link = receipt.getByRole('link', { name: 'Back to the Trade' });
       const look = await link.evaluate((el) => {
         const s = getComputedStyle(el);
@@ -1467,4 +1445,133 @@ test.describe('T2.55-B6 narrow 1R and Reward : risk on an incoherent Planned row
       await context.close();
     });
   }
+});
+
+// Client rects of the first "@" and of the price after it, and of "fee" and its amount, found by walking the
+// element's text so spans and inline markup do not matter. Runs in the page, so it is self-contained.
+interface AtPair {
+  readonly text: string;
+  readonly atTop: number;
+  readonly priceTop: number;
+  readonly atRight: number;
+  readonly priceLeft: number;
+  readonly feeTop: number | undefined;
+  readonly feeAmountTop: number | undefined;
+}
+
+const atPairs = (loc: Locator): Promise<AtPair[]> =>
+  loc.evaluateAll((els) => {
+    const rectOf = (el: Element, from: number, to: number): DOMRect => {
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      const range = document.createRange();
+      let offset = 0;
+      let started = false;
+      for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+        const len = (n.textContent ?? '').length;
+        if (!started && from < offset + len) {
+          range.setStart(n, from - offset);
+          started = true;
+        }
+        if (started && to <= offset + len) {
+          range.setEnd(n, to - offset);
+          break;
+        }
+        offset += len;
+      }
+      return range.getBoundingClientRect();
+    };
+    return els.map((el) => {
+      const text = el.textContent ?? '';
+      const at = text.indexOf('@');
+      const price = text.indexOf('$', at);
+      const fee = text.indexOf('fee');
+      const feeAmount = fee < 0 ? -1 : text.indexOf('$', fee);
+      const atRect = rectOf(el, at, at + 1);
+      const priceRect = rectOf(el, price, price + 1);
+      return {
+        text,
+        atTop: atRect.top,
+        priceTop: priceRect.top,
+        atRight: atRect.right,
+        priceLeft: priceRect.left,
+        feeTop: fee < 0 ? undefined : rectOf(el, fee, fee + 3).top,
+        feeAmountTop: feeAmount < 0 ? undefined : rectOf(el, feeAmount, feeAmount + 1).top,
+      };
+    });
+  });
+
+function expectAtWithPrice(pairs: readonly AtPair[], where: string): void {
+  for (const p of pairs) {
+    expect(Math.abs(p.priceTop - p.atTop), `${where}: price on the line of its "@" in "${p.text}"`).toBeLessThanOrEqual(1);
+    if (p.feeTop !== undefined) expect(Math.abs(p.feeAmountTop! - p.feeTop), `${where}: fee beside its amount in "${p.text}"`).toBeLessThanOrEqual(1);
+  }
+}
+
+test.describe('T2.62 line breaks', () => {
+  for (const width of [320, 390, 1280]) {
+    test(`should keep the Underlying header on one line and each Trade cell's "@" with its price at ${width}`, async ({ server, profile }) => {
+      void server;
+      const context = await profile.launch();
+      const page = await onboardedPage(context);
+      await seedTrades(page);
+      await page.setViewportSize({ width, height: width === 1280 ? 900 : 844 });
+      await expectLayout(page, width);
+      for (const tab of TABS) {
+        if (tab === 'Planned') await openPlanned(page);
+        const table = page.getByRole('table', { name: `${tab} Trades` });
+        await expect(table).toBeVisible(READY);
+        const header = await table.locator('thead th').first().evaluate((th) => {
+          const range = document.createRange();
+          range.selectNodeContents(th);
+          return { text: th.textContent, height: range.getBoundingClientRect().height, lineHeight: parseFloat(getComputedStyle(th).lineHeight) };
+        });
+        expect(header.text).toBe('Underlying');
+        expect(header.height, `${tab} Underlying header height at ${width}`).toBeLessThanOrEqual(1.6 * header.lineHeight);
+        expectAtWithPrice(await atPairs(table.locator('tbody tr td:nth-child(2)')), `${tab} Trade cell at ${width}`);
+        const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+        expect(overflow, `${tab} page overflow at ${width}`).toBeLessThanOrEqual(0);
+      }
+      await context.close();
+    });
+  }
+
+  test('should read each Detail Execution as one phrase with the price straight after the "@" at 320, 390 and 1280', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await openTradeWithJournal(page);
+    const rows = page.getByRole('region', { name: 'Executions (3)', exact: true }).locator('ul.executions > li .execution-summary');
+    for (const width of [320, 390, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expectLayout(page, width);
+      const pairs = await atPairs(rows);
+      expect(pairs.length, `Execution rows at ${width}`).toBe(3);
+      expectAtWithPrice(pairs, `Execution row at ${width}`);
+      for (const p of pairs) expect(p.priceLeft - p.atRight, `price follows the "@" at ${width} in "${p.text}"`).toBeLessThanOrEqual(12);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), `overflow at ${width}`).toBeLessThanOrEqual(0);
+    }
+    await context.close();
+  });
+
+  test('should read each receipt row as one phrase with the price after the "@" and "fee" beside its amount at 320, 390 and 1280', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await confirmReference(page);
+    await recordEntry(page, PC1);
+    const rows = page.getByRole('region', { name: 'Entry recorded', exact: true }).locator('ul.executions > li');
+    for (const width of [320, 390, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expectLayout(page, width);
+      const pairs = await atPairs(rows);
+      expect(pairs.length, `receipt rows at ${width}`).toBe(2);
+      expectAtWithPrice(pairs, `receipt row at ${width}`);
+      for (const p of pairs) {
+        expect(p.feeTop, 'receipt shows a fee').toBeDefined();
+        expect(p.priceLeft - p.atRight, `price follows the "@" at ${width} in "${p.text}"`).toBeLessThanOrEqual(12);
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), `overflow at ${width}`).toBeLessThanOrEqual(0);
+    }
+    await context.close();
+  });
 });

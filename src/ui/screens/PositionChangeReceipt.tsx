@@ -70,8 +70,9 @@ export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceip
         <ul className="executions">
           {saved.executions.map((e) => (
             <li key={e.factId} className="execution-line">
-              <span className="execution-what">{`${e.action} ${e.quantity} ${e.instrument.symbol} @`}</span>{' '}
-              <span className="execution-money number">{`${price(e.price)}, fee ${price(e.fee)}`}</span>
+              <span className="execution-what">{`${e.action} ${e.quantity} ${e.instrument.symbol}`}</span>{' '}
+              <span className="execution-price number">{`@ ${price(e.price)}`}</span>,{' '}
+              <span className="nowrap number">{`fee ${price(e.fee)}`}</span>
             </li>
           ))}
         </ul>

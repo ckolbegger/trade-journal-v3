@@ -345,8 +345,8 @@ function ExecutionRow({
       >
         <span id={`execution-summary-${e.factId}`} className="execution-summary">
           {/* The spaces between the spans keep the name "Buy 60 XYZ @ $50.10 time", the visible text: inline spans trim their own. */}
-          <span className="execution-what">{`${what} @`}</span>{' '}
-          <span className="execution-money number">{price(e.price)}</span>{' '}
+          <span className="execution-what">{what}</span>{' '}
+          <span className="execution-price number">{`@ ${price(e.price)}`}</span>{' '}
           <span className="nowrap">{time}</span>
         </span>
         <span id={`execution-hint-${e.factId}`} className="visually-hidden">

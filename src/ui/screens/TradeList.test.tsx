@@ -222,7 +222,8 @@ describe('Trades table columns', () => {
     const open = await openTable([openItem]);
     const openCell = within(within(open).getAllByRole('row')[1]!).getAllByRole('cell')[1]!;
     expect(openCell.textContent).toBe('Long 60 shares @ $50.10 Net cost $3,007.00');
-    expect(within(openCell).getByText('Long 60 shares @ $50.10')).toBeTruthy();
+    // T2.62: the "@" and its price sit in one no-wrap span, so the summary text has no break between them.
+    expect(within(openCell).getByText('@ $50.10').className).toBe('nowrap');
     expect(within(openCell).getByText('Net cost $3,007.00').className).toBe('trade-line');
     // The Net cost column carries the same figure for the wide layout.
     expect(within(within(open).getAllByRole('row')[1]!).getAllByRole('cell')[2]!.textContent).toBe('$3,007.00');

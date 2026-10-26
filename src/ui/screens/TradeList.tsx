@@ -181,12 +181,24 @@ function OpenList({
 
 const NOT_AVAILABLE = 'Not available';
 
+// The "@" stays with its price when the text wraps.
+function TradeText({ text }: { readonly text: string }) {
+  const at = text.indexOf('@ ');
+  if (at < 0) return <span>{text}</span>;
+  return (
+    <span>
+      {text.slice(0, at)}
+      <span className="nowrap">{text.slice(at)}</span>
+    </span>
+  );
+}
+
 // The Trade cell: the summary text, then on a narrow screen a second line with the figures whose
 // columns are hidden there (plan section 2a). The wide layout hides the line instead.
 function TradeCell({ text, disagrees, line }: { readonly text: string; readonly disagrees: boolean; readonly line: string | undefined }) {
   return (
     <>
-      <span>{text}</span>
+      <TradeText text={text} />
       {/* Text, not colour alone, carries the meaning; an agreeing row shows nothing. The spaces keep
           the cell's text and accessible name from running the parts together. */}
       {disagrees && (

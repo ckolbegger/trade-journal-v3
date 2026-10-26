@@ -419,7 +419,7 @@ label.chip:focus-within {
 
 .table-scroll {
   overflow-x: auto;
-  --pin: 5rem;
+  --pin: 6.5rem;
   --shadow: rgba(28, 27, 25, 0.28);
   /* The card ground lives here, under the table, so scroll shadows can be drawn over it. A local
      cover hides each shadow until the region has scrolled that way; the left pair sits beside the
@@ -490,6 +490,12 @@ table.trades th {
   letter-spacing: 0.04em;
   color: var(--muted);
   text-align: left;
+}
+
+/* The pinned header word is never broken inside; the column is sized to hold it. */
+table.trades th:first-child {
+  overflow-wrap: normal;
+  word-break: keep-all;
 }
 
 table.trades th.number {
@@ -748,33 +754,26 @@ ul.executions > li:first-child {
   cursor: pointer;
 }
 
-/* The action text on the left, the money flush right, the time on its own line. */
+/* One phrase, "Buy 30 XYZ @ $50.00", the "@" never parted from its price; the time on its own line. */
 .execution-summary {
   flex: 1 1 0;
   min-width: 0;
-  display: flex;
-  flex-wrap: wrap;
-  column-gap: 0.5rem;
   font-variant-numeric: tabular-nums;
 }
 
 .execution-summary .nowrap {
-  flex-basis: 100%;
+  display: block;
   color: var(--muted);
   font-size: 0.9rem;
 }
 
-.execution-money {
-  margin-left: auto;
+.execution-price {
+  white-space: nowrap;
   font-weight: 600;
 }
 
-/* The receipt reuses the row: no disclosure, the money after the action text. */
+/* The receipt reuses the phrase: no disclosure, the fee after the price. */
 ul.executions > li.execution-line {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  column-gap: 0.5rem;
   padding: 0.6rem 0.75rem;
   font-variant-numeric: tabular-nums;
 }
