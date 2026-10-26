@@ -123,13 +123,16 @@ export function AppShell({
   // At most one request at a time: the ref guards calls in the same tick, the state disables the buttons.
   const requestPending = useRef(false);
   const [requesting, setRequesting] = useState(false);
+  // The last request was rejected: the card says so and the button works again.
+  const [requestFailed, setRequestFailed] = useState(false);
   const requestDurability = useCallback(() => {
     if (requestPending.current) return;
     requestPending.current = true;
     setRequesting(true);
+    setRequestFailed(false);
     void facade.Workspace
       .requestDurability()
-      .then(setDurability)
+      .then(setDurability, () => setRequestFailed(true))
       .finally(() => {
         requestPending.current = false;
         setRequesting(false);
@@ -292,6 +295,7 @@ export function AppShell({
           durability={durability}
           onRequest={requestDurability}
           requesting={requesting}
+          failed={requestFailed}
         />
         <FirstRun facade={facade} onOpened={setStatus} />
       </>
@@ -310,6 +314,7 @@ export function AppShell({
           durability={durability}
           onRequest={requestDurability}
           requesting={requesting}
+          failed={requestFailed}
         />
         <OnboardingAccount
           facade={facade}
@@ -358,6 +363,7 @@ export function AppShell({
         durability,
         requestDurability,
         requestingDurability: requesting,
+        durabilityRequestFailed: requestFailed,
         timeZone: "timeZone" in status ? status.timeZone : undefined,
       }}
     >

@@ -17,6 +17,8 @@ export interface RuntimeState {
   readonly requestDurability?: () => void;
   // A durability request is in flight; further requests are ignored until it resolves.
   readonly requestingDurability?: boolean;
+  // The last durability request was rejected, so the browser gave no answer.
+  readonly durabilityRequestFailed?: boolean;
 }
 
 export const RuntimeContext = createContext<RuntimeState>({ writable: false, report: () => undefined });

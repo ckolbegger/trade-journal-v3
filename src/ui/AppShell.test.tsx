@@ -327,9 +327,69 @@ describe('storage warning', () => {
     renderShell(facade, '/about', aboutScreen(facade));
     const user = userEvent.setup();
     await user.click(await screen.findByRole('button', { name: 'Ask the browser to keep data' }));
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Ask the browser to keep data' }).disabled).toBe(true);
+    // aria-disabled, not the disabled attribute: a disabled button drops keyboard focus (B3).
+    expect(screen.getByRole('button', { name: 'Ask the browser to keep data' }).getAttribute('aria-disabled')).toBe('true');
     await act(() => Promise.resolve(resolvers[0]!({ kind: 'NotImproved', currentProtection: { kind: 'BestEffort', reason: 'HostDeclined' } })));
     expect(await screen.findByText(/the browser declined/i)).toBeTruthy();
+  });
+
+  it('should keep focus on the ask button while pending and call the facade once for a second press', async () => {
+    const facade = facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) });
+    const resolvers = pendingRequest(facade);
+    renderShell(facade, '/about', aboutScreen(facade));
+    const user = userEvent.setup();
+    const button = await screen.findByRole('button', { name: 'Ask the browser to keep data' });
+    button.focus();
+    await user.keyboard('{Enter}');
+    expect(document.activeElement).toBe(button);
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    await user.keyboard('{Enter}');
+    expect(facade.Workspace.requestDurability).toHaveBeenCalledTimes(1);
+    await act(() => Promise.resolve(resolvers[0]!({ kind: 'Improved', currentProtection: 'Protected' })));
+  });
+
+  it('should move focus to the result status when the request resolves', async () => {
+    const facade = facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) });
+    const resolvers = pendingRequest(facade);
+    renderShell(facade, '/about', aboutScreen(facade));
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Ask the browser to keep data' }));
+    await act(() => Promise.resolve(resolvers[0]!({ kind: 'NotImproved', currentProtection: { kind: 'BestEffort', reason: 'HostDeclined' } })));
+    const status = await screen.findByText(/the browser declined/i);
+    expect(status.getAttribute('role')).toBe('status');
+    expect(document.activeElement).toBe(status);
+    cleanup();
+    const granted = facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) });
+    const grantedResolvers = pendingRequest(granted);
+    renderShell(granted, '/about', aboutScreen(granted));
+    await user.click(await screen.findByRole('button', { name: 'Ask the browser to keep data' }));
+    await act(() => Promise.resolve(grantedResolvers[0]!({ kind: 'Improved', currentProtection: 'Protected' })));
+    const kept = await screen.findByText(/will now keep your journal data/i);
+    expect(document.activeElement).toBe(kept);
+  });
+
+  it('should catch a rejected request, show a retry status and make the button usable again', async () => {
+    const unhandled: unknown[] = [];
+    const listener = (reason: unknown) => unhandled.push(reason);
+    process.on('unhandledRejection', listener);
+    try {
+      const facade = facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) });
+      vi.mocked(facade.Workspace.requestDurability).mockRejectedValueOnce(new Error('boom')).mockResolvedValue({ kind: 'Improved', currentProtection: 'Protected' });
+      renderShell(facade, '/about', aboutScreen(facade));
+      const user = userEvent.setup();
+      await user.click(await screen.findByRole('button', { name: 'Ask the browser to keep data' }));
+      const status = await screen.findByText("The browser didn't answer. You can try again.");
+      expect(status.getAttribute('role')).toBe('status');
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(unhandled).toEqual([]);
+      const button = screen.getByRole('button', { name: 'Ask the browser to keep data' });
+      expect(button.getAttribute('aria-disabled')).not.toBe('true');
+      expect(screen.getByRole('region', { name: 'Storage protection' })).toBeTruthy();
+      await user.click(button);
+      expect(facade.Workspace.requestDurability).toHaveBeenCalledTimes(2);
+    } finally {
+      process.off('unhandledRejection', listener);
+    }
   });
 
   it('should ignore a second request while one is pending so a later NotImproved cannot overwrite a granted result', async () => {
