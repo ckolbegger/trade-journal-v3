@@ -2114,3 +2114,19 @@ Fixes the three Valid ocr findings on 05e1e8b. The outcome of `Workspace.request
 | (question b) | `src/ui` | No other template puts "a" before a variable; every literal "Enter a/an…" or "Choose a/an…" reads correctly | Holds |
 
 **Complete cumulative run after T2.65-B2** (`suite-runner`, 2026-10-26 06:09 EDT, on `43d2a70`): Unit 43 files / 474 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 117 passed (3.5m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` wrote 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.65-b2-*.txt`.
+
+### T2.66 One shared Planned summary helper (U10a)
+
+**T2.66** (`09871bf`, refactor): `plannedLongStockSummary(legs)` in a new `src/domain/values/planned-summary.ts` replaces the list read model's `plannedSummary` (both `trade-views.ts` call sites) and T2.55-B1's copy in `confirmed-detail.ts`. No test changed; before and after, `npx vitest run src` 474 passed; integration 49; e2e d1+d2 117; lint:deps clean. One definition remains.
+
+**ocr review of T2.66** (`ocr-review` step): commit `09871bf`, session `f05b8c3f-08ce-4ae5-9225-ac3906aef876`, 4 files reviewed, 0 comments, plus three main-session questions. Raw output: `ocr/t2.66-09871bf.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| (question a) | `src/domain/values/planned-summary.ts` | `domain/values` holds value types and their arithmetic (D1 plan line 69); a Long-Stock Trade Summary is a Trade concept, a weak fit. A new `src/domain/trade-summary.ts` beside `strategy.ts`, owning `TradeSummary` and the helper, is reachable by both callers | Doubtful, taken as a defect with the user's approval (2026-10-26, "approve all findings"); T2.66-B1 |
+| (question b) | removed code vs helper | Behavior byte-identical (parsing, sums, first-leg price, empty legs) | Holds |
+| (question c) | call sites | Drift fails to compile at both typed call sites; typing the helper's return as `TradeSummary` needs the type in the shared home (folded into T2.66-B1) | Holds |
+
+**Complete cumulative run after T2.66** (`suite-runner`, 2026-10-26 07:52 EDT, on `09871bf`): Unit 43 files / 474 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 117 passed (3.6m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` wrote 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.66-*.txt`.
+
+**T2.66-B1** (bug task for the T2.66 review, approved by the user): move the helper and the `TradeSummary` type to a new `src/domain/trade-summary.ts` (beside `strategy.ts`); type the helper's return as `TradeSummary`; `trade-views.ts` and `confirmed-detail.ts` import from there (re-export `TradeSummary` from `trade-views.ts` if its public surface needs it). Refactor: every test green before and after unchanged; lint:deps clean.
