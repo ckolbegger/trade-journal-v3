@@ -5,12 +5,14 @@ export interface StorageProtectionCardProps {
   // The shell's outcome of the request, and the shell function that makes it.
   readonly durability?: Durability;
   readonly onRequest?: () => void;
+  // A request is in flight: the button is disabled until it resolves.
+  readonly requesting?: boolean;
 }
 
 // The advisory storage warning (ADR 0009): the explanation, the one explicit request, and its honest
 // result. It never disables a control. About shows it; first run and onboarding, which have no About
 // to link to, show it themselves.
-export function StorageProtectionCard({ protection, durability, onRequest }: StorageProtectionCardProps) {
+export function StorageProtectionCard({ protection, durability, onRequest, requesting }: StorageProtectionCardProps) {
   return (
     <>
       {durability && durability.kind !== 'NotImproved' && (
@@ -37,6 +39,7 @@ export function StorageProtectionCard({ protection, durability, onRequest }: Sto
             <button
               type="button"
               className="pill secondary"
+              disabled={requesting}
               onClick={onRequest}
             >
               Ask the browser to keep data

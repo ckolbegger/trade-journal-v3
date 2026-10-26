@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useRef,
   useState,
   type ComponentType,
   type ReactNode,
@@ -119,8 +120,20 @@ export function AppShell({
   const [refusedAt, setRefusedAt] = useState<string | undefined>();
   // The outcome of the trader's one durability request, shared by every screen that shows the card.
   const [durability, setDurability] = useState<Durability | undefined>();
+  // At most one request at a time: the ref guards calls in the same tick, the state disables the buttons.
+  const requestPending = useRef(false);
+  const [requesting, setRequesting] = useState(false);
   const requestDurability = useCallback(() => {
-    void facade.Workspace.requestDurability().then(setDurability);
+    if (requestPending.current) return;
+    requestPending.current = true;
+    setRequesting(true);
+    void facade.Workspace
+      .requestDurability()
+      .then(setDurability)
+      .finally(() => {
+        requestPending.current = false;
+        setRequesting(false);
+      });
   }, [facade]);
   // While initialize converts an older stored schema (D2 A31).
   const [migrating, setMigrating] = useState(false);
@@ -278,6 +291,7 @@ export function AppShell({
           protection={status.protection}
           durability={durability}
           onRequest={requestDurability}
+          requesting={requesting}
         />
         <FirstRun facade={facade} onOpened={setStatus} />
       </>
@@ -295,6 +309,7 @@ export function AppShell({
           protection={status.protection}
           durability={durability}
           onRequest={requestDurability}
+          requesting={requesting}
         />
         <OnboardingAccount
           facade={facade}
@@ -342,6 +357,7 @@ export function AppShell({
         report,
         durability,
         requestDurability,
+        requestingDurability: requesting,
         timeZone: "timeZone" in status ? status.timeZone : undefined,
       }}
     >

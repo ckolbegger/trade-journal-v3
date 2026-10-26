@@ -26,7 +26,7 @@ const gb = (bytes: number) => `${(bytes / 1024 ** 3).toFixed(2)} GB`;
 // Evidence about this installed release and this browser, never a support verdict by identity.
 export function AboutView({ facade, updates }: AboutViewProps) {
   const [status, setStatus] = useState<Status | undefined>();
-  const { durability, requestDurability } = useRuntime();
+  const { durability, requestDurability, requestingDurability } = useRuntime();
   const [checked, setChecked] = useState<'NoUpdate' | 'UpdateWaiting' | undefined>();
   useEffect(() => {
     void facade.Workspace.getStatus().then(setStatus);
@@ -51,7 +51,7 @@ export function AboutView({ facade, updates }: AboutViewProps) {
   return (
     <article className="about">
       <h1>About</h1>
-      <StorageProtectionCard protection={status.protection} durability={durability} onRequest={requestDurability} />
+      <StorageProtectionCard protection={status.protection} durability={durability} onRequest={requestDurability} requesting={requestingDurability} />
       <section className="card" aria-labelledby="release-heading">
         <h2 id="release-heading">This release</h2>
         <dl>

@@ -15,6 +15,8 @@ export interface RuntimeState {
   readonly durability?: Durability;
   // Asks the browser to keep the data and records the outcome in the shell.
   readonly requestDurability?: () => void;
+  // A durability request is in flight; further requests are ignored until it resolves.
+  readonly requestingDurability?: boolean;
 }
 
 export const RuntimeContext = createContext<RuntimeState>({ writable: false, report: () => undefined });

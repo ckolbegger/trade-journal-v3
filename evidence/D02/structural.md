@@ -1971,3 +1971,5 @@ Fixes the three Valid ocr findings on 05e1e8b. The outcome of `Workspace.request
 | (question d) | `AppShell.tsx:121, 301-303` | The outcome survives onboarding → shell | Holds |
 
 **Complete cumulative run after T2.60-B1** (`suite-runner`, 2026-10-25 23:15 EDT, on `43f7359`): Unit 42 files / 448 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 100 passed (3.1m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` exit 0, 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.60-b1-*.txt`.
+
+**T2.60-B2** (bug fix for the T2.60-B1 review finding, no in-flight guard): `AppShell` runs at most one `Workspace.requestDurability` at a time (a ref guard plus a `requesting` state); `RuntimeState.requestingDurability` and the card's `requesting` prop disable the "Ask the browser to keep data" button (the `disabled` attribute) while it is pending. Three cases added to "storage warning" in `src/ui/AppShell.test.tsx` (one facade call for two clicks; button disabled while pending; a second call in the same tick is ignored so a later NotImproved cannot replace a granted result). No first-run passes.

@@ -300,6 +300,53 @@ describe('storage warning', () => {
     expect(term.nextElementSibling?.textContent).toBe('Protected');
   });
 
+  type Durable = Awaited<ReturnType<UiFacade['Workspace']['requestDurability']>>;
+  function pendingRequest(facade: UiFacade) {
+    const resolvers: Array<(value: Durable) => void> = [];
+    vi.mocked(facade.Workspace.requestDurability).mockImplementation(
+      () => new Promise<Durable>((resolve) => resolvers.push(resolve)),
+    );
+    return resolvers;
+  }
+
+  it('should call the facade once when the ask button is clicked twice before the request resolves', async () => {
+    const facade = facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) });
+    const resolvers = pendingRequest(facade);
+    renderShell(facade, '/about', aboutScreen(facade));
+    const user = userEvent.setup();
+    const button = await screen.findByRole('button', { name: 'Ask the browser to keep data' });
+    await user.click(button);
+    await user.click(button);
+    expect(facade.Workspace.requestDurability).toHaveBeenCalledTimes(1);
+    await act(() => Promise.resolve(resolvers[0]!({ kind: 'Improved', currentProtection: 'Protected' })));
+  });
+
+  it('should disable the ask button while the request is pending', async () => {
+    const facade = facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) });
+    const resolvers = pendingRequest(facade);
+    renderShell(facade, '/about', aboutScreen(facade));
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Ask the browser to keep data' }));
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Ask the browser to keep data' }).disabled).toBe(true);
+    await act(() => Promise.resolve(resolvers[0]!({ kind: 'NotImproved', currentProtection: { kind: 'BestEffort', reason: 'HostDeclined' } })));
+    expect(await screen.findByText(/the browser declined/i)).toBeTruthy();
+  });
+
+  it('should ignore a second request while one is pending so a later NotImproved cannot overwrite a granted result', async () => {
+    const facade = facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) });
+    const resolvers = pendingRequest(facade);
+    const Twice = () => {
+      const { requestDurability } = useRuntime();
+      return <button type="button" onClick={() => { requestDurability?.(); requestDurability?.(); }}>Ask twice</button>;
+    };
+    renderShell(facade, '/about', { about: () => <Twice /> });
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Ask twice' }));
+    expect(facade.Workspace.requestDurability).toHaveBeenCalledTimes(1);
+    await act(() => Promise.resolve(resolvers[0]!({ kind: 'Improved', currentProtection: 'Protected' })));
+    expect(screen.queryByRole('link', ICON)).toBeNull();
+  });
+
   it('should show neither icon nor card when protection is Protected', async () => {
     const facade = facadeDouble({ status: readyStatus({ protection: 'Protected' }) });
     renderShell(facade, '/about', aboutScreen(facade));
