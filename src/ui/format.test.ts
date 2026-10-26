@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rational } from '../domain/values/index.ts';
-import { money, netCost, ratio, rMultiple, tradeSummary } from './format.ts';
+import { decimalMoney, money, netCost, ratio, rMultiple, tradeSummary } from './format.ts';
 
 const r = (numerator: bigint, denominator: bigint) => Rational.of(numerator, denominator);
 
@@ -37,5 +37,36 @@ describe('Trade Summary text', () => {
   it('should format a Net cost debit as $3,007.00 and a credit as $212.00 credit', () => {
     expect(netCost(r(3007n, 1n))).toBe('$3,007.00');
     expect(netCost(r(-212n, 1n))).toBe('$212.00 credit');
+  });
+});
+
+describe('money format', () => {
+  it('should group thousands in an amount of 1,000 or more', () => {
+    expect(money(r(1561n, 1n))).toBe('$1,561.00');
+    expect(money(r(30061n, 1n))).toBe('$30,061.00');
+    expect(money(r(123456789n, 100n))).toBe('$1,234,567.89');
+  });
+
+  it('should leave an amount under 1,000 unchanged', () => {
+    expect(money(r(5010n, 100n))).toBe('$50.10');
+    expect(money(r(1n, 2n))).toBe('$0.50');
+    expect(money(r(0n, 1n))).toBe('$0.00');
+    expect(money(r(99999n, 100n))).toBe('$999.99');
+  });
+
+  it('should group a negative amount, keeping the sign form the formatter uses today', () => {
+    expect(money(r(-156100n, 100n))).toBe('−$1,561.00');
+    expect(money(r(-12345n, 100n))).toBe('−$123.45');
+  });
+
+  it('should give Net cost and every other amount the same grouping', () => {
+    expect(netCost(r(30061n, 1n))).toBe(money(r(30061n, 1n)));
+    expect(netCost(r(-123456789n, 100n))).toBe(`${money(r(123456789n, 100n))} credit`);
+    expect(decimalMoney('1234.5')).toBe(money(r(12345n, 10n)));
+  });
+
+  it('should show a 1,234.00 dollar price grouped in the Trade text, the Executions and the receipt', () => {
+    expect(tradeSummary({ kind: 'Stock', direction: 'Long', quantity: r(2n, 1n), price: r(1234n, 1n) })).toBe('Long 2 shares @ $1,234.00');
+    expect(decimalMoney('1234.00')).toBe('$1,234.00');
   });
 });

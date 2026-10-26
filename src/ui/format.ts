@@ -4,7 +4,8 @@ import { formatDecimal, formatMoney, parseDecimal, Rational } from '../domain/va
 
 // Presentation only. Values may arrive structurally cloned (navigation state), so only their
 // numerator and denominator fields are read.
-export const money = (value: Rational): string => formatMoney(value);
+// Money with comma-grouped thousands; the one money format of the UI.
+export const money = (value: Rational): string => formatMoney(value).replace(/\d+(?=\.)/, (whole) => whole.replace(/\B(?=(\d{3})+$)/g, ','));
 
 // A stored finite decimal (a price or fee as entered) as Money.
 export const decimalMoney = (text: string): string => {
@@ -28,11 +29,6 @@ export const localTime = (instant: string, timeZone: string): string => toWorksp
 export const tradeSummary = (summary: PlannedTradeItem['summary']): string =>
   `${summary.direction} ${quantity(summary.quantity)} shares @ ${money(summary.price)}`;
 
-// Signed cost of the open exposure, with thousands separators: a debit as Money, a credit (negative)
-// as its magnitude then "credit".
-export const netCost = (value: Rational): string => {
-  const credit = value.numerator < 0n;
-  const [whole = '', cents = ''] = money(credit ? Rational.of(-value.numerator, value.denominator) : value).split('.');
-  const text = `${whole.replace(/\B(?=(\d{3})+$)/g, ',')}.${cents}`;
-  return credit ? `${text} credit` : text;
-};
+// Signed cost of the open exposure: a debit as Money, a credit (negative) as its magnitude then "credit".
+export const netCost = (value: Rational): string =>
+  value.numerator < 0n ? `${money(Rational.of(-value.numerator, value.denominator))} credit` : money(value);
