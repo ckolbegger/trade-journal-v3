@@ -2085,3 +2085,15 @@ Fixes the three Valid ocr findings on 05e1e8b. The outcome of `Workspace.request
 **T2.65-B1** (bug task for critic-8 Defect 1): the Detail summary card's Trade text ("Long 100 shares @ $1,236.70") renders `tradeSummary` as plain text, so at 320–350 px it breaks as "Long 100 shares @ / $1,236.70"; only the Trades cells use the `nowrap` "@ price" span (`TradeText`, T2.62). Cases, in `e2e/d2/ui-alignment.spec.ts` "T2.62 line breaks" (or beside it) plus a unit case in `TradeDetail.test.tsx`:
 - it should keep "@" and its price on one line in the Detail summary card's Trade text at 320, 340 and 390 (a Trade priced over $1,000, e.g. "Long 100 shares @ $1,236.70" and a Planned "Long 1000 shares @ $1,500.00")
 - it should render the Detail summary Trade text through the same "@ price" component the Trades cells use
+
+**T2.65-B1** (`7624912`): `TradeText` moved unchanged from `TradeList.tsx` to `src/ui/TradeText.tsx` and now also renders the Detail summary card's Trade text, so "@ price" stays together there. Unit case in `TradeDetail.test.tsx` (red `expected undefined to be '@ $50.00'`, green) and e2e "should keep "@" with its price in the Detail summary card Trade text at 320, 340 and 390" (Open "Long 100 shares @ $1,236.70", Planned "Long 1000 shares @ $1,500.00"; red with the Detail line temporarily plain, green after). No first-run passes. One existing assertion changed from `getByText` to the `.summary-text` textContent, same strings. No PNG changed (seeded prices never wrap).
+
+**ocr review of T2.65-B1** (`ocr-review` step): commit `7624912`, session `68b9cee7-0dda-4a3f-88fa-56bd6ac3764c`, 3 files reviewed, 0 comments, plus three main-session questions. Raw output: `ocr/t2.65-b1-7624912.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| (question a) | `TradeList.tsx:167, 190, 263`, `TradeDetail.tsx:201` | Every `tradeSummary` rendering goes through `TradeText`; nothing else builds that text | Holds |
+| (question b) | `TradeText.tsx` | Without "@ " it renders the text unchanged; textContent always equals the input | Holds |
+| (question c) | `TradeDetail.test.tsx` | The changed assertion keeps (and tightens) its coverage | Holds |
+
+**Complete cumulative run after T2.65-B1** (`suite-runner`, 2026-10-26 05:46 EDT, on `7624912`): Unit 42 files / 473 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 117 passed (3.6m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` wrote 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.65-b1-*.txt`.
