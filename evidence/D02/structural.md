@@ -1895,3 +1895,15 @@ Main-session decision: the third round of swap hardening showed the backup itsel
 - **Tests:** three `PlanForm` unit cases (blank Stop, blank Target, several failing with per-field clearing) and `T2.55-B5` in `ui-alignment.spec.ts`.
 
 **Screenshots after T2.55-B1 to B5** (`npm run ui:screenshots`, after the e2e run): committed with B5: 05-new-plan-errors (390, 1280: the empty submission now marks Stop and Target and Intended entry each with its own message), 07-detail-planned (390, 1280: summary text, capped rows), 14-detail-open (390, 1280: capped rows, Last activity), 15-journal (390, 1280: label/value lists capped at 480 px). Reverted as pixel noise: 04-new-plan-1280, 17-about-390 and 17-about-1280 (the release hash differs only).
+
+**ocr review of T2.55-B1 to B5** (`ocr-review` step): range `ffd6249^..1e1e793`, session `27c4a78c-e0a6-49e5-801b-173c99e9e7e8`, 8 files reviewed (PNGs excluded), 0 comments, plus five main-session questions. Raw output: `ocr/t2.55-b1-b5-ffd6249-1e1e793.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| (question a) | `confirmed-detail.ts:5-9, 33-39` vs `trade-views.ts:219-226, 256-260` | `confirmedDetail` repeats `plannedSummary`'s derivation and the `decimal()` helper | Valid as duplication (no disagreement today: same `parseDecimal`, exact `Rational`). Deferred to the user in the final report: a single source means either `confirmPlan`'s result carrying the summary (facade change) or a shared pure helper, a design choice |
+| (question b) | `PlanForm.tsx:140`, `form-issues.tsx:61-64` vs `plan.ts:66-69, 140` | The UI's failing-price check can disagree with the domain's | Holds (same `parseDecimal(…, {positive: true})` on trimmed text) |
+| (question c) | `app.css:846-848`, `TradeDetail.tsx:567, 582` | The 480 px cap misaligns Journal columns | Dismissed: the meta and answers lists never shared a left edge (pre-existing); the cap is what T2.53 requires and changes nothing below 480 px |
+| (question d) | `TradeList.tsx:166, 169`, `app.css:511-532` | Narrow Net cost once in the accessibility tree per width, hidden at wide | Holds |
+| (question e) | `trade-views.ts:288, 430`, `trade-record.ts:305-308` | `lastActivity` on the Detail matches the list; only Position Changes move it | Holds |
+
+**Complete cumulative run after T2.55-B5** (`suite-runner`, 2026-10-25 22:04 EDT, on `1e1e793`): Unit 42 files / 441 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 96 passed (2.8m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` exit 0, 34 PNGs (6 pixel-noise re-renders reverted). Failures: none. Outputs: `suite-runs/t2.55-b5-*.txt`.

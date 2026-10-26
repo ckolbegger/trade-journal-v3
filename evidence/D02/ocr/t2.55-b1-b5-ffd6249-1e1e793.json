@@ -1,0 +1,166 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 8 selected item(s).",
+  "summary": {
+    "files_reviewed": 8,
+    "comments": 0,
+    "total_tokens": 133654,
+    "input_tokens": 131815,
+    "output_tokens": 1839,
+    "cache_read_tokens": 27008,
+    "elapsed": "1m12s"
+  },
+  "tool_calls": {
+    "total": 23,
+    "by_tool": {
+      "code_search": 8,
+      "file_read": 14,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Trade views, detail presentation, and supporting fixtures",
+      "files": [
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/ui/screens/TradeDetail.tsx",
+        "src/ui/screens/TradeList.tsx",
+        "src/ui/screens/confirmed-detail.ts",
+        "tests/support/open-detail-fixtures.ts"
+      ]
+    },
+    {
+      "label": "Plan form issue handling and styling",
+      "files": [
+        "src/ui/app.css",
+        "src/ui/screens/PlanForm.tsx",
+        "src/ui/screens/plan-issues.ts"
+      ]
+    }
+  ],
+  "session_id": "27c4a78c-e0a6-49e5-801b-173c99e9e7e8",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "27c4a78c-e0a6-49e5-801b-173c99e9e7e8",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "ffd6249^",
+      "requested_head": "1e1e793",
+      "resolved_base": "c0da6f4fb9a775fbd4df7287763d1593abb4fa61",
+      "resolved_head": "1e1e793521d42ac06792d59ee60fa0c5f1fdf914",
+      "exact_range": "c0da6f4fb9a775fbd4df7287763d1593abb4fa61..1e1e793521d42ac06792d59ee60fa0c5f1fdf914",
+      "source_artifact_sha256": "f96add46d29a13ca4f5cb929bf9cfe9a86549b942f1cbdb9d1eae7065c540a79"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "c55d73221b278ddcd57b69153100d249db2aeb44db675d13462fa383079871ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "222b34e85fb5d65db6bb846a0f5717db5c8b2961f09c0de5384b9165f9c33dec",
+          "path": "src/ui/screens/plan-issues.ts",
+          "fingerprint": "3d62761ccf6fa59f99f1f0bbf8363811aa52bba9a9370d3a1b8d7f101a1a4d01"
+        },
+        {
+          "item_id": "4bef282ec0dc6c7cd0fa2bf6f5db680b17ce8a78b337af77eba2134fd8d9a3f5",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "53ad07ca2602369321e2f9e800d7fa27b76228b4845597f6e3498369b1a587ed"
+        },
+        {
+          "item_id": "5b4924226d674d5735d81f79232ed2888af254046d9c58d51a19994096f8105c",
+          "path": "tests/support/open-detail-fixtures.ts",
+          "fingerprint": "0b7a8f990bd53c753d5c24944c0aae875f13fe025b98be13c2c1305cc225f48a"
+        },
+        {
+          "item_id": "5cfbcb9cc09bf41d787410c32947da605b0793380d46439a05a17cddf37604df",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "405657a3b587f403429e4636c246b4e18a73f4be522f2f394202074b49662d9f"
+        },
+        {
+          "item_id": "aa02a05b4881073ca1bb3f85ff78ad8713a1b6996978e8ecdf490c815750997f",
+          "path": "src/ui/app.css",
+          "fingerprint": "7591d79c93a31be552202921d12bf0d9907627965518471e0e7a91659e1a623b"
+        },
+        {
+          "item_id": "afd14a1c78b8466bd8ee260f2f2b578fd721f9a65ee0ae9d153f114d85787722",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "104fe705a7df06cd8b41c848642efccf8fc73cb1a5971c0e9cefc5d8ccd4c2bb"
+        },
+        {
+          "item_id": "b12ad24522f1026301b11bf501681fcd0601ce407898c5b05ed4a4e72f117cc7",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "7f7fa9f0ea08594fcfaa2355182dc8ff5e12ecfe816785d0fa6ed637ddbc1292"
+        },
+        {
+          "item_id": "b7dc8e5a80db585c27b91838d9c35e2ea83c9e5449378c7254c049324b675c39",
+          "path": "src/ui/screens/confirmed-detail.ts",
+          "fingerprint": "1471d1ce4eaaad5ee3f49ad8e65d516949d4b70c0eaf54141886ec6aedb9e5d5"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "222b34e85fb5d65db6bb846a0f5717db5c8b2961f09c0de5384b9165f9c33dec",
+          "path": "src/ui/screens/plan-issues.ts",
+          "fingerprint": "3d62761ccf6fa59f99f1f0bbf8363811aa52bba9a9370d3a1b8d7f101a1a4d01"
+        },
+        {
+          "item_id": "4bef282ec0dc6c7cd0fa2bf6f5db680b17ce8a78b337af77eba2134fd8d9a3f5",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "53ad07ca2602369321e2f9e800d7fa27b76228b4845597f6e3498369b1a587ed"
+        },
+        {
+          "item_id": "5b4924226d674d5735d81f79232ed2888af254046d9c58d51a19994096f8105c",
+          "path": "tests/support/open-detail-fixtures.ts",
+          "fingerprint": "0b7a8f990bd53c753d5c24944c0aae875f13fe025b98be13c2c1305cc225f48a"
+        },
+        {
+          "item_id": "5cfbcb9cc09bf41d787410c32947da605b0793380d46439a05a17cddf37604df",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "405657a3b587f403429e4636c246b4e18a73f4be522f2f394202074b49662d9f"
+        },
+        {
+          "item_id": "aa02a05b4881073ca1bb3f85ff78ad8713a1b6996978e8ecdf490c815750997f",
+          "path": "src/ui/app.css",
+          "fingerprint": "7591d79c93a31be552202921d12bf0d9907627965518471e0e7a91659e1a623b"
+        },
+        {
+          "item_id": "afd14a1c78b8466bd8ee260f2f2b578fd721f9a65ee0ae9d153f114d85787722",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "104fe705a7df06cd8b41c848642efccf8fc73cb1a5971c0e9cefc5d8ccd4c2bb"
+        },
+        {
+          "item_id": "b12ad24522f1026301b11bf501681fcd0601ce407898c5b05ed4a4e72f117cc7",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "7f7fa9f0ea08594fcfaa2355182dc8ff5e12ecfe816785d0fa6ed637ddbc1292"
+        },
+        {
+          "item_id": "b7dc8e5a80db585c27b91838d9c35e2ea83c9e5449378c7254c049324b675c39",
+          "path": "src/ui/screens/confirmed-detail.ts",
+          "fingerprint": "1471d1ce4eaaad5ee3f49ad8e65d516949d4b70c0eaf54141886ec6aedb9e5d5"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 72150
+  }
+}
