@@ -179,6 +179,7 @@ Kinds:
 | T2.54 | Reference-pair screenshots | close | S | all above | `npm run ui:screenshots` |
 | T2.55 | Critic gate for the batch | close | gate | T2.54 | fresh critic (section 7) |
 | T2.60 | Storage warning as an icon that opens About (U8, user 2026-10-25) | close | B | T2.55-B6 | `AppShell`, `AboutView` |
+| T2.60-B4 | Storage icon at the far right of the page title (user 2026-10-26) | close | S | T2.60-B3 | `ui-alignment.spec.ts` (storage icon) |
 
 **Ordering:**
 - Batches run A → B → C → D.
@@ -446,6 +447,18 @@ describe("storage warning")
 ```
 
 **Test impact:** the T2.37 banner measurements and every e2e lookup of the "Storage protection" region outside About change in this commit, with the reason in the evidence. The `tabTo` focus check and axe stay clean.
+
+### T2.60-B4 Storage icon at the far right of the page title (structural; the user, 2026-10-26)
+
+**Problem:** the T2.60 icon sits in its own row above the page title (`.storage-flag` in `AppShell`), which wastes vertical space at the top of every page (the user's screenshot of Trades at 1280).
+
+**Change:** the icon sits on the page title's row, at its far right, on every shell screen that has a page `h1` (Trades, New Plan, a Detail, Record entry, the receipt, Accounts, About), at every width. Its name, link, target size, focus outline and conditions from T2.60–T2.60-B3 are unchanged. No row is reserved when the icon is absent.
+
+**Exact verification** (in `e2e/d2/ui-alignment.spec.ts`, against dist-faults, measurements first and failing on the current build), at 320, 390 and 1280, on Trades, a Detail, New Plan and About:
+- The icon's vertical centre lies within the `h1`'s box.
+- The icon's right edge is at the content column's right edge (within 1 px), and the icon does not overlap the `h1` text.
+- The `h1`'s top is the same (within 1 px) with the icon shown (Best Effort) and absent (Protected).
+- The icon stays a 44 px target with an unclipped focus outline; no page overflow; axe clean.
 
 ### T2.52 Record entry Trade context
 
