@@ -1919,3 +1919,7 @@ Critic-5 D4's class, for Planned rows: `TradeList.tsx` PlannedList's Trade cell 
 | `npx vitest run src` | 42 files, 442 tests passed |
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
 | `npm run build:faults && npx playwright test e2e/d1 e2e/d2` | 99 passed (3.0m) |
+
+**ocr review of T2.55-B6** (`ocr-review` step): commit `3f17a56`, session `66d82041-5d7d-450a-8063-b79d959c4a66`, 1 file reviewed, 0 comments, plus three main-session questions, all holding: each figure once in the accessibility tree per width, the line hidden at wide (`app.css:509-531`); 1R and Reward : risk are all-or-nothing in the view, so no mixed line occurs; the fixture is the one `integrity.spec.ts:66-67` uses. Raw output: `ocr/t2.55-b6-3f17a56.json`.
+
+**Complete cumulative run after T2.55-B6** (`suite-runner`, 2026-10-25 22:18 EDT, on `3f17a56`): Unit 42 files / 442 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 99 passed (3.0m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` exit 0, 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.55-b6-*.txt`.

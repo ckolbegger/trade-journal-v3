@@ -1,0 +1,81 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 9583,
+    "input_tokens": 9529,
+    "output_tokens": 54,
+    "cache_read_tokens": 3840,
+    "elapsed": "7s"
+  },
+  "tool_calls": {
+    "total": 1,
+    "by_tool": {
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/ui/screens/TradeList.tsx",
+      "files": [
+        "src/ui/screens/TradeList.tsx"
+      ]
+    }
+  ],
+  "session_id": "66d82041-5d7d-450a-8063-b79d959c4a66",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "66d82041-5d7d-450a-8063-b79d959c4a66",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "3f17a56",
+      "resolved_base": "aa13ffedf9a16c31838c5f602d96997a43fb177b",
+      "resolved_head": "3f17a5632f1cda951175ec9bb89e9b4318736749",
+      "exact_range": "aa13ffedf9a16c31838c5f602d96997a43fb177b..3f17a5632f1cda951175ec9bb89e9b4318736749",
+      "source_artifact_sha256": "8b5edb4f8c3f2f27b492e57e960f2b222dd46521277c3e1073ad8d085fc3cf77"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "12b813eaf82b5679b2a0ab8ec6431a756a32f03214d4c1e5ed1aad83b2d1f543"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "12b813eaf82b5679b2a0ab8ec6431a756a32f03214d4c1e5ed1aad83b2d1f543"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 6881
+  }
+}
