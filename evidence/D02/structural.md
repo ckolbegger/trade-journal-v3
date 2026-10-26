@@ -2035,3 +2035,14 @@ Fixes the three Valid ocr findings on 05e1e8b. The outcome of `Workspace.request
 **T2.62-B1** (bug fix for the T2.62 review findings): at 320 and 390, on "Open Trades" and "Planned Trades", before scrolling:
 - it should keep the Underlying and Trade cells, including the second line and any badge, inside the scroll region's client box (not just the window);
 - it should keep the "UNDERLYING" header inside its own cell (`scrollWidth ≤ clientWidth`, and its right edge ≤ the Trade header's left edge), on one line.
+
+**T2.62-B1** (`1172327`, bug fix for the T2.62 review findings): the narrow Trade column's `min-width` goes from 12.5rem to 11.5rem, so the 6.5rem pin plus the Trade column is 288 px, the scroll region's width at 320. Six measurements added to "T2.62 line breaks" at 320 and 390: Underlying and Trade cells (second line included) inside the scroll region's client box, red at 320 (`Expected <= 304.5, Received 320`), green after; a "Records disagree" badge (Planned ABC fixture) inside the region, red at 320, green after; the "UNDERLYING" header inside its own cell on one line, **a first-run pass, flagged** (mutation: `letter-spacing: 0.3em; font-size: 1.3rem` on the header, failed with `scrollWidth Expected <= 104, Received 201`). So the T2.62 question (b) concern did not hold: the header already fit. The 390 variants pass on the old build as well (room to spare). Two PNGs re-rendered (`08-trades-planned-390`, `13-trades-open-390`).
+
+**ocr review of T2.62-B1** (`ocr-review` step): commit `1172327`, session `7ba1469a-e775-41af-8a32-e1a620ddf219`, 1 file reviewed, 0 comments, plus two main-session questions. Raw output: `ocr/t2.62-b1-1172327.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| (question a) | `app.css` | At 320 the Trade cell's content (wrapping text, nowrap "@ $1,234.56", "$1,234,567.00", the "Records disagree" badge at about 145 px of about 165 px) fits its cell | Holds |
+| (question b) | `e2e/d2/ui-alignment.spec.ts` | The tests measure the scroll region's client box and fail at 320 if the pin or Trade min-width grows | Holds |
+
+**Complete cumulative run after T2.62-B1** (`suite-runner`, 2026-10-26 04:50 EDT, on `1172327`): Unit 42 files / 459 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 114 passed (3.4m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` wrote 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.62-b1-*.txt`.
