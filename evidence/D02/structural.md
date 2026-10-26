@@ -1863,3 +1863,9 @@ Main-session decision: the third round of swap hardening showed the backup itsel
 
 
 **critic-5 cost note:** critic-5 stopped at the session usage limit during C2.10 and was resumed with SendMessage. The failed segment's notice carried no usage figures, so the row holds only the resumed segment's figures; the whole run cost more.
+
+### T2.55-B1 Planned Detail Trade Summary (critic-5 D1)
+
+- **Cause:** `getTradeDetail` already attaches `summary` to a Planned Detail. The Detail the user lands on after "Confirm Plan" is not read back: `confirmedDetail()` (`src/ui/screens/confirmed-detail.ts`) builds the `PlannedTradeDetail` from the command's post-commit result and never set `summary`. T2.49's unit fixture (`plannedDetail`) carried `summary`, so it passed; the browser run reached the Detail through the confirm path and saw none. A reload reads the real view and does show it.
+- **Fix:** `confirmedDetail` sets `summary` the way `plannedSummary` does (Stock, Long, total planned quantity, first leg's intended entry), using `parseDecimal` and `Rational` from `domain/values`. No view type changed (`PlannedTradeDetail.summary` already optional).
+- **Tests:** `confirmed-detail.test.ts` (unit, at the level that failed) and a browser case in `e2e/d2/ui-alignment.spec.ts` (confirm, then check the card leads with the text; reload, same).

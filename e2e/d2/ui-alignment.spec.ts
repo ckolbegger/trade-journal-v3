@@ -1185,3 +1185,18 @@ test.describe('T2.53 Detail, receipt and Accounts styling', () => {
     await context.close();
   });
 });
+
+test.describe('T2.55-B1 Planned Detail Trade Summary', () => {
+  test('should lead the summary card of a just-confirmed Planned Detail, and of the same Detail reloaded, with the Trade Summary', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await confirmReference(page);
+    const summary = page.getByRole('region', { name: 'Summary', exact: true });
+    await expect(summary.getByText('Long 100 shares @ $50.00')).toBeVisible(READY);
+    expect(await summary.locator(':scope > *').first().textContent(), 'first element of the card').toBe('Long 100 shares @ $50.00');
+    await page.reload();
+    await expect(summary.getByText('Long 100 shares @ $50.00')).toBeVisible(READY);
+    await context.close();
+  });
+});
