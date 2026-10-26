@@ -1,0 +1,198 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 11 selected item(s).",
+  "summary": {
+    "files_reviewed": 11,
+    "comments": 0,
+    "total_tokens": 54204,
+    "input_tokens": 53335,
+    "output_tokens": 869,
+    "cache_read_tokens": 11520,
+    "elapsed": "32s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 14,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Shared page title component and application shell integration",
+      "files": [
+        "src/ui/AppShell.tsx",
+        "src/ui/PageTitle.tsx",
+        "src/ui/app.css",
+        "src/ui/runtime.tsx"
+      ]
+    },
+    {
+      "label": "Screen-level page title adoption",
+      "files": [
+        "src/ui/screens/AboutView.tsx",
+        "src/ui/screens/AccountsView.tsx",
+        "src/ui/screens/PlanForm.tsx",
+        "src/ui/screens/PositionChangeForm.tsx",
+        "src/ui/screens/PositionChangeReceipt.tsx",
+        "src/ui/screens/TradeDetail.tsx",
+        "src/ui/screens/TradeList.tsx"
+      ]
+    }
+  ],
+  "session_id": "ba7fb4a8-0091-4b02-8a81-410740ce3ae9",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "ba7fb4a8-0091-4b02-8a81-410740ce3ae9",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "d6b570d",
+      "resolved_base": "0f64283418bcb14b5722b7b389112555c7a48d17",
+      "resolved_head": "d6b570d4d4e72b9ad05cad126f5019b7f740c6de",
+      "exact_range": "0f64283418bcb14b5722b7b389112555c7a48d17..d6b570d4d4e72b9ad05cad126f5019b7f740c6de",
+      "source_artifact_sha256": "ff1a1e9c834d9b7541ca2840ee0aa56d221bc91f3af815dd5ca44455e2550ba7"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "c55d73221b278ddcd57b69153100d249db2aeb44db675d13462fa383079871ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "04b54720c235e8c4c6110679c810623cf946a2b4dc5df1e357ede81bd9bd100b",
+          "path": "src/ui/PageTitle.tsx",
+          "fingerprint": "30f327600a269813ab7a002f85fcd88db8b540785358cef78f107f7e71366070"
+        },
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "fd1b8b0f540c0f59c9b39f235aed3a18b509787861b35495c4270e616f12de20"
+        },
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "1000c8ffe950001819ca61a6fbc97eb429990b03f759363b67fce2a8c4b73fda"
+        },
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "ab16f29a06f0d0d25e53f70b1f36600727d898ea76fb8e19a007bbbcef43b1de"
+        },
+        {
+          "item_id": "3b19891a8713f43c2aa08f50a42cf3abbe4d166f7d44b7ccfe76ba2b19a154b8",
+          "path": "src/ui/screens/PositionChangeReceipt.tsx",
+          "fingerprint": "62c2c94ef0072c6fa242fced09daf0d264bc63cb3da9ded446a83f7059c2699f"
+        },
+        {
+          "item_id": "67c8cc015993669e767b5de712c0acddfac2093780ae942de657a04784ed8024",
+          "path": "src/ui/runtime.tsx",
+          "fingerprint": "8c80cfd4e4834bbd95c300beeef69ce22be3f2901b73a2bf68ebd83fad3dbebc"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "22ccc0b108d2987696d7fc18dbeddc138e8d30765526588e0f5e53b021efdc8e"
+        },
+        {
+          "item_id": "8650c2637949522eaaa02e5ed749ec7b8b6ab8151b0cd0060f9a966595e84af1",
+          "path": "src/ui/screens/AboutView.tsx",
+          "fingerprint": "2372a0d1eb0f75939a74e3e0b9f01eaa283f4de6e3145805e00b73d2b6b0b386"
+        },
+        {
+          "item_id": "ba20b98bc1612e76f9501573d2ac8c4c304075cf175a8c30a7f5f00e002cef88",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "a1ff4e9f09767fd39694df28e2cdd9d7c2455b0b658208c791515f006e502a3f"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "2afed6ae64f1da4a2dfce79f46bef4aa64b50c4ae026ece8b49f7d2deb53fa61"
+        },
+        {
+          "item_id": "e4ea847301042fa058b097109a4632057a445286266fbdb2371320631ac4ef7e",
+          "path": "src/ui/screens/AccountsView.tsx",
+          "fingerprint": "172e154a7f2c6834f80255bf5bf46ccdbc7e03bf0c27066358edc8acc7a2e1c2"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "04b54720c235e8c4c6110679c810623cf946a2b4dc5df1e357ede81bd9bd100b",
+          "path": "src/ui/PageTitle.tsx",
+          "fingerprint": "30f327600a269813ab7a002f85fcd88db8b540785358cef78f107f7e71366070"
+        },
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "fd1b8b0f540c0f59c9b39f235aed3a18b509787861b35495c4270e616f12de20"
+        },
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "1000c8ffe950001819ca61a6fbc97eb429990b03f759363b67fce2a8c4b73fda"
+        },
+        {
+          "item_id": "2a625df83184b76985e64941dad800508a19445382c4fe1de1d861d7db398236",
+          "path": "src/ui/screens/PositionChangeForm.tsx",
+          "fingerprint": "ab16f29a06f0d0d25e53f70b1f36600727d898ea76fb8e19a007bbbcef43b1de"
+        },
+        {
+          "item_id": "3b19891a8713f43c2aa08f50a42cf3abbe4d166f7d44b7ccfe76ba2b19a154b8",
+          "path": "src/ui/screens/PositionChangeReceipt.tsx",
+          "fingerprint": "62c2c94ef0072c6fa242fced09daf0d264bc63cb3da9ded446a83f7059c2699f"
+        },
+        {
+          "item_id": "67c8cc015993669e767b5de712c0acddfac2093780ae942de657a04784ed8024",
+          "path": "src/ui/runtime.tsx",
+          "fingerprint": "8c80cfd4e4834bbd95c300beeef69ce22be3f2901b73a2bf68ebd83fad3dbebc"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "22ccc0b108d2987696d7fc18dbeddc138e8d30765526588e0f5e53b021efdc8e"
+        },
+        {
+          "item_id": "8650c2637949522eaaa02e5ed749ec7b8b6ab8151b0cd0060f9a966595e84af1",
+          "path": "src/ui/screens/AboutView.tsx",
+          "fingerprint": "2372a0d1eb0f75939a74e3e0b9f01eaa283f4de6e3145805e00b73d2b6b0b386"
+        },
+        {
+          "item_id": "ba20b98bc1612e76f9501573d2ac8c4c304075cf175a8c30a7f5f00e002cef88",
+          "path": "src/ui/screens/PlanForm.tsx",
+          "fingerprint": "a1ff4e9f09767fd39694df28e2cdd9d7c2455b0b658208c791515f006e502a3f"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "2afed6ae64f1da4a2dfce79f46bef4aa64b50c4ae026ece8b49f7d2deb53fa61"
+        },
+        {
+          "item_id": "e4ea847301042fa058b097109a4632057a445286266fbdb2371320631ac4ef7e",
+          "path": "src/ui/screens/AccountsView.tsx",
+          "fingerprint": "172e154a7f2c6834f80255bf5bf46ccdbc7e03bf0c27066358edc8acc7a2e1c2"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 31756
+  }
+}
