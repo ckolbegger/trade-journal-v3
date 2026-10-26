@@ -1960,3 +1960,14 @@ Fixes the three Valid ocr findings on 05e1e8b. The outcome of `Workspace.request
 
 - `src/ui/AppShell.test.tsx`: three cases added to "storage warning" (decline survives leaving About; no icon after a first-run success; the About row reads Protected after success).
 - Also, on the coordinator's instruction citing decision 2 of `plan/implementation-plan.md` (the warning offers the durability request but does not recommend a backup until D8): removed "Back up your journal as soon as this release offers backup" and the `recommendBackup` prop; new case "should not recommend a backup in the storage card on About" (red then green); the T2.60 About-card case no longer asserts the sentence.
+
+**ocr review of T2.60-B1** (`ocr-review` step): commit `43f7359`, session `34e1d2d7-f2e7-491a-a054-c61b8abc11e9`, 4 files reviewed, 0 comments, plus four main-session questions. Raw output: `ocr/t2.60-b1-43f7359.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| (question a) | `AppShell.tsx:121-123`, `StorageProtectionCard.tsx:36-43` | No in-flight guard: a double click, or first run then About, runs two requests and the later result overwrites the earlier | Valid (minor); T2.60-B2 |
+| (question b) | `AppShell.tsx:121, 277-297, 328`, `AboutView.tsx:29-69` | Icon, cards and About's row all derive from the one shell outcome | Holds |
+| (question c) | `src/ui` outside tests | No backup recommendation left; the Recovery Only text only explains backup is not offered yet | Holds |
+| (question d) | `AppShell.tsx:121, 301-303` | The outcome survives onboarding → shell | Holds |
+
+**Complete cumulative run after T2.60-B1** (`suite-runner`, 2026-10-25 23:15 EDT, on `43f7359`): Unit 42 files / 448 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 100 passed (3.1m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` exit 0, 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.60-b1-*.txt`.
