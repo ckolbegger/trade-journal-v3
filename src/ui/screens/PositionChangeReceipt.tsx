@@ -67,7 +67,9 @@ export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceip
         Entry recorded
       </PageTitle>
       <section aria-labelledby="saved-change-heading">
-        <h2 id="saved-change-heading">{`Position Change at ${localTime(saved.economicTime, timeZone)}`}</h2>
+        <h2 id="saved-change-heading">
+          Position Change at <span className="nowrap">{localTime(saved.economicTime, timeZone)}</span>
+        </h2>
         <ul className="executions">
           {saved.executions.map((e) => (
             <li key={e.factId} className="execution-line">

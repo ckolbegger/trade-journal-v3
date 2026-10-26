@@ -1798,3 +1798,125 @@ test.describe('T2.64 Detail cards', () => {
     await context.close();
   });
 });
+
+test.describe('T2.67 leftovers', () => {
+  // (b) The receipt heading never parts its date from its time.
+  for (const width of [320, 340, 390]) {
+    test(`should keep the date and time of the receipt heading on one line at ${width}`, async ({ server, profile }) => {
+      void server;
+      const context = await profile.launch();
+      const page = await onboardedPage(context);
+      await confirmReference(page);
+      await recordEntry(page, PC1);
+      await page.setViewportSize({ width, height: 844 });
+      await expectLayout(page, width);
+      const heading = page.getByRole('heading', { name: 'Position Change at 2026-10-12 10:00', level: 2 });
+      await expect(heading).toBeVisible();
+      const tops = await heading.evaluate((el) => {
+        const range = document.createRange();
+        const top = (needle: string): number => {
+          const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+          for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+            const at = (n.textContent ?? '').indexOf(needle);
+            if (at < 0) continue;
+            range.setStart(n, at);
+            range.setEnd(n, at + needle.length);
+            return range.getBoundingClientRect().top;
+          }
+          throw new Error(`"${needle}" not found in the heading`);
+        };
+        return { date: top('2026-10-12'), time: top('10:00') };
+      });
+      expect(Math.abs(tops.time - tops.date), `heading time beside its date at ${width}`).toBeLessThanOrEqual(1);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), `overflow at ${width}`).toBeLessThanOrEqual(0);
+      await expectAccessible(page, `receipt at ${width}`);
+      await context.close();
+    });
+  }
+
+  // (c) Open Lots: no pinned-column hairline, and the last row reaches the card's row edges.
+  for (const width of [1280, 320]) {
+    test(`should draw Open Lots without a pinned hairline and with its last row on the card's row edges at ${width}`, async ({ server, profile }) => {
+      void server;
+      const context = await profile.launch();
+      const page = await onboardedPage(context);
+      await confirmReference(page);
+      await recordEntry(page, PC1);
+      await backToTrade(page);
+      await page.setViewportSize({ width, height: 900 });
+      await expectLayout(page, width);
+      const region = page.getByRole('region', { name: 'Open Lots', exact: true });
+      await expect(region).toBeVisible(READY);
+      const lots = await region.evaluate((el) => {
+        const cells = [...el.querySelectorAll('tr')].flatMap((tr) => [...tr.children]);
+        const style = getComputedStyle(el);
+        const last = [...el.querySelectorAll('tbody tr:last-child td')].map((td) => td.getBoundingClientRect());
+        const rows = [...el.closest('section')!.querySelectorAll('dl.figure-grid > div')].map((row) => row.getBoundingClientRect());
+        const box = el.getBoundingClientRect();
+        return {
+          // Any cell border beside another cell: the right edge of a first cell or the left edge of a later one.
+          vertical: cells.flatMap((c, i) => {
+            const s = getComputedStyle(c);
+            const first = c.matches(':first-child');
+            return [{ i, side: 'right', width: first ? s.borderRightWidth : '0px' }, { i, side: 'left', width: first ? '0px' : s.borderLeftWidth }];
+          }).filter((b) => b.width !== '0px'),
+          radius: [style.borderBottomLeftRadius, style.borderBottomRightRadius],
+          lastLeft: Math.min(...last.map((r) => r.left)),
+          lastRight: Math.max(...last.map((r) => r.right)),
+          regionRight: box.right,
+          cardLeft: Math.min(...rows.map((r) => r.left)),
+          cardRight: Math.max(...rows.map((r) => r.right)),
+        };
+      });
+      expect(lots.vertical, `Open Lots cells with a vertical border at ${width}`).toEqual([]);
+      expect(lots.radius, `Open Lots region corner radii at ${width} (a radius clips the last row's border)`).toEqual(['0px', '0px']);
+      expect(Math.abs(lots.lastLeft - lots.cardLeft), `last row left edge at ${width}`).toBeLessThanOrEqual(1);
+      // At 320 the table scrolls, so its row runs on past the region; the visible edge is the region's.
+      expect(Math.abs(Math.min(lots.lastRight, lots.regionRight) - lots.cardRight), `last row right edge at ${width}`).toBeLessThanOrEqual(width === 1280 ? 1 : 1 + 0);
+      await context.close();
+    });
+  }
+
+  // (d) The narrow table caption stays in view when the region is scrolled fully right.
+  for (const width of [320, 390]) {
+    test(`should keep the Trades table caption in view after scrolling the region fully right at ${width}`, async ({ server, profile }) => {
+      void server;
+      const context = await profile.launch();
+      const page = await onboardedPage(context);
+      await seedTrades(page);
+      await page.setViewportSize({ width, height: 844 });
+      await expectLayout(page, width);
+      for (const tab of TABS) {
+        if (tab === 'Planned') await openPlanned(page);
+        const region = page.getByRole('region', { name: `${tab} Trades` });
+        await expect(page.getByRole('table', { name: `${tab} Trades` })).toBeVisible(READY);
+        await region.evaluate((el) => {
+          el.scrollLeft = el.scrollWidth;
+        });
+        const seen = await region.evaluate((el) => {
+          const caption = el.querySelector('caption')!;
+          const range = document.createRange();
+          range.selectNodeContents(caption);
+          const text = range.getBoundingClientRect();
+          const box = caption.getBoundingClientRect();
+          const clip = el.getBoundingClientRect();
+          const probe = document.elementFromPoint(text.left + 1, text.top + text.height / 2);
+          return { scrolled: el.scrollLeft, boxLeft: box.left, boxRight: box.right, textLeft: text.left, textRight: text.right, clipLeft: clip.left, clipRight: clip.right, covered: probe !== null && !caption.contains(probe) };
+        });
+        expect(seen.scrolled, `${tab} scrolled at ${width}`).toBeGreaterThan(0);
+        expect(seen.boxLeft, `${tab} caption box left at ${width}`).toBeGreaterThanOrEqual(seen.clipLeft - 0.5);
+        expect(seen.boxRight, `${tab} caption box right at ${width}`).toBeLessThanOrEqual(Math.min(seen.clipRight, width) + 0.5);
+        expect(seen.textLeft, `${tab} caption text left at ${width}`).toBeGreaterThanOrEqual(seen.clipLeft - 0.5);
+        expect(seen.textRight, `${tab} caption text right at ${width}`).toBeLessThanOrEqual(Math.min(seen.clipRight, width) + 0.5);
+        expect(seen.covered, `${tab} caption not covered by another element at ${width}`).toBe(false);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), `${tab} overflow at ${width}`).toBeLessThanOrEqual(0);
+        await expectAccessible(page, `${tab} Trades scrolled right at ${width}`);
+        await region.evaluate((el) => {
+          el.scrollLeft = 0;
+        });
+      }
+      // The T2.40 and T2.62 measurements are asserted by their own tests above; they run unchanged in this suite.
+      await context.close();
+    });
+  }
+});

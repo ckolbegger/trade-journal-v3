@@ -454,6 +454,10 @@ table.trades caption {
   text-align: left;
   font-weight: 700;
   padding: 0.5rem 0;
+  /* Only as wide as its words, and held at the region's left edge when the region scrolls right. */
+  width: fit-content;
+  position: sticky;
+  left: 0;
 }
 
 table.trades th,
@@ -928,6 +932,8 @@ table.lots td {
 /* The date and time is wider than the pinned column, so Open Lots does not pin it. */
 .table-scroll.lots-scroll {
   --pin: 0px;
+  /* Square corners: a radius would clip the last row's bottom border short of the card's row edges. */
+  border-radius: 0;
 }
 
 table.lots th:first-child,
@@ -936,6 +942,7 @@ table.lots td:first-child {
   width: auto;
   min-width: 0;
   max-width: none;
+  border-right: 0;
 }
 
 /* Text for assistive technology only; it keeps a control's name starting with its visible text. */
