@@ -72,7 +72,7 @@ const rgb = (hex: string): string => {
   return `rgb(${n >> 16}, ${(n >> 8) & 255}, ${n & 255})`;
 };
 
-test.describe('T2.37 navigation and durability banner', () => {
+test.describe('T2.37 navigation styling', () => {
   test('should fill the current sidebar link with ink and white text', async ({ server, profile }) => {
     void server;
     const context = await profile.launch();
@@ -116,46 +116,59 @@ test.describe('T2.37 navigation and durability banner', () => {
     for (const box of boxes) expect(box.iconBottom, box.name).toBeLessThanOrEqual(box.labelTop + 0.5);
     await context.close();
   });
+});
 
-  for (const [width, height] of [[390, 844], [1280, 900]] as const) {
-    test(`should style the durability banner with the warning ground and keep it compact at ${width}`, async ({ server, profile }) => {
+// T2.60 (decision U8) replaced the T2.37 banner measurements (warning ground, compact height, button
+// centred on the text): the full card is on About only, and every other screen shows the icon.
+test.describe('T2.60 storage warning icon', () => {
+  const NAME = 'Storage not protected: see About';
+  for (const [width, height] of [[320, 700], [390, 844], [1280, 900]] as const) {
+    test(`should show a focusable warning icon linking to About and no storage card outside About at ${width}`, async ({ server, profile }) => {
       void server;
       const context = await profile.launch();
       const page = await onboardedPage(context);
       await page.setViewportSize({ width, height });
+      await expectLayout(page, width);
       await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
-      const banner = page.getByRole('region', { name: 'Storage protection' });
-      await expect(banner).toBeVisible();
-      const measured = await banner.evaluate((el) => {
-        const probe = document.createElement('span');
-        probe.style.color = getComputedStyle(document.documentElement).getPropertyValue('--warning-ground').trim();
-        document.body.append(probe);
-        const ground = getComputedStyle(probe).color;
-        probe.remove();
-        const box = el.getBoundingClientRect();
-        const texts = [...el.querySelectorAll('p')].map((p) => p.getBoundingClientRect());
-        const button = el.querySelector('button')?.getBoundingClientRect();
-        return {
-          background: getComputedStyle(el).backgroundColor,
-          ground,
-          height: box.height,
-          textTop: Math.min(...texts.map((t) => t.top)),
-          textBottom: Math.max(...texts.map((t) => t.bottom)),
-          buttonCentre: button ? (button.top + button.bottom) / 2 : null,
-        };
+      const icon = page.getByRole('link', { name: NAME });
+      await expect(icon).toBeVisible();
+      await expect(icon).toHaveAttribute('href', '/about');
+      await expect(page.getByRole('region', { name: 'Storage protection' })).toHaveCount(0);
+      await expect(page.getByText('This browser may clear your journal data')).toHaveCount(0);
+      const box = await icon.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return { right: r.right, top: r.top, width: r.width, height: r.height };
       });
-      expect(measured.background).toBe(measured.ground);
-      if (width === 390) expect(measured.height).toBeLessThanOrEqual(120);
-      if (width === 1280 && measured.buttonCentre !== null) {
-        expect(measured.buttonCentre).toBeGreaterThanOrEqual(measured.textTop);
-        expect(measured.buttonCentre).toBeLessThanOrEqual(measured.textBottom);
-      }
-      await expectAccessible(page, `Trades at ${width}`);
+      expect(box.right, 'right edge inside the viewport').toBeLessThanOrEqual(width);
+      expect(box.width).toBeGreaterThanOrEqual(44);
+      expect(box.height).toBeGreaterThanOrEqual(44);
+      await expectAccessible(page, `Trades with the storage icon at ${width}`);
+
+      await tabTo(page, icon);
+      const outline = await icon.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        const style = getComputedStyle(el);
+        return { style: style.outlineStyle, width: parseFloat(style.outlineWidth), offset: parseFloat(style.outlineOffset), top: r.top, right: window.innerWidth - r.right };
+      });
+      expect(outline.style).not.toBe('none');
+      const reach = outline.width + outline.offset;
+      expect(outline.top, 'outline room above').toBeGreaterThanOrEqual(reach);
+      expect(outline.right, 'outline room at the right').toBeGreaterThanOrEqual(reach);
+      await expectAccessible(page, `Trades with the focused storage icon at ${width}`);
+
+      await icon.click();
+      await expect(page.getByRole('heading', { name: 'About' })).toBeVisible();
+      const card = page.getByRole('region', { name: 'Storage protection' });
+      await expect(card).toBeVisible();
+      await expect(card.getByText('Back up your journal')).toBeVisible();
+      await expectAccessible(page, `About with the storage card at ${width}`);
       await context.close();
     });
   }
 });
 
+// The first-run and onboarding screens have no About to link to (no routes before a Workspace
+// exists), so they keep the full card; T2.60 leaves these measurements as they were.
 test.describe('T2.37-B1 durability banner before the shell renders', () => {
   for (const stage of ['first run', 'account onboarding'] as const) {
     test(`should keep the storage banner compact with the warning ground on ${stage} at 390`, async ({ server, profile }) => {
@@ -207,8 +220,9 @@ async function expectGutters(page: Page, view: string, width: number): Promise<v
   }
 }
 
+// T2.60: the shell banner is gone outside About, so the heading is now the reference edge.
 test.describe('T2.38 one content column and side gutters', () => {
-  test('should keep the banner, heading, tabs and first card on one left edge on Trades and Open Detail at 1280', async ({ server, profile }) => {
+  test('should keep the heading, tabs and first card on one left edge on Trades and Open Detail at 1280', async ({ server, profile }) => {
     void server;
     const context = await profile.launch();
     const page = await onboardedPage(context);
@@ -221,7 +235,6 @@ test.describe('T2.38 one content column and side gutters', () => {
       page.evaluate(() => {
         const left = (selector: string) => document.querySelector(selector)?.getBoundingClientRect().left;
         const found: Record<string, number | undefined> = {
-          banner: left('.banner'),
           h1: left('main h1'),
           tablist: left('[role="tablist"]'),
           card: left('main .card, main .table-scroll'),
@@ -229,13 +242,13 @@ test.describe('T2.38 one content column and side gutters', () => {
         return Object.fromEntries(Object.entries(found).filter(([, x]) => x !== undefined)) as Record<string, number>;
       });
     const detail = await lefts();
-    expect(Object.keys(detail).sort(), 'Open Detail elements').toEqual(['banner', 'card', 'h1']);
-    for (const [name, x] of Object.entries(detail)) expect.soft(Math.abs(x - detail['banner']!), `Detail ${name} left ${JSON.stringify(detail)}`).toBeLessThanOrEqual(1);
+    expect(Object.keys(detail).sort(), 'Open Detail elements').toEqual(['card', 'h1']);
+    for (const [name, x] of Object.entries(detail)) expect.soft(Math.abs(x - detail['h1']!), `Detail ${name} left ${JSON.stringify(detail)}`).toBeLessThanOrEqual(1);
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();
     await expect(page.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
     const trades = await lefts();
-    expect(Object.keys(trades), 'Trades elements').toEqual(expect.arrayContaining(['banner', 'h1', 'tablist', 'card']));
-    for (const [name, x] of Object.entries(trades)) expect.soft(Math.abs(x - trades['banner']!), `Trades ${name} left ${JSON.stringify(trades)}`).toBeLessThanOrEqual(1);
+    expect(Object.keys(trades), 'Trades elements').toEqual(expect.arrayContaining(['h1', 'tablist', 'card']));
+    for (const [name, x] of Object.entries(trades)) expect.soft(Math.abs(x - trades['h1']!), `Trades ${name} left ${JSON.stringify(trades)}`).toBeLessThanOrEqual(1);
     await context.close();
   });
 

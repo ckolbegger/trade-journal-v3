@@ -27,16 +27,23 @@ test.describe('B1.7 protection is advisory', () => {
     const context = await profile.launch();
     const page = await onboardedPage(context);
     const persisted = await page.evaluate(() => navigator.storage.persisted());
+    const icon = page.getByRole('link', { name: 'Storage not protected: see About' });
     const warning = page.getByText('This browser may clear your journal data');
     if (persisted) {
+      await expect(icon).toHaveCount(0);
       await expect(warning).toHaveCount(0);
     } else {
+      // The full card lives on About; every other screen shows only the icon linking to it (T2.60).
+      await expect(icon).toBeVisible();
+      await expect(warning).toHaveCount(0);
+      await icon.click();
       await expect(warning).toBeVisible();
       const ask = page.getByRole('button', { name: 'Ask the browser to keep data' });
       const canPersist = await page.evaluate(() => typeof navigator.storage.persist === 'function');
       await expect(ask).toHaveCount(canPersist ? 1 : 0);
       await confirmPlan(page);
       if (canPersist) {
+        await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'About' }).click();
         await ask.click();
         const after = await page.evaluate(() => navigator.storage.persisted());
         await expect(

@@ -1923,3 +1923,19 @@ Critic-5 D4's class, for Planned rows: `TradeList.tsx` PlannedList's Trade cell 
 **ocr review of T2.55-B6** (`ocr-review` step): commit `3f17a56`, session `66d82041-5d7d-450a-8063-b79d959c4a66`, 1 file reviewed, 0 comments, plus three main-session questions, all holding: each figure once in the accessibility tree per width, the line hidden at wide (`app.css:509-531`); 1R and Reward : risk are all-or-nothing in the view, so no mixed line occurs; the fixture is the one `integrity.spec.ts:66-67` uses. Raw output: `ocr/t2.55-b6-3f17a56.json`.
 
 **Complete cumulative run after T2.55-B6** (`suite-runner`, 2026-10-25 22:18 EDT, on `3f17a56`): Unit 42 files / 442 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 99 passed (3.0m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` exit 0, 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.55-b6-*.txt`.
+
+## T2.60 storage warning as an icon that opens About (U8)
+
+The full storage card moved to About (`src/ui/StorageProtectionCard.tsx`, used by `AboutView`). Every other screen with a shell shows one `WarningIcon` link to About, named "Storage not protected: see About", at the top right of the content column (`.storage-flag`, 44 px target, `--warning-line`). It disappears when protection is Protected or when the request on About succeeds (`RuntimeState.onStorageKept`).
+
+**First run and onboarding decision:** About is not reachable there (`AppShell` renders them with no `Routes`, and no Workspace exists), so they keep the full card and show no icon. That card keeps its compact text; the extra backup sentence appears on About only, because the T2.37 height limit (120 px at 390) would fail with it.
+
+**Test impact, with reasons:**
+- `e2e/d2/ui-alignment.spec.ts`: the T2.37 shell-banner measurements (warning ground, height at most 120 at 390, button centre at 1280) were replaced by a T2.60 case at 320, 390 and 1280, because that banner no longer exists outside About (U8). The T2.37-B1 first-run and onboarding measurements stay, since the card is still there.
+- `e2e/d1/readiness.spec.ts` (B1.7): finds the icon on Trades, goes to About for the warning and the "Ask the browser to keep data" button, and returns to About for the request. `e2e/d1/onboarding.spec.ts` is unchanged (card kept on those screens).
+- `src/ui/AppShell.test.tsx`: the "storage-protection warning" describe became "storage warning" with the four planned cases plus the first-run and onboarding case.
+
+| Command | Result |
+| --- | --- |
+| `.claude/scripts/tdd.sh red/green T2.60 src/ui/AppShell.test.tsx ...` | cases 1 to 3 red then green; case 4 first-run pass with mutation (see tdd-log) |
+| `npx playwright test e2e/d1/readiness.spec.ts e2e/d1/onboarding.spec.ts e2e/d2/ui-alignment.spec.ts -g "B1.7\|critic-2\|T2.37\|T2.60"` | 8 passed (icon visible, link to /about, name, 44 px target, full focus outline room, no card outside About, axe clean at 320, 390, 1280) |

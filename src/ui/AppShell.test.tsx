@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { Link, MemoryRouter } from 'react-router';
@@ -7,6 +7,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble, readyStatus, writableReadiness } from '../../tests/support/facade-double.ts';
 import type { UiFacade } from '../app/compose.ts';
 import { AppShell, type Screens } from './AppShell.tsx';
+import { AboutView } from './screens/AboutView.tsx';
+import { createReleaseUpdateController } from './update/controller.ts';
+import { ChannelNetwork, FakeContainer, FakeRegistration } from './update/doubles.ts';
 import { useRuntime } from './runtime.tsx';
 
 // Minimal stand-ins for the real screens, so the shell is tested on its own.
@@ -183,54 +186,87 @@ describe('readiness gate presentation', () => {
   });
 });
 
-describe('storage-protection warning', () => {
-  it('should keep a warning that the browser may clear data visible while protection is BestEffort or Unavailable, with every control enabled', async () => {
+describe('storage warning', () => {
+  const ICON = { name: 'Storage not protected: see About' };
+  const aboutScreen = (facade: UiFacade): Partial<Screens> => ({
+    about: () => <AboutView facade={facade} updates={createReleaseUpdateController({ registration: new FakeRegistration(), container: new FakeContainer(), channel: new ChannelNetwork().open(), reload: () => undefined })} />,
+  });
+
+  it('should show a warning icon linking to About, named Storage not protected: see About, and no storage card, on Trades, a Detail and New Plan while protection is not Protected', async () => {
     for (const protection of ['BestEffort', 'Unavailable']) {
-      const facade = facadeDouble({ status: readyStatus({ protection }) });
-      renderShell(facade, '/plans/new', { 'new-plan': formScreen(facade) });
-      expect(await screen.findByText(/this browser may clear your journal data/i)).toBeTruthy();
-      expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Confirm Plan' }).disabled).toBe(false);
-      cleanup();
+      for (const path of ['/', '/trades/t1', '/plans/new']) {
+        const facade = facadeDouble({ status: readyStatus({ protection }) });
+        renderShell(facade, path, { 'new-plan': formScreen(facade) });
+        const icon = await screen.findByRole('link', ICON);
+        expect(icon.getAttribute('href'), path).toBe('/about');
+        expect(screen.queryByRole('region', { name: 'Storage protection' }), path).toBeNull();
+        expect(screen.queryByText(/this browser may clear your journal data/i), path).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Ask the browser to keep data' }), path).toBeNull();
+        cleanup();
+      }
     }
-    renderShell(facadeDouble({ status: readyStatus({ protection: 'Protected' }) }));
-    await screen.findByText('Trades screen');
+  });
+
+  it('should show the full storage card on About, with the explanation, the backup recommendation, and Ask the browser to keep data when protection is Best Effort', async () => {
+    const facade = facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) });
+    renderShell(facade, '/about', aboutScreen(facade));
+    const card = await screen.findByRole('region', { name: 'Storage protection' });
+    expect(within(card).getByText(/this browser may clear your journal data/i)).toBeTruthy();
+    expect(within(card).getByText(/back up/i)).toBeTruthy();
+    expect(within(card).getByRole<HTMLButtonElement>('button', { name: 'Ask the browser to keep data' }).disabled).toBe(false);
+    cleanup();
+
+    const unavailable = facadeDouble({ status: readyStatus({ protection: 'Unavailable' }) });
+    renderShell(unavailable, '/about', aboutScreen(unavailable));
+    await screen.findByRole('region', { name: 'Storage protection' });
+    expect(screen.queryByRole('button', { name: 'Ask the browser to keep data' })).toBeNull();
+  });
+
+  it('should show the request result on About and remove the icon once the browser agrees to keep data', async () => {
+    const declined = facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) });
+    vi.mocked(declined.Workspace.requestDurability).mockResolvedValue({
+      kind: 'NotImproved',
+      currentProtection: { kind: 'BestEffort', reason: 'HostDeclined' },
+    });
+    renderShell(declined, '/about', aboutScreen(declined));
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Ask the browser to keep data' }));
+    expect(await screen.findByText(/the browser declined/i)).toBeTruthy();
+    expect(screen.getByText(/this browser may clear your journal data/i)).toBeTruthy();
+    expect(screen.getByRole('link', ICON)).toBeTruthy();
+    cleanup();
+
+    const improved = facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) });
+    vi.mocked(improved.Workspace.requestDurability).mockResolvedValue({ kind: 'Improved', currentProtection: 'Protected' });
+    renderShell(improved, '/about', aboutScreen(improved));
+    expect(await screen.findByRole('link', ICON)).toBeTruthy();
+    await user.click(await screen.findByRole('button', { name: 'Ask the browser to keep data' }));
+    expect(await screen.findByText(/the browser will now keep your journal data/i)).toBeTruthy();
+    expect(screen.queryByRole('link', ICON)).toBeNull();
     expect(screen.queryByText(/this browser may clear your journal data/i)).toBeNull();
   });
 
-  it('should keep the warning and the durability action visible on the first-run and onboarding screens too', async () => {
+  it('should show neither icon nor card when protection is Protected', async () => {
+    const facade = facadeDouble({ status: readyStatus({ protection: 'Protected' }) });
+    renderShell(facade, '/about', aboutScreen(facade));
+    await screen.findByRole('heading', { name: 'About' });
+    expect(screen.queryByRole('link', ICON)).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Storage protection' })).toBeNull();
+    cleanup();
+    renderShell(facadeDouble({ status: readyStatus({ protection: 'Protected' }) }));
+    await screen.findByText('Trades screen');
+    expect(screen.queryByRole('link', ICON)).toBeNull();
+  });
+
+  it('should keep the full card and the durability action on the first-run and onboarding screens, where About is not reachable', async () => {
     const firstRun = readyStatus({ kind: 'InitializationRequired', protection: 'BestEffort' });
     for (const status of [firstRun, readyStatus({ protection: 'BestEffort', onboarding: 'NeedsInstitutionAndAccount' })]) {
       renderShell(facadeDouble({ status }));
       expect(await screen.findByText(/this browser may clear your journal data/i), String(status.kind)).toBeTruthy();
       expect(screen.getByRole('button', { name: 'Ask the browser to keep data' })).toBeTruthy();
+      expect(screen.queryByRole('link', ICON)).toBeNull();
       cleanup();
     }
-  });
-
-  it('should offer "Ask the browser to keep data" only when the host supports storage.persist, and show the honest result after it is pressed', async () => {
-    const facade = facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) });
-    vi.mocked(facade.Workspace.requestDurability).mockResolvedValue({
-      kind: 'NotImproved',
-      currentProtection: { kind: 'BestEffort', reason: 'HostDeclined' },
-    });
-    renderShell(facade);
-    const user = userEvent.setup();
-    await user.click(await screen.findByRole('button', { name: 'Ask the browser to keep data' }));
-    expect(await screen.findByText(/the browser declined/i)).toBeTruthy();
-    expect(screen.getByText(/this browser may clear your journal data/i)).toBeTruthy();
-    cleanup();
-
-    const improved = facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) });
-    vi.mocked(improved.Workspace.requestDurability).mockResolvedValue({ kind: 'Improved', currentProtection: 'Protected' });
-    renderShell(improved);
-    await user.click(await screen.findByRole('button', { name: 'Ask the browser to keep data' }));
-    expect(await screen.findByText(/the browser will now keep your journal data/i)).toBeTruthy();
-    expect(screen.queryByText(/this browser may clear your journal data/i)).toBeNull();
-    cleanup();
-
-    renderShell(facadeDouble({ status: readyStatus({ protection: 'Unavailable' }) }));
-    await screen.findByText(/this browser may clear your journal data/i);
-    expect(screen.queryByRole('button', { name: 'Ask the browser to keep data' })).toBeNull();
   });
 });
 

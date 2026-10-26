@@ -938,3 +938,29 @@ table.lots td:first-child {
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* The storage warning icon: one place at every width, at the right of the content column. */
+.storage-flag {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0.5rem 1rem 0;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.storage-flag a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  color: var(--warning-line);
+  border-radius: var(--radius);
+}
+
+.storage-flag .icon {
+  width: 24px;
+  height: 24px;
+}

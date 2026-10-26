@@ -7,6 +7,8 @@ export interface RuntimeState {
   // The Workspace time zone, once a Workspace exists.
   readonly timeZone?: string;
   readonly report: (result: { readonly kind: string }) => void;
+  // About calls this when the browser agrees to keep the data, so the shell drops the warning icon.
+  readonly onStorageKept?: () => void;
 }
 
 export const RuntimeContext = createContext<RuntimeState>({ writable: false, report: () => undefined });

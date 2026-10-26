@@ -50,6 +50,13 @@ export const AboutIcon = () => (
   </Icon>
 );
 
+export const WarningIcon = () => (
+  <Icon>
+    <path d="M12 3.5L2.5 20h19L12 3.5z" />
+    <path d="M12 10v4.5M12 17.25h.01" />
+  </Icon>
+);
+
 export const BackIcon = () => (
   <Icon>
     <path d="M19 12H5M11 6l-6 6 6 6" />

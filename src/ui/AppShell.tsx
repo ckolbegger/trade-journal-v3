@@ -21,8 +21,15 @@ import type {
 } from "../delivery/runtime-not-writable.ts";
 import { isRouteInstalled, ROUTES } from "../app/routes.ts";
 import { explainFailure, explainMigrationIssue } from "./readiness-copy.ts";
-import { AboutIcon, AccountsIcon, NewPlanIcon, TradesIcon } from "./icons.tsx";
+import {
+  AboutIcon,
+  AccountsIcon,
+  NewPlanIcon,
+  TradesIcon,
+  WarningIcon,
+} from "./icons.tsx";
 import { RuntimeContext } from "./runtime.tsx";
+import { StorageProtectionCard } from "./StorageProtectionCard.tsx";
 import { FirstRun } from "./screens/FirstRun.tsx";
 import { OnboardingAccount } from "./screens/OnboardingAccount.tsx";
 
@@ -80,6 +87,7 @@ function navigationOwner(pathname: string): RouteId | undefined {
 
 // The application shell: nothing is offered until Runtime Readiness has been established.
 // The route filter drops the write route when not Writable, so the fallback takes its path from ROUTES.
+const ABOUT_PATH = ROUTES.find((route) => route.id === "about")!.path;
 const RECORD_ENTRY_PATH = ROUTES.find(
   (route) => route.id === "record-entry",
 )!.path;
@@ -109,10 +117,8 @@ export function AppShell({
   // Where the refusal arrived, so the form open there keeps its values (see `routes` below).
   const { pathname } = useLocation();
   const [refusedAt, setRefusedAt] = useState<string | undefined>();
-  // The honest outcome of the trader's explicit durability request, if any.
-  const [durability, setDurability] = useState<
-    Awaited<ReturnType<UiFacade["Workspace"]["requestDurability"]>> | undefined
-  >();
+  // Set once the trader's durability request succeeds on About, which removes the warning icon.
+  const [storageKept, setStorageKept] = useState(false);
   // While initialize converts an older stored schema (D2 A31).
   const [migrating, setMigrating] = useState(false);
   // The last conversion attempt's failure: the old data is unchanged and nothing is Ready.
@@ -261,53 +267,11 @@ export function AppShell({
     );
   }
 
-  // Shown wherever data can be saved, first run and onboarding included (ADR 0009).
-  const protectionWarning = (
-    <>
-      {durability && durability.kind !== "NotImproved" && (
-        <p className="banner notice" role="status">
-          The browser will now keep your journal data unless you clear it.
-        </p>
-      )}
-      {status.protection !== "Protected" &&
-        (!durability || durability.kind === "NotImproved") && (
-          <section
-            className="banner warning durability"
-            aria-label="Storage protection"
-          >
-            <div className="banner-text">
-              <p>
-                This browser may clear your journal data, for example when the
-                device is low on space. It has not promised to keep it.
-              </p>
-              {durability?.kind === "NotImproved" && (
-                <p role="status">
-                  {durability.currentProtection.kind === "BestEffort"
-                    ? "The browser declined to promise it will keep your data. You can keep using the journal."
-                    : "This browser offers no way to ask it to keep data."}
-                </p>
-              )}
-            </div>
-            {status.protection === "BestEffort" && !durability && (
-              <button
-                type="button"
-                className="pill secondary"
-                onClick={() =>
-                  void facade.Workspace.requestDurability().then(setDurability)
-                }
-              >
-                Ask the browser to keep data
-              </button>
-            )}
-          </section>
-        )}
-    </>
-  );
-
   if (status.kind === "InitializationRequired") {
     return (
       <>
-        {protectionWarning}
+        {/* About is not reachable before a Workspace exists, so the full card stays here. */}
+        <StorageProtectionCard facade={facade} protection={status.protection} />
         <FirstRun facade={facade} onOpened={setStatus} />
       </>
     );
@@ -320,7 +284,7 @@ export function AppShell({
   ) {
     return (
       <>
-        {protectionWarning}
+        <StorageProtectionCard facade={facade} protection={status.protection} />
         <OnboardingAccount
           facade={facade}
           onReady={() =>
@@ -349,6 +313,9 @@ export function AppShell({
   const superseded = failedChecks.some(
     (failure) => failure.reason === "SessionSuperseded",
   );
+  const aboutRoute = routes.find((route) => route.id === "about");
+  const showStorageIcon =
+    status.protection !== "Protected" && !storageKept && aboutRoute !== undefined;
   const report = (result: { readonly kind: string }) => {
     if (result.kind === "RuntimeNotWritable") {
       setRefusal(result as RuntimeNotWritable);
@@ -361,6 +328,7 @@ export function AppShell({
       value={{
         writable,
         report,
+        onStorageKept: () => setStorageKept(true),
         timeZone: "timeZone" in status ? status.timeZone : undefined,
       }}
     >
@@ -403,7 +371,13 @@ export function AppShell({
             <p>{SEPARATE_STORAGE}</p>
           </section>
         )}
-        {protectionWarning}
+        {showStorageIcon && (
+          <div className="storage-flag">
+            <Link to={ABOUT_PATH} aria-label="Storage not protected: see About">
+              <WarningIcon />
+            </Link>
+          </div>
+        )}
         <main className="content">
           <Routes>
             {routes.map((route) => {

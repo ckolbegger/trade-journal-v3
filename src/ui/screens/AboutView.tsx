@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { UiFacade } from '../../app/compose.ts';
 import { APP_NAME, MANIFEST_ID } from '../../app/identity.ts';
+import { useRuntime } from '../runtime.tsx';
+import { StorageProtectionCard } from '../StorageProtectionCard.tsx';
 import type { ReleaseUpdateController } from '../update/controller.ts';
 
 type Status = Awaited<ReturnType<UiFacade['Workspace']['getStatus']>>;
@@ -24,6 +26,7 @@ const gb = (bytes: number) => `${(bytes / 1024 ** 3).toFixed(2)} GB`;
 // Evidence about this installed release and this browser, never a support verdict by identity.
 export function AboutView({ facade, updates }: AboutViewProps) {
   const [status, setStatus] = useState<Status | undefined>();
+  const { onStorageKept } = useRuntime();
   const [checked, setChecked] = useState<'NoUpdate' | 'UpdateWaiting' | undefined>();
   useEffect(() => {
     void facade.Workspace.getStatus().then(setStatus);
@@ -46,6 +49,7 @@ export function AboutView({ facade, updates }: AboutViewProps) {
   return (
     <article className="about">
       <h1>About</h1>
+      <StorageProtectionCard facade={facade} protection={status.protection} recommendBackup onKept={onStorageKept} />
       <section className="card" aria-labelledby="release-heading">
         <h2 id="release-heading">This release</h2>
         <dl>
