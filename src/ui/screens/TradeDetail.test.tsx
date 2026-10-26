@@ -152,9 +152,9 @@ describe('Open Trade Detail', () => {
     });
     expect(termValue(quality, 'Resolved at')).toBe('Position Change at 2026-10-12 11:00');
     expect(termValue(quality, 'Average entry')).toBe('$50.18');
-    expect(termValue(quality, 'Actual initial risk')).toBe('$270.00 (1.08R)');
+    expect(termValue(quality, 'Actual initial risk')).toBe('$270.00 1.08R');
     expect(termValue(quality, 'Actual initial reward')).toBe('$580.00');
-    expect(termValue(quality, 'Reward : risk')).toBe('2.15 (planned 2.4)');
+    expect(termValue(quality, 'Reward : risk')).toBe('2.15 planned 2.4');
     expect(termValue(quality, 'Slippage')).toBe('$18.00');
     expect(termValue(quality, 'Size')).toBe('1× planned quantity');
     expect(within(quality).getByText('$50.18').className).toContain('number');
@@ -166,7 +166,7 @@ describe('Open Trade Detail', () => {
     const flagged = await screen.findByRole('region', {
       name: 'Entry Quality',
     });
-    expect(termValue(flagged, 'Reward : risk')).toBe('Not applicable: entry at or beyond the Stop (planned 2.4)');
+    expect(termValue(flagged, 'Reward : risk')).toBe('Not applicable: entry at or beyond the Stop planned 2.4');
   });
 
   it('should show Planned-Leg Fulfillment and each Entry Size Deviation with its quantity and causing Position Change', async () => {
@@ -659,5 +659,37 @@ describe('Journal entries', () => {
   it('should label the region with the number of items', async () => {
     renderView(openDetailOf([PC1, PC2], { journal: [planEntry, pc1Reflection, pc2Decline] }));
     expect(await screen.findByRole('region', { name: 'Journal (3)' })).toBeTruthy();
+  });
+});
+
+describe('R lines', () => {
+  async function detailEntryQuality() {
+    renderView(openDetailOf([PC1, PC2]));
+    return screen.findByRole('region', { name: 'Entry Quality' });
+  }
+  const valueOf = (region: HTMLElement, term: string) => within(region).getByText(term, { selector: 'dt' }).nextElementSibling as HTMLElement;
+
+  it('should put the R multiple on its own line below Actual initial risk on the receipt and in Entry Quality', async () => {
+    const value = valueOf(await detailEntryQuality(), 'Actual initial risk');
+    const [amount, second] = Array.from(value.children) as HTMLElement[];
+    expect(amount!.textContent).toBe('$270.00');
+    expect(second!.textContent).toBe('1.08R');
+    expect(second!.className).toContain('second-line');
+    expect(value.textContent).not.toMatch(/[()]/);
+  });
+
+  it('should put planned 2.4 on its own line below the Reward : risk value on the receipt and in Entry Quality', async () => {
+    const value = valueOf(await detailEntryQuality(), 'Reward : risk');
+    const [amount, second] = Array.from(value.children) as HTMLElement[];
+    expect(amount!.textContent).toBe('2.15');
+    expect(second!.textContent).toBe('planned 2.4');
+    expect(second!.className).toContain('second-line');
+    expect(value.textContent).not.toMatch(/[()]/);
+  });
+
+  it('should keep the amount and its second line in one value cell, read in order', async () => {
+    const quality = await detailEntryQuality();
+    expect(valueOf(quality, 'Actual initial risk').textContent).toBe('$270.00 1.08R');
+    expect(valueOf(quality, 'Reward : risk').textContent).toBe('2.15 planned 2.4');
   });
 });

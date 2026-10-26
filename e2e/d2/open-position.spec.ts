@@ -74,9 +74,9 @@ test.describe('B2.2 scale-in and decline', () => {
     const quality = region(page, 'Entry Quality');
     await expect(quality).toContainText('Position Change at 2026-10-12 11:00');
     await expect(quality).toContainText('$50.18');
-    await expect(quality).toContainText('$270.00 (1.08R)');
+    await expect(quality).toContainText('$270.00 1.08R');
     await expect(quality).toContainText('$580.00');
-    await expect(quality).toContainText('2.15 (planned 2.4)');
+    await expect(quality).toContainText('2.15 planned 2.4');
     await expect(quality).toContainText('$18.00');
     await expect(region(page, 'Deviations')).toContainText(
       'Entry Size (Excess): 20 shares above plan, caused by the Position Change at 2026-10-12 14:00.',

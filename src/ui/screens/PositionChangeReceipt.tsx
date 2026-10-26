@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { PageTitle } from '../PageTitle.tsx';
+import { WithSecondLine } from '../SecondLine.tsx';
 import { Link } from 'react-router';
 import type { IntegrityFinding, PositionChangeResult } from '../../app/types.ts';
 import { decimalMoney as price, localTime, money, ratio, rMultiple } from '../format.ts';
@@ -84,11 +85,11 @@ export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceip
             <dt>Average entry</dt>
             <dd className="number">{shown(figures.averageEntry, money)}</dd>
             <dt>Actual initial risk</dt>
-            <dd className="number">{`${shown(figures.actualInitialRisk, money)} (${shown(figures.riskInPlanR, rMultiple)})`}</dd>
+            <dd className="number"><WithSecondLine amount={shown(figures.actualInitialRisk, money)} second={shown(figures.riskInPlanR, rMultiple)} /></dd>
             <dt>Actual initial reward</dt>
             <dd className="number">{shown(figures.actualInitialReward, money)}</dd>
             <dt>Reward : risk</dt>
-            <dd className="number">{`${shown(figures.actualRewardRisk, ratio)} (planned ${shown(figures.plannedRewardRisk, ratio)})`}</dd>
+            <dd className="number"><WithSecondLine amount={shown(figures.actualRewardRisk, ratio)} second={`planned ${shown(figures.plannedRewardRisk, ratio)}`} /></dd>
             <dt>Slippage</dt>
             <dd className="number">{shown(figures.slippage, money)}</dd>
           </dl>

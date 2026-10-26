@@ -566,6 +566,12 @@ dd {
   margin: 0;
 }
 
+/* A figure's R multiple or planned comparison: its own muted line below the amount. */
+.second-line {
+  display: block;
+  color: var(--muted);
+}
+
 /* About: a long capability name or time zone wraps inside its card rather than widening the page. */
 .about dd,
 .about li {

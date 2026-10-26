@@ -1664,3 +1664,47 @@ test.describe('T2.62 line breaks', () => {
     await context.close();
   });
 });
+
+test.describe('T2.63 R lines', () => {
+  async function expectSecondLinesBelow(entryQuality: Locator, page: Page, where: string, width: number): Promise<void> {
+    for (const [term, second] of [['Actual initial risk', '1.08R'], ['Reward : risk', 'planned 2.4']] as const) {
+      const value = entryQuality.locator('dt', { hasText: term }).locator('xpath=following-sibling::dd[1]');
+      const parts = await value.evaluate((dd) =>
+        Array.from(dd.children).map((el) => {
+          const box = el.getBoundingClientRect();
+          return { text: el.textContent ?? '', top: box.top, bottom: box.bottom };
+        }),
+      );
+      const [amount, line] = parts;
+      expect(line?.text, `${where} ${term} second line at ${width}`).toBe(second);
+      expect(line!.top, `${where} ${term} second line top at ${width}`).toBeGreaterThanOrEqual(amount!.bottom - 0.5);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), `${where} overflow at ${width}`).toBeLessThanOrEqual(0);
+  }
+
+  test('should put the second line at or below the amount on the receipt and in Entry Quality at 320 and 1280', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await confirmReference(page);
+    await recordEntry(page, PC1);
+    await backToTrade(page);
+    await recordEntry(page, PC2, { decline: true });
+    const receipt = page.getByRole('region', { name: 'Entry recorded', exact: true }).getByRole('region', { name: 'Entry Quality', exact: true });
+    await expect(receipt).toBeVisible(READY);
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expectLayout(page, width);
+      await expectSecondLinesBelow(receipt, page, 'receipt', width);
+    }
+    await backToTrade(page);
+    const detail = page.getByRole('region', { name: 'Entry Quality', exact: true });
+    await expect(detail).toBeVisible(READY);
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expectLayout(page, width);
+      await expectSecondLinesBelow(detail, page, 'Detail', width);
+    }
+    await context.close();
+  });
+});

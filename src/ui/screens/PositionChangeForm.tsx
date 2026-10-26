@@ -300,11 +300,9 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
         <p>
           <strong>{view.plan.underlying}</strong> · <span>{view.labels.strategy}</span> · <Badge tone="info">{view.lifecycle.stored}</Badge>
         </p>
-        <p className="number">
-          {'positions' in view
-            ? `${quantity(view.positions.reduce((total, p) => total.add(p.quantity), Rational.of(0n)))} of ${leg.quantity} shares entered`
-            : 'Not entered yet'}
-        </p>
+        {'positions' in view && (
+          <p className="number">{`${quantity(view.positions.reduce((total, p) => total.add(p.quantity), Rational.of(0n)))} of ${leg.quantity} shares entered`}</p>
+        )}
       </section>
       {conflict && (
         <section ref={conflictRef} tabIndex={-1} className="banner warning" aria-labelledby="entry-conflict-heading">

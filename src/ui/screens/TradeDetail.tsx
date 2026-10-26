@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Link, useLocation, useParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type {
@@ -17,6 +17,7 @@ import type {
 import { Rational } from '../../domain/values/index.ts';
 import { PageTitle } from '../PageTitle.tsx';
 import { Badge } from '../Badge.tsx';
+import { WithSecondLine } from '../SecondLine.tsx';
 import { decimalMoney as price, localTime, money, netCost, quantity, ratio, rMultiple, tradeSummary } from '../format.ts';
 import { BackIcon, ChevronIcon } from '../icons.tsx';
 import { useRuntime } from '../runtime.tsx';
@@ -179,7 +180,7 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
 }
 
 // One label and value in a figure grid; a row never grows wider than its cap (app.css).
-function Figure({ term, plain, tone, children }: { readonly term: string; readonly plain?: boolean; readonly tone?: 'stop' | 'target'; readonly children: string }) {
+function Figure({ term, plain, tone, children }: { readonly term: string; readonly plain?: boolean; readonly tone?: 'stop' | 'target'; readonly children: ReactNode }) {
   return (
     <div>
       <dt className={tone && `${tone}-label`}>{term}</dt>
@@ -633,9 +634,9 @@ function EntryQualitySection({ view, timeZone }: { readonly view: OpenTradeDetai
             {resolvedAt ? `Position Change at ${localTime(resolvedAt.economicTime, timeZone)}` : ''}
           </Figure>
           <Figure term="Average entry">{shown(quality.value.averageEntry, money)}</Figure>
-          <Figure term="Actual initial risk">{`${shown(quality.value.actualInitialRisk, money)} (${shown(quality.value.riskInPlanR, rMultiple)})`}</Figure>
+          <Figure term="Actual initial risk"><WithSecondLine amount={shown(quality.value.actualInitialRisk, money)} second={shown(quality.value.riskInPlanR, rMultiple)} /></Figure>
           <Figure term="Actual initial reward">{shown(quality.value.actualInitialReward, money)}</Figure>
-          <Figure term="Reward : risk">{`${shown(quality.value.actualRewardRisk, ratio)} (planned ${shown(quality.value.plannedRewardRisk, ratio)})`}</Figure>
+          <Figure term="Reward : risk"><WithSecondLine amount={shown(quality.value.actualRewardRisk, ratio)} second={`planned ${shown(quality.value.plannedRewardRisk, ratio)}`} /></Figure>
           <Figure term="Slippage">{shown(quality.value.slippage, money)}</Figure>
           <Figure term="Size">{`${shown(quality.value.sizeRatio, ratio)}× planned quantity`}</Figure>
         </dl>

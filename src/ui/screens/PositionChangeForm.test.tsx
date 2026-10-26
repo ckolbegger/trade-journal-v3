@@ -316,9 +316,9 @@ describe('submission', () => {
     const entryQuality = within(receipt).getByRole('region', { name: 'Entry Quality' });
     expect(within(entryQuality).getAllByRole('definition').map((dd) => dd.textContent)).toEqual([
       '$50.18',
-      '$270.00 (1.08R)',
+      '$270.00 1.08R',
       '$580.00',
-      '2.15 (planned 2.4)',
+      '2.15 planned 2.4',
       '$18.00',
     ]);
     expect(within(receipt).getByText('Entry Size Deviation: 20 shares above plan, caused by this Position Change.')).toBeTruthy();
@@ -1111,18 +1111,20 @@ describe('Record entry issues', () => {
 });
 
 describe('entry context', () => {
-  it('should show the Trades symbol, Strategy, stored lifecycle, and 60 of 100 shares entered or Not entered yet above the form', async () => {
+  it('should show the Trades symbol, Strategy, and stored lifecycle above the form, and not show Not entered yet when nothing has been entered', async () => {
     const planned = renderForm();
     const context = await screen.findByRole('region', { name: 'Trade' });
     expect(within(context).getByText('XYZ')).toBeTruthy();
     expect(within(context).getByText('Long Stock')).toBeTruthy();
     expect(within(context).getByText('Planned')).toBeTruthy();
-    expect(within(context).getByText('Not entered yet')).toBeTruthy();
+    expect(within(context).queryByText('Not entered yet')).toBeNull();
+    expect(context.querySelectorAll('p').length).toBe(1);
     const form = screen.getByRole('group', { name: 'Execution 1' });
     expect(context.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(planned.TradeWorkflows.recordPositionChange).not.toHaveBeenCalled();
-    cleanup();
+  });
 
+  it('should still show 60 of 100 shares entered once some quantity is entered', async () => {
     const facade = positionChangeFormFacade();
     vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({
       kind: 'Ready',
@@ -1146,5 +1148,44 @@ describe('entry context', () => {
     await user.click(link);
     expect(await screen.findByText('Trade Detail route')).toBeTruthy();
     expect(facade.TradeWorkflows.recordPositionChange).not.toHaveBeenCalled();
+  });
+});
+
+describe('R lines', () => {
+  async function receiptEntryQuality() {
+    const facade = renderForm();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(recordedResult());
+    const user = userEvent.setup();
+    await fillRows(user, [['20', '51.00', '1.00', '2026-10-12T14:00']]);
+    await completeReflection(user);
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    const receipt = await screen.findByRole('region', { name: 'Entry recorded' });
+    return within(receipt).getByRole('region', { name: 'Entry Quality' });
+  }
+  const valueOf = (region: HTMLElement, term: string) => within(region).getByText(term, { selector: 'dt' }).nextElementSibling as HTMLElement;
+
+  it('should put the R multiple on its own line below Actual initial risk on the receipt and in Entry Quality', async () => {
+    const value = valueOf(await receiptEntryQuality(), 'Actual initial risk');
+    const [amount, second] = Array.from(value.children) as HTMLElement[];
+    expect(amount!.textContent).toBe('$270.00');
+    expect(second!.textContent).toBe('1.08R');
+    expect(second!.className).toContain('second-line');
+    expect(value.textContent).not.toMatch(/[()]/);
+  });
+
+  it('should put planned 2.4 on its own line below the Reward : risk value on the receipt and in Entry Quality', async () => {
+    const value = valueOf(await receiptEntryQuality(), 'Reward : risk');
+    const [amount, second] = Array.from(value.children) as HTMLElement[];
+    expect(amount!.textContent).toBe('2.15');
+    expect(second!.textContent).toBe('planned 2.4');
+    expect(second!.className).toContain('second-line');
+    expect(value.textContent).not.toMatch(/[()]/);
+  });
+
+  it('should keep the amount and its second line in one value cell, read in order', async () => {
+    const quality = await receiptEntryQuality();
+    expect(valueOf(quality, 'Actual initial risk').textContent).toBe('$270.00 1.08R');
+    expect(valueOf(quality, 'Reward : risk').textContent).toBe('2.15 planned 2.4');
+    expect(within(quality).getAllByRole('definition')).toHaveLength(5);
   });
 });
