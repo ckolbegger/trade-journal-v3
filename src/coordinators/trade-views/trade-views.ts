@@ -167,6 +167,8 @@ export interface OpenTradeDetail extends Omit<PlannedTradeDetail, 'journal'> {
   readonly positions: readonly InstrumentPosition[];
   readonly fees: DerivedTradeState['fees'];
   readonly netCost: DerivedTradeState['netCost'];
+  // The latest activity on the Trade, as its Open list item carries it (it orders that list).
+  readonly lastActivity: string;
   // Position Changes, and the Executions within each, in Fact Order.
   readonly positionChanges: readonly PositionChangeFact[];
   readonly entryStatus: 'Entering' | 'Resolved';
@@ -314,12 +316,14 @@ function openDetail(
   analysis: TradeAnalysisRecord,
   derived: DerivedTradeState,
   narrative: readonly NarrativeItem[],
+  lastActivity: string,
 ): OpenTradeDetail {
   return {
     ...planned,
     positions: derived.positions,
     ...optional('summary', openSummary(derived)),
     netCost: derived.netCost,
+    lastActivity,
     fees: derived.fees,
     positionChanges: inFactOrder(analysis, derived),
     entryStatus: entryStatusOf(derived),
@@ -423,7 +427,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const view: TradeDetailView =
           analysis.storedLifecycle === 'Planned' && derived.expectedLifecycle === 'Planned'
             ? { ...planned, summary: plannedSummary(analysis), journal: narrative.items.flatMap((item) => (item.kind === 'Entry' ? [withoutKind(item)] : [])) }
-            : openDetail(planned, analysis, derived, narrative.items);
+            : openDetail(planned, analysis, derived, narrative.items, s.lastActivity ?? s.planTime);
         return { binding, view };
       });
     },

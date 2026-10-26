@@ -243,6 +243,7 @@ function OpenSections({ view, timeZone }: { readonly view: OpenTradeDetail; read
         <dl className="figure-grid">
           <Figure term="Position">{view.positions.map((p) => `${quantity(p.quantity)} shares of ${p.instrument.symbol}`).join(', ')}</Figure>
           <Figure term="Opening fees">{money(view.fees.incurredOpening)}</Figure>
+          <Figure term="Last activity" plain>{localTime(view.lastActivity, timeZone)}</Figure>
         </dl>
         {/* Tables scroll inside their own focusable region on a narrow screen, never the page. */}
         <div className="table-scroll lots-scroll" role="region" aria-label="Open Lots" tabIndex={0}>

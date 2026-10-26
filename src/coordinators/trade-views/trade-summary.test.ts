@@ -151,7 +151,7 @@ describe('Trade Summary', () => {
     ]);
     expect(without(await detailed(views, planned.tradeId), 'summary')).toEqual(['baseline', 'factRevision', 'journal', 'labels', 'lifecycle', 'plan', 'tradeId']);
     expect(without(await detailed(views, open.tradeId), 'summary', 'netCost')).toEqual([
-      'baseline', 'deviations', 'entryQuality', 'entryResolution', 'entryStatus', 'factRevision', 'fees', 'findings', 'journal', 'labels', 'legFulfillment', 'lifecycle', 'plan', 'positionChanges', 'positions', 'tradeId',
+      'baseline', 'deviations', 'entryQuality', 'entryResolution', 'entryStatus', 'factRevision', 'fees', 'findings', 'journal', 'labels', 'lastActivity', 'legFulfillment', 'lifecycle', 'plan', 'positionChanges', 'positions', 'tradeId',
     ]);
   });
 });

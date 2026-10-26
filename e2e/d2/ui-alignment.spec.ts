@@ -1238,3 +1238,20 @@ test.describe('T2.55-B2 capped Detail label/value rows', () => {
     await context.close();
   });
 });
+
+test.describe('T2.55-B3 Last activity on the Open Detail', () => {
+  test('should show Last activity in the Position card as the latest Position Change time', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await confirmReference(page);
+    await recordEntry(page, PC1);
+    await backToTrade(page);
+    await recordEntry(page, PC2);
+    await backToTrade(page);
+    const position = page.getByRole('region', { name: 'Position', exact: true });
+    await expect(position.locator('dt', { hasText: /^Last activity$/ })).toBeVisible(READY);
+    await expect(position.locator('dt', { hasText: /^Last activity$/ }).locator('xpath=following-sibling::dd[1]')).toHaveText('2026-10-12 11:00');
+    await context.close();
+  });
+});

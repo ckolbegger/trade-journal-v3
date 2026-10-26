@@ -272,6 +272,20 @@ describe('getTradeDetail: Open', () => {
     ]);
   });
 
+  it('should give the Open Detail the same Last Activity as its Open list item', async () => {
+    const stack = await openStack();
+    const trade = await stack.confirm('XYZ');
+    await stack.enter(trade, PC1, '60', '50.10');
+    await stack.enter(trade, PC2, '40', '50.30');
+
+    const detail = await stack.views.getTradeDetail({ tradeId: trade.tradeId });
+    const list = await stack.views.browseTrades({ lifecycle: 'Open' });
+    if (detail.kind !== 'Ready' || !('positionChanges' in detail.view)) throw new Error('expected the Open form of Detail');
+    if (list.kind !== 'Ready') throw new Error(`expected Ready, got ${list.kind}`);
+    expect(list.view.items[0]).toEqual(expect.objectContaining({ lastActivity: PC2 }));
+    expect(detail.view.lastActivity).toBe(PC2);
+  });
+
   it('should return the Planned form of Detail unchanged for a Planned Trade', async () => {
     const stack = await openStack();
     const trade = await stack.confirm('XYZ');

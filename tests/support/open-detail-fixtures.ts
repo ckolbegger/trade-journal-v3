@@ -74,6 +74,7 @@ export function openDetailOf(positionChanges: readonly PositionChangeFact[], opt
     summary: openSummary(derived.positions),
     positions: derived.positions,
     netCost: derived.netCost,
+    lastActivity: positionChanges.at(-1)?.economicTime ?? record.plan.economicTime,
     fees: derived.fees,
     positionChanges,
     entryStatus: derived.entryResolution.kind === 'Resolved' ? 'Resolved' : 'Entering',

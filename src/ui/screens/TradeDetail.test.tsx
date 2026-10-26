@@ -106,6 +106,12 @@ const rowsOf = (table: HTMLElement) =>
     );
 
 describe('Open Trade Detail', () => {
+  it('should show Last activity in the Position card as a labelled local time', async () => {
+    renderView(openDetailOf([PC1, PC2]));
+    const position = await screen.findByRole('region', { name: 'Position' });
+    expect(termValue(position, 'Last activity')).toBe('2026-10-12 11:00');
+  });
+
   it('should show lifecycle Open as text, Position, an Open Lots table, and Executions as rows in Fact Order', async () => {
     renderView(openDetailOf([PC1, PC2]));
     expect(await screen.findByRole('heading', { name: 'XYZ', level: 1 })).toBeTruthy();
