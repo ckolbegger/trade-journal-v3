@@ -15,7 +15,7 @@ import {
   type PlanBaseline,
   type TradeAnalysisRecord,
 } from '../../domain/trade-analysis/index.ts';
-import { parseDecimal, Rational } from '../../domain/values/index.ts';
+import { parseDecimal, plannedLongStockSummary, Rational } from '../../domain/values/index.ts';
 import type { Journal, NarrativeEntry, NarrativeItem } from '../../modules/journal/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { BrowseRecord, TradeRecord, TradeSummary as RecordSummary } from '../../modules/trade-record/index.ts';
@@ -215,16 +215,6 @@ function withoutKind(item: Extract<NarrativeItem, { kind: 'Entry' }>): Narrative
 
 type Labels = { readonly strategy: string; readonly account: string; readonly institution: string };
 
-// The Plan's total quantity at its first Planned Leg's intended entry (D2 plans are one Long Stock leg).
-function plannedSummary(analysis: TradeAnalysisRecord): TradeSummary {
-  return {
-    kind: 'Stock',
-    direction: 'Long',
-    quantity: sum(analysis.plan.legs.map((l) => decimal(l.quantity))),
-    price: decimal(analysis.plan.legs[0]!.intendedEntry),
-  };
-}
-
 // The open quantity at the quantity-weighted Open Lot price, fees excluded; none without open quantity.
 function openSummary(derived: DerivedTradeState): TradeSummary | undefined {
   const lots = derived.positions.flatMap((p) => p.openLots);
@@ -243,7 +233,7 @@ function plannedItem(summary: RecordSummary, analysis: TradeAnalysisRecord, deri
     oneR: baseline.oneR,
     originalPlannedReward: baseline.originalPlannedReward,
     rewardRiskRatio: baseline.rewardRiskRatio,
-    summary: plannedSummary(analysis),
+    summary: plannedLongStockSummary(analysis.plan.legs),
     entryReadiness: 'Awaiting entry',
     ...(derived.findings.length > 0 && { integrity: 'Disagrees' as const }),
   };
@@ -426,7 +416,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         // narrative holds Entries only, without the item kind; any other Trade gets the Open form.
         const view: TradeDetailView =
           analysis.storedLifecycle === 'Planned' && derived.expectedLifecycle === 'Planned'
-            ? { ...planned, summary: plannedSummary(analysis), journal: narrative.items.flatMap((item) => (item.kind === 'Entry' ? [withoutKind(item)] : [])) }
+            ? { ...planned, summary: plannedLongStockSummary(analysis.plan.legs), journal: narrative.items.flatMap((item) => (item.kind === 'Entry' ? [withoutKind(item)] : [])) }
             : openDetail(planned, analysis, derived, narrative.items, s.lastActivity ?? s.planTime);
         return { binding, view };
       });

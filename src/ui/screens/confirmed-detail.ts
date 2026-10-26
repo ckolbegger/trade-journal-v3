@@ -1,11 +1,5 @@
-import { parseDecimal, Rational } from '../../domain/values/index.ts';
+import { plannedLongStockSummary } from '../../domain/values/index.ts';
 import type { EntryDefinitionRecord, NarrativeAnswer, PlannedTradeDetail, TradeMutationSuccess } from '../../app/types.ts';
-
-const decimal = (text: string): Rational => {
-  const parsed = parseDecimal(text);
-  if (!parsed.ok) throw new Error(`not a decimal: ${text}`);
-  return parsed.value;
-};
 
 // Builds the Trade Detail view of a just-confirmed Plan from the command's post-commit result,
 // so presenting the success needs no read back (AC-RESP-001).
@@ -31,12 +25,7 @@ export function confirmedDetail(
     lifecycle: { stored: trade.storedLifecycle, agreement: derivation.agreement },
     baseline: derivation.baseline,
     // As Trade Views gives a Planned Detail: the Plan's total quantity at its first leg's intended entry.
-    summary: {
-      kind: 'Stock',
-      direction: 'Long',
-      quantity: trade.plan.legs.map((l) => decimal(l.quantity)).reduce((a, b) => a.add(b), Rational.of(0n)),
-      price: decimal(trade.plan.legs[0]!.intendedEntry),
-    },
+    summary: plannedLongStockSummary(trade.plan.legs),
     labels,
     journal: [
       {
