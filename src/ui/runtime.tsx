@@ -19,6 +19,8 @@ export interface RuntimeState {
   readonly requestingDurability?: boolean;
   // The last durability request was rejected, so the browser gave no answer.
   readonly durabilityRequestFailed?: boolean;
+  // Where the storage warning icon on the page title links (About), present only while the icon shows.
+  readonly storageIconTo?: string;
 }
 
 export const RuntimeContext = createContext<RuntimeState>({ writable: false, report: () => undefined });

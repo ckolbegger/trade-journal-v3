@@ -27,9 +27,9 @@ import {
   AccountsIcon,
   NewPlanIcon,
   TradesIcon,
-  WarningIcon,
 } from "./icons.tsx";
 import { RuntimeContext, type Durability } from "./runtime.tsx";
+import { PageTitle } from "./PageTitle.tsx";
 import { StorageProtectionCard } from "./StorageProtectionCard.tsx";
 import { FirstRun } from "./screens/FirstRun.tsx";
 import { OnboardingAccount } from "./screens/OnboardingAccount.tsx";
@@ -98,7 +98,7 @@ function RecordEntryUnavailable() {
   const { tradeId } = useParams();
   return (
     <section className="card">
-      <h1>Record entry isn't available</h1>
+      <PageTitle>Record entry isn't available</PageTitle>
       <p>This browser can't save right now, so an entry can't be recorded.</p>
       <Link to={`/trades/${tradeId}`}>Back to the Trade</Link>
     </section>
@@ -364,6 +364,7 @@ export function AppShell({
         requestDurability,
         requestingDurability: requesting,
         durabilityRequestFailed: requestFailed,
+        storageIconTo: showStorageIcon ? ABOUT_PATH : undefined,
         timeZone: "timeZone" in status ? status.timeZone : undefined,
       }}
     >
@@ -405,13 +406,6 @@ export function AppShell({
             </ul>
             <p>{SEPARATE_STORAGE}</p>
           </section>
-        )}
-        {showStorageIcon && (
-          <div className="storage-flag">
-            <Link to={ABOUT_PATH} aria-label="Storage not protected: see About">
-              <WarningIcon />
-            </Link>
-          </div>
         )}
         <main className="content">
           <Routes>

@@ -10,6 +10,7 @@ import type {
 } from '../../app/types.ts';
 import { fromWorkspaceLocal, toWorkspaceLocal } from '../../domain/time/index.ts';
 import { Rational } from '../../domain/values/index.ts';
+import { PageTitle } from '../PageTitle.tsx';
 import { Badge } from '../Badge.tsx';
 import { quantity } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
@@ -174,9 +175,9 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   if (view && 'recordedPositionChanges' in view) {
     return (
       <section className="card">
-        <h1 ref={headingRef} tabIndex={-1}>
+        <PageTitle ref={headingRef} tabIndex={-1}>
           Record entry
-        </h1>
+        </PageTitle>
         <p>{INCOHERENT_ENTRY_NOTE}</p>
         <Link to={`/trades/${tradeId}`}>Back to the Trade</Link>
       </section>
@@ -185,7 +186,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   if (failure === 'NotFound') {
     return (
       <section className="card">
-        <h1>Trade not found</h1>
+        <PageTitle>Trade not found</PageTitle>
         <p>No Trade with this identity exists in this journal.</p>
         <Link to="/">Back to Trades</Link>
       </section>
@@ -194,7 +195,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   if (failure === 'Error') {
     return (
       <section className="card">
-        <h1>Record entry</h1>
+        <PageTitle>Record entry</PageTitle>
         <p>We couldn’t load this entry form. Nothing was changed.</p>
         <button
           type="button"
@@ -292,9 +293,9 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
     <form className="plan-form" noValidate onSubmit={(event) => void submit(event)}>
       {/* Leaving records nothing; entered values are never saved as a draft. */}
       <Link to={`/trades/${tradeId}`}>Back to the Trade</Link>
-      <h1 ref={headingRef} tabIndex={-1}>
+      <PageTitle ref={headingRef} tabIndex={-1}>
         Record entry
-      </h1>
+      </PageTitle>
       <section className="card" aria-label="Trade">
         <p>
           <strong>{view.plan.underlying}</strong> · <span>{view.labels.strategy}</span> · <Badge tone="info">{view.lifecycle.stored}</Badge>

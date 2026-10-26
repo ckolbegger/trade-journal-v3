@@ -15,6 +15,7 @@ import type {
   TradeDetailView,
 } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
+import { PageTitle } from '../PageTitle.tsx';
 import { Badge } from '../Badge.tsx';
 import { decimalMoney as price, localTime, money, netCost, quantity, ratio, rMultiple, tradeSummary } from '../format.ts';
 import { BackIcon, ChevronIcon } from '../icons.tsx';
@@ -91,7 +92,7 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
     return (
       <section className="card">
         <BackToTrades />
-        <h1>Trade not found</h1>
+        <PageTitle>Trade not found</PageTitle>
         <p>No Trade with this identity exists in this journal.</p>
       </section>
     );
@@ -117,7 +118,7 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
     <article className="trade-detail">
       <header>
         <BackToTrades lifecycle={view.lifecycle.stored} />
-        <h1>{view.plan.underlying}</h1>
+        <PageTitle>{view.plan.underlying}</PageTitle>
         <p>
           {view.labels.strategy} · <Badge tone="info">{view.lifecycle.stored}</Badge>
         </p>

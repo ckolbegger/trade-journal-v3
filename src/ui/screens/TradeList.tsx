@@ -2,6 +2,7 @@ import { useEffect, useState, type KeyboardEvent } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { IncoherentOpenTradeItem, IncoherentPlannedTradeItem, OpenTradeItem, PlannedTradeItem } from '../../app/types.ts';
+import { PageTitle } from '../PageTitle.tsx';
 import { Badge } from '../Badge.tsx';
 import { money, netCost, quantity, ratio, tradeSummary } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
@@ -59,7 +60,7 @@ export function TradeList({ facade }: TradeListProps) {
 
   return (
     <section>
-      <h1>Trades</h1>
+      <PageTitle>Trades</PageTitle>
       <div role="tablist" aria-label="Trades by lifecycle" className="tabs" onKeyDown={moveBetweenTabs}>
         {LIFECYCLES.map((l) => (
           <button

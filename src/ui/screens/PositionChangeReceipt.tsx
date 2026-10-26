@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { PageTitle } from '../PageTitle.tsx';
 import { Link } from 'react-router';
 import type { IntegrityFinding, PositionChangeResult } from '../../app/types.ts';
 import { decimalMoney as price, localTime, money, ratio, rMultiple } from '../format.ts';
@@ -61,9 +62,9 @@ export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceip
 
   return (
     <section className="card" aria-labelledby="receipt-heading">
-      <h1 id="receipt-heading" ref={headingRef} tabIndex={-1}>
+      <PageTitle id="receipt-heading" ref={headingRef} tabIndex={-1}>
         Entry recorded
-      </h1>
+      </PageTitle>
       <section aria-labelledby="saved-change-heading">
         <h2 id="saved-change-heading">{`Position Change at ${localTime(saved.economicTime, timeZone)}`}</h2>
         <ul className="executions">

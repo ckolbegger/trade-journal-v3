@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import type { UiFacade } from '../../app/compose.ts';
+import { PageTitle } from '../PageTitle.tsx';
 import { useRuntime } from '../runtime.tsx';
 
 interface Row {
@@ -83,7 +84,7 @@ export function AccountsView({ facade }: AccountsViewProps) {
 
   return (
     <section className="accounts">
-      <h1>Accounts</h1>
+      <PageTitle>Accounts</PageTitle>
       {institutions.map((institution) => (
         <section key={institution.id} className="card" aria-labelledby={`institution-${institution.id}`}>
           <h2 id={`institution-${institution.id}`}>{institution.label}</h2>

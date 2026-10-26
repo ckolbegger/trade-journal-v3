@@ -7,19 +7,21 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble, readyStatus, writableReadiness } from '../../tests/support/facade-double.ts';
 import type { UiFacade } from '../app/compose.ts';
 import { AppShell, type Screens } from './AppShell.tsx';
+import { PageTitle } from './PageTitle.tsx';
 import { AboutView } from './screens/AboutView.tsx';
 import { createReleaseUpdateController } from './update/controller.ts';
 import { ChannelNetwork, FakeContainer, FakeRegistration } from './update/doubles.ts';
 import { useRuntime } from './runtime.tsx';
 
-// Minimal stand-ins for the real screens, so the shell is tested on its own.
+// Minimal stand-ins for the real screens, so the shell is tested on its own. The ones the storage icon
+// is checked on carry a PageTitle, as the real screens do, since the icon sits on the title's row (T2.60-B4).
 function AccountsStub() {
   const { writable } = useRuntime();
   return <section>{writable ? <button type="button">Add Account</button> : <p>Accounts (read only)</p>}</section>;
 }
 const screens: Screens = {
-  trades: () => <p>Trades screen</p>,
-  'trade-detail': () => <p>Trade detail</p>,
+  trades: () => <><PageTitle>Trades</PageTitle><p>Trades screen</p></>,
+  'trade-detail': () => <><PageTitle>XYZ</PageTitle><p>Trade detail</p></>,
   'record-entry': () => <p>Record entry form</p>,
   'new-plan': () => <p>New Plan form</p>,
   accounts: AccountsStub,
@@ -41,6 +43,7 @@ function formScreen(facade: UiFacade) {
           void facade.TradeWorkflows.confirmPlan({} as never).then((result) => runtime.report(result));
         }}
       >
+        <PageTitle>New Plan</PageTitle>
         <label>
           Underlying
           <input value={underlying} onChange={(e) => setUnderlying(e.target.value)} />

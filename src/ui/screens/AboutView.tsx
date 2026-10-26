@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { UiFacade } from '../../app/compose.ts';
 import { APP_NAME, MANIFEST_ID } from '../../app/identity.ts';
+import { PageTitle } from '../PageTitle.tsx';
 import { useRuntime } from '../runtime.tsx';
 import { StorageProtectionCard } from '../StorageProtectionCard.tsx';
 import type { ReleaseUpdateController } from '../update/controller.ts';
@@ -50,7 +51,7 @@ export function AboutView({ facade, updates }: AboutViewProps) {
 
   return (
     <article className="about">
-      <h1>About</h1>
+      <PageTitle>About</PageTitle>
       <StorageProtectionCard protection={status.protection} durability={durability} onRequest={requestDurability} requesting={requestingDurability} failed={durabilityRequestFailed} />
       <section className="card" aria-labelledby="release-heading">
         <h2 id="release-heading">This release</h2>

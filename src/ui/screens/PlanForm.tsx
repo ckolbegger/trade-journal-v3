@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import { fromWorkspaceLocal, toWorkspaceLocal } from '../../domain/time/index.ts';
 import type { EntryDefinitionRecord } from '../../app/types.ts';
+import { PageTitle } from '../PageTitle.tsx';
 import { useRuntime } from '../runtime.tsx';
 import { confirmedDetail } from './confirmed-detail.ts';
 import { answerChanged, fieldIssues, isValidSymbol, IssueSummary, positiveDecimal } from './form-issues.tsx';
@@ -190,7 +191,7 @@ export function PlanForm({ facade, timeZone, now, onDirtyChange }: PlanFormProps
 
   return (
     <form className="plan-form" noValidate onSubmit={(event) => void submit(event)}>
-      <h1>New Plan</h1>
+      <PageTitle>New Plan</PageTitle>
       {/* A rejected confirmation moves focus to the summary of every issue. */}
       <IssueSummary id="plan-issues-heading" heading="This Plan can’t be confirmed yet" issues={issues} corrected={corrected} />
       <section className="card" aria-labelledby="plan-trade-heading">

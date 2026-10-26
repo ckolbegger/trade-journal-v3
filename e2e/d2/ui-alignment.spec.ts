@@ -167,6 +167,127 @@ test.describe('T2.60 storage warning icon', () => {
   }
 });
 
+// T2.60-B4: the icon sits on the page title's row at its far right, instead of a row of its own.
+// The T2.60 case above measured the icon alone (size, focus room, link); it had no measurement of its
+// row, so none is replaced. Its checks stay valid on the title row: the icon overhangs the title row
+// upward by a few pixels, which still leaves the outline room above it.
+test.describe('T2.60-B4 storage icon on the page title row', () => {
+  const NAME = 'Storage not protected: see About';
+  type Title = { name: string; iconCentre: number; iconRight: number; iconLeft: number; iconWidth: number; iconHeight: number; h1Top: number; h1PageTop: number; h1Bottom: number; textRight: number; columnRight: number };
+
+  const measureTitle = (page: Page, name: string): Promise<Title> =>
+    page.evaluate((viewName) => {
+      const h1 = document.querySelector('main h1')!;
+      const icon = document.querySelector('a[aria-label="Storage not protected: see About"]')!.getBoundingClientRect();
+      const box = h1.getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(h1);
+      const main = document.querySelector('main')!;
+      const columnRight = main.getBoundingClientRect().right - parseFloat(getComputedStyle(main).paddingRight);
+      return {
+        name: viewName,
+        iconCentre: icon.top + icon.height / 2,
+        iconRight: icon.right,
+        iconLeft: icon.left,
+        iconWidth: icon.width,
+        iconHeight: icon.height,
+        h1Top: box.top,
+        h1Bottom: box.bottom,
+        h1PageTop: box.top + window.scrollY,
+        textRight: range.getBoundingClientRect().right,
+        columnRight,
+      };
+    }, name);
+
+  const h1Top = (page: Page): Promise<number> => page.evaluate(() => document.querySelector('main h1')!.getBoundingClientRect().top + window.scrollY);
+
+  for (const [width, height] of [[320, 700], [390, 844], [1280, 900]] as const) {
+    test(`should put the storage icon at the far right of the title row on Trades, a Detail, New Plan and About at ${width}`, async ({ server, profile }) => {
+      void server;
+      const context = await profile.launch();
+      const page = await onboardedPage(context);
+      await page.setViewportSize({ width, height });
+      await expectLayout(page, width);
+      const nav = page.getByRole('navigation', { name: 'Primary' });
+      const go = async (link: string, heading: string): Promise<void> => {
+        await nav.getByRole('link', { name: link }).click();
+        await expect(page.getByRole('heading', { name: heading, level: 1 })).toBeVisible();
+      };
+      const views: [string, () => Promise<void>][] = [
+        ['Trades', () => go('Trades', 'Trades')],
+        ['Detail', async () => {
+          await go('New Plan', 'New Plan');
+          await fillPlan(page, PLAN);
+          await page.getByRole('button', { name: 'Confirm Plan' }).click();
+          await expect(page.getByRole('heading', { name: PLAN.symbol, level: 1 })).toBeVisible();
+        }],
+        ['New Plan', () => go('New Plan', 'New Plan')],
+        ['About', () => go('About', 'About')],
+      ];
+      const shown: Record<string, number> = {};
+      for (const [view, open] of views) {
+        await open();
+        const icon = page.getByRole('link', { name: NAME });
+        await expect(icon).toBeVisible();
+        const m = await measureTitle(page, view);
+        expect(m.iconCentre, `${view} icon centre below h1 top at ${width}`).toBeGreaterThanOrEqual(m.h1Top);
+        expect(m.iconCentre, `${view} icon centre above h1 bottom at ${width}`).toBeLessThanOrEqual(m.h1Bottom);
+        expect(Math.abs(m.iconRight - m.columnRight), `${view} icon right edge vs column at ${width}`).toBeLessThanOrEqual(1);
+        expect(m.textRight, `${view} h1 text clear of the icon at ${width}`).toBeLessThanOrEqual(m.iconLeft);
+        expect(m.iconWidth, `${view} icon width`).toBeGreaterThanOrEqual(44);
+        expect(m.iconHeight, `${view} icon height`).toBeGreaterThanOrEqual(44);
+        shown[view] = m.h1PageTop;
+        // Reset the keyboard starting point: the nav link just clicked would otherwise start the Tab walk after the content.
+        await page.evaluate(() => {
+          window.scrollTo(0, 0);
+          document.body.tabIndex = -1;
+          document.body.focus();
+          document.body.removeAttribute('tabindex');
+        });
+        await tabTo(page, icon);
+        const reach = await icon.evaluate((el) => {
+          const style = getComputedStyle(el);
+          return { style: style.outlineStyle, reach: parseFloat(style.outlineWidth) + parseFloat(style.outlineOffset), right: window.innerWidth - el.getBoundingClientRect().right };
+        });
+        expect(reach.style).not.toBe('none');
+        expect(reach.right, `${view} outline room at the right at ${width}`).toBeGreaterThanOrEqual(reach.reach);
+        await expect
+          .poll(() => page.evaluate(() => document.documentElement.scrollWidth), { message: `${view} page width at ${width}` })
+          .toBeLessThanOrEqual(width);
+        await expectAccessible(page, `${view} with the title-row storage icon at ${width}`);
+        if (view === 'Detail' && width === 320) {
+          // A long Detail title wraps inside its own column and never runs under the icon.
+          await page.evaluate(() => {
+            document.querySelector('main h1')!.textContent = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+          });
+          const long = await measureTitle(page, 'long');
+          expect(long.textRight, 'long title clear of the icon').toBeLessThanOrEqual(long.iconLeft);
+          expect(await page.evaluate(() => document.documentElement.scrollWidth), 'long title page width').toBeLessThanOrEqual(width);
+        }
+      }
+
+      // Protected: no icon, and no row is reserved, so every title keeps the same top.
+      await page.addInitScript(() => {
+        Object.defineProperty(navigator.storage, 'persisted', { value: () => Promise.resolve(true) });
+      });
+      await page.reload();
+      await expect(page.locator('.shell')).toBeVisible(READY);
+      await expectLayout(page, width);
+      for (const [view, open] of views) {
+        if (view === 'Detail') {
+          await go('Trades', 'Trades');
+          await openPlanned(page);
+          await page.getByRole('link', { name: new RegExp(PLAN.symbol) }).first().click();
+          await expect(page.getByRole('heading', { name: PLAN.symbol, level: 1 })).toBeVisible();
+        } else await open();
+        await expect(page.getByRole('link', { name: NAME })).toHaveCount(0);
+        expect(Math.abs((await h1Top(page)) - shown[view]!), `${view} h1 top with and without the icon at ${width}`).toBeLessThanOrEqual(1);
+      }
+      await context.close();
+    });
+  }
+});
+
 // The first-run and onboarding screens have no About to link to (no routes before a Workspace
 // exists), so they keep the full card; T2.60 leaves these measurements as they were.
 test.describe('T2.37-B1 durability banner before the shell renders', () => {
