@@ -719,6 +719,7 @@ Figures from each critic's completion notice (the harness's own token count; com
 | critic-5 (T2.55) | `b3392bb` | v2 | 191,688 (resumed segment only) | 21 (resumed segment) | 4 min 50 s (resumed segment) | 5 |
 | critic-6 (T2.55) | `7f2a1fd` | v2 | stopped by the user, no report | — | — | — |
 | critic-7 (T2.55) | `9dc8068` | v2 | 180,493 | 69 | 13 min 58 s | 0 |
+| critic-8 (T2.65) | `d92019d` | v2 | 217,704 | 84 | 14 min 55 s | 1 |
 
 Reading: no measurable saving from brief v2 in this sample. critic-3 sits between critic-1 and critic-2 on tokens and above both on tool calls and time; it also did more beyond the flows (axe at 1280 and 320, a B2.10 mid-form fault, narrow checks of six screens). With one sample per brief and a 14% spread between the two v1 runs, the difference is within noise. critic-4 (after the follow-up batch) ran five of the eleven flows plus a wider narrow check, so it is not directly comparable.
 
@@ -2076,3 +2077,11 @@ Fixes the three Valid ocr findings on 05e1e8b. The outcome of `Workspace.request
 | (question d) | `e2e` | The final margin tweak cannot plausibly break other assertions; the cumulative run below covers it | Holds |
 
 **Complete cumulative run after T2.64** (`suite-runner`, 2026-10-26 05:18 EDT, on `b0b34cf`): Unit 42 files / 472 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 116 passed (3.5m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` wrote 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.64-*.txt`.
+
+### T2.65 Critic gate after the U9 fixes
+
+**critic-8** (`d92019d`, `evidence/D02/critic-8.md`): FAIL with one defect. Every flow (C2.1, C2.5, C2.7, C2.10, C2.11, CU.1–CU.5), U9 a, b, d–i and the storage warning passed; U9(c) failed on the Detail.
+
+**T2.65-B1** (bug task for critic-8 Defect 1): the Detail summary card's Trade text ("Long 100 shares @ $1,236.70") renders `tradeSummary` as plain text, so at 320–350 px it breaks as "Long 100 shares @ / $1,236.70"; only the Trades cells use the `nowrap` "@ price" span (`TradeText`, T2.62). Cases, in `e2e/d2/ui-alignment.spec.ts` "T2.62 line breaks" (or beside it) plus a unit case in `TradeDetail.test.tsx`:
+- it should keep "@" and its price on one line in the Detail summary card's Trade text at 320, 340 and 390 (a Trade priced over $1,000, e.g. "Long 100 shares @ $1,236.70" and a Planned "Long 1000 shares @ $1,500.00")
+- it should render the Detail summary Trade text through the same "@ price" component the Trades cells use
