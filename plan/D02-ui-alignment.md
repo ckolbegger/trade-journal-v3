@@ -60,7 +60,8 @@ The task IDs continue D2's numbering, T2.36–T2.55, so `tdd.sh` and the evidenc
 | U5 | **Contextual forms:** sheets and drawers, or routes? | **Decided by the user 2026-10-24: keep dedicated routes**, which the contract allows, and add Trade context to Record entry (T2.52). | A sheet or drawer: a larger change to routing and focus management for no contract gain. |
 | U6 | **Icons:** how are navigation icons supplied? | **Decided by the user 2026-10-24: draw our own inline SVGs**, thin outline strokes in the reference's style, in one source module, marked `aria-hidden` beside a visible label. No new dependency. Covers the navigation icons (T2.36), the back arrow (T2.48) and the disclosure chevron (T2.50). | Copy an open-source set such as Lucide (more consistent as the set grows; carries a licence notice); an icon package (needs a plan revision for the pin, decision 42). Either can replace the drawn icons later without changing any test. |
 | U7 | **Trades header content** | **Decided 2026-10-24: `h1` "Trades" only.** No page-level New Plan button: the primary navigation already offers New Plan on every screen, at every width, and the Empty states offer it as their next action (ui-contract View states). No greeting and no count line: a total needs a count the paged read model does not provide. | A header New Plan button as in the reference (rejected as a duplicate of the navigation entry); a count for the current page only, which could mislead with Planned paging. |
-| U8 | **Where the storage-protection warning lives** | **Decided by the user 2026-10-25:** the full card (explanation, backup advice, "Ask the browser to keep data", and the result notice) moves to About only. Every other screen shows only a warning icon that links to About. The icon is the visible warning that ui-contract ("keeps a visible warning") and acceptance line 471 require, so no spec changes. This replaces the T2.37 banner styling and the CU.1 "banner … always present until protection" condition. **Also decided by the user 2026-10-25:** no screen recommends a backup until backup exists (D8), as plan decision 2 already says; T2.60 had added a backup sentence to About in error, removed in T2.60-B1. The first-run and onboarding card keeps its compact text and the T2.37-B1 120 px limit stands. | Card on every page (today; the user found it noisy); About only with nothing elsewhere (rejected: no visible warning outside About, contrary to the specs); a "Storage not protected" text marker (the user preferred an icon); a per-session dismiss. |
+| U8 | **Where the storage-protection warning lives** | **Decided by the user 2026-10-25:** the full card (explanation, "Ask the browser to keep data", and the result notice) moves to About only. Every other screen shows only a warning icon that links to About. The icon is the visible warning that ui-contract ("keeps a visible warning") and acceptance line 471 require, so no spec changes. This replaces the T2.37 banner styling and the CU.1 "banner … always present until protection" condition. **Also decided by the user 2026-10-25:** no screen recommends a backup until backup exists (D8), as plan decision 2 already says; T2.60 had added a backup sentence to About in error, removed in T2.60-B1. The first-run and onboarding card keeps its compact text and the T2.37-B1 120 px limit stands. | Card on every page (today; the user found it noisy); About only with nothing elsewhere (rejected: no visible warning outside About, contrary to the specs); a "Storage not protected" text marker (the user preferred an icon); a per-session dismiss. |
+| U9 | **Post-gate layout decisions** | **Decided by the user 2026-10-26, after critic-7 passed the gate** (its minor observations, `evidence/D02/critic-7.md`): (a) every money amount groups thousands ("$1,561.00"), as `netCost` already does; (b) the narrow Underlying header never breaks inside the word; (c) a price never wraps away from its "@"; (d) an Execution row reads as one phrase, "Buy 30 XYZ @ $50.00", with the price after the "@" rather than right-aligned in its own column (this replaces T2.53's "Execution rows … with right-aligned money" and the receipt's reuse of it); (e) Record entry's context drops "Not entered yet", which repeats the Planned badge (this replaces that part of T2.52); (f) a figure's R multiple or planned comparison always sits on its own line below the amount ("$1,561.00" then "6.24R"; "2.27" then "planned 2.4"), on the receipt and in Entry Quality; (g) Planned-Leg Fulfillment is a label/value row like the other card rows; (h) Journal prompt answers read as prose, the question above its answer at full width, as T2.53 already required; (i) the Deviations card has no status badge: an Active Deviation is plain text and a Superseded one is struck through, with a visually hidden "Superseded" so assistive technology hears it. The summary card's "Deviation active" badge stays. The receipt's storage icon inside its card is accepted as it is. | Leave as critic-7 found them (the user chose to fix them before D4). |
 
 **Implementation decisions** (settled with the user during the named task, before it is committed):
 
@@ -180,6 +181,11 @@ Kinds:
 | T2.55 | Critic gate for the batch | close | gate | T2.54 | fresh critic (section 7) |
 | T2.60 | Storage warning as an icon that opens About (U8, user 2026-10-25) | close | B | T2.55-B6 | `AppShell`, `AboutView` |
 | T2.60-B4 | Storage icon at the far right of the page title (user 2026-10-26) | close | S | T2.60-B3 | `ui-alignment.spec.ts` (storage icon) |
+| T2.61 | Thousands separators on every money amount (U9a) | close | B | T2.60-B4 | the UI money formatter |
+| T2.62 | Narrow line breaks: Underlying header, "@ price", Execution phrase (U9b–d) | close | S | T2.61 | `ui-alignment.spec.ts` (line breaks) |
+| T2.63 | Record entry context and R lines (U9e–f) | close | B | T2.62 | `PositionChangeForm`, `PositionChangeReceipt`, `TradeDetail` |
+| T2.64 | Detail cards: Fulfillment row, Journal prose, Deviations without a badge (U9g–i) | close | B | T2.63 | `TradeDetail` |
+| T2.65 | Critic gate after the U9 fixes | close | gate | T2.64 | fresh critic (section 7, plus U9) |
 
 **Ordering:**
 - Batches run A → B → C → D.
@@ -459,6 +465,91 @@ describe("storage warning")
 - The icon's right edge is at the content column's right edge (within 1 px), and the icon does not overlap the `h1` text.
 - The `h1`'s top is the same (within 1 px) with the icon shown (Best Effort) and absent (Protected).
 - The icon stays a 44 px target with an unclipped focus outline; no page overflow; axe clean.
+
+### T2.61 Thousands separators on every money amount (behavioral; U9a)
+
+**Problem (critic-7, minor 1):** the UI's general money formatter never groups digits; only `netCost` does. The same card shows "Net cost $30,061.00" beside "Actual initial risk $1561.00", and a price of $1,000 or more reads "@ $1234.00".
+
+**Change:** one money format for the whole UI, grouping thousands with commas, used by every amount (summary and Detail cards, Plan, Plan Baseline, Entry Quality, Open Lots, Executions, the receipt, the Trades tables, Net cost). Decimal places, the currency sign and the sign form for negatives are unchanged. Values come from domain/values decimals; no float conversion.
+
+```text
+describe("money format")
+  it should group thousands in an amount of 1,000 or more ("$1,561.00", "$30,061.00", "$1,234,567.89")
+  it should leave an amount under 1,000 unchanged ("$50.10", "$0.50", "$0.00")
+  it should group a negative amount, keeping the sign form the formatter uses today
+  it should give Net cost and every other amount the same grouping (one formatter)
+  it should show a $1,234.00 price grouped in the Trade text, the Executions and the receipt
+```
+
+Re-render `npm run ui:screenshots` after the browser suite and commit only the PNGs that changed.
+
+### T2.62 Narrow line breaks (structural; U9b–d)
+
+**Problems (critic-7, minor 5):** at 320 the pinned Trades header reads "UNDERL / YING"; the Trade text breaks as "Long 120 shares @ / $50.32"; Execution rows split "Buy 30 XYZ @" from a right-aligned price, on the receipt ("Buy 600 QQQ @ / $50.10, fee $1.00") and in the Detail's Executions.
+
+**Change:**
+- The narrow Underlying header is never broken inside the word, at 320 and wider, on "Open Trades" and "Planned Trades"; the T2.40 checks (Underlying and Trade cells inside the viewport before scrolling, pinned column) still hold.
+- In the Trade text the "@" and its price are kept together ("Long 120 shares / @ $50.32" is allowed, "… @ / $50.32" is not).
+- An Execution row reads as one phrase, "Buy 30 XYZ @ $50.00", the price directly after the "@" (no right-aligned price column), on the receipt and in the Detail's Executions; the receipt keeps ", fee $1.00" after the price, with "fee" and its amount kept together. The T2.50 button names and grouping text are unchanged.
+
+**Exact verification** (in `e2e/d2/ui-alignment.spec.ts`, against dist-faults, failing first on the current build), at 320, 390 and 1280:
+- The Underlying `th` text occupies one line (its height ≤ 1.6 × line-height) at 320 and 390, both tables; the T2.40 measurements pass.
+- In every Trade cell and Execution row, the client rects of the "@" and of the price that follows share a top (within 1 px), and in the receipt so do "fee" and its amount.
+- In each Execution row the price's left edge follows the "@" (price left − "@" right ≤ 12 px when on one line), not the row's right edge.
+- No page overflow; axe clean on Trades, the Detail and the receipt; `narrow.spec.ts` stays green.
+
+Re-render `npm run ui:screenshots` and commit only the PNGs that changed.
+
+### T2.63 Record entry context and R lines (behavioral; U9e–f)
+
+**Seams:** `PositionChangeForm` (context card), `PositionChangeReceipt` and `TradeDetail` (Entry Quality).
+
+**Change (e):** the Record entry context card shows "60 of 100 shares entered" when some quantity is entered and nothing in its place when none is; the Planned badge already says so. This replaces T2.52's "(or "Not entered yet")".
+
+**Change (f):** a figure's R multiple or planned comparison sits on its own line below the amount, in muted text and without brackets: "Actual initial risk" "$1,561.00" over "6.24R"; "Reward : risk" "2.27" over "planned 2.4"; and the same for every Entry Quality figure that carries one, on the receipt and in the Detail's Entry Quality. Accessible text keeps both parts in order.
+
+```text
+describe("entry context")
+  it should not show "Not entered yet" when nothing has been entered
+  it should still show "60 of 100 shares entered" once some quantity is entered
+
+describe("R lines")
+  it should put the R multiple on its own line below Actual initial risk on the receipt and in Entry Quality
+  it should put "planned 2.4" on its own line below the Reward : risk value on the receipt and in Entry Quality
+  it should keep the amount and its second line in one value cell, read in order
+```
+
+Plus, in `e2e/d2/ui-alignment.spec.ts`: at 320 and 1280 the second line's top is at or below the amount's bottom, on the receipt and the Detail; no overflow. Re-render screenshots as above.
+
+### T2.64 Detail cards: Fulfillment row, Journal prose, Deviations (behavioral; U9g–i)
+
+**Seam:** `TradeDetail`.
+
+**Change (g):** Planned-Leg Fulfillment is a label/value row, the leg ("Long 100 shares of XYZ") as the label and the result ("Filled with Deviation") as the value, aligned and capped like the other card rows (T2.53: no row wider than 480 px at 1280, values on the shared right edge).
+
+**Change (h):** each Journal Entry's prompt answers read as prose: the question as a small label line, the answer below it at the card's full width. Anchor, Source, Moment and Authored stay a compact label/value list. A declined reflection keeps "Reflection declined" and its reason.
+
+**Change (i):** the Deviations card shows no status badge. An Active Deviation is plain text; a Superseded one is struck through (`del` or `line-through`) with a visually hidden "Superseded" before it. The summary card's "Deviation active" badge is unchanged. A Superseded occurrence cannot be produced through D2's screens, so the case uses a view fixture.
+
+```text
+describe("fulfillment row")
+  it should show Planned-Leg Fulfillment as a label/value row with the leg as label and the result as value
+
+describe("journal prose")
+  it should show each prompt's question above its answer, not beside it
+  it should keep Anchor, Source, Moment and Authored as a label/value list
+
+describe("deviations")
+  it should show an Active Deviation as plain text with no status badge
+  it should strike through a Superseded Deviation and name it "Superseded" for assistive technology
+  it should keep the summary card's "Deviation active" badge while a Deviation is Active
+```
+
+Plus, in `e2e/d2/ui-alignment.spec.ts` at 1280: the Fulfillment row is ≤ 480 px wide and its value ends on the shared right edge; each answer's top is below its question's bottom and the answer is wider than 480 px when its text needs it; axe clean at 1280 and 320. Re-render screenshots as above.
+
+### T2.65 Critic gate after the U9 fixes
+
+A fresh critic runs section 7 again (C2.1, C2.5, C2.7, C2.10, C2.11, CU.1–CU.5) on the commit after T2.64, and checks every U9 item at 320, 390 and 1280.
 
 ### T2.52 Record entry Trade context
 
