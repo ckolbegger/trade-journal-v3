@@ -2004,3 +2004,17 @@ Fixes the three Valid ocr findings on 05e1e8b. The outcome of `Workspace.request
 | (question c) | `AppShell.tsx:349, 367` | The icon condition lives only in the shell | Holds |
 
 **Complete cumulative run after T2.60-B4** (`suite-runner`, 2026-10-26 02:53 EDT, on `d6b570d`): Unit 42 files / 454 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 103 passed (3.2m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` exit 0, 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.60-b4-*.txt`.
+
+### T2.61 Thousands separators on every money amount (U9a)
+
+**T2.61** (`c7e2520`): `money` in `src/ui/format.ts` groups thousands with commas on the decimal string (no float), keeping "−$" for negatives; `decimalMoney`, `tradeSummary` and `netCost` all go through it, and `netCost` keeps its "<magnitude> credit" rule without its own grouping code. Five cases in `src/ui/format.test.ts`; case 1 red then green; **cases 2–5 first-run passes** (built by case 1's change), each confirmed by a mutation check (assertion failures recorded as `note` rows in `tdd-log.md`). Case 5 was renamed to avoid "$" in the `-t` filter and tests the formatters behind the Trade text, Executions and receipt rather than rendering them. No existing assertion needed updating. One PNG changed (`14-detail-open-1280.png`).
+
+**ocr review of T2.61** (`ocr-review` step): commit `c7e2520`, session `0bef4d71-8def-4d37-8b94-34a9c4f1c676`, 1 file reviewed, 0 comments, plus three main-session questions. Raw output: `ocr/t2.61-c7e2520.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| (question a) | `src/ui` outside tests | Every money amount goes through `money`; no other currency formatting (the only `toFixed` is About's GB sizes) | Holds |
+| (question b) | `format.ts` | Grouping works on the decimal string; correct for 4+ digits, millions, zero, sub-dollar, negatives, and a round-up to $1,000.00 | Holds |
+| (question c) | `format.ts` `netCost` | The credit rule is unchanged | Holds |
+
+**Complete cumulative run after T2.61** (`suite-runner`, 2026-10-26 04:26 EDT, on `c7e2520`): Unit 42 files / 459 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 103 passed (3.1m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` wrote 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.61-*.txt`.
