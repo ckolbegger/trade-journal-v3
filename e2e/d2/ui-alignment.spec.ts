@@ -1255,3 +1255,30 @@ test.describe('T2.55-B3 Last activity on the Open Detail', () => {
     await context.close();
   });
 });
+
+test.describe('T2.55-B4 narrow Net cost on an incoherent Open row', () => {
+  for (const width of [1280, 390, 320]) {
+    test(`should show Net cost once in the accessibility tree of an incoherent Open row at ${width}`, async ({ server, profile }) => {
+      void server;
+      const setup = await profile.launch();
+      const page = await onboardedPage(setup);
+      await confirmReference(page, { ...PLAN, symbol: 'ABC' });
+      await recordEntry(page, PC1);
+      await setup.close();
+      await writeIntegrityFixture(profile.dir, { kind: 'UnknownPlannedLeg', underlying: 'ABC' });
+      const context = await profile.launch();
+      const app = await firstPage(context);
+      await app.setViewportSize({ width, height: 844 });
+      await app.goto('/');
+      await expectLayout(app, width);
+      await expect(app.getByRole('table', { name: 'Open Trades' })).toBeVisible(READY);
+      const row = app.getByRole('region', { name: 'Open Trades' }).locator('tbody tr').first();
+      const tree = (await row.ariaSnapshot()).split('\n').slice(1).join('\n');
+      if (width < WIDE_LAYOUT_MIN_WIDTH) expect(tree.match(/Net cost Not available/g)?.length, `Net cost line at ${width}`).toBe(1);
+      else expect(tree, `no second line at ${width}`).not.toContain('Net cost');
+      // Wide: the Net cost cell itself reads Not available.
+      if (width >= WIDE_LAYOUT_MIN_WIDTH) await expect(row.locator('td').nth(2)).toHaveText('Not available');
+      await context.close();
+    });
+  }
+});

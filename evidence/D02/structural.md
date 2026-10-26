@@ -1881,3 +1881,9 @@ Main-session decision: the third round of swap hardening showed the backup itsel
 - **Cause:** T2.40 removed the Last activity column from the Open list on the promise that "the Detail shows it" (section 2a), but `OpenTradeDetail` never carried the value and no component rendered it.
 - **Fix:** public view type `OpenTradeDetail` gains `readonly lastActivity: string`, set in `getTradeDetail` from the Trade Record summary exactly as Open list items set it (`lastActivity ?? planTime`). The Position card shows it as a labelled "Last activity" row formatted with `localTime`. Not added to the Planned or incoherent Detail.
 - **Tests:** `open-views.test.ts` (Detail equals the list item), `TradeDetail.test.tsx` (labelled local time), a browser case in `ui-alignment.spec.ts`.
+
+### T2.55-B4 narrow Net cost on an incoherent Open row (critic-5 D4)
+
+- **Cause:** `TradeList` built the Trade cell's second line only for a row with a Net cost value (`derived && netCost.kind === 'Value'`). An incoherent row has no `netCost`, so at narrow, where the Net cost column is hidden, the figure's "Not available" appeared nowhere.
+- **Fix:** the Open row's second line is always `Net cost <figure or Not available>`; wide still hides the line and shows the cell. This also gives a coherent row with no open quantity the same line. The Planned table has the same shape for 1R and Reward : risk on an incoherent Planned row (not in this defect; not changed).
+- **Tests:** a `TradeList` unit case; `T2.55-B4` at 1280, 390 and 320 in `ui-alignment.spec.ts` (fixture `UnknownPlannedLeg` on an Open Trade): the narrow tree has "Net cost Not available" exactly once. The existing disagreeing-row unit assertion now expects the added line.

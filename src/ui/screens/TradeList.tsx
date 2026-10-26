@@ -163,7 +163,7 @@ function OpenList({
                   <TradeCell
                     disagrees={item.integrity === 'Disagrees'}
                     text={derived?.summary ? tradeSummary(derived.summary) : NOT_AVAILABLE}
-                    line={derived && derived.netCost.kind === 'Value' ? `Net cost ${netCost(derived.netCost.value)}` : undefined}
+                    line={`Net cost ${derived && derived.netCost.kind === 'Value' ? netCost(derived.netCost.value) : NOT_AVAILABLE}`}
                   />
                 </td>
                 <td className="number wide-only">{derived && derived.netCost.kind === 'Value' ? netCost(derived.netCost.value) : NOT_AVAILABLE}</td>

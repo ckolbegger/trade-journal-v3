@@ -256,6 +256,16 @@ describe('Trades table columns', () => {
     });
   });
 
+  it('should carry the Net cost of an incoherent Open row, Not available, in the second line of its Trade cell', async () => {
+    const { strategy, account, institution, plannedQuantity, deviationCount, lastActivity } = openItem;
+    const incoherent = { tradeId: 'trade-4', underlying: 'GHI', strategy, account, institution, plannedQuantity, deviationCount, integrity: 'Disagrees', lastActivity };
+    const open = await openTable([incoherent]);
+    const [, row] = within(open).getAllByRole('row');
+    const cells = within(row!).getAllByRole('cell');
+    expect(within(cells[1]!).getByText('Net cost Not available').className).toBe('trade-line');
+    expect(cells[2]!.textContent).toBe('Not available');
+  });
+
   it('should show a Records disagree badge in the Trade cell of a disagreeing row, coherent or incoherent, and none on an agreeing row', async () => {
     const { tradeId, underlying, strategy, account, institution, plannedQuantity, deviationCount, lastActivity } = openItem;
     const incoherent = { tradeId: 'trade-4', underlying: 'GHI', strategy, account, institution, plannedQuantity, deviationCount, integrity: 'Disagrees', lastActivity };
@@ -268,7 +278,7 @@ describe('Trades table columns', () => {
     expect(within(coherentCell).getByText('Records disagree').className).toBe('badge');
     expect(coherentCell.textContent).toBe('Long 60 shares @ $50.10 Records disagree Net cost $3,007.00');
     const brokenCells = within(broken!).getAllByRole('cell');
-    expect(brokenCells[1]!.textContent).toBe('Not available Records disagree');
+    expect(brokenCells[1]!.textContent).toBe('Not available Records disagree Net cost Not available');
     expect(within(brokenCells[1]!).getByText('Records disagree').className).toBe('badge');
     expect(brokenCells.map((c) => c.textContent).slice(2)).toEqual(['Not available', 'Not available', 'Fidelity — Roth IRA']);
     expect(within(broken!).getByRole('link', { name: 'GHI' }).getAttribute('href')).toBe('/trades/trade-4');
