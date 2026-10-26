@@ -2046,3 +2046,18 @@ Fixes the three Valid ocr findings on 05e1e8b. The outcome of `Workspace.request
 | (question b) | `e2e/d2/ui-alignment.spec.ts` | The tests measure the scroll region's client box and fail at 320 if the pin or Trade min-width grows | Holds |
 
 **Complete cumulative run after T2.62-B1** (`suite-runner`, 2026-10-26 04:50 EDT, on `1172327`): Unit 42 files / 459 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 114 passed (3.4m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` wrote 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.62-b1-*.txt`.
+
+### T2.63 Record entry context and R lines (U9e–f)
+
+**T2.63** (`2a7a6de`): Record entry's context card no longer renders "Not entered yet" (the paragraph is absent until something is entered; "60 of 100 shares entered" unchanged). A new `WithSecondLine({ amount, second })` (`src/ui/SecondLine.tsx`, `.second-line { display: block; color: var(--muted) }`) puts the R multiple and the planned comparison on their own line below the amount, without brackets, on the receipt and in the Detail's Entry Quality (Actual initial risk, Reward : risk). Unit cases in `PositionChangeForm.test.tsx` and `TradeDetail.test.tsx`; e2e "T2.63 R lines" at 320 and 1280. Updated assertions: the receipt and Detail Entry Quality values, the Not applicable case, and `offline.spec.ts` / `open-position.spec.ts` (`$270.00 1.08R`, `2.15 planned 2.4`). **Flagged:** the "60 of 100 shares entered" case was a first-run pass (built by T2.52; mutation "shares entered!" failed); **code ahead of red:** the shared R-line code was written right after the first red, and the later R-line reds (and the e2e red) were obtained by temporarily reverting to the bracketed text or mutating CSS, as logged in `tdd-log.md`. Six PNGs re-rendered; `07-detail-planned-1280.png`, committed by the task, differed only in capture height and was restored to its previous version by the main session.
+
+**ocr review of T2.63** (`ocr-review` step): commit `2a7a6de`, session `572478d9-28a3-4f32-867c-ccf95b7e8c80`, 5 files reviewed, 0 comments, plus four main-session questions. Raw output: `ocr/t2.63-2a7a6de.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| (question a) | `src/ui` outside tests | Every bracketed R multiple or planned comparison now goes through `WithSecondLine`; none left | Holds |
+| (question b) | `SecondLine.tsx`, `TradeDetail.tsx` | Accessible text reads amount, one space, second line; the Not applicable path is correct (a planned ratio that is itself Not applicable would read "planned Not applicable…", wording only) | Holds |
+| (question c) | `PositionChangeForm.tsx` | No empty element or gap when nothing is entered | Holds |
+| (question d) | `app.css` | The second line stays right-aligned under the amount; rows stay within 480 px | Holds |
+
+**Complete cumulative run after T2.63** (`suite-runner`, 2026-10-26 05:03 EDT, on `2a7a6de`): Unit 42 files / 466 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 115 passed (3.5m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` wrote 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.63-*.txt`.
