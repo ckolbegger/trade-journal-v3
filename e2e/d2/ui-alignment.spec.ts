@@ -1535,6 +1535,95 @@ test.describe('T2.62 line breaks', () => {
     });
   }
 
+  // Right edges (cell, its descendants) of the pinned and Trade cells against the scroll region's client box, before any scrolling.
+  const insideRegion = (page: Page, tab: (typeof TABS)[number]) =>
+    page.getByRole('region', { name: `${tab} Trades` }).evaluate((region) => {
+      const limit = region.getBoundingClientRect().left + region.clientLeft + region.clientWidth;
+      return [...region.querySelectorAll('tbody tr')].flatMap((row) =>
+        [row.querySelector('td:nth-child(1)')!, row.querySelector('td:nth-child(2)')!].map((cell, i) => ({
+          cell: i === 0 ? 'Underlying' : 'Trade',
+          limit,
+          right: Math.max(cell.getBoundingClientRect().right, ...[...cell.querySelectorAll('*')].map((d) => d.getBoundingClientRect().right)),
+        })),
+      );
+    });
+
+  for (const width of [320, 390]) {
+    test(`should keep the Underlying and Trade cells, with the second line and any badge, inside the scroll region at ${width}`, async ({ server, profile }) => {
+      void server;
+      const context = await profile.launch();
+      const page = await onboardedPage(context);
+      await seedTrades(page);
+      await page.setViewportSize({ width, height: 844 });
+      await expectLayout(page, width);
+      for (const tab of TABS) {
+        if (tab === 'Planned') await openPlanned(page);
+        await expect(page.getByRole('table', { name: `${tab} Trades` })).toBeVisible(READY);
+        for (const c of await insideRegion(page, tab)) expect(c.right, `${tab} ${c.cell} cell right edge at ${width}`).toBeLessThanOrEqual(c.limit + 0.5);
+      }
+      await context.close();
+    });
+
+    test(`should keep a Records disagree badge inside the scroll region at ${width}`, async ({ server, profile }) => {
+      void server;
+      const setup = await profile.launch();
+      const page = await onboardedPage(setup);
+      await confirmReference(page, { ...PLAN, symbol: 'ABC' });
+      await recordEntry(page, PC1);
+      await setup.close();
+      await writeIntegrityFixture(profile.dir, { kind: 'StoredLifecycle', underlying: 'ABC', lifecycle: 'Planned' });
+      const context = await profile.launch();
+      const app = await firstPage(context);
+      await app.setViewportSize({ width, height: 844 });
+      await app.goto('/?lifecycle=Planned');
+      await expect(app.getByRole('table', { name: 'Planned Trades' })).toBeVisible(READY);
+      expect((await measure(app, 'Planned')).rows.filter((r) => r.badgeRight !== undefined).length, `badges at ${width}`).toBe(1);
+      for (const c of await insideRegion(app, 'Planned')) expect(c.right, `Planned ${c.cell} cell right edge at ${width}`).toBeLessThanOrEqual(c.limit + 0.5);
+      await context.close();
+    });
+
+    test(`should keep the UNDERLYING header inside its own cell on one line at ${width}`, async ({ server, profile }) => {
+      void server;
+      const context = await profile.launch();
+      const page = await onboardedPage(context);
+      await seedTrades(page);
+      await page.setViewportSize({ width, height: 844 });
+      await expectLayout(page, width);
+      for (const tab of TABS) {
+        if (tab === 'Planned') await openPlanned(page);
+        const table = page.getByRole('table', { name: `${tab} Trades` });
+        await expect(table).toBeVisible(READY);
+        const h = await table.locator('thead tr').first().evaluate((tr) => {
+          const first = tr.querySelectorAll('th')[0]!;
+          const second = tr.querySelectorAll('th')[1]!;
+          const range = document.createRange();
+          range.selectNodeContents(first);
+          const s = getComputedStyle(first);
+          const probe = document.createElement('div');
+          probe.style.width = 'var(--pin)';
+          first.closest('.table-scroll')!.append(probe);
+          const pin = probe.getBoundingClientRect().width;
+          probe.remove();
+          return {
+            width: first.getBoundingClientRect().width,
+            pin,
+            scrollWidth: first.scrollWidth,
+            clientWidth: first.clientWidth,
+            textRight: range.getBoundingClientRect().right,
+            tradeLeft: second.getBoundingClientRect().left,
+            height: range.getBoundingClientRect().height,
+            lineHeight: parseFloat(s.lineHeight),
+          };
+        });
+        expect(h.width, `${tab} pinned header cell stays at the pin width at ${width}`).toBeLessThanOrEqual(h.pin + 0.5);
+        expect(h.scrollWidth, `${tab} UNDERLYING scrollWidth at ${width}`).toBeLessThanOrEqual(h.clientWidth);
+        expect(h.textRight, `${tab} UNDERLYING text right edge at ${width}`).toBeLessThanOrEqual(h.tradeLeft);
+        expect(h.height, `${tab} UNDERLYING one line at ${width}`).toBeLessThanOrEqual(1.6 * h.lineHeight);
+      }
+      await context.close();
+    });
+  }
+
   test('should read each Detail Execution as one phrase with the price straight after the "@" at 320, 390 and 1280', async ({ server, profile }) => {
     void server;
     const context = await profile.launch();

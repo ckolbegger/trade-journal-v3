@@ -479,7 +479,7 @@ table.trades td:first-child {
 /* The Trade cell: summary text, badges, then a second line of key figures that only a narrow screen shows. */
 table.trades th:nth-child(2),
 table.trades td:nth-child(2) {
-  min-width: 12.5rem;
+  min-width: 11.5rem; /* with the 6.5rem pin, 288 px: the scroll region at 320 */
 }
 
 /* Headers: small, muted, uppercase labels; figure columns align their header with the figures. */
