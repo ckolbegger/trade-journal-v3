@@ -2018,3 +2018,20 @@ Fixes the three Valid ocr findings on 05e1e8b. The outcome of `Workspace.request
 | (question c) | `format.ts` `netCost` | The credit rule is unchanged | Holds |
 
 **Complete cumulative run after T2.61** (`suite-runner`, 2026-10-26 04:26 EDT, on `c7e2520`): Unit 42 files / 459 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 103 passed (3.1m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` wrote 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.61-*.txt`.
+
+### T2.62 Narrow line breaks (U9b–d)
+
+**T2.62** (`4b2b448`): the narrow Underlying header no longer breaks inside the word (`word-break: keep-all`, `--pin` 5rem → 6.5rem at narrow); a private `TradeText` keeps "@ price" together in a `nowrap` span; Execution rows on the Detail and the receipt read as one phrase (`.execution-what` then `.execution-price` "@ $50.00", and on the receipt ", fee $0.50" kept together). Measurements in `e2e/d2/ui-alignment.spec.ts` "T2.62 line breaks" (5 tests), red then green. **First-run passes, flagged:** the 1280 header variant (mutation: header `white-space: normal` plus `word-break: break-all` at wide, failed); the Trade-cell "@" check at 320 and 390 was masked by the header assertion failing first (mutation: drop the nowrap span, failed). The receipt red's failure text was not captured. U9(d) replaced T2.53's right-aligned Execution money: the Detail case keeps only the tint assertion, and the receipt case drops its right-alignment assertions. One unit assertion in `TradeList.test.tsx` now checks the `nowrap` span; textContent assertions are unchanged. Six PNGs re-rendered.
+
+**ocr review of T2.62** (`ocr-review` step): commit `4b2b448`, session `70d1c309-bcc6-47c6-aa37-61f6f22b2cdc`, 4 files reviewed, 1 comment, plus three main-session questions. Raw output: `ocr/t2.62-4b2b448.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| ocr 1 (medium) | `src/ui/app.css:422, 482` | `--pin` 6.5rem plus the Trade column's `min-width: 12.5rem` is 304 px, wider than the 288 px scroll region at 320, so the Trade cell's right edge (or a badge) is clipped by about 6 px before scrolling; the T2.40 checks compare against the window, not the region, so they miss it | Valid; T2.62-B1 |
+| (question a) | `TradeDetail.tsx`, `PositionChangeReceipt.tsx`, `TradeList.tsx` | Accessible names and text unchanged, no lost or doubled spaces | Holds |
+| (question b) | `app.css` `th:first-child` | With `keep-all`, "UNDERLYING" (about 90 px) may be wider than the cell's about 85 px text area and spill into the Trade column; the height check cannot see it | Doubtful, taken as a defect; T2.62-B1 |
+| (question c) | `e2e/d2/ui-alignment.spec.ts`, `TradeList.test.tsx` | Only the intended T2.53 right-alignment assertions were dropped; the unit change is covered by textContent | Holds |
+
+**T2.62-B1** (bug fix for the T2.62 review findings): at 320 and 390, on "Open Trades" and "Planned Trades", before scrolling:
+- it should keep the Underlying and Trade cells, including the second line and any badge, inside the scroll region's client box (not just the window);
+- it should keep the "UNDERLYING" header inside its own cell (`scrollWidth ≤ clientWidth`, and its right edge ≤ the Trade header's left edge), on one line.

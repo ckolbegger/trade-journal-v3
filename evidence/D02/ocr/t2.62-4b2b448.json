@@ -1,0 +1,126 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 122394,
+    "input_tokens": 121353,
+    "output_tokens": 1041,
+    "cache_read_tokens": 15360,
+    "elapsed": "1m27s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_read": 13
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/app.css",
+      "content": "At 320px, the content area is 288px wide after its 1rem side padding. Increasing the pinned column to 104px while the Trade column still has `min-width: 12.5rem` (200px) makes those two columns require at least 304px. Consequently, the rightmost 16px of the Trade cell is clipped by `.table-scroll` until the user scrolls, contrary to keeping both initial columns visible. Rebalance the narrow Trade-column minimum width along with this increase so both columns fit within the scroll region.",
+      "existing_code": "  --pin: 6.5rem;",
+      "start_line": 422,
+      "end_line": 422,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Trade and position screens with shared UI styling",
+      "files": [
+        "src/ui/app.css",
+        "src/ui/screens/PositionChangeReceipt.tsx",
+        "src/ui/screens/TradeDetail.tsx",
+        "src/ui/screens/TradeList.tsx"
+      ]
+    }
+  ],
+  "session_id": "70d1c309-bcc6-47c6-aa37-61f6f22b2cdc",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "70d1c309-bcc6-47c6-aa37-61f6f22b2cdc",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "4b2b448",
+      "resolved_base": "aae9cf1bf0f6455a491a79ccf18f1fbd415c3b36",
+      "resolved_head": "4b2b448ee149502ede3e2a7adcf1a57b937cff99",
+      "exact_range": "aae9cf1bf0f6455a491a79ccf18f1fbd415c3b36..4b2b448ee149502ede3e2a7adcf1a57b937cff99",
+      "source_artifact_sha256": "0edeff57faaafe373c6324e2b7f03745085f77f39dda4efd8f87692cab7581a7"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "4ce455a6425caf2612004175b1e32c8320917c65bf6585c345fd748cf5adc743"
+        },
+        {
+          "item_id": "3b19891a8713f43c2aa08f50a42cf3abbe4d166f7d44b7ccfe76ba2b19a154b8",
+          "path": "src/ui/screens/PositionChangeReceipt.tsx",
+          "fingerprint": "75a58473785a5516078247e139e9486864a47b97274c4e460b6647a033667b4c"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "a7b748cb995116d84bcb47ccbdc4640cec7f62d7ef2c1647a841e034b56b99ce"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "8ac96b165e60c7c0bf554b4776d6142b725642ef7d8a5868802bca6c6f2cb86f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "4ce455a6425caf2612004175b1e32c8320917c65bf6585c345fd748cf5adc743"
+        },
+        {
+          "item_id": "3b19891a8713f43c2aa08f50a42cf3abbe4d166f7d44b7ccfe76ba2b19a154b8",
+          "path": "src/ui/screens/PositionChangeReceipt.tsx",
+          "fingerprint": "75a58473785a5516078247e139e9486864a47b97274c4e460b6647a033667b4c"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "a7b748cb995116d84bcb47ccbdc4640cec7f62d7ef2c1647a841e034b56b99ce"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "8ac96b165e60c7c0bf554b4776d6142b725642ef7d8a5868802bca6c6f2cb86f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 86751
+  }
+}
