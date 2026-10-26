@@ -259,7 +259,7 @@ function PlannedList({ state, retry }: ListProps) {
                   <TradeCell
                     disagrees={item.integrity === 'Disagrees'}
                     text={derived ? tradeSummary(derived.summary) : NOT_AVAILABLE}
-                    line={derived ? `1R ${money(derived.oneR)} · Reward : risk ${ratio(derived.rewardRiskRatio)}` : undefined}
+                    line={`1R ${derived ? money(derived.oneR) : NOT_AVAILABLE} · Reward : risk ${derived ? ratio(derived.rewardRiskRatio) : NOT_AVAILABLE}`}
                   />
                 </td>
                 <td className="number wide-only">{derived ? money(derived.oneR) : NOT_AVAILABLE}</td>

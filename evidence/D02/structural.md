@@ -1907,3 +1907,15 @@ Main-session decision: the third round of swap hardening showed the backup itsel
 | (question e) | `trade-views.ts:288, 430`, `trade-record.ts:305-308` | `lastActivity` on the Detail matches the list; only Position Changes move it | Holds |
 
 **Complete cumulative run after T2.55-B5** (`suite-runner`, 2026-10-25 22:04 EDT, on `1e1e793`): Unit 42 files / 441 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 96 passed (2.8m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` exit 0, 34 PNGs (6 pixel-noise re-renders reverted). Failures: none. Outputs: `suite-runs/t2.55-b5-*.txt`.
+
+## T2.55-B6 narrow 1R and Reward : risk on incoherent Planned rows
+
+Critic-5 D4's class, for Planned rows: `TradeList.tsx` PlannedList's Trade cell second line was skipped when the row had no derived values. It is now always `1R <value or Not available> · Reward : risk <value or Not available>`, matching the wide cells (both read Not available) and B4's phrasing.
+
+| Command | Result |
+| --- | --- |
+| `.claude/scripts/tdd.sh red/green T2.55-B6 src/ui/screens/TradeList.test.tsx "should carry 1R and Reward : risk of an incoherent Planned row, Not available, in the second line of its Trade cell"` | red then green |
+| `npx playwright test e2e/d2/ui-alignment.spec.ts -g "T2.55-B6"` (fixture: StoredLifecycle Planned plus UnknownPlannedLeg on an entered Trade, since the fixture tool needs an Execution) | before the fix 390 and 320 failed, 1280 passed; after, 3 passed. Each figure once in the accessibility tree at 390 and 320; no second line at 1280 |
+| `npx vitest run src` | 42 files, 442 tests passed |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | all exit 0 |
+| `npm run build:faults && npx playwright test e2e/d1 e2e/d2` | 99 passed (3.0m) |

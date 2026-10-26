@@ -266,6 +266,17 @@ describe('Trades table columns', () => {
     expect(cells[2]!.textContent).toBe('Not available');
   });
 
+  it('should carry 1R and Reward : risk of an incoherent Planned row, Not available, in the second line of its Trade cell', async () => {
+    const { strategy, account, institution, planTime } = plannedItem;
+    const incoherent = { tradeId: 'trade-6', underlying: 'JKL', strategy, account, institution, planTime, integrity: 'Disagrees' };
+    const planned = await plannedTable([incoherent]);
+    const [, row] = within(planned).getAllByRole('row');
+    const cells = within(row!).getAllByRole('cell');
+    expect(within(cells[1]!).getByText('1R Not available · Reward : risk Not available').className).toBe('trade-line');
+    expect(cells[2]!.textContent).toBe('Not available');
+    expect(cells[3]!.textContent).toBe('Not available');
+  });
+
   it('should show a Records disagree badge in the Trade cell of a disagreeing row, coherent or incoherent, and none on an agreeing row', async () => {
     const { tradeId, underlying, strategy, account, institution, plannedQuantity, deviationCount, lastActivity } = openItem;
     const incoherent = { tradeId: 'trade-4', underlying: 'GHI', strategy, account, institution, plannedQuantity, deviationCount, integrity: 'Disagrees', lastActivity };
@@ -294,6 +305,6 @@ describe('Trades table columns', () => {
     expect(within(flaggedCells[1]!).getByText('Records disagree').className).toBe('badge');
     expect(flaggedCells[4]!.textContent).toBe('Awaiting entry');
     const lostCells = within(lost!).getAllByRole('cell');
-    expect(lostCells.map((c) => c.textContent)).toEqual(['JKL', 'Not available Records disagree', 'Not available', 'Not available', 'Not available', 'Fidelity — Roth IRA']);
+    expect(lostCells.map((c) => c.textContent)).toEqual(['JKL', 'Not available Records disagree 1R Not available · Reward : risk Not available', 'Not available', 'Not available', 'Not available', 'Fidelity — Roth IRA']);
   });
 });

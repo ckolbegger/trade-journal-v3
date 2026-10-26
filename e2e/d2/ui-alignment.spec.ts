@@ -1301,3 +1301,36 @@ test.describe('T2.55-B5 price issues on the field that fails', () => {
     });
   }
 });
+
+test.describe('T2.55-B6 narrow 1R and Reward : risk on an incoherent Planned row', () => {
+  for (const width of [1280, 390, 320]) {
+    test(`should show 1R and Reward : risk once in the accessibility tree of an incoherent Planned row at ${width}`, async ({ server, profile }) => {
+      void server;
+      const setup = await profile.launch();
+      const page = await onboardedPage(setup);
+      await confirmReference(page, { ...PLAN, symbol: 'ABC' });
+      await recordEntry(page, PC1);
+      await setup.close();
+      // Raw stored records are edited before launch: the Open Trade is filed under Planned and its facts cannot be replayed.
+      await writeIntegrityFixture(profile.dir, { kind: 'StoredLifecycle', underlying: 'ABC', lifecycle: 'Planned' });
+      await writeIntegrityFixture(profile.dir, { kind: 'UnknownPlannedLeg', underlying: 'ABC' });
+      const context = await profile.launch();
+      const app = await firstPage(context);
+      await app.setViewportSize({ width, height: 844 });
+      await app.goto('/?lifecycle=Planned');
+      await expectLayout(app, width);
+      await expect(app.getByRole('table', { name: 'Planned Trades' })).toBeVisible(READY);
+      const row = app.getByRole('region', { name: 'Planned Trades' }).locator('tbody tr').first();
+      const tree = (await row.ariaSnapshot()).split('\n').slice(1).join('\n');
+      if (width < WIDE_LAYOUT_MIN_WIDTH) {
+        expect(tree.match(/1R Not available/g)?.length, `1R line at ${width}`).toBe(1);
+        expect(tree.match(/Reward : risk Not available/g)?.length, `Reward : risk line at ${width}`).toBe(1);
+      } else {
+        expect(tree, `no second line at ${width}`).not.toContain('1R Not available');
+        await expect(row.locator('td').nth(2)).toHaveText('Not available');
+        await expect(row.locator('td').nth(3)).toHaveText('Not available');
+      }
+      await context.close();
+    });
+  }
+});
