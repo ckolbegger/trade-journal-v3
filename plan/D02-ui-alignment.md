@@ -60,6 +60,7 @@ The task IDs continue D2's numbering, T2.36–T2.55, so `tdd.sh` and the evidenc
 | U5 | **Contextual forms:** sheets and drawers, or routes? | **Decided by the user 2026-10-24: keep dedicated routes**, which the contract allows, and add Trade context to Record entry (T2.52). | A sheet or drawer: a larger change to routing and focus management for no contract gain. |
 | U6 | **Icons:** how are navigation icons supplied? | **Decided by the user 2026-10-24: draw our own inline SVGs**, thin outline strokes in the reference's style, in one source module, marked `aria-hidden` beside a visible label. No new dependency. Covers the navigation icons (T2.36), the back arrow (T2.48) and the disclosure chevron (T2.50). | Copy an open-source set such as Lucide (more consistent as the set grows; carries a licence notice); an icon package (needs a plan revision for the pin, decision 42). Either can replace the drawn icons later without changing any test. |
 | U7 | **Trades header content** | **Decided 2026-10-24: `h1` "Trades" only.** No page-level New Plan button: the primary navigation already offers New Plan on every screen, at every width, and the Empty states offer it as their next action (ui-contract View states). No greeting and no count line: a total needs a count the paged read model does not provide. | A header New Plan button as in the reference (rejected as a duplicate of the navigation entry); a count for the current page only, which could mislead with Planned paging. |
+| U8 | **Where the storage-protection warning lives** | **Decided by the user 2026-10-25:** the full card (explanation, backup advice, "Ask the browser to keep data", and the result notice) moves to About only. Every other screen shows only a warning icon that links to About. The icon is the visible warning that ui-contract ("keeps a visible warning") and acceptance line 471 require, so no spec changes. This replaces the T2.37 banner styling and the CU.1 "banner … always present until protection" condition. | Card on every page (today; the user found it noisy); About only with nothing elsewhere (rejected: no visible warning outside About, contrary to the specs); a "Storage not protected" text marker (the user preferred an icon); a per-session dismiss. |
 
 **Implementation decisions** (settled with the user during the named task, before it is committed):
 
@@ -177,6 +178,7 @@ Kinds:
 | T2.53 | Detail, receipt and Accounts styling | D | S | T2.49–T2.52 | `ui-alignment.spec.ts` (detail) |
 | T2.54 | Reference-pair screenshots | close | S | all above | `npm run ui:screenshots` |
 | T2.55 | Critic gate for the batch | close | gate | T2.54 | fresh critic (section 7) |
+| T2.60 | Storage warning as an icon that opens About (U8, user 2026-10-25) | close | B | T2.55-B6 | `AppShell`, `AboutView` |
 
 **Ordering:**
 - Batches run A → B → C → D.
@@ -422,6 +424,28 @@ describe("Journal entries")
   it should show a decline with the warning badge "Reflection declined", its reason or "No reason given", its Anchor and Source
   it should label the region with the number of items, "Journal (4)"
 ```
+
+### T2.60 Storage warning as an icon that opens About (U8)
+
+**Seam:** `AppShell`, `AboutView`.
+
+**Basis:** U8 (the user, 2026-10-25); ui-contract Status ("When host storage protection is not `Protected`, the UI keeps a visible warning that the browser may clear the data, recommends a backup, and … offers one explicit action that invokes `Workspace.requestDurability`. The warning never disables a control."); ADR 0009; acceptance line 471. The icon is the visible warning; About holds the full card. Today `AppShell` renders the card at the top of every screen, first run and onboarding included.
+
+**Shape:**
+- While protection is not Protected (and no successful durability request has changed it), every screen shows one warning icon from `src/ui/icons.tsx`, in the warning tone, at the same place at every width. It is a link to About, with the accessible name "Storage not protected: see About", and a visible focus outline. Colour is not its only cue: it is a distinct warning glyph.
+- About shows the full card: the explanation, the backup recommendation, "Ask the browser to keep data" where the host can request it, and the request's result notice. It never disables a control.
+- After protection becomes Protected, or the request succeeds, the icon disappears.
+- First run and onboarding: if About is reachable there, the icon links to it; if it is not, they keep the full card (report which).
+
+```text
+describe("storage warning")
+  it should show a warning icon linking to About, named "Storage not protected: see About", and no storage card, on Trades, a Detail and New Plan while protection is not Protected
+  it should show the full storage card on About, with the explanation, the backup recommendation, and "Ask the browser to keep data" when protection is Best Effort
+  it should show the request's result on About and remove the icon once the browser agrees to keep data
+  it should show neither icon nor card when protection is Protected
+```
+
+**Test impact:** the T2.37 banner measurements and every e2e lookup of the "Storage protection" region outside About change in this commit, with the reason in the evidence. The `tabTo` focus check and axe stay clean.
 
 ### T2.52 Record entry Trade context
 
