@@ -716,6 +716,7 @@ Figures from each critic's completion notice (the harness's own token count; com
 | critic-2 | `40581f7` | v1 | 121,270 | 32 | 7 min 19 s | 2 |
 | critic-3 | `19971ed` | v2 | 136,644 | 50 | 9 min 45 s | 0 |
 | critic-4 | `4b109b7` | v2 | 112,888 | 43 | 7 min 1 s | 0 |
+| critic-5 (T2.55) | `b3392bb` | v2 | 191,688 (resumed segment only) | 21 (resumed segment) | 4 min 50 s (resumed segment) | 5 |
 
 Reading: no measurable saving from brief v2 in this sample. critic-3 sits between critic-1 and critic-2 on tokens and above both on tool calls and time; it also did more beyond the flows (axe at 1280 and 320, a B2.10 mid-form fault, narrow checks of six screens). With one sample per brief and a 14% spread between the two v1 runs, the difference is within noise. critic-4 (after the follow-up batch) ran five of the eleven flows plus a wider narrow check, so it is not directly comparable.
 
@@ -1859,3 +1860,6 @@ Main-session decision: the third round of swap hardening showed the backup itsel
 **ocr review of T2.54-B4** (`ocr-review` step): commit `98471b1`, session `1753e2a0-e78b-40c6-a4f1-6c4c69cb1b3b`, 1 file reviewed, 0 comments, plus three main-session questions, all holding: no committed file is deleted before its replacement is in place (only the post-copy sweep at line 243 deletes in OUT); the sweep reads only OUT's direct entries; release order kept. Raw output: `ocr/t2.54-b4-98471b1.json`.
 
 **Complete cumulative run after T2.54-B4** (`suite-runner`, 2026-10-25 10:29 EDT, on `98471b1`): Unit 41 files / 435 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 88 passed (2.7m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` exit 0, 34 PNGs plus the README (re-renders reverted, no capture directory left). Failures: none. Outputs: `suite-runs/t2.54-b4-*.txt`.
+
+
+**critic-5 cost note:** critic-5 stopped at the session usage limit during C2.10 and was resumed with SendMessage. The failed segment's notice carried no usage figures, so the row holds only the resumed segment's figures; the whole run cost more.
