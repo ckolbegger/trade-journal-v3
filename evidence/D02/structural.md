@@ -2061,3 +2061,18 @@ Fixes the three Valid ocr findings on 05e1e8b. The outcome of `Workspace.request
 | (question d) | `app.css` | The second line stays right-aligned under the amount; rows stay within 480 px | Holds |
 
 **Complete cumulative run after T2.63** (`suite-runner`, 2026-10-26 05:03 EDT, on `2a7a6de`): Unit 42 files / 466 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 115 passed (3.5m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` wrote 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.63-*.txt`.
+
+### T2.64 Detail cards: Fulfillment row, Journal prose, Deviations (U9g–i)
+
+**T2.64** (`b0b34cf`): Planned-Leg Fulfillment reuses `Figure` in `dl.figure-grid.one-column` (a new single-track modifier, so the lone row shares the summary card's right edge at 1280); Journal Entries' prompt answers use the Plan Reflection prose markup (`dl.answers`, question above answer, dividers) with `ul.narrative dl.answers { margin-top: 0.75rem }`, while Anchor, Source, Moment and Authored stay a label/value list; the Deviations card has no status badge: Active is plain text, Superseded is `<span class="visually-hidden">Superseded</span> <del>…</del>` (view fixture). The summary card's "Deviation active" badge is unchanged and now has its own warning-tone case. Expanded Execution rows (`ExecutionReflection`, their own `<dl>`) are unchanged. Six unit cases in `TradeDetail.test.tsx` plus e2e "T2.64 Detail cards" (1280 and 320). **First-run passes, flagged:** "keep Anchor, Source, Moment and Authored as a label/value list" (mutation: `answers` class on that list, failed) and "keep the summary card Deviation active badge" (mutation: condition against 'Nope', failed); the e2e prose assertions were first reached only after the Fulfillment fix (second mutation, `dl.answers` as a grid with `display: contents`, failed). Updated: the Deviation list text no longer ends with " Active"; the "badge meanings" test now covers Reflection declined only (the summary badge tone is covered by the new case). Four PNGs re-rendered (`14-detail-open-1280/390`, `15-journal-1280/390`).
+
+**ocr review of T2.64** (`ocr-review` step): commit `b0b34cf`, session `5454d36c-46ca-4056-9ce2-7206ca366b3e`, 2 files reviewed, 0 comments, plus four main-session questions. Raw output: `ocr/t2.64-b0b34cf.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| (question a) | `TradeDetail.tsx` Deviations | "Superseded" is heard before the struck text with correct spacing; `<del>` may add a "deletion" cue in some screen readers (an extra cue, not a duplicate); the status type is the closed union `'Active' \| 'Superseded'` (`derive.ts:165`) | Holds |
+| (question b) | `TradeDetail.test.tsx` | The summary "Deviation active" badge's warning tone is still asserted (new case); only the removed Deviations-card badge lost its assertion, by U9(i) | Holds |
+| (question c) | `app.css`, `TradeDetail.tsx:423` | `.one-column` is used only on Fulfillment; `ul.narrative dl.answers` matches only the Journal, not the Planned Detail's Plan Reflection | Holds |
+| (question d) | `e2e` | The final margin tweak cannot plausibly break other assertions; the cumulative run below covers it | Holds |
+
+**Complete cumulative run after T2.64** (`suite-runner`, 2026-10-26 05:18 EDT, on `b0b34cf`): Unit 42 files / 472 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 116 passed (3.5m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` wrote 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.64-*.txt`.
