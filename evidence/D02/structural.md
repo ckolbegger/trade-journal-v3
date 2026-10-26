@@ -1973,3 +1973,14 @@ Fixes the three Valid ocr findings on 05e1e8b. The outcome of `Workspace.request
 **Complete cumulative run after T2.60-B1** (`suite-runner`, 2026-10-25 23:15 EDT, on `43f7359`): Unit 42 files / 448 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 100 passed (3.1m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` exit 0, 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.60-b1-*.txt`.
 
 **T2.60-B2** (bug fix for the T2.60-B1 review finding, no in-flight guard): `AppShell` runs at most one `Workspace.requestDurability` at a time (a ref guard plus a `requesting` state); `RuntimeState.requestingDurability` and the card's `requesting` prop disable the "Ask the browser to keep data" button (the `disabled` attribute) while it is pending. Three cases added to "storage warning" in `src/ui/AppShell.test.tsx` (one facade call for two clicks; button disabled while pending; a second call in the same tick is ignored so a later NotImproved cannot replace a granted result). No first-run passes.
+
+**ocr review of T2.60-B2** (`ocr-review` step): commit `7bc2dd3`, session `5e38f85b-583d-4051-930b-4c72e983fff2`, 4 files reviewed, 0 comments, plus three main-session questions. Raw output: `ocr/t2.60-b2-7bc2dd3.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| (question a) | `AppShell.tsx:126-138` | On rejection the guard clears, but `.finally` re-propagates and nothing catches: an unhandled rejection | Valid; T2.60-B3 |
+| (question b) | `AppShell.tsx:123-125, 291-359`, `AboutView.tsx:29, 54` | One ref, state and callback shared by first run, onboarding and About | Holds |
+| (question c) | `StorageProtectionCard.tsx:42` | Native `disabled` is exposed to assistive technology | Holds |
+| (question c) | `StorageProtectionCard.tsx:31-47` | A focused button that becomes disabled, then unmounts, drops keyboard focus to the body; the pending period is silent | Doubtful, taken as a defect (focus loss); T2.60-B3 |
+
+**Complete cumulative run after T2.60-B2** (`suite-runner`, 2026-10-25 23:28 EDT, on `7bc2dd3`): Unit 42 files / 451 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 100 passed (3.0m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` exit 0, 34 PNGs (4 re-renders reverted). Failures: none. Outputs: `suite-runs/t2.60-b2-*.txt`.
