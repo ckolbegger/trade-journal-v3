@@ -188,7 +188,7 @@ describe('Open Trade Detail', () => {
       within(deviations)
         .getAllByRole('listitem')
         .map((item) => item.textContent),
-    ).toEqual(['Entry Size (Excess): 20 shares above plan, caused by the Position Change at 2026-10-12 14:00. Active']);
+    ).toEqual(['Entry Size (Excess): 20 shares above plan, caused by the Position Change at 2026-10-12 14:00.']);
   });
 
   it('should show Position Change Reflections with snapshot labels and declines as Reflection declined with the reason', async () => {
@@ -332,14 +332,10 @@ describe('incoherent Trade Detail', () => {
 });
 
 describe('badge meanings', () => {
-  it('should give an Active Deviation and Reflection declined the warning tone', async () => {
-    renderView(openDetailOf([PC1, PC2, PC3], { recordedDeviations: [pc3Excess], journal: [pc2Decline] }));
-    const deviations = await screen.findByRole('region', { name: 'Deviations' });
-    expect(within(deviations).getByText('Active').getAttribute('data-tone')).toBe('warning');
+  it('should give Reflection declined the warning tone', async () => {
+    renderView(openDetailOf([PC1, PC2, PC3], { journal: [pc2Decline] }));
     expect(
-      within(screen.getByRole('region', { name: /^Journal/ }))
-        .getByText('Reflection declined')
-        .getAttribute('data-tone'),
+      (await within(await screen.findByRole('region', { name: /^Journal/ })).findByText('Reflection declined')).getAttribute('data-tone'),
     ).toBe('warning');
   });
 
@@ -691,5 +687,74 @@ describe('R lines', () => {
     const quality = await detailEntryQuality();
     expect(valueOf(quality, 'Actual initial risk').textContent).toBe('$270.00 1.08R');
     expect(valueOf(quality, 'Reward : risk').textContent).toBe('2.15 planned 2.4');
+  });
+});
+
+describe('fulfillment row', () => {
+  it('should show Planned-Leg Fulfillment as a label/value row with the leg as label and the result as value', async () => {
+    renderView(openDetailOf([PC1, PC2, PC3], { recordedDeviations: [pc3Excess] }));
+    const fulfillment = await screen.findByRole('region', { name: 'Planned-Leg Fulfillment' });
+    const label = within(fulfillment).getByText('Long 100 shares of XYZ', { selector: 'dt' });
+    expect(label.closest('dl')?.classList.contains('figure-grid')).toBe(true);
+    expect(label.nextElementSibling?.textContent).toBe('Filled with Deviation');
+  });
+});
+
+describe('journal prose', () => {
+  async function journalItem() {
+    renderView(openDetailOf([PC1, PC2], { journal: [pc1Reflection] }));
+    const region = await screen.findByRole('region', { name: /^Journal/ });
+    return within(region).getAllByRole('listitem')[0]!;
+  }
+
+  it('should show each prompt question above its answer, not beside it', async () => {
+    const item = await journalItem();
+    const question = within(item).getByText('Primary emotion', { selector: 'dt' });
+    expect(question.closest('dl')?.classList.contains('answers')).toBe(true);
+    expect(question.nextElementSibling?.textContent).toBe('Calm');
+  });
+
+  it('should keep Anchor, Source, Moment and Authored as a label/value list', async () => {
+    const item = await journalItem();
+    const anchor = within(item).getByText('Anchor', { selector: 'dt' }).closest('dl')!;
+    expect(anchor.classList.contains('answers')).toBe(false);
+    for (const term of ['Source', 'Moment', 'Authored']) {
+      expect(within(anchor).getByText(term, { selector: 'dt' })).toBeTruthy();
+    }
+    expect(within(anchor).queryByText('Primary emotion')).toBeNull();
+  });
+});
+
+describe('deviations', () => {
+  const superseded = {
+    ...pc3Excess,
+    versions: [{ ...pc3Excess.versions[0]!, status: 'Superseded' as const, reason: 'NoLongerExpected' as const }],
+  } as unknown as typeof pc3Excess;
+  const deviationItem = async (recorded: typeof pc3Excess) => {
+    renderView(openDetailOf([PC1, PC2, PC3], { recordedDeviations: [recorded] }));
+    const region = await screen.findByRole('region', { name: 'Deviations' });
+    return within(region).getByRole('listitem');
+  };
+
+  it('should show an Active Deviation as plain text with no status badge', async () => {
+    const item = await deviationItem(pc3Excess);
+    expect(item.textContent).toBe('Entry Size (Excess): 20 shares above plan, caused by the Position Change at 2026-10-12 14:00.');
+    expect(item.querySelector('.badge, del')).toBeNull();
+  });
+
+  it('should strike through a Superseded Deviation and name it Superseded for assistive technology', async () => {
+    const item = await deviationItem(superseded);
+    const struck = item.querySelector('del')!;
+    expect(struck.textContent).toContain('Entry Size (Excess): 20 shares above plan');
+    expect(item.querySelector('.badge')).toBeNull();
+    const hidden = item.querySelector('.visually-hidden')!;
+    expect(hidden.textContent).toBe('Superseded');
+    expect(hidden.compareDocumentPosition(struck) & Node.DOCUMENT_POSITION_FOLLOWING || struck.contains(hidden)).toBeTruthy();
+  });
+
+  it('should keep the summary card Deviation active badge while a Deviation is Active', async () => {
+    renderView(openDetailOf([PC1, PC2, PC3], { recordedDeviations: [pc3Excess] }));
+    const card = await screen.findByRole('region', { name: 'Summary' });
+    expect(within(card).getByText('Deviation active').getAttribute('data-tone')).toBe('warning');
   });
 });

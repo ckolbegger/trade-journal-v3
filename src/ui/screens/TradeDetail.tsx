@@ -420,14 +420,13 @@ function FulfillmentSection({ view }: { readonly view: OpenTradeDetail }) {
   return (
     <section className="card" aria-labelledby="fulfillment-heading">
       <h2 id="fulfillment-heading">Planned-Leg Fulfillment</h2>
-      <dl>
+      <dl className="figure-grid one-column">
         {view.legFulfillment.map((f) => {
           const leg = view.plan.legs.find((l) => l.factId === f.plannedLegId);
           return (
-            <div key={f.plannedLegId}>
-              <dt>{leg ? `${leg.side} ${leg.quantity} shares of ${leg.instrument.symbol}` : f.plannedLegId}</dt>
-              <dd>{FULFILLMENT[f.fulfillment]}</dd>
-            </div>
+            <Figure key={f.plannedLegId} term={leg ? `${leg.side} ${leg.quantity} shares of ${leg.instrument.symbol}` : f.plannedLegId} plain>
+              {FULFILLMENT[f.fulfillment]}
+            </Figure>
           );
         })}
       </dl>
@@ -447,10 +446,17 @@ function DeviationsSection({ view, timeZone }: { readonly view: OpenTradeDetail;
         <ul>
           {view.deviations.map((occurrence) => {
             const current = occurrence.versions.at(-1)!;
+            const text = `Entry Size (Excess): ${current.quantityAbovePlan} shares above plan, caused by the Position Change at ${timeOf(current.causingPositionChangeId)}.`;
             return (
               <li key={occurrence.occurrenceId}>
-                {`Entry Size (Excess): ${current.quantityAbovePlan} shares above plan, caused by the Position Change at ${timeOf(current.causingPositionChangeId)}.`}{' '}
-                <Badge tone={current.status === 'Active' ? 'warning' : 'neutral'}>{current.status}</Badge>
+                {current.status === 'Active' ? (
+                  text
+                ) : (
+                  <>
+                    <span className="visually-hidden">Superseded</span>{' '}
+                    <del>{text}</del>
+                  </>
+                )}
               </li>
             );
           })}
@@ -581,7 +587,7 @@ function JournalSection({ journal, symbol, timeZone }: { readonly journal: reado
               )}
             </dl>
             {item.kind === 'Entry' ? (
-              <dl>
+              <dl className="answers">
                 {item.responses.map((response) => (
                   <div key={response.prompt}>
                     <dt>{response.prompt}</dt>

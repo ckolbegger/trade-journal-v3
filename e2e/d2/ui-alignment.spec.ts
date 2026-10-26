@@ -7,7 +7,9 @@ import {
   confirmD1Plan,
   confirmReference,
   expect,
+  completeReflection,
   expectAccessible,
+  fillRows,
   fillPlan,
   firstPage,
   onboardedD1Page,
@@ -18,6 +20,7 @@ import {
   PC2,
   PLAN,
   READY,
+  reflectionSection,
   recordEntry,
   reloadFromNotice,
   SECOND_PLAN,
@@ -1704,6 +1707,56 @@ test.describe('T2.63 R lines', () => {
       await page.setViewportSize({ width, height: 900 });
       await expectLayout(page, width);
       await expectSecondLinesBelow(detail, page, 'Detail', width);
+    }
+    await context.close();
+  });
+});
+
+test.describe('T2.64 Detail cards', () => {
+  const LONG_NOTE = 'Scaled in over three fills because the first two filled below my intended entry and the market kept pressing the stop, so I held the last tranche until the retest of the breakout level held. '.repeat(2);
+
+  test('should align the Fulfillment row with the other rows, set Journal answers below their questions, and stay accessible at 1280 and 320', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await confirmReference(page);
+    await openEntryForm(page);
+    await fillRows(page, PC1);
+    await completeReflection(page);
+    await reflectionSection(page).getByLabel('Note').fill(LONG_NOTE);
+    await page.getByRole('button', { name: 'Save entry' }).click();
+    await expect(page.getByRole('heading', { name: 'Entry recorded' })).toBeVisible();
+    await backToTrade(page);
+    await expect(page.getByRole('region', { name: 'Entry Quality', exact: true })).toBeVisible(READY);
+    const fulfillment = page.getByRole('region', { name: 'Planned-Leg Fulfillment', exact: true });
+    const journal = page.getByRole('region', { name: /^Journal/ });
+    for (const width of [1280, 320]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expectLayout(page, width);
+      if (width === 1280) {
+        const row = await fulfillment.locator('dt').first().evaluate((dt) => {
+          const box = dt.parentElement!.getBoundingClientRect();
+          return { width: box.width, valueRight: dt.nextElementSibling!.getBoundingClientRect().right };
+        });
+        expect(row.width, 'Fulfillment row width').toBeLessThanOrEqual(480.5);
+        const edges = await page.getByRole('region', { name: 'Summary', exact: true }).locator('dd').evaluateAll((els) => els.map((el) => el.getBoundingClientRect().right));
+        expect(Math.abs(row.valueRight - Math.max(...edges)), `Fulfillment value right edge ${row.valueRight} vs summary ${edges.join(',')}`).toBeLessThanOrEqual(1);
+      }
+      const pairs = await journal.locator('dl.answers dt').evaluateAll((dts) =>
+        dts.map((dt) => {
+          const q = dt.getBoundingClientRect();
+          const a = dt.nextElementSibling!.getBoundingClientRect();
+          return { text: dt.textContent ?? '', questionBottom: q.bottom, answerTop: a.top, answerWidth: a.width };
+        }),
+      );
+      expect(pairs.length, `answers at ${width}`).toBeGreaterThanOrEqual(3);
+      for (const p of pairs) expect(p.answerTop, `${p.text} answer below its question at ${width}`).toBeGreaterThanOrEqual(p.questionBottom - 0.5);
+      if (width === 1280) {
+        const note = pairs.find((p) => p.text === 'Note');
+        expect(note?.answerWidth, 'long Note answer width at 1280').toBeGreaterThan(480);
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), `overflow at ${width}`).toBeLessThanOrEqual(0);
+      await expectAccessible(page, `Open Detail with fulfillment row and Journal prose at ${width}`);
     }
     await context.close();
   });

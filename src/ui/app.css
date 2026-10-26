@@ -852,8 +852,9 @@ dl.figure-grid {
   max-width: 480px;
 }
 
-/* The summary card is one column at every width, so its values share a right edge. */
-.summary-card dl.figure-grid {
+/* The summary card and Planned-Leg Fulfillment are one column at every width, so their values share a right edge. */
+.summary-card dl.figure-grid,
+dl.figure-grid.one-column {
   grid-template-columns: minmax(0, 480px);
 }
 
@@ -891,6 +892,11 @@ dl.answers > div:first-child {
 
 dl.answers dt {
   font-size: 0.9rem;
+}
+
+/* In a Journal item the answers follow the Anchor list and need a gap after it. */
+ul.narrative dl.answers {
+  margin-top: 0.75rem;
 }
 
 dl.answers dd {
