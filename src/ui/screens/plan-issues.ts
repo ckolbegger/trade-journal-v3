@@ -27,7 +27,7 @@ const ANALYSIS: Record<string, FieldIssue> = {
 
 export type PriceField = 'entry' | 'stop' | 'target';
 
-const PRICE_LABEL = { entry: 'intended entry', stop: 'Stop', target: 'Target' } as const;
+const PRICE_LABEL = { entry: 'an intended entry', stop: 'a Stop', target: 'a Target' } as const;
 
 // The domain reports InvalidPrice once, without saying which price failed, so the form says which
 // submitted prices fail the domain's rule (`failing`); the issue goes to each of them, and to the
@@ -35,7 +35,7 @@ const PRICE_LABEL = { entry: 'intended entry', stop: 'Stop', target: 'Target' } 
 function priceIssues(failing: readonly PriceField[]): FieldIssue[] {
   return (failing.length > 0 ? failing : (['entry'] as const)).map((field) => ({
     field,
-    message: `Enter a ${PRICE_LABEL[field]} price greater than zero, with at most 6 decimal places.`,
+    message: `Enter ${PRICE_LABEL[field]} price greater than zero, with at most 6 decimal places.`,
     code: 'InvalidPrice',
   }));
 }
