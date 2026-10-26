@@ -2131,3 +2131,17 @@ Fixes the three Valid ocr findings on 05e1e8b. The outcome of `Workspace.request
 
 
 No bug task for T2.66: the user directed on 2026-10-26 that every review and critic finding is shown to them and becomes a bug task only with their approval. A T2.66-B1 agent was started on a misreading of that direction and stopped before it changed anything (no commit, no edits).
+
+### T2.67 Receipt date and time, Open Lots lines, narrow caption (U10b–d)
+
+**T2.67** (`a980fa6`): (b) the receipt heading wraps its date and time in a `nowrap` span; (c) the Open Lots first column has no right border and `.lots-scroll` has `border-radius: 0`; (d) `table.trades caption { width: fit-content; position: sticky; left: 0 }`. Seven measurements in `e2e/d2/ui-alignment.spec.ts` "T2.67 leftovers", red then green. **First-run passes, flagged:** the receipt heading at 390 (mutation: time as a `display: block` span, failed); the Open Lots corner-radius assertion was masked by the hairline assertion (mutation: remove `border-radius: 0`, failed). The "last row spans the card's row edges" measurement passed on the old build, so it cannot show the critic's ~10 px inset; the radius assertion tests the cause. Two PNGs re-rendered (`14-detail-open-1280/390`).
+
+**ocr review of T2.67** (`ocr-review` step): commit `a980fa6`, session `64b6d24a-c14e-4203-9285-bb531b05f97d`, 2 files reviewed, 0 comments, plus three main-session questions. Raw output: `ocr/t2.67-a980fa6.json`. Under the user's 2026-10-26 rule, findings are shown to the user for triage; none becomes a bug task without their approval.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| (question a) | `app.css` `.table-scroll`, `.lots-scroll` | The ~10 px inset comes from the region's 14 px rounded corners clipping the last row's border (about 8.8 px from each side); `border-radius: 0` removes it; the new test asserts the radius, not the painted border, and only the screenshot confirms it visually | Holds, verification gap noted for triage |
+| (question b) | `app.css` `table.trades caption` | `position: sticky` on a `<caption>` is not uniformly supported; Chromium and probably WebKit honour it, Firefox unverified; the e2e runs on Chromium only; the wide layout is unchanged | Doubtful (cross-engine), for the user's triage |
+| (question c) | `app.css`, `TradeList.tsx`, `TradeDetail.tsx` | The lots changes are scoped to Open Lots; the sticky caption applies to every `table.trades` (Open and Planned Trades, Open Lots and two other Detail tables), wider than U10(d) names | Holds for the lots changes; the caption scope is for the user's triage |
+
+**Complete cumulative run after T2.67** (`suite-runner`, 2026-10-26 08:48 EDT, on `a980fa6`): Unit 43 files / 474 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 124 passed (3.9m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` wrote 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.67-*.txt`.
