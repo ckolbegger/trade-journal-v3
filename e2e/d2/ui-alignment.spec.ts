@@ -1200,3 +1200,41 @@ test.describe('T2.55-B1 Planned Detail Trade Summary', () => {
     await context.close();
   });
 });
+
+// One label/value row per div of a dl, or per dt/dd pair of a plain dl; Plan Reflection answers are prose.
+const detailRows = (page: Page) =>
+  page.locator('main dl:not(.answers)').evaluateAll((lists) =>
+    lists.flatMap((list) => {
+      const card = list.closest('section')?.getAttribute('aria-label') ?? list.closest('section')?.querySelector('h2')?.textContent ?? '';
+      const rect = (el: Element) => el.getBoundingClientRect();
+      const wrapped = [...list.children].filter((c) => c.tagName === 'DIV');
+      const pairs = wrapped.length > 0 ? wrapped.map((row) => [row.querySelector('dt')!, row.querySelector('dd')!] as const) : [...list.querySelectorAll(':scope > dt')].map((dt) => [dt, dt.nextElementSibling!] as const);
+      return pairs.map(([dt, dd]) => ({ card, label: dt.textContent ?? '', width: rect(dd).right - rect(dt).left, valueRight: rect(dd).right, valueClass: dd.className }));
+    }),
+  );
+
+test.describe('T2.55-B2 capped Detail label/value rows', () => {
+  test('should keep every label/value row on the Planned and Open Details at most 480 px wide at 1280, with the summary values on one right edge', async ({ server, profile }) => {
+    void server;
+    const context = await profile.launch();
+    const page = await onboardedPage(context);
+    await confirmReference(page);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await expectLayout(page, 1280);
+    const check = async (state: string) => {
+      const rows = await detailRows(page);
+      expect(rows.length, `${state} rows`).toBeGreaterThan(8);
+      for (const row of rows) expect(row.width, `${state} ${row.card} / ${row.label} width`).toBeLessThanOrEqual(480.5);
+      const edges = (await page.getByRole('region', { name: 'Summary', exact: true }).locator('dd').evaluateAll((els) => els.map((el) => el.getBoundingClientRect().right)));
+      expect(Math.max(...edges) - Math.min(...edges), `${state} summary value right edges`).toBeLessThanOrEqual(1);
+    };
+    await check('Planned');
+    await recordEntry(page, PC1);
+    await backToTrade(page);
+    await expect(page.getByRole('region', { name: 'Entry Quality', exact: true })).toBeVisible(READY);
+    await check('Open');
+    await page.getByRole('region', { name: 'Executions (2)', exact: true }).getByRole('button', { name: /details$/ }).first().click();
+    await check('Open with an Execution expanded');
+    await context.close();
+  });
+});

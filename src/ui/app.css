@@ -841,6 +841,17 @@ dl.figure-grid {
   }
 }
 
+/* Every other label/value list on the Detail (fulfillment, executions, journal) keeps its dt/dd grid
+   but stops at the same cap, so no row spans the card at wide. Prose answers keep their full width. */
+.trade-detail dl:not(.figure-grid):not(.answers) {
+  max-width: 480px;
+}
+
+/* The summary card is one column at every width, so its values share a right edge. */
+.summary-card dl.figure-grid {
+  grid-template-columns: minmax(0, 480px);
+}
+
 dl.figure-grid > div {
   display: flex;
   justify-content: space-between;

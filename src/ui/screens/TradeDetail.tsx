@@ -134,19 +134,13 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
       {'recordedPositionChanges' in view && <IncoherentPanel view={view} timeZone={timeZone} />}
       <section className="card" aria-labelledby="plan-heading">
         <h2 id="plan-heading">Plan</h2>
-        <dl>
-          <dt>Leg</dt>
-          <dd>{leg ? `${leg.side} ${leg.quantity} shares of ${leg.instrument.symbol}` : ''}</dd>
-          <dt>Intended entry</dt>
-          <dd className="number">{leg ? price(leg.intendedEntry) : ''}</dd>
-          <dt>Stop</dt>
-          <dd className="number">{stop ? price(stop.price) : ''}</dd>
-          <dt>Target</dt>
-          <dd className="number">{target ? price(target.price) : ''}</dd>
-          <dt>Plan time</dt>
-          <dd>{localTime(view.plan.planTime, timeZone)}</dd>
-          <dt>Account</dt>
-          <dd>{`${view.labels.institution} — ${view.labels.account}`}</dd>
+        <dl className="figure-grid">
+          <Figure term="Leg" plain>{leg ? `${leg.side} ${leg.quantity} shares of ${leg.instrument.symbol}` : ''}</Figure>
+          <Figure term="Intended entry">{leg ? price(leg.intendedEntry) : ''}</Figure>
+          <Figure term="Stop">{stop ? price(stop.price) : ''}</Figure>
+          <Figure term="Target">{target ? price(target.price) : ''}</Figure>
+          <Figure term="Plan time" plain>{localTime(view.plan.planTime, timeZone)}</Figure>
+          <Figure term="Account" plain>{`${view.labels.institution} — ${view.labels.account}`}</Figure>
         </dl>
       </section>
       {'baseline' in view && (
@@ -184,11 +178,11 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
 }
 
 // One label and value in a figure grid; a row never grows wider than its cap (app.css).
-function Figure({ term, plain, children }: { readonly term: string; readonly plain?: boolean; readonly children: string }) {
+function Figure({ term, plain, tone, children }: { readonly term: string; readonly plain?: boolean; readonly tone?: 'stop' | 'target'; readonly children: string }) {
   return (
     <div>
-      <dt>{term}</dt>
-      <dd className={plain ? undefined : 'number'}>{children}</dd>
+      <dt className={tone && `${tone}-label`}>{term}</dt>
+      <dd className={[plain ? '' : 'number', tone ?? ''].filter(Boolean).join(' ') || undefined}>{children}</dd>
     </div>
   );
 }
@@ -203,47 +197,28 @@ function SummaryCard({ view }: { readonly view: PlannedTradeDetail | OpenTradeDe
     <section className="card summary-card" aria-label="Summary">
       {view.summary && <p className="summary-text number">{tradeSummary(view.summary)}</p>}
       {'deviations' in view && view.deviations.some((d) => d.versions.at(-1)?.status === 'Active') && <Badge tone="warning">Deviation active</Badge>}
-      <dl>
-        {'netCost' in view && view.netCost.kind === 'Value' && (
-          <>
-            <dt>Net cost</dt>
-            <dd className="number">{netCost(view.netCost.value)}</dd>
-          </>
-        )}
+      <dl className="figure-grid">
+        {'netCost' in view && view.netCost.kind === 'Value' && <Figure term="Net cost">{netCost(view.netCost.value)}</Figure>}
         {'positionChanges' in view && (
           <>
-            <dt>Quantity</dt>
-            <dd className="number">{`${quantity(view.positions.reduce((total, p) => total.add(p.quantity), Rational.of(0n)))} of ${leg?.quantity ?? ''} shares`}</dd>
-            <dt>Entry</dt>
-            <dd>{view.entryStatus}</dd>
-            <dt>Opening fees</dt>
-            <dd className="number">{money(view.fees.incurredOpening)}</dd>
+            <Figure term="Quantity">{`${quantity(view.positions.reduce((total, p) => total.add(p.quantity), Rational.of(0n)))} of ${leg?.quantity ?? ''} shares`}</Figure>
+            <Figure term="Entry" plain>{view.entryStatus}</Figure>
+            <Figure term="Opening fees">{money(view.fees.incurredOpening)}</Figure>
           </>
         )}
         {'positionChanges' in view && view.entryQuality.kind === 'Value' && (
           <>
-            <dt>Average entry</dt>
-            <dd className="number">{shown(view.entryQuality.value.averageEntry, money)}</dd>
-            <dt>Actual initial risk</dt>
-            <dd className="number">{shown(view.entryQuality.value.actualInitialRisk, money)}</dd>
+            <Figure term="Average entry">{shown(view.entryQuality.value.averageEntry, money)}</Figure>
+            <Figure term="Actual initial risk">{shown(view.entryQuality.value.actualInitialRisk, money)}</Figure>
           </>
         )}
+        {!('positionChanges' in view) && <Figure term="Intended entry">{leg ? price(leg.intendedEntry) : ''}</Figure>}
+        <Figure term="Stop" tone="stop">{stop ? price(stop.price) : ''}</Figure>
+        <Figure term="Target" tone="target">{target ? price(target.price) : ''}</Figure>
         {!('positionChanges' in view) && (
           <>
-            <dt>Intended entry</dt>
-            <dd className="number">{leg ? price(leg.intendedEntry) : ''}</dd>
-          </>
-        )}
-        <dt className="stop-label">Stop</dt>
-        <dd className="number stop">{stop ? price(stop.price) : ''}</dd>
-        <dt className="target-label">Target</dt>
-        <dd className="number target">{target ? price(target.price) : ''}</dd>
-        {!('positionChanges' in view) && (
-          <>
-            <dt>1R</dt>
-            <dd className="number">{money(view.baseline.oneR)}</dd>
-            <dt>Reward : risk</dt>
-            <dd className="number">{ratio(view.baseline.rewardRiskRatio)}</dd>
+            <Figure term="1R">{money(view.baseline.oneR)}</Figure>
+            <Figure term="Reward : risk">{ratio(view.baseline.rewardRiskRatio)}</Figure>
           </>
         )}
       </dl>
@@ -265,11 +240,9 @@ function OpenSections({ view, timeZone }: { readonly view: OpenTradeDetail; read
     <>
       <section className="card" aria-labelledby="position-heading">
         <h2 id="position-heading">Position</h2>
-        <dl>
-          <dt>Position</dt>
-          <dd className="number">{view.positions.map((p) => `${quantity(p.quantity)} shares of ${p.instrument.symbol}`).join(', ')}</dd>
-          <dt>Opening fees</dt>
-          <dd className="number">{money(view.fees.incurredOpening)}</dd>
+        <dl className="figure-grid">
+          <Figure term="Position">{view.positions.map((p) => `${quantity(p.quantity)} shares of ${p.instrument.symbol}`).join(', ')}</Figure>
+          <Figure term="Opening fees">{money(view.fees.incurredOpening)}</Figure>
         </dl>
         {/* Tables scroll inside their own focusable region on a narrow screen, never the page. */}
         <div className="table-scroll lots-scroll" role="region" aria-label="Open Lots" tabIndex={0}>
