@@ -62,6 +62,7 @@ The task IDs continue D2's numbering, T2.36–T2.55, so `tdd.sh` and the evidenc
 | U7 | **Trades header content** | **Decided 2026-10-24: `h1` "Trades" only.** No page-level New Plan button: the primary navigation already offers New Plan on every screen, at every width, and the Empty states offer it as their next action (ui-contract View states). No greeting and no count line: a total needs a count the paged read model does not provide. | A header New Plan button as in the reference (rejected as a duplicate of the navigation entry); a count for the current page only, which could mislead with Planned paging. |
 | U8 | **Where the storage-protection warning lives** | **Decided by the user 2026-10-25:** the full card (explanation, "Ask the browser to keep data", and the result notice) moves to About only. Every other screen shows only a warning icon that links to About. The icon is the visible warning that ui-contract ("keeps a visible warning") and acceptance line 471 require, so no spec changes. This replaces the T2.37 banner styling and the CU.1 "banner … always present until protection" condition. **Also decided by the user 2026-10-25:** no screen recommends a backup until backup exists (D8), as plan decision 2 already says; T2.60 had added a backup sentence to About in error, removed in T2.60-B1. The first-run and onboarding card keeps its compact text and the T2.37-B1 120 px limit stands. | Card on every page (today; the user found it noisy); About only with nothing elsewhere (rejected: no visible warning outside About, contrary to the specs); a "Storage not protected" text marker (the user preferred an icon); a per-session dismiss. |
 | U9 | **Post-gate layout decisions** | **Decided by the user 2026-10-26, after critic-7 passed the gate** (its minor observations, `evidence/D02/critic-7.md`): (a) every money amount groups thousands ("$1,561.00"), as `netCost` already does; (b) the narrow Underlying header never breaks inside the word; (c) a price never wraps away from its "@"; (d) an Execution row reads as one phrase, "Buy 30 XYZ @ $50.00", with the price after the "@" rather than right-aligned in its own column (this replaces T2.53's "Execution rows … with right-aligned money" and the receipt's reuse of it); (e) Record entry's context drops "Not entered yet", which repeats the Planned badge (this replaces that part of T2.52); (f) a figure's R multiple or planned comparison always sits on its own line below the amount ("$1,561.00" then "6.24R"; "2.27" then "planned 2.4"), on the receipt and in Entry Quality; (g) Planned-Leg Fulfillment is a label/value row like the other card rows; (h) Journal prompt answers read as prose, the question above its answer at full width, as T2.53 already required; (i) the Deviations card has no status badge: an Active Deviation is plain text and a Superseded one is struck through, with a visually hidden "Superseded" so assistive technology hears it. The summary card's "Deviation active" badge stays. The receipt's storage icon inside its card is accepted as it is. | Leave as critic-7 found them (the user chose to fix them before D4). |
+| U10 | **Closing the D2 leftovers** | **Decided by the user 2026-10-26, after critic-9 passed T2.65:** (a) the T2.55-B1 duplication of `plannedSummary` in `confirmed-detail.ts` is removed through one shared helper used by the list read model and the confirmed Detail (no facade or result-type change); (b) the receipt heading keeps its date and time together ("POSITION CHANGE AT 2026-10-12 10:00" never breaks between them), as Execution rows do (I2); (c) the Open Lots table drops the pinned-column hairline after "Opened" and its bottom border reaches the card's row edge; (d) the narrow Trades table caption ("Open Trades", "Planned Trades") stays in view when the region is scrolled right. | Confirm Plan's result carries the summary (a public type change); leave the duplication and the cosmetic notes for the final report. |
 
 **Implementation decisions** (settled with the user during the named task, before it is committed):
 
@@ -186,6 +187,9 @@ Kinds:
 | T2.63 | Record entry context and R lines (U9e–f) | close | B | T2.62 | `PositionChangeForm`, `PositionChangeReceipt`, `TradeDetail` |
 | T2.64 | Detail cards: Fulfillment row, Journal prose, Deviations without a badge (U9g–i) | close | B | T2.63 | `TradeDetail` |
 | T2.65 | Critic gate after the U9 fixes | close | gate | T2.64 | fresh critic (section 7, plus U9) |
+| T2.66 | One shared Planned summary helper (U10a) | close | S | T2.65 | the list read model, `confirmed-detail.ts` |
+| T2.67 | Receipt date and time, Open Lots lines, narrow caption (U10b–d) | close | S | T2.66 | `ui-alignment.spec.ts` (leftovers) |
+| T2.68 | Critic gate after the U10 fixes | close | gate | T2.67 | fresh critic (section 7, plus U9 and U10) |
 
 **Ordering:**
 - Batches run A → B → C → D.
@@ -550,6 +554,21 @@ Plus, in `e2e/d2/ui-alignment.spec.ts` at 1280: the Fulfillment row is ≤ 480 p
 ### T2.65 Critic gate after the U9 fixes
 
 A fresh critic runs section 7 again (C2.1, C2.5, C2.7, C2.10, C2.11, CU.1–CU.5) on the commit after T2.64, and checks every U9 item at 320, 390 and 1280.
+
+### T2.66 One shared Planned summary helper (structural refactor; U10a)
+
+**Problem:** T2.55-B1 computes the Planned summary (the "Long 100 shares @ $50.00" Trade Summary and its figures) a second time in `confirmed-detail.ts`, duplicating the list read model's `plannedSummary`.
+
+**Change:** one helper, used by both places; no facade, result-type or behavior change.
+
+**Exact verification:** the existing tests that cover the Planned summary after Confirm Plan and after a reload (T2.55-B1, the Trades list and Detail cases) pass before and after unchanged; `npx vitest run src`, the integration suite and `npx playwright test e2e/d1 e2e/d2` are green; `lint:deps` passes; a grep shows one definition of the summary computation.
+
+### T2.67 Receipt date and time, Open Lots lines, narrow caption (structural; U10b–d)
+
+**Exact verification** (in `e2e/d2/ui-alignment.spec.ts`, new describe "T2.67 leftovers", against dist-faults, failing first on the current build):
+- (b) On the receipt at 320, 340 and 390, the date and the time in the "Position Change at …" heading share a top (within 1 px).
+- (c) On an Open Detail at 1280 and 320, no Open Lots cell after the first has a left border, and the table's last row bottom edge spans the same left and right as the card's other rows (within 1 px).
+- (d) At 320 and 390, on "Open Trades" and "Planned Trades", after scrolling the region fully right the caption's box is still inside the viewport and visible; the T2.40 and T2.62 measurements still pass; no page overflow; axe clean.
 
 ### T2.52 Record entry Trade context
 
