@@ -1939,3 +1939,17 @@ The full storage card moved to About (`src/ui/StorageProtectionCard.tsx`, used b
 | --- | --- |
 | `.claude/scripts/tdd.sh red/green T2.60 src/ui/AppShell.test.tsx ...` | cases 1 to 3 red then green; case 4 first-run pass with mutation (see tdd-log) |
 | `npx playwright test e2e/d1/readiness.spec.ts e2e/d1/onboarding.spec.ts e2e/d2/ui-alignment.spec.ts -g "B1.7\|critic-2\|T2.37\|T2.60"` | 8 passed (icon visible, link to /about, name, 44 px target, full focus outline room, no card outside About, axe clean at 320, 390, 1280) |
+
+**ocr review of T2.60** (`ocr-review` step): commit `05e1e8b`, session `24b40c49-9ed6-47fc-a9b6-fe0d2eb10066`, 6 files reviewed (PNGs and tests excluded), 3 comments, plus four main-session questions. Raw output: `ocr/t2.60-05e1e8b.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| ocr comment | `StorageProtectionCard.tsx:20` | The request outcome lives in the card; after a declined request, leaving About and returning drops the notice and offers the button again | Valid; T2.60-B1 |
+| ocr comment | `AppShell.tsx:287, 291, 318` | A successful request during first run or onboarding is not passed to the shell, so the icon shows after onboarding | Valid; T2.60-B1 |
+| ocr comment | `AboutView.tsx:32, 52` | After success, About's own `status` row still reads Best effort in the same visit | Valid (cosmetic); T2.60-B1 |
+| (question a) | `AppShell.tsx:118, 331` | A success survives navigation; the icon never reappears | Holds |
+| (question b) | `AppShell.tsx:316-318`, `routes.ts:72-79` | Icon and card conditions per launch state, Recovery Only included | Holds, except the onboarding case above |
+| (question c) | `AboutView.tsx:52`, `AppShell.tsx:274, 287` | Backup recommendation on About only; first run and onboarding lack it | Confirmed; the gap predates the commit (narrowed by it); raised with the user |
+| (question d) | `icons.tsx:5-21`, `app.css` | Exact name, `aria-hidden` SVG, 44 px target, distinct glyph | Holds (code reading) |
+
+**Complete cumulative run after T2.60** (`suite-runner`, 2026-10-25 22:56 EDT, on `05e1e8b`): Unit 42 files / 444 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 100 passed (3.1m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` exit 0, 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.60-*.txt`.

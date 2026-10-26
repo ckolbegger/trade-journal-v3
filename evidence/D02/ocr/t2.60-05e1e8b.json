@@ -1,0 +1,172 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 3,
+    "total_tokens": 156365,
+    "input_tokens": 153841,
+    "output_tokens": 2524,
+    "cache_read_tokens": 26880,
+    "elapsed": "2m4s"
+  },
+  "tool_calls": {
+    "total": 30,
+    "by_tool": {
+      "code_comment": 3,
+      "code_search": 7,
+      "file_read": 18,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/AboutView.tsx",
+      "content": "A successful durability request only updates the shell through `onStorageKept`; About's `status` is still the snapshot fetched on mount. Consequently the card announces that the browser will keep the data while “Storage protection” below still says “Best effort” until the user leaves and reopens About. Refresh About's status (or update its protection field) in the success callback as well as notifying the shell.",
+      "existing_code": "      \u003cStorageProtectionCard facade={facade} protection={status.protection} recommendBackup onKept={onStorageKept} /\u003e",
+      "start_line": 52,
+      "end_line": 52,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/AppShell.tsx",
+      "content": "A successful durability request during onboarding is not propagated to the shell. This card hides its warning locally, but `onReady` only changes `status.onboarding`, retaining the original `BestEffort` protection, and `storageKept` remains false because no `onKept` callback is supplied. Consequently the warning icon appears immediately after onboarding despite the browser having agreed to keep the data (and remains even after About reads the updated Protected status). Propagate success here to the shell or refresh Workspace status before leaving onboarding.",
+      "existing_code": "        \u003cStorageProtectionCard facade={facade} protection={status.protection} /\u003e\n        \u003cOnboardingAccount",
+      "start_line": 287,
+      "end_line": 288,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/StorageProtectionCard.tsx",
+      "content": "The request outcome now lives in a route-local component, so leaving About and returning discards it. After a declined request, the result notice disappears and the request button reappears; previously the shell retained the outcome across navigation. Keep the durability outcome in session-level state (and pass it into the card) so navigating does not erase the result or reset the single-request action.",
+      "existing_code": "  const [durability, setDurability] = useState\u003cDurability | undefined\u003e();",
+      "start_line": 20,
+      "end_line": 20,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Storage protection card and application UI integration",
+      "files": [
+        "src/ui/AppShell.tsx",
+        "src/ui/StorageProtectionCard.tsx",
+        "src/ui/app.css",
+        "src/ui/icons.tsx",
+        "src/ui/runtime.tsx"
+      ]
+    },
+    {
+      "label": "About view updates",
+      "files": [
+        "src/ui/screens/AboutView.tsx"
+      ]
+    }
+  ],
+  "session_id": "24b40c49-9ed6-47fc-a9b6-fe0d2eb10066",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "24b40c49-9ed6-47fc-a9b6-fe0d2eb10066",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "05e1e8b",
+      "resolved_base": "a3ecad88a414fe85ba35ed1d4f7959c59df7a455",
+      "resolved_head": "05e1e8b340cb107e40c00712ab58be0778509456",
+      "exact_range": "a3ecad88a414fe85ba35ed1d4f7959c59df7a455..05e1e8b340cb107e40c00712ab58be0778509456",
+      "source_artifact_sha256": "80e9801d3798074803aba066bef27e1dfdfa331c8584b9717f7ff7dff8d2eda2"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "c55d73221b278ddcd57b69153100d249db2aeb44db675d13462fa383079871ab",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "297c265fc854899d3785325c8b638cf167d043d29b3187da929930a183e5bc3a"
+        },
+        {
+          "item_id": "13dbc2c8cca9f0d3104cffe3086788f771b1be30692657b8f13c232b7450b436",
+          "path": "src/ui/icons.tsx",
+          "fingerprint": "3601177848cb6f784dcbfa17cb5e5e02955a054f5b0e5fac60967dec1d7a4c36"
+        },
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "70cf804fe4f60c85a2966d9c2957eef78a4d0287f07413f1cf0949755e5549a0"
+        },
+        {
+          "item_id": "67c8cc015993669e767b5de712c0acddfac2093780ae942de657a04784ed8024",
+          "path": "src/ui/runtime.tsx",
+          "fingerprint": "4ab1c3605f79d381a864453155d4225817b43ad74eb4313b2b74c008a6b1fce3"
+        },
+        {
+          "item_id": "8650c2637949522eaaa02e5ed749ec7b8b6ab8151b0cd0060f9a966595e84af1",
+          "path": "src/ui/screens/AboutView.tsx",
+          "fingerprint": "0af8efafcfd3f861f6e48fce612f036c00d85a4f2b67059091e91eba8ec3d9ab"
+        },
+        {
+          "item_id": "97442c58502e5e6a5a000d8e0bb57d93cb0b1110f36612725d9bd4b7f9e005ff",
+          "path": "src/ui/StorageProtectionCard.tsx",
+          "fingerprint": "22b54b25a4a2ec3f5a91cfcf9eec1ef0c29965741b1e80233648279d445fb6ed"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "297c265fc854899d3785325c8b638cf167d043d29b3187da929930a183e5bc3a"
+        },
+        {
+          "item_id": "13dbc2c8cca9f0d3104cffe3086788f771b1be30692657b8f13c232b7450b436",
+          "path": "src/ui/icons.tsx",
+          "fingerprint": "3601177848cb6f784dcbfa17cb5e5e02955a054f5b0e5fac60967dec1d7a4c36"
+        },
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "70cf804fe4f60c85a2966d9c2957eef78a4d0287f07413f1cf0949755e5549a0"
+        },
+        {
+          "item_id": "67c8cc015993669e767b5de712c0acddfac2093780ae942de657a04784ed8024",
+          "path": "src/ui/runtime.tsx",
+          "fingerprint": "4ab1c3605f79d381a864453155d4225817b43ad74eb4313b2b74c008a6b1fce3"
+        },
+        {
+          "item_id": "8650c2637949522eaaa02e5ed749ec7b8b6ab8151b0cd0060f9a966595e84af1",
+          "path": "src/ui/screens/AboutView.tsx",
+          "fingerprint": "0af8efafcfd3f861f6e48fce612f036c00d85a4f2b67059091e91eba8ec3d9ab"
+        },
+        {
+          "item_id": "97442c58502e5e6a5a000d8e0bb57d93cb0b1110f36612725d9bd4b7f9e005ff",
+          "path": "src/ui/StorageProtectionCard.tsx",
+          "fingerprint": "22b54b25a4a2ec3f5a91cfcf9eec1ef0c29965741b1e80233648279d445fb6ed"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 123781
+  }
+}
