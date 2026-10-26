@@ -207,12 +207,11 @@ describe('storage warning', () => {
     }
   });
 
-  it('should show the full storage card on About, with the explanation, the backup recommendation, and Ask the browser to keep data when protection is Best Effort', async () => {
+  it('should show the full storage card on About, with the explanation and Ask the browser to keep data when protection is Best Effort', async () => {
     const facade = facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) });
     renderShell(facade, '/about', aboutScreen(facade));
     const card = await screen.findByRole('region', { name: 'Storage protection' });
     expect(within(card).getByText(/this browser may clear your journal data/i)).toBeTruthy();
-    expect(within(card).getByText(/back up/i)).toBeTruthy();
     expect(within(card).getByRole<HTMLButtonElement>('button', { name: 'Ask the browser to keep data' }).disabled).toBe(false);
     cleanup();
 
@@ -244,6 +243,61 @@ describe('storage warning', () => {
     expect(await screen.findByText(/the browser will now keep your journal data/i)).toBeTruthy();
     expect(screen.queryByRole('link', ICON)).toBeNull();
     expect(screen.queryByText(/this browser may clear your journal data/i)).toBeNull();
+  });
+
+  it('should not recommend a backup in the storage card on About, since no backup exists before D8', async () => {
+    const facade = facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) });
+    renderShell(facade, '/about', aboutScreen(facade));
+    const card = await screen.findByRole('region', { name: 'Storage protection' });
+    expect(within(card).queryByText(/back up/i)).toBeNull();
+  });
+
+  it('should keep the decline notice and no ask button after leaving About and returning', async () => {
+    const facade = facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) });
+    vi.mocked(facade.Workspace.requestDurability).mockResolvedValue({
+      kind: 'NotImproved',
+      currentProtection: { kind: 'BestEffort', reason: 'HostDeclined' },
+    });
+    const Nav = () => (
+      <nav>
+        <Link to="/">Go to Trades</Link>
+        <Link to="/about">Go to About</Link>
+      </nav>
+    );
+    const About = aboutScreen(facade)['about']!;
+    renderShell(facade, '/about', { about: () => <><Nav /><About /></> });
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Ask the browser to keep data' }));
+    expect(await screen.findByText(/the browser declined/i)).toBeTruthy();
+    await user.click(screen.getByRole('link', { name: 'Go to Trades' }));
+    await screen.findByText('Trades screen');
+    await user.click(screen.getByRole('link', { name: 'Storage not protected: see About' }));
+    expect(await screen.findByText(/the browser declined/i)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Ask the browser to keep data' })).toBeNull();
+  });
+
+  it('should show no warning icon on the first shell screen after a successful request during first run', async () => {
+    const facade = facadeDouble({ status: readyStatus({ kind: 'InitializationRequired', protection: 'BestEffort' }) });
+    vi.mocked(facade.Workspace.requestDurability).mockResolvedValue({ kind: 'Improved', currentProtection: 'Protected' });
+    vi.mocked(facade.Workspace.initialize).mockResolvedValue({ kind: 'Opened', status: readyStatus({ protection: 'BestEffort' }) } as never);
+    renderShell(facade);
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Ask the browser to keep data' }));
+    await screen.findByText(/the browser will now keep your journal data/i);
+    await user.click(screen.getByRole('button', { name: 'Start my journal' }));
+    await screen.findByText('Trades screen');
+    expect(screen.queryByRole('link', ICON)).toBeNull();
+  });
+
+  it('should show the Storage protection row as Protected on About after a successful request in the same visit', async () => {
+    const facade = facadeDouble({ status: readyStatus({ protection: 'BestEffort' }) });
+    vi.mocked(facade.Workspace.requestDurability).mockResolvedValue({ kind: 'Improved', currentProtection: 'Protected' });
+    renderShell(facade, '/about', aboutScreen(facade));
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Ask the browser to keep data' }));
+    await screen.findByText(/the browser will now keep your journal data/i);
+    const term = screen.getByText('Storage protection', { selector: 'dt' });
+    expect(term.nextElementSibling?.textContent).toBe('Protected');
   });
 
   it('should show neither icon nor card when protection is Protected', async () => {

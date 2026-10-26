@@ -26,12 +26,14 @@ const gb = (bytes: number) => `${(bytes / 1024 ** 3).toFixed(2)} GB`;
 // Evidence about this installed release and this browser, never a support verdict by identity.
 export function AboutView({ facade, updates }: AboutViewProps) {
   const [status, setStatus] = useState<Status | undefined>();
-  const { onStorageKept } = useRuntime();
+  const { durability, requestDurability } = useRuntime();
   const [checked, setChecked] = useState<'NoUpdate' | 'UpdateWaiting' | undefined>();
   useEffect(() => {
     void facade.Workspace.getStatus().then(setStatus);
   }, [facade]);
   if (!status) return <p role="status">Loading release details…</p>;
+  // A request the browser granted in this session outranks the status read when About opened.
+  const kept = durability !== undefined && durability.kind !== 'NotImproved';
 
   const { checks } = status.readiness;
   const inventory = checks.inventory.evidence;
@@ -49,7 +51,7 @@ export function AboutView({ facade, updates }: AboutViewProps) {
   return (
     <article className="about">
       <h1>About</h1>
-      <StorageProtectionCard facade={facade} protection={status.protection} recommendBackup onKept={onStorageKept} />
+      <StorageProtectionCard protection={status.protection} durability={durability} onRequest={requestDurability} />
       <section className="card" aria-labelledby="release-heading">
         <h2 id="release-heading">This release</h2>
         <dl>
@@ -64,7 +66,7 @@ export function AboutView({ facade, updates }: AboutViewProps) {
           <dt>Offline assets</dt>
           <dd className="number">{inventory && 'assetCount' in inventory ? String(inventory.assetCount) : 'Unknown'}</dd>
           <dt>Storage protection</dt>
-          <dd>{PROTECTION[status.protection]}</dd>
+          <dd>{PROTECTION[kept ? 'Protected' : status.protection]}</dd>
           <dt>Time zone</dt>
           <dd>{'timeZone' in status ? status.timeZone : 'Not set'}</dd>
         </dl>

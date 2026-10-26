@@ -1953,3 +1953,10 @@ The full storage card moved to About (`src/ui/StorageProtectionCard.tsx`, used b
 | (question d) | `icons.tsx:5-21`, `app.css` | Exact name, `aria-hidden` SVG, 44 px target, distinct glyph | Holds (code reading) |
 
 **Complete cumulative run after T2.60** (`suite-runner`, 2026-10-25 22:56 EDT, on `05e1e8b`): Unit 42 files / 444 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 100 passed (3.1m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` exit 0, 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.60-*.txt`.
+
+### T2.60-B1 Keep the storage request outcome in the shell
+
+Fixes the three Valid ocr findings on 05e1e8b. The outcome of `Workspace.requestDurability` is held once in `AppShell` and exposed as `RuntimeState.durability` and `RuntimeState.requestDurability`; every `StorageProtectionCard` reads it and requests through that function. The icon and About's Storage protection row derive from it. `onStorageKept` and `onKept` are removed.
+
+- `src/ui/AppShell.test.tsx`: three cases added to "storage warning" (decline survives leaving About; no icon after a first-run success; the About row reads Protected after success).
+- Also, on the coordinator's instruction citing decision 2 of `plan/implementation-plan.md` (the warning offers the durability request but does not recommend a backup until D8): removed "Back up your journal as soon as this release offers backup" and the `recommendBackup` prop; new case "should not recommend a backup in the storage card on About" (red then green); the T2.60 About-card case no longer asserts the sentence.

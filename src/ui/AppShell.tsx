@@ -28,7 +28,7 @@ import {
   TradesIcon,
   WarningIcon,
 } from "./icons.tsx";
-import { RuntimeContext } from "./runtime.tsx";
+import { RuntimeContext, type Durability } from "./runtime.tsx";
 import { StorageProtectionCard } from "./StorageProtectionCard.tsx";
 import { FirstRun } from "./screens/FirstRun.tsx";
 import { OnboardingAccount } from "./screens/OnboardingAccount.tsx";
@@ -117,8 +117,11 @@ export function AppShell({
   // Where the refusal arrived, so the form open there keeps its values (see `routes` below).
   const { pathname } = useLocation();
   const [refusedAt, setRefusedAt] = useState<string | undefined>();
-  // Set once the trader's durability request succeeds on About, which removes the warning icon.
-  const [storageKept, setStorageKept] = useState(false);
+  // The outcome of the trader's one durability request, shared by every screen that shows the card.
+  const [durability, setDurability] = useState<Durability | undefined>();
+  const requestDurability = useCallback(() => {
+    void facade.Workspace.requestDurability().then(setDurability);
+  }, [facade]);
   // While initialize converts an older stored schema (D2 A31).
   const [migrating, setMigrating] = useState(false);
   // The last conversion attempt's failure: the old data is unchanged and nothing is Ready.
@@ -271,7 +274,11 @@ export function AppShell({
     return (
       <>
         {/* About is not reachable before a Workspace exists, so the full card stays here. */}
-        <StorageProtectionCard facade={facade} protection={status.protection} />
+        <StorageProtectionCard
+          protection={status.protection}
+          durability={durability}
+          onRequest={requestDurability}
+        />
         <FirstRun facade={facade} onOpened={setStatus} />
       </>
     );
@@ -284,7 +291,11 @@ export function AppShell({
   ) {
     return (
       <>
-        <StorageProtectionCard facade={facade} protection={status.protection} />
+        <StorageProtectionCard
+          protection={status.protection}
+          durability={durability}
+          onRequest={requestDurability}
+        />
         <OnboardingAccount
           facade={facade}
           onReady={() =>
@@ -314,6 +325,7 @@ export function AppShell({
     (failure) => failure.reason === "SessionSuperseded",
   );
   const aboutRoute = routes.find((route) => route.id === "about");
+  const storageKept = durability !== undefined && durability.kind !== "NotImproved";
   const showStorageIcon =
     status.protection !== "Protected" && !storageKept && aboutRoute !== undefined;
   const report = (result: { readonly kind: string }) => {
@@ -328,7 +340,8 @@ export function AppShell({
       value={{
         writable,
         report,
-        onStorageKept: () => setStorageKept(true),
+        durability,
+        requestDurability,
         timeZone: "timeZone" in status ? status.timeZone : undefined,
       }}
     >

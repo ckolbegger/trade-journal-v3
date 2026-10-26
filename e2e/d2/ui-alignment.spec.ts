@@ -160,7 +160,7 @@ test.describe('T2.60 storage warning icon', () => {
       await expect(page.getByRole('heading', { name: 'About' })).toBeVisible();
       const card = page.getByRole('region', { name: 'Storage protection' });
       await expect(card).toBeVisible();
-      await expect(card.getByText('Back up your journal')).toBeVisible();
+      await expect(card.getByText('Back up your journal')).toHaveCount(0);
       await expectAccessible(page, `About with the storage card at ${width}`);
       await context.close();
     });
