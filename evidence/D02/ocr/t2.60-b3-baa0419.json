@@ -1,0 +1,240 @@
+{
+  "status": "failed",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review failed: 0 finding(s); 4 of 4 selected item(s) failed.",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "elapsed": "6s"
+  },
+  "tool_calls": {
+    "total": 0,
+    "by_tool": {},
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": null,
+  "groups": [
+    {
+      "label": "src/ui/AppShell.tsx",
+      "files": [
+        "src/ui/AppShell.tsx"
+      ]
+    },
+    {
+      "label": "src/ui/StorageProtectionCard.tsx",
+      "files": [
+        "src/ui/StorageProtectionCard.tsx"
+      ]
+    },
+    {
+      "label": "src/ui/runtime.tsx",
+      "files": [
+        "src/ui/runtime.tsx"
+      ]
+    },
+    {
+      "label": "src/ui/screens/AboutView.tsx",
+      "files": [
+        "src/ui/screens/AboutView.tsx"
+      ]
+    }
+  ],
+  "session_id": "5b43ff94-2cf5-4bf8-82c3-e498cf74be8e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "5b43ff94-2cf5-4bf8-82c3-e498cf74be8e",
+    "operation": "review",
+    "terminal_state": "failed",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "baa0419",
+      "resolved_base": "2b97f45ff861203cd816c92484c516c8fe976dbb",
+      "resolved_head": "baa0419fa03b9e31ecb4256b29115127cfff80e2",
+      "exact_range": "2b97f45ff861203cd816c92484c516c8fe976dbb..baa0419fa03b9e31ecb4256b29115127cfff80e2",
+      "source_artifact_sha256": "8af6a42451dccc5486c061a497128ded24754a93bb745cd9af12e5a0d3125cc2"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "ad3a830d5b7938907a520d9177ea1693953ef63620b50da40e3eca4e1cbc21a9"
+        },
+        {
+          "item_id": "67c8cc015993669e767b5de712c0acddfac2093780ae942de657a04784ed8024",
+          "path": "src/ui/runtime.tsx",
+          "fingerprint": "15f58a4358797c40d4e29e9e1beb7128ca7d9fb43a385e811e90e2ac7fc97555"
+        },
+        {
+          "item_id": "8650c2637949522eaaa02e5ed749ec7b8b6ab8151b0cd0060f9a966595e84af1",
+          "path": "src/ui/screens/AboutView.tsx",
+          "fingerprint": "8b3e29b262558c5262a706404bc3a1b15b51f249d3f2c7df39f7eae45b5e6317"
+        },
+        {
+          "item_id": "97442c58502e5e6a5a000d8e0bb57d93cb0b1110f36612725d9bd4b7f9e005ff",
+          "path": "src/ui/StorageProtectionCard.tsx",
+          "fingerprint": "7b3f44481a00b6c84183427f6e8205ebb2ed0d22cfeea1c60b4738cf4a2ec9b0"
+        }
+      ],
+      "completed": [],
+      "reused": [],
+      "failed": [
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "ad3a830d5b7938907a520d9177ea1693953ef63620b50da40e3eca4e1cbc21a9",
+          "classification": "provider",
+          "reason": "provider or subtask request failed"
+        },
+        {
+          "item_id": "67c8cc015993669e767b5de712c0acddfac2093780ae942de657a04784ed8024",
+          "path": "src/ui/runtime.tsx",
+          "fingerprint": "15f58a4358797c40d4e29e9e1beb7128ca7d9fb43a385e811e90e2ac7fc97555",
+          "classification": "provider",
+          "reason": "provider or subtask request failed"
+        },
+        {
+          "item_id": "8650c2637949522eaaa02e5ed749ec7b8b6ab8151b0cd0060f9a966595e84af1",
+          "path": "src/ui/screens/AboutView.tsx",
+          "fingerprint": "8b3e29b262558c5262a706404bc3a1b15b51f249d3f2c7df39f7eae45b5e6317",
+          "classification": "provider",
+          "reason": "provider or subtask request failed"
+        },
+        {
+          "item_id": "97442c58502e5e6a5a000d8e0bb57d93cb0b1110f36612725d9bd4b7f9e005ff",
+          "path": "src/ui/StorageProtectionCard.tsx",
+          "fingerprint": "7b3f44481a00b6c84183427f6e8205ebb2ed0d22cfeea1c60b4738cf4a2ec9b0",
+          "classification": "provider",
+          "reason": "provider or subtask request failed"
+        }
+      ],
+      "waived": []
+    },
+    "elapsed_ms": 5765
+  },
+  "retry_report": {
+    "schema_version": "ocr.llm-retry-report/v1",
+    "total_requests": 5,
+    "retried_requests": 0,
+    "total_retries": 0,
+    "recovered_requests": 0,
+    "failed_requests": 5,
+    "cancelled_requests": 0,
+    "requests": [
+      {
+        "logical_request_id": "56e5802d7e8a3fe8c469737562ccb26b1b94bdb28c0d7d0cd322bb0d427fde65",
+        "provider": "chatgpt",
+        "model": "gpt-6.1-sol",
+        "file_path": "src/ui/runtime.tsx",
+        "task_type": "main_task",
+        "request_no": 1,
+        "outcome": "failed",
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "error",
+            "error_class": "provider",
+            "failure_phase": "stream",
+            "status_code": 200,
+            "duration_to_headers_ms": 4430
+          }
+        ]
+      },
+      {
+        "logical_request_id": "58b44f4c8cd4d42730471efde7e9390e5152fc99c78ff0bd71368e1641d3f897",
+        "provider": "chatgpt",
+        "model": "gpt-6.1-sol",
+        "file_path": "__grouping__",
+        "task_type": "grouping_task",
+        "request_no": 1,
+        "outcome": "failed",
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "error",
+            "error_class": "provider",
+            "failure_phase": "stream",
+            "status_code": 200,
+            "duration_to_headers_ms": 1133
+          }
+        ]
+      },
+      {
+        "logical_request_id": "62c6e76807023b9ba1f28803bf18c19ffbcea54fbfd355788f4d9e408bcf695e",
+        "provider": "chatgpt",
+        "model": "gpt-6.1-sol",
+        "file_path": "src/ui/StorageProtectionCard.tsx",
+        "task_type": "main_task",
+        "request_no": 1,
+        "outcome": "failed",
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "error",
+            "error_class": "provider",
+            "failure_phase": "stream",
+            "status_code": 200,
+            "duration_to_headers_ms": 3054
+          }
+        ]
+      },
+      {
+        "logical_request_id": "631ce8e48f152190d8532a725d81a1abc032a91c6dbb7216471b3c1918513438",
+        "provider": "chatgpt",
+        "model": "gpt-6.1-sol",
+        "file_path": "src/ui/AppShell.tsx",
+        "task_type": "main_task",
+        "request_no": 1,
+        "outcome": "failed",
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "error",
+            "error_class": "provider",
+            "failure_phase": "stream",
+            "status_code": 200,
+            "duration_to_headers_ms": 3001
+          }
+        ]
+      },
+      {
+        "logical_request_id": "ed3ded709e524bf76f0d8baba0fd4d3c266cc62cfc80442f9af07d8e0f5de83e",
+        "provider": "chatgpt",
+        "model": "gpt-6.1-sol",
+        "file_path": "src/ui/screens/AboutView.tsx",
+        "task_type": "main_task",
+        "request_no": 1,
+        "outcome": "failed",
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "error",
+            "error_class": "provider",
+            "failure_phase": "stream",
+            "status_code": 200,
+            "duration_to_headers_ms": 2953
+          }
+        ]
+      }
+    ]
+  }
+}
