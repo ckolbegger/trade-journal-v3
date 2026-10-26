@@ -721,6 +721,7 @@ Figures from each critic's completion notice (the harness's own token count; com
 | critic-7 (T2.55) | `9dc8068` | v2 | 180,493 | 69 | 13 min 58 s | 0 |
 | critic-8 (T2.65) | `d92019d` | v2 | 217,704 | 84 | 14 min 55 s | 1 |
 | critic-9 (T2.65) | `e98b536` | v2 | 196,804 | 72 | 11 min 17 s | 0 |
+| critic-10 (T2.68) | `1fac05f` | v2 | 204,778 | 74 | 17 min 1 s | 0 |
 
 Reading: no measurable saving from brief v2 in this sample. critic-3 sits between critic-1 and critic-2 on tokens and above both on tool calls and time; it also did more beyond the flows (axe at 1280 and 320, a B2.10 mid-form fault, narrow checks of six screens). With one sample per brief and a 14% spread between the two v1 runs, the difference is within noise. critic-4 (after the follow-up batch) ran five of the eleven flows plus a wider narrow check, so it is not directly comparable.
 
@@ -2145,3 +2146,7 @@ No bug task for T2.66: the user directed on 2026-10-26 that every review and cri
 | (question c) | `app.css`, `TradeList.tsx`, `TradeDetail.tsx` | The lots changes are scoped to Open Lots; the sticky caption applies to every `table.trades` (Open and Planned Trades, Open Lots and two other Detail tables), wider than U10(d) names | Holds for the lots changes; the caption scope is for the user's triage |
 
 **Complete cumulative run after T2.67** (`suite-runner`, 2026-10-26 08:48 EDT, on `a980fa6`): Unit 43 files / 474 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 124 passed (3.9m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` wrote 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.67-*.txt`.
+
+### T2.68 Critic gate after the U10 fixes
+
+**critic-10** (`1fac05f`, `evidence/D02/critic-10.md`): **PASS**, no defects. Every flow, every U9 and U10 item and the storage warning passed. U10(c) was confirmed in zoomed captures (the Open Lots bottom hairline is flush at both ends at 1280 and 320); U10(d) held in Chromium and in a cached Firefox 157 build; WebKit could not be checked (its headless build reports Unsupported on the capacity check). Its minor observations and the open review points are listed for the user's triage; none becomes a bug task without their approval.
