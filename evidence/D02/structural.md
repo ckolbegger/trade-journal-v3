@@ -2103,3 +2103,14 @@ Fixes the three Valid ocr findings on 05e1e8b. The outcome of `Workspace.request
 
 **T2.65-B2** (bug task for critic-9 minor observation 3): the New Plan price issue reads "Enter a intended entry price greater than zero…" (`src/ui/screens/plan-issues.ts:38`, template `Enter a ${PRICE_LABEL[field]} price…`). Case, in the plan-issues tests:
 - it should read "Enter an intended entry price greater than zero, with at most 6 decimal places." for the intended entry, and keep "Enter a Stop price…" and "Enter a Target price…"
+
+**T2.65-B2** (`43d2a70`): `PRICE_LABEL` in `plan-issues.ts` carries its article ("an intended entry", "a Stop", "a Target"), so the issue reads "Enter an intended entry price greater than zero, with at most 6 decimal places." New `src/ui/screens/plan-issues.test.ts` (red, then green). No first-run passes; no other assertion expected the old text.
+
+**ocr review of T2.65-B2** (`ocr-review` step): commit `43d2a70`, session `f4217382-4966-4a6a-9fa6-c3ef2f23ea82`, 1 file reviewed, 0 comments, plus two main-session questions. Raw output: `ocr/t2.65-b2-43d2a70.json`.
+
+| Item | Location | Claim checked | Verdict |
+| --- | --- | --- | --- |
+| (question a) | `plan-issues.ts:30, 38` | `PRICE_LABEL` is used only in that one message | Holds |
+| (question b) | `src/ui` | No other template puts "a" before a variable; every literal "Enter a/an…" or "Choose a/an…" reads correctly | Holds |
+
+**Complete cumulative run after T2.65-B2** (`suite-runner`, 2026-10-26 06:09 EDT, on `43d2a70`): Unit 43 files / 474 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 117 passed (3.5m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` wrote 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.65-b2-*.txt`.
