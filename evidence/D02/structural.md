@@ -720,6 +720,7 @@ Figures from each critic's completion notice (the harness's own token count; com
 | critic-6 (T2.55) | `7f2a1fd` | v2 | stopped by the user, no report | — | — | — |
 | critic-7 (T2.55) | `9dc8068` | v2 | 180,493 | 69 | 13 min 58 s | 0 |
 | critic-8 (T2.65) | `d92019d` | v2 | 217,704 | 84 | 14 min 55 s | 1 |
+| critic-9 (T2.65) | `e98b536` | v2 | 196,804 | 72 | 11 min 17 s | 0 |
 
 Reading: no measurable saving from brief v2 in this sample. critic-3 sits between critic-1 and critic-2 on tokens and above both on tool calls and time; it also did more beyond the flows (axe at 1280 and 320, a B2.10 mid-form fault, narrow checks of six screens). With one sample per brief and a 14% spread between the two v1 runs, the difference is within noise. critic-4 (after the follow-up batch) ran five of the eleven flows plus a wider narrow check, so it is not directly comparable.
 
@@ -2097,3 +2098,8 @@ Fixes the three Valid ocr findings on 05e1e8b. The outcome of `Workspace.request
 | (question c) | `TradeDetail.test.tsx` | The changed assertion keeps (and tightens) its coverage | Holds |
 
 **Complete cumulative run after T2.65-B1** (`suite-runner`, 2026-10-26 05:46 EDT, on `7624912`): Unit 42 files / 473 tests passed; Node integration 21 / 49 passed; Browser (Chromium) 117 passed (3.6m); static and verify checks 11 of 11 exit 0; `npm run ui:screenshots` wrote 34 PNGs (re-renders reverted). Failures: none. Outputs: `suite-runs/t2.65-b1-*.txt`.
+
+**critic-9** (`e98b536`, `evidence/D02/critic-9.md`): **PASS**, no defects. Every flow, the critic-8 recheck (a 97-width sweep, 0 broken), every U9 item (including a long Journal answer at 886 px) and the storage warning passed.
+
+**T2.65-B2** (bug task for critic-9 minor observation 3): the New Plan price issue reads "Enter a intended entry price greater than zero…" (`src/ui/screens/plan-issues.ts:38`, template `Enter a ${PRICE_LABEL[field]} price…`). Case, in the plan-issues tests:
+- it should read "Enter an intended entry price greater than zero, with at most 6 decimal places." for the intended entry, and keep "Enter a Stop price…" and "Enter a Target price…"
