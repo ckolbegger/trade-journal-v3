@@ -1,4 +1,4 @@
-import { plannedLongStockSummary } from '../../domain/values/index.ts';
+import { plannedLongStockSummary } from '../../domain/trade-summary.ts';
 import type { EntryDefinitionRecord, NarrativeAnswer, PlannedTradeDetail, TradeMutationSuccess } from '../../app/types.ts';
 
 // Builds the Trade Detail view of a just-confirmed Plan from the command's post-commit result,

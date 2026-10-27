@@ -2169,3 +2169,20 @@ After critic-10, the main session listed ten open findings with a recommendation
 | 10 | T2.64 ocr (question a) | `<del>` may add a "deletion" cue in some screen readers (no Superseded Deviation in D2) | Leave until D15 (as recommended) |
 
 The user asked for T2.66-B1 to run in a fresh session; `plan/D02-handoff.md` section 7 names it as the next task.
+
+## T2.66-B1 Move the Trade Summary type and Planned helper
+
+Created `src/domain/trade-summary.ts` (the Trade Views `TradeSummary` type, moved, and `plannedLongStockSummary` returning `TradeSummary`). `trade-views.ts` imports both and re-exports `TradeSummary`; `src/ui/screens/confirmed-detail.ts` imports from the new file; `src/domain/values/planned-summary.ts` and its export line were removed. The Trade Record `TradeSummary` (`RecordSummary`) is a different type and was not touched.
+
+| Command | Result |
+| --- | --- |
+| `npx vitest run src` (before) | 43 files, 474 tests passed |
+| `npx vitest run src` (after) | 43 files, 474 tests passed (same count) |
+| `npx vitest run tests/integration` | 21 files, 49 tests passed |
+| `npm run typecheck` | exit 0 |
+| `npx tsc6 --noEmit` | exit 0 |
+| `npm run lint` | exit 0 |
+| `npm run lint:deps` | no dependency violations (167 modules, 598 dependencies) |
+| `npm run build:faults && npx playwright test e2e/d1 e2e/d2` | 124 passed |
+| `git diff --stat` | 4 source files changed (trade-views.ts, values/index.ts, planned-summary.ts deleted, confirmed-detail.ts) plus the new file; no test file changed |
+| `grep -rn "function plannedLongStockSummary\|type TradeSummary = " src` | one hit each, both in `src/domain/trade-summary.ts` (the Trade Record `TradeSummary` is an interface in `modules/trade-record`) |

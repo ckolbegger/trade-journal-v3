@@ -15,7 +15,8 @@ import {
   type PlanBaseline,
   type TradeAnalysisRecord,
 } from '../../domain/trade-analysis/index.ts';
-import { parseDecimal, plannedLongStockSummary, Rational } from '../../domain/values/index.ts';
+import { plannedLongStockSummary, type TradeSummary } from '../../domain/trade-summary.ts';
+import { parseDecimal, Rational } from '../../domain/values/index.ts';
 import type { Journal, NarrativeEntry, NarrativeItem } from '../../modules/journal/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { BrowseRecord, TradeRecord, TradeSummary as RecordSummary } from '../../modules/trade-record/index.ts';
@@ -35,14 +36,8 @@ export interface TradeBrowseRequest<L extends 'Planned' | 'Open' = 'Planned' | '
 
 export const BROWSE_PAGE_SIZE = 50;
 
-// What a Trade holds, structured so the UI formats it as one short text (plan section 2a). D2 has only
-// Long Stock; later deliverables add variants without changing this one. Never stored.
-export type TradeSummary = {
-  readonly kind: 'Stock';
-  readonly direction: 'Long';
-  readonly quantity: Rational;
-  readonly price: Rational;
-};
+// Moved to the domain beside plannedLongStockSummary; still reached through this module.
+export type { TradeSummary };
 
 // One Planned Trade as the list presents it.
 export interface PlannedTradeItem {
