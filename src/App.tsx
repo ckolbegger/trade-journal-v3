@@ -514,8 +514,9 @@ export function App({ runtime, initialViewportWidth }: AppProps): React.ReactEle
             Advisory: Local Storage Protection is {readinessReport.storageProtection}
           </p>
           <p className="mt-0.5 text-[#78350F]">
-            Your workspace is Writable, but the browser may clear best-effort site data under heavy
-            storage pressure. Request stronger durability or create regular backups.
+            {readinessReport.readiness === 'Writable'
+              ? 'Your workspace is Writable, but the browser may clear best-effort site data under heavy storage pressure. Request stronger durability or create regular backups.'
+              : 'Local storage is currently under best-effort browser eviction policy. Request stronger durability or create regular backups.'}
           </p>
           {durabilityFeedback && (
             <p className="mt-1 font-medium" data-testid="durability-feedback-banner">
