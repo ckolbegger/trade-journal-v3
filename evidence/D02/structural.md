@@ -2150,3 +2150,22 @@ No bug task for T2.66: the user directed on 2026-10-26 that every review and cri
 ### T2.68 Critic gate after the U10 fixes
 
 **critic-10** (`1fac05f`, `evidence/D02/critic-10.md`): **PASS**, no defects. Every flow, every U9 and U10 item and the storage warning passed. U10(c) was confirmed in zoomed captures (the Open Lots bottom hairline is flush at both ends at 1280 and 320); U10(d) held in Chromium and in a cached Firefox 157 build; WebKit could not be checked (its headless build reports Unsupported on the capacity check). Its minor observations and the open review points are listed for the user's triage; none becomes a bug task without their approval.
+
+### Triage of the remaining findings (the user, 2026-10-27)
+
+After critic-10, the main session listed ten open findings with a recommendation each. The user's decisions:
+
+| # | Source | Finding | Decision |
+| --- | --- | --- | --- |
+| 1 | T2.66 ocr (question a) | `plannedLongStockSummary` sits in `src/domain/values` (value types and arithmetic only); move it and the `TradeSummary` type to a new `src/domain/trade-summary.ts` | **Fix: bug task T2.66-B1, approved** |
+| 2 | T2.67 ocr (question b) | The sticky caption is unverified in WebKit (Chromium and Firefox confirmed by critic-10); a browser that ignores it just scrolls the caption away | Leave (as recommended) |
+| 3 | T2.67 ocr (question c) | The sticky caption also applies to Open Lots and the two disagreement tables | Leave (as recommended) |
+| 4 | critic-10 minor 1 | The narrow caption starts at x 16 while header and cell text start at x 26 | **Leave as is** (the user) |
+| 5 | critic-10 minor 4 | The Deviations card still renders a bulleted list | **Leave as is** (the user) |
+| 6 | critic-10 minor 5 | A Trade whose stored lifecycle disagrees still offers Record entry (a save repairs it with disclosure, decision 23) | Leave (as recommended) |
+| 7 | critic-8 minor 4 | Share quantities are not grouped ("Long 1000 shares") | **Leave** (the user: the difference helps tell quantities from dollar amounts) |
+| 8 | critic-7 minor 3, critic-9 minor 2 | Recovery Only Detail keeps the wide layout for under 500 ms after a resize | Leave (as recommended) |
+| 9 | T2.63 ocr (question b) | "planned Not applicable…" if the planned ratio were itself Not applicable (not reachable in D2) | Leave (as recommended) |
+| 10 | T2.64 ocr (question a) | `<del>` may add a "deletion" cue in some screen readers (no Superseded Deviation in D2) | Leave until D15 (as recommended) |
+
+The user asked for T2.66-B1 to run in a fresh session; `plan/D02-handoff.md` section 7 names it as the next task.

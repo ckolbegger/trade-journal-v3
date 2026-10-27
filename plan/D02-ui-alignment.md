@@ -190,6 +190,7 @@ Kinds:
 | T2.66 | One shared Planned summary helper (U10a) | close | S | T2.65 | the list read model, `confirmed-detail.ts` |
 | T2.67 | Receipt date and time, Open Lots lines, narrow caption (U10b–d) | close | S | T2.66 | `ui-alignment.spec.ts` (leftovers) |
 | T2.68 | Critic gate after the U10 fixes | close | gate | T2.67 | fresh critic (section 7, plus U9 and U10) |
+| T2.66-B1 | Move the Trade Summary type and Planned helper to `domain/trade-summary` (triage 2026-10-27, finding 1) | close | S | T2.68 | `src/domain/trade-summary.ts` |
 
 **Ordering:**
 - Batches run A → B → C → D.
@@ -569,6 +570,18 @@ A fresh critic runs section 7 again (C2.1, C2.5, C2.7, C2.10, C2.11, CU.1–CU.5
 - (b) On the receipt at 320, 340 and 390, the date and the time in the "Position Change at …" heading share a top (within 1 px).
 - (c) On an Open Detail at 1280 and 320, no Open Lots cell after the first has a left border, and the table's last row bottom edge spans the same left and right as the card's other rows (within 1 px).
 - (d) At 320 and 390, on "Open Trades" and "Planned Trades", after scrolling the region fully right the caption's box is still inside the viewport and visible; the T2.40 and T2.62 measurements still pass; no page overflow; axe clean.
+
+### T2.66-B1 Move the Trade Summary type and Planned helper (structural refactor; approved by the user 2026-10-27)
+
+**Problem (T2.66 review, question a):** T2.66 put `plannedLongStockSummary` in `src/domain/values/planned-summary.ts`, but `domain/values` holds value types and their arithmetic (D1 breakdown, "decimal parse/format, rational arithmetic"). A Long Stock Trade Summary is a Trade concept. Its result is also only structurally equal to `TradeSummary`, which lives in `src/coordinators/trade-views/trade-views.ts` where `domain` cannot import it.
+
+**Change:**
+- Create `src/domain/trade-summary.ts` beside `src/domain/strategy.ts`. It owns the `TradeSummary` type (moved from `trade-views.ts`) and the helper, whose return type becomes `TradeSummary`.
+- `trade-views.ts` and `src/ui/screens/confirmed-detail.ts` import from it. Keep `TradeSummary` available from `trade-views.ts` (a re-export) unless every importer can import from the new file directly.
+- Remove `src/domain/values/planned-summary.ts` and its export from `src/domain/values/index.ts`.
+- No facade, public behavior or test change.
+
+**Exact verification:** `npx vitest run src` before and after with the same count; `npx vitest run tests/integration`, typecheck, `npx tsc6 --noEmit`, lint and `npm run lint:deps` (the UI and coordinators may import the new file, as they do `strategy.ts`) all pass; `npm run build:faults && npx playwright test e2e/d1 e2e/d2` passes; no test changed (if one must, stop and explain); a grep shows one definition of the Planned summary and of `TradeSummary`.
 
 ### T2.52 Record entry Trade context
 
