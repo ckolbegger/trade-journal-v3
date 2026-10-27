@@ -604,7 +604,7 @@ Added on 2026-10-24, after the D2 gate passed (tag `claude-opus-5.5-d2`), at the
   - each item ends with a complete cumulative run recorded in `evidence/D02/structural.md`;
   - red and green rows go in `evidence/D02/tdd-log.md` under task IDs T2.25 to T2.35.
 - After the batch, one fresh browser critic re-runs C2.1, C2.6, C2.7, C2.10 and C2.11, plus the narrow-layout check, and saves its report as `evidence/D02/critic-<n>.md`. A defect it finds is handled as at the D2 gate.
-- The `claude-opus-5.5-d2` tag is not moved. D4's harness keeps building the previous release from it (D4 A50).
+- The `claude-opus-5.5-d2` tag is not moved. D4's harness keeps building the previous release from it (D4 A50). *Superseded by decision 50 (revision 9, 2026-10-27): the user moved the tag to the last D2 commit, `de3fa27`.*
 - F12 is carried into D8 (D8 breakdown, status paragraph).
 
 **Durable compatibility.** None of F1–F12 changes the schema, the committed fixtures (`tests/fixtures/workspace-v1`, `workspace-v2`), the bench dataset, or any backup content version. The view shapes of coherent, agreeing Trades must stay exactly as they are, so `verify:fixtures` stays equal.

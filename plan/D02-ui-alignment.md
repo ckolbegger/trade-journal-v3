@@ -662,5 +662,5 @@ It re-runs C2.1, C2.5, C2.7, C2.10 and C2.11 from D2 section 7, then these flows
   - `verify:fixtures` is still equal;
   - a fresh critic passes T2.55.
 
-  The `claude-opus-5.5-d2` tag is not moved. D4's harness keeps building from it.
+  The `claude-opus-5.5-d2` tag is not moved. D4's harness keeps building from it. *Superseded by decision 50 (revision 9, 2026-10-27): the user moved the tag to the last D2 commit, `de3fa27`.*
 - **Acceptance rows:** no status change. AC-UI-001 and AC-UI-002 stay `covered`, and their command, `e2e/d2/responsive-a11y.spec.ts`, keeps passing.
