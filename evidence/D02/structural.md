@@ -2186,3 +2186,18 @@ Created `src/domain/trade-summary.ts` (the Trade Views `TradeSummary` type, move
 | `npm run build:faults && npx playwright test e2e/d1 e2e/d2` | 124 passed |
 | `git diff --stat` | 4 source files changed (trade-views.ts, values/index.ts, planned-summary.ts deleted, confirmed-detail.ts) plus the new file; no test file changed |
 | `grep -rn "function plannedLongStockSummary\|type TradeSummary = " src` | one hit each, both in `src/domain/trade-summary.ts` (the Trade Record `TradeSummary` is an interface in `modules/trade-record`) |
+
+### T2.66-B1 ocr review
+
+ocr on `28a9f5f` (session 1c0b67ce-a7b1-4147-b417-46d4ddf6ac2c, 4 files reviewed, 1 excluded): **No findings.** Raw output `evidence/D02/ocr/t2.66-b1-28a9f5f.json`.
+
+### Cumulative run after T2.66-B1
+
+`suite-runner`, label `t2.66-b1`, on `28a9f5f` (the only uncommitted file was the raw ocr output), 2026-10-27 19:06 EDT. Fully green.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 43 files, 474 tests passed | `evidence/D02/suite-runs/t2.66-b1-unit.txt` |
+| Node integration | 21 files, 49 tests passed | `evidence/D02/suite-runs/t2.66-b1-integration.txt` |
+| Browser (Chromium) | 124 passed | `evidence/D02/suite-runs/t2.66-b1-browser.txt` |
+| Static and verify checks | 11 of 11 exit 0 (typecheck, tsc6, lint, lint:deps, build, verify:release, verify:capabilities, verify:releases, verify:no-fault-hooks, verify:capacity, verify:fixtures) | `evidence/D02/suite-runs/t2.66-b1-checks.txt` |

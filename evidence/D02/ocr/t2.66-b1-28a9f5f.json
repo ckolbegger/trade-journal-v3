@@ -1,0 +1,118 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 33964,
+    "input_tokens": 33605,
+    "output_tokens": 359,
+    "cache_read_tokens": 7680,
+    "elapsed": "30s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_search": 1,
+      "file_find": 1,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Trade summary domain refactor and related view updates",
+      "files": [
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/domain/trade-summary.ts",
+        "src/domain/values/index.ts",
+        "src/ui/screens/confirmed-detail.ts"
+      ]
+    }
+  ],
+  "session_id": "1c0b67ce-a7b1-4147-b417-46d4ddf6ac2c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1c0b67ce-a7b1-4147-b417-46d4ddf6ac2c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "28a9f5f",
+      "resolved_base": "a632573d471ceef02b197dab55f78205bbea7a25",
+      "resolved_head": "28a9f5fafbfd0e30faafbdf7eaa69fda06a93bae",
+      "exact_range": "a632573d471ceef02b197dab55f78205bbea7a25..28a9f5fafbfd0e30faafbdf7eaa69fda06a93bae",
+      "source_artifact_sha256": "8366a0df791a4a07b082e9839efc587b4197ce8dbd74e943a0a2f5fa233998cd"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2e9bb57e6aa42bf97ec2ea0b2d27cf4636f28062fae8f533ecadb66062baed50",
+          "path": "src/domain/values/index.ts",
+          "fingerprint": "10a026b6b837c54b7c6ef12fb62bd2fe58ba5fc0e095e1230221255c715da284"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "e9303ac51ece4e1e35396f9423324088197c317251679b4cbbca666a18ee01db"
+        },
+        {
+          "item_id": "67201c3e7eac47a79144c7c6bfcf860fc1e60bd550cc6c28713835a7875a4dad",
+          "path": "src/ui/screens/confirmed-detail.ts",
+          "fingerprint": "06c6a294633a4c33472fff02c98962c8a5ffceeef174c4e5e69cc2251dc94982"
+        },
+        {
+          "item_id": "a2a3477ecd47c725c59d6b1c47faecda2cdfd680607b001462b8a791dd591b07",
+          "path": "src/domain/trade-summary.ts",
+          "old_path": "src/domain/values/planned-summary.ts",
+          "fingerprint": "e688911c808d85de92744fe9b24a4d7f9f68046f0ebe90005f6eb6f963ae17a2"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2e9bb57e6aa42bf97ec2ea0b2d27cf4636f28062fae8f533ecadb66062baed50",
+          "path": "src/domain/values/index.ts",
+          "fingerprint": "10a026b6b837c54b7c6ef12fb62bd2fe58ba5fc0e095e1230221255c715da284"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "e9303ac51ece4e1e35396f9423324088197c317251679b4cbbca666a18ee01db"
+        },
+        {
+          "item_id": "67201c3e7eac47a79144c7c6bfcf860fc1e60bd550cc6c28713835a7875a4dad",
+          "path": "src/ui/screens/confirmed-detail.ts",
+          "fingerprint": "06c6a294633a4c33472fff02c98962c8a5ffceeef174c4e5e69cc2251dc94982"
+        },
+        {
+          "item_id": "a2a3477ecd47c725c59d6b1c47faecda2cdfd680607b001462b8a791dd591b07",
+          "path": "src/domain/trade-summary.ts",
+          "old_path": "src/domain/values/planned-summary.ts",
+          "fingerprint": "e688911c808d85de92744fe9b24a4d7f9f68046f0ebe90005f6eb6f963ae17a2"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 29804
+  }
+}
