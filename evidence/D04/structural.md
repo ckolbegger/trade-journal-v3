@@ -757,3 +757,29 @@ ocr review of `8739bc2` (B6): session `4f67d9ea-cce2-4e77-9a37-39eabd5c2438`, 3 
 - `339a62e` (code at `8739bc2`, B1–B6), 2026-10-28 04:28 EDT: unit 682, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.16-b6-*`.
 
 Only `verify:capacity` failed (expected until T4.28). T4.16 is complete.
+
+## T4.17 Workspace: migration, seeds, policy compatibility
+
+`71df51e`. Cases in `src/coordinators/workspace/migration.test.ts`. Migration and every initialize use `D3_JOURNAL_MANIFEST` (fresh and existing Workspaces get Daily Trade Review and the Daily Review Source). A40: when the stored identity differs from the release's, `initialize` validates `observations` with Market Data's `validateSection(source, releasePolicy)`; only `NotASession` and `SessionPolicyCoverage` become findings and never block; the identity is written after the seeds. Migration never runs that validator (pre-schema-3 sources have no `observations`), so its receipt has `findings: []` and A40 cannot block it. Case 6 found a T4.6 defect: a kept record on a date that became a closure shadowed the earlier session's Mark in `staleContextOf`; the reverse cursor now requires a Session.
+
+Decisions and types: `InitializationReceipt` gains optional `sessionPolicy: SessionPolicyReceipt {previous?, recorded, findings}`; `SessionPolicyFinding {code, instrumentKey, tradingDate}`; `WorkspaceDeps.sessionPolicy` (typed as `MarketDataDeps['sessionPolicy']`, so Workspace imports no session-policy module; T4.19's dependency rule must allow it); `ApplicationDeps.sessionPolicy` optional, default NYSE; `testStack` takes an optional policy. Existing tests asserting manifest 2 moved to 3 (three in `workspace.test.ts`, I1.1, I2.1, I2.12).
+
+Deviation: case 3's tail "each current figure Unavailable(MarkMissing) (A51)" cannot be asserted until Trade Views have current figures; carried to T4.18. First-run passes, each mutation-checked: cases 2, 3, 4, and case 5's and case 6's later assertions. No code ahead of red.
+
+ocr review of `71df51e`: session `f2e79530-9e53-4847-bf0a-a77c10733dfb` (scratch clone with tests renamed so ocr includes them), 10 files, 1 comment. `ocr/T4.17-71df51e.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/coordinators/workspace/workspace.ts:197` | `recordSessionPolicy` reads `meta` and `observations` in two snapshots and commits the identity with no checks, so a write between the scan and the commit can be missed | Valid in part: the two snapshots and unbound commit depart from ADR 0002's read, validate, commit-with-bindings pattern and are fixable by one snapshot and a binding on the identity read. A newly added observation key cannot be bound (the same limit as the T4.16-B1 question) | Bug task T4.17-B1 |
+| low | `migration.test.ts`, v1 case | "in one candidate" is not asserted; a two-candidate chain that deleted its intermediate would pass | Valid (coverage) | Bug task T4.17-B2 |
+| low | `src/modules/market-data/market-data.ts`, `staleContextOf` | `classify` throws on a malformed stored date inside the cursor predicate | Doubtful: `classify` calls `Temporal.PlainDate.from` and `section.ts` guards it for that reason; saves reject malformed dates, so only a forged record could carry one | Bug task T4.17-B3 |
+| (note) | `recordSessionPolicy` | Findings exist only in the in-memory receipt | Not a defect: A40 names the receipt as the report | None |
+
+### T4.17-B1 The policy identity is recorded against the snapshot it validated
+- it should record nothing more when another launch records the identity between this launch's scan and its commit
+
+### T4.17-B2 One candidate
+- it should migrate a v1 Workspace to schema 3 in one candidate (asserts exactly one candidate created)
+
+### T4.17-B3 A malformed stored date never breaks Stale context
+- it should give Stale context from the latest earlier session Mark when a stored key holds a malformed date

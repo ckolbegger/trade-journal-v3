@@ -1,0 +1,203 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 10 selected item(s).",
+  "summary": {
+    "files_reviewed": 10,
+    "comments": 1,
+    "total_tokens": 365542,
+    "input_tokens": 361485,
+    "output_tokens": 4057,
+    "cache_read_tokens": 54144,
+    "elapsed": "2m2s"
+  },
+  "tool_calls": {
+    "total": 50,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 12,
+      "file_find": 3,
+      "file_read": 31,
+      "file_read_diff": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/workspace/workspace.ts",
+      "content": "The policy identity is committed without binding it to the snapshot that was validated. Initialization of an existing workspace does not hold the lifecycle lock, and observation saves do not use that lock either. If a tab still using the previous policy adds an observation after this scan but before this commit, a newly excluded key can be missing from the receipt; subsequent launches skip validation because the stored identity already matches. Read metadata and observations in one snapshot, check its content revision (and previous identity) in the commit, and retry validation on conflict rather than reporting the policy as recorded.",
+      "existing_code": "    const committed = await deps.persistence.commit({ checks: [], writes: [{ op: 'put', store: 'meta', value: { key: 'sessionPolicy', policy: recorded } }] });",
+      "start_line": 197,
+      "end_line": 197,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Workspace migration logic and migration checks",
+      "files": [
+        "src/coordinators/workspace/migration.check.ts",
+        "src/coordinators/workspace/migration.ts",
+        "tests/integration/d2/migration.check.ts"
+      ]
+    },
+    {
+      "label": "Workspace coordination and market-data wiring",
+      "files": [
+        "src/app/compose.ts",
+        "src/coordinators/workspace/workspace.check.ts",
+        "src/coordinators/workspace/workspace.ts",
+        "src/modules/market-data/market-data.ts"
+      ]
+    },
+    {
+      "label": "Integration initialization, seeding, and test stack support",
+      "files": [
+        "tests/integration/d1/initialize.check.ts",
+        "tests/integration/d2/seed.check.ts",
+        "tests/support/stack.ts"
+      ]
+    }
+  ],
+  "session_id": "f2e79530-9e53-4847-bf0a-a77c10733dfb",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "f2e79530-9e53-4847-bf0a-a77c10733dfb",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "range",
+      "requested_from": "5922b90717f2347ca78b0282e85eee644a28f607",
+      "requested_head": "521cf59dd90d52c221f58d4f2c6759adba8889ac",
+      "resolved_base": "5922b90717f2347ca78b0282e85eee644a28f607",
+      "resolved_head": "521cf59dd90d52c221f58d4f2c6759adba8889ac",
+      "exact_range": "5922b90717f2347ca78b0282e85eee644a28f607..521cf59dd90d52c221f58d4f2c6759adba8889ac",
+      "source_artifact_sha256": "923ab367bdb6842acd8586afba061759b6764659d7f547881faed96227056343"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1829f40b932c0e8aabdd0678b4cd72b819f4fbf9711429df6ff01f0253c7621a",
+          "path": "src/coordinators/workspace/migration.ts",
+          "fingerprint": "bc7c1c2d7be9236346f70e944c5f8f662ee02429f71ae9e66e6ef674aab83dd8"
+        },
+        {
+          "item_id": "23e67de7005fcb70dc91802ca0b72d04d082139775b0fae7be6d82c150fce419",
+          "path": "tests/support/stack.ts",
+          "fingerprint": "4cc8d2f201bf2905acca2357cf7cf52a3206bf0e720c4ae31d8baea94873f880"
+        },
+        {
+          "item_id": "30732fb5c33c9d69f025472eeb39f7bebd9dc579b270ce2775017a679c482f06",
+          "path": "tests/integration/d1/initialize.check.ts",
+          "fingerprint": "f16023fc3b498696b7b73591163c1a2e35463b53251c8e36eeeb1288bda55201"
+        },
+        {
+          "item_id": "36e677930c34af947be68ee57b763a25f095b0727755ace7e222b2485ce6870d",
+          "path": "tests/integration/d2/seed.check.ts",
+          "fingerprint": "09bd2334d0a8958c3d08f72d452a277e556bd89db218a84a15dceea8659507ec"
+        },
+        {
+          "item_id": "3f21880fe5e6cb236cf8d119eba04014db42fb805d44968f47b47dce2f6111c1",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "d1543c1329afe3ac8ec1a7f37c77ad4edaaf2c7fbe71f1e38a62186b8b430728"
+        },
+        {
+          "item_id": "3f886469280613463fbe6e6495cdf22e5f0fb315229013576ade287b44a0fd10",
+          "path": "src/coordinators/workspace/workspace.ts",
+          "fingerprint": "68eaa83af7d52d9fae452133d2d01b6661596ec9f67fca4b7fdcf4b82fd37a39"
+        },
+        {
+          "item_id": "89e370f40dcc9c3523cb5345496dbecb5d60b2947b67813482652313c0201b3e",
+          "path": "src/app/compose.ts",
+          "fingerprint": "da51c61f3f68dab5396c76626b30cb6668c1291c08f10994a3a81cc64197c7dd"
+        },
+        {
+          "item_id": "9658c96deec576c417a006033d9dee7f53d16b0657c99dffebfae0cc5b4ba344",
+          "path": "tests/integration/d2/migration.check.ts",
+          "fingerprint": "4a9d3c493729bb1a7f384551defee1c0e9d86c4c6e399b49c7b849bb074b38b5"
+        },
+        {
+          "item_id": "bd63da9a6b1ba03a8b239b6754ab8bcca742bbd8d91bed625da8c2ea93092507",
+          "path": "src/coordinators/workspace/migration.check.ts",
+          "fingerprint": "342ecf3d920df487243fa1fc077326a35532efe57fea900d30ac75675f6176f0"
+        },
+        {
+          "item_id": "d8aecd1d466edc33820f2dd05aa0b9be047cba38c87b83018f3239db44ac4c64",
+          "path": "src/coordinators/workspace/workspace.check.ts",
+          "fingerprint": "bf2919a77e8f6ec714df629b95d6ea5b2c7212f06b8dc0a2ac7f169d09ed3eda"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1829f40b932c0e8aabdd0678b4cd72b819f4fbf9711429df6ff01f0253c7621a",
+          "path": "src/coordinators/workspace/migration.ts",
+          "fingerprint": "bc7c1c2d7be9236346f70e944c5f8f662ee02429f71ae9e66e6ef674aab83dd8"
+        },
+        {
+          "item_id": "23e67de7005fcb70dc91802ca0b72d04d082139775b0fae7be6d82c150fce419",
+          "path": "tests/support/stack.ts",
+          "fingerprint": "4cc8d2f201bf2905acca2357cf7cf52a3206bf0e720c4ae31d8baea94873f880"
+        },
+        {
+          "item_id": "30732fb5c33c9d69f025472eeb39f7bebd9dc579b270ce2775017a679c482f06",
+          "path": "tests/integration/d1/initialize.check.ts",
+          "fingerprint": "f16023fc3b498696b7b73591163c1a2e35463b53251c8e36eeeb1288bda55201"
+        },
+        {
+          "item_id": "36e677930c34af947be68ee57b763a25f095b0727755ace7e222b2485ce6870d",
+          "path": "tests/integration/d2/seed.check.ts",
+          "fingerprint": "09bd2334d0a8958c3d08f72d452a277e556bd89db218a84a15dceea8659507ec"
+        },
+        {
+          "item_id": "3f21880fe5e6cb236cf8d119eba04014db42fb805d44968f47b47dce2f6111c1",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "d1543c1329afe3ac8ec1a7f37c77ad4edaaf2c7fbe71f1e38a62186b8b430728"
+        },
+        {
+          "item_id": "3f886469280613463fbe6e6495cdf22e5f0fb315229013576ade287b44a0fd10",
+          "path": "src/coordinators/workspace/workspace.ts",
+          "fingerprint": "68eaa83af7d52d9fae452133d2d01b6661596ec9f67fca4b7fdcf4b82fd37a39"
+        },
+        {
+          "item_id": "89e370f40dcc9c3523cb5345496dbecb5d60b2947b67813482652313c0201b3e",
+          "path": "src/app/compose.ts",
+          "fingerprint": "da51c61f3f68dab5396c76626b30cb6668c1291c08f10994a3a81cc64197c7dd"
+        },
+        {
+          "item_id": "9658c96deec576c417a006033d9dee7f53d16b0657c99dffebfae0cc5b4ba344",
+          "path": "tests/integration/d2/migration.check.ts",
+          "fingerprint": "4a9d3c493729bb1a7f384551defee1c0e9d86c4c6e399b49c7b849bb074b38b5"
+        },
+        {
+          "item_id": "bd63da9a6b1ba03a8b239b6754ab8bcca742bbd8d91bed625da8c2ea93092507",
+          "path": "src/coordinators/workspace/migration.check.ts",
+          "fingerprint": "342ecf3d920df487243fa1fc077326a35532efe57fea900d30ac75675f6176f0"
+        },
+        {
+          "item_id": "d8aecd1d466edc33820f2dd05aa0b9be047cba38c87b83018f3239db44ac4c64",
+          "path": "src/coordinators/workspace/workspace.check.ts",
+          "fingerprint": "bf2919a77e8f6ec714df629b95d6ea5b2c7212f06b8dc0a2ac7f169d09ed3eda"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 122099
+  }
+}
