@@ -1,3 +1,4 @@
+import { Temporal } from 'temporal-polyfill';
 import type { DerivedTradeState, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
 import type { AttentionBand, AttentionReason, CalculationFamily, PressureBasis } from './types.ts';
@@ -91,7 +92,8 @@ export function byAttention(a: Attention & TieBreak, b: Attention & TieBreak): n
   } else if (a.basis.kind !== b.basis.kind) {
     return Number(a.basis.kind === 'NotComparable') - Number(b.basis.kind === 'NotComparable');
   }
-  if (a.lastActivity !== b.lastActivity) return a.lastActivity < b.lastActivity ? 1 : -1;
+  const byActivity = Temporal.Instant.compare(b.lastActivity, a.lastActivity);
+  if (byActivity !== 0) return byActivity;
   return a.tradeId < b.tradeId ? -1 : a.tradeId > b.tradeId ? 1 : 0;
 }
 
