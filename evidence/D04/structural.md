@@ -313,3 +313,12 @@ ocr review of `46436bb`: session `195120bb-72b5-4855-ad94-f8b180812e24`, 4 files
 
 ### T4.5-B1 Stale context reads only the Instrument's own history
 - it should look up Stale context within the Instrument's own byInstrumentDate range, visiting no other Instrument's records, when the Instrument has no earlier Mark
+
+ocr review of `0e3d0de` (T4.5-B1): session `cb66078e-76b0-4dd1-8fad-d58b2c80c138`, 1 file reviewed, **No findings.** Raw output: `ocr/T4.5-B1-0e3d0de.json`. Its log has one failed "green" row (an edit that did not apply) before the real green.
+
+### Cumulative runs after T4.5
+
+- `46436bb` (T4.5), 2026-10-27 23:53 EDT: unit 535, integration 49, browser 124 passed; checks 11 of 12. `suite-runs/t4.5-acknowledgments-*`.
+- `0e3d0de` (T4.5-B1), 23:58 EDT: unit 536, integration 49, browser 124 passed; checks 11 of 12. `suite-runs/t4.5-b1-*`.
+
+Only `verify:capacity` failed in each (expected until T4.28). T4.5 is complete.
