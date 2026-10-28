@@ -16,5 +16,4 @@ export type {
   MarkRevision,
   ObservationKey,
   ObservationRecord,
-  StaleMarkContext,
 } from './records.ts';

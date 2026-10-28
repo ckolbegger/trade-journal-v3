@@ -134,8 +134,6 @@ export interface ReadTransaction {
   getAll(store: WorkspaceStore): Promise<Record<string, unknown>[]>;
   // `count` bounds the one index request, as a page read needs.
   getAllFromIndex(store: WorkspaceStore, index: string, query: IDBValidKey | IDBKeyRange, count?: number): Promise<Record<string, unknown>[]>;
-  // One reverse-cursor request over an index range: the last record, in index order, that `accept` takes.
-  findLastFromIndex(store: WorkspaceStore, index: string, query: IDBKeyRange, accept: (record: Record<string, unknown>) => boolean): Promise<Record<string, unknown> | undefined>;
 }
 
 export interface Snapshot<T> {
@@ -333,11 +331,6 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
         getAll: async (store) => (await tx.objectStore(store).getAll()) as Record<string, unknown>[],
         getAllFromIndex: async (store, index, query, count) =>
           (await tx.objectStore(store).index(index).getAll(query, count)) as Record<string, unknown>[],
-        findLastFromIndex: async (store, index, query, accept) => {
-          let cursor = await tx.objectStore(store).index(index).openCursor(query, 'prev');
-          while (cursor && !accept(cursor.value as Record<string, unknown>)) cursor = await cursor.continue();
-          return cursor?.value as Record<string, unknown> | undefined;
-        },
       });
       await tx.done;
       return { value, binding: { databaseName: db.name, contentRevision: content.contentRevision } };
