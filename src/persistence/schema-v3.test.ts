@@ -137,6 +137,14 @@ describe('v2 → v3 transform', () => {
     ]);
   });
 
+  it('should drop every private Trade field, activityDesc and exposureStart, in the v2 to v3 transform', () => {
+    const value = { tradeId: 'trade-1', lifecycle: 'Open', facts: [], activityDesc: 'stale', exposureStart: '2026-10-09T15:00:00Z' };
+    const out = migrationChain(2)({ store: 'trades', value });
+    expect(out).toEqual({ store: 'trades', value: { tradeId: 'trade-1', lifecycle: 'Open', facts: [] } });
+    expect(Object.keys(out.value)).not.toContain('activityDesc');
+    expect(Object.keys(out.value)).not.toContain('exposureStart');
+  });
+
   it('should migrate a v1 Workspace through v1→v2 and v2→v3 inside one candidate', async () => {
     const stale = { tradeId: 'trade-1', lifecycle: 'Planned', planTime: '2026-10-12T13:30:00Z', activityDesc: 'stale-private-key' };
     await seedV2Workspace('tj-ws-v1', [{ store: 'trades', value: stale }, V2_RECORDS[1]!], 1);
