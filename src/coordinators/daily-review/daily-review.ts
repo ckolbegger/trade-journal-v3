@@ -1,11 +1,16 @@
-import { derive, evaluate, type IncoherentFacts, type ObservationFrame } from '../../domain/trade-analysis/index.ts';
+import { openLongStockSummary } from '../../domain/trade-summary.ts';
+import { derive, evaluate, type DerivedTradeState, type IncoherentFacts, type ObservationFrame, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import type { Journal } from '../../modules/journal/index.ts';
 import type { MarkFrame, MarketData, MarketDataIssue } from '../../modules/market-data/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { BrowseRecord, TradeRecord } from '../../modules/trade-record/index.ts';
-import type { Persistence } from '../../persistence/index.ts';
+import type { Persistence, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import { attentionOf, byAttention, unavailableFamilies } from './attention.ts';
 import type {
+  ActionForm,
+  DailyTradeReview,
+  GetDailyTradeReviewRequest,
+  GetDailyTradeReviewResult,
   HistoricalGapGroup,
   IncompleteReason,
   MarkRow,
@@ -37,6 +42,28 @@ function incoherentItem(identity: Pick<ReviewTradeItem, 'tradeId' | 'underlying'
   };
 }
 
+type Derivation = ReturnType<typeof derive>;
+
+// One Trade the index selected and confirmed Open at the cutoff, with both derivations of it.
+interface EligibleTrade {
+  readonly summary: BrowseRecord['summary'];
+  readonly analysis: BrowseRecord['analysis'];
+  readonly derivation: Derivation;
+  readonly integrity: Derivation;
+}
+
+// The Marks the eligible Trades require: each Instrument once, at its earliest relevant date.
+function observationNeeds(eligible: readonly EligibleTrade[]) {
+  const derived = eligible.flatMap(({ summary, analysis, derivation, integrity }) => (derivation.kind === 'Derived' && integrity.kind === 'Derived' ? [{ summary, analysis, state: derivation }] : []));
+  const requirements = derived.flatMap(({ state }) => state.observationRequirements.map((r) => ({ tradeId: state.tradeId, ...r })));
+  const earliest = new Map<string, string>();
+  for (const { instrument, earliestRelevance } of requirements) {
+    const known = earliest.get(instrument.symbol);
+    if (known === undefined || earliestRelevance < known) earliest.set(instrument.symbol, earliestRelevance);
+  }
+  return { requirements, earliest };
+}
+
 type ReadyReview = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
 
 // What one pass returns before its binding is checked against the Workspace.
@@ -50,8 +77,23 @@ type Pass =
       readonly evidence: Pick<ReviewBinding, 'marketDataSnapshotId' | 'factRevisions'>;
     };
 
+// What one Trade pass returns before its binding is checked against the Workspace.
+type TradePass =
+  | { readonly kind: 'Expired' }
+  | { readonly kind: 'Rejected'; readonly issues: readonly MarketDataIssue[] }
+  | { readonly kind: 'ReviewChanged' }
+  | { readonly kind: 'Ready'; readonly review: Omit<Extract<GetDailyTradeReviewResult, { kind: 'Ready' }>, 'kind'> };
+
+// One attempt at a read: retried (an expired cursor), returned as it is, or returned once the
+// Workspace is confirmed unchanged, completed with the binding then current.
+type Attempt<R> =
+  | { readonly retry: true }
+  | { readonly done: R }
+  | { readonly settle: (binding: { workspace: WorkspaceSnapshotBinding; catalogRevision: number; journalRevision: number }) => R };
+
 export interface DailyReview {
   open(request: OpenDailyReviewRequest): Promise<OpenDailyReviewResult>;
+  getTrade(request: GetDailyTradeReviewRequest): Promise<GetDailyTradeReviewResult>;
 }
 
 // Market Data's frame as Trade Analysis reads it: composition maps one into the other.
@@ -62,6 +104,46 @@ function observationFrame(frame: MarkFrame): ObservationFrame {
     closeInstant: frame.closeInstant,
     resolution: frame.resolution,
   };
+}
+
+// The Trade's place in the walk and, when its facts replay, its evaluation at the Review-date frame.
+function reviewItem({ summary, analysis, derivation, integrity }: EligibleTrade, frames: readonly MarkFrame[]) {
+  const identity = { tradeId: summary.tradeId, underlying: summary.underlying, lastActivity: summary.lastActivity ?? summary.planTime };
+  // Facts that cannot be replayed at any time make the Trade incoherent, whichever derivation finds them.
+  if (derivation.kind === 'IncoherentFacts') return { item: incoherentItem(identity, derivation), evaluation: undefined };
+  if (integrity.kind === 'IncoherentFacts') return { item: incoherentItem(identity, integrity), evaluation: undefined };
+  const frame = frames.find((f) => f.instrumentKey === analysis.plan.underlying);
+  if (!frame) throw new Error(`Market Data returned no frame for ${analysis.plan.underlying}`);
+  const evaluation = evaluate({ state: derivation, frame: observationFrame(frame) });
+  const item: ReviewTradeItem = { ...identity, ...attentionOf(derivation, evaluation, integrity.findings) };
+  return { item, evaluation };
+}
+
+// The Position held at the Stale context's close, valued with that session's own exact Mark; absent
+// without Stale context (P13, A54).
+function datedLastCloseOf(analysis: EligibleTrade['analysis'], frame: MarkFrame, evaluation: TradeEvaluation): DailyTradeReview['datedLastClose'] {
+  const stale = evaluation.staleContext;
+  if (!stale) return undefined;
+  const atLastClose = derive({ record: analysis, cutoff: stale.closeInstant, valuationDate: stale.tradingDate });
+  if (atLastClose.kind !== 'Derived') throw new Error('facts cannot be replayed at the last close');
+  // Shown only if the Trade had exposure then.
+  if (!atLastClose.positions.some((p) => p.openLots.length > 0)) return undefined;
+  const lastClose: ObservationFrame = {
+    instrument: { kind: 'Stock', symbol: frame.instrumentKey },
+    tradingDate: stale.tradingDate,
+    closeInstant: stale.closeInstant,
+    resolution: { kind: 'Available', mark: { revisionId: stale.revisionId, revisionNumber: stale.revisionNumber, price: stale.price } },
+  };
+  return { tradingDate: stale.tradingDate, evaluation: evaluate({ state: atLastClose, frame: lastClose }) };
+}
+
+// What replaying the Trade yields at the Review-date frame.
+function figuresOf(entry: EligibleTrade, state: DerivedTradeState, frames: readonly MarkFrame[], evaluation: TradeEvaluation) {
+  const frame = frames.find((f) => f.instrumentKey === entry.analysis.plan.underlying);
+  if (!frame) throw new Error(`Market Data returned no frame for ${entry.analysis.plan.underlying}`);
+  const summary = openLongStockSummary(state);
+  const datedLastClose = datedLastCloseOf(entry.analysis, frame, evaluation);
+  return { ...(summary && { summary }), frame, evaluation, ...(datedLastClose && { datedLastClose }) };
 }
 
 export function createDailyReview(deps: DailyReviewDeps): DailyReview {
@@ -91,20 +173,15 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     };
   }
 
-  // One pass over the module reads. Its Review carries what the pass itself learned of the binding.
-  async function assemble(request: OpenDailyReviewRequest): Promise<Pass> {
-    const session = await deps.marketData.query({ kind: 'ResolveSession', context: { kind: 'Current', asOf: request.asOf } });
-    if (session.kind === 'Rejected') return session;
-    if (session.kind !== 'Session') throw new Error(`unexpected session result: ${session.kind}`);
-    const { tradingDate: reviewDate, closeInstant: cutoff } = session;
+  // Each eligible Trade is derived at the cutoff, which also yields the Marks its Position requires.
+  // The index only selects; a Trade whose facts do not leave it Open at the cutoff is not eligible.
+  // Integrity (A59) is whether the stored Trade agrees with all its facts, so it comes from a
+  // second derivation with no cutoff; the cutoff derivation decides eligibility, state, and evaluation.
+  // Undefined when a Trade commit expired the eligibility cursor.
+  async function eligibleTrades(cutoff: string, reviewDate: string): Promise<EligibleTrade[] | undefined> {
     const records = await eligibleRecords(cutoff);
-    if (!records) return { kind: 'Expired' };
-
-    // Each Trade is derived at the cutoff, which also yields the Marks its Position requires.
-    // The index only selects; a Trade whose facts do not leave it Open at the cutoff is not eligible.
-    // Integrity (A59) is whether the stored Trade agrees with all its facts, so it comes from a
-    // second derivation with no cutoff; the cutoff derivation decides eligibility, state, and evaluation.
-    const derivations = records
+    if (!records) return undefined;
+    return records
       .map(({ summary, analysis }) => ({
         summary,
         analysis,
@@ -112,14 +189,34 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         integrity: derive({ record: analysis }),
       }))
       .filter(({ derivation }) => derivation.kind !== 'Derived' || derivation.expectedLifecycle === 'Open');
-    if (derivations.length === 0) return { kind: 'Empty', reviewDate, cutoff };
-    const derived = derivations.flatMap(({ summary, analysis, derivation, integrity }) => (derivation.kind === 'Derived' && integrity.kind === 'Derived' ? [{ summary, analysis, state: derivation }] : []));
-    const requirements = derived.flatMap(({ state }) => state.observationRequirements.map((r) => ({ tradeId: state.tradeId, ...r })));
-    const earliest = new Map<string, string>();
-    for (const { instrument, earliestRelevance } of requirements) {
-      const known = earliest.get(instrument.symbol);
-      if (known === undefined || earliestRelevance < known) earliest.set(instrument.symbol, earliestRelevance);
+  }
+
+  // The module reads are separate transactions, so a read is accepted only if the Workspace is
+  // unchanged across its assembly; otherwise it is read again, a bounded number of times (A46).
+  async function coherently<R>(attempt: () => Promise<Attempt<R>>): Promise<R | { readonly kind: 'ChangedDuringAssembly' }> {
+    for (let i = 0; i < ASSEMBLY_ATTEMPTS; i++) {
+      const before = await currentBinding();
+      const result = await attempt();
+      if ('retry' in result) continue;
+      if ('done' in result) return result.done;
+      const after = await currentBinding();
+      if (after.workspace.databaseName === before.workspace.databaseName && after.workspace.contentRevision === before.workspace.contentRevision) {
+        return result.settle(after);
+      }
     }
+    return { kind: 'ChangedDuringAssembly' };
+  }
+
+  // One pass over the module reads. Its Review carries what the pass itself learned of the binding.
+  async function assemble(request: OpenDailyReviewRequest): Promise<Pass> {
+    const session = await deps.marketData.query({ kind: 'ResolveSession', context: { kind: 'Current', asOf: request.asOf } });
+    if (session.kind === 'Rejected') return session;
+    if (session.kind !== 'Session') throw new Error(`unexpected session result: ${session.kind}`);
+    const { tradingDate: reviewDate, closeInstant: cutoff } = session;
+    const derivations = await eligibleTrades(cutoff, reviewDate);
+    if (!derivations) return { kind: 'Expired' };
+    if (derivations.length === 0) return { kind: 'Empty', reviewDate, cutoff };
+    const { requirements, earliest } = observationNeeds(derivations);
     const recovered = await deps.marketData.recover({
       context: { kind: 'Review', reviewDate },
       instruments: [...earliest].map(([instrumentKey, earliestExposure]) => ({ instrumentKey, earliestExposure })),
@@ -140,17 +237,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       .map((g): HistoricalGapGroup => ({ ...g, blocking: false }));
 
     const ranked = derivations
-      .map(({ summary, analysis, derivation, integrity }) => {
-        const identity = { tradeId: summary.tradeId, underlying: summary.underlying, lastActivity: summary.lastActivity ?? summary.planTime };
-        // Facts that cannot be replayed at any time make the Trade incoherent, whichever derivation finds them.
-        if (derivation.kind === 'IncoherentFacts') return { item: incoherentItem(identity, derivation), evaluation: undefined };
-        if (integrity.kind === 'IncoherentFacts') return { item: incoherentItem(identity, integrity), evaluation: undefined };
-        const frame = recovered.frames.find((f) => f.instrumentKey === analysis.plan.underlying);
-        if (!frame) throw new Error(`Market Data returned no frame for ${analysis.plan.underlying}`);
-        const evaluation = evaluate({ state: derivation, frame: observationFrame(frame) });
-        const item: ReviewTradeItem = { ...identity, ...attentionOf(derivation, evaluation, integrity.findings) };
-        return { item, evaluation };
-      })
+      .map((trade) => reviewItem(trade, recovered.frames))
       .sort((a, b) => byAttention(a.item, b.item));
     const families: ReviewFamily[] = [
       { family: 'Marks', today, earlier },
@@ -193,21 +280,83 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     };
   }
 
+  // One pass over the module reads for one Trade of an overview.
+  async function assembleTrade(request: GetDailyTradeReviewRequest): Promise<TradePass> {
+    const session = await deps.marketData.query({ kind: 'ResolveSession', context: { kind: 'Review', reviewDate: request.reviewDate } });
+    if (session.kind === 'Rejected') return session;
+    if (session.kind !== 'Session') throw new Error(`unexpected session result: ${session.kind}`);
+    const { tradingDate: reviewDate, closeInstant: cutoff } = session;
+    const eligible = await eligibleTrades(cutoff, reviewDate);
+    if (!eligible) return { kind: 'Expired' };
+    const entry = eligible.find(({ analysis }) => analysis.tradeId === request.tradeId);
+    if (!entry) return { kind: 'ReviewChanged' };
+    const { summary, analysis } = entry;
+    if (analysis.factRevision !== request.binding.factRevisions[analysis.tradeId]) return { kind: 'ReviewChanged' };
+    // The same request as the overview's recovery, so its snapshot is comparable.
+    const instruments = [...observationNeeds(eligible).earliest.keys()];
+    const frames = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Review', reviewDate }, instruments });
+    if (frames.kind === 'Rejected') return frames;
+    if (frames.kind !== 'Frames') throw new Error(`unexpected frames result: ${frames.kind}`);
+    if (frames.snapshotId !== request.binding.marketDataSnapshotId) return { kind: 'ReviewChanged' };
+    const labels = await deps.catalog.resolve([
+      { name: 'account', kind: 'Account', id: summary.accountId, mode: 'DisplayOnly' },
+      { name: 'strategy', kind: 'Strategy', id: summary.strategyId, mode: 'DisplayOnly' },
+    ]);
+    const resolved = labels.kind === 'Resolved' ? labels.resolved : {};
+    const { item, evaluation } = reviewItem(entry, frames.frames);
+    // Facts that cannot be replayed have no figures.
+    const figures = evaluation && entry.derivation.kind === 'Derived' ? figuresOf(entry, entry.derivation, frames.frames, evaluation) : {};
+    const saved = (await deps.journal.queryActions({ reviewDate })).actions[analysis.tradeId];
+    const form: ActionForm = saved ? { kind: 'Saved', action: saved } : { kind: 'New', viewState: { selectedAction: 'Hold' } };
+    const definition = await deps.journal.getDefinitions({ latestFor: 'entry-type.daily-trade-review' });
+    if (definition.kind !== 'Found') throw new Error('no Daily Trade Review definition');
+    return {
+      kind: 'Ready',
+      review: {
+        reviewDate,
+        cutoff,
+        trade: {
+          tradeId: analysis.tradeId,
+          underlying: summary.underlying,
+          attention: item,
+          labels: {
+            strategy: resolved['strategy']?.label ?? '',
+            account: resolved['account']?.label ?? '',
+            institution: resolved['account']?.institution?.label ?? '',
+          },
+          ...figures,
+          form,
+          definitionRevision: definition.definition.id,
+          saveBinding: {
+            reviewDate,
+            tradeId: analysis.tradeId,
+            factRevision: analysis.factRevision,
+            marketDataSnapshotId: frames.snapshotId,
+            obligationKey: { entryType: 'DailyTradeReview', trade: analysis.tradeId, reviewDate },
+            ...(saved && { expectedEntryRevision: saved.entryRevision }),
+            definitionRevision: definition.definition.id,
+          },
+        },
+      },
+    };
+  }
+
   return {
-    // The module reads are separate transactions, so a Review is accepted only if the Workspace is
-    // unchanged across its assembly; otherwise it is read again, a bounded number of times (A46).
-    async open(request) {
-      for (let attempt = 0; attempt < ASSEMBLY_ATTEMPTS; attempt++) {
-        const before = await currentBinding();
+    // A Review is accepted only if the Workspace is unchanged across its assembly (A46).
+    open: (request) =>
+      coherently<OpenDailyReviewResult>(async () => {
         const pass = await assemble(request);
-        if (pass.kind === 'Expired') continue;
-        if (pass.kind !== 'Ready') return pass;
-        const after = await currentBinding();
-        if (after.workspace.databaseName === before.workspace.databaseName && after.workspace.contentRevision === before.workspace.contentRevision) {
-          return { kind: 'Ready', ...pass.review, binding: { ...after, ...pass.evidence } };
-        }
-      }
-      return { kind: 'ChangedDuringAssembly' };
-    },
+        if (pass.kind === 'Expired') return { retry: true };
+        if (pass.kind !== 'Ready') return { done: pass };
+        return { settle: (binding) => ({ kind: 'Ready', ...pass.review, binding: { ...binding, ...pass.evidence } }) };
+      }),
+
+    getTrade: (request) =>
+      coherently<GetDailyTradeReviewResult>(async () => {
+        const pass = await assembleTrade(request);
+        if (pass.kind === 'Expired') return { retry: true };
+        if (pass.kind !== 'Ready') return { done: pass };
+        return { settle: () => ({ kind: 'Ready', ...pass.review }) };
+      }),
   };
 }

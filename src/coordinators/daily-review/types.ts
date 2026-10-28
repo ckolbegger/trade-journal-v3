@@ -1,8 +1,10 @@
 import type { Instant } from '../../domain/time/index.ts';
-import type { IncoherentFacts, IntegrityFinding } from '../../domain/trade-analysis/index.ts';
+import type { IncoherentFacts, IntegrityFinding, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
+import type { TradeSummary } from '../../domain/trade-summary.ts';
 import type { Rational } from '../../domain/values/index.ts';
 import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
-import type { MarketDataIssue, MarkResolution } from '../../modules/market-data/index.ts';
+import type { DailyAction, JournalObligationKey } from '../../modules/journal/index.ts';
+import type { MarkFrame, MarketDataIssue, MarkResolution } from '../../modules/market-data/index.ts';
 
 // The request names the date and the as-of instant (Daily Review, "Date, eligibility, and ordering").
 // D4 opens LatestCompleted only (P15); an exact date arrives in D15.
@@ -117,5 +119,58 @@ export type OpenDailyReviewResult =
   | { readonly kind: 'Empty'; readonly reviewDate: string; readonly cutoff: Instant }
   | { readonly kind: 'Ready'; readonly reviewDate: string; readonly cutoff: Instant; readonly families: readonly ReviewFamily[]; readonly completion: ReviewCompletion; readonly binding: ReviewBinding }
   // Writes kept landing between the read phases; nothing incoherent is returned (A46).
+  | { readonly kind: 'ChangedDuringAssembly' }
+  | { readonly kind: 'Rejected'; readonly issues: readonly MarketDataIssue[] };
+
+// The Trade to open from an overview: its Review Date and the binding `open` returned.
+export interface GetDailyTradeReviewRequest {
+  readonly reviewDate: string;
+  readonly tradeId: string;
+  readonly binding: ReviewBinding;
+}
+
+// The Action form: the saved Action, or a new form whose Hold preselection is view state only
+// (Daily Review, `getTrade`); nothing is recorded until Save.
+export type ActionForm =
+  | { readonly kind: 'Saved'; readonly action: DailyAction }
+  | { readonly kind: 'New'; readonly viewState: { readonly selectedAction: 'Hold' } };
+
+// What Save must present: the exact Trade revision, evidence snapshot, obligation, and rendered
+// form revision (Daily Review, `save`).
+export interface TradeSaveBinding {
+  readonly reviewDate: string;
+  readonly tradeId: string;
+  readonly factRevision: number;
+  readonly marketDataSnapshotId: string;
+  readonly obligationKey: JournalObligationKey;
+  // The revision of the saved Action being edited; absent for a new Action.
+  readonly expectedEntryRevision?: number;
+  readonly definitionRevision: string;
+}
+
+export interface DailyTradeReview {
+  readonly tradeId: string;
+  readonly underlying: string;
+  readonly summary?: TradeSummary;
+  // The Trade's band and reasons, as the overview lists them.
+  readonly attention: ReviewTradeItem;
+  readonly labels: { readonly strategy: string; readonly account: string; readonly institution: string };
+  // The Review-date frame, with its Stale context when the Mark is Missing; this and the figures
+  // below are absent when the Trade's facts cannot be replayed.
+  readonly frame?: MarkFrame;
+  // Evaluated at the Review cutoff with the Review-date frame.
+  readonly evaluation?: TradeEvaluation;
+  // The Position held at the Stale context's close, valued with that session's own exact Mark (P13, A54).
+  readonly datedLastClose?: { readonly tradingDate: string; readonly evaluation: TradeEvaluation };
+  readonly form: ActionForm;
+  // The Daily Trade Review definition revision the form was rendered from.
+  readonly definitionRevision: string;
+  readonly saveBinding: TradeSaveBinding;
+}
+
+export type GetDailyTradeReviewResult =
+  | { readonly kind: 'Ready'; readonly reviewDate: string; readonly cutoff: Instant; readonly trade: DailyTradeReview }
+  // The Trade's facts or the Review-date evidence no longer match the overview's binding (A46, AC-REV-005).
+  | { readonly kind: 'ReviewChanged' }
   | { readonly kind: 'ChangedDuringAssembly' }
   | { readonly kind: 'Rejected'; readonly issues: readonly MarketDataIssue[] };

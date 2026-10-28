@@ -15,7 +15,7 @@ import {
   type PlanBaseline,
   type TradeAnalysisRecord,
 } from '../../domain/trade-analysis/index.ts';
-import { plannedLongStockSummary, type TradeSummary } from '../../domain/trade-summary.ts';
+import { openLongStockSummary, plannedLongStockSummary, type TradeSummary } from '../../domain/trade-summary.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
 import type { Journal, NarrativeEntry, NarrativeItem } from '../../modules/journal/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
@@ -210,14 +210,6 @@ function withoutKind(item: Extract<NarrativeItem, { kind: 'Entry' }>): Narrative
 
 type Labels = { readonly strategy: string; readonly account: string; readonly institution: string };
 
-// The open quantity at the quantity-weighted Open Lot price, fees excluded; none without open quantity.
-function openSummary(derived: DerivedTradeState): TradeSummary | undefined {
-  const lots = derived.positions.flatMap((p) => p.openLots);
-  const quantity = sum(lots.map((l) => l.quantity));
-  if (quantity.compare(Rational.of(0n)) === 0) return undefined;
-  return { kind: 'Stock', direction: 'Long', quantity, price: sum(lots.map((l) => l.quantity.mul(l.price))).div(quantity) };
-}
-
 function plannedItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels): PlannedTradeItem {
   const { baseline } = derived;
   return {
@@ -256,7 +248,7 @@ const entryStatusOf = (derived: DerivedTradeState) => (derived.entryResolution.k
 const optional = <K extends string, V>(key: K, value: V | undefined) => (value === undefined ? {} : ({ [key]: value } as Record<K, V>));
 
 function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels): OpenTradeItem {
-  const open = openSummary(derived);
+  const open = openLongStockSummary(derived);
   return {
     tradeId: summary.tradeId,
     underlying: summary.underlying,
@@ -306,7 +298,7 @@ function openDetail(
   return {
     ...planned,
     positions: derived.positions,
-    ...optional('summary', openSummary(derived)),
+    ...optional('summary', openLongStockSummary(derived)),
     netCost: derived.netCost,
     lastActivity,
     fees: derived.fees,

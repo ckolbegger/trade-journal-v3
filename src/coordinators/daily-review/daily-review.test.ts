@@ -612,3 +612,163 @@ describe('completion', () => {
     expect(await stores()).toEqual(storesBefore);
   }, 30_000);
 });
+
+describe('getTrade', () => {
+  // The overview's binding is what the Review screen carries into a Trade.
+  const overview = async (stack: ReviewStack) => ready(await open(stack, MONDAY_1700));
+  const getTrade = async (stack: ReviewStack, tradeId: string) => {
+    const { reviewDate, binding } = await overview(stack);
+    return stack.dailyReview.getTrade({ reviewDate, tradeId, binding });
+  };
+
+  it('should return the Trade\'s summary, labels, Review-date frame with Stale context, Review-context evaluation, the existing Action or a new form with Hold preselected only in view state, the definition revision, and the save binding', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a, c, e } = await fiveTradeFixture(stack);
+    await stack.saveAction(e, 'Hold');
+    // DEF has no Mark for Monday; Friday's is disclosed as context only.
+    await stack.saveMark('DEF', '39.00', '2026-10-09');
+
+    const result = await getTrade(stack, a);
+    const missing = await getTrade(stack, c);
+    const saved = await getTrade(stack, e);
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        kind: 'Ready',
+        reviewDate: '2026-10-12',
+        trade: expect.objectContaining({
+          tradeId: a,
+          underlying: 'XYZ',
+          summary: { kind: 'Stock', direction: 'Long', quantity: Rational.of(100n), price: Rational.of(5018n, 100n) },
+          labels: { strategy: stack.strategy.label, account: stack.account.label, institution: stack.institution.label },
+        }) as unknown,
+      }),
+    );
+    expect(result.kind === 'Ready' && result.trade.frame).toEqual(
+      expect.objectContaining({ instrumentKey: 'XYZ', tradingDate: '2026-10-12', closeInstant: MONDAY_CUTOFF, resolution: expect.objectContaining({ kind: 'Available' }) as unknown }),
+    );
+    expect(missing.kind === 'Ready' && missing.trade.frame?.resolution).toEqual({
+      kind: 'Missing',
+      stale: expect.objectContaining({ tradingDate: '2026-10-09', price: '39' }) as unknown,
+    });
+    // Evaluated at the cutoff with the Review-date frame: Monday's Mark values A; C's missing Mark is named and Friday's never used.
+    expect(result.kind === 'Ready' && result.trade.evaluation).toEqual(
+      expect.objectContaining({ valuationDate: '2026-10-12', marketValue: { kind: 'Value', value: Rational.of(5200n) } }),
+    );
+    expect(missing.kind === 'Ready' && missing.trade.evaluation).toEqual(
+      expect.objectContaining({
+        marketValue: { kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument: { kind: 'Stock', symbol: 'DEF' }, date: '2026-10-12' } },
+        staleContext: expect.objectContaining({ tradingDate: '2026-10-09' }) as unknown,
+      }),
+    );
+    // No Action yet: Hold is preselected in view state only. A saved Action is returned as it is.
+    expect(result.kind === 'Ready' && result.trade.form).toEqual({ kind: 'New', viewState: { selectedAction: 'Hold' } });
+    expect(saved.kind === 'Ready' && saved.trade.form).toEqual({ kind: 'Saved', action: expect.objectContaining({ action: 'Hold', entryRevision: 1 }) as unknown });
+    // The form was rendered from the latest Daily Trade Review definition.
+    const definition = await stack.journal.getDefinitions({ latestFor: 'entry-type.daily-trade-review' });
+    expect(result.kind === 'Ready' && result.trade.definitionRevision).toBe(definition.kind === 'Found' && definition.definition.id);
+    // Save must present the Trade revision, evidence snapshot, obligation, and form revision the Review showed.
+    const { binding } = await overview(stack);
+    expect(result.kind === 'Ready' && result.trade.saveBinding).toEqual({
+      reviewDate: '2026-10-12',
+      tradeId: a,
+      factRevision: binding.factRevisions[a],
+      marketDataSnapshotId: binding.marketDataSnapshotId,
+      obligationKey: { entryType: 'DailyTradeReview', trade: a, reviewDate: '2026-10-12' },
+      definitionRevision: definition.kind === 'Found' && definition.definition.id,
+    });
+    // An Action being edited names the Entry revision it was shown at.
+    expect(saved.kind === 'Ready' && saved.trade.saveBinding.expectedEntryRevision).toBe(1);
+  }, 30_000);
+
+  it('should include the dated last-close and at-entry lines when the Review-date Mark is Missing, P13', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    // 60 shares bought Wednesday 10:00 and 40 on Monday; Wednesday's Mark is the latest, and Monday's is missing.
+    const xyz = await stack.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '56.00', planTime: '2026-10-07T13:00:00Z' });
+    await stack.fill(xyz, '2026-10-07T14:00:00Z', '60', '50.10');
+    await stack.fill(xyz, TEN_AM, '40', '50.30');
+    await stack.saveMark('XYZ', '52.00', '2026-10-08');
+
+    const result = await getTrade(stack, xyz.tradeId);
+
+    if (result.kind !== 'Ready') throw new Error(`expected Ready, got ${result.kind}`);
+    const { evaluation, datedLastClose } = result.trade;
+    // Current figures never use the earlier Mark.
+    expect(evaluation?.marketValue).toEqual({ kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument: { kind: 'Stock', symbol: 'XYZ' }, date: '2026-10-12' } });
+    // The Position held at Wednesday's close, valued with Wednesday's own Mark.
+    expect(datedLastClose).toEqual({
+      tradingDate: '2026-10-08',
+      evaluation: expect.objectContaining({ valuationDate: '2026-10-08', openQuantity: { kind: 'Value', value: Rational.of(60n) }, marketValue: { kind: 'Value', value: Rational.of(3120n) } }) as unknown,
+    });
+    // The 40 shares bought since are measured from their execution prices, never as valuation.
+    expect(evaluation?.atEntry).toEqual({
+      label: 'AtEntry',
+      quantity: Rational.of(40n),
+      averageEntry: Rational.of(503n, 10n),
+      riskFromEntry: Rational.of(112n),
+      rewardFromEntry: Rational.of(228n),
+    });
+
+    // A Trade with no exposure at that close, though Friday's Mark exists, has no dated line.
+    const def = await stack.confirm({ symbol: 'DEF', shares: '100', entry: '40.00', stop: '38.00', target: '46.00' });
+    await stack.fill(def, TEN_AM, '100', '40.00');
+    await stack.saveMark('DEF', '39.00', '2026-10-09');
+    const unexposed = await getTrade(stack, def.tradeId);
+    expect(unexposed.kind === 'Ready' && unexposed.trade.datedLastClose).toBeUndefined();
+  }, 30_000);
+
+  it('should return ReviewChanged when the Trade\'s revision or its evidence no longer matches the overview binding', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a, c } = await fiveTradeFixture(stack);
+    const { reviewDate, binding } = await overview(stack);
+
+    // A fill recorded after the overview changes the Trade's FactRevision.
+    const current = await stack.tradeRecord.getRecord({ tradeId: a, projection: 'AnalysisInput' });
+    if (current.kind !== 'Found') throw new Error('no Trade');
+    await stack.fill(current.projection as Parameters<typeof stack.fill>[0], '2026-10-12T20:05:00Z', '10', '51.00');
+
+    expect(await stack.dailyReview.getTrade({ reviewDate, tradeId: a, binding })).toEqual({ kind: 'ReviewChanged' });
+
+    // A Mark saved after the overview changes the Review-date evidence for a Trade whose own facts are unchanged.
+    const evidenceBinding = (await overview(stack)).binding;
+    expect((await stack.dailyReview.getTrade({ reviewDate, tradeId: c, binding: evidenceBinding })).kind).toBe('Ready');
+    await stack.saveMark('DEF', '40.50');
+    expect(await stack.dailyReview.getTrade({ reviewDate, tradeId: c, binding: evidenceBinding })).toEqual({ kind: 'ReviewChanged' });
+
+    // A Trade the Review no longer finds eligible is a changed Review too.
+    expect(await stack.dailyReview.getTrade({ reviewDate, tradeId: 'no-such-trade', binding })).toEqual({ kind: 'ReviewChanged' });
+  }, 30_000);
+
+  it('should record nothing', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a, b, c, e } = await fiveTradeFixture(stack);
+    await stack.saveAction(e, 'Hold');
+    const before = await dumpAll(stack.factory);
+
+    // A new form, a saved Action, and a Missing Mark: opening and leaving each records nothing.
+    for (const tradeId of [a, b, c, e]) expect((await getTrade(stack, tradeId)).kind).toBe('Ready');
+
+    expect(await dumpAll(stack.factory)).toEqual(before);
+  }, 30_000);
+
+  it('should return the same attention reasons as the overview for an integrity disagreement and for facts that cannot be replayed', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { d, e } = await fiveTradeFixture(stack);
+    await breakFirstExecution(stack, e);
+    const review = await overview(stack);
+    const { reviewDate, binding } = review;
+    const items = walk(review);
+
+    // A disagreement between stored records and facts keeps its Blocker reason, with the figures still evaluated.
+    const disagreeing = await stack.dailyReview.getTrade({ reviewDate, tradeId: d, binding });
+    expect(disagreeing.kind === 'Ready' && disagreeing.trade.attention).toEqual(items.find((t) => t.tradeId === d));
+
+    // Facts that cannot be replayed give no frame or evaluation, only the Blocker and a form to answer.
+    const unreplayable = await stack.dailyReview.getTrade({ reviewDate, tradeId: e, binding });
+    if (unreplayable.kind !== 'Ready') throw new Error(`expected Ready, got ${unreplayable.kind}`);
+    expect(unreplayable.trade.attention).toEqual(items.find((t) => t.tradeId === e));
+    expect(unreplayable.trade.attention.reasons).toEqual([expect.objectContaining({ code: 'IncoherentFacts' })]);
+    expect(unreplayable.trade).not.toHaveProperty('evaluation');
+    expect(unreplayable.trade.form).toEqual({ kind: 'New', viewState: { selectedAction: 'Hold' } });
+  }, 30_000);
+});
