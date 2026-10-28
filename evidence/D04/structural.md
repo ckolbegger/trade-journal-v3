@@ -545,3 +545,11 @@ Verification: `npx vitest run src tests/integration` passes with the same count 
 
 ### T4.12-B2 Obligation keys as explicit guards (structural)
 Verification: as for B1.
+
+ocr reviews of the T4.12 bug tasks, each **No findings**: `5dc3669` (B1, session `050f6ec6-feaa-4b8d-a977-dfdaaf012c58`; the Action prompt is found by role in the Entry's original definition from definitions already in the single snapshot), `a9a3055` (B2, `e1207c71-f577-4f2e-9b91-6c315386a115`; also removed the test file's eslint-disable header, which raised an unknown-rule warning under `lint:deps`, typing six nested matchers `as unknown` instead). Raw outputs `ocr/T4.12-B<n>-<sha>.json`. The B2 subagent saw one unidentified failure in one of three local `src tests/integration` runs (filtered output, test not named); the two runs after it and the cumulative run below were clean, so it is recorded as an unconfirmed flake.
+
+### Cumulative run after T4.12
+
+- `a9a3055` (B1–B2), 2026-10-28 01:58 EDT: unit 612, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.12-b2-*`.
+
+Only `verify:capacity` failed (expected until T4.28). T4.12 is complete.
