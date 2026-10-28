@@ -1,11 +1,12 @@
 import { openLongStockSummary } from '../../domain/trade-summary.ts';
-import { derive, evaluate, type DerivedTradeState, type IncoherentFacts, type ObservationFrame, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
+import { derive, evaluate, type DerivedTradeState, type IncoherentFacts, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import type { Journal } from '../../modules/journal/index.ts';
 import type { FrameContext, MarkFrame, MarketData, MarketDataIssue } from '../../modules/market-data/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { BrowseRecord, TradeRecord } from '../../modules/trade-record/index.ts';
 import { beginSemanticTransaction, type Persistence, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { MutationGuard } from '../mutation-guard.ts';
+import { datedLineOf, observationFrame } from '../valuation.ts';
 import { attentionOf, byAttention, unavailableFamilies } from './attention.ts';
 import type {
   ActionForm,
@@ -121,16 +122,6 @@ export interface DailyReview {
   save(request: SaveDailyReviewRequest): Promise<SaveDailyReviewResult>;
 }
 
-// Market Data's frame as Trade Analysis reads it: composition maps one into the other.
-function observationFrame(frame: MarkFrame): ObservationFrame {
-  return {
-    instrument: { kind: 'Stock', symbol: frame.instrumentKey },
-    tradingDate: frame.tradingDate,
-    closeInstant: frame.closeInstant,
-    resolution: frame.resolution,
-  };
-}
-
 // The Trade's place in the walk and, when its facts replay, its evaluation at the Review-date frame.
 function reviewItem({ summary, analysis, derivation, integrity }: EligibleTrade, frames: readonly MarkFrame[]) {
   const identity = { tradeId: summary.tradeId, underlying: summary.underlying, lastActivity: summary.lastActivity ?? summary.planTime };
@@ -144,30 +135,12 @@ function reviewItem({ summary, analysis, derivation, integrity }: EligibleTrade,
   return { item, evaluation };
 }
 
-// The Position held at the Stale context's close, valued with that session's own exact Mark; absent
-// without Stale context (P13, A54).
-function datedLastCloseOf(analysis: EligibleTrade['analysis'], frame: MarkFrame, evaluation: TradeEvaluation): DailyTradeReview['datedLastClose'] {
-  const stale = evaluation.staleContext;
-  if (!stale) return undefined;
-  const atLastClose = derive({ record: analysis, cutoff: stale.closeInstant, valuationDate: stale.tradingDate });
-  if (atLastClose.kind !== 'Derived') throw new Error('facts cannot be replayed at the last close');
-  // Shown only if the Trade had exposure then.
-  if (!atLastClose.positions.some((p) => p.openLots.length > 0)) return undefined;
-  const lastClose: ObservationFrame = {
-    instrument: { kind: 'Stock', symbol: frame.instrumentKey },
-    tradingDate: stale.tradingDate,
-    closeInstant: stale.closeInstant,
-    resolution: { kind: 'Available', mark: { revisionId: stale.revisionId, revisionNumber: stale.revisionNumber, price: stale.price } },
-  };
-  return { tradingDate: stale.tradingDate, evaluation: evaluate({ state: atLastClose, frame: lastClose }) };
-}
-
 // What replaying the Trade yields at the Review-date frame.
 function figuresOf(entry: EligibleTrade, state: DerivedTradeState, frames: readonly MarkFrame[], evaluation: TradeEvaluation) {
   const frame = frames.find((f) => f.instrumentKey === entry.analysis.plan.underlying);
   if (!frame) throw new Error(`Market Data returned no frame for ${entry.analysis.plan.underlying}`);
   const summary = openLongStockSummary(state);
-  const datedLastClose = datedLastCloseOf(entry.analysis, frame, evaluation);
+  const datedLastClose = datedLineOf(entry.analysis, frame, evaluation);
   return { ...(summary && { summary }), frame, evaluation, ...(datedLastClose && { datedLastClose }) };
 }
 

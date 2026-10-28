@@ -9,7 +9,7 @@ import type {
   RecordedDeviation,
 } from '../../src/app/types.ts';
 import { Rational } from '../../src/domain/values/index.ts';
-import { derive, type TradeAnalysisRecord } from '../../src/domain/trade-analysis/index.ts';
+import { derive, evaluate, type TradeAnalysisRecord } from '../../src/domain/trade-analysis/index.ts';
 import { LEG_ID, referenceRecord } from '../../src/domain/trade-analysis/reference-trade.ts';
 import { plannedDetail } from './views-fixtures.ts';
 
@@ -84,6 +84,16 @@ export function openDetailOf(positionChanges: readonly PositionChangeFact[], opt
     deviations: record.recordedDeviations ?? [],
     findings: derived.findings,
     journal: options.journal ?? [],
+    // No Mark is entered for the fixture's Expected Mark Date, so every current figure is Unavailable.
+    current: {
+      expectedMarkDate: '2026-10-12',
+      markResolution: { kind: 'Missing' },
+      coverage: [{ instrument: { kind: 'Stock', symbol: record.plan.underlying }, coverage: { kind: 'Missing' } }],
+      evaluation: evaluate({
+        state: derived,
+        frame: { instrument: { kind: 'Stock', symbol: record.plan.underlying }, tradingDate: '2026-10-12', closeInstant: '2026-10-12T20:00:00Z', resolution: { kind: 'Missing' } },
+      }),
+    },
   };
 }
 

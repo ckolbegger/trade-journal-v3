@@ -147,11 +147,11 @@ describe('Trade Summary', () => {
       'account', 'entryReadiness', 'institution', 'oneR', 'originalPlannedReward', 'planTime', 'rewardRiskRatio', 'strategy', 'tradeId', 'underlying',
     ]);
     expect(without(await listed(views, 'Open'), 'summary', 'netCost')).toEqual([
-      'account', 'averageOpenCost', 'deviationCount', 'entryStatus', 'incurredFees', 'institution', 'integrity', 'lastActivity', 'openQuantity', 'plannedQuantity', 'strategy', 'tradeId', 'underlying',
+      'account', 'averageOpenCost', 'current', 'deviationCount', 'entryStatus', 'incurredFees', 'institution', 'integrity', 'lastActivity', 'openQuantity', 'plannedQuantity', 'strategy', 'tradeId', 'underlying',
     ]);
     expect(without(await detailed(views, planned.tradeId), 'summary')).toEqual(['baseline', 'factRevision', 'journal', 'labels', 'lifecycle', 'plan', 'tradeId']);
     expect(without(await detailed(views, open.tradeId), 'summary', 'netCost')).toEqual([
-      'baseline', 'deviations', 'entryQuality', 'entryResolution', 'entryStatus', 'factRevision', 'fees', 'findings', 'journal', 'labels', 'lastActivity', 'legFulfillment', 'lifecycle', 'plan', 'positionChanges', 'positions', 'tradeId',
+      'baseline', 'current', 'deviations', 'entryQuality', 'entryResolution', 'entryStatus', 'factRevision', 'fees', 'findings', 'journal', 'labels', 'lastActivity', 'legFulfillment', 'lifecycle', 'plan', 'positionChanges', 'positions', 'tradeId',
     ]);
   });
 });

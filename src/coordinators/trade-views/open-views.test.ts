@@ -133,6 +133,7 @@ describe('browseTrades: Open', () => {
       deviationCount: 0,
       integrity: 'Agrees',
       lastActivity: PC1,
+      current: expect.any(Object) as unknown,
     });
     expect(second?.openQuantity.equals(Rational.of(60n))).toBe(true);
     expect(second?.plannedQuantity.equals(Rational.of(100n))).toBe(true);
@@ -184,6 +185,7 @@ describe('browseTrades: Open', () => {
       workspace: current.binding,
       catalogRevision: (current.value.catalog as { catalogRevision: number }).catalogRevision,
       journalRevision: (current.value.journal as { journalRevision: number }).journalRevision,
+      marketDataSnapshotId: expect.any(String) as unknown,
     });
   });
 

@@ -1,6 +1,9 @@
 import {
   derive,
+  evaluate,
+  type AtEntryFigures,
   type CalculationResult,
+  type ConditionStatus,
   type DerivedTradeState,
   type EntryQuality,
   type EntryResolution,
@@ -10,23 +13,29 @@ import {
   type LegFulfillment,
   type LifecycleAgreement,
   type PositionChangeFact,
+  type TradeEvaluation,
   type RecordedDeviation,
   type LifecycleState,
   type PlanBaseline,
   type TradeAnalysisRecord,
 } from '../../domain/trade-analysis/index.ts';
 import { openLongStockSummary, plannedLongStockSummary, type TradeSummary } from '../../domain/trade-summary.ts';
+import type { Clock } from '../../domain/time/index.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
 import type { Journal, NarrativeEntry, NarrativeItem } from '../../modules/journal/index.ts';
+import type { MarkFrame, MarketData, MarkResolution, ObservationRecord } from '../../modules/market-data/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { BrowseRecord, TradeRecord, TradeSummary as RecordSummary } from '../../modules/trade-record/index.ts';
 import type { Persistence, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
+import { datedLineOf, observationFrame, type DatedLine } from '../valuation.ts';
 
 export interface TradeViewsDeps {
   readonly persistence: Persistence;
   readonly tradeRecord: TradeRecord;
   readonly catalog: ReferenceCatalog;
   readonly journal: Journal;
+  readonly marketData: MarketData;
+  readonly clock: Clock;
 }
 
 export interface TradeBrowseRequest<L extends 'Planned' | 'Open' = 'Planned' | 'Open'> {
@@ -59,8 +68,30 @@ export interface PlannedTradeItem {
   readonly integrity?: 'Disagrees';
 }
 
-// One Open Trade as the list presents it (D2 A32): factual Position and entry figures, no valuation
-// or risk (D4).
+// The Open list item's figures at the Expected Mark Date, each with its own availability (A41).
+export interface OpenCurrentFigures {
+  readonly expectedMarkDate: string;
+  readonly markResolution: MarkResolution;
+  readonly remainingOpenPnl: CalculationResult<Rational>;
+  readonly currentMarkedPnl: CalculationResult<Rational>;
+  readonly currentMarkedPnlInPlanR: CalculationResult<Rational>;
+  readonly ongoingRiskToStop: CalculationResult<Rational>;
+  readonly ongoingRiskToStopInPlanR: CalculationResult<Rational>;
+  readonly worstCaseOngoingRisk: CalculationResult<Rational>;
+  readonly worstCaseOngoingRiskInPlanR: CalculationResult<Rational>;
+  readonly incrementalRewardToTarget: CalculationResult<Rational>;
+  readonly incrementalRewardToTargetInPlanR: CalculationResult<Rational>;
+  readonly maximumIncrementalReward: CalculationResult<Rational>;
+  // Stop and Target status, each condition its own result.
+  readonly conditions: readonly ConditionStatus[];
+  // Lots opened after the latest exact Mark's close, measured from their execution prices (P12, A54).
+  readonly atEntry: AtEntryFigures | null;
+  // The Position held at the last close with an exact Mark, valued with that Mark; absent when none applies.
+  readonly datedLine?: DatedLine;
+}
+
+// One Open Trade as the list presents it (D2 A32): factual Position and entry figures, with the
+// current evaluation at the Expected Mark Date (D4).
 export interface OpenTradeItem {
   readonly tradeId: string;
   readonly underlying: string;
@@ -83,13 +114,14 @@ export interface OpenTradeItem {
   // Whether stored and expected records agree; a disagreement is surfaced, never repaired.
   readonly integrity: 'Agrees' | 'Disagrees';
   readonly lastActivity: string;
+  readonly current: OpenCurrentFigures;
 }
 
 // An Open Trade whose recorded facts cannot be replayed (AC-LIFE-003): its Position and entry figures
 // are unavailable rather than shown as numbers, and its records disagree.
 export interface IncoherentOpenTradeItem extends Omit<
   OpenTradeItem,
-  'openQuantity' | 'averageOpenCost' | 'summary' | 'netCost' | 'incurredFees' | 'entryStatus' | 'integrity'
+  'openQuantity' | 'averageOpenCost' | 'summary' | 'netCost' | 'incurredFees' | 'entryStatus' | 'integrity' | 'current'
 > {
   readonly integrity: 'Disagrees';
 }
@@ -118,6 +150,8 @@ export interface ViewBinding {
   readonly workspace: WorkspaceSnapshotBinding;
   readonly catalogRevision: number;
   readonly journalRevision: number;
+  // The Mark evidence a current evaluation read, bound with the Workspace content revision it was read in.
+  readonly marketDataSnapshotId?: string;
 }
 
 export type ReadViewResult<T> =
@@ -154,6 +188,30 @@ export interface PlannedTradeDetail {
   readonly journal: readonly NarrativeEntry[];
 }
 
+// The Mark that valued the figures and where it came from (Market Data, "Observation model").
+export interface MarkProvenance {
+  readonly source: 'Manual';
+  readonly revisionId: string;
+  readonly revisionNumber: number;
+  readonly price: string;
+  readonly savedAt: string;
+  // The reason given when this revision corrected an earlier one.
+  readonly correctionReason?: string;
+}
+
+// The Open Detail's valuation at the Expected Mark Date: the evaluation in full, with the Mark's
+// provenance and the dated line when the current figures need one (P12, P13).
+export interface OpenCurrentEvaluation {
+  readonly expectedMarkDate: string;
+  readonly markResolution: MarkResolution;
+  // Present when an exact Mark valued the figures.
+  readonly mark?: MarkProvenance;
+  // Per Instrument; a Long Stock Trade has one.
+  readonly coverage: readonly { readonly instrument: TradeEvaluation['observation']['instrument']; readonly coverage: TradeEvaluation['coverage'] }[];
+  readonly evaluation: TradeEvaluation;
+  readonly datedLine?: DatedLine;
+}
+
 // The Open form of Trade Detail (D2): the Planned form's Plan, lifecycle, Baseline, and labels, plus
 // the derived Position and entry, the recorded Deviations, any integrity findings, and the whole
 // narrative with declines. No valuation, Marks, or risk (D4).
@@ -175,6 +233,7 @@ export interface OpenTradeDetail extends Omit<PlannedTradeDetail, 'journal'> {
   // Where stored records disagree with what the facts imply: surfaced, never repaired (AC-LIFE-003).
   readonly findings: readonly IntegrityFinding[];
   readonly journal: readonly NarrativeItem[];
+  readonly current: OpenCurrentEvaluation;
 }
 
 // A recorded fact that cannot be replayed, named with the reason (AC-LIFE-003).
@@ -247,7 +306,9 @@ const entryStatusOf = (derived: DerivedTradeState) => (derived.entryResolution.k
 
 const optional = <K extends string, V>(key: K, value: V | undefined) => (value === undefined ? {} : ({ [key]: value } as Record<K, V>));
 
-function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels): OpenTradeItem {
+function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels, frame: MarkFrame): OpenTradeItem {
+  const evaluation = evaluate({ state: derived, frame: observationFrame(frame) });
+  const datedLine = datedLineOf(analysis, frame, evaluation);
   const open = openLongStockSummary(derived);
   return {
     tradeId: summary.tradeId,
@@ -263,6 +324,23 @@ function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived
     deviationCount: activeDeviations(analysis),
     integrity: derived.findings.length === 0 ? 'Agrees' : 'Disagrees',
     lastActivity: summary.lastActivity ?? summary.planTime,
+    current: {
+      expectedMarkDate: frame.tradingDate,
+      markResolution: frame.resolution,
+      remainingOpenPnl: evaluation.remainingOpenPnl,
+      currentMarkedPnl: evaluation.currentMarkedPnl,
+      currentMarkedPnlInPlanR: evaluation.currentMarkedPnlInPlanR,
+      ongoingRiskToStop: evaluation.ongoingRiskToStop,
+      ongoingRiskToStopInPlanR: evaluation.ongoingRiskToStopInPlanR,
+      worstCaseOngoingRisk: evaluation.worstCaseOngoingRisk,
+      worstCaseOngoingRiskInPlanR: evaluation.worstCaseOngoingRiskInPlanR,
+      incrementalRewardToTarget: evaluation.incrementalRewardToTarget,
+      incrementalRewardToTargetInPlanR: evaluation.incrementalRewardToTargetInPlanR,
+      maximumIncrementalReward: evaluation.maximumIncrementalReward,
+      conditions: evaluation.conditions,
+      atEntry: evaluation.atEntry,
+      ...optional('datedLine', datedLine),
+    },
   };
 }
 
@@ -294,6 +372,7 @@ function openDetail(
   derived: DerivedTradeState,
   narrative: readonly NarrativeItem[],
   lastActivity: string,
+  current: OpenCurrentEvaluation,
 ): OpenTradeDetail {
   return {
     ...planned,
@@ -310,6 +389,7 @@ function openDetail(
     deviations: analysis.recordedDeviations ?? [],
     findings: derived.findings,
     journal: narrative,
+    current,
   };
 }
 
@@ -327,19 +407,39 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
     };
   }
 
+  // The frames at the Expected Mark Date for the current instant, one per Instrument.
+  async function currentFrames(symbols: readonly string[]): Promise<{ readonly frames: readonly MarkFrame[]; readonly snapshotId?: string }> {
+    if (symbols.length === 0) return { frames: [] };
+    const instruments = [...new Set(symbols)].sort();
+    const result = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Current', asOf: deps.clock.now() }, instruments });
+    if (result.kind !== 'Frames') throw new Error(`Market Data returned ${result.kind} for the current frames`);
+    return { frames: result.frames, snapshotId: result.snapshotId };
+  }
+
+  // The effective Mark revision's provenance, which a frame does not carry.
+  async function markProvenance(frame: MarkFrame): Promise<MarkProvenance | undefined> {
+    if (frame.resolution.kind !== 'Available') return undefined;
+    const { revisionId } = frame.resolution.mark;
+    const { value } = await deps.persistence.readSnapshot(['observations'], (tx) => tx.get('observations', [frame.tradingDate, frame.instrumentKey]));
+    const revision = (value as ObservationRecord | undefined)?.marks.find((m) => m.revisionId === revisionId);
+    if (!revision) throw new Error(`Mark revision ${revisionId} is not stored`);
+    const { source, revisionNumber, price, savedAt, intention, reason } = revision;
+    return { source, revisionId, revisionNumber, price, savedAt, ...(intention === 'Correction' && reason !== undefined && { correctionReason: reason }) };
+  }
+
   // Module reads are separate transactions, so a view is accepted only if the Workspace binding
   // is unchanged across its assembly; otherwise it is retried, a bounded number of times.
   async function coherent<T>(
-    assemble: () => Promise<{ view: T; binding: WorkspaceSnapshotBinding } | { rejected: 'CursorExpired' } | { notFound: true }>,
+    assemble: () => Promise<{ view: T; binding: WorkspaceSnapshotBinding; marketDataSnapshotId?: string } | { rejected: 'CursorExpired' } | { notFound: true }>,
   ): Promise<ReadViewResult<T>> {
     for (let attempt = 0; attempt < ASSEMBLY_ATTEMPTS; attempt++) {
       const assembled = await assemble();
       if ('rejected' in assembled) return { kind: 'Rejected', reason: assembled.rejected };
       if ('notFound' in assembled) return { kind: 'NotFound' };
-      const { view, binding } = assembled;
+      const { view, binding, marketDataSnapshotId } = assembled;
       const after = await currentBinding();
       if (after.workspace.databaseName === binding.databaseName && after.workspace.contentRevision === binding.contentRevision) {
-        return { kind: 'Ready', view, binding: after };
+        return { kind: 'Ready', view, binding: { ...after, ...optional('marketDataSnapshotId', marketDataSnapshotId) } };
       }
     }
     return { kind: 'ChangedDuringAssembly' };
@@ -401,11 +501,25 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         };
         // A Trade that is Planned by both its stored lifecycle and its facts keeps D1's Detail, whose
         // narrative holds Entries only, without the item kind; any other Trade gets the Open form.
-        const view: TradeDetailView =
-          analysis.storedLifecycle === 'Planned' && derived.expectedLifecycle === 'Planned'
-            ? { ...planned, summary: plannedLongStockSummary(analysis.plan.legs), journal: narrative.items.flatMap((item) => (item.kind === 'Entry' ? [withoutKind(item)] : [])) }
-            : openDetail(planned, analysis, derived, narrative.items, s.lastActivity ?? s.planTime);
-        return { binding, view };
+        if (analysis.storedLifecycle === 'Planned' && derived.expectedLifecycle === 'Planned') {
+          const view: TradeDetailView = { ...planned, summary: plannedLongStockSummary(analysis.plan.legs), journal: narrative.items.flatMap((item) => (item.kind === 'Entry' ? [withoutKind(item)] : [])) };
+          return { binding, view };
+        }
+        const { frames, snapshotId } = await currentFrames([analysis.plan.underlying]);
+        const frame = frames[0]!;
+        const evaluation = evaluate({ state: derived, frame: observationFrame(frame) });
+        const mark = await markProvenance(frame);
+        const datedLine = datedLineOf(analysis, frame, evaluation);
+        const current: OpenCurrentEvaluation = {
+          expectedMarkDate: frame.tradingDate,
+          markResolution: frame.resolution,
+          ...optional('mark', mark),
+          coverage: [{ instrument: evaluation.observation.instrument, coverage: evaluation.coverage }],
+          evaluation,
+          ...optional('datedLine', datedLine),
+        };
+        const view: TradeDetailView = openDetail(planned, analysis, derived, narrative.items, s.lastActivity ?? s.planTime, current);
+        return { binding, view, ...optional('marketDataSnapshotId', snapshotId) };
       });
     },
 
@@ -435,18 +549,23 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           account: label(summary.accountId)?.label ?? '',
           institution: label(summary.accountId)?.institution?.label ?? '',
         });
-        const items = records.map(({ summary, analysis }) => {
-          // Each Trade on the page is derived once.
-          const derived = derive({ record: analysis });
+        // Each Trade on the page is derived once.
+        const derivations = records.map(({ summary, analysis }) => ({ summary, analysis, derived: derive({ record: analysis }) }));
+        const { frames, snapshotId } =
+          request.lifecycle === 'Open'
+            ? await currentFrames(derivations.flatMap(({ analysis, derived }) => (derived.kind === 'Derived' ? [analysis.plan.underlying] : [])))
+            : { frames: [] };
+        const items = derivations.map(({ summary, analysis, derived }) => {
           if (request.lifecycle === 'Open') {
-            return derived.kind === 'Derived'
-              ? openItem(summary, analysis, derived, labelsOf(summary))
-              : incoherentItem(summary, analysis, labelsOf(summary));
+            if (derived.kind !== 'Derived') return incoherentItem(summary, analysis, labelsOf(summary));
+            const frame = frames.find((f) => f.instrumentKey === analysis.plan.underlying);
+            if (!frame) throw new Error(`Market Data returned no frame for ${analysis.plan.underlying}`);
+            return openItem(summary, analysis, derived, labelsOf(summary), frame);
           }
           // A Planned item's Baseline needs a replay; facts that cannot be replayed are surfaced, never repaired.
           return derived.kind === 'Derived' ? plannedItem(summary, analysis, derived, labelsOf(summary)) : incoherentPlannedItem(summary, labelsOf(summary));
         }) as TradeBrowseItem<L>[];
-        return { view: { items, ...(page.nextCursor ? { nextCursor: page.nextCursor } : {}) }, binding: page.binding };
+        return { view: { items, ...(page.nextCursor ? { nextCursor: page.nextCursor } : {}) }, binding: page.binding, ...optional('marketDataSnapshotId', snapshotId) };
       });
     },
   };

@@ -7,6 +7,7 @@ import { createReadinessSession, evaluateReadiness, type CapacityRequirement, ty
 import { toRuntimeNotWritable } from '../delivery/write-gate.ts';
 import type { Clock } from '../domain/time/index.ts';
 import { createJournal } from '../modules/journal/index.ts';
+import { createMarketData } from '../modules/market-data/index.ts';
 import { createReferenceCatalog } from '../modules/reference-catalog/index.ts';
 import { createTradeRecord } from '../modules/trade-record/index.ts';
 import { nyseSessionPolicy, type SessionPolicy } from '../domain/session-policy/index.ts';
@@ -63,7 +64,8 @@ export async function createApplication(deps: ApplicationDeps) {
   const tradeRecord = createTradeRecord({ persistence, ids: deps.ids });
   const workspace = createWorkspace({ persistence, session, catalog, journal, host: deps.host, ids: deps.ids, clock: deps.clock, releaseId: deps.releaseId, sessionPolicy, locks: deps.locks, migrationHooks: deps.migrationHooks });
   const tradeWorkflows = createTradeWorkflows({ persistence, catalog, journal, tradeRecord, clock: deps.clock, guard });
-  const tradeViews = createTradeViews({ persistence, catalog, journal, tradeRecord });
+  const marketData = createMarketData({ persistence, ids: deps.ids, clock: deps.clock, sessionPolicy });
+  const tradeViews = createTradeViews({ persistence, catalog, journal, tradeRecord, marketData, clock: deps.clock });
 
   return {
     Workspace: {

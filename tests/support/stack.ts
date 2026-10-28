@@ -6,6 +6,7 @@ import { toRuntimeNotWritable } from '../../src/delivery/write-gate.ts';
 import { nyseSessionPolicy, type SessionPolicy } from '../../src/domain/session-policy/index.ts';
 import { fixedClock } from '../../src/domain/time/index.ts';
 import { createJournal } from '../../src/modules/journal/index.ts';
+import { createMarketData } from '../../src/modules/market-data/index.ts';
 import { createReferenceCatalog } from '../../src/modules/reference-catalog/index.ts';
 import { createTradeRecord } from '../../src/modules/trade-record/index.ts';
 import { createInProcessLifecycleLock, createPersistence } from '../../src/persistence/index.ts';
@@ -52,6 +53,7 @@ export async function testStack(factory = new IDBFactory(), now = '2026-10-12T14
     catalog: createReferenceCatalog({ persistence, ids }),
     journal: createJournal({ persistence, ids, clock }),
     tradeRecord: createTradeRecord({ persistence, ids }),
+    marketData: createMarketData({ persistence, ids: sequentialIds('md'), clock, sessionPolicy }),
   };
 }
 

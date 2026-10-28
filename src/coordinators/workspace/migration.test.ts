@@ -336,8 +336,6 @@ describe('migration to schema 3', () => {
     expect(migrated['observations']).toEqual([]);
   });
 
-  // The current figures of an Open Trade (Unavailable MarkMissing, A51) arrive with T4.18's views;
-  // until then the snapshot comparison covers every field the pre-migration views contain.
   it('should keep every earlier field of the Planned and Open lists and Details equal to the pre-migration views', async () => {
     const v1 = await v1Stack();
     const v2 = await v2Stack();
@@ -348,6 +346,41 @@ describe('migration to schema 3', () => {
     expect(compareSnapshot(await v2.views(), v2Views)).toEqual([]);
     // The comparison is not vacuous: the v2 snapshot holds Open Trades.
     expect((v2Views as { open: unknown[] }).open.length).toBeGreaterThan(0);
+  });
+
+  it('should give every current figure of a pre-schema-3 Open Trade the value Unavailable MarkMissing after migrating v1 and v2', async () => {
+    const v1 = await v1Stack();
+    const v2 = await v2Stack();
+    expect((await v1.workspace.initialize({})).kind).toBe('Opened');
+    expect((await v2.workspace.initialize({})).kind).toBe('Opened');
+    const missing = { kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument: { kind: 'Stock', symbol: expect.any(String) as unknown }, date: '2026-10-16' } };
+    let checked = 0;
+    for (const stack of [v1, v2]) {
+      const views = createTradeViews(stack);
+      const list = await views.browseTrades({ lifecycle: 'Open' });
+      if (list.kind !== 'Ready') throw new Error(`expected Ready, got ${list.kind}`);
+      for (const item of list.view.items) {
+        if (!('current' in item)) throw new Error('expected current figures');
+        const { current } = item;
+        expect(current.markResolution).toEqual({ kind: 'Missing' });
+        const figures = [
+          current.remainingOpenPnl, current.currentMarkedPnl, current.currentMarkedPnlInPlanR,
+          current.ongoingRiskToStop, current.ongoingRiskToStopInPlanR, current.worstCaseOngoingRisk, current.worstCaseOngoingRiskInPlanR,
+          current.incrementalRewardToTarget, current.incrementalRewardToTargetInPlanR, ...current.conditions.map((c) => c.result),
+        ];
+        expect(figures).toHaveLength(11);
+        for (const figure of figures) expect(figure).toEqual(missing);
+        const detail = await views.getTradeDetail({ tradeId: item.tradeId });
+        if (detail.kind !== 'Ready' || !('current' in detail.view)) throw new Error('expected the Open form of Detail');
+        const { evaluation } = detail.view.current;
+        for (const figure of [evaluation.marketValue, evaluation.remainingOpenPnl, evaluation.currentMarkedPnl, evaluation.ongoingRiskToStop, evaluation.incrementalRewardToTarget]) {
+          expect(figure).toEqual(missing);
+        }
+        checked++;
+      }
+    }
+    // The comparison is not vacuous: the v2 fixture holds three Open Trades.
+    expect(checked).toBe(3);
   });
 
   it('should return MigrationBlocked with the old stores unchanged when candidate validation fails, and Opened after Retry once the cause is removed', async () => {
