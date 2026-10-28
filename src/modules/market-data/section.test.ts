@@ -169,4 +169,23 @@ describe('Market Data section', () => {
       { code: 'WithdrawalWithoutAssertion', instrumentKey: 'BBB', tradingDate: '2026-10-12', versionId: 'b-3' },
     ]);
   });
+
+  it('should report a Withdrawn acknowledgment version saved after the key first Mark', async () => {
+    const source = recordSourceOf({
+      meta: [sessionPolicyMeta],
+      observations: [
+        // Asserted, then a Mark (21:00), then Withdrawn (21:30): the writer rejects the withdrawal once a Mark is effective.
+        record('AAA', '2026-10-12', {
+          marks: [mark('a-m1', 1, '52')],
+          effectiveMarkId: 'a-m1',
+          acknowledgments: [acknowledgment('a-1', 'Asserted', '2026-10-12T20:00:00Z'), acknowledgment('a-2', 'Withdrawn', '2026-10-12T21:30:00Z')],
+          effectiveAcknowledgmentId: 'a-2',
+        }),
+      ],
+    });
+
+    const result = await validateSection(source, nyseSessionPolicy);
+
+    expect(result.issues).toEqual([{ code: 'WithdrawnWhileMarkEffective', instrumentKey: 'AAA', tradingDate: '2026-10-12', versionId: 'a-2' }]);
+  });
 });

@@ -12,7 +12,7 @@ export type MarketDataSectionIssue = { readonly instrumentKey: string; readonly 
   | { readonly code: 'NotASession' | 'SessionPolicyCoverage' }
   | { readonly code: 'CorrectionReasonMissing'; readonly revisionId: string }
   | { readonly code: 'CorrectionFootprintMissing'; readonly revisionId: string }
-  | { readonly code: 'AssertedWhileMarkEffective' | 'WithdrawalWithoutAssertion'; readonly versionId: string }
+  | { readonly code: 'AssertedWhileMarkEffective' | 'WithdrawnWhileMarkEffective' | 'WithdrawalWithoutAssertion'; readonly versionId: string }
   | { readonly code: 'MarkChainBroken'; readonly revisionId: string; readonly field: 'supersedes' | 'revisionNumber' }
   | { readonly code: 'PriceNegative' | 'InvalidPrice'; readonly revisionId: string }
   | { readonly code: 'EffectiveHeadNotLast'; readonly chain: Chain; readonly effectiveId: string | null; readonly lastId: string | null }
@@ -58,14 +58,15 @@ export async function validateSection(source: RecordSource, policy: SessionPolic
         const lastId = ids.at(-1) ?? null;
         if (effectiveId !== lastId) issues.push({ code: 'EffectiveHeadNotLast', instrumentKey, tradingDate, chain, effectiveId, lastId });
       }
-      // A Mark is never withdrawn, so an Asserted version saved after the first Mark was saved
-      // contradicts it. An Asserted version that came first and was followed by a Mark is the
-      // normal history, which the resolution rule reads as Available.
+      // A Mark is never withdrawn, so an acknowledgment version saved after the first Mark was saved
+      // contradicts it: the writer takes an Asserted version only while nothing is effective and
+      // rejects a withdrawal once a Mark is. An Asserted version that came first and was followed by
+      // a Mark is the normal history, which the resolution rule reads as Available.
       const firstMarkAt = record.marks[0]?.savedAt;
       for (const ack of record.acknowledgments) {
-        if (ack.kind === 'Asserted' && firstMarkAt !== undefined && Temporal.Instant.compare(ack.savedAt, firstMarkAt) > 0) {
-          issues.push({ code: 'AssertedWhileMarkEffective', instrumentKey, tradingDate, versionId: ack.versionId });
-        }
+        if (firstMarkAt === undefined || Temporal.Instant.compare(ack.savedAt, firstMarkAt) <= 0) continue;
+        const code = ack.kind === 'Asserted' ? 'AssertedWhileMarkEffective' : 'WithdrawnWhileMarkEffective';
+        issues.push({ code, instrumentKey, tradingDate, versionId: ack.versionId });
       }
       // The writer withdraws only an effective Asserted version, so a Withdrawn version must follow one.
       record.acknowledgments.forEach((ack, index) => {
