@@ -148,6 +148,8 @@ export interface TradeSaveBinding {
   // The revision of the saved Action being edited; absent for a new Action.
   readonly expectedEntryRevision?: number;
   readonly definitionRevision: string;
+  // The Workspace database the form was rendered from; a restored or different Workspace is a changed review.
+  readonly databaseName: string;
 }
 
 export interface DailyTradeReview {

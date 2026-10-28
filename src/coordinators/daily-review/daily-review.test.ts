@@ -676,6 +676,7 @@ describe('getTrade', () => {
       marketDataSnapshotId: binding.marketDataSnapshotId,
       obligationKey: { entryType: 'DailyTradeReview', trade: a, reviewDate: '2026-10-12' },
       definitionRevision: definition.kind === 'Found' && definition.definition.id,
+      databaseName: binding.workspace.databaseName,
     });
     // An Action being edited names the Entry revision it was shown at.
     expect(saved.kind === 'Ready' && saved.trade.saveBinding.expectedEntryRevision).toBe(1);

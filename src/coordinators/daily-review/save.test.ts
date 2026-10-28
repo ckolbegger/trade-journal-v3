@@ -234,6 +234,18 @@ describe('bindings rechecked inside the commit', () => {
     expect((await stack.journal.queryActions({ reviewDate: binding.reviewDate })).actions).toEqual({});
   }, 30_000);
 
+  it('should return ReviewChanged and write nothing when the save binding names another Workspace', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a } = await fiveTradeFixture(stack);
+    const binding = await bindingFor(stack, a);
+    const before = await dumpAll(stack.factory);
+
+    const result = await saveAction(stack, { ...binding, databaseName: 'other-workspace' });
+
+    expect(result.kind).toBe('ReviewChanged');
+    expect(await dumpAll(stack.factory)).toEqual(before);
+  }, 30_000);
+
   it('should return ReviewChanged and write no Action when a Mark changes after the read and before the commit', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const { a } = await fiveTradeFixture(stack);

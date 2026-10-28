@@ -97,7 +97,8 @@ type TradePass =
   | { readonly kind: 'Expired' }
   | { readonly kind: 'Rejected'; readonly issues: readonly MarketDataIssue[] }
   | { readonly kind: 'ReviewChanged' }
-  | { readonly kind: 'Ready'; readonly review: Omit<Extract<GetDailyTradeReviewResult, { kind: 'Ready' }>, 'kind'> };
+  // The save binding still lacks the Workspace's database name: that is read once the Workspace is settled.
+  | { readonly kind: 'Ready'; readonly review: Omit<Extract<GetDailyTradeReviewResult, { kind: 'Ready' }>, 'kind' | 'trade'> & { readonly trade: Omit<DailyTradeReview, 'saveBinding'> & { readonly saveBinding: Omit<TradeSaveBinding, 'databaseName'> } } };
 
 // One attempt at a read: retried (an expired cursor), returned as it is, or returned once the
 // Workspace is confirmed unchanged, completed with the binding then current.
@@ -378,7 +379,12 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       if (pass.kind === 'Expired') return { retry: true };
       if (pass.kind !== 'Ready') return { done: pass };
       // The overview's Workspace is the one this read must be in; its content revision moves with every write.
-      return { settle: ({ workspace }) => (workspace.databaseName === request.binding.workspace.databaseName ? { kind: 'Ready', ...pass.review } : { kind: 'ReviewChanged' }) };
+      return {
+        settle: ({ workspace }) =>
+          workspace.databaseName === request.binding.workspace.databaseName
+            ? { kind: 'Ready', ...pass.review, trade: { ...pass.review.trade, saveBinding: { ...pass.review.trade.saveBinding, databaseName: workspace.databaseName } } }
+            : { kind: 'ReviewChanged' },
+      };
     });
 
   // The prompts of the Daily Trade Review definition, by the option each Action chooses.
@@ -417,11 +423,15 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const frames = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Review', reviewDate: binding.reviewDate }, instruments });
     if (frames.kind === 'Rejected') return { done: frames };
     if (frames.kind !== 'Frames') throw new Error(`unexpected frames result: ${frames.kind}`);
-    if (entry?.analysis.factRevision !== binding.factRevision || frames.snapshotId !== binding.marketDataSnapshotId) {
-      const evidence = { marketDataSnapshotId: frames.snapshotId, frames: frames.frames, ...(entry && { factRevision: entry.analysis.factRevision }) };
-      return { done: { kind: 'ReviewChanged', evidence } };
-    }
-    return { done: { kind: 'Checked', cutoff: session.closeInstant, marks } };
+    const stale = entry?.analysis.factRevision !== binding.factRevision || frames.snapshotId !== binding.marketDataSnapshotId;
+    const evidence = { marketDataSnapshotId: frames.snapshotId, frames: frames.frames, ...(entry && { factRevision: entry.analysis.factRevision }) };
+    // Settled through `coherently`, so the Workspace is also the same before and after; the binding's Workspace is compared by database name.
+    return {
+      settle: ({ workspace }) =>
+        stale || workspace.databaseName !== binding.databaseName
+          ? { kind: 'ReviewChanged', evidence }
+          : { kind: 'Checked', cutoff: session.closeInstant, marks },
+    };
   }
 
   // A commit refused on a binding re-reads and re-validates, so the answer names what changed; bounded (ADR 0011).
