@@ -308,7 +308,7 @@ describe('applyPreparedChange: PositionChange', () => {
 
   it('should reject a reconciliation whose digest, expected lifecycle, or Deviation actions do not match the prepared change', async () => {
     const { record, prepared, drawn } = await preparedPc4();
-    const valid = { candidateDigest: prepared.digest, expectedLifecycle: 'Open' as const, deviationActions: [retainPc3, createPc4], repairs: [] };
+    const valid = { candidateDigest: prepared.digest, expectedLifecycle: 'Open' as const, deviationActions: [retainPc3, createPc4], repairs: [], exposureStart: null };
     const mismatches = [
       { ...valid, candidateDigest: 'f'.repeat(64) },
       { ...valid, expectedLifecycle: 'Planned' as const },
@@ -337,7 +337,7 @@ describe('applyPreparedChange: PositionChange', () => {
     const prepared = await record.prepareChange(change(PC1));
     if (prepared.kind !== 'Prepared') throw new Error(`expected Prepared, got ${prepared.kind}`);
     const tx = beginSemanticTransaction();
-    const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle: 'Open', deviationActions: [], repairs: [] });
+    const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle: 'Open', deviationActions: [], repairs: [], exposureStart: null });
     if (staged.kind !== 'Staged') throw new Error(`expected Staged, got ${staged.kind}`);
     expect(staged.mapping).toEqual({ 'candidate:pc-1': 'd-0001', 'candidate:execution-1': 'd-0002' });
     expect(staged.projection).toEqual({
@@ -391,7 +391,7 @@ describe('applyPreparedChange: PositionChange', () => {
       { kind: 'Supersede', occurrenceId: 'occ-3', fingerprint: fingerprint('trade-1:pc-1'), reason: 'NoLongerExpected' },
       createPc4,
     ];
-    const staged4 = open.record.applyPreparedChange(tx4, pc4, { candidateDigest: pc4.digest, expectedLifecycle: 'Open', deviationActions: actions, repairs: [] });
+    const staged4 = open.record.applyPreparedChange(tx4, pc4, { candidateDigest: pc4.digest, expectedLifecycle: 'Open', deviationActions: actions, repairs: [], exposureStart: null });
     expect(staged4.kind).toBe('Staged');
     expect((await open.persistence.commit(tx4.close())).kind).toBe('Committed');
     const stored = await open.persistence.readSnapshot(['trades'], (t) => t.get('trades', 'trade-1'));
@@ -419,6 +419,7 @@ describe('applyPreparedChange: PositionChange', () => {
       expectedLifecycle: 'Open',
       deviationActions: [{ kind: 'Supersede', occurrenceId: 'occ-3', fingerprint: fingerprint('trade-1:pc-1'), reason: 'NoLongerExpected' }],
       repairs,
+      exposureStart: null,
     });
     if (staged.kind !== 'Staged') throw new Error(`expected Staged, got ${staged.kind}`);
     // The apply result carries the repairs it staged, for the receipt to disclose.
@@ -439,7 +440,7 @@ describe('applyPreparedChange: PositionChange', () => {
     const closed = beginSemanticTransaction();
     closed.close();
     expect(() =>
-      record.applyPreparedChange(closed, prepared, { candidateDigest: prepared.digest, expectedLifecycle: 'Open', deviationActions: [retainPc3, createPc4], repairs: [] }),
+      record.applyPreparedChange(closed, prepared, { candidateDigest: prepared.digest, expectedLifecycle: 'Open', deviationActions: [retainPc3, createPc4], repairs: [], exposureStart: null }),
     ).toThrow(NotInSemanticTransaction);
     expect(drawn()).toBe(0);
   });
@@ -457,7 +458,7 @@ async function recordEntries(
     if (current.kind !== 'Found') throw new Error(`unknown Trade ${tradeId}`);
     const prepared = await record.prepareChange(change(executions, current.factRevision, tradeId));
     if (prepared.kind !== 'Prepared') throw new Error(`expected Prepared, got ${prepared.kind}`);
-    const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle: 'Open', deviationActions: [], repairs: [], ...(exposureStart && { exposureStart }) });
+    const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle: 'Open', deviationActions: [], repairs: [], exposureStart: exposureStart ?? null });
     if (staged.kind !== 'Staged') throw new Error(`expected Staged, got ${staged.kind}`);
   }
   const committed = await persistence.commit(tx.close());

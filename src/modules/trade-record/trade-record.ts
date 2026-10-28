@@ -103,7 +103,8 @@ export function analysisInputOf(document: TradeDocument): TradeAnalysisRecord {
 // Trade Record never sets lifecycle on its own. A Plan confirmation has no recorded occurrences to
 // act on, so it may omit the Deviation actions and repairs.
 export type DerivedTradeReconciliation = Pick<AnalysisReconciliation, 'candidateDigest' | 'expectedLifecycle'> &
-  Partial<Pick<AnalysisReconciliation, 'deviationActions' | 'repairs' | 'exposureStart'>>;
+  Pick<AnalysisReconciliation, 'exposureStart'> &
+  Partial<Pick<AnalysisReconciliation, 'deviationActions' | 'repairs'>>;
 
 // Whether the Deviation actions account for every recorded occurrence of the before-state exactly
 // once and name only this candidate's Trade, Planned Legs, and Position Changes.

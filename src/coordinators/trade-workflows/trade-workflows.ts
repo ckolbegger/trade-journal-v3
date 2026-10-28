@@ -112,6 +112,7 @@ export function createTradeWorkflows(deps: TradeWorkflowsDeps): TradeWorkflows {
       const staged = deps.tradeRecord.applyPreparedChange(tx, prepared, {
         candidateDigest: prepared.digest,
         expectedLifecycle: derived.expectedLifecycle,
+        exposureStart: null,
       });
       if (staged.kind !== 'Staged') throw new Error('mismatch');
       const journal = deps.journal.applyPreparedEffects(tx, reflection, staged.mapping);

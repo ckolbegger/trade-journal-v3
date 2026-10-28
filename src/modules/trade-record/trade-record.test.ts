@@ -100,10 +100,10 @@ describe('applyPreparedChange', () => {
   it('should reject a reconciliation whose candidate digest or expected lifecycle does not match the prepared change', async () => {
     const { record, prepared: p } = await prepared();
     const tx = beginSemanticTransaction();
-    expect(record.applyPreparedChange(tx, p, { candidateDigest: 'f'.repeat(64), expectedLifecycle: 'Planned' })).toEqual({
+    expect(record.applyPreparedChange(tx, p, { candidateDigest: 'f'.repeat(64), expectedLifecycle: 'Planned', exposureStart: null })).toEqual({
       kind: 'ReconciliationMismatch',
     });
-    expect(record.applyPreparedChange(tx, p, { candidateDigest: p.digest, expectedLifecycle: 'Open' })).toEqual({
+    expect(record.applyPreparedChange(tx, p, { candidateDigest: p.digest, expectedLifecycle: 'Open', exposureStart: null })).toEqual({
       kind: 'ReconciliationMismatch',
     });
     expect(tx.close().writes).toEqual([]);
@@ -112,7 +112,7 @@ describe('applyPreparedChange', () => {
   it('should assign durable identities, stage the Trade document and its lifecycle-index membership, and return the identity mapping and staged projection', async () => {
     const { record, persistence, prepared: p } = await prepared();
     const tx = beginSemanticTransaction();
-    const result = record.applyPreparedChange(tx, p, { candidateDigest: p.digest, expectedLifecycle: 'Planned' });
+    const result = record.applyPreparedChange(tx, p, { candidateDigest: p.digest, expectedLifecycle: 'Planned', exposureStart: null });
     expect(result).toEqual({
       kind: 'Staged',
       mapping: {
@@ -144,7 +144,7 @@ describe('applyPreparedChange', () => {
     closed.close();
     let thrown: unknown;
     try {
-      record.applyPreparedChange(closed, p, { candidateDigest: p.digest, expectedLifecycle: 'Planned' });
+      record.applyPreparedChange(closed, p, { candidateDigest: p.digest, expectedLifecycle: 'Planned', exposureStart: null });
     } catch (error) {
       thrown = error;
     }
@@ -158,7 +158,7 @@ async function confirmed(record: Awaited<ReturnType<typeof tradeRecord>>['record
   const prepared = await record.prepareChange({ ...change, plan: { ...change.plan, economicTime: planTime } });
   if (prepared.kind !== 'Prepared') throw new Error('expected Prepared');
   const tx = beginSemanticTransaction();
-  const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle: 'Planned' });
+  const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle: 'Planned', exposureStart: null });
   if (staged.kind !== 'Staged') throw new Error('expected Staged');
   await persistence.commit(tx.close());
   return staged.projection.tradeId;
