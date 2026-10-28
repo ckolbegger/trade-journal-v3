@@ -695,3 +695,36 @@ T4.15-B3 dismissed, no code changed: the P12 case cannot occur in `getTrade`. It
 - `3dea96e` (code at `799734a`, B1–B2), 2026-10-28 03:36 EDT: unit 661, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.15-b2-*`.
 
 Only `verify:capacity` failed (expected until T4.28). T4.15 is complete.
+
+## T4.16 Daily Review: save
+
+Implemented in `f5ec98f`: the 6 planned cases (case 1 grown part by part) plus in-commit binding cases (Trade fact and Mark changed between read and commit give ReviewChanged; a Journal counter that moved alone is retried into Saved; acknowledgment and same-Trade Action races). Process slip, flagged: production code was written ahead of its red in three places (the expected-revision mapping for case 3, the FactRevision comparison for case 4, the write guard for case 6); each was removed to get a genuine red and restored. First-run passes, each mutation-checked: completion, the remaining case 2 assertions, case 3's identity, case 4's acknowledgment, case 5's stale edit, the commit-level acknowledgment and same-Trade races, and the Done step.
+
+Bindings in the commit: `trade:<id>` FactRevision; `mark:<Instrument>@<date>` resolution revision of each Review-date key; `journal@N` (counter binding, ADR 0011, up to 3 attempts); the Journal's Entry revision check and the obligation `add`. Shapes: request `{kind: 'SaveTradeAction', binding: TradeSaveBinding, action, intent?}`; result Saved{action, review: PostSaveReview} | ReviewChanged{evidence} | Conflict | Rejected{issues} | ChangedDuringAssembly | RuntimeNotWritable | StorageFailure; `PostSaveReview` Ready{progress, completion, nextStep, binding}; `ReviewNextStep` Mark{row} | Trade{trade: DailyTradeReview} | Done. `DailyReviewDeps` gains `guard: MutationGuard`; `assemble` takes a FrameContext.
+
+Decision: the next step is the first open obligation in the normative task-family order (the design: "the task-family order is normative"): a Missing Review-date Mark, then the first Trade in the walk without an Action, then Done.
+
+ocr review of `f5ec98f`: session `a25ee264-ebd2-416e-992c-654f8c000643`, 4 files, 4 comments. `ocr/T4.16-f5ec98f.json`. The reviewer confirmed that a subject conflict is never retried into Saved and that a counter which keeps moving ends in Conflict, though no test covers the exhaustion.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/coordinators/daily-review/daily-review.ts:448` | The commit rechecks only Review-date Mark keys, so an earlier-session Mark corrected after the pre-read changes Stale context without failing the commit | Valid | Bug task T4.16-B1 |
+| medium | `daily-review.ts:410` | `checkBinding` returns `done`, so `coherently` skips its Workspace check; nothing compares the Workspace database name, so a Restore is not detected | Valid | Bug task T4.16-B2 |
+| medium | `daily-review.ts:467` | The unbound post-commit `queryActions` can return another writer's newer version as the saved Action | Valid | Bug task T4.16-B3 |
+| medium | `daily-review.ts:468` | A throw in the post-commit read escapes to the guard as StorageFailure although the Action is committed | Valid | Bug task T4.16-B4 |
+| (gap) | `saveTradeAction` | No test for a Journal counter that moves on every attempt | Valid (coverage) | Bug task T4.16-B5 |
+
+### T4.16-B1 The commit binds the Stale-context Marks
+- it should return ReviewChanged and write nothing when an earlier-session Mark is corrected between the read and the commit
+
+### T4.16-B2 save binds the Workspace
+- it should return ReviewChanged and write nothing when the save binding names another Workspace
+
+### T4.16-B3 Saved returns the committed Action
+- it should return the Action this save committed even when another version lands before the post-commit read
+
+### T4.16-B4 A committed save is never reported as a failure
+- it should return Saved with the review ChangedDuringAssembly when the post-commit read fails
+
+### T4.16-B5 Counter exhaustion
+- it should return Conflict and write nothing when the Journal counter moves on every attempt

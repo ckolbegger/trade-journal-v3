@@ -1,0 +1,164 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 4 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 4,
+    "total_tokens": 265759,
+    "input_tokens": 262177,
+    "output_tokens": 3582,
+    "cache_read_tokens": 41088,
+    "elapsed": "2m56s"
+  },
+  "tool_calls": {
+    "total": 30,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 11,
+      "file_find": 1,
+      "file_read": 16
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "code_search": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 12,
+        "tool_name": "code_search",
+        "file_path": "src/coordinators/daily-review/daily-review.ts,src/coordinators/daily-review/index.ts,src/coordinators/daily-review/types.ts,tests/support/onboarded.ts",
+        "arguments": "{\"search_text\": \"commit(plan|commit(transaction|async commit|commit:\", \"file_patterns\": [\"src/persistence/\"], \"use_perl_regexp\": true}",
+        "error": "git grep failed: exit status 128: fatal: -e option, 'commit(plan|commit(transaction|async commit|commit:': missing closing parenthesis"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "Returning `done` bypasses the before/after workspace check in `coherently` (it returns immediately for this branch). Consequently, `checkBinding` is not actually a coherent read: for example, a new eligible trade/instrument inserted after `eligibleTrades` can be omitted from the frame request, letting the old snapshot match and the save succeed. Return successful validation through `settle` so changes during assembly trigger a bounded retry.",
+      "existing_code": "    return { done: { kind: 'Checked', cutoff: session.closeInstant, marks } };",
+      "start_line": 410,
+      "end_line": 410,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "These checks protect only review-date rows, but `ResolveFrames` also includes the historical stale mark's revision ID in its snapshot when the review-date price is missing. Correcting that earlier mark after `checkBinding` and before commit changes the evidence shown on the form without changing any of these rows, so the action is saved against stale evidence instead of returning `ReviewChanged`. Protect historical frame dependencies too (or require an appropriate snapshot-wide revision and retry), and add a race test for correcting the stale-context mark.",
+      "existing_code": "    for (const [instrumentKey, revision] of checked.marks) {\n      tx.require({\n        name: `mark:${instrumentKey}@${binding.reviewDate}`,\n        store: 'observations',\n        key: [binding.reviewDate, instrumentKey],\n        verify: (current) =\u003e (current?.['resolutionRevision'] ?? 'None') === revision,\n      });\n    }",
+      "start_line": 448,
+      "end_line": 455,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "This unbound read can return a different writer's action rather than the action just committed. Another save can read and edit the newly committed entry before this query runs; `MutationGuard.run` does not serialize writers. The original Hold save could then report `Saved` with the other writer's Exit and revision. Build the returned action from the staged/committed entry and its exact revision, rather than querying the latest action after commit.",
+      "existing_code": "    const action = (await deps.journal.queryActions({ reviewDate: binding.reviewDate })).actions[binding.tradeId]!;",
+      "start_line": 467,
+      "end_line": 467,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "A failure in this post-commit refresh escapes into MutationGuard.run, which returns StorageFailure (or RuntimeNotWritable), even though the Action has already been committed. Those failure results imply nothing was written; retrying a new Action with the original binding then produces Conflict. Keep post-commit refresh failures separate from mutation failures and preserve the Saved outcome, using the committed Action and a ChangedDuringAssembly review when the refresh cannot be obtained. The preceding queryActions read needs the same protection.",
+      "existing_code": "    return { kind: 'Saved', action, review: await postSaveReview(binding.reviewDate) };",
+      "start_line": 468,
+      "end_line": 468,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Daily review coordinator updates and onboarding test support",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/index.ts",
+        "src/coordinators/daily-review/types.ts",
+        "tests/support/onboarded.ts"
+      ]
+    }
+  ],
+  "session_id": "a25ee264-ebd2-416e-992c-654f8c000643",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a25ee264-ebd2-416e-992c-654f8c000643",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f5ec98f",
+      "resolved_base": "f9fcdcabf29b526533c18741c96c7716560655c6",
+      "resolved_head": "f5ec98f70c216c774a9a452a93a457bc54a5d036",
+      "exact_range": "f9fcdcabf29b526533c18741c96c7716560655c6..f5ec98f70c216c774a9a452a93a457bc54a5d036",
+      "source_artifact_sha256": "29d85d28b15cab94d691676a241912271fa1ae4449332bacaad80e67b89b9353"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "394d685f6af442f33b002381a7d78dba3c502b26c70c11760ce0a538aee11a1e"
+        },
+        {
+          "item_id": "6a6b9b12cb7b1e95587498df80d254f39f0795ba4947d1a526e1477d62864123",
+          "path": "tests/support/onboarded.ts",
+          "fingerprint": "a8dd09beeffe35b44dca9a5100570439aaf87c6d0c95326751ab124ad3f2e14b"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "0f32d9e81ee5e6afc9913354f9418cc2eea51a7390397f6e61bedb7b3caf7a3b"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "57f486b68b1dec890d06547650234a440f995c4ac5f9c553fc868b24ca060d13"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "394d685f6af442f33b002381a7d78dba3c502b26c70c11760ce0a538aee11a1e"
+        },
+        {
+          "item_id": "6a6b9b12cb7b1e95587498df80d254f39f0795ba4947d1a526e1477d62864123",
+          "path": "tests/support/onboarded.ts",
+          "fingerprint": "a8dd09beeffe35b44dca9a5100570439aaf87c6d0c95326751ab124ad3f2e14b"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "0f32d9e81ee5e6afc9913354f9418cc2eea51a7390397f6e61bedb7b3caf7a3b"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "57f486b68b1dec890d06547650234a440f995c4ac5f9c553fc868b24ca060d13"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 175916
+  }
+}
