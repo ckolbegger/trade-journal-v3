@@ -245,12 +245,14 @@ export function createJournal(deps: JournalDeps): Journal {
     const declining = disposition.kind === 'Decline' && request.obligation === 'PositionChangeReflection';
     if (disposition.kind !== 'Complete' && !declining) return { kind: 'Rejected', issues: [{ code: 'DispositionNotAllowed' }] };
     const { entryTypeKey, sourceKey } = OBLIGATIONS[request.obligation];
-    const obligationKey: JournalObligationKey =
-      request.obligation === 'PlanReflection'
-        ? { entryType: 'PlanReflection', trade: request.anchor.ref }
-        : request.obligation === 'DailyTradeReview'
-          ? { entryType: 'DailyTradeReview', trade: request.anchor.ref, reviewDate: request.origin.reviewDate }
-          : { entryType: 'PositionChangeReflection', positionChange: request.origin.ref };
+    const obligationKeyOf = (): JournalObligationKey => {
+      if (request.obligation === 'PlanReflection') return { entryType: 'PlanReflection', trade: request.anchor.ref };
+      if (request.obligation === 'DailyTradeReview') {
+        return { entryType: 'DailyTradeReview', trade: request.anchor.ref, reviewDate: request.origin.reviewDate };
+      }
+      return { entryType: 'PositionChangeReflection', positionChange: request.origin.ref };
+    };
+    const obligationKey = obligationKeyOf();
     const { value } = await deps.persistence.readSnapshot(['journalDefinitions', 'journalObligations', 'journalEntries', 'meta'], async (tx) => {
       // A Daily Trade Review whose key already has an Entry is an edit of that Entry.
       const obligation =
@@ -414,12 +416,11 @@ export function createJournal(deps: JournalDeps): Journal {
       // Trade Record's exact durable mapping; a reference it does not list is already durable.
       const durable = (ref: CandidateRef) => mapping[ref] ?? ref;
       // A Daily Trade Review key is an array so one range read finds a Review Date's Actions (D4 A38).
-      const keyOf = (key: JournalObligationKey): string | string[] =>
-        key.entryType === 'DailyTradeReview'
-          ? ['DailyTradeReview', key.reviewDate, durable(key.trade)]
-          : key.entryType === 'PlanReflection'
-            ? `PlanReflection:${durable(key.trade)}`
-            : `PositionChangeReflection:${durable(key.positionChange)}`;
+      const keyOf = (key: JournalObligationKey): string | string[] => {
+        if (key.entryType === 'DailyTradeReview') return ['DailyTradeReview', key.reviewDate, durable(key.trade)];
+        if (key.entryType === 'PlanReflection') return `PlanReflection:${durable(key.trade)}`;
+        return `PositionChangeReflection:${durable(key.positionChange)}`;
+      };
       // Each outcome is staged with its obligation record; `add` fails the whole transaction when
       // the key already has an outcome (D2 A28).
       const stageObligation = (obligationKey: string | string[], outcome: { kind: 'Entry' | 'Decline'; id: string }) =>

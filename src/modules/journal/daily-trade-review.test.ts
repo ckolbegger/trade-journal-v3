@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment -- asymmetric matchers inside toEqual return any */
 import { describe, expect, it } from 'vitest';
 import { fixedClock } from '../../domain/time/index.ts';
 import { beginSemanticTransaction, type Persistence } from '../../persistence/index.ts';
@@ -248,7 +247,7 @@ describe('edit by expected revision (AC-JOUR-005)', () => {
         responses: expect.arrayContaining([
           { promptId: ACTION, value: option('Exit') },
           { promptId: INTENT, value: { kind: 'Text', text: 'Target reached.' } },
-        ]),
+        ]) as unknown,
       },
     ]);
     expect(after.entries[0]).toEqual(expect.objectContaining({ id: first.staged.entries[0]!.id, authoredTime: '2026-10-12T21:30:00Z', obligationKey: KEY }));
@@ -317,10 +316,10 @@ describe('query: Actions for a Review Date', () => {
       kind: 'Actions',
       reviewDate: '2026-10-12',
       actions: {
-        'trade-1': expect.objectContaining({ action: 'Adjust', entryRevision: 2, anchor: { kind: 'Trade', tradeId: 'trade-1' } }),
-        'trade-2': expect.objectContaining({ action: 'Roll', entryRevision: 1, anchor: { kind: 'Trade', tradeId: 'trade-2' } }),
+        'trade-1': expect.objectContaining({ action: 'Adjust', entryRevision: 2, anchor: { kind: 'Trade', tradeId: 'trade-1' } }) as unknown,
+        'trade-2': expect.objectContaining({ action: 'Roll', entryRevision: 1, anchor: { kind: 'Trade', tradeId: 'trade-2' } }) as unknown,
       },
-      snapshot: { journalRevision: expect.any(Number) },
+      snapshot: { journalRevision: expect.any(Number) as unknown },
     });
     expect(Object.keys((result as { actions: object }).actions)).toEqual(['trade-1', 'trade-2']);
   });
@@ -349,8 +348,8 @@ describe('query: Trade narrative', () => {
 
     const items = page.items.filter((item) => item.kind === 'Entry');
     expect(items).toEqual([
-      expect.objectContaining({ entryType: 'Daily Trade Review', source: 'Daily Review', momentTime: '2026-10-12T21:00:00Z', responses: expect.arrayContaining([{ prompt: 'Action', answer: { kind: 'Option', label: 'Hold' } }]) }),
-      expect.objectContaining({ momentTime: '2026-10-13T21:00:00Z', edited: true, responses: expect.arrayContaining([{ prompt: 'Action', answer: { kind: 'Option', label: 'Exit' } }]) }),
+      expect.objectContaining({ entryType: 'Daily Trade Review', source: 'Daily Review', momentTime: '2026-10-12T21:00:00Z', responses: expect.arrayContaining([{ prompt: 'Action', answer: { kind: 'Option', label: 'Hold' } }]) as unknown }),
+      expect.objectContaining({ momentTime: '2026-10-13T21:00:00Z', edited: true, responses: expect.arrayContaining([{ prompt: 'Action', answer: { kind: 'Option', label: 'Exit' } }]) as unknown }),
     ]);
     expect(items[0]).not.toHaveProperty('edited');
   });
