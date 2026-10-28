@@ -355,3 +355,13 @@ ocr reviews of the T4.6 bug tasks:
 
 ### T4.6-B4 canonicalContext as a switch (structural)
 Verification: `npx vitest run src/modules/market-data` passes unchanged before and after; typecheck, tsc6, lint, lint:deps exit 0.
+
+ocr review of `0715b2a` (T4.6-B4): session `2e88e036-a67b-4b15-9b11-a5d1ccd23bd0`, 1 file, **No findings.** `ocr/T4.6-B4-0715b2a.json`. B4 verification: `npx vitest run src/modules/market-data` 45 passed before and after.
+
+### Cumulative runs after T4.6
+
+- `1bd50e1` (T4.6), 2026-10-28 00:09 EDT: unit 550, integration 49, browser 124 passed; checks 11 of 12. `suite-runs/t4.6-frames-*`.
+- `3d5607b` (B1–B3), 00:17 EDT: unit 553, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.6-b3-*`.
+- `0715b2a` (B4), 00:22 EDT: unit 553, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.6-b4-*`.
+
+Only `verify:capacity` failed in each (expected until T4.28). T4.6 is complete.
