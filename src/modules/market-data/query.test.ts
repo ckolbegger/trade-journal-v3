@@ -209,6 +209,19 @@ describe('snapshot binding and ExpectedSnapshot', () => {
     expect(other.evidenceDigest).not.toBe(a.evidenceDigest);
   });
 
+  it('should return equal snapshot ids and digests for contexts with the same fields in a different order', async () => {
+    const { marketData } = await setup();
+    await marketData.save(mark('XYZ', '2026-10-12'));
+    const a = await marketData.query({ kind: 'ResolveFrames', context: { kind: 'Current', asOf: TUESDAY_NOON }, instruments: ['XYZ'] });
+    const reordered = { kind: 'ResolveFrames' as const, context: { asOf: TUESDAY_NOON, kind: 'Current' as const }, instruments: ['XYZ'] };
+    const b = await marketData.query(reordered);
+    if (a.kind !== 'Frames' || b.kind !== 'Frames') throw new Error('expected frames');
+    expect(b.snapshotId).toBe(a.snapshotId);
+    expect(b.evidenceDigest).toBe(a.evidenceDigest);
+    const check = await marketData.query({ ...reordered, expectedSnapshot: a.snapshotId });
+    expect(check).toEqual({ kind: 'SnapshotUnchanged', snapshotId: a.snapshotId, evidenceDigest: a.evidenceDigest });
+  });
+
   it('should include the session-policy revision in the binding', async () => {
     const { marketData, persistence } = await setup();
     await marketData.save(mark('XYZ', '2026-10-12'));

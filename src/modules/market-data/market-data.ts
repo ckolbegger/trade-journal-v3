@@ -321,12 +321,17 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
         next.ok && Temporal.Instant.compare(at, Temporal.Instant.from(next.value.completion)) >= 0
           ? { tradingDate: next.value.date, closeInstant: next.value.close }
           : undefined;
+      // The context is serialized from its known fields so the caller's property order and extra properties cannot change the digest.
+      const canonicalContext =
+        context.kind === 'Current' ? { kind: context.kind, asOf: context.asOf }
+        : context.kind === 'Review' ? { kind: context.kind, reviewDate: context.reviewDate }
+        : { kind: context.kind, tradingDate: context.tradingDate };
       // The digest is computed after the read transaction closes (A45). It carries the as-of instant's material effect: the completed next session.
       const evidenceDigest = bytesToHex(
         sha256(
           utf8ToBytes(
             JSON.stringify({
-              request: { context, date: day.value.date, instruments },
+              request: { context: canonicalContext, date: day.value.date, instruments },
               policy: { id: deps.sessionPolicy.identity.id, revision: deps.sessionPolicy.identity.revision, digest: deps.sessionPolicy.identity.digest },
               nextSession: nextSession?.tradingDate ?? null,
               evidence: evidence.map(({ record, stale }) => [record?.effectiveMarkId ?? null, record?.effectiveAcknowledgmentId ?? null, stale?.revisionId ?? null]),
