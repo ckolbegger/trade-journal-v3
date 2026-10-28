@@ -501,3 +501,20 @@ ocr reviews of the T4.10 bug tasks, each **No findings**: `22da598` (B1, session
 - `97ef04a` (B1–B2), 2026-10-28 01:27 EDT: unit 598, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.10-b2-*`.
 
 Only `verify:capacity` failed (expected until T4.28). T4.10 is complete, and with it Trade Analysis (T4.8–T4.10).
+
+## T4.11 Trade Record: exposure start and StateAtEconomicCutoff
+
+Implemented in `3f0c306` (3 cases). Flagged: case 3 first-run pass (the Open query already reads one lifecycle-index getAll per page in one snapshot), mutation-checked. The `exposureStart` strip in `tests/integration/d2/rebuild.test.ts` is deleted and the test passes, so the rebuild equals what commits write. Decision: `rebuild.ts` keeps its own `exposureStartOf` instead of calling `derive` (persistence may not import Trade Record's `analysisInputOf`); the rebuild test locks the two rules together. Query shape `queryRecords({lifecycle: 'Open', cutoff, projection})`; pages are filtered in memory, so a page can be short or empty while `nextCursor` is present and callers follow it to the end. Domain `DerivedTradeReconciliation` gains `exposureStart: Instant | null`; `TradeRecordQuery` gains optional `cutoff`; `exposureStart` stays private (dropped by `storedDocument`, absent from projections, before, candidate and digest).
+
+ocr review of `3f0c306`: session `a60ae5c8-edc2-4b2b-9ce3-c8317cef2bbe`, 2 files, 2 comments. `ocr/T4.11-3f0c306.json`. Also checked on request: `facts[0]` is the first effective Execution (only Execution members of effective Position Changes enter `facts`; D6 will need an opening filter); no leak of `exposureStart`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/modules/trade-record/trade-record.ts:220` | The cursor does not carry `cutoff`, so reusing it with another cutoff silently skips Trades; the Trade Record design binds cursors to the normalized query | Valid | Bug task T4.11-B1 |
+| medium | `src/modules/trade-record/trade-record.ts:356` | A Position Change commit whose reconciliation omits `exposureStart` erases the stored value | Doubtful (`derive` always supplies it; only hand-built reconciliations omit it) | Bug task T4.11-B2 (structural: make it required for a Position Change) |
+
+### T4.11-B1 The cursor is bound to the cutoff
+- it should return CursorExpired when a cursor is reused with a different cutoff or without one
+
+### T4.11-B2 exposureStart required in a Position Change reconciliation (structural)
+Verification: `exposureStart` becomes required in Trade Record's Position Change reconciliation type and hand-built test reconciliations supply it; `npx vitest run src tests/integration` passes with the same count before and after; typecheck, tsc6, lint, lint:deps exit 0.

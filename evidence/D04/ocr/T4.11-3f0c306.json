@@ -1,0 +1,114 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 93010,
+    "input_tokens": 91971,
+    "output_tokens": 1039,
+    "cache_read_tokens": 13440,
+    "elapsed": "41s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_find": 1,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/trade-record/trade-record.ts",
+      "content": "The new cutoff is not included in TradeCursor or checked when resuming a query. Reusing a cursor with a different cutoff (or removing the cutoff) is accepted and resumes after the old page's index key, silently skipping Trades that are eligible under the new query. Include the normalized cutoff in the cursor and return CursorExpired when it changes, as required by the query-bound cursor contract.",
+      "existing_code": "  readonly cutoff?: Instant;",
+      "start_line": 220,
+      "end_line": 220,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/trade-record/trade-record.ts",
+      "content": "exposureStart is optional in the accepted reconciliation, but storedDocument removes the previous value and this put omits it when the caller does not supply one. Consequently, an otherwise accepted Position Change can erase an existing exposureStart, causing that Open Trade to disappear from all cutoff queries. Require a non-null exposureStart for Position Change reconciliations and reject missing values before staging, while retaining the optional form for Plan confirmations.",
+      "existing_code": "    tx.stage({ op: 'put', store: 'trades', value: { ...document, activityDesc: activityDescOf(document.lastActivity!), ...(exposureStart \u0026\u0026 { exposureStart }) } });",
+      "start_line": 356,
+      "end_line": 356,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/domain/trade-analysis/derive.ts",
+        "src/modules/trade-record/trade-record.ts"
+      ]
+    }
+  ],
+  "session_id": "a60ae5c8-edc2-4b2b-9ce3-c8317cef2bbe",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a60ae5c8-edc2-4b2b-9ce3-c8317cef2bbe",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "3f0c306",
+      "resolved_base": "8ae9afd12a3d40818075094fd24d17040ce00089",
+      "resolved_head": "3f0c3060819bdcb3777e1ac4ab8ec8eaa68f73ac",
+      "exact_range": "8ae9afd12a3d40818075094fd24d17040ce00089..3f0c3060819bdcb3777e1ac4ab8ec8eaa68f73ac",
+      "source_artifact_sha256": "57c9a2b617c38232d0a58fa698ce844294cfd51747f308e798047011be9a0996"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "465a7762d2ecd2fc98ee18649f278c14237b582110289102c1b5d20985576130",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "71a487b7f3c9f3422b3c5e51fa49f1633d4c2ecb85e268c44c5d73c6cf059178"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "e5df855289c6491d495486d3f82b9a6f56bda61aab655a36e07736a9ad8d1835"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "465a7762d2ecd2fc98ee18649f278c14237b582110289102c1b5d20985576130",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "71a487b7f3c9f3422b3c5e51fa49f1633d4c2ecb85e268c44c5d73c6cf059178"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "e5df855289c6491d495486d3f82b9a6f56bda61aab655a36e07736a9ad8d1835"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 41452
+  }
+}
