@@ -186,3 +186,24 @@ Run 2026-10-27 21:30 EDT on commit `ab37cd0` (uncommitted: evidence only), Node 
 | Static and verification checks (12 commands) | as after T4.2 | 11 of 12 exit 0 | `suite-runs/t4.27-d2-release-build-checks.txt` |
 
 Failures: `verify:capacity` only, "FAIL basis measured at schema version 2, current is 3: run measure:capacity" — expected until T4.28. `verify:releases` and B2.3 pass again.
+
+## T4.4 Market Data: Manual Mark save
+
+Implemented in `b8f490d` (behavioral; cases in `tdd-log.md`). Decision: the case "reject a zero, negative, non-finite, or over-precise price with InvalidPrice" predates D7 P27's amendment of A37, which T4.4's case list did not pick up; the implementation follows A37 (0 accepted, negative gives `PriceNegative`, non-finite or over-precise gives `InvalidPrice`). Facade wiring (`guard.run('MarketData.save', ...)`, `FACADE_GROUPS`, capability manifest) is not part of T4.4; the write-gate case covers the persistence boundary, and I4.9 exercises the facade boundary once the facade exposes Market Data.
+
+ocr review of `b8f490d`: session `d52d54af-8f40-41ac-82ed-35fbb12a6042`, 3 files reviewed, 3 comments. Raw output: `ocr/T4.4-b8f490d.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/modules/market-data/market-data.ts:118` | A well-shaped impossible date (`2026-02-30`) reaches `classify`, which throws, so `save` rejects instead of returning `InvalidDate` | Valid (`policy.ts:23` calls `Temporal.PlainDate.from`) | Bug task T4.4-B1 |
+| medium | `src/modules/market-data/market-data.ts:124` | `clock.now() < day.completion` compares ISO strings; a fractional-second instant (`…:00.500Z`) sorts before `…:00Z` | Valid (`systemClock` emits fractional seconds) | Bug task T4.4-B2 |
+| medium | `src/modules/market-data/market-data.ts:193` | Commit-time check on the global `marketDataRevision` makes a save to one key return `Conflict` when another key was saved concurrently | Valid (A38 makes the per-key `resolutionRevision` the binding) | Bug task T4.4-B3 |
+
+### T4.4-B1 Impossible calendar dates are rejected, not thrown
+- it should reject a well-shaped impossible date such as 2026-02-30 with InvalidDate and write nothing
+
+### T4.4-B2 Session completion compares instants, not strings
+- it should accept a Mark for Tuesday at 16:30:00.500 on Tuesday, a fractional-second instant after the completion
+
+### T4.4-B3 Only the key's own binding produces Conflict
+- it should save both of two simultaneous initial Marks for different keys, incrementing marketDataRevision once for each
