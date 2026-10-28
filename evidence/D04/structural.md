@@ -528,3 +528,20 @@ Decision (B2): the B2 subagent stopped because Plan confirmation and Position Ch
 - `9f0be49` (B1–B2), 2026-10-28 01:41 EDT: unit 602, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.11-b2-*`.
 
 Only `verify:capacity` failed (expected until T4.28). T4.11 is complete.
+
+## T4.12 Journal: Daily Trade Review
+
+Implemented in `5ab255b` (10 cases). Flagged first-run passes, each mutation-checked: case 3 (seed adds nothing again, covered by the product-key matching) and case 6 (Defer and Decline rejected, covered by the existing decline rule). Decisions where the specs name nothing: ids `entry-type.daily-trade-review`, `source.daily-review`, `prompt.daily-trade-review.{action, intent, conviction, considered, note}`, `option.daily-trade-review.action.{hold, exit, roll, adjust}` (following the manifest's existing pattern); manifest `D3_JOURNAL_MANIFEST` (version 3); origin `{kind: 'DailyReview', factId: tradeId, reviewDate}`; obligation key stored as `['DailyTradeReview', reviewDate, tradeId]`; Entry revision is its version count; edits validate against the original definition and keep the original moment and authored times; `NarrativeEntry.edited` only with more than one version. Deviation: the Review Date read is a separate `Journal.queryActions({reviewDate})`, since a second `query` overload broke `Parameters<>` callers; the Journal design lists no Review Date filter for `query`, so this is a spec gap, not a contradiction.
+
+ocr review of `5ab255b`: session `7cc33542-4b01-4d72-b9c7-83ee19e3ed96`, 5 files, 2 comments. `ocr/T4.12-5ab255b.json`. Also checked on request and found sound: ids and origin against the Journal and Daily Review designs; the `\uffff` upper bound of the Review Date range; the edit binding at commit.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/modules/journal/journal.ts:364` | `queryActions` reads `responses[0]` as the Action, which a definition that reorders prompts would break | Doubtful (an Entry keeps its original definition, whose first prompt is Action) | Bug task T4.12-B1 (structural: find the Action response by its prompt role) |
+| low | `src/modules/journal/journal.ts:251-253`, `keyOf` | Nested ternaries build obligation keys | Valid (readability only) | Bug task T4.12-B2 (structural) |
+
+### T4.12-B1 The Action response found by its prompt role (structural)
+Verification: `npx vitest run src tests/integration` passes with the same count before and after; typecheck, tsc6, lint, lint:deps exit 0.
+
+### T4.12-B2 Obligation keys as explicit guards (structural)
+Verification: as for B1.

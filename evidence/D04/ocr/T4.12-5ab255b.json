@@ -1,0 +1,147 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 2,
+    "total_tokens": 175135,
+    "input_tokens": 172899,
+    "output_tokens": 2236,
+    "cache_read_tokens": 29824,
+    "elapsed": "1m29s"
+  },
+  "tool_calls": {
+    "total": 20,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_find": 1,
+      "file_read": 14
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/journal/journal.ts",
+      "content": "Resolve the selected Action using the effective definition's `role: 'Action'` prompt rather than the first response. New Entries use the latest definition revision, so a revision that inserts or reorders prompts can make this return an empty string (or another select's label) despite a valid saved Action. Match the role's prompt ID to the effective version's response before rendering its option label.",
+      "existing_code": "      const chosen = narrative.responses[0]?.answer;",
+      "start_line": 364,
+      "end_line": 364,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/journal/journal.ts",
+      "content": "These newly added branches introduce nested ternary expressions, which the review checklist explicitly prohibits. Use a switch or explicit if/else branches for obligation-key construction, and apply the same change to `keyOf` below so the different key formats remain easy to follow.",
+      "existing_code": "        : request.obligation === 'DailyTradeReview'\n          ? { entryType: 'DailyTradeReview', trade: request.anchor.ref, reviewDate: request.origin.reviewDate }\n          : { entryType: 'PositionChangeReflection', positionChange: request.origin.ref };",
+      "start_line": 251,
+      "end_line": 253,
+      "category": "style",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Journal module implementation, effects, records, and registration",
+      "files": [
+        "src/modules/journal/effects.ts",
+        "src/modules/journal/index.ts",
+        "src/modules/journal/journal.ts",
+        "src/modules/journal/manifest.ts",
+        "src/modules/journal/records.ts"
+      ]
+    }
+  ],
+  "session_id": "7cc33542-4b01-4d72-b9c7-83ee19e3ed96",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7cc33542-4b01-4d72-b9c7-83ee19e3ed96",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "5ab255b",
+      "resolved_base": "37315eee3a56796060b2cdbad39a75f8994e6ac4",
+      "resolved_head": "5ab255bfc8c6d7b75726f2bb3b8d81d1debab421",
+      "exact_range": "37315eee3a56796060b2cdbad39a75f8994e6ac4..5ab255bfc8c6d7b75726f2bb3b8d81d1debab421",
+      "source_artifact_sha256": "c4c8bb9c9169ad76ae0eb1f956c95c6bff430658c14ce92e70b41c0d0e3779ba"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "265139fa195a485874d9acb508d60d0ba58df1a60a8c61f10a5dc5af23536c70",
+          "path": "src/modules/journal/manifest.ts",
+          "fingerprint": "a051437545eaeb44ca1ea834823e79e1c57d69b8b006ecc26e944ae234b651d6"
+        },
+        {
+          "item_id": "2f64c03c681bb0e4cb769794bfa15cb393d2414f28f9249686cc06d16338bb98",
+          "path": "src/modules/journal/index.ts",
+          "fingerprint": "e9bb39a8793e49ebca2116bbe285e77708bbb56e3d37d0740ec46484f7d14ff9"
+        },
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "03becae37467038fccb9416651473206a6954548ca73c1e965da46444fb3b72b"
+        },
+        {
+          "item_id": "d6c8c47ccfe003cc12717253e6fc1645df411f51f99a7a0d515fd378b2c40a00",
+          "path": "src/modules/journal/records.ts",
+          "fingerprint": "ad132a95b03e9d4ea1f740dbd93fb135dcc4ff7cf6ec40ca7fcff84a2fe632e5"
+        },
+        {
+          "item_id": "fd1c910f754a206e66b4e66d854fe19ed7ac30adb9c39111b3b1ccc9e7046634",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "6c863206e7fd2797dafe7eb371a867e0b8a2e7ff15ab2644200607fd5854ceef"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "265139fa195a485874d9acb508d60d0ba58df1a60a8c61f10a5dc5af23536c70",
+          "path": "src/modules/journal/manifest.ts",
+          "fingerprint": "a051437545eaeb44ca1ea834823e79e1c57d69b8b006ecc26e944ae234b651d6"
+        },
+        {
+          "item_id": "2f64c03c681bb0e4cb769794bfa15cb393d2414f28f9249686cc06d16338bb98",
+          "path": "src/modules/journal/index.ts",
+          "fingerprint": "e9bb39a8793e49ebca2116bbe285e77708bbb56e3d37d0740ec46484f7d14ff9"
+        },
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "03becae37467038fccb9416651473206a6954548ca73c1e965da46444fb3b72b"
+        },
+        {
+          "item_id": "d6c8c47ccfe003cc12717253e6fc1645df411f51f99a7a0d515fd378b2c40a00",
+          "path": "src/modules/journal/records.ts",
+          "fingerprint": "ad132a95b03e9d4ea1f740dbd93fb135dcc4ff7cf6ec40ca7fcff84a2fe632e5"
+        },
+        {
+          "item_id": "fd1c910f754a206e66b4e66d854fe19ed7ac30adb9c39111b3b1ccc9e7046634",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "6c863206e7fd2797dafe7eb371a867e0b8a2e7ff15ab2644200607fd5854ceef"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 89424
+  }
+}
