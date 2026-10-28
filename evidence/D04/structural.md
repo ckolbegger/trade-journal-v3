@@ -493,3 +493,11 @@ ocr review of `bab35b1`: session `7db81f8e-36da-4673-b14f-7375d28fc37d`, 4 files
 
 ### T4.10-B2 Condition status as explicit guards (structural)
 Verification: `npx vitest run src/domain/trade-analysis` passes unchanged before and after; typecheck, tsc6, lint, lint:deps exit 0.
+
+ocr reviews of the T4.10 bug tasks, each **No findings**: `22da598` (B1, session `0ced3b93-fbd7-4984-9395-8bad48396909`; one `usableMark` drives `marked` and `observation.mark`; cases 2 and 3 were written with case 1 before its fix, so they had no red run of their own: process slip, both mutation-checked and flagged), `97ef04a` (B2, `734f6c34-89c1-4841-b2c7-df4cd28d8134`; `statusOf` helper). Raw outputs `ocr/T4.10-B<n>-<sha>.json`. Noted: `prettier --check` flags `evaluate.ts` (already so before B2; lint does not enforce prettier).
+
+### Cumulative run after T4.10
+
+- `97ef04a` (B1–B2), 2026-10-28 01:27 EDT: unit 598, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.10-b2-*`.
+
+Only `verify:capacity` failed (expected until T4.28). T4.10 is complete, and with it Trade Analysis (T4.8–T4.10).
