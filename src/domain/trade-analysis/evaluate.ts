@@ -209,6 +209,11 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   };
   const measure = (dollars: Rational): Measure => ({ dollars, planR: dollars.div(state.baseline.oneR) });
   // A Stop is crossed at or below it, a Target at or above it; the distance beyond is the Overrun (A42).
+  const statusOf = (role: 'Stop' | 'Target', crossed: boolean): ConditionReading['status'] => {
+    if (!crossed) return 'Active';
+    if (role === 'Stop') return 'Breached';
+    return 'Reached';
+  };
   const conditionOf = (role: 'Stop' | 'Target', index: number, boundary: string): ConditionStatus => ({
     id: `${role.toLowerCase()}-${index + 1}`,
     role,
@@ -218,7 +223,7 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
       const toward = quantity.mul(role === 'Stop' ? mark.sub(decimal(boundary)) : decimal(boundary).sub(mark));
       const crossed = toward.compare(ZERO) <= 0;
       return {
-        status: !crossed ? 'Active' : role === 'Stop' ? 'Breached' : 'Reached',
+        status: statusOf(role, crossed),
         distance: measure(atLeastZero(toward)),
         overrun: crossed ? measure(ZERO.sub(toward)) : null,
         evidence: { instrument: frame.instrument, date: frame.tradingDate, mark: (resolution as { mark: MarkEvidence }).mark },
