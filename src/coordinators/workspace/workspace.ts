@@ -177,17 +177,17 @@ export function createWorkspace(deps: WorkspaceDeps): Workspace {
   }
 
   // Records this release's session-policy identity when the stored one differs (D4 A40). The
-  // identity and every observation are read in one snapshot, and the commit binds the identity
-  // read; when the binding fails the scan is redone, up to 3 attempts in all (ADR 0011).
+  // identity is read first and every observation only when it differs, in one snapshot, and the
+  // commit binds the identity read; when the binding fails the scan is redone, up to 3 attempts in all (ADR 0011).
   async function recordSessionPolicy(): Promise<SessionPolicyReceipt | undefined | RuntimeNotWritable> {
     const recorded = deps.sessionPolicy.identity;
     const same = (p: SessionPolicyIdentity) => p.id === recorded.id && p.revision === recorded.revision && p.digest === recorded.digest;
     for (let attempt = 0; attempt < 3; attempt++) {
-      const { value: snapshot } = await deps.persistence.readSnapshot(['meta', 'observations'], async (tx) => ({
-        stored: await tx.get('meta', 'sessionPolicy'),
-        observations: await tx.getAll('observations'),
-      }));
-      const previous = (snapshot.stored as { policy: SessionPolicyIdentity }).policy;
+      const { value: snapshot } = await deps.persistence.readSnapshot(['meta', 'observations'], async (tx) => {
+        const stored = (await tx.get('meta', 'sessionPolicy')) as { policy: SessionPolicyIdentity };
+        return { previous: stored.policy, observations: same(stored.policy) ? [] : await tx.getAll('observations') };
+      });
+      const { previous } = snapshot;
       if (same(previous)) return undefined;
       // Every stored key is judged by the new policy; a key it no longer counts as a session is
       // reported and kept, never deleted (A40).

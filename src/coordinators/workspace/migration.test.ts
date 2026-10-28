@@ -409,6 +409,34 @@ describe('session-policy compatibility (A40)', () => {
     expect(again.kind === 'Opened' && again.receipt.sessionPolicy).toBeUndefined();
   });
 
+  it('should read no observations when the stored session-policy identity matches the release\'s', async () => {
+    const first = await launch(new IDBFactory(), nyseSessionPolicy);
+    expect((await first.workspace.initialize({ timeZone: 'America/New_York' })).kind).toBe('Opened');
+    first.persistence.close();
+
+    const second = await launch(first.factory, nyseSessionPolicy);
+    // Every store read inside a snapshot is noted.
+    const reads: string[] = [];
+    const observing: Persistence = {
+      ...second.persistence,
+      readSnapshot: (stores, read) =>
+        second.persistence.readSnapshot(stores, (tx) =>
+          read({
+            ...tx,
+            get: (store, key) => (reads.push(store), tx.get(store, key)),
+            getAll: (store) => (reads.push(store), tx.getAll(store)),
+            getAllInRange: (store, range) => (reads.push(store), tx.getAllInRange(store, range)),
+            getAllFromIndex: (store, index, query, count) => (reads.push(store), tx.getAllFromIndex(store, index, query, count)),
+          }),
+        ),
+    };
+    const workspace = createWorkspace({ ...second, persistence: observing, host: second.testHost.host, releaseId: second.testHost.releaseId });
+    const result = await workspace.initialize({});
+    expect(result.kind === 'Opened' && result.receipt.sessionPolicy).toBeUndefined();
+    expect(reads).toContain('meta');
+    expect(reads).not.toContain('observations');
+  });
+
   it('should record nothing more when another launch records the identity between its scan and its commit', async () => {
     const first = await launch(new IDBFactory(), nyseSessionPolicy);
     expect((await first.workspace.initialize({ timeZone: 'America/New_York' })).kind).toBe('Opened');
