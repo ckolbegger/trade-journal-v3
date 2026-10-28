@@ -245,10 +245,15 @@ interface TradeCursor {
   readonly databaseName: string;
   readonly tradeRevision: number;
   readonly lifecycle: LifecycleState;
+  readonly cutoff?: Instant;
   // The Open list resumes after the last index key of the previous page; others by position.
   readonly after?: [string, string, string];
   readonly offset?: number;
 }
+
+// Cutoffs match by instant value, as the query compares them.
+const sameCutoff = (a: Instant | undefined, b: Instant | undefined) =>
+  a === undefined || b === undefined ? a === b : compareInstants(a, b) === 0;
 
 // The benchmarked maximum Open book, shown as one page (D2 A32).
 const OPEN_PAGE_SIZE = 200;
@@ -381,7 +386,7 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
       const { tradeRevision, documents } = value;
       if (
         cursor &&
-        (cursor.databaseName !== binding.databaseName || cursor.tradeRevision !== tradeRevision || cursor.lifecycle !== query.lifecycle)
+        (cursor.databaseName !== binding.databaseName || cursor.tradeRevision !== tradeRevision || cursor.lifecycle !== query.lifecycle || !sameCutoff(cursor.cutoff, query.cutoff))
       ) {
         return { kind: 'CursorExpired' };
       }
@@ -409,6 +414,7 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
         databaseName: binding.databaseName,
         tradeRevision,
         lifecycle: query.lifecycle,
+        ...(query.cutoff !== undefined && { cutoff: query.cutoff }),
         ...(byActivity ? { after: [query.lifecycle, last.activityDesc!, last.tradeId] } : { offset: end }),
       };
       return { kind: 'Page', items, binding, nextCursor: JSON.stringify(next) };

@@ -653,6 +653,24 @@ describe('queryRecords: StateAtEconomicCutoff Open (A55)', () => {
     expect(ids(await record.queryRecords({ lifecycle: 'Open', projection: 'Summary', cutoff }))).toEqual(['trade-c', 'trade-a', 'trade-b']);
   });
 
+  it('should return CursorExpired when a cursor is reused with a different cutoff or without one', async () => {
+    const tradeIds = ['trade-a', 'trade-b', 'trade-c'];
+    const { record, persistence } = await tradeRecord(tradeIds.map(plannedDocument));
+    const at = (tradeId: string, time: string) => ({ tradeId, executions: [buy(time, '10', '50.10', tradeId)], exposureStart: time });
+    await recordEntries(record, persistence, [at('trade-a', '2026-10-12T14:00:00Z'), at('trade-b', '2026-10-12T15:00:00Z'), at('trade-c', '2026-10-12T16:00:00Z')]);
+    const cutoff = '2026-10-12T15:00:00Z';
+    const base = { lifecycle: 'Open', projection: 'Summary', pageSize: 1 } as const;
+    const withCutoff = await record.queryRecords({ ...base, cutoff });
+    if (withCutoff.kind !== 'Page' || !withCutoff.nextCursor) throw new Error('expected a first page with a cursor');
+    const without = await record.queryRecords(base);
+    if (without.kind !== 'Page' || !without.nextCursor) throw new Error('expected a first page with a cursor');
+    expect(await record.queryRecords({ ...base, cutoff: '2026-10-12T16:00:00Z', cursor: withCutoff.nextCursor })).toEqual({ kind: 'CursorExpired' });
+    expect(await record.queryRecords({ ...base, cursor: withCutoff.nextCursor })).toEqual({ kind: 'CursorExpired' });
+    expect(await record.queryRecords({ ...base, cutoff, cursor: without.nextCursor })).toEqual({ kind: 'CursorExpired' });
+    // The same cutoff keeps the cursor usable.
+    expect((await record.queryRecords({ ...base, cutoff, cursor: withCutoff.nextCursor })).kind).toBe('Page');
+  });
+
   it('should read each page with one lifecycle-index getAll and return AnalysisInput for the page from one read snapshot', async () => {
     const tradeIds = ['trade-a', 'trade-b', 'trade-c'];
     const { record, persistence } = await tradeRecord(tradeIds.map(plannedDocument));
