@@ -29,6 +29,7 @@ export {
   type InstrumentPosition,
   type IntegrityFinding,
   type LegFulfillment,
+  type ObservationRequirement,
   type OpenLot,
   type PositionChangeFact,
   type RecordedDeviation,

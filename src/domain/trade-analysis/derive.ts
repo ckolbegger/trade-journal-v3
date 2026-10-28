@@ -58,6 +58,19 @@ export interface TradeDerivationInput {
   readonly record: TradeAnalysisRecord;
   // Present when record is a prepared candidate.
   readonly candidate?: CandidateBinding;
+  // The economic cutoff: only facts at or before it count. Absent means every effective fact.
+  readonly cutoff?: Instant;
+  // The date (YYYY-MM-DD) of the Marks required for remaining quantity; supplied by the coordinator,
+  // since analysis knows no calendar. Absent means no observation is required.
+  readonly valuationDate?: string;
+}
+
+// An exact Mark required on the valuation date for an Instrument with remaining quantity; it is
+// relevant from the Instrument's exposure start.
+export interface ObservationRequirement {
+  readonly instrument: ExecutionFact['instrument'];
+  readonly valuationDate: string;
+  readonly earliestRelevance: Instant;
 }
 
 // Agreement between stored and expected Lifecycle State; a disagreement is reported, never repaired.
@@ -224,6 +237,10 @@ export interface DerivedTradeState {
   // Effective Executions in Fact Order, each with its Position Change.
   readonly facts: readonly (ExecutionFact & { readonly positionChangeId: string })[];
   readonly positions: readonly InstrumentPosition[];
+  // The Economic Time of the first effective opening Execution; null while the Trade is Planned.
+  readonly exposureStart: Instant | null;
+  // One per Instrument with remaining quantity; none for a Planned Trade.
+  readonly observationRequirements: readonly ObservationRequirement[];
   // Every opening Execution's actual fee, each counted once.
   readonly fees: { readonly incurredOpening: Rational };
   // Signed cost of the remaining open exposure: quantity x price over the Open Lots plus their unconsumed
@@ -297,6 +314,20 @@ function positionsOf(facts: readonly ExecutionFact[]): InstrumentPosition[] {
       openLots: lots,
     },
   ];
+}
+
+function observationRequirementsOf(
+  positions: readonly InstrumentPosition[],
+  facts: readonly ExecutionFact[],
+  valuationDate: string,
+): ObservationRequirement[] {
+  return positions
+    .filter((p) => p.quantity.compare(Rational.of(0n)) !== 0)
+    .map((p) => ({
+      instrument: p.instrument,
+      valuationDate,
+      earliestRelevance: facts.find((e) => e.instrument.symbol === p.instrument.symbol)!.economicTime,
+    }));
 }
 
 // FactOrder: Economic Time, then the stable Recorded Sequence for ties.
@@ -542,8 +573,20 @@ function changeEffects(before: DerivedTradeState, lifecycle: LifecycleState, dev
   return effects;
 }
 
+// The record's effective facts at or before the cutoff; a Position Change keeps its members that are.
+function atCutoff(record: TradeAnalysisRecord, cutoff: Instant | undefined): TradeAnalysisRecord {
+  if (cutoff === undefined) return record;
+  const upTo = (at: Instant) => Temporal.Instant.compare(at, cutoff) <= 0;
+  return {
+    ...record,
+    positionChanges: record.positionChanges
+      .map((pc) => ({ ...pc, executions: pc.executions.filter((e) => upTo(e.economicTime)) }))
+      .filter((pc) => pc.executions.length > 0),
+  };
+}
+
 export function derive(input: TradeDerivationInput): DerivationResult {
-  const { record } = input;
+  const record = atCutoff(input.record, input.cutoff);
   const findings = incoherence(record);
   if (findings.length > 0) return { kind: 'IncoherentFacts', findings };
   const facts = record.positionChanges
@@ -558,7 +601,7 @@ export function derive(input: TradeDerivationInput): DerivationResult {
   // Effective facts that leave nonzero exposure make the Trade Open; none leave it Planned.
   const expectedLifecycle: LifecycleState = positions.length > 0 ? 'Open' : 'Planned';
   const deviations = deviationsOf(record);
-  const before = input.candidate && derive({ record: input.candidate.before });
+  const before = input.candidate && derive({ record: input.candidate.before, ...(input.cutoff && { cutoff: input.cutoff }) });
   if (before?.kind === 'IncoherentFacts') return before;
   const agreement: LifecycleAgreement =
     record.storedLifecycle === expectedLifecycle
@@ -576,6 +619,8 @@ export function derive(input: TradeDerivationInput): DerivationResult {
     agreement,
     facts,
     positions,
+    exposureStart: facts[0]?.economicTime ?? null,
+    observationRequirements: input.valuationDate === undefined ? [] : observationRequirementsOf(positions, facts, input.valuationDate),
     fees: { incurredOpening: facts.reduce((sum, e) => sum.add(decimal(e.fee)), Rational.of(0n)) },
     netCost: netCostOf(positions),
     baseline,
