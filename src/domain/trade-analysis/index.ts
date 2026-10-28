@@ -43,6 +43,9 @@ export {
 export {
   evaluate,
   type AtEntryFigures,
+  type ConditionReading,
+  type ConditionStatus,
+  type Measure,
   type MarkEvidence,
   type ObservationFrame,
   type StaleContext,

@@ -32,6 +32,31 @@ export interface StaleContext {
   readonly closeInstant: Instant;
 }
 
+// A dollar amount with its Plan-R conversion.
+export interface Measure {
+  readonly dollars: Rational;
+  readonly planR: Rational;
+}
+
+// One underlying-price condition read against the exact Mark, evidence included.
+export interface ConditionReading {
+  readonly status: 'Active' | 'Breached' | 'Reached';
+  // Remaining distance to the boundary across the open Position; zero once crossed.
+  readonly distance: Measure;
+  // The distance beyond a crossed boundary; null while it is not crossed.
+  readonly overrun: Measure | null;
+  readonly evidence: { readonly instrument: ObservationFrame['instrument']; readonly date: string; readonly mark: MarkEvidence };
+}
+
+// Each Stop and Target is read independently (OR semantics); the id is its role and 1-based position.
+export interface ConditionStatus {
+  readonly id: string;
+  readonly role: 'Stop' | 'Target';
+  readonly kind: 'UnderlyingPrice';
+  readonly boundary: string;
+  readonly result: CalculationResult<ConditionReading>;
+}
+
 export interface TradeEvaluationInput {
   readonly state: DerivedTradeState;
   readonly frame: ObservationFrame;
@@ -64,6 +89,21 @@ export interface TradeEvaluation {
   readonly ongoingRiskToStop: CalculationResult<Rational>;
   readonly worstCaseOngoingRisk: CalculationResult<Rational>;
   readonly incrementalRewardToTarget: CalculationResult<Rational>;
+  readonly conditions: readonly ConditionStatus[];
+  // The observation the figures were computed from; mark is null when no exact Mark valued them.
+  readonly observation: {
+    readonly instrument: ObservationFrame['instrument'];
+    readonly tradingDate: string;
+    readonly mark: MarkEvidence | null;
+  };
+  // Mark-dependent Deviation occurrences: none until Stop Discipline lands in D12 (A44), and a
+  // reached Target is never one.
+  readonly deviations: readonly never[];
+  readonly ongoingRiskToStopInPlanR: CalculationResult<Rational>;
+  readonly worstCaseOngoingRiskInPlanR: CalculationResult<Rational>;
+  readonly incrementalRewardToTargetInPlanR: CalculationResult<Rational>;
+  // A long Stock Position's reward has no ceiling, so this never depends on the Mark.
+  readonly maximumIncrementalReward: CalculationResult<Rational>;
   // Frozen at confirmation and resolved at the Entry Resolution Point, so never Mark-dependent.
   readonly planBaseline: CalculationResult<PlanBaseline>;
   readonly oneR: CalculationResult<Rational>;
@@ -87,7 +127,7 @@ function decimal(text: string): Rational {
   return parsed.value;
 }
 
-const value = (v: Rational): CalculationResult<Rational> => ({ kind: 'Value', value: v });
+const value = <T>(v: T): CalculationResult<T> => ({ kind: 'Value', value: v });
 
 // Risk and reward of lots measured from their execution prices, never called valuation or P&L (A54).
 function atEntryOf(lots: readonly OpenLot[], stop: Rational, target: Rational): AtEntryFigures | null {
@@ -103,7 +143,9 @@ function atEntryOf(lots: readonly OpenLot[], stop: Rational, target: Rational): 
   };
 }
 
-const noRemainingPosition: CalculationResult<Rational> = { kind: 'NotApplicable', reason: 'NoRemainingPosition' };
+const atLeastZero = (r: Rational) => (r.compare(ZERO) > 0 ? r : ZERO);
+
+const noRemainingPosition: CalculationResult<never> = { kind: 'NotApplicable', reason: 'NoRemainingPosition' };
 
 export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   const { state, frame } = input;
@@ -133,7 +175,7 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   // A frame for another Instrument holds no exact Mark for this Position, so every Lot is at entry.
   const latestExactClose = resolution.kind === 'Available' ? frame.closeInstant : resolution.stale?.closeInstant;
   const atEntryLots = foreign || latestExactClose === undefined ? lots : openedAfter(latestExactClose);
-  const unavailableResult = (): CalculationResult<Rational> => {
+  const unavailableResult = (): CalculationResult<never> => {
     if (foreign) {
       return { kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument: foreign.instrument, date: frame.tradingDate } };
     }
@@ -147,7 +189,7 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     };
   };
   const unavailable = unavailableResult();
-  const marked = (of: (mark: Rational) => Rational): CalculationResult<Rational> => {
+  const marked = <T>(of: (mark: Rational) => T): CalculationResult<T> => {
     if (lots.length === 0) return noRemainingPosition;
     if (resolution.kind === 'Available' && !openedAfterClose && !foreign) return value(of(decimal(resolution.mark.price)));
     return unavailable;
@@ -163,6 +205,24 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     }
     return { kind: resolution.kind };
   };
+  const measure = (dollars: Rational): Measure => ({ dollars, planR: dollars.div(state.baseline.oneR) });
+  // A Stop is crossed at or below it, a Target at or above it; the distance beyond is the Overrun (A42).
+  const conditionOf = (role: 'Stop' | 'Target', index: number, boundary: string): ConditionStatus => ({
+    id: `${role.toLowerCase()}-${index + 1}`,
+    role,
+    kind: 'UnderlyingPrice',
+    boundary,
+    result: marked((mark): ConditionReading => {
+      const toward = quantity.mul(role === 'Stop' ? mark.sub(decimal(boundary)) : decimal(boundary).sub(mark));
+      const crossed = toward.compare(ZERO) <= 0;
+      return {
+        status: !crossed ? 'Active' : role === 'Stop' ? 'Breached' : 'Reached',
+        distance: measure(atLeastZero(toward)),
+        overrun: crossed ? measure(ZERO.sub(toward)) : null,
+        evidence: { instrument: frame.instrument, date: frame.tradingDate, mark: (resolution as { mark: MarkEvidence }).mark },
+      };
+    }),
+  });
   return {
     kind: 'Evaluated',
     valuationDate: frame.tradingDate,
@@ -176,9 +236,20 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     currentMarkedPnl: marked(currentMarked),
     currentMarkedPnlInPlanR: marked((mark) => currentMarked(mark).div(state.baseline.oneR)),
     incurredFees: current(state.fees.incurredOpening),
-    ongoingRiskToStop: marked((mark) => quantity.mul(mark.sub(stop))),
+    ongoingRiskToStop: marked((mark) => atLeastZero(quantity.mul(mark.sub(stop)))),
     worstCaseOngoingRisk: marked((mark) => quantity.mul(mark)),
-    incrementalRewardToTarget: marked((mark) => quantity.mul(target.sub(mark))),
+    incrementalRewardToTarget: marked((mark) => atLeastZero(quantity.mul(target.sub(mark)))),
+    ongoingRiskToStopInPlanR: marked((mark) => atLeastZero(quantity.mul(mark.sub(stop))).div(state.baseline.oneR)),
+    worstCaseOngoingRiskInPlanR: marked((mark) => quantity.mul(mark).div(state.baseline.oneR)),
+    incrementalRewardToTargetInPlanR: marked((mark) => atLeastZero(quantity.mul(target.sub(mark))).div(state.baseline.oneR)),
+    maximumIncrementalReward:
+      lots.length === 0 ? noRemainingPosition : { kind: 'Unbounded', direction: 'Above', explanation: 'A long Stock Position has no price ceiling' },
+    conditions: [
+      ...state.baseline.stopBasis.map((basis, i) => conditionOf('Stop', i, basis.condition.price)),
+      ...state.baseline.targetBasis.map((basis, i) => conditionOf('Target', i, basis.condition.price)),
+    ],
+    observation: { instrument: frame.instrument, tradingDate: frame.tradingDate, mark: resolution.kind === 'Available' ? resolution.mark : null },
+    deviations: [],
     coveredSubtotal: null,
     atEntry: atEntryOf(atEntryLots, stop, target),
     planBaseline: { kind: 'Value', value: state.baseline },

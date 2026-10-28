@@ -264,3 +264,126 @@ describe('A frame for a different Instrument', () => {
     expect(exact({ kind: 'Value', value: atEntry!.rewardFromEntry })).toBe(q(582n));
   });
 });
+
+describe('ongoing risk and reward (Mark 52.00)', () => {
+  const state = derivedState(referenceRecord([PC1, PC2]));
+
+  it('should return Ongoing Risk to Stop $450.00 (9/5 R), Worst-Case Ongoing Risk $5,200.00 (104/5 R), Incremental Reward to Target $400.00 (8/5 R), and Maximum Incremental Reward Unbounded Above', () => {
+    const evaluation = evaluate({ state, frame: availableFrame('52.00') });
+    expect(exact(evaluation.ongoingRiskToStop)).toBe(q(450n));
+    expect(exact(evaluation.ongoingRiskToStopInPlanR)).toBe(q(9n, 5n));
+    expect(exact(evaluation.worstCaseOngoingRisk)).toBe(q(5200n));
+    expect(exact(evaluation.worstCaseOngoingRiskInPlanR)).toBe(q(104n, 5n));
+    expect(exact(evaluation.incrementalRewardToTarget)).toBe(q(400n));
+    expect(exact(evaluation.incrementalRewardToTargetInPlanR)).toBe(q(8n, 5n));
+    expect(evaluation.maximumIncrementalReward).toMatchObject({ kind: 'Unbounded', direction: 'Above' });
+  });
+
+  it('should return Maximum Incremental Reward Unbounded Above when the Mark is Missing, and the other three as Unavailable MarkMissing', () => {
+    const evaluation = evaluate({ state, frame: missingFrame() });
+    expect(evaluation.maximumIncrementalReward).toMatchObject({ kind: 'Unbounded', direction: 'Above' });
+    for (const figure of [evaluation.ongoingRiskToStop, evaluation.worstCaseOngoingRisk, evaluation.incrementalRewardToTarget]) {
+      expect(figure).toEqual(markMissing);
+    }
+    for (const figure of [evaluation.ongoingRiskToStopInPlanR, evaluation.worstCaseOngoingRiskInPlanR, evaluation.incrementalRewardToTargetInPlanR]) {
+      expect(figure).toEqual(markMissing);
+    }
+  });
+});
+
+describe('Stop crossed (Mark 47.00)', () => {
+  const state = derivedState(referenceRecord([PC1, PC2]));
+  const stopOf = (e: ReturnType<typeof evaluate>) => e.conditions.find((c) => c.role === 'Stop')!;
+
+  it('should report the Stop Breached, Ongoing Risk to Stop $0.00, Stop Overrun $50.00 (1/5 R), Worst-Case $4,700.00, Incremental Reward $900.00, and Current Marked Trade P&L -$320.00 (-32/25 R)', () => {
+    const evaluation = evaluate({ state, frame: availableFrame('47.00') });
+    const stop = stopOf(evaluation);
+    if (stop.result.kind !== 'Value') throw new Error('expected a Value');
+    expect(stop.result.value.status).toBe('Breached');
+    expect(exact(evaluation.ongoingRiskToStop)).toBe(q(0n));
+    expect(exact(evaluation.ongoingRiskToStopInPlanR)).toBe(q(0n));
+    expect(stop.result.value.overrun && exact({ kind: 'Value', value: stop.result.value.overrun.dollars })).toBe(q(50n));
+    expect(stop.result.value.overrun && exact({ kind: 'Value', value: stop.result.value.overrun.planR })).toBe(q(1n, 5n));
+    expect(exact(evaluation.worstCaseOngoingRisk)).toBe(q(4700n));
+    expect(exact(evaluation.incrementalRewardToTarget)).toBe(q(900n));
+    expect(exact(evaluation.currentMarkedPnl)).toBe(q(-320n));
+    expect(exact(evaluation.currentMarkedPnlInPlanR)).toBe(q(-32n, 25n));
+  });
+
+  it('should report a Mark of exactly 47.50 as Breached with Overrun $0.00 (A42)', () => {
+    const stop = stopOf(evaluate({ state, frame: availableFrame('47.50') }));
+    if (stop.result.kind !== 'Value') throw new Error('expected a Value');
+    expect(stop.result.value.status).toBe('Breached');
+    expect(stop.result.value.overrun && exact({ kind: 'Value', value: stop.result.value.overrun.dollars })).toBe(q(0n));
+    // Just above the Stop it is still Active with no Overrun.
+    const above = stopOf(evaluate({ state, frame: availableFrame('47.51') }));
+    expect(above.result.kind === 'Value' && [above.result.value.status, above.result.value.overrun]).toEqual(['Active', null]);
+  });
+
+  it('should return no Deviation occurrence (A44)', () => {
+    expect(evaluate({ state, frame: availableFrame('47.00') }).deviations).toEqual([]);
+  });
+});
+
+describe('Target reached (Mark 57.00)', () => {
+  const state = derivedState(referenceRecord([PC1, PC2]));
+  const targetOf = (e: ReturnType<typeof evaluate>) => e.conditions.find((c) => c.role === 'Target')!;
+
+  it('should report the Target Reached, Incremental Reward to Target $0.00, Target Overrun $100.00 (2/5 R), and Ongoing Risk to Stop $950.00 (19/5 R)', () => {
+    const evaluation = evaluate({ state, frame: availableFrame('57.00') });
+    const target = targetOf(evaluation);
+    if (target.result.kind !== 'Value') throw new Error('expected a Value');
+    expect(target.result.value.status).toBe('Reached');
+    expect(exact(evaluation.incrementalRewardToTarget)).toBe(q(0n));
+    expect(exact(evaluation.incrementalRewardToTargetInPlanR)).toBe(q(0n));
+    expect(target.result.value.overrun && exact({ kind: 'Value', value: target.result.value.overrun.dollars })).toBe(q(100n));
+    expect(target.result.value.overrun && exact({ kind: 'Value', value: target.result.value.overrun.planR })).toBe(q(2n, 5n));
+    expect(exact(evaluation.ongoingRiskToStop)).toBe(q(950n));
+    expect(exact(evaluation.ongoingRiskToStopInPlanR)).toBe(q(19n, 5n));
+  });
+
+  it('should not classify the reached Target as a Deviation (AC-CALC-003)', () => {
+    const evaluation = evaluate({ state, frame: availableFrame('57.00') });
+    expect(evaluation.conditions.find((c) => c.role === 'Target')!.result).toMatchObject({ value: { status: 'Reached' } });
+    expect(evaluation.deviations).toEqual([]);
+  });
+});
+
+describe('per-condition status', () => {
+  const state = derivedState(referenceRecord([PC1, PC2]));
+
+  it('should return each Stop and Target condition with its identity, kind UnderlyingPrice, boundary, status, distance in dollars and Plan R, Overrun when crossed, and its evidence', () => {
+    const evidence = { instrument: XYZ, date: '2026-10-12', mark: { revisionId: 'mark-rev-1', revisionNumber: 1, price: '52.00' } };
+    const [stop, target] = evaluate({ state, frame: availableFrame('52.00') }).conditions;
+    expect(stop).toMatchObject({ id: 'stop-1', role: 'Stop', kind: 'UnderlyingPrice', boundary: '47.5' });
+    expect(target).toMatchObject({ id: 'target-1', role: 'Target', kind: 'UnderlyingPrice', boundary: '56' });
+    const reading = (c: typeof stop) => (c!.result.kind === 'Value' ? c!.result.value : null);
+    expect(reading(stop)!.status).toBe('Active');
+    expect(reading(stop)!.overrun).toBeNull();
+    expect(reading(stop)!.evidence).toEqual(evidence);
+    expect(exact({ kind: 'Value', value: reading(stop)!.distance.dollars })).toBe(q(450n));
+    expect(exact({ kind: 'Value', value: reading(stop)!.distance.planR })).toBe(q(9n, 5n));
+    expect(reading(target)!.status).toBe('Active');
+    expect(reading(target)!.evidence).toEqual(evidence);
+    expect(exact({ kind: 'Value', value: reading(target)!.distance.dollars })).toBe(q(400n));
+    expect(exact({ kind: 'Value', value: reading(target)!.distance.planR })).toBe(q(8n, 5n));
+  });
+
+  it('should return each condition as Unavailable with the Mark reason when the Mark is Missing or acknowledged', () => {
+    const missing = evaluate({ state, frame: missingFrame() });
+    expect(missing.conditions.map((c) => c.result)).toEqual([markMissing, markMissing]);
+    const acknowledged = evaluate({ state, frame: { ...missingFrame(), resolution: { kind: 'AcknowledgedUnavailable' } } });
+    expect(acknowledged.conditions.map((c) => c.result)).toEqual([
+      { ...markMissing, reason: 'AcknowledgedUnavailable' },
+      { ...markMissing, reason: 'AcknowledgedUnavailable' },
+    ]);
+  });
+
+  it('should return the observation binding it used and deep-equal results for identical inputs', () => {
+    const input = { state, frame: availableFrame('52.00') };
+    const first = evaluate(input);
+    expect(first.observation).toEqual({ instrument: XYZ, tradingDate: '2026-10-12', mark: { revisionId: 'mark-rev-1', revisionNumber: 1, price: '52.00' } });
+    expect(evaluate(input)).toEqual(first);
+    expect(evaluate({ state, frame: missingFrame() }).observation).toEqual({ instrument: XYZ, tradingDate: '2026-10-13', mark: null });
+  });
+});

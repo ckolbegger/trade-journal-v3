@@ -622,7 +622,9 @@ const NOT_APPLICABLE: Record<string, string> = {
 };
 
 function shown<T>(result: CalculationResult<T>, format: (value: T) => string): string {
-  return result.kind === 'Value' ? format(result.value) : `Not applicable: ${NOT_APPLICABLE[result.reason] ?? result.reason}`;
+  if (result.kind === 'Value') return format(result.value);
+  if (result.kind === 'Unbounded') return `Unbounded ${result.direction.toLowerCase()}`;
+  return `Not applicable: ${NOT_APPLICABLE[result.reason] ?? result.reason}`;
 }
 
 // Entry Quality once the Entry Resolution Point is reached, and progress toward it before (A24).

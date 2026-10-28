@@ -96,6 +96,7 @@ export interface InstrumentPosition {
 // One independently useful calculation (Trade Analysis, shared values); reasons are stable codes.
 export type CalculationResult<T, Reason extends string = string> =
   | { readonly kind: 'Value'; readonly value: T }
+  | { readonly kind: 'Unbounded'; readonly direction: 'Above' | 'Below'; readonly explanation: string }
   | { readonly kind: 'NotApplicable'; readonly reason: Reason }
   | { readonly kind: 'Unavailable'; readonly reason: Reason; readonly detail: UnavailableDetail };
 
