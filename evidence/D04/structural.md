@@ -796,3 +796,13 @@ ocr review of `9bb5498` (B1): session `3ec83f54-851b-4a10-99e7-6e35adf9ec7d`, 2 
 | Severity | Location | Claim | Assessment | Disposition |
 |---|---|---|---|---|
 | medium | `src/coordinators/workspace/workspace.ts:188` | Every existing-Workspace launch now reads all observations, even when the identity matches | Valid: B1 reads both stores before comparing; the earlier code read observations only on a mismatch | Bug task T4.17-B4 |
+
+ocr review of `1e9dd0d` (B2, test only): session `08de4f5c-c199-4386-96d5-f9ac5bb5b53d`, no findings. `ocr/T4.17-B2-1e9dd0d.json`. The case spies on `factory.open` and requires the only database opened besides `tj-root` and the source to be the migrated one. First-run pass, flagged; a second `createCandidate` fails it with an assertion. An earlier run on a mis-built scratch clone flagged only the clone's rename and was discarded.
+
+ocr review of `4e91410` (B3): session `8eb675b0-6dfd-4793-a42d-2b1c33573184`, 3 files, 1 comment. `ocr/T4.17-B3-4e91410.json`. `staleContextOf` reuses `classifyDate` (now exported from `section.ts`) and skips a malformed stored date. The reviewer found no other unguarded `classify` of a stored key in the frame query path (the call after the cursor runs on a key the predicate already classified as a Session). No first-run passes, no code ahead of red.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `query-check.ts:120` | The renamed test file no longer matches the unit-test include pattern | Wrong: an artifact of the scratch clone's rename; the commit keeps `query.test.ts` | Dismissed |
+
+ocr review of `153ba3c` (B4): session `1c410e6c-6db0-4887-bc54-100fe6682eb6`, no findings. `ocr/T4.17-B4-153ba3c.json`. Inside the one snapshot, the identity is read first and observations only on a mismatch; the reviewer confirmed each attempt still rescans fully on a mismatch and the binding is unchanged. No first-run passes, no code ahead of red.

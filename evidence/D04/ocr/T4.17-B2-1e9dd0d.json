@@ -1,0 +1,80 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 16423,
+    "input_tokens": 16225,
+    "output_tokens": 198,
+    "cache_read_tokens": 5760,
+    "elapsed": "12s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/coordinators/workspace/migration-cases.ts",
+      "files": [
+        "src/coordinators/workspace/migration-cases.ts"
+      ]
+    }
+  ],
+  "session_id": "08de4f5c-c199-4386-96d5-f9ac5bb5b53d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "08de4f5c-c199-4386-96d5-f9ac5bb5b53d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "f91724166b44d15fa67a1fa81966f8cb4c15a169",
+      "resolved_head": "c1cbcd7812c71cc3fc46fa06b8e8f1299d69768e",
+      "exact_range": "f91724166b44d15fa67a1fa81966f8cb4c15a169..c1cbcd7812c71cc3fc46fa06b8e8f1299d69768e",
+      "source_artifact_sha256": "90476bfffc5b374649c34f67bdf41d57240a2d415568b29468291215f95a4c6b"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "f49e4232d28854ed58f4ecb0a65ee12ae1ca0b38e0bd72aa39074796159f1fff",
+          "path": "src/coordinators/workspace/migration-cases.ts",
+          "fingerprint": "025432907731fdc09c3ba8ebbf6bffa6628767e540267f441f5e80f35ddf4334"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "f49e4232d28854ed58f4ecb0a65ee12ae1ca0b38e0bd72aa39074796159f1fff",
+          "path": "src/coordinators/workspace/migration-cases.ts",
+          "fingerprint": "025432907731fdc09c3ba8ebbf6bffa6628767e540267f441f5e80f35ddf4334"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 11774
+  }
+}

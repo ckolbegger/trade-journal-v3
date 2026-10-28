@@ -1,0 +1,117 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 52710,
+    "input_tokens": 52135,
+    "output_tokens": 575,
+    "cache_read_tokens": 7680,
+    "elapsed": "34s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_find": 1,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/market-data/query-check.ts",
+      "content": "Renaming this file from `query.test.ts` to `query-check.ts` excludes the entire suite from the unit test project, whose include pattern in `vite.config.ts` is `src/**/*.test.{ts,tsx}`. Consequently, neither this regression test nor the existing query tests will run under `npm run test:unit`. Keep the `.test.ts` suffix (or explicitly update test discovery to include this file).",
+      "existing_code": "  it('should give Stale context from the latest earlier session Mark when a stored key holds a malformed date', async () =\u003e {",
+      "start_line": 120,
+      "end_line": 120,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/modules/market-data/market-data.ts",
+        "src/modules/market-data/query-check.ts",
+        "src/modules/market-data/section.ts"
+      ]
+    }
+  ],
+  "session_id": "8eb675b0-6dfd-4793-a42d-2b1c33573184",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "8eb675b0-6dfd-4793-a42d-2b1c33573184",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "range",
+      "requested_from": "4e91410~1",
+      "requested_head": "HEAD",
+      "resolved_base": "1e9dd0de812c605aca251ec0febc8e9209968dad",
+      "resolved_head": "042d74bd066fbbf82f3bfa397ce5d9756aec9d02",
+      "exact_range": "1e9dd0de812c605aca251ec0febc8e9209968dad..042d74bd066fbbf82f3bfa397ce5d9756aec9d02",
+      "source_artifact_sha256": "48fc37f15f5475a77e5ae4639b6bc194ff10873a1ef7fb24949cece4dcaded78"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3d09d4b2c7e354af90994d8158ba117315b309bf777532a69108f3b4040afe8a",
+          "path": "src/modules/market-data/section.ts",
+          "fingerprint": "7e9ced7a8419807321911f85d7fa5b990a9afd925c9c42d7bfd2033c03288cf8"
+        },
+        {
+          "item_id": "3f21880fe5e6cb236cf8d119eba04014db42fb805d44968f47b47dce2f6111c1",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "5f916c45c100cace08c7e69a0a998a449faf1297e402db2024aa08367b0ba339"
+        },
+        {
+          "item_id": "fe29363966103fd1283733fe227144cbb3e9c43a200622349a9f5a86b15d1617",
+          "path": "src/modules/market-data/query-check.ts",
+          "old_path": "src/modules/market-data/query.test.ts",
+          "fingerprint": "d39964a97b22c16d0aefe4c461282414681aafccecacf9f290a8d38da9a6762a"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3d09d4b2c7e354af90994d8158ba117315b309bf777532a69108f3b4040afe8a",
+          "path": "src/modules/market-data/section.ts",
+          "fingerprint": "7e9ced7a8419807321911f85d7fa5b990a9afd925c9c42d7bfd2033c03288cf8"
+        },
+        {
+          "item_id": "3f21880fe5e6cb236cf8d119eba04014db42fb805d44968f47b47dce2f6111c1",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "5f916c45c100cace08c7e69a0a998a449faf1297e402db2024aa08367b0ba339"
+        },
+        {
+          "item_id": "fe29363966103fd1283733fe227144cbb3e9c43a200622349a9f5a86b15d1617",
+          "path": "src/modules/market-data/query-check.ts",
+          "old_path": "src/modules/market-data/query.test.ts",
+          "fingerprint": "d39964a97b22c16d0aefe4c461282414681aafccecacf9f290a8d38da9a6762a"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 34251
+  }
+}
