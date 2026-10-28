@@ -587,3 +587,11 @@ Cumulative run 2026-10-28 02:18 EDT on `86b9928` (B1–B3): unit 619, integratio
 
 ### T4.13-B4 No withdrawal after a Mark
 - it should report a Withdrawn acknowledgment version saved after the key's first Mark
+
+ocr review of `03b0eb1` (B4): session `52424def-484c-4d5d-91d8-858b548c0171`, 1 file, **No findings.** `ocr/T4.13-B4-03b0eb1.json`. New code `WithdrawnWhileMarkEffective {versionId}` shares one `savedAt` check with `AssertedWhileMarkEffective`; the reviewer confirmed no writer-producible history is flagged. Noted, not a bug task: both rules compare `savedAt`, so a clock stepping backward between an acknowledgment and a later Mark would flag a history the app wrote.
+
+### Cumulative run after T4.13
+
+- `03b0eb1` (B4), 2026-10-28 02:24 EDT: unit 620, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.13-b4-*`.
+
+Only `verify:capacity` failed (expected until T4.28). T4.13 is complete.
