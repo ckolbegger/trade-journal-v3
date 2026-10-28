@@ -749,6 +749,27 @@ describe('getTrade', () => {
     expect(await stack.dailyReview.getTrade({ reviewDate, tradeId: a, binding: other })).toEqual({ kind: 'ReviewChanged' });
   }, 30_000);
 
+  it('should name the Entry first version\'s definition for a saved Action and the latest definition for a new form', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a, e } = await fiveTradeFixture(stack);
+    await stack.saveAction(e, 'Hold');
+    const original = await stack.journal.getDefinitions({ latestFor: 'entry-type.daily-trade-review' });
+    if (original.kind !== 'Found') throw new Error('no Daily Trade Review definition');
+    // The Journal has no revise path yet: a second revision is written to the store directly.
+    const revised = { ...original.definition, id: 'definition.daily-trade-review.r2', revisionNumber: original.definition.revisionNumber + 1 };
+    const committed = await stack.persistence.commit({ checks: [], writes: [{ op: 'put', store: 'journalDefinitions', value: { ...revised } }] });
+    expect(committed.kind).toBe('Committed');
+
+    const saved = await getTrade(stack, e);
+    const fresh = await getTrade(stack, a);
+
+    if (saved.kind !== 'Ready' || fresh.kind !== 'Ready') throw new Error('expected Ready');
+    expect(saved.trade.definitionRevision).toBe(original.definition.id);
+    expect(saved.trade.saveBinding.definitionRevision).toBe(original.definition.id);
+    expect(fresh.trade.definitionRevision).toBe(revised.id);
+    expect(fresh.trade.saveBinding.definitionRevision).toBe(revised.id);
+  }, 30_000);
+
   it('should record nothing', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const { a, b, c, e } = await fiveTradeFixture(stack);

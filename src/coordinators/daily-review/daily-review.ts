@@ -308,8 +308,13 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const figures = evaluation && entry.derivation.kind === 'Derived' ? figuresOf(entry, entry.derivation, frames.frames, evaluation) : {};
     const saved = (await deps.journal.queryActions({ reviewDate })).actions[analysis.tradeId];
     const form: ActionForm = saved ? { kind: 'Saved', action: saved } : { kind: 'New', viewState: { selectedAction: 'Hold' } };
-    const definition = await deps.journal.getDefinitions({ latestFor: 'entry-type.daily-trade-review' });
-    if (definition.kind !== 'Found') throw new Error('no Daily Trade Review definition');
+    // A saved Action's form is the Entry's first version's definition; a new form takes the latest.
+    let definitionRevision = saved?.definitionId;
+    if (definitionRevision === undefined) {
+      const definition = await deps.journal.getDefinitions({ latestFor: 'entry-type.daily-trade-review' });
+      if (definition.kind !== 'Found') throw new Error('no Daily Trade Review definition');
+      definitionRevision = definition.definition.id;
+    }
     return {
       kind: 'Ready',
       review: {
@@ -326,7 +331,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           },
           ...figures,
           form,
-          definitionRevision: definition.definition.id,
+          definitionRevision,
           saveBinding: {
             reviewDate,
             tradeId: analysis.tradeId,
@@ -334,7 +339,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
             marketDataSnapshotId: frames.snapshotId,
             obligationKey: { entryType: 'DailyTradeReview', trade: analysis.tradeId, reviewDate },
             ...(saved && { expectedEntryRevision: saved.entryRevision }),
-            definitionRevision: definition.definition.id,
+            definitionRevision,
           },
         },
       },

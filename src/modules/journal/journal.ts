@@ -367,7 +367,7 @@ export function createJournal(deps: JournalDeps): Journal {
       const actionPromptId = definitions.get(entry.versions[0]!.definitionId)?.prompts.find((p) => p.kind === 'SingleSelect' && p.role === 'Action')?.id;
       const latest = entry.versions[entry.versions.length - 1]!;
       const chosen = narrative.responses[latest.responses.findIndex((r) => r.promptId === actionPromptId)]?.answer;
-      actions[entry.anchor.tradeId] = { ...narrative, entryRevision: entry.versions.length, action: chosen?.kind === 'Option' ? chosen.label : '' };
+      actions[entry.anchor.tradeId] = { ...narrative, entryRevision: entry.versions.length, definitionId: entry.versions[0]!.definitionId, action: chosen?.kind === 'Option' ? chosen.label : '' };
     }
     return { kind: 'Actions', reviewDate, actions, snapshot: { journalRevision: value.meta?.journalRevision ?? 0 } };
   }

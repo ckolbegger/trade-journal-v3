@@ -226,8 +226,9 @@ export type JournalPage = {
 };
 
 // An Action as last saved: the effective version's answers, the Entry revision (its version
-// count) a retry or edit must name, and the chosen Action's label.
-export type DailyAction = NarrativeEntry & { readonly entryRevision: number; readonly action: string };
+// count) a retry or edit must name, the chosen Action's label, and the definition of the Entry's
+// first version, which every edit is validated against.
+export type DailyAction = NarrativeEntry & { readonly entryRevision: number; readonly action: string; readonly definitionId: string };
 
 export type ReviewDateActions = {
   readonly kind: 'Actions';
