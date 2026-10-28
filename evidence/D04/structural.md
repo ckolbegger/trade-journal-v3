@@ -629,3 +629,18 @@ ocr review of `1e8fdce`: session `da5116e6-d452-405e-ac23-383d8500f058`, 7 files
 
 ### T4.14-B5 Completion as explicit guards (structural)
 Verification: `npx vitest run src tests/integration` passes with the same count before and after; typecheck, tsc6, lint, lint:deps exit 0.
+
+ocr reviews of the T4.14 bug tasks so far: `d4e61ac` (B1, session `eca45c44-2eb0-45de-99cf-685d9edeec2f`, **No findings**; an expired cursor gives an internal `Expired` pass and the 3-attempt loop continues; tested with the module's existing `pageSize: 2`; the give-up assertion mutation-checked and flagged), `4e9d689` (B2, `27a2ccb4-ee65-43f2-9471-5f5cfbc2fb1e`, **No findings**; `Temporal.Instant.compare`; the offset-form assertion mutation-checked and flagged), `3af1373` (B3, `c3178e38-decb-46fa-b2e1-3b16f1d4a431`, no ocr comments; recorded Deviations kept at a cutoff by their latest version's Economic Time; the Daily Review case and one derive assertion were first-run passes, mutation-checked and flagged). Raw outputs `ocr/T4.14-B<n>-<sha>.json`.
+
+Assessment of B3's noted limit, requested from the reviewer:
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/domain/trade-analysis/derive.ts:592-598` | A Position Change whose Executions straddle the cutoff (A18 gives each Execution its own Economic Time; A19 gives the Position Change its earliest) keeps its recorded Deviation while the expected quantity comes from the surviving Executions, so a spurious integrity finding remains | Valid | Bug task T4.14-B6 (second round on T4.14) |
+| low | `derive.ts:597` | Latest version's time vs first | Wrong: pairing already uses the latest version, and its time follows the Position Change | Dismissed |
+
+Decision for B6: integrity is whether the stored Trade agrees with its facts, which does not depend on the Review cutoff. Daily Review therefore takes integrity findings (A59) from a derivation over all facts, and uses the cutoff derivation only for eligibility, state and evaluation. This removes post-cutoff and straddling cases together; B3's filter stays, so the cutoff derivation is self-consistent.
+
+### T4.14-B6 Integrity findings from all facts
+- it should not report an integrity blocker for a Position Change whose Executions straddle the cutoff
+- it should still report an integrity blocker for a disagreement in facts after the cutoff

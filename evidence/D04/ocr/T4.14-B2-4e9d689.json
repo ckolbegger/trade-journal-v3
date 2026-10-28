@@ -1,0 +1,82 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 19683,
+    "input_tokens": 19512,
+    "output_tokens": 171,
+    "cache_read_tokens": 7680,
+    "elapsed": "13s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/coordinators/daily-review/attention.ts",
+      "files": [
+        "src/coordinators/daily-review/attention.ts"
+      ]
+    }
+  ],
+  "session_id": "27a2ccb4-ee65-43f2-9471-5f5cfbc2fb1e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "27a2ccb4-ee65-43f2-9471-5f5cfbc2fb1e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "4e9d689",
+      "resolved_base": "d4e61ac1b1b760de3b290fbdfa1741420acaec08",
+      "resolved_head": "4e9d689f8bd55c60208de91f4013446b9b86ba77",
+      "exact_range": "d4e61ac1b1b760de3b290fbdfa1741420acaec08..4e9d689f8bd55c60208de91f4013446b9b86ba77",
+      "source_artifact_sha256": "eed0b16e19edfaea7219aae09b680f868c22d4f47115ecf694d579ba2a7ec2f1"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "d0be2164d0e1800eeaf3d8a4cfb980155f3541c2f9ad47e1bafc8e88ac22f9b0",
+          "path": "src/coordinators/daily-review/attention.ts",
+          "fingerprint": "8252329f841a073e68b0d62b731ef6e07eced39f35c9141b48ae727f02aec4cd"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "d0be2164d0e1800eeaf3d8a4cfb980155f3541c2f9ad47e1bafc8e88ac22f9b0",
+          "path": "src/coordinators/daily-review/attention.ts",
+          "fingerprint": "8252329f841a073e68b0d62b731ef6e07eced39f35c9141b48ae727f02aec4cd"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 12940
+  }
+}
