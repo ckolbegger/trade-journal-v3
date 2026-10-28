@@ -13,6 +13,7 @@ export type MarketDataSectionIssue = { readonly instrumentKey: string; readonly 
   | { readonly code: 'CorrectionReasonMissing'; readonly revisionId: string }
   | { readonly code: 'CorrectionFootprintMissing'; readonly revisionId: string }
   | { readonly code: 'AssertedWhileMarkEffective'; readonly versionId: string }
+  | { readonly code: 'MarkChainBroken'; readonly revisionId: string; readonly field: 'supersedes' | 'revisionNumber' }
   | { readonly code: 'PriceNegative' | 'InvalidPrice'; readonly revisionId: string }
   | { readonly code: 'EffectiveHeadNotLast'; readonly chain: Chain; readonly effectiveId: string | null; readonly lastId: string | null }
 );
@@ -66,6 +67,18 @@ export async function validateSection(source: RecordSource, policy: SessionPolic
           issues.push({ code: 'AssertedWhileMarkEffective', instrumentKey, tradingDate, versionId: ack.versionId });
         }
       }
+      record.marks.forEach((mark, index) => {
+        // The first revision is numbered 1 and supersedes nothing; every later one follows the revision before it.
+        const previous = record.marks[index - 1];
+        const expectedNumber = previous === undefined ? 1 : previous.revisionNumber + 1;
+        const expectedSupersedes = previous?.revisionId;
+        if (mark.revisionNumber !== expectedNumber) {
+          issues.push({ code: 'MarkChainBroken', instrumentKey, tradingDate, revisionId: mark.revisionId, field: 'revisionNumber' });
+        }
+        if (mark.supersedes !== expectedSupersedes) {
+          issues.push({ code: 'MarkChainBroken', instrumentKey, tradingDate, revisionId: mark.revisionId, field: 'supersedes' });
+        }
+      });
       for (const mark of record.marks) {
         // A price is a finite decimal with at most 6 fractional digits (A37); zero is valid.
         const price = parseDecimal(mark.price);

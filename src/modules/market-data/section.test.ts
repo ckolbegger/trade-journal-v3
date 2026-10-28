@@ -117,4 +117,29 @@ describe('Market Data section', () => {
       { code: 'NotASession', instrumentKey: 'BBB', tradingDate: '2026-2-3' },
     ]);
   });
+
+  it('should report a Mark revision whose supersedes link or revision number does not follow the one before it', async () => {
+    const source = recordSourceOf({
+      meta: [sessionPolicyMeta],
+      observations: [
+        // The second revision supersedes a revision that is not the one before it.
+        record('AAA', '2026-10-12', { marks: [mark('a-1', 1, '52'), correction('a-2', 2, '51', 'a-9', 'AAA', '2026-10-12')], effectiveMarkId: 'a-2' }),
+        // The second revision skips a revision number.
+        record('BBB', '2026-10-12', { marks: [mark('b-1', 1, '52'), correction('b-2', 3, '51', 'b-1', 'BBB', '2026-10-12')], effectiveMarkId: 'b-2' }),
+        // The first revision supersedes something.
+        record('CCC', '2026-10-12', { marks: [mark('c-1', 1, '52', { supersedes: 'c-0' })], effectiveMarkId: 'c-1' }),
+        // The first revision does not carry revision number 1.
+        record('DDD', '2026-10-12', { marks: [mark('d-1', 2, '52')], effectiveMarkId: 'd-1' }),
+      ],
+    });
+
+    const result = await validateSection(source, nyseSessionPolicy);
+
+    expect(result.issues).toEqual([
+      { code: 'MarkChainBroken', instrumentKey: 'AAA', tradingDate: '2026-10-12', revisionId: 'a-2', field: 'supersedes' },
+      { code: 'MarkChainBroken', instrumentKey: 'BBB', tradingDate: '2026-10-12', revisionId: 'b-2', field: 'revisionNumber' },
+      { code: 'MarkChainBroken', instrumentKey: 'CCC', tradingDate: '2026-10-12', revisionId: 'c-1', field: 'supersedes' },
+      { code: 'MarkChainBroken', instrumentKey: 'DDD', tradingDate: '2026-10-12', revisionId: 'd-1', field: 'revisionNumber' },
+    ]);
+  });
 });
