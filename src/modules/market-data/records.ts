@@ -51,15 +51,29 @@ export interface ObservationRecord extends ObservationKey {
   readonly effectiveAcknowledgmentId: string | null;
 }
 
+// The latest earlier effective Mark of the same Instrument: disclosed context, never a price (A47).
+export interface StaleMarkContext {
+  readonly tradingDate: string;
+  readonly price: string;
+  readonly revisionId: string;
+  readonly revisionNumber: number;
+  readonly closeInstant: string;
+}
+
 export type MarkResolution =
   | { readonly kind: 'Available'; readonly mark: Pick<MarkRevision, 'revisionId' | 'revisionNumber' | 'price' | 'source'> }
-  | { readonly kind: 'Missing' };
+  | { readonly kind: 'Missing'; readonly stale?: StaleMarkContext }
+  | { readonly kind: 'AcknowledgedUnavailable'; readonly acknowledgment: AcknowledgmentVersion; readonly stale?: StaleMarkContext };
 
 // Resolution precedence (market-data contract): an exact Mark is Available whatever the
 // acknowledgment history holds; T4.5 adds the acknowledgment branch before Missing.
-export function resolve(record: ObservationRecord | undefined): MarkResolution {
+export function resolve(record: ObservationRecord | undefined, stale?: StaleMarkContext): MarkResolution {
   const effective = record?.marks.find((m) => m.revisionId === record.effectiveMarkId);
-  if (!effective) return { kind: 'Missing' };
+  if (!effective) {
+    const acknowledgment = record?.acknowledgments.find((a) => a.versionId === record.effectiveAcknowledgmentId);
+    if (acknowledgment?.kind === 'Asserted') return { kind: 'AcknowledgedUnavailable', acknowledgment, ...(stale && { stale }) };
+    return { kind: 'Missing', ...(stale && { stale }) };
+  }
   const { revisionId, revisionNumber, price, source } = effective;
   return { kind: 'Available', mark: { revisionId, revisionNumber, price, source } };
 }

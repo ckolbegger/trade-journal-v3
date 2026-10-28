@@ -336,7 +336,7 @@ describe('key and price validation (P8, P9, P10)', () => {
   it('should reject OverrideManualValuation with VariantNotInstalled', async () => {
     const { marketData, persistence } = await setup();
     const before = await stored(persistence);
-    const result = await marketData.save({ ...initial(), intention: 'OverrideManualValuation' });
+    const result = await marketData.save({ intention: 'OverrideManualValuation', instrumentKey: 'XYZ', tradingDate: '2026-10-12', price: '52', expectedResolutionRevision: 'None' });
     expect(result).toEqual({ kind: 'VariantNotInstalled', intention: 'OverrideManualValuation' });
     expect(await stored(persistence)).toEqual(before);
   });
@@ -358,5 +358,207 @@ describe('write gate', () => {
     expect(await marketData.save(correct())).toEqual(refusal);
     expect(await marketData.save(initial({ instrumentKey: 'ABC' }))).toEqual(refusal);
     expect(await stored(persistence)).toEqual(before);
+  });
+});
+
+// T4.5: acknowledgments and resolution precedence (D4 A35, A36, A47; AC-MARK-003).
+
+const FRIDAY_CLOSE = '2026-10-09T20:00:00Z';
+
+const assertUnavailable = (overrides: Partial<Extract<MarketDataSaveCommand, { intention: 'AssertUnavailable' }>> = {}): MarketDataSaveCommand => ({
+  intention: 'AssertUnavailable',
+  instrumentKey: 'DEF',
+  tradingDate: '2026-10-12',
+  reason: 'Halted, no close printed',
+  expectedResolutionRevision: 'None',
+  ...overrides,
+});
+
+describe('assert unavailable (AC-MARK-003)', () => {
+  it('should append an Asserted acknowledgment with its reason and time, and no price, for DEF 2026-10-12, returning AcknowledgedUnavailable with Stale context and the new resolution revision', async () => {
+    const { marketData, persistence } = await setup();
+    await marketData.save(initial({ instrumentKey: 'DEF', tradingDate: '2026-10-09', price: '51.20' }));
+    const result = await marketData.save(assertUnavailable());
+    const version = { versionId: 'rev-0002', kind: 'Asserted', reason: 'Halted, no close printed', savedAt: TUESDAY_NOON };
+    expect(result).toEqual({
+      kind: 'Saved',
+      key: { instrumentKey: 'DEF', tradingDate: '2026-10-12' },
+      resolution: {
+        kind: 'AcknowledgedUnavailable',
+        acknowledgment: version,
+        stale: { tradingDate: '2026-10-09', price: '51.2', revisionId: 'rev-0001', revisionNumber: 1, closeInstant: FRIDAY_CLOSE },
+      },
+      resolutionRevision: 1,
+      classification: 'Asserted',
+      acknowledgment: version,
+      binding: { instrumentKey: 'DEF', tradingDate: '2026-10-12', expectedResolutionRevision: 'None' },
+    });
+    const { observations } = await stored(persistence);
+    const record = observations.find((o) => o.tradingDate === '2026-10-12')!;
+    expect(record.marks).toEqual([]);
+    expect(record.acknowledgments).toEqual([version]);
+    expect(record.effectiveAcknowledgmentId).toBe('rev-0002');
+  });
+});
+
+describe('assert rejections', () => {
+  it('should reject assert on a key with an effective Mark with MarkExists, and a blank or over-long reason', async () => {
+    const { marketData, persistence } = await setup();
+    await marketData.save(initial({ instrumentKey: 'DEF' }));
+    const before = await stored(persistence);
+    expect(await marketData.save(assertUnavailable({ expectedResolutionRevision: 1 }))).toEqual({
+      kind: 'Rejected',
+      issues: [{ field: 'key', code: 'MarkExists' }],
+    });
+    expect(await marketData.save(assertUnavailable({ instrumentKey: 'ABC', reason: '   ' }))).toEqual({
+      kind: 'Rejected',
+      issues: [{ field: 'reason', code: 'ReasonRequired' }],
+    });
+    expect(await marketData.save(assertUnavailable({ instrumentKey: 'ABC', reason: 'x'.repeat(501) }))).toEqual({
+      kind: 'Rejected',
+      issues: [{ field: 'reason', code: 'ReasonTooLong' }],
+    });
+    expect(await stored(persistence)).toEqual(before);
+  });
+});
+
+describe('assert for a past session', () => {
+  it('should accept assert for a past session, so a skipped day can be acknowledged', async () => {
+    const { marketData, persistence } = await setup();
+    const result = await marketData.save(assertUnavailable({ tradingDate: '2026-10-09' }));
+    expect(result).toMatchObject({
+      kind: 'Saved',
+      key: { instrumentKey: 'DEF', tradingDate: '2026-10-09' },
+      resolution: { kind: 'AcknowledgedUnavailable' },
+      resolutionRevision: 1,
+    });
+    const { observations } = await stored(persistence);
+    expect(observations).toEqual([expect.objectContaining({ tradingDate: '2026-10-09', effectiveAcknowledgmentId: 'rev-0001' })]);
+  });
+});
+
+const withdraw = (overrides: Partial<Extract<MarketDataSaveCommand, { intention: 'WithdrawAcknowledgment' }>> = {}): MarketDataSaveCommand => ({
+  intention: 'WithdrawAcknowledgment',
+  instrumentKey: 'DEF',
+  tradingDate: '2026-10-12',
+  expectedResolutionRevision: 1,
+  ...overrides,
+});
+
+describe('withdraw', () => {
+  it('should append a Withdrawn version, return Missing, and keep the assertion in history', async () => {
+    const { marketData, persistence } = await setup();
+    await marketData.save(initial({ instrumentKey: 'DEF', tradingDate: '2026-10-09', price: '51.20' }));
+    await marketData.save(assertUnavailable());
+    const result = await marketData.save(withdraw({ reason: 'Close was printed after all' }));
+    const withdrawn = { versionId: 'rev-0003', kind: 'Withdrawn', reason: 'Close was printed after all', savedAt: TUESDAY_NOON };
+    expect(result).toEqual({
+      kind: 'Saved',
+      key: { instrumentKey: 'DEF', tradingDate: '2026-10-12' },
+      resolution: {
+        kind: 'Missing',
+        stale: { tradingDate: '2026-10-09', price: '51.2', revisionId: 'rev-0001', revisionNumber: 1, closeInstant: FRIDAY_CLOSE },
+      },
+      resolutionRevision: 2,
+      classification: 'Withdrawn',
+      acknowledgment: withdrawn,
+      binding: { instrumentKey: 'DEF', tradingDate: '2026-10-12', expectedResolutionRevision: 1 },
+    });
+    const { observations } = await stored(persistence);
+    const record = observations.find((o) => o.tradingDate === '2026-10-12')!;
+    expect(record.acknowledgments.map((a) => [a.versionId, a.kind])).toEqual([['rev-0002', 'Asserted'], ['rev-0003', 'Withdrawn']]);
+    expect(record.effectiveAcknowledgmentId).toBe('rev-0003');
+  });
+});
+
+describe('withdraw rejections', () => {
+  it('should reject withdraw when no assertion is effective with NothingToWithdraw', async () => {
+    const { marketData, persistence } = await setup();
+    const nothing = { kind: 'Rejected', issues: [{ field: 'key', code: 'NothingToWithdraw' }] };
+    // No record at all.
+    expect(await marketData.save(withdraw({ expectedResolutionRevision: 'None' }))).toEqual(nothing);
+    // An assertion that was already withdrawn.
+    await marketData.save(assertUnavailable());
+    await marketData.save(withdraw());
+    const before = await stored(persistence);
+    expect(await marketData.save(withdraw({ expectedResolutionRevision: 2 }))).toEqual(nothing);
+    // A key with an effective Mark and no assertion.
+    await marketData.save(initial({ instrumentKey: 'ABC' }));
+    expect(await marketData.save(withdraw({ instrumentKey: 'ABC', expectedResolutionRevision: 1 }))).toEqual(nothing);
+    expect((await stored(persistence)).observations).toHaveLength(before.observations.length + 1);
+  });
+});
+
+describe('precedence', () => {
+  it('should resolve Available when an exact Mark is saved after an acknowledgment, keeping the acknowledgment history', async () => {
+    const { marketData, persistence } = await setup();
+    await marketData.save(assertUnavailable({ instrumentKey: 'XYZ' }));
+    const result = await marketData.save(initial({ expectedResolutionRevision: 1 }));
+    expect(result).toMatchObject({
+      kind: 'Saved',
+      classification: 'InitialManual',
+      resolution: { kind: 'Available', mark: { revisionId: 'rev-0002', price: '52' } },
+      resolutionRevision: 2,
+    });
+    const { observations } = await stored(persistence);
+    expect(observations[0]!.acknowledgments).toEqual([
+      { versionId: 'rev-0001', kind: 'Asserted', reason: 'Halted, no close printed', savedAt: TUESDAY_NOON },
+    ]);
+    expect(observations[0]!.effectiveAcknowledgmentId).toBe('rev-0001');
+  });
+});
+
+describe('no price for an acknowledged key', () => {
+  it('should never return a price for an acknowledged key', async () => {
+    const { marketData, persistence } = await setup();
+    await marketData.save(initial({ instrumentKey: 'DEF', tradingDate: '2026-10-09', price: '51.20' }));
+    const result = await marketData.save(assertUnavailable());
+    if (result.kind !== 'Saved' || !('acknowledgment' in result)) throw new Error('not an acknowledgment save');
+    expect(result.resolution.kind).toBe('AcknowledgedUnavailable');
+    expect(result.resolution).not.toHaveProperty('mark');
+    expect(result.resolution).not.toHaveProperty('price');
+    expect(result.acknowledgment).not.toHaveProperty('price');
+    const { observations } = await stored(persistence);
+    const record = observations.find((o) => o.tradingDate === '2026-10-12')!;
+    expect(record.marks).toEqual([]);
+    expect(record.effectiveMarkId).toBeNull();
+  });
+});
+
+describe('acknowledgment saves keep the shared save guarantees', () => {
+  it('should return Conflict for an acknowledgment prepared against an old resolution revision, and RuntimeNotWritable when the gate refuses, writing nothing', async () => {
+    const { marketData, persistence, gate } = await setup();
+    await marketData.save(assertUnavailable());
+    const before = await stored(persistence);
+    expect(await marketData.save(assertUnavailable({ expectedResolutionRevision: 'None' }))).toMatchObject({
+      kind: 'Conflict',
+      resolutionRevision: 1,
+      resolution: { kind: 'AcknowledgedUnavailable' },
+    });
+    expect(await marketData.save(withdraw({ expectedResolutionRevision: 7 }))).toMatchObject({ kind: 'Conflict', resolutionRevision: 1 });
+    const refusal: RuntimeNotWritable = {
+      kind: 'RuntimeNotWritable',
+      runtimeReadiness: 'RecoveryOnly',
+      failedChecks: [{ check: 'inventory', reason: 'InventoryInvalid' }],
+      workspaceStatus: 'RecoveryOnly',
+      safeActions: [{ action: 'Retry', explanation: 'Check again once the problem is fixed.' }],
+    };
+    gate.refusal = refusal;
+    expect(await marketData.save(withdraw({ expectedResolutionRevision: 1 }))).toEqual(refusal);
+    expect(await stored(persistence)).toEqual(before);
+  });
+
+  it('should reject an acknowledgment for a malformed symbol, a weekend, and a session not yet completed, as a Mark does', async () => {
+    const { marketData, persistence } = await setup();
+    const result = await marketData.save(assertUnavailable({ instrumentKey: 'bad key', tradingDate: '2026-10-10' }));
+    expect(result).toEqual({
+      kind: 'Rejected',
+      issues: [{ field: 'instrumentKey', code: 'InvalidInstrument' }, { field: 'tradingDate', code: 'NotASession' }],
+    });
+    expect(await marketData.save(assertUnavailable({ tradingDate: '2026-10-13' }))).toEqual({
+      kind: 'Rejected',
+      issues: [{ field: 'tradingDate', code: 'SessionNotCompleted' }],
+    });
+    expect((await stored(persistence)).observations).toEqual([]);
   });
 });
