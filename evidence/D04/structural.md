@@ -391,3 +391,12 @@ ocr review of `b16e1e4`: session `df72fde1-1944-47ea-8402-776944149495`, 2 files
 
 ### T4.7-B4 recover deduplicates Instruments
 - it should return one gap record and issue one gap read per Instrument when the request repeats an Instrument
+
+ocr reviews of the T4.7 bug tasks, each **No findings**: `d4efb8d` (B1, session `819f49ff-2293-45b7-adb8-ad5cbfa8ce44`), `0a62b63` (B2, `00ff0908-b6a8-4ee7-961b-8ba06062fad6`; `MarketDataIssue` gains optional `instrumentKey`, field `earliestExposure`), `f0948d7` (B3, `5c00584e-8499-42ba-aa4a-3dc2fcda5f15`; frame builder extracted into `resolveDay`, `frameEvidence`, `frameResult`), `62d31fa` (B4, `21a84e76-a346-421b-8bd9-5015b892296f`). Raw outputs `ocr/T4.7-B<n>-<sha>.json`.
+
+### Cumulative runs after T4.7
+
+- `b16e1e4` (T4.7), 2026-10-28 00:30 EDT: unit 559, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.7-recover-*`.
+- `62d31fa` (B1–B4), 00:41 EDT: unit 564, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.7-b4-*`.
+
+Only `verify:capacity` failed (expected until T4.28). T4.7 is complete, and with it the Market Data group (T4.4–T4.7).
