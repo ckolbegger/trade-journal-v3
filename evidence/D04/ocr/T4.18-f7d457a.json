@@ -1,0 +1,197 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 10 selected item(s).",
+  "summary": {
+    "files_reviewed": 10,
+    "comments": 1,
+    "total_tokens": 267410,
+    "input_tokens": 265018,
+    "output_tokens": 2392,
+    "cache_read_tokens": 23040,
+    "elapsed": "1m33s"
+  },
+  "tool_calls": {
+    "total": 29,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 9,
+      "file_find": 1,
+      "file_read": 17,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/trade-views/trade-views.ts",
+      "content": "Handle session-policy coverage rejection instead of throwing here. `MarketData.resolveDay` returns `Rejected` with code `SessionPolicyCoverage` when `latestCompleted(asOf)` is outside coverage, so both Open browse and Open detail currently reject their promises in that case. P8 requires current figures to be `Unavailable(SessionPolicyNotCovered)` while the rest of the view remains readable. Map that rejection to explicit unavailable figures and add uncovered-clock tests for both APIs; do not invent a session date or reuse an earlier mark.",
+      "existing_code": "    if (result.kind !== 'Frames') throw new Error(`Market Data returned ${result.kind} for the current frames`);",
+      "start_line": 415,
+      "end_line": 415,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Shared valuation coordinator and application wiring",
+      "files": [
+        "src/app/compose.ts",
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/valuation.ts",
+        "tests/support/stack.ts"
+      ]
+    },
+    {
+      "label": "Trade-view evaluation, summaries, and workspace compatibility",
+      "files": [
+        "src/coordinators/trade-views/current-evaluation.chk.ts",
+        "src/coordinators/trade-views/open-views.chk.ts",
+        "src/coordinators/trade-views/trade-summary.chk.ts",
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/coordinators/workspace/migration.chk.ts",
+        "tests/support/open-detail-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "7ce6a91b-091e-4ba2-b73b-3deda5c25ee7",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7ce6a91b-091e-4ba2-b73b-3deda5c25ee7",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "232cd2c1f4c55f59dc94ba80397a47f2089bf023",
+      "resolved_head": "e3939a772369eab7447bfe9c83ffc4eee9e1273e",
+      "exact_range": "232cd2c1f4c55f59dc94ba80397a47f2089bf023..e3939a772369eab7447bfe9c83ffc4eee9e1273e",
+      "source_artifact_sha256": "e85ff1de6c2d275047aaa465925419ead51a42930130f1e40174deb5bf39d257"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "066f5a8cf5adb82ece277f831a934b900a3943f0addb4c92caaba59cc8000027",
+          "path": "src/coordinators/trade-views/current-evaluation.chk.ts",
+          "fingerprint": "3bec795e9542f51aabd208d71316cc0ab9b7b6c73b6036393a4901d7f851e811"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "df47d317ab5894348daa5a15aaffb5b238bce84b73bc0dc3f1a9ac9cdbcfbbac"
+        },
+        {
+          "item_id": "12626ba2e4a9ed20c4d156fd8a07e4e989c5e018142ca6db77671b5647a5f123",
+          "path": "tests/support/stack.ts",
+          "fingerprint": "cd893df0795f0a5b24fa39a920c6833ca21f0a061c525a280b2db7dc489ec4b2"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "f116335c30930db40e81deae716483470935e50d59cce8c4cee0a7df167b2d68"
+        },
+        {
+          "item_id": "4b8ce715f40aa4b54f7fac794376a03f875408d2d77f381963e248879a09a35d",
+          "path": "src/coordinators/workspace/migration.chk.ts",
+          "fingerprint": "5360e9fc5fd36020e5f2a8bdb507b1a0b331b6ed17421348a2cc8f5f6deea7f0"
+        },
+        {
+          "item_id": "6d3fad6b3efc4d1fe0b50a0c838ca8def1d39d84c2ccf765c93272de473b91ee",
+          "path": "src/coordinators/trade-views/trade-summary.chk.ts",
+          "fingerprint": "b110e7fc6ab119fc2155474a08b92847657fb9132f12a16389bf7f8d465c98db"
+        },
+        {
+          "item_id": "751cfcaab7a5f97af3fd3f54b18520951be6a69dbe6fc0905dda4b53eb1ee309",
+          "path": "tests/support/open-detail-fixtures.ts",
+          "fingerprint": "f492d8332793107ce9cee6729df874165f053f118dfaa968b1c00efa73a26881"
+        },
+        {
+          "item_id": "8be6b1c3e5dcd1a81f07cbebdb76edca8de1f5f310509f944d885aa39bf3c7da",
+          "path": "src/coordinators/trade-views/open-views.chk.ts",
+          "fingerprint": "efdabfd3a46da5942c9fa3142248dcd5f6d52d667cc6a0bd9f356712e09bd3d0"
+        },
+        {
+          "item_id": "91539de63f9c084b4bd8166c155de6d64a0a809a3ab0f7e54d8e4ed68fc30c4f",
+          "path": "src/app/compose.ts",
+          "fingerprint": "13d4118d23467ca1d583171b0fe727bf7c1462f01c41e7732ea273be3cbd6c03"
+        },
+        {
+          "item_id": "99d627713d805a8be3f1d2ef6e20fe1ecba03739d81dfbba50d27ef341f8934c",
+          "path": "src/coordinators/valuation.ts",
+          "fingerprint": "d2bdd4272745719ed642cb5c9f6d9e8b76a08fdc8e6b59dc752e001c9155cb32"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "066f5a8cf5adb82ece277f831a934b900a3943f0addb4c92caaba59cc8000027",
+          "path": "src/coordinators/trade-views/current-evaluation.chk.ts",
+          "fingerprint": "3bec795e9542f51aabd208d71316cc0ab9b7b6c73b6036393a4901d7f851e811"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "df47d317ab5894348daa5a15aaffb5b238bce84b73bc0dc3f1a9ac9cdbcfbbac"
+        },
+        {
+          "item_id": "12626ba2e4a9ed20c4d156fd8a07e4e989c5e018142ca6db77671b5647a5f123",
+          "path": "tests/support/stack.ts",
+          "fingerprint": "cd893df0795f0a5b24fa39a920c6833ca21f0a061c525a280b2db7dc489ec4b2"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "f116335c30930db40e81deae716483470935e50d59cce8c4cee0a7df167b2d68"
+        },
+        {
+          "item_id": "4b8ce715f40aa4b54f7fac794376a03f875408d2d77f381963e248879a09a35d",
+          "path": "src/coordinators/workspace/migration.chk.ts",
+          "fingerprint": "5360e9fc5fd36020e5f2a8bdb507b1a0b331b6ed17421348a2cc8f5f6deea7f0"
+        },
+        {
+          "item_id": "6d3fad6b3efc4d1fe0b50a0c838ca8def1d39d84c2ccf765c93272de473b91ee",
+          "path": "src/coordinators/trade-views/trade-summary.chk.ts",
+          "fingerprint": "b110e7fc6ab119fc2155474a08b92847657fb9132f12a16389bf7f8d465c98db"
+        },
+        {
+          "item_id": "751cfcaab7a5f97af3fd3f54b18520951be6a69dbe6fc0905dda4b53eb1ee309",
+          "path": "tests/support/open-detail-fixtures.ts",
+          "fingerprint": "f492d8332793107ce9cee6729df874165f053f118dfaa968b1c00efa73a26881"
+        },
+        {
+          "item_id": "8be6b1c3e5dcd1a81f07cbebdb76edca8de1f5f310509f944d885aa39bf3c7da",
+          "path": "src/coordinators/trade-views/open-views.chk.ts",
+          "fingerprint": "efdabfd3a46da5942c9fa3142248dcd5f6d52d667cc6a0bd9f356712e09bd3d0"
+        },
+        {
+          "item_id": "91539de63f9c084b4bd8166c155de6d64a0a809a3ab0f7e54d8e4ed68fc30c4f",
+          "path": "src/app/compose.ts",
+          "fingerprint": "13d4118d23467ca1d583171b0fe727bf7c1462f01c41e7732ea273be3cbd6c03"
+        },
+        {
+          "item_id": "99d627713d805a8be3f1d2ef6e20fe1ecba03739d81dfbba50d27ef341f8934c",
+          "path": "src/coordinators/valuation.ts",
+          "fingerprint": "d2bdd4272745719ed642cb5c9f6d9e8b76a08fdc8e6b59dc752e001c9155cb32"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 93413
+  }
+}

@@ -823,3 +823,23 @@ ocr review of `d34beb3` (B6, test only): session `08aab6e1-5999-449a-abf8-c222b6
 - `e9f5e45` (code at `d34beb3`, B1–B6), 2026-10-28 05:07 EDT: unit 693, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.17-b6-*`.
 
 Only `verify:capacity` failed (expected until T4.28). `TradeList.test.tsx` passed. T4.17 is complete.
+
+## T4.18 Trade Views: current evaluation
+
+`f7d457a`. Cases in `src/coordinators/trade-views/current-evaluation.test.ts`; the A51 tail carried from T4.17 is in `migration.test.ts` (v1 has no Open Trades, so v2's three are checked). Shared helpers moved from Daily Review to `src/coordinators/valuation.ts` (`observationFrame`, `datedLineOf`, which also picks the frame's own close in the P12 case). Frames are requested only for Derived Open Trades; Planned views never query Market Data. Types: `TradeViewsDeps` gains `marketData` and `clock`; `ViewBinding.marketDataSnapshotId` optional (Open views only); `OpenTradeItem.current: OpenCurrentFigures`; `OpenTradeDetail.current: OpenCurrentEvaluation` (with `mark: MarkProvenance`, `coverage[]` one entry per Instrument, the full evaluation, optional `datedLine`). Three existing exact-shape expectations gained the new keys. First-run passes, each mutation-checked: case 4 (derive counts), case 5's retry and exhaustion assertions, cases 7, 8 and the A51 tail. No code ahead of red.
+
+ocr review of `f7d457a`: session `7ce6a91b-091e-4ba2-b73b-3deda5c25ee7` (scratch clone with tests renamed), 10 files, 1 comment. `ocr/T4.18-f7d457a.json`. The reviewer found no defect in the figures, Plan-R conversions or availability mapping.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/coordinators/trade-views/trade-views.ts:415` | `currentFrames` throws on Market Data's `Rejected` `SessionPolicyCoverage`, so Open browse and Detail reject instead of giving `Unavailable(SessionPolicyNotCovered)` (P8) | Valid | Bug task T4.18-B1 |
+| low | `trade-views.ts:421` (`markProvenance`) | Trade Views reads the `observations` store directly for save time and correction reason | Valid as a module-boundary breach (not a torn read: the shared content revision retries any write between the reads, and revisions are append-only). Market Data should expose provenance on the frame's Mark | Bug task T4.18-B2 |
+| info | `trade-views.ts:431` (`coherent`) | `marketDataSnapshotId` is not rechecked between attempts | Wrong: the Workspace content revision advances on every Market Data write, so any change to the frames fails the binding; each attempt reassembles from scratch | Dismissed |
+| info | `src/app/compose.ts:67` | A second Market Data instance | Wrong: it is the only production `createMarketData`; T4.19 must have Daily Review reuse it | Dismissed; carried to T4.19 |
+| info | `valuation.ts` (`datedLineOf`) | Daily Review now also takes the P12 frame-own-date path | Matches A54; P12 is unreachable at the Review cutoff (T4.15-B3) | None |
+
+### T4.18-B1 A date outside coverage is Unavailable, not a failure
+- it should return Open items and Detail with current figures Unavailable(SessionPolicyNotCovered) when the as-of date is outside session-policy coverage
+
+### T4.18-B2 Market Data owns Mark provenance
+- it should give the frame's Mark its save time and correction reason from Market Data
