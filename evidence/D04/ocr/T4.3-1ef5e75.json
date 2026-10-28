@@ -1,0 +1,199 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 10 selected item(s).",
+  "summary": {
+    "files_reviewed": 10,
+    "comments": 1,
+    "total_tokens": 154511,
+    "input_tokens": 153132,
+    "output_tokens": 1379,
+    "cache_read_tokens": 25984,
+    "elapsed": "1m6s"
+  },
+  "tool_calls": {
+    "total": 29,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 5,
+      "file_find": 1,
+      "file_read": 22
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/persistence/migrations/v2-to-v3.ts",
+      "content": "The v2→v3 transform removes `exposureStart` but still copies the existing private `activityDesc` field from v2 Trades. Unlike migrations starting at v1, migrations starting at v2 never run `v1ToV2`, which is currently the only transform that strips that field. This violates A139's authoritative-only transform contract and leaves source-derived private state in the candidate until rebuild. Strip both private Trade fields here so direct v2 migrations also produce an authoritative-only candidate.",
+      "suggestion_code": "  if (store === 'trades') {\n    delete copy['activityDesc'];\n    delete copy['exposureStart'];\n  }",
+      "existing_code": "  if (store === 'trades') delete copy['exposureStart'];",
+      "start_line": 10,
+      "end_line": 10,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Persistence schema migration and application integration",
+      "files": [
+        "src/app/compose.ts",
+        "src/persistence/index.ts",
+        "src/persistence/migrations/index.ts",
+        "src/persistence/migrations/v2-to-v3.ts",
+        "src/persistence/persistence.ts",
+        "src/persistence/rebuild.ts",
+        "src/persistence/schema.ts"
+      ]
+    },
+    {
+      "label": "Shared session policy for test support",
+      "files": [
+        "tests/support/session-policy.ts",
+        "tests/support/stack.ts",
+        "tests/support/workspace.ts"
+      ]
+    }
+  ],
+  "session_id": "c6f27e1f-87d6-4ff7-aea0-d1922b0fbb8c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c6f27e1f-87d6-4ff7-aea0-d1922b0fbb8c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "1ef5e75",
+      "resolved_base": "619144ac8e1aabb2b242f377f1be2d9eba379cee",
+      "resolved_head": "1ef5e75e9d2a7d15a0e51343ccefbe5dd1c049fb",
+      "exact_range": "619144ac8e1aabb2b242f377f1be2d9eba379cee..1ef5e75e9d2a7d15a0e51343ccefbe5dd1c049fb",
+      "source_artifact_sha256": "080c0fb7e06543809b05b697ecbae61d802db1b0dbb7b5547fd791c0beeecf65"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "12626ba2e4a9ed20c4d156fd8a07e4e989c5e018142ca6db77671b5647a5f123",
+          "path": "tests/support/stack.ts",
+          "fingerprint": "858fb24ccb03d9726a28fc6a19382b10aba5641ea5c347add135b3972e21a85e"
+        },
+        {
+          "item_id": "13ff36c0b0027f5fd4233607bde86d6e2d9e160e47e421e6c59de49704848ce4",
+          "path": "src/persistence/migrations/v2-to-v3.ts",
+          "fingerprint": "5895fb4ce451ec532d52a35c5ae4048070e5337822da36a36b1d542486070f57"
+        },
+        {
+          "item_id": "776bb605ba0fd83c50a73a71a91a6cca1a44597605923b9fa4d605816190d8aa",
+          "path": "tests/support/workspace.ts",
+          "fingerprint": "0b259bec6fe9a6c1eaf83080c19c5bd17fb3a6c78dbf747c55ee2d52d8fe4bc1"
+        },
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "0db4605ace82c1ce6f0c4ef3be824c0192684f94878ef4d91baca87dccd72070"
+        },
+        {
+          "item_id": "88f96927e861b632d4d9397a86aa43879f8bd433def01fcf61dcc792b80d5aae",
+          "path": "src/persistence/schema.ts",
+          "fingerprint": "eb8bf955feff52b391d77b749167841fbcfcaf34a5d16ccbfaead6678019b062"
+        },
+        {
+          "item_id": "91539de63f9c084b4bd8166c155de6d64a0a809a3ab0f7e54d8e4ed68fc30c4f",
+          "path": "src/app/compose.ts",
+          "fingerprint": "e9618f75c94702d6d778be09d89f958210bf80149c5e9513d6ee7a4979e37ef9"
+        },
+        {
+          "item_id": "ad48df54c917518c35d20e654488cf80aca465a126f7a764dd5a62fa2afa7c9b",
+          "path": "src/persistence/rebuild.ts",
+          "fingerprint": "0811d4d77ebb46cb675ef2124dcea18147a5a525274ed8935edb63ac2c6f71c2"
+        },
+        {
+          "item_id": "c8f02bb22d8d60c091f4ffa5d41b9db41b84affc50bef597e0f06ad5e9c534f3",
+          "path": "tests/support/session-policy.ts",
+          "fingerprint": "98246e0ce2f381fac859067fd5e2ecbb6dd52ff967b12fdf4900e832636ce3ce"
+        },
+        {
+          "item_id": "c92a2f280976ff9718e8027b86c97fa95bab6b9ab685a22cc15e9ca6b2bda0e2",
+          "path": "src/persistence/migrations/index.ts",
+          "fingerprint": "30d97335f99495118a7b520b41a0284cf598897f9c5137463df754c32b30c6e1"
+        },
+        {
+          "item_id": "ccc90ce69829b440ce6cd6762a5bc403b9ed2dcfc00f7d0daf697deadd67d65d",
+          "path": "src/persistence/index.ts",
+          "fingerprint": "a5523a46521a2a3a934bfb217d4f02a3a6b29f931a1249f5cdc98e8f38f5ffa2"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "12626ba2e4a9ed20c4d156fd8a07e4e989c5e018142ca6db77671b5647a5f123",
+          "path": "tests/support/stack.ts",
+          "fingerprint": "858fb24ccb03d9726a28fc6a19382b10aba5641ea5c347add135b3972e21a85e"
+        },
+        {
+          "item_id": "13ff36c0b0027f5fd4233607bde86d6e2d9e160e47e421e6c59de49704848ce4",
+          "path": "src/persistence/migrations/v2-to-v3.ts",
+          "fingerprint": "5895fb4ce451ec532d52a35c5ae4048070e5337822da36a36b1d542486070f57"
+        },
+        {
+          "item_id": "776bb605ba0fd83c50a73a71a91a6cca1a44597605923b9fa4d605816190d8aa",
+          "path": "tests/support/workspace.ts",
+          "fingerprint": "0b259bec6fe9a6c1eaf83080c19c5bd17fb3a6c78dbf747c55ee2d52d8fe4bc1"
+        },
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "0db4605ace82c1ce6f0c4ef3be824c0192684f94878ef4d91baca87dccd72070"
+        },
+        {
+          "item_id": "88f96927e861b632d4d9397a86aa43879f8bd433def01fcf61dcc792b80d5aae",
+          "path": "src/persistence/schema.ts",
+          "fingerprint": "eb8bf955feff52b391d77b749167841fbcfcaf34a5d16ccbfaead6678019b062"
+        },
+        {
+          "item_id": "91539de63f9c084b4bd8166c155de6d64a0a809a3ab0f7e54d8e4ed68fc30c4f",
+          "path": "src/app/compose.ts",
+          "fingerprint": "e9618f75c94702d6d778be09d89f958210bf80149c5e9513d6ee7a4979e37ef9"
+        },
+        {
+          "item_id": "ad48df54c917518c35d20e654488cf80aca465a126f7a764dd5a62fa2afa7c9b",
+          "path": "src/persistence/rebuild.ts",
+          "fingerprint": "0811d4d77ebb46cb675ef2124dcea18147a5a525274ed8935edb63ac2c6f71c2"
+        },
+        {
+          "item_id": "c8f02bb22d8d60c091f4ffa5d41b9db41b84affc50bef597e0f06ad5e9c534f3",
+          "path": "tests/support/session-policy.ts",
+          "fingerprint": "98246e0ce2f381fac859067fd5e2ecbb6dd52ff967b12fdf4900e832636ce3ce"
+        },
+        {
+          "item_id": "c92a2f280976ff9718e8027b86c97fa95bab6b9ab685a22cc15e9ca6b2bda0e2",
+          "path": "src/persistence/migrations/index.ts",
+          "fingerprint": "30d97335f99495118a7b520b41a0284cf598897f9c5137463df754c32b30c6e1"
+        },
+        {
+          "item_id": "ccc90ce69829b440ce6cd6762a5bc403b9ed2dcfc00f7d0daf697deadd67d65d",
+          "path": "src/persistence/index.ts",
+          "fingerprint": "a5523a46521a2a3a934bfb217d4f02a3a6b29f931a1249f5cdc98e8f38f5ffa2"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 66136
+  }
+}

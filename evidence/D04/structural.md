@@ -125,3 +125,39 @@ Run 2026-10-27 21:06 EDT on commit `b09ba64` (uncommitted: evidence only), Node 
 | Static and verification checks (12 commands) | the 11 earlier commands plus `npm run verify:session-policy` | 12 of 12 exit 0 | `suite-runs/t4.2-session-policy-verification-checks.txt` |
 
 Failures: none.
+
+## T4.3 Persistence: schema v3
+
+Implementation commit `1ef5e75`. Two cases passed on their first run (the v1→v2→v3 chain, built by T2.8's `migrationChain` and case 2; the `byInstrumentDate` rebuild, built by `rebuildPrivateState` and case 1); each is mutation-checked and flagged in `tdd-log.md`. Decisions recorded by the implementer: `exposureStart` is a private Trade field (derived; dropped by the transform, recomputed by the rebuild; D8's A149 schema-3 private list must include it with `activityDesc`); `meta.sessionPolicy` is stored nested as `{ key, policy }` to avoid the top-level `revision` stamp; persistence takes the policy identity as a `PersistenceDeps.sessionPolicy` parameter, wired from `src/app/compose.ts`, so T4.19's A39 rule must allow the composition root. **Expected failure until T4.28:** `verify:capacity` reports `FAIL basis measured at schema version 2, current is 3: run measure:capacity`, as D2's runs did between T2.8 and T2.18.
+
+### ocr review of `1ef5e75`
+
+Session `c6f27e1f-87d6-4ff7-aea0-d1922b0fbb8c`, 10 files reviewed, 1 comment. Raw output: `ocr/T4.3-1ef5e75.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/persistence/migrations/v2-to-v3.ts:10` | The transform drops `exposureStart` but copies the private `activityDesc`, so a direct v2 migration's transform output carries a private field (A139) | Doubtful (the rebuild recomputes `activityDesc`, so no stale value survives, but the transform output itself breaks A139, which D8's Restore reuses) | Bug task T4.3-B1 |
+
+### T4.3-B1 The v2→v3 transform carries only authoritative fields
+
+Defect: the transform's output includes the private `activityDesc`, contrary to A139 (transforms read and emit only authoritative fields; private fields come only from the rebuild).
+- it should drop every private Trade field, activityDesc and exposureStart, in the v2 to v3 transform
+
+Implemented in `8900f28`: `PRIVATE_TRADE_FIELDS` and `withoutPrivateFields` in `src/persistence/migrations/private-fields.ts`, used by both transforms. (`recomputePrivateTradeFields` in `rebuild.ts` still names the fields by literal.)
+
+ocr review of `8900f28`: session `ea9dfd2a-c776-4155-a1cb-3287493fa895`, 3 files reviewed, **No findings.** Raw output: `ocr/T4.3-B1-8900f28.json`.
+
+### Cumulative run after T4.3
+
+Run 2026-10-27 21:20 EDT on commit `8900f28` (uncommitted: evidence only), Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 45 passed (45)`, `Tests 502 passed (502)`, exit 0 | `suite-runs/t4.3-schema-v3-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 21 passed (21)`, `Tests 49 passed (49)`, exit 0 | `suite-runs/t4.3-schema-v3-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `1 failed`, `123 passed (3.9m)`, exit 1 | `suite-runs/t4.3-schema-v3-browser.txt` |
+| Static and verification checks (12 commands) | as after T4.2 | 10 of 12 exit 0 | `suite-runs/t4.3-schema-v3-checks.txt` |
+
+Failures, all consequences of `SCHEMA_VERSION` becoming 3, none a T4.3 defect:
+- `verify:capacity`: "basis measured at schema version 2, current is 3" — expected until T4.28.
+- `verify:releases`: "FAIL d2: reports schema 3, expected 2", and `e2e/d2/migration.spec.ts:47` (B2.3, About shows schema 3, expected 2). Reproduced with `npm run verify:releases`. The release harness builds its `d2` folder from the current source (`tools/build-releases.ts`, D2 T2.17). The planned fix is T4.27 (build `d2` from the `claude-opus-5.5-d2` tag and add a current `d4`), which depends only on D2 T2.17, so it runs next, ahead of the graph order, to restore a green suite.

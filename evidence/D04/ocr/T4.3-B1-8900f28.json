@@ -1,0 +1,104 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 17299,
+    "input_tokens": 17114,
+    "output_tokens": 185,
+    "cache_read_tokens": 7680,
+    "elapsed": "17s"
+  },
+  "tool_calls": {
+    "total": 2,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/persistence/migrations/private-fields.ts",
+        "src/persistence/migrations/v1-to-v2.ts",
+        "src/persistence/migrations/v2-to-v3.ts"
+      ]
+    }
+  ],
+  "session_id": "ea9dfd2a-c776-4155-a1cb-3287493fa895",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "ea9dfd2a-c776-4155-a1cb-3287493fa895",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "8900f28",
+      "resolved_base": "1ef5e75e9d2a7d15a0e51343ccefbe5dd1c049fb",
+      "resolved_head": "8900f28774d5a6497aa9552c7d5073d3d255825f",
+      "exact_range": "1ef5e75e9d2a7d15a0e51343ccefbe5dd1c049fb..8900f28774d5a6497aa9552c7d5073d3d255825f",
+      "source_artifact_sha256": "d61400ec4b1c11573239d619b2dd14a63fbd5a62cfc1691bfbb987c11ee2bacd"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "13ff36c0b0027f5fd4233607bde86d6e2d9e160e47e421e6c59de49704848ce4",
+          "path": "src/persistence/migrations/v2-to-v3.ts",
+          "fingerprint": "3387e2525b381462d95020c4a22df23871bf29c543302def8d70feca0da0823b"
+        },
+        {
+          "item_id": "50be0eacb4b2df2d5d5890c58351227857fb0f07432f3943fcc2ab1df5869e09",
+          "path": "src/persistence/migrations/v1-to-v2.ts",
+          "fingerprint": "97f92d446d542a575a60d724b3dade1998916fd7b09b9826806473d9b5484077"
+        },
+        {
+          "item_id": "82dbb1e7beb6c0b8bd2ecd4ac25dd6b85629967422bd1d9fb3515b50eb80a9b0",
+          "path": "src/persistence/migrations/private-fields.ts",
+          "fingerprint": "ea1a588c9cb65402c414a51629628f44a6c62b386383585066ada95f377c8b50"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "13ff36c0b0027f5fd4233607bde86d6e2d9e160e47e421e6c59de49704848ce4",
+          "path": "src/persistence/migrations/v2-to-v3.ts",
+          "fingerprint": "3387e2525b381462d95020c4a22df23871bf29c543302def8d70feca0da0823b"
+        },
+        {
+          "item_id": "50be0eacb4b2df2d5d5890c58351227857fb0f07432f3943fcc2ab1df5869e09",
+          "path": "src/persistence/migrations/v1-to-v2.ts",
+          "fingerprint": "97f92d446d542a575a60d724b3dade1998916fd7b09b9826806473d9b5484077"
+        },
+        {
+          "item_id": "82dbb1e7beb6c0b8bd2ecd4ac25dd6b85629967422bd1d9fb3515b50eb80a9b0",
+          "path": "src/persistence/migrations/private-fields.ts",
+          "fingerprint": "ea1a588c9cb65402c414a51629628f44a6c62b386383585066ada95f377c8b50"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 16692
+  }
+}
