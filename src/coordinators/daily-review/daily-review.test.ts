@@ -739,6 +739,16 @@ describe('getTrade', () => {
     expect(await stack.dailyReview.getTrade({ reviewDate, tradeId: 'no-such-trade', binding })).toEqual({ kind: 'ReviewChanged' });
   }, 30_000);
 
+  it('should return ReviewChanged when the overview binding names another Workspace', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a } = await fiveTradeFixture(stack);
+    const { reviewDate, binding } = await overview(stack);
+    expect((await stack.dailyReview.getTrade({ reviewDate, tradeId: a, binding })).kind).toBe('Ready');
+
+    const other = { ...binding, workspace: { ...binding.workspace, databaseName: `${binding.workspace.databaseName}-other` } };
+    expect(await stack.dailyReview.getTrade({ reviewDate, tradeId: a, binding: other })).toEqual({ kind: 'ReviewChanged' });
+  }, 30_000);
+
   it('should record nothing', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const { a, b, c, e } = await fiveTradeFixture(stack);

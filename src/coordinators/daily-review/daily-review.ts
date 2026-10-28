@@ -356,7 +356,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         const pass = await assembleTrade(request);
         if (pass.kind === 'Expired') return { retry: true };
         if (pass.kind !== 'Ready') return { done: pass };
-        return { settle: () => ({ kind: 'Ready', ...pass.review }) };
+        // The overview's Workspace is the one this read must be in; its content revision moves with every write.
+        return { settle: ({ workspace }) => (workspace.databaseName === request.binding.workspace.databaseName ? { kind: 'Ready', ...pass.review } : { kind: 'ReviewChanged' }) };
       }),
   };
 }
