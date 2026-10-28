@@ -653,3 +653,11 @@ ocr review of `344b959` (B4): session `8b42f8cc-0db8-4e3c-9710-5c3913e3b231`, 1 
 
 ### T4.14-B7 Empty after confirmation
 - it should return Empty when the index selects only Trades whose facts are not Open at the cutoff
+
+ocr reviews of the remaining T4.14 bug tasks, each **No findings**: `1ecd669` (B7, session `314ff6cf-abda-494d-ac49-35b468512744`; the Empty decision moved after the confirmation and before `recover`; Mark tasks come only from surviving Trades, so Empty loses nothing), `d0226ad` (B6, `0e4d9854-1e19-4bb2-8ea9-d493e351aad4`; each eligible Trade derived twice over the same AnalysisInput; integrity findings from the all-facts derivation; IncoherentFacts if either is incoherent, cutoff findings first, kept out of Mark requirements; a third case added for a Trade broken only after the cutoff; `fillTogether` in the fixture; no first-run passes), `45903e4` (B5, `a1786fe6-deec-4ae7-9706-dd0d2cc4902f`; `completionOf`, `incoherentItem` with narrowed types removing an unreachable `: []`, and the tie-break in `byAttention`; precedence unchanged). Raw outputs `ocr/T4.14-B<n>-<sha>.json`.
+
+### Cumulative run after T4.14
+
+- `45903e4` (B1–B7), 2026-10-28 03:13 EDT: unit 654, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.14-b5-*`.
+
+Only `verify:capacity` failed (expected until T4.28). T4.14 is complete.
