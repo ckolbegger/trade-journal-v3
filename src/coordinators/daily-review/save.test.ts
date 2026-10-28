@@ -250,6 +250,23 @@ describe('bindings rechecked inside the commit', () => {
     expect((await stack.journal.queryActions({ reviewDate: binding.reviewDate })).actions).toEqual({});
   }, 30_000);
 
+  it('should return ReviewChanged and write nothing when an earlier-session Mark is corrected between the read and the commit', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    // DEF has no Review-date Mark; its Stale context is Friday's Mark.
+    await stack.saveMark('DEF', '39.00', '2026-10-09');
+    const { a } = await fiveTradeFixture(stack);
+    const binding = await bindingFor(stack, a);
+    const review = racing(stack, async () => {
+      const corrected = await stack.marketData.save({ intention: 'CorrectMark', instrumentKey: 'DEF', tradingDate: '2026-10-09', price: '39.50', reason: 'Typo.', expectedResolutionRevision: 1 });
+      expect(corrected.kind).toBe('Saved');
+    });
+    const result = await review.save({ kind: 'SaveTradeAction', binding, action: 'Hold' });
+
+    if (result.kind !== 'ReviewChanged') throw new Error(`expected ReviewChanged, got ${result.kind}`);
+    expect(result.evidence.marketDataSnapshotId).not.toBe(binding.marketDataSnapshotId);
+    expect((await stack.journal.queryActions({ reviewDate: binding.reviewDate })).actions).toEqual({});
+  }, 30_000);
+
   it('should return ReviewChanged and write no Action when an acknowledgment is recorded after the read and before the commit', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const { a } = await fiveTradeFixture(stack);

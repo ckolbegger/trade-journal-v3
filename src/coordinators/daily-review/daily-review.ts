@@ -386,7 +386,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
   const INTENT_PROMPT = 'prompt.daily-trade-review.intent';
 
   // The Trade's facts and the Review-date evidence as they are now, against what the form was rendered from.
-  type Checked = { readonly kind: 'Checked'; readonly cutoff: string; readonly marks: readonly (readonly [instrumentKey: string, resolutionRevision: number | 'None'])[] } | Extract<SaveDailyReviewResult, { kind: 'ReviewChanged' | 'Rejected' }>;
+  type Checked = { readonly kind: 'Checked'; readonly cutoff: string; readonly marks: readonly (readonly [instrumentKey: string, tradingDate: string, resolutionRevision: number | 'None'])[] } | Extract<SaveDailyReviewResult, { kind: 'ReviewChanged' | 'Rejected' }>;
   async function checkBinding(binding: TradeSaveBinding): Promise<Attempt<Checked>> {
     const session = await deps.marketData.query({ kind: 'ResolveSession', context: { kind: 'Review', reviewDate: binding.reviewDate } });
     if (session.kind === 'Rejected') return { done: session };
@@ -397,9 +397,23 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     // The same request as the overview's recovery, so its snapshot is comparable.
     const instruments = [...observationNeeds(eligible).earliest.keys()];
     // Read before the frames, so a Mark saved in between fails the commit's recheck rather than slipping past.
-    const { value: marks } = await deps.persistence.readSnapshot(['observations'], (tx) =>
-      Promise.all(instruments.map(async (key) => [key, ((await tx.get('observations', [binding.reviewDate, key]))?.['resolutionRevision'] as number | undefined) ?? 'None'] as const)),
-    );
+    const { value: marks } = await deps.persistence.readSnapshot(['observations'], async (tx) => {
+      const bound: (readonly [instrumentKey: string, date: string, resolutionRevision: number | 'None'])[] = [];
+      for (const key of instruments) {
+        const onDate = await tx.get('observations', [binding.reviewDate, key]);
+        bound.push([key, binding.reviewDate, (onDate?.['resolutionRevision'] as number | undefined) ?? 'None']);
+        if (onDate?.['effectiveMarkId']) continue;
+        // Without a Mark on the Review date the Stale context is the latest earlier effective Mark: part of the evidence.
+        const earlier = await tx.findLastFromIndex(
+          'observations',
+          'byInstrumentDate',
+          IDBKeyRange.bound([key], [key, binding.reviewDate], false, true),
+          (r) => r['instrumentKey'] === key && (r['effectiveMarkId'] as string | null) !== null,
+        );
+        if (earlier) bound.push([key, earlier['tradingDate'] as string, earlier['resolutionRevision'] as number]);
+      }
+      return bound;
+    });
     const frames = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Review', reviewDate: binding.reviewDate }, instruments });
     if (frames.kind === 'Rejected') return { done: frames };
     if (frames.kind !== 'Frames') throw new Error(`unexpected frames result: ${frames.kind}`);
@@ -444,12 +458,12 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const tx = beginSemanticTransaction();
     // The Trade the Action was judged against, rechecked in the commit.
     tx.require({ name: `trade:${binding.tradeId}`, store: 'trades', key: binding.tradeId, verify: (current) => current?.['factRevision'] === binding.factRevision });
-    // The Review-date evidence, by each Instrument's resolution revision: a Mark or an acknowledgment moves it.
-    for (const [instrumentKey, revision] of checked.marks) {
+    // The Review-date evidence, by each Instrument's resolution revision (a Mark or an acknowledgment moves it), and the Stale-context Mark's.
+    for (const [instrumentKey, date, revision] of checked.marks) {
       tx.require({
-        name: `mark:${instrumentKey}@${binding.reviewDate}`,
+        name: `mark:${instrumentKey}@${date}`,
         store: 'observations',
-        key: [binding.reviewDate, instrumentKey],
+        key: [date, instrumentKey],
         verify: (current) => (current?.['resolutionRevision'] ?? 'None') === revision,
       });
     }
