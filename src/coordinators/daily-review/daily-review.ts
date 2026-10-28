@@ -491,7 +491,9 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     // The Entry version this commit wrote; a version another writer saves since is not this save's Action.
     const entry = prepared.effects.entries[0]!;
     const action = await deps.journal.actionAt(applied.entries[0]!.id, (entry.edit?.expectedRevision ?? 0) + 1);
-    return { kind: 'Saved', action, review: await postSaveReview(binding.reviewDate) };
+    // The Action is committed; a read that fails from here on only costs the next step, never the save.
+    const review = await postSaveReview(binding.reviewDate).catch((): PostSaveReview => ({ kind: 'ChangedDuringAssembly' }));
+    return { kind: 'Saved', action, review };
   }
 
   // The Review under the facts the save left, read like `open`. A Review that is no longer Ready

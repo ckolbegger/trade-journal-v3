@@ -351,3 +351,33 @@ describe('the saved Action', () => {
     expect((await stack.journal.queryActions({ reviewDate: binding.reviewDate })).actions[a]).toEqual(expect.objectContaining({ action: 'Adjust', entryRevision: 3 }));
   }, 30_000);
 });
+
+// The commit is the save; a read that fails after it must not turn a committed Action into a failure.
+describe('a failure after the commit', () => {
+  it('should return Saved with the review ChangedDuringAssembly when the post-commit read fails', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a } = await fiveTradeFixture(stack);
+    const binding = await bindingFor(stack, a);
+    let committed = false;
+    let failed = false;
+    const commit = (async (...args: Parameters<typeof stack.persistence.commit>) => {
+      const result = await stack.persistence.commit(...args);
+      committed = true;
+      return result;
+    }) as typeof stack.persistence.commit;
+    const query = (async (...args: Parameters<typeof stack.marketData.query>) => {
+      if (committed && !failed) {
+        failed = true;
+        throw new Error('read failed after the commit');
+      }
+      return stack.marketData.query(...args);
+    }) as typeof stack.marketData.query;
+    const review = createDailyReview({ ...stack, persistence: { ...stack.persistence, commit }, marketData: { ...stack.marketData, query } });
+
+    const result = await review.save({ kind: 'SaveTradeAction', binding, action: 'Hold' });
+
+    expect(saved(result).review).toEqual({ kind: 'ChangedDuringAssembly' });
+    expect(saved(result).action).toEqual(expect.objectContaining({ action: 'Hold', entryRevision: 1 }));
+    expect((await stack.journal.queryActions({ reviewDate: binding.reviewDate })).actions[a]).toEqual(expect.objectContaining({ action: 'Hold', entryRevision: 1 }));
+  }, 30_000);
+});
