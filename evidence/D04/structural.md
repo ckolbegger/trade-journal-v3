@@ -806,3 +806,12 @@ ocr review of `4e91410` (B3): session `8eb675b0-6dfd-4793-a42d-2b1c33573184`, 3 
 | medium | `query-check.ts:120` | The renamed test file no longer matches the unit-test include pattern | Wrong: an artifact of the scratch clone's rename; the commit keeps `query.test.ts` | Dismissed |
 
 ocr review of `153ba3c` (B4): session `1c410e6c-6db0-4887-bc54-100fe6682eb6`, no findings. `ocr/T4.17-B4-153ba3c.json`. Inside the one snapshot, the identity is read first and observations only on a mismatch; the reviewer confirmed each attempt still rescans fully on a mismatch and the binding is unchanged. No first-run passes, no code ahead of red.
+
+ocr review of `28abd46` (B5, test only): session `7aa3d7ed-3f8f-477b-8fae-d8072e27afc9` (scratch clone with the test renamed), 1 comment. `ocr/T4.17-B5-28abd46.json`. Both cases are flagged first-run passes, each assertion mutation-checked; the reviewer confirmed case 1's expected receipt can come only from the rescan and case 2's count and receipt fail on any other bound. An unrelated full-run failure in `src/ui/screens/TradeList.test.tsx` ("Open list" render states) passed alone twice and on rerun; recorded as a flake under load.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| low | `migration.test.ts:525` | "Not the release's identity" would also pass if exhaustion deleted or replaced the record | Valid (coverage, minor) | Bug task T4.17-B6 (third round) |
+
+### T4.17-B6 Exhaustion keeps the racing identity
+- it should record nothing and report no session policy when the identity keeps changing on every attempt (asserts the last racing identity is stored)

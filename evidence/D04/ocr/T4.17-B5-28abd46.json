@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 112117,
+    "input_tokens": 110479,
+    "output_tokens": 1638,
+    "cache_read_tokens": 17280,
+    "elapsed": "1m25s"
+  },
+  "tool_calls": {
+    "total": 16,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_find": 1,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/workspace/migration.review.ts",
+      "content": "This negative assertion also passes if retry exhaustion deletes the sessionPolicy record or replaces it with an unrelated identity. Assert that the final racing identity (`{ id: 'nyse', revision: 13, digest: 'moving' }`) remains stored as well, so the test verifies that exhaustion leaves the other launch's metadata intact.",
+      "suggestion_code": "    expect(stored).toContainEqual(expect.objectContaining({ key: 'sessionPolicy', policy: { id: 'nyse', revision: 13, digest: 'moving' } }));",
+      "existing_code": "    expect(stored).not.toContainEqual(expect.objectContaining({ key: 'sessionPolicy', policy: POLICY_REVISION_2.identity }));",
+      "start_line": 525,
+      "end_line": 525,
+      "category": "test",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/coordinators/workspace/migration.review.ts",
+      "files": [
+        "src/coordinators/workspace/migration.review.ts"
+      ]
+    }
+  ],
+  "session_id": "7aa3d7ed-3f8f-477b-8fae-d8072e27afc9",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7aa3d7ed-3f8f-477b-8fae-d8072e27afc9",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "941b575d22ed9cbb3f0d8dbc6eea95788a4b4ab3",
+      "resolved_head": "98d684ef9da2839ab6d1b114669949c147ccd052",
+      "exact_range": "941b575d22ed9cbb3f0d8dbc6eea95788a4b4ab3..98d684ef9da2839ab6d1b114669949c147ccd052",
+      "source_artifact_sha256": "62f472019d7c9d3c236b56515848ebf7686deaee402b4744c78ae750f9722047"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "a07e7bc1905e56dd714ca06d1fb667ce8dd5a5d423338f1320bf5a0f9b53e53f",
+          "path": "src/coordinators/workspace/migration.review.ts",
+          "fingerprint": "81ca7a0b317a56a7e6b5dc33aaedc429cfa2990d27d5d3f114e4b8cbf02c4587"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "a07e7bc1905e56dd714ca06d1fb667ce8dd5a5d423338f1320bf5a0f9b53e53f",
+          "path": "src/coordinators/workspace/migration.review.ts",
+          "fingerprint": "81ca7a0b317a56a7e6b5dc33aaedc429cfa2990d27d5d3f114e4b8cbf02c4587"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 84510
+  }
+}
