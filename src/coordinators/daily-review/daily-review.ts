@@ -484,11 +484,13 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       key: 'journal',
       verify: (current) => ((current?.['journalRevision'] as number | undefined) ?? 0) === prepared.snapshot.journalRevision,
     });
-    deps.journal.applyPreparedEffects(tx, prepared, {});
+    const applied = deps.journal.applyPreparedEffects(tx, prepared, {});
     const committed = await deps.persistence.commit(tx.close());
     if (committed.kind === 'Conflict') return { kind: 'Retry' };
     if (committed.kind !== 'Committed') throw new Error(`unexpected commit result: ${committed.kind}`);
-    const action = (await deps.journal.queryActions({ reviewDate: binding.reviewDate })).actions[binding.tradeId]!;
+    // The Entry version this commit wrote; a version another writer saves since is not this save's Action.
+    const entry = prepared.effects.entries[0]!;
+    const action = await deps.journal.actionAt(applied.entries[0]!.id, (entry.edit?.expectedRevision ?? 0) + 1);
     return { kind: 'Saved', action, review: await postSaveReview(binding.reviewDate) };
   }
 

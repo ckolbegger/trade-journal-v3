@@ -86,6 +86,8 @@ export interface Journal {
   query(query: JournalQuery): Promise<JournalPage>;
   // Every Daily Trade Review Action for a Review Date, keyed by Trade.
   queryActions(query: ReviewDateQuery): Promise<ReviewDateActions>;
+  // The Action as one Entry version saved it, whatever versions were saved after.
+  actionAt(entryId: string, entryRevision: number): Promise<DailyAction>;
 }
 
 interface StoredEntry {
@@ -225,6 +227,20 @@ function narrativeEntry(
   };
 }
 
+// An Entry's effective version as a Daily Action: the answers, the revision, the chosen Action's label.
+function dailyAction(
+  entry: StoredEntry,
+  definitions: ReadonlyMap<string, EntryDefinitionRecord>,
+  labels: ReadonlyMap<string, string>,
+): DailyAction {
+  const narrative = narrativeEntry(entry, definitions, labels);
+  // The Action prompt is the one holding the Action role in the Entry's original definition.
+  const actionPromptId = definitions.get(entry.versions[0]!.definitionId)?.prompts.find((p) => p.kind === 'SingleSelect' && p.role === 'Action')?.id;
+  const latest = entry.versions[entry.versions.length - 1]!;
+  const chosen = narrative.responses[latest.responses.findIndex((r) => r.promptId === actionPromptId)]?.answer;
+  return { ...narrative, entryRevision: entry.versions.length, definitionId: entry.versions[0]!.definitionId, action: chosen?.kind === 'Option' ? chosen.label : '' };
+}
+
 // A decline's optional reason, in characters (Unicode code points) (D2 A29).
 const MAX_DECLINE_REASON = 500;
 
@@ -361,19 +377,24 @@ export function createJournal(deps: JournalDeps): Journal {
     const definitions = new Map(value.definitions.map((d) => [d.id, d]));
     const labels = new Map(value.types.map((t) => [t.productKey, t.label]));
     const actions: Record<string, DailyAction> = {};
-    for (const entry of value.entries) {
-      const narrative = narrativeEntry(entry, definitions, labels);
-      // The Action prompt is the one holding the Action role in the Entry's original definition.
-      const actionPromptId = definitions.get(entry.versions[0]!.definitionId)?.prompts.find((p) => p.kind === 'SingleSelect' && p.role === 'Action')?.id;
-      const latest = entry.versions[entry.versions.length - 1]!;
-      const chosen = narrative.responses[latest.responses.findIndex((r) => r.promptId === actionPromptId)]?.answer;
-      actions[entry.anchor.tradeId] = { ...narrative, entryRevision: entry.versions.length, definitionId: entry.versions[0]!.definitionId, action: chosen?.kind === 'Option' ? chosen.label : '' };
-    }
+    for (const entry of value.entries) actions[entry.anchor.tradeId] = dailyAction(entry, definitions, labels);
     return { kind: 'Actions', reviewDate, actions, snapshot: { journalRevision: value.meta?.journalRevision ?? 0 } };
+  }
+
+  async function actionAt(entryId: string, entryRevision: number): Promise<DailyAction> {
+    const { value } = await deps.persistence.readSnapshot(['journalEntries', 'journalDefinitions', 'journalTypes'], async (tx) => ({
+      entry: (await tx.get('journalEntries', entryId)) as unknown as StoredEntry,
+      definitions: (await tx.getAll('journalDefinitions')) as unknown as EntryDefinitionRecord[],
+      types: (await tx.getAll('journalTypes')) as unknown as JournalTypeRecord[],
+    }));
+    // Versions are append-only, so the prefix is the Entry as that version left it.
+    const entry = { ...value.entry, versions: value.entry.versions.slice(0, entryRevision) };
+    return dailyAction(entry, new Map(value.definitions.map((d) => [d.id, d])), new Map(value.types.map((t) => [t.productKey, t.label])));
   }
 
   return {
     queryActions: ({ reviewDate }) => queryActions(reviewDate),
+    actionAt,
 
     async query(query) {
       const { value } = await deps.persistence.readSnapshot(

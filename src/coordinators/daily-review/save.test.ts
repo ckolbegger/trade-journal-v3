@@ -323,3 +323,31 @@ describe('bindings rechecked inside the commit', () => {
     expect(actions[a]).toEqual(expect.objectContaining({ action: 'Hold', entryRevision: 1 }));
   }, 30_000);
 });
+
+// The Action a save returns is the one it committed (A38), whatever lands before its post-commit read.
+describe('the saved Action', () => {
+  it('should return the Action this save committed even when another version lands before the post-commit read', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a } = await fiveTradeFixture(stack);
+    saved(await saveAction(stack, await bindingFor(stack, a), 'Hold'));
+    const binding = await bindingFor(stack, a);
+    expect(binding.expectedEntryRevision).toBe(1);
+    // After this save's commit, another writer edits the same Entry (revision 2 becomes 3).
+    let raced = false;
+    const commit = (async (...args: Parameters<typeof stack.persistence.commit>) => {
+      const result = await stack.persistence.commit(...args);
+      if (!raced) {
+        raced = true;
+        saved(await saveAction(stack, { ...binding, expectedEntryRevision: 2 }, 'Adjust', 'A newer thought.'));
+      }
+      return result;
+    }) as typeof stack.persistence.commit;
+    const review = createDailyReview({ ...stack, persistence: { ...stack.persistence, commit } });
+
+    const result = saved(await review.save({ kind: 'SaveTradeAction', binding, action: 'Exit', intent: 'Because the plan changed.' }));
+
+    expect(result.action).toEqual(expect.objectContaining({ action: 'Exit', entryRevision: 2 }));
+    expect(result.action.responses.map(({ answer }) => answer)).toContainEqual({ kind: 'Text', text: 'Because the plan changed.' });
+    expect((await stack.journal.queryActions({ reviewDate: binding.reviewDate })).actions[a]).toEqual(expect.objectContaining({ action: 'Adjust', entryRevision: 3 }));
+  }, 30_000);
+});
