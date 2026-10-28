@@ -25,7 +25,7 @@ export interface MarketDataSectionValidation {
 }
 
 // classify throws on a malformed or impossible calendar date; a stored key may hold one.
-function classifyDate(policy: SessionPolicy, date: string): ReturnType<SessionPolicy['classify']> | 'Invalid' {
+export function classifyDate(policy: SessionPolicy, date: string): ReturnType<SessionPolicy['classify']> | 'Invalid' {
   try {
     return policy.classify(date);
   } catch {

@@ -117,6 +117,24 @@ describe('Current and Review contexts', () => {
     });
   });
 
+  it('should give Stale context from the latest earlier session Mark when a stored key holds a malformed date', async () => {
+    const { marketData, persistence } = await setup();
+    await marketData.save(mark('XYZ', '2026-01-05', '51.20'));
+    const forged = {
+      instrumentKey: 'XYZ',
+      tradingDate: '2026-02-30',
+      resolutionRevision: 1,
+      marks: [{ revisionId: 'm-forged', revisionNumber: 1, price: '10', source: 'Manual', intention: 'InitialManual', observedAt: TUESDAY_NOON, savedAt: TUESDAY_NOON }],
+      effectiveMarkId: 'm-forged',
+      acknowledgments: [],
+      effectiveAcknowledgmentId: null,
+    };
+    const committed = await persistence.commit({ checks: [], writes: [{ op: 'put', store: 'observations', value: forged }] });
+    if (committed.kind !== 'Committed') throw new Error('seed failed');
+    const result = await marketData.query(current(['XYZ']));
+    expect(framesOf(result)[0]?.resolution).toMatchObject({ kind: 'Missing', stale: { tradingDate: '2026-01-05', price: '51.2', revisionId: 'rev-0001' } });
+  });
+
   it('should never select a Mark from another date as the exact Mark, and select the corrected revision after a correction', async () => {
     const { marketData } = await setup();
     await marketData.save(mark('XYZ', '2026-10-09', '51.20'));

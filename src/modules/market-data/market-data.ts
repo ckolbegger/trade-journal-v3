@@ -15,6 +15,7 @@ import {
   type ObservationRecord,
   type StaleMarkContext,
 } from './records.ts';
+import { classifyDate } from './section.ts';
 
 export interface MarketDataDeps {
   readonly persistence: Persistence;
@@ -242,10 +243,11 @@ async function staleContextOf(tx: ReadTransaction, policy: SessionPolicy, key: O
     'byInstrumentDate',
     IDBKeyRange.bound([key.instrumentKey], [key.instrumentKey, key.tradingDate], false, true),
     // A key the policy no longer counts as a session stays stored but is never selected (A40).
-    (r) =>
-      r['instrumentKey'] === key.instrumentKey &&
-      (r['effectiveMarkId'] as string | null) !== null &&
-      policy.classify(r['tradingDate'] as string).kind === 'Session',
+    (r) => {
+      if (r['instrumentKey'] !== key.instrumentKey || (r['effectiveMarkId'] as string | null) === null) return false;
+      const day = classifyDate(policy, r['tradingDate'] as string);
+      return day !== 'Invalid' && day.kind === 'Session';
+    },
   );
   const earlier = stripRevision(found);
   const mark = earlier?.marks.find((m) => m.revisionId === earlier.effectiveMarkId);
