@@ -192,7 +192,7 @@ describe('candidate and activation', () => {
       ['catalog', 'journalDeclines', 'journalDefinitions', 'journalEntries', 'journalTypes', 'meta', 'observations', 'trades'],
     );
     // Transforms see authoritative records only: no persistence stamp, no private store.
-    expect(seen.map((r) => r.store).sort()).toEqual(['catalog', 'journalDeclines', 'journalEntries', 'meta', 'meta', 'meta', 'trades']);
+    expect(seen.map((r) => r.store).sort()).toEqual(['catalog', 'journalDeclines', 'journalEntries', 'meta', 'meta', 'trades']);
     expect(seen.some((r) => 'revision' in r.value)).toBe(false);
     expect(await rawGetAll(candidate, 'catalog')).toEqual([{ id: 'institution-1', label: 'Broker', copied: true, revision: 1 }]);
     expect(await rawGetAll(candidate, 'journalDeclines')).toEqual([
@@ -204,7 +204,6 @@ describe('candidate and activation', () => {
     expect(await rawGetAll(candidate, 'journalObligations')).toEqual([]);
     expect(await rawGetAll(candidate, 'meta')).toEqual([
       { key: 'content', contentRevision: 1 },
-      { key: 'marketDataRevision', marketDataRevision: 0, copied: true, revision: 1 },
       { key: 'schema', schemaVersion: 3 },
       { key: 'sessionPolicy', policy: TEST_SESSION_POLICY, copied: true, revision: 1 },
       { key: 'settings', timeZone: 'America/New_York', copied: true, revision: 1 },

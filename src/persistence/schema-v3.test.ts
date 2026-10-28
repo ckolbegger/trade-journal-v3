@@ -49,7 +49,7 @@ async function rawGetAll(database: string, store: string): Promise<Record<string
 }
 
 describe('schema v3 layout', () => {
-  it('should create a fresh Workspace at schema version 3 with the observations store keyed by tradingDate and instrumentKey, its byInstrumentDate index, and meta fields sessionPolicy and marketDataRevision 0', async () => {
+  it('should create a fresh Workspace at schema version 3 with the observations store keyed by tradingDate and instrumentKey, its byInstrumentDate index, and the meta field sessionPolicy, and no marketDataRevision', async () => {
     const p = persistence();
     const created = await p.createWorkspace([]);
     if (created.kind !== 'Created') throw new Error('workspace not created');
@@ -72,9 +72,9 @@ describe('schema v3 layout', () => {
       expect.arrayContaining([
         { key: 'schema', schemaVersion: 3 },
         { key: 'sessionPolicy', policy: TEST_SESSION_POLICY },
-        { key: 'marketDataRevision', marketDataRevision: 0 },
       ]),
     );
+    expect(meta.map((m) => m['key'])).not.toContain('marketDataRevision');
   });
 });
 
@@ -130,7 +130,6 @@ describe('v2 → v3 transform', () => {
     expect(await rawGetAll(candidate, 'observations')).toEqual([]);
     expect(await rawGetAll(candidate, 'meta')).toEqual([
       { key: 'content', contentRevision: 1 },
-      { key: 'marketDataRevision', marketDataRevision: 0 },
       { key: 'schema', schemaVersion: 3 },
       { key: 'sessionPolicy', policy: TEST_SESSION_POLICY },
       { key: 'settings', timeZone: 'America/New_York', revision: 1 },

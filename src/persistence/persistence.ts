@@ -218,7 +218,6 @@ function initializeWorkspace(sessionPolicy: SessionPolicyIdentity) {
     meta.put({ key: 'content', contentRevision: 1 });
     // Nested, since a record's own top-level `revision` is the persistence write stamp.
     meta.put({ key: 'sessionPolicy', policy: sessionPolicy });
-    meta.put({ key: 'marketDataRevision', marketDataRevision: 0 });
   };
 }
 

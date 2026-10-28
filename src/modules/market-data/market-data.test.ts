@@ -45,7 +45,7 @@ const initial = (overrides: Partial<Extract<MarketDataSaveCommand, { intention: 
 async function stored(persistence: Awaited<ReturnType<typeof setup>>['persistence']) {
   const { value } = await persistence.readSnapshot(['meta', 'observations'], async (tx) => ({
     observations: (await tx.getAll('observations')) as unknown as (ObservationRecord & { revision: number })[],
-    marketDataRevision: (await tx.get('meta', 'marketDataRevision'))?.['marketDataRevision'],
+    meta: (await tx.getAll('meta')) as unknown as { key: string; revision?: number }[],
     content: (await tx.get('meta', 'content'))?.['contentRevision'],
   }));
   return value;
@@ -106,18 +106,16 @@ describe('record an initial Manual Mark', () => {
     expect(decimals).toMatchObject({ revision: { price: '52.5' } });
   });
 
-  it('should commit in one semantic commit that increments marketDataRevision and the Workspace content revision exactly once', async () => {
+  it('should commit in one semantic commit that increments the Workspace content revision exactly once and writes only the key observation record', async () => {
     const { marketData, persistence } = await setup();
     const before = await stored(persistence);
-    expect(before.marketDataRevision).toBe(0);
     await marketData.save(initial());
     const after = await stored(persistence);
-    expect(after.marketDataRevision).toBe(1);
     expect(after.content).toBe((before.content as number) + 1);
-    // Every record the commit wrote carries that one content revision.
+    // Every record the commit wrote carries that one content revision: the observation, and no meta record.
     expect(after.observations.map((o) => o.revision)).toEqual([after.content]);
-    await marketData.save(initial({ instrumentKey: 'ABC' }));
-    expect((await stored(persistence)).marketDataRevision).toBe(2);
+    const unchanged = (m: { key: string }) => m.key !== 'content';
+    expect(after.meta.filter(unchanged)).toEqual(before.meta.filter(unchanged));
   });
 
   it('should return Conflict with the current resolution and write nothing when the key already has a Mark', async () => {
@@ -167,8 +165,7 @@ describe('correct a believed-wrong Mark', () => {
       revision: revision2,
       binding: { instrumentKey: 'XYZ', tradingDate: '2026-10-12', expectedResolutionRevision: 1 },
     });
-    const { observations, marketDataRevision } = await stored(persistence);
-    expect(marketDataRevision).toBe(2);
+    const { observations } = await stored(persistence);
     expect(observations[0]).toEqual(
       expect.objectContaining({
         effectiveMarkId: 'rev-0002',
@@ -235,61 +232,17 @@ describe('concurrent saves', () => {
     const { marketData, persistence } = await setup();
     const results = await Promise.all([marketData.save(initial({ price: '52' })), marketData.save(initial({ price: '53' }))]);
     expect(results.map((r) => r.kind).sort()).toEqual(['Conflict', 'Saved']);
-    const { observations, marketDataRevision } = await stored(persistence);
+    const { observations } = await stored(persistence);
     expect(observations).toHaveLength(1);
     expect(observations[0]?.marks).toHaveLength(1);
-    expect(marketDataRevision).toBe(1);
   });
 
-  it('should save both of two simultaneous initial Marks for different keys, incrementing marketDataRevision once for each', async () => {
+  it('should save both of two simultaneous initial Marks for different keys', async () => {
     const { marketData, persistence } = await setup();
     const results = await Promise.all([marketData.save(initial({ instrumentKey: 'AAA' })), marketData.save(initial({ instrumentKey: 'BBB' }))]);
     expect(results.map((r) => r.kind)).toEqual(['Saved', 'Saved']);
-    const { observations, marketDataRevision } = await stored(persistence);
+    const { observations } = await stored(persistence);
     expect(observations).toHaveLength(2);
-    expect(marketDataRevision).toBe(2);
-  });
-
-  // A MarketData over the same workspace whose commits first run `beforeCommit`, counting each attempt.
-  async function interfered(beforeCommit: (attempt: number) => Promise<void>) {
-    const base = await setup();
-    let attempts = 0;
-    const persistence: typeof base.persistence = {
-      ...base.persistence,
-      commit: async (set) => {
-        attempts += 1;
-        await beforeCommit(attempts);
-        return base.persistence.commit(set);
-      },
-    };
-    const marketData = createMarketData({ persistence, ids: sequentialIds('wrap'), clock: fixedClock(TUESDAY_NOON), sessionPolicy: nyseSessionPolicy });
-    return { base, marketData, attempts: () => attempts };
-  }
-
-  it('should return Conflict without retrying when the own resolution revision of the key moved', async () => {
-    const { base, marketData, attempts } = await interfered(async (attempt) => {
-      if (attempt === 1) await base.marketData.save(initial({ price: '53' }));
-    });
-    const result = await marketData.save(initial({ price: '52' }));
-    expect(result).toEqual(expect.objectContaining({ kind: 'Conflict', resolutionRevision: 1 }));
-    expect(attempts()).toBe(1);
-  });
-
-  it('should stop after 3 attempts when the shared counter keeps moving, and write nothing', async () => {
-    let bumps = 0;
-    const { base, marketData, attempts } = await interfered(async () => {
-      bumps += 1;
-      await base.persistence.commit({ checks: [], writes: [{ op: 'put', store: 'meta', value: { key: 'marketDataRevision', marketDataRevision: bumps } }] });
-    });
-    const result = await marketData.save(initial());
-    expect(result).toEqual({
-      kind: 'Conflict',
-      key: { instrumentKey: 'XYZ', tradingDate: '2026-10-12' },
-      resolution: { kind: 'Missing' },
-      resolutionRevision: 'None',
-    });
-    expect(attempts()).toBe(3);
-    expect((await stored(base.persistence)).observations).toEqual([]);
   });
 });
 

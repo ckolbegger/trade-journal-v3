@@ -67,8 +67,6 @@ export interface MarketData {
 }
 
 const MAX_REASON = 500;
-// Attempts in all when only the shared marketDataRevision counter moved between read and commit.
-const MAX_ATTEMPTS = 3;
 
 // The exact decimal text without redundant digits: "52.000" is stored as "52".
 function normalizedPrice(price: string): string {
@@ -90,8 +88,6 @@ function conflictOf(key: ObservationKey, record: ObservationRecord | undefined):
   return { kind: 'Conflict', key, resolution: resolve(record), resolutionRevision: revisionOf(record) };
 }
 
-const MARKET_DATA_BINDING = (marketDataRevision: number) => `marketDataRevision@${marketDataRevision}`;
-
 // Rechecked inside the commit: the key is still at the revision the save read.
 function keyUnchanged(key: ObservationKey, expected: ExpectedResolutionRevision): BindingCheck {
   return {
@@ -99,15 +95,6 @@ function keyUnchanged(key: ObservationKey, expected: ExpectedResolutionRevision)
     store: 'observations',
     key: [key.tradingDate, key.instrumentKey],
     verify: (current) => (current === undefined ? 'None' : (current['resolutionRevision'] as number)) === expected,
-  };
-}
-
-function marketDataUnchanged(marketDataRevision: number): BindingCheck {
-  return {
-    name: MARKET_DATA_BINDING(marketDataRevision),
-    store: 'meta',
-    key: 'marketDataRevision',
-    verify: (current) => ((current?.['marketDataRevision'] as number | undefined) ?? 0) === marketDataRevision,
   };
 }
 
@@ -152,75 +139,66 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
       if (command.intention === 'OverrideManualValuation') return { kind: 'VariantNotInstalled', intention: command.intention };
       const issues = validate(command);
       if (issues.length > 0) return { kind: 'Rejected', issues };
-      for (let attempt = 1; ; attempt++) {
-        const { value: current } = await deps.persistence.readSnapshot(['meta', 'observations'], async (tx) => ({
-          record: stripRevision(await tx.get('observations', [key.tradingDate, key.instrumentKey])),
-          marketDataRevision: ((await tx.get('meta', 'marketDataRevision'))?.['marketDataRevision'] as number | undefined) ?? 0,
-        }));
-        const { marketDataRevision } = current;
-        if (revisionOf(current.record) !== command.expectedResolutionRevision) return conflictOf(key, current.record);
-        const effective = current.record?.marks.find((m) => m.revisionId === current.record?.effectiveMarkId);
-        if (command.intention === 'RecordInitialManualMark' && effective) return conflictOf(key, current.record);
-        if (command.intention === 'CorrectMark') {
-          if (!effective) return { kind: 'Rejected', issues: [{ field: 'price', code: 'NothingToCorrect' }] };
-          if (effective.price === normalizedPrice(command.price)) {
-            return { kind: 'Rejected', issues: [{ field: 'price', code: 'CorrectionUnchanged' }] };
-          }
+      const { value: current } = await deps.persistence.readSnapshot(['observations'], async (tx) => ({
+        record: stripRevision(await tx.get('observations', [key.tradingDate, key.instrumentKey])),
+      }));
+      if (revisionOf(current.record) !== command.expectedResolutionRevision) return conflictOf(key, current.record);
+      const effective = current.record?.marks.find((m) => m.revisionId === current.record?.effectiveMarkId);
+      if (command.intention === 'RecordInitialManualMark' && effective) return conflictOf(key, current.record);
+      if (command.intention === 'CorrectMark') {
+        if (!effective) return { kind: 'Rejected', issues: [{ field: 'price', code: 'NothingToCorrect' }] };
+        if (effective.price === normalizedPrice(command.price)) {
+          return { kind: 'Rejected', issues: [{ field: 'price', code: 'CorrectionUnchanged' }] };
         }
-        const savedAt = deps.clock.now();
-        const base = { revisionId: deps.ids.next(), price: normalizedPrice(command.price), source: 'Manual', observedAt: savedAt, savedAt } as const;
-        const revision: MarkRevision =
-          command.intention === 'RecordInitialManualMark'
-            ? { ...base, revisionNumber: 1, intention: 'InitialManual' }
-            : {
-                ...base,
-                revisionNumber: effective!.revisionNumber + 1,
-                intention: 'Correction',
-                reason: command.reason.trim(),
-                supersedes: effective!.revisionId,
-                correctionFootprint: {
-                  key,
-                  effectDate: key.tradingDate,
-                  savedAt,
-                  domains: ['Valuation', 'ConditionStatus', 'Replay'],
-                  replayInterval: { from: key.tradingDate, to: key.tradingDate },
-                },
-              };
-        const resolutionRevision = (current.record?.resolutionRevision ?? 0) + 1;
-        const record: ObservationRecord = {
-          ...key,
-          resolutionRevision,
-          marks: [...(current.record?.marks ?? []), revision],
-          effectiveMarkId: revision.revisionId,
-          acknowledgments: current.record?.acknowledgments ?? [],
-          effectiveAcknowledgmentId: current.record?.effectiveAcknowledgmentId ?? null,
-        };
-        const committed = await deps.persistence.commit({
-          checks: [keyUnchanged(key, command.expectedResolutionRevision), marketDataUnchanged(marketDataRevision)],
-          writes: [
-            { op: 'put', store: 'observations', value: { ...record } },
-            { op: 'put', store: 'meta', value: { key: 'marketDataRevision', marketDataRevision: marketDataRevision + 1 } },
-          ],
-        });
-        if (committed.kind === 'RuntimeNotWritable') return committed;
-        // Only the shared counter moved (a save to another key): read again and revalidate.
-        if (committed.kind === 'Conflict' && committed.binding === MARKET_DATA_BINDING(marketDataRevision) && attempt < MAX_ATTEMPTS) continue;
-        if (committed.kind !== 'Committed') {
-          const latest = await deps.persistence.readSnapshot(['observations'], async (tx) =>
-            stripRevision(await tx.get('observations', [key.tradingDate, key.instrumentKey])),
-          );
-          return conflictOf(key, latest.value);
-        }
-        return {
-          kind: 'Saved',
-          key,
-          resolution: resolve(record),
-          resolutionRevision,
-          classification: revision.intention,
-          revision,
-          binding: { ...key, expectedResolutionRevision: command.expectedResolutionRevision },
-        };
       }
+      const savedAt = deps.clock.now();
+      const base = { revisionId: deps.ids.next(), price: normalizedPrice(command.price), source: 'Manual', observedAt: savedAt, savedAt } as const;
+      const revision: MarkRevision =
+        command.intention === 'RecordInitialManualMark'
+          ? { ...base, revisionNumber: 1, intention: 'InitialManual' }
+          : {
+              ...base,
+              revisionNumber: effective!.revisionNumber + 1,
+              intention: 'Correction',
+              reason: command.reason.trim(),
+              supersedes: effective!.revisionId,
+              correctionFootprint: {
+                key,
+                effectDate: key.tradingDate,
+                savedAt,
+                domains: ['Valuation', 'ConditionStatus', 'Replay'],
+                replayInterval: { from: key.tradingDate, to: key.tradingDate },
+              },
+            };
+      const resolutionRevision = (current.record?.resolutionRevision ?? 0) + 1;
+      const record: ObservationRecord = {
+        ...key,
+        resolutionRevision,
+        marks: [...(current.record?.marks ?? []), revision],
+        effectiveMarkId: revision.revisionId,
+        acknowledgments: current.record?.acknowledgments ?? [],
+        effectiveAcknowledgmentId: current.record?.effectiveAcknowledgmentId ?? null,
+      };
+      const committed = await deps.persistence.commit({
+        checks: [keyUnchanged(key, command.expectedResolutionRevision)],
+        writes: [{ op: 'put', store: 'observations', value: { ...record } }],
+      });
+      if (committed.kind === 'RuntimeNotWritable') return committed;
+      if (committed.kind !== 'Committed') {
+        const latest = await deps.persistence.readSnapshot(['observations'], async (tx) =>
+          stripRevision(await tx.get('observations', [key.tradingDate, key.instrumentKey])),
+        );
+        return conflictOf(key, latest.value);
+      }
+      return {
+        kind: 'Saved',
+        key,
+        resolution: resolve(record),
+        resolutionRevision,
+        classification: revision.intention,
+        revision,
+        binding: { ...key, expectedResolutionRevision: command.expectedResolutionRevision },
+      };
     },
   };
 }
