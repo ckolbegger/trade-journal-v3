@@ -41,6 +41,7 @@ export type MarketDataSaveCommand =
 export type MarketDataIssueCode =
   | 'InvalidInstrument'
   | 'InvalidDate'
+  | 'InvalidInstant'
   | 'NotASession'
   | 'SessionPolicyCoverage'
   | 'SessionNotCompleted'
@@ -190,6 +191,16 @@ async function staleContextOf(tx: ReadTransaction, policy: SessionPolicy, key: O
   return { tradingDate: earlier.tradingDate, price: mark.price, revisionId: mark.revisionId, revisionNumber: mark.revisionNumber, closeInstant: day.close };
 }
 
+// An as-of instant must be a full ISO instant with an offset; a date-only or free-text value is not one.
+function isInstant(value: string): boolean {
+  try {
+    Temporal.Instant.from(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function createMarketData(deps: MarketDataDeps): MarketData {
   // The key checks of P8, P9, and P10 (any well-formed Instrument on a completed covered
   // session), the price check of A37, and the reason check of A35, all reported together.
@@ -280,7 +291,10 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
     async query(query) {
       const { context } = query;
       let day: Covered<Session>;
-      if (context.kind === 'Current') day = deps.sessionPolicy.latestCompleted(context.asOf);
+      if (context.kind === 'Current') {
+        if (!isInstant(context.asOf)) return { kind: 'Rejected', issues: [{ field: 'asOf', code: 'InvalidInstant' }] };
+        day = deps.sessionPolicy.latestCompleted(context.asOf);
+      }
       else {
         const date = context.kind === 'Review' ? context.reviewDate : context.tradingDate;
         const issues = validateDate(date);

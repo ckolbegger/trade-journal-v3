@@ -153,6 +153,14 @@ describe('Current and Review contexts', () => {
     const late = await marketData.query(current(['XYZ'], '2029-01-05T21:00:00Z'));
     expect(late).toEqual({ kind: 'Rejected', issues: [{ field: 'asOf', code: 'SessionPolicyCoverage' }] });
   });
+
+  it('should reject a Current context whose asOf is not an ISO instant with an asOf issue', async () => {
+    const { marketData } = await setup();
+    for (const asOf of ['not-a-time', '2026-10-13']) {
+      const result = await marketData.query(current(['XYZ'], asOf));
+      expect(result).toEqual({ kind: 'Rejected', issues: [{ field: 'asOf', code: 'InvalidInstant' }] });
+    }
+  });
 });
 
 describe('Historical point context (A53)', () => {
