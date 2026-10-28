@@ -215,6 +215,8 @@ export type DeviationAction =
 export interface DerivedTradeReconciliation {
   readonly candidateDigest: string;
   readonly expectedLifecycle: LifecycleState;
+  // The candidate's exposure start, which Trade Record stores in the Trade document (D4 A38).
+  readonly exposureStart: Instant | null;
   readonly deviationActions: readonly DeviationAction[];
   // Where the before-state's stored lifecycle or recorded occurrences disagreed with its own
   // coherent facts: repaired by applying the candidate and disclosed (P7).
@@ -642,6 +644,7 @@ export function derive(input: TradeDerivationInput): DerivationResult {
         reconciliation: {
           candidateDigest: input.candidate.digest,
           expectedLifecycle,
+          exposureStart: facts[0]?.economicTime ?? null,
           deviationActions: deviationActions(deviations, input.candidate.before.recordedDeviations ?? []),
           repairs: before.findings,
           effects: changeEffects(before, expectedLifecycle, deviations),

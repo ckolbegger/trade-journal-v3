@@ -58,11 +58,7 @@ describe('I2.11 rebuild equivalence', () => {
     expect(before.list.items).toHaveLength(3);
     expect(await views(again)).toEqual(before);
     expect((await dumpAll(d.factory))[databaseName]!['journalObligations']).toEqual(obligations);
-    // The rebuild adds the private `exposureStart`; Trade Record writes it at commit only from T4.11,
-    // so until then the index differs by that one field (D4 A38) and the comparison leaves it out.
-    const withoutExposureStart = (records: unknown) =>
-      (records as Record<string, unknown>[]).map((record) => Object.fromEntries(Object.entries(record).filter(([key]) => key !== 'exposureStart')));
-    expect(withoutExposureStart(await readIndex(d.factory, databaseName, 'trades', 'byLifecycleActivity'))).toEqual(withoutExposureStart(index));
+    expect(await readIndex(d.factory, databaseName, 'trades', 'byLifecycleActivity')).toEqual(index);
     // Three Plan Reflections and five Position Change Reflection outcomes.
     expect(obligations).toHaveLength(8);
   });

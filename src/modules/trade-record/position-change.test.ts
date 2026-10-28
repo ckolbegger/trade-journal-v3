@@ -446,14 +446,18 @@ describe('applyPreparedChange: PositionChange', () => {
 });
 
 // Records one Position Change on each named Trade through prepare, apply, and one commit.
-async function recordEntries(record: TradeRecord, persistence: Persistence, entries: readonly { tradeId: string; executions: readonly ExecutionFactValue[] }[]) {
+async function recordEntries(
+  record: TradeRecord,
+  persistence: Persistence,
+  entries: readonly { tradeId: string; executions: readonly ExecutionFactValue[]; exposureStart?: string }[],
+) {
   const tx = beginSemanticTransaction();
-  for (const { tradeId, executions } of entries) {
+  for (const { tradeId, executions, exposureStart } of entries) {
     const current = await record.getRecord({ tradeId, projection: 'AnalysisInput' });
     if (current.kind !== 'Found') throw new Error(`unknown Trade ${tradeId}`);
     const prepared = await record.prepareChange(change(executions, current.factRevision, tradeId));
     if (prepared.kind !== 'Prepared') throw new Error(`expected Prepared, got ${prepared.kind}`);
-    const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle: 'Open', deviationActions: [], repairs: [] });
+    const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle: 'Open', deviationActions: [], repairs: [], ...(exposureStart && { exposureStart }) });
     if (staged.kind !== 'Staged') throw new Error(`expected Staged, got ${staged.kind}`);
   }
   const committed = await persistence.commit(tx.close());
@@ -608,5 +612,69 @@ describe('getRecord: Position Changes', () => {
       })),
     );
     expect(analysis.recordedDeviations).toEqual([pc3Excess, withHistory]);
+  });
+});
+
+describe('exposure start', () => {
+  it('should store exposureStart in the Trade document at each Position Change commit, as supplied by the reconciliation, moving it earlier for an earlier-dated Position Change P5', async () => {
+    const { record, persistence } = await tradeRecord();
+    const commitChange = async (executions: readonly ExecutionFactValue[], exposureStart: string) => {
+      const current = await record.getRecord({ tradeId: 'trade-1', projection: 'AnalysisInput' });
+      if (current.kind !== 'Found') throw new Error('unknown Trade');
+      const prepared = await record.prepareChange(change(executions, current.factRevision));
+      if (prepared.kind !== 'Prepared') throw new Error(`expected Prepared, got ${prepared.kind}`);
+      // The private field never enters the candidate, so it cannot leak into the digest or the next write.
+      expect(prepared.before).not.toHaveProperty('exposureStart');
+      expect(prepared.candidate).not.toHaveProperty('exposureStart');
+      const tx = beginSemanticTransaction();
+      const staged = record.applyPreparedChange(tx, prepared, { candidateDigest: prepared.digest, expectedLifecycle: 'Open', deviationActions: [], repairs: [], exposureStart });
+      if (staged.kind !== 'Staged') throw new Error(`expected Staged, got ${staged.kind}`);
+      expect((await persistence.commit(tx.close())).kind).toBe('Committed');
+      return (await persistence.readSnapshot(['trades'], (t) => t.get('trades', 'trade-1'))).value!['exposureStart'];
+    };
+    expect(await commitChange(PC2, '2026-10-12T15:00:00Z')).toBe('2026-10-12T15:00:00Z');
+    expect(await commitChange(PC3, '2026-10-12T15:00:00Z')).toBe('2026-10-12T15:00:00Z');
+    // An earlier-dated Position Change moves exposure start earlier (P5).
+    expect(await commitChange(PC1, '2026-10-12T14:00:00Z')).toBe('2026-10-12T14:00:00Z');
+  });
+});
+
+describe('queryRecords: StateAtEconomicCutoff Open (A55)', () => {
+  it('should return Open Trades whose exposure started at or before the cutoff, excluding an Open Trade whose first fill is after it and every Planned Trade', async () => {
+    const tradeIds = ['trade-a', 'trade-b', 'trade-c', 'trade-d'];
+    const { record, persistence } = await tradeRecord(tradeIds.map(plannedDocument));
+    const at = (tradeId: string, time: string) => ({ tradeId, executions: [buy(time, '10', '50.10', tradeId)], exposureStart: time });
+    // trade-a starts exactly at the cutoff, trade-b before it, trade-c after it; trade-d stays Planned.
+    await recordEntries(record, persistence, [at('trade-a', '2026-10-12T15:00:00Z'), at('trade-b', '2026-10-12T14:00:00Z'), at('trade-c', '2026-10-12T15:00:01Z')]);
+    const cutoff = '2026-10-12T15:00:00Z';
+    expect(ids(await record.queryRecords({ lifecycle: 'Open', projection: 'Summary', cutoff }))).toEqual(['trade-a', 'trade-b']);
+    // An earlier-dated Position Change moves exposure start before the cutoff and makes trade-c eligible (P5).
+    await recordEntries(record, persistence, [at('trade-c', '2026-10-12T13:00:00Z')]);
+    expect(ids(await record.queryRecords({ lifecycle: 'Open', projection: 'Summary', cutoff }))).toEqual(['trade-c', 'trade-a', 'trade-b']);
+  });
+
+  it('should read each page with one lifecycle-index getAll and return AnalysisInput for the page from one read snapshot', async () => {
+    const tradeIds = ['trade-a', 'trade-b', 'trade-c'];
+    const { record, persistence } = await tradeRecord(tradeIds.map(plannedDocument));
+    const at = (tradeId: string, time: string) => ({ tradeId, executions: [buy(time, '10', '50.10', tradeId)], exposureStart: time });
+    await recordEntries(record, persistence, [at('trade-a', '2026-10-12T14:00:00Z'), at('trade-b', '2026-10-12T15:00:00Z'), at('trade-c', '2026-10-12T16:00:00Z')]);
+    const indexGetAll = vi.spyOn(FakeIDBIndex.prototype, 'getAll');
+    const otherReads = [
+      vi.spyOn(FakeIDBIndex.prototype, 'get'),
+      vi.spyOn(FakeIDBIndex.prototype, 'openCursor'),
+      vi.spyOn(FakeIDBObjectStore.prototype, 'getAll'),
+      vi.spyOn(FakeIDBObjectStore.prototype, 'openCursor'),
+    ];
+    const storeGet = vi.spyOn(FakeIDBObjectStore.prototype, 'get');
+    const page = await record.queryRecords({ lifecycle: 'Open', projection: 'AnalysisInput', cutoff: '2026-10-12T15:00:00Z' });
+    expect(indexGetAll).toHaveBeenCalledTimes(1);
+    expect(storeGet.mock.contexts.map((store) => (store as IDBObjectStore).name)).toEqual(storeGet.mock.calls.map(() => 'meta'));
+    for (const spy of otherReads) expect(spy).not.toHaveBeenCalled();
+    vi.restoreAllMocks();
+    if (page.kind !== 'Page') throw new Error(`expected a page, got ${page.kind}`);
+    const each = await Promise.all(['trade-b', 'trade-a'].map((tradeId) => record.getRecord({ tradeId, projection: 'AnalysisInput' })));
+    expect(page.items).toEqual(each.map((r) => r.kind === 'Found' && r.projection));
+    const current = await persistence.readSnapshot(['meta'], () => Promise.resolve(null));
+    expect(page.binding).toEqual(current.binding);
   });
 });

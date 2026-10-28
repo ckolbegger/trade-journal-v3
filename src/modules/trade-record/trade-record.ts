@@ -23,6 +23,7 @@ import {
   type SemanticTransaction,
   type WorkspaceSnapshotBinding,
 } from '../../persistence/index.ts';
+import type { Instant } from '../../domain/time/index.ts';
 import { formatDecimal, type Rational } from '../../domain/values/index.ts';
 import { canonicalJson } from './canonical.ts';
 import type { ConfirmPlanChange, PlanFactValue, PositionChangeChange, PositionChangeFactValue, TradeDocument, TradeFact } from './records.ts';
@@ -35,6 +36,7 @@ function storedDocument(value: Record<string, unknown>): TradeDocument {
   const document = { ...value };
   delete document['revision'];
   delete document['activityDesc'];
+  delete document['exposureStart'];
   return document as unknown as TradeDocument;
 }
 
@@ -101,7 +103,7 @@ export function analysisInputOf(document: TradeDocument): TradeAnalysisRecord {
 // Trade Record never sets lifecycle on its own. A Plan confirmation has no recorded occurrences to
 // act on, so it may omit the Deviation actions and repairs.
 export type DerivedTradeReconciliation = Pick<AnalysisReconciliation, 'candidateDigest' | 'expectedLifecycle'> &
-  Partial<Pick<AnalysisReconciliation, 'deviationActions' | 'repairs'>>;
+  Partial<Pick<AnalysisReconciliation, 'deviationActions' | 'repairs' | 'exposureStart'>>;
 
 // Whether the Deviation actions account for every recorded occurrence of the before-state exactly
 // once and name only this candidate's Trade, Planned Legs, and Position Changes.
@@ -213,6 +215,9 @@ export function summaryOf(document: TradeDocument): TradeSummary {
 export interface TradeRecordQuery {
   // CurrentState membership from the authoritative lifecycle index.
   readonly lifecycle: LifecycleState;
+  // With an Open lifecycle, StateAtEconomicCutoff (D4 A55): only Trades whose exposure started at or
+  // before this Economic Time.
+  readonly cutoff?: Instant;
   // Browse returns each Trade's Summary with its AnalysisInput, for lists that need both.
   readonly projection: 'Summary' | 'AnalysisInput' | 'Browse';
   readonly pageSize?: number;
@@ -323,7 +328,7 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
     tx: SemanticTransaction,
     before: TradeDocument,
     candidate: TradeDocument,
-    { expectedLifecycle, deviationActions = [] }: DerivedTradeReconciliation,
+    { expectedLifecycle, deviationActions = [], exposureStart }: DerivedTradeReconciliation,
   ): Omit<Staged, 'repairs'> {
     // Durable identities are assigned only here, never in prepare (D1 A11).
     const mapping: Record<string, string> = {};
@@ -348,7 +353,7 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
     });
     // The stored lifecycle and the private Last Activity sort key place the Trade in the lifecycle
     // indexes in the same commit.
-    tx.stage({ op: 'put', store: 'trades', value: { ...document, activityDesc: activityDescOf(document.lastActivity!) } });
+    tx.stage({ op: 'put', store: 'trades', value: { ...document, activityDesc: activityDescOf(document.lastActivity!), ...(exposureStart && { exposureStart }) } });
     touchTradeSection(tx);
     return { kind: 'Staged', mapping, projection: analysisInputOf(document) };
   }
@@ -371,7 +376,7 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
               cursor?.after ? IDBKeyRange.bound(cursor.after, [query.lifecycle, []], true) : all,
               pageSize + 1,
             )
-          : await tx.getAllFromIndex('trades', 'byLifecycle', all)) as unknown as (TradeDocument & { activityDesc?: string })[],
+          : await tx.getAllFromIndex('trades', 'byLifecycle', all)) as unknown as (TradeDocument & { activityDesc?: string; exposureStart?: string })[],
       }));
       const { tradeRevision, documents } = value;
       if (
@@ -388,7 +393,10 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
       const start = byActivity ? 0 : (cursor?.offset ?? 0);
       const end = start + pageSize;
       // One batch from one snapshot: no per-Trade loads.
-      const page = documents.slice(start, end);
+      const eligible = (d: TradeDocument & { exposureStart?: string }) =>
+        query.cutoff === undefined || (d.exposureStart !== undefined && compareInstants(d.exposureStart, query.cutoff) <= 0);
+      const read = documents.slice(start, end);
+      const page = read.filter(eligible);
       const items =
         query.projection === 'Summary'
           ? page.map(summaryOf)
@@ -396,7 +404,7 @@ export function createTradeRecord(deps: TradeRecordDeps): TradeRecord {
             ? page.map(analysisInputOf)
             : page.map((d) => ({ summary: summaryOf(d), analysis: analysisInputOf(d) }));
       if (end >= documents.length) return { kind: 'Page', items, binding };
-      const last = page[page.length - 1]!;
+      const last = read[read.length - 1]!;
       const next: TradeCursor = {
         databaseName: binding.databaseName,
         tradeRevision,
