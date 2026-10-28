@@ -817,3 +817,9 @@ ocr review of `28abd46` (B5, test only): session `7aa3d7ed-3f8f-477b-8fae-d8072e
 - it should record nothing and report no session policy when the identity keeps changing on every attempt (asserts the last racing identity is stored)
 
 ocr review of `d34beb3` (B6, test only): session `08aab6e1-5999-449a-abf8-c222b65019d1` (scratch clone with the test renamed), no findings. `ocr/T4.17-B6-d34beb3.json`. The exhaustion case now requires the stored identity to be the last racing one (revision 13). First-run pass, flagged: deleting the record on exhaustion fails the new assertion; writing the release identity fails the attempt count first.
+
+### Cumulative run after T4.17
+
+- `e9f5e45` (code at `d34beb3`, B1–B6), 2026-10-28 05:07 EDT: unit 693, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.17-b6-*`.
+
+Only `verify:capacity` failed (expected until T4.28). `TradeList.test.tsx` passed. T4.17 is complete.
