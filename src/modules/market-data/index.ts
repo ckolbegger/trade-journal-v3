@@ -11,6 +11,11 @@ export {
   type MarketDataQueryResult,
   type MarketDataSaveCommand,
   type MarketDataSaveResult,
+  type HistoricalGaps,
+  type RecoverDiagnostic,
+  type RecoverRequest,
+  type RecoverResult,
+  type ResolvedKey,
 } from './market-data.ts';
 export type {
   AcknowledgmentVersion,

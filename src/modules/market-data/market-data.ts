@@ -129,9 +129,44 @@ export type MarketDataQueryResult =
     }
   | { readonly kind: 'Rejected'; readonly issues: readonly MarketDataIssue[] };
 
+// Recovery is asked at a Review Date or an as-of instant, with each Instrument's earliest exposure instant (A56).
+export interface RecoverRequest {
+  readonly context: Exclude<FrameContext, { kind: 'Historical' }>;
+  readonly instruments: readonly { readonly instrumentKey: string; readonly earliestExposure: string }[];
+}
+
+export interface ResolvedKey extends ObservationKey {
+  readonly resolution: MarkResolution;
+}
+
+// Sessions before the Review Date that lack an effective Mark: Missing and acknowledged ones are kept apart.
+export interface HistoricalGaps {
+  readonly instrumentKey: string;
+  readonly missing: readonly string[];
+  readonly acknowledged: readonly string[];
+}
+
+// Transient: it is never stored and creates no fact.
+export type RecoverDiagnostic = { readonly kind: 'NotConfigured' };
+
+export type RecoverResult =
+  | {
+      readonly kind: 'Recovered';
+      readonly frames: readonly MarkFrame[];
+      readonly resolutions: readonly ResolvedKey[];
+      readonly gaps: readonly HistoricalGaps[];
+      // The Review Date's Missing keys: the Marks task asks the trader for each (A56).
+      readonly manualTasks: readonly ObservationKey[];
+      readonly snapshotId: string;
+      readonly evidenceDigest: string;
+      readonly diagnostics: readonly RecoverDiagnostic[];
+    }
+  | { readonly kind: 'Rejected'; readonly issues: readonly MarketDataIssue[] };
+
 export interface MarketData {
   save(command: MarketDataSaveCommand): Promise<MarketDataSaveResult>;
   query(query: MarketDataQuery): Promise<MarketDataQueryResult>;
+  recover(request: RecoverRequest): Promise<RecoverResult>;
 }
 
 const MAX_REASON = 500;
@@ -298,7 +333,35 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
     };
   }
 
-  return {
+  // Per Instrument, the sessions before the Review Date without an effective Mark, from its relevance start (A56).
+  // One bounded range read per Instrument, whatever the history length (A47).
+  async function historicalGaps(instruments: RecoverRequest['instruments'], reviewDate: string | undefined): Promise<HistoricalGaps[]> {
+    const lastHistorical = reviewDate && Temporal.PlainDate.from(reviewDate).subtract({ days: 1 }).toString();
+    const { value } = await deps.persistence.readSnapshot(['observations'], (tx) =>
+      Promise.all(
+        [...instruments]
+          .sort((a, b) => (a.instrumentKey < b.instrumentKey ? -1 : 1))
+          .map(async ({ instrumentKey, earliestExposure }): Promise<HistoricalGaps> => {
+            const exposure = Temporal.Instant.from(earliestExposure);
+            const from = exposure.toZonedDateTimeISO('UTC').toPlainDate().subtract({ days: 1 }).toString();
+            const sessions = lastHistorical ? deps.sessionPolicy.sessionsBetween(from, lastHistorical) : { ok: true as const, value: [] };
+            // Relevance starts at the first session whose close is at or after the exposure.
+            const relevant = sessions.ok ? sessions.value.filter((s) => Temporal.Instant.compare(Temporal.Instant.from(s.close), exposure) >= 0) : [];
+            const stored = relevant.length === 0 ? [] : await tx.getAllFromIndex('observations', 'byInstrumentDate', IDBKeyRange.bound([instrumentKey, relevant[0]!.date], [instrumentKey, relevant[relevant.length - 1]!.date]));
+            const resolutionOf = new Map(stored.map((r) => [r['tradingDate'] as string, resolve(stripRevision(r)).kind]));
+            const kinds = relevant.map((s) => ({ date: s.date, kind: resolutionOf.get(s.date) ?? 'Missing' }));
+            return {
+              instrumentKey,
+              missing: kinds.filter((k) => k.kind === 'Missing').map((k) => k.date),
+              acknowledged: kinds.filter((k) => k.kind === 'AcknowledgedUnavailable').map((k) => k.date),
+            };
+          }),
+      ),
+    );
+    return value;
+  }
+
+  const marketData: MarketData = {
     async query(query) {
       const { context } = query;
       let day: Covered<Session>;
@@ -426,5 +489,22 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
         binding: { ...key, expectedResolutionRevision: command.expectedResolutionRevision },
       };
     },
+    async recover(request) {
+      const instruments = request.instruments.map((i) => i.instrumentKey);
+      const queried = await marketData.query({ kind: 'ResolveFrames', context: request.context, instruments });
+      if (queried.kind !== 'Frames') return { kind: 'Rejected', issues: queried.kind === 'Rejected' ? queried.issues : [] };
+      const gaps = await historicalGaps(request.instruments, queried.frames[0]?.tradingDate);
+      return {
+        kind: 'Recovered',
+        frames: queried.frames,
+        resolutions: queried.frames.map(({ instrumentKey, tradingDate, resolution }) => ({ instrumentKey, tradingDate, resolution })),
+        gaps,
+        manualTasks: queried.frames.filter((f) => f.resolution.kind === 'Missing').map(({ instrumentKey, tradingDate }) => ({ instrumentKey, tradingDate })),
+        snapshotId: queried.snapshotId,
+        evidenceDigest: queried.evidenceDigest,
+        diagnostics: [{ kind: 'NotConfigured' }],
+      };
+    },
   };
+  return marketData;
 }
