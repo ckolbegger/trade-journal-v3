@@ -94,7 +94,8 @@ export function byAttention(a: Attention & TieBreak, b: Attention & TieBreak): n
   }
   const byActivity = Temporal.Instant.compare(b.lastActivity, a.lastActivity);
   if (byActivity !== 0) return byActivity;
-  return a.tradeId < b.tradeId ? -1 : a.tradeId > b.tradeId ? 1 : 0;
+  if (a.tradeId === b.tradeId) return 0;
+  return a.tradeId < b.tradeId ? -1 : 1;
 }
 
 const FAMILIES: readonly CalculationFamily[] = ['Valuation', 'Risk', 'Reward', 'ConditionStatus'];

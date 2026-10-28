@@ -1,4 +1,4 @@
-import { derive, evaluate, type ObservationFrame } from '../../domain/trade-analysis/index.ts';
+import { derive, evaluate, type IncoherentFacts, type ObservationFrame } from '../../domain/trade-analysis/index.ts';
 import type { Journal } from '../../modules/journal/index.ts';
 import type { MarkFrame, MarketData, MarketDataIssue } from '../../modules/market-data/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
@@ -26,6 +26,16 @@ export interface DailyReviewDeps {
 }
 
 const ASSEMBLY_ATTEMPTS = 3;
+
+// Facts that cannot be replayed make the Trade a Blocker with no mark-based figures to compare.
+function incoherentItem(identity: Pick<ReviewTradeItem, 'tradeId' | 'underlying' | 'lastActivity'>, incoherent: IncoherentFacts): ReviewTradeItem {
+  return {
+    ...identity,
+    band: 'Blocker',
+    reasons: [{ code: 'IncoherentFacts', findings: incoherent.findings }],
+    basis: { kind: 'NotComparable', reason: 'FactsIncoherent' },
+  };
+}
 
 type ReadyReview = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
 
@@ -133,16 +143,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       .map(({ summary, analysis, derivation, integrity }) => {
         const identity = { tradeId: summary.tradeId, underlying: summary.underlying, lastActivity: summary.lastActivity ?? summary.planTime };
         // Facts that cannot be replayed at any time make the Trade incoherent, whichever derivation finds them.
-        if (derivation.kind !== 'Derived' || integrity.kind !== 'Derived') {
-          const incoherent = derivation.kind === 'IncoherentFacts' ? derivation : integrity;
-          const item: ReviewTradeItem = {
-            ...identity,
-            band: 'Blocker',
-            reasons: [{ code: 'IncoherentFacts', findings: incoherent.kind === 'IncoherentFacts' ? incoherent.findings : [] }],
-            basis: { kind: 'NotComparable', reason: 'FactsIncoherent' },
-          };
-          return { item, evaluation: undefined };
-        }
+        if (derivation.kind === 'IncoherentFacts') return { item: incoherentItem(identity, derivation), evaluation: undefined };
+        if (integrity.kind === 'IncoherentFacts') return { item: incoherentItem(identity, integrity), evaluation: undefined };
         const frame = recovered.frames.find((f) => f.instrumentKey === analysis.plan.underlying);
         if (!frame) throw new Error(`Market Data returned no frame for ${analysis.plan.underlying}`);
         const evaluation = evaluate({ state: derivation, frame: observationFrame(frame) });
@@ -169,17 +171,17 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     ];
     const acknowledged = today.filter((row) => row.resolution.kind === 'AcknowledgedUnavailable');
     const affected = ranked.filter(({ item }) => acknowledged.some((row) => row.trades.includes(item.tradeId)));
-    const completion: ReviewCompletion =
-      reasons.length > 0
-        ? { kind: 'Incomplete', reasons }
-        : acknowledged.length > 0
-          ? {
-              kind: 'CompleteWithUnavailableMarks',
-              instruments: acknowledged.map((row) => row.instrumentKey),
-              trades: affected.map(({ item }) => item.tradeId),
-              families: unavailableFamilies(affected.flatMap(({ evaluation }) => (evaluation ? [evaluation] : []))),
-            }
-          : { kind: 'Complete' };
+    const completionOf = (): ReviewCompletion => {
+      if (reasons.length > 0) return { kind: 'Incomplete', reasons };
+      if (acknowledged.length === 0) return { kind: 'Complete' };
+      return {
+        kind: 'CompleteWithUnavailableMarks',
+        instruments: acknowledged.map((row) => row.instrumentKey),
+        trades: affected.map(({ item }) => item.tradeId),
+        families: unavailableFamilies(affected.flatMap(({ evaluation }) => (evaluation ? [evaluation] : []))),
+      };
+    };
+    const completion = completionOf();
 
     return {
       kind: 'Ready',
