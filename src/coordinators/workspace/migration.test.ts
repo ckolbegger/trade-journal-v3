@@ -7,6 +7,7 @@ import { compareSnapshot } from '../../../tools/fixtures/snapshot-compare.ts';
 import { loadDump, viewsOf, type WorkspaceDump } from '../../../tools/fixtures/workspace-fixture.ts';
 import { createTradeViews } from '../trade-views/index.ts';
 import { createMarketData } from '../../modules/market-data/index.ts';
+import type { Persistence } from '../../persistence/index.ts';
 import { createWorkspace, type MigrationStageHooks } from './index.ts';
 import { createSessionPolicy, nyseSessionPolicy, type SessionPolicy } from '../../domain/session-policy/index.ts';
 import { NYSE_TABLE } from '../../domain/session-policy/table.ts';
@@ -398,6 +399,29 @@ describe('session-policy compatibility (A40)', () => {
     const third = await launch(first.factory, POLICY_REVISION_2);
     const again = await third.workspace.initialize({});
     expect(again.kind === 'Opened' && again.receipt.sessionPolicy).toBeUndefined();
+  });
+
+  it('should record nothing more when another launch records the identity between its scan and its commit', async () => {
+    const first = await launch(new IDBFactory(), nyseSessionPolicy);
+    expect((await first.workspace.initialize({ timeZone: 'America/New_York' })).kind).toBe('Opened');
+    first.persistence.close();
+
+    const second = await launch(first.factory, POLICY_REVISION_2);
+    // Just before this launch records the identity, another launch of the same release does.
+    const racing: Persistence = {
+      ...second.persistence,
+      async commit(writeSet) {
+        const records = writeSet.writes.some((w) => w.op === 'put' && w.store === 'meta' && w.value['key'] === 'sessionPolicy');
+        if (records) await second.persistence.commit({ checks: [], writes: [{ op: 'put', store: 'meta', value: { key: 'sessionPolicy', policy: POLICY_REVISION_2.identity } }] });
+        return second.persistence.commit(writeSet);
+      },
+    };
+    const workspace = createWorkspace({ ...second, persistence: racing, host: second.testHost.host, releaseId: second.testHost.releaseId });
+    const result = await workspace.initialize({});
+    if (result.kind !== 'Opened') throw new Error('expected Opened');
+    expect(result.receipt.sessionPolicy).toBeUndefined();
+    const stored = Object.values(await dumpAll(first.factory)).flatMap((stores) => stores['meta'] ?? []);
+    expect(stored).toContainEqual(expect.objectContaining({ key: 'sessionPolicy', policy: POLICY_REVISION_2.identity }));
   });
 
   it('should keep an observation record whose date the newer policy turns into a closure, list it as a finding in the receipt, and leave it out of every frame', async () => {

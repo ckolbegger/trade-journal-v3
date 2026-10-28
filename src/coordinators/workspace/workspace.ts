@@ -176,27 +176,49 @@ export function createWorkspace(deps: WorkspaceDeps): Workspace {
     };
   }
 
-  // Records this release's session-policy identity when the stored one differs (D4 A40).
+  // Records this release's session-policy identity when the stored one differs (D4 A40). The
+  // identity and every observation are read in one snapshot, and the commit binds the identity
+  // read; when the binding fails the scan is redone, up to 3 attempts in all (ADR 0011).
   async function recordSessionPolicy(): Promise<SessionPolicyReceipt | undefined | RuntimeNotWritable> {
     const recorded = deps.sessionPolicy.identity;
-    const { value } = await deps.persistence.readSnapshot(['meta'], (tx) => tx.get('meta', 'sessionPolicy'));
-    const previous = (value as { policy: SessionPolicyIdentity }).policy;
-    if (previous.id === recorded.id && previous.revision === recorded.revision && previous.digest === recorded.digest) return undefined;
-    // Every stored key is judged by the new policy; a key it no longer counts as a session is
-    // reported and kept, never deleted (A40).
-    const { value: observations } = await deps.persistence.readSnapshot(['observations'], (tx) => tx.getAll('observations'));
-    const source: RecordSource = {
-      async *batches() {
-        yield await Promise.resolve(observations as unknown as readonly SectionRecord[]);
-      },
-    };
-    const validation = await validateMarketData(source, deps.sessionPolicy);
-    const findings = validation.issues.flatMap(({ code, instrumentKey, tradingDate }): SessionPolicyFinding[] =>
-      code === 'NotASession' || code === 'SessionPolicyCoverage' ? [{ code, instrumentKey, tradingDate }] : [],
-    );
-    const committed = await deps.persistence.commit({ checks: [], writes: [{ op: 'put', store: 'meta', value: { key: 'sessionPolicy', policy: recorded } }] });
-    if (committed.kind === 'RuntimeNotWritable') return committed;
-    return { previous, recorded, findings };
+    const same = (p: SessionPolicyIdentity) => p.id === recorded.id && p.revision === recorded.revision && p.digest === recorded.digest;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const { value: snapshot } = await deps.persistence.readSnapshot(['meta', 'observations'], async (tx) => ({
+        stored: await tx.get('meta', 'sessionPolicy'),
+        observations: await tx.getAll('observations'),
+      }));
+      const previous = (snapshot.stored as { policy: SessionPolicyIdentity }).policy;
+      if (same(previous)) return undefined;
+      // Every stored key is judged by the new policy; a key it no longer counts as a session is
+      // reported and kept, never deleted (A40).
+      const source: RecordSource = {
+        async *batches() {
+          yield await Promise.resolve(snapshot.observations as unknown as readonly SectionRecord[]);
+        },
+      };
+      const validation = await validateMarketData(source, deps.sessionPolicy);
+      const findings = validation.issues.flatMap(({ code, instrumentKey, tradingDate }): SessionPolicyFinding[] =>
+        code === 'NotASession' || code === 'SessionPolicyCoverage' ? [{ code, instrumentKey, tradingDate }] : [],
+      );
+      const committed = await deps.persistence.commit({
+        checks: [
+          {
+            name: 'meta/sessionPolicy',
+            store: 'meta',
+            key: 'sessionPolicy',
+            verify: (current) => {
+              const stored = (current as { policy: SessionPolicyIdentity } | undefined)?.policy;
+              return stored !== undefined && stored.id === previous.id && stored.revision === previous.revision && stored.digest === previous.digest;
+            },
+          },
+        ],
+        writes: [{ op: 'put', store: 'meta', value: { key: 'sessionPolicy', policy: recorded } }],
+      });
+      if (committed.kind === 'RuntimeNotWritable') return committed;
+      if (committed.kind === 'Committed') return { previous, recorded, findings };
+    }
+    // The identity kept moving to another release's: nothing is recorded, and the next launch scans again.
+    return undefined;
   }
 
   const workspace: Workspace = {
