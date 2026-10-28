@@ -27,3 +27,4 @@ export type {
   ObservationRecord,
   StaleMarkContext,
 } from './records.ts';
+export { validateSection, type MarketDataSectionIssue, type MarketDataSectionValidation } from './section.ts';

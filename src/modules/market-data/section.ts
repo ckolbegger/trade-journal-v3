@@ -1,0 +1,71 @@
+import { Temporal } from 'temporal-polyfill';
+import type { SessionPolicy } from '../../domain/session-policy/index.ts';
+import { parseDecimal } from '../../domain/values/index.ts';
+import type { RecordSource } from '../../persistence/index.ts';
+import type { ObservationRecord } from './records.ts';
+
+type Chain = 'marks' | 'acknowledgments';
+
+export type MarketDataSectionIssue = { readonly instrumentKey: string; readonly tradingDate: string } & (
+  | { readonly code: 'MissingRevisionIdentity'; readonly chain: Chain }
+  | { readonly code: 'DuplicateRevisionIdentity'; readonly chain: Chain; readonly id: string }
+  | { readonly code: 'NotASession' | 'SessionPolicyCoverage' }
+  | { readonly code: 'CorrectionReasonMissing'; readonly revisionId: string }
+  | { readonly code: 'CorrectionFootprintMissing'; readonly revisionId: string }
+  | { readonly code: 'AssertedWhileMarkEffective'; readonly versionId: string }
+  | { readonly code: 'PriceNegative' | 'InvalidPrice'; readonly revisionId: string }
+  | { readonly code: 'EffectiveHeadNotLast'; readonly chain: Chain; readonly effectiveId: string | null; readonly lastId: string | null }
+);
+
+export interface MarketDataSectionValidation {
+  readonly issues: readonly MarketDataSectionIssue[];
+  // The Market Data section has no repairable disagreement in D4.
+  readonly repairs: readonly never[];
+}
+
+export async function validateSection(source: RecordSource, policy: SessionPolicy): Promise<MarketDataSectionValidation> {
+  const issues: MarketDataSectionIssue[] = [];
+  // Revision and version identities seen so far, kept between batches.
+  const seen = new Set<string>();
+  for await (const batch of source.batches('observations')) {
+    for (const record of batch as unknown as readonly ObservationRecord[]) {
+      const { instrumentKey, tradingDate } = record;
+      const day = policy.classify(tradingDate);
+      if (day.kind === 'NotCovered') issues.push({ code: 'SessionPolicyCoverage', instrumentKey, tradingDate });
+      else if (day.kind !== 'Session') issues.push({ code: 'NotASession', instrumentKey, tradingDate });
+      const chains: readonly (readonly [Chain, readonly (string | undefined)[], string | null])[] = [
+        ['marks', record.marks.map((m) => m.revisionId), record.effectiveMarkId],
+        ['acknowledgments', record.acknowledgments.map((a) => a.versionId), record.effectiveAcknowledgmentId],
+      ];
+      for (const [chain, ids, effectiveId] of chains) {
+        for (const id of ids) {
+          if (id === undefined || id === '') issues.push({ code: 'MissingRevisionIdentity', instrumentKey, tradingDate, chain });
+          else if (seen.has(id)) issues.push({ code: 'DuplicateRevisionIdentity', instrumentKey, tradingDate, chain, id });
+          else seen.add(id);
+        }
+        // The effective head is the chain's last entry, or null for an empty chain.
+        const lastId = ids.at(-1) ?? null;
+        if (effectiveId !== lastId) issues.push({ code: 'EffectiveHeadNotLast', instrumentKey, tradingDate, chain, effectiveId, lastId });
+      }
+      // A Mark is never withdrawn, so an Asserted version saved after the first Mark was saved
+      // contradicts it. An Asserted version that came first and was followed by a Mark is the
+      // normal history, which the resolution rule reads as Available.
+      const firstMarkAt = record.marks[0]?.savedAt;
+      for (const ack of record.acknowledgments) {
+        if (ack.kind === 'Asserted' && firstMarkAt !== undefined && Temporal.Instant.compare(ack.savedAt, firstMarkAt) > 0) {
+          issues.push({ code: 'AssertedWhileMarkEffective', instrumentKey, tradingDate, versionId: ack.versionId });
+        }
+      }
+      for (const mark of record.marks) {
+        // A price is a finite decimal with at most 6 fractional digits (A37); zero is valid.
+        const price = parseDecimal(mark.price);
+        if (!price.ok) issues.push({ code: 'InvalidPrice', instrumentKey, tradingDate, revisionId: mark.revisionId });
+        else if (price.normalized.startsWith('-')) issues.push({ code: 'PriceNegative', instrumentKey, tradingDate, revisionId: mark.revisionId });
+        if (mark.intention !== 'Correction') continue;
+        if ((mark.reason ?? '').trim() === '') issues.push({ code: 'CorrectionReasonMissing', instrumentKey, tradingDate, revisionId: mark.revisionId });
+        if (mark.correctionFootprint === undefined) issues.push({ code: 'CorrectionFootprintMissing', instrumentKey, tradingDate, revisionId: mark.revisionId });
+      }
+    }
+  }
+  return { issues, repairs: [] };
+}

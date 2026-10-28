@@ -3,7 +3,8 @@ import type { RecordSource } from '../../persistence/index.ts';
 export type JournalSectionIssue =
   | { readonly code: 'MissingDefinitionRevision'; readonly id: string; readonly definitionId: string }
   | { readonly code: 'DuplicateObligationOutcome'; readonly obligationKey: string; readonly ids: readonly [string, string] }
-  | { readonly code: 'MissingAnchor'; readonly id: string };
+  | { readonly code: 'MissingAnchor'; readonly id: string }
+  | { readonly code: 'EditDefinitionChanged'; readonly id: string; readonly versionNumber: number };
 
 export interface JournalSectionValidation {
   readonly issues: readonly JournalSectionIssue[];
@@ -17,9 +18,10 @@ export interface JournalSectionValidation {
 // definition revision in each version, a decline names the revision it was shown.
 interface StoredOutcome {
   readonly id: string;
-  readonly obligationKey: string;
+  // A Daily Trade Review key is the array ['DailyTradeReview', reviewDate, tradeId] (D4 A38).
+  readonly obligationKey: string | readonly string[];
   readonly anchor?: { readonly kind: 'Trade'; readonly tradeId?: string };
-  readonly versions?: readonly { readonly definitionId: string }[];
+  readonly versions?: readonly { readonly versionNumber: number; readonly definitionId: string }[];
   readonly definitionId?: string;
 }
 
@@ -43,12 +45,18 @@ export async function validateSection(source: RecordSource): Promise<JournalSect
         for (const definitionId of new Set(revisions)) {
           if (!definitionIds.has(definitionId)) issues.push({ code: 'MissingDefinitionRevision', id: outcome.id, definitionId });
         }
+        // An edit keeps the Entry's original definition snapshot.
+        const [firstVersion, ...edits] = outcome.versions ?? [];
+        for (const version of edits) {
+          if (version.definitionId !== firstVersion!.definitionId) issues.push({ code: 'EditDefinitionChanged', id: outcome.id, versionNumber: version.versionNumber });
+        }
         const tradeId = outcome.anchor?.tradeId;
         if (tradeId === undefined) issues.push({ code: 'MissingAnchor', id: outcome.id });
         else anchorTradeIds.add(tradeId);
-        const first = outcomes.get(outcome.obligationKey);
-        if (first === undefined) outcomes.set(outcome.obligationKey, outcome.id);
-        else issues.push({ code: 'DuplicateObligationOutcome', obligationKey: outcome.obligationKey, ids: [first, outcome.id] });
+        const obligationKey = typeof outcome.obligationKey === 'string' ? outcome.obligationKey : outcome.obligationKey.join(':');
+        const first = outcomes.get(obligationKey);
+        if (first === undefined) outcomes.set(obligationKey, outcome.id);
+        else issues.push({ code: 'DuplicateObligationOutcome', obligationKey, ids: [first, outcome.id] });
       }
     }
   }

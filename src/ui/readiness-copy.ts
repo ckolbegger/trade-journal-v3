@@ -23,6 +23,7 @@ const MIGRATION_ISSUES: Record<MigrationIssue['code'], string> = {
   MissingDefinitionRevision: 'A Journal Entry names a form revision that does not exist.',
   DuplicateObligationOutcome: 'One reflection has more than one recorded outcome.',
   MissingAnchor: 'A reflection does not name the Trade it belongs to.',
+  EditDefinitionChanged: 'An edited Journal Entry names a different form revision than its first version.',
   UnknownAccount: 'A Trade names an Account that does not exist.',
   DuplicateFactIdentity: 'A Trade records the same fact identity twice.',
   UnknownAnchorTrade: 'A reflection belongs to a Trade that does not exist.',
