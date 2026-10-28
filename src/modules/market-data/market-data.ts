@@ -134,7 +134,7 @@ async function staleContextOf(tx: ReadTransaction, policy: SessionPolicy, key: O
   const found = await tx.findLastFromIndex(
     'observations',
     'byInstrumentDate',
-    IDBKeyRange.upperBound([key.instrumentKey, key.tradingDate], true),
+    IDBKeyRange.bound([key.instrumentKey], [key.instrumentKey, key.tradingDate], false, true),
     (r) => r['instrumentKey'] === key.instrumentKey && (r['effectiveMarkId'] as string | null) !== null,
   );
   const earlier = stripRevision(found);

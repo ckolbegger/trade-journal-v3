@@ -562,3 +562,31 @@ describe('acknowledgment saves keep the shared save guarantees', () => {
     expect((await stored(persistence)).observations).toEqual([]);
   });
 });
+
+describe('Stale context lookup bound (T4.5-B1)', () => {
+  it('should look up Stale context within the Instrument own byInstrumentDate range, visiting no other Instrument records, when the Instrument has no earlier Mark', async () => {
+    const { marketData, persistence } = await setup();
+    for (const tradingDate of ['2026-10-07', '2026-10-08', '2026-10-09']) {
+      await marketData.save(initial({ instrumentKey: 'AAA', tradingDate }));
+    }
+    const visited: unknown[] = [];
+    const spying: typeof persistence = {
+      ...persistence,
+      readSnapshot: (stores, read) =>
+        persistence.readSnapshot(stores, (tx) =>
+          read({
+            ...tx,
+            findLastFromIndex: (store, index, range, accept) =>
+              tx.findLastFromIndex(store, index, range, (r) => {
+                visited.push(r['instrumentKey']);
+                return accept(r);
+              }),
+          }),
+        ),
+    };
+    const watched = createMarketData({ persistence: spying, ids: sequentialIds('spy'), clock: fixedClock(TUESDAY_NOON), sessionPolicy: nyseSessionPolicy });
+    const result = await watched.save(assertUnavailable());
+    expect(result.kind).toBe('Saved');
+    expect(visited.filter((k) => k !== 'DEF')).toEqual([]);
+  });
+});
