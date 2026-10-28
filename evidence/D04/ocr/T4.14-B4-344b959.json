@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 56850,
+    "input_tokens": 56343,
+    "output_tokens": 507,
+    "cache_read_tokens": 19584,
+    "elapsed": "44s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "If every indexed candidate is excluded by this new cutoff check, `derivations` is empty, but assembly still proceeds and returns `Ready` with empty families and `Complete` (or unnecessarily fails during recovery). The existing `Empty` check only covers the pre-filter records. Return `Empty` when the filtered list is empty, before requesting recovery, to satisfy the no-eligible-Trades/no-tasks contract.",
+      "existing_code": "      .filter(({ derivation }) =\u003e derivation.kind !== 'Derived' || derivation.expectedLifecycle === 'Open');",
+      "start_line": 98,
+      "end_line": 98,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/coordinators/daily-review/daily-review.ts",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts"
+      ]
+    }
+  ],
+  "session_id": "8b42f8cc-0db8-4e3c-9710-5c3913e3b231",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "8b42f8cc-0db8-4e3c-9710-5c3913e3b231",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "344b959",
+      "resolved_base": "116ca5d2e135d1ac6408952c3fd509aa8966e0a0",
+      "resolved_head": "344b9598cfe80d1629c19da6bfde501b11b45734",
+      "exact_range": "116ca5d2e135d1ac6408952c3fd509aa8966e0a0..344b9598cfe80d1629c19da6bfde501b11b45734",
+      "source_artifact_sha256": "ece5e01a3410f847d6a9e66b4f1e8d3b4ff20202e77e81a8331f36d212212acb"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "7ca31ed467cc33ce8ccef5803d00b2d3cf316a40a434c3f614a317568d34cd93"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "7ca31ed467cc33ce8ccef5803d00b2d3cf316a40a434c3f614a317568d34cd93"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 43925
+  }
+}

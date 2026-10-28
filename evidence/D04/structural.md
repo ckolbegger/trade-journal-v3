@@ -644,3 +644,12 @@ Decision for B6: integrity is whether the stored Trade agrees with its facts, wh
 ### T4.14-B6 Integrity findings from all facts
 - it should not report an integrity blocker for a Position Change whose Executions straddle the cutoff
 - it should still report an integrity blocker for a disagreement in facts after the cutoff
+
+ocr review of `344b959` (B4): session `8b42f8cc-0db8-4e3c-9710-5c3913e3b231`, 1 file, 1 comment. `ocr/T4.14-B4-344b959.json`. B4 drops a Trade whose derivation at the cutoff is `Derived` with `expectedLifecycle` other than Open (IncoherentFacts kept). The red was a runtime exception before any assertion; the Marks assertion was mutation-checked; the completion assertion has no isolating mutation and is flagged as not separately checked.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/coordinators/daily-review/daily-review.ts:98` | When the confirmation excludes every selected Trade, `open` returns Ready with empty families instead of Empty, because the Empty check runs before the filter | Valid (also noted by the implementer) | Bug task T4.14-B7 (second round) |
+
+### T4.14-B7 Empty after confirmation
+- it should return Empty when the index selects only Trades whose facts are not Open at the cutoff
