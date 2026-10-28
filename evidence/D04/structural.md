@@ -241,3 +241,10 @@ ocr review of `a6ec5d9` (T4.4-B5): session `1eb69f3e-581d-4943-936a-995c712d818d
 | Severity | Location | Claim | Assessment | Disposition |
 |---|---|---|---|---|
 | medium | `src/persistence/persistence.ts:390` | A put or add followed by an increment of the same record loses the revision stamp: the increment resolves unstamped from the in-memory view and its put overwrites the stamped value, while `Committed.revisions` still reports the new revision | Valid (latent: no current write set puts and increments one record) | **Stopped for the user**: third round of bug tasks on T4.4 still leaves a finding (handoff, stop condition 5) |
+
+### T4.4-B6 Optimistic retry on the shared counter (user's direction, 2026-10-27)
+
+The user directed a traditional optimistic-concurrency fix in place of the in-transaction `increment` write: Market Data keeps both binding checks (the key's `resolutionRevision` and `meta.marketDataRevision`) and writes `marketDataRevision` as N+1; `commit` already names the failed binding. When only the shared-counter check fails, Market Data re-reads, re-validates, and commits again, up to 3 attempts in all (as A46's read retry); when the key's own binding fails it returns `Conflict`. The persistence `increment` write from B3–B5 is reverted, which also removes the B5 finding (revision stamp lost on put-then-increment).
+- it should save both of two simultaneous initial Marks for different keys, incrementing marketDataRevision once for each (B3's case, kept)
+- it should return Conflict without retrying when the key's own resolution revision moved
+- it should stop after 3 attempts when the shared counter keeps moving, and write nothing
