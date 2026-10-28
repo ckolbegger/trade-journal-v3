@@ -78,6 +78,68 @@ describe('initialize', () => {
     );
   });
 
+  it('should return RuntimeNotWritable from initialize, not Opened, when an existing Workspace Catalog or Journal seed returns RuntimeNotWritable', async () => {
+    const first = await workspaceStack();
+    await first.workspace.initialize({ timeZone: 'America/New_York' });
+    const refused = {
+      kind: 'RuntimeNotWritable',
+      runtimeReadiness: 'RecoveryOnly',
+      failedChecks: [{ check: 'inventory', reason: 'InventoryMissing' }],
+      workspaceStatus: 'RecoveryOnly',
+      safeActions: [{ action: 'Retry', explanation: 'Check again once the problem is fixed.' }],
+    } as const;
+    const catalogRefused = await workspaceStack(first.factory);
+    let journalSeeds = 0;
+    const withCatalogRefused = createWorkspace({
+      ...catalogRefused,
+      host: catalogRefused.testHost.host,
+      releaseId: catalogRefused.testHost.releaseId,
+      catalog: { ...catalogRefused.catalog, seedDefaults: () => Promise.resolve(refused) },
+      journal: {
+        ...catalogRefused.journal,
+        seedDefaults: (manifest) => {
+          journalSeeds += 1;
+          return catalogRefused.journal.seedDefaults(manifest);
+        },
+      },
+    });
+    expect(await withCatalogRefused.initialize({})).toEqual(refused);
+    expect(journalSeeds).toBe(0);
+
+    const journalRefused = await workspaceStack(first.factory);
+    const withJournalRefused = createWorkspace({
+      ...journalRefused,
+      host: journalRefused.testHost.host,
+      releaseId: journalRefused.testHost.releaseId,
+      journal: { ...journalRefused.journal, seedDefaults: () => Promise.resolve(refused) },
+    });
+    expect(await withJournalRefused.initialize({})).toEqual(refused);
+  });
+
+  it('should return Opened with no additions for a seed that returns Conflict, and its receipt should name the seed that did not complete', async () => {
+    const first = await workspaceStack();
+    await first.workspace.initialize({ timeZone: 'America/New_York' });
+    const restarted = await workspaceStack(first.factory);
+    const workspace = createWorkspace({
+      ...restarted,
+      host: restarted.testHost.host,
+      releaseId: restarted.testHost.releaseId,
+      journal: { ...restarted.journal, seedDefaults: () => Promise.resolve({ kind: 'Conflict' }) },
+    });
+    const result = await workspace.initialize({});
+    expect(result).toEqual(
+      expect.objectContaining({
+        kind: 'Opened',
+        receipt: expect.objectContaining({
+          seeds: {
+            catalog: { manifestVersion: 1, additions: [] },
+            journal: { manifestVersion: 2, additions: [], completed: false },
+          },
+        }) as unknown,
+      }),
+    );
+  });
+
   it('should return RuntimeNotWritable with Workspace status RecoveryOnly when a readable Workspace exists and readiness fails', async () => {
     const first = await workspaceStack();
     await first.workspace.initialize({ timeZone: 'America/New_York' });

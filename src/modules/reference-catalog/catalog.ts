@@ -30,7 +30,7 @@ export type SeedCatalogResult =
   | { readonly kind: 'SeedConflict'; readonly productKey: string }
   // catalogRevision kept moving through every attempt; nothing was written.
   | { readonly kind: 'Conflict' }
-  | { readonly kind: 'RuntimeNotWritable' };
+  | RuntimeNotWritable;
 
 export type PreparedSeed =
   | { readonly kind: 'Additions'; readonly records: readonly StrategyRecord[] }

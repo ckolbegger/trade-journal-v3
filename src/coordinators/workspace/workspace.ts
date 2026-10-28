@@ -79,6 +79,13 @@ export interface ReadyStatus {
 export interface SeedReceipt {
   readonly manifestVersion: number;
   readonly additions: readonly string[];
+  // Present (false) only when this seed's counter retry was exhausted and it added nothing.
+  readonly completed?: false;
+}
+
+function seedReceipt(manifestVersion: number, seed: { readonly kind: string; readonly additions?: readonly string[] }): SeedReceipt {
+  if (seed.kind === 'Seeded') return { manifestVersion, additions: seed.additions ?? [] };
+  return { manifestVersion, additions: [], completed: false };
 }
 
 export interface InitializationReceipt {
@@ -237,13 +244,16 @@ export function createWorkspace(deps: WorkspaceDeps): Workspace {
       if (readiness.rootInspection?.kind === 'KnownWorkspace') {
         // An existing Workspace receives only genuinely missing seeds.
         const catalog = await deps.catalog.seedDefaults(D1_CATALOG_MANIFEST);
+        // A refused seed is a refused write, not an Opened Workspace; Journal's seed is not attempted.
+        if (catalog.kind === 'RuntimeNotWritable') return catalog;
         const journal = await deps.journal.seedDefaults(D2_JOURNAL_MANIFEST);
+        if (journal.kind === 'RuntimeNotWritable') return journal;
         latestReceipt = {
           fresh: false,
           readiness,
           seeds: {
-            catalog: { manifestVersion: D1_CATALOG_MANIFEST.version, additions: catalog.kind === 'Seeded' ? catalog.additions : [] },
-            journal: { manifestVersion: D2_JOURNAL_MANIFEST.version, additions: journal.kind === 'Seeded' ? journal.additions : [] },
+            catalog: seedReceipt(D1_CATALOG_MANIFEST.version, catalog),
+            journal: seedReceipt(D2_JOURNAL_MANIFEST.version, journal),
           },
         };
         return { kind: 'Opened', status: await readyStatus(readiness), receipt: latestReceipt };
