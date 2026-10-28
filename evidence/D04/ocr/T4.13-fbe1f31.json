@@ -1,0 +1,150 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 3,
+    "total_tokens": 183335,
+    "input_tokens": 180627,
+    "output_tokens": 2708,
+    "cache_read_tokens": 36096,
+    "elapsed": "1m37s"
+  },
+  "tool_calls": {
+    "total": 32,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 8,
+      "file_read": 21,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/market-data/section.ts",
+      "content": "RecordSource explicitly supplies untrusted records, but this cast provides no runtime validation. For example, a record with tradingDate '2026-02-30' throws in policy.classify, and a missing marks array throws at .map, so the whole section validation rejects instead of returning issues. Validate record shapes and temporal values before using them, and report malformed records as issues so a damaged restore candidate can be diagnosed.",
+      "existing_code": "    for (const record of batch as unknown as readonly ObservationRecord[]) {",
+      "start_line": 31,
+      "end_line": 31,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/market-data/section.ts",
+      "content": "The Mark history is never checked for continuity: unique IDs and a matching last head are enough to pass even when a Correction supersedes a nonexistent revision or skips revision numbers. Normal writes set supersedes to the preceding head and increment revisionNumber, so such a history cannot be produced by the writer but is accepted here as valid. Check the initial revision and each successor's supersedes/revisionNumber relationship, with tests for broken links and gaps.",
+      "existing_code": "      for (const mark of record.marks) {",
+      "start_line": 59,
+      "end_line": 59,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/market-data/section.ts",
+      "content": "The acknowledgment history is checked for IDs and head position, but not for valid state transitions. A chain containing only a `Withdrawn` version (or consecutive withdrawals) currently returns no issues. `saveAcknowledgment` rejects these histories with `NothingToWithdraw`, because withdrawal requires an effective Asserted acknowledgment. Validate each withdrawal against the preceding acknowledgment state so restore cannot accept a history that normal writes cannot produce.",
+      "existing_code": "      for (const ack of record.acknowledgments) {",
+      "start_line": 54,
+      "end_line": 54,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Market data section and readiness messaging",
+      "files": [
+        "src/modules/market-data/index.ts",
+        "src/modules/market-data/section.ts",
+        "src/ui/readiness-copy.ts"
+      ]
+    },
+    {
+      "label": "Journal section updates",
+      "files": [
+        "src/modules/journal/section.ts"
+      ]
+    }
+  ],
+  "session_id": "d07643d0-737e-48f4-a22b-8414917a1eca",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "d07643d0-737e-48f4-a22b-8414917a1eca",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "fbe1f31",
+      "resolved_base": "be9ceaf0d6ee2255217796ab61e840870c0a7f56",
+      "resolved_head": "fbe1f313b9f46003e5eac1e4af826fa582a49be0",
+      "exact_range": "be9ceaf0d6ee2255217796ab61e840870c0a7f56..fbe1f313b9f46003e5eac1e4af826fa582a49be0",
+      "source_artifact_sha256": "3b9df5358be5f0e3570541c4e13ee07076a43558b39c8cd0c1395a4801d64d81"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "157b410229dcea7bf91b0064c04c074dd52c9469f111e4031b05d2715012ae80",
+          "path": "src/modules/journal/section.ts",
+          "fingerprint": "7490963b140fefaa620aed319af1aedbbd6f604068b1badd953706ec4655518c"
+        },
+        {
+          "item_id": "57e2573986855744064977daaf8fb9d0228298dbb7e8482c0f1bc2051658e860",
+          "path": "src/ui/readiness-copy.ts",
+          "fingerprint": "c2b308edfaabc4c75a88b4518fbffb07ea34593c4e86d72e3de125ffda46eb7c"
+        },
+        {
+          "item_id": "6cccbb3f63f207ad23e39c4400bffe0e0c2e16fcfcc0ece9effa6c41a429fdc1",
+          "path": "src/modules/market-data/index.ts",
+          "fingerprint": "2bcf5ae1e94fa091519f352d0c7b6dbc2a53d640d0428be703dd935a17dd6699"
+        },
+        {
+          "item_id": "b9e68db2fc45bf23af8eda66f3fcb6558c676b61d556e918380a9b929f716337",
+          "path": "src/modules/market-data/section.ts",
+          "fingerprint": "e95938c4cf5ace1f1fbdb8958a471de7a9c8b1e588d0b84194b0b723f1325099"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "157b410229dcea7bf91b0064c04c074dd52c9469f111e4031b05d2715012ae80",
+          "path": "src/modules/journal/section.ts",
+          "fingerprint": "7490963b140fefaa620aed319af1aedbbd6f604068b1badd953706ec4655518c"
+        },
+        {
+          "item_id": "57e2573986855744064977daaf8fb9d0228298dbb7e8482c0f1bc2051658e860",
+          "path": "src/ui/readiness-copy.ts",
+          "fingerprint": "c2b308edfaabc4c75a88b4518fbffb07ea34593c4e86d72e3de125ffda46eb7c"
+        },
+        {
+          "item_id": "6cccbb3f63f207ad23e39c4400bffe0e0c2e16fcfcc0ece9effa6c41a429fdc1",
+          "path": "src/modules/market-data/index.ts",
+          "fingerprint": "2bcf5ae1e94fa091519f352d0c7b6dbc2a53d640d0428be703dd935a17dd6699"
+        },
+        {
+          "item_id": "b9e68db2fc45bf23af8eda66f3fcb6558c676b61d556e918380a9b929f716337",
+          "path": "src/modules/market-data/section.ts",
+          "fingerprint": "e95938c4cf5ace1f1fbdb8958a471de7a9c8b1e588d0b84194b0b723f1325099"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 96879
+  }
+}

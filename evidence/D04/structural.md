@@ -553,3 +553,26 @@ ocr reviews of the T4.12 bug tasks, each **No findings**: `5dc3669` (B1, session
 - `a9a3055` (B1–B2), 2026-10-28 01:58 EDT: unit 612, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.12-b2-*`.
 
 Only `verify:capacity` failed (expected until T4.28). T4.12 is complete.
+
+## T4.13 Section validators
+
+Implemented in `fbe1f31` (4 cases; case 2 grown one defect at a time, ten reds). Flagged: case 3 (Journal accepts Action Entries) first-run pass, mutation-checked. Issue codes: `MissingRevisionIdentity`, `DuplicateRevisionIdentity` (store-wide), `EffectiveHeadNotLast`, `CorrectionReasonMissing`, `CorrectionFootprintMissing`, `AssertedWhileMarkEffective`, and the save codes `PriceNegative`, `InvalidPrice` (zero valid, A37), `NotASession`, `SessionPolicyCoverage`; Journal gains `EditDefinitionChanged`; repairs `[]` for both. `src/ui/readiness-copy.ts` gains one line for `EditDefinitionChanged` (its record is exhaustive).
+
+Decisions: Market Data's validator is `validateSection(source, policy)`: `meta.sessionPolicy` stores only identity, so the caller supplies the policy that identity names (this release ships one revision). T4.17 must keep A40's "no longer a covered session" findings from blocking a migration, by validating with the policy the stored identity names or treating those two codes as A40 findings. "An Asserted acknowledgment while a Mark is effective" means an Asserted version saved after the key's first Mark: the app rejects Assert with `MarkExists` once a Mark is effective, but keeps an earlier Asserted head when a Mark is saved and gives the Mark precedence (T4.5), so the literal reading would flag the app's own writes. A forged Mark then Assert at the same instant is not detectable from `savedAt`.
+
+ocr review of `fbe1f31`: session `d07643d0-737e-48f4-a22b-8414917a1eca`, 4 files, 3 comments. `ocr/T4.13-fbe1f31.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/modules/market-data/section.ts:31` | An impossible or malformed `tradingDate` makes `policy.classify` throw, so the validator rejects instead of reporting | Valid for the date (the key is the record's identity). Unchecked record shapes in general (missing arrays, non-string prices) are shared with D2's validators and are left to D8's restore parsing | Bug task T4.13-B1 |
+| medium | `src/modules/market-data/section.ts:59` | Mark chain continuity (`supersedes` links, `revisionNumber` steps) is never checked, though the plan says "continuous chains" | Valid | Bug task T4.13-B2 |
+| medium | `src/modules/market-data/section.ts:54` | A Withdrawn version with no effective Asserted version before it passes | Doubtful (the app rejects it with `NothingToWithdraw`) | Bug task T4.13-B3 |
+
+### T4.13-B1 An impossible observation date is reported, not thrown
+- it should report NotASession for a key whose date is not a valid calendar date
+
+### T4.13-B2 Mark chains are continuous
+- it should report a Mark revision whose supersedes link or revision number does not follow the one before it
+
+### T4.13-B3 A withdrawal follows an effective assertion
+- it should report a Withdrawn acknowledgment version with no effective Asserted version before it
