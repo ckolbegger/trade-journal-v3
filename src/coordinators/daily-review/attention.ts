@@ -1,5 +1,5 @@
 import { Temporal } from 'temporal-polyfill';
-import type { DerivedTradeState, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
+import type { DerivedTradeState, IntegrityFinding, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
 import type { AttentionBand, AttentionReason, CalculationFamily, PressureBasis } from './types.ts';
 
@@ -53,9 +53,9 @@ function pressureOf(state: DerivedTradeState, evaluation: TradeEvaluation): Pres
   return { kind: 'Comparable', side: 'Winning', share: rewardAtEntry.sub(reward.value).div(rewardAtEntry), atEntry: rewardAtEntry, now: reward.value };
 }
 
-export function attentionOf(state: DerivedTradeState, evaluation: TradeEvaluation): Attention {
+export function attentionOf(state: DerivedTradeState, evaluation: TradeEvaluation, findings: readonly IntegrityFinding[]): Attention {
   const basis = pressureOf(state, evaluation);
-  if (state.findings.length > 0) return { band: 'Blocker', reasons: [{ code: 'IntegrityDisagreement', findings: state.findings }], basis };
+  if (findings.length > 0) return { band: 'Blocker', reasons: [{ code: 'IntegrityDisagreement', findings }], basis };
   const crossed = evaluation.conditions.flatMap((c) =>
     c.result.kind === 'Value' && c.result.value.status !== 'Active' && c.result.value.overrun
       ? [{ code: c.role === 'Stop' ? ('StopBreached' as const) : ('TargetReached' as const), conditionId: c.id, overrun: c.result.value.overrun.dollars }]

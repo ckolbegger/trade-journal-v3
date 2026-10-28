@@ -319,6 +319,29 @@ describe('facts that cannot be replayed', () => {
   });
 });
 
+describe('facts that cannot be replayed after the cutoff', () => {
+  it('should list a Trade whose Execution after the cutoff cannot be replayed in the blocker band', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const trade = await stack.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '56.00' });
+    await stack.fill(trade, TEN_AM, '100', '50.00');
+    await stack.fill(trade, '2026-10-12T20:05:00Z', '20', '50.50');
+    await stack.saveMark('XYZ', '52.00');
+    await stack.saveAction(trade.tradeId, 'Hold');
+    type Fact = { factId: string; kind: string; versions: { value: Record<string, unknown> }[] };
+    await rawEditTrade(stack, trade.tradeId, (t) => {
+      const facts = t['facts'] as Fact[];
+      const last = facts.filter((f) => f.kind === 'Execution').at(-1);
+      const broken = (fact: Fact) => ({ ...fact, versions: fact.versions.map((v) => ({ ...v, value: { ...v.value, intent: { kind: 'ServesPlannedLeg', plannedLegId: 'leg-unknown' } } })) });
+      return { ...t, facts: facts.map((fact) => (fact === last ? broken(fact) : fact)) };
+    });
+
+    const review = ready(await open(stack, MONDAY_1700));
+
+    expect(walk(review)).toEqual([expect.objectContaining({ tradeId: trade.tradeId, band: 'Blocker', reasons: [{ code: 'IncoherentFacts', findings: [expect.objectContaining({ reason: 'UnknownPlannedLeg' })] }] })]);
+    expect(review.completion).toEqual({ kind: 'Incomplete', reasons: [{ code: 'IncoherentFacts', tradeId: trade.tradeId, findings: [expect.objectContaining({ reason: 'UnknownPlannedLeg' })] }] });
+  }, 30_000);
+});
+
 describe('coherent read (A46)', () => {
   it('should bind the Workspace, Catalog, and Journal revisions, the market snapshot, and each Trade fact revision of one read', async () => {
     const stack = await reviewStack(MONDAY_1700);
@@ -509,6 +532,39 @@ describe('completion', () => {
 
     expect(review.completion).toEqual({ kind: 'Complete' });
     expect(walk(review).map((t) => t.band)).not.toContain('Blocker');
+  }, 30_000);
+
+  it('should not report an integrity blocker for a Position Change whose Executions straddle the cutoff', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const trade = await stack.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '56.00' });
+    // One Position Change: 90 before the cutoff and 20 at 16:05 New York, over plan only in total.
+    await stack.fillTogether(trade, [
+      { economicTime: TEN_AM, quantity: '90', price: '50.00' },
+      { economicTime: '2026-10-12T20:05:00Z', quantity: '20', price: '50.50' },
+    ]);
+    await stack.saveMark('XYZ', '52.00');
+    await stack.saveAction(trade.tradeId, 'Hold');
+
+    const review = ready(await open(stack, MONDAY_1700));
+
+    expect(review.completion).toEqual({ kind: 'Complete' });
+    expect(walk(review).map((t) => t.band)).not.toContain('Blocker');
+  }, 30_000);
+
+  it('should still report an integrity blocker for a disagreement in facts after the cutoff', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const trade = await stack.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '56.00' });
+    await stack.fill(trade, TEN_AM, '100', '50.00');
+    // 16:05 New York: over plan after the cutoff, then its recorded Deviation is removed from the stored Trade.
+    await stack.fill(trade, '2026-10-12T20:05:00Z', '20', '50.50');
+    await rawEditTrade(stack, trade.tradeId, (t) => ({ ...t, deviations: [] }));
+    await stack.saveMark('XYZ', '52.00');
+    await stack.saveAction(trade.tradeId, 'Hold');
+
+    const review = ready(await open(stack, MONDAY_1700));
+
+    expect(walk(review)).toEqual([expect.objectContaining({ tradeId: trade.tradeId, band: 'Blocker', reasons: [{ code: 'IntegrityDisagreement', findings: [expect.objectContaining({ kind: 'DeviationMissing' })] }] })]);
+    expect(review.completion).toEqual({ kind: 'Incomplete', reasons: [{ code: 'IntegrityDisagreement', tradeId: trade.tradeId, findings: [expect.objectContaining({ kind: 'DeviationMissing' })] }] });
   }, 30_000);
 
   it('should leave historical gaps out of completion', async () => {

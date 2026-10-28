@@ -77,11 +77,11 @@ export async function reviewStack(now = MONDAY_1700) {
     return confirmed.postCommit.trade;
   };
 
-  // One single-Execution Position Change, at the Trade's current FactRevision.
-  const fill = async (trade: TradeAnalysisRecord, economicTime: string, quantity: string, price: string): Promise<void> => {
+  // One Position Change holding an Execution per fill, at the Trade's current FactRevision.
+  const fillTogether = async (trade: TradeAnalysisRecord, fills: readonly { economicTime: string; quantity: string; price: string }[]): Promise<void> => {
     const current = await stack.tradeRecord.getRecord({ tradeId: trade.tradeId, projection: 'AnalysisInput' });
     if (current.kind !== 'Found') throw new Error('no Trade');
-    const member: PositionChangeMember = {
+    const members: PositionChangeMember[] = fills.map(({ economicTime, quantity, price }) => ({
       kind: 'Execution',
       tradeId: trade.tradeId,
       action: 'Buy',
@@ -91,15 +91,18 @@ export async function reviewStack(now = MONDAY_1700) {
       price,
       fee: '1.00',
       economicTime,
-    };
+    }));
     const result = await stack.tradeWorkflows.recordPositionChange({
       originTradeId: trade.tradeId,
       trades: [{ tradeId: trade.tradeId, expectedFactRevision: current.factRevision }],
-      members: [member],
+      members,
       reflection,
     });
     if (result.kind !== 'Recorded') throw new Error(`expected Recorded, got ${result.kind}`);
   };
+
+  // One single-Execution Position Change.
+  const fill = (trade: TradeAnalysisRecord, economicTime: string, quantity: string, price: string): Promise<void> => fillTogether(trade, [{ economicTime, quantity, price }]);
 
   const saveMark = async (instrumentKey: string, price: string, tradingDate = REVIEW_DATE): Promise<MarketDataSaveResult> => {
     const saved = await marketData.save({ intention: 'RecordInitialManualMark', instrumentKey, tradingDate, price, expectedResolutionRevision: 'None' });
@@ -139,7 +142,7 @@ export async function reviewStack(now = MONDAY_1700) {
     if (committed.kind !== 'Committed') throw new Error(`expected Committed, got ${committed.kind}`);
   };
 
-  return { ...stack, factory, marketData, dailyReview, confirm, fill, saveMark, acknowledge, saveAction };
+  return { ...stack, factory, marketData, dailyReview, confirm, fill, fillTogether, saveMark, acknowledge, saveAction };
 }
 
 export type ReviewStack = Awaited<ReturnType<typeof reviewStack>>;

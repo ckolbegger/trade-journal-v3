@@ -92,11 +92,18 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
 
     // Each Trade is derived at the cutoff, which also yields the Marks its Position requires.
     // The index only selects; a Trade whose facts do not leave it Open at the cutoff is not eligible.
+    // Integrity (A59) is whether the stored Trade agrees with all its facts, so it comes from a
+    // second derivation with no cutoff; the cutoff derivation decides eligibility, state, and evaluation.
     const derivations = records
-      .map(({ summary, analysis }) => ({ summary, analysis, derivation: derive({ record: analysis, cutoff, valuationDate: reviewDate }) }))
+      .map(({ summary, analysis }) => ({
+        summary,
+        analysis,
+        derivation: derive({ record: analysis, cutoff, valuationDate: reviewDate }),
+        integrity: derive({ record: analysis }),
+      }))
       .filter(({ derivation }) => derivation.kind !== 'Derived' || derivation.expectedLifecycle === 'Open');
     if (derivations.length === 0) return { kind: 'Empty', reviewDate, cutoff };
-    const derived = derivations.flatMap(({ summary, analysis, derivation }) => (derivation.kind === 'Derived' ? [{ summary, analysis, state: derivation }] : []));
+    const derived = derivations.flatMap(({ summary, analysis, derivation, integrity }) => (derivation.kind === 'Derived' && integrity.kind === 'Derived' ? [{ summary, analysis, state: derivation }] : []));
     const requirements = derived.flatMap(({ state }) => state.observationRequirements.map((r) => ({ tradeId: state.tradeId, ...r })));
     const earliest = new Map<string, string>();
     for (const { instrument, earliestRelevance } of requirements) {
@@ -123,13 +130,15 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       .map((g): HistoricalGapGroup => ({ ...g, blocking: false }));
 
     const ranked = derivations
-      .map(({ summary, analysis, derivation }) => {
+      .map(({ summary, analysis, derivation, integrity }) => {
         const identity = { tradeId: summary.tradeId, underlying: summary.underlying, lastActivity: summary.lastActivity ?? summary.planTime };
-        if (derivation.kind === 'IncoherentFacts') {
+        // Facts that cannot be replayed at any time make the Trade incoherent, whichever derivation finds them.
+        if (derivation.kind !== 'Derived' || integrity.kind !== 'Derived') {
+          const incoherent = derivation.kind === 'IncoherentFacts' ? derivation : integrity;
           const item: ReviewTradeItem = {
             ...identity,
             band: 'Blocker',
-            reasons: [{ code: 'IncoherentFacts', findings: derivation.findings }],
+            reasons: [{ code: 'IncoherentFacts', findings: incoherent.kind === 'IncoherentFacts' ? incoherent.findings : [] }],
             basis: { kind: 'NotComparable', reason: 'FactsIncoherent' },
           };
           return { item, evaluation: undefined };
@@ -137,7 +146,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         const frame = recovered.frames.find((f) => f.instrumentKey === analysis.plan.underlying);
         if (!frame) throw new Error(`Market Data returned no frame for ${analysis.plan.underlying}`);
         const evaluation = evaluate({ state: derivation, frame: observationFrame(frame) });
-        const item: ReviewTradeItem = { ...identity, ...attentionOf(derivation, evaluation) };
+        const item: ReviewTradeItem = { ...identity, ...attentionOf(derivation, evaluation, integrity.findings) };
         return { item, evaluation };
       })
       .sort((a, b) => byAttention(a.item, b.item));
