@@ -1,0 +1,138 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 1,
+    "total_tokens": 188424,
+    "input_tokens": 186999,
+    "output_tokens": 1425,
+    "cache_read_tokens": 15360,
+    "elapsed": "1m24s"
+  },
+  "tool_calls": {
+    "total": 16,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_find": 2,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "package.json",
+      "content": "The verifier is only exposed as an opt-in command: `build` still runs `vite build`, and no build/CI entry point invokes this script. Consequently, changing the table or completion buffer without bumping the revision still allows the build to succeed, contrary to A39's required build check. Wire this command into `prebuild`, the build command, or a mandatory build/CI gate so its nonzero exit status blocks the build.",
+      "existing_code": "    \"verify:session-policy\": \"node tools/verify-session-policy.ts\",",
+      "start_line": 34,
+      "end_line": 34,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Session policy data, revision tracking, and verification tooling",
+      "files": [
+        "package.json",
+        "src/domain/session-policy/nyse-published.json",
+        "src/domain/session-policy/revision-digests.json",
+        "src/domain/session-policy/table.ts",
+        "tools/verify-session-policy.ts"
+      ]
+    }
+  ],
+  "session_id": "f78e3534-cc39-47ab-869c-ced091850a5f",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "f78e3534-cc39-47ab-869c-ced091850a5f",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "b09ba64",
+      "resolved_base": "c0df16434e9cf05100d86abc4ed832ef651b865f",
+      "resolved_head": "b09ba64952b29643dd1a4c78f8d155434d2df4d2",
+      "exact_range": "c0df16434e9cf05100d86abc4ed832ef651b865f..b09ba64952b29643dd1a4c78f8d155434d2df4d2",
+      "source_artifact_sha256": "a3453cb51e3c8884f80275466486dddbd13162df390d932bdb2083ea7ec3c336"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "83dc527108ec076ae4043fe58da7d54785ed123859e9ffabb9d29400ddec07e6",
+          "path": "src/domain/session-policy/nyse-published.json",
+          "fingerprint": "c2bfab5bfa488a1da66345e6d76efb5a65151cf3d1d1d8d2991d9e7b0a42229d"
+        },
+        {
+          "item_id": "c34b7b516c88528c08c03d36f62f5920bf953ef8f3aa6f352057d4fd3c27e808",
+          "path": "src/domain/session-policy/revision-digests.json",
+          "fingerprint": "59f400c1b0bf35d09408a4b484637ca060b2557d729cc211e5f880660ecf4a9b"
+        },
+        {
+          "item_id": "ceb9867c5e6ebcc16ad55f7be92b51ae60016504e323f4a412f21ce3ecf13a6c",
+          "path": "tools/verify-session-policy.ts",
+          "fingerprint": "4292d4edf41d4103023220f4edfe3fbfd5b1598b4b755840a06ae271bb87b6bf"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "2c941b263819f18b41468850022cfdf3a421240ad0296f06d9e5ec41ce3f8863"
+        },
+        {
+          "item_id": "efb760ca2849f8f832592606d751f6356a62cc2f9bacf5ed9f4238436a1bee6d",
+          "path": "src/domain/session-policy/table.ts",
+          "fingerprint": "f03d0be1f48498b13d9b9a014ddd74081b9f29ae0b7dd22da3ab73653223fae7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "83dc527108ec076ae4043fe58da7d54785ed123859e9ffabb9d29400ddec07e6",
+          "path": "src/domain/session-policy/nyse-published.json",
+          "fingerprint": "c2bfab5bfa488a1da66345e6d76efb5a65151cf3d1d1d8d2991d9e7b0a42229d"
+        },
+        {
+          "item_id": "c34b7b516c88528c08c03d36f62f5920bf953ef8f3aa6f352057d4fd3c27e808",
+          "path": "src/domain/session-policy/revision-digests.json",
+          "fingerprint": "59f400c1b0bf35d09408a4b484637ca060b2557d729cc211e5f880660ecf4a9b"
+        },
+        {
+          "item_id": "ceb9867c5e6ebcc16ad55f7be92b51ae60016504e323f4a412f21ce3ecf13a6c",
+          "path": "tools/verify-session-policy.ts",
+          "fingerprint": "4292d4edf41d4103023220f4edfe3fbfd5b1598b4b755840a06ae271bb87b6bf"
+        },
+        {
+          "item_id": "de566e6284a31c2314451a985c1f7d6df2743b4e564b2caa20d17560bbad6f03",
+          "path": "package.json",
+          "fingerprint": "2c941b263819f18b41468850022cfdf3a421240ad0296f06d9e5ec41ce3f8863"
+        },
+        {
+          "item_id": "efb760ca2849f8f832592606d751f6356a62cc2f9bacf5ed9f4238436a1bee6d",
+          "path": "src/domain/session-policy/table.ts",
+          "fingerprint": "f03d0be1f48498b13d9b9a014ddd74081b9f29ae0b7dd22da3ab73653223fae7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 83689
+  }
+}

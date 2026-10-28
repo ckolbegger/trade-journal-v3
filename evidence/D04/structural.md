@@ -104,3 +104,24 @@ verify:session-policy OK: ... exit 0
 ```
 
 `npx vitest run src/domain/session-policy`: 22 passed (22), T4.1's cases unchanged.
+
+### ocr review of `b09ba64` (T4.2)
+
+Session `f78e3534-cc39-47ab-869c-ced091850a5f`, 5 files reviewed, 1 comment. Raw output: `ocr/T4.2-b09ba64.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `package.json:34` | `verify:session-policy` is opt-in; nothing in the build runs it, so a table or buffer change without a revision bump could still build (A39) | Wrong | Dismissed. The plan's exact verification for T4.2 is `npm run verify:session-policy`; `.claude/scripts/full-suite.sh` line 38 runs every `verify:*` script in `package.json`, so every cumulative run and the gate check it, the same way decision 18's capacity "build check" is `verify:capacity`. |
+
+### Cumulative run after T4.2
+
+Run 2026-10-27 21:06 EDT on commit `b09ba64` (uncommitted: evidence only), Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 44 passed (44)`, `Tests 496 passed (496)`, exit 0 | `suite-runs/t4.2-session-policy-verification-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 21 passed (21)`, `Tests 49 passed (49)`, exit 0 | `suite-runs/t4.2-session-policy-verification-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `124 passed (3.9m)`, exit 0 | `suite-runs/t4.2-session-policy-verification-browser.txt` |
+| Static and verification checks (12 commands) | the 11 earlier commands plus `npm run verify:session-policy` | 12 of 12 exit 0 | `suite-runs/t4.2-session-policy-verification-checks.txt` |
+
+Failures: none.
