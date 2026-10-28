@@ -408,3 +408,26 @@ Implemented in `a1a138c` (3 cases, no first-run passes). `TradeDerivationInput` 
 ocr review of `a1a138c`: session `b2064e1f-6307-400d-bc88-20c6b0efdccb`, 2 files, **No findings.** `ocr/T4.8-a1a138c.json`.
 
 Cumulative run 2026-10-28 00:47 EDT on `a1a138c`: unit 567, integration 49, browser 124 passed; checks 11 of 12 (only `verify:capacity`, expected). `suite-runs/t4.8-cutoff-*`. T4.8 is complete.
+
+## T4.9 Trade Analysis: valuation and availability
+
+Implemented in `ee4bb7b` (13 cases). Flagged: case 13 first-run pass (mutation-checked); process slip on the covered-subtotal case (production line written before its red, reverted, red run, restored). `evaluate` takes one `ObservationFrame` (Instrument object, date, close instant, resolution) and handles one Instrument; covered subtotal is `null` until D10.
+
+ocr review of `ee4bb7b`: session `60abb6b3-4137-45ae-bda0-495eaeb1d972`, 3 files reviewed, 4 comments. Raw output: `ocr/T4.9-ee4bb7b.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/domain/trade-analysis/evaluate.ts:110` | The frame's Instrument is never compared with the Position's, so an ABC frame values XYZ Lots | Valid (latent with single-Instrument callers) | Bug task T4.9-B1 |
+| medium | `src/domain/trade-analysis/evaluate.ts:156-158` | Ongoing Risk to Stop and Incremental Reward are not floored at 0 past the Stop or Target | Valid, and exactly T4.10's planned cases ("Stop crossed": Ongoing Risk $0.00 with Overrun; "Target reached": Incremental Reward $0.00 with Overrun) | Folded into T4.10, which builds it test-first; no separate bug task |
+| medium | `src/domain/trade-analysis/evaluate.ts:160` | With a Missing frame carrying Stale context, at-entry Lots are chosen by the Missing frame's close rather than the Stale Mark's close, so Friday Mark plus Monday fills gives `atEntry: null` | Doubtful (A54's coordinator passes D's frame, which the test does; but evaluating the current Missing frame directly should still give at-entry relative to D) | Bug task T4.9-B2 |
+| low | `src/domain/trade-analysis/evaluate.ts:135` | Nested ternary in `marked` | Doubtful (readability only) | Bug task T4.9-B3 (structural) |
+
+### T4.9-B1 evaluate values only the frame's own Instrument
+- it should return the Mark-dependent figures as Unavailable(MarkMissing) naming the Position's Instrument when the frame is for a different Instrument
+
+### T4.9-B2 At-entry figures are relative to the latest exact Mark's close
+- it should return at-entry figures for Lots opened after the Stale context's close when the frame is Missing (Friday Mark, Monday fills: all 100 shares, risk from entry $268.00, reward from entry $582.00)
+- it should return at-entry figures for every remaining Lot when the frame is Missing without Stale context
+
+### T4.9-B3 marked as explicit guards (structural)
+Verification: `npx vitest run src/domain/trade-analysis` passes unchanged before and after; typecheck, tsc6, lint, lint:deps exit 0.

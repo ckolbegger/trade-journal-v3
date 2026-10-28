@@ -1,0 +1,142 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 4 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 4,
+    "total_tokens": 202538,
+    "input_tokens": 200671,
+    "output_tokens": 1867,
+    "cache_read_tokens": 31104,
+    "elapsed": "1m17s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 4,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/domain/trade-analysis/evaluate.ts",
+      "content": "The supplied frame is never checked against the Position's instrument. A state holding XYZ can be evaluated with an ABC frame and return XYZ's P\u0026L using ABC's price, with Available coverage and ABC's revision evidence. Validate the frame's instrument against the remaining Position before using its Mark (and reject unsupported multi-instrument inputs rather than applying one price to all lots).",
+      "existing_code": "  const lots = state.positions.flatMap((p) =\u003e p.openLots);",
+      "start_line": 110,
+      "end_line": 110,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/domain/trade-analysis/evaluate.ts",
+      "content": "Risk and reward must remain nonnegative once their boundaries are crossed (A41). For example, 100 shares with Stop 47.50 and Mark 47.00 currently return risk −$50; a Mark above the Target similarly returns negative incremental reward. Floor both distances at zero and add boundary-crossing tests; any excess belongs in separate Overrun figures.",
+      "existing_code": "    ongoingRiskToStop: marked((mark) =\u003e quantity.mul(mark.sub(stop))),\n    worstCaseOngoingRisk: marked((mark) =\u003e quantity.mul(mark)),\n    incrementalRewardToTarget: marked((mark) =\u003e quantity.mul(target.sub(mark))),",
+      "start_line": 156,
+      "end_line": 158,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/domain/trade-analysis/evaluate.ts",
+      "content": "This nested ternary violates the supplied checklist. Use explicit guards for no remaining Position and for an available, eligible Mark, followed by the Unavailable fallback, so the precedence of these availability rules is clear.",
+      "existing_code": "    lots.length === 0 ? noRemainingPosition : resolution.kind === 'Available' \u0026\u0026 !openedAfterClose ? value(of(decimal(resolution.mark.price))) : unavailable;",
+      "start_line": 135,
+      "end_line": 135,
+      "category": "style",
+      "severity": "low"
+    },
+    {
+      "path": "src/domain/trade-analysis/evaluate.ts",
+      "content": "For a Missing frame with stale evidence, the at-entry cutoff must be the stale Mark's close, not the missing session's close (P13/A54). For example, with only a Friday Mark and Monday fills, evaluating Monday's Missing frame currently returns `atEntry: null` because the fills precede Monday's close. T4.9 explicitly requires at-entry figures for all 100 shares in this case. Select the at-entry lots relative to `resolution.stale.closeInstant` when applicable, while keeping current-figure availability based on the requested frame (so it still reports MarkMissing).",
+      "existing_code": "    atEntry: atEntryOf(lotsAfterClose, stop, target),",
+      "start_line": 160,
+      "end_line": 160,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/domain/trade-analysis/derive.ts",
+        "src/domain/trade-analysis/evaluate.ts",
+        "src/domain/trade-analysis/index.ts"
+      ]
+    }
+  ],
+  "session_id": "60abb6b3-4137-45ae-bda0-495eaeb1d972",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "60abb6b3-4137-45ae-bda0-495eaeb1d972",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "ee4bb7b",
+      "resolved_base": "c1ab14666519db798efad9ed88ca8f83fbb0e38c",
+      "resolved_head": "ee4bb7bf5caa3361b0e77467efb3925d89367764",
+      "exact_range": "c1ab14666519db798efad9ed88ca8f83fbb0e38c..ee4bb7bf5caa3361b0e77467efb3925d89367764",
+      "source_artifact_sha256": "dba35e10546dc4bbaee0dd2ca80c55da23b1437b85fc4cd896b8cf339d17a17e"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "33f3e14cd4b415983cd1da07fdf7ac84fa0706e692ac39394537498495f444be"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "6c9af553062fd2516288c325d43d9999897802837aa95796d28e5c4b91fcbeef"
+        },
+        {
+          "item_id": "8411810b972f01aae046b61cff46f2696ec8bf23a4e9d6abff256a42fc139477",
+          "path": "src/domain/trade-analysis/index.ts",
+          "fingerprint": "9a8b62e64df9fe0f210e092eae63d1118f2f8260f3b0e11b3285daffbc46862e"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "33f3e14cd4b415983cd1da07fdf7ac84fa0706e692ac39394537498495f444be"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "6c9af553062fd2516288c325d43d9999897802837aa95796d28e5c4b91fcbeef"
+        },
+        {
+          "item_id": "8411810b972f01aae046b61cff46f2696ec8bf23a4e9d6abff256a42fc139477",
+          "path": "src/domain/trade-analysis/index.ts",
+          "fingerprint": "9a8b62e64df9fe0f210e092eae63d1118f2f8260f3b0e11b3285daffbc46862e"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 76758
+  }
+}
