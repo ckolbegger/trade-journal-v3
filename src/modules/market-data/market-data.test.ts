@@ -285,6 +285,11 @@ describe('key and price validation (P8, P9, P10)', () => {
     expect(await completed.marketData.save(initial({ tradingDate: '2026-10-13' }))).toEqual(expect.objectContaining({ kind: 'Saved' }));
   });
 
+  it('should accept a Mark for Tuesday at 16:30:00.500 on Tuesday, a fractional-second instant after the completion', async () => {
+    const { marketData } = await setup('2026-10-13T20:30:00.500Z');
+    expect(await marketData.save(initial({ tradingDate: '2026-10-13' }))).toEqual(expect.objectContaining({ kind: 'Saved' }));
+  });
+
   it('should accept Friday 2026-10-09, because past completed sessions are valid keys', async () => {
     const { marketData } = await setup();
     const result = await marketData.save(initial({ tradingDate: '2026-10-09' }));

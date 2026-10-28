@@ -1,3 +1,4 @@
+import { Temporal } from 'temporal-polyfill';
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
 import type { SessionPolicy } from '../../domain/session-policy/index.ts';
 import type { Clock } from '../../domain/time/index.ts';
@@ -128,7 +129,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
       const day = deps.sessionPolicy.classify(command.tradingDate);
       if (day.kind === 'NotCovered') issues.push({ field: 'tradingDate', code: 'SessionPolicyCoverage' });
       else if (day.kind !== 'Session') issues.push({ field: 'tradingDate', code: 'NotASession' });
-      else if (deps.clock.now() < day.completion) issues.push({ field: 'tradingDate', code: 'SessionNotCompleted' });
+      else if (Temporal.Instant.compare(Temporal.Instant.from(deps.clock.now()), Temporal.Instant.from(day.completion)) < 0) issues.push({ field: 'tradingDate', code: 'SessionNotCompleted' });
     }
     const price = parseDecimal(command.price);
     if (!price.ok) issues.push({ field: 'price', code: 'InvalidPrice' });
