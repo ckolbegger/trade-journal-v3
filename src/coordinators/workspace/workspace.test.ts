@@ -182,7 +182,7 @@ describe('getStatus', () => {
         }) as unknown,
       }) as unknown,
       protection: 'BestEffort',
-      schemaVersion: 2,
+      schemaVersion: 3,
       latestReceipt: opened.receipt,
     });
   });
@@ -302,7 +302,7 @@ describe('Installed Capability Manifest', () => {
       },
       strategies: ['strategy.long-stock'],
       entryTypes: ['entry-type.plan-reflection', 'entry-type.position-change-reflection'],
-      schemaVersion: 2,
+      schemaVersion: 3,
       backupSchemaRange: null,
       providerAdapters: [],
     });

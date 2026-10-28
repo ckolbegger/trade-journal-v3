@@ -6,13 +6,22 @@ export const WORKSPACE_PREFIX = 'tj-ws-';
 export const POINTER_KEY = 'current';
 
 // The Workspace schema this release reads and writes.
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 export function upgradeRoot(db: IDBDatabase, oldVersion: number): void {
   if (oldVersion < 1) {
     db.createObjectStore('pointer', { keyPath: 'key' });
     db.createObjectStore('diagnostics', { keyPath: 'id' });
   }
+}
+
+// The session policy a release ships, as plain data. Persistence never imports the policy itself
+// (D4 A39); the composition root passes its identity in. Recorded in `meta` (D4 A38).
+export interface SessionPolicyIdentity {
+  readonly id: string;
+  readonly revision: number;
+  readonly digest: string;
+  readonly coverage: { readonly first: string; readonly last: string };
 }
 
 export type WorkspaceStore =
@@ -23,9 +32,10 @@ export type WorkspaceStore =
   | 'journalEntries'
   | 'journalDeclines'
   | 'journalObligations'
-  | 'trades';
+  | 'trades'
+  | 'observations';
 
-export const WORKSPACE_KEY_PATHS: Readonly<Record<WorkspaceStore, string>> = {
+export const WORKSPACE_KEY_PATHS: Readonly<Record<WorkspaceStore, string | readonly string[]>> = {
   meta: 'key',
   catalog: 'id',
   journalTypes: 'id',
@@ -36,7 +46,15 @@ export const WORKSPACE_KEY_PATHS: Readonly<Record<WorkspaceStore, string>> = {
   // and journalDeclines (D2 A28).
   journalObligations: 'obligationKey',
   trades: 'tradeId',
+  // One record per Market Data key, with its Mark and acknowledgment chains (D4 A38).
+  observations: ['tradingDate', 'instrumentKey'],
 };
+
+// A record's primary key, whether its store's key path is one field or several.
+export function keyOf(store: WorkspaceStore, value: Record<string, unknown>): IDBValidKey {
+  const keyPath = WORKSPACE_KEY_PATHS[store];
+  return (typeof keyPath === 'string' ? value[keyPath] : keyPath.map((field) => value[field])) as IDBValidKey;
+}
 
 // Stores holding private derived state: never copied by migration or backed up, only rebuilt.
 export const PRIVATE_STORES: ReadonlySet<WorkspaceStore> = new Set(['journalObligations']);
@@ -55,12 +73,14 @@ export function createWorkspaceIndexes(store: (name: WorkspaceStore) => IDBObjec
   store('trades').createIndex('byLifecycle', ['lifecycle', 'planTime', 'tradeId']);
   // The Open list, most recent activity first: `activityDesc` is a descending sort key (D2 A28).
   store('trades').createIndex('byLifecycleActivity', ['lifecycle', 'activityDesc', 'tradeId']);
+  // Stale context and gap enumeration read one Instrument's observations by date (D4 A38).
+  store('observations').createIndex('byInstrumentDate', ['instrumentKey', 'tradingDate']);
 }
 
 export function upgradeWorkspace(db: IDBDatabase, oldVersion: number): void {
   if (oldVersion < 1) {
     const stores = new Map(
-      Object.entries(WORKSPACE_KEY_PATHS).map(([store, keyPath]) => [store, db.createObjectStore(store, { keyPath })]),
+      Object.entries(WORKSPACE_KEY_PATHS).map(([store, keyPath]) => [store, db.createObjectStore(store, { keyPath: keyPath as string | string[] })]),
     );
     createWorkspaceIndexes((name) => stores.get(name)!);
   }

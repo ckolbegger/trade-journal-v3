@@ -8,6 +8,7 @@ import {
   type StoreRecord,
   type WriteGate,
 } from './index.ts';
+import { TEST_SESSION_POLICY } from '../../tests/support/session-policy.ts';
 
 // T2.8: schema version 2, the candidate database, the pointer flip, and cleanup (D2 A28, A30, A139).
 
@@ -27,7 +28,7 @@ afterEach(() => {
 const writable: WriteGate = { current: () => null, recheck: () => Promise.resolve(null) };
 
 function persistence(prefix = 'p') {
-  return createPersistence({ indexedDB: factory, ids: ids(prefix), writeGate: writable });
+  return createPersistence({ indexedDB: factory, ids: ids(prefix), writeGate: writable, sessionPolicy: TEST_SESSION_POLICY });
 }
 
 // Raw IndexedDB access, independent of the code under test.
@@ -47,7 +48,7 @@ describe('schema v2 layout', () => {
     if (created.kind !== 'Created') throw new Error('workspace not created');
     p.close();
 
-    expect(await p.inspectRoot()).toEqual(expect.objectContaining({ kind: 'KnownWorkspace', schemaVersion: 2 }));
+    expect(await p.inspectRoot()).toEqual(expect.objectContaining({ kind: 'KnownWorkspace', schemaVersion: 3 }));
     const db = await rawOpen(created.databaseName);
     const stores = Array.from(db.objectStoreNames);
     const tx = db.transaction(stores);
@@ -60,7 +61,7 @@ describe('schema v2 layout', () => {
     const declines = tx.objectStore('journalDeclines');
     db.close();
 
-    expect(meta).toEqual({ key: 'schema', schemaVersion: 2 });
+    expect(meta).toEqual({ key: 'schema', schemaVersion: 3 });
     expect(stores).toEqual(expect.arrayContaining(['journalDeclines', 'journalObligations']));
     expect(index.keyPath).toEqual(['lifecycle', 'activityDesc', 'tradeId']);
     expect(obligations.keyPath).toBe('obligationKey');
@@ -188,10 +189,10 @@ describe('candidate and activation', () => {
     expect(onSource).toHaveLength(1);
     expect(onSource[0]?.[1] ?? 'readonly').toBe('readonly');
     expect([...(onSource[0]?.[0] as string[])].sort()).toEqual(
-      ['catalog', 'journalDeclines', 'journalDefinitions', 'journalEntries', 'journalTypes', 'meta', 'trades'],
+      ['catalog', 'journalDeclines', 'journalDefinitions', 'journalEntries', 'journalTypes', 'meta', 'observations', 'trades'],
     );
     // Transforms see authoritative records only: no persistence stamp, no private store.
-    expect(seen.map((r) => r.store).sort()).toEqual(['catalog', 'journalDeclines', 'journalEntries', 'meta', 'trades']);
+    expect(seen.map((r) => r.store).sort()).toEqual(['catalog', 'journalDeclines', 'journalEntries', 'meta', 'meta', 'meta', 'trades']);
     expect(seen.some((r) => 'revision' in r.value)).toBe(false);
     expect(await rawGetAll(candidate, 'catalog')).toEqual([{ id: 'institution-1', label: 'Broker', copied: true, revision: 1 }]);
     expect(await rawGetAll(candidate, 'journalDeclines')).toEqual([
@@ -203,7 +204,9 @@ describe('candidate and activation', () => {
     expect(await rawGetAll(candidate, 'journalObligations')).toEqual([]);
     expect(await rawGetAll(candidate, 'meta')).toEqual([
       { key: 'content', contentRevision: 1 },
-      { key: 'schema', schemaVersion: 2 },
+      { key: 'marketDataRevision', marketDataRevision: 0, copied: true, revision: 1 },
+      { key: 'schema', schemaVersion: 3 },
+      { key: 'sessionPolicy', policy: TEST_SESSION_POLICY, copied: true, revision: 1 },
       { key: 'settings', timeZone: 'America/New_York', copied: true, revision: 1 },
     ]);
   });

@@ -10,6 +10,7 @@ import { createTradeRecord } from '../../src/modules/trade-record/index.ts';
 import { createInProcessLifecycleLock, createPersistence } from '../../src/persistence/index.ts';
 import { nodeTestHost } from './node-test-host.ts';
 import { sequentialIds } from './workspace.ts';
+import { TEST_SESSION_POLICY } from './session-policy.ts';
 
 const GB = 1024 ** 3;
 export const TEST_CAPACITY = { projectedWorkspaceBytes: 0.7 * GB, requiredQuotaBytes: 2.1 * GB };
@@ -23,6 +24,7 @@ export async function testStack(factory = new IDBFactory(), now = '2026-10-12T14
   const persistence = createPersistence({
     indexedDB: factory,
     ids,
+    sessionPolicy: TEST_SESSION_POLICY,
     writeGate: {
       current: () => toRuntimeNotWritable(holder.session!.current()),
       recheck: async () => toRuntimeNotWritable(await holder.session!.recheck()),

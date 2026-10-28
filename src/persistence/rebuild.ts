@@ -1,3 +1,4 @@
+import { Temporal } from 'temporal-polyfill';
 import { openDatabase } from './idb.ts';
 import { activityDescOf, createWorkspaceIndexes } from './schema.ts';
 
@@ -14,25 +15,43 @@ export async function rebuildPrivateState(indexedDB: IDBFactory, databaseName: s
       const store = tx.objectStore(name);
       for (const index of Array.from(store.indexNames)) store.deleteIndex(index);
     }
-    recomputeActivityKeys(tx.objectStore('trades'));
+    recomputePrivateTradeFields(tx.objectStore('trades'));
     rebuildObligations(tx);
     createWorkspaceIndexes((name) => tx.objectStore(name));
   });
   rebuilt.close();
 }
 
-// Each Trade's private Last Activity sort key, from its stored Last Activity (D2 A28).
-function recomputeActivityKeys(trades: IDBObjectStore): void {
+// Each Trade's private fields, from its stored facts: the Last Activity sort key (D2 A28) and
+// `exposureStart` (D4 A38), the Economic Time of its first effective opening Execution.
+function recomputePrivateTradeFields(trades: IDBObjectStore): void {
   const request = trades.openCursor();
   request.onsuccess = () => {
     const cursor = request.result;
     if (!cursor) return;
     const trade = { ...(cursor.value as Record<string, unknown>) };
     delete trade['activityDesc'];
+    delete trade['exposureStart'];
     if (typeof trade['lastActivity'] === 'string') trade['activityDesc'] = activityDescOf(trade['lastActivity']);
+    const exposureStart = exposureStartOf(trade['facts']);
+    if (exposureStart !== undefined) trade['exposureStart'] = exposureStart;
     cursor.update(trade);
     cursor.continue();
   };
+}
+
+interface StoredFact {
+  readonly kind: string;
+  readonly versions: readonly { readonly value: { readonly economicTime: string } }[];
+}
+
+// The earliest Economic Time among a Trade's Executions, each at its latest version; undefined when
+// it has none. Every Execution through D4 is an opening Buy, so each is an opening Execution.
+function exposureStartOf(facts: unknown): string | undefined {
+  const times = ((facts as readonly StoredFact[] | undefined) ?? [])
+    .filter((fact) => fact.kind === 'Execution')
+    .map((fact) => fact.versions[fact.versions.length - 1]!.value.economicTime);
+  return times.sort((a, b) => Temporal.Instant.compare(a, b))[0];
 }
 
 // The Journal obligation index (D2 A28): one record per obligation key naming its current outcome,

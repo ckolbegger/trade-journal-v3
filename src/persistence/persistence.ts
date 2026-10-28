@@ -4,6 +4,7 @@ import { deleteDatabase, openDatabase } from './idb.ts';
 import { rebuildPrivateState } from './rebuild.ts';
 import type { RecordSource } from './record-source.ts';
 import {
+  keyOf,
   POINTER_KEY,
   PRIVATE_STORES,
   WORKSPACE_KEY_PATHS,
@@ -14,6 +15,7 @@ import {
   upgradeWorkspace,
   WORKSPACE_PREFIX,
   WORKSPACE_VERSION,
+  type SessionPolicyIdentity,
   type WorkspaceStore,
 } from './schema.ts';
 
@@ -32,6 +34,8 @@ export interface PersistenceDeps {
   readonly indexedDB: IDBFactory;
   readonly ids: IdGenerator;
   readonly writeGate: WriteGate;
+  // The release's session-policy identity, recorded in a new Workspace's meta (D4 A38).
+  readonly sessionPolicy: SessionPolicyIdentity;
 }
 
 // A superseded session never writes, even if a rerun of readiness happens to pass.
@@ -206,10 +210,16 @@ function isAuthoritative(store: string): store is WorkspaceStore {
 
 // Creates a Workspace database's stores and indexes at the current schema version, at content
 // revision 1.
-function initializeWorkspace(db: IDBDatabase, oldVersion: number, tx: IDBTransaction): void {
-  upgradeWorkspace(db, oldVersion);
-  tx.objectStore('meta').put({ key: 'schema', schemaVersion: SCHEMA_VERSION });
-  tx.objectStore('meta').put({ key: 'content', contentRevision: 1 });
+function initializeWorkspace(sessionPolicy: SessionPolicyIdentity) {
+  return (db: IDBDatabase, oldVersion: number, tx: IDBTransaction): void => {
+    upgradeWorkspace(db, oldVersion);
+    const meta = tx.objectStore('meta');
+    meta.put({ key: 'schema', schemaVersion: SCHEMA_VERSION });
+    meta.put({ key: 'content', contentRevision: 1 });
+    // Nested, since a record's own top-level `revision` is the persistence write stamp.
+    meta.put({ key: 'sessionPolicy', policy: sessionPolicy });
+    meta.put({ key: 'marketDataRevision', marketDataRevision: 0 });
+  };
 }
 
 interface SchemaRecord {
@@ -365,7 +375,7 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
         } else {
           const value: Record<string, unknown> = { ...write.value, revision: contentRevision };
           request = write.op === 'add' ? store.add(value) : store.put(value);
-          revisions.push({ store: write.store, key: value[WORKSPACE_KEY_PATHS[write.store]] as IDBValidKey, revision: contentRevision });
+          revisions.push({ store: write.store, key: keyOf(write.store, value), revision: contentRevision });
         }
         request.catch((error: unknown) => {
           if (error instanceof Error && error.name === 'ConstraintError') violation ??= write.store;
@@ -387,7 +397,7 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
       await inRoot(async (store) => {
         await store.put({ key: CANDIDATES_KEY, databaseNames: [...(await listed(store, CANDIDATES_KEY)), databaseName] });
       });
-      const candidate = await openDatabase(deps.indexedDB, databaseName, WORKSPACE_VERSION, initializeWorkspace);
+      const candidate = await openDatabase(deps.indexedDB, databaseName, WORKSPACE_VERSION, initializeWorkspace(deps.sessionPolicy));
       candidate.close();
       return { databaseName };
     },
@@ -465,7 +475,7 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
               const batch = (await db.getAll(store, range, CANDIDATE_BATCH_SIZE)) as Record<string, unknown>[];
               if (batch.length === 0) return;
               yield batch;
-              after = batch[batch.length - 1]![WORKSPACE_KEY_PATHS[store]] as IDBValidKey;
+              after = keyOf(store, batch[batch.length - 1]!);
             }
           } finally {
             db.close();
@@ -504,7 +514,7 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
       if (refusal) return refusal;
       const databaseName = `${WORKSPACE_PREFIX}${deps.ids.next()}`;
       const workspace = await openDatabase(deps.indexedDB, databaseName, WORKSPACE_VERSION, (db, oldVersion, tx) => {
-        initializeWorkspace(db, oldVersion, tx);
+        initializeWorkspace(deps.sessionPolicy)(db, oldVersion, tx);
         for (const { store, value } of initialRecords) tx.objectStore(store).put({ ...value, revision: 1 });
       });
       workspace.close();

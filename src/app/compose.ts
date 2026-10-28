@@ -9,6 +9,7 @@ import type { Clock } from '../domain/time/index.ts';
 import { createJournal } from '../modules/journal/index.ts';
 import { createReferenceCatalog } from '../modules/reference-catalog/index.ts';
 import { createTradeRecord } from '../modules/trade-record/index.ts';
+import { nyseSessionPolicy } from '../domain/session-policy/index.ts';
 import { createPersistence, type IdGenerator, type LifecycleLock } from '../persistence/index.ts';
 
 export interface ApplicationDeps {
@@ -37,6 +38,7 @@ export async function createApplication(deps: ApplicationDeps) {
   const persistence = createPersistence({
     indexedDB: deps.indexedDB,
     ids: deps.ids,
+    sessionPolicy: nyseSessionPolicy.identity,
     writeGate: {
       current: () => toRuntimeNotWritable(holder.session!.current()),
       recheck: async () => toRuntimeNotWritable(await holder.session!.recheck()),

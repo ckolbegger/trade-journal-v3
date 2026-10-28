@@ -2,6 +2,7 @@ import { IDBDatabase as FakeIDBDatabase, IDBFactory, IDBObjectStore as FakeIDBOb
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RuntimeNotWritable } from '../delivery/runtime-not-writable.ts';
 import { createPersistence, rebuildPrivateState, type WriteGate } from './index.ts';
+import { TEST_SESSION_POLICY } from '../../tests/support/session-policy.ts';
 
 function sequentialIds() {
   let n = 0;
@@ -70,7 +71,7 @@ async function rawGet(database: string, store: string, key: IDBValidKey): Promis
 const writable: WriteGate = { current: () => null, recheck: () => Promise.resolve(null) };
 
 function persistence(writeGate: WriteGate = writable) {
-  return createPersistence({ indexedDB: factory, ids: sequentialIds(), writeGate });
+  return createPersistence({ indexedDB: factory, ids: sequentialIds(), writeGate, sessionPolicy: TEST_SESSION_POLICY });
 }
 
 describe('root inspection', () => {
@@ -82,11 +83,11 @@ describe('root inspection', () => {
 
   it('should report KnownWorkspace with database name and schema version when the pointer names a database that opens at a supported version', async () => {
     await seedRoot('tj-ws-a');
-    await seedWorkspace('tj-ws-a', { key: 'schema', schemaVersion: 2 });
+    await seedWorkspace('tj-ws-a', { key: 'schema', schemaVersion: 3 });
     expect(await persistence().inspectRoot()).toEqual({
       kind: 'KnownWorkspace',
       databaseName: 'tj-ws-a',
-      schemaVersion: 2,
+      schemaVersion: 3,
       deletedOrphans: [],
     });
   });
@@ -141,13 +142,13 @@ describe('root inspection', () => {
 
   it('should delete an orphaned candidate database (candidate prefix, not named by the pointer) and list it in the inspection receipt', async () => {
     await seedRoot('tj-ws-a');
-    await seedWorkspace('tj-ws-a', { key: 'schema', schemaVersion: 2 });
-    await seedWorkspace('tj-ws-orphan', { key: 'schema', schemaVersion: 2 });
+    await seedWorkspace('tj-ws-a', { key: 'schema', schemaVersion: 3 });
+    await seedWorkspace('tj-ws-orphan', { key: 'schema', schemaVersion: 3 });
     await seedWorkspace('unrelated-db');
     expect(await persistence().inspectRoot()).toEqual({
       kind: 'KnownWorkspace',
       databaseName: 'tj-ws-a',
-      schemaVersion: 2,
+      schemaVersion: 3,
       deletedOrphans: ['tj-ws-orphan'],
     });
     expect((await factory.databases()).map((d) => d.name).sort()).toEqual(['tj-root', 'tj-ws-a', 'unrelated-db']);
@@ -432,8 +433,8 @@ describe('connection lifecycle and private-state rebuild (D1 section 6.1)', () =
 
     await rebuildPrivateState(factory, created.databaseName);
 
-    expect(deleted.mock.calls.map(([name]) => name).sort()).toEqual(['byAnchorTrade', 'byAnchorTrade', 'byLifecycle', 'byLifecycleActivity', 'byObligation']);
-    expect(createdIndexes.mock.calls.map(([name]) => name).sort()).toEqual(['byAnchorTrade', 'byAnchorTrade', 'byLifecycle', 'byLifecycleActivity', 'byObligation']);
+    expect(deleted.mock.calls.map(([name]) => name).sort()).toEqual(['byAnchorTrade', 'byAnchorTrade', 'byInstrumentDate', 'byLifecycle', 'byLifecycleActivity', 'byObligation']);
+    expect(createdIndexes.mock.calls.map(([name]) => name).sort()).toEqual(['byAnchorTrade', 'byAnchorTrade', 'byInstrumentDate', 'byLifecycle', 'byLifecycleActivity', 'byObligation']);
     const db = await new Promise<IDBDatabase>((resolve) => {
       const request = factory.open(created.databaseName);
       request.onsuccess = () => resolve(request.result);

@@ -57,7 +57,7 @@ describe('I2.1 migrate the v1 fixture', () => {
     expect(opened.receipt.migration).toEqual(
       expect.objectContaining({
         fromVersion: 1,
-        toVersion: 2,
+        toVersion: 3,
         sourceDatabase: V1_DATABASE,
         databaseName: expect.stringMatching(/^tj-ws-/) as string,
       }),
@@ -70,7 +70,7 @@ describe('I2.1 migrate the v1 fixture', () => {
 
     const again = await restart(app, d);
     const status = await again.Workspace.getStatus();
-    expect(status.kind === 'Ready' && status.schemaVersion).toBe(2);
+    expect(status.kind === 'Ready' && status.schemaVersion).toBe(3);
     expect(compareSnapshot(await viewsOf(again, 1), V1_VIEWS)).toEqual([]);
     // A second launch seeds nothing more.
     const second = await again.Workspace.initialize({});
@@ -116,7 +116,7 @@ describe('I2.2 migration failure and retry', () => {
     // The cause is removed, then Retry is initialize again.
     await rawUpdate(d.factory, V1_DATABASE, 'trades', 'fx-0009', (trade) => ({ ...trade, accountId: 'fx-0006' }));
     const retried = await app.Workspace.initialize({});
-    expect(retried.kind === 'Opened' && retried.receipt.migration).toEqual(expect.objectContaining({ fromVersion: 1, toVersion: 2 }));
+    expect(retried.kind === 'Opened' && retried.receipt.migration).toEqual(expect.objectContaining({ fromVersion: 1, toVersion: 3 }));
     const again = await restart(app, d);
     expect((await again.Workspace.getStatus()).kind).toBe('Ready');
   });
@@ -193,7 +193,7 @@ describe('I2.3 interrupted migration', () => {
 
     const app = await launch(d);
     const status = await app.Workspace.getStatus();
-    expect(status.kind === 'Ready' && [status.schemaVersion, status.binding.databaseName]).toEqual([2, flipped]);
+    expect(status.kind === 'Ready' && [status.schemaVersion, status.binding.databaseName]).toEqual([3, flipped]);
     const opened = await app.Workspace.initialize({});
     expect(opened.kind === 'Opened' && opened.receipt.migration).toBeUndefined();
     expect(Object.keys(await dumpAll(d.factory)).sort()).toEqual(['tj-root', flipped]);
@@ -212,7 +212,7 @@ describe('I2.4 concurrent migration', () => {
     expect(opened.filter((r) => r.receipt.migration !== undefined)).toHaveLength(1);
     const names = opened.map((r) => r.status.binding.databaseName);
     expect(names[0]).toBe(names[1]);
-    expect(opened.map((r) => r.status.schemaVersion)).toEqual([2, 2]);
+    expect(opened.map((r) => r.status.schemaVersion)).toEqual([3, 3]);
     expect(Object.keys(await dumpAll(d.factory)).sort()).toEqual(['tj-root', names[0]]);
   });
 });

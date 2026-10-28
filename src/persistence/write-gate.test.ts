@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createReadinessSession, type ReadinessEvaluation } from '../delivery/readiness.ts';
 import { readinessWriteGate } from '../delivery/write-gate.ts';
 import { createPersistence } from './index.ts';
+import { TEST_SESSION_POLICY } from '../../tests/support/session-policy.ts';
 
 const passed = { passed: true } as const;
 const writable: ReadinessEvaluation = {
@@ -58,6 +59,7 @@ async function workspaceThen(next: ReadinessEvaluation) {
     indexedDB: factory,
     ids: { next: () => `id-${++n}` },
     writeGate: readinessWriteGate(session),
+    sessionPolicy: TEST_SESSION_POLICY,
   });
   const created = await persistence.createWorkspace([]);
   if (created.kind !== 'Created') throw new Error('workspace not created');
@@ -125,7 +127,7 @@ describe('persistence-level gate', () => {
     // Creating a Workspace is a write too: outside Writable it must not happen.
     factory = new IDBFactory();
     const session = await createReadinessSession(() => Promise.resolve(recoveryOnly));
-    const fresh = createPersistence({ indexedDB: factory, ids: { next: () => 'new' }, writeGate: readinessWriteGate(session) });
+    const fresh = createPersistence({ indexedDB: factory, ids: { next: () => 'new' }, writeGate: readinessWriteGate(session), sessionPolicy: TEST_SESSION_POLICY });
     await fresh.inspectRoot();
     const empty = await dump();
     expect(await fresh.createWorkspace([])).toEqual(expect.objectContaining({ kind: 'RuntimeNotWritable' }));
