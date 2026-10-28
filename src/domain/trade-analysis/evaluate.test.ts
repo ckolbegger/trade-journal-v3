@@ -196,3 +196,24 @@ describe('dated last close with a Missing Mark (P13, A54)', () => {
     expect(exact({ kind: 'Value', value: atEntry!.rewardFromEntry })).toBe(q(582n));
   });
 });
+
+describe('A frame for a different Instrument', () => {
+  it('should return the Mark-dependent figures as Unavailable MarkMissing naming the Position Instrument when the frame is for a different Instrument', () => {
+    const state = derivedState(referenceRecord([PC1, PC2]));
+    const abcFrame: ObservationFrame = { ...availableFrame('52.00'), instrument: { kind: 'Stock', symbol: 'ABC' } };
+    const evaluation = evaluate({ state, frame: abcFrame });
+    const missing = { kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument: XYZ, date: '2026-10-12' } };
+    expect(evaluation.marketValue).toEqual(missing);
+    expect(evaluation.remainingOpenPnl).toEqual(missing);
+    expect(evaluation.currentMarkedPnl).toEqual(missing);
+    expect(evaluation.currentMarkedPnlInPlanR).toEqual(missing);
+    expect(evaluation.ongoingRiskToStop).toEqual(missing);
+    expect(evaluation.worstCaseOngoingRisk).toEqual(missing);
+    expect(evaluation.incrementalRewardToTarget).toEqual(missing);
+    expect(exact(evaluation.openQuantity)).toBe(q(100n));
+    expect(exact(evaluation.openCost)).toBe(q(5018n));
+    expect(exact(evaluation.unconsumedOpeningFees)).toBe(q(2n));
+    expect(exact(evaluation.realizedToDate)).toBe(q(0n));
+    expect(exact(evaluation.incurredFees)).toBe(q(2n));
+  });
+});

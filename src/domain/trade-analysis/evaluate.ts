@@ -124,7 +124,13 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   });
   const openedAfterClose = lotsAfterClose.length > 0;
   // Every Mark-dependent figure is computed from the exact Mark, or is Unavailable naming why not.
-  const unavailable: CalculationResult<Rational> = openedAfterClose
+  // A Mark for another Instrument values nothing here; the Position's Instrument is named instead.
+  const foreign = state.positions.find(
+    (p) => p.openLots.length > 0 && (p.instrument.kind !== frame.instrument.kind || p.instrument.symbol !== frame.instrument.symbol),
+  );
+  const unavailable: CalculationResult<Rational> = foreign
+    ? { kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument: foreign.instrument, date: frame.tradingDate } }
+    : openedAfterClose
     ? { kind: 'Unavailable', reason: 'AwaitingClose', detail: { after: frame.tradingDate } }
     : {
         kind: 'Unavailable',
@@ -132,7 +138,7 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
         detail: { instrument: frame.instrument, date: frame.tradingDate },
       };
   const marked = (of: (mark: Rational) => Rational): CalculationResult<Rational> =>
-    lots.length === 0 ? noRemainingPosition : resolution.kind === 'Available' && !openedAfterClose ? value(of(decimal(resolution.mark.price))) : unavailable;
+    lots.length === 0 ? noRemainingPosition : resolution.kind === 'Available' && !openedAfterClose && !foreign ? value(of(decimal(resolution.mark.price))) : unavailable;
   // Facts about the remaining Position, shown only while one remains.
   const current = (v: Rational) => (lots.length === 0 ? noRemainingPosition : value(v));
   const remainingOpen = (mark: Rational) => quantity.mul(mark).sub(cost).sub(openingFees);
