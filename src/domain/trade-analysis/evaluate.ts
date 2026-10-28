@@ -131,32 +131,42 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   );
   // At-entry Lots are relative to the latest exact Mark: this frame's, else its Stale context's, else none.
   // A frame for another Instrument holds no exact Mark for this Position, so every Lot is at entry.
-  const latestExactClose = foreign ? undefined : resolution.kind === 'Available' ? frame.closeInstant : resolution.stale?.closeInstant;
-  const atEntryLots = latestExactClose === undefined ? lots : openedAfter(latestExactClose);
-  const unavailable: CalculationResult<Rational> = foreign
-    ? { kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument: foreign.instrument, date: frame.tradingDate } }
-    : openedAfterClose
-    ? { kind: 'Unavailable', reason: 'AwaitingClose', detail: { after: frame.tradingDate } }
-    : {
-        kind: 'Unavailable',
-        reason: resolution.kind === 'Missing' ? 'MarkMissing' : 'AcknowledgedUnavailable',
-        detail: { instrument: frame.instrument, date: frame.tradingDate },
-      };
-  const marked = (of: (mark: Rational) => Rational): CalculationResult<Rational> =>
-    lots.length === 0 ? noRemainingPosition : resolution.kind === 'Available' && !openedAfterClose && !foreign ? value(of(decimal(resolution.mark.price))) : unavailable;
+  const latestExactClose = resolution.kind === 'Available' ? frame.closeInstant : resolution.stale?.closeInstant;
+  const atEntryLots = foreign || latestExactClose === undefined ? lots : openedAfter(latestExactClose);
+  const unavailableResult = (): CalculationResult<Rational> => {
+    if (foreign) {
+      return { kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument: foreign.instrument, date: frame.tradingDate } };
+    }
+    if (openedAfterClose) {
+      return { kind: 'Unavailable', reason: 'AwaitingClose', detail: { after: frame.tradingDate } };
+    }
+    return {
+      kind: 'Unavailable',
+      reason: resolution.kind === 'Missing' ? 'MarkMissing' : 'AcknowledgedUnavailable',
+      detail: { instrument: frame.instrument, date: frame.tradingDate },
+    };
+  };
+  const unavailable = unavailableResult();
+  const marked = (of: (mark: Rational) => Rational): CalculationResult<Rational> => {
+    if (lots.length === 0) return noRemainingPosition;
+    if (resolution.kind === 'Available' && !openedAfterClose && !foreign) return value(of(decimal(resolution.mark.price)));
+    return unavailable;
+  };
   // Facts about the remaining Position, shown only while one remains.
   const current = (v: Rational) => (lots.length === 0 ? noRemainingPosition : value(v));
   const remainingOpen = (mark: Rational) => quantity.mul(mark).sub(cost).sub(openingFees);
   const currentMarked = (mark: Rational) => realized.add(remainingOpen(mark));
+  const coverageOf = (): TradeEvaluation['coverage'] => {
+    if (foreign) return { kind: 'Missing' };
+    if (resolution.kind === 'Available') {
+      return { kind: 'Available', revisionId: resolution.mark.revisionId, revisionNumber: resolution.mark.revisionNumber };
+    }
+    return { kind: resolution.kind };
+  };
   return {
     kind: 'Evaluated',
     valuationDate: frame.tradingDate,
-    coverage:
-      foreign
-        ? { kind: 'Missing' }
-        : resolution.kind === 'Available'
-        ? { kind: 'Available', revisionId: resolution.mark.revisionId, revisionNumber: resolution.mark.revisionNumber }
-        : { kind: resolution.kind },
+    coverage: coverageOf(),
     openQuantity: current(quantity),
     openCost: current(cost),
     unconsumedOpeningFees: current(openingFees),
