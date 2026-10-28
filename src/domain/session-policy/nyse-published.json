@@ -1,0 +1,468 @@
+{
+  "retrieved": "2026-10-27",
+  "note": "Transcribed from the sources listed per year. No New Year's Day holiday is observed in 2028 because January 1, 2028 is a Saturday (stated in both 2028 sources). Early closes are at 1:00 p.m. Eastern.",
+  "years": [
+    {
+      "year": 2024,
+      "sources": [
+        {
+          "title": "NYSE Group Announces 2024, 2025 and 2026 Holiday and Early Closings Calendar (ICE press release, 2023-11-10)",
+          "url": "https://ir.theice.com/press/news-details/2023/NYSE-Group-Announces-2024-2025-and-2026-Holiday-and-Early-Closings-Calendar/default.aspx"
+        }
+      ],
+      "closures": [
+        {
+          "date": "2024-01-01",
+          "weekday": "Monday",
+          "name": "New Year's Day",
+          "source": "https://ir.theice.com/press/news-details/2023/NYSE-Group-Announces-2024-2025-and-2026-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2024-01-15",
+          "weekday": "Monday",
+          "name": "Martin Luther King, Jr. Day",
+          "source": "https://ir.theice.com/press/news-details/2023/NYSE-Group-Announces-2024-2025-and-2026-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2024-02-19",
+          "weekday": "Monday",
+          "name": "Washington's Birthday",
+          "source": "https://ir.theice.com/press/news-details/2023/NYSE-Group-Announces-2024-2025-and-2026-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2024-03-29",
+          "weekday": "Friday",
+          "name": "Good Friday",
+          "source": "https://ir.theice.com/press/news-details/2023/NYSE-Group-Announces-2024-2025-and-2026-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2024-05-27",
+          "weekday": "Monday",
+          "name": "Memorial Day",
+          "source": "https://ir.theice.com/press/news-details/2023/NYSE-Group-Announces-2024-2025-and-2026-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2024-06-19",
+          "weekday": "Wednesday",
+          "name": "Juneteenth National Independence Day",
+          "source": "https://ir.theice.com/press/news-details/2023/NYSE-Group-Announces-2024-2025-and-2026-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2024-07-04",
+          "weekday": "Thursday",
+          "name": "Independence Day",
+          "source": "https://ir.theice.com/press/news-details/2023/NYSE-Group-Announces-2024-2025-and-2026-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2024-09-02",
+          "weekday": "Monday",
+          "name": "Labor Day",
+          "source": "https://ir.theice.com/press/news-details/2023/NYSE-Group-Announces-2024-2025-and-2026-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2024-11-28",
+          "weekday": "Thursday",
+          "name": "Thanksgiving Day",
+          "source": "https://ir.theice.com/press/news-details/2023/NYSE-Group-Announces-2024-2025-and-2026-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2024-12-25",
+          "weekday": "Wednesday",
+          "name": "Christmas Day",
+          "source": "https://ir.theice.com/press/news-details/2023/NYSE-Group-Announces-2024-2025-and-2026-Holiday-and-Early-Closings-Calendar/default.aspx"
+        }
+      ],
+      "earlyCloses": [
+        {
+          "date": "2024-07-03",
+          "weekday": "Wednesday",
+          "name": "Day before Independence Day",
+          "close": "13:00",
+          "source": "https://ir.theice.com/press/news-details/2023/NYSE-Group-Announces-2024-2025-and-2026-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2024-11-29",
+          "weekday": "Friday",
+          "name": "Day after Thanksgiving",
+          "close": "13:00",
+          "source": "https://ir.theice.com/press/news-details/2023/NYSE-Group-Announces-2024-2025-and-2026-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2024-12-24",
+          "weekday": "Tuesday",
+          "name": "Christmas Eve",
+          "close": "13:00",
+          "source": "https://ir.theice.com/press/news-details/2023/NYSE-Group-Announces-2024-2025-and-2026-Holiday-and-Early-Closings-Calendar/default.aspx"
+        }
+      ]
+    },
+    {
+      "year": 2025,
+      "sources": [
+        {
+          "title": "NYSE Group Announces 2024, 2025 and 2026 Holiday and Early Closings Calendar (ICE press release, 2023-11-10)",
+          "url": "https://ir.theice.com/press/news-details/2023/NYSE-Group-Announces-2024-2025-and-2026-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "title": "NYSE: Holidays and Trading Hours (2025, 2026 and 2027 schedule)",
+          "url": "https://www.nyse.com/markets/hours-calendars"
+        },
+        {
+          "title": "The New York Stock Exchange Will Close Markets on January 9 to Honor the Passing of Former President Jimmy Carter on National Day of Mourning (ICE press release, 2024-12-30)",
+          "url": "https://ir.theice.com/press/news-details/2024/The-New-York-Stock-Exchange-Will-Close-Markets-on-January-9-to-Honor-the-Passing-of-Former-President-Jimmy-Carter-on-National-Day-of-Mourning/default.aspx"
+        }
+      ],
+      "closures": [
+        {
+          "date": "2025-01-01",
+          "weekday": "Wednesday",
+          "name": "New Year's Day",
+          "source": "https://www.nyse.com/markets/hours-calendars"
+        },
+        {
+          "date": "2025-01-09",
+          "weekday": "Thursday",
+          "name": "National Day of Mourning for President Jimmy Carter (one-off closing)",
+          "source": "https://ir.theice.com/press/news-details/2024/The-New-York-Stock-Exchange-Will-Close-Markets-on-January-9-to-Honor-the-Passing-of-Former-President-Jimmy-Carter-on-National-Day-of-Mourning/default.aspx"
+        },
+        {
+          "date": "2025-01-20",
+          "weekday": "Monday",
+          "name": "Martin Luther King, Jr. Day",
+          "source": "https://www.nyse.com/markets/hours-calendars"
+        },
+        {
+          "date": "2025-02-17",
+          "weekday": "Monday",
+          "name": "Washington's Birthday",
+          "source": "https://www.nyse.com/markets/hours-calendars"
+        },
+        {
+          "date": "2025-04-18",
+          "weekday": "Friday",
+          "name": "Good Friday",
+          "source": "https://www.nyse.com/markets/hours-calendars"
+        },
+        {
+          "date": "2025-05-26",
+          "weekday": "Monday",
+          "name": "Memorial Day",
+          "source": "https://www.nyse.com/markets/hours-calendars"
+        },
+        {
+          "date": "2025-06-19",
+          "weekday": "Thursday",
+          "name": "Juneteenth National Independence Day",
+          "source": "https://www.nyse.com/markets/hours-calendars"
+        },
+        {
+          "date": "2025-07-04",
+          "weekday": "Friday",
+          "name": "Independence Day",
+          "source": "https://www.nyse.com/markets/hours-calendars"
+        },
+        {
+          "date": "2025-09-01",
+          "weekday": "Monday",
+          "name": "Labor Day",
+          "source": "https://www.nyse.com/markets/hours-calendars"
+        },
+        {
+          "date": "2025-11-27",
+          "weekday": "Thursday",
+          "name": "Thanksgiving Day",
+          "source": "https://www.nyse.com/markets/hours-calendars"
+        },
+        {
+          "date": "2025-12-25",
+          "weekday": "Thursday",
+          "name": "Christmas Day",
+          "source": "https://www.nyse.com/markets/hours-calendars"
+        }
+      ],
+      "earlyCloses": [
+        {
+          "date": "2025-07-03",
+          "weekday": "Thursday",
+          "name": "Day before Independence Day",
+          "close": "13:00",
+          "source": "https://www.nyse.com/markets/hours-calendars"
+        },
+        {
+          "date": "2025-11-28",
+          "weekday": "Friday",
+          "name": "Day after Thanksgiving",
+          "close": "13:00",
+          "source": "https://www.nyse.com/markets/hours-calendars"
+        },
+        {
+          "date": "2025-12-24",
+          "weekday": "Wednesday",
+          "name": "Christmas Eve",
+          "close": "13:00",
+          "source": "https://www.nyse.com/markets/hours-calendars"
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "sources": [
+        {
+          "title": "NYSE Group Announces 2026, 2027 and 2028 Holiday and Early Closings Calendar (ICE press release, 2025-12-23)",
+          "url": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "title": "NYSE Holidays & Trading Hours (2026, 2027 and 2028 schedule)",
+          "url": "https://www.nyse.com/trade/hours-calendars"
+        }
+      ],
+      "closures": [
+        {
+          "date": "2026-01-01",
+          "weekday": "Thursday",
+          "name": "New Year's Day",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2026-01-19",
+          "weekday": "Monday",
+          "name": "Martin Luther King, Jr. Day",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2026-02-16",
+          "weekday": "Monday",
+          "name": "Washington's Birthday",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2026-04-03",
+          "weekday": "Friday",
+          "name": "Good Friday",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2026-05-25",
+          "weekday": "Monday",
+          "name": "Memorial Day",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2026-06-19",
+          "weekday": "Friday",
+          "name": "Juneteenth National Independence Day",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2026-07-03",
+          "weekday": "Friday",
+          "name": "Independence Day (observed)",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2026-09-07",
+          "weekday": "Monday",
+          "name": "Labor Day",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2026-11-26",
+          "weekday": "Thursday",
+          "name": "Thanksgiving Day",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2026-12-25",
+          "weekday": "Friday",
+          "name": "Christmas Day",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        }
+      ],
+      "earlyCloses": [
+        {
+          "date": "2026-11-27",
+          "weekday": "Friday",
+          "name": "Day after Thanksgiving",
+          "close": "13:00",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2026-12-24",
+          "weekday": "Thursday",
+          "name": "Christmas Eve",
+          "close": "13:00",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        }
+      ]
+    },
+    {
+      "year": 2027,
+      "sources": [
+        {
+          "title": "NYSE Group Announces 2026, 2027 and 2028 Holiday and Early Closings Calendar (ICE press release, 2025-12-23)",
+          "url": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "title": "NYSE Holidays & Trading Hours (2026, 2027 and 2028 schedule)",
+          "url": "https://www.nyse.com/trade/hours-calendars"
+        }
+      ],
+      "closures": [
+        {
+          "date": "2027-01-01",
+          "weekday": "Friday",
+          "name": "New Year's Day",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2027-01-18",
+          "weekday": "Monday",
+          "name": "Martin Luther King, Jr. Day",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2027-02-15",
+          "weekday": "Monday",
+          "name": "Washington's Birthday",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2027-03-26",
+          "weekday": "Friday",
+          "name": "Good Friday",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2027-05-31",
+          "weekday": "Monday",
+          "name": "Memorial Day",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2027-06-18",
+          "weekday": "Friday",
+          "name": "Juneteenth National Independence Day (observed)",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2027-07-05",
+          "weekday": "Monday",
+          "name": "Independence Day (observed)",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2027-09-06",
+          "weekday": "Monday",
+          "name": "Labor Day",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2027-11-25",
+          "weekday": "Thursday",
+          "name": "Thanksgiving Day",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2027-12-24",
+          "weekday": "Friday",
+          "name": "Christmas Day (observed)",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        }
+      ],
+      "earlyCloses": [
+        {
+          "date": "2027-11-26",
+          "weekday": "Friday",
+          "name": "Day after Thanksgiving",
+          "close": "13:00",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        }
+      ]
+    },
+    {
+      "year": 2028,
+      "sources": [
+        {
+          "title": "NYSE Group Announces 2026, 2027 and 2028 Holiday and Early Closings Calendar (ICE press release, 2025-12-23)",
+          "url": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "title": "NYSE Holidays & Trading Hours (2026, 2027 and 2028 schedule)",
+          "url": "https://www.nyse.com/trade/hours-calendars"
+        }
+      ],
+      "closures": [
+        {
+          "date": "2028-01-17",
+          "weekday": "Monday",
+          "name": "Martin Luther King, Jr. Day",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2028-02-21",
+          "weekday": "Monday",
+          "name": "Washington's Birthday",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2028-04-14",
+          "weekday": "Friday",
+          "name": "Good Friday",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2028-05-29",
+          "weekday": "Monday",
+          "name": "Memorial Day",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2028-06-19",
+          "weekday": "Monday",
+          "name": "Juneteenth National Independence Day",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2028-07-04",
+          "weekday": "Tuesday",
+          "name": "Independence Day",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2028-09-04",
+          "weekday": "Monday",
+          "name": "Labor Day",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2028-11-23",
+          "weekday": "Thursday",
+          "name": "Thanksgiving Day",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2028-12-25",
+          "weekday": "Monday",
+          "name": "Christmas Day",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        }
+      ],
+      "earlyCloses": [
+        {
+          "date": "2028-07-03",
+          "weekday": "Monday",
+          "name": "Day before Independence Day",
+          "close": "13:00",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        },
+        {
+          "date": "2028-11-24",
+          "weekday": "Friday",
+          "name": "Day after Thanksgiving",
+          "close": "13:00",
+          "source": "https://ir.theice.com/press/news-details/2025/NYSE-Group-Announces-2026-2027-and-2028-Holiday-and-Early-Closings-Calendar/default.aspx"
+        }
+      ]
+    }
+  ]
+}
