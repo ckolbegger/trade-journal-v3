@@ -222,3 +222,16 @@ ocr review of `28fd3e1`: session `28a318e8-5b98-409e-a7ff-98f4c0711656`, 2 files
 
 ### T4.4-B4 A constraint failure before an increment still returns ConstraintViolation
 - it should return ConstraintViolation, not throw, when a write set's add violates a constraint before its increment
+
+ocr review of `e506ec8` (T4.4-B4): session `baf60063-b84c-419a-9f82-d5462fc56138`, 1 file reviewed, 2 comments. Raw output: `ocr/T4.4-B4-e506ec8.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/persistence/persistence.ts:379-381` | The chained increment queues its `put` only in a `.then`, after later requests; two increments of one record both write N+1, and a later put or delete of that record can be overwritten | Valid (latent: no current write set touches one record twice) | Bug task T4.4-B5 |
+| medium | `src/persistence/persistence.ts:379-381` | A missing or malformed increment target throws inside `.then`; `request.catch` swallows non-constraint errors, so `commit` returns `Committed` without the increment | Valid (silent-failure regression from B4) | Bug task T4.4-B5 |
+
+Both findings come from the same chained-increment design, so one bug task covers them. This is the third round of bug tasks on T4.4 (B1–B3, then B4, then B5); if B5's review still leaves findings, the session stops for the user (handoff, stop condition 5).
+
+### T4.4-B5 Increments apply in write-set order and fail loudly
+- it should apply a write set's writes in order when it increments one meta field twice and when a later put replaces the incremented record
+- it should not report Committed when an increment's target record or field is missing, and should write nothing

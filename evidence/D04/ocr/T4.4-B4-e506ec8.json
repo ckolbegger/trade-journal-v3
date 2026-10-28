@@ -1,0 +1,102 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 2,
+    "total_tokens": 56520,
+    "input_tokens": 55747,
+    "output_tokens": 773,
+    "cache_read_tokens": 15360,
+    "elapsed": "51s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 2,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/persistence/persistence.ts",
+      "content": "This stops preserving write-set order for increments. For example, committing two increments of the same meta record queues both `get`s before either callback queues its `put`; both read N and write N+1, so the commit succeeds but loses one increment. A subsequent put/delete of that record can likewise be overwritten by the delayed put. Preserve sequential execution for dependent writes while still routing request failures through the transaction error mapping (and add a same-record, two-increment regression test).",
+      "existing_code": "          request = store\n            .get(write.key)\n            .then((record) =\u003e store.put({ ...(record as Record\u003cstring, number\u003e), [write.field]: (record as Record\u003cstring, number\u003e)[write.field]! + 1 }));",
+      "start_line": 379,
+      "end_line": 381,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/persistence/persistence.ts",
+      "content": "Errors thrown inside this callback no longer propagate to `commit`. For example, if the increment target is missing, indexing `record` throws a TypeError, which the existing `request.catch` silently consumes. No IndexedDB request fails in that case, so `tx.done` resolves and the method returns `Committed` with the other writes persisted but no increment. Ensure callback failures abort the transaction and propagate to the caller, rather than relying exclusively on `tx.done` to detect them.",
+      "existing_code": "          request = store\n            .get(write.key)\n            .then((record) =\u003e store.put({ ...(record as Record\u003cstring, number\u003e), [write.field]: (record as Record\u003cstring, number\u003e)[write.field]! + 1 }));",
+      "start_line": 379,
+      "end_line": 381,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/persistence/persistence.ts",
+      "files": [
+        "src/persistence/persistence.ts"
+      ]
+    }
+  ],
+  "session_id": "baf60063-b84c-419a-9f82-d5462fc56138",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "baf60063-b84c-419a-9f82-d5462fc56138",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "e506ec8",
+      "resolved_base": "f4e51500520a49f78b4b95b6d704b71c5571827b",
+      "resolved_head": "e506ec8673c12f9f9a320251a3b20ed634a28ae0",
+      "exact_range": "f4e51500520a49f78b4b95b6d704b71c5571827b..e506ec8673c12f9f9a320251a3b20ed634a28ae0",
+      "source_artifact_sha256": "873b2b9c1b5eec92bed0bb2f223c42f7237e0477714ae7d89aa88a0ff647f95a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "701852b0d8698c7092bb39b45ab7641c7c685db4ab3e23c226fc4162edc04386"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "701852b0d8698c7092bb39b45ab7641c7c685db4ab3e23c226fc4162edc04386"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 50824
+  }
+}
