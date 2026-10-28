@@ -266,3 +266,17 @@ The user then directed (2026-10-27) that the pattern become [ADR 0011](../../spe
 ### Cumulative run after T4.4-B6
 
 Run 2026-10-27 23:20 EDT on commit `03b323b`. Unit 46 files, 522 tests passed; integration 21 files, 49 passed; browser 124 passed (3.9m); checks 11 of 12 exit 0. Only `verify:capacity` failed ("basis measured at schema version 2, current is 3"), expected until T4.28. Outputs: `suite-runs/t4.4-b6-{unit,integration,browser,checks}.txt`. Earlier T4.4 runs (`t4.4-manual-mark-*` at `28fd3e1`, `t4.4-b4-*` at `e506ec8`, `t4.4-b5-*` at `a6ec5d9`) had the same single expected failure.
+
+ocr review of `633fdc1` (T4.4-B7): session `164e749a-9547-40c1-970f-c9a9268df004`, 1 file reviewed, 2 comments. Raw output: `ocr/T4.4-B7-633fdc1.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/modules/reference-catalog/catalog.ts:32` | Workspace `initialize` (`workspace.ts:239-249`) turns any non-`Seeded` seed result into empty additions and returns `Opened`, so the new `Conflict` and `RuntimeNotWritable` outcomes are swallowed | Split. **`RuntimeNotWritable`: Valid**: Workspace's `WorkspaceInitializationResult` has a `RuntimeNotWritable` branch (`specs/design/workspace.md` line 41), and returning `Opened` after a refused write misreports. **`Conflict`: Doubtful**: exhaustion means other writers kept advancing the counter, and this call truthfully added nothing; the spec defines no other initialization result for it, and the next start seeds whatever is still missing. Its receipt should still not hide it. | Bug task T4.4-B9 |
+| medium | `src/modules/reference-catalog/catalog.ts:33` | `SeedCatalogResult`'s `RuntimeNotWritable` variant is a bare `{ kind }`, dropping the shared `RuntimeNotWritable` type's recovery details | Valid (the file already imports the shared type; B8 used it for Journal) | Folded into T4.4-B9 (type only) |
+
+### T4.4-B9 Workspace initialization reports refused seeds
+- it should return RuntimeNotWritable from initialize, not Opened, when an existing Workspace's Catalog or Journal seed returns RuntimeNotWritable
+- it should return Opened with no additions for a seed that returns Conflict, and its receipt should name the seed that did not complete
+- `SeedCatalogResult` uses the shared `RuntimeNotWritable` type (no case; typecheck)
+
+ocr review of `0d6ce0c` (T4.4-B8): session `4056da4a-9fa2-449f-8ac0-a855b276dec3`, 1 file reviewed, 1 comment. Raw output: `ocr/T4.4-B8-0d6ce0c.json`. The one comment is the same Workspace-initialization finding as B7's first (Journal's results swallowed at `workspace.ts:240`); it is covered by T4.4-B9. B8's own change drew no other findings.

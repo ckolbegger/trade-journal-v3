@@ -1,0 +1,103 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 2,
+    "total_tokens": 162279,
+    "input_tokens": 160747,
+    "output_tokens": 1532,
+    "cache_read_tokens": 21120,
+    "elapsed": "1m14s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 7,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/reference-catalog/catalog.ts",
+      "content": "Handle these new failure outcomes in the workspace initialization path as well. In `src/coordinators/workspace/workspace.ts:239–249`, every non-Seeded catalog result is converted to an empty additions list and initialization still returns `Opened`. Consequently, exhausting these retries can open a workspace whose required defaults are still missing, and RuntimeNotWritable is swallowed using the earlier readiness result. Propagate the refusal or return a retryable initialization failure before reporting Opened.",
+      "existing_code": "  | { readonly kind: 'Conflict' }\n  | { readonly kind: 'RuntimeNotWritable' };",
+      "start_line": 32,
+      "end_line": 33,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/reference-catalog/catalog.ts",
+      "content": "Use the imported `RuntimeNotWritable` type instead of a kind-only replacement. Persistence returns recovery details (`runtimeReadiness`, `failedChecks`, `workspaceStatus`, and `safeActions`), but this public return type erases them, so a caller narrowing a seed result to RuntimeNotWritable cannot access the recovery information or forward it to an API expecting the shared refusal type. This also differs from CatalogSaveResult in this file.",
+      "suggestion_code": "  | RuntimeNotWritable;",
+      "existing_code": "  | { readonly kind: 'RuntimeNotWritable' };",
+      "start_line": 33,
+      "end_line": 33,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/modules/reference-catalog/catalog.ts",
+      "files": [
+        "src/modules/reference-catalog/catalog.ts"
+      ]
+    }
+  ],
+  "session_id": "164e749a-9547-40c1-970f-c9a9268df004",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "164e749a-9547-40c1-970f-c9a9268df004",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "633fdc1",
+      "resolved_base": "e48343d8f391b32d1955d2e91058a3bcce0470e3",
+      "resolved_head": "633fdc1de4c2310ce697a842e434428960ee0844",
+      "exact_range": "e48343d8f391b32d1955d2e91058a3bcce0470e3..633fdc1de4c2310ce697a842e434428960ee0844",
+      "source_artifact_sha256": "412a67757590442aa701725ca53e0b148e8b1b90d77daf0609a29d98dd7c8e34"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6d496b4569363a6ec811de6be03984918577679984e6b20092b8ef86d2b39d5f",
+          "path": "src/modules/reference-catalog/catalog.ts",
+          "fingerprint": "0e7ff697cc394a398e9c6b3f18ca9b7e9dd4c1c9694cae3f26aa7196bbf9e5cb"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6d496b4569363a6ec811de6be03984918577679984e6b20092b8ef86d2b39d5f",
+          "path": "src/modules/reference-catalog/catalog.ts",
+          "fingerprint": "0e7ff697cc394a398e9c6b3f18ca9b7e9dd4c1c9694cae3f26aa7196bbf9e5cb"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 74284
+  }
+}
