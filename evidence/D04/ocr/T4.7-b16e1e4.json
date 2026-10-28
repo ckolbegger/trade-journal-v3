@@ -1,0 +1,132 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 4 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 4,
+    "total_tokens": 131649,
+    "input_tokens": 129543,
+    "output_tokens": 2106,
+    "cache_read_tokens": 19200,
+    "elapsed": "1m26s"
+  },
+  "tool_calls": {
+    "total": 16,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 2,
+      "file_find": 3,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/market-data/market-data.ts",
+      "content": "Historical session-policy failures are treated as an empty history. `sessionsBetween` returns `ok: false` when any date is outside coverage, so an exposure before coverage produces a successful recovery reporting no gaps, even for covered sessions with missing Marks. The extra day subtracted from the lower bound can also trigger this for an exposure on the first covered date. Propagate a `SessionPolicyCoverage` rejection (and avoid requesting an unnecessary out-of-coverage day) rather than presenting incomplete enumeration as no gaps.",
+      "existing_code": "            const relevant = sessions.ok ? sessions.value.filter((s) =\u003e Temporal.Instant.compare(Temporal.Instant.from(s.close), exposure) \u003e= 0) : [];",
+      "start_line": 349,
+      "end_line": 349,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/market-data/market-data.ts",
+      "content": "`earliestExposure` is parsed without validation, so a date-only or malformed value throws a RangeError and rejects the promise instead of returning `RecoverResult`'s structured `Rejected` result. Unlike `context.asOf`, this public string input never passes through `isInstant`. Validate all exposure bounds before reading observations and return an `InvalidInstant` issue, extending the issue field type to identify the exposure input.",
+      "existing_code": "            const exposure = Temporal.Instant.from(earliestExposure);",
+      "start_line": 345,
+      "end_line": 345,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/market-data/market-data.ts",
+      "content": "The frame query closes its read transaction before `historicalGaps` opens a second snapshot. A concurrent save of a historical Mark can therefore remove a gap in this result while the returned frame still has the old Missing/stale context and snapshot metadata. Read frames and historical observations in the same persistence snapshot so a recovery describes one consistent evidence state.",
+      "existing_code": "      const gaps = await historicalGaps(request.instruments, queried.frames[0]?.tradingDate);",
+      "start_line": 496,
+      "end_line": 496,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/market-data/market-data.ts",
+      "content": "Normalize or reject duplicate instrument keys before computing gaps. `query` deduplicates its instrument list, but this loop processes every request entry, so two entries for MNO produce one frame but two gap records and two historical range reads (potentially with conflicting relevance bounds). This also breaks the one-gap-request-per-Instrument requirement. Group by instrumentKey and use the earliest exposure, or return a structured rejection for duplicates.",
+      "existing_code": "        [...instruments]\n          .sort((a, b) =\u003e (a.instrumentKey \u003c b.instrumentKey ? -1 : 1))",
+      "start_line": 342,
+      "end_line": 343,
+      "category": "bug",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/modules/market-data/index.ts",
+        "src/modules/market-data/market-data.ts"
+      ]
+    }
+  ],
+  "session_id": "df72fde1-1944-47ea-8402-776944149495",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "df72fde1-1944-47ea-8402-776944149495",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "b16e1e4",
+      "resolved_base": "d2d32ba456e888bdf23a0a4cf4d9d1cb38810244",
+      "resolved_head": "b16e1e424c1eef88e72fd4450e5158f7a581e322",
+      "exact_range": "d2d32ba456e888bdf23a0a4cf4d9d1cb38810244..b16e1e424c1eef88e72fd4450e5158f7a581e322",
+      "source_artifact_sha256": "e2134695e5f58b8b50cdb55d7faa7d102682a5639c99e78060a6361d6a7a8dcd"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6cccbb3f63f207ad23e39c4400bffe0e0c2e16fcfcc0ece9effa6c41a429fdc1",
+          "path": "src/modules/market-data/index.ts",
+          "fingerprint": "939977cd41c4e4f4a091a739416f87953d5d53ea36b9d71cd528ab02b02284d8"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "c46e2e44dbb261316414b9049e917d34784fe7c15eb0aac015b923ccfe8b886e"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6cccbb3f63f207ad23e39c4400bffe0e0c2e16fcfcc0ece9effa6c41a429fdc1",
+          "path": "src/modules/market-data/index.ts",
+          "fingerprint": "939977cd41c4e4f4a091a739416f87953d5d53ea36b9d71cd528ab02b02284d8"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "c46e2e44dbb261316414b9049e917d34784fe7c15eb0aac015b923ccfe8b886e"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 86342
+  }
+}

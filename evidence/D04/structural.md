@@ -365,3 +365,29 @@ ocr review of `0715b2a` (T4.6-B4): session `2e88e036-a67b-4b15-9b11-a5d1ccd23bd0
 - `0715b2a` (B4), 00:22 EDT: unit 553, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.6-b4-*`.
 
 Only `verify:capacity` failed in each (expected until T4.28). T4.6 is complete.
+
+## T4.7 Market Data: recover without a provider
+
+Implemented in `b16e1e4` (6 cases). Flagged: first-run passes 4 (relevance start) and 6 (one gap request per Instrument), each mutation-checked; **code ahead of red for case 3** (case 2's green already split acknowledged from missing sessions; the subagent loosened it to get case 3's red), reported to the user and kept, unlike T4.5, because it touched one case. Result shapes are the subagent's (`RecoverRequest`, `RecoverResult` `Recovered`, `HistoricalGaps`, `RecoverDiagnostic`), open to T4.19.
+
+ocr review of `b16e1e4`: session `df72fde1-1944-47ea-8402-776944149495`, 2 files reviewed, 4 comments. Raw output: `ocr/T4.7-b16e1e4.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/modules/market-data/market-data.ts:349` | A coverage failure from `sessionsBetween` becomes empty history, so recovery reports no gaps instead of saying why; the enumeration starts a day before the exposure date, so an exposure on the first covered date also trips it | Valid. Decision: per P8 (diagnostic, never a guess) without breaking the Review for a Trade whose exposure predates coverage, `recover` enumerates only covered sessions and adds a per-Instrument `SessionPolicyCoverage` diagnostic when relevance starts before coverage; the off-by-one is removed | Bug task T4.7-B1 |
+| medium | `src/modules/market-data/market-data.ts:345` | A malformed `earliestExposure` throws instead of returning `Rejected` | Valid | Bug task T4.7-B2 |
+| medium | `src/modules/market-data/market-data.ts:496` | Frames (via `query`) and historical gaps are read in separate transactions, so the result can mix two states | Doubtful (needs a concurrent historical save; A47 asks for one bounded read set) | Bug task T4.7-B3 |
+| low | `src/modules/market-data/market-data.ts:342` | Duplicate Instrument keys in the request give duplicate gap records and reads, unlike `query` | Valid (minor) | Bug task T4.7-B4 |
+
+### T4.7-B1 recover reports coverage instead of silently empty gaps
+- it should list gaps from the first covered session and add a SessionPolicyCoverage diagnostic for an Instrument whose relevance starts before coverage
+- it should list gaps normally, with no diagnostic, for an exposure on the first covered session
+
+### T4.7-B2 A malformed exposure instant is rejected
+- it should reject a recover request whose earliestExposure is not an ISO instant with an InvalidInstant issue
+
+### T4.7-B3 recover reads frames and gaps in one transaction
+- it should build the frames and the historical gaps from one read transaction, so a Mark saved during recover cannot appear in one and not the other
+
+### T4.7-B4 recover deduplicates Instruments
+- it should return one gap record and issue one gap read per Instrument when the request repeats an Instrument
