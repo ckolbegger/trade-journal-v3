@@ -74,6 +74,38 @@ describe('seedDefaults', () => {
     }));
     expect(after.value).toEqual(before.value);
   });
+
+  it('should seed the defaults exactly once and advance catalogRevision once when two seeds run at once', async () => {
+    const { catalog: c, persistence } = await catalog();
+    const results = await Promise.all([c.seedDefaults(D1_CATALOG_MANIFEST), c.seedDefaults(D1_CATALOG_MANIFEST)]);
+    const additions = results.map((r) => (r.kind === 'Seeded' ? r.additions : null));
+    expect(additions).toContainEqual(['strategy.long-stock']);
+    expect(additions).toContainEqual([]);
+    const stored = await persistence.readSnapshot(['catalog', 'meta'], async (tx) => ({
+      records: await tx.getAll('catalog'),
+      meta: await tx.get('meta', 'catalog'),
+    }));
+    expect(stored.value.records.filter((r) => r['productKey'] === 'strategy.long-stock')).toHaveLength(1);
+    expect(stored.value.meta?.['catalogRevision']).toBe(1);
+  });
+
+  it('should return its typed conflict and write nothing after 3 attempts when catalogRevision keeps moving', async () => {
+    const { persistence } = await emptyWorkspace();
+    let attempts = 0;
+    const wrapped: typeof persistence = {
+      ...persistence,
+      commit: async (set) => {
+        attempts += 1;
+        await persistence.commit({ checks: [], writes: [{ op: 'put', store: 'meta', value: { key: 'catalog', catalogRevision: attempts } }] });
+        return persistence.commit(set);
+      },
+    };
+    const c = createReferenceCatalog({ persistence: wrapped, ids: sequentialIds() });
+    expect(await c.seedDefaults(D1_CATALOG_MANIFEST)).toEqual({ kind: 'Conflict' });
+    expect(attempts).toBe(3);
+    const stored = await persistence.readSnapshot(['catalog'], (tx) => tx.getAll('catalog'));
+    expect(stored.value).toEqual([]);
+  });
 });
 
 describe('save: create Institution', () => {

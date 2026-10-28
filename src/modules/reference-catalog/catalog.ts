@@ -17,6 +17,9 @@ export interface ReferenceCatalogDeps {
   readonly ids: IdGenerator;
 }
 
+// Attempts in all when only the shared catalogRevision counter moved between read and commit.
+const MAX_ATTEMPTS = 3;
+
 export type SeedCatalogResult =
   | {
       readonly kind: 'Seeded';
@@ -24,7 +27,10 @@ export type SeedCatalogResult =
       readonly additions: readonly string[];
       readonly selectableAccountCount: number;
     }
-  | { readonly kind: 'SeedConflict'; readonly productKey: string };
+  | { readonly kind: 'SeedConflict'; readonly productKey: string }
+  // catalogRevision kept moving through every attempt; nothing was written.
+  | { readonly kind: 'Conflict' }
+  | { readonly kind: 'RuntimeNotWritable' };
 
 export type PreparedSeed =
   | { readonly kind: 'Additions'; readonly records: readonly StrategyRecord[] }
@@ -291,30 +297,41 @@ export function createReferenceCatalog(deps: ReferenceCatalogDeps): ReferenceCat
 
 
     async seedDefaults(manifest) {
-      const { value } = await deps.persistence.readSnapshot(['meta', 'catalog'], async (tx) => ({
-        meta: (await tx.get('meta', 'catalog')) as CatalogMeta | undefined,
-        records: (await tx.getAll('catalog')) as unknown as CatalogRecord[],
-      }));
-      const current = value.meta?.catalogRevision ?? 0;
-      const prepared = prepareSeed(value.records, manifest, deps.ids);
-      if (prepared.kind === 'SeedConflict') return prepared;
-      const additions = prepared.records;
-      const accounts = selectableAccountCount(value.records);
-      if (additions.length === 0) {
-        return { kind: 'Seeded', snapshot: { catalogRevision: current }, additions: [], selectableAccountCount: accounts };
+      for (let attempt = 1; ; attempt++) {
+        const { value } = await deps.persistence.readSnapshot(['meta', 'catalog'], async (tx) => ({
+          meta: (await tx.get('meta', 'catalog')) as CatalogMeta | undefined,
+          records: (await tx.getAll('catalog')) as unknown as CatalogRecord[],
+        }));
+        const current = value.meta?.catalogRevision ?? 0;
+        const prepared = prepareSeed(value.records, manifest, deps.ids);
+        if (prepared.kind === 'SeedConflict') return prepared;
+        const additions = prepared.records;
+        const accounts = selectableAccountCount(value.records);
+        if (additions.length === 0) {
+          return { kind: 'Seeded', snapshot: { catalogRevision: current }, additions: [], selectableAccountCount: accounts };
+        }
+        const catalogRevision = current + 1;
+        const records: StoreRecord[] = [
+          ...additions.map((record) => ({ store: 'catalog' as const, value: { ...(record as CatalogRecord) } })),
+          { store: 'meta', value: { key: 'catalog', catalogRevision } },
+        ];
+        const committed = await deps.persistence.commit({
+          checks: [catalogUnchanged(current)],
+          writes: records.map((r) => ({ op: 'put', ...r })),
+        });
+        if (committed.kind === 'RuntimeNotWritable') return committed;
+        // Only the Catalog counter moved: read again and prepare the seed afresh.
+        if (committed.kind !== 'Committed') {
+          if (attempt < MAX_ATTEMPTS) continue;
+          return { kind: 'Conflict' };
+        }
+        return {
+          kind: 'Seeded',
+          snapshot: { catalogRevision },
+          additions: additions.map((a) => a.productKey),
+          selectableAccountCount: accounts,
+        };
       }
-      const catalogRevision = current + 1;
-      const records: StoreRecord[] = [
-        ...additions.map((record) => ({ store: 'catalog' as const, value: { ...(record as CatalogRecord) } })),
-        { store: 'meta', value: { key: 'catalog', catalogRevision } },
-      ];
-      await deps.persistence.commit({ checks: [], writes: records.map((r) => ({ op: 'put', ...r })) });
-      return {
-        kind: 'Seeded',
-        snapshot: { catalogRevision },
-        additions: additions.map((a) => a.productKey),
-        selectableAccountCount: accounts,
-      };
     },
   };
 }
