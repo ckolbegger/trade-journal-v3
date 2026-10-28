@@ -387,3 +387,24 @@ describe('per-condition status', () => {
     expect(evaluate({ state, frame: missingFrame() }).observation).toEqual({ instrument: XYZ, tradingDate: '2026-10-13', mark: null });
   });
 });
+
+describe('observation binding', () => {
+  const consulted = { instrument: XYZ, tradingDate: '2026-10-12' };
+
+  it('should bind no Mark when the frame is for a different Instrument', () => {
+    const state = derivedState(referenceRecord([PC1, PC2]));
+    const abc = { kind: 'Stock', symbol: 'ABC' } as const;
+    const { observation } = evaluate({ state, frame: { ...availableFrame('52.00'), instrument: abc } });
+    expect(observation).toEqual({ instrument: abc, tradingDate: '2026-10-12', mark: null });
+  });
+
+  it('should bind no Mark when a Lot opened after the frame close', () => {
+    const state = derivedState(referenceRecord([PC1, TUESDAY_PC2]));
+    expect(evaluate({ state, frame: availableFrame('52.00') }).observation).toEqual({ ...consulted, mark: null });
+  });
+
+  it('should bind no Mark when no Position remains', () => {
+    const state = derivedState(referenceRecord([]));
+    expect(evaluate({ state, frame: availableFrame('52.00') }).observation).toEqual({ ...consulted, mark: null });
+  });
+});

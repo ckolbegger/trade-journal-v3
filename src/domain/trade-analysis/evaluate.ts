@@ -189,9 +189,11 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     };
   };
   const unavailable = unavailableResult();
+  // The frame's Mark values the Position only when one remains, it is Available, and it applies to every Lot.
+  const usableMark = lots.length > 0 && resolution.kind === 'Available' && !openedAfterClose && !foreign ? resolution.mark : null;
   const marked = <T>(of: (mark: Rational) => T): CalculationResult<T> => {
     if (lots.length === 0) return noRemainingPosition;
-    if (resolution.kind === 'Available' && !openedAfterClose && !foreign) return value(of(decimal(resolution.mark.price)));
+    if (usableMark) return value(of(decimal(usableMark.price)));
     return unavailable;
   };
   // Facts about the remaining Position, shown only while one remains.
@@ -248,7 +250,7 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
       ...state.baseline.stopBasis.map((basis, i) => conditionOf('Stop', i, basis.condition.price)),
       ...state.baseline.targetBasis.map((basis, i) => conditionOf('Target', i, basis.condition.price)),
     ],
-    observation: { instrument: frame.instrument, tradingDate: frame.tradingDate, mark: resolution.kind === 'Available' ? resolution.mark : null },
+    observation: { instrument: frame.instrument, tradingDate: frame.tradingDate, mark: usableMark },
     deviations: [],
     coveredSubtotal: null,
     atEntry: atEntryOf(atEntryLots, stop, target),
