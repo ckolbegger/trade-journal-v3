@@ -783,3 +783,16 @@ ocr review of `71df51e`: session `f2e79530-9e53-4847-bf0a-a77c10733dfb` (scratch
 
 ### T4.17-B3 A malformed stored date never breaks Stale context
 - it should give Stale context from the latest earlier session Mark when a stored key holds a malformed date
+
+### T4.17-B4 A matching identity reads no observations
+- it should read no observations when the stored session-policy identity matches the release's
+
+### T4.17-B5 The identity retry
+- it should revalidate and record findings when another launch records a different identity between the scan and the commit
+- it should record nothing and report no session policy when the identity keeps changing on every attempt
+
+ocr review of `9bb5498` (B1): session `3ec83f54-851b-4a10-99e7-6e35adf9ec7d`, 2 files, 1 comment. `ocr/T4.17-B1-9bb5498.json`. B1 reads the identity and every observation in one snapshot and binds `meta/sessionPolicy` (id, revision, digest) to the identity read; on Conflict it re-reads, records nothing if the identity now matches the release's, else revalidates and retries, 3 attempts in all; on exhaustion it records nothing, so the next launch scans again (no typed result exists for it; findings of that launch go unreported). The reviewer confirmed each attempt recomputes its state. One first-run pass (stored identity), mutation-checked. Code ahead of red, flagged: the revalidate-and-retry path and exhaustion had no case; B5 adds them. Finding from the subagent, for the user: a tab on an older release can keep writing observations after a newer release recorded its identity (no write-gate check compares policies, and a policy-only release keeps schema 3), so a key on a newly closed date written then is never reported; it is still never selected. Proposed: accept, as for T4.16-B1.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/coordinators/workspace/workspace.ts:188` | Every existing-Workspace launch now reads all observations, even when the identity matches | Valid: B1 reads both stores before comparing; the earlier code read observations only on a mismatch | Bug task T4.17-B4 |

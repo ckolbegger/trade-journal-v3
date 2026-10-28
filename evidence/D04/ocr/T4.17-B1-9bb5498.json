@@ -1,0 +1,103 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 109788,
+    "input_tokens": 108501,
+    "output_tokens": 1287,
+    "cache_read_tokens": 15360,
+    "elapsed": "1m5s"
+  },
+  "tool_calls": {
+    "total": 16,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 5,
+      "file_find": 2,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/workspace/workspace.ts",
+      "content": "This eagerly reads and materializes the entire observations store on every existing-workspace initialization, even when the policy identity is unchanged. Previously that common startup path read only metadata, so startup time and peak memory now scale with all stored observation history unnecessarily. Read the identity first inside this same snapshot callback and skip `getAll('observations')` when it already matches; this preserves snapshot consistency for actual policy changes.",
+      "existing_code": "        observations: await tx.getAll('observations'),",
+      "start_line": 188,
+      "end_line": 188,
+      "category": "performance",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/workspace/migration-spec.ts",
+        "src/coordinators/workspace/workspace.ts"
+      ]
+    }
+  ],
+  "session_id": "3ec83f54-851b-4a10-99e7-6e35adf9ec7d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3ec83f54-851b-4a10-99e7-6e35adf9ec7d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "cd731c79ba9694c95da7776a0bb32f82b1552b0e",
+      "resolved_head": "c20b1b0fc61e28ef1e001af3b61d7e65e472db88",
+      "exact_range": "cd731c79ba9694c95da7776a0bb32f82b1552b0e..c20b1b0fc61e28ef1e001af3b61d7e65e472db88",
+      "source_artifact_sha256": "4c160bc18e34554af5b9a879368a540a0ecc9007767ea3980bb91b780f711555"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "eb9ebbaeca62896703f987e579d6b37c3b4c4ab5c7b0cea62aa992e6534e2f5b",
+          "path": "src/coordinators/workspace/migration-spec.ts",
+          "fingerprint": "5bb495b0e636535044791db68522ab88a83d7be355169b5b8a75709696b0a1d8"
+        },
+        {
+          "item_id": "f1030df827c5901440ba4c43d43635aef3e7698f2ea00255a635dc2b120e73e9",
+          "path": "src/coordinators/workspace/workspace.ts",
+          "fingerprint": "3ff9e515537495c1384568665f1e225bc9913b4d9c08047ce1d6bef10d751c39"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "eb9ebbaeca62896703f987e579d6b37c3b4c4ab5c7b0cea62aa992e6534e2f5b",
+          "path": "src/coordinators/workspace/migration-spec.ts",
+          "fingerprint": "5bb495b0e636535044791db68522ab88a83d7be355169b5b8a75709696b0a1d8"
+        },
+        {
+          "item_id": "f1030df827c5901440ba4c43d43635aef3e7698f2ea00255a635dc2b120e73e9",
+          "path": "src/coordinators/workspace/workspace.ts",
+          "fingerprint": "3ff9e515537495c1384568665f1e225bc9913b4d9c08047ce1d6bef10d751c39"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 65111
+  }
+}
