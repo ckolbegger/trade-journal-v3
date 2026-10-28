@@ -31,7 +31,7 @@ export interface MarkRevision {
   readonly savedAt: string;
 }
 
-// One immutable acknowledgment version: it carries no price. T4.5 writes them.
+// One immutable acknowledgment version: it carries no price.
 export interface AcknowledgmentVersion {
   readonly versionId: string;
   readonly kind: 'Asserted' | 'Withdrawn';
@@ -51,15 +51,31 @@ export interface ObservationRecord extends ObservationKey {
   readonly effectiveAcknowledgmentId: string | null;
 }
 
+// The closest earlier Mark for an Instrument, disclosed as context and never used as a price (A47).
+export interface StaleMarkContext {
+  readonly tradingDate: string;
+  readonly price: string;
+  readonly revisionId: string;
+  readonly revisionNumber: number;
+  readonly closeInstant: string;
+}
+
 export type MarkResolution =
   | { readonly kind: 'Available'; readonly mark: Pick<MarkRevision, 'revisionId' | 'revisionNumber' | 'price' | 'source'> }
-  | { readonly kind: 'Missing' };
+  | { readonly kind: 'Missing'; readonly stale?: StaleMarkContext }
+  | { readonly kind: 'AcknowledgedUnavailable'; readonly acknowledgment: AcknowledgmentVersion; readonly stale?: StaleMarkContext };
 
 // Resolution precedence (market-data contract): an exact Mark is Available whatever the
-// acknowledgment history holds; T4.5 adds the acknowledgment branch before Missing.
-export function resolve(record: ObservationRecord | undefined): MarkResolution {
+// acknowledgment history holds; without one an effective Asserted acknowledgment is
+// AcknowledgedUnavailable; otherwise Missing. Stale context accompanies the last two.
+export function resolve(record: ObservationRecord | undefined, stale?: StaleMarkContext): MarkResolution {
   const effective = record?.marks.find((m) => m.revisionId === record.effectiveMarkId);
-  if (!effective) return { kind: 'Missing' };
-  const { revisionId, revisionNumber, price, source } = effective;
-  return { kind: 'Available', mark: { revisionId, revisionNumber, price, source } };
+  if (effective) {
+    const { revisionId, revisionNumber, price, source } = effective;
+    return { kind: 'Available', mark: { revisionId, revisionNumber, price, source } };
+  }
+  const context = stale ? { stale } : {};
+  const acknowledgment = record?.acknowledgments.find((a) => a.versionId === record.effectiveAcknowledgmentId);
+  if (acknowledgment?.kind === 'Asserted') return { kind: 'AcknowledgedUnavailable', acknowledgment, ...context };
+  return { kind: 'Missing', ...context };
 }
