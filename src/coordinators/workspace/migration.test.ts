@@ -1,7 +1,7 @@
 // Migration in Workspace.initialize (D2 T2.10), from the committed schema-1 fixture.
 import { readFileSync } from 'node:fs';
 import { IDBFactory } from 'fake-indexeddb';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { dumpAll, testStack } from '../../../tests/support/stack.ts';
 import { compareSnapshot } from '../../../tools/fixtures/snapshot-compare.ts';
 import { loadDump, viewsOf, type WorkspaceDump } from '../../../tools/fixtures/workspace-fixture.ts';
@@ -310,8 +310,16 @@ describe('migration to schema 3', () => {
 
   it('should migrate a v1 Workspace to schema 3 in one candidate', async () => {
     const { workspace, factory } = await v1Stack();
+    const opened = new Set<string>();
+    const open = factory.open.bind(factory);
+    vi.spyOn(factory, 'open').mockImplementation((name: string, version?: number) => {
+      opened.add(name);
+      return open(name, version);
+    });
     const result = await workspace.initialize({});
     if (result.kind !== 'Opened' || !result.receipt.migration) throw new Error('expected a migration receipt');
+    // Exactly one candidate database was ever opened beside the root and the source, even one deleted afterwards.
+    expect([...opened].filter((name) => name !== 'tj-root' && name !== V1_DATABASE)).toEqual([result.receipt.migration.databaseName]);
     expect(result.receipt.migration).toMatchObject({ fromVersion: 1, toVersion: 3, sourceDatabase: V1_DATABASE });
     expect(result.receipt.seeds.journal).toEqual({
       manifestVersion: 3,
