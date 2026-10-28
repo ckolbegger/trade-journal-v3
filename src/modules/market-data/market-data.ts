@@ -343,8 +343,15 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
   async function historicalGaps(tx: ReadTransaction, instruments: RecoverRequest['instruments'], reviewDate: string): Promise<{ gaps: HistoricalGaps[]; diagnostics: RecoverDiagnostic[] }> {
     const lastHistorical = Temporal.PlainDate.from(reviewDate).subtract({ days: 1 }).toString();
     const { coverage } = deps.sessionPolicy.identity;
+    // One request entry per Instrument: a Trade's earliest exposure governs (A56).
+    const earliest = new Map<string, string>();
+    for (const { instrumentKey, earliestExposure } of instruments) {
+      const known = earliest.get(instrumentKey);
+      if (known === undefined || Temporal.Instant.compare(Temporal.Instant.from(earliestExposure), Temporal.Instant.from(known)) < 0) earliest.set(instrumentKey, earliestExposure);
+    }
     const value = await Promise.all(
-        [...instruments]
+        [...earliest]
+          .map(([instrumentKey, earliestExposure]) => ({ instrumentKey, earliestExposure }))
           .sort((a, b) => (a.instrumentKey < b.instrumentKey ? -1 : 1))
           .map(async ({ instrumentKey, earliestExposure }) => {
             const exposure = Temporal.Instant.from(earliestExposure);

@@ -202,6 +202,16 @@ describe('recover without a provider (A56)', () => {
     expect(small).toHaveLength(2);
     expect(large).toEqual(small);
   });
+  it('should return one gap record and issue one gap read per Instrument when the request repeats an Instrument', async () => {
+    const { marketData } = await setup();
+    const { result, requests } = await countRequests(() =>
+      marketData.recover(review([{ instrumentKey: 'MNO', earliestExposure: '2026-10-09T14:00:00Z' }, { instrumentKey: 'MNO', earliestExposure: MNO_OPENED }])),
+    );
+    if (result.kind !== 'Recovered') throw new Error('expected a recovery');
+    // The earliest exposure governs (A56): relevance starts Wednesday 2026-10-07, not Friday.
+    expect(result.gaps).toEqual([{ instrumentKey: 'MNO', missing: ['2026-10-07', '2026-10-08', '2026-10-09'], acknowledged: [] }]);
+    expect(requests.filter((r) => r.store === 'observations' && r.index === 'byInstrumentDate' && r.method === 'getAll')).toHaveLength(1);
+  });
 });
 
 describe('recover outside session policy coverage (P8)', () => {
