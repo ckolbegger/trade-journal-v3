@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { breakFirstExecution, fiveTradeFixture, MONDAY_1615, MONDAY_1700, MONDAY_CUTOFF, reviewStack, ELEVEN_AM, TEN_AM, type ReviewStack } from '../../../tests/support/review-fixture.ts';
+import { breakFirstExecution, fiveTradeFixture, rawEditTrade, MONDAY_1615, MONDAY_1700, MONDAY_CUTOFF, reviewStack, ELEVEN_AM, TEN_AM, type ReviewStack } from '../../../tests/support/review-fixture.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { dumpAll } from '../../../tests/support/stack.ts';
 import { createDailyReview, type OpenDailyReviewResult } from './index.ts';
@@ -36,6 +36,22 @@ describe('date and eligibility (P9, P15, A55)', () => {
     await fiveTradeFixture(quarterPast, { withoutMarks: true });
     expect(await open(quarterPast, MONDAY_1615)).toEqual({ kind: 'Empty', reviewDate: '2026-10-09', cutoff: '2026-10-09T20:00:00Z' });
   }, 30_000);
+
+  it('should exclude a Trade the index selects whose facts are not Open at the cutoff', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const early = await stack.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '56.00' });
+    await stack.fill(early, TEN_AM, '100', '50.00');
+    const late = await stack.confirm({ symbol: 'ABC', shares: '100', entry: '30.00', stop: '28.00', target: '36.00' });
+    await stack.fill(late, '2026-10-12T20:05:00Z', '100', '30.00');
+    // A stale stored exposure start, earlier than the first fill, makes the index select it.
+    await rawEditTrade(stack, late.tradeId, (trade) => ({ ...trade, exposureStart: TEN_AM }));
+
+    const result = await open(stack, MONDAY_1700);
+
+    expect(walk(result).map((t) => t.tradeId)).toEqual([early.tradeId]);
+    expect(JSON.stringify(marks(result))).not.toContain('ABC');
+    expect(JSON.stringify(ready(result).completion)).not.toContain('ABC');
+  });
 });
 
 describe('eligibility at the cutoff (AC-REV-001)', () => {
