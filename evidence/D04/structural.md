@@ -729,6 +729,9 @@ ocr review of `f5ec98f`: session `a25ee264-ebd2-416e-992c-654f8c000643`, 4 files
 ### T4.16-B5 Counter exhaustion
 - it should return Conflict and write nothing when the Journal counter moves on every attempt
 
+### T4.16-B6 The saved Action needs no post-commit read
+- it should return Saved with the committed Action when the post-commit Journal read fails
+
 ocr review of `d35c345` (B1): session `e04740cd-1aac-416d-a0f3-bac4ca1dcbdf`, 1 file, 1 comment. `ocr/T4.16-B1-d35c345.json`. B1 binds, for each Instrument without an effective Review-date Mark, the Stale source key found by the same `byInstrumentDate` reverse lookup as `staleContextOf` (no session filter, so it can only over-bind). No code ahead of red, no first-run passes.
 
 | Severity | Location | Claim | Assessment | Disposition |
@@ -738,3 +741,9 @@ ocr review of `d35c345` (B1): session `e04740cd-1aac-416d-a0f3-bac4ca1dcbdf`, 1 
 ocr review of `7f3b70d` (B2): session `9d7de8ce-b6da-4eb4-b1b1-bf5593ee33a4`, no findings. `ocr/T4.16-B2-7f3b70d.json`. `TradeSaveBinding` now carries `databaseName`, and save compares it with the open Workspace before reading. The subagent flagged one slip: `getTrade` set `databaseName` on the binding before the red that required it. No first-run passes.
 
 ocr review of `528b9a1` (B3): session `c60a1f61-d1c6-4849-8746-6abd50fe2045`, no findings. `ocr/T4.16-B3-528b9a1.json`. Save now reads the committed version with `Journal.actionAt(entryId, entryRevision)`; the reviewer confirmed versions are append-only and the revision is the version count. Residual note, not a finding: `actionAt` maps with the current definitions and labels, which match the commit's unless the Catalog changes in between. No code ahead of red, no first-run passes.
+
+ocr review of `8210d89` (B4): session `3692232b-bb20-47a9-b1a3-a699e5b2dbdf`, 1 file, 1 comment. `ocr/T4.16-B4-8210d89.json`. B4 catches a throw from the post-save review and returns review ChangedDuringAssembly. Two assertions passed on their first run (the committed Action and the durable Hold Entry), both mutation-checked and flagged. No code ahead of red.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| high | `src/coordinators/daily-review/daily-review.ts:493` | `journal.actionAt` runs after the commit outside the new catch, so its throw still reports a committed save as StorageFailure | Valid: the implementer reported the same gap. The reviewer found the Journal can build the Action from what prepare already reads (definitions, plus `journalTypes` for labels) without a post-commit read and without copying `dailyAction` | Bug task T4.16-B6, after B5 |

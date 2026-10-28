@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 42203,
+    "input_tokens": 41776,
+    "output_tokens": 427,
+    "cache_read_tokens": 13440,
+    "elapsed": "35s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "The post-commit failure boundary still excludes `await deps.journal.actionAt(...)` immediately above. That method performs a persistence snapshot read, so a read failure after `commit` succeeds still rejects `save` and reports a committed action as a failure (potentially prompting a duplicate retry). Obtain the returned action from the prepared/committed data without a fallible post-commit read, or otherwise handle that read failure as a successful save too.",
+      "existing_code": "    const review = await postSaveReview(binding.reviewDate).catch((): PostSaveReview =\u003e ({ kind: 'ChangedDuringAssembly' }));",
+      "start_line": 495,
+      "end_line": 495,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/coordinators/daily-review/daily-review.ts",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts"
+      ]
+    }
+  ],
+  "session_id": "3692232b-bb20-47a9-b1a3-a699e5b2dbdf",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3692232b-bb20-47a9-b1a3-a699e5b2dbdf",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "8210d89",
+      "resolved_base": "528b9a12a271eb96b8393372b5658a8b1a587335",
+      "resolved_head": "8210d89b02aabf75f6c90856bfba4684559cef0e",
+      "exact_range": "528b9a12a271eb96b8393372b5658a8b1a587335..8210d89b02aabf75f6c90856bfba4684559cef0e",
+      "source_artifact_sha256": "6689b8c3b6a6cf7abfa9231bf714339bcfcb679a2845529646ac24266e9e2453"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "d19fa983048f683512f62cbdaa70da3824ae5f86ce67277d1286f6a421c9eeb1"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "d19fa983048f683512f62cbdaa70da3824ae5f86ce67277d1286f6a421c9eeb1"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 34889
+  }
+}
