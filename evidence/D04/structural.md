@@ -472,3 +472,24 @@ ocr review of `9d7f6d5` (B3): session `7095015b-5566-45fb-9c9e-b4c23e6bc01f`, 1 
 - `9d7f6d5` (B1–B5), 2026-10-28 01:14 EDT: unit 585, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.9-b3-full-*`.
 
 Only `verify:capacity` failed (expected until T4.28). T4.9 is complete.
+
+## T4.10 Trade Analysis: risk and reward
+
+Implemented in `bab35b1` (10 cases). Flagged first-run passes, each mutation-checked: case 2 (Unbounded when Missing, built by case 1), case 4 (exactly 47.50 Breached, built by case 3's `<= 0`), case 7 (reached Target not a Deviation, built by case 5), case 8 (per-condition fields; its only failure was a fixture error, `47.5` not `47.50`), case 9 (conditions Unavailable with the Mark's reason, via the shared `marked`). Flooring at $0.00 came from the reds of cases 3 and 6.
+
+Decisions: `CalculationResult` gains `Unbounded{direction, explanation}`, which forced one branch ("Unbounded above") in `src/ui/screens/TradeDetail.tsx`; Plan R figures are the floored dollars over 1R; condition ids are role plus 1-based position (`stop-1`, `target-1`) since the basis carries no identity; Overrun is read from the crossed condition, with no headline field; `deviations` is always `[]` (A44); headline figures still use the single original Stop and Target (D17), long Stock only. Notes for T4.14 (store `observation` as the binding; `deviations` empty until D12) and T4.18 (render Unbounded; Overrun from `conditions`).
+
+ocr review of `bab35b1`: session `7db81f8e-36da-4673-b14f-7375d28fc37d`, 4 files, 2 comments. `ocr/T4.10-bab35b1.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/domain/trade-analysis/evaluate.ts:251` | `observation.mark` names the frame's Mark whenever it is Available, even when no figure was computed from it (another Instrument, a Lot opened after the close, no remaining Position) | Valid | Bug task T4.10-B1 |
+| low | `src/domain/trade-analysis/evaluate.ts:219` | Nested ternary for condition `status` | Doubtful (readability only) | Bug task T4.10-B2 (structural) |
+
+### T4.10-B1 The observation binding names only a Mark that was used
+- it should bind no Mark when the frame is for a different Instrument
+- it should bind no Mark when a Lot opened after the frame's close
+- it should bind no Mark when no Position remains
+
+### T4.10-B2 Condition status as explicit guards (structural)
+Verification: `npx vitest run src/domain/trade-analysis` passes unchanged before and after; typecheck, tsc6, lint, lint:deps exit 0.

@@ -1,0 +1,135 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 2,
+    "total_tokens": 139006,
+    "input_tokens": 137106,
+    "output_tokens": 1900,
+    "cache_read_tokens": 15360,
+    "elapsed": "1m8s"
+  },
+  "tool_calls": {
+    "total": 19,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 5,
+      "file_read": 13
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/domain/trade-analysis/evaluate.ts",
+      "content": "Only attach a Mark when it passes the same eligibility checks as marked(). An Available frame can still be rejected because it belongs to another instrument or predates an open lot (both are supported scenarios), yet observation.mark currently records that revision as the evidence used. It also remains populated with no remaining position. This contradicts the observation contract and can make unavailable figures appear backed by an exact Mark. Set mark to null unless there are open lots, the frame matches, and no lot opened after the close; add edge-case assertions for those scenarios.",
+      "existing_code": "    observation: { instrument: frame.instrument, tradingDate: frame.tradingDate, mark: resolution.kind === 'Available' ? resolution.mark : null },",
+      "start_line": 251,
+      "end_line": 251,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/domain/trade-analysis/evaluate.ts",
+      "content": "This nested ternary violates the requested checklist. Determine the crossed status separately (Breached for Stop, Reached for Target), then use a single conditional to choose Active versus that status, or use explicit if/else branches.",
+      "existing_code": "        status: !crossed ? 'Active' : role === 'Stop' ? 'Breached' : 'Reached',",
+      "start_line": 219,
+      "end_line": 219,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Trade analysis evaluation and detail screen integration",
+      "files": [
+        "src/domain/trade-analysis/derive.ts",
+        "src/domain/trade-analysis/evaluate.ts",
+        "src/domain/trade-analysis/index.ts",
+        "src/ui/screens/TradeDetail.tsx"
+      ]
+    }
+  ],
+  "session_id": "7db81f8e-36da-4673-b14f-7375d28fc37d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7db81f8e-36da-4673-b14f-7375d28fc37d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "bab35b1",
+      "resolved_base": "e2d41b435f135bf680c3e7535bee1e2d4f770b36",
+      "resolved_head": "bab35b19eec7f75da6a194b6b76f3842c9ac87c9",
+      "exact_range": "e2d41b435f135bf680c3e7535bee1e2d4f770b36..bab35b19eec7f75da6a194b6b76f3842c9ac87c9",
+      "source_artifact_sha256": "a9d44966b63f3e93038cd1e2fe74fb2239a839c0124f472fc34588d86f6af3f4"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "0698a0b15b3eb864e948c923079aa9589cf1d8d43aa0b075946303a76d2408d5"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "62609103527c446143786c3660b55b661839aa768b49ec3751e7d94624522ef6"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "5934727468a29dbbd9e125d39c676464afbe6e0e7fe1e7d97625d7eafd9e8980"
+        },
+        {
+          "item_id": "8411810b972f01aae046b61cff46f2696ec8bf23a4e9d6abff256a42fc139477",
+          "path": "src/domain/trade-analysis/index.ts",
+          "fingerprint": "c658bf642d0e86bdfc5203bba4f56eb330191ec4cd9589c71e0ec18c46827acd"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "0698a0b15b3eb864e948c923079aa9589cf1d8d43aa0b075946303a76d2408d5"
+        },
+        {
+          "item_id": "53baddff11b40fdab9a926ee41418c74d163fdee1104a4468e45f0be4391739b",
+          "path": "src/domain/trade-analysis/derive.ts",
+          "fingerprint": "62609103527c446143786c3660b55b661839aa768b49ec3751e7d94624522ef6"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "5934727468a29dbbd9e125d39c676464afbe6e0e7fe1e7d97625d7eafd9e8980"
+        },
+        {
+          "item_id": "8411810b972f01aae046b61cff46f2696ec8bf23a4e9d6abff256a42fc139477",
+          "path": "src/domain/trade-analysis/index.ts",
+          "fingerprint": "c658bf642d0e86bdfc5203bba4f56eb330191ec4cd9589c71e0ec18c46827acd"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 68068
+  }
+}
