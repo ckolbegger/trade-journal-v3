@@ -522,7 +522,8 @@ describe('session-policy compatibility (A40)', () => {
     expect(result.receipt.sessionPolicy).toBeUndefined();
     expect(attempts).toBe(3);
     const stored = Object.values(await dumpAll(first.factory)).flatMap((stores) => stores['meta'] ?? []);
-    expect(stored).not.toContainEqual(expect.objectContaining({ key: 'sessionPolicy', policy: POLICY_REVISION_2.identity }));
+    // The identity left is the last racing one the wrapper wrote, never this release's.
+    expect(stored.filter((r) => (r as { key: string }).key === 'sessionPolicy')).toEqual([expect.objectContaining({ policy: { id: 'nyse', revision: 10 + attempts, digest: 'moving' } })]);
   });
 
   it('should keep an observation record whose date the newer policy turns into a closure, list it as a finding in the receipt, and leave it out of every frame', async () => {
