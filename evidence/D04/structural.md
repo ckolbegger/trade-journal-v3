@@ -235,3 +235,9 @@ Both findings come from the same chained-increment design, so one bug task cover
 ### T4.4-B5 Increments apply in write-set order and fail loudly
 - it should apply a write set's writes in order when it increments one meta field twice and when a later put replaces the incremented record
 - it should not report Committed when an increment's target record or field is missing, and should write nothing
+
+ocr review of `a6ec5d9` (T4.4-B5): session `1eb69f3e-581d-4943-936a-995c712d818d`, 1 file reviewed, 1 comment. Raw output: `ocr/T4.4-B5-a6ec5d9.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/persistence/persistence.ts:390` | A put or add followed by an increment of the same record loses the revision stamp: the increment resolves unstamped from the in-memory view and its put overwrites the stamped value, while `Committed.revisions` still reports the new revision | Valid (latent: no current write set puts and increments one record) | **Stopped for the user**: third round of bug tasks on T4.4 still leaves a finding (handoff, stop condition 5) |

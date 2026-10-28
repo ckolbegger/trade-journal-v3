@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 96526,
+    "input_tokens": 95796,
+    "output_tokens": 730,
+    "cache_read_tokens": 19200,
+    "elapsed": "1m4s"
+  },
+  "tool_calls": {
+    "total": 9,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/persistence/persistence.ts",
+      "content": "A put/add followed by an increment of the same meta record loses the new revision stamp. `seen` retains the original, unstamped `write.value`, so the increment's later `put` overwrites the stamped record with a value whose `revision` is missing or stale, although `Committed.revisions` reports the new revision. Cache the stamped value for put/add writes (or preserve its stamp when resolving subsequent increments), and add a put-then-increment regression test.",
+      "existing_code": "else seen.set(stamp(write.store, keyOf(write.store, write.value)), write.value);",
+      "start_line": 390,
+      "end_line": 390,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/persistence/persistence.ts",
+      "files": [
+        "src/persistence/persistence.ts"
+      ]
+    }
+  ],
+  "session_id": "1eb69f3e-581d-4943-936a-995c712d818d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1eb69f3e-581d-4943-936a-995c712d818d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "a6ec5d9",
+      "resolved_base": "7c7f9158ed63d3515f6d4956837b189e11381e30",
+      "resolved_head": "a6ec5d99e48e286a221c77c25ddcb453d0e160e6",
+      "exact_range": "7c7f9158ed63d3515f6d4956837b189e11381e30..a6ec5d99e48e286a221c77c25ddcb453d0e160e6",
+      "source_artifact_sha256": "ac3cb663c059b8e828e0ed35d820bbd3462c329b24ed7b25d05894c1bdb76a6a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "cf9eff43ca251c431e8917c66f9d4fe142842fb79a5c3010f8185e28106c3630"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "cf9eff43ca251c431e8917c66f9d4fe142842fb79a5c3010f8185e28106c3630"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 64332
+  }
+}
