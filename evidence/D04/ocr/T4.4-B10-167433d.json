@@ -1,0 +1,104 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 35966,
+    "input_tokens": 35640,
+    "output_tokens": 326,
+    "cache_read_tokens": 3840,
+    "elapsed": "24s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/modules/market-data/market-data.ts",
+        "src/persistence/migrations/v2-to-v3.ts",
+        "src/persistence/persistence.ts"
+      ]
+    }
+  ],
+  "session_id": "9e762d4f-38f5-4f68-855f-ceb1a267822c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "9e762d4f-38f5-4f68-855f-ceb1a267822c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "167433d",
+      "resolved_base": "d6317013017f4c8b8d5c6e862a62bf6b27091882",
+      "resolved_head": "167433d02ed078fef6e07678fa194582ec248122",
+      "exact_range": "d6317013017f4c8b8d5c6e862a62bf6b27091882..167433d02ed078fef6e07678fa194582ec248122",
+      "source_artifact_sha256": "ce1c6077810ad57aff94a7af97cf673b8ff043ff0fd86fdaa6c2fc5fbf8294bb"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "13ff36c0b0027f5fd4233607bde86d6e2d9e160e47e421e6c59de49704848ce4",
+          "path": "src/persistence/migrations/v2-to-v3.ts",
+          "fingerprint": "104858a0c32af5ce459e7343e404fb9a0a9e4f667aeaca4e296ed62a6c5931ae"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "7d39cb8a5617ba0e1d913d13efd86da484c130081fe7d5582d4b82a7375998f2"
+        },
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "8ac1db134d39ad84a1f3c62ca17dc47c1c7c336a053c1f78016ffc4772afb000"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "13ff36c0b0027f5fd4233607bde86d6e2d9e160e47e421e6c59de49704848ce4",
+          "path": "src/persistence/migrations/v2-to-v3.ts",
+          "fingerprint": "104858a0c32af5ce459e7343e404fb9a0a9e4f667aeaca4e296ed62a6c5931ae"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "7d39cb8a5617ba0e1d913d13efd86da484c130081fe7d5582d4b82a7375998f2"
+        },
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "8ac1db134d39ad84a1f3c62ca17dc47c1c7c336a053c1f78016ffc4772afb000"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 24267
+  }
+}

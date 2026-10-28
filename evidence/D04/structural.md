@@ -294,3 +294,9 @@ The user directed (2026-10-27) removing `meta.marketDataRevision`: nothing reads
 - it should create a fresh Workspace at schema version 3 with the observations store, its byInstrumentDate index, and meta sessionPolicy, and no marketDataRevision (restated T4.3 case)
 - it should commit in one semantic commit that increments the Workspace content revision exactly once and writes only the key's observation record (restated T4.4 case)
 - it should save both of two simultaneous initial Marks for different keys (B3's case, restated without the counter)
+
+ocr review of `167433d` (T4.4-B10): session `9e762d4f-38f5-4f68-855f-ceb1a267822c`, 3 files reviewed, **No findings.** Raw output: `ocr/T4.4-B10-167433d.json`. Flagged: B3's restated case first-run passed (mutation-checked); the T4.4 restated commit case's logged red came from a stricter first assertion, and the final assertion (every `meta` record except `content` unchanged) was not re-proven red.
+
+### Cumulative run after T4.4-B10
+
+Run 2026-10-27 23:41 EDT on commit `167433d`. Unit 46 files, 526 passed; integration 21 files, 49 passed; browser 124 passed (3.9m), so B9's narrow-spec timeout did not recur; checks 11 of 12, only `verify:capacity` (expected until T4.28). Outputs: `suite-runs/t4.4-b10-*`. T4.4 is complete.
