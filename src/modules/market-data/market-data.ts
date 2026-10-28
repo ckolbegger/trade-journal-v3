@@ -166,6 +166,17 @@ function keyUnchanged(key: ObservationKey, expected: ExpectedResolutionRevision)
   };
 }
 
+function canonicalContextOf(context: FrameContext): FrameContext {
+  switch (context.kind) {
+    case 'Current':
+      return { kind: context.kind, asOf: context.asOf };
+    case 'Review':
+      return { kind: context.kind, reviewDate: context.reviewDate };
+    case 'Historical':
+      return { kind: context.kind, tradingDate: context.tradingDate };
+  }
+}
+
 const SYMBOL = /^[A-Z][A-Z0-9.]{0,9}$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -322,10 +333,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
           ? { tradingDate: next.value.date, closeInstant: next.value.close }
           : undefined;
       // The context is serialized from its known fields so the caller's property order and extra properties cannot change the digest.
-      const canonicalContext =
-        context.kind === 'Current' ? { kind: context.kind, asOf: context.asOf }
-        : context.kind === 'Review' ? { kind: context.kind, reviewDate: context.reviewDate }
-        : { kind: context.kind, tradingDate: context.tradingDate };
+      const canonicalContext = canonicalContextOf(context);
       // The digest is computed after the read transaction closes (A45). It carries the as-of instant's material effect: the completed next session.
       const evidenceDigest = bytesToHex(
         sha256(
