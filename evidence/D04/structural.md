@@ -689,3 +689,9 @@ ocr review of `92224ec`: session `bc87e477-4485-4c5c-bd95-cb912cf2a4d3`, 5 files
 ocr reviews of the T4.15 bug tasks, each **No findings**: `8cc879f` (B1, session `509e00ba-7cb9-4a27-996c-51b12f23fa70`; only `workspace.databaseName` is compared, since `contentRevision` moves with every save and the fact revision and snapshot id catch real content changes), `799734a` (B2, `ed741c74-d50f-432f-b62e-0a1e7f3c08af`; Journal `DailyAction` gains `definitionId`, the Entry's first version's definition; the second definition revision is a raw store write in the test, as the Journal has no revise path; three assertions were first-run passes, mutation-checked and flagged). Raw outputs `ocr/T4.15-B<n>-<sha>.json`.
 
 T4.15-B3 dismissed, no code changed: the P12 case cannot occur in `getTrade`. It evaluates the state derived at the Review cutoff (the Review-date close), and `atCutoff` drops every Execution after it, so no Lot opened after the frame's close reaches that state. A54's P12 dated line (`D` = the frame's own date, AwaitingClose after D, at-entry figures for later Lots) belongs to current figures and is carried to T4.18 (Trade Views).
+
+### Cumulative run after T4.15
+
+- `3dea96e` (code at `799734a`, B1–B2), 2026-10-28 03:36 EDT: unit 661, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.15-b2-*`.
+
+Only `verify:capacity` failed (expected until T4.28). T4.15 is complete.
