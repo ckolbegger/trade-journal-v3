@@ -460,6 +460,71 @@ describe('session-policy compatibility (A40)', () => {
     expect(stored).toContainEqual(expect.objectContaining({ key: 'sessionPolicy', policy: POLICY_REVISION_2.identity }));
   });
 
+  it('should revalidate and record findings when another launch records a different identity between the scan and the commit', async () => {
+    const closure = { date: '2026-10-14', kind: 'Closure', name: 'Test closure', source: { name: 'Test', url: 'https://example.test/closure' } } as const;
+    const withClosure = createSessionPolicy({ id: 'nyse', revision: 2, coverage: { first: '2024-01-01', last: '2029-12-31' }, table: [...NYSE_TABLE, closure] });
+    const first = await launch(new IDBFactory(), nyseSessionPolicy);
+    expect((await first.workspace.initialize({ timeZone: 'America/New_York' })).kind).toBe('Opened');
+    first.persistence.close();
+
+    const second = await launch(first.factory, withClosure);
+    const third = { id: 'nyse', revision: 3, digest: 'another-release' };
+    let moved = false;
+    // Before this launch's first identity commit, another launch records a third identity and an observation on a date this release closes.
+    const racing: Persistence = {
+      ...second.persistence,
+      async commit(writeSet) {
+        const records = writeSet.writes.some((w) => w.op === 'put' && w.store === 'meta' && w.value['key'] === 'sessionPolicy');
+        if (records && !moved) {
+          moved = true;
+          const marketData = createMarketData({ persistence: second.persistence, ids: second.ids, clock: second.clock, sessionPolicy: nyseSessionPolicy });
+          const saved = await marketData.save({ intention: 'RecordInitialManualMark', instrumentKey: 'XYZ', tradingDate: '2026-10-14', price: '52', expectedResolutionRevision: 'None' });
+          expect(saved.kind).toBe('Saved');
+          await second.persistence.commit({ checks: [], writes: [{ op: 'put', store: 'meta', value: { key: 'sessionPolicy', policy: third } }] });
+        }
+        return second.persistence.commit(writeSet);
+      },
+    };
+    const workspace = createWorkspace({ ...second, persistence: racing, host: second.testHost.host, releaseId: second.testHost.releaseId });
+    const result = await workspace.initialize({});
+    if (result.kind !== 'Opened') throw new Error('expected Opened');
+    expect(result.receipt.sessionPolicy).toEqual({
+      previous: third,
+      recorded: withClosure.identity,
+      findings: [{ code: 'NotASession', instrumentKey: 'XYZ', tradingDate: '2026-10-14' }],
+    });
+    const stored = Object.values(await dumpAll(first.factory)).flatMap((stores) => stores['meta'] ?? []);
+    expect(stored).toContainEqual(expect.objectContaining({ key: 'sessionPolicy', policy: withClosure.identity }));
+  });
+
+  it('should record nothing and report no session policy when the identity keeps changing on every attempt', async () => {
+    const first = await launch(new IDBFactory(), nyseSessionPolicy);
+    expect((await first.workspace.initialize({ timeZone: 'America/New_York' })).kind).toBe('Opened');
+    first.persistence.close();
+
+    const second = await launch(first.factory, POLICY_REVISION_2);
+    let attempts = 0;
+    // Before each of this launch's identity commits, another launch moves the identity to one more release's.
+    const racing: Persistence = {
+      ...second.persistence,
+      async commit(writeSet) {
+        const records = writeSet.writes.some((w) => w.op === 'put' && w.store === 'meta' && w.value['key'] === 'sessionPolicy');
+        if (records) {
+          attempts += 1;
+          await second.persistence.commit({ checks: [], writes: [{ op: 'put', store: 'meta', value: { key: 'sessionPolicy', policy: { id: 'nyse', revision: 10 + attempts, digest: 'moving' } } }] });
+        }
+        return second.persistence.commit(writeSet);
+      },
+    };
+    const workspace = createWorkspace({ ...second, persistence: racing, host: second.testHost.host, releaseId: second.testHost.releaseId });
+    const result = await workspace.initialize({});
+    if (result.kind !== 'Opened') throw new Error('expected Opened');
+    expect(result.receipt.sessionPolicy).toBeUndefined();
+    expect(attempts).toBe(3);
+    const stored = Object.values(await dumpAll(first.factory)).flatMap((stores) => stores['meta'] ?? []);
+    expect(stored).not.toContainEqual(expect.objectContaining({ key: 'sessionPolicy', policy: POLICY_REVISION_2.identity }));
+  });
+
   it('should keep an observation record whose date the newer policy turns into a closure, list it as a finding in the receipt, and leave it out of every frame', async () => {
     const closure = { date: '2026-10-14', kind: 'Closure', name: 'Test closure', source: { name: 'Test', url: 'https://example.test/closure' } } as const;
     const withClosure = createSessionPolicy({
