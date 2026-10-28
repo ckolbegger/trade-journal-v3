@@ -5,6 +5,10 @@ export {
   type MarketDataDeps,
   type MarketDataIssue,
   type MarketDataIssueCode,
+  type FrameContext,
+  type MarkFrame,
+  type MarketDataQuery,
+  type MarketDataQueryResult,
   type MarketDataSaveCommand,
   type MarketDataSaveResult,
 } from './market-data.ts';

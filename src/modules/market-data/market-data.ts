@@ -1,6 +1,8 @@
+import { sha256 } from '@noble/hashes/sha2.js';
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import { Temporal } from 'temporal-polyfill';
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
-import type { SessionPolicy } from '../../domain/session-policy/index.ts';
+import type { Covered, Session, SessionPolicy } from '../../domain/session-policy/index.ts';
 import type { Clock } from '../../domain/time/index.ts';
 import { parseDecimal } from '../../domain/values/index.ts';
 import type { BindingCheck, IdGenerator, Persistence, ReadTransaction } from '../../persistence/index.ts';
@@ -52,7 +54,7 @@ export type MarketDataIssueCode =
   | 'NothingToWithdraw';
 
 export interface MarketDataIssue {
-  readonly field: 'instrumentKey' | 'tradingDate' | 'price' | 'reason' | 'key';
+  readonly field: 'instrumentKey' | 'tradingDate' | 'asOf' | 'price' | 'reason' | 'key';
   readonly code: MarketDataIssueCode;
 }
 
@@ -83,8 +85,52 @@ export type MarketDataSaveResult =
   | { readonly kind: 'Conflict'; readonly key: ObservationKey; readonly resolution: MarkResolution; readonly resolutionRevision: ExpectedResolutionRevision }
   | RuntimeNotWritable;
 
+// A point context (A53): the Expected Mark Date comes from the as-of instant, the Review Date, or the date itself.
+export type FrameContext =
+  | { readonly kind: 'Current'; readonly asOf: string }
+  | { readonly kind: 'Review'; readonly reviewDate: string }
+  | { readonly kind: 'Historical'; readonly tradingDate: string };
+
+export interface ResolveFramesQuery {
+  readonly kind: 'ResolveFrames';
+  readonly context: FrameContext;
+  readonly instruments: readonly string[];
+  // The snapshot a coordinator prepared against; the query then answers whether it still holds (A45).
+  readonly expectedSnapshot?: string;
+}
+
+export type MarketDataQuery = ResolveFramesQuery;
+
+// One point frame: an Instrument at one session, with that session's close and the next session once completed.
+export interface MarkFrame {
+  readonly instrumentKey: string;
+  readonly tradingDate: string;
+  readonly closeInstant: string;
+  readonly nextSession?: { readonly tradingDate: string; readonly closeInstant: string };
+  readonly resolution: MarkResolution;
+}
+
+export type MarketDataQueryResult =
+  | { readonly kind: 'SnapshotUnchanged'; readonly snapshotId: string; readonly evidenceDigest: string }
+  | {
+      readonly kind: 'Frames';
+      readonly frames: readonly MarkFrame[];
+      // Opaque token holding the session-policy revision and the evidence digest (A45).
+      readonly snapshotId: string;
+      readonly evidenceDigest: string;
+    }
+  // The snapshot a coordinator prepared against no longer holds: the current frames, never a blessing of the old ones.
+  | {
+      readonly kind: 'SnapshotChanged';
+      readonly frames: readonly MarkFrame[];
+      readonly snapshotId: string;
+      readonly evidenceDigest: string;
+    }
+  | { readonly kind: 'Rejected'; readonly issues: readonly MarketDataIssue[] };
+
 export interface MarketData {
   save(command: MarketDataSaveCommand): Promise<MarketDataSaveResult>;
+  query(query: MarketDataQuery): Promise<MarketDataQueryResult>;
 }
 
 const MAX_REASON = 500;
@@ -147,17 +193,20 @@ async function staleContextOf(tx: ReadTransaction, policy: SessionPolicy, key: O
 export function createMarketData(deps: MarketDataDeps): MarketData {
   // The key checks of P8, P9, and P10 (any well-formed Instrument on a completed covered
   // session), the price check of A37, and the reason check of A35, all reported together.
+  // A date must be a real, covered, completed session.
+  function validateDate(tradingDate: string): MarketDataIssue[] {
+    if (!DATE.test(tradingDate) || !isRealDate(tradingDate)) return [{ field: 'tradingDate', code: 'InvalidDate' }];
+    const day = deps.sessionPolicy.classify(tradingDate);
+    if (day.kind === 'NotCovered') return [{ field: 'tradingDate', code: 'SessionPolicyCoverage' }];
+    if (day.kind !== 'Session') return [{ field: 'tradingDate', code: 'NotASession' }];
+    if (Temporal.Instant.compare(Temporal.Instant.from(deps.clock.now()), Temporal.Instant.from(day.completion)) < 0) return [{ field: 'tradingDate', code: 'SessionNotCompleted' }];
+    return [];
+  }
+
   function validateKey(command: ObservationKey): MarketDataIssue[] {
     const issues: MarketDataIssue[] = [];
     if (!SYMBOL.test(command.instrumentKey)) issues.push({ field: 'instrumentKey', code: 'InvalidInstrument' });
-    if (!DATE.test(command.tradingDate) || !isRealDate(command.tradingDate)) {
-      issues.push({ field: 'tradingDate', code: 'InvalidDate' });
-    } else {
-      const day = deps.sessionPolicy.classify(command.tradingDate);
-      if (day.kind === 'NotCovered') issues.push({ field: 'tradingDate', code: 'SessionPolicyCoverage' });
-      else if (day.kind !== 'Session') issues.push({ field: 'tradingDate', code: 'NotASession' });
-      else if (Temporal.Instant.compare(Temporal.Instant.from(deps.clock.now()), Temporal.Instant.from(day.completion)) < 0) issues.push({ field: 'tradingDate', code: 'SessionNotCompleted' });
-    }
+    issues.push(...validateDate(command.tradingDate));
     return issues;
   }
 
@@ -228,6 +277,63 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
   }
 
   return {
+    async query(query) {
+      const { context } = query;
+      let day: Covered<Session>;
+      if (context.kind === 'Current') day = deps.sessionPolicy.latestCompleted(context.asOf);
+      else {
+        const date = context.kind === 'Review' ? context.reviewDate : context.tradingDate;
+        const issues = validateDate(date);
+        if (issues.length > 0) return { kind: 'Rejected', issues };
+        day = { ok: true, value: deps.sessionPolicy.classify(date) as Session };
+      }
+      if (!day.ok) return { kind: 'Rejected', issues: [{ field: 'asOf', code: 'SessionPolicyCoverage' }] };
+      const instruments = [...new Set(query.instruments)].sort();
+      const { value: evidence } = await deps.persistence.readSnapshot(['observations'], async (tx) => {
+        // One range read of the valuation date, then one reverse-cursor request per Missing Instrument (A47).
+        const onDate = await tx.getAllInRange('observations', IDBKeyRange.bound([day.value.date], [day.value.date, []]));
+        return Promise.all(
+          instruments.map(async (instrumentKey) => {
+            const record = stripRevision(onDate.find((r) => r['instrumentKey'] === instrumentKey));
+            const stale = record?.effectiveMarkId ? undefined : await staleContextOf(tx, deps.sessionPolicy, { instrumentKey, tradingDate: day.value.date });
+            return { record, stale };
+          }),
+        );
+      });
+      // The digest is computed after the read transaction closes (A45).
+      const evidenceDigest = bytesToHex(
+        sha256(
+          utf8ToBytes(
+            JSON.stringify({
+              request: { context, date: day.value.date, instruments },
+              policy: { id: deps.sessionPolicy.identity.id, revision: deps.sessionPolicy.identity.revision, digest: deps.sessionPolicy.identity.digest },
+              evidence: evidence.map(({ record, stale }) => [record?.effectiveMarkId ?? null, record?.effectiveAcknowledgmentId ?? null, stale?.revisionId ?? null]),
+            }),
+          ),
+        ),
+      );
+      // The next session is disclosed once it is completed at the as-of instant (the clock for a date context).
+      const at = Temporal.Instant.from(context.kind === 'Current' ? context.asOf : deps.clock.now());
+      const next = deps.sessionPolicy.nextSession(day.value.date);
+      const nextSession =
+        next.ok && Temporal.Instant.compare(at, Temporal.Instant.from(next.value.completion)) >= 0
+          ? { tradingDate: next.value.date, closeInstant: next.value.close }
+          : undefined;
+      const snapshotId = `mds1:${deps.sessionPolicy.identity.revision}:${evidenceDigest}`;
+      if (query.expectedSnapshot === snapshotId) return { kind: 'SnapshotUnchanged', snapshotId, evidenceDigest };
+      return {
+        kind: query.expectedSnapshot === undefined ? 'Frames' : 'SnapshotChanged',
+        frames: instruments.map((instrumentKey, i) => ({
+          instrumentKey,
+          tradingDate: day.value.date,
+          closeInstant: day.value.close,
+          ...(nextSession && { nextSession }),
+          resolution: resolve(evidence[i]!.record, evidence[i]!.stale),
+        })),
+        snapshotId,
+        evidenceDigest,
+      };
+    },
     async save(command) {
       if (command.intention === 'AssertUnavailable' || command.intention === 'WithdrawAcknowledgment') return saveAcknowledgment(command);
       const key: ObservationKey = { instrumentKey: command.instrumentKey, tradingDate: command.tradingDate };

@@ -132,6 +132,8 @@ export type CommitResult =
 export interface ReadTransaction {
   get(store: WorkspaceStore, key: IDBValidKey): Promise<Record<string, unknown> | undefined>;
   getAll(store: WorkspaceStore): Promise<Record<string, unknown>[]>;
+  // One request over a primary-key range.
+  getAllInRange(store: WorkspaceStore, range: IDBKeyRange): Promise<Record<string, unknown>[]>;
   // `count` bounds the one index request, as a page read needs.
   getAllFromIndex(store: WorkspaceStore, index: string, query: IDBValidKey | IDBKeyRange, count?: number): Promise<Record<string, unknown>[]>;
   // One reverse cursor request: the last record in the range that `accept` takes, or undefined.
@@ -336,6 +338,7 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
       const value = await read({
         get: async (store, key) => (await tx.objectStore(store).get(key)) as Record<string, unknown> | undefined,
         getAll: async (store) => (await tx.objectStore(store).getAll()) as Record<string, unknown>[],
+        getAllInRange: async (store, range) => (await tx.objectStore(store).getAll(range)) as Record<string, unknown>[],
         getAllFromIndex: async (store, index, query, count) =>
           (await tx.objectStore(store).index(index).getAll(query, count)) as Record<string, unknown>[],
         findLastFromIndex: async (store, index, range, accept) => {
