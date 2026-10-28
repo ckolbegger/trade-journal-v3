@@ -595,3 +595,37 @@ ocr review of `03b0eb1` (B4): session `52424def-484c-4d5d-91d8-858b548c0171`, 1 
 - `03b0eb1` (B4), 2026-10-28 02:24 EDT: unit 620, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.13-b4-*`.
 
 Only `verify:capacity` failed (expected until T4.28). T4.13 is complete.
+
+## T4.14 Daily Review: open
+
+Implemented in `1e8fdce`: the 20 planned cases plus 4 added (NotComparable for a non-positive risk or reward at entry, which crashed the Review with `DivisionByZero`; the binding content; retry then `ChangedDuringAssembly`; a Trade with unreplayable facts kept as a blocker) and one Market Data case. Flagged first-run passes, each mutation-checked: cases 3, 4, 6, 8, 10, 11, 13, 19, 20; case 13 held only through Trade Record's return order, so the comparator now breaks ties explicitly. New module `src/coordinators/daily-review/` and fixture `tests/support/review-fixture.ts`.
+
+Decisions: Market Data gains the query kind `ResolveSession` (Review Date and cutoff), as the Daily Review design says Market Data resolves the cutoff; T4.19 adds it to the manifest text. The request carries `asOf`. Names where the specs give none: bands `Blocker`, `BoundaryReached`, `EvidenceLimited`, `QuantifiedPressure`, `Routine`; reason codes `IntegrityDisagreement`, `IncoherentFacts`, `StopBreached`, `TargetReached`, `MarkMissing`, `AcknowledgedUnavailable`, `AwaitingClose`, `PressureTowardStop`, `PressureTowardTarget`, `NoPressure`; calculation families `Valuation`, `Risk`, `Reward`, `ConditionStatus`; completion `Incomplete`, `Complete`, `CompleteWithUnavailableMarks`; families `Marks` (with `today` and the nonblocking `earlier` gaps) and `Trades`.
+
+ocr review of `1e8fdce`: session `da5116e6-d452-405e-ac23-383d8500f058`, 7 files, 3 comments, plus an assessment of the implementer's declared gaps. `ocr/T4.14-1e8fdce.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/coordinators/daily-review/daily-review.ts:63` | An expired page cursor (a Trade commit between pages) throws outside the retry loop, so `open` rejects instead of retrying or returning ChangedDuringAssembly (A46) | Valid | Bug task T4.14-B1 |
+| medium | `src/coordinators/daily-review/attention.ts:94` | Last Activity compared as raw strings, not instants | Valid | Bug task T4.14-B2 |
+| (gap b) | `derive` at the cutoff | Recorded Deviations are not filtered to the cutoff, so a Deviation recorded after it pairs with nothing and becomes a spurious blocker | Valid | Bug task T4.14-B3 |
+| (gap a) | eligibility | No confirm-by-derive at the cutoff (A55; Daily Review design): a Trade selected by the index whose facts are not Open at the cutoff is shown as a blocker instead of excluded | Valid (unreachable without a stale `exposureStart` before D6, but cheap) | Bug task T4.14-B4 |
+| low | `src/coordinators/daily-review/daily-review.ts:159` | Nested ternary for completion | Valid (readability only) | Bug task T4.14-B5 (structural) |
+| (gap c) | `pressureOf` | Worst-Case Ongoing Risk and Maximum Incremental Reward fallbacks (P14) absent | Doubtful: unreachable for Long Stock, which always has a Stop, a Target and a value when a Mark exists | Deferred to the first deliverable with a Trade lacking a Stop or Target |
+| (gap d) | `recover` | Called once for all Instruments, not in bounded batches | Doubtful: A47's request count depends only on the Instrument count; no batch size is specified | Deferred |
+| (gap e) | `ReviewTradeItem` | No Strategy or Account labels, no saved-Action field (A57) | Doubtful: these belong to `getTrade`, save and the Review screen | Deferred to T4.15, T4.16 and T4.21 |
+
+### T4.14-B1 An expired cursor during open is retried
+- it should retry, then return ChangedDuringAssembly, when a Trade commit expires the eligibility cursor between pages
+
+### T4.14-B2 Last Activity compared as instants
+- it should order equal pressure by Last Activity as instants, not strings
+
+### T4.14-B3 Recorded Deviations at the cutoff
+- it should not report an integrity blocker for a Deviation recorded after the cutoff
+
+### T4.14-B4 Eligibility confirmed by deriving at the cutoff
+- it should exclude a Trade the index selects whose facts are not Open at the cutoff
+
+### T4.14-B5 Completion as explicit guards (structural)
+Verification: `npx vitest run src tests/integration` passes with the same count before and after; typecheck, tsc6, lint, lint:deps exit 0.

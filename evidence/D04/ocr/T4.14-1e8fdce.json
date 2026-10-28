@@ -1,0 +1,184 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 7 selected item(s).",
+  "summary": {
+    "files_reviewed": 7,
+    "comments": 3,
+    "total_tokens": 434925,
+    "input_tokens": 431872,
+    "output_tokens": 3053,
+    "cache_read_tokens": 61312,
+    "elapsed": "2m47s"
+  },
+  "tool_calls": {
+    "total": 37,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 13,
+      "file_find": 3,
+      "file_read": 17,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "A Trade commit between browse pages expires the cursor, so reviews spanning more than 200 Open Trades can reject here instead of using the bounded assembly retries. `open()` only retries after a completed Ready pass and does not catch this exception. Treat cursor expiration as a retryable assembly change, restarting from the first page and returning ChangedDuringAssembly if all three attempts are exhausted. Add a test that commits a Trade change between pages.",
+      "existing_code": "      if (page.kind === 'CursorExpired') throw new Error('Trade pages expired while the Review was read');",
+      "start_line": 63,
+      "end_line": 63,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "This completion assignment uses a nested ternary, which the supplied checklist explicitly prohibits. Use explicit if/else branches for Incomplete, CompleteWithUnavailableMarks, and Complete so their distinct payloads remain easy to inspect.",
+      "existing_code": "      reasons.length \u003e 0\n        ? { kind: 'Incomplete', reasons }\n        : acknowledged.length \u003e 0",
+      "start_line": 159,
+      "end_line": 161,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "src/coordinators/daily-review/attention.ts",
+      "content": "Compare Last Activity as instants rather than raw strings. Stored economic times are retained as supplied, so even valid UTC strings with different fractional precision sort incorrectly: `2026-10-12T15:00:00Z` sorts ahead of `2026-10-12T15:00:00.500Z`, although it is older. Equivalent instant spellings also bypass the Trade-ID tie-break. Use `Temporal.Instant.compare` (as Trade Record does) to preserve the required chronological ordering.",
+      "existing_code": "  if (a.lastActivity !== b.lastActivity) return a.lastActivity \u003c b.lastActivity ? 1 : -1;",
+      "start_line": 94,
+      "end_line": 94,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Daily review coordinator, attention logic, types, and test fixture",
+      "files": [
+        "src/coordinators/daily-review/attention.ts",
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/index.ts",
+        "src/coordinators/daily-review/types.ts",
+        "tests/support/review-fixture.ts"
+      ]
+    },
+    {
+      "label": "Market data module updates and exports",
+      "files": [
+        "src/modules/market-data/index.ts",
+        "src/modules/market-data/market-data.ts"
+      ]
+    }
+  ],
+  "session_id": "da5116e6-d452-405e-ac23-383d8500f058",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "da5116e6-d452-405e-ac23-383d8500f058",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "1e8fdce",
+      "resolved_base": "60c63eee954729908446a5503e2fcfc74487de7a",
+      "resolved_head": "1e8fdce3e10fb2046ef3869e541457231d30893e",
+      "exact_range": "60c63eee954729908446a5503e2fcfc74487de7a..1e8fdce3e10fb2046ef3869e541457231d30893e",
+      "source_artifact_sha256": "64906f0886487385c59c5bdee176a3ab085990c45667e748b7b01885fd7a6eee"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "0247394744ee9ffb4f6a890a0852a6c405ea0cd4f3b7537c60db15330faf1091"
+        },
+        {
+          "item_id": "6cccbb3f63f207ad23e39c4400bffe0e0c2e16fcfcc0ece9effa6c41a429fdc1",
+          "path": "src/modules/market-data/index.ts",
+          "fingerprint": "cb08c80a449d088740b70fe0753d0f4200461135b916434737eefc70ef4f1fef"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "e3403e7527893b3196babaf5f4e4b8beb3bcad3e8d23f107d57a5e70def2eafd"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "71fb50c05c2887a9be1ca90fcb0222400852543498024dd91e8769253489d1ed"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "7d7c5f9e99cc0a1955f7d3586e4558335e82232fc54c2430528769c967f11a5f"
+        },
+        {
+          "item_id": "9fcc9106e1f1d3b34a703c3af12c8e441b2327bf74a78dbb4748f627b9a5c7a9",
+          "path": "tests/support/review-fixture.ts",
+          "fingerprint": "8149c8276fd2cf87dc65e4e975b4da9462ca28b6a32418d14659a50d529b9546"
+        },
+        {
+          "item_id": "d0be2164d0e1800eeaf3d8a4cfb980155f3541c2f9ad47e1bafc8e88ac22f9b0",
+          "path": "src/coordinators/daily-review/attention.ts",
+          "fingerprint": "969d0d75a55ee2fd345ae32b8db6bdddc6d013448c39054325620dccdc06a387"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "0247394744ee9ffb4f6a890a0852a6c405ea0cd4f3b7537c60db15330faf1091"
+        },
+        {
+          "item_id": "6cccbb3f63f207ad23e39c4400bffe0e0c2e16fcfcc0ece9effa6c41a429fdc1",
+          "path": "src/modules/market-data/index.ts",
+          "fingerprint": "cb08c80a449d088740b70fe0753d0f4200461135b916434737eefc70ef4f1fef"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "e3403e7527893b3196babaf5f4e4b8beb3bcad3e8d23f107d57a5e70def2eafd"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "71fb50c05c2887a9be1ca90fcb0222400852543498024dd91e8769253489d1ed"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "7d7c5f9e99cc0a1955f7d3586e4558335e82232fc54c2430528769c967f11a5f"
+        },
+        {
+          "item_id": "9fcc9106e1f1d3b34a703c3af12c8e441b2327bf74a78dbb4748f627b9a5c7a9",
+          "path": "tests/support/review-fixture.ts",
+          "fingerprint": "8149c8276fd2cf87dc65e4e975b4da9462ca28b6a32418d14659a50d529b9546"
+        },
+        {
+          "item_id": "d0be2164d0e1800eeaf3d8a4cfb980155f3541c2f9ad47e1bafc8e88ac22f9b0",
+          "path": "src/coordinators/daily-review/attention.ts",
+          "fingerprint": "969d0d75a55ee2fd345ae32b8db6bdddc6d013448c39054325620dccdc06a387"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 166962
+  }
+}
