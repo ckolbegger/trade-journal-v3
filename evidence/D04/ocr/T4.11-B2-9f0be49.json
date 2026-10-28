@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 24877,
+    "input_tokens": 24652,
+    "output_tokens": 225,
+    "cache_read_tokens": 5760,
+    "elapsed": "9s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/trade-workflows/trade-workflows.ts",
+        "src/modules/trade-record/trade-record.ts"
+      ]
+    }
+  ],
+  "session_id": "9af7ab6f-9ff1-458e-a9e1-7cab3135154d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "9af7ab6f-9ff1-458e-a9e1-7cab3135154d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "9f0be49",
+      "resolved_base": "bb97642b84f920c20309aca8b2cec9d833be92ab",
+      "resolved_head": "9f0be49953dbee4d704dc21860d1eab89e54f7c6",
+      "exact_range": "bb97642b84f920c20309aca8b2cec9d833be92ab..9f0be49953dbee4d704dc21860d1eab89e54f7c6",
+      "source_artifact_sha256": "4e775f783190ec91b8a03e54f9ae24194c6ae960409796ab4527b8de05246277"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "465a7762d2ecd2fc98ee18649f278c14237b582110289102c1b5d20985576130",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "49cff5eefc61bccb4a09aa0b52911530da84d89efc797222c72e518fa87e564c"
+        },
+        {
+          "item_id": "c784ed3e6332589d74fdfb0abf7c1e6c16fe99096e9c188a5bb0a61361a849b4",
+          "path": "src/coordinators/trade-workflows/trade-workflows.ts",
+          "fingerprint": "53e82b341e9b49eaf2e1c64e12b57bc71fc87743f8dbed030f8c8c702d26e22c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "465a7762d2ecd2fc98ee18649f278c14237b582110289102c1b5d20985576130",
+          "path": "src/modules/trade-record/trade-record.ts",
+          "fingerprint": "49cff5eefc61bccb4a09aa0b52911530da84d89efc797222c72e518fa87e564c"
+        },
+        {
+          "item_id": "c784ed3e6332589d74fdfb0abf7c1e6c16fe99096e9c188a5bb0a61361a849b4",
+          "path": "src/coordinators/trade-workflows/trade-workflows.ts",
+          "fingerprint": "53e82b341e9b49eaf2e1c64e12b57bc71fc87743f8dbed030f8c8c702d26e22c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 9422
+  }
+}

@@ -518,3 +518,13 @@ ocr review of `3f0c306`: session `a60ae5c8-edc2-4b2b-9ce3-c8317cef2bbe`, 2 files
 
 ### T4.11-B2 exposureStart required in a Position Change reconciliation (structural)
 Verification: `exposureStart` becomes required in Trade Record's Position Change reconciliation type and hand-built test reconciliations supply it; `npx vitest run src tests/integration` passes with the same count before and after; typecheck, tsc6, lint, lint:deps exit 0.
+
+ocr reviews of the T4.11 bug tasks, each **No findings**: `bb97642` (B1, session `e6ad8200-c3e0-413e-8570-07c6e2fea445`; the cursor carries the cutoff and a mismatch in either direction returns CursorExpired; assertions 2 and 3 had no red of their own after assertion 1's fix, mutation-checked and flagged), `9f0be49` (B2, `9af7ab6f-9ff1-458e-a9e1-7cab3135154d`). Raw outputs `ocr/T4.11-B<n>-<sha>.json`.
+
+Decision (B2): the B2 subagent stopped because Plan confirmation and Position Change share one reconciliation type. `exposureStart: Instant | null` is required on the shared type and Plan confirmation passes `null`, which is true (a Planned Trade has no effective Execution); splitting the `Prepared` type was rejected as a larger change than a Doubtful finding warrants. `null` writes no field, as the rebuild does.
+
+### Cumulative run after T4.11
+
+- `9f0be49` (B1–B2), 2026-10-28 01:41 EDT: unit 602, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.11-b2-*`.
+
+Only `verify:capacity` failed (expected until T4.28). T4.11 is complete.
