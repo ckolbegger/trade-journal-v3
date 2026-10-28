@@ -400,3 +400,11 @@ ocr reviews of the T4.7 bug tasks, each **No findings**: `d4efb8d` (B1, session 
 - `62d31fa` (B1–B4), 00:41 EDT: unit 564, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.7-b4-*`.
 
 Only `verify:capacity` failed (expected until T4.28). T4.7 is complete, and with it the Market Data group (T4.4–T4.7).
+
+## T4.8 Trade Analysis: derive at a cutoff
+
+Implemented in `a1a138c` (3 cases, no first-run passes). `TradeDerivationInput` gains optional `cutoff` and `valuationDate`; `DerivedTradeState` gains `exposureStart` and `observationRequirements`. Notes for later tasks: expected lifecycle is derived from cutoff-filtered facts, so an early cutoff can disagree with stored lifecycle (T4.9/T4.11 decide whether that is a finding); requirements are per Instrument by symbol (revisit with options, D7); `rebuild.ts` could call `derive` for `exposureStart` (T4.11).
+
+ocr review of `a1a138c`: session `b2064e1f-6307-400d-bc88-20c6b0efdccb`, 2 files, **No findings.** `ocr/T4.8-a1a138c.json`.
+
+Cumulative run 2026-10-28 00:47 EDT on `a1a138c`: unit 567, integration 49, browser 124 passed; checks 11 of 12 (only `verify:capacity`, expected). `suite-runs/t4.8-cutoff-*`. T4.8 is complete.
