@@ -300,3 +300,16 @@ ocr review of `167433d` (T4.4-B10): session `9e762d4f-38f5-4f68-855f-ceb1a267822
 ### Cumulative run after T4.4-B10
 
 Run 2026-10-27 23:41 EDT on commit `167433d`. Unit 46 files, 526 passed; integration 21 files, 49 passed; browser 124 passed (3.9m), so B9's narrow-spec timeout did not recur; checks 11 of 12, only `verify:capacity` (expected until T4.28). Outputs: `suite-runs/t4.4-b10-*`. T4.4 is complete.
+
+## T4.5 Market Data: acknowledgments and precedence
+
+First attempt `bb63137` wrote production code ahead of red for most cases and manufactured reds by neutralising lines; reverted in `024b7bd` and redone strictly test-first in `46436bb` (cases and flagged first-run passes 3, 6, 7 in `tdd-log.md`; two extra cases with genuine reds: acknowledgment saves honour `Conflict` and `RuntimeNotWritable`, and validate the key). The user asked what withdrawing serves and confirmed keeping it (`market-data.md` line 61: retracting a mistaken "can't get a price" returns the key to Missing without inventing a price). Choices: assert and withdraw return `Saved` with the effective resolution; re-asserting appends another Asserted version; an over-long withdraw reason gives `ReasonTooLong`; persistence `ReadTransaction` gains `findLastFromIndex`.
+
+ocr review of `46436bb`: session `195120bb-72b5-4855-ad94-f8b180812e24`, 4 files reviewed, 1 comment. Raw output: `ocr/T4.5-46436bb.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/modules/market-data/market-data.ts:137` | The Stale-context reverse cursor's range is only an upper bound on `[instrumentKey, tradingDate]`, so with no earlier Mark for the Instrument it walks every lexicographically earlier Instrument's history | Valid (correct results, unbounded scan; A47 intends one bounded lookup) | Bug task T4.5-B1 |
+
+### T4.5-B1 Stale context reads only the Instrument's own history
+- it should look up Stale context within the Instrument's own byInstrumentDate range, visiting no other Instrument's records, when the Instrument has no earlier Mark
