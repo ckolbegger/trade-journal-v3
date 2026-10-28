@@ -372,6 +372,39 @@ describe('writes landing during assembly (A46)', () => {
     expect(await always.open({ date: { kind: 'LatestCompleted' }, asOf: MONDAY_1700 })).toEqual({ kind: 'ChangedDuringAssembly' });
     expect(attempts).toBe(3);
   }, 30_000);
+
+  it('should retry, then return ChangedDuringAssembly, when a Trade commit expires the eligibility cursor between pages', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    await fiveTradeFixture(stack);
+    // Two Trades to a page, so the five Open Trades span three pages; a Trade commit lands after the first page of an attempt.
+    let commits = 0;
+    let attempts = 0;
+    const racing = (limit: number) =>
+      createDailyReview({
+        ...stack,
+        tradeRecord: {
+          ...stack.tradeRecord,
+          queryRecords: async (query) => {
+            if (!query.cursor) attempts++;
+            const page = await stack.tradeRecord.queryRecords({ ...query, pageSize: 2 });
+            if (!query.cursor && commits < limit) {
+              await stack.confirm({ symbol: `NEW${commits++}`, shares: '10', entry: '10.00', stop: '9.00', target: '12.00' });
+            }
+            return page;
+          },
+        },
+      });
+
+    // One commit expires the first attempt's cursor; the second attempt reads a quiet Workspace.
+    const retried = ready(await racing(1).open({ date: { kind: 'LatestCompleted' }, asOf: MONDAY_1700 }));
+    expect(attempts).toBe(2);
+    expect(walk(retried)).toHaveLength(5);
+
+    // A commit in every attempt: three attempts, then nothing incoherent is returned.
+    attempts = 0;
+    expect(await racing(commits + 3).open({ date: { kind: 'LatestCompleted' }, asOf: MONDAY_1700 })).toEqual({ kind: 'ChangedDuringAssembly' });
+    expect(attempts).toBe(3);
+  }, 30_000);
 });
 
 describe('completion', () => {

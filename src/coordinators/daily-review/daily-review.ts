@@ -33,6 +33,7 @@ type ReadyReview = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
 type Pass =
   | { readonly kind: 'Empty'; readonly reviewDate: string; readonly cutoff: string }
   | { readonly kind: 'Rejected'; readonly issues: readonly MarketDataIssue[] }
+  | { readonly kind: 'Expired' }
   | {
       readonly kind: 'Ready';
       readonly review: Omit<ReadyReview, 'kind' | 'binding'>;
@@ -54,13 +55,13 @@ function observationFrame(frame: MarkFrame): ObservationFrame {
 }
 
 export function createDailyReview(deps: DailyReviewDeps): DailyReview {
-  // Every Open Trade whose exposure started at or before the cutoff, following the pages.
-  async function eligibleRecords(cutoff: string): Promise<BrowseRecord[]> {
+  // Every Open Trade whose exposure started at or before the cutoff, following the pages; undefined when a Trade commit expired the cursor.
+  async function eligibleRecords(cutoff: string): Promise<BrowseRecord[] | undefined> {
     const records: BrowseRecord[] = [];
     let cursor: string | undefined;
     do {
       const page = await deps.tradeRecord.queryRecords({ lifecycle: 'Open', cutoff, projection: 'Browse', ...(cursor && { cursor }) });
-      if (page.kind === 'CursorExpired') throw new Error('Trade pages expired while the Review was read');
+      if (page.kind === 'CursorExpired') return undefined;
       records.push(...(page.items as BrowseRecord[]));
       cursor = page.nextCursor;
     } while (cursor);
@@ -87,6 +88,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     if (session.kind !== 'Session') throw new Error(`unexpected session result: ${session.kind}`);
     const { tradingDate: reviewDate, closeInstant: cutoff } = session;
     const records = await eligibleRecords(cutoff);
+    if (!records) return { kind: 'Expired' };
     if (records.length === 0) return { kind: 'Empty', reviewDate, cutoff };
 
     // Each Trade is derived at the cutoff, which also yields the Marks its Position requires.
@@ -184,6 +186,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       for (let attempt = 0; attempt < ASSEMBLY_ATTEMPTS; attempt++) {
         const before = await currentBinding();
         const pass = await assemble(request);
+        if (pass.kind === 'Expired') continue;
         if (pass.kind !== 'Ready') return pass;
         const after = await currentBinding();
         if (after.workspace.databaseName === before.workspace.databaseName && after.workspace.contentRevision === before.workspace.contentRevision) {
