@@ -12,7 +12,7 @@ export type MarketDataSectionIssue = { readonly instrumentKey: string; readonly 
   | { readonly code: 'NotASession' | 'SessionPolicyCoverage' }
   | { readonly code: 'CorrectionReasonMissing'; readonly revisionId: string }
   | { readonly code: 'CorrectionFootprintMissing'; readonly revisionId: string }
-  | { readonly code: 'AssertedWhileMarkEffective'; readonly versionId: string }
+  | { readonly code: 'AssertedWhileMarkEffective' | 'WithdrawalWithoutAssertion'; readonly versionId: string }
   | { readonly code: 'MarkChainBroken'; readonly revisionId: string; readonly field: 'supersedes' | 'revisionNumber' }
   | { readonly code: 'PriceNegative' | 'InvalidPrice'; readonly revisionId: string }
   | { readonly code: 'EffectiveHeadNotLast'; readonly chain: Chain; readonly effectiveId: string | null; readonly lastId: string | null }
@@ -67,6 +67,12 @@ export async function validateSection(source: RecordSource, policy: SessionPolic
           issues.push({ code: 'AssertedWhileMarkEffective', instrumentKey, tradingDate, versionId: ack.versionId });
         }
       }
+      // The writer withdraws only an effective Asserted version, so a Withdrawn version must follow one.
+      record.acknowledgments.forEach((ack, index) => {
+        if (ack.kind === 'Withdrawn' && record.acknowledgments[index - 1]?.kind !== 'Asserted') {
+          issues.push({ code: 'WithdrawalWithoutAssertion', instrumentKey, tradingDate, versionId: ack.versionId });
+        }
+      });
       record.marks.forEach((mark, index) => {
         // The first revision is numbered 1 and supersedes nothing; every later one follows the revision before it.
         const previous = record.marks[index - 1];

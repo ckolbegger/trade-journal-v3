@@ -142,4 +142,31 @@ describe('Market Data section', () => {
       { code: 'MarkChainBroken', instrumentKey: 'DDD', tradingDate: '2026-10-12', revisionId: 'd-1', field: 'revisionNumber' },
     ]);
   });
+
+  it('should report a Withdrawn acknowledgment version with no effective Asserted version before it', async () => {
+    const source = recordSourceOf({
+      meta: [sessionPolicyMeta],
+      observations: [
+        // The chain starts with a withdrawal.
+        record('AAA', '2026-10-12', { acknowledgments: [acknowledgment('a-1', 'Withdrawn')], effectiveAcknowledgmentId: 'a-1' }),
+        // A second withdrawal follows a withdrawal, not an assertion.
+        record('BBB', '2026-10-12', {
+          acknowledgments: [acknowledgment('b-1', 'Asserted'), acknowledgment('b-2', 'Withdrawn'), acknowledgment('b-3', 'Withdrawn')],
+          effectiveAcknowledgmentId: 'b-3',
+        }),
+        // Assert, withdraw, assert, withdraw is the writer's normal history.
+        record('CCC', '2026-10-12', {
+          acknowledgments: [acknowledgment('c-1', 'Asserted'), acknowledgment('c-2', 'Withdrawn'), acknowledgment('c-3', 'Asserted'), acknowledgment('c-4', 'Withdrawn')],
+          effectiveAcknowledgmentId: 'c-4',
+        }),
+      ],
+    });
+
+    const result = await validateSection(source, nyseSessionPolicy);
+
+    expect(result.issues).toEqual([
+      { code: 'WithdrawalWithoutAssertion', instrumentKey: 'AAA', tradingDate: '2026-10-12', versionId: 'a-1' },
+      { code: 'WithdrawalWithoutAssertion', instrumentKey: 'BBB', tradingDate: '2026-10-12', versionId: 'b-3' },
+    ]);
+  });
 });
