@@ -440,5 +440,18 @@ B1's subagent also noted that `coverage` still reports the foreign Mark as `Avai
 ### T4.9-B4 Coverage of a frame for another Instrument
 - it should report coverage as Missing, with no Stale context, when the frame is for a different Instrument
 
-### T4.9-B3 marked and the unavailability reason as explicit guards (structural)
+ocr review of `4c35056` (B2): session `b7efbd63-0909-49ef-9470-2812336a66f2`, 1 file, **No findings.** `ocr/T4.9-B2-4c35056.json`. B2 notes: case 2 was a first-run pass (built by case 1's latest-exact-close rule), mutation-checked and flagged; the existing Stale-disclosure case now excludes `atEntry` from its full-equality comparison, since at-entry depends on the Stale close (not its price).
+
+ocr review of `277c969` (B4): session `749e113b-d142-4ac5-a111-5bda393a156c`, 1 file, 1 comment. `ocr/T4.9-B4-277c969.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| low | `src/domain/trade-analysis/evaluate.ts:154-158` | The coverage expression is a nested ternary | Valid (readability only) | Folded into T4.9-B3 |
+
+B4's subagent noted that at-entry Lot selection still reads a foreign frame's close or its Stale close: bug task T4.9-B5, before B3.
+
+### T4.9-B5 At-entry figures for a frame for another Instrument
+- it should return at-entry figures for every remaining Lot when the frame is for a different Instrument
+
+### T4.9-B3 marked, the unavailability reason and coverage as explicit guards (structural)
 Verification: `npx vitest run src/domain/trade-analysis` passes unchanged before and after; typecheck, tsc6, lint, lint:deps exit 0.
