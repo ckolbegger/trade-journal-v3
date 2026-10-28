@@ -576,3 +576,14 @@ ocr review of `fbe1f31`: session `d07643d0-737e-48f4-a22b-8414917a1eca`, 4 files
 
 ### T4.13-B3 A withdrawal follows an effective assertion
 - it should report a Withdrawn acknowledgment version with no effective Asserted version before it
+
+ocr reviews of the T4.13 bug tasks: `ff0df16` (B1, session `ce41be17-c0aa-4827-8bf4-00e0e97d7f73`, **No findings**; the malformed-date assertion had no red of its own and was mutation-checked afterwards, logged in `6fc4e05`), `d6d20c8` (B2, `68a8397d-ae1d-44f0-9813-501f75ceeca6`, **No findings**; `MarkChainBroken {revisionId, field}`, checked against the writer's Corrections), `86b9928` (B3, `731a6d8d-42bf-4ad6-9074-5deaefe0b027`, 1 comment; `WithdrawalWithoutAssertion {versionId}`; the valid Asserted, Withdrawn, Asserted, Withdrawn chain was a first-run pass, mutation-checked; no leftover mutation after a hand restore). Raw outputs `ocr/T4.13-B<n>-<sha>.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/modules/market-data/section.ts:72` | Asserted, then a Mark, then Withdrawn passes, though the writer rejects a withdrawal once a Mark is effective (`resolve()` returns Available) | Valid | Bug task T4.13-B4 (second round of bug tasks on T4.13) |
+
+Cumulative run 2026-10-28 02:18 EDT on `86b9928` (B1–B3): unit 619, integration 49, browser 124; checks 11 of 12 (only `verify:capacity`). `suite-runs/t4.13-b3-*`.
+
+### T4.13-B4 No withdrawal after a Mark
+- it should report a Withdrawn acknowledgment version saved after the key's first Mark
