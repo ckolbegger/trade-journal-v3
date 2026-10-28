@@ -105,7 +105,9 @@ describe('Missing Mark (AC-CALC-002, single Instrument)', () => {
     const lowFigures = { ...low, staleContext: undefined };
     const highFigures = { ...high, staleContext: undefined };
     expect(lowFigures).toEqual(highFigures);
-    expect(lowFigures).toEqual({ ...evaluate({ state, frame: missingFrame() }), staleContext: undefined });
+    // Without Stale context there is no exact Mark, so at-entry figures legitimately differ (B2).
+    const withoutStale = evaluate({ state, frame: missingFrame() });
+    expect({ ...lowFigures, atEntry: undefined }).toEqual({ ...withoutStale, staleContext: undefined, atEntry: undefined });
   });
 
   it('should return no covered subtotal for a single-Instrument Trade (A43)', () => {
@@ -191,6 +193,30 @@ describe('dated last close with a Missing Mark (P13, A54)', () => {
     });
     const { atEntry, currentMarkedPnl } = evaluate({ state: derivedState(record), frame: fridayFrame });
     expect(currentMarkedPnl).toEqual({ kind: 'Unavailable', reason: 'AwaitingClose', detail: { after: '2026-10-09' } });
+    expect(exact({ kind: 'Value', value: atEntry!.quantity })).toBe(q(100n));
+    expect(exact({ kind: 'Value', value: atEntry!.riskFromEntry })).toBe(q(268n));
+    expect(exact({ kind: 'Value', value: atEntry!.rewardFromEntry })).toBe(q(582n));
+  });
+
+  it('should return at-entry figures for Lots opened after the Stale context close when the frame is Missing', () => {
+    const missingFrame: ObservationFrame = {
+      instrument: XYZ,
+      tradingDate: '2026-10-12',
+      closeInstant: MONDAY_CLOSE,
+      resolution: {
+        kind: 'Missing',
+        stale: { tradingDate: '2026-10-09', price: '51.00', revisionId: 'mark-rev-0', revisionNumber: 1, closeInstant: '2026-10-09T20:00:00Z' },
+      },
+    };
+    const { atEntry } = evaluate({ state: derivedState(referenceRecord([PC1, PC2])), frame: missingFrame });
+    expect(exact({ kind: 'Value', value: atEntry!.quantity })).toBe(q(100n));
+    expect(exact({ kind: 'Value', value: atEntry!.riskFromEntry })).toBe(q(268n));
+    expect(exact({ kind: 'Value', value: atEntry!.rewardFromEntry })).toBe(q(582n));
+  });
+
+  it('should return at-entry figures for every remaining Lot when the frame is Missing without Stale context', () => {
+    const missingFrame: ObservationFrame = { instrument: XYZ, tradingDate: '2026-10-12', closeInstant: MONDAY_CLOSE, resolution: { kind: 'Missing' } };
+    const { atEntry } = evaluate({ state: derivedState(referenceRecord([PC1, PC2])), frame: missingFrame });
     expect(exact({ kind: 'Value', value: atEntry!.quantity })).toBe(q(100n));
     expect(exact({ kind: 'Value', value: atEntry!.riskFromEntry })).toBe(q(268n));
     expect(exact({ kind: 'Value', value: atEntry!.rewardFromEntry })).toBe(q(582n));

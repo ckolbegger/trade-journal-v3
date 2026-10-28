@@ -118,11 +118,15 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   const stop = decimal(state.baseline.stopBasis[0]!.condition.price);
   const target = decimal(state.baseline.targetBasis[0]!.condition.price);
   // Lots opened after the frame's close cannot be valued with its Mark (P12).
-  const lotsAfterClose = lots.filter((l) => {
-    const opening = state.facts.find((f) => f.factId === l.openingExecutionId)!;
-    return Temporal.Instant.compare(opening.economicTime, frame.closeInstant) > 0;
-  });
-  const openedAfterClose = lotsAfterClose.length > 0;
+  const openedAfter = (close: Instant) =>
+    lots.filter((l) => {
+      const opening = state.facts.find((f) => f.factId === l.openingExecutionId)!;
+      return Temporal.Instant.compare(opening.economicTime, close) > 0;
+    });
+  const openedAfterClose = openedAfter(frame.closeInstant).length > 0;
+  // At-entry Lots are relative to the latest exact Mark: this frame's, else its Stale context's, else none.
+  const latestExactClose = resolution.kind === 'Available' ? frame.closeInstant : resolution.stale?.closeInstant;
+  const atEntryLots = latestExactClose === undefined ? lots : openedAfter(latestExactClose);
   // Every Mark-dependent figure is computed from the exact Mark, or is Unavailable naming why not.
   // A Mark for another Instrument values nothing here; the Position's Instrument is named instead.
   const foreign = state.positions.find(
@@ -163,7 +167,7 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     worstCaseOngoingRisk: marked((mark) => quantity.mul(mark)),
     incrementalRewardToTarget: marked((mark) => quantity.mul(target.sub(mark))),
     coveredSubtotal: null,
-    atEntry: atEntryOf(lotsAfterClose, stop, target),
+    atEntry: atEntryOf(atEntryLots, stop, target),
     planBaseline: { kind: 'Value', value: state.baseline },
     oneR: value(state.baseline.oneR),
     entryQuality: state.entryQuality,
