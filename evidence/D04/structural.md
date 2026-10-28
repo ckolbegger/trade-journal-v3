@@ -280,3 +280,17 @@ ocr review of `633fdc1` (T4.4-B7): session `164e749a-9547-40c1-970f-c9a9268df004
 - `SeedCatalogResult` uses the shared `RuntimeNotWritable` type (no case; typecheck)
 
 ocr review of `0d6ce0c` (T4.4-B8): session `4056da4a-9fa2-449f-8ac0-a855b276dec3`, 1 file reviewed, 1 comment. Raw output: `ocr/T4.4-B8-0d6ce0c.json`. The one comment is the same Workspace-initialization finding as B7's first (Journal's results swallowed at `workspace.ts:240`); it is covered by T4.4-B9. B8's own change drew no other findings.
+
+ocr review of `6c2fed7` (T4.4-B9): session `22a3401f-9d4e-4712-abe4-d1e713b6fcc4`, 2 files reviewed, **No findings.** Raw output: `ocr/T4.4-B9-6c2fed7.json`. B9 adds `completed?: false` to a seed receipt entry; it also marks a manifest `SeedConflict` incomplete (subagent's choice, accepted).
+
+### Cumulative runs after T4.4-B7 to B9
+
+- `0d6ce0c` (B7, B8), 23:26 EDT: unit 526, integration 49, browser 124 passed; checks 11 of 12 (only `verify:capacity`, expected). `suite-runs/t4.4-b8-*`.
+- `6c2fed7` (B9), 23:32 EDT: unit 528, integration 49 passed; browser 1 failed, 123 passed; checks 11 of 12 (only `verify:capacity`, expected). `suite-runs/t4.4-b9-*`. The browser failure was `e2e/d2/narrow.spec.ts:69` ("keep the Open Trade Detail within 375 and 320 px"), a 30 s test timeout; rerun alone, `npx playwright test e2e/d2/narrow.spec.ts --project=chromium` gave 5 passed (8.9s). Recorded as a load-related timeout, not a B9 regression; the next cumulative run confirms.
+
+### T4.4-B10 Mark saves bind only their key (plan revision 12, decision 53)
+
+The user directed (2026-10-27) removing `meta.marketDataRevision`: nothing reads it, it made unrelated Mark saves contend, and it doubled the records each save writes. Code changes: the v2→v3 migration and fresh Workspace stop creating it; `MarketData.save` binds only the key's `resolutionRevision`, with no retry (B6's loop and its two retry cases go).
+- it should create a fresh Workspace at schema version 3 with the observations store, its byInstrumentDate index, and meta sessionPolicy, and no marketDataRevision (restated T4.3 case)
+- it should commit in one semantic commit that increments the Workspace content revision exactly once and writes only the key's observation record (restated T4.4 case)
+- it should save both of two simultaneous initial Marks for different keys (B3's case, restated without the counter)

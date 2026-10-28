@@ -4,7 +4,7 @@
 
 Written 2026-10-27, after D2 completed. [D02-handoff.md](D02-handoff.md) is the record of D2's session; this note is the starting point for D4.
 
-This session **implements D4, "Daily Review, with Manual Marks and ongoing risk/reward"** (D3 was merged into it, decision 24), under the frozen plan at revision 11. D2 is complete:
+This session **implements D4, "Daily Review, with Manual Marks and ongoing risk/reward"** (D3 was merged into it, decision 24), under the frozen plan at revision 12. D2 is complete:
 - Its gate passed (critic-3), and so did the gates of its follow-up and UI-alignment batches (critic-4, critic-7, critic-9, critic-10).
 - Every D2 acceptance row is marked covered.
 - It is tagged `claude-opus-5.5-d2` on `de3fa27`, the last D2 commit (decision 50), and pushed.
@@ -22,7 +22,7 @@ The repository hosts several independent implementations of the same spec, each 
 | Worktree path | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | Branch | `claude-opus-5.5` |
 | Dev server port | `5175`, from the gitignored `.env.local` |
-| Frozen plan | tag `claude-opus-5.5-plan-r11` (revision 11; r10 before T4.4-B6) |
+| Frozen plan | tag `claude-opus-5.5-plan-r12` (revision 12; r10 before T4.4-B6, r11 before T4.4-B10) |
 | D2 release | tag `claude-opus-5.5-d2` (`de3fa27`) |
 | D4 starting point | tag `claude-opus-5.5-pre-d4` (the commit that added this note and revision 9) |
 
@@ -75,7 +75,7 @@ You may read D5–D8's breakdowns for context, since several of them amend D4 (s
 2. Name the affected specification passages, acceptance scenarios and durable compatibility.
 3. Ask for approval to revise the plan.
 
-An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`; the next one is r12. Updating an acceptance row's status from `planned` to `covered` once evidence exists is not a revision, but ask the user before doing it, as was done for D1 and D2.
+An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`; the next one is r13. Updating an acceptance row's status from `planned` to `covered` once evidence exists is not a revision, but ask the user before doing it, as was done for D1 and D2.
 
 ## 3. D4 specifics
 
@@ -172,7 +172,7 @@ Never push.
 - Any deliverable other than D4, unless the user says otherwise.
 - D1's and D2's optional polish, unless the user asks. The D2 items the user triaged as "leave" on 2026-10-27 (`evidence/D02/structural.md`, "Triage of the remaining findings") stay as they are: the WebKit sticky caption, the caption inset, the Deviations bullet list, Record entry on a lifecycle disagreement, ungrouped share quantities, the Recovery Only resize delay, the "planned Not applicable" wording, and `<del>` until D15.
 - F12, the section-validator gaps, carried into D8's T8.6.
-- Breakdowns for D9–D28 and RC. D9's numbering will start at P36, A150 and decision 53.
+- Breakdowns for D9–D28 and RC. D9's numbering will start at P36, A150 and decision 54.
 - Editing `specs/`, or editing the frozen plan without an approved revision.
 - Cloudflare setup, which the user will do, and verifying Marketdata.app's CORS support (due before D11's breakdown, decision 15).
 

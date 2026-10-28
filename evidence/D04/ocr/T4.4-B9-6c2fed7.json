@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 37784,
+    "input_tokens": 37422,
+    "output_tokens": 362,
+    "cache_read_tokens": 5760,
+    "elapsed": "22s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/workspace/workspace.ts",
+        "src/modules/reference-catalog/catalog.ts"
+      ]
+    }
+  ],
+  "session_id": "22a3401f-9d4e-4712-abe4-d1e713b6fcc4",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "22a3401f-9d4e-4712-abe4-d1e713b6fcc4",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "6c2fed7",
+      "resolved_base": "8bfeb4790cf4f8724a3fbcc00c890d1aedff892d",
+      "resolved_head": "6c2fed7a3f67094e0114e41a6eb59f771fe74bfb",
+      "exact_range": "8bfeb4790cf4f8724a3fbcc00c890d1aedff892d..6c2fed7a3f67094e0114e41a6eb59f771fe74bfb",
+      "source_artifact_sha256": "74826395fd5085d2ccf8ed032dcadcc231059d23543c6fcd41b47252051546d8"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6d496b4569363a6ec811de6be03984918577679984e6b20092b8ef86d2b39d5f",
+          "path": "src/modules/reference-catalog/catalog.ts",
+          "fingerprint": "7425d4fd7f88bc622ea7f73c850463e3cb92ba15e274c03fdf2dbd2f23940fe2"
+        },
+        {
+          "item_id": "f1030df827c5901440ba4c43d43635aef3e7698f2ea00255a635dc2b120e73e9",
+          "path": "src/coordinators/workspace/workspace.ts",
+          "fingerprint": "446d146369a55755caf10473366e14185edb81cdc67114c4aec8aff592a1986f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6d496b4569363a6ec811de6be03984918577679984e6b20092b8ef86d2b39d5f",
+          "path": "src/modules/reference-catalog/catalog.ts",
+          "fingerprint": "7425d4fd7f88bc622ea7f73c850463e3cb92ba15e274c03fdf2dbd2f23940fe2"
+        },
+        {
+          "item_id": "f1030df827c5901440ba4c43d43635aef3e7698f2ea00255a635dc2b120e73e9",
+          "path": "src/coordinators/workspace/workspace.ts",
+          "fingerprint": "446d146369a55755caf10473366e14185edb81cdc67114c4aec8aff592a1986f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 22268
+  }
+}

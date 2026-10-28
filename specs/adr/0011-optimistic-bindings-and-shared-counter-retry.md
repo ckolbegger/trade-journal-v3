@@ -2,7 +2,7 @@
 
 Status: accepted, 2026-10-27. Refines [ADR 0002](0002-semantic-command-atomicity.md).
 
-ADR 0002 rechecks every optimistic binding inside the atomic commit. Modules also keep shared counters in `meta`, such as the Market Data, Catalog, and Journal revisions, which every write in that module advances. A shared counter written as the value read plus one needs a binding of its own, or two concurrent commits both write the same next value and one advance is lost. But a counter is not the subject the trader acted on: when it is the only binding that moved, the command's own subject is unchanged, and reporting a conflict would be false.
+ADR 0002 rechecks every optimistic binding inside the atomic commit. Modules also keep shared counters in `meta`, such as the Catalog and Journal revisions, which every write in that module advances. A shared counter written as the value read plus one needs a binding of its own, or two concurrent commits both write the same next value and one advance is lost. But a counter is not the subject the trader acted on: when it is the only binding that moved, the command's own subject is unchanged, and reporting a conflict would be false.
 
 Each command therefore distinguishes two kinds of binding:
 
@@ -17,3 +17,4 @@ Consequences:
 - `commit` names the failed binding, so a module can tell a subject conflict from a counter-only conflict.
 - A retry repeats the whole read, validation, and commit; it never reuses the earlier candidate. Seeding re-runs its preparation and adds nothing that another writer already added.
 - Retries are bounded and local to the owning module; there is no general retry utility.
+- A module counter must earn its place: keep one only where a spec defines a module-scoped snapshot that a whole-module rule is judged against, as the Catalog's is. A frequently written dataset binds per key instead. Market Data has no module counter (plan revision 12): a Mark save binds only its key's resolution revision, and its frame snapshot is an evidence digest.
