@@ -1,0 +1,144 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 3,
+    "total_tokens": 139042,
+    "input_tokens": 137093,
+    "output_tokens": 1949,
+    "cache_read_tokens": 25472,
+    "elapsed": "1m16s"
+  },
+  "tool_calls": {
+    "total": 22,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 5,
+      "file_find": 1,
+      "file_read": 14
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 12,
+        "tool_name": "file_read",
+        "file_path": "src/modules/market-data/index.ts,src/modules/market-data/market-data.ts,src/persistence/persistence.ts",
+        "arguments": "{\"file_path\": \"src/domain/session-policy/session-policy.ts\", \"start_line\": 1, \"end_line\": 270}",
+        "error": "file \"src/domain/session-policy/session-policy.ts\" not found: git show 1bd50e1:src/domain/session-policy/session-policy.ts: exit status 128: fatal: path 'src/domain/session-policy/session-policy.ts' does not exist in '1bd50e1'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/modules/market-data/market-data.ts",
+      "content": "For Review and Historical queries, nextSession depends on the current clock, but that result is not included in the snapshot binding. For example, querying Monday's historical frame at Tuesday noon and rechecking after Tuesday's completion returns SnapshotUnchanged, even though a fresh frame now includes Tuesday as nextSession. Include the resolved nextSession (or its completion state) in the digest before comparing snapshots, and add a test that advances the clock across completion.",
+      "existing_code": "      const snapshotId = `mds1:${deps.sessionPolicy.identity.revision}:${evidenceDigest}`;\n      if (query.expectedSnapshot === snapshotId) return { kind: 'SnapshotUnchanged', snapshotId, evidenceDigest };",
+      "start_line": 322,
+      "end_line": 323,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/market-data/market-data.ts",
+      "content": "A malformed asOf string (for example, 'not-a-date' or a timestamp without an offset) causes latestCompleted's Temporal.Instant.from call to throw. This makes query reject its promise instead of returning the structured Rejected result used for invalid date contexts. Validate the instant or catch its parsing error and return an issue on asOf before invoking the policy; add coverage for malformed timestamps.",
+      "existing_code": "      if (context.kind === 'Current') day = deps.sessionPolicy.latestCompleted(context.asOf);",
+      "start_line": 283,
+      "end_line": 283,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/market-data/market-data.ts",
+      "content": "The digest serializes the caller's context object directly, so property insertion order changes the snapshot binding. For example, `{ kind: 'Current', asOf }` and `{ asOf, kind: 'Current' }` are the same typed request but produce different digests, causing ExpectedSnapshot to return SnapshotChanged with identical evidence and frames. Construct a canonical context with explicitly ordered fields before hashing (as is already done for instruments).",
+      "existing_code": "              request: { context, date: day.value.date, instruments },",
+      "start_line": 308,
+      "end_line": 308,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/modules/market-data/index.ts",
+        "src/modules/market-data/market-data.ts",
+        "src/persistence/persistence.ts"
+      ]
+    }
+  ],
+  "session_id": "1bc7ea08-7d13-4a99-833b-f0958d498df5",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1bc7ea08-7d13-4a99-833b-f0958d498df5",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "1bd50e1",
+      "resolved_base": "b9f04239c08fe87d345a5be258c652211df5bb6d",
+      "resolved_head": "1bd50e1250fdddb7464690ffdd6212801978c6f6",
+      "exact_range": "b9f04239c08fe87d345a5be258c652211df5bb6d..1bd50e1250fdddb7464690ffdd6212801978c6f6",
+      "source_artifact_sha256": "4f117eabaefe778a3f9160d03b16390b032dde5d7b5fd8a3a2f233852bf2f132"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6cccbb3f63f207ad23e39c4400bffe0e0c2e16fcfcc0ece9effa6c41a429fdc1",
+          "path": "src/modules/market-data/index.ts",
+          "fingerprint": "2d198bd6b1b938915a991b9779af8df3ad5dd9287c585253cb50ce723d157edc"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "77d6398b20b8e6d5a21146245047d289508c3cad41c916e81412ba96ce6140d8"
+        },
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "bbda1ba1d11689b97023d175ce35d12950907058e583e1d3dcb066e288c93149"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6cccbb3f63f207ad23e39c4400bffe0e0c2e16fcfcc0ece9effa6c41a429fdc1",
+          "path": "src/modules/market-data/index.ts",
+          "fingerprint": "2d198bd6b1b938915a991b9779af8df3ad5dd9287c585253cb50ce723d157edc"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "77d6398b20b8e6d5a21146245047d289508c3cad41c916e81412ba96ce6140d8"
+        },
+        {
+          "item_id": "850474dea08b60f1d08bd0c54599896e94a804d70113be9eed421d383eff1ae6",
+          "path": "src/persistence/persistence.ts",
+          "fingerprint": "bbda1ba1d11689b97023d175ce35d12950907058e583e1d3dcb066e288c93149"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 76273
+  }
+}

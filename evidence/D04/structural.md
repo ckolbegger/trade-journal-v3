@@ -322,3 +322,24 @@ ocr review of `0e3d0de` (T4.5-B1): session `cb66078e-76b0-4dd1-8fad-d58b2c80c138
 - `0e3d0de` (T4.5-B1), 23:58 EDT: unit 536, integration 49, browser 124 passed; checks 11 of 12. `suite-runs/t4.5-b1-*`.
 
 Only `verify:capacity` failed in each (expected until T4.28). T4.5 is complete.
+
+## T4.6 Market Data: ResolveFrames and ExpectedSnapshot
+
+Implemented in `1bd50e1` (14 cases; flagged first-run passes 4, 5, 11, each mutation-checked). The spec names no request or result types beyond `ResolveFrames`, `ExpectedSnapshot`, `SnapshotUnchanged`, `SnapshotChanged`; the subagent's shapes (`FrameContext`, `MarkFrame`, `MarketDataQueryResult`, `snapshotId` `mds1:<policyRevision>:<digest>`) stand until T4.19's facade. Persistence `ReadTransaction` gains `getAllInRange`.
+
+ocr review of `1bd50e1`: session `1bc7ea08-7d13-4a99-833b-f0958d498df5`, 3 files reviewed, 3 comments. Raw output: `ocr/T4.6-1bd50e1.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/modules/market-data/market-data.ts:322` | `nextSession` depends on the clock but is not in the digest, so `ExpectedSnapshot` returns `SnapshotUnchanged` after the next session completes although fresh frames would carry it | Valid. Decision: A45's canonical request includes the as-of instant; the digest takes its material effect, each frame's completed next session (or none), rather than the raw instant, so a Review re-checked later is unchanged until a next session completes. Within A45, no revision. | Bug task T4.6-B1 |
+| medium | `src/modules/market-data/market-data.ts:283` | A malformed `asOf` reaches `Temporal.Instant.from` and throws instead of returning `Rejected` | Valid | Bug task T4.6-B2 |
+| medium | `src/modules/market-data/market-data.ts:308` | The digest serializes the caller's `context` in its own property order, so equal requests can digest differently | Valid (low impact) | Bug task T4.6-B3 |
+
+### T4.6-B1 The digest covers each frame's completed next session
+- it should return SnapshotChanged for a Review context once that date's next session completes, and SnapshotUnchanged while it has not
+
+### T4.6-B2 A malformed as-of instant is rejected
+- it should reject a Current context whose asOf is not an ISO instant with an asOf issue, and write nothing
+
+### T4.6-B3 The digest is independent of the request's property order
+- it should return equal snapshot ids and digests for contexts with the same fields in a different order
