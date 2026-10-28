@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 25233,
+    "input_tokens": 24967,
+    "output_tokens": 266,
+    "cache_read_tokens": 5760,
+    "elapsed": "19s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "file_find": 1,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/domain/session-policy/index.ts",
+        "src/domain/session-policy/table.ts"
+      ]
+    }
+  ],
+  "session_id": "7485c288-a5c9-4d5f-b29e-23fa49cd20ef",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7485c288-a5c9-4d5f-b29e-23fa49cd20ef",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "d420ebc",
+      "resolved_base": "64f259e1495a9d8b494b35db31e7f5d317888b77",
+      "resolved_head": "d420ebc042c89aa1ed6d86ad8906bd6486234126",
+      "exact_range": "64f259e1495a9d8b494b35db31e7f5d317888b77..d420ebc042c89aa1ed6d86ad8906bd6486234126",
+      "source_artifact_sha256": "c4609c40fd53587d5339d7683b305bcc0a5fed004460060bf3c3b0cd078432ae"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "5d5035aa6be3747324e54864ed7a6c5d51d8a669ced41a91bf7dd48e0e781646",
+          "path": "src/domain/session-policy/index.ts",
+          "fingerprint": "51e7360bb85670db09488f47469930981e54013f76d2ef5e8c989f32c8db815b"
+        },
+        {
+          "item_id": "efb760ca2849f8f832592606d751f6356a62cc2f9bacf5ed9f4238436a1bee6d",
+          "path": "src/domain/session-policy/table.ts",
+          "fingerprint": "fc6da7bd5a29322ae274224941d391ca10b51e4d670e5d82a0b348fd469b3e0d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "5d5035aa6be3747324e54864ed7a6c5d51d8a669ced41a91bf7dd48e0e781646",
+          "path": "src/domain/session-policy/index.ts",
+          "fingerprint": "51e7360bb85670db09488f47469930981e54013f76d2ef5e8c989f32c8db815b"
+        },
+        {
+          "item_id": "efb760ca2849f8f832592606d751f6356a62cc2f9bacf5ed9f4238436a1bee6d",
+          "path": "src/domain/session-policy/table.ts",
+          "fingerprint": "fc6da7bd5a29322ae274224941d391ca10b51e4d670e5d82a0b348fd469b3e0d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 18612
+  }
+}
