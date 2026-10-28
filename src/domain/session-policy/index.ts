@@ -8,6 +8,6 @@ export type * from './types.ts';
 export const nyseSessionPolicy = createSessionPolicy({
   id: 'nyse',
   revision: 1,
-  coverage: { first: '2000-01-01', last: '2028-12-31' },
+  coverage: { first: '2024-01-01', last: '2028-12-31' },
   table: NYSE_TABLE,
 });

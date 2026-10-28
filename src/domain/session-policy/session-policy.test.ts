@@ -25,29 +25,23 @@ describe('regular holiday rules', () => {
     for (const date of around) expect(policy.classify(date).kind, date).toBe('Session');
   });
 
-  it('should observe a Saturday holiday on the preceding Friday and a Sunday holiday on the following Monday', () => {
+  it('should observe a Saturday holiday on the preceding Friday (Independence Day 2026 on 2026-07-03) and a Sunday holiday on the following Monday (Independence Day 2027 on 2027-07-05)', () => {
     expect(holidayName('2026-07-03')).toBe('Independence Day');
     expect(policy.classify('2026-07-04').kind).toBe('Weekend');
-    expect(holidayName('2022-06-20')).toBe('Juneteenth');
-    expect(policy.classify('2022-06-17').kind).toBe('Session');
+    expect(holidayName('2027-07-05')).toBe('Independence Day');
+    expect(policy.classify('2027-07-04').kind).toBe('Weekend');
+    expect(policy.classify('2027-07-02').kind).toBe('Session');
   });
 
-  it('should keep Friday 2021-12-31 a session, because New Year\'s Day 2022 falls on a Saturday', () => {
-    expect(policy.classify('2021-12-31').kind).toBe('Session');
-    expect(policy.classify('2022-01-01').kind).toBe('Weekend');
-    expect(policy.classify('2022-01-03').kind).toBe('Session');
+  it('should keep Friday 2027-12-31 a session, because New Year\'s Day 2028 falls on a Saturday', () => {
+    expect(policy.classify('2027-12-31').kind).toBe('Session');
+    expect(policy.classify('2028-01-01').kind).toBe('Weekend');
+    expect(policy.classify('2028-01-03').kind).toBe('Session');
   });
 
   it('should place Good Friday two days before Easter', () => {
     expect(holidayName('2026-04-03')).toBe('Good Friday');
     expect(holidayName('2027-03-26')).toBe('Good Friday');
-  });
-
-  it('should treat Juneteenth as a holiday only from 2022', () => {
-    expect(policy.classify('2021-06-18').kind).toBe('Session');
-    expect(policy.classify('2021-06-21').kind).toBe('Session');
-    expect(holidayName('2022-06-20')).toBe('Juneteenth');
-    expect(holidayName('2023-06-19')).toBe('Juneteenth');
   });
 
   it('should keep Columbus Day 2026-10-12 a session', () => {
@@ -62,16 +56,12 @@ function sessionOf(date: string) {
 }
 
 describe('explicit table', () => {
-  it('should classify each listed one-off closure as a Closure with its name', () => {
-    for (const date of ['2001-09-11', '2001-09-12', '2001-09-13', '2001-09-14', '2012-10-29', '2012-10-30', '2018-12-05', '2025-01-09']) {
-      const day = policy.classify(date);
-      expect(day.kind, date).toBe('Closure');
-      if (day.kind === 'Closure') expect(day.name.length, date).toBeGreaterThan(0);
-    }
-    expect(policy.classify('2001-09-10').kind).toBe('Session');
-    expect(policy.classify('2001-09-17').kind).toBe('Session');
-    expect(policy.classify('2004-06-11').kind).toBe('Closure');
-    expect(policy.classify('2007-01-02').kind).toBe('Closure');
+  it('should classify the listed one-off closure 2025-01-09 as a Closure with its name', () => {
+    const day = policy.classify('2025-01-09');
+    expect(day.kind).toBe('Closure');
+    if (day.kind === 'Closure') expect(day.name.length).toBeGreaterThan(0);
+    expect(policy.classify('2025-01-08').kind).toBe('Session');
+    expect(policy.classify('2025-01-10').kind).toBe('Session');
   });
 
   it('should give each listed early-close day a 13:00 America/New_York close and every other session a 16:00 close', () => {
@@ -137,7 +127,7 @@ describe('neighbours and enumeration', () => {
     expect(dateOf(policy.nextSession('2026-10-09'))).toBe('2026-10-12');
     expect(dateOf(policy.nextSession('2026-11-25'))).toBe('2026-11-27');
     expect(dateOf(policy.previousSession('2026-11-27'))).toBe('2026-11-25');
-    expect(dateOf(policy.nextSession('2012-10-26'))).toBe('2012-10-31');
+    expect(dateOf(policy.nextSession('2025-01-08'))).toBe('2025-01-10');
     expect(dateOf(policy.previousSession('2025-01-10'))).toBe('2025-01-08');
     expect(dateOf(policy.nextSession('2026-10-17'))).toBe('2026-10-19');
   });
@@ -153,41 +143,41 @@ describe('neighbours and enumeration', () => {
 });
 
 describe('neighbours and coverage', () => {
-  const coverage = { first: '2000-01-01', last: '2028-12-31' };
+  const coverage = { first: '2024-01-01', last: '2028-12-31' };
   const diagnostic = (date: string) => ({ ok: false, diagnostic: { kind: 'SessionPolicyCoverage', date, coverage } });
 
   it('should return a SessionPolicyCoverage diagnostic from previousSession and nextSession when the input date is outside coverage', () => {
-    expect(policy.nextSession('1999-12-31')).toEqual(diagnostic('1999-12-31'));
+    expect(policy.nextSession('2023-12-29')).toEqual(diagnostic('2023-12-29'));
     expect(policy.previousSession('2029-01-02')).toEqual(diagnostic('2029-01-02'));
   });
 
   it('should return a SessionPolicyCoverage diagnostic when the neighbour would fall outside coverage', () => {
-    expect(policy.previousSession('2000-01-03')).toEqual(diagnostic('1999-12-31'));
+    expect(policy.previousSession('2024-01-02')).toEqual(diagnostic('2023-12-31'));
     expect(policy.nextSession('2028-12-29')).toEqual(diagnostic('2029-01-01'));
   });
 });
 
 describe('coverage (P8)', () => {
-  it('should classify a date before 2000-01-01 or after the last covered year as NotCovered with the coverage range, never as a session or a holiday', () => {
-    const coverage = { first: '2000-01-01', last: '2028-12-31' };
-    for (const date of ['1999-12-31', '1999-12-24', '2029-01-01', '2029-01-02', '2030-07-04', '2040-03-15']) {
+  it('should classify a date before 2024-01-01 or after the last covered year as NotCovered with the coverage range, never as a session or a holiday', () => {
+    const coverage = { first: '2024-01-01', last: '2028-12-31' };
+    for (const date of ['2023-12-29', '2023-12-24', '2029-01-01', '2029-01-02', '2030-07-04', '2040-03-15']) {
       expect(policy.classify(date), date).toEqual({ kind: 'NotCovered', date, coverage });
     }
-    expect(policy.classify('2000-01-03').kind).toBe('Session');
+    expect(policy.classify('2024-01-02').kind).toBe('Session');
     expect(policy.classify('2028-12-29').kind).toBe('Session');
     expect(policy.classify('2028-12-31').kind).toBe('Weekend');
   });
 
   it('should return a SessionPolicyCoverage diagnostic from latest completed session when the instant\'s exchange date is outside coverage', () => {
-    const coverage = { first: '2000-01-01', last: '2028-12-31' };
+    const coverage = { first: '2024-01-01', last: '2028-12-31' };
     expect(policy.latestCompleted('2029-01-03T20:00:00Z')).toEqual({ ok: false, diagnostic: { kind: 'SessionPolicyCoverage', date: '2029-01-03', coverage } });
-    expect(policy.latestCompleted('1999-06-01T12:00:00Z')).toEqual({ ok: false, diagnostic: { kind: 'SessionPolicyCoverage', date: '1999-06-01', coverage } });
+    expect(policy.latestCompleted('2023-06-01T12:00:00Z')).toEqual({ ok: false, diagnostic: { kind: 'SessionPolicyCoverage', date: '2023-06-01', coverage } });
     // Inside coverage, but no session has completed yet inside the window.
-    expect(policy.latestCompleted('2000-01-03T12:00:00Z').ok).toBe(false);
+    expect(policy.latestCompleted('2024-01-02T12:00:00Z').ok).toBe(false);
     // The exchange date is New York's: 2029-01-01T03:00Z is still 2028-12-31 there.
     expect(latest('2029-01-01T03:00:00Z')).toBe('2028-12-29');
     expect(policy.nextSession('2028-12-29').ok).toBe(false);
-    expect(policy.previousSession('2000-01-03').ok).toBe(false);
+    expect(policy.previousSession('2024-01-02').ok).toBe(false);
     expect(policy.sessionsBetween('2028-12-28', '2029-01-02').ok).toBe(false);
   });
 
@@ -196,7 +186,7 @@ describe('coverage (P8)', () => {
       id: 'nyse',
       revision: 1,
       digest: policy.identity.digest,
-      coverage: { first: '2000-01-01', last: '2028-12-31' },
+      coverage: { first: '2024-01-01', last: '2028-12-31' },
     });
     expect(policy.identity.digest).toMatch(/^[0-9a-f]{64}$/);
     const definition = { id: 'test', revision: 7, coverage: { first: '2020-01-01', last: '2030-12-31' }, table: [] };
