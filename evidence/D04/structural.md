@@ -728,3 +728,9 @@ ocr review of `f5ec98f`: session `a25ee264-ebd2-416e-992c-654f8c000643`, 4 files
 
 ### T4.16-B5 Counter exhaustion
 - it should return Conflict and write nothing when the Journal counter moves on every attempt
+
+ocr review of `d35c345` (B1): session `e04740cd-1aac-416d-a0f3-bac4ca1dcbdf`, 1 file, 1 comment. `ocr/T4.16-B1-d35c345.json`. B1 binds, for each Instrument without an effective Review-date Mark, the Stale source key found by the same `byInstrumentDate` reverse lookup as `staleContextOf` (no session filter, so it can only over-bind). No code ahead of red, no first-run passes.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| high | `src/coordinators/daily-review/daily-review.ts:413` | A Mark that newly becomes the Stale source between the read and the commit (a new, later earlier-session key, or the first one) is not caught | Doubtful: real, but per-key bindings cannot cover a key that did not exist at the read, and `commit` checks only exact keys (ADR 0011 keeps its write set static). Stale context is disclosure only (T4.9) and the saved Entry stores no evidence | Open question for the user: catching it needs a range binding in persistence, a design change |

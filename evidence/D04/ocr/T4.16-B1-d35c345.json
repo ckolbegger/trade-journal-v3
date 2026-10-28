@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 114637,
+    "input_tokens": 113807,
+    "output_tokens": 830,
+    "cache_read_tokens": 25984,
+    "elapsed": "1m24s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "Binding only the previously selected row does not protect against a new Stale-context Mark. For example, after `ResolveFrames` validates a review using Monday's Mark, another save can create Tuesday's Mark before this action commits for Wednesday. Monday's and Wednesday's revisions remain unchanged, so all commit checks pass even though Tuesday is now the latest earlier Mark and the reviewed evidence has changed. The same gap exists when `earlier` is absent. Bind a revision that changes for any relevant historical Mark insertion/update (or atomically recheck the latest-earlier selection), not just the selected row.",
+      "existing_code": "        if (earlier) bound.push([key, earlier['tradingDate'] as string, earlier['resolutionRevision'] as number]);",
+      "start_line": 413,
+      "end_line": 413,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/coordinators/daily-review/daily-review.ts",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts"
+      ]
+    }
+  ],
+  "session_id": "e04740cd-1aac-416d-a0f3-bac4ca1dcbdf",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e04740cd-1aac-416d-a0f3-bac4ca1dcbdf",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "d35c345",
+      "resolved_base": "047c1adf96b43621ed00bed75fb62c1d47343d76",
+      "resolved_head": "d35c3456876433c6b92bb6f7e88dd991919fcf1a",
+      "exact_range": "047c1adf96b43621ed00bed75fb62c1d47343d76..d35c3456876433c6b92bb6f7e88dd991919fcf1a",
+      "source_artifact_sha256": "2dd0560c8bd0d41f870ed9ba5aac997875356d925badfbd433650122b34c48e8"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "718bc7514967a866f059fd76d965d033a1a4071923b0a484aba4a54bb3403cb0"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "718bc7514967a866f059fd76d965d033a1a4071923b0a484aba4a54bb3403cb0"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 83831
+  }
+}
