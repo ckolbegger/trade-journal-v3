@@ -38,4 +38,14 @@ export {
   type LifecycleState,
   type TradeAnalysisRecord,
   type TradeDerivationInput,
+  type UnavailableDetail,
 } from './derive.ts';
+export {
+  evaluate,
+  type AtEntryFigures,
+  type MarkEvidence,
+  type ObservationFrame,
+  type StaleContext,
+  type TradeEvaluation,
+  type TradeEvaluationInput,
+} from './evaluate.ts';

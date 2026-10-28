@@ -96,7 +96,14 @@ export interface InstrumentPosition {
 // One independently useful calculation (Trade Analysis, shared values); reasons are stable codes.
 export type CalculationResult<T, Reason extends string = string> =
   | { readonly kind: 'Value'; readonly value: T }
-  | { readonly kind: 'NotApplicable'; readonly reason: Reason };
+  | { readonly kind: 'NotApplicable'; readonly reason: Reason }
+  | { readonly kind: 'Unavailable'; readonly reason: Reason; readonly detail: UnavailableDetail };
+
+// What an Unavailable result names: the Instrument and date lacking an exact Mark, or the close
+// still awaited.
+export type UnavailableDetail =
+  | { readonly instrument: ExecutionFact['instrument']; readonly date: string }
+  | { readonly after: string };
 
 // D2's Entry Resolution Point: the Position Change at which the entry window resolves (A23).
 export type EntryResolution = { readonly kind: 'Unresolved' } | { readonly kind: 'Resolved'; readonly positionChangeId: string };
