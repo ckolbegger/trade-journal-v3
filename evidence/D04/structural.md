@@ -661,3 +661,27 @@ ocr reviews of the remaining T4.14 bug tasks, each **No findings**: `1ecd669` (B
 - `45903e4` (B1–B7), 2026-10-28 03:13 EDT: unit 654, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.14-b5-*`.
 
 Only `verify:capacity` failed (expected until T4.28). T4.14 is complete.
+
+## T4.15 Daily Review: getTrade
+
+Implemented in `92224ec`: the 4 planned cases (case 1 grown part by part, each with its own red) plus case 5 (a Trade whose facts cannot be replayed gets the overview's attention item and a form, with no frame or evaluation, instead of a throw). Flagged first-run passes, each mutation-checked: case 2's current figures `Unavailable(MarkMissing)` and its at-entry figures (both from `evaluate`), and case 4 (record nothing; the mutation trips ChangedDuringAssembly before the before/after dump runs, so the dump comparison is not isolated). Shapes: request `{reviewDate, tradeId, binding}`; result Ready | ReviewChanged | ChangedDuringAssembly | Rejected; `ActionForm` `Saved{action}` | `New{viewState: {selectedAction: 'Hold'}}`; `TradeSaveBinding {reviewDate, tradeId, factRevision, marketDataSnapshotId, obligationKey, expectedEntryRevision?, definitionRevision}`; `datedLastClose {tradingDate, evaluation}`. `open` and `getTrade` share `eligibleTrades`, `observationNeeds` and `reviewItem`; `openLongStockSummary` moved to `src/domain/trade-summary.ts`.
+
+Decision: the evidence check compares the Review's single `marketDataSnapshotId`, so any Mark change on the Review's Instruments returns ReviewChanged for every Trade. The design's binding holds one snapshot id and requires ReviewChanged, never a hybrid, when it is no longer coherent; the overview's Marks family is stale after any Mark change (AC-REV-005). Per-Trade evidence would only be an optimisation.
+
+ocr review of `92224ec`: session `bc87e477-4485-4c5c-bd95-cb912cf2a4d3`, 5 files, 1 comment, plus the requested assessments. `ocr/T4.15-92224ec.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/coordinators/daily-review/daily-review.ts:354` | `getTrade` never compares `binding.workspace`, so an overview kept across a Restore could return Ready | Doubtful (fact revision and snapshot id must also match) | Bug task T4.15-B1 |
+| low | `daily-review.ts:311,329,337` | `definitionRevision` is always the latest definition, though an edit is validated against the Entry's first version's definition and rejected otherwise | Valid (latent while one revision exists) | Bug task T4.15-B2 |
+| (c) | `daily-review.ts:124-143` | No dated line when the frame is Available but Lots opened after its close (P12); A54 names the frame's own date as `D` there | Valid | Bug task T4.15-B3 |
+| low | `types.ts:125-130` | The request carries no cutoff beyond `reviewDate` | Doubtful: the cutoff is re-derived from the date and a policy change alters the snapshot id, which is compared | Dismissed: redundant |
+
+### T4.15-B1 getTrade binds the Workspace
+- it should return ReviewChanged when the overview binding names another Workspace
+
+### T4.15-B2 A saved Action's form names its original definition
+- it should name the Entry's first version's definition for a saved Action and the latest definition for a new form
+
+### T4.15-B3 Dated line in the P12 case
+- it should include a dated line at the frame's own close and at-entry figures when Lots opened after the Review-date close
