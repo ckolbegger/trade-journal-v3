@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 27191,
+    "input_tokens": 26754,
+    "output_tokens": 437,
+    "cache_read_tokens": 9600,
+    "elapsed": "20s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/domain/trade-analysis/evaluate.ts",
+      "content": "This adds a nested ternary, which the review checklist explicitly prohibits. Keep the mark-time selection as a single conditional and apply the foreign-instrument check when selecting lots; this preserves the behavior without nesting.",
+      "suggestion_code": "  const latestExactClose = resolution.kind === 'Available' ? frame.closeInstant : resolution.stale?.closeInstant;\n  const atEntryLots = foreign || latestExactClose === undefined ? lots : openedAfter(latestExactClose);",
+      "existing_code": "  const latestExactClose = foreign ? undefined : resolution.kind === 'Available' ? frame.closeInstant : resolution.stale?.closeInstant;\n  const atEntryLots = latestExactClose === undefined ? lots : openedAfter(latestExactClose);",
+      "start_line": 134,
+      "end_line": 135,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/domain/trade-analysis/evaluate.ts",
+      "files": [
+        "src/domain/trade-analysis/evaluate.ts"
+      ]
+    }
+  ],
+  "session_id": "65cd7d94-a44e-47bd-914a-2067e1849bdc",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "65cd7d94-a44e-47bd-914a-2067e1849bdc",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "48067ca",
+      "resolved_base": "75e3c1c947005f903998a8fc8abe9d2120875476",
+      "resolved_head": "48067ca41e89a8dd0289c9acf01500ea837c75ca",
+      "exact_range": "75e3c1c947005f903998a8fc8abe9d2120875476..48067ca41e89a8dd0289c9acf01500ea837c75ca",
+      "source_artifact_sha256": "f0de261cb77f82a3ee8f054d089dbeb7a066d69279cbb63b1babd693489aaad8"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "d98c7057cbe6866eea8266eb45850854f11246c9eb78cbc32cd099371f55be40"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "d98c7057cbe6866eea8266eb45850854f11246c9eb78cbc32cd099371f55be40"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 20499
+  }
+}

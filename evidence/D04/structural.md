@@ -453,5 +453,13 @@ B4's subagent noted that at-entry Lot selection still reads a foreign frame's cl
 ### T4.9-B5 At-entry figures for a frame for another Instrument
 - it should return at-entry figures for every remaining Lot when the frame is for a different Instrument
 
-### T4.9-B3 marked, the unavailability reason and coverage as explicit guards (structural)
+ocr review of `48067ca` (B5): session `65cd7d94-a44e-47bd-914a-2067e1849bdc`, 1 file, 1 comment. `ocr/T4.9-B5-48067ca.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| low | `src/domain/trade-analysis/evaluate.ts:134-135` | `latestExactClose` is a nested ternary; move the `foreign` check into the at-entry selection | Valid (readability only) | Folded into T4.9-B3 |
+
+Decision: for a foreign frame `valuationDate` and the MarkMissing detail date stay the frame's trading date, the date that was asked for.
+
+### T4.9-B3 marked, the unavailability reason, coverage and the latest exact close as explicit guards (structural)
 Verification: `npx vitest run src/domain/trade-analysis` passes unchanged before and after; typecheck, tsc6, lint, lint:deps exit 0.
