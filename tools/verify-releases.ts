@@ -1,10 +1,11 @@
-// npm run verify:releases: v1, v2, d1 and d2 each pass verify:release with distinct identities,
-// v2-corrupt fails on exactly the altered asset (D1 T1.26), and d1 is a schema 1 release while
-// d2 is a schema 2 release (D2 T2.17).
+// npm run verify:releases: v1, v2, d1, d2 and d4 each pass verify:release with distinct identities,
+// v2-corrupt fails on exactly the altered asset (D1 T1.26), and d1 is a schema 1 release, d2 a
+// schema 2 release (D2 T2.17, D4 T4.27) and d4 the current schema.
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { OfflineReleaseInventory } from '../src/delivery/inventory.ts';
 import { corruptedAsset, RELEASES_DIR } from './build-releases.ts';
+import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
 import { INVENTORY_FILE } from './release.ts';
 import { verifyRelease } from './verify-release.ts';
 
@@ -24,16 +25,17 @@ async function schemaVersionOf(name: string): Promise<number | string> {
   return found.size === 1 ? [...found][0]! : `no single schema record (found ${JSON.stringify([...found])})`;
 }
 
-const verified = ['v1', 'v2', 'd1', 'd2'];
+const verified = ['v1', 'v2', 'd1', 'd2', 'd4'];
 for (const name of verified) {
   for (const p of await verifyRelease(path.join(RELEASES_DIR, name))) problems.push(`${name}: ${p}`);
 }
 const ids = Object.fromEntries(await Promise.all(verified.map(async (n) => [n, await identityOf(n)] as const)));
 if (new Set(Object.values(ids)).size !== verified.length) problems.push(`releases share an identity: ${JSON.stringify(ids)}`);
 
-const schemas = { d1: await schemaVersionOf('d1'), d2: await schemaVersionOf('d2') };
+const schemas = { d1: await schemaVersionOf('d1'), d2: await schemaVersionOf('d2'), d4: await schemaVersionOf('d4') };
 if (schemas.d1 !== 1) problems.push(`d1: reports schema ${schemas.d1}, expected 1`);
 if (schemas.d2 !== 2) problems.push(`d2: reports schema ${schemas.d2}, expected 2`);
+if (schemas.d4 !== SCHEMA_VERSION) problems.push(`d4: reports schema ${schemas.d4}, expected ${SCHEMA_VERSION}`);
 
 const corrupt = path.join(RELEASES_DIR, 'v2-corrupt');
 const altered = await corruptedAsset(corrupt);
@@ -49,5 +51,5 @@ if (problems.length > 0) {
 }
 console.log(
   `verify:releases OK: v1 ${ids.v1}, v2 ${ids.v2}, v2-corrupt fails only on ${altered}, ` +
-    `d1 ${ids.d1} schema ${schemas.d1}, d2 ${ids.d2} schema ${schemas.d2}`,
+    `d1 ${ids.d1} schema ${schemas.d1}, d2 ${ids.d2} schema ${schemas.d2}, d4 ${ids.d4} schema ${schemas.d4}`,
 );

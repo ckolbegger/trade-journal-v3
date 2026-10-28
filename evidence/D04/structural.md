@@ -161,3 +161,13 @@ Run 2026-10-27 21:20 EDT on commit `8900f28` (uncommitted: evidence only), Node 
 Failures, all consequences of `SCHEMA_VERSION` becoming 3, none a T4.3 defect:
 - `verify:capacity`: "basis measured at schema version 2, current is 3" — expected until T4.28.
 - `verify:releases`: "FAIL d2: reports schema 3, expected 2", and `e2e/d2/migration.spec.ts:47` (B2.3, About shows schema 3, expected 2). Reproduced with `npm run verify:releases`. The release harness builds its `d2` folder from the current source (`tools/build-releases.ts`, D2 T2.17). The planned fix is T4.27 (build `d2` from the `claude-opus-5.5-d2` tag and add a current `d4`), which depends only on D2 T2.17, so it runs next, ahead of the graph order, to restore a green suite.
+
+## T4.27 Previous-release harness
+
+Change: `tools/build-releases.ts` generalises the tagged-release builder (`buildTaggedRelease(name)`, scratch `tj-release-<name>-<commit>` cached by commit, `git archive` only). `d1` is built from `D1_RELEASE_TAG` (`claude-opus-5.5-d1`), `d2` from `PREVIOUS_RELEASE_TAG` (now `claude-opus-5.5-d2`, commit `de3fa27`), and `d4` is the current source with build label d4. `tools/verify-releases.ts` checks d1 schema 1, d2 schema 2, d4 `SCHEMA_VERSION` (3), and distinct identities for v1, v2, d1, d2, d4.
+
+e2e changes: none needed. Every `d2` use (`e2e/d2/migration.spec.ts` lines 63, 73, 138) is a d1 to d2 switch that now exercises the real D2 release; no case needed current code under that name. `test:e2e` left at `e2e/d1 e2e/d2`: git does not track an empty `e2e/d4`, and Playwright fails on a path filter matching no tests, so T4.33 extends it when it adds specs.
+
+- `npm run build:releases && npm run verify:releases`: d1 reused from cache; d2 built in `tj-release-d2-de3fa276a263` (claude-opus-5.5-d2 at de3fa276a2632b568296040fd56efd2825708a39); `verify:releases OK: v1 f424ca68..., v2 d117d6aa..., v2-corrupt fails only on /assets/index-CWnWZl9c.css, d1 9c8b5b3d... schema 1, d2 01736544... schema 2, d4 eccbd63a... schema 3`.
+- `npx playwright test e2e/d2/migration.spec.ts --project=chromium`: 4 passed (B2.3 included).
+- `npx playwright test e2e/d1 e2e/d2 --project=chromium`: 124 passed.
