@@ -425,9 +425,20 @@ ocr review of `ee4bb7b`: session `60abb6b3-4137-45ae-bda0-495eaeb1d972`, 3 files
 ### T4.9-B1 evaluate values only the frame's own Instrument
 - it should return the Mark-dependent figures as Unavailable(MarkMissing) naming the Position's Instrument when the frame is for a different Instrument
 
+ocr review of `4ce7faf` (B1): session `e9fb4e9d-20ff-45e2-9437-ac63193a18cb`, 1 file, 1 comment. `ocr/T4.9-B1-4ce7faf.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| low | `src/domain/trade-analysis/evaluate.ts:131-133` | The reason chain `foreign ? … : openedAfterClose ? … : …` is a nested ternary | Valid (readability only) | Folded into T4.9-B3 |
+
+B1's subagent also noted that `coverage` still reports the foreign Mark as `Available` with its revision, so the evaluation claims coverage that does not apply to the Position: bug task T4.9-B4, run before the structural B3 so the refactor covers the final code.
+
 ### T4.9-B2 At-entry figures are relative to the latest exact Mark's close
 - it should return at-entry figures for Lots opened after the Stale context's close when the frame is Missing (Friday Mark, Monday fills: all 100 shares, risk from entry $268.00, reward from entry $582.00)
 - it should return at-entry figures for every remaining Lot when the frame is Missing without Stale context
 
-### T4.9-B3 marked as explicit guards (structural)
+### T4.9-B4 Coverage of a frame for another Instrument
+- it should report coverage as Missing, with no Stale context, when the frame is for a different Instrument
+
+### T4.9-B3 marked and the unavailability reason as explicit guards (structural)
 Verification: `npx vitest run src/domain/trade-analysis` passes unchanged before and after; typecheck, tsc6, lint, lint:deps exit 0.
