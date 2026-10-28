@@ -300,18 +300,6 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
           }),
         );
       });
-      // The digest is computed after the read transaction closes (A45).
-      const evidenceDigest = bytesToHex(
-        sha256(
-          utf8ToBytes(
-            JSON.stringify({
-              request: { context, date: day.value.date, instruments },
-              policy: { id: deps.sessionPolicy.identity.id, revision: deps.sessionPolicy.identity.revision, digest: deps.sessionPolicy.identity.digest },
-              evidence: evidence.map(({ record, stale }) => [record?.effectiveMarkId ?? null, record?.effectiveAcknowledgmentId ?? null, stale?.revisionId ?? null]),
-            }),
-          ),
-        ),
-      );
       // The next session is disclosed once it is completed at the as-of instant (the clock for a date context).
       const at = Temporal.Instant.from(context.kind === 'Current' ? context.asOf : deps.clock.now());
       const next = deps.sessionPolicy.nextSession(day.value.date);
@@ -319,6 +307,19 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
         next.ok && Temporal.Instant.compare(at, Temporal.Instant.from(next.value.completion)) >= 0
           ? { tradingDate: next.value.date, closeInstant: next.value.close }
           : undefined;
+      // The digest is computed after the read transaction closes (A45). It carries the as-of instant's material effect: the completed next session.
+      const evidenceDigest = bytesToHex(
+        sha256(
+          utf8ToBytes(
+            JSON.stringify({
+              request: { context, date: day.value.date, instruments },
+              policy: { id: deps.sessionPolicy.identity.id, revision: deps.sessionPolicy.identity.revision, digest: deps.sessionPolicy.identity.digest },
+              nextSession: nextSession?.tradingDate ?? null,
+              evidence: evidence.map(({ record, stale }) => [record?.effectiveMarkId ?? null, record?.effectiveAcknowledgmentId ?? null, stale?.revisionId ?? null]),
+            }),
+          ),
+        ),
+      );
       const snapshotId = `mds1:${deps.sessionPolicy.identity.revision}:${evidenceDigest}`;
       if (query.expectedSnapshot === snapshotId) return { kind: 'SnapshotUnchanged', snapshotId, evidenceDigest };
       return {

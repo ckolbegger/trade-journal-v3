@@ -227,6 +227,28 @@ describe('snapshot binding and ExpectedSnapshot', () => {
     expect(check).toEqual({ kind: 'SnapshotUnchanged', snapshotId: first.snapshotId, evidenceDigest: first.evidenceDigest });
   });
 
+  it('should return SnapshotChanged for a Review context once that date next session completes, and SnapshotUnchanged while it has not', async () => {
+    const { marketData, persistence } = await setup();
+    await marketData.save(mark('XYZ', '2026-10-12'));
+    const at = (now: string) => createMarketData({ persistence, ids: sequentialIds('rev'), clock: fixedClock(now), sessionPolicy: nyseSessionPolicy });
+    const review = (expectedSnapshot?: string) => ({
+      kind: 'ResolveFrames' as const,
+      context: { kind: 'Review' as const, reviewDate: '2026-10-12' },
+      instruments: ['XYZ'],
+      ...(expectedSnapshot && { expectedSnapshot }),
+    });
+    const first = await at('2026-10-13T16:00:00Z').query(review());
+    if (first.kind !== 'Frames') throw new Error('expected frames');
+    // Tuesday 16:00 America/New_York: the session has closed but is not yet completed.
+    const notYet = await at('2026-10-13T20:00:00Z').query(review(first.snapshotId));
+    expect(notYet.kind).toBe('SnapshotUnchanged');
+    // Tuesday 16:30 America/New_York: the next session is completed.
+    const done = await at('2026-10-13T20:30:00Z').query(review(first.snapshotId));
+    expect(done.kind).toBe('SnapshotChanged');
+    if (done.kind !== 'SnapshotChanged') return;
+    expect(done.frames[0]).toHaveProperty('nextSession');
+  });
+
   it('should return SnapshotChanged with current frames when a selected Mark, an acknowledgment, a Stale-context Mark, or an absence changed', async () => {
     const { marketData } = await setup();
     await marketData.save(mark('XYZ', '2026-10-12', '52'));
