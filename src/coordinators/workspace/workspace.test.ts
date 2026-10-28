@@ -30,8 +30,15 @@ describe('initialize', () => {
           seeds: {
             catalog: { manifestVersion: 1, additions: ['strategy.long-stock'] },
             journal: {
-              manifestVersion: 2,
-              additions: ['entry-type.plan-reflection', 'entry-type.position-change-reflection', 'source.plan-confirmation', 'source.position-change'],
+              manifestVersion: 3,
+              additions: [
+                'entry-type.plan-reflection',
+                'entry-type.position-change-reflection',
+                'entry-type.daily-trade-review',
+                'source.plan-confirmation',
+                'source.position-change',
+                'source.daily-review',
+              ],
             },
           },
         },
@@ -46,8 +53,8 @@ describe('initialize', () => {
     );
     // Every seeded record was written by the one creating transaction (content revision 1).
     expect(stored?.['catalog']).toEqual([expect.objectContaining({ productKey: 'strategy.long-stock', revision: 1 })]);
-    expect(stored?.['journalTypes']).toHaveLength(4);
-    expect(stored?.['journalDefinitions']).toEqual([expect.objectContaining({ revision: 1 }), expect.objectContaining({ revision: 1 })]);
+    expect(stored?.['journalTypes']).toHaveLength(6);
+    expect(stored?.['journalDefinitions']).toEqual([expect.objectContaining({ revision: 1 }), expect.objectContaining({ revision: 1 }), expect.objectContaining({ revision: 1 })]);
   });
 
   it('should reject an invalid zone with InvalidTimeZone and write nothing', async () => {
@@ -71,7 +78,7 @@ describe('initialize', () => {
           fresh: false,
           seeds: {
             catalog: { manifestVersion: 1, additions: [] },
-            journal: { manifestVersion: 2, additions: [] },
+            journal: { manifestVersion: 3, additions: [] },
           },
         }) as unknown,
       }),
@@ -133,7 +140,7 @@ describe('initialize', () => {
         receipt: expect.objectContaining({
           seeds: {
             catalog: { manifestVersion: 1, additions: [] },
-            journal: { manifestVersion: 2, additions: [], completed: false },
+            journal: { manifestVersion: 3, additions: [], completed: false },
           },
         }) as unknown,
       }),

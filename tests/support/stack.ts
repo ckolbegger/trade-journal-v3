@@ -3,6 +3,7 @@
 import { IDBFactory } from 'fake-indexeddb';
 import { createReadinessSession, evaluateReadiness, type ReadinessSession } from '../../src/delivery/readiness.ts';
 import { toRuntimeNotWritable } from '../../src/delivery/write-gate.ts';
+import { nyseSessionPolicy, type SessionPolicy } from '../../src/domain/session-policy/index.ts';
 import { fixedClock } from '../../src/domain/time/index.ts';
 import { createJournal } from '../../src/modules/journal/index.ts';
 import { createReferenceCatalog } from '../../src/modules/reference-catalog/index.ts';
@@ -10,12 +11,12 @@ import { createTradeRecord } from '../../src/modules/trade-record/index.ts';
 import { createInProcessLifecycleLock, createPersistence } from '../../src/persistence/index.ts';
 import { nodeTestHost } from './node-test-host.ts';
 import { sequentialIds } from './workspace.ts';
-import { TEST_SESSION_POLICY } from './session-policy.ts';
 
 const GB = 1024 ** 3;
 export const TEST_CAPACITY = { projectedWorkspaceBytes: 0.7 * GB, requiredQuotaBytes: 2.1 * GB };
 
-export async function testStack(factory = new IDBFactory(), now = '2026-10-12T14:05:00Z') {
+// `sessionPolicy` is the release's policy: a test passes another to stand in for a later release.
+export async function testStack(factory = new IDBFactory(), now = '2026-10-12T14:05:00Z', sessionPolicy: SessionPolicy = nyseSessionPolicy) {
   const testHost = await nodeTestHost(factory);
   const ids = sequentialIds('id');
   const clock = fixedClock(now);
@@ -24,7 +25,7 @@ export async function testStack(factory = new IDBFactory(), now = '2026-10-12T14
   const persistence = createPersistence({
     indexedDB: factory,
     ids,
-    sessionPolicy: TEST_SESSION_POLICY,
+    sessionPolicy: sessionPolicy.identity,
     writeGate: {
       current: () => toRuntimeNotWritable(holder.session!.current()),
       recheck: async () => toRuntimeNotWritable(await holder.session!.recheck()),
@@ -41,6 +42,7 @@ export async function testStack(factory = new IDBFactory(), now = '2026-10-12T14
   holder.session = session;
   return {
     factory,
+    sessionPolicy,
     testHost,
     session,
     persistence,

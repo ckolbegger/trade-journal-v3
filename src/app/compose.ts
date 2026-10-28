@@ -9,7 +9,7 @@ import type { Clock } from '../domain/time/index.ts';
 import { createJournal } from '../modules/journal/index.ts';
 import { createReferenceCatalog } from '../modules/reference-catalog/index.ts';
 import { createTradeRecord } from '../modules/trade-record/index.ts';
-import { nyseSessionPolicy } from '../domain/session-policy/index.ts';
+import { nyseSessionPolicy, type SessionPolicy } from '../domain/session-policy/index.ts';
 import { createPersistence, type IdGenerator, type LifecycleLock } from '../persistence/index.ts';
 
 export interface ApplicationDeps {
@@ -18,6 +18,8 @@ export interface ApplicationDeps {
   readonly clock: Clock;
   readonly ids: IdGenerator;
   readonly releaseId: string;
+  // Only the Node suite supplies this, to stand in for a later release's policy (D4 section 6.0).
+  readonly sessionPolicy?: SessionPolicy;
   readonly capacityRequirement: CapacityRequirement;
   // The Workspace lifecycle lock: the Web Locks API in the browser, the disclosed in-process lock
   // in Node (D2 section 6.0).
@@ -35,10 +37,11 @@ export interface ApplicationDeps {
 export async function createApplication(deps: ApplicationDeps) {
   // The session and the persistence write gate refer to each other.
   const holder: { session?: ReadinessSession } = {};
+  const sessionPolicy = deps.sessionPolicy ?? nyseSessionPolicy;
   const persistence = createPersistence({
     indexedDB: deps.indexedDB,
     ids: deps.ids,
-    sessionPolicy: nyseSessionPolicy.identity,
+    sessionPolicy: sessionPolicy.identity,
     writeGate: {
       current: () => toRuntimeNotWritable(holder.session!.current()),
       recheck: async () => toRuntimeNotWritable(await holder.session!.recheck()),
@@ -58,7 +61,7 @@ export async function createApplication(deps: ApplicationDeps) {
   const catalog = createReferenceCatalog({ persistence, ids: deps.ids });
   const journal = createJournal({ persistence, ids: deps.ids, clock: deps.clock });
   const tradeRecord = createTradeRecord({ persistence, ids: deps.ids });
-  const workspace = createWorkspace({ persistence, session, catalog, journal, host: deps.host, ids: deps.ids, clock: deps.clock, releaseId: deps.releaseId, locks: deps.locks, migrationHooks: deps.migrationHooks });
+  const workspace = createWorkspace({ persistence, session, catalog, journal, host: deps.host, ids: deps.ids, clock: deps.clock, releaseId: deps.releaseId, sessionPolicy, locks: deps.locks, migrationHooks: deps.migrationHooks });
   const tradeWorkflows = createTradeWorkflows({ persistence, catalog, journal, tradeRecord, clock: deps.clock, guard });
   const tradeViews = createTradeViews({ persistence, catalog, journal, tradeRecord });
 

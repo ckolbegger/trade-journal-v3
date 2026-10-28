@@ -3,10 +3,11 @@ import type { ReadinessEvaluation, ReadinessSession, StorageProtection } from '.
 import type { ReadinessFailure, RuntimeNotWritable, SafeAction } from '../../delivery/runtime-not-writable.ts';
 import { toRuntimeNotWritable } from '../../delivery/write-gate.ts';
 import { validateTimeZone, type Clock } from '../../domain/time/index.ts';
-import { D2_JOURNAL_MANIFEST, prepareJournalSeed, type Journal } from '../../modules/journal/index.ts';
+import { D3_JOURNAL_MANIFEST, prepareJournalSeed, type Journal } from '../../modules/journal/index.ts';
+import { validateSection as validateMarketData, type MarketDataDeps } from '../../modules/market-data/index.ts';
 import { D1_CATALOG_MANIFEST, prepareSeed, type ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import { SCHEMA_VERSION } from '../../persistence/schema.ts';
-import type { IdGenerator, LifecycleLock, Persistence, StoreRecord, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
+import type { IdGenerator, LifecycleLock, Persistence, RecordSource, SectionRecord, SessionPolicyIdentity, StoreRecord, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import { installedCapabilities, type InstalledCapabilityManifest } from './capabilities.ts';
 import { migrate, type MigrationBlocked, type MigrationReceipt, type MigrationStageHooks } from './migration.ts';
 
@@ -19,6 +20,8 @@ export interface WorkspaceDeps {
   readonly ids: IdGenerator;
   readonly clock: Clock;
   readonly releaseId: string;
+  // The release's session policy; its identity is what a Workspace records (D4 A40).
+  readonly sessionPolicy: MarketDataDeps['sessionPolicy'];
   // The exclusive Workspace lifecycle lock: one migration at a time across every tab (D2 A30).
   readonly locks: LifecycleLock;
   // Stage-boundary hooks for the faults build (T2.16); production passes none.
@@ -88,12 +91,29 @@ function seedReceipt(manifestVersion: number, seed: { readonly kind: string; rea
   return { manifestVersion, additions: [], completed: false };
 }
 
+// The session-policy identity this initialization recorded, with the stored observation keys the
+// policy no longer counts as sessions (D4 A40).
+export interface SessionPolicyFinding {
+  readonly code: 'NotASession' | 'SessionPolicyCoverage';
+  readonly instrumentKey: string;
+  readonly tradingDate: string;
+}
+
+export interface SessionPolicyReceipt {
+  // The identity the Workspace recorded before, when this release replaced it.
+  readonly previous?: SessionPolicyIdentity;
+  readonly recorded: SessionPolicyIdentity;
+  readonly findings: readonly SessionPolicyFinding[];
+}
+
 export interface InitializationReceipt {
   readonly fresh: boolean;
   readonly readiness: ReadinessEvaluation;
   readonly seeds: { readonly catalog: SeedReceipt; readonly journal: SeedReceipt };
   // Present when this initialization migrated the Workspace from an older schema.
   readonly migration?: MigrationReceipt;
+  // Present when this initialization recorded a session-policy identity.
+  readonly sessionPolicy?: SessionPolicyReceipt;
 }
 
 export type WorkspaceInitializationResult =
@@ -154,6 +174,29 @@ export function createWorkspace(deps: WorkspaceDeps): Workspace {
       schemaVersion: SCHEMA_VERSION,
       latestReceipt,
     };
+  }
+
+  // Records this release's session-policy identity when the stored one differs (D4 A40).
+  async function recordSessionPolicy(): Promise<SessionPolicyReceipt | undefined | RuntimeNotWritable> {
+    const recorded = deps.sessionPolicy.identity;
+    const { value } = await deps.persistence.readSnapshot(['meta'], (tx) => tx.get('meta', 'sessionPolicy'));
+    const previous = (value as { policy: SessionPolicyIdentity }).policy;
+    if (previous.id === recorded.id && previous.revision === recorded.revision && previous.digest === recorded.digest) return undefined;
+    // Every stored key is judged by the new policy; a key it no longer counts as a session is
+    // reported and kept, never deleted (A40).
+    const { value: observations } = await deps.persistence.readSnapshot(['observations'], (tx) => tx.getAll('observations'));
+    const source: RecordSource = {
+      async *batches() {
+        yield await Promise.resolve(observations as unknown as readonly SectionRecord[]);
+      },
+    };
+    const validation = await validateMarketData(source, deps.sessionPolicy);
+    const findings = validation.issues.flatMap(({ code, instrumentKey, tradingDate }): SessionPolicyFinding[] =>
+      code === 'NotASession' || code === 'SessionPolicyCoverage' ? [{ code, instrumentKey, tradingDate }] : [],
+    );
+    const committed = await deps.persistence.commit({ checks: [], writes: [{ op: 'put', store: 'meta', value: { key: 'sessionPolicy', policy: recorded } }] });
+    if (committed.kind === 'RuntimeNotWritable') return committed;
+    return { previous, recorded, findings };
   }
 
   const workspace: Workspace = {
@@ -234,9 +277,11 @@ export function createWorkspace(deps: WorkspaceDeps): Workspace {
           readiness,
           seeds: {
             catalog: { manifestVersion: D1_CATALOG_MANIFEST.version, additions: outcome.seeds.catalog },
-            journal: { manifestVersion: D2_JOURNAL_MANIFEST.version, additions: outcome.seeds.journal },
+            journal: { manifestVersion: D3_JOURNAL_MANIFEST.version, additions: outcome.seeds.journal },
           },
           migration: outcome.receipt,
+          // A pre-schema-3 source holds no observation, so there is nothing to find.
+          sessionPolicy: { recorded: deps.sessionPolicy.identity, findings: [] },
         };
         // The session re-evaluates so it describes the migrated Workspace.
         return { kind: 'Opened', status: await readyStatus(await deps.session.recheck()), receipt: latestReceipt };
@@ -246,15 +291,18 @@ export function createWorkspace(deps: WorkspaceDeps): Workspace {
         const catalog = await deps.catalog.seedDefaults(D1_CATALOG_MANIFEST);
         // A refused seed is a refused write, not an Opened Workspace; Journal's seed is not attempted.
         if (catalog.kind === 'RuntimeNotWritable') return catalog;
-        const journal = await deps.journal.seedDefaults(D2_JOURNAL_MANIFEST);
+        const journal = await deps.journal.seedDefaults(D3_JOURNAL_MANIFEST);
         if (journal.kind === 'RuntimeNotWritable') return journal;
+        const sessionPolicy = await recordSessionPolicy();
+        if (sessionPolicy && 'kind' in sessionPolicy) return sessionPolicy;
         latestReceipt = {
           fresh: false,
           readiness,
           seeds: {
             catalog: seedReceipt(D1_CATALOG_MANIFEST.version, catalog),
-            journal: seedReceipt(D2_JOURNAL_MANIFEST.version, journal),
+            journal: seedReceipt(D3_JOURNAL_MANIFEST.version, journal),
           },
+          ...(sessionPolicy && { sessionPolicy }),
         };
         return { kind: 'Opened', status: await readyStatus(readiness), receipt: latestReceipt };
       }
@@ -263,7 +311,7 @@ export function createWorkspace(deps: WorkspaceDeps): Workspace {
       if (!zone.ok) return { kind: 'Rejected', issues: [{ code: 'InvalidTimeZone' }] };
       const timeZone = zone.timeZone;
       const catalogSeed = prepareSeed([], D1_CATALOG_MANIFEST, deps.ids);
-      const journalSeed = prepareJournalSeed([], [], D2_JOURNAL_MANIFEST, deps.ids);
+      const journalSeed = prepareJournalSeed([], [], D3_JOURNAL_MANIFEST, deps.ids);
       if (catalogSeed.kind !== 'Additions' || journalSeed.kind !== 'Additions') throw new Error('Fresh seeds cannot conflict');
       // Metadata and both modules' defaults are written by the one Workspace-creating transaction.
       const records: StoreRecord[] = [
@@ -283,7 +331,7 @@ export function createWorkspace(deps: WorkspaceDeps): Workspace {
         readiness,
         seeds: {
           catalog: { manifestVersion: D1_CATALOG_MANIFEST.version, additions: catalogSeed.records.map((r) => r.productKey) },
-          journal: { manifestVersion: D2_JOURNAL_MANIFEST.version, additions: journalSeed.types.map((t) => t.productKey) },
+          journal: { manifestVersion: D3_JOURNAL_MANIFEST.version, additions: journalSeed.types.map((t) => t.productKey) },
         },
       };
       // The session re-evaluates so it describes the Workspace that now exists. The response

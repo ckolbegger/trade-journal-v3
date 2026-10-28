@@ -1,15 +1,20 @@
 // Migration in Workspace.initialize (D2 T2.10), from the committed schema-1 fixture.
 import { readFileSync } from 'node:fs';
-import type { IDBFactory } from 'fake-indexeddb';
+import { IDBFactory } from 'fake-indexeddb';
 import { describe, expect, it } from 'vitest';
 import { dumpAll, testStack } from '../../../tests/support/stack.ts';
 import { compareSnapshot } from '../../../tools/fixtures/snapshot-compare.ts';
 import { loadDump, viewsOf, type WorkspaceDump } from '../../../tools/fixtures/workspace-fixture.ts';
 import { createTradeViews } from '../trade-views/index.ts';
+import { createMarketData } from '../../modules/market-data/index.ts';
 import { createWorkspace, type MigrationStageHooks } from './index.ts';
+import { createSessionPolicy, nyseSessionPolicy, type SessionPolicy } from '../../domain/session-policy/index.ts';
+import { NYSE_TABLE } from '../../domain/session-policy/table.ts';
 
 const V1_DUMP = JSON.parse(readFileSync('tests/fixtures/workspace-v1/dump.json', 'utf8')) as WorkspaceDump;
 const V1_DATABASE = 'tj-ws-fx-0003';
+const V2_DUMP = JSON.parse(readFileSync('tests/fixtures/workspace-v2/dump.json', 'utf8')) as WorkspaceDump;
+const V2_DATABASE = 'tj-ws-fx-0004';
 const V1_VIEWS: unknown = JSON.parse(readFileSync('tests/fixtures/workspace-v1/expected-views.json', 'utf8'));
 
 type MutableDump = {
@@ -62,8 +67,12 @@ describe('migration from schema 1', () => {
         readiness: expect.objectContaining({ outcome: 'Writable' }) as unknown,
         seeds: {
           catalog: { manifestVersion: 1, additions: [] },
-          journal: { manifestVersion: 2, additions: ['entry-type.position-change-reflection', 'source.position-change'] },
+          journal: {
+            manifestVersion: 3,
+            additions: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'source.position-change', 'source.daily-review'],
+          },
         },
+        sessionPolicy: { recorded: nyseSessionPolicy.identity, findings: [] },
         migration: {
           fromVersion: 1,
           toVersion: 3,
@@ -83,7 +92,7 @@ describe('migration from schema 1', () => {
     );
     expect(migrated['meta']).toEqual(expect.arrayContaining([{ key: 'schema', schemaVersion: 3 }]));
     expect(migrated['trades']).toEqual(expect.arrayContaining([expect.objectContaining({ tradeId: 'fx-0009', lifecycle: 'Planned' })]));
-    expect(migrated['journalTypes']).toHaveLength(4);
+    expect(migrated['journalTypes']).toHaveLength(6);
     expect(migrated['journalObligations']).toHaveLength(5);
     // The old database is retired and deleted, and no candidate remains.
     expect(Object.keys(dump).sort()).toEqual(['tj-root', result.receipt.migration.databaseName]);
@@ -259,5 +268,178 @@ describe('unsupported versions', () => {
     });
     expect(await workspace.getStatus()).toEqual(expect.objectContaining({ kind: 'IntegrityBlocked', reason: 'UnsupportedNewerSchema' }));
     expect(await dumpAll(factory)).toEqual(before);
+  });
+});
+
+// A device holding the v2 fixture, optionally edited before the release opens it.
+async function v2Stack(edit?: (dump: MutableDump) => void, migrationHooks?: MigrationStageHooks) {
+  const dump = structuredClone(V2_DUMP);
+  edit?.(dump as unknown as MutableDump);
+  const stack = await testStack(await loadDump(dump), dump.asOf);
+  const workspace = createWorkspace({ ...stack, host: stack.testHost.host, releaseId: stack.testHost.releaseId, migrationHooks });
+  return { ...stack, workspace, views: () => viewsOf({ TradeViewsAndReporting: createTradeViews(stack) }, V2_DUMP.schemaVersion) };
+}
+
+describe('migration to schema 3', () => {
+  it('should migrate a v2 Workspace and return Opened with a receipt naming 2 → 3, per-store counts, seed additions Daily Trade Review and Daily Review Source, and the recorded session-policy identity', async () => {
+    const { workspace } = await v2Stack();
+    expect(await workspace.initialize({})).toEqual({
+      kind: 'Opened',
+      status: expect.objectContaining({ kind: 'Ready', schemaVersion: 3 }) as unknown,
+      receipt: {
+        fresh: false,
+        readiness: expect.objectContaining({ outcome: 'Writable' }) as unknown,
+        seeds: {
+          catalog: { manifestVersion: 1, additions: [] },
+          journal: { manifestVersion: 3, additions: ['entry-type.daily-trade-review', 'source.daily-review'] },
+        },
+        sessionPolicy: { recorded: nyseSessionPolicy.identity, findings: [] },
+        migration: {
+          fromVersion: 2,
+          toVersion: 3,
+          sourceDatabase: V2_DATABASE,
+          databaseName: expect.stringMatching(/^tj-ws-/) as string,
+          counts: { catalog: 6, journalDeclines: 3, journalDefinitions: 2, journalEntries: 11, journalTypes: 4, meta: 4, trades: 8 },
+          repairs: [],
+          privateRebuilds: ['trades.activityDesc', 'journalObligations', 'indexes'],
+        },
+      },
+    });
+  });
+
+  it('should migrate a v1 Workspace to schema 3 in one candidate', async () => {
+    const { workspace, factory } = await v1Stack();
+    const result = await workspace.initialize({});
+    if (result.kind !== 'Opened' || !result.receipt.migration) throw new Error('expected a migration receipt');
+    expect(result.receipt.migration).toMatchObject({ fromVersion: 1, toVersion: 3, sourceDatabase: V1_DATABASE });
+    expect(result.receipt.seeds.journal).toEqual({
+      manifestVersion: 3,
+      additions: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'source.position-change', 'source.daily-review'],
+    });
+    const dump = await dumpAll(factory);
+    // One candidate carried the whole v1 to v3 chain, so no intermediate Workspace remains.
+    expect(Object.keys(dump).sort()).toEqual(['tj-root', result.receipt.migration.databaseName]);
+    const migrated = dump[result.receipt.migration.databaseName]!;
+    expect(migrated['meta']).toEqual(
+      expect.arrayContaining([{ key: 'schema', schemaVersion: 3 }, expect.objectContaining({ key: 'sessionPolicy', policy: nyseSessionPolicy.identity })]),
+    );
+    expect(migrated['journalTypes']).toHaveLength(6);
+    expect(migrated['observations']).toEqual([]);
+  });
+
+  // The current figures of an Open Trade (Unavailable MarkMissing, A51) arrive with T4.18's views;
+  // until then the snapshot comparison covers every field the pre-migration views contain.
+  it('should keep every earlier field of the Planned and Open lists and Details equal to the pre-migration views', async () => {
+    const v1 = await v1Stack();
+    const v2 = await v2Stack();
+    expect((await v1.workspace.initialize({})).kind).toBe('Opened');
+    expect((await v2.workspace.initialize({})).kind).toBe('Opened');
+    const v2Views: unknown = JSON.parse(readFileSync('tests/fixtures/workspace-v2/expected-views.json', 'utf8'));
+    expect(compareSnapshot(await v1.views(), V1_VIEWS)).toEqual([]);
+    expect(compareSnapshot(await v2.views(), v2Views)).toEqual([]);
+    // The comparison is not vacuous: the v2 snapshot holds Open Trades.
+    expect((v2Views as { open: unknown[] }).open.length).toBeGreaterThan(0);
+  });
+
+  it('should return MigrationBlocked with the old stores unchanged when candidate validation fails, and Opened after Retry once the cause is removed', async () => {
+    const { workspace, factory } = await v2Stack((dump) => {
+      dump.databases[V2_DATABASE]!.stores['trades']!.records[0]!['accountId'] = 'fx-unknown';
+    });
+    const before = (await dumpAll(factory))[V2_DATABASE];
+    const blocked = await workspace.initialize({});
+    expect(blocked).toEqual(
+      expect.objectContaining({
+        kind: 'MigrationBlocked',
+        stage: 'Validate',
+        issues: [{ code: 'UnknownAccount', tradeId: 'fx-0010', accountId: 'fx-unknown' }],
+        fromVersion: 2,
+        toVersion: 3,
+      }),
+    );
+    const after = await dumpAll(factory);
+    expect(after[V2_DATABASE]).toEqual(before);
+    expect(Object.keys(after).sort()).toEqual(['tj-root', V2_DATABASE]);
+    expect(await workspace.getStatus()).toEqual(expect.objectContaining({ kind: 'MigrationBlocked', stage: 'Validate' }));
+    await rawUpdate(factory, V2_DATABASE, 'trades', 'fx-0010', (trade) => ({ ...trade, accountId: 'fx-0007' }));
+    expect(await workspace.initialize({})).toEqual(
+      expect.objectContaining({
+        kind: 'Opened',
+        receipt: expect.objectContaining({ migration: expect.objectContaining({ fromVersion: 2, toVersion: 3 }) as unknown }) as unknown,
+      }),
+    );
+    expect(await workspace.getStatus()).toEqual(expect.objectContaining({ kind: 'Ready', schemaVersion: 3 }));
+  });
+});
+
+// A later release's policy: the same table with another revision and a longer coverage.
+const POLICY_REVISION_2 = createSessionPolicy({ id: 'nyse', revision: 2, coverage: { first: '2024-01-01', last: '2029-12-31' }, table: NYSE_TABLE });
+
+// One launch of a release shipping `sessionPolicy` on the device held by `factory`.
+async function launch(factory: IDBFactory, sessionPolicy: SessionPolicy, now = '2026-10-16T21:00:00Z') {
+  const stack = await testStack(factory, now, sessionPolicy);
+  return { ...stack, workspace: createWorkspace({ ...stack, host: stack.testHost.host, releaseId: stack.testHost.releaseId }) };
+}
+
+describe('session-policy compatibility (A40)', () => {
+  it('should record a newer policy revision that only extends coverage, with no findings', async () => {
+    const first = await launch(new IDBFactory(), nyseSessionPolicy);
+    expect((await first.workspace.initialize({ timeZone: 'America/New_York' })).kind).toBe('Opened');
+    first.persistence.close();
+
+    const second = await launch(first.factory, POLICY_REVISION_2);
+    const result = await second.workspace.initialize({});
+    if (result.kind !== 'Opened') throw new Error('expected Opened');
+    expect(result.receipt.sessionPolicy).toEqual({ previous: nyseSessionPolicy.identity, recorded: POLICY_REVISION_2.identity, findings: [] });
+    const stored = Object.values(await dumpAll(first.factory)).flatMap((stores) => stores['meta'] ?? []);
+    expect(stored).toContainEqual(expect.objectContaining({ key: 'sessionPolicy', policy: POLICY_REVISION_2.identity }));
+    second.persistence.close();
+
+    // The identity is recorded once: the next launch of the same release has nothing to record.
+    const third = await launch(first.factory, POLICY_REVISION_2);
+    const again = await third.workspace.initialize({});
+    expect(again.kind === 'Opened' && again.receipt.sessionPolicy).toBeUndefined();
+  });
+
+  it('should keep an observation record whose date the newer policy turns into a closure, list it as a finding in the receipt, and leave it out of every frame', async () => {
+    const closure = { date: '2026-10-14', kind: 'Closure', name: 'Test closure', source: { name: 'Test', url: 'https://example.test/closure' } } as const;
+    const withClosure = createSessionPolicy({
+      id: 'nyse',
+      revision: 2,
+      coverage: { first: '2024-01-01', last: '2029-12-31' },
+      table: [...NYSE_TABLE, closure],
+    });
+    const first = await launch(new IDBFactory(), nyseSessionPolicy);
+    expect((await first.workspace.initialize({ timeZone: 'America/New_York' })).kind).toBe('Opened');
+    // Tuesday's Mark stays a session's; Wednesday's date becomes a closure in the next release.
+    const marketData = createMarketData({ persistence: first.persistence, ids: first.ids, clock: first.clock, sessionPolicy: nyseSessionPolicy });
+    for (const tradingDate of ['2026-10-13', '2026-10-14']) {
+      const saved = await marketData.save({ intention: 'RecordInitialManualMark', instrumentKey: 'XYZ', tradingDate, price: '52', expectedResolutionRevision: 'None' });
+      expect(saved.kind).toBe('Saved');
+    }
+    first.persistence.close();
+
+    const second = await launch(first.factory, withClosure);
+    const result = await second.workspace.initialize({});
+    if (result.kind !== 'Opened') throw new Error('expected Opened');
+    expect(result.receipt.sessionPolicy).toEqual({
+      previous: nyseSessionPolicy.identity,
+      recorded: withClosure.identity,
+      findings: [{ code: 'NotASession', instrumentKey: 'XYZ', tradingDate: '2026-10-14' }],
+    });
+    // The record is kept, never deleted.
+    const kept = Object.values(await dumpAll(first.factory)).flatMap((stores) => stores['observations'] ?? []);
+    expect(kept).toContainEqual(expect.objectContaining({ instrumentKey: 'XYZ', tradingDate: '2026-10-14' }));
+
+    // No frame names it: the closure is not a session, and Stale context comes from the last session with a Mark.
+    const later = createMarketData({ persistence: second.persistence, ids: second.ids, clock: second.clock, sessionPolicy: withClosure });
+    expect(await later.query({ kind: 'ResolveFrames', context: { kind: 'Historical', tradingDate: '2026-10-14' }, instruments: ['XYZ'] })).toEqual({
+      kind: 'Rejected',
+      issues: [{ field: 'tradingDate', code: 'NotASession' }],
+    });
+    const friday = await later.query({ kind: 'ResolveFrames', context: { kind: 'Current', asOf: '2026-10-16T21:00:00Z' }, instruments: ['XYZ'] });
+    if (friday.kind !== 'Frames') throw new Error('expected frames');
+    expect(friday.frames.map((frame) => [frame.tradingDate, frame.resolution])).toEqual([
+      ['2026-10-16', { kind: 'Missing', stale: expect.objectContaining({ tradingDate: '2026-10-13' }) as unknown }],
+    ]);
   });
 });
