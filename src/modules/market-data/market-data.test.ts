@@ -243,6 +243,15 @@ describe('concurrent saves', () => {
 });
 
 describe('key and price validation (P8, P9, P10)', () => {
+  it('should reject a well-shaped impossible date such as 2026-02-30 with InvalidDate and write nothing', async () => {
+    const { marketData, persistence } = await setup();
+    const before = await stored(persistence);
+    for (const tradingDate of ['2026-02-30', '2026-13-01', '2026-00-10']) {
+      expect(await marketData.save(initial({ tradingDate }))).toEqual({ kind: 'Rejected', issues: [{ field: 'tradingDate', code: 'InvalidDate' }] });
+    }
+    expect(await stored(persistence)).toEqual(before);
+  });
+
   it('should reject a weekend, holiday, or closure date with NotASession and a date outside coverage with SessionPolicyCoverage', async () => {
     const { marketData, persistence } = await setup();
     const before = await stored(persistence);

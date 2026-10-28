@@ -109,13 +109,20 @@ function marketDataUnchanged(marketDataRevision: number): BindingCheck {
 const SYMBOL = /^[A-Z][A-Z0-9.]{0,9}$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
+// A well-shaped date must also be a real calendar day (2026-02-30 is not).
+function isRealDate(text: string): boolean {
+  const [y, m, d] = text.split('-').map(Number) as [number, number, number];
+  const date = new Date(Date.UTC(y, m - 1, d));
+  return date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d;
+}
+
 export function createMarketData(deps: MarketDataDeps): MarketData {
   // The key checks of P8, P9, and P10 (any well-formed Instrument on a completed covered
   // session), the price check of A37, and the reason check of A35, all reported together.
   function validate(command: Exclude<MarketDataSaveCommand, { intention: 'OverrideManualValuation' }>): MarketDataIssue[] {
     const issues: MarketDataIssue[] = [];
     if (!SYMBOL.test(command.instrumentKey)) issues.push({ field: 'instrumentKey', code: 'InvalidInstrument' });
-    if (!DATE.test(command.tradingDate)) {
+    if (!DATE.test(command.tradingDate) || !isRealDate(command.tradingDate)) {
       issues.push({ field: 'tradingDate', code: 'InvalidDate' });
     } else {
       const day = deps.sessionPolicy.classify(command.tradingDate);
