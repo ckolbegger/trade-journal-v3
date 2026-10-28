@@ -375,8 +375,10 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
         if (write.op === 'delete') {
           request = store.delete(write.key);
         } else if (write.op === 'increment') {
-          const record = (await store.get(write.key)) as Record<string, number>;
-          request = store.put({ ...record, [write.field]: record[write.field]! + 1 });
+          // Chained, not awaited, so a constraint failure earlier in the set still reaches the mapping on tx.done.
+          request = store
+            .get(write.key)
+            .then((record) => store.put({ ...(record as Record<string, number>), [write.field]: (record as Record<string, number>)[write.field]! + 1 }));
         } else {
           const value: Record<string, unknown> = { ...write.value, revision: contentRevision };
           request = write.op === 'add' ? store.add(value) : store.put(value);

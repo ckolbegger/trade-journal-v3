@@ -235,6 +235,16 @@ describe('semantic commit', () => {
     expect(await rawGet(databaseName, 'meta', 'marketDataRevision')).toEqual({ key: 'marketDataRevision', marketDataRevision: 2 });
   });
 
+  it('should return ConstraintViolation, not throw, when a write set add violates a constraint before its increment', async () => {
+    const { p, databaseName } = await created();
+    await p.commit({ checks: [], writes: [{ op: 'put', store: 'catalog', value: { id: 'taken' } }] });
+    const bump = { op: 'increment', store: 'meta', key: 'marketDataRevision', field: 'marketDataRevision' } as const;
+    const result = await p.commit({ checks: [], writes: [{ op: 'add', store: 'catalog', value: { id: 'taken' } }, bump] });
+    expect(result).toEqual({ kind: 'ConstraintViolation', store: 'catalog' });
+    expect(await rawGet(databaseName, 'meta', 'marketDataRevision')).toEqual({ key: 'marketDataRevision', marketDataRevision: 0 });
+    expect(await rawGet(databaseName, 'meta', 'content')).toEqual({ key: 'content', contentRevision: 2 });
+  });
+
   it('should write nothing and leave the content revision unchanged when a binding check fails, returning a typed Conflict that names the stale binding', async () => {
     const { p, databaseName } = await created();
     await p.commit({ checks: [], writes: [{ op: 'put', store: 'catalog', value: { id: 'account-1', label: 'Old' } }] });
