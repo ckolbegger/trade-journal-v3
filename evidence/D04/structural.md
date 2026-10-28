@@ -463,3 +463,12 @@ Decision: for a foreign frame `valuationDate` and the MarkMissing detail date st
 
 ### T4.9-B3 marked, the unavailability reason, coverage and the latest exact close as explicit guards (structural)
 Verification: `npx vitest run src/domain/trade-analysis` passes unchanged before and after; typecheck, tsc6, lint, lint:deps exit 0.
+
+ocr review of `9d7f6d5` (B3): session `7095015b-5566-45fb-9c9e-b4c23e6bc01f`, 1 file, **No findings.** `ocr/T4.9-B3-9d7f6d5.json`. Behaviour preservation rests on `src/domain/trade-analysis` passing 71 of 71 before and after.
+
+### Cumulative runs after T4.9
+
+- `ee4bb7b` (T4.9): unit 580, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.9-valuation-*`.
+- `9d7f6d5` (B1–B5), 2026-10-28 01:14 EDT: unit 585, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.9-b3-full-*`.
+
+Only `verify:capacity` failed (expected until T4.28). T4.9 is complete.
