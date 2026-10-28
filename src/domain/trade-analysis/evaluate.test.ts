@@ -242,4 +242,14 @@ describe('A frame for a different Instrument', () => {
     expect(exact(evaluation.realizedToDate)).toBe(q(0n));
     expect(exact(evaluation.incurredFees)).toBe(q(2n));
   });
+
+  it('should report coverage as Missing, with no Stale context, when the frame is for a different Instrument', () => {
+    const state = derivedState(referenceRecord([PC1, PC2]));
+    const abc = { kind: 'Stock', symbol: 'ABC' } as const;
+    const available = evaluate({ state, frame: { ...availableFrame('52.00'), instrument: abc } });
+    expect(available.coverage).toEqual({ kind: 'Missing' });
+    const missingWithStale = evaluate({ state, frame: { ...missingFrame({ price: '49.00' }), instrument: abc } });
+    expect(missingWithStale.coverage).toEqual({ kind: 'Missing' });
+    expect(missingWithStale.staleContext).toBeUndefined();
+  });
 });

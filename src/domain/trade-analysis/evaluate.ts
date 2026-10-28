@@ -151,7 +151,9 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     kind: 'Evaluated',
     valuationDate: frame.tradingDate,
     coverage:
-      resolution.kind === 'Available'
+      foreign
+        ? { kind: 'Missing' }
+        : resolution.kind === 'Available'
         ? { kind: 'Available', revisionId: resolution.mark.revisionId, revisionNumber: resolution.mark.revisionNumber }
         : { kind: resolution.kind },
     openQuantity: current(quantity),
@@ -171,6 +173,6 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     planBaseline: { kind: 'Value', value: state.baseline },
     oneR: value(state.baseline.oneR),
     entryQuality: state.entryQuality,
-    ...(resolution.kind !== 'Available' && resolution.stale && { staleContext: resolution.stale }),
+    ...(!foreign && resolution.kind !== 'Available' && resolution.stale && { staleContext: resolution.stale }),
   };
 }
