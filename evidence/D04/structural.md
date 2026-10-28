@@ -262,3 +262,7 @@ The user then directed (2026-10-27) that the pattern become [ADR 0011](../../spe
 `src/modules/journal/journal.ts` `seedDefaults` has the same shape with `journalRevision`.
 - it should seed the default Journal types and definitions exactly once and advance journalRevision once when two seeds run at once
 - it should return its typed conflict and write nothing after 3 attempts when journalRevision keeps moving
+
+### Cumulative run after T4.4-B6
+
+Run 2026-10-27 23:20 EDT on commit `03b323b`. Unit 46 files, 522 tests passed; integration 21 files, 49 passed; browser 124 passed (3.9m); checks 11 of 12 exit 0. Only `verify:capacity` failed ("basis measured at schema version 2, current is 3"), expected until T4.28. Outputs: `suite-runs/t4.4-b6-{unit,integration,browser,checks}.txt`. Earlier T4.4 runs (`t4.4-manual-mark-*` at `28fd3e1`, `t4.4-b4-*` at `e506ec8`, `t4.4-b5-*` at `a6ec5d9`) had the same single expected failure.
