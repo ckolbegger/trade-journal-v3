@@ -369,20 +369,42 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
       const contentRevision = content.contentRevision + 1;
       let violation: WorkspaceStore | undefined;
       const revisions: RecordRevision[] = [];
-      for (const write of writeSet.writes) {
+      // Increments are resolved to puts before anything is queued, so a missing target fails the commit with nothing written.
+      const seen = new Map<string, Record<string, unknown> | undefined>();
+      const stamp = (store: WorkspaceStore, key: IDBValidKey) => JSON.stringify([store, key]);
+      const targets = writeSet.writes.filter((w) => w.op === 'increment');
+      const reads = await Promise.all(targets.map((w) => tx.objectStore(w.store).get(w.key)));
+      for (const [i, w] of targets.entries()) seen.set(stamp(w.store, w.key), reads[i] as Record<string, unknown> | undefined);
+      const resolved: { write: Exclude<Write, { op: 'increment' }>; stamped: boolean }[] = [];
+      try {
+        for (const write of writeSet.writes) {
+          if (write.op === 'increment') {
+            const record = seen.get(stamp(write.store, write.key));
+            const current = record?.[write.field];
+            if (typeof current !== 'number') throw new Error(`increment target ${write.store}/${write.key}.${write.field} is missing or not a number`);
+            const value = { ...record, [write.field]: current + 1 };
+            seen.set(stamp(write.store, write.key), value);
+            resolved.push({ write: { op: 'put', store: write.store, value }, stamped: false });
+          } else {
+            if (write.op === 'delete') seen.set(stamp(write.store, write.key), undefined);
+            else seen.set(stamp(write.store, keyOf(write.store, write.value)), write.value);
+            resolved.push({ write, stamped: true });
+          }
+        }
+      } catch (error) {
+        tx.abort();
+        await tx.done.catch(() => undefined);
+        throw error;
+      }
+      for (const { write, stamped } of resolved) {
         const store = tx.objectStore(write.store);
         let request: Promise<unknown>;
         if (write.op === 'delete') {
           request = store.delete(write.key);
-        } else if (write.op === 'increment') {
-          // Chained, not awaited, so a constraint failure earlier in the set still reaches the mapping on tx.done.
-          request = store
-            .get(write.key)
-            .then((record) => store.put({ ...(record as Record<string, number>), [write.field]: (record as Record<string, number>)[write.field]! + 1 }));
         } else {
-          const value: Record<string, unknown> = { ...write.value, revision: contentRevision };
+          const value: Record<string, unknown> = stamped ? { ...write.value, revision: contentRevision } : write.value;
           request = write.op === 'add' ? store.add(value) : store.put(value);
-          revisions.push({ store: write.store, key: keyOf(write.store, value), revision: contentRevision });
+          if (stamped) revisions.push({ store: write.store, key: keyOf(write.store, value), revision: contentRevision });
         }
         request.catch((error: unknown) => {
           if (error instanceof Error && error.name === 'ConstraintError') violation ??= write.store;

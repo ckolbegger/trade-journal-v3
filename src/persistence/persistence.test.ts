@@ -245,6 +245,31 @@ describe('semantic commit', () => {
     expect(await rawGet(databaseName, 'meta', 'content')).toEqual({ key: 'content', contentRevision: 2 });
   });
 
+  it('should apply a write set writes in order when it increments one meta field twice and when a later put replaces the incremented record', async () => {
+    const { p, databaseName } = await created();
+    const bump = { op: 'increment', store: 'meta', key: 'marketDataRevision', field: 'marketDataRevision' } as const;
+    await p.commit({ checks: [], writes: [bump, bump] });
+    expect(await rawGet(databaseName, 'meta', 'marketDataRevision')).toEqual({ key: 'marketDataRevision', marketDataRevision: 2 });
+    await p.commit({
+      checks: [],
+      writes: [bump, { op: 'put', store: 'meta', value: { key: 'marketDataRevision', marketDataRevision: 10 } }],
+    });
+    expect(await rawGet(databaseName, 'meta', 'marketDataRevision')).toEqual(expect.objectContaining({ marketDataRevision: 10 }));
+  });
+
+  it('should not report Committed when an increment target record or field is missing, and should write nothing', async () => {
+    const { p, databaseName } = await created();
+    const put = { op: 'put', store: 'catalog', value: { id: 'untouched' } } as const;
+    await expect(
+      p.commit({ checks: [], writes: [put, { op: 'increment', store: 'meta', key: 'absent', field: 'n' }] }),
+    ).rejects.toThrow();
+    await expect(
+      p.commit({ checks: [], writes: [put, { op: 'increment', store: 'meta', key: 'marketDataRevision', field: 'absent' }] }),
+    ).rejects.toThrow();
+    expect(await rawGet(databaseName, 'catalog', 'untouched')).toBeUndefined();
+    expect(await rawGet(databaseName, 'meta', 'content')).toEqual({ key: 'content', contentRevision: 1 });
+  });
+
   it('should write nothing and leave the content revision unchanged when a binding check fails, returning a typed Conflict that names the stale binding', async () => {
     const { p, databaseName } = await created();
     await p.commit({ checks: [], writes: [{ op: 'put', store: 'catalog', value: { id: 'account-1', label: 'Old' } }] });
