@@ -227,49 +227,6 @@ describe('semantic commit', () => {
     expect(await rawGet(databaseName, 'journalEntries', 'entry-1')).toBeDefined();
   });
 
-  it('should increment a meta field inside the commit transaction, so that two concurrent commits raise it by 2', async () => {
-    const { p, databaseName } = await created();
-    const bump = { op: 'increment', store: 'meta', key: 'marketDataRevision', field: 'marketDataRevision' } as const;
-    const results = await Promise.all([p.commit({ checks: [], writes: [bump] }), p.commit({ checks: [], writes: [bump] })]);
-    expect(results.map((r) => r.kind)).toEqual(['Committed', 'Committed']);
-    expect(await rawGet(databaseName, 'meta', 'marketDataRevision')).toEqual({ key: 'marketDataRevision', marketDataRevision: 2 });
-  });
-
-  it('should return ConstraintViolation, not throw, when a write set add violates a constraint before its increment', async () => {
-    const { p, databaseName } = await created();
-    await p.commit({ checks: [], writes: [{ op: 'put', store: 'catalog', value: { id: 'taken' } }] });
-    const bump = { op: 'increment', store: 'meta', key: 'marketDataRevision', field: 'marketDataRevision' } as const;
-    const result = await p.commit({ checks: [], writes: [{ op: 'add', store: 'catalog', value: { id: 'taken' } }, bump] });
-    expect(result).toEqual({ kind: 'ConstraintViolation', store: 'catalog' });
-    expect(await rawGet(databaseName, 'meta', 'marketDataRevision')).toEqual({ key: 'marketDataRevision', marketDataRevision: 0 });
-    expect(await rawGet(databaseName, 'meta', 'content')).toEqual({ key: 'content', contentRevision: 2 });
-  });
-
-  it('should apply a write set writes in order when it increments one meta field twice and when a later put replaces the incremented record', async () => {
-    const { p, databaseName } = await created();
-    const bump = { op: 'increment', store: 'meta', key: 'marketDataRevision', field: 'marketDataRevision' } as const;
-    await p.commit({ checks: [], writes: [bump, bump] });
-    expect(await rawGet(databaseName, 'meta', 'marketDataRevision')).toEqual({ key: 'marketDataRevision', marketDataRevision: 2 });
-    await p.commit({
-      checks: [],
-      writes: [bump, { op: 'put', store: 'meta', value: { key: 'marketDataRevision', marketDataRevision: 10 } }],
-    });
-    expect(await rawGet(databaseName, 'meta', 'marketDataRevision')).toEqual(expect.objectContaining({ marketDataRevision: 10 }));
-  });
-
-  it('should not report Committed when an increment target record or field is missing, and should write nothing', async () => {
-    const { p, databaseName } = await created();
-    const put = { op: 'put', store: 'catalog', value: { id: 'untouched' } } as const;
-    await expect(
-      p.commit({ checks: [], writes: [put, { op: 'increment', store: 'meta', key: 'absent', field: 'n' }] }),
-    ).rejects.toThrow();
-    await expect(
-      p.commit({ checks: [], writes: [put, { op: 'increment', store: 'meta', key: 'marketDataRevision', field: 'absent' }] }),
-    ).rejects.toThrow();
-    expect(await rawGet(databaseName, 'catalog', 'untouched')).toBeUndefined();
-    expect(await rawGet(databaseName, 'meta', 'content')).toEqual({ key: 'content', contentRevision: 1 });
-  });
-
   it('should write nothing and leave the content revision unchanged when a binding check fails, returning a typed Conflict that names the stale binding', async () => {
     const { p, databaseName } = await created();
     await p.commit({ checks: [], writes: [{ op: 'put', store: 'catalog', value: { id: 'account-1', label: 'Old' } }] });

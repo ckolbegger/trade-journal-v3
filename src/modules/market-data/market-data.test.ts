@@ -249,6 +249,48 @@ describe('concurrent saves', () => {
     expect(observations).toHaveLength(2);
     expect(marketDataRevision).toBe(2);
   });
+
+  // A MarketData over the same workspace whose commits first run `beforeCommit`, counting each attempt.
+  async function interfered(beforeCommit: (attempt: number) => Promise<void>) {
+    const base = await setup();
+    let attempts = 0;
+    const persistence: typeof base.persistence = {
+      ...base.persistence,
+      commit: async (set) => {
+        attempts += 1;
+        await beforeCommit(attempts);
+        return base.persistence.commit(set);
+      },
+    };
+    const marketData = createMarketData({ persistence, ids: sequentialIds('wrap'), clock: fixedClock(TUESDAY_NOON), sessionPolicy: nyseSessionPolicy });
+    return { base, marketData, attempts: () => attempts };
+  }
+
+  it('should return Conflict without retrying when the own resolution revision of the key moved', async () => {
+    const { base, marketData, attempts } = await interfered(async (attempt) => {
+      if (attempt === 1) await base.marketData.save(initial({ price: '53' }));
+    });
+    const result = await marketData.save(initial({ price: '52' }));
+    expect(result).toEqual(expect.objectContaining({ kind: 'Conflict', resolutionRevision: 1 }));
+    expect(attempts()).toBe(1);
+  });
+
+  it('should stop after 3 attempts when the shared counter keeps moving, and write nothing', async () => {
+    let bumps = 0;
+    const { base, marketData, attempts } = await interfered(async () => {
+      bumps += 1;
+      await base.persistence.commit({ checks: [], writes: [{ op: 'put', store: 'meta', value: { key: 'marketDataRevision', marketDataRevision: bumps } }] });
+    });
+    const result = await marketData.save(initial());
+    expect(result).toEqual({
+      kind: 'Conflict',
+      key: { instrumentKey: 'XYZ', tradingDate: '2026-10-12' },
+      resolution: { kind: 'Missing' },
+      resolutionRevision: 'None',
+    });
+    expect(attempts()).toBe(3);
+    expect((await stored(base.persistence)).observations).toEqual([]);
+  });
 });
 
 describe('key and price validation (P8, P9, P10)', () => {
