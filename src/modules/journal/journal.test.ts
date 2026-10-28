@@ -87,6 +87,37 @@ describe('seedDefaults', () => {
     expect(await j.seedDefaults(incompatible)).toEqual({ kind: 'SeedConflict', productKey: 'entry-type.plan-reflection' });
     expect(await stored(persistence)).toEqual(before);
   });
+
+  it('should seed the default Journal types and definitions exactly once and advance journalRevision once when two seeds run at once', async () => {
+    const { journal: j, persistence } = await journal();
+    const results = await Promise.all([j.seedDefaults(D1_JOURNAL_MANIFEST), j.seedDefaults(D1_JOURNAL_MANIFEST)]);
+    const additions = results.map((r) => (r.kind === 'Seeded' ? r.additions : null));
+    expect(additions).toContainEqual(['entry-type.plan-reflection', 'source.plan-confirmation']);
+    expect(additions).toContainEqual([]);
+    const state = await stored(persistence);
+    expect(state.types).toHaveLength(2);
+    expect(state.definitions).toHaveLength(1);
+    expect(state.meta?.['journalRevision']).toBe(1);
+  });
+
+  it('should return its typed conflict and write nothing after 3 attempts when journalRevision keeps moving', async () => {
+    const { persistence } = await emptyWorkspace();
+    let attempts = 0;
+    const wrapped: typeof persistence = {
+      ...persistence,
+      commit: async (set) => {
+        attempts += 1;
+        await persistence.commit({ checks: [], writes: [{ op: 'put', store: 'meta', value: { key: 'journal', journalRevision: attempts } }] });
+        return persistence.commit(set);
+      },
+    };
+    const j = createJournal({ persistence: wrapped, ids: sequentialIds('j'), clock });
+    expect(await j.seedDefaults(D1_JOURNAL_MANIFEST)).toEqual({ kind: 'Conflict' });
+    expect(attempts).toBe(3);
+    const state = await stored(persistence);
+    expect(state.types).toEqual([]);
+    expect(state.definitions).toEqual([]);
+  });
 });
 
 describe('getDefinitions', () => {

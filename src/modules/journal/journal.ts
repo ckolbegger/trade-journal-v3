@@ -1,5 +1,6 @@
+import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
 import type { Clock } from '../../domain/time/index.ts';
-import { requireOpen, type IdGenerator, type Persistence, type SemanticTransaction, type Write } from '../../persistence/index.ts';
+import { requireOpen, type BindingCheck, type IdGenerator, type Persistence, type SemanticTransaction, type Write } from '../../persistence/index.ts';
 import type {
   AnswerInput,
   CandidateRef,
@@ -33,7 +34,23 @@ export interface JournalDeps {
 
 export type SeedJournalResult =
   | { readonly kind: 'Seeded'; readonly additions: readonly string[]; readonly snapshot: JournalSnapshot }
-  | { readonly kind: 'SeedConflict'; readonly productKey: string };
+  | { readonly kind: 'SeedConflict'; readonly productKey: string }
+  // journalRevision kept moving through every attempt; nothing was written.
+  | { readonly kind: 'Conflict' }
+  | RuntimeNotWritable;
+
+// Attempts in all when only the shared journalRevision counter moved between read and commit.
+const MAX_ATTEMPTS = 3;
+
+// Rechecked inside the commit: the seed was prepared against this Journal revision.
+function journalUnchanged(journalRevision: number): BindingCheck {
+  return {
+    name: `journal@${journalRevision}`,
+    store: 'meta',
+    key: 'journal',
+    verify: (current) => ((current?.['journalRevision'] as number | undefined) ?? 0) === journalRevision,
+  };
+}
 
 interface JournalMeta {
   readonly key: 'journal';
@@ -398,23 +415,31 @@ export function createJournal(deps: JournalDeps): Journal {
     },
 
     async seedDefaults(manifest) {
-      const { value } = await deps.persistence.readSnapshot(['meta', 'journalTypes', 'journalDefinitions'], async (tx) => ({
-        meta: (await tx.get('meta', 'journal')) as JournalMeta | undefined,
-        types: (await tx.getAll('journalTypes')) as unknown as JournalTypeRecord[],
-        definitions: (await tx.getAll('journalDefinitions')) as unknown as EntryDefinitionRecord[],
-      }));
-      const current = value.meta?.journalRevision ?? 0;
-      const prepared = prepareJournalSeed(value.types, value.definitions, manifest, deps.ids);
-      if (prepared.kind === 'SeedConflict') return prepared;
-      if (prepared.types.length === 0) return { kind: 'Seeded', additions: [], snapshot: { journalRevision: current } };
-      const journalRevision = current + 1;
-      const writes: Write[] = [
-        ...prepared.types.map((t): Write => ({ op: 'put', store: 'journalTypes', value: { ...t } })),
-        ...prepared.definitions.map((d): Write => ({ op: 'put', store: 'journalDefinitions', value: { ...d } })),
-        { op: 'put', store: 'meta', value: { key: 'journal', journalRevision } },
-      ];
-      await deps.persistence.commit({ checks: [], writes });
-      return { kind: 'Seeded', additions: prepared.types.map((t) => t.productKey), snapshot: { journalRevision } };
+      for (let attempt = 1; ; attempt++) {
+        const { value } = await deps.persistence.readSnapshot(['meta', 'journalTypes', 'journalDefinitions'], async (tx) => ({
+          meta: (await tx.get('meta', 'journal')) as JournalMeta | undefined,
+          types: (await tx.getAll('journalTypes')) as unknown as JournalTypeRecord[],
+          definitions: (await tx.getAll('journalDefinitions')) as unknown as EntryDefinitionRecord[],
+        }));
+        const current = value.meta?.journalRevision ?? 0;
+        const prepared = prepareJournalSeed(value.types, value.definitions, manifest, deps.ids);
+        if (prepared.kind === 'SeedConflict') return prepared;
+        if (prepared.types.length === 0) return { kind: 'Seeded', additions: [], snapshot: { journalRevision: current } };
+        const journalRevision = current + 1;
+        const writes: Write[] = [
+          ...prepared.types.map((t): Write => ({ op: 'put', store: 'journalTypes', value: { ...t } })),
+          ...prepared.definitions.map((d): Write => ({ op: 'put', store: 'journalDefinitions', value: { ...d } })),
+          { op: 'put', store: 'meta', value: { key: 'journal', journalRevision } },
+        ];
+        const committed = await deps.persistence.commit({ checks: [journalUnchanged(current)], writes });
+        if (committed.kind === 'RuntimeNotWritable') return committed;
+        // Only the Journal counter moved: read again and prepare the seed afresh.
+        if (committed.kind !== 'Committed') {
+          if (attempt < MAX_ATTEMPTS) continue;
+          return { kind: 'Conflict' };
+        }
+        return { kind: 'Seeded', additions: prepared.types.map((t) => t.productKey), snapshot: { journalRevision } };
+      }
     },
   };
 }
