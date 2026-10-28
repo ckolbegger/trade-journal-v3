@@ -213,4 +213,13 @@ describe('coverage (P8)', () => {
     expect(createSessionPolicy({ ...definition, id: 'other', revision: 9 }).identity.digest).toBe(first.identity.digest);
     expect(withRow.classify('2026-10-12')).toMatchObject({ kind: 'Closure', name: 'Test closure' });
   });
+
+  it('should reject a policy definition whose table has two rows for one date', () => {
+    const source = { name: 'test', url: 'https://example.test' };
+    const table = [
+      { date: '2026-10-12', kind: 'Closure' as const, name: 'Test closure', source },
+      { date: '2026-10-12', kind: 'EarlyClose' as const, name: 'Test early close', source },
+    ];
+    expect(() => createSessionPolicy({ id: 'test', revision: 1, coverage: { first: '2020-01-01', last: '2030-12-31' }, table })).toThrow(/2026-10-12/);
+  });
 });

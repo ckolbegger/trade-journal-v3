@@ -2,7 +2,7 @@ import { Temporal } from 'temporal-polyfill';
 import type { Instant } from '../time/index.ts';
 import { policyDigest } from './digest.ts';
 import { BUFFER_MINUTES, regularHolidays } from './rules.ts';
-import type { Covered, DayClass, ExchangeDate, Session, SessionPolicy, SessionPolicyCoverage, SessionPolicyDefinition } from './types.ts';
+import type { Covered, DayClass, ExchangeDate, Session, SessionPolicy, SessionPolicyCoverage, SessionPolicyDefinition, TableRow } from './types.ts';
 
 const EXCHANGE_ZONE = 'America/New_York';
 
@@ -12,7 +12,11 @@ function exchangeInstant(day: Temporal.PlainDate, hour: number): Instant {
 }
 
 export function createSessionPolicy(definition: SessionPolicyDefinition): SessionPolicy {
-  const rows = new Map(definition.table.map((row) => [row.date, row]));
+  const rows = new Map<ExchangeDate, TableRow>();
+  for (const row of definition.table) {
+    if (rows.has(row.date)) throw new Error(`Session policy table has two rows for ${row.date}`);
+    rows.set(row.date, row);
+  }
   const coverageDiagnostic = (date: ExchangeDate): SessionPolicyCoverage => ({ kind: 'SessionPolicyCoverage', date, coverage: definition.coverage });
   const classify = (date: ExchangeDate): DayClass => {
     if (date < definition.coverage.first || date > definition.coverage.last) return { kind: 'NotCovered', date, coverage: definition.coverage };
