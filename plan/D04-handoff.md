@@ -4,7 +4,7 @@
 
 Written 2026-10-27, after D2 completed. [D02-handoff.md](D02-handoff.md) is the record of D2's session; this note is the starting point for D4.
 
-This session **implements D4, "Daily Review, with Manual Marks and ongoing risk/reward"** (D3 was merged into it, decision 24), under the frozen plan at revision 9. D2 is complete:
+This session **implements D4, "Daily Review, with Manual Marks and ongoing risk/reward"** (D3 was merged into it, decision 24), under the frozen plan at revision 10. D2 is complete:
 - Its gate passed (critic-3), and so did the gates of its follow-up and UI-alignment batches (critic-4, critic-7, critic-9, critic-10).
 - Every D2 acceptance row is marked covered.
 - It is tagged `claude-opus-5.5-d2` on `de3fa27`, the last D2 commit (decision 50), and pushed.
@@ -22,7 +22,7 @@ The repository hosts several independent implementations of the same spec, each 
 | Worktree path | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | Branch | `claude-opus-5.5` |
 | Dev server port | `5175`, from the gitignored `.env.local` |
-| Frozen plan | tag `claude-opus-5.5-plan-r9` (revision 9) |
+| Frozen plan | tag `claude-opus-5.5-plan-r10` (revision 10) |
 | D2 release | tag `claude-opus-5.5-d2` (`de3fa27`) |
 | D4 starting point | tag `claude-opus-5.5-pre-d4` (the commit that added this note and revision 9) |
 
@@ -34,7 +34,7 @@ Run these checks. Each one must match:
 | `git branch --show-current` | `claude-opus-5.5` |
 | `git status -sb` | `## claude-opus-5.5...origin/claude-opus-5.5`, in sync or ahead only by D4 commits; no uncommitted changes |
 | `git log --oneline claude-opus-5.5-pre-d4..HEAD` | empty at the first session; afterwards only D4 task commits and their evidence and handoff updates, ending with the commit section 7 names as the last commit |
-| `git tag --list 'claude-opus-5.5-*'` | includes `claude-opus-5.5-plan-r9`, `claude-opus-5.5-d2` and `claude-opus-5.5-pre-d4` |
+| `git tag --list 'claude-opus-5.5-*'` | includes `claude-opus-5.5-plan-r10`, `claude-opus-5.5-d2` and `claude-opus-5.5-pre-d4` |
 | `git rev-parse claude-opus-5.5-d2` | `de3fa276a2632b568296040fd56efd2825708a39` |
 | `grep DEV_PORT .env.local` | `DEV_PORT=5175` |
 | `node --version` | `v26.x`, at or above `v26.12.0` (decision 43) |
@@ -75,11 +75,12 @@ You may read D5–D8's breakdowns for context, since several of them amend D4 (s
 2. Name the affected specification passages, acceptance scenarios and durable compatibility.
 3. Ask for approval to revise the plan.
 
-An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`; the next one is r10. Updating an acceptance row's status from `planned` to `covered` once evidence exists is not a revision, but ask the user before doing it, as was done for D1 and D2.
+An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`; the next one is r11. Updating an acceptance row's status from `planned` to `covered` once evidence exists is not a revision, but ask the user before doing it, as was done for D1 and D2.
 
 ## 3. D4 specifics
 
 - **Order.** Follow D4's task graph (section 3 of its breakdown). Fix the frame, evaluation, Review, Action and Open read models in T4.19's type module early; that is what lets the four tracks the breakdown names proceed in parallel: session policy and Market Data (T4.1–T4.7), Trade Analysis (T4.8–T4.10), persistence, Trade Record and Journal (T4.3, T4.11–T4.13, T4.17), and UI (T4.20–T4.25). Daily Review (T4.14–T4.16) and Trade Views (T4.18) join them. Run tasks one at a time.
+- **Session-policy coverage (decision 51, revision 10).** Coverage is 2024-01-01 through 2028-12-31. T4.1 was built for 2000–2028 and must be restated: a fresh subagent restates its cases test-first per the D4 breakdown's revised T4.1 text, shrinks the table to 2024–2028, and moves any T4.1-B1 test date outside the new coverage (1999-12-31, 2000-01-03) to its 2024 equivalent. T4.2 then transcribes NYSE's calendars for 2024–2028 only; the earlier T4.2 attempt's source notes are in `evidence/D04/t4.2-first-attempt-source-notes.md` and, for 2024–2028, used nyse.com and ICE announcements.
 - **P14 and attention pressure (decision 49).** Pressure is the losing share (risk consumed since entry ÷ risk at entry) or the winning share (reward consumed since entry ÷ reward at entry), the at-entry figures evaluated with each open Lot's open cost, without fees, in place of the Mark. Pressure above 0 is quantified pressure; 0 is routine. At equal pressure the losing Trade comes first, then Last Activity descending, then identity. The reason states the side and the share ("75% of the way from entry to the Stop"). T4.14's attention cases and the five-Trade fixture (T-A 91/291, T-E 1/10) were rewritten for it. The Zero case (Unbounded reward) is not reachable in D4, because every Long Stock Plan has a Target.
 - **This is the second schema change** (schema 2 → 3), through D2's migration engine (A30): the `v2→v3` transform and the `v1→v2→v3` chain, candidate database, pointer flip, cleanup, the `tj-lifecycle` lock and Migration Blocked.
 - **Amendments later breakdowns made to D4.** These are part of the frozen D4 and must be built now:
@@ -89,7 +90,7 @@ An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`; the ne
 - **Do not build D5+ behavior early:** no deferred reflection or Journal Debt, exits or closing, options or Settlement Due, backup or Restore, Pricing Provider or Daily Bars, opening an exact past Review date, Stop Discipline Deviations, corrections of Executions, or management revisions. The same list (D4 section 7) is what D4's critic must not treat as defects.
 - **The NYSE calendar (T4.2).** `verify:session-policy` compares the rules with a transcription of NYSE's published holiday, early-close and historical-closing calendars, each year with its source and retrieval date. Transcribing it needs web access (WebFetch or WebSearch). If neither is available, stop and ask the user for the calendars.
 - **The previous release (A50, T4.27)** is exported from the tag `claude-opus-5.5-d2` (`de3fa27`, decision 50) with `git archive` into a scratch directory and built there. Never create a worktree for it.
-- **Benchmarks (AC-PERF-001, T4.30, T4.31).** The generator simulates every session from 2021-10-11 with Playwright's pinned clock (A52), adding about 189,000 Marks and 126,000 Actions; generation takes on the order of an hour and is cached per generator and schema version. Thresholds stay at a nearest-rank p95 of 2,500 ms cold and 1,500 ms warm. Results go in `evidence/D04/bench.md`. Run the generator in the background and continue with other tasks.
+- **Benchmarks (AC-PERF-001, T4.30, T4.31).** The generator simulates every session from 2024-01-02 (revision 10, decision 51) with Playwright's pinned clock (A52), adding about 189,000 Marks and 126,000 Actions; generation takes on the order of an hour and is cached per generator and schema version. Thresholds stay at a nearest-rank p95 of 2,500 ms cold and 1,500 ms warm. Results go in `evidence/D04/bench.md`. Run the generator in the background and continue with other tasks.
 - **TDD discipline.** Run every `it should` case red, then green, one at a time. Record the commands and outcomes in `evidence/D04/tdd-log.md` (create it before the first task, with a note that its rows are single-case runs; `tdd.sh` refuses to run without it). Code written before its red is backed out and rerun to a genuine red. A case that passes on its first run because earlier work already built the behavior gets the mutation check in the `tdd-task` agent (an assertion failure or runtime exception, never a compile or type error) and is flagged for the user; never fabricate a red. Structural tasks record their exact verification in `evidence/D04/structural.md`. Engine and OS versions go in `evidence/D04/provenance.md`.
 - **Test cost.** Routine browser suites run in Chromium only, with the faults build. `test:e2e` runs `e2e/d1 e2e/d2`; extend it to `e2e/d1 e2e/d2 e2e/d4`, since D4's gate needs all three. Evidence from all three engines belongs in RC.
 - **The browser-critic gate (T4.34).**
@@ -171,7 +172,7 @@ Never push.
 - Any deliverable other than D4, unless the user says otherwise.
 - D1's and D2's optional polish, unless the user asks. The D2 items the user triaged as "leave" on 2026-10-27 (`evidence/D02/structural.md`, "Triage of the remaining findings") stay as they are: the WebKit sticky caption, the caption inset, the Deviations bullet list, Record entry on a lifecycle disagreement, ungrouped share quantities, the Recovery Only resize delay, the "planned Not applicable" wording, and `<del>` until D15.
 - F12, the section-validator gaps, carried into D8's T8.6.
-- Breakdowns for D9–D28 and RC. D9's numbering will start at P36, A150 and decision 51.
+- Breakdowns for D9–D28 and RC. D9's numbering will start at P36, A150 and decision 52.
 - Editing `specs/`, or editing the frozen plan without an approved revision.
 - Cloudflare setup, which the user will do, and verifying Marketdata.app's CORS support (due before D11's breakdown, decision 15).
 
@@ -182,6 +183,6 @@ Update this section at the end of each task.
 | | |
 |---|---|
 | Tasks done | T4.1 Session policy (`fd100c5`), with bug tasks T4.1-B1 neighbours respect coverage (`b3e55b5`) and T4.1-B2 reject duplicate table dates (`b1c7ad2`); all ocr reviews clean; cumulative run after T4.1 passed (`evidence/D04/structural.md`). |
-| Next task | **T4.2, Session-policy verification against NYSE's published calendars** (structural; D4 section 5). It also settles the T4.1 ocr finding that the early-close table may omit 2002-07-05 and 2003-12-26 and may be wrong on 2002-07-03 and 2003-07-03, and the T4.1 agent's doubts (2000-07-03, 1 pm closes such as 2001-11-23, generic source URLs). The table is `src/domain/session-policy/table.ts` (`NYSE_TABLE`); `RULES_VERSION` and `BUFFER_MINUTES` are in `rules.ts`; built-in digest `896a31a8…ce42` at revision 1. |
-| Last commit | the T4.1 evidence and handoff commit after `b1c7ad2` |
+| Next task | **T4.1-R, restate T4.1 under revision 10** (coverage 2024-01-01 to 2028-12-31; D4 section 4, "T4.1 Session policy", now 19 cases), then **T4.2** for 2024–2028. The first T4.2 attempt stopped on missing NYSE sources for 2011 and 2000–2002 and changed nothing; the user then directed revision 10. |
+| Last commit | `docs(plan): revision 10 ...`, tagged `claude-opus-5.5-plan-r10` |
 | Open questions | **D4 flagged first-run passes:** T4.1, 9 of 20 cases (Saturday New Year's, Good Friday, Columbus Day, DST closes, exactly 16:30, weekend latest-completed, early-close latest-completed, Thanksgiving skip, latestCompleted coverage diagnostic), each built by an earlier case and mutation-checked; T4.1-B1 case 2. Details in `evidence/D04/tdd-log.md`. **D4 decisions:** the T4.1 ocr table-accuracy finding was folded into T4.2 rather than becoming a bug task, since T4.2 corrects the table against NYSE's published calendars. Carried from D2 for the user, none blocking: `npm audit` reports 3 high findings in `sharp` via the pinned `wrangler@4.147.0` (deploy-only), and fixing them needs a pin change, so a plan revision. `engine-strict`'s refusal was never exercised. `sw.js` is outside the inventory by design (T1.3), so a worker-only change keeps the release identity. Local times show no UTC offset, so a DST fall-back hour is ambiguous wherever times are shown (T2.51-B1). D2's flagged first-run passes and decisions are listed in `plan/D02-handoff.md`, section 7, "Open questions". |
