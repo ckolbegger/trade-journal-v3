@@ -15,6 +15,7 @@ export {
   type RecoverDiagnostic,
   type RecoverRequest,
   type RecoverResult,
+  type ResolveSessionQuery,
   type ResolvedKey,
 } from './market-data.ts';
 export type {

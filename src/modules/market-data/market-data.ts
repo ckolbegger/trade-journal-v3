@@ -102,7 +102,13 @@ export interface ResolveFramesQuery {
   readonly expectedSnapshot?: string;
 }
 
-export type MarketDataQuery = ResolveFramesQuery;
+// The session a point context names, with no Instrument: Daily Review resolves its date and cutoff here.
+export interface ResolveSessionQuery {
+  readonly kind: 'ResolveSession';
+  readonly context: FrameContext;
+}
+
+export type MarketDataQuery = ResolveFramesQuery | ResolveSessionQuery;
 
 // One point frame: an Instrument at one session, with that session's close and the next session once completed.
 export interface MarkFrame {
@@ -114,6 +120,8 @@ export interface MarkFrame {
 }
 
 export type MarketDataQueryResult =
+  // The session's trading date and its close, which is the Review Cutoff (P9).
+  | { readonly kind: 'Session'; readonly tradingDate: string; readonly closeInstant: string }
   | { readonly kind: 'SnapshotUnchanged'; readonly snapshotId: string; readonly evidenceDigest: string }
   | {
       readonly kind: 'Frames';
@@ -453,6 +461,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
     async query(query) {
       const resolved = resolveDay(query.context);
       if (resolved.kind === 'Rejected') return resolved;
+      if (query.kind === 'ResolveSession') return { kind: 'Session', tradingDate: resolved.day.date, closeInstant: resolved.day.close };
       const instruments = [...new Set(query.instruments)].sort();
       const { value: evidence } = await deps.persistence.readSnapshot(['observations'], (tx) => frameEvidence(tx, resolved.day.date, instruments));
       return frameResult(query, resolved.day, instruments, evidence);

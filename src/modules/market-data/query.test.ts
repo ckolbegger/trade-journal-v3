@@ -339,3 +339,22 @@ describe('bounded reads (A47)', () => {
     ]);
   });
 });
+
+describe('ResolveSession (T4.14: Daily Review resolves its date through Market Data)', () => {
+  it('should resolve the latest completed session at an as-of instant to its trading date and close, and reject an instant outside coverage', async () => {
+    const { marketData } = await setup();
+    // Monday 16:15 New York: the session closed at 16:00 but completes at 16:30, so Friday is still the latest completed.
+    expect(await marketData.query({ kind: 'ResolveSession', context: { kind: 'Current', asOf: '2026-10-12T20:15:00Z' } })).toEqual({
+      kind: 'Session',
+      tradingDate: '2026-10-09',
+      closeInstant: '2026-10-09T20:00:00Z',
+    });
+    expect(await marketData.query({ kind: 'ResolveSession', context: { kind: 'Current', asOf: '2026-10-12T20:30:00Z' } })).toEqual({
+      kind: 'Session',
+      tradingDate: '2026-10-12',
+      closeInstant: '2026-10-12T20:00:00Z',
+    });
+    const outside = await marketData.query({ kind: 'ResolveSession', context: { kind: 'Current', asOf: '2020-01-02T21:00:00Z' } });
+    expect(outside).toEqual({ kind: 'Rejected', issues: [{ field: 'asOf', code: 'SessionPolicyCoverage' }] });
+  });
+});
