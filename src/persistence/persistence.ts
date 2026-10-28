@@ -92,7 +92,9 @@ export type CreateWorkspaceResult =
 
 export type Write =
   | { readonly op: 'put' | 'add'; readonly store: WorkspaceStore; readonly value: Record<string, unknown> }
-  | { readonly op: 'delete'; readonly store: WorkspaceStore; readonly key: IDBValidKey };
+  | { readonly op: 'delete'; readonly store: WorkspaceStore; readonly key: IDBValidKey }
+  // Adds one to a numeric field of a meta record, read inside the commit transaction.
+  | { readonly op: 'increment'; readonly store: 'meta'; readonly key: string; readonly field: string };
 
 // Rechecked inside the commit transaction: `verify` receives the stored record and must
 // answer synchronously.
@@ -372,6 +374,9 @@ export function createPersistence(deps: PersistenceDeps): Persistence {
         let request: Promise<unknown>;
         if (write.op === 'delete') {
           request = store.delete(write.key);
+        } else if (write.op === 'increment') {
+          const record = (await store.get(write.key)) as Record<string, number>;
+          request = store.put({ ...record, [write.field]: record[write.field]! + 1 });
         } else {
           const value: Record<string, unknown> = { ...write.value, revision: contentRevision };
           request = write.op === 'add' ? store.add(value) : store.put(value);

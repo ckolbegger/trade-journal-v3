@@ -227,6 +227,14 @@ describe('semantic commit', () => {
     expect(await rawGet(databaseName, 'journalEntries', 'entry-1')).toBeDefined();
   });
 
+  it('should increment a meta field inside the commit transaction, so that two concurrent commits raise it by 2', async () => {
+    const { p, databaseName } = await created();
+    const bump = { op: 'increment', store: 'meta', key: 'marketDataRevision', field: 'marketDataRevision' } as const;
+    const results = await Promise.all([p.commit({ checks: [], writes: [bump] }), p.commit({ checks: [], writes: [bump] })]);
+    expect(results.map((r) => r.kind)).toEqual(['Committed', 'Committed']);
+    expect(await rawGet(databaseName, 'meta', 'marketDataRevision')).toEqual({ key: 'marketDataRevision', marketDataRevision: 2 });
+  });
+
   it('should write nothing and leave the content revision unchanged when a binding check fails, returning a typed Conflict that names the stale binding', async () => {
     const { p, databaseName } = await created();
     await p.commit({ checks: [], writes: [{ op: 'put', store: 'catalog', value: { id: 'account-1', label: 'Old' } }] });

@@ -98,15 +98,6 @@ function keyUnchanged(key: ObservationKey, expected: ExpectedResolutionRevision)
   };
 }
 
-function marketDataUnchanged(marketDataRevision: number): BindingCheck {
-  return {
-    name: `marketDataRevision@${marketDataRevision}`,
-    store: 'meta',
-    key: 'marketDataRevision',
-    verify: (current) => ((current?.['marketDataRevision'] as number | undefined) ?? 0) === marketDataRevision,
-  };
-}
-
 const SYMBOL = /^[A-Z][A-Z0-9.]{0,9}$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -150,9 +141,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
       if (issues.length > 0) return { kind: 'Rejected', issues };
       const { value: current } = await deps.persistence.readSnapshot(['meta', 'observations'], async (tx) => ({
         record: stripRevision(await tx.get('observations', [key.tradingDate, key.instrumentKey])),
-        marketDataRevision: ((await tx.get('meta', 'marketDataRevision'))?.['marketDataRevision'] as number | undefined) ?? 0,
       }));
-      const { marketDataRevision } = current;
       if (revisionOf(current.record) !== command.expectedResolutionRevision) return conflictOf(key, current.record);
       const effective = current.record?.marks.find((m) => m.revisionId === current.record?.effectiveMarkId);
       if (command.intention === 'RecordInitialManualMark' && effective) return conflictOf(key, current.record);
@@ -191,10 +180,10 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
         effectiveAcknowledgmentId: current.record?.effectiveAcknowledgmentId ?? null,
       };
       const committed = await deps.persistence.commit({
-        checks: [keyUnchanged(key, command.expectedResolutionRevision), marketDataUnchanged(marketDataRevision)],
+        checks: [keyUnchanged(key, command.expectedResolutionRevision)],
         writes: [
           { op: 'put', store: 'observations', value: { ...record } },
-          { op: 'put', store: 'meta', value: { key: 'marketDataRevision', marketDataRevision: marketDataRevision + 1 } },
+          { op: 'increment', store: 'meta', key: 'marketDataRevision', field: 'marketDataRevision' },
         ],
       });
       if (committed.kind === 'RuntimeNotWritable') return committed;

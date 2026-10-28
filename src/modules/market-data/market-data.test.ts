@@ -240,6 +240,15 @@ describe('concurrent saves', () => {
     expect(observations[0]?.marks).toHaveLength(1);
     expect(marketDataRevision).toBe(1);
   });
+
+  it('should save both of two simultaneous initial Marks for different keys, incrementing marketDataRevision once for each', async () => {
+    const { marketData, persistence } = await setup();
+    const results = await Promise.all([marketData.save(initial({ instrumentKey: 'AAA' })), marketData.save(initial({ instrumentKey: 'BBB' }))]);
+    expect(results.map((r) => r.kind)).toEqual(['Saved', 'Saved']);
+    const { observations, marketDataRevision } = await stored(persistence);
+    expect(observations).toHaveLength(2);
+    expect(marketDataRevision).toBe(2);
+  });
 });
 
 describe('key and price validation (P8, P9, P10)', () => {
