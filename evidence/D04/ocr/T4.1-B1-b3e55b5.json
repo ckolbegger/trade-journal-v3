@@ -1,0 +1,81 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 7422,
+    "input_tokens": 7362,
+    "output_tokens": 60,
+    "cache_read_tokens": 3840,
+    "elapsed": "6s"
+  },
+  "tool_calls": {
+    "total": 1,
+    "by_tool": {
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/domain/session-policy/policy.ts",
+      "files": [
+        "src/domain/session-policy/policy.ts"
+      ]
+    }
+  ],
+  "session_id": "6249a934-c762-4398-adf0-478f2a85a883",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "6249a934-c762-4398-adf0-478f2a85a883",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "b3e55b5",
+      "resolved_base": "fd100c59ebc0bb292922a00fee2d7a602bf6ce5d",
+      "resolved_head": "b3e55b5f248c23bcdc25a85b872a6d26fd799291",
+      "exact_range": "fd100c59ebc0bb292922a00fee2d7a602bf6ce5d..b3e55b5f248c23bcdc25a85b872a6d26fd799291",
+      "source_artifact_sha256": "9e8d4d7f7e1422fc58e1e2e215c718da494d2253ea54fc64c3937428da4360de"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "11883c4c79292d276e47d3385ca457611cbde089311e3d48133ad11db8ed6dfc",
+          "path": "src/domain/session-policy/policy.ts",
+          "fingerprint": "eb2d7b41cf842dfaa662952ab4c2b475e7d46efb1c5f063386fe717ab1b19875"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "11883c4c79292d276e47d3385ca457611cbde089311e3d48133ad11db8ed6dfc",
+          "path": "src/domain/session-policy/policy.ts",
+          "fingerprint": "eb2d7b41cf842dfaa662952ab4c2b475e7d46efb1c5f063386fe717ab1b19875"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 5946
+  }
+}

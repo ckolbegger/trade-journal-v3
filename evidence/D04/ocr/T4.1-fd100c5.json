@@ -1,0 +1,176 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 4 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 4,
+    "total_tokens": 160067,
+    "input_tokens": 157714,
+    "output_tokens": 2353,
+    "cache_read_tokens": 15360,
+    "elapsed": "1m49s"
+  },
+  "tool_calls": {
+    "total": 10,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 3,
+      "file_find": 2,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/domain/session-policy/policy.ts",
+      "content": "Validate the supplied date against coverage before stepping. Currently nextSession('1999-12-31') returns 2000-01-03 and previousSession('2029-01-01') returns 2028-12-29, despite P8 requiring a SessionPolicyCoverage diagnostic for dates outside coverage. Add boundary tests for both inward-pointing requests.",
+      "existing_code": "  const neighbour = (date: ExchangeDate, step: 1 | -1): Covered\u003cSession\u003e =\u003e {\n    for (let day = Temporal.PlainDate.from(date).add({ days: step }); ; day = day.add({ days: step })) {",
+      "start_line": 31,
+      "end_line": 32,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/domain/session-policy/policy.ts",
+      "content": "Reject duplicate table dates before constructing the map. Classification uses the last row for each date, but policyDigest sorts by date and kind. Thus reversing a Closure and EarlyClose row for the same trading date produces the same digest but changes classification from Session to Closure. Enforcing unique dates keeps policy identity consistent with behavior.",
+      "existing_code": "  const rows = new Map(definition.table.map((row) =\u003e [row.date, row]));",
+      "start_line": 15,
+      "end_line": 15,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/domain/session-policy/digest.ts",
+      "content": "This comparator uses nested ternaries, which the review checklist explicitly prohibits. Use a block comparator with separate date and kind comparisons to make the canonical ordering easier to audit.",
+      "existing_code": "    .sort((a, b) =\u003e (a.date \u003c b.date ? -1 : a.date \u003e b.date ? 1 : a.kind \u003c b.kind ? -1 : a.kind \u003e b.kind ? 1 : 0))",
+      "start_line": 10,
+      "end_line": 10,
+      "category": "style",
+      "severity": "low"
+    },
+    {
+      "path": "src/domain/session-policy/table.ts",
+      "content": "The historical early-close table is incomplete: NYSE closed at 13:00 on 2002-07-05 and 2003-12-26, but neither date has a row. Both are within the advertised coverage, so classify currently gives them a 16:00 close and latestCompleted uses a completion three hours too late. Add the historical early-close rows with supporting sources and regression cases; also verify the July 2002 entries against the historical schedule rather than applying today's July 3 convention.",
+      "existing_code": "  { date: '2002-07-03', kind: 'EarlyClose', name: 'Day before Independence Day', source: HOURS },",
+      "start_line": 31,
+      "end_line": 31,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Session policy domain: types, rules, policy evaluation, table, digest, and exports",
+      "files": [
+        "src/domain/session-policy/digest.ts",
+        "src/domain/session-policy/index.ts",
+        "src/domain/session-policy/policy.ts",
+        "src/domain/session-policy/rules.ts",
+        "src/domain/session-policy/table.ts",
+        "src/domain/session-policy/types.ts"
+      ]
+    }
+  ],
+  "session_id": "7973f261-b334-48a7-9e4a-e4dbd193d3bf",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7973f261-b334-48a7-9e4a-e4dbd193d3bf",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "fd100c5",
+      "resolved_base": "e7fcb755ac9c2432a7e1a79f695a56f0264d9c66",
+      "resolved_head": "fd100c59ebc0bb292922a00fee2d7a602bf6ce5d",
+      "exact_range": "e7fcb755ac9c2432a7e1a79f695a56f0264d9c66..fd100c59ebc0bb292922a00fee2d7a602bf6ce5d",
+      "source_artifact_sha256": "2f8f866c63ebc720ba2bb64ac1c158bcfe65f8665c1a239572fb5c052f6291a8"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0bfe2d794e997fe4d3ac0ce7c2e3140bf787a0fd8e8bb766e458702658fd30bb",
+          "path": "src/domain/session-policy/digest.ts",
+          "fingerprint": "d94af3d7ef71e0768dc23d497199f10bd858e8437c6c304844b733132567c2d4"
+        },
+        {
+          "item_id": "11883c4c79292d276e47d3385ca457611cbde089311e3d48133ad11db8ed6dfc",
+          "path": "src/domain/session-policy/policy.ts",
+          "fingerprint": "10b1d9faa10c940d96743cdab00308347b455717665113228638ec516172b177"
+        },
+        {
+          "item_id": "2236688b95445681fdd37aaa0607b0cdcc203d25dd8d9381f5c1f07cc8473a24",
+          "path": "src/domain/session-policy/rules.ts",
+          "fingerprint": "b33e2aac6c2a21029c9c9f13a1f828ac4e424041977681cb671944cd86e8117e"
+        },
+        {
+          "item_id": "5d5035aa6be3747324e54864ed7a6c5d51d8a669ced41a91bf7dd48e0e781646",
+          "path": "src/domain/session-policy/index.ts",
+          "fingerprint": "5782973fa4c0552a19002544285e92488671ba6a3f6aad15e3921d343aabdd36"
+        },
+        {
+          "item_id": "b52193565402f00e2e0e64f41541bd9f154fdaa736890fd9baae41477c99c736",
+          "path": "src/domain/session-policy/types.ts",
+          "fingerprint": "96bd396554759fc2df0b0d6a63c777617e5a88f57b95904f3c0ca35cc0b44613"
+        },
+        {
+          "item_id": "efb760ca2849f8f832592606d751f6356a62cc2f9bacf5ed9f4238436a1bee6d",
+          "path": "src/domain/session-policy/table.ts",
+          "fingerprint": "813003093a228ac9f6a770bc7ec25237173033c99ba0fac40687f83253559119"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0bfe2d794e997fe4d3ac0ce7c2e3140bf787a0fd8e8bb766e458702658fd30bb",
+          "path": "src/domain/session-policy/digest.ts",
+          "fingerprint": "d94af3d7ef71e0768dc23d497199f10bd858e8437c6c304844b733132567c2d4"
+        },
+        {
+          "item_id": "11883c4c79292d276e47d3385ca457611cbde089311e3d48133ad11db8ed6dfc",
+          "path": "src/domain/session-policy/policy.ts",
+          "fingerprint": "10b1d9faa10c940d96743cdab00308347b455717665113228638ec516172b177"
+        },
+        {
+          "item_id": "2236688b95445681fdd37aaa0607b0cdcc203d25dd8d9381f5c1f07cc8473a24",
+          "path": "src/domain/session-policy/rules.ts",
+          "fingerprint": "b33e2aac6c2a21029c9c9f13a1f828ac4e424041977681cb671944cd86e8117e"
+        },
+        {
+          "item_id": "5d5035aa6be3747324e54864ed7a6c5d51d8a669ced41a91bf7dd48e0e781646",
+          "path": "src/domain/session-policy/index.ts",
+          "fingerprint": "5782973fa4c0552a19002544285e92488671ba6a3f6aad15e3921d343aabdd36"
+        },
+        {
+          "item_id": "b52193565402f00e2e0e64f41541bd9f154fdaa736890fd9baae41477c99c736",
+          "path": "src/domain/session-policy/types.ts",
+          "fingerprint": "96bd396554759fc2df0b0d6a63c777617e5a88f57b95904f3c0ca35cc0b44613"
+        },
+        {
+          "item_id": "efb760ca2849f8f832592606d751f6356a62cc2f9bacf5ed9f4238436a1bee6d",
+          "path": "src/domain/session-policy/table.ts",
+          "fingerprint": "813003093a228ac9f6a770bc7ec25237173033c99ba0fac40687f83253559119"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 109227
+  }
+}
