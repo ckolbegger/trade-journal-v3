@@ -324,6 +324,29 @@ describe('bindings rechecked inside the commit', () => {
   }, 30_000);
 });
 
+describe('the shared Journal counter keeps moving (ADR 0011)', () => {
+  it('should return Conflict and write nothing when the Journal counter moves on every attempt', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a, b, c, e } = await fiveTradeFixture(stack);
+    const binding = await bindingFor(stack, a);
+    // Before each commit, another writer saves an Action for a different Trade: only the shared counter moves.
+    const others = [b, c, e];
+    let commits = 0;
+    const commit = (async (...args: Parameters<typeof stack.persistence.commit>) => {
+      await stack.saveAction(others[commits]!, 'Hold');
+      commits += 1;
+      return stack.persistence.commit(...args);
+    }) as typeof stack.persistence.commit;
+    const review = createDailyReview({ ...stack, persistence: { ...stack.persistence, commit } });
+
+    const result = await review.save({ kind: 'SaveTradeAction', binding, action: 'Hold' });
+
+    expect(result).toEqual({ kind: 'Conflict' });
+    expect(commits).toBe(3);
+    expect((await stack.journal.queryActions({ reviewDate: binding.reviewDate })).actions[a]).toBeUndefined();
+  }, 30_000);
+});
+
 // The Action a save returns is the one it committed (A38), whatever lands before its post-commit read.
 describe('the saved Action', () => {
   it('should return the Action this save committed even when another version lands before the post-commit read', async () => {
