@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rational } from '../values/index.ts';
 import { derive, type DerivedTradeState, type TradeAnalysisRecord } from './index.ts';
-import { PC1, PC2, PC3, referenceRecord } from './reference-trade.ts';
+import { LEG_ID, PC1, PC2, PC3, referenceRecord } from './reference-trade.ts';
 
 // Monday 2026-10-12, America/New_York: 10:30 is 14:30Z.
 const MONDAY_1030 = '2026-10-12T14:30:00Z';
@@ -34,5 +34,26 @@ describe('derive at an economic cutoff', () => {
     expect(planned.observationRequirements).toEqual([]);
     const beforeFills = derivedState(referenceRecord([PC1]), { cutoff: '2026-10-12T13:30:00Z', valuationDate: '2026-10-12' });
     expect(beforeFills.observationRequirements).toEqual([]);
+  });
+
+  it('should not report a Deviation finding at a cutoff for a Deviation recorded with a Position Change after the cutoff', () => {
+    const recorded = {
+      occurrenceId: 'dev-1',
+      versions: [
+        {
+          fingerprint: { tradeId: 'trade-1', plannedLegId: LEG_ID, positionChangeId: PC3.factId },
+          type: 'EntrySize' as const,
+          form: 'Excess' as const,
+          quantityAbovePlan: '20',
+          causingPositionChangeId: PC3.factId,
+          economicTime: PC3.economicTime,
+          status: 'Active' as const,
+        },
+      ],
+    };
+    const record = { ...referenceRecord([PC1, PC2, PC3]), recordedDeviations: [recorded] };
+
+    expect(derivedState(record, { cutoff: MONDAY_1030 }).findings).toEqual([]);
+    expect(derivedState(record).findings).toEqual([]);
   });
 });

@@ -471,6 +471,21 @@ describe('completion', () => {
     });
   }, 30_000);
 
+  it('should not report an integrity blocker for a Deviation recorded after the cutoff', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const trade = await stack.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '56.00' });
+    await stack.fill(trade, TEN_AM, '100', '50.00');
+    // 16:05 New York: 20 shares above plan, after the 16:00 cutoff, recorded as an Entry Size Deviation.
+    await stack.fill(trade, '2026-10-12T20:05:00Z', '20', '50.50');
+    await stack.saveMark('XYZ', '52.00');
+    await stack.saveAction(trade.tradeId, 'Hold');
+
+    const review = ready(await open(stack, MONDAY_1700));
+
+    expect(review.completion).toEqual({ kind: 'Complete' });
+    expect(walk(review).map((t) => t.band)).not.toContain('Blocker');
+  }, 30_000);
+
   it('should leave historical gaps out of completion', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const mno = await stack.confirm({ symbol: 'MNO', shares: '100', entry: '10.00', stop: '9.00', target: '14.00', planTime: '2026-10-07T13:00:00Z' });

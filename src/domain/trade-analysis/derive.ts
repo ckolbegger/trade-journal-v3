@@ -592,6 +592,10 @@ function atCutoff(record: TradeAnalysisRecord, cutoff: Instant | undefined): Tra
     positionChanges: record.positionChanges
       .map((pc) => ({ ...pc, executions: pc.executions.filter((e) => upTo(e.economicTime)) }))
       .filter((pc) => pc.executions.length > 0),
+    // A recorded Deviation is placed by the Economic Time of the Position Change that raised it.
+    ...(record.recordedDeviations && {
+      recordedDeviations: record.recordedDeviations.filter((d) => upTo(latestVersion(d).economicTime)),
+    }),
   };
 }
 
