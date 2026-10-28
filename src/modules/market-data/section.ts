@@ -23,6 +23,15 @@ export interface MarketDataSectionValidation {
   readonly repairs: readonly never[];
 }
 
+// classify throws on a malformed or impossible calendar date; a stored key may hold one.
+function classifyDate(policy: SessionPolicy, date: string): ReturnType<SessionPolicy['classify']> | 'Invalid' {
+  try {
+    return policy.classify(date);
+  } catch {
+    return 'Invalid';
+  }
+}
+
 export async function validateSection(source: RecordSource, policy: SessionPolicy): Promise<MarketDataSectionValidation> {
   const issues: MarketDataSectionIssue[] = [];
   // Revision and version identities seen so far, kept between batches.
@@ -30,8 +39,9 @@ export async function validateSection(source: RecordSource, policy: SessionPolic
   for await (const batch of source.batches('observations')) {
     for (const record of batch as unknown as readonly ObservationRecord[]) {
       const { instrumentKey, tradingDate } = record;
-      const day = policy.classify(tradingDate);
-      if (day.kind === 'NotCovered') issues.push({ code: 'SessionPolicyCoverage', instrumentKey, tradingDate });
+      const day = classifyDate(policy, tradingDate);
+      if (day === 'Invalid') issues.push({ code: 'NotASession', instrumentKey, tradingDate });
+      else if (day.kind === 'NotCovered') issues.push({ code: 'SessionPolicyCoverage', instrumentKey, tradingDate });
       else if (day.kind !== 'Session') issues.push({ code: 'NotASession', instrumentKey, tradingDate });
       const chains: readonly (readonly [Chain, readonly (string | undefined)[], string | null])[] = [
         ['marks', record.marks.map((m) => m.revisionId), record.effectiveMarkId],

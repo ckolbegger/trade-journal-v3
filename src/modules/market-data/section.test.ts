@@ -103,4 +103,18 @@ describe('Market Data section', () => {
     ]);
     expect(result.repairs).toEqual([]);
   });
+
+  it('should report NotASession for a key whose date is not a valid calendar date', async () => {
+    const source = recordSourceOf({
+      meta: [sessionPolicyMeta],
+      observations: [record('AAA', '2026-02-30', {}), record('BBB', '2026-2-3', {})],
+    });
+
+    const result = await validateSection(source, nyseSessionPolicy);
+
+    expect(result.issues).toEqual([
+      { code: 'NotASession', instrumentKey: 'AAA', tradingDate: '2026-02-30' },
+      { code: 'NotASession', instrumentKey: 'BBB', tradingDate: '2026-2-3' },
+    ]);
+  });
 });
