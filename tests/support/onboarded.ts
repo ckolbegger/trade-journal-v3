@@ -8,7 +8,8 @@ import { testStack } from './stack.ts';
 export async function onboardedStack(...args: Parameters<typeof testStack>) {
   const stack = await testStack(...args);
   const workspace = createWorkspace({ ...stack, host: stack.testHost.host, releaseId: stack.testHost.releaseId });
-  const tradeWorkflows = createTradeWorkflows({ ...stack, guard: createMutationGuard(stack.session) });
+  const guard = createMutationGuard(stack.session);
+  const tradeWorkflows = createTradeWorkflows({ ...stack, guard });
   await workspace.initialize({ timeZone: 'America/New_York' });
   const institution = await stack.catalog.save({ kind: 'CreateInstitution', label: 'Fidelity' });
   if (institution.kind !== 'Saved') throw new Error('institution not saved');
@@ -21,6 +22,7 @@ export async function onboardedStack(...args: Parameters<typeof testStack>) {
   return {
     ...stack,
     workspace,
+    guard,
     tradeWorkflows,
     institution: institution.record,
     account: account.record,

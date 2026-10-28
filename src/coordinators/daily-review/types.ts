@@ -1,9 +1,11 @@
+import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
 import type { Instant } from '../../domain/time/index.ts';
 import type { IncoherentFacts, IntegrityFinding, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import type { TradeSummary } from '../../domain/trade-summary.ts';
 import type { Rational } from '../../domain/values/index.ts';
 import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
-import type { DailyAction, JournalObligationKey } from '../../modules/journal/index.ts';
+import type { StorageFailure } from '../mutation-guard.ts';
+import type { DailyAction, JournalIssue, JournalObligationKey } from '../../modules/journal/index.ts';
 import type { MarkFrame, MarketDataIssue, MarkResolution } from '../../modules/market-data/index.ts';
 
 // The request names the date and the as-of instant (Daily Review, "Date, eligibility, and ordering").
@@ -174,3 +176,62 @@ export type GetDailyTradeReviewResult =
   | { readonly kind: 'ReviewChanged' }
   | { readonly kind: 'ChangedDuringAssembly' }
   | { readonly kind: 'Rejected'; readonly issues: readonly MarketDataIssue[] };
+
+// The Action the trader chose; Hold has an optional Intent, the other three require it.
+export type ActionChoice = 'Hold' | 'Exit' | 'Roll' | 'Adjust';
+
+// SaveTradeAction: the exact binding `getTrade` returned, the chosen Action, and its Intent.
+export interface SaveTradeActionRequest {
+  readonly kind: 'SaveTradeAction';
+  readonly binding: TradeSaveBinding;
+  readonly action: ActionChoice;
+  readonly intent?: string;
+}
+
+// ResolveReviewDebt arrives with D5.
+export type SaveDailyReviewRequest = SaveTradeActionRequest;
+
+// How many of the eligible Trades have an Action for the Review Date.
+export interface ReviewProgress {
+  readonly tradesWithAction: number;
+  readonly tradesEligible: number;
+}
+
+// The first obligation still open, in the normative family order: a Missing Review-date Mark, then
+// the first Trade of the walk without an Action (with the form to answer, as `getTrade` returns it),
+// then nothing, and completion says why.
+export type ReviewNextStep =
+  | { readonly kind: 'Mark'; readonly row: MarkRow }
+  | { readonly kind: 'Trade'; readonly trade: DailyTradeReview }
+  | { readonly kind: 'Done' };
+
+// The Review under the facts the save left: derived like `open`, with a binding for the next reads.
+export type PostSaveReview =
+  | {
+      readonly kind: 'Ready';
+      readonly progress: ReviewProgress;
+      readonly completion: ReviewCompletion;
+      readonly nextStep: ReviewNextStep;
+      readonly binding: ReviewBinding;
+    }
+  // The Action is saved; writes kept landing while the Review was read again. Open it afresh.
+  | { readonly kind: 'ChangedDuringAssembly' };
+
+// The Review-date evidence as it is now, so the trader sees what changed.
+export interface RefreshedEvidence {
+  readonly marketDataSnapshotId: string;
+  readonly frames: readonly MarkFrame[];
+  // The Trade's current FactRevision; absent when the Review no longer finds the Trade eligible.
+  readonly factRevision?: number;
+}
+
+export type SaveDailyReviewResult =
+  | { readonly kind: 'Saved'; readonly action: DailyAction; readonly review: PostSaveReview }
+  // A Mark, an acknowledgment, or the Trade's facts changed since the binding; nothing was written.
+  | { readonly kind: 'ReviewChanged'; readonly evidence: RefreshedEvidence }
+  // Another Action was saved for the Trade and date since the binding; nothing was written.
+  | { readonly kind: 'Conflict' }
+  | { readonly kind: 'Rejected'; readonly issues: readonly (JournalIssue | MarketDataIssue)[] }
+  | { readonly kind: 'ChangedDuringAssembly' }
+  | RuntimeNotWritable
+  | StorageFailure;

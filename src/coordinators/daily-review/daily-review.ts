@@ -1,10 +1,11 @@
 import { openLongStockSummary } from '../../domain/trade-summary.ts';
 import { derive, evaluate, type DerivedTradeState, type IncoherentFacts, type ObservationFrame, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import type { Journal } from '../../modules/journal/index.ts';
-import type { MarkFrame, MarketData, MarketDataIssue } from '../../modules/market-data/index.ts';
+import type { FrameContext, MarkFrame, MarketData, MarketDataIssue } from '../../modules/market-data/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { BrowseRecord, TradeRecord } from '../../modules/trade-record/index.ts';
-import type { Persistence, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
+import { beginSemanticTransaction, type Persistence, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
+import type { MutationGuard } from '../mutation-guard.ts';
 import { attentionOf, byAttention, unavailableFamilies } from './attention.ts';
 import type {
   ActionForm,
@@ -16,10 +17,17 @@ import type {
   MarkRow,
   OpenDailyReviewRequest,
   OpenDailyReviewResult,
+  PostSaveReview,
   ReviewBinding,
   ReviewCompletion,
   ReviewFamily,
+  ReviewNextStep,
+  ReviewProgress,
   ReviewTradeItem,
+  SaveDailyReviewRequest,
+  SaveDailyReviewResult,
+  SaveTradeActionRequest,
+  TradeSaveBinding,
 } from './types.ts';
 
 export interface DailyReviewDeps {
@@ -28,6 +36,7 @@ export interface DailyReviewDeps {
   readonly catalog: ReferenceCatalog;
   readonly journal: Journal;
   readonly marketData: MarketData;
+  readonly guard: MutationGuard;
 }
 
 const ASSEMBLY_ATTEMPTS = 3;
@@ -64,6 +73,9 @@ function observationNeeds(eligible: readonly EligibleTrade[]) {
   return { requirements, earliest };
 }
 
+// The first obligation still open; a Trade is completed with its form after the read.
+type NextTask = Exclude<ReviewNextStep, { readonly kind: 'Trade' }> | { readonly kind: 'Trade'; readonly tradeId: string };
+
 type ReadyReview = Extract<OpenDailyReviewResult, { kind: 'Ready' }>;
 
 // What one pass returns before its binding is checked against the Workspace.
@@ -75,6 +87,9 @@ type Pass =
       readonly kind: 'Ready';
       readonly review: Omit<ReadyReview, 'kind' | 'binding'>;
       readonly evidence: Pick<ReviewBinding, 'marketDataSnapshotId' | 'factRevisions'>;
+      // What a save continues from; `open` does not return it.
+      readonly progress: ReviewProgress;
+      readonly nextTask: NextTask;
     };
 
 // What one Trade pass returns before its binding is checked against the Workspace.
@@ -91,9 +106,18 @@ type Attempt<R> =
   | { readonly done: R }
   | { readonly settle: (binding: { workspace: WorkspaceSnapshotBinding; catalogRevision: number; journalRevision: number }) => R };
 
+// Marks come first, then the first Trade of the walk without an Action (Daily Review, task families).
+function nextTaskOf(today: readonly MarkRow[], walkOrder: readonly string[], actions: Readonly<Record<string, unknown>>): NextTask {
+  const mark = today.find((row) => row.task === 'Manual');
+  if (mark) return { kind: 'Mark', row: mark };
+  const tradeId = walkOrder.find((id) => !(id in actions));
+  return tradeId === undefined ? { kind: 'Done' } : { kind: 'Trade', tradeId };
+}
+
 export interface DailyReview {
   open(request: OpenDailyReviewRequest): Promise<OpenDailyReviewResult>;
   getTrade(request: GetDailyTradeReviewRequest): Promise<GetDailyTradeReviewResult>;
+  save(request: SaveDailyReviewRequest): Promise<SaveDailyReviewResult>;
 }
 
 // Market Data's frame as Trade Analysis reads it: composition maps one into the other.
@@ -208,8 +232,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
   }
 
   // One pass over the module reads. Its Review carries what the pass itself learned of the binding.
-  async function assemble(request: OpenDailyReviewRequest): Promise<Pass> {
-    const session = await deps.marketData.query({ kind: 'ResolveSession', context: { kind: 'Current', asOf: request.asOf } });
+  async function assemble(context: FrameContext): Promise<Pass> {
+    const session = await deps.marketData.query({ kind: 'ResolveSession', context });
     if (session.kind === 'Rejected') return session;
     if (session.kind !== 'Session') throw new Error(`unexpected session result: ${session.kind}`);
     const { tradingDate: reviewDate, closeInstant: cutoff } = session;
@@ -277,6 +301,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         marketDataSnapshotId: recovered.snapshotId,
         factRevisions: Object.fromEntries(derivations.map(({ analysis }) => [analysis.tradeId, analysis.factRevision])),
       },
+      nextTask: nextTaskOf(today, ranked.map(({ item }) => item.tradeId), actions.actions),
+      progress: { tradesWithAction: ranked.filter(({ item }) => item.tradeId in actions.actions).length, tradesEligible: ranked.length },
     };
   }
 
@@ -346,23 +372,131 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     };
   }
 
+  const getTrade = (request: GetDailyTradeReviewRequest) =>
+    coherently<GetDailyTradeReviewResult>(async () => {
+      const pass = await assembleTrade(request);
+      if (pass.kind === 'Expired') return { retry: true };
+      if (pass.kind !== 'Ready') return { done: pass };
+      // The overview's Workspace is the one this read must be in; its content revision moves with every write.
+      return { settle: ({ workspace }) => (workspace.databaseName === request.binding.workspace.databaseName ? { kind: 'Ready', ...pass.review } : { kind: 'ReviewChanged' }) };
+    });
+
+  // The prompts of the Daily Trade Review definition, by the option each Action chooses.
+  const ACTION_PROMPT = 'prompt.daily-trade-review.action';
+  const INTENT_PROMPT = 'prompt.daily-trade-review.intent';
+
+  // The Trade's facts and the Review-date evidence as they are now, against what the form was rendered from.
+  type Checked = { readonly kind: 'Checked'; readonly cutoff: string; readonly marks: readonly (readonly [instrumentKey: string, resolutionRevision: number | 'None'])[] } | Extract<SaveDailyReviewResult, { kind: 'ReviewChanged' | 'Rejected' }>;
+  async function checkBinding(binding: TradeSaveBinding): Promise<Attempt<Checked>> {
+    const session = await deps.marketData.query({ kind: 'ResolveSession', context: { kind: 'Review', reviewDate: binding.reviewDate } });
+    if (session.kind === 'Rejected') return { done: session };
+    if (session.kind !== 'Session') throw new Error(`unexpected session result: ${session.kind}`);
+    const eligible = await eligibleTrades(session.closeInstant, binding.reviewDate);
+    if (!eligible) return { retry: true };
+    const entry = eligible.find(({ analysis }) => analysis.tradeId === binding.tradeId);
+    // The same request as the overview's recovery, so its snapshot is comparable.
+    const instruments = [...observationNeeds(eligible).earliest.keys()];
+    // Read before the frames, so a Mark saved in between fails the commit's recheck rather than slipping past.
+    const { value: marks } = await deps.persistence.readSnapshot(['observations'], (tx) =>
+      Promise.all(instruments.map(async (key) => [key, ((await tx.get('observations', [binding.reviewDate, key]))?.['resolutionRevision'] as number | undefined) ?? 'None'] as const)),
+    );
+    const frames = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Review', reviewDate: binding.reviewDate }, instruments });
+    if (frames.kind === 'Rejected') return { done: frames };
+    if (frames.kind !== 'Frames') throw new Error(`unexpected frames result: ${frames.kind}`);
+    if (entry?.analysis.factRevision !== binding.factRevision || frames.snapshotId !== binding.marketDataSnapshotId) {
+      const evidence = { marketDataSnapshotId: frames.snapshotId, frames: frames.frames, ...(entry && { factRevision: entry.analysis.factRevision }) };
+      return { done: { kind: 'ReviewChanged', evidence } };
+    }
+    return { done: { kind: 'Checked', cutoff: session.closeInstant, marks } };
+  }
+
+  // A commit refused on a binding re-reads and re-validates, so the answer names what changed; bounded (ADR 0011).
+  async function saveTradeAction(request: SaveTradeActionRequest): Promise<SaveDailyReviewResult> {
+    for (let i = 0; i < ASSEMBLY_ATTEMPTS; i++) {
+      const result = await attemptSave(request);
+      if (result.kind !== 'Retry') return result;
+    }
+    return { kind: 'Conflict' };
+  }
+
+  async function attemptSave(request: SaveTradeActionRequest): Promise<SaveDailyReviewResult | { readonly kind: 'Retry' }> {
+    const { binding } = request;
+    const checked = await coherently(() => checkBinding(binding));
+    if (checked.kind !== 'Checked') return checked;
+    const prepared = await deps.journal.prepareEffects({
+      obligation: 'DailyTradeReview',
+      disposition: {
+        kind: 'Complete',
+        form: {
+          definitionId: binding.definitionRevision,
+          answers: {
+            [ACTION_PROMPT]: { kind: 'Option', optionId: `option.daily-trade-review.action.${request.action.toLowerCase()}` },
+            ...(request.intent === undefined ? {} : { [INTENT_PROMPT]: { kind: 'Text', text: request.intent } }),
+          },
+        },
+      },
+      anchor: { kind: 'Trade', ref: binding.tradeId },
+      origin: { kind: 'DailyReview', ref: binding.tradeId, reviewDate: binding.reviewDate },
+      momentTime: checked.cutoff,
+      ...(binding.expectedEntryRevision === undefined ? {} : { expectedEntryRevision: binding.expectedEntryRevision }),
+    });
+    if (prepared.kind === 'Rejected' || prepared.kind === 'Conflict') return prepared;
+    const tx = beginSemanticTransaction();
+    // The Trade the Action was judged against, rechecked in the commit.
+    tx.require({ name: `trade:${binding.tradeId}`, store: 'trades', key: binding.tradeId, verify: (current) => current?.['factRevision'] === binding.factRevision });
+    // The Review-date evidence, by each Instrument's resolution revision: a Mark or an acknowledgment moves it.
+    for (const [instrumentKey, revision] of checked.marks) {
+      tx.require({
+        name: `mark:${instrumentKey}@${binding.reviewDate}`,
+        store: 'observations',
+        key: [binding.reviewDate, instrumentKey],
+        verify: (current) => (current?.['resolutionRevision'] ?? 'None') === revision,
+      });
+    }
+    // The shared Journal counter this save advances (ADR 0011): when it alone moved, the save is read again.
+    tx.require({
+      name: `journal@${prepared.snapshot.journalRevision}`,
+      store: 'meta',
+      key: 'journal',
+      verify: (current) => ((current?.['journalRevision'] as number | undefined) ?? 0) === prepared.snapshot.journalRevision,
+    });
+    deps.journal.applyPreparedEffects(tx, prepared, {});
+    const committed = await deps.persistence.commit(tx.close());
+    if (committed.kind === 'Conflict') return { kind: 'Retry' };
+    if (committed.kind !== 'Committed') throw new Error(`unexpected commit result: ${committed.kind}`);
+    const action = (await deps.journal.queryActions({ reviewDate: binding.reviewDate })).actions[binding.tradeId]!;
+    return { kind: 'Saved', action, review: await postSaveReview(binding.reviewDate) };
+  }
+
+  // The Review under the facts the save left, read like `open`. A Review that is no longer Ready
+  // (the Trade left the eligible set) is for the trader to open afresh.
+  async function postSaveReview(reviewDate: string): Promise<PostSaveReview> {
+    const read = await coherently<Omit<Extract<PostSaveReview, { kind: 'Ready' }>, 'nextStep'> & { nextTask: NextTask } | Extract<PostSaveReview, { kind: 'ChangedDuringAssembly' }>>(async () => {
+      const pass = await assemble({ kind: 'Review', reviewDate });
+      if (pass.kind === 'Expired') return { retry: true };
+      if (pass.kind !== 'Ready') return { done: { kind: 'ChangedDuringAssembly' } };
+      return { settle: (binding) => ({ kind: 'Ready', progress: pass.progress, completion: pass.review.completion, nextTask: pass.nextTask, binding: { ...binding, ...pass.evidence } }) };
+    });
+    if (read.kind !== 'Ready') return read;
+    const { nextTask, ...review } = read;
+    if (nextTask.kind !== 'Trade') return { ...review, nextStep: nextTask };
+    const next = await getTrade({ reviewDate, tradeId: nextTask.tradeId, binding: read.binding });
+    if (next.kind !== 'Ready') return { kind: 'ChangedDuringAssembly' };
+    return { ...review, nextStep: { kind: 'Trade', trade: next.trade } };
+  }
+
   return {
+    save: (request) => deps.guard.run('DailyReview.save', () => saveTradeAction(request)),
+
     // A Review is accepted only if the Workspace is unchanged across its assembly (A46).
     open: (request) =>
       coherently<OpenDailyReviewResult>(async () => {
-        const pass = await assemble(request);
+        const pass = await assemble({ kind: 'Current', asOf: request.asOf });
         if (pass.kind === 'Expired') return { retry: true };
         if (pass.kind !== 'Ready') return { done: pass };
         return { settle: (binding) => ({ kind: 'Ready', ...pass.review, binding: { ...binding, ...pass.evidence } }) };
       }),
 
-    getTrade: (request) =>
-      coherently<GetDailyTradeReviewResult>(async () => {
-        const pass = await assembleTrade(request);
-        if (pass.kind === 'Expired') return { retry: true };
-        if (pass.kind !== 'Ready') return { done: pass };
-        // The overview's Workspace is the one this read must be in; its content revision moves with every write.
-        return { settle: ({ workspace }) => (workspace.databaseName === request.binding.workspace.databaseName ? { kind: 'Ready', ...pass.review } : { kind: 'ReviewChanged' }) };
-      }),
+    getTrade,
   };
 }
