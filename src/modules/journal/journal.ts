@@ -4,6 +4,8 @@ import { requireOpen, type BindingCheck, type IdGenerator, type Persistence, typ
 import type {
   AnswerInput,
   CandidateRef,
+  DailyAction,
+  DailyTradeReviewRequest,
   DeclineProjection,
   EntryProjection,
   JournalObligationKey,
@@ -11,6 +13,8 @@ import type {
   JournalIssue,
   JournalPage,
   JournalQuery,
+  ReviewDateActions,
+  ReviewDateQuery,
   NarrativeAnswer,
   NarrativeEntry,
   NarrativeItem,
@@ -18,13 +22,15 @@ import type {
   PlanReflectionRequest,
   PlanSemantics,
   PositionChangeReflectionRequest,
+  PreparedEntry,
+  PreparedEntryEdit,
   PreparedJournalOutcome,
   PreparePlanReflectionResult,
   ResponseValue,
   PrepareJournalEffectsResult,
 } from './effects.ts';
 import type { JournalSeedManifest } from './manifest.ts';
-import type { EntryDefinitionRecord, JournalSnapshot, JournalTypeRecord } from './records.ts';
+import type { EntryDefinitionRecord, JournalSnapshot, JournalTypeRecord, PromptDefinition } from './records.ts';
 
 export interface JournalDeps {
   readonly persistence: Persistence;
@@ -68,6 +74,7 @@ export interface Journal {
   getDefinitions(request: GetDefinitionsRequest): Promise<GetDefinitionsResult>;
   // Validates a workflow's Journal obligation and prepares its outcome without writing.
   prepareEffects(request: PlanReflectionRequest): Promise<PreparePlanReflectionResult>;
+  prepareEffects(request: DailyTradeReviewRequest): Promise<PrepareJournalEffectsResult>;
   prepareEffects(request: PositionChangeReflectionRequest): Promise<PrepareJournalEffectsResult>;
   // Stages prepared outcomes in the coordinator's semantic transaction, mapping candidate
   // references through Trade Record's durable identities; assigns Entry identities.
@@ -77,6 +84,8 @@ export interface Journal {
     mapping: Readonly<Record<CandidateRef, string>>,
   ): JournalApplyResult;
   query(query: JournalQuery): Promise<JournalPage>;
+  // Every Daily Trade Review Action for a Review Date, keyed by Trade.
+  queryActions(query: ReviewDateQuery): Promise<ReviewDateActions>;
 }
 
 interface StoredEntry {
@@ -152,6 +161,13 @@ function isBlank(answer: AnswerInput | undefined): boolean {
   return answer === undefined || (answer.kind === 'Text' && answer.text.trim() === '');
 }
 
+// RequireWhenOption: the prompt becomes required when its controlling Single Select holds a named option.
+function requiredByOption(prompt: PromptDefinition, answers: Readonly<Record<string, AnswerInput>>): boolean {
+  if (prompt.kind !== 'Text' || !prompt.requiredWhen) return false;
+  const controlling = answers[prompt.requiredWhen.promptId];
+  return controlling?.kind === 'Option' && prompt.requiredWhen.optionIds.includes(controlling.optionId);
+}
+
 // Every issue in the completed form, all at once.
 function validateForm(definition: EntryDefinitionRecord, answers: Readonly<Record<string, AnswerInput>>): JournalIssue[] {
   const issues: JournalIssue[] = [];
@@ -162,7 +178,7 @@ function validateForm(definition: EntryDefinitionRecord, answers: Readonly<Recor
   for (const prompt of definition.prompts) {
     const answer = answers[prompt.id];
     if (isBlank(answer)) {
-      if (prompt.required) issues.push({ promptId: prompt.id, code: 'RequiredAnswerMissing' });
+      if (prompt.required || requiredByOption(prompt, answers)) issues.push({ promptId: prompt.id, code: 'RequiredAnswerMissing' });
       continue;
     }
     if (prompt.kind === 'Scale') {
@@ -193,6 +209,8 @@ function narrativeEntry(
     momentTime: entry.momentTime,
     authoredTime: entry.authoredTime,
     ...(entry.origin.kind === 'PositionChange' ? { positionChangeId: entry.origin.factId } : {}),
+    // A discreet Edited indicator once an Entry has more than one version.
+    ...(entry.versions.length > 1 ? { edited: true as const } : {}),
     responses: version.responses.map(({ promptId, value }) => {
       const prompt = definition.prompts.find((p) => p.id === promptId)!;
       let answer: NarrativeAnswer;
@@ -214,6 +232,7 @@ const MAX_DECLINE_REASON = 500;
 const OBLIGATIONS = {
   PlanReflection: { entryTypeKey: 'entry-type.plan-reflection', sourceKey: 'source.plan-confirmation' },
   PositionChangeReflection: { entryTypeKey: 'entry-type.position-change-reflection', sourceKey: 'source.position-change' },
+  DailyTradeReview: { entryTypeKey: 'entry-type.daily-trade-review', sourceKey: 'source.daily-review' },
 } as const;
 
 export function createJournal(deps: JournalDeps): Journal {
@@ -229,16 +248,30 @@ export function createJournal(deps: JournalDeps): Journal {
     const obligationKey: JournalObligationKey =
       request.obligation === 'PlanReflection'
         ? { entryType: 'PlanReflection', trade: request.anchor.ref }
-        : { entryType: 'PositionChangeReflection', positionChange: request.origin.ref };
-    const { value } = await deps.persistence.readSnapshot(['journalDefinitions', 'meta'], async (tx) => ({
-      definitions: (await tx.getAll('journalDefinitions')) as unknown as EntryDefinitionRecord[],
-      meta: (await tx.get('meta', 'journal')) as JournalMeta | undefined,
-    }));
+        : request.obligation === 'DailyTradeReview'
+          ? { entryType: 'DailyTradeReview', trade: request.anchor.ref, reviewDate: request.origin.reviewDate }
+          : { entryType: 'PositionChangeReflection', positionChange: request.origin.ref };
+    const { value } = await deps.persistence.readSnapshot(['journalDefinitions', 'journalObligations', 'journalEntries', 'meta'], async (tx) => {
+      // A Daily Trade Review whose key already has an Entry is an edit of that Entry.
+      const obligation =
+        obligationKey.entryType === 'DailyTradeReview'
+          ? ((await tx.get('journalObligations', ['DailyTradeReview', obligationKey.reviewDate, obligationKey.trade])) as { outcome: { id: string } } | undefined)
+          : undefined;
+      return {
+        definitions: (await tx.getAll('journalDefinitions')) as unknown as EntryDefinitionRecord[],
+        meta: (await tx.get('meta', 'journal')) as JournalMeta | undefined,
+        existing: obligation && ((await tx.get('journalEntries', obligation.outcome.id)) as unknown as StoredEntry | undefined),
+      };
+    });
+    const existing = value.existing;
+    // A Daily Trade Review save names the Entry revision it edits, or none when it creates the Entry.
+    if (request.obligation === 'DailyTradeReview' && existing?.versions.length !== request.expectedEntryRevision) return { kind: 'Conflict' };
     const snapshot = { journalRevision: value.meta?.journalRevision ?? 0 };
     // The outcome must name the exact current revision the trader was shown.
-    const definition = value.definitions
-      .filter((d) => d.entryTypeKey === entryTypeKey)
-      .sort((a, b) => b.revisionNumber - a.revisionNumber)[0];
+    // An edit uses the Entry's original definition snapshot, never a later revision.
+    const definition = existing
+      ? value.definitions.find((d) => d.id === existing.versions[0]!.definitionId)
+      : value.definitions.filter((d) => d.entryTypeKey === entryTypeKey).sort((a, b) => b.revisionNumber - a.revisionNumber)[0];
     const shown = disposition.kind === 'Decline' ? disposition.definitionId : disposition.form.definitionId;
     if (!definition || definition.id !== shown) {
       return { kind: 'Rejected', issues: [{ code: 'DefinitionRevisionMismatch' }] };
@@ -282,8 +315,11 @@ export function createJournal(deps: JournalDeps): Journal {
             obligationKey,
             anchor: request.anchor,
             origin: request.origin,
-            momentTime: request.momentTime,
-            authoredTime: deps.clock.now(),
+            momentTime: existing ? existing.momentTime : request.momentTime,
+            authoredTime: existing ? existing.authoredTime : deps.clock.now(),
+            ...(existing
+              ? { edit: { entryId: existing.id, expectedRevision: existing.versions.length, savedAt: deps.clock.now(), current: existing as unknown as Record<string, unknown> } }
+              : {}),
             // A blank optional answer is saved as Unanswered, never as declined.
             responses: definition.prompts.map((prompt) => {
               const answer = form.answers[prompt.id];
@@ -305,7 +341,35 @@ export function createJournal(deps: JournalDeps): Journal {
     return { ...prepared, semantics };
   }
 
+  // One range read over the obligation keys of the Review Date finds every Action (D4 A38).
+  async function queryActions(reviewDate: string): Promise<ReviewDateActions> {
+    const range = IDBKeyRange.bound(['DailyTradeReview', reviewDate, ''], ['DailyTradeReview', reviewDate, '\uffff']);
+    const { value } = await deps.persistence.readSnapshot(
+      ['journalObligations', 'journalEntries', 'journalDefinitions', 'journalTypes', 'meta'],
+      async (tx) => {
+        const obligations = (await tx.getAllInRange('journalObligations', range)) as unknown as { obligationKey: string[]; outcome: { id: string } }[];
+        return {
+          entries: (await Promise.all(obligations.map((o) => tx.get('journalEntries', o.outcome.id)))) as unknown as StoredEntry[],
+          definitions: (await tx.getAll('journalDefinitions')) as unknown as EntryDefinitionRecord[],
+          types: (await tx.getAll('journalTypes')) as unknown as JournalTypeRecord[],
+          meta: (await tx.get('meta', 'journal')) as JournalMeta | undefined,
+        };
+      },
+    );
+    const definitions = new Map(value.definitions.map((d) => [d.id, d]));
+    const labels = new Map(value.types.map((t) => [t.productKey, t.label]));
+    const actions: Record<string, DailyAction> = {};
+    for (const entry of value.entries) {
+      const narrative = narrativeEntry(entry, definitions, labels);
+      const chosen = narrative.responses[0]?.answer;
+      actions[entry.anchor.tradeId] = { ...narrative, entryRevision: entry.versions.length, action: chosen?.kind === 'Option' ? chosen.label : '' };
+    }
+    return { kind: 'Actions', reviewDate, actions, snapshot: { journalRevision: value.meta?.journalRevision ?? 0 } };
+  }
+
   return {
+    queryActions: ({ reviewDate }) => queryActions(reviewDate),
+
     async query(query) {
       const { value } = await deps.persistence.readSnapshot(
         ['journalEntries', 'journalDeclines', 'journalDefinitions', 'journalTypes', 'meta'],
@@ -346,19 +410,49 @@ export function createJournal(deps: JournalDeps): Journal {
       requireOpen(tx);
       // Trade Record's exact durable mapping; a reference it does not list is already durable.
       const durable = (ref: CandidateRef) => mapping[ref] ?? ref;
-      const keyOf = (key: JournalObligationKey) =>
-        key.entryType === 'PlanReflection' ? `PlanReflection:${durable(key.trade)}` : `PositionChangeReflection:${durable(key.positionChange)}`;
+      // A Daily Trade Review key is an array so one range read finds a Review Date's Actions (D4 A38).
+      const keyOf = (key: JournalObligationKey): string | string[] =>
+        key.entryType === 'DailyTradeReview'
+          ? ['DailyTradeReview', key.reviewDate, durable(key.trade)]
+          : key.entryType === 'PlanReflection'
+            ? `PlanReflection:${durable(key.trade)}`
+            : `PositionChangeReflection:${durable(key.positionChange)}`;
       // Each outcome is staged with its obligation record; `add` fails the whole transaction when
       // the key already has an outcome (D2 A28).
-      const stageObligation = (obligationKey: string, outcome: { kind: 'Entry' | 'Decline'; id: string }) =>
+      const stageObligation = (obligationKey: string | string[], outcome: { kind: 'Entry' | 'Decline'; id: string }) =>
         tx.stage({ op: 'add', store: 'journalObligations', value: { obligationKey, outcome } });
+      // An edit appends a version to the same Entry identity; the version count it was prepared
+      // against is rechecked inside the commit.
+      const stageEdit = (entry: PreparedEntry, edit: PreparedEntryEdit): EntryProjection => {
+        const current = edit.current as unknown as StoredEntry;
+        const version = { versionNumber: edit.expectedRevision + 1, definitionId: entry.definitionId, responses: entry.responses, savedAt: edit.savedAt };
+        tx.require({
+          name: `entry@${edit.entryId}:${edit.expectedRevision}`,
+          store: 'journalEntries',
+          key: edit.entryId,
+          verify: (stored) => ((stored?.['versions'] as unknown[] | undefined)?.length ?? 0) === edit.expectedRevision,
+        });
+        tx.stage({ op: 'put', store: 'journalEntries', value: { ...edit.current, versions: [...current.versions, version] } });
+        return {
+          id: current.id,
+          entryTypeKey: current.entryTypeKey,
+          sourceKey: current.sourceKey,
+          anchor: current.anchor,
+          origin: current.origin as EntryProjection['origin'],
+          momentTime: current.momentTime,
+          authoredTime: current.authoredTime,
+          definitionId: entry.definitionId,
+          responses: entry.responses,
+        };
+      };
       const entries = prepared.effects.entries.map((entry): EntryProjection => {
+        if (entry.edit) return stageEdit(entry, entry.edit);
         const projection: EntryProjection = {
           id: deps.ids.next(),
           entryTypeKey: entry.entryTypeKey,
           sourceKey: entry.sourceKey,
           anchor: { kind: 'Trade', tradeId: durable(entry.anchor.ref) },
-          origin: { kind: entry.origin.kind, factId: durable(entry.origin.ref) },
+          origin: { kind: entry.origin.kind, factId: durable(entry.origin.ref), ...(entry.origin.kind === 'DailyReview' ? { reviewDate: entry.origin.reviewDate } : {}) },
           momentTime: entry.momentTime,
           authoredTime: entry.authoredTime,
           definitionId: entry.definitionId,

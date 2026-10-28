@@ -37,12 +37,26 @@ export interface PositionChangeReflectionRequest {
   readonly momentTime: Instant;
 }
 
-export type JournalEffectRequest = PlanReflectionRequest | PositionChangeReflectionRequest;
+// The Action recorded for one Trade at one Review Date (Journal, "Daily Trade Review"). The Trade
+// is already durable; the origin names the (Trade, Review Date) checkpoint; the moment time is
+// the Review cutoff. Only CompleteNow is allowed.
+export interface DailyTradeReviewRequest {
+  readonly obligation: 'DailyTradeReview';
+  readonly disposition: ReflectionDisposition;
+  readonly anchor: { readonly kind: 'Trade'; readonly ref: CandidateRef };
+  readonly origin: { readonly kind: 'DailyReview'; readonly ref: CandidateRef; readonly reviewDate: string };
+  readonly momentTime: Instant;
+  // Names the Entry revision the trader was editing when the obligation already has an Entry.
+  readonly expectedEntryRevision?: number;
+}
+
+export type JournalEffectRequest = PlanReflectionRequest | PositionChangeReflectionRequest | DailyTradeReviewRequest;
 
 // One obligation has exactly one current outcome (Journal, "Debt and obligation semantics").
 export type JournalObligationKey =
   | { readonly entryType: 'PlanReflection'; readonly trade: CandidateRef }
-  | { readonly entryType: 'PositionChangeReflection'; readonly positionChange: CandidateRef };
+  | { readonly entryType: 'PositionChangeReflection'; readonly positionChange: CandidateRef }
+  | { readonly entryType: 'DailyTradeReview'; readonly trade: CandidateRef; readonly reviewDate: string };
 
 // A saved answer: "optional" means Unanswered is a valid value; it never means declined.
 export type ResponseValue = AnswerInput | { readonly kind: 'Unanswered' };
@@ -53,11 +67,24 @@ export interface PreparedEntry {
   readonly sourceKey: string;
   readonly obligationKey: JournalObligationKey;
   readonly anchor: { readonly kind: 'Trade'; readonly ref: CandidateRef };
-  readonly origin: { readonly kind: 'Plan' | 'PositionChange'; readonly ref: CandidateRef };
+  readonly origin:
+    | { readonly kind: 'Plan' | 'PositionChange'; readonly ref: CandidateRef }
+    | { readonly kind: 'DailyReview'; readonly ref: CandidateRef; readonly reviewDate: string };
   readonly momentTime: Instant;
   readonly authoredTime: Instant;
   // One response per prompt of the definition revision, in its order.
   readonly responses: readonly { readonly promptId: string; readonly value: ResponseValue }[];
+  // Present when this appends a version to the obligation's existing Entry instead of creating one.
+  readonly edit?: PreparedEntryEdit;
+}
+
+// An edit appends a version under the same Entry identity; `current` is the stored Entry the edit
+// was prepared against, rechecked by the expected revision when applied.
+export interface PreparedEntryEdit {
+  readonly entryId: string;
+  readonly expectedRevision: number;
+  readonly savedAt: Instant;
+  readonly current: Readonly<Record<string, unknown>>;
 }
 
 // An explicit decline of a reflection obligation (D2 A29): a distinct record, never an Entry.
@@ -99,6 +126,8 @@ export interface PreparedJournalOutcome {
 
 export type PrepareJournalEffectsResult =
   | { readonly kind: 'Rejected'; readonly issues: readonly JournalIssue[] }
+  // The Entry revision a Daily Trade Review save named is not the current one.
+  | { readonly kind: 'Conflict' }
   | PreparedJournalOutcome;
 
 // Workflow-critical answers by semantic role, entered once and frozen into the Plan facts.
@@ -117,7 +146,7 @@ export interface EntryProjection {
   readonly entryTypeKey: string;
   readonly sourceKey: string;
   readonly anchor: { readonly kind: 'Trade'; readonly tradeId: string };
-  readonly origin: { readonly kind: 'Plan' | 'PositionChange'; readonly factId: string };
+  readonly origin: { readonly kind: 'Plan' | 'PositionChange' | 'DailyReview'; readonly factId: string; readonly reviewDate?: string };
   readonly momentTime: Instant;
   readonly authoredTime: Instant;
   readonly definitionId: string;
@@ -148,6 +177,11 @@ export interface JournalQuery {
   readonly tradeId: string;
 }
 
+// Every Daily Trade Review Action saved for one Review Date.
+export interface ReviewDateQuery {
+  readonly reviewDate: string;
+}
+
 // An answer as saved, with the option label from the Entry's own definition snapshot.
 export type NarrativeAnswer =
   | { readonly kind: 'Text'; readonly text: string }
@@ -164,6 +198,8 @@ export interface NarrativeEntry {
   readonly authoredTime: Instant;
   // The Position Change whose reflection this is; absent on any other Entry.
   readonly positionChangeId?: string;
+  // True once the Entry has more than one version; absent otherwise.
+  readonly edited?: true;
   readonly responses: readonly { readonly prompt: string; readonly answer: NarrativeAnswer }[];
 }
 
@@ -186,5 +222,17 @@ export type NarrativeItem = ({ readonly kind: 'Entry' } & NarrativeEntry) | Narr
 export type JournalPage = {
   readonly kind: 'Page';
   readonly items: readonly NarrativeItem[];
+  readonly snapshot: { readonly journalRevision: number };
+};
+
+// An Action as last saved: the effective version's answers, the Entry revision (its version
+// count) a retry or edit must name, and the chosen Action's label.
+export type DailyAction = NarrativeEntry & { readonly entryRevision: number; readonly action: string };
+
+export type ReviewDateActions = {
+  readonly kind: 'Actions';
+  readonly reviewDate: string;
+  // Keyed by Trade identity; a Trade with no Action for the date is absent (never an implicit Hold).
+  readonly actions: Readonly<Record<string, DailyAction>>;
   readonly snapshot: { readonly journalRevision: number };
 };

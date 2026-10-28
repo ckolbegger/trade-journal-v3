@@ -91,3 +91,41 @@ export const D2_JOURNAL_MANIFEST: JournalSeedManifest = {
   ],
   sources: [...D1_JOURNAL_MANIFEST.sources, { productKey: 'source.position-change', label: 'Position Change' }],
 };
+
+const ACTION = 'prompt.daily-trade-review.action';
+const ACTIONS = ['Hold', 'Exit', 'Roll', 'Adjust'] as const;
+const actionOption = (label: string) => `option.daily-trade-review.action.${label.toLowerCase()}`;
+
+// D4 adds the Daily Trade Review Entry Type and the Daily Review Source.
+export const D3_JOURNAL_MANIFEST: JournalSeedManifest = {
+  version: 3,
+  entryTypes: [
+    ...D2_JOURNAL_MANIFEST.entryTypes,
+    {
+      productKey: 'entry-type.daily-trade-review',
+      label: 'Daily Trade Review',
+      prompts: [
+        {
+          id: ACTION,
+          kind: 'SingleSelect',
+          text: 'Action',
+          required: true,
+          role: 'Action',
+          options: ACTIONS.map((label) => ({ id: actionOption(label), label })),
+        },
+        {
+          id: 'prompt.daily-trade-review.intent',
+          kind: 'Text',
+          text: 'Why are you taking this action?',
+          required: false,
+          role: 'Intent',
+          requiredWhen: { promptId: ACTION, optionIds: ['Exit', 'Roll', 'Adjust'].map(actionOption) },
+        },
+        { id: 'prompt.daily-trade-review.conviction', kind: 'Scale', text: 'Conviction now', required: false, min: 1, max: 5 },
+        { id: 'prompt.daily-trade-review.considered', kind: 'Text', text: 'Anything you considered doing and decided against?', required: false },
+        { id: 'prompt.daily-trade-review.note', kind: 'Text', text: 'Note', required: false },
+      ],
+    },
+  ],
+  sources: [...D2_JOURNAL_MANIFEST.sources, { productKey: 'source.daily-review', label: 'Daily Review' }],
+};

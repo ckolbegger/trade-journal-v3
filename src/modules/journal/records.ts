@@ -1,6 +1,13 @@
 // Journal records. Seeded identities are their stable product keys; a label is never identity.
 
-export type PromptRole = 'Thesis' | 'Invalidation';
+export type PromptRole = 'Thesis' | 'Invalidation' | 'Action' | 'Intent';
+
+// RequireWhenOption (Journal, "Initial Entry Definitions"): the prompt is required when the named
+// SingleSelect prompt holds one of these options.
+export interface RequireWhenOption {
+  readonly promptId: string;
+  readonly optionIds: readonly string[];
+}
 
 export interface PromptOption {
   readonly id: string;
@@ -8,13 +15,14 @@ export interface PromptOption {
 }
 
 export type PromptDefinition =
-  | { readonly id: string; readonly kind: 'Text'; readonly text: string; readonly required: boolean; readonly role?: PromptRole }
+  | { readonly id: string; readonly kind: 'Text'; readonly text: string; readonly required: boolean; readonly role?: PromptRole; readonly requiredWhen?: RequireWhenOption }
   | { readonly id: string; readonly kind: 'Scale'; readonly text: string; readonly required: boolean; readonly min: number; readonly max: number }
   | {
       readonly id: string;
       readonly kind: 'SingleSelect';
       readonly text: string;
       readonly required: boolean;
+      readonly role?: PromptRole;
       readonly options: readonly PromptOption[];
     };
 
