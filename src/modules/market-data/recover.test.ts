@@ -133,6 +133,34 @@ describe('recover without a provider (A56)', () => {
     expect(settled.manualTasks).toEqual([]);
   });
 
+  it('should build the frames and the historical gaps from one read transaction, so a Mark saved during recover cannot appear in one and not the other', async () => {
+    const { persistence } = await setup();
+    const plain = createMarketData({ persistence, ids: sequentialIds('rev'), clock: fixedClock(TUESDAY_NOON), sessionPolicy: nyseSessionPolicy });
+    await plain.save(mark('MNO', '2026-10-07', '10'));
+    await plain.save(mark('MNO', '2026-10-08', '11'));
+    let reads = 0;
+    const racing = {
+      ...persistence,
+      readSnapshot: async (...args: Parameters<typeof persistence.readSnapshot>) => {
+        const snapshot = await persistence.readSnapshot(...args);
+        reads += 1;
+        // A Mark for the historical gap date and one for the Review date land right after the first read resolves.
+        if (reads === 1) {
+          await plain.save(mark('MNO', '2026-10-09', '12'));
+          await plain.save(mark('MNO', '2026-10-12', '13'));
+        }
+        return snapshot;
+      },
+    } as typeof persistence;
+    const racingData = createMarketData({ persistence: racing, ids: sequentialIds('race'), clock: fixedClock(TUESDAY_NOON), sessionPolicy: nyseSessionPolicy });
+    const result = await racingData.recover(review([MNO]));
+    if (result.kind !== 'Recovered') throw new Error('expected a recovery');
+    expect(reads).toBe(1);
+    // Both parts reflect the same snapshot: before either late Mark.
+    expect(result.frames[0]!.resolution.kind).toBe('Missing');
+    expect(result.gaps).toEqual([{ instrumentKey: 'MNO', missing: ['2026-10-09'], acknowledged: [] }]);
+  });
+
   it('should issue one gap request per Instrument, whatever the history length', async () => {
     const longPolicy = createSessionPolicy({ id: 'nyse', revision: 1, coverage: { first: '2020-01-01', last: '2028-12-31' }, table: NYSE_TABLE });
     const gapRequests = async (sessionsBack: number) => {

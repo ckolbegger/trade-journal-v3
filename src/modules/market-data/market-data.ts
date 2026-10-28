@@ -340,11 +340,10 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
 
   // Per Instrument, the sessions before the Review Date without an effective Mark, from its relevance start (A56).
   // One bounded range read per Instrument, whatever the history length (A47).
-  async function historicalGaps(instruments: RecoverRequest['instruments'], reviewDate: string | undefined): Promise<{ gaps: HistoricalGaps[]; diagnostics: RecoverDiagnostic[] }> {
-    const lastHistorical = reviewDate && Temporal.PlainDate.from(reviewDate).subtract({ days: 1 }).toString();
+  async function historicalGaps(tx: ReadTransaction, instruments: RecoverRequest['instruments'], reviewDate: string): Promise<{ gaps: HistoricalGaps[]; diagnostics: RecoverDiagnostic[] }> {
+    const lastHistorical = Temporal.PlainDate.from(reviewDate).subtract({ days: 1 }).toString();
     const { coverage } = deps.sessionPolicy.identity;
-    const { value } = await deps.persistence.readSnapshot(['observations'], (tx) =>
-      Promise.all(
+    const value = await Promise.all(
         [...instruments]
           .sort((a, b) => (a.instrumentKey < b.instrumentKey ? -1 : 1))
           .map(async ({ instrumentKey, earliestExposure }) => {
@@ -353,7 +352,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
             // Outside coverage there is a diagnostic, never a guessed session (P8): enumeration starts at the first covered date.
             const beforeCoverage = exposureDate < coverage.first;
             const from = beforeCoverage ? coverage.first : exposureDate;
-            const sessions = lastHistorical ? deps.sessionPolicy.sessionsBetween(from, lastHistorical) : { ok: true as const, value: [] };
+            const sessions = deps.sessionPolicy.sessionsBetween(from, lastHistorical);
             // Relevance starts at the first session whose close is at or after the exposure.
             const relevant = sessions.ok ? sessions.value.filter((s) => Temporal.Instant.compare(Temporal.Instant.from(s.close), exposure) >= 0) : [];
             const stored = relevant.length === 0 ? [] : await tx.getAllFromIndex('observations', 'byInstrumentDate', IDBKeyRange.bound([instrumentKey, relevant[0]!.date], [instrumentKey, relevant[relevant.length - 1]!.date]));
@@ -366,7 +365,6 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
             };
             return { gaps, beforeCoverage };
           }),
-      ),
     );
     return {
       gaps: value.map((v) => v.gaps),
@@ -374,69 +372,83 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
     };
   }
 
+  // The day a frame context names, or why it names none.
+  function resolveDay(context: ResolveFramesQuery['context']): { kind: 'Day'; day: Session } | { kind: 'Rejected'; issues: MarketDataIssue[] } {
+  let day: Covered<Session>;
+  if (context.kind === 'Current') {
+    if (!isInstant(context.asOf)) return { kind: 'Rejected', issues: [{ field: 'asOf', code: 'InvalidInstant' }] };
+    day = deps.sessionPolicy.latestCompleted(context.asOf);
+  }
+  else {
+    const date = context.kind === 'Review' ? context.reviewDate : context.tradingDate;
+    const issues = validateDate(date);
+    if (issues.length > 0) return { kind: 'Rejected', issues };
+    day = { ok: true, value: deps.sessionPolicy.classify(date) as Session };
+  }
+  if (!day.ok) return { kind: 'Rejected', issues: [{ field: 'asOf', code: 'SessionPolicyCoverage' }] };
+  return { kind: 'Day', day: day.value };
+  }
+
+  // The read half of a frame query, inside the caller's read transaction.
+  // One range read of the valuation date, then one reverse-cursor request per Missing Instrument (A47).
+  async function frameEvidence(tx: ReadTransaction, date: string, instruments: readonly string[]) {
+    const onDate = await tx.getAllInRange('observations', IDBKeyRange.bound([date], [date, []]));
+    return Promise.all(
+      instruments.map(async (instrumentKey) => {
+        const record = stripRevision(onDate.find((r) => r['instrumentKey'] === instrumentKey));
+        const stale = record?.effectiveMarkId ? undefined : await staleContextOf(tx, deps.sessionPolicy, { instrumentKey, tradingDate: date });
+        return { record, stale };
+      }),
+    );
+  }
+
+  // The frames, digest, and snapshot id from evidence already read; computed after the read transaction closes (A45).
+  function frameResult(query: ResolveFramesQuery, day: Session, instruments: readonly string[], evidence: Awaited<ReturnType<typeof frameEvidence>>): MarketDataQueryResult {
+  // The next session is disclosed once it is completed at the as-of instant (the clock for a date context).
+  const at = Temporal.Instant.from(query.context.kind === 'Current' ? query.context.asOf : deps.clock.now());
+  const next = deps.sessionPolicy.nextSession(day.date);
+  const nextSession =
+    next.ok && Temporal.Instant.compare(at, Temporal.Instant.from(next.value.completion)) >= 0
+      ? { tradingDate: next.value.date, closeInstant: next.value.close }
+      : undefined;
+  // The context is serialized from its known fields so the caller's property order and extra properties cannot change the digest.
+  const canonicalContext = canonicalContextOf(query.context);
+  // The digest is computed after the read transaction closes (A45). It carries the as-of instant's material effect: the completed next session.
+  const evidenceDigest = bytesToHex(
+    sha256(
+      utf8ToBytes(
+        JSON.stringify({
+          request: { context: canonicalContext, date: day.date, instruments },
+          policy: { id: deps.sessionPolicy.identity.id, revision: deps.sessionPolicy.identity.revision, digest: deps.sessionPolicy.identity.digest },
+          nextSession: nextSession?.tradingDate ?? null,
+          evidence: evidence.map(({ record, stale }) => [record?.effectiveMarkId ?? null, record?.effectiveAcknowledgmentId ?? null, stale?.revisionId ?? null]),
+        }),
+      ),
+    ),
+  );
+  const snapshotId = `mds1:${deps.sessionPolicy.identity.revision}:${evidenceDigest}`;
+  if (query.expectedSnapshot === snapshotId) return { kind: 'SnapshotUnchanged', snapshotId, evidenceDigest };
+  return {
+    kind: query.expectedSnapshot === undefined ? 'Frames' : 'SnapshotChanged',
+    frames: instruments.map((instrumentKey, i) => ({
+      instrumentKey,
+      tradingDate: day.date,
+      closeInstant: day.close,
+      ...(nextSession && { nextSession }),
+      resolution: resolve(evidence[i]!.record, evidence[i]!.stale),
+    })),
+    snapshotId,
+    evidenceDigest,
+  };
+  }
+
   const marketData: MarketData = {
     async query(query) {
-      const { context } = query;
-      let day: Covered<Session>;
-      if (context.kind === 'Current') {
-        if (!isInstant(context.asOf)) return { kind: 'Rejected', issues: [{ field: 'asOf', code: 'InvalidInstant' }] };
-        day = deps.sessionPolicy.latestCompleted(context.asOf);
-      }
-      else {
-        const date = context.kind === 'Review' ? context.reviewDate : context.tradingDate;
-        const issues = validateDate(date);
-        if (issues.length > 0) return { kind: 'Rejected', issues };
-        day = { ok: true, value: deps.sessionPolicy.classify(date) as Session };
-      }
-      if (!day.ok) return { kind: 'Rejected', issues: [{ field: 'asOf', code: 'SessionPolicyCoverage' }] };
+      const resolved = resolveDay(query.context);
+      if (resolved.kind === 'Rejected') return resolved;
       const instruments = [...new Set(query.instruments)].sort();
-      const { value: evidence } = await deps.persistence.readSnapshot(['observations'], async (tx) => {
-        // One range read of the valuation date, then one reverse-cursor request per Missing Instrument (A47).
-        const onDate = await tx.getAllInRange('observations', IDBKeyRange.bound([day.value.date], [day.value.date, []]));
-        return Promise.all(
-          instruments.map(async (instrumentKey) => {
-            const record = stripRevision(onDate.find((r) => r['instrumentKey'] === instrumentKey));
-            const stale = record?.effectiveMarkId ? undefined : await staleContextOf(tx, deps.sessionPolicy, { instrumentKey, tradingDate: day.value.date });
-            return { record, stale };
-          }),
-        );
-      });
-      // The next session is disclosed once it is completed at the as-of instant (the clock for a date context).
-      const at = Temporal.Instant.from(context.kind === 'Current' ? context.asOf : deps.clock.now());
-      const next = deps.sessionPolicy.nextSession(day.value.date);
-      const nextSession =
-        next.ok && Temporal.Instant.compare(at, Temporal.Instant.from(next.value.completion)) >= 0
-          ? { tradingDate: next.value.date, closeInstant: next.value.close }
-          : undefined;
-      // The context is serialized from its known fields so the caller's property order and extra properties cannot change the digest.
-      const canonicalContext = canonicalContextOf(context);
-      // The digest is computed after the read transaction closes (A45). It carries the as-of instant's material effect: the completed next session.
-      const evidenceDigest = bytesToHex(
-        sha256(
-          utf8ToBytes(
-            JSON.stringify({
-              request: { context: canonicalContext, date: day.value.date, instruments },
-              policy: { id: deps.sessionPolicy.identity.id, revision: deps.sessionPolicy.identity.revision, digest: deps.sessionPolicy.identity.digest },
-              nextSession: nextSession?.tradingDate ?? null,
-              evidence: evidence.map(({ record, stale }) => [record?.effectiveMarkId ?? null, record?.effectiveAcknowledgmentId ?? null, stale?.revisionId ?? null]),
-            }),
-          ),
-        ),
-      );
-      const snapshotId = `mds1:${deps.sessionPolicy.identity.revision}:${evidenceDigest}`;
-      if (query.expectedSnapshot === snapshotId) return { kind: 'SnapshotUnchanged', snapshotId, evidenceDigest };
-      return {
-        kind: query.expectedSnapshot === undefined ? 'Frames' : 'SnapshotChanged',
-        frames: instruments.map((instrumentKey, i) => ({
-          instrumentKey,
-          tradingDate: day.value.date,
-          closeInstant: day.value.close,
-          ...(nextSession && { nextSession }),
-          resolution: resolve(evidence[i]!.record, evidence[i]!.stale),
-        })),
-        snapshotId,
-        evidenceDigest,
-      };
+      const { value: evidence } = await deps.persistence.readSnapshot(['observations'], (tx) => frameEvidence(tx, resolved.day.date, instruments));
+      return frameResult(query, resolved.day, instruments, evidence);
     },
     async save(command) {
       if (command.intention === 'AssertUnavailable' || command.intention === 'WithdrawAcknowledgment') return saveAcknowledgment(command);
@@ -508,9 +520,17 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
         return { kind: 'Rejected', issues: invalid.map((i) => ({ field: 'earliestExposure', code: 'InvalidInstant', instrumentKey: i.instrumentKey })) };
       }
       const instruments = request.instruments.map((i) => i.instrumentKey);
-      const queried = await marketData.query({ kind: 'ResolveFrames', context: request.context, instruments });
-      if (queried.kind !== 'Frames') return { kind: 'Rejected', issues: queried.kind === 'Rejected' ? queried.issues : [] };
-      const { gaps, diagnostics } = await historicalGaps(request.instruments, queried.frames[0]?.tradingDate);
+      const sorted = [...new Set(instruments)].sort();
+      const resolved = resolveDay(request.context);
+      if (resolved.kind === 'Rejected') return resolved;
+      // Frames and gaps are read in one transaction, so a Mark saved meanwhile cannot show in one and not the other (A47).
+      const { value: read } = await deps.persistence.readSnapshot(['observations'], async (tx) => ({
+        evidence: await frameEvidence(tx, resolved.day.date, sorted),
+        historical: await historicalGaps(tx, request.instruments, resolved.day.date),
+      }));
+      const queried = frameResult({ kind: 'ResolveFrames', context: request.context, instruments }, resolved.day, sorted, read.evidence);
+      if (queried.kind !== 'Frames') return { kind: 'Rejected', issues: [] };
+      const { gaps, diagnostics } = read.historical;
       return {
         kind: 'Recovered',
         frames: queried.frames,
