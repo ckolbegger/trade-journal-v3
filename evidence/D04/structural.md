@@ -207,3 +207,18 @@ ocr review of `b8f490d`: session `d52d54af-8f40-41ac-82ed-35fbb12a6042`, 3 files
 
 ### T4.4-B3 Only the key's own binding produces Conflict
 - it should save both of two simultaneous initial Marks for different keys, incrementing marketDataRevision once for each
+
+ocr review of `48e1420` (T4.4-B1, `isRealDate` round-trip before `classify`): session `29155dc4-e3b5-47e7-97f6-0e18812b0acc`, 1 file reviewed, **No findings.** Raw output: `ocr/T4.4-B1-48e1420.json`.
+
+ocr review of `0b3dc81` (T4.4-B2, `Temporal.Instant.compare` for completion): session `11be427c-527e-4907-b058-53b78c4586f9`, 1 file reviewed, **No findings.** Raw output: `ocr/T4.4-B2-0b3dc81.json`.
+
+T4.4-B3 first attempt stopped without changes: `Persistence.commit` had no in-transaction read-modify-write for a module's `meta` field, so dropping the global check would let concurrent saves both write N+1. Decision (main session): add a minimal `increment` write to persistence, patterned on the content-revision increment, rather than derive the counter or rely on check-then-write ordering. Implemented in `28fd3e1`: `Write` gains `{ op: 'increment', store: 'meta', key, field }`; Market Data uses it and no longer checks `marketDataRevision`.
+
+ocr review of `28fd3e1`: session `28a318e8-5b98-409e-a7ff-98f4c0711656`, 2 files reviewed, 1 comment. Raw output: `ocr/T4.4-B3-28fd3e1.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/persistence/persistence.ts:378` | The increment's `await store.get` sits inside the write loop, outside the `try/catch` around `tx.done`; if an earlier `add` aborts the transaction with a `ConstraintError`, the `get` rejects with `AbortError` and `commit` throws instead of returning `ConstraintViolation` | Valid (narrow: needs a failing `add` before an `increment` in one write set) | Bug task T4.4-B4 |
+
+### T4.4-B4 A constraint failure before an increment still returns ConstraintViolation
+- it should return ConstraintViolation, not throw, when a write set's add violates a constraint before its increment
