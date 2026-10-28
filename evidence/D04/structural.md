@@ -343,3 +343,15 @@ ocr review of `1bd50e1`: session `1bc7ea08-7d13-4a99-833b-f0958d498df5`, 3 files
 
 ### T4.6-B3 The digest is independent of the request's property order
 - it should return equal snapshot ids and digests for contexts with the same fields in a different order
+
+ocr reviews of the T4.6 bug tasks:
+- `1abdf25` (B1): session `627956b7-c547-487f-a3d7-bf9e5277dec2`, 1 file, **No findings.** `ocr/T4.6-B1-1abdf25.json`.
+- `8c61109` (B2, new issue code `InvalidInstant` on field `asOf`): session `5165afcf-1d28-42d0-94aa-5a1b640d86ac`, 1 file, **No findings** (the reviewing agent returned no report; the raw output was read directly: status complete, 0 comments). `ocr/T4.6-B2-8c61109.json`.
+- `3d5607b` (B3): session `9b1113c4-98df-4775-807e-0ef39c2484a9`, 1 file, 1 comment. `ocr/T4.6-B3-3d5607b.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| low | `src/modules/market-data/market-data.ts:325-328` | The nested ternary building `canonicalContext` should be a switch on `context.kind` | Doubtful (correct as written; readability only; the same style finding was fixed in T4.1-B2) | Bug task T4.6-B4 (structural) |
+
+### T4.6-B4 canonicalContext as a switch (structural)
+Verification: `npx vitest run src/modules/market-data` passes unchanged before and after; typecheck, tsc6, lint, lint:deps exit 0.

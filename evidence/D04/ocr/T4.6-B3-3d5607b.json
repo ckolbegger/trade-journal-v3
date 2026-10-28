@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 35660,
+    "input_tokens": 35294,
+    "output_tokens": 366,
+    "cache_read_tokens": 11520,
+    "elapsed": "30s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/market-data/market-data.ts",
+      "content": "This nested ternary violates the checklist's prohibition on nested ternary expressions. Use an explicit switch on `context.kind` (or an if/else chain) to construct the canonical context while preserving the fixed field order for each kind.",
+      "existing_code": "      const canonicalContext =\n        context.kind === 'Current' ? { kind: context.kind, asOf: context.asOf }\n        : context.kind === 'Review' ? { kind: context.kind, reviewDate: context.reviewDate }\n        : { kind: context.kind, tradingDate: context.tradingDate };",
+      "start_line": 325,
+      "end_line": 328,
+      "category": "style",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/modules/market-data/market-data.ts",
+      "files": [
+        "src/modules/market-data/market-data.ts"
+      ]
+    }
+  ],
+  "session_id": "9b1113c4-98df-4775-807e-0ef39c2484a9",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "9b1113c4-98df-4775-807e-0ef39c2484a9",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "3d5607b",
+      "resolved_base": "8c6110980fc30236a30723d0d4c759bd8c303e29",
+      "resolved_head": "3d5607b373b3e9eb1ce745df3be326821c91c1ee",
+      "exact_range": "8c6110980fc30236a30723d0d4c759bd8c303e29..3d5607b373b3e9eb1ce745df3be326821c91c1ee",
+      "source_artifact_sha256": "544ed8abd547de0b559b9ef11206651045d25c93a7129df9c1bf085984a2af15"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "0f5a283e66b4420b333e6e78035f9eab6943ef533ae5d8bfc264c99fa800bad2"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "0f5a283e66b4420b333e6e78035f9eab6943ef533ae5d8bfc264c99fa800bad2"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 29893
+  }
+}
