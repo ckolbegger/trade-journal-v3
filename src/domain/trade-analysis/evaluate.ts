@@ -124,14 +124,15 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
       return Temporal.Instant.compare(opening.economicTime, close) > 0;
     });
   const openedAfterClose = openedAfter(frame.closeInstant).length > 0;
-  // At-entry Lots are relative to the latest exact Mark: this frame's, else its Stale context's, else none.
-  const latestExactClose = resolution.kind === 'Available' ? frame.closeInstant : resolution.stale?.closeInstant;
-  const atEntryLots = latestExactClose === undefined ? lots : openedAfter(latestExactClose);
   // Every Mark-dependent figure is computed from the exact Mark, or is Unavailable naming why not.
   // A Mark for another Instrument values nothing here; the Position's Instrument is named instead.
   const foreign = state.positions.find(
     (p) => p.openLots.length > 0 && (p.instrument.kind !== frame.instrument.kind || p.instrument.symbol !== frame.instrument.symbol),
   );
+  // At-entry Lots are relative to the latest exact Mark: this frame's, else its Stale context's, else none.
+  // A frame for another Instrument holds no exact Mark for this Position, so every Lot is at entry.
+  const latestExactClose = foreign ? undefined : resolution.kind === 'Available' ? frame.closeInstant : resolution.stale?.closeInstant;
+  const atEntryLots = latestExactClose === undefined ? lots : openedAfter(latestExactClose);
   const unavailable: CalculationResult<Rational> = foreign
     ? { kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument: foreign.instrument, date: frame.tradingDate } }
     : openedAfterClose

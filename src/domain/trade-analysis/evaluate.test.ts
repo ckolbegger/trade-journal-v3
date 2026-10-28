@@ -252,4 +252,15 @@ describe('A frame for a different Instrument', () => {
     expect(missingWithStale.coverage).toEqual({ kind: 'Missing' });
     expect(missingWithStale.staleContext).toBeUndefined();
   });
+
+  it('should return at-entry figures for every remaining Lot when the frame is for a different Instrument', () => {
+    const state = derivedState(referenceRecord([PC1, PC2]));
+    const abcFrame: ObservationFrame = { ...availableFrame('52.00', '2026-10-13', TUESDAY_CLOSE), instrument: { kind: 'Stock', symbol: 'ABC' } };
+    const { atEntry } = evaluate({ state, frame: abcFrame });
+    expect(atEntry?.label).toBe('AtEntry');
+    expect(exact({ kind: 'Value', value: atEntry!.quantity })).toBe(q(100n));
+    expect(exact({ kind: 'Value', value: atEntry!.averageEntry })).toBe(q(5018n, 100n));
+    expect(exact({ kind: 'Value', value: atEntry!.riskFromEntry })).toBe(q(268n));
+    expect(exact({ kind: 'Value', value: atEntry!.rewardFromEntry })).toBe(q(582n));
+  });
 });
