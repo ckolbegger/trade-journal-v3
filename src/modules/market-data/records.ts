@@ -60,8 +60,11 @@ export interface StaleMarkContext {
   readonly closeInstant: string;
 }
 
+// The effective Mark revision as a frame describes it: its provenance comes from Market Data.
+export type FrameMark = Pick<MarkRevision, 'revisionId' | 'revisionNumber' | 'price' | 'source' | 'savedAt'> & { readonly correctionReason?: string };
+
 export type MarkResolution =
-  | { readonly kind: 'Available'; readonly mark: Pick<MarkRevision, 'revisionId' | 'revisionNumber' | 'price' | 'source'> }
+  | { readonly kind: 'Available'; readonly mark: FrameMark }
   | { readonly kind: 'Missing'; readonly stale?: StaleMarkContext }
   | { readonly kind: 'AcknowledgedUnavailable'; readonly acknowledgment: AcknowledgmentVersion; readonly stale?: StaleMarkContext };
 
@@ -74,6 +77,9 @@ export function resolve(record: ObservationRecord | undefined, stale?: StaleMark
     if (acknowledgment?.kind === 'Asserted') return { kind: 'AcknowledgedUnavailable', acknowledgment, ...(stale && { stale }) };
     return { kind: 'Missing', ...(stale && { stale }) };
   }
-  const { revisionId, revisionNumber, price, source } = effective;
-  return { kind: 'Available', mark: { revisionId, revisionNumber, price, source } };
+  const { revisionId, revisionNumber, price, source, savedAt, intention, reason } = effective;
+  return {
+    kind: 'Available',
+    mark: { revisionId, revisionNumber, price, source, savedAt, ...(intention === 'Correction' && reason !== undefined && { correctionReason: reason }) },
+  };
 }

@@ -23,7 +23,7 @@ import { openLongStockSummary, plannedLongStockSummary, type TradeSummary } from
 import type { Clock } from '../../domain/time/index.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
 import type { Journal, NarrativeEntry, NarrativeItem } from '../../modules/journal/index.ts';
-import type { MarkFrame, MarketData, MarkResolution, ObservationRecord } from '../../modules/market-data/index.ts';
+import type { MarkFrame, MarketData, MarkResolution } from '../../modules/market-data/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { BrowseRecord, TradeRecord, TradeSummary as RecordSummary } from '../../modules/trade-record/index.ts';
 import type { Persistence, WorkspaceSnapshotBinding } from '../../persistence/index.ts';
@@ -416,15 +416,11 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
     return { frames: result.frames, snapshotId: result.snapshotId };
   }
 
-  // The effective Mark revision's provenance, which a frame does not carry.
-  async function markProvenance(frame: MarkFrame): Promise<MarkProvenance | undefined> {
+  // The effective Mark revision's provenance, as Market Data describes it on the frame.
+  function markProvenance(frame: MarkFrame): MarkProvenance | undefined {
     if (frame.resolution.kind !== 'Available') return undefined;
-    const { revisionId } = frame.resolution.mark;
-    const { value } = await deps.persistence.readSnapshot(['observations'], (tx) => tx.get('observations', [frame.tradingDate, frame.instrumentKey]));
-    const revision = (value as ObservationRecord | undefined)?.marks.find((m) => m.revisionId === revisionId);
-    if (!revision) throw new Error(`Mark revision ${revisionId} is not stored`);
-    const { source, revisionNumber, price, savedAt, intention, reason } = revision;
-    return { source, revisionId, revisionNumber, price, savedAt, ...(intention === 'Correction' && reason !== undefined && { correctionReason: reason }) };
+    const { source, revisionId, revisionNumber, price, savedAt, correctionReason } = frame.resolution.mark;
+    return { source, revisionId, revisionNumber, price, savedAt, ...(correctionReason !== undefined && { correctionReason }) };
   }
 
   // Module reads are separate transactions, so a view is accepted only if the Workspace binding
@@ -508,7 +504,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const { frames, snapshotId } = await currentFrames([analysis.plan.underlying]);
         const frame = frames[0]!;
         const evaluation = evaluate({ state: derived, frame: observationFrame(frame) });
-        const mark = await markProvenance(frame);
+        const mark = markProvenance(frame);
         const datedLine = datedLineOf(analysis, frame, evaluation);
         const current: OpenCurrentEvaluation = {
           expectedMarkDate: frame.tradingDate,

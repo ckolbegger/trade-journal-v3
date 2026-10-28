@@ -68,7 +68,7 @@ describe('record an initial Manual Mark', () => {
     expect(result).toEqual({
       kind: 'Saved',
       key: { instrumentKey: 'XYZ', tradingDate: '2026-10-12' },
-      resolution: { kind: 'Available', mark: { revisionId: 'rev-0001', revisionNumber: 1, price: '52', source: 'Manual' } },
+      resolution: { kind: 'Available', mark: { revisionId: 'rev-0001', revisionNumber: 1, price: '52', source: 'Manual', savedAt: TUESDAY_NOON } },
       resolutionRevision: 1,
       classification: 'InitialManual',
       revision: {
@@ -126,7 +126,7 @@ describe('record an initial Manual Mark', () => {
     expect(result).toEqual({
       kind: 'Conflict',
       key: { instrumentKey: 'XYZ', tradingDate: '2026-10-12' },
-      resolution: { kind: 'Available', mark: { revisionId: 'rev-0001', revisionNumber: 1, price: '52', source: 'Manual' } },
+      resolution: { kind: 'Available', mark: { revisionId: 'rev-0001', revisionNumber: 1, price: '52', source: 'Manual', savedAt: TUESDAY_NOON } },
       resolutionRevision: 1,
     });
     expect(await stored(persistence)).toEqual(before);
@@ -159,7 +159,7 @@ describe('correct a believed-wrong Mark', () => {
     expect(result).toEqual({
       kind: 'Saved',
       key: { instrumentKey: 'XYZ', tradingDate: '2026-10-12' },
-      resolution: { kind: 'Available', mark: { revisionId: 'rev-0002', revisionNumber: 2, price: '51.5', source: 'Manual' } },
+      resolution: { kind: 'Available', mark: { revisionId: 'rev-0002', revisionNumber: 2, price: '51.5', source: 'Manual', savedAt: TUESDAY_NOON, correctionReason: 'Typo: I read the wrong row' } },
       resolutionRevision: 2,
       classification: 'Correction',
       revision: revision2,
@@ -216,7 +216,7 @@ describe('correct a believed-wrong Mark', () => {
     expect(await marketData.save(correct({ price: '50', expectedResolutionRevision: 1 }))).toEqual({
       kind: 'Conflict',
       key: { instrumentKey: 'XYZ', tradingDate: '2026-10-12' },
-      resolution: { kind: 'Available', mark: { revisionId: 'rev-0002', revisionNumber: 2, price: '51.5', source: 'Manual' } },
+      resolution: { kind: 'Available', mark: { revisionId: 'rev-0002', revisionNumber: 2, price: '51.5', source: 'Manual', savedAt: TUESDAY_NOON, correctionReason: 'Typo: I read the wrong row' } },
       resolutionRevision: 2,
     });
     expect(await stored(persistence)).toEqual(before);

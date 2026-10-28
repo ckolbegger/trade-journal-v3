@@ -155,6 +155,17 @@ describe('Current and Review contexts', () => {
     expect(after).toMatchObject({ frames: [{ resolution: { kind: 'Available', mark: { revisionId: 'rev-0003', revisionNumber: 2, price: '11' } } }] });
   });
 
+  it('should give the frame Mark its save time and correction reason from Market Data', async () => {
+    const { marketData } = await setup();
+    await marketData.save(mark('ABC', '2026-10-12', '10'));
+    const initial = framesOf(await marketData.query(current(['ABC'])))[0]?.resolution;
+    expect(initial).toMatchObject({ kind: 'Available', mark: { savedAt: TUESDAY_NOON } });
+    expect(initial).not.toHaveProperty('mark.correctionReason');
+    await marketData.save({ intention: 'CorrectMark', instrumentKey: 'ABC', tradingDate: '2026-10-12', price: '11', reason: 'Typo', expectedResolutionRevision: 1 });
+    const corrected = framesOf(await marketData.query(current(['ABC'])))[0]?.resolution;
+    expect(corrected).toMatchObject({ kind: 'Available', mark: { revisionNumber: 2, savedAt: TUESDAY_NOON, correctionReason: 'Typo' } });
+  });
+
   it('should return the same frames for a Review context naming 2026-10-12 as for the Current context at Tuesday noon', async () => {
     const { marketData } = await setup();
     await marketData.save(mark('XYZ', '2026-10-12'));
@@ -198,7 +209,7 @@ describe('Historical point context (A53)', () => {
         tradingDate: '2026-10-09',
         closeInstant: '2026-10-09T20:00:00Z',
         nextSession: { tradingDate: '2026-10-12', closeInstant: '2026-10-12T20:00:00Z' },
-        resolution: { kind: 'Available', mark: { revisionId: 'rev-0001', revisionNumber: 1, price: '51.2', source: 'Manual' } },
+        resolution: { kind: 'Available', mark: { revisionId: 'rev-0001', revisionNumber: 1, price: '51.2', source: 'Manual', savedAt: TUESDAY_NOON } },
       },
     ]);
   });
