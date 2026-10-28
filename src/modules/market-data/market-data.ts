@@ -2,7 +2,7 @@ import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import { Temporal } from 'temporal-polyfill';
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
-import type { Covered, Session, SessionPolicy } from '../../domain/session-policy/index.ts';
+import type { CoverageRange, Covered, Session, SessionPolicy } from '../../domain/session-policy/index.ts';
 import type { Clock } from '../../domain/time/index.ts';
 import { parseDecimal } from '../../domain/values/index.ts';
 import type { BindingCheck, IdGenerator, Persistence, ReadTransaction } from '../../persistence/index.ts';
@@ -147,7 +147,10 @@ export interface HistoricalGaps {
 }
 
 // Transient: it is never stored and creates no fact.
-export type RecoverDiagnostic = { readonly kind: 'NotConfigured' };
+export type RecoverDiagnostic =
+  | { readonly kind: 'NotConfigured' }
+  // The Instrument's relevance starts before the session policy's coverage: only covered sessions are listed (P8).
+  | { readonly kind: 'SessionPolicyCoverage'; readonly instrumentKey: string; readonly coverage: CoverageRange };
 
 export type RecoverResult =
   | {
@@ -335,30 +338,38 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
 
   // Per Instrument, the sessions before the Review Date without an effective Mark, from its relevance start (A56).
   // One bounded range read per Instrument, whatever the history length (A47).
-  async function historicalGaps(instruments: RecoverRequest['instruments'], reviewDate: string | undefined): Promise<HistoricalGaps[]> {
+  async function historicalGaps(instruments: RecoverRequest['instruments'], reviewDate: string | undefined): Promise<{ gaps: HistoricalGaps[]; diagnostics: RecoverDiagnostic[] }> {
     const lastHistorical = reviewDate && Temporal.PlainDate.from(reviewDate).subtract({ days: 1 }).toString();
+    const { coverage } = deps.sessionPolicy.identity;
     const { value } = await deps.persistence.readSnapshot(['observations'], (tx) =>
       Promise.all(
         [...instruments]
           .sort((a, b) => (a.instrumentKey < b.instrumentKey ? -1 : 1))
-          .map(async ({ instrumentKey, earliestExposure }): Promise<HistoricalGaps> => {
+          .map(async ({ instrumentKey, earliestExposure }) => {
             const exposure = Temporal.Instant.from(earliestExposure);
-            const from = exposure.toZonedDateTimeISO('UTC').toPlainDate().subtract({ days: 1 }).toString();
+            const exposureDate = exposure.toZonedDateTimeISO('UTC').toPlainDate().toString();
+            // Outside coverage there is a diagnostic, never a guessed session (P8): enumeration starts at the first covered date.
+            const beforeCoverage = exposureDate < coverage.first;
+            const from = beforeCoverage ? coverage.first : exposureDate;
             const sessions = lastHistorical ? deps.sessionPolicy.sessionsBetween(from, lastHistorical) : { ok: true as const, value: [] };
             // Relevance starts at the first session whose close is at or after the exposure.
             const relevant = sessions.ok ? sessions.value.filter((s) => Temporal.Instant.compare(Temporal.Instant.from(s.close), exposure) >= 0) : [];
             const stored = relevant.length === 0 ? [] : await tx.getAllFromIndex('observations', 'byInstrumentDate', IDBKeyRange.bound([instrumentKey, relevant[0]!.date], [instrumentKey, relevant[relevant.length - 1]!.date]));
             const resolutionOf = new Map(stored.map((r) => [r['tradingDate'] as string, resolve(stripRevision(r)).kind]));
             const kinds = relevant.map((s) => ({ date: s.date, kind: resolutionOf.get(s.date) ?? 'Missing' }));
-            return {
+            const gaps: HistoricalGaps = {
               instrumentKey,
               missing: kinds.filter((k) => k.kind === 'Missing').map((k) => k.date),
               acknowledged: kinds.filter((k) => k.kind === 'AcknowledgedUnavailable').map((k) => k.date),
             };
+            return { gaps, beforeCoverage };
           }),
       ),
     );
-    return value;
+    return {
+      gaps: value.map((v) => v.gaps),
+      diagnostics: value.filter((v) => v.beforeCoverage).map((v): RecoverDiagnostic => ({ kind: 'SessionPolicyCoverage', instrumentKey: v.gaps.instrumentKey, coverage })),
+    };
   }
 
   const marketData: MarketData = {
@@ -493,7 +504,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
       const instruments = request.instruments.map((i) => i.instrumentKey);
       const queried = await marketData.query({ kind: 'ResolveFrames', context: request.context, instruments });
       if (queried.kind !== 'Frames') return { kind: 'Rejected', issues: queried.kind === 'Rejected' ? queried.issues : [] };
-      const gaps = await historicalGaps(request.instruments, queried.frames[0]?.tradingDate);
+      const { gaps, diagnostics } = await historicalGaps(request.instruments, queried.frames[0]?.tradingDate);
       return {
         kind: 'Recovered',
         frames: queried.frames,
@@ -502,7 +513,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
         manualTasks: queried.frames.filter((f) => f.resolution.kind === 'Missing').map(({ instrumentKey, tradingDate }) => ({ instrumentKey, tradingDate })),
         snapshotId: queried.snapshotId,
         evidenceDigest: queried.evidenceDigest,
-        diagnostics: [{ kind: 'NotConfigured' }],
+        diagnostics: [{ kind: 'NotConfigured' }, ...diagnostics],
       };
     },
   };

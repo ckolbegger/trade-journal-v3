@@ -175,3 +175,27 @@ describe('recover without a provider (A56)', () => {
     expect(large).toEqual(small);
   });
 });
+
+describe('recover outside session policy coverage (P8)', () => {
+  const policyFrom = (first: string) => createSessionPolicy({ id: 'nyse', revision: 1, coverage: { first, last: '2028-12-31' }, table: NYSE_TABLE });
+
+  it('should list gaps from the first covered session and add a SessionPolicyCoverage diagnostic for an Instrument whose relevance starts before coverage', async () => {
+    const coverage = { first: '2026-10-09', last: '2028-12-31' };
+    const { marketData } = await setup(TUESDAY_NOON, policyFrom(coverage.first));
+    const result = await marketData.recover(review([MNO, XYZ]));
+    if (result.kind !== 'Recovered') throw new Error('expected a recovery');
+    expect(result.gaps).toEqual([
+      { instrumentKey: 'MNO', missing: ['2026-10-09'], acknowledged: [] },
+      { instrumentKey: 'XYZ', missing: [], acknowledged: [] },
+    ]);
+    expect(result.diagnostics).toEqual([{ kind: 'NotConfigured' }, { kind: 'SessionPolicyCoverage', instrumentKey: 'MNO', coverage }]);
+  });
+
+  it('should list gaps normally, with no diagnostic, for an exposure on the first covered session', async () => {
+    const { marketData } = await setup(TUESDAY_NOON, policyFrom('2026-10-07'));
+    const result = await marketData.recover(review([MNO]));
+    if (result.kind !== 'Recovered') throw new Error('expected a recovery');
+    expect(result.gaps).toEqual([{ instrumentKey: 'MNO', missing: ['2026-10-07', '2026-10-08', '2026-10-09'], acknowledged: [] }]);
+    expect(result.diagnostics).toEqual([{ kind: 'NotConfigured' }]);
+  });
+});
