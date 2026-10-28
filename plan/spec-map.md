@@ -197,6 +197,12 @@ Characters of spec text a session reads (core plus tagged), and an estimate in t
 |---|---|---|---|---|---|---|---|
 | S088 | 1–15 | (opening) | 1,741 | core — Every ADR is core. | D1, D5, D8 | D11, D28, RC | ADR 0010: backup is download then read-back verification; only verification yields CompletedBackupReceipt; confirmBackup added. |
 
+### `specs/adr/0011-optimistic-bindings-and-shared-counter-retry.md`
+
+| ID | Lines | Section | Chars | Class | D1–D8 | D9–D28 (provisional) | Summary |
+|---|---|---|---|---|---|---|---|
+| S259 | 1–19 | (opening) | 2,320 | core — Every ADR is core. | D1, D2, D4, D5, D6, D7, D8 | D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28 | ADR 0011 (revision 11): subject-binding conflicts reported; shared-counter-only conflicts retried up to 3 attempts; no persistence increment primitive. |
+
 ### `specs/design/daily-review.md`
 
 | ID | Lines | Section | Chars | Class | D1–D8 | D9–D28 (provisional) | Summary |

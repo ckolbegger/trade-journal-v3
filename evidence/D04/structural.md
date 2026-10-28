@@ -248,3 +248,17 @@ The user directed a traditional optimistic-concurrency fix in place of the in-tr
 - it should save both of two simultaneous initial Marks for different keys, incrementing marketDataRevision once for each (B3's case, kept)
 - it should return Conflict without retrying when the key's own resolution revision moved
 - it should stop after 3 attempts when the shared counter keeps moving, and write nothing
+
+ocr review of `03b323b` (T4.4-B6): session `b4d8d96a-7e3e-47f8-9b97-a954cab0252e`, 2 files reviewed, **No findings.** Raw output: `ocr/T4.4-B6-03b323b.json`. B6 reverted `src/persistence/persistence.ts` and its tests to `b8f490d`, so B3–B5's persistence changes and the B5 finding no longer exist. Flagged first-run pass: "should return Conflict without retrying when the own resolution revision of the key moved" (the re-read's stale-revision check returns before a second commit; mutation-checked on the commit count).
+
+The user then directed (2026-10-27) that the pattern become [ADR 0011](../../specs/adr/0011-optimistic-bindings-and-shared-counter-retry.md), plan revision 11 (decision 52), and that the two D1/D2 writes it exposes be fixed as bug tasks here. A review of every `commit` call in `src/` found: Trade Record's `factRevision` and Trade Workflows' Catalog references already bind their subjects; Catalog create binds `catalogRevision` as a subject (label distinctness is judged against the whole Catalog) and stays as it is; the two seeds below commit with no checks.
+
+### T4.4-B7 Catalog seedDefaults binds its counter and retries (ADR 0011)
+`src/modules/reference-catalog/catalog.ts` `seedDefaults` commits with `checks: []` and writes `catalogRevision` as a value read before the transaction plus one; two concurrent seeds lose an advance and can both add the default records under fresh ids.
+- it should seed the defaults exactly once and advance catalogRevision once when two seeds run at once
+- it should return its typed conflict and write nothing after 3 attempts when catalogRevision keeps moving
+
+### T4.4-B8 Journal seedDefaults binds its counter and retries (ADR 0011)
+`src/modules/journal/journal.ts` `seedDefaults` has the same shape with `journalRevision`.
+- it should seed the default Journal types and definitions exactly once and advance journalRevision once when two seeds run at once
+- it should return its typed conflict and write nothing after 3 attempts when journalRevision keeps moving

@@ -54,6 +54,7 @@ Explicitly outside the MVP:
 - [Standards-based PWA delivery and Runtime Readiness](adr/0008-pwa-delivery-and-runtime-readiness.md)
 - [Storage protection is advisory, not a write gate](adr/0009-advisory-storage-protection.md)
 - [Backup is a file download verified by read-back](adr/0010-backup-download-verified-by-read-back.md)
+- [Optimistic bindings and shared-counter retry](adr/0011-optimistic-bindings-and-shared-counter-retry.md)
 
 ### Architecture and interfaces
 
