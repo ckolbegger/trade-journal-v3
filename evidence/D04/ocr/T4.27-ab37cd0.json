@@ -1,0 +1,104 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 45920,
+    "input_tokens": 45695,
+    "output_tokens": 225,
+    "cache_read_tokens": 5760,
+    "elapsed": "16s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "tools/build-releases.ts",
+        "tools/release-server.ts",
+        "tools/verify-releases.ts"
+      ]
+    }
+  ],
+  "session_id": "d18245e8-5a35-4d41-b709-0b0c02f3e190",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "d18245e8-5a35-4d41-b709-0b0c02f3e190",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "ab37cd0",
+      "resolved_base": "e5adca152449c0788bdd9ae20d07c72bf5eb773f",
+      "resolved_head": "ab37cd0aca7da9d8bddfc045020c5554f4c5e183",
+      "exact_range": "e5adca152449c0788bdd9ae20d07c72bf5eb773f..ab37cd0aca7da9d8bddfc045020c5554f4c5e183",
+      "source_artifact_sha256": "179fce7ab7476ea29f12da1ed36eb3d79bc524cdfac88d8a1b37fe86620bcf90"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "03c1ba2b84b53a2147664cc5be448929d0f431984b6f6753951ef7b32159340d",
+          "path": "tools/release-server.ts",
+          "fingerprint": "8238984216eed5ad5ba93c4b491a1c7e2572b3cfffa47b2a4861047620a9f41e"
+        },
+        {
+          "item_id": "305942210661647b5b7cd0302a2714873146b73002c7e16827a4791f2918916e",
+          "path": "tools/verify-releases.ts",
+          "fingerprint": "60d88c083250db9641026e92e2ea7b7ca54978a36985f0829304337ea919ad64"
+        },
+        {
+          "item_id": "d44f59486d424c04258c508dfe5085256801c054f64ba88feadbe92dd7ff10d2",
+          "path": "tools/build-releases.ts",
+          "fingerprint": "a51b92a9adf8f51a61511fcf85b5922a6bac7a7286766d65ce48e15a8f00ae0f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "03c1ba2b84b53a2147664cc5be448929d0f431984b6f6753951ef7b32159340d",
+          "path": "tools/release-server.ts",
+          "fingerprint": "8238984216eed5ad5ba93c4b491a1c7e2572b3cfffa47b2a4861047620a9f41e"
+        },
+        {
+          "item_id": "305942210661647b5b7cd0302a2714873146b73002c7e16827a4791f2918916e",
+          "path": "tools/verify-releases.ts",
+          "fingerprint": "60d88c083250db9641026e92e2ea7b7ca54978a36985f0829304337ea919ad64"
+        },
+        {
+          "item_id": "d44f59486d424c04258c508dfe5085256801c054f64ba88feadbe92dd7ff10d2",
+          "path": "tools/build-releases.ts",
+          "fingerprint": "a51b92a9adf8f51a61511fcf85b5922a6bac7a7286766d65ce48e15a8f00ae0f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 15615
+  }
+}

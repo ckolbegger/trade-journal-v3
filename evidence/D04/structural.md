@@ -171,3 +171,18 @@ e2e changes: none needed. Every `d2` use (`e2e/d2/migration.spec.ts` lines 63, 7
 - `npm run build:releases && npm run verify:releases`: d1 reused from cache; d2 built in `tj-release-d2-de3fa276a263` (claude-opus-5.5-d2 at de3fa276a2632b568296040fd56efd2825708a39); `verify:releases OK: v1 f424ca68..., v2 d117d6aa..., v2-corrupt fails only on /assets/index-CWnWZl9c.css, d1 9c8b5b3d... schema 1, d2 01736544... schema 2, d4 eccbd63a... schema 3`.
 - `npx playwright test e2e/d2/migration.spec.ts --project=chromium`: 4 passed (B2.3 included).
 - `npx playwright test e2e/d1 e2e/d2 --project=chromium`: 124 passed.
+
+ocr review of `ab37cd0`: session `d18245e8-5a35-4d41-b709-0b0c02f3e190`, 3 files reviewed, **No findings.** Raw output: `ocr/T4.27-ab37cd0.json`.
+
+### Cumulative run after T4.27
+
+Run 2026-10-27 21:30 EDT on commit `ab37cd0` (uncommitted: evidence only), Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 45 passed (45)`, `Tests 502 passed (502)`, exit 0 | `suite-runs/t4.27-d2-release-build-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 21 passed (21)`, `Tests 49 passed (49)`, exit 0 | `suite-runs/t4.27-d2-release-build-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `124 passed (3.8m)`, exit 0 | `suite-runs/t4.27-d2-release-build-browser.txt` |
+| Static and verification checks (12 commands) | as after T4.2 | 11 of 12 exit 0 | `suite-runs/t4.27-d2-release-build-checks.txt` |
+
+Failures: `verify:capacity` only, "FAIL basis measured at schema version 2, current is 3: run measure:capacity" — expected until T4.28. `verify:releases` and B2.3 pass again.
