@@ -403,4 +403,33 @@ describe('a failure after the commit', () => {
     expect(saved(result).action).toEqual(expect.objectContaining({ action: 'Hold', entryRevision: 1 }));
     expect((await stack.journal.queryActions({ reviewDate: binding.reviewDate })).actions[a]).toEqual(expect.objectContaining({ action: 'Hold', entryRevision: 1 }));
   }, 30_000);
+
+  it('should return Saved with the committed Action when the post-commit Journal read fails', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a } = await fiveTradeFixture(stack);
+    const binding = await bindingFor(stack, a);
+    let committed = false;
+    const commit = (async (...args: Parameters<typeof stack.persistence.commit>) => {
+      const result = await stack.persistence.commit(...args);
+      committed = true;
+      return result;
+    }) as typeof stack.persistence.commit;
+    // Every Journal read, once the commit has landed, throws.
+    const journal = new Proxy(stack.journal, {
+      get(target, property, receiver) {
+        const member: unknown = Reflect.get(target, property, receiver);
+        if (typeof member !== 'function' || ['prepareEffects', 'applyPreparedEffects', 'seedDefaults'].includes(String(property))) return member;
+        return (...args: unknown[]) => {
+          if (committed) throw new Error('journal read failed after the commit');
+          return (member as (...a: unknown[]) => unknown).apply(target, args);
+        };
+      },
+    });
+    const review = createDailyReview({ ...stack, persistence: { ...stack.persistence, commit }, journal });
+
+    const result = saved(await review.save({ kind: 'SaveTradeAction', binding, action: 'Hold' }));
+
+    expect(result.action).toEqual(expect.objectContaining({ action: 'Hold', entryRevision: 1 }));
+    expect(result.review).toEqual({ kind: 'ChangedDuringAssembly' });
+  }, 30_000);
 });

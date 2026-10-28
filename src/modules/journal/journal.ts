@@ -86,8 +86,6 @@ export interface Journal {
   query(query: JournalQuery): Promise<JournalPage>;
   // Every Daily Trade Review Action for a Review Date, keyed by Trade.
   queryActions(query: ReviewDateQuery): Promise<ReviewDateActions>;
-  // The Action as one Entry version saved it, whatever versions were saved after.
-  actionAt(entryId: string, entryRevision: number): Promise<DailyAction>;
 }
 
 interface StoredEntry {
@@ -269,7 +267,7 @@ export function createJournal(deps: JournalDeps): Journal {
       return { entryType: 'PositionChangeReflection', positionChange: request.origin.ref };
     };
     const obligationKey = obligationKeyOf();
-    const { value } = await deps.persistence.readSnapshot(['journalDefinitions', 'journalObligations', 'journalEntries', 'meta'], async (tx) => {
+    const { value } = await deps.persistence.readSnapshot(['journalDefinitions', 'journalObligations', 'journalEntries', 'journalTypes', 'meta'], async (tx) => {
       // A Daily Trade Review whose key already has an Entry is an edit of that Entry.
       const obligation =
         obligationKey.entryType === 'DailyTradeReview'
@@ -277,6 +275,7 @@ export function createJournal(deps: JournalDeps): Journal {
           : undefined;
       return {
         definitions: (await tx.getAll('journalDefinitions')) as unknown as EntryDefinitionRecord[],
+        types: (await tx.getAll('journalTypes')) as unknown as JournalTypeRecord[],
         meta: (await tx.get('meta', 'journal')) as JournalMeta | undefined,
         existing: obligation && ((await tx.get('journalEntries', obligation.outcome.id)) as unknown as StoredEntry | undefined),
       };
@@ -349,6 +348,22 @@ export function createJournal(deps: JournalDeps): Journal {
       },
       snapshot,
     };
+    if (request.obligation === 'DailyTradeReview') {
+      const [entry] = prepared.effects.entries;
+      const saved: StoredEntry = {
+        id: '',
+        entryTypeKey: entry!.entryTypeKey,
+        sourceKey: entry!.sourceKey,
+        anchor: { kind: 'Trade', tradeId: entry!.anchor.ref },
+        momentTime: entry!.momentTime,
+        authoredTime: entry!.authoredTime,
+        origin: { kind: entry!.origin.kind, factId: entry!.origin.ref },
+        // The Entry as this save leaves it: the versions it was prepared against, then the new one.
+        versions: [...(existing?.versions ?? []), { definitionId: entry!.definitionId, responses: entry!.responses }],
+      };
+      const action = dailyAction(saved, new Map(value.definitions.map((d) => [d.id, d])), new Map(value.types.map((t) => [t.productKey, t.label])));
+      return { ...prepared, action };
+    }
     if (request.obligation !== 'PlanReflection') return prepared;
     const textFor = (role: 'Thesis' | 'Invalidation') => {
       const prompt = definition.prompts.find((p) => p.kind === 'Text' && p.role === role);
@@ -381,20 +396,8 @@ export function createJournal(deps: JournalDeps): Journal {
     return { kind: 'Actions', reviewDate, actions, snapshot: { journalRevision: value.meta?.journalRevision ?? 0 } };
   }
 
-  async function actionAt(entryId: string, entryRevision: number): Promise<DailyAction> {
-    const { value } = await deps.persistence.readSnapshot(['journalEntries', 'journalDefinitions', 'journalTypes'], async (tx) => ({
-      entry: (await tx.get('journalEntries', entryId)) as unknown as StoredEntry,
-      definitions: (await tx.getAll('journalDefinitions')) as unknown as EntryDefinitionRecord[],
-      types: (await tx.getAll('journalTypes')) as unknown as JournalTypeRecord[],
-    }));
-    // Versions are append-only, so the prefix is the Entry as that version left it.
-    const entry = { ...value.entry, versions: value.entry.versions.slice(0, entryRevision) };
-    return dailyAction(entry, new Map(value.definitions.map((d) => [d.id, d])), new Map(value.types.map((t) => [t.productKey, t.label])));
-  }
-
   return {
     queryActions: ({ reviewDate }) => queryActions(reviewDate),
-    actionAt,
 
     async query(query) {
       const { value } = await deps.persistence.readSnapshot(
@@ -517,7 +520,7 @@ export function createJournal(deps: JournalDeps): Journal {
         return projection;
       });
       tx.stage({ op: 'put', store: 'meta', value: { key: 'journal', journalRevision: prepared.snapshot.journalRevision + 1 } });
-      return { kind: 'Staged', entries, declines };
+      return { kind: 'Staged', entries, declines, ...(prepared.action && { action: { ...prepared.action, id: entries[0]!.id } }) };
     },
 
     // One implementation serves both overloads: only a Plan Reflection carries semantics.

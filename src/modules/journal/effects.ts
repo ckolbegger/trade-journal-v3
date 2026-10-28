@@ -122,6 +122,9 @@ export interface PreparedJournalOutcome {
   readonly effects: PreparedJournalEffects;
   // The Journal snapshot this outcome was validated against, rechecked when applied.
   readonly snapshot: { readonly journalRevision: number };
+  // A Daily Trade Review save: the Action it will commit, built from the snapshot it was prepared
+  // against. A new Entry's identity is assigned when applied, so its id here is empty until then.
+  readonly action?: DailyAction;
 }
 
 export type PrepareJournalEffectsResult =
@@ -170,6 +173,8 @@ export type JournalApplyResult = {
   readonly kind: 'Staged';
   readonly entries: readonly EntryProjection[];
   readonly declines: readonly DeclineProjection[];
+  // The Action a prepared Daily Trade Review save commits, with its Entry identity.
+  readonly action?: DailyAction;
 };
 
 export interface JournalQuery {

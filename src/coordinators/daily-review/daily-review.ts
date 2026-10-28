@@ -488,9 +488,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const committed = await deps.persistence.commit(tx.close());
     if (committed.kind === 'Conflict') return { kind: 'Retry' };
     if (committed.kind !== 'Committed') throw new Error(`unexpected commit result: ${committed.kind}`);
-    // The Entry version this commit wrote; a version another writer saves since is not this save's Action.
-    const entry = prepared.effects.entries[0]!;
-    const action = await deps.journal.actionAt(applied.entries[0]!.id, (entry.edit?.expectedRevision ?? 0) + 1);
+    // The Action this commit wrote, built when the save was prepared; no read follows the commit.
+    const action = applied.action!;
     // The Action is committed; a read that fails from here on only costs the next step, never the save.
     const review = await postSaveReview(binding.reviewDate).catch((): PostSaveReview => ({ kind: 'ChangedDuringAssembly' }));
     return { kind: 'Saved', action, review };

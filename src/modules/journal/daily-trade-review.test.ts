@@ -166,6 +166,8 @@ describe('prepareEffects: Daily Trade Review (CompleteNow)', () => {
         declines: [],
       },
       snapshot: { journalRevision: 3 },
+      // The Action this save will commit (asserted in full under the saved Action cases below).
+      action: expect.objectContaining({ action: 'Hold', entryRevision: 1 }) as unknown,
     });
     expect(await stored(persistence)).toEqual(before);
   });
@@ -274,6 +276,40 @@ describe('edit by expected revision (AC-JOUR-005)', () => {
     expect(await j.prepareEffects(complete({ [ACTION]: option('Hold') }, { expectedEntryRevision: 1 }))).toEqual({ kind: 'Conflict' });
     expect(await j.prepareEffects(complete({ [ACTION]: option('Hold') }))).toEqual({ kind: 'Conflict' });
     expect(await stored(persistence)).toEqual(before);
+  });
+});
+
+// The Action a save returns is built from the snapshot the save was prepared against, so no read follows the commit.
+describe('applyPreparedEffects: the saved Action', () => {
+  it('should give the Action the prepared save will commit, for a new save', async () => {
+    const { journal: j, persistence } = await seeded();
+    const prepared = await j.prepareEffects(complete({ [ACTION]: option('Exit'), [INTENT]: { kind: 'Text', text: 'Done.' } }));
+    if (prepared.kind !== 'Prepared') throw new Error('expected Prepared');
+    const tx = beginSemanticTransaction();
+    const staged = j.applyPreparedEffects(tx, prepared, {});
+    expect((await persistence.commit(tx.close())).kind).toBe('Committed');
+
+    const committed = (await j.queryActions({ reviewDate: '2026-10-12' })).actions['trade-1'];
+    expect(staged.action).toEqual(committed);
+    expect(staged.action).toEqual(expect.objectContaining({ id: staged.entries[0]!.id, action: 'Exit', entryRevision: 1 }));
+  });
+
+  it('should give the Action the prepared save will commit, for an edit', async () => {
+    const { journal: j, persistence } = await seeded();
+    const first = await j.prepareEffects(complete({ [ACTION]: option('Hold') }));
+    if (first.kind !== 'Prepared') throw new Error('expected Prepared');
+    const firstTx = beginSemanticTransaction();
+    j.applyPreparedEffects(firstTx, first, {});
+    expect((await persistence.commit(firstTx.close())).kind).toBe('Committed');
+    const prepared = await j.prepareEffects(complete({ [ACTION]: option('Roll'), [INTENT]: { kind: 'Text', text: 'Roll out.' } }, { expectedEntryRevision: 1 }));
+    if (prepared.kind !== 'Prepared') throw new Error('expected Prepared');
+    const tx = beginSemanticTransaction();
+    const staged = j.applyPreparedEffects(tx, prepared, {});
+    expect((await persistence.commit(tx.close())).kind).toBe('Committed');
+
+    const committed = (await j.queryActions({ reviewDate: '2026-10-12' })).actions['trade-1'];
+    expect(staged.action).toEqual(committed);
+    expect(staged.action).toEqual(expect.objectContaining({ action: 'Roll', entryRevision: 2, edited: true }));
   });
 });
 
