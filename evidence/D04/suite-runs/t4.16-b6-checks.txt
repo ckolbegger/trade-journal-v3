@@ -1,0 +1,91 @@
+$ npm run typecheck
+
+> trade-journal-v3@0.0.0 typecheck
+> tsc
+
+EXIT 0
+$ npx tsc6 --noEmit
+EXIT 0
+$ npm run lint
+
+> trade-journal-v3@0.0.0 lint
+> eslint .
+
+EXIT 0
+$ npm run lint:deps
+
+> trade-journal-v3@0.0.0 lint:deps
+> node tools/lint-deps.ts
+
+
+✔ no dependency violations found (201 modules, 753 dependencies cruised)
+
+lint:deps OK (src)
+EXIT 0
+$ npm run build
+
+> trade-journal-v3@0.0.0 build
+> vite build
+
+vite v8.3.2 building client environment for production...
+transforming...
+✓ 126 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.50 kB │ gzip:   0.30 kB
+dist/assets/index-CWnWZl9c.css   12.09 kB │ gzip:   3.24 kB
+dist/assets/index-A1S1X5I-.js   484.33 kB │ gzip: 149.54 kB
+
+✓ built in 82ms
+EXIT 0
+$ npm run verify:release
+
+> trade-journal-v3@0.0.0 verify:release
+> node tools/verify-release.ts
+
+OK /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/dist: release d6f6b97094c5bb0ab9b7aaeca67e6d53bd083481cbd1f9251665782ac23512ee, 6 assets
+EXIT 0
+$ npm run verify:capabilities
+
+> trade-journal-v3@0.0.0 verify:capabilities
+> node tools/verify-capabilities.ts
+
+verify:capabilities OK: 12 operations, 3 variant-qualified, 7 routes, 2 Entry Types, schema 3, release 853915999821e451dab53a036014cc8b75c550437222e52b40765fad954a9b29
+EXIT 0
+$ npm run verify:releases
+
+> trade-journal-v3@0.0.0 verify:releases
+> node tools/verify-releases.ts
+
+verify:releases OK: v1 a1ad25d3903e1420f9bf864bdc939c82b086a7bcf31252bcbe0cf9773c968af1, v2 8fb47445cb30c14d7352103ac9eb54e580787ff9ea995e677f5787c41b2f818c, v2-corrupt fails only on /assets/index-CWnWZl9c.css, d1 9c8b5b3dac0bff4a2ddda1888ee01c8532b419da03ba1a9f080e4f0fc77dee78 schema 1, d2 017365441a54b501a8c2ae4eee9a7321be9286c07062ffb16e6607622b4ce94d schema 2, d4 9bb08652888d6995700fcc5b1894395d4e95ce9c0cea044c452bf7dfc7889cbb schema 3
+EXIT 0
+$ npm run verify:no-fault-hooks
+
+> trade-journal-v3@0.0.0 verify:no-fault-hooks
+> node tools/verify-no-fault-hooks.ts
+
+verify:no-fault-hooks OK: /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/dist has no fault or bench hooks
+EXIT 0
+$ npm run verify:capacity
+
+> trade-journal-v3@0.0.0 verify:capacity
+> node tools/verify-capacity.ts
+
+FAIL basis measured at schema version 2, current is 3: run measure:capacity
+EXIT 1
+$ npm run verify:fixtures
+
+> trade-journal-v3@0.0.0 verify:fixtures
+> node tools/verify-fixtures.ts
+
+workspace-v1: schema 1, migrated to 3 into tj-ws-verify-0001, views equal
+workspace-v2: schema 2, migrated to 3 into tj-ws-verify-0001, views equal
+verify:fixtures OK: workspace-v1, workspace-v2 open Ready at schema 3 with views equal to their snapshots
+EXIT 0
+$ npm run verify:session-policy
+
+> trade-journal-v3@0.0.0 verify:session-policy
+> node tools/verify-session-policy.ts
+
+verify:session-policy OK: 5 years (2024-01-01 to 2028-12-31), 1827 dates compared, nyse revision 1 digest 13ff3ef725e71414e2f9bed388b5b59c81964d2ffbd77db2c9a75443b859998b
+EXIT 0

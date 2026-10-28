@@ -751,3 +751,9 @@ ocr review of `8210d89` (B4): session `3692232b-bb20-47a9-b1a3-a699e5b2dbdf`, 1 
 ocr review of `2b0eb08` (B5): session `9be954d7-7b24-4e52-ba82-2eb97d24c8b7`, no findings. `ocr/T4.16-B5-2b0eb08.json`. ocr excludes test files by path, so the reviewer ran it on a scratch clone with `save.test.ts` renamed; the JSON names that path. The test is a flagged first-run pass, and its log has a green row with no red row (the subagent ran green first; the note row says so). Mutations: a bound of 4 fails the test (the fourth attempt has no racing writer and throws); exhaustion returning another kind fails; the reviewer confirmed a bound of 2 fails the commits-equal-3 assertion. Small gap, not a defect: the test does not inspect which binding refused the commit, though each attempt rechecks the subject first and would return ReviewChanged had it moved.
 
 ocr review of `8739bc2` (B6): session `4f67d9ea-cce2-4e77-9a37-39eabd5c2438`, 3 files, no findings. `ocr/T4.16-B6-8739bc2.json`. My own reading of the diff on the points ocr did not address: prepare builds the Action with the existing `dailyAction` mapping over the Entry it read in the same snapshot plus the new version, so the revision is the version count after the commit and `edited` follows from it; a retry repeats prepare (ADR 0011), so no Action outlives its snapshot; apply fills the new Entry's id; `applied.action!` is safe because save always prepares a Daily Trade Review; `actionAt` had no other caller and is removed. Four first-run passes, each mutation-checked and flagged; one existing prepare test's exact-equality expectation was updated after the change, not by a red.
+
+### Cumulative run after T4.16
+
+- `339a62e` (code at `8739bc2`, B1–B6), 2026-10-28 04:28 EDT: unit 682, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.16-b6-*`.
+
+Only `verify:capacity` failed (expected until T4.28). T4.16 is complete.
