@@ -734,3 +734,7 @@ ocr review of `d35c345` (B1): session `e04740cd-1aac-416d-a0f3-bac4ca1dcbdf`, 1 
 | Severity | Location | Claim | Assessment | Disposition |
 |---|---|---|---|---|
 | high | `src/coordinators/daily-review/daily-review.ts:413` | A Mark that newly becomes the Stale source between the read and the commit (a new, later earlier-session key, or the first one) is not caught | Doubtful: real, but per-key bindings cannot cover a key that did not exist at the read, and `commit` checks only exact keys (ADR 0011 keeps its write set static). Stale context is disclosure only (T4.9) and the saved Entry stores no evidence | Open question for the user: catching it needs a range binding in persistence, a design change |
+
+ocr review of `7f3b70d` (B2): session `9d7de8ce-b6da-4eb4-b1b1-bf5593ee33a4`, no findings. `ocr/T4.16-B2-7f3b70d.json`. `TradeSaveBinding` now carries `databaseName`, and save compares it with the open Workspace before reading. The subagent flagged one slip: `getTrade` set `databaseName` on the binding before the red that required it. No first-run passes.
+
+ocr review of `528b9a1` (B3): session `c60a1f61-d1c6-4849-8746-6abd50fe2045`, no findings. `ocr/T4.16-B3-528b9a1.json`. Save now reads the committed version with `Journal.actionAt(entryId, entryRevision)`; the reviewer confirmed versions are append-only and the revision is the version count. Residual note, not a finding: `actionAt` maps with the current definitions and labels, which match the commit's unless the Catalog changes in between. No code ahead of red, no first-run passes.
