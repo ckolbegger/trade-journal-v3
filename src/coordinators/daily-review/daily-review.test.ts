@@ -52,6 +52,15 @@ describe('date and eligibility (P9, P15, A55)', () => {
     expect(JSON.stringify(marks(result))).not.toContain('ABC');
     expect(JSON.stringify(ready(result).completion)).not.toContain('ABC');
   });
+
+  it('should return Empty when the index selects only Trades whose facts are not Open at the cutoff', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const late = await stack.confirm({ symbol: 'ABC', shares: '100', entry: '30.00', stop: '28.00', target: '36.00' });
+    await stack.fill(late, '2026-10-12T20:05:00Z', '100', '30.00');
+    await rawEditTrade(stack, late.tradeId, (trade) => ({ ...trade, exposureStart: TEN_AM }));
+
+    expect(await open(stack, MONDAY_1700)).toEqual({ kind: 'Empty', reviewDate: '2026-10-12', cutoff: MONDAY_CUTOFF });
+  });
 });
 
 describe('eligibility at the cutoff (AC-REV-001)', () => {

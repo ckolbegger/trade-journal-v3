@@ -89,13 +89,13 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const { tradingDate: reviewDate, closeInstant: cutoff } = session;
     const records = await eligibleRecords(cutoff);
     if (!records) return { kind: 'Expired' };
-    if (records.length === 0) return { kind: 'Empty', reviewDate, cutoff };
 
     // Each Trade is derived at the cutoff, which also yields the Marks its Position requires.
     // The index only selects; a Trade whose facts do not leave it Open at the cutoff is not eligible.
     const derivations = records
       .map(({ summary, analysis }) => ({ summary, analysis, derivation: derive({ record: analysis, cutoff, valuationDate: reviewDate }) }))
       .filter(({ derivation }) => derivation.kind !== 'Derived' || derivation.expectedLifecycle === 'Open');
+    if (derivations.length === 0) return { kind: 'Empty', reviewDate, cutoff };
     const derived = derivations.flatMap(({ summary, analysis, derivation }) => (derivation.kind === 'Derived' ? [{ summary, analysis, state: derivation }] : []));
     const requirements = derived.flatMap(({ state }) => state.observationRequirements.map((r) => ({ tradeId: state.tradeId, ...r })));
     const earliest = new Map<string, string>();
