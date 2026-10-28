@@ -198,4 +198,16 @@ describe('recover outside session policy coverage (P8)', () => {
     expect(result.gaps).toEqual([{ instrumentKey: 'MNO', missing: ['2026-10-07', '2026-10-08', '2026-10-09'], acknowledged: [] }]);
     expect(result.diagnostics).toEqual([{ kind: 'NotConfigured' }]);
   });
+
+  it('should reject a recover request whose earliestExposure is not an ISO instant with an InvalidInstant issue', async () => {
+    const { marketData } = await setup();
+    const result = await marketData.recover(review([{ instrumentKey: 'MNO', earliestExposure: 'not-a-time' }, XYZ, { instrumentKey: 'ABC', earliestExposure: '2026-10-07' }]));
+    expect(result).toEqual({
+      kind: 'Rejected',
+      issues: [
+        { field: 'earliestExposure', code: 'InvalidInstant', instrumentKey: 'MNO' },
+        { field: 'earliestExposure', code: 'InvalidInstant', instrumentKey: 'ABC' },
+      ],
+    });
+  });
 });

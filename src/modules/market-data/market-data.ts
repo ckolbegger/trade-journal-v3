@@ -55,8 +55,10 @@ export type MarketDataIssueCode =
   | 'NothingToWithdraw';
 
 export interface MarketDataIssue {
-  readonly field: 'instrumentKey' | 'tradingDate' | 'asOf' | 'price' | 'reason' | 'key';
+  readonly field: 'instrumentKey' | 'tradingDate' | 'asOf' | 'earliestExposure' | 'price' | 'reason' | 'key';
   readonly code: MarketDataIssueCode;
+  // Set when the issue concerns one entry of a multi-Instrument request.
+  readonly instrumentKey?: string;
 }
 
 export type MarketDataSaveResult =
@@ -501,6 +503,10 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
       };
     },
     async recover(request) {
+      const invalid = request.instruments.filter((i) => !isInstant(i.earliestExposure));
+      if (invalid.length > 0) {
+        return { kind: 'Rejected', issues: invalid.map((i) => ({ field: 'earliestExposure', code: 'InvalidInstant', instrumentKey: i.instrumentKey })) };
+      }
       const instruments = request.instruments.map((i) => i.instrumentKey);
       const queried = await marketData.query({ kind: 'ResolveFrames', context: request.context, instruments });
       if (queried.kind !== 'Frames') return { kind: 'Rejected', issues: queried.kind === 'Rejected' ? queried.issues : [] };
