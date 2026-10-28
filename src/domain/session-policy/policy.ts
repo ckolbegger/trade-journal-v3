@@ -29,6 +29,8 @@ export function createSessionPolicy(definition: SessionPolicyDefinition): Sessio
   };
   // The nearest session strictly before (step -1) or after (step 1) a date.
   const neighbour = (date: ExchangeDate, step: 1 | -1): Covered<Session> => {
+    const input = classify(date);
+    if (input.kind === 'NotCovered') return { ok: false, diagnostic: coverageDiagnostic(input.date) };
     for (let day = Temporal.PlainDate.from(date).add({ days: step }); ; day = day.add({ days: step })) {
       const found = classify(day.toString());
       if (found.kind === 'NotCovered') return { ok: false, diagnostic: coverageDiagnostic(found.date) };

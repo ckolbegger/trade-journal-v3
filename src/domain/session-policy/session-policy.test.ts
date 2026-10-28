@@ -152,6 +152,21 @@ describe('neighbours and enumeration', () => {
   });
 });
 
+describe('neighbours and coverage', () => {
+  const coverage = { first: '2000-01-01', last: '2028-12-31' };
+  const diagnostic = (date: string) => ({ ok: false, diagnostic: { kind: 'SessionPolicyCoverage', date, coverage } });
+
+  it('should return a SessionPolicyCoverage diagnostic from previousSession and nextSession when the input date is outside coverage', () => {
+    expect(policy.nextSession('1999-12-31')).toEqual(diagnostic('1999-12-31'));
+    expect(policy.previousSession('2029-01-02')).toEqual(diagnostic('2029-01-02'));
+  });
+
+  it('should return a SessionPolicyCoverage diagnostic when the neighbour would fall outside coverage', () => {
+    expect(policy.previousSession('2000-01-03')).toEqual(diagnostic('1999-12-31'));
+    expect(policy.nextSession('2028-12-29')).toEqual(diagnostic('2029-01-01'));
+  });
+});
+
 describe('coverage (P8)', () => {
   it('should classify a date before 2000-01-01 or after the last covered year as NotCovered with the coverage range, never as a session or a holiday', () => {
     const coverage = { first: '2000-01-01', last: '2028-12-31' };
