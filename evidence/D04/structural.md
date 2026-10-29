@@ -1094,3 +1094,5 @@ ocr review of `e071a4c` (B1): session `e967dccd-16a0-477c-8c66-e9af6fdee320` (sc
 
 ### T4.22-B7 An unsaved Action holds the walk
 - it should not open another Trade or continue to Trades while the open Action form holds an unsaved value, and say why
+
+ocr review of `c22a440` (B6): session `478ac7ad-a212-4e1c-9d4d-1d6c4aca14ea` (scratch clone), no findings. `ocr/T4.22-B6-c22a440.json`. The `openTrade` ref is gone; each `Selected` carries the `opening` count it was shown under (`show()` returns it), `saved(post, opening)` moves the selection only for that opening, and `refreshTrade` captures the count before `reopen()`. The reviewer checked select, proceed, saved and refreshTrade, that a same-Trade refresh keeps ActionForm mounted (keyed by `tradeId`), and that both new tests hold results on deferred promises. No first-run passes, no code ahead of red.
