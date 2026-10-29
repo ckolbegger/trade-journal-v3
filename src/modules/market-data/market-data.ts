@@ -384,14 +384,15 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
             // Relevance starts at the first session whose close is at or after the exposure.
             const relevant = sessions.ok ? sessions.value.filter((s) => Temporal.Instant.compare(Temporal.Instant.from(s.close), exposure) >= 0) : [];
             const stored = relevant.length === 0 ? [] : await tx.getAllFromIndex('observations', 'byInstrumentDate', IDBKeyRange.bound([instrumentKey, relevant[0]!.date], [instrumentKey, relevant[relevant.length - 1]!.date]));
-            const resolutionOf = new Map(stored.map((r) => [r['tradingDate'] as string, resolve(stripRevision(r)).kind]));
+            const storedOn = new Map(stored.map((r) => [r['tradingDate'] as string, r]));
+            const resolutionOf = new Map([...storedOn].map(([date, r]) => [date, resolve(stripRevision(r)).kind]));
             const kinds = relevant.map((s) => ({ date: s.date, kind: resolutionOf.get(s.date) ?? 'Missing' }));
             const gaps: HistoricalGaps = {
               instrumentKey,
               missing: kinds.filter((k) => k.kind === 'Missing').map((k) => k.date),
               acknowledged: kinds.filter((k) => k.kind === 'AcknowledgedUnavailable').map((k) => k.date),
               revisions: Object.fromEntries(
-                kinds.filter((k) => k.kind !== 'Available').map((k) => [k.date, revisionOf(stripRevision(stored.find((r) => r['tradingDate'] === k.date)))]),
+                kinds.filter((k) => k.kind !== 'Available').map((k) => [k.date, revisionOf(stripRevision(storedOn.get(k.date)))]),
               ),
             };
             return { gaps, beforeCoverage };
