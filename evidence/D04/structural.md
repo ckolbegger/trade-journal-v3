@@ -1156,3 +1156,13 @@ ocr review of `35734b9`: session `4928e670-2234-4095-b16c-897b1d2a4685` (scratch
 
 ### T4.23-B1 Each unavailable reason in its own words
 - it should word an Acknowledged Unavailable Mark as the trader's acknowledgment, not as missing, with no Mark missing badge, and word a figure outside calendar coverage as not available, wherever `calculation` is used
+
+ocr review of `f22bf7b` (B1): session `35bb25c5-0286-4e55-a1ef-92cee918c9e0` (scratch clone; the reviewer read TradeList.test.tsx itself), 3 files, 2 comments. `ocr/T4.23-B1-f22bf7b.json`. `calculation` words an Unavailable result from its reason: MarkMissing "Mark missing: XYZ, Tue Oct 13", AcknowledgedUnavailable "Acknowledged unavailable: XYZ, Tue Oct 13", SessionPolicyNotCovered "Not available", AwaitingClose "Awaiting the next close". TradeList's "Mark missing" badge shows only for MarkMissing; an acknowledged row keeps the Review link (the Review offers Enter there, T4.21-B5); TradeList's own SessionPolicyNotCovered case is gone. The reviewer traced the four codes `unavailableResult` emits and the link appearing only where a key exists. ReviewTrade's risk and reward figures now word SessionPolicyNotCovered and AcknowledgedUnavailable as above (the intended fix). First-run pass, mutation-checked: each other reason from its code. Code ahead of red, flagged: the SessionPolicyNotCovered line, reverted for its red, then restored.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/ui/figures.ts:14` | An unknown reason code with a date reads "Mark missing" (and without one "Awaiting the next close"); the fallback is not neutral | Valid (low impact: only four codes are emitted today; `reason` is typed `string`) | Bug task T4.23-B2 (second round) |
+| medium | `src/ui/figures.checks.ts:1` | The new test file is not discovered by vitest | Wrong: a scratch-clone rename; the real file is `figures.test.ts` | Dismissed |
+
+### T4.23-B2 An unknown reason reads as not available
+- it should word an Unavailable result with an unknown reason as not available, with no Mark missing link

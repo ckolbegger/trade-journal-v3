@@ -1,0 +1,123 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 2,
+    "total_tokens": 64219,
+    "input_tokens": 63406,
+    "output_tokens": 813,
+    "cache_read_tokens": 15360,
+    "elapsed": "43s"
+  },
+  "tool_calls": {
+    "total": 15,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_find": 2,
+      "file_read": 9
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/figures.checks.ts",
+      "content": "This file is not discovered by either Vitest project: the unit project includes only `src/**/*.test.{ts,tsx}` and integration includes only `tests/integration/**/*.test.ts`. Rename it to `figures.test.ts` so `npm run test:unit` actually executes these regression checks.",
+      "existing_code": "import { describe, expect, it } from 'vitest';",
+      "start_line": 1,
+      "end_line": 1,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/figures.ts",
+      "content": "Unknown reason codes are currently reported as `Mark missing` whenever their detail contains a date (or as `Awaiting the next close` otherwise). Since `CalculationResult` allows arbitrary string reasons, this does not provide the required safe fallback and can incorrectly tell the trader a Mark is missing. Handle the four known reasons explicitly and return a neutral `Not available` for unrecognized reasons; add an unknown-reason regression test.",
+      "existing_code": "  return reason === 'AcknowledgedUnavailable' ? `Acknowledged unavailable: ${where}` : `Mark missing: ${where}`;",
+      "start_line": 14,
+      "end_line": 14,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/figures.checks.ts",
+        "src/ui/figures.ts",
+        "src/ui/screens/TradeList.tsx"
+      ]
+    }
+  ],
+  "session_id": "35bb25c5-0286-4e55-a1ef-92cee918c9e0",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "35bb25c5-0286-4e55-a1ef-92cee918c9e0",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "0526a1307d1390d50bf8fde3a1c44e27cf368d9e",
+      "resolved_head": "1d64125b7f8c613fc318a00824d477fdf0bd27e0",
+      "exact_range": "0526a1307d1390d50bf8fde3a1c44e27cf368d9e..1d64125b7f8c613fc318a00824d477fdf0bd27e0",
+      "source_artifact_sha256": "5a7651d39fbfbc96825ab2c3d64d590f02745e3f3ce2dc21497d4baa92ac6d9f"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "12227846100d1e2f6ca2b8e95879dcfc7565775dd2ebcf39a1469d82c3d0415b",
+          "path": "src/ui/figures.ts",
+          "fingerprint": "5b4e1832e26cb7dc022f1811ed681e57970f8ae99c533f760280561d6a5b653f"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "cb506843d1ba025822d2e5f8718e8c65dc1123a06210594fcf42908726ef99f7"
+        },
+        {
+          "item_id": "dfd841b11e0323e411b5f33bb3160fca092711d2040266e42f755e6d79b421e2",
+          "path": "src/ui/figures.checks.ts",
+          "fingerprint": "090c655091a004a26a414d0d29c4807aabb88254a036f3e25d79fa602461b560"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "12227846100d1e2f6ca2b8e95879dcfc7565775dd2ebcf39a1469d82c3d0415b",
+          "path": "src/ui/figures.ts",
+          "fingerprint": "5b4e1832e26cb7dc022f1811ed681e57970f8ae99c533f760280561d6a5b653f"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "cb506843d1ba025822d2e5f8718e8c65dc1123a06210594fcf42908726ef99f7"
+        },
+        {
+          "item_id": "dfd841b11e0323e411b5f33bb3160fca092711d2040266e42f755e6d79b421e2",
+          "path": "src/ui/figures.checks.ts",
+          "fingerprint": "090c655091a004a26a414d0d29c4807aabb88254a036f3e25d79fa602461b560"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 43271
+  }
+}
