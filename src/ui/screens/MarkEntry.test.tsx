@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import type { UiFacade } from '../../app/compose.ts';
-import type { ExpectedResolutionRevision, MarkResolution } from '../../app/types.ts';
+import type { ExpectedResolutionRevision, MarketDataSaveResult, MarkResolution } from '../../app/types.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { MarkEntry } from './MarkEntry.tsx';
 
@@ -16,8 +16,39 @@ const mark = (price: string, revisionNumber = 1, correctionReason?: string) =>
     kind: 'Available',
     mark: { revisionId: `r${revisionNumber}`, revisionNumber, price, source: 'Manual', savedAt: '2026-10-12T21:00:00Z', ...(correctionReason && { correctionReason }) },
   }) as const satisfies MarkResolution;
-const saved = (resolution: MarkResolution, resolutionRevision: number, classification = 'InitialManual') =>
-  ({ kind: 'Saved', key, resolution, resolutionRevision, classification, binding: { ...key, expectedResolutionRevision: 'None' } }) as never;
+type Saved = Extract<MarketDataSaveResult, { kind: 'Saved' }>;
+type Acknowledgment = Extract<Saved, { acknowledgment: unknown }>['acknowledgment'];
+type Available = Extract<MarkResolution, { kind: 'Available' }>;
+// A Mark save result: the intention's classification and the expected revision the request carried.
+const savedMark = (resolution: Available, expectedResolutionRevision: ExpectedResolutionRevision, classification: 'InitialManual' | 'Correction' = 'InitialManual'): Saved => ({
+  kind: 'Saved',
+  key,
+  resolution,
+  resolutionRevision: resolution.mark.revisionNumber,
+  classification,
+  revision: {
+    revisionId: resolution.mark.revisionId,
+    revisionNumber: resolution.mark.revisionNumber,
+    price: resolution.mark.price,
+    source: 'Manual',
+    intention: classification,
+    ...(resolution.mark.correctionReason && { reason: resolution.mark.correctionReason }),
+    observedAt: '2026-10-12T21:00:00Z',
+    savedAt: resolution.mark.savedAt,
+  },
+  binding: { ...key, expectedResolutionRevision },
+});
+// An acknowledgment save result; Asserted resolves to AcknowledgedUnavailable, Withdrawn to Missing.
+const savedAcknowledgment = (acknowledgment: Acknowledgment, resolutionRevision: number, expectedResolutionRevision: ExpectedResolutionRevision): Saved => ({
+  kind: 'Saved',
+  key,
+  resolution: acknowledgment.kind === 'Asserted' ? { kind: 'AcknowledgedUnavailable', acknowledgment } : { kind: 'Missing' },
+  resolutionRevision,
+  classification: acknowledgment.kind,
+  acknowledgment,
+  binding: { ...key, expectedResolutionRevision },
+});
+const withdrawn: Acknowledgment = { versionId: 'a2', kind: 'Withdrawn', savedAt: '2026-10-12T21:00:00Z' };
 
 function renderEntry(
   resolution: MarkResolution = { kind: 'Missing' },
@@ -43,7 +74,7 @@ function renderEntry(
 describe('entering, correcting, acknowledging, withdrawing', () => {
   it('should submit an initial Mark with the Instrument, date, price, and expected resolution revision, then render the saved resolution from the result without a read call', async () => {
     const facade = facadeDouble();
-    vi.mocked(facade.MarketData.save).mockResolvedValue(saved(mark('52.5'), 1));
+    vi.mocked(facade.MarketData.save).mockResolvedValue(savedMark(mark('52.5'), 'None'));
     renderEntry({ kind: 'Missing' }, 'None', { facade });
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: 'Enter' }));
@@ -61,7 +92,7 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
 
   it('should open Correct with the effective price shown, require a reason, and submit the new price and reason', async () => {
     const facade = facadeDouble();
-    vi.mocked(facade.MarketData.save).mockResolvedValue(saved(mark('53', 2, 'Typo in the close'), 2));
+    vi.mocked(facade.MarketData.save).mockResolvedValue(savedMark(mark('53', 2, 'Typo in the close'), 1, 'Correction'));
     renderEntry(mark('52.5'), 1, { facade });
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: 'Correct' }));
@@ -90,7 +121,7 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
       kind: 'AcknowledgedUnavailable',
       acknowledgment: { versionId: 'a1', kind: 'Asserted', reason: 'Vendor outage', savedAt: '2026-10-12T21:00:00Z' },
     };
-    vi.mocked(facade.MarketData.save).mockResolvedValue(saved(acknowledged, 1));
+    vi.mocked(facade.MarketData.save).mockResolvedValue(savedAcknowledgment(acknowledged.acknowledgment, 1, 'None'));
     renderEntry({ kind: 'Missing' }, 'None', { facade });
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: "Can't get a price" }));
@@ -108,7 +139,7 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
 
   it('should offer Withdraw on an acknowledged key and render Missing afterwards', async () => {
     const facade = facadeDouble();
-    vi.mocked(facade.MarketData.save).mockResolvedValue(saved({ kind: 'Missing' }, 2, 'Withdrawn'));
+    vi.mocked(facade.MarketData.save).mockResolvedValue(savedAcknowledgment(withdrawn, 2, 1));
     renderEntry({ kind: 'AcknowledgedUnavailable', acknowledgment: { versionId: 'a1', kind: 'Asserted', savedAt: '2026-10-12T21:00:00Z' } }, 1, { facade });
     const user = userEvent.setup();
     expect(screen.queryByRole('button', { name: 'Correct' })).toBeNull();
@@ -276,7 +307,7 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
 
   it('should send one save and disable the Mark actions while a save is in flight', async () => {
     const facade = facadeDouble();
-    let finish: (result: never) => void = () => undefined;
+    let finish: (result: MarketDataSaveResult) => void = () => undefined;
     vi.mocked(facade.MarketData.save).mockReturnValue(new Promise((resolve) => (finish = resolve)));
     renderEntry({ kind: 'Missing' }, 'None', { facade });
     const user = userEvent.setup();
@@ -292,7 +323,7 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
     expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Enter' }).disabled).toBe(true);
     expect(screen.getByRole<HTMLButtonElement>('button', { name: "Can't get a price" }).disabled).toBe(true);
 
-    finish(saved(mark('52.5'), 1));
+    finish(savedMark(mark('52.5'), 'None'));
     expect(await screen.findByText('$52.50')).toBeTruthy();
     expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Correct' }).disabled).toBe(false);
     cleanup();
@@ -300,13 +331,13 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
     // Withdraw sends one save and is disabled until the result arrives.
     const withdrawFacade = facadeDouble();
     vi.mocked(withdrawFacade.MarketData.save).mockReturnValue(new Promise((resolve) => (finish = resolve)));
-    renderEntry({ kind: 'AcknowledgedUnavailable', acknowledgment: { reason: 'Halted' } } as never, 1, { facade: withdrawFacade });
+    renderEntry({ kind: 'AcknowledgedUnavailable', acknowledgment: { versionId: 'a1', kind: 'Asserted', reason: 'Halted', savedAt: '2026-10-12T21:00:00Z' } }, 1, { facade: withdrawFacade });
     const withdraw = screen.getByRole<HTMLButtonElement>('button', { name: 'Withdraw' });
     await user.click(withdraw);
     await user.click(withdraw);
     expect(withdrawFacade.MarketData.save).toHaveBeenCalledOnce();
     expect(withdraw.disabled).toBe(true);
-    finish(saved({ kind: 'Missing' }, 2, 'Withdrawn'));
+    finish(savedAcknowledgment(withdrawn, 2, 1));
     await vi.waitFor(() => expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Enter' }).disabled).toBe(false));
   });
 
@@ -314,7 +345,7 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
     const facade = facadeDouble();
     const save = vi.mocked(facade.MarketData.save);
     save.mockResolvedValueOnce({ kind: 'StorageFailure', reason: 'QuotaExceededError' } as never);
-    save.mockResolvedValueOnce(saved(mark('52.5'), 1));
+    save.mockResolvedValueOnce(savedMark(mark('52.5'), 'None'));
     renderEntry({ kind: 'Missing' }, 'None', { facade });
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: 'Enter' }));
@@ -338,7 +369,7 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
     const facade = facadeDouble();
     const save = vi.mocked(facade.MarketData.save);
     save.mockResolvedValueOnce({ kind: 'StorageFailure', reason: 'QuotaExceededError' } as never);
-    save.mockResolvedValueOnce(saved({ kind: 'Missing' }, 2, 'Withdrawn'));
+    save.mockResolvedValueOnce(savedAcknowledgment(withdrawn, 2, 1));
     renderEntry({ kind: 'AcknowledgedUnavailable', acknowledgment: { versionId: 'a1', kind: 'Asserted', savedAt: '2026-10-12T21:00:00Z' } }, 1, { facade });
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: 'Withdraw' }));
