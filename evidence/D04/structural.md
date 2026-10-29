@@ -1425,3 +1425,18 @@ Commands and results:
 - code at `b6e2527`, 2026-10-29 05:56 EDT: unit 800, integration 53, browser 124; checks 12 of 12. `suite-runs/t4.31-*`.
 
 Fully green. T4.31 is complete.
+
+## T4.32 part 1
+
+Node mock-free integration cases I4.1, I4.2, I4.12, I4.3, I4.4, I4.5 (plan section 6.1 of D4). Parts 2 and 3 add I4.6–I4.9, I4.11, I4.18 and I4.10, I4.13–I4.17. Shared helpers: `tests/integration/d4/support.ts`.
+
+| Case | File | Mutation (restored, `git diff -- src` empty) | Failure line |
+|---|---|---|---|
+| I4.1 migrate v1 and v2 fixtures | `tests/integration/d4/migration.test.ts` | the migration receipt records the session-policy identity with revision plus one (`workspace.ts`) | AssertionError: expected { Object (recorded, findings) } to deeply equal ... |
+| I4.2 migration failure and retry | `tests/integration/d4/migration.test.ts` | migration Trade validation accepts every Account (`migration.ts`) | AssertionError: expected { kind: 'Opened', ... } to deeply equal ObjectContaining{...} |
+| I4.12 fresh initialization at schema 3 | `tests/integration/d4/seed.test.ts` | fresh Workspace records the session-policy identity with revision plus one (`persistence.ts`) | AssertionError: expected [ { key: 'catalog', ... } ] to deeply equal ArrayContaining{...} |
+| I4.3 value a Trade | `tests/integration/d4/value-trade.test.ts`, `responses.test.ts` (save result) | ongoingRiskToStop adds the Mark (`evaluate.ts`); Saved result returns resolutionRevision plus one (`market-data.ts`) | AssertionError: expected { kind: 'Value', ... } to deeply equal ...; expected 2 to be 1 |
+| I4.4 Expected Mark Date and Stale context | `tests/integration/d4/expected-mark.test.ts` | a Missing resolution drops its Stale context (`records.ts`) | AssertionError: expected { kind: 'Missing' } to deeply equal { kind: 'Missing', ... } |
+| I4.5 correct a Mark | `tests/integration/d4/responses.test.ts` | the correction footprint drops the ConditionStatus domain (`market-data.ts`) | AssertionError: expected { revisionId: 'id-0021', ... } to deeply equal ObjectContaining{...} |
+
+All six passed at first run (behavior built by earlier D4 tasks); each is flagged in `tdd-log.md`. Run: `npm run test:integration` exit 0, 29 files, 61 tests passed. `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` exit 0.
