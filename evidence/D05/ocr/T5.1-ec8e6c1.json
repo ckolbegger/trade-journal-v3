@@ -1,0 +1,127 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 128791,
+    "input_tokens": 127794,
+    "output_tokens": 997,
+    "cache_read_tokens": 17280,
+    "elapsed": "55s"
+  },
+  "tool_calls": {
+    "total": 19,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_find": 1,
+      "file_read": 13
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/persistence/schema.ts",
+      "content": "The schema bump leaves existing migration tests inconsistent with the release. `src/coordinators/workspace/migration.test.ts` still expects Ready status and migrated meta at version 3 (e.g. lines 65 and 94), and its UnsupportedNewerSchema fixture sets version 4 (line 262), which is now supported. `src/persistence/schema-v3.test.ts` also still expects candidate meta at version 3 (line 133). Update these expectations to 4 and use a version greater than 4 for the unsupported-schema fixture so the existing suite continues to pass and tests the intended branches.",
+      "existing_code": "export const SCHEMA_VERSION = 4;",
+      "start_line": 9,
+      "end_line": 9,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Persistence schema v4 migration and rebuild support",
+      "files": [
+        "src/persistence/migrations/index.ts",
+        "src/persistence/migrations/v3-to-v4.ts",
+        "src/persistence/rebuild.ts",
+        "src/persistence/schema.ts"
+      ]
+    }
+  ],
+  "session_id": "f8978970-cf3e-4732-8833-2bd786ef60cc",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "f8978970-cf3e-4732-8833-2bd786ef60cc",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "ec8e6c1",
+      "resolved_base": "9860157a2ad7113113225ac7929a9a0ed3e49c1a",
+      "resolved_head": "ec8e6c138b346f57f9c327fe9776a61cfeb822b5",
+      "exact_range": "9860157a2ad7113113225ac7929a9a0ed3e49c1a..ec8e6c138b346f57f9c327fe9776a61cfeb822b5",
+      "source_artifact_sha256": "880c0bf53f8b7e2d6fe3bd150d8c240e0d6ea150f6bdff6e3cfc2c5756cde8b9"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "88f96927e861b632d4d9397a86aa43879f8bd433def01fcf61dcc792b80d5aae",
+          "path": "src/persistence/schema.ts",
+          "fingerprint": "efcdd8d6dcb14519bf2df451b8e12640fe8c3df59ef7bd81c9d7972421b06efc"
+        },
+        {
+          "item_id": "ad48df54c917518c35d20e654488cf80aca465a126f7a764dd5a62fa2afa7c9b",
+          "path": "src/persistence/rebuild.ts",
+          "fingerprint": "8410036037c77e4d247a41f966150aa44c2b128bf2448eea7667f0f5ac984ee9"
+        },
+        {
+          "item_id": "c92a2f280976ff9718e8027b86c97fa95bab6b9ab685a22cc15e9ca6b2bda0e2",
+          "path": "src/persistence/migrations/index.ts",
+          "fingerprint": "e90289168d360ecf2c2704c319445646f1ac464ed329da5dc525ad62506fd498"
+        },
+        {
+          "item_id": "ed67f5527193c6443ea0ee1390cb6f66f6db50087eb2443c15fa22c04e21c5cd",
+          "path": "src/persistence/migrations/v3-to-v4.ts",
+          "fingerprint": "8289fc8791f084ddcf8b3496afe1487e741e1ee4998ebba6f730e941f8a3cca7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "88f96927e861b632d4d9397a86aa43879f8bd433def01fcf61dcc792b80d5aae",
+          "path": "src/persistence/schema.ts",
+          "fingerprint": "efcdd8d6dcb14519bf2df451b8e12640fe8c3df59ef7bd81c9d7972421b06efc"
+        },
+        {
+          "item_id": "ad48df54c917518c35d20e654488cf80aca465a126f7a764dd5a62fa2afa7c9b",
+          "path": "src/persistence/rebuild.ts",
+          "fingerprint": "8410036037c77e4d247a41f966150aa44c2b128bf2448eea7667f0f5ac984ee9"
+        },
+        {
+          "item_id": "c92a2f280976ff9718e8027b86c97fa95bab6b9ab685a22cc15e9ca6b2bda0e2",
+          "path": "src/persistence/migrations/index.ts",
+          "fingerprint": "e90289168d360ecf2c2704c319445646f1ac464ed329da5dc525ad62506fd498"
+        },
+        {
+          "item_id": "ed67f5527193c6443ea0ee1390cb6f66f6db50087eb2443c15fa22c04e21c5cd",
+          "path": "src/persistence/migrations/v3-to-v4.ts",
+          "fingerprint": "8289fc8791f084ddcf8b3496afe1487e741e1ee4998ebba6f730e941f8a3cca7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 55404
+  }
+}

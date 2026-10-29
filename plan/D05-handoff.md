@@ -181,7 +181,7 @@ Update this section at the end of each task.
 
 | | |
 |---|---|
-| Tasks done | none |
-| Next task | **T5.1 Persistence: schema v4 and the `v3→v4` transform** (section 4 of the D5 breakdown), after creating `evidence/D05/` with `tdd-log.md`, `structural.md` and `provenance.md`. |
-| Last commit | the commit tagged `claude-opus-5.5-pre-d5` |
+| Tasks done | T5.1 (`ec8e6c1`), with T5.1-S1 (`fc2dfd7`, migration tests target the current schema). Cumulative run after T5.1: green except B4.7 (fixed by T5.18) and `verify:capacity` (until T5.19). |
+| Next task | **T5.18 Release harness: `d4` from the `claude-opus-5.5-d4` tag, plus a current `d5`** (run ahead of graph order, as T4.27 was), then T5.2. |
+| Last commit | the evidence and handoff commit after T5.1 |
 | Open questions | **Before T5.11 and T5.17 (plan question for the user):** how an Outstanding Debt is classified on Trade Detail outside session-policy coverage, where there is no Expected Mark Date (decision 54 and A69); recommended answer in section 3. **Pending the user (raised 2026-10-29, not blocking):** `npm audit` reports vite 8.3.2 (high, dev server only; fixed in 8.3.5) and zod 4.6.5 (high, memory exhaustion on huge collections; fixed in 4.6.7; no app code imports zod until D8). Moving either pin is a plan revision (r15) with a full suite run; ask before doing it. |
