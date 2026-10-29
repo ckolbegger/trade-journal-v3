@@ -525,6 +525,39 @@ describe('Refresh to a different Review Date', () => {
   });
 });
 
+describe('Refresh to a different Review Date after a failed Trade read', () => {
+  it('should say the form starts afresh when the Trade read failed on the first Refresh that moved the date', async () => {
+    const first = tradeReview('t1', 'XYZ');
+    const newBinding = savedBinding({ reviewDate: '2026-10-13', obligationKey: { entryType: 'DailyTradeReview', trade: 't1', reviewDate: '2026-10-13' } });
+    const moved = tradeReview('t1', 'XYZ', { saveBinding: newBinding });
+    const facade = walkFacade(ready([item('t1', 'XYZ')]), first);
+    vi.mocked(facade.DailyReview.getTrade)
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValueOnce({ kind: 'Ready', reviewDate: '2026-10-13', cutoff: '2026-10-13T20:00:00Z', trade: moved });
+    vi.mocked(facade.DailyReview.open)
+      .mockResolvedValueOnce(ready([item('t1', 'XYZ')]))
+      .mockResolvedValueOnce(ready([item('t1', 'XYZ')]))
+      .mockResolvedValue(ready([item('t1', 'XYZ')], undefined, { reviewDate: '2026-10-13' }));
+    const save = vi.mocked(facade.DailyReview.save);
+    save.mockResolvedValueOnce({ kind: 'Conflict' });
+    renderWalk(facade);
+    const user = userEvent.setup();
+    const trade = await openTrade(user, 'XYZ');
+    await user.click(within(trade).getByRole('radio', { name: 'Exit' }));
+    await user.type(within(trade).getByRole('textbox', { name: /Intent/ }), 'Plan changed.');
+    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(await within(trade).findByRole('button', { name: 'Refresh' }));
+    // The Review moved but the Trade read failed: the form stays on its own date.
+    await screen.findByRole('region', { name: 'XYZ review' });
+    expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenCalledTimes(2);
+    await user.click(await within(screen.getByRole('region', { name: 'XYZ review' })).findByRole('button', { name: 'Refresh' }));
+
+    expect((await screen.findByRole('status')).textContent).toBe('The Review moved to Tue Oct 13. This Trade’s form starts afresh for that date.');
+    const form = screen.getByRole('region', { name: 'XYZ review' });
+    expect(within(form).getByRole('textbox', { name: /Intent/ })).toHaveProperty('value', '');
+  });
+});
+
 describe('After a save', () => {
   it('should start the next Trade form afresh, and say what follows when no Trade is next', async () => {
     const user = userEvent.setup();

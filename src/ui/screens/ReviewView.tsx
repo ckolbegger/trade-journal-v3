@@ -351,13 +351,14 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
     const request = selection.current;
     const result = await reopen();
     if (!result) return false;
-    const moved = result.reviewDate !== review.reviewDate;
     setReview(result);
     const trade = await facade.DailyReview.getTrade({ reviewDate: result.reviewDate, tradeId, binding: result.binding }).catch(() => undefined);
     if (trade?.kind !== 'Ready') return false;
     if (selection.current !== request) return true;
     // An Action belongs to one Review Date: the form is keyed by it, so the old date's draft is dropped, and the trader is told.
-    if (moved) setAfterSave(`The Review moved to ${shortDate(result.reviewDate)}. This Trade’s form starts afresh for that date.`);
+    // The date the shown form was opened under, not the overview's: a failed read can leave the two apart.
+    const shownDate = typeof selected?.state === 'object' ? selected.state.trade.saveBinding.reviewDate : undefined;
+    if (shownDate !== undefined && trade.trade.saveBinding.reviewDate !== shownDate) setAfterSave(`The Review moved to ${shortDate(result.reviewDate)}. This Trade’s form starts afresh for that date.`);
     setSelected({ tradeId, opening: request, state: { trade: trade.trade } });
     return true;
   };
