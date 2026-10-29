@@ -226,11 +226,33 @@ describe('prepareEffects: Position Change Reflection, Decline', () => {
     expect((await j.prepareEffects(decline('x'.repeat(500)))).kind).toBe('Prepared');
   });
 
-  // Replaced from D5 by D5 T5.2, which installs Defer: the test is changed to the new expectation then, not deleted.
-  it('should reject Defer with DispositionNotAllowed', async () => {
+  // D2's "should reject Defer with DispositionNotAllowed", changed in place by D5 T5.2, which installs Defer (D5 section 1.2).
+  it('should prepare one Outstanding Debt, and no Entry or decline, with the current definition revision as its snapshot, a Trade Anchor to the originating Trade, Source Position Change, the Position Change origin, moment time and due anchor equal to the Position Change Economic Time, and route JournalOnly', async () => {
     const { journal: j, persistence } = await seeded();
     const before = await stored(persistence);
-    expect(await j.prepareEffects(request({ kind: 'Defer' }))).toEqual({ kind: 'Rejected', issues: [{ code: 'DispositionNotAllowed' }] });
+    expect(await j.prepareEffects(request({ kind: 'Defer' }))).toEqual({
+      kind: 'Prepared',
+      effects: {
+        entries: [],
+        declines: [],
+        debts: [
+          {
+            entryTypeKey: 'entry-type.position-change-reflection',
+            definitionId: DEFINITION,
+            sourceKey: 'source.position-change',
+            obligationKey: { entryType: 'PositionChangeReflection', positionChange: 'candidate:pc-1' },
+            anchor: { kind: 'Trade', ref: 'trade-1' },
+            origin: { kind: 'PositionChange', ref: 'candidate:pc-1' },
+            momentTime: '2026-10-12T14:00:00Z',
+            dueAnchor: '2026-10-12T14:00:00Z',
+            dueRule: 'OneSessionGrace',
+            route: 'JournalOnly',
+          },
+        ],
+      },
+      snapshot: { journalRevision: 1 },
+    });
+    // Nothing is written and no identity is reserved (A11).
     expect(await stored(persistence)).toEqual(before);
   });
 });
@@ -311,6 +333,59 @@ describe('applyPreparedEffects and the obligation index', () => {
     expect(afterDecline.obligations).toEqual([
       { obligationKey: 'PositionChangeReflection:pc-durable-1', outcome: { kind: 'Decline', id: 'j-0003' }, revision: 3 },
     ]);
+  });
+
+  it('should stage the Debt with one Outstanding version and an obligation record naming it as the current outcome, mapped to Trade Record durable Position Change identity, return the staged Debt projection, and fail the transaction when the key already has an outcome', async () => {
+    const deferred = await prepared(request({ kind: 'Defer' }));
+    const tx = beginSemanticTransaction();
+    const staged = deferred.journal.applyPreparedEffects(tx, deferred.prepared, mapping);
+    const projection = {
+      debtId: 'j-0003',
+      obligationKey: 'PositionChangeReflection:pc-durable-1',
+      entryTypeKey: 'entry-type.position-change-reflection',
+      sourceKey: 'source.position-change',
+      definitionId: DEFINITION,
+      anchor: { kind: 'Trade', tradeId: 'trade-1' },
+      origin: { kind: 'PositionChange', factId: 'pc-durable-1' },
+      momentTime: '2026-10-12T14:00:00Z',
+      dueAnchor: '2026-10-12T14:00:00Z',
+      dueRule: 'OneSessionGrace',
+      route: 'JournalOnly',
+      status: 'Outstanding',
+      revision: 'j-0004',
+    };
+    expect(staged).toEqual({ kind: 'Staged', entries: [], declines: [], debts: [projection] });
+    expect((await deferred.persistence.commit(tx.close())).kind).toBe('Committed');
+
+    const { value } = await deferred.persistence.readSnapshot(['journalDebts', 'journalObligations', 'meta'], async (r) => ({
+      debts: await r.getAll('journalDebts'),
+      outstanding: await r.getAllFromIndex('journalDebts', 'byOutstandingDue', IDBKeyRange.bound(['', ''], ['￿', '￿'])),
+      byTrade: await r.getAllFromIndex('journalDebts', 'byAnchorTrade', 'trade-1'),
+      obligations: await r.getAll('journalObligations'),
+      meta: await r.get('meta', 'journal'),
+    }));
+    const identity: Record<string, unknown> = { ...projection };
+    delete identity['status'];
+    delete identity['revision'];
+    expect(value.debts).toEqual([
+      expect.objectContaining({
+        ...identity,
+        anchorTradeId: 'trade-1',
+        outstandingDue: '2026-10-12T14:00:00Z',
+        versions: [{ versionId: 'j-0004', status: 'Outstanding', savedAt: '2026-10-12T15:05:00Z' }],
+      }),
+    ]);
+    expect(value.outstanding).toEqual(value.debts);
+    expect(value.byTrade).toEqual(value.debts);
+    expect(value.obligations).toEqual([
+      { obligationKey: 'PositionChangeReflection:pc-durable-1', outcome: { kind: 'Debt', id: 'j-0003' }, revision: 3 },
+    ]);
+    expect(value.meta).toEqual(expect.objectContaining({ journalRevision: 2 }));
+
+    // A key that already has an outcome, here the Debt itself, fails the whole transaction.
+    const again = beginSemanticTransaction();
+    deferred.journal.applyPreparedEffects(again, deferred.prepared, mapping);
+    expect(await deferred.persistence.commit(again.close())).toEqual(expect.objectContaining({ kind: 'ConstraintViolation' }));
   });
 
   it('should fail the transaction when the obligation key already has an outcome, whether Entry or decline', async () => {

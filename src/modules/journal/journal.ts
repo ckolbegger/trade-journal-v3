@@ -6,6 +6,7 @@ import type {
   CandidateRef,
   DailyAction,
   DailyTradeReviewRequest,
+  DebtProjection,
   DeclineProjection,
   EntryProjection,
   JournalObligationKey,
@@ -256,9 +257,10 @@ export function createJournal(deps: JournalDeps): Journal {
   ): Promise<PrepareJournalEffectsResult | PreparePlanReflectionResult> {
     const { disposition } = request;
     // Plan Reflection requires completion now; Position Change Reflection may also be declined.
-    // Defer arrives with D5.
+    // Defer is installed for the Position Change Reflection only (D5 A66).
     const declining = disposition.kind === 'Decline' && request.obligation === 'PositionChangeReflection';
-    if (disposition.kind !== 'Complete' && !declining) return { kind: 'Rejected', issues: [{ code: 'DispositionNotAllowed' }] };
+    const deferring = disposition.kind === 'Defer' && request.obligation === 'PositionChangeReflection';
+    if (disposition.kind !== 'Complete' && !declining && !deferring) return { kind: 'Rejected', issues: [{ code: 'DispositionNotAllowed' }] };
     const { entryTypeKey, sourceKey } = OBLIGATIONS[request.obligation];
     const obligationKeyOf = (): JournalObligationKey => {
       if (request.obligation === 'PlanReflection') return { entryType: 'PlanReflection', trade: request.anchor.ref };
@@ -290,6 +292,32 @@ export function createJournal(deps: JournalDeps): Journal {
     const definition = existing
       ? value.definitions.find((d) => d.id === existing.versions[0]!.definitionId)
       : value.definitions.filter((d) => d.entryTypeKey === entryTypeKey).sort((a, b) => b.revisionNumber - a.revisionNumber)[0];
+    if (disposition.kind === 'Defer') {
+      // The trader is shown no form, so the Debt snapshots the current revision.
+      if (!definition) return { kind: 'Rejected', issues: [{ code: 'DefinitionRevisionMismatch' }] };
+      return {
+        kind: 'Prepared',
+        effects: {
+          entries: [],
+          declines: [],
+          debts: [
+            {
+              entryTypeKey,
+              definitionId: definition.id,
+              sourceKey,
+              obligationKey,
+              anchor: request.anchor,
+              origin: request.origin as { kind: 'PositionChange'; ref: CandidateRef },
+              momentTime: request.momentTime,
+              dueAnchor: request.momentTime,
+              dueRule: 'OneSessionGrace',
+              route: 'JournalOnly',
+            },
+          ],
+        },
+        snapshot,
+      };
+    }
     const shown = disposition.kind === 'Decline' ? disposition.definitionId : disposition.form.definitionId;
     if (!definition || definition.id !== shown) {
       return { kind: 'Rejected', issues: [{ code: 'DefinitionRevisionMismatch' }] };
@@ -448,7 +476,7 @@ export function createJournal(deps: JournalDeps): Journal {
       };
       // Each outcome is staged with its obligation record; `add` fails the whole transaction when
       // the key already has an outcome (D2 A28).
-      const stageObligation = (obligationKey: string | string[], outcome: { kind: 'Entry' | 'Decline'; id: string }) =>
+      const stageObligation = (obligationKey: string | string[], outcome: { kind: 'Entry' | 'Decline' | 'Debt'; id: string }) =>
         tx.stage({ op: 'add', store: 'journalObligations', value: { obligationKey, outcome } });
       // An edit appends a version to the same Entry identity; the version count it was prepared
       // against is rechecked inside the commit.
@@ -520,8 +548,40 @@ export function createJournal(deps: JournalDeps): Journal {
         stageObligation(obligationKey, { kind: 'Decline', id: projection.id });
         return projection;
       });
+      const debts = (prepared.effects.debts ?? []).map((debt): DebtProjection => {
+        const projection: DebtProjection = {
+          debtId: deps.ids.next(),
+          obligationKey: keyOf(debt.obligationKey) as string,
+          entryTypeKey: debt.entryTypeKey,
+          sourceKey: debt.sourceKey,
+          definitionId: debt.definitionId,
+          anchor: { kind: 'Trade', tradeId: durable(debt.anchor.ref) },
+          origin: { kind: 'PositionChange', factId: durable(debt.origin.ref) },
+          momentTime: debt.momentTime,
+          dueAnchor: debt.dueAnchor,
+          dueRule: debt.dueRule,
+          route: debt.route,
+          status: 'Outstanding',
+          // The Debt's revision is its last version identity (A61).
+          revision: deps.ids.next(),
+        };
+        const { status, revision, ...identity } = projection;
+        tx.stage({
+          op: 'add',
+          store: 'journalDebts',
+          value: {
+            ...identity,
+            // Private fields (A62), set here so the indexes find the Debt before any rebuild.
+            anchorTradeId: projection.anchor.tradeId,
+            outstandingDue: debt.dueAnchor,
+            versions: [{ versionId: revision, status, savedAt: deps.clock.now() }],
+          },
+        });
+        stageObligation(projection.obligationKey, { kind: 'Debt', id: projection.debtId });
+        return projection;
+      });
       tx.stage({ op: 'put', store: 'meta', value: { key: 'journal', journalRevision: prepared.snapshot.journalRevision + 1 } });
-      return { kind: 'Staged', entries, declines, ...(prepared.action && { action: { ...prepared.action, id: entries[0]!.id } }) };
+      return { kind: 'Staged', entries, declines, ...(debts.length > 0 && { debts }), ...(prepared.action && { action: { ...prepared.action, id: entries[0]!.id } }) };
     },
 
     // One implementation serves both overloads: only a Plan Reflection carries semantics.

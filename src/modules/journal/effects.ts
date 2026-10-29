@@ -100,9 +100,26 @@ export interface PreparedDecline {
   readonly authoredTime: Instant;
 }
 
+// A deferred reflection (D5 A61): an Outstanding Debt for one Position Change. The definition is
+// snapshotted by immutable revision reference; the due anchor equals the moment time (P16).
+export interface PreparedDebt {
+  readonly entryTypeKey: string;
+  readonly definitionId: string;
+  readonly sourceKey: string;
+  readonly obligationKey: JournalObligationKey;
+  readonly anchor: { readonly kind: 'Trade'; readonly ref: CandidateRef };
+  readonly origin: { readonly kind: 'PositionChange'; readonly ref: CandidateRef };
+  readonly momentTime: Instant;
+  readonly dueAnchor: Instant;
+  readonly dueRule: 'OneSessionGrace';
+  readonly route: 'JournalOnly';
+}
+
 export interface PreparedJournalEffects {
   readonly entries: readonly PreparedEntry[];
   readonly declines: readonly PreparedDecline[];
+  // Present only for a Defer.
+  readonly debts?: readonly PreparedDebt[];
 }
 
 export interface JournalIssue {
@@ -169,10 +186,32 @@ export interface DeclineProjection {
   readonly authoredTime: Instant;
 }
 
+// The durable projection of a staged Debt: its current (and, in D5, only) version flattened.
+// T5.6 returns it through Trade Workflows; T5.13 lifts it into the app types.
+export interface DebtProjection {
+  readonly debtId: string;
+  readonly obligationKey: string;
+  readonly entryTypeKey: string;
+  readonly sourceKey: string;
+  // The snapshot definition revision.
+  readonly definitionId: string;
+  readonly anchor: { readonly kind: 'Trade'; readonly tradeId: string };
+  readonly origin: { readonly kind: 'PositionChange'; readonly factId: string };
+  readonly momentTime: Instant;
+  readonly dueAnchor: Instant;
+  readonly dueRule: 'OneSessionGrace';
+  readonly route: 'JournalOnly';
+  readonly status: 'Outstanding';
+  // The Debt's last version identity, its optimistic binding.
+  readonly revision: string;
+}
+
 export type JournalApplyResult = {
   readonly kind: 'Staged';
   readonly entries: readonly EntryProjection[];
   readonly declines: readonly DeclineProjection[];
+  // Present only when a Defer staged a Debt.
+  readonly debts?: readonly DebtProjection[];
   // The Action a prepared Daily Trade Review save commits, with its Entry identity.
   readonly action?: DailyAction;
 };
