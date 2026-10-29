@@ -872,3 +872,9 @@ ocr review of `444ea29` (B4): session `9953f4f3-eb7d-406e-b2b2-3c3153d83f5c` (sc
 | Severity | Location | Claim | Assessment | Disposition |
 |---|---|---|---|---|
 | medium | `src/modules/market-data/market-data.ts:412` | At the lower coverage edge (as-of 2024-01-02 before completion) the issue names 2023-12-31, where the backward scan left coverage, not the as-of date 2024-01-02 | Wrong as a defect: 2024-01-02 is covered; the date the policy cannot classify is the one the scan reached, which is the true fact behind `SessionPolicyNotCovered`. Only the B4 case's title ("with the as-of exchange date") overstates it; both probes it uses are themselves uncovered | Dismissed; the issue's date means "the uncovered date" |
+
+### Cumulative run after T4.18
+
+- `8044d83` (code at `0a8f52a`, B1–B4), 2026-10-28 23:12 EDT: unit 704, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.18-b4-*`.
+
+Only `verify:capacity` failed (expected until T4.28); `verify:fixtures` passed. T4.18 is complete.
