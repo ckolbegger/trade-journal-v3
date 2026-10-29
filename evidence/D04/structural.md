@@ -1027,3 +1027,5 @@ ocr review of `c0ab563` (B1): session `bea48656-2f1f-4a13-a70d-532669c8e052` (sc
 
 ### T4.21-B8 A form that no longer fits its Mark closes with a notice
 - it should close an open form whose intention no longer fits the refreshed Mark and say the Mark changed and nothing was saved
+
+ocr review of `5aae490` (B7): session `22d0aaed-a1ec-407c-9da2-40f7cce28320` (scratch clone), no findings. `ocr/T4.21-B7-5aae490.json`. MarkEntry resyncs only when the `resolutionRevision` prop changes (`seenRevision`); gap rows use a hoisted `MISSING`. The reviewer confirmed an entry's own save is not reset by props still at the old revision, and Today rows still resync on a refresh. Noted, not a defect: a resolution that changes without its key's revision (a Missing key's Stale context, which moves when another key changes) is not resynced; MarkEntry does not show Stale context. First-run passes: the post-Continue revision binding (mutation-checked); the post-Continue price check has no clean mutation (the only mutation tried raised "Too many re-renders").
