@@ -1,0 +1,753 @@
+
+ RUN  v4.1.11 /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5
+
+ ✓ |unit| src/modules/market-data/query.test.ts > Current and Review contexts > should resolve the Expected Mark Date from the as-of instant and return one point frame per Instrument with its date, close instant, and next completed session 9ms
+ ✓ |unit| src/modules/market-data/query.test.ts > Current and Review contexts > should return Available for XYZ at Tuesday noon when a Monday Mark exists, for AC-MARK-001 2ms
+ ✓ |unit| src/modules/market-data/query.test.ts > Current and Review contexts > should return Missing for 2026-10-12 with Stale context 2026-10-09, 51.20, its revision, its close instant when only a Friday Mark exists, and Missing without Stale context when there is no earlier Mark 2ms
+ ✓ |unit| src/modules/market-data/query.test.ts > Current and Review contexts > should return AcknowledgedUnavailable with Stale context for an acknowledged key 3ms
+ ✓ |unit| src/modules/market-data/query.test.ts > Current and Review contexts > should give Stale context from the latest earlier session Mark when a stored key holds a malformed date 3ms
+ ✓ |unit| src/modules/market-data/query.test.ts > Current and Review contexts > should never select a Mark from another date as the exact Mark, and select the corrected revision after a correction 4ms
+ ✓ |unit| src/modules/market-data/query.test.ts > Current and Review contexts > should give the frame Mark its save time and correction reason from Market Data 4ms
+ ✓ |unit| src/modules/market-data/query.test.ts > Current and Review contexts > should return the same frames for a Review context naming 2026-10-12 as for the Current context at Tuesday noon 3ms
+ ✓ |unit| src/modules/market-data/query.test.ts > Current and Review contexts > should return SessionPolicyCoverage with the as-of exchange date when the as-of instant is outside coverage 1ms
+ ✓ |unit| src/modules/market-data/query.test.ts > Current and Review contexts > should reject a Current context whose asOf is not an ISO instant with an asOf issue 1ms
+ ✓ |unit| src/modules/market-data/query.test.ts > Historical point context (A53) > should return Available for XYZ and 2026-10-09 from a Friday Mark when asked at Tuesday noon 3ms
+ ✓ |unit| src/modules/market-data/query.test.ts > Historical point context (A53) > should return NotASession for Saturday 2026-10-10 and SessionNotCompleted for Tuesday at Tuesday noon 1ms
+ ✓ |unit| src/modules/market-data/query.test.ts > snapshot binding and ExpectedSnapshot > should return equal MarketDataSnapshotIds and evidence digests for the same evidence and request, whatever the Instrument order 12ms
+ ✓ |unit| src/modules/market-data/query.test.ts > snapshot binding and ExpectedSnapshot > should return equal snapshot ids and digests for contexts with the same fields in a different order 4ms
+ ✓ |unit| src/modules/market-data/query.test.ts > snapshot binding and ExpectedSnapshot > should include the session-policy revision in the binding 3ms
+ ✓ |unit| src/modules/market-data/query.test.ts > snapshot binding and ExpectedSnapshot > should return SnapshotUnchanged for the same request when nothing material changed 4ms
+ ✓ |unit| src/modules/market-data/query.test.ts > snapshot binding and ExpectedSnapshot > should return SnapshotChanged for a Review context once that date next session completes, and SnapshotUnchanged while it has not 3ms
+ ✓ |unit| src/modules/market-data/query.test.ts > snapshot binding and ExpectedSnapshot > should return SnapshotChanged with current frames when a selected Mark, an acknowledgment, a Stale-context Mark, or an absence changed 13ms
+ ✓ |unit| src/coordinators/daily-review/save.test.ts > SaveTradeAction (AC-REV-003) > should save Hold with no Intent as one Daily Trade Review Entry and return the Entry, the revised progress and completion, and the next step 102ms
+ ✓ |unit| src/coordinators/trade-workflows/record-position-change.test.ts > accepted opening Position Change > should commit the Position Change, its Executions, the Open lifecycle-index move, Deviation actions, and the reflection Entry in one semantic commit 52ms
+ ✓ |unit| src/coordinators/trade-workflows/record-position-change.test.ts > accepted opening Position Change > should return TradeMutationSuccess: new FactRevision, created fact identities, the lifecycle transition Planned to Open, the Entry or decline identity, the post-commit Trade projection, its derivation with Position, Lots, Entry status, Entry Quality, Fulfillment, Deviations, the Journal outcome projection, and the affected Open and Planned list scopes 19ms
+ ✓ |unit| src/coordinators/trade-workflows/record-position-change.test.ts > accepted opening Position Change > should record a decline instead of an Entry when the disposition is Decline 10ms
+ ✓ |unit| src/coordinators/trade-workflows/record-position-change.test.ts > accepted opening Position Change > should keep the Trade Open and add PC3s Entry Size occurrence to the receipts Deviation reconciliation 15ms
+ ✓ |unit| src/coordinators/trade-views/trade-views.test.ts > browseTrades: Planned > should return a Ready page with, per Trade, underlying, current Strategy, Account and Institution labels, Plan time, 1R, Original Planned Reward, planned ratio, and "Awaiting entry", ordered by Plan time descending 45ms
+ ✓ |unit| src/coordinators/trade-views/trade-views.test.ts > browseTrades: Planned > should return a Ready page with no items when there are no Planned Trades 7ms
+ ✓ |unit| src/coordinators/trade-views/trade-views.test.ts > browseTrades: Planned > should bind the Trade, Journal, and Catalog revisions it read from one snapshot 9ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > date and eligibility (P9, P15, A55) > should resolve LatestCompleted to 2026-10-12 with cutoff 16:00 at Monday 17:00, and to Friday 2026-10-09 at Monday 16:15 129ms
+ ✓ |unit| src/coordinators/workspace/migration.test.ts > migration from schema 1 > should migrate a v1 Workspace to v2 and return Opened with a receipt naming from and to versions, per-store record counts, seed additions Position Change Reflection and Position Change Source, repairs, and private rebuilds 50ms
+ ✓ |unit| src/coordinators/workspace/migration.test.ts > migration from schema 1 > should leave the Planned list and every Trade Detail equal, apart from opaque revision tokens, to the v1 views 21ms
+ ✓ |unit| src/coordinators/workspace/migration.test.ts > migration from schema 1 > should return Opened existing with no migration on the next launch 22ms
+ ✓ |unit| src/coordinators/workspace/migration.test.ts > migration failure AC-REST-004 > should return MigrationBlocked with the failed stage, issues, and unchanged-data evidence database name, content revision, per-store counts when validation fails, leaving the old stores equal and no candidate 13ms
+ ✓ |unit| src/coordinators/trade-workflows/record-position-change.test.ts > earlier-dated entry P5 > should accept an Execution dated between the Plan and the Trades latest fact, and disclose in the receipt that the Entry Resolution Point and Entry Quality changed 15ms
+ ✓ |unit| src/coordinators/trade-workflows/record-position-change.test.ts > integrity before the change P7 > should commit and list each repair in the receipt when the Trades stored lifecycle or recorded Deviations disagree with coherent facts 25ms
+ ✓ |unit| src/coordinators/trade-workflows/record-position-change.test.ts > integrity before the change P7 > should return IntegrityDisagreement with the findings and write nothing when the Trades facts are incoherent 40ms
+ ✓ |unit| src/coordinators/trade-workflows/record-position-change.test.ts > rejected > should reject an Execution before the Plans Economic Time with EconomicTimeBeforePlan, and one in the future with EconomicTimeInFuture 12ms
+ ✓ |unit| src/coordinators/trade-workflows/record-position-change.test.ts > rejected > should reject a Sell, another Instrument, ExplicitlyUnplanned intent, or a second Trade with VariantNotInstalled 13ms
+ ✓ |unit| src/modules/market-data/query.test.ts > bounded reads (A47) > should read all exact-date observations with one request and Stale context with one request per Missing Instrument, whether each Instrument has 10 or 1,000 earlier Marks 170ms
+ ✓ |unit| src/modules/market-data/query.test.ts > ResolveSession (T4.14: Daily Review resolves its date through Market Data) > should resolve the latest completed session at an as-of instant to its trading date and close, and reject an instant outside coverage 1ms
+ ✓ |unit| src/coordinators/trade-views/trade-views.test.ts > browseTrades: Planned > should return pages of 50 with a next cursor and accept that cursor until the next commit 149ms
+ ✓ |unit| src/modules/trade-record/position-change.test.ts > prepareChange: PositionChange > should build a candidate with one Position Change fact and its Execution facts, each a candidate fact identity holding a single-version list, plus Planned-Leg intent per Execution 8ms
+ ✓ |unit| src/modules/trade-record/position-change.test.ts > prepareChange: PositionChange, sequences > should assign Recorded Sequences from the Trade counter, the Position Change first and then members in submitted order, and set Last Activity to the latest Economic Time 4ms
+ ✓ |unit| src/modules/trade-record/position-change.test.ts > prepareChange: PositionChange, no write > should return before and candidate AnalysisInput with a canonical digest, write nothing, and reserve no identity 4ms
+ ✓ |unit| src/modules/trade-record/position-change.test.ts > prepareChange: PositionChange, rejections > should return Conflict naming the Trade when the expected FactRevision is stale 1ms
+ ✓ |unit| src/modules/trade-record/position-change.test.ts > prepareChange: PositionChange, rejections > should return NotFound for an unknown Trade 2ms
+ ✓ |unit| src/modules/trade-record/position-change.test.ts > applyPreparedChange: PositionChange > should reject a reconciliation whose digest, expected lifecycle, or Deviation actions do not match the prepared change 2ms
+ ✓ |unit| src/modules/trade-record/position-change.test.ts > applyPreparedChange: PositionChange > should assign durable identities, stage the Trade document, move lifecycle-index membership from Planned to Open, and apply every Deviation action, returning the identity mapping and staged projection 7ms
+ ✓ |unit| src/modules/trade-record/position-change.test.ts > applyPreparedChange: PositionChange > should stage a repair listed in the reconciliation exactly as listed P7 4ms
+ ✓ |unit| src/modules/trade-record/position-change.test.ts > applyPreparedChange: PositionChange > should refuse to run outside a semantic transaction 7ms
+ ✓ |unit| src/modules/trade-record/position-change.test.ts > queryRecords: CurrentState Open > should select Open Trades ordered by Last Activity descending then Trade identity 16ms
+ ✓ |unit| src/modules/trade-record/position-change.test.ts > queryRecords: CurrentState Open > should read each page with exactly one index getAll request, returning Summary or AnalysisInput for the whole page from one read snapshot 7ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > date and eligibility (P9, P15, A55) > should exclude a Trade the index selects whose facts are not Open at the cutoff 35ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > date and eligibility (P9, P15, A55) > should return Empty when the index selects only Trades whose facts are not Open at the cutoff 24ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > eligibility at the cutoff (AC-REV-001) > should include a Trade whose first fill is before the cutoff and exclude one whose first fill is at 16:05, though both are Open now 16ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > earlier-dated Position Change (P5, A55) > should make a Trade eligible after an earlier-dated Position Change moves its exposure start before the cutoff 19ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > empty Review > should return Empty when no Trade is eligible and no task exists 7ms
+ ✓ |unit| src/modules/trade-record/position-change.test.ts > queryRecords: CurrentState Open > should return pages of up to 200 with a cursor that fails with CursorExpired after any Trade commit 187ms
+ ✓ |unit| src/modules/trade-record/position-change.test.ts > getRecord: Position Changes > should return Position Changes, Executions, and recorded Deviation occurrences with their version lists in AnalysisInput 1ms
+ ✓ |unit| src/modules/trade-record/position-change.test.ts > exposure start > should store exposureStart in the Trade document at each Position Change commit, as supplied by the reconciliation, moving it earlier for an earlier-dated Position Change P5 3ms
+ ✓ |unit| src/modules/trade-record/position-change.test.ts > queryRecords: StateAtEconomicCutoff Open (A55) > should return Open Trades whose exposure started at or before the cutoff, excluding an Open Trade whose first fill is after it and every Planned Trade 4ms
+ ✓ |unit| src/modules/trade-record/position-change.test.ts > queryRecords: StateAtEconomicCutoff Open (A55) > should return CursorExpired when a cursor is reused with a different cutoff or without one 3ms
+ ✓ |unit| src/modules/trade-record/position-change.test.ts > queryRecords: StateAtEconomicCutoff Open (A55) > should read each page with one lifecycle-index getAll and return AnalysisInput for the page from one read snapshot 4ms
+ ✓ |unit| src/coordinators/trade-views/trade-views.test.ts > getTradeDetail: Planned > should return the Plan (underlying, leg, quantity, intended entry, Stop, Target, Thesis, Invalidation, Plan time), stored lifecycle Planned with agreement, Plan Baseline with per-condition basis, 1R, labels, and the Plan Reflection with snapshot prompt labels 8ms
+ ✓ |unit| src/coordinators/trade-views/trade-views.test.ts > getTradeDetail: Planned > should return NotFound for an unknown Trade identity 5ms
+ ✓ |unit| src/coordinators/trade-views/trade-views.test.ts > getTradeDetail: Planned > should bind every revision it read from one snapshot even when a commit races with the read 11ms
+ ✓ |unit| src/coordinators/workspace/migration.test.ts > migration failure AC-REST-004 > should never report Ready while blocked, and getStatus should report MigrationBlocked 45ms
+ ✓ |unit| src/coordinators/workspace/migration.test.ts > migration failure AC-REST-004 > should migrate and return Opened when Retry runs after the cause is removed 20ms
+ ✓ |unit| src/coordinators/workspace/migration.test.ts > activation failure > should return MigrationBlocked at the Activate stage with unchanged-data evidence, leaving the old stores equal and no candidate, when the root flip transaction aborts 20ms
+ ✓ |unit| src/coordinators/workspace/migration.test.ts > not Writable before migration P6 > should return RuntimeNotWritable with Workspace status IntegrityBlocked AwaitingMigration, not migrate, and leave the old database unchanged when readiness fails and the stored schema is older 4ms
+ ✓ |unit| src/coordinators/workspace/migration.test.ts > unsupported versions > should return IntegrityBlocked UnsupportedNewerSchema and write nothing when the stored schema is newer than the release 4ms
+ ✓ |unit| src/coordinators/workspace/migration.test.ts > migration to schema 3 > should migrate a v2 Workspace and return Opened with a receipt naming 2 → 3, per-store counts, seed additions Daily Trade Review and Daily Review Source, and the recorded session-policy identity 16ms
+ ✓ |unit| src/coordinators/daily-review/save.test.ts > SaveTradeAction (AC-REV-003) > should continue with the first Trade of the walk that has no Action, with the form getTrade would return 84ms
+ ✓ |unit| src/coordinators/daily-review/save.test.ts > SaveTradeAction (AC-REV-003) > should reject Exit, Roll, or Adjust without Intent, and save them with Intent while creating no Trade fact 76ms
+ ✓ |unit| src/coordinators/trade-workflows/record-position-change.test.ts > rejected > should reject zero or negative quantity or price, a negative fee, a missing fee, or more than 20 Executions with typed issues, all at once together with Journal issues 11ms
+ ✓ |unit| src/coordinators/trade-workflows/record-position-change.test.ts > rejected > should return Conflict and write nothing when the same command is submitted twice, the second carrying a stale FactRevision 10ms
+ ✓ |unit| src/coordinators/trade-workflows/record-position-change.test.ts > rejected > should leave Trade Record, Journal, and Workspace content revisions unchanged on every rejection 21ms
+ ✓ |unit| src/coordinators/trade-workflows/record-position-change.test.ts > rejected > should return RuntimeNotWritable and write nothing when the mutation-boundary readiness recheck fails 8ms
+ ✓ |unit| src/coordinators/trade-workflows/record-position-change.test.ts > rejected > should reject a Position Change with no Executions with NoExecutions and write nothing 7ms
+ ✓ |unit| src/coordinators/daily-review/save.test.ts > SaveTradeAction (AC-REV-003) > should edit the same Entry identity when the Action is saved again with the expected Entry revision 40ms
+ ✓ |unit| src/coordinators/daily-review/save.test.ts > SaveTradeAction (AC-REV-003) > should report Complete with nothing left to do when the save was the last open obligation 85ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > lifecycle tabs > should show Open and Planned tabs as a tablist with Open selected by default, and no other lifecycle 65ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > lifecycle tabs > should request a fresh page on every tab switch 18ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > task families (AC-REV-002, AC-MARK-004) > should return the Marks family first, listing DEF Review-date Mark as a Manual task, then the Trade walk 29ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > task families (AC-REV-002, AC-MARK-004) > should carry each Mark row and gap date the resolutionRevision its key was read at 30ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > task families (AC-REV-002, AC-MARK-004) > should list one Mark task for an Instrument shared by two eligible Trades, naming both 12ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > task families (AC-REV-002, AC-MARK-004) > should list skipped sessions as historical gaps marked nonblocking 12ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > task families (AC-REV-002, AC-MARK-004) > should write nothing 106ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Trade Detail > should render the Detail summary Trade text through the shared at-price component so the at sign stays with its price 65ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Trade Detail > should show the Plan, Planned Leg, Stop, Target, Plan Baseline, 1R, the "Planned" lifecycle as text (not only colour), and the Plan Reflection with its snapshot prompt labels 14ms
+ ✓ |unit| src/ui/screens/ReviewView.test.tsx > overview > should show the Review Date, completion as text, and each blocker 83ms
+ ✓ |unit| src/ui/screens/ReviewView.test.tsx > overview > should show Complete as text with no blockers when every obligation is resolved 9ms
+ ✓ |unit| src/ui/screens/PlanForm.test.tsx > rendering > should offer only selectable Accounts and the Long Stock Strategy 33ms
+ ✓ |unit| src/ui/screens/PlanForm.test.tsx > rendering > should render Plan Reflection prompts from the loaded definition revision, with Primary emotion as a radio group inside a labelled fieldset and Conviction as a 1–5 radio group 65ms
+ ✓ |unit| src/ui/AppShell.test.tsx > readiness gate presentation > should show startup verification with no navigation and no mutating control while readiness is pending 50ms
+ ✓ |unit| src/ui/AppShell.test.tsx > readiness gate presentation > should render Unsupported naming every failed check in plain language, with Retry and a recommendation to try another browser, and no initialization control 18ms
+ ✓ |unit| src/ui/AppShell.test.tsx > readiness gate presentation > should render Recovery Only with one clear reason, the failed checks, read-only navigation (Trades, Review, Accounts, About), no New Plan or Add Account control, and the separate-storage explanation (A13) 19ms
+ ✓ |unit| src/ui/AppShell.test.tsx > readiness gate presentation > should render Integrity Blocked with a warning that journal data may exist, Retry as the only action, and no initialization or data navigation 7ms
+ ✓ |unit| src/coordinators/workspace/migration.test.ts > migration to schema 3 > should migrate a v1 Workspace to schema 3 in one candidate 12ms
+ ✓ |unit| src/coordinators/workspace/migration.test.ts > migration to schema 3 > should keep every earlier field of the Planned and Open lists and Details equal to the pre-migration views 39ms
+ ✓ |unit| src/coordinators/workspace/migration.test.ts > migration to schema 3 > should give every current figure of a pre-schema-3 Open Trade the value Unavailable MarkMissing after migrating v1 and v2 47ms
+ ✓ |unit| src/coordinators/workspace/migration.test.ts > migration to schema 3 > should return MigrationBlocked with the old stores unchanged when candidate validation fails, and Opened after Retry once the cause is removed 111ms
+ ✓ |unit| src/modules/market-data/recover.test.ts > recover without a provider (A56) > should return Review-date frames, current resolutions, the MarketDataSnapshotId, and a NotConfigured diagnostic, and write nothing 16ms
+ ✓ |unit| src/modules/market-data/recover.test.ts > recover without a provider (A56) > should list Friday 2026-10-09 as MNO historical gap and no gap for XYZ, whose relevance starts on 2026-10-12 5ms
+ ✓ |unit| src/modules/market-data/recover.test.ts > recover without a provider (A56) > should list acknowledged earlier sessions separately from Missing ones 6ms
+ ✓ |unit| src/modules/market-data/recover.test.ts > recover without a provider (A56) > should start relevance at the first session whose close is at or after the earliest exposure, so a first fill at Monday 17:00 starts relevance on Tuesday 4ms
+ ✓ |unit| src/modules/market-data/recover.test.ts > recover without a provider (A56) > should carry each Review-date key resolutionRevision, None for a key without a record 5ms
+ ✓ |unit| src/modules/market-data/recover.test.ts > recover without a provider (A56) > should carry the resolutionRevision of each listed gap date, None where no record exists 5ms
+ ✓ |unit| src/modules/market-data/recover.test.ts > recover without a provider (A56) > should carry the effective acknowledgment of each acknowledged gap date 4ms
+ ✓ |unit| src/modules/market-data/recover.test.ts > recover without a provider (A56) > should return the current-date Missing keys of MNO and XYZ on 2026-10-12 as Manual tasks 7ms
+ ✓ |unit| src/modules/market-data/recover.test.ts > recover without a provider (A56) > should build the frames and the historical gaps from one read transaction, so a Mark saved during recover cannot appear in one and not the other 4ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Trade Detail > should render NotFound and Error states distinctly 21ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Open Trade Detail > should show Last activity in the Position card as a labelled local time 14ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Open Trade Detail > should show lifecycle Open as text, Position, an Open Lots table, and Executions as rows in Fact Order 29ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Open Trade Detail > should show Entry Quality figures with units once resolved, and Entry not yet resolved: 60 of 100 entered before 33ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Trades heading > should show an h1 Trades above the tabs in the Loading, Ready, Empty, and Error states of both tabs 46ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Open list > should render distinct Loading, Ready, Empty explaining that recording an entry on a Planned Trade opens it, and Error with Retry states 26ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Planned list > should render distinct Loading, Ready, Empty (with a New Plan action), and Error (with Retry) states 24ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Trades table columns > should show the Open columns in order Underlying, Trade, Net cost, Entry, Account, with Underlying a link named by the symbol, and no Fees, Integrity, Deviations or Last activity column 15ms
+ ✓ |unit| src/ui/screens/MarkEntry.test.tsx > entering, correcting, acknowledging, withdrawing > should submit an initial Mark with the Instrument, date, price, and expected resolution revision, then render the saved resolution from the result without a read call 117ms
+ ✓ |unit| src/ui/screens/PlanForm.test.tsx > rendering > should default Plan time to now in the Workspace zone 6ms
+ ✓ |unit| src/coordinators/workspace/workspace.test.ts > initialize > should return TimeZoneSelectionRequired and write nothing when readiness is Writable, no Workspace exists, and no zone is supplied 25ms
+ ✓ |unit| src/coordinators/workspace/workspace.test.ts > initialize > should create metadata with the zone (settings revision 1), seed Catalog and Journal in the same transaction, and return Opened with onboarding NeedsInstitutionAndAccount and a receipt naming the readiness evidence, fresh status, and seed versions and additions 10ms
+ ✓ |unit| src/coordinators/workspace/workspace.test.ts > initialize > should reject an invalid zone with InvalidTimeZone and write nothing 5ms
+ ✓ |unit| src/coordinators/workspace/workspace.test.ts > initialize > should return Opened(existing) with a receipt showing no seed additions when the Workspace already exists 13ms
+ ✓ |unit| src/coordinators/workspace/workspace.test.ts > initialize > should return RuntimeNotWritable from initialize, not Opened, when an existing Workspace Catalog or Journal seed returns RuntimeNotWritable 11ms
+ ✓ |unit| src/coordinators/workspace/workspace.test.ts > initialize > should return Opened with no additions for a seed that returns Conflict, and its receipt should name the seed that did not complete 11ms
+ ✓ |unit| src/coordinators/workspace/workspace.test.ts > initialize > should return RuntimeNotWritable with Workspace status RecoveryOnly when a readable Workspace exists and readiness fails 15ms
+ ✓ |unit| src/coordinators/workspace/workspace.test.ts > initialize > should return RuntimeNotWritable with readiness Unsupported, Workspace status None, and every failed check when no Workspace exists and readiness fails, writing nothing 7ms
+ ✓ |unit| src/coordinators/workspace/workspace.test.ts > initialize > should return RuntimeNotWritable with Workspace status IntegrityBlocked and never initialize when the root is unreadable 8ms
+ ✓ |unit| src/ui/screens/ReviewView.test.tsx > overview > should render distinct Loading, Ready, Empty, and Error states with Retry 41ms
+ ✓ |unit| src/ui/screens/ReviewView.test.tsx > overview > should name the Instruments, Trades, and calculation families when completion is Complete with Unavailable Marks 5ms
+ ✓ |unit| src/coordinators/trade-views/current-evaluation.test.ts > browseTrades: Open with current evaluation > should add to each item the Expected Mark Date, its Mark resolution, remaining-open marked P&L, Current Marked Trade P&L, Ongoing Risk to Stop, Worst-Case Ongoing Risk, Incremental Reward to Target, Maximum Incremental Reward, their Plan-R conversions, and Stop and Target status, each with its own availability 56ms
+ ✓ |unit| src/coordinators/trade-views/current-evaluation.test.ts > browseTrades: Open with current evaluation > should return Unavailable figures naming the Instrument and date when the Mark is Missing, with the dated last-close and at-entry lines (P13), never fill cost or zero 23ms
+ ✓ |unit| src/coordinators/trade-views/current-evaluation.test.ts > browseTrades: Open with current evaluation > should return AwaitingClose figures with the dated and at-entry lines when Lots opened after the Expected Mark Date close (P12) 29ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > attention order > should order the fixture T-D, T-B, T-C, T-A, T-E, returning each Trade band, reasons, and selected basis 50ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > attention order > should keep T-B in boundary reached although its risk to stop is zero 13ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > attention order > should give T-A pressure 91/291 and T-E pressure 1/10 as winning shares, measured from each Trade open cost without fees 36ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > attention order > should give equal pressure 3/4 to a Trade marked 48.50 and one marked 53.00, and order the losing one first whatever their Last Activity 41ms
+ ✓ |unit| src/coordinators/workspace/migration.test.ts > session-policy compatibility (A40) > should record a newer policy revision that only extends coverage, with no findings 23ms
+ ✓ |unit| src/coordinators/workspace/migration.test.ts > session-policy compatibility (A40) > should read no observations when the stored session-policy identity matches the release's 16ms
+ ✓ |unit| src/coordinators/workspace/migration.test.ts > session-policy compatibility (A40) > should record nothing more when another launch records the identity between its scan and its commit 15ms
+ ✓ |unit| src/coordinators/workspace/migration.test.ts > session-policy compatibility (A40) > should revalidate and record findings when another launch records a different identity between the scan and the commit 15ms
+ ✓ |unit| src/coordinators/workspace/migration.test.ts > session-policy compatibility (A40) > should record nothing and report no session policy when the identity keeps changing on every attempt 16ms
+ ✓ |unit| src/coordinators/workspace/migration.test.ts > session-policy compatibility (A40) > should keep an observation record whose date the newer policy turns into a closure, list it as a finding in the receipt, and leave it out of every frame 20ms
+ ✓ |unit| src/ui/AppShell.test.tsx > readiness gate presentation > should switch to Recovery Only when a mutation returns RuntimeNotWritable, keeping the open form's entered values on screen 55ms
+ ✓ |unit| src/ui/AppShell.test.tsx > readiness gate presentation > should show "Updated in another tab: reload when ready", keeping the open form's entered values on screen, when the session is superseded by a version change 38ms
+ ✓ |unit| src/coordinators/daily-review/save.test.ts > changed evidence (AC-REV-005) > should return ReviewChanged with refreshed evidence and write nothing when a Mark, an acknowledgment, or the Trade facts changed since the binding 138ms
+ ✓ |unit| src/coordinators/daily-review/save.test.ts > changed evidence (AC-REV-005) > should return Conflict and write nothing when another Action was saved for the same Trade and date since the binding 96ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Trades table columns > should show the Planned columns in order Underlying, Trade, 1R, Reward : risk, Entry, Account, with no Planned reward or Plan time column 14ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Trades table columns > should show the Trade cell summary text and, on a second line, Net cost 3,007.00 for Open or 1R 250.00 and Reward : risk 2.4 for Planned 16ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Trades table columns > should separate the Trade cell's summary, badge and second line with a space 17ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Trades table columns > should show Entering · 60 of 100 or Resolved · 120.5 of 100 in the Open Entry cell 11ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Trades table columns > badge meanings > should give a Records disagree badge the warning tone 8ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Trades table columns > should carry the Net cost of an incoherent Open row, Not available, in the second line of its Trade cell 9ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Trades table columns > should carry 1R and Reward : risk of an incoherent Planned row, Not available, in the second line of its Trade cell 14ms
+ ✓ |unit| src/ui/screens/TradeList.test.tsx > Trades table columns > should show a Records disagree badge in the Trade cell of a disagreeing row, coherent or incoherent, and none on an agreeing row 24ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Open Trade Detail > should show Planned-Leg Fulfillment and each Entry Size Deviation with its quantity and causing Position Change 26ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Open Trade Detail > should show Position Change Reflections with snapshot labels and declines as Reflection declined with the reason 15ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Open Trade Detail > should show an integrity panel listing stored versus expected values when agreement fails 58ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Open Trade Detail > should show the Records disagree region naming each fact that cannot be replayed, with the Plan, recorded Position Changes and Journal but no derived figures, when the facts are incoherent 22ms
+ ✓ |unit| src/coordinators/workspace/workspace.test.ts > initialize > should return IntegrityBlocked with recovery actions when readiness is Writable but stored contents fail validation 10ms
+ ✓ |unit| src/coordinators/workspace/workspace.test.ts > getStatus > should return Ready only when readiness is Writable and the Workspace is valid, with the snapshot binding, time zone, Installed Capability Manifest, onboarding, per-check evidence, protection, schema version, and latest receipt 10ms
+ ✓ |unit| src/coordinators/workspace/workspace.test.ts > getStatus > should return InitializationRequired, RecoveryOnly, Unsupported, or IntegrityBlocked for the corresponding inspection and readiness combinations 15ms
+ ✓ |unit| src/coordinators/workspace/workspace.test.ts > getStatus > should report onboarding NeedsInstitutionAndAccount until a selectable Account exists, then ReadyForTradePlanning 11ms
+ ✓ |unit| src/coordinators/workspace/workspace.test.ts > getStatus > should leave the content revision unchanged 22ms
+ ✓ |unit| src/coordinators/workspace/workspace.test.ts > requestDurability > should return Improved when persist() succeeds after persisted() was false 2ms
+ ✓ |unit| src/coordinators/workspace/workspace.test.ts > requestDurability > should return AlreadyProtected when persisted() is already true 2ms
+ ✓ |unit| src/coordinators/workspace/workspace.test.ts > requestDurability > should return NotImproved(BestEffort) when persist() resolves false and NotImproved(Unavailable) when the API is absent 2ms
+ ✓ |unit| src/coordinators/workspace/workspace.test.ts > requestDurability > should never change Runtime Readiness 8ms
+ ✓ |unit| src/coordinators/workspace/workspace.test.ts > Installed Capability Manifest > should list exactly the public operations and variants through D4, the Long Stock Strategy, the Plan Reflection, Position Change Reflection and Daily Trade Review Entry Types, schema version 3, no backup schema range, and no provider adapters, bound to the release identity and the session-policy identity 0ms
+ ✓ |unit| src/ui/screens/MarkEntry.test.tsx > entering, correcting, acknowledging, withdrawing > should open Correct with the effective price shown, require a reason, and submit the new price and reason 94ms
+ ✓ |unit| src/ui/screens/MarkEntry.test.tsx > entering, correcting, acknowledging, withdrawing > should submit Cant get a price with a required reason and render Acknowledged Unavailable as a trader acknowledgment, never as a price 63ms
+ ✓ |unit| src/ui/screens/MarkEntry.test.tsx > entering, correcting, acknowledging, withdrawing > should offer Withdraw on an acknowledged key and render Missing afterwards 13ms
+ ✓ |unit| src/modules/market-data/recover.test.ts > recover without a provider (A56) > should issue one gap request per Instrument, whatever the history length 200ms
+ ✓ |unit| src/coordinators/trade-views/current-evaluation.test.ts > browseTrades: Open with current evaluation > should derive and evaluate each Trade once, plus once more at the dated line close only for Trades that need it 33ms
+ ✓ |unit| src/coordinators/trade-views/current-evaluation.test.ts > browseTrades: Open with current evaluation > should bind the Trade, Journal, and Catalog revisions and the MarketDataSnapshotId of one Workspace content revision, retrying when a write lands between phases and returning ChangedDuringAssembly after 3 retries 48ms
+ ✓ |unit| src/coordinators/trade-views/current-evaluation.test.ts > getTradeDetail: Open with current evaluation > should return valuation with per-Instrument coverage, the P&L components, risk and reward with Plan R, every condition status and Overrun, the dated and at-entry lines when present, and the Mark source, revision, save time, and correction reason 37ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > attention order > should break equal pressure on the same side by Last Activity descending, then Trade identity 29ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > attention order > should place T-E in quantified pressure, and a Trade marked at its average open cost in routine with pressure 0 23ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > pressure that cannot be compared > should mark a Trade Not Comparable when its risk or reward at entry is not positive on the side it moved toward 20ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > facts that cannot be replayed > should list a Trade whose facts cannot be replayed in the blocker band and keep the Review Incomplete 18ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > facts that cannot be replayed after the cutoff > should list a Trade whose Execution after the cutoff cannot be replayed in the blocker band 25ms
+ ✓ |unit| src/ui/screens/ReviewView.test.tsx > Marks family (P11, P15) > should list Today Mark tasks, each shared Instrument once with its Trades, using MarkEntry 127ms
+ ✓ |unit| src/modules/market-data/recover.test.ts > recover without a provider (A56) > should return one gap record and issue one gap read per Instrument when the request repeats an Instrument 4ms
+ ✓ |unit| src/modules/market-data/recover.test.ts > recover outside session policy coverage (P8) > should list gaps from the first covered session and add a SessionPolicyCoverage diagnostic for an Instrument whose relevance starts before coverage 5ms
+ ✓ |unit| src/modules/market-data/recover.test.ts > recover outside session policy coverage (P8) > should list gaps normally, with no diagnostic, for an exposure on the first covered session 7ms
+ ✓ |unit| src/modules/market-data/recover.test.ts > recover outside session policy coverage (P8) > should reject a recover request whose earliestExposure is not an ISO instant with an InvalidInstant issue 3ms
+ ✓ |unit| src/ui/AppShell.test.tsx > storage warning > should show a warning icon linking to About, named Storage not protected: see About, and no storage card, on Trades, a Detail and New Plan while protection is not Protected 67ms
+ ✓ |unit| src/ui/AppShell.test.tsx > storage warning > should show the full storage card on About, with the explanation and Ask the browser to keep data when protection is Best Effort 19ms
+ ✓ |unit| src/ui/AppShell.test.tsx > storage warning > should show the request result on About and remove the icon once the browser agrees to keep data 59ms
+ ✓ |unit| src/ui/AppShell.test.tsx > storage warning > should not recommend a backup in the storage card on About, since no backup exists before D8 12ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Open Trade Detail > should offer Record entry only while Writable 32ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > incoherent Trade Detail > should not offer Record entry on an IncoherentTradeDetail, while a coherent Open or Planned Detail still offers it 23ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > incoherent Trade Detail > should explain beside the Records disagree panel that new entries cannot be recorded until the records agree 13ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > badge meanings > should give Reflection declined the warning tone 14ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > badge meanings > should give the lifecycle badge the info tone 7ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > back to the list > should show a Back to Trades link above the h1 that opens the Trades tab of the Trades stored lifecycle 16ms
+ ✓ |unit| src/ui/screens/MarkEntry.test.tsx > entering, correcting, acknowledging, withdrawing > should offer Enter on an acknowledged key and save the Mark under that key revision 39ms
+ ✓ |unit| src/ui/screens/Onboarding.test.tsx > Institution and Account onboarding > should require an Institution and Account when onboarding is NeedsInstitutionAndAccount and show no New Plan action 61ms
+ ✓ |unit| src/coordinators/daily-review/save.test.ts > write gate > should return RuntimeNotWritable and write nothing when the mutation-boundary readiness recheck fails 65ms
+ ✓ |unit| src/coordinators/daily-review/save.test.ts > bindings rechecked inside the commit > should return ReviewChanged and write no Action when the Trade facts change after the read and before the commit 83ms
+ ✓ |unit| src/coordinators/trade-views/current-evaluation.test.ts > getTradeDetail: Open with current evaluation > should include Daily Trade Review Actions in the narrative 36ms
+ ✓ |unit| src/coordinators/trade-views/current-evaluation.test.ts > getTradeDetail: Open with current evaluation > should return Planned Detail without current evaluation and leave every content revision unchanged after reading 39ms
+ ✓ |unit| src/coordinators/trade-views/current-evaluation.test.ts > Open views outside session-policy coverage > should return Open items and Detail with every Mark-dependent figure Unavailable SessionPolicyNotCovered when the as-of date is outside coverage 30ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > rendering > should show the Plans symbol, Buy, and the Planned Leg read-only, one Execution row with Economic Time defaulting to now, and Add and Remove row controls up to 20 rows 365ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > rendering > should render the Position Change Reflection from the loaded definition revision, with Decision mode and Primary emotion as radio groups in labelled fieldsets and Decision confidence as a 1–5 radio group 19ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > rendering > should offer Decline to reflect with an optional reason as the explicit alternative to completing the form 47ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > coherent read (A46) > should bind the Workspace, Catalog, and Journal revisions, the market snapshot, and each Trade fact revision of one read 59ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > writes landing during assembly (A46) > should retry the read when a write lands between phases, and return ChangedDuringAssembly after 3 attempts 61ms
+ ✓ |unit| src/ui/AppShell.test.tsx > storage warning > should keep the decline notice and no ask button after leaving About and returning 54ms
+ ✓ |unit| src/coordinators/trade-workflows/trade-workflows.test.ts > confirmPlan: accepted > should commit the Trade, its facts, Planned lifecycle-index membership, and the Plan Reflection Entry in one semantic commit 42ms
+ ✓ |unit| src/coordinators/trade-workflows/trade-workflows.test.ts > confirmPlan: accepted > should return TradeMutationSuccess: Trade identity and FactRevision, created fact identities, the lifecycle transition to Planned, the Entry identity, the post-commit Trade projection, its derivation with Plan Baseline and 1R, the Entry projection, and the affected Planned-list scope 30ms
+ ✓ |unit| src/coordinators/trade-workflows/trade-workflows.test.ts > confirmPlan: accepted > should store Thesis and Invalidation in the Plan facts equal to the Entry's answers, entered once 24ms
+ ✓ |unit| src/coordinators/trade-workflows/trade-workflows.test.ts > confirmPlan: accepted > should store the trader-supplied Economic Time on the Plan fact and as the Entry's moment time 17ms
+ ✓ |unit| src/ui/screens/ReviewView.test.tsx > Marks family (P11, P15) > should list Earlier sessions without Marks as optional per Instrument, newest first, 20 per page, and say they do not block the Review 145ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > back to the list > should show the link on Loading, Not Found, and Error states as well 13ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > summary card > should lead the summary card with the Trade Summary text and on an Open Detail with Net cost 14ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > summary card > should open a Planned Detail with a summary of Intended entry, Stop, and Target, each with its text label, plus 1R and Reward : risk 6ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > summary card > should open an Open Detail with the Position quantity against plan, the entry status, opening fees, Stop, and Target 21ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > summary card > should add the Average entry and Actual initial risk to the Open summary once the entry is resolved, and say Entry not yet resolved before 25ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > summary card > should show an active-Deviation badge in the Open summary when a recorded Deviation is Active 20ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > summary card > should show no summary figures on an incoherent Detail, leaving the Records disagree panel first 7ms
+ ✓ |unit| src/ui/screens/MarkEntry.test.tsx > entering, correcting, acknowledging, withdrawing > should show InvalidPrice, ReasonRequired, ReasonTooLong, CorrectionUnchanged, and MarkExists beside their fields and move focus to the first 123ms
+ ✓ |unit| src/ui/screens/MarkEntry.test.tsx > entering, correcting, acknowledging, withdrawing > should show PriceNegative beside the price and any other rejection for the Mark as a whole, even with no form open 50ms
+ ✓ |unit| src/ui/screens/Onboarding.test.tsx > Institution and Account onboarding > should create the Institution then the Account and, from the returned onboarding state alone, show the Trades empty state with a New Plan action 105ms
+ ✓ |unit| src/ui/screens/PlanForm.test.tsx > submission > should submit stable Prompt and Option identities, the rendered definition revision, record revisions of the chosen references, and the entered Economic Time 370ms
+ ✓ |unit| src/coordinators/trade-workflows/trade-workflows.test.ts > confirmPlan: rejected > should aggregate Catalog, Journal, and Trade Analysis issues into one typed rejection 11ms
+ ✓ |unit| src/coordinators/trade-workflows/trade-workflows.test.ts > confirmPlan: rejected > should reject a future Economic Time with EconomicTimeInFuture 15ms
+ ✓ |unit| src/coordinators/trade-workflows/trade-workflows.test.ts > confirmPlan: rejected > should reject an unknown Account or Strategy with typed reference issues 17ms
+ ✓ |unit| src/coordinators/trade-workflows/trade-workflows.test.ts > confirmPlan: rejected > should leave the Trade Record, Journal, Catalog, and Workspace content revisions unchanged on every rejection 26ms
+ ✓ |unit| src/coordinators/trade-workflows/trade-workflows.test.ts > confirmPlan: rejected > should return Conflict and write nothing when a referenced record's revision changed after the form was loaded 11ms
+ ✓ |unit| src/coordinators/trade-workflows/trade-workflows.test.ts > confirmPlan: rejected > should return RuntimeNotWritable and write nothing when the mutation-boundary readiness recheck fails 10ms
+ ✓ |unit| src/ui/screens/ReviewView.test.tsx > Marks family (P11, P15) > should not page away from earlier sessions while a Mark on the page holds an unsaved value 102ms
+ ✓ |unit| src/ui/screens/ReviewView.test.tsx > Marks family (P11, P15) > should focus the Instrument named by the link it was opened from 25ms
+ ✓ |unit| src/ui/screens/ReviewView.test.tsx > moving on > should call open again when Continue to Trades is pressed, then show the Trade walk in the returned order with band labels and reasons as text 24ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > writes landing during assembly (A46) > should retry, then return ChangedDuringAssembly, when a Trade commit expires the eligibility cursor between pages 60ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > completion > should report Incomplete listing DEF missing Review-date Mark and each Trade without an Action 36ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > completion > should report Complete when every eligible Trade has an Action and every Review-date Mark is exact 37ms
+ ✓ |unit| src/coordinators/daily-review/save.test.ts > bindings rechecked inside the commit > should return ReviewChanged and write nothing when the save binding names another Workspace 50ms
+ ✓ |unit| src/coordinators/daily-review/save.test.ts > bindings rechecked inside the commit > should return ReviewChanged and write no Action when a Mark changes after the read and before the commit 46ms
+ ✓ |unit| src/coordinators/daily-review/save.test.ts > bindings rechecked inside the commit > should return ReviewChanged and write nothing when an earlier-session Mark is corrected between the read and the commit 63ms
+ ✓ |unit| src/ui/AppShell.test.tsx > storage warning > should show no warning icon on the first shell screen after a successful request during first run 59ms
+ ✓ |unit| src/ui/AppShell.test.tsx > storage warning > should show the Storage protection row as Protected on About after a successful request in the same visit 19ms
+ ✓ |unit| src/ui/AppShell.test.tsx > storage warning > should call the facade once when the ask button is clicked twice before the request resolves 27ms
+ ✓ |unit| src/ui/AppShell.test.tsx > storage warning > should disable the ask button while the request is pending 23ms
+ ✓ |unit| src/ui/AppShell.test.tsx > storage warning > should keep focus on the ask button while pending and call the facade once for a second press 20ms
+ ✓ |unit| src/ui/screens/Onboarding.test.tsx > Institution and Account onboarding > should show each typed issue (LabelRequired, LabelNotDistinguishable) next to its field and move focus to the first one 80ms
+ ✓ |unit| src/ui/screens/Onboarding.test.tsx > Institution and Account onboarding > should reuse an Institution an earlier attempt saved without an Account, instead of creating it again 39ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Executions > should label the region Executions with its count of Executions and list them in Fact Order 11ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Executions > should name each Execution row button exactly as its visible text followed by details 15ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Executions > should show each Execution collapsed as one row with action, quantity, symbol, price, and Economic Time with no fee, with no Executions table and no Position Change headings 16ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Executions > should give each row a disclosure button named for its Execution, collapsed by default with aria-expanded false 20ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Executions > should show the Instrument, Economic Time, fee, and the Position Change with its Execution count when the row is expanded, and hide them again when it is collapsed 29ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Executions > should show the Position Change Reflection's answers in the expanded row of an Execution whose Position Change has one 17ms
+ ✓ |unit| src/coordinators/trade-views/trade-summary.test.ts > Trade Summary > should give each Planned item and Planned Detail summary Stock, Long, the planned quantity, and the intended entry 46ms
+ ✓ |unit| src/coordinators/trade-views/trade-summary.test.ts > Trade Summary > should give each Open item and Open Detail summary Stock, Long, the open quantity, and the average open cost, with netCost from derive 23ms
+ ✓ |unit| src/coordinators/trade-views/trade-summary.test.ts > Trade Summary > should give an incoherent Planned or Open item and Detail no summary and no netCost 20ms
+ ✓ |unit| src/coordinators/trade-views/trade-summary.test.ts > Trade Summary > should keep every other field of every item and Detail unchanged 18ms
+ ✓ |unit| src/ui/screens/MarkEntry.test.tsx > entering, correcting, acknowledging, withdrawing > should show Conflict with the entered values kept and the current resolution displayed 43ms
+ ✓ |unit| src/ui/screens/MarkEntry.test.tsx > entering, correcting, acknowledging, withdrawing > should make no call when cancelled or left, register as unsaved while a value has been entered, and offer its actions only while Writable 71ms
+ ✓ |unit| src/modules/journal/daily-trade-review.test.ts > seedDefaults: manifest v3 > should add the Daily Trade Review Entry Type, its definition revision 1, and the Daily Review Source, and nothing else, to a v2-seeded Journal 17ms
+ ✓ |unit| src/modules/journal/daily-trade-review.test.ts > seedDefaults: manifest v3 contract > should match the contract exactly: "Action" required workflow-critical Single Select (Hold, Exit, Roll, Adjust); "Why are you taking this action?" Text required when Action is Exit, Roll, or Adjust; "Conviction now" optional Scale 1–5; "Anything you considered doing and decided against?" optional Text; "Note" optional Text, in that order 2ms
+ ✓ |unit| src/modules/journal/daily-trade-review.test.ts > seedDefaults: manifest v3 repeat > should add nothing when run again 3ms
+ ✓ |unit| src/modules/journal/daily-trade-review.test.ts > prepareEffects: Daily Trade Review (CompleteNow) > should prepare an Entry with the definition snapshot, a Trade Anchor, Source Daily Review, origin DailyReview (Trade, Review Date), moment time at the Review cutoff, and authored time from the clock 5ms
+ ✓ |unit| src/modules/journal/daily-trade-review.test.ts > prepareEffects: Daily Trade Review Intent > should accept Hold with no Intent and return RequiredAnswerMissing for Exit, Roll, or Adjust without Intent 8ms
+ ✓ |unit| src/modules/journal/daily-trade-review.test.ts > prepareEffects: Daily Trade Review dispositions > should reject Defer and Decline with DispositionNotAllowed 4ms
+ ✓ |unit| src/modules/journal/daily-trade-review.test.ts > edit by expected revision (AC-JOUR-005) > should append a version under the same Entry identity, using the original definition snapshot, when the obligation already has an Entry and the expected Entry revision matches 6ms
+ ✓ |unit| src/modules/journal/daily-trade-review.test.ts > edit by expected revision (AC-JOUR-005) > should return Conflict when the expected Entry revision is stale, and fail the transaction on a second new Entry for the same key 7ms
+ ✓ |unit| src/modules/journal/daily-trade-review.test.ts > applyPreparedEffects: the saved Action > should give the Action the prepared save will commit, for a new save 4ms
+ ✓ |unit| src/modules/journal/daily-trade-review.test.ts > applyPreparedEffects: the saved Action > should give the Action the prepared save will commit, for an edit 5ms
+ ✓ |unit| src/modules/journal/daily-trade-review.test.ts > query: Actions for a Review Date > should return every Action for a Review Date with one range read, keyed by Trade 6ms
+ ✓ |unit| src/modules/journal/daily-trade-review.test.ts > query: Trade narrative > should include Daily Trade Review Entries, with an Edited indicator when they have more than one version, in the Trade narrative 6ms
+ ✓ |unit| src/ui/AppShell.test.tsx > storage warning > should move focus to the result status when the request resolves 37ms
+ ✓ |unit| src/ui/AppShell.test.tsx > storage warning > should catch a rejected request, show a retry status and make the button usable again 47ms
+ ✓ |unit| src/ui/AppShell.test.tsx > storage warning > should ignore a second request while one is pending so a later NotImproved cannot overwrite a granted result 16ms
+ ✓ |unit| src/ui/AppShell.test.tsx > storage warning > should show neither icon nor card when protection is Protected 18ms
+ ✓ |unit| src/coordinators/daily-review/save.test.ts > bindings rechecked inside the commit > should return ReviewChanged and write no Action when an acknowledgment is recorded after the read and before the commit 41ms
+ ✓ |unit| src/coordinators/daily-review/save.test.ts > bindings rechecked inside the commit > should save the Action, retrying, when only the shared Journal counter moved between the read and the commit 75ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Executions > should show Reflection declined with the reason, or No reflection, when the Position Change has a decline or no reflection 24ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Executions > should mark the Executions of a Position Change with several Executions as one group and show the shared reflection in each ones expanded row 16ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Executions > should toggle with Enter and Space and keep focus on the button 39ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Journal entries > should show each Entry as its own item with the Entry Type as a badge, the Anchor, the Source labelled as Source, and the moment time 11ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Journal entries > should show the authored time as well when it differs from the moment time 12ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > completion > should report CompleteWithUnavailableMarks naming DEF, T-C, and the affected calculation families when DEF is acknowledged and every Action is saved 30ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > completion > should report Incomplete while T-D integrity disagreement remains, even with an Action saved 38ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > completion > should not report an integrity blocker for a Deviation recorded after the cutoff 20ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > completion > should not report an integrity blocker for a Position Change whose Executions straddle the cutoff 28ms
+ ✓ |unit| src/ui/screens/ReviewView.test.tsx > moving on > should keep Continue to Trades available after the walk opens, refresh status, blockers and order on it, and show each Mark entry's refreshed resolution 74ms
+ ✓ |unit| src/ui/screens/ReviewView.test.tsx > moving on > should send one open and disable Continue to Trades while a refresh is in flight 29ms
+ ✓ |unit| src/ui/screens/ReviewView.test.tsx > moving on > should offer Enter on an acknowledged earlier-session date, saved under that date revision, without Withdraw 40ms
+ ✓ |unit| src/ui/screens/MarkEntry.test.tsx > entering, correcting, acknowledging, withdrawing > should report a refused write to the shell and keep the entered values 31ms
+ ✓ |unit| src/ui/AppShell.test.tsx > storage warning > should keep the full card and the durability action on the first-run and onboarding screens, where About is not reachable 20ms
+ ✓ |unit| src/ui/AppShell.test.tsx > responsive navigation > should render bottom navigation below 960 px and a left sidebar at or above it 8ms
+ ✓ |unit| src/ui/AppShell.test.tsx > responsive navigation > should switch layout on a live resize without remounting the active route or losing entered form values 22ms
+ ✓ |unit| src/ui/AppShell.test.tsx > responsive navigation > should list only destinations whose capabilities are in the Installed Capability Manifest 4ms
+ ✓ |unit| src/ui/AppShell.test.tsx > primary navigation > should mark the link of the current route, and only that link, with aria-current page in both the sidebar and the bottom bar 9ms
+ ✓ |unit| src/ui/AppShell.test.tsx > primary navigation > should mark Trades as current on a Trade Detail and on Record entry 9ms
+ ✓ |unit| src/ui/AppShell.test.tsx > primary navigation > should show the product name Trade Journal at the top of the wide sidebar, outside the link list 9ms
+ ✓ |unit| src/ui/AppShell.test.tsx > primary navigation > should render an icon beside every label with aria-hidden, leaving every link accessible name unchanged 7ms
+ ✓ |unit| src/ui/AppShell.test.tsx > migration startup states > should show Updating your journal to this release with no data or controls while initialize is migrating 2ms
+ ✓ |unit| src/ui/AppShell.test.tsx > migration startup states > should render Migration Blocked with the reason, Your data is unchanged, and Retry, and no data navigation 14ms
+ ✓ |unit| src/ui/AppShell.test.tsx > migration startup states > should render IntegrityBlocked AwaitingMigration explaining that this release must convert the journal once the browser passes its safety checks, with Retry 5ms
+ ✓ |unit| src/ui/AppShell.test.tsx > migration startup states > should explain an aborted activation in Migration Blocked, saying the conversion could not finish and the data is unchanged 5ms
+ ✓ |unit| src/ui/AppShell.test.tsx > migration startup states > should re-read getStatus instead of staying on the updating message when initialize rejects during migration 4ms
+ ✓ |unit| src/modules/journal/position-change-reflection.test.ts > seedDefaults: manifest v2 > should add the Position Change Reflection Entry Type, its definition revision 1, and the Position Change Source, and nothing else, to a v1-seeded Journal 15ms
+ ✓ |unit| src/modules/journal/position-change-reflection.test.ts > seedDefaults: manifest v2 > should match the contract exactly: Decision mode required Single Select As Planned, Deliberate Adjustment, Reactive, Externally Imposed; Primary emotion required Single Select Calm, Eager, Anxious, FOMO, Revenge, Relieved, Frustrated, Other; Decision confidence required Scale 1–5; Note optional Text, in that order 4ms
+ ✓ |unit| src/modules/journal/position-change-reflection.test.ts > seedDefaults: manifest v2 > should add nothing when run again with manifest v2 5ms
+ ✓ |unit| src/modules/journal/position-change-reflection.test.ts > prepareEffects: Position Change Reflection, Complete > should prepare an Entry with the definition snapshot, a Trade Anchor to the originating Trade, Source Position Change, the Position Change origin, and moment time equal to the Position Change Economic Time 3ms
+ ✓ |unit| src/modules/journal/position-change-reflection.test.ts > prepareEffects: Position Change Reflection, Complete > should return RequiredAnswerMissing for each blank required prompt at once, and store a blank Note as Unanswered 5ms
+ ✓ |unit| src/modules/journal/position-change-reflection.test.ts > prepareEffects: Position Change Reflection, Decline > should prepare a decline with the obligation key, Anchor, Source, origin, the definition revision shown, an optional reason, and moment and authored times 6ms
+ ✓ |unit| src/modules/journal/position-change-reflection.test.ts > prepareEffects: Position Change Reflection, Decline > should reject a reason longer than 500 characters with ReasonTooLong 3ms
+ ✓ |unit| src/modules/journal/position-change-reflection.test.ts > prepareEffects: Position Change Reflection, Decline > should reject Defer with DispositionNotAllowed 4ms
+ ✓ |unit| src/modules/journal/position-change-reflection.test.ts > applyPreparedEffects and the obligation index > should stage the Entry or decline and its obligation record in the shared transaction, mapped to Trade Record durable Position Change identity 13ms
+ ✓ |unit| src/modules/journal/position-change-reflection.test.ts > applyPreparedEffects and the obligation index > should fail the transaction when the obligation key already has an outcome, whether Entry or decline 21ms
+ ✓ |unit| src/modules/journal/position-change-reflection.test.ts > applyPreparedEffects and the obligation index > should rebuild the obligation index from Entries and declines with the same contents 7ms
+ ✓ |unit| src/modules/journal/position-change-reflection.test.ts > query: Trade narrative > should return Plan Reflection, Position Change Reflections, and declines for the Trade ordered by moment time then identity, each with its snapshot labels or decline reason 5ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Journal entries > should not show the authored time when it reads the same as the moment time 10ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Journal entries > should show a decline with the warning badge Reflection declined, its reason or No reason given, its Anchor and Source 10ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > Journal entries > should label the region with the number of items 11ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > R lines > should put the R multiple on its own line below Actual initial risk on the receipt and in Entry Quality 10ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > R lines > should put planned 2.4 on its own line below the Reward : risk value on the receipt and in Entry Quality 10ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > R lines > should keep the amount and its second line in one value cell, read in order 10ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > fulfillment row > should show Planned-Leg Fulfillment as a label/value row with the leg as label and the result as value 10ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > journal prose > should show each prompt question above its answer, not beside it 10ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > journal prose > should keep Anchor, Source, Moment and Authored as a label/value list 10ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > deviations > should show an Active Deviation as plain text with no status badge 9ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > deviations > should strike through a Superseded Deviation and name it Superseded for assistive technology 11ms
+ ✓ |unit| src/ui/screens/TradeDetail.test.tsx > deviations > should keep the summary card Deviation active badge while a Deviation is Active 9ms
+ ✓ |unit| src/ui/screens/FirstRun.test.tsx > first-run time zone > should propose the browser-resolved zone and allow choosing any supported zone before calling initialize 83ms
+ ✓ |unit| src/ui/screens/FirstRun.test.tsx > first-run time zone > should show InvalidTimeZone as a field error and make no other call 13ms
+ ✓ |unit| src/coordinators/daily-review/save.test.ts > bindings rechecked inside the commit > should return Conflict and keep the one Entry when another Action for the Trade and date lands after the read and before the commit 54ms
+ ✓ |unit| src/coordinators/daily-review/save.test.ts > the shared Journal counter keeps moving (ADR 0011) > should return Conflict and write nothing when the Journal counter moves on every attempt 59ms
+ ✓ |unit| src/ui/screens/ReviewView.test.tsx > moving on > should keep a value typed into a Mark entry when a refresh brings that key a newer revision 44ms
+ ✓ |unit| src/modules/journal/journal.test.ts > seedDefaults > should create only the Plan Reflection Entry Type, its definition revision 1, and the Plan Confirmation Source under stable product keys 9ms
+ ✓ |unit| src/modules/journal/journal.test.ts > seedDefaults > should match the contract exactly: four prompts in order ("Why this trade, why now?" required Text, Thesis role; "What would invalidate the thesis?" required Text, Invalidation role; "Conviction" optional Scale 1–5; "Primary emotion" optional Single Select with Calm, Eager, Anxious, FOMO, Revenge, Relieved, Frustrated, Other in that order) 4ms
+ ✓ |unit| src/modules/journal/journal.test.ts > seedDefaults > should add nothing when run again with the same manifest 3ms
+ ✓ |unit| src/modules/journal/journal.test.ts > seedDefaults > should return SeedConflict and write nothing when the manifest declares the Plan Reflection key with an incompatible definition 4ms
+ ✓ |unit| src/modules/journal/journal.test.ts > seedDefaults > should seed the default Journal types and definitions exactly once and advance journalRevision once when two seeds run at once 4ms
+ ✓ |unit| src/modules/journal/journal.test.ts > seedDefaults > should return its typed conflict and write nothing after 3 attempts when journalRevision keeps moving 4ms
+ ✓ |unit| src/modules/journal/journal.test.ts > getDefinitions > should return the latest Plan Reflection definition with stable Prompt and Option identities 2ms
+ ✓ |unit| src/modules/journal/journal.test.ts > getDefinitions > should return an exact retained revision by identity and NotFound for an unknown revision 2ms
+ ✓ |unit| src/modules/journal/journal.test.ts > prepareEffects: completed Plan Reflection > should prepare an Entry with the definition-revision snapshot, a Trade Anchor to the candidate Trade, Source Plan Confirmation, Plan origin, moment time equal to the Plan Economic Time, and authored time from the clock 2ms
+ ✓ |unit| src/modules/journal/journal.test.ts > prepareEffects: completed Plan Reflection > should return the Thesis and Invalidation answers by semantic role 2ms
+ ✓ |unit| src/modules/journal/journal.test.ts > prepareEffects: completed Plan Reflection > should store an unanswered optional prompt as Unanswered, never as declined 2ms
+ ✓ |unit| src/modules/journal/journal.test.ts > prepareEffects: completed Plan Reflection > should return RequiredAnswerMissing for each blank required prompt, all at once 2ms
+ ✓ |unit| src/modules/journal/journal.test.ts > prepareEffects: completed Plan Reflection > should reject a Conviction outside 1–5 or non-integer with InvalidScaleValue and an unknown option with UnknownOption 2ms
+ ✓ |unit| src/modules/journal/journal.test.ts > prepareEffects: completed Plan Reflection > should reject an unknown prompt with UnknownPrompt and a non-current definition revision with DefinitionRevisionMismatch 3ms
+ ✓ |unit| src/modules/journal/journal.test.ts > prepareEffects: completed Plan Reflection > should reject Defer or Decline for Plan Reflection with DispositionNotAllowed 2ms
+ ✓ |unit| src/modules/journal/journal.test.ts > prepareEffects: completed Plan Reflection > should write nothing (Journal revision unchanged) 5ms
+ ✓ |unit| src/modules/journal/journal.test.ts > applyPreparedEffects > should stage the Entry inside the shared transaction with candidate references mapped to Trade Record's durable identities and return the staged projection 5ms
+ ✓ |unit| src/modules/journal/journal.test.ts > applyPreparedEffects > should refuse to run outside a semantic transaction 3ms
+ ✓ |unit| src/modules/journal/journal.test.ts > applyPreparedEffects > should fail the transaction when a Plan Reflection already exists for the same obligation key 6ms
+ ✓ |unit| src/modules/journal/journal.test.ts > query: Trade narrative > should return the Trade's Entries with their snapshot labels, ordered by moment time then identity, and an empty page for a Trade with none 3ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > record an initial Manual Mark > should append revision 1 (Manual, InitialManual, 52.00) for (XYZ, 2026-10-12) and return Saved with resolution Available, the new resolution revision, the saved-intention classification, and the accepted command binding 10ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > record an initial Manual Mark > should store "52.000" as "52" without changing its exact value 5ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > record an initial Manual Mark > should commit in one semantic commit that increments the Workspace content revision exactly once and writes only the key observation record 3ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > record an initial Manual Mark > should return Conflict with the current resolution and write nothing when the key already has a Mark 4ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > correct a believed-wrong Mark > should append revision 2 (Correction, 51.50, reason, superseding revision 1) with its Correction Footprint (key, effect date 2026-10-12, save time, domains valuation, condition status, and replay, interval 2026-10-12 to 2026-10-12), make it effective, and keep revision 1 6ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > correct a believed-wrong Mark > should require a reason of 1 to 500 characters, returning ReasonRequired or ReasonTooLong 6ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > correct a believed-wrong Mark > should reject a correction to the effective price with CorrectionUnchanged and a correction for a key with no Mark with NothingToCorrect 4ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > correct a believed-wrong Mark > should return Conflict and write nothing when the expected resolution revision is stale 5ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > concurrent saves > should save one of two simultaneous initial Marks for a key and return Conflict for the other 3ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > concurrent saves > should save both of two simultaneous initial Marks for different keys 3ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > key and price validation (P8, P9, P10) > should reject a well-shaped impossible date such as 2026-02-30 with InvalidDate and write nothing 2ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > key and price validation (P8, P9, P10) > should reject a weekend, holiday, or closure date with NotASession and a date outside coverage with SessionPolicyCoverage 2ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > key and price validation (P8, P9, P10) > should reject Tuesday at Tuesday noon and at Tuesday 16:10 (closed but not completed), and any later date, with SessionNotCompleted 3ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > key and price validation (P8, P9, P10) > should accept a Mark for Tuesday at 16:30:00.500 on Tuesday, a fractional-second instant after the completion 2ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > key and price validation (P8, P9, P10) > should accept Friday 2026-10-09, because past completed sessions are valid keys 1ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > key and price validation (P8, P9, P10) > should reject a malformed symbol with InvalidInstrument and a negative, non-finite, or over-precise price with InvalidPrice, all at once 2ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > key and price validation (P8, P9, P10) > should reject OverrideManualValuation with VariantNotInstalled 2ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > write gate > should return RuntimeNotWritable and write nothing when the mutation-boundary readiness recheck fails 3ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > assert unavailable (AC-MARK-003) > should append an Asserted acknowledgment with its reason and time, and no price, for DEF 2026-10-12, returning AcknowledgedUnavailable with Stale context and the new resolution revision 3ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > assert rejections > should reject assert on a key with an effective Mark with MarkExists, and a blank or over-long reason 2ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > assert for a past session > should accept assert for a past session, so a skipped day can be acknowledged 3ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > withdraw > should append a Withdrawn version, return Missing, and keep the assertion in history 5ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > withdraw rejections > should reject withdraw when no assertion is effective with NothingToWithdraw 5ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > precedence > should resolve Available when an exact Mark is saved after an acknowledgment, keeping the acknowledgment history 2ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > no price for an acknowledged key > should never return a price for an acknowledged key 5ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > acknowledgment saves keep the shared save guarantees > should return Conflict for an acknowledgment prepared against an old resolution revision, and RuntimeNotWritable when the gate refuses, writing nothing 4ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > acknowledgment saves keep the shared save guarantees > should reject an acknowledgment for a malformed symbol, a weekend, and a session not yet completed, as a Mark does 1ms
+ ✓ |unit| src/modules/market-data/market-data.test.ts > Stale context lookup bound (T4.5-B1) > should look up Stale context within the Instrument own byInstrumentDate range, visiting no other Instrument records, when the Instrument has no earlier Mark 3ms
+ ✓ |unit| src/ui/screens/MarkEntry.test.tsx > entering, correcting, acknowledging, withdrawing > should send one save and disable the Mark actions while a save is in flight 115ms
+ ✓ |unit| src/ui/screens/MarkEntry.test.tsx > entering, correcting, acknowledging, withdrawing > should show that the Mark was not saved, keep the entered values, and allow a retry when the save returns StorageFailure 47ms
+ ✓ |unit| src/ui/screens/MarkEntry.test.tsx > entering, correcting, acknowledging, withdrawing > should show that nothing was saved and keep Withdraw available when Withdraw returns StorageFailure 19ms
+ ✓ |unit| src/ui/screens/AboutView.test.tsx > About this release > should show the application name, Web App Manifest id, release identity, inventory asset count, per-check readiness evidence including the capacity figures, storage protection, Workspace time zone, and the Installed Capability Manifest 67ms
+ ✓ |unit| src/ui/screens/AboutView.test.tsx > About this release > should show the Workspace schema version next to the release identity 8ms
+ ✓ |unit| src/ui/screens/AboutView.test.tsx > About this release > should call registration.update when "Check for updates" is pressed and report "No update" or show the update notice 39ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > completion > should still report an integrity blocker for a disagreement in facts after the cutoff 17ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > completion > should leave historical gaps out of completion 17ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > completion > should derive completion from facts only, with no stored Review, stage, or flag 61ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > getTrade > should return the Trade's summary, labels, Review-date frame with Stale context, Review-context evaluation, the existing Action or a new form with Hold preselected only in view state, the definition revision, and the save binding 61ms
+ ✓ |unit| src/ui/screens/PlanForm.test.tsx > submission > should show every rejection issue beside its field, list them in a summary, and move focus to the summary 311ms
+ ✓ |unit| src/ui/AppShell.test.tsx > migration startup states > should show the D1 Updated in another tab message, keeping on-screen form values, when the session is superseded by a version change 28ms
+ ✓ |unit| src/ui/AppShell.test.tsx > write route while not Writable > should show a heading Record entry isn't available, an explanation that this browser can't save right now, and a link to the Trade, for a direct record-entry link 7ms
+ ✓ |unit| src/ui/AppShell.test.tsx > write route while not Writable > should show the same view after a runtime refusal mid-session, without losing the read-only banner 29ms
+ ✓ |unit| src/ui/AppShell.test.tsx > write route while not Writable > should show Record entry isn't available on returning to the entry form after leaving the page where the refusal arrived 41ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > submission > should submit one Position Change with every row, the expected FactRevision, the rendered definition revision, stable Prompt and Option identities, and the chosen disposition 411ms
+ ✓ |unit| src/coordinators/daily-review/save.test.ts > the saved Action > should return the Action this save committed even when another version lands before the post-commit read 76ms
+ ✓ |unit| src/coordinators/daily-review/save.test.ts > a failure after the commit > should return Saved with the review ChangedDuringAssembly when the post-commit read fails 54ms
+ ✓ |unit| src/ui/screens/ReviewView.test.tsx > moving on > should keep an earlier-session Mark's saved resolution when the Review re-renders without a newer revision 98ms
+ ✓ |unit| src/ui/screens/ReviewView.test.tsx > moving on > should resume from the returned state after a reload, showing saved Actions and Marks without any stored session 20ms
+ ✓ |unit| src/ui/screens/ReviewView.test.tsx > moving on > should show a fresh entry for an Instrument whose Review Date changed when the Review is opened again 37ms
+ ✓ |unit| src/ui/screens/ReviewView.test.tsx > moving on > should name each Mark entry region by Instrument and date 8ms
+ ✓ |unit| src/modules/reference-catalog/catalog.test.ts > seedDefaults > should create exactly one Strategy, Long Stock, under product key strategy.long-stock with one long Stock role, origin Seeded, and return the snapshot, the additions, and a selectable-Account count of 0 6ms
+ ✓ |unit| src/modules/reference-catalog/catalog.test.ts > seedDefaults > should add nothing and keep the snapshot revision when run again with the same manifest 3ms
+ ✓ |unit| src/modules/reference-catalog/catalog.test.ts > seedDefaults > should return SeedConflict and write nothing when the manifest declares strategy.long-stock with a different shape 4ms
+ ✓ |unit| src/modules/reference-catalog/catalog.test.ts > seedDefaults > should seed the defaults exactly once and advance catalogRevision once when two seeds run at once 4ms
+ ✓ |unit| src/modules/reference-catalog/catalog.test.ts > seedDefaults > should return its typed conflict and write nothing after 3 attempts when catalogRevision keeps moving 4ms
+ ✓ |unit| src/modules/reference-catalog/catalog.test.ts > save: create Institution > should create an Institution with a stable identity and revision 1 and return the complete record and new Catalog snapshot 3ms
+ ✓ |unit| src/modules/reference-catalog/catalog.test.ts > save: create Institution > should reject a blank label with a typed LabelRequired issue 2ms
+ ✓ |unit| src/modules/reference-catalog/catalog.test.ts > save: create Institution > should reject a label that normalizes (case, surrounding and repeated spaces) to an existing Institution label with LabelNotDistinguishable 4ms
+ ✓ |unit| src/modules/reference-catalog/catalog.test.ts > save: create Account > should create an Account under a selectable Institution with that immutable parent and return the record, snapshot, and selectable-Account count 1 2ms
+ ✓ |unit| src/modules/reference-catalog/catalog.test.ts > save: create Account > should reject an unknown Institution identity with UnknownReference 2ms
+ ✓ |unit| src/modules/reference-catalog/catalog.test.ts > save: create Account > should reject a duplicate Account label under the same Institution and accept the same label under a different Institution 5ms
+ ✓ |unit| src/modules/reference-catalog/catalog.test.ts > query > should list selectable Institutions, Accounts, and Strategies ordered by normalized label then identity, in pages bound to the Catalog snapshot 5ms
+ ✓ |unit| src/modules/reference-catalog/catalog.test.ts > query > should reject a cursor with CursorExpired after any Catalog change 4ms
+ ✓ |unit| src/modules/reference-catalog/catalog.test.ts > resolve > should resolve a selectable Account and Strategy as NewSelection with record revisions and the Account's Institution 3ms
+ ✓ |unit| src/modules/reference-catalog/catalog.test.ts > resolve > should return every issue at once when an identity is unknown or of the wrong kind 4ms
+ ✓ |unit| src/modules/reference-catalog/catalog.test.ts > resolve > should resolve DisplayOnly to the current label without granting selection eligibility 4ms
+ ✓ |unit| src/delivery/readiness.test.ts > diagnostic transaction check > should write, read back, and delete a probe in tj-root.diagnostics in one transaction and pass, leaving the store empty and no Workspace store touched 22ms
+ ✓ |unit| src/delivery/readiness.test.ts > diagnostic transaction check > should fail with the failing step named when the probe write, read-back comparison, or delete fails 5ms
+ ✓ |unit| src/delivery/readiness.test.ts > capacity check > should pass when quota ≥ the requirement and record quota, usage, available, M, and the requirement as evidence 3ms
+ ✓ |unit| src/delivery/readiness.test.ts > capacity check > should fail when quota < the requirement 2ms
+ ✓ |unit| src/delivery/readiness.test.ts > capacity check > should fail with reason EstimateUnavailable when storage.estimate is absent or rejects 3ms
+ ✓ |unit| src/delivery/readiness.test.ts > service-worker control check > should pass when the controller reports the page's release identity 2ms
+ ✓ |unit| src/delivery/readiness.test.ts > service-worker control check > should fail when there is no controller after the first-claim wait, or when the controller reports a different release identity 4ms
+ ✓ |unit| src/delivery/readiness.test.ts > inventory check > should pass when every inventory asset is cached and its recomputed digest matches 2ms
+ ✓ |unit| src/delivery/readiness.test.ts > inventory check > should fail and name each asset that is missing or whose digest differs 2ms
+ ✓ |unit| src/delivery/readiness.test.ts > outcome classification > should return Writable when all four checks pass 2ms
+ ✓ |unit| src/delivery/readiness.test.ts > outcome classification > should return Unsupported with every failed check when the root inspection reports NoWorkspace 2ms
+ ✓ |unit| src/delivery/readiness.test.ts > outcome classification > should return RecoveryOnly with every failed check when a readable Workspace exists 1ms
+ ✓ |unit| src/delivery/readiness.test.ts > outcome classification > should return Unsupported with Workspace status IntegrityBlocked when the root is Unreadable, whatever the other checks report 3ms
+ ✓ |unit| src/delivery/readiness.test.ts > outcome classification > should report all failed checks when two or more fail at once, never only the first 1ms
+ ✓ |unit| src/delivery/readiness.test.ts > storage protection is advisory > should report Protected, BestEffort, or Unavailable from storage.persisted and remain Writable when protection is BestEffort or Unavailable 5ms
+ ✓ |unit| src/delivery/readiness.test.ts > session readiness > should move the session from Writable to RecoveryOnly immediately when a storage failure is reported and the Workspace is still readable 2ms
+ ✓ |unit| src/delivery/readiness.test.ts > session readiness > should replace the session state with a fresh evaluation when recheck is called 3ms
+ ✓ |unit| src/coordinators/daily-review/save.test.ts > a failure after the commit > should return Saved with the committed Action when the post-commit Journal read fails 48ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > getTrade > should include the dated last-close and at-entry lines when the Review-date Mark is Missing, P13 32ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > getTrade > should return ReviewChanged when the Trade's revision or its evidence no longer matches the overview binding 59ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > getTrade > should return ReviewChanged when the overview binding names another Workspace 47ms
+ ✓ |unit| src/ui/screens/MarkEntry.test.tsx > entering, correcting, acknowledging, withdrawing > should keep Cancel disabled while a save is in flight, and open each form with no earlier Conflict, storage-failure notice or issues 170ms
+ ✓ |unit| src/ui/screens/MarkEntry.test.tsx > entering, correcting, acknowledging, withdrawing > should close an open form whose intention no longer fits the refreshed Mark and say the Mark changed and nothing was saved 33ms
+ ✓ |unit| src/modules/trade-record/trade-record.test.ts > prepareChange: ConfirmPlan > should build a candidate Trade with a Plan fact, one Planned Leg fact, and Stop and Target condition facts, each a candidate fact identity holding a single-version list 7ms
+ ✓ |unit| src/modules/trade-record/trade-record.test.ts > prepareChange: ConfirmPlan > should assign Recorded Sequence in submitted order and stored lifecycle Planned, and return the candidate AnalysisInput plus a canonical digest 2ms
+ ✓ |unit| src/modules/trade-record/trade-record.test.ts > prepareChange: ConfirmPlan > should write nothing and assign no durable identity 3ms
+ ✓ |unit| src/modules/trade-record/trade-record.test.ts > prepareChange: ConfirmPlan > should reject a change with no Planned Leg with a typed IncoherentChange 1ms
+ ✓ |unit| src/modules/trade-record/trade-record.test.ts > applyPreparedChange > should reject a reconciliation whose candidate digest or expected lifecycle does not match the prepared change 1ms
+ ✓ |unit| src/modules/trade-record/trade-record.test.ts > applyPreparedChange > should assign durable identities, stage the Trade document and its lifecycle-index membership, and return the identity mapping and staged projection 3ms
+ ✓ |unit| src/modules/trade-record/trade-record.test.ts > applyPreparedChange > should refuse to run outside a semantic transaction 2ms
+ ✓ |unit| src/modules/trade-record/trade-record.test.ts > getRecord > should return Summary or AnalysisInput at its FactRevision, and NotFound for an unknown Trade 3ms
+ ✓ |unit| src/modules/trade-record/trade-record.test.ts > queryRecords: CurrentState > should select Planned Trades from the lifecycle index, ordered by Plan Time descending then Trade identity 3ms
+ ✓ |unit| src/modules/trade-record/trade-record.test.ts > queryRecords: CurrentState > should return AnalysisInput for a whole page from one read snapshot 6ms
+ ✓ |unit| src/modules/trade-record/trade-record.test.ts > queryRecords: CurrentState > should reject a cursor with CursorExpired after any Trade commit 4ms
+ ✓ |unit| src/ui/screens/ReviewView.test.tsx > moving on > should register as unsaved while any Mark entry holds a value, today or earlier, and clear when the last is cancelled 67ms
+ ✓ |unit| src/ui/screens/ReviewView.test.tsx > moving on > should offer no Mark entry controls while the runtime is not writable, and still allow Continue to Trades 18ms
+ ✓ |unit| src/ui/screens/ReviewView.test.tsx > moving on > should keep the Marks and offer Continue to Trades again when the Review cannot be refreshed 35ms
+ ✓ |unit| src/persistence/persistence.test.ts > root inspection > should report NoWorkspace when the root database is created fresh and holds no pointer 3ms
+ ✓ |unit| src/persistence/persistence.test.ts > root inspection > should report KnownWorkspace with database name and schema version when the pointer names a database that opens at a supported version 3ms
+ ✓ |unit| src/persistence/persistence.test.ts > root inspection > should report Unreadable(PossibleRoot) when tj-root exists at a newer version, without upgrading, deleting, or writing to it 2ms
+ ✓ |unit| src/persistence/persistence.test.ts > root inspection > should report Unreadable(KnownRoot) when the pointer names a database that does not exist, aborting the upgrade so no empty database is created 1ms
+ ✓ |unit| src/persistence/persistence.test.ts > root inspection > should report Invalid when the Workspace meta record is missing or names an unknown schema version 2ms
+ ✓ |unit| src/persistence/persistence.test.ts > root inspection > should delete an orphaned candidate database (candidate prefix, not named by the pointer) and list it in the inspection receipt 2ms
+ ✓ |unit| src/persistence/persistence.test.ts > workspace creation > should make a new Workspace visible only through the final pointer write, so a reader sees no Workspace or the complete one 4ms
+ ✓ |unit| src/persistence/persistence.test.ts > workspace creation > should report AlreadyInitialized and leave the existing pointer unchanged when a second initializer's pointer add fails with ConstraintError 2ms
+ ✓ |unit| src/persistence/persistence.test.ts > semantic commit > should apply a write set spanning several stores in one readwrite transaction and increment the Workspace content revision exactly once 4ms
+ ✓ |unit| src/persistence/persistence.test.ts > semantic commit > should write nothing and leave the content revision unchanged when a binding check fails, returning a typed Conflict that names the stale binding 3ms
+ ✓ |unit| src/persistence/persistence.test.ts > semantic commit > should leave every earlier write absent when the last write in the set fails with ConstraintError 3ms
+ ✓ |unit| src/persistence/persistence.test.ts > semantic commit > should open write transactions with durability "strict" 2ms
+ ✓ |unit| src/persistence/persistence.test.ts > semantic commit > should reject with EarlyAutoCommitGuard and write nothing when a binding check returns a promise instead of completing synchronously 2ms
+ ✓ |unit| src/persistence/persistence.test.ts > semantic commit > should return the committed content revision and the new revision of every written record 2ms
+ ✓ |unit| src/persistence/persistence.test.ts > snapshot reads > should read several stores in one readonly transaction and report the single content revision observed, even when a commit races with the read 3ms
+ ✓ |unit| src/persistence/persistence.test.ts > versionchange (amendment agreed during the D2 breakdown, 2026-10-11) > should close its Workspace connection and mark the session superseded when another connection requests a version change of the Workspace database 3ms
+ ✓ |unit| src/persistence/persistence.test.ts > versionchange (amendment agreed during the D2 breakdown, 2026-10-11) > should return RuntimeNotWritable from the next commit after supersession, with readiness rerun and no write attempted 2ms
+ ✓ |unit| src/persistence/persistence.test.ts > versionchange (amendment agreed during the D2 breakdown, 2026-10-11) > should name the supersession among the failed checks of that RuntimeNotWritable, so the shell can explain it 1ms
+ ✓ |unit| src/persistence/persistence.test.ts > connection lifecycle and private-state rebuild (D1 section 6.1) > should close its Workspace connection on close, so a later version change does not mark the session superseded 1ms
+ ✓ |unit| src/persistence/persistence.test.ts > connection lifecycle and private-state rebuild (D1 section 6.1) > should drop and recreate every Workspace index through the migration path, keeping every record 6ms
+ ✓ |unit| src/persistence/candidate.test.ts > schema v2 layout > should create a fresh Workspace at schema version 2 with the byLifecycleActivity index, journalDeclines, and journalObligations 7ms
+ ✓ |unit| src/persistence/candidate.test.ts > candidate and activation > should name the candidate in the root candidates record before creating it 5ms
+ ✓ |unit| src/persistence/candidate.test.ts > candidate and activation > should bump the old database IndexedDB version without changing any store, closing every other connection to it first 7ms
+ ✓ |unit| src/persistence/candidate.test.ts > candidate and activation > should copy every store through the supplied per-record transforms in one read-only snapshot 6ms
+ ✓ |unit| src/persistence/candidate.test.ts > candidate and activation > should switch the pointer, remove the candidate entry, and list the old database as retired in one root transaction 7ms
+ ✓ |unit| src/persistence/candidate.test.ts > candidate and activation > should delete a retired database after activation and on the next inspection if deletion was interrupted 7ms
+ ✓ |unit| src/persistence/candidate.test.ts > candidate and activation > should delete a listed candidate that the pointer does not name on the next inspection, leaving the pointer unchanged 6ms
+ ✓ |unit| src/persistence/candidate.test.ts > discarding > should delete the candidate and leave the old database stores and the pointer exactly as they were 5ms
+ ✓ |unit| src/persistence/candidate.test.ts > versionchange > should close its Workspace connection and mark the session superseded when another connection requests a version change 4ms
+ ✓ |unit| src/persistence/candidate.test.ts > lifecycle lock > should run at most one migration at a time; a second caller waits and then sees the already-activated Workspace 10ms
+ ✓ |unit| src/persistence/schema-v3.test.ts > schema v3 layout > should create a fresh Workspace at schema version 3 with the observations store keyed by tradingDate and instrumentKey, its byInstrumentDate index, and the meta field sessionPolicy, and no marketDataRevision 8ms
+ ✓ |unit| src/persistence/schema-v3.test.ts > v2 → v3 transform > should copy every v2 store, create an empty observations store, and record the release session-policy identity in meta 6ms
+ ✓ |unit| src/persistence/schema-v3.test.ts > v2 → v3 transform > should drop every private Trade field, activityDesc and exposureStart, in the v2 to v3 transform 1ms
+ ✓ |unit| src/persistence/schema-v3.test.ts > v2 → v3 transform > should migrate a v1 Workspace through v1→v2 and v2→v3 inside one candidate 5ms
+ ✓ |unit| src/persistence/schema-v3.test.ts > rebuild > should rebuild byInstrumentDate from observations with identical contents 6ms
+ ✓ |unit| src/persistence/schema-v3.test.ts > rebuild > should compute exposureStart for each Trade document from its first opening Execution during the private rebuild that follows the chain 6ms
+ ✓ |unit| src/ui/screens/AccountsView.test.tsx > Accounts page > should list Institutions with their Accounts and offer Add Institution and Add Account only while Writable 67ms
+ ✓ |unit| src/sw/sw.test.ts > release staging > should fetch every inventory asset with cache "reload", verify each SHA-256 digest, and write the release cache only after all match 15ms
+ ✓ |unit| src/sw/sw.test.ts > release staging > should fail installation and leave no release cache when any asset is missing or its digest differs 4ms
+ ✓ |unit| src/sw/sw.test.ts > release staging > should fail installation when the embedded release identity does not equal the hash of the inventory's digest list 2ms
+ ✓ |unit| src/sw/sw.test.ts > offline serving > should answer a navigation request with the release's cached index document without calling fetch 2ms
+ ✓ |unit| src/sw/sw.test.ts > offline serving > should answer an inventory asset only from its own release cache, never another release's 1ms
+ ✓ |unit| src/sw/sw.test.ts > offline serving > should serve each cached asset with the Content-Type the network sent, so module scripts load 1ms
+ ✓ |unit| src/sw/sw.test.ts > offline serving > should not cache any response outside the inventory 1ms
+ ✓ |unit| src/sw/sw.test.ts > activation > should not call skipWaiting at install while an earlier release cache exists 1ms
+ ✓ |unit| src/sw/sw.test.ts > activation > should claim uncontrolled clients at first activation when no earlier release cache exists 2ms
+ ✓ |unit| src/sw/sw.test.ts > activation > should call skipWaiting only after receiving an ApplyUpdate message 1ms
+ ✓ |unit| src/sw/sw.test.ts > activation > should delete earlier release caches only during its own activation 1ms
+ ✓ |unit| src/sw/sw.test.ts > activation > should reply to a ReleaseIdentity message with its release identity 1ms
+ ✓ |unit| src/ui/update/controller.test.ts > update availability > should show no notice until a new release is waiting (installed and verified) 3ms
+ ✓ |unit| src/ui/update/controller.test.ts > activation > should post ApplyUpdate to the waiting worker and reload exactly once on controllerchange 0ms
+ ✓ |unit| src/ui/update/controller.test.ts > activation > should reload a tab with no unsaved form on controllerchange caused by another tab 0ms
+ ✓ |unit| src/ui/update/controller.test.ts > critic-1 findings (C1.8) > should learn of unsaved work that another tab announced before this tab opened 8ms
+ ✓ |unit| src/ui/update/controller.test.ts > critic-1 findings (C1.8) > should report UpdateWaiting when the check finds a release still installing, once it is installed and waiting 2ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > Mark-to-Market valuation (after PC2, Mark 52.00 for 2026-10-12) > should return valuation date 2026-10-12, coverage Available with the Mark revision, open quantity 100, open cost $5,018.00, unconsumed opening fees $2.00, and market value $5,200.00 1ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > Mark-to-Market valuation (after PC2, Mark 52.00 for 2026-10-12) > should return remaining-open marked P&L $180.00, realized-to-date $0.00, Current Marked Trade P&L $180.00 (18/25 R), and incurred fees $2.00, each as its own Calculation Result 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > Mark-to-Market valuation (after PC2, Mark 52.00 for 2026-10-12) > should use the remaining Position after PC3 and return $199.00 at the same Mark (AC-CALC-001) 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > Missing Mark (AC-CALC-002, single Instrument) > should return the open component, Current Marked Trade P&L, and its Plan-R conversion as Unavailable(MarkMissing) naming XYZ and the frame date 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > Missing Mark (AC-CALC-002, single Instrument) > should keep realized-to-date, incurred fees, Plan Baseline, 1R, and Entry Quality as Values 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > Missing Mark (AC-CALC-002, single Instrument) > should carry Stale context as disclosure only, so no current figure changes when its price changes 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > Missing Mark (AC-CALC-002, single Instrument) > should return no covered subtotal for a single-Instrument Trade (A43) 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > Missing Mark (AC-CALC-002, single Instrument) > should return Unavailable with reason AcknowledgedUnavailable for an acknowledged key, never a value 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > Missing Mark (AC-CALC-002, single Instrument) > should return every current figure of a Planned Trade as NotApplicable with reason NoRemainingPosition 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > Lots opened after the frame's close (P12, A54) > should return current figures as Unavailable with reason AwaitingClose after 2026-10-12 when PC2 is dated Tuesday 10:00 and the frame is Monday's 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > Lots opened after the frame's close (P12, A54) > should return at-entry figures for those 40 shares: average entry 50.30, risk from entry $112.00, reward from entry $228.00, labelled at entry 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > Lots opened after the frame's close (P12, A54) > should evaluate the state derived at Monday close with Monday Mark as the dated line: 60 shares, P&L $113.00, risk to stop $270.00, worst case $3,120.00, reward $240.00 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > dated last close with a Missing Mark (P13, A54) > should, given only a Friday Mark and Monday fills, return no dated line (no exposure at Friday close) and at-entry figures for all 100 shares: risk from entry $268.00, reward from entry $582.00 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > dated last close with a Missing Mark (P13, A54) > should return at-entry figures for Lots opened after the Stale context close when the frame is Missing 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > dated last close with a Missing Mark (P13, A54) > should return at-entry figures for every remaining Lot when the frame is Missing without Stale context 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > A frame for a different Instrument > should return the Mark-dependent figures as Unavailable MarkMissing naming the Position Instrument when the frame is for a different Instrument 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > A frame for a different Instrument > should report coverage as Missing, with no Stale context, when the frame is for a different Instrument 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > A frame for a different Instrument > should return at-entry figures for every remaining Lot when the frame is for a different Instrument 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > ongoing risk and reward (Mark 52.00) > should return Ongoing Risk to Stop $450.00 (9/5 R), Worst-Case Ongoing Risk $5,200.00 (104/5 R), Incremental Reward to Target $400.00 (8/5 R), and Maximum Incremental Reward Unbounded Above 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > ongoing risk and reward (Mark 52.00) > should return Maximum Incremental Reward Unbounded Above when the Mark is Missing, and the other three as Unavailable MarkMissing 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > Stop crossed (Mark 47.00) > should report the Stop Breached, Ongoing Risk to Stop $0.00, Stop Overrun $50.00 (1/5 R), Worst-Case $4,700.00, Incremental Reward $900.00, and Current Marked Trade P&L -$320.00 (-32/25 R) 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > Stop crossed (Mark 47.00) > should report a Mark of exactly 47.50 as Breached with Overrun $0.00 (A42) 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > Stop crossed (Mark 47.00) > should return no Deviation occurrence (A44) 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > Target reached (Mark 57.00) > should report the Target Reached, Incremental Reward to Target $0.00, Target Overrun $100.00 (2/5 R), and Ongoing Risk to Stop $950.00 (19/5 R) 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > Target reached (Mark 57.00) > should not classify the reached Target as a Deviation (AC-CALC-003) 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > per-condition status > should return each Stop and Target condition with its identity, kind UnderlyingPrice, boundary, status, distance in dollars and Plan R, Overrun when crossed, and its evidence 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > per-condition status > should return each condition as Unavailable with the Mark reason when the Mark is Missing or acknowledged 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > per-condition status > should return the observation binding it used and deep-equal results for identical inputs 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > observation binding > should bind no Mark when the frame is for a different Instrument 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > observation binding > should bind no Mark when a Lot opened after the frame close 0ms
+ ✓ |unit| src/domain/trade-analysis/evaluate.test.ts > observation binding > should bind no Mark when no Position remains 0ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > submission > should show every issue beside its field or row, list them in a summary, and move focus to the summary 220ms
+ ✓ |unit| src/modules/trade-record/section.test.ts > Trade Record section > should accept Planned and Open Trades with single-version fact lists 8ms
+ ✓ |unit| src/modules/trade-record/section.test.ts > Trade Record section > should report a Trade referencing an unknown Account, a fact identity used twice, and an Anchor naming an unknown Trade 1ms
+ ✓ |unit| src/modules/trade-record/section.test.ts > Trade Record section > should return a repair, not an issue, when stored lifecycle or recorded Deviations disagree with facts that derive coherently 1ms
+ ✓ |unit| src/modules/trade-record/section.test.ts > Trade Record section > should return an issue when a Trade facts are incoherent 0ms
+ ✓ |unit| src/persistence/write-gate.test.ts > persistence-level gate > should return RuntimeNotWritable before opening any write transaction when the session is RecoveryOnly, carrying readiness, every failed check, Workspace status RecoveryOnly, and safe actions 6ms
+ ✓ |unit| src/persistence/write-gate.test.ts > persistence-level gate > should return RuntimeNotWritable with Workspace status IntegrityBlocked or None when the session is Unsupported 4ms
+ ✓ |unit| src/persistence/write-gate.test.ts > persistence-level gate > should leave the content revision and every store unchanged on the RuntimeNotWritable path 5ms
+ ✓ |unit| src/domain/trade-analysis/deviations.test.ts > Entry Size excess, P4 > should expect no occurrence after PC1 and PC2 2ms
+ ✓ |unit| src/domain/trade-analysis/deviations.test.ts > Entry Size excess, P4 > should expect one Excess occurrence of 20 shares fingerprinted Trade, leg, PC3 after PC3 0ms
+ ✓ |unit| src/domain/trade-analysis/deviations.test.ts > Entry Size excess, P4 > should expect a second occurrence of 10 shares fingerprinted Trade, leg, PC4 after a further PC4 of 10 0ms
+ ✓ |unit| src/domain/trade-analysis/deviations.test.ts > Entry Size excess, P4 > should expect one occurrence of 20 fingerprinted Trade, leg, PC1 when PC1 buys 120 0ms
+ ✓ |unit| src/domain/trade-analysis/deviations.test.ts > earlier-dated Position Change, P5 > should move the Entry Resolution Point to a Position Change recorded later but dated earlier, and recompute Entry Quality from the new window 0ms
+ ✓ |unit| src/domain/trade-analysis/deviations.test.ts > earlier-dated Position Change, P5 > should change the expected occurrence for an existing fingerprint when an earlier-dated entry changes the quantity above plan 0ms
+ ✓ |unit| src/domain/trade-analysis/deviations.test.ts > agreement findings > should report LifecycleDisagreement when stored lifecycle is Planned and an opening Execution exists 0ms
+ ✓ |unit| src/domain/trade-analysis/deviations.test.ts > agreement findings > should report DeviationMissing and DeviationUnexpected, each with its fingerprint, when recorded and expected occurrences differ 0ms
+ ✓ |unit| src/domain/trade-analysis/deviations.test.ts > agreement findings > should never return a corrected record or alter its input 1ms
+ ✓ |unit| src/domain/trade-analysis/deviations.test.ts > reconciliation for a candidate > should bind the candidate digest, expected lifecycle, and the create, retain, new-version, and supersede actions for every fingerprint 0ms
+ ✓ |unit| src/domain/trade-analysis/deviations.test.ts > reconciliation for a candidate > should list repairs separately from the change own effects when the before-state disagreed with coherent facts, P7 0ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > regular holiday rules > should classify the ten regular holidays of 2026 with their names, and the weekdays around each as sessions 2ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > regular holiday rules > should observe a Saturday holiday on the preceding Friday (Independence Day 2026 on 2026-07-03) and a Sunday holiday on the following Monday (Independence Day 2027 on 2027-07-05) 0ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > regular holiday rules > should keep Friday 2027-12-31 a session, because New Year's Day 2028 falls on a Saturday 0ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > regular holiday rules > should place Good Friday two days before Easter 0ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > regular holiday rules > should keep Columbus Day 2026-10-12 a session 0ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > explicit table > should classify the listed one-off closure 2025-01-09 as a Closure with its name 0ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > explicit table > should give each listed early-close day a 13:00 America/New_York close and every other session a 16:00 close 1ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > close and completion instants (P9) > should return each close as an exact instant across daylight-saving changes 0ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > close and completion instants (P9) > should return each completion 30 minutes after its close 0ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > latest completed session (P9) > should return Monday 2026-10-12 at Tuesday 2026-10-13 12:00 (AC-MARK-001) 0ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > latest completed session (P9) > should return Tuesday at exactly Tuesday 16:30:00, and Monday at Tuesday 16:00 and at 16:29:59.999 0ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > latest completed session (P9) > should return Friday 2026-10-16 on Saturday, on Sunday, and on Monday 2026-10-19 before 16:30 0ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > latest completed session (P9) > should return Friday 2026-11-27 at 13:30 that day and Wednesday 2026-11-25 at 13:29 that day 0ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > latest completed session (P9) > should skip a holiday, returning 2026-11-25 at Thanksgiving 2026-11-26 18:00 0ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > neighbours and enumeration > should return the previous and next sessions of a date, skipping weekends, holidays, and closures 0ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > neighbours and enumeration > should enumerate sessions inclusively (2026-11-23 to 2026-11-30 gives 23, 24, 25, 27, and 30) 0ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > neighbours and coverage > should return a SessionPolicyCoverage diagnostic from previousSession and nextSession when the input date is outside coverage 0ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > neighbours and coverage > should return a SessionPolicyCoverage diagnostic when the neighbour would fall outside coverage 0ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > coverage (P8) > should classify a date before 2024-01-01 or after the last covered year as NotCovered with the coverage range, never as a session or a holiday 0ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > coverage (P8) > should return a SessionPolicyCoverage diagnostic from latest completed session when the instant's exchange date is outside coverage 0ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > coverage (P8) > should expose its identity (id, revision, digest, coverage range) and return deep-equal results for identical inputs 0ms
+ ✓ |unit| src/domain/session-policy/session-policy.test.ts > coverage (P8) > should reject a policy definition whose table has two rows for one date 0ms
+ ✓ |unit| src/ui/screens/PlanForm.test.tsx > submission > should render the confirmed Plan from the returned post-commit state, without a read call, and navigate to its Trade Detail 307ms
+ ✓ |unit| src/domain/trade-analysis/trade-analysis.test.ts > assessPlan: Long Stock > should accept 100 shares at intended entry 50.00, Stop 47.50, Target 56.00 with Original Planned Risk $250, Original Planned Reward $600, ratio 12/5, 1R $250, and per-condition basis 1ms
+ ✓ |unit| src/domain/trade-analysis/trade-analysis.test.ts > assessPlan: Long Stock > should compute exactly for fractional inputs (3.5 shares, entry 10.10, Stop 9.95: risk $0.525) 0ms
+ ✓ |unit| src/domain/trade-analysis/trade-analysis.test.ts > assessPlan: Long Stock > should reject a Stop at or above intended entry with NoPositiveRisk 0ms
+ ✓ |unit| src/domain/trade-analysis/trade-analysis.test.ts > assessPlan: Long Stock > should reject a Target at or below intended entry with TargetNotBeyondEntry 0ms
+ ✓ |unit| src/domain/trade-analysis/trade-analysis.test.ts > assessPlan: Long Stock > should reject a missing Stop with MissingStop and a missing Target with MissingTarget 0ms
+ ✓ |unit| src/domain/trade-analysis/trade-analysis.test.ts > assessPlan: Long Stock > should reject zero legs, two legs, a short leg, or a non-Stock Instrument with StrategyShapeMismatch 0ms
+ ✓ |unit| src/domain/trade-analysis/trade-analysis.test.ts > assessPlan: Long Stock > should report StrategyShapeMismatch together with the other issues of a leading Long Stock leg, so every issue is returned at once 0ms
+ ✓ |unit| src/domain/trade-analysis/trade-analysis.test.ts > assessPlan: Long Stock > should reject a leg whose symbol differs from the Plan's underlying with UnderlyingMismatch 0ms
+ ✓ |unit| src/domain/trade-analysis/trade-analysis.test.ts > assessPlan: Long Stock > should reject a leg with no Stock symbol, or one that fails the symbol format, with MissingInstrument 0ms
+ ✓ |unit| src/domain/trade-analysis/trade-analysis.test.ts > assessPlan: Long Stock > should return every issue at once rather than the first 0ms
+ ✓ |unit| src/domain/trade-analysis/trade-analysis.test.ts > derive: Planned > should derive expected lifecycle Planned, agreement Agrees with stored Planned, no Positions, and the frozen Plan Baseline and 1R for a record with no position-changing facts 0ms
+ ✓ |unit| src/domain/trade-analysis/trade-analysis.test.ts > derive: Planned > should report a structured LifecycleDisagreement finding, without changing anything, when the supplied stored lifecycle is Open but no exposure facts exist 0ms
+ ✓ |unit| src/domain/trade-analysis/trade-analysis.test.ts > derive: Planned > should return deep-equal results for identical inputs 0ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > getTrade > should name the Entry first version's definition for a saved Action and the latest definition for a new form 91ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > getTrade > should record nothing 112ms
+ ✓ |unit| src/domain/trade-analysis/replay.test.ts > fact replay order > should order effective facts by Economic Time then Recorded Sequence, regardless of the order they are supplied in 2ms
+ ✓ |unit| src/domain/trade-analysis/replay.test.ts > fact replay order > should order two Executions with equal Economic Time by Recorded Sequence 0ms
+ ✓ |unit| src/domain/trade-analysis/replay.test.ts > Instrument Position and Open Lots > should derive Position 60 and one Open Lot after PC1 0ms
+ ✓ |unit| src/domain/trade-analysis/replay.test.ts > Instrument Position and Open Lots > should derive Position 100 and two Open Lots in Fact Order after PC1 and PC2 0ms
+ ✓ |unit| src/domain/trade-analysis/replay.test.ts > Instrument Position and Open Lots > should create one Lot per Execution when one Position Change has two Executions 0ms
+ ✓ |unit| src/domain/trade-analysis/replay.test.ts > Instrument Position and Open Lots > should report incurred opening fees as the exact sum of Execution fees, counting each fee once 0ms
+ ✓ |unit| src/domain/trade-analysis/replay.test.ts > Instrument Position and Open Lots > should keep exact values for fractional inputs 0ms
+ ✓ |unit| src/domain/trade-analysis/replay.test.ts > expected lifecycle > should expect Planned with no Position Change and Open after any opening Execution 0ms
+ ✓ |unit| src/domain/trade-analysis/replay.test.ts > expected lifecycle > should report agreement Agrees when the supplied stored lifecycle equals the expected one 0ms
+ ✓ |unit| src/domain/trade-analysis/replay.test.ts > incoherent facts > should return a typed IncoherentFacts result naming the fact when an Execution names an unknown Planned Leg, has a nonpositive quantity, or duplicates a fact identity 0ms
+ ✓ |unit| src/domain/trade-analysis/replay.test.ts > incoherent facts > should return deep-equal results for identical inputs 1ms
+ ✓ |unit| src/ui/update/UpdateNotice.test.tsx > update availability > should show "An update is ready" with a Reload action when a release is waiting and no form in any tab is unsaved 55ms
+ ✓ |unit| src/ui/update/UpdateNotice.test.tsx > deferral while work is unsaved > should disable Reload and explain that the update waits for the open form to be saved or cancelled when this tab has an unsaved form 5ms
+ ✓ |unit| src/ui/update/UpdateNotice.test.tsx > deferral while work is unsaved > should disable Reload and explain that another tab has unsaved work when another tab reports one 3ms
+ ✓ |unit| src/ui/update/UpdateNotice.test.tsx > deferral while work is unsaved > should enable Reload once every form is saved or cancelled 3ms
+ ✓ |unit| src/ui/update/UpdateNotice.test.tsx > activation > should keep a tab's unsaved form on screen and show "Updated in another tab: reload when ready" when controllerchange arrives while that form is unsaved 3ms
+ ✓ |unit| src/domain/trade-analysis/cutoff.test.ts > derive at an economic cutoff > should derive Position and Lots from facts at or before the cutoff only (the reference Trade at Monday 10:30 has 60 shares) 2ms
+ ✓ |unit| src/domain/trade-analysis/cutoff.test.ts > derive at an economic cutoff > should report exposure start as the first effective opening Execution's Economic Time, moving earlier when an earlier-dated Position Change is supplied 0ms
+ ✓ |unit| src/domain/trade-analysis/cutoff.test.ts > derive at an economic cutoff > should require an exact Mark on the valuation date for each Instrument with remaining quantity at the cutoff, with earliest relevance at its exposure start, and nothing for a Planned Trade 0ms
+ ✓ |unit| src/domain/trade-analysis/cutoff.test.ts > derive at an economic cutoff > should not report a Deviation finding at a cutoff for a Deviation recorded with a Position Change after the cutoff 0ms
+ ✓ |unit| src/domain/trade-analysis/entry.test.ts > Entry Resolution Point > should leave the entry unresolved after PC1 and report Entry Quality NotApplicable with reason EntryNotResolved 2ms
+ ✓ |unit| src/domain/trade-analysis/entry.test.ts > Entry Resolution Point > should resolve at PC2, when entered quantity first reaches the planned 100 0ms
+ ✓ |unit| src/domain/trade-analysis/entry.test.ts > Entry Resolution Point > should resolve at PC1 when PC1 alone buys 120 shares 0ms
+ ✓ |unit| src/domain/trade-analysis/entry.test.ts > Entry Quality, reference Trade resolved at PC2 > should report average entry 50.18, window quantity 100, and window fees 2.00 0ms
+ ✓ |unit| src/domain/trade-analysis/entry.test.ts > Entry Quality, reference Trade resolved at PC2 > should report actual initial risk 270.00 and actual initial reward 580.00 0ms
+ ✓ |unit| src/domain/trade-analysis/entry.test.ts > Entry Quality, reference Trade resolved at PC2 > should report risk in Plan R 27/25, slippage 18.00, size ratio 1, planned ratio 12/5, and actual ratio 58/27, each as its own Calculation Result 0ms
+ ✓ |unit| src/domain/trade-analysis/entry.test.ts > Entry Quality, reference Trade resolved at PC2 > should keep Entry Quality unchanged after PC3 adds 20 shares outside the window, AC-CALC-001 0ms
+ ✓ |unit| src/domain/trade-analysis/entry.test.ts > Entry Quality, reference Trade resolved at PC2 > should include every Execution of the resolving Position Change in the window, so a first entry of 120 @ 50.00 fee 1.00 gives risk 301.00, reward 719.00, and size ratio 6/5 0ms
+ ✓ |unit| src/domain/trade-analysis/entry.test.ts > entries beyond a boundary > should report risk equal to window fees, flag EntryAtOrBeyondStop, and return the actual ratio as NotApplicable EntryAtOrBeyondStop for 100 @ 47.00 fee 1.00 0ms
+ ✓ |unit| src/domain/trade-analysis/entry.test.ts > entries beyond a boundary > should flag EntryAtOrBeyondTarget and return the actual ratio as NotApplicable EntryAtOrBeyondTarget for 100 @ 56.50 fee 1.00 0ms
+ ✓ |unit| src/domain/trade-analysis/entry.test.ts > Planned-Leg Fulfillment > should report Unfilled before PC1, PartiallyFilled after PC1, and FilledAsPlanned after PC2 0ms
+ ✓ |unit| src/domain/trade-analysis/entry.test.ts > Planned-Leg Fulfillment > should report FilledWithDeviation after PC3 0ms
+ ✓ |unit| src/domain/values/decimal.test.ts > parsing finite decimal input > should parse "100", "50.25", and "0.000001" into exact rationals equal to 100, 5025/100, and 1/1000000 1ms
+ ✓ |unit| src/domain/values/decimal.test.ts > parsing finite decimal input > should normalize "50.250" and "050.25" to the stored string "50.25" 0ms
+ ✓ |unit| src/domain/values/decimal.test.ts > parsing finite decimal input > should reject "", "1e3", "NaN", "Infinity", "+5", "1,000", and a 7th fractional digit, each with a typed InvalidDecimal reason 0ms
+ ✓ |unit| src/domain/values/decimal.test.ts > parsing finite decimal input > should reject zero and negative values where the caller requests a positive decimal, with a typed NotPositive reason 0ms
+ ✓ |unit| src/domain/values/decimal.test.ts > rational arithmetic > should add 0.1 and 0.2 to exactly 0.3 0ms
+ ✓ |unit| src/domain/values/decimal.test.ts > rational arithmetic > should return exactly 1 for (1/3) × 3 0ms
+ ✓ |unit| src/domain/values/decimal.test.ts > rational arithmetic > should compare and order rationals with different denominators correctly, including equality 0ms
+ ✓ |unit| src/domain/values/decimal.test.ts > rational arithmetic > should throw a typed DivisionByZero programming error when dividing by zero 0ms
+ ✓ |unit| src/domain/values/decimal.test.ts > presentation formatting > should format 1/3 dollar as "$0.33" and 2/3 as "$0.67" (half away from zero) without changing the exact value 0ms
+ ✓ |unit| src/domain/values/decimal.test.ts > presentation formatting > should format negative Money with a leading minus and the dollar sign ("−$12.50") 0ms
+ ✓ |unit| src/domain/time/time.test.ts > injected clock > should return exactly the instant supplied by a fixed test clock on every call 1ms
+ ✓ |unit| src/domain/time/time.test.ts > time-zone validation > should accept "America/New_York" and "Europe/London" and return their canonical identifiers 1ms
+ ✓ |unit| src/domain/time/time.test.ts > time-zone validation > should reject "Mars/Base" and "" with a typed InvalidTimeZone reason 0ms
+ ✓ |unit| src/domain/time/time.test.ts > instant and Workspace-local conversion > should render 2026-03-09T14:30:00Z as 2026-03-09 10:30 in America/New_York (after the DST change) 0ms
+ ✓ |unit| src/domain/time/time.test.ts > instant and Workspace-local conversion > should convert local 2026-10-12 09:00 in America/New_York to 2026-10-12T13:00:00Z 0ms
+ ✓ |unit| src/domain/time/time.test.ts > instant and Workspace-local conversion > should reject local 2026-03-08 02:30 in America/New_York with a typed NonexistentLocalTime reason 0ms
+ ✓ |unit| src/domain/time/time.test.ts > instant and Workspace-local conversion > should reject local 2026-11-01 01:30 in America/New_York with a typed AmbiguousLocalTime reason 0ms
+ ✓ |unit| src/modules/market-data/section.test.ts > Market Data section > should accept observation records with continuous Mark and acknowledgment chains and correct effective heads 2ms
+ ✓ |unit| src/modules/market-data/section.test.ts > Market Data section > should report a missing or duplicated revision identity, an effective head that is not the chain last entry, a Correction without a reason or footprint, an Asserted acknowledgment while a Mark is effective, a negative or non-finite price, and a key whose date is not a covered session under the stored policy 1ms
+ ✓ |unit| src/modules/market-data/section.test.ts > Market Data section > should report NotASession for a key whose date is not a valid calendar date 0ms
+ ✓ |unit| src/modules/market-data/section.test.ts > Market Data section > should report a Mark revision whose supersedes link or revision number does not follow the one before it 0ms
+ ✓ |unit| src/modules/market-data/section.test.ts > Market Data section > should report a Withdrawn acknowledgment version with no effective Asserted version before it 0ms
+ ✓ |unit| src/modules/market-data/section.test.ts > Market Data section > should report a Withdrawn acknowledgment version saved after the key first Mark 0ms
+ ✓ |unit| src/coordinators/daily-review/daily-review.test.ts > getTrade > should return the same attention reasons as the overview for an integrity disagreement and for facts that cannot be replayed 88ms
+ ✓ |unit| src/coordinators/mutation-guard.test.ts > mutation-boundary recheck > should re-run readiness before each authoritative mutation and return RuntimeNotWritable without calling the mutation when the recheck fails 1ms
+ ✓ |unit| src/coordinators/mutation-guard.test.ts > mutation-boundary recheck > should downgrade the session and return RuntimeNotWritable when a commit fails with a storage error and the re-evaluated readiness is no longer Writable 0ms
+ ✓ |unit| src/coordinators/mutation-guard.test.ts > mutation-boundary recheck > should return a typed StorageFailure, not RuntimeNotWritable, when a commit fails with a storage error but readiness still passes 0ms
+ ✓ |unit| src/coordinators/mutation-guard.test.ts > mutation-boundary recheck > should not apply the gate to requestDurability 0ms
+ ✓ |unit| src/ui/format.test.ts > R multiple format > should format an R multiple with exactly two decimals 1ms
+ ✓ |unit| src/ui/format.test.ts > R multiple format > should round half away from zero at the second decimal, matching money 0ms
+ ✓ |unit| src/ui/format.test.ts > R multiple format > should leave Reward : risk and the other ratios as they are 0ms
+ ✓ |unit| src/ui/format.test.ts > Trade Summary text > should format a Stock summary as Long 60 shares @ $50.10 using the money format for the price 0ms
+ ✓ |unit| src/ui/format.test.ts > Trade Summary text > should keep a fractional share quantity exact 0ms
+ ✓ |unit| src/ui/format.test.ts > Trade Summary text > should format a Net cost debit as $3,007.00 and a credit as $212.00 credit 0ms
+ ✓ |unit| src/ui/format.test.ts > money format > should group thousands in an amount of 1,000 or more 0ms
+ ✓ |unit| src/ui/format.test.ts > money format > should leave an amount under 1,000 unchanged 0ms
+ ✓ |unit| src/ui/format.test.ts > money format > should group a negative amount, keeping the sign form the formatter uses today 0ms
+ ✓ |unit| src/ui/format.test.ts > money format > should give Net cost and every other amount the same grouping 0ms
+ ✓ |unit| src/ui/format.test.ts > money format > should show a 1,234.00 dollar price grouped in the Trade text, the Executions and the receipt 0ms
+ ✓ |unit| src/modules/journal/section.test.ts > Journal section > should accept seeded definitions, Plan and Position Change Reflection Entries, and declines 1ms
+ ✓ |unit| src/modules/journal/section.test.ts > Journal section > should report an Entry whose definition revision is absent, an obligation with two outcomes, and an Entry or decline with no Anchor 0ms
+ ✓ |unit| src/modules/journal/section.test.ts > Journal section, Daily Trade Review > should accept Action Entries with version chains under their obligation keys 0ms
+ ✓ |unit| src/modules/journal/section.test.ts > Journal section, Daily Trade Review > should report two Entries for one Trade and Review Date key and an Edit version whose definition snapshot differs from the first version 0ms
+ ✓ |unit| src/coordinators/trade-views/open-views.test.ts > browseTrades: Open > should return a Ready page with, per Trade, underlying, Strategy, Account and Institution labels, open quantity of planned quantity, average open cost, incurred fees, entry status Entering or Resolved, Deviation count, integrity indicator, and Last Activity, ordered by Last Activity descending 68ms
+ ✓ |unit| src/coordinators/trade-views/open-views.test.ts > browseTrades: Open > should return an empty Ready page when no Trade is Open 8ms
+ ✓ |unit| src/coordinators/trade-views/open-views.test.ts > browseTrades: Open > should derive each Trade once and bind the Trade, Journal, and Catalog revisions from one snapshot 16ms
+ ✓ |unit| src/coordinators/trade-views/open-views.test.ts > browseTrades: Open > should list the Open book in pages of up to 200, the benchmarked maximum 1576ms
+ ✓ |unit| src/domain/trade-analysis/net-cost.test.ts > Net cost > should return Net cost as the sum of quantity times price over the Open Lots plus their opening fees, exactly: 60 @ 50.10 with fee 1.00 is 3007.00 1ms
+ ✓ |unit| src/domain/trade-analysis/net-cost.test.ts > Net cost > should sum across the Lots of several Position Changes, including an earlier-dated one: 60 @ 50.10, 40 @ 50.30, fees 1.00 each is 5020.00 0ms
+ ✓ |unit| src/domain/trade-analysis/net-cost.test.ts > Net cost > should return Net cost NotApplicable with reason NoOpenQuantity for a Planned Trade with no Lots 0ms
+ ✓ |unit| src/modules/reference-catalog/section.test.ts > Catalog section > should accept the seeded Catalog with Institutions and Accounts 1ms
+ ✓ |unit| src/modules/reference-catalog/section.test.ts > Catalog section > should report DuplicateIdentity, MissingParent Account whose Institution is absent, and UnknownSeedKey 0ms
+ ✓ |unit| src/ui/screens/confirmed-detail.test.ts > confirmedDetail > should give the just-confirmed Planned Detail the Trade Summary of the Plan, as a Planned list item has 1ms
+ ✓ |unit| src/ui/screens/plan-issues.test.ts > plan issues > should word the invalid price issue with an article that fits each price label 1ms
+ ✓ |unit| src/coordinators/daily-review/attention.test.ts > Last Activity order > should order equal pressure by Last Activity as instants, not strings 1ms
+ ✓ |unit| src/ui/Badge.test.tsx > Badge > should render its text with a data-tone of neutral, info, or warning 14ms
+ ✓ |unit| src/coordinators/trade-views/open-views.test.ts > getTradeDetail: Open > should return the Plan, stored lifecycle Open with agreement, Position, Open Lots, Position Changes with their Executions in Fact Order, Entry status, Entry Quality, Planned-Leg Fulfillment, recorded Deviations, and the Journal narrative including declines 11ms
+ ✓ |unit| src/coordinators/trade-views/open-views.test.ts > getTradeDetail: Open > should carry the positionChangeId of its Position Change on a reflection Entry and a Decline, and none on other items 9ms
+ ✓ |unit| src/coordinators/trade-views/open-views.test.ts > getTradeDetail: Open > should give the Open Detail the same Last Activity as its Open list item 8ms
+ ✓ |unit| src/coordinators/trade-views/open-views.test.ts > getTradeDetail: Open > should return the Planned form of Detail unchanged for a Planned Trade 5ms
+ ✓ |unit| src/coordinators/trade-views/open-views.test.ts > integrity is surfaced, never repaired AC-LIFE-003 > should return Ready with each agreement finding, and the list items integrity indicator, when stored and expected records disagree 15ms
+ ✓ |unit| src/coordinators/trade-views/open-views.test.ts > integrity is surfaced, never repaired AC-LIFE-003 > should surface the disagreement on the Planned list item of an Open Trade stored as Planned, leaving an agreeing Planned item unchanged 10ms
+ ✓ |unit| src/coordinators/trade-views/open-views.test.ts > integrity is surfaced, never repaired AC-LIFE-003 > should leave every content revision unchanged after reading a Trade with a disagreement 11ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > submission > should render the saved Position Change, Entry Quality when resolved, any new Entry Size Deviation, and any repairs from the returned state alone, without a read call 223ms
+ ✓ |unit| src/ui/screens/PlanForm.test.tsx > submission > should report a RuntimeNotWritable result to the shell and keep every entered value on screen 294ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > submission > should show Conflict with the entered values kept and an explanation that the Trade changed 190ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > submission > should replace the entry form history entry with the Trade Detail URL once saved, keeping the receipt in place, and keep the URL after Conflict 179ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > submission > should make no call when cancelled or left, and register as unsaved while any value differs from its initial value 71ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > receipt Deviation changes > should say Entry Size Deviation changed to 60 shares above plan, was 20, caused by the Position Change at 11:00, for a NewVersion action 3ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > receipt Deviation changes > should say an Entry Size Deviation no longer applies for a Supersede action 3ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > receipt Deviation changes > should say nothing for a Retain action 2ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > Record entry route for an incoherent Trade > should show the same explanation and a link back to the Trade instead of the form, and make no recordPositionChange call 3ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > Record entry load states > should show Not Found, with a link to Trades, when getTradeDetail returns NotFound 3ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > Record entry load states > should show an Error state with Retry when getTradeDetail returns Error or rejects 6ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > Record entry load states > should show the Error state with Retry when the reflection definition cannot be loaded 5ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > Record entry load states > should load the form when Retry succeeds, without a page reload 12ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > Record entry load attempts > should keep the form loaded by Retry when the first attempts definition load fails afterwards 14ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > Record entry load attempts > should ignore a late successful result from a superseded attempt, so the form shows the Retry attempts Trade and definition 36ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > Record entry Retry > should show Loading, not the earlier attempts Trade, after Retry until both retried loads finish 12ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > Record entry Retry > should start from Loading with no carried-over failure when the route moves to another Trade 14ms
+ ✓ |unit| src/ui/screens/PlanForm.test.tsx > submission > should make no call when the form is cancelled or left 252ms
+ ✓ |unit| src/ui/screens/PlanForm.test.tsx > submission > should register as unsaved while any value differs from its initial value 27ms
+ ✓ |unit| src/ui/screens/PlanForm.test.tsx > New Plan issues > should remove a field issue and its summary line once that field is edited to a valid value, without submitting, but keep a server issue until the next submit 295ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > Record entry on another Trade > should start the other Trades form from its initial values: one Execution row with Economic Time now, no reflection answers, no decline or reason 307ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > Record entry on another Trade > should show no issues, conflict, or receipt carried over from the previous Trade 73ms
+ ✓ |unit| src/ui/screens/PlanForm.test.tsx > New Plan issues > should keep the summary, with the remaining issues, while any issue remains, and remove it when none remain 306ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > Record entry on another Trade > should report the form as not unsaved once it moves to the other Trade 46ms
+ ✓ |unit| src/ui/screens/PlanForm.test.tsx > New Plan issues > should not move focus when an issue clears 295ms
+ ✓ |unit| src/ui/screens/PlanForm.test.tsx > New Plan issues > should attach the price issue to a blank Stop, not to the valid Intended entry 270ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > after a Conflict > should offer Load the latest Trade in the Conflict message, keeping every entered Execution row, answer, decline and reason 483ms
+ ✓ |unit| src/ui/screens/PlanForm.test.tsx > New Plan issues > should attach the price issue to a blank Target, not to the valid Intended entry 264ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > after a Conflict > should reload the Detail when chosen, so the next save uses the new FactRevision and records exactly one Position Change 292ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > after a Conflict > should show the reloaded Trades changed figures above the kept values before the trader saves again 267ms
+ ✓ |unit| src/ui/screens/PlanForm.test.tsx > New Plan issues > should attach the price issue to every price that fails, and clear each as its own price becomes valid 315ms
+ ✓ |unit| src/ui/screens/PlanForm.test.tsx > New Plan issues > should clear a MissingInstrument issue only when the symbol matches the symbol rule 290ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > after a Conflict > should ignore an earlier reload that answers after a later one 291ms
+ ✓ |unit| src/ui/screens/PlanForm.test.tsx > New Plan issues > should keep a required Prompt issue while a Text answer is only whitespace 289ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > after a Conflict > should ignore a reload that answers after a save 292ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > after a Conflict > should keep the Conflict message and the values when the reload itself fails 270ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > focus after navigation > should move focus to the Record entry heading when the form finishes loading 5ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > focus after navigation > should move focus to the Record entry heading of the incoherent note when the definition load fails 3ms
+ ✓ |unit| src/ui/screens/PlanForm.test.tsx > New Plan issues > should compare the Stop and entry as exact decimals, not floating point numbers 415ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > focus after navigation > should move focus to the Entry recorded heading when the receipt replaces the form 163ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > focus after navigation > should not move focus away from the summary after a rejected save 94ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > Record entry issues > should remove an Execution fields issue and its summary line once that field is edited to a valid value, but keep a server issue until the next submit 166ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > Record entry issues > should keep a Journal prompts issue until that prompt is answered 145ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > Record entry issues > should clear a local-time issue once the Economic Time resolves to one instant 184ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > Record entry issues > should treat an issue whose Execution row was removed as corrected 222ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > entry context > should show the Trades symbol, Strategy, and stored lifecycle above the form, and not show Not entered yet when nothing has been entered 8ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > entry context > should still show 60 of 100 shares entered once some quantity is entered 7ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > entry context > should offer Back to the Trade at the top that leaves without saving or calling the facade 29ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > R lines > should put the R multiple on its own line below Actual initial risk on the receipt and in Entry Quality 183ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > R lines > should put planned 2.4 on its own line below the Reward : risk value on the receipt and in Entry Quality 190ms
+ ✓ |unit| src/ui/screens/PositionChangeForm.test.tsx > R lines > should keep the amount and its second line in one value cell, read in order 197ms
+
+ Test Files  58 passed (58)
+      Tests  743 passed (743)
+   Start at  00:53:43
+   Duration  6.45s (transform 2.11s, setup 736ms, import 4.79s, tests 23.04s, environment 3.34s)
+
+EXIT 0
