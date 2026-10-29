@@ -96,6 +96,25 @@ test.describe('B4.13 Responsive and accessible', () => {
     await context.close();
   });
 
+  test('should show a disabled Action chip as disabled with a not-allowed cursor and reduced opacity', async ({ profile }) => {
+    const { context, page } = await onboardedAt(profile, MONDAY_1700);
+    await createTrades(page, [FOUR_TRADES[0]!]);
+    await openReview(page);
+    await enterMark(page, 'XYZ', DATE, '52.00');
+    await continueToTrades(page);
+    await tradesFamily(page).getByRole('button', { name: 'Review XYZ' }).click();
+    const chipStyle = (choice: string) => actionForm(page).locator('label.chip', { hasText: new RegExp(`^${choice}$`) })
+      .evaluate((el) => ({ cursor: getComputedStyle(el).cursor, opacity: Number(getComputedStyle(el).opacity) }));
+    expect((await chipStyle('Exit')).cursor).toBe('pointer');
+    // The form disables its radios while saving or read only; disable one directly so the computed style is real.
+    await actionForm(page).getByRole('radio', { name: 'Exit', exact: true }).evaluate((el) => { (el as HTMLInputElement).disabled = true; });
+    const disabled = await chipStyle('Exit');
+    expect(disabled.cursor).toBe('not-allowed');
+    expect(disabled.opacity).toBeLessThan(1);
+    expect((await chipStyle('Hold')).cursor).toBe('pointer');
+    await context.close();
+  });
+
   test('should report no WCAG 2.1 AA violations on the Review, the Action form, the Open list, and Detail in every evaluation state, with each state distinguishable by its words', async ({ profile }) => {
     test.setTimeout(240_000);
     const { context, page } = await onboardedAt(profile, MONDAY_1700);

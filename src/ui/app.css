@@ -391,6 +391,11 @@ label.chip:has(input:checked) {
   color: #ffffff;
 }
 
+label.chip:has(input:disabled) {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 label.chip:focus-within {
   outline: 3px solid var(--focus);
   outline-offset: 2px;

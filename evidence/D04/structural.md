@@ -1743,3 +1743,11 @@ Test-strengthening fix to `src/ui/screens/ReviewTrade.test.tsx` (the ocr finding
 - Mutation (dated line rendered with the current evaluation's Ongoing Risk R): the case failed, `expected '$300.00 · 1.60R' to be '$300.00 · 1.20R'`; restored, `git diff -- src/ui/screens/ReviewTrade.tsx` empty.
 - `npx vitest run src/ui` : exit 0; 19 files, 296 passed
 - `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` : each exit 0
+
+### T4.34-B6
+
+ocr finding on 2bdf619: a disabled Action chip looked clickable. Added `label.chip:has(input:disabled)` (opacity 0.55, cursor not-allowed, the `.pill:disabled` idiom) to `src/ui/app.css`; it applies to every chip group. Browser test in `e2e/d4/responsive-a11y.spec.ts` disables the Exit radio in the page and asserts the chip's computed cursor and opacity (Hold stays pointer).
+
+- `npx playwright test e2e/d4/responsive-a11y.spec.ts -g "disabled Action chip"` : red against old CSS (`Expected "not-allowed" Received "pointer"`), green after; whole spec 5 passed
+- `npx vitest run src/ui` : exit 0; 19 files, 296 passed
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` : each exit 0
