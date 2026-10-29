@@ -1210,3 +1210,15 @@ ocr review of `c363144` (B1): session `d9aa5a7f-4dd1-4de1-a929-cd099751c1ee` (sc
 - code at `c363144` (T4.24 and B1), 2026-10-29 02:40 EDT: unit 793, integration 50, browser 124; checks 11 of 12. `suite-runs/t4.24-b1-*`.
 
 Only `verify:capacity` failed (expected until T4.28). T4.24 is complete.
+
+## T4.25 UI: coverage notice and About
+
+`34c3ffc`, under plan revision 13 (decision 54). Outside calendar coverage the shell's `PageTitle` shows a warning link in the browser-storage icon's style, named "Coming soon - update calendar", linking to About; About's "This release" list gains Session policy (`nyse`), Session policy revision (`1`) and Calendar coverage (`2024-01-01 to 2028-12-31`). Identity and coverage come from `facade.capabilities.sessionPolicy`; today is the Workspace-zone date of `getStatus().observedAt` (`toWorkspaceLocal` from `domain/time`, allowed for the UI). No facade or module change. Every other control stays enabled (asserted). No first-run passes, no code ahead of red; one green row exited 1 (the Accounts stub lacked a `PageTitle`). No e2e spec changed.
+
+ocr review of `34c3ffc`: session `96f8e6c2-1d00-4241-a0e0-1ec1733f0d0d` (scratch clone with tests renamed), 6 files, no comments. `ocr/T4.25-34c3ffc.json`. The reviewer traced the coverage comparison at both edges and before coverage (the same string comparison as the policy; the first covered day and a before-coverage date have no test), the dependency rule (`domain/time` is allowed; the UI sees only the identity), every other control enabled, and a missing zone hiding the icon.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| low | `src/ui/AppShell.tsx:351` | "Today" is the launch status's `observedAt`, while the Review uses `systemClock`; a tab open across the last covered midnight shows no icon until the status is read again | Doubtful: the icon is advisory and every figure resolves its own date; recorded for the user | Dismissed |
+| low | `src/ui/PageTitle.tsx:14` | Link carries the same `aria-label` and `title` | Wrong: the name is correct and the link is focusable | Dismissed |
+| low | `AppShell.tsx` bare-`h1` screens | First run, onboarding and the readiness and error screens never show the icon | Doubtful: decision 54 puts it with the storage icon on `PageTitle`; those screens come before a usable journal | Dismissed |

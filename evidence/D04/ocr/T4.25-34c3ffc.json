@@ -1,0 +1,140 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 0,
+    "total_tokens": 47221,
+    "input_tokens": 46592,
+    "output_tokens": 629,
+    "cache_read_tokens": 11520,
+    "elapsed": "24s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_search": 4,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Application shell, page title, and runtime integration",
+      "files": [
+        "src/ui/AppShell.spec-check.tsx",
+        "src/ui/AppShell.tsx",
+        "src/ui/PageTitle.tsx",
+        "src/ui/runtime.tsx"
+      ]
+    },
+    {
+      "label": "About view and its checks",
+      "files": [
+        "src/ui/screens/AboutView.spec-check.tsx",
+        "src/ui/screens/AboutView.tsx"
+      ]
+    }
+  ],
+  "session_id": "96f8e6c2-1d00-4241-a0e0-1ec1733f0d0d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "96f8e6c2-1d00-4241-a0e0-1ec1733f0d0d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "89011d05892328c26d5ebca306cd6de035c65a5c",
+      "resolved_head": "db5cff24632325271a79b32e47468b7d9595de79",
+      "exact_range": "89011d05892328c26d5ebca306cd6de035c65a5c..db5cff24632325271a79b32e47468b7d9595de79",
+      "source_artifact_sha256": "765f5bf47fe6a40ee9305fc217fa76685491a2fc681055f13bef6e0aadbc831a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "04b54720c235e8c4c6110679c810623cf946a2b4dc5df1e357ede81bd9bd100b",
+          "path": "src/ui/PageTitle.tsx",
+          "fingerprint": "db8cfed766f45f2a52bae8a9cfd66075baf2cb0200c40c4835ce09d48eae1bee"
+        },
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "1ee74ac90e8bd86a6b3b7c4e3443b4ac3a26774e07ef5093458844ce16ec06c7"
+        },
+        {
+          "item_id": "65e8f39e56bc6cebffa21ca27f6e78fc2b098d1b7880622ea477519551503706",
+          "path": "src/ui/AppShell.spec-check.tsx",
+          "fingerprint": "53c0e0665471f7bdb135370d2fa6d4b6a2226d256a5debb1ebb8bbb802c6283f"
+        },
+        {
+          "item_id": "67c8cc015993669e767b5de712c0acddfac2093780ae942de657a04784ed8024",
+          "path": "src/ui/runtime.tsx",
+          "fingerprint": "632183329dbe700315e27ca69623ac00530b9b219410b46389d48c0db4083c70"
+        },
+        {
+          "item_id": "8650c2637949522eaaa02e5ed749ec7b8b6ab8151b0cd0060f9a966595e84af1",
+          "path": "src/ui/screens/AboutView.tsx",
+          "fingerprint": "79709e4289001afbc0ac61ec42d873c8500a888d67ddf397f6e767d005a51c8f"
+        },
+        {
+          "item_id": "a51264bab066ad731292df3c8c2f523976dacae747c9219a06bcdf10a4511af3",
+          "path": "src/ui/screens/AboutView.spec-check.tsx",
+          "fingerprint": "fc5e7049f94c3c06ff564673288c887c3ae2a83cbf364bfae96e4d4954b50f45"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "04b54720c235e8c4c6110679c810623cf946a2b4dc5df1e357ede81bd9bd100b",
+          "path": "src/ui/PageTitle.tsx",
+          "fingerprint": "db8cfed766f45f2a52bae8a9cfd66075baf2cb0200c40c4835ce09d48eae1bee"
+        },
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "1ee74ac90e8bd86a6b3b7c4e3443b4ac3a26774e07ef5093458844ce16ec06c7"
+        },
+        {
+          "item_id": "65e8f39e56bc6cebffa21ca27f6e78fc2b098d1b7880622ea477519551503706",
+          "path": "src/ui/AppShell.spec-check.tsx",
+          "fingerprint": "53c0e0665471f7bdb135370d2fa6d4b6a2226d256a5debb1ebb8bbb802c6283f"
+        },
+        {
+          "item_id": "67c8cc015993669e767b5de712c0acddfac2093780ae942de657a04784ed8024",
+          "path": "src/ui/runtime.tsx",
+          "fingerprint": "632183329dbe700315e27ca69623ac00530b9b219410b46389d48c0db4083c70"
+        },
+        {
+          "item_id": "8650c2637949522eaaa02e5ed749ec7b8b6ab8151b0cd0060f9a966595e84af1",
+          "path": "src/ui/screens/AboutView.tsx",
+          "fingerprint": "79709e4289001afbc0ac61ec42d873c8500a888d67ddf397f6e767d005a51c8f"
+        },
+        {
+          "item_id": "a51264bab066ad731292df3c8c2f523976dacae747c9219a06bcdf10a4511af3",
+          "path": "src/ui/screens/AboutView.spec-check.tsx",
+          "fingerprint": "fc5e7049f94c3c06ff564673288c887c3ae2a83cbf364bfae96e4d4954b50f45"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 24053
+  }
+}
