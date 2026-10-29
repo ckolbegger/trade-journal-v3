@@ -85,8 +85,15 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   useEffect(() => {
     if (notice) noticeRef.current?.focus();
   }, [notice]);
+  // The form's binding is about to change, so a save waits for the Refresh.
+  const [refreshing, setRefreshing] = useState(false);
   const refresh = async () => {
-    if (await onRefresh()) setNotice(undefined);
+    setRefreshing(true);
+    try {
+      if (await onRefresh()) setNotice(undefined);
+    } finally {
+      setRefreshing(false);
+    }
   };
   const required = action !== 'Hold';
   const [saving, setSaving] = useState(false);
@@ -137,7 +144,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
         <div ref={noticeRef} role="alert" tabIndex={-1} className="banner warning">
           <p>{NOTICE[notice]}</p>
           {notice !== 'StorageFailure' && (
-            <button type="button" className="pill secondary" onClick={() => void refresh()}>
+            <button type="button" className="pill secondary" disabled={saving} onClick={() => void refresh()}>
               Refresh
             </button>
           )}
@@ -164,7 +171,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
         </label>
         {fieldError(intentField)}
       </div>
-      <button type="submit" className="pill primary" disabled={saving}>
+      <button type="submit" className="pill primary" disabled={saving || refreshing}>
         Save
       </button>
     </form>
