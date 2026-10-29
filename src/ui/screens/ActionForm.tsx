@@ -106,11 +106,17 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
     if (result.kind === 'Saved') onSaved(result);
   };
   if (!writable && form.kind === 'New') return <p>No Action saved.</p>;
-  if (form.kind === 'Saved' && (!changing || !writable)) {
+  // Values held over a Conflict refresh differ from the saved Action it now shows: they stay open, as if Change were pressed.
+  const savedLines = form.kind === 'Saved' && (
+    <>
+      <p>Saved Action: {form.action.action}</p>
+      {returned.intent !== '' && <p>Intent: {returned.intent}</p>}
+    </>
+  );
+  if (form.kind === 'Saved' && (!writable || (!changing && !dirty))) {
     return (
       <section aria-label="Saved Action">
-        <p>Saved Action: {form.action.action}</p>
-        {returned.intent !== '' && <p>Intent: {returned.intent}</p>}
+        {savedLines}
         {writable && (
           <button type="button" className="pill secondary" onClick={() => setChanging(true)}>
             Change
@@ -121,6 +127,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   }
   return (
     <form aria-label="Action" noValidate onSubmit={(event) => void submit(event)}>
+      {!changing && savedLines}
       {notice && (
         <div ref={noticeRef} role="alert" tabIndex={-1} className="banner warning">
           <p>{NOTICE[notice]}</p>

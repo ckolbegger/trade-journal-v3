@@ -444,6 +444,51 @@ describe('Action save failures', () => {
   });
 });
 
+describe('Conflict refresh with a saved Action', () => {
+  async function conflictThenRefresh(refreshedAction: ReturnType<typeof savedAction>, onDirtyChange: (dirty: boolean) => void = () => undefined) {
+    const first = tradeReview('t1', 'XYZ');
+    const refreshed = tradeReview('t1', 'XYZ', { form: { kind: 'Saved', action: refreshedAction }, saveBinding: savedBinding({ expectedEntryRevision: 2 }) });
+    const facade = walkFacade(ready([item('t1', 'XYZ')]), first, refreshed);
+    const save = vi.mocked(facade.DailyReview.save);
+    save.mockResolvedValueOnce({ kind: 'Conflict' });
+    renderWalk(facade, { onDirtyChange });
+    const user = userEvent.setup();
+    const trade = await openTrade(user, 'XYZ');
+    await user.click(within(trade).getByRole('radio', { name: 'Exit' }));
+    await user.type(within(trade).getByRole('textbox', { name: /Intent/ }), 'Plan changed.');
+    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(await within(trade).findByRole('button', { name: 'Refresh' }));
+    return { facade, save, user, trade: await screen.findByRole('region', { name: 'XYZ review' }) };
+  }
+
+  it('should keep the entered values in an open form after a Conflict refresh shows a saved Action', async () => {
+    const onDirtyChange = vi.fn();
+    const { save, user, trade } = await conflictThenRefresh(savedAction('Hold', 'Other save.', 2), onDirtyChange);
+
+    // The trader's values stay in an open form, with the other save shown to compare.
+    await within(trade).findByText('Saved Action: Hold');
+    expect(within(trade).getByText('Intent: Other save.')).toBeTruthy();
+    expect(within(trade).getByRole('radio', { name: 'Exit' })).toHaveProperty('checked', true);
+    expect(within(trade).getByRole('textbox', { name: /Intent/ })).toHaveProperty('value', 'Plan changed.');
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+
+    // Save replaces the other save under the refreshed expected Entry revision.
+    save.mockResolvedValueOnce({ kind: 'Saved', action: savedAction('Exit', 'Plan changed.', 3), review: { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding } });
+    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    expect(save).toHaveBeenLastCalledWith({ kind: 'SaveTradeAction', binding: savedBinding({ expectedEntryRevision: 2 }), action: 'Exit', intent: 'Plan changed.' });
+  });
+
+  it('should show the saved view when the kept values equal the refreshed saved Action', async () => {
+    const onDirtyChange = vi.fn();
+    const { trade } = await conflictThenRefresh(savedAction('Exit', 'Plan changed.', 2), onDirtyChange);
+
+    await within(trade).findByText('Saved Action: Exit');
+    expect(within(trade).queryByRole('button', { name: 'Save' })).toBeNull();
+    expect(within(trade).getByRole('button', { name: 'Change' })).toBeTruthy();
+    expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+  });
+});
+
 describe('After a save', () => {
   it('should start the next Trade form afresh, and say what follows when no Trade is next', async () => {
     const user = userEvent.setup();
