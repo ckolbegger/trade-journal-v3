@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -323,6 +323,48 @@ describe('moving on', () => {
     // The refreshed Review replaces the first: its Mark and completion are the returned ones.
     expect(screen.getByText('Incomplete')).toBeTruthy();
     expect(screen.queryByText('Mark missing for XYZ on Mon Oct 12')).toBeNull();
+  });
+
+  it('should keep Continue to Trades available after the walk opens, refresh status, blockers and order on it, and show each Mark entry\'s refreshed resolution', async () => {
+    const first = ready({ today: [markRow('XYZ', ['t1'])], trades: [tradeItem('t1', 'XYZ'), tradeItem('t2', 'DEF')], completion: incomplete({ code: 'MarkMissing', instrumentKey: 'XYZ', tradingDate: '2026-10-12', trades: ['t1'] }) });
+    const second = ready({ today: [markRow('XYZ', ['t1'], available('52'), 1)], trades: [tradeItem('t1', 'XYZ'), tradeItem('t2', 'DEF')], completion: incomplete({ code: 'ActionMissing', tradeId: 't1' }, { code: 'ActionMissing', tradeId: 't2' }) });
+    const third = ready({ today: [markRow('XYZ', ['t1'], available('55'), 2)], trades: [tradeItem('t2', 'DEF'), tradeItem('t1', 'XYZ')], completion: incomplete({ code: 'ActionMissing', tradeId: 't2' }) });
+    const facade = reviewFacade(first, second, third);
+    renderReview(facade);
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Continue to Trades' }));
+    await screen.findByRole('region', { name: 'Trades' });
+
+    // The walk is open and the Mark is still editable; Continue asks again.
+    await user.click(screen.getByRole('button', { name: 'Continue to Trades' }));
+    await waitFor(() => expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledTimes(3));
+    const rows = within(screen.getByRole('region', { name: 'Trades' })).getAllByRole('listitem');
+    expect(rows.map((row) => within(row).getByRole('link').textContent)).toEqual(['DEF', 'XYZ']);
+    const blockers = within(screen.getByRole('list', { name: 'Blockers' })).getAllByRole('listitem');
+    expect(blockers.map((b) => b.textContent)).toEqual(['Action missing for DEF']);
+    // The Mark entry for the unchanged key shows the refreshed resolution and saves against its revision.
+    const xyz = screen.getByRole('region', { name: 'XYZ Mark' });
+    expect(within(xyz).getByText('$55.00', { exact: false })).toBeTruthy();
+    vi.mocked(facade.MarketData.save).mockResolvedValue({ kind: 'Conflict', key: { instrumentKey: 'XYZ', tradingDate: '2026-10-12' }, resolution: available('55'), resolutionRevision: 2 });
+    await user.click(within(xyz).getByRole('button', { name: 'Correct' }));
+    await user.type(screen.getByLabelText('Price'), '56');
+    await user.type(screen.getByLabelText('Reason (required)'), 'typo');
+    await user.click(screen.getByRole('button', { name: 'Save correction' }));
+    expect(facade.MarketData.save).toHaveBeenLastCalledWith({ intention: 'CorrectMark', instrumentKey: 'XYZ', tradingDate: '2026-10-12', price: '56', reason: 'typo', expectedResolutionRevision: 2 });
+  });
+
+  it('should keep a value typed into a Mark entry when a refresh brings that key a newer revision', async () => {
+    const first = ready({ today: [markRow('DEF', ['t1'])], trades: [tradeItem('t1', 'DEF')] });
+    const second = ready({ today: [markRow('DEF', ['t1'], available('12'), 1)], trades: [tradeItem('t1', 'DEF')] });
+    renderReview(reviewFacade(first, second));
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Enter' }));
+    await user.type(screen.getByLabelText('Price'), '12.5');
+
+    await user.click(screen.getByRole('button', { name: 'Continue to Trades' }));
+    await screen.findByRole('region', { name: 'Trades' });
+
+    expect(screen.getByLabelText<HTMLInputElement>('Price').value).toBe('12.5');
   });
 
   it('should resume from the returned state after a reload, showing saved Actions and Marks without any stored session', async () => {

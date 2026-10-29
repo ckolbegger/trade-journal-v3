@@ -289,13 +289,10 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
           <p>We couldn’t refresh the Review. Nothing was changed.</p>
         </div>
       )}
-      {walk ? (
-        <TradeWalk review={review} />
-      ) : (
-        <button type="button" className="pill primary" onClick={() => void proceed()}>
-          Continue to Trades
-        </button>
-      )}
+      {walk && <TradeWalk review={review} />}
+      <button type="button" className="pill primary" onClick={() => void proceed()}>
+        Continue to Trades
+      </button>
     </>
   );
 }

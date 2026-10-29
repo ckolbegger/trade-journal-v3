@@ -28,6 +28,13 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
   const { writable, report } = useRuntime();
   const [resolution, setResolution] = useState(initial);
   const [revision, setRevision] = useState(initialRevision);
+  // A refreshed Review hands this key a newer resolution and revision; entered values and the open form stay.
+  const [seen, setSeen] = useState({ initial, initialRevision });
+  if (seen.initial !== initial || seen.initialRevision !== initialRevision) {
+    setSeen({ initial, initialRevision });
+    setResolution(initial);
+    setRevision(initialRevision);
+  }
   // The open form, if any: entering the first Mark, correcting the effective one, or saying no price can be had.
   const [mode, setMode] = useState<'Enter' | 'Correct' | 'Acknowledge' | undefined>();
   const [price, setPrice] = useState('');
