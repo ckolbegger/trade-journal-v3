@@ -1222,3 +1222,8 @@ ocr review of `34c3ffc`: session `96f8e6c2-1d00-4241-a0e0-1ec1733f0d0d` (scratch
 | low | `src/ui/AppShell.tsx:351` | "Today" is the launch status's `observedAt`, while the Review uses `systemClock`; a tab open across the last covered midnight shows no icon until the status is read again | Doubtful: the icon is advisory and every figure resolves its own date; recorded for the user | Dismissed |
 | low | `src/ui/PageTitle.tsx:14` | Link carries the same `aria-label` and `title` | Wrong: the name is correct and the link is focusable | Dismissed |
 | low | `AppShell.tsx` bare-`h1` screens | First run, onboarding and the readiness and error screens never show the icon | Doubtful: decision 54 puts it with the storage icon on `PageTitle`; those screens come before a usable journal | Dismissed |
+
+Cumulative run, code at `34c3ffc`, 2026-10-29 02:49 EDT: unit 795, integration 50; browser 118 passed, 6 failed; checks 11 of 12 (only `verify:capacity`, expected). `suite-runs/t4.25-*`. All six browser failures (`e2e/d1/identity.spec.ts:6` twice, `responsive-a11y.spec.ts:57`, `update.spec.ts:42`, `:90`, `:133`) have one cause: the D1 specs locate the release identity by `.identity`, and About's new Session policy value `<dd class="identity">nyse</dd>` is a second match (strict mode violation). T4.25 is not complete.
+
+### T4.25-B1 One release identity in About
+- the D1 identity, accessibility and update cases pass again: About's session-policy values do not share the release identity's `identity` class
