@@ -3,11 +3,14 @@
 // every migration stage (copying, validation, activation) is production code. The production
 // bundle never imports this module; `verify:no-fault-hooks` proves the marker below and
 // `__tjFaults` are absent there.
+import { Temporal } from 'temporal-polyfill';
+import type { Clock } from '../domain/time/index.ts';
 import type { MigrationStageHooks } from '../coordinators/workspace/index.ts';
 import type { HostPort } from './host.ts';
 import type { ReadinessCheckName } from './runtime-not-writable.ts';
 
 export const FAULT_HOOK_MARKER = 'tj-fault-hooks-v1';
+export const CLOCK_PIN_MARKER = 'tj-clock-pin-v1';
 
 const CHECKS: readonly ReadinessCheckName[] = ['diagnostic', 'capacity', 'control', 'inventory'];
 
@@ -21,6 +24,8 @@ const FAULTS: readonly FaultName[] = [...CHECKS, ...MIGRATION_FAULTS];
 
 declare global {
   interface Window {
+    // Set only while a launch is pinned by ?clock= (T4.26).
+    __tjClockPin?: { readonly marker: string; readonly instant: string };
     __tjFaults?: {
       readonly marker: string;
       // Replaces the active faults.
@@ -109,4 +114,20 @@ export function migrationFaults(): MigrationStageHooks {
       if (faults().has('migration:activate')) throw new Error('injected fault: migration:activate');
     },
   };
+}
+
+// D4 T4.26 (A49): `?clock=<ISO instant>` fixes the app's now for that launch. The app reads now only
+// through the injected Clock, so pinning that seam fixes the Review Date, the shell's calendar
+// state and every saved time together; timers still run normally. An absent or non-instant value
+// (a zone-less time included) is ignored, like an unknown fault name.
+export function pinnedClock(search: string, real: Clock): Clock {
+  const value = new URLSearchParams(search).get('clock');
+  if (!value) return real;
+  try {
+    const pinned = Temporal.Instant.from(value).toString();
+    if (typeof window !== 'undefined') window.__tjClockPin = { marker: CLOCK_PIN_MARKER, instant: pinned };
+    return { now: () => pinned };
+  } catch {
+    return real;
+  }
 }

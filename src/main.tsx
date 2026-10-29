@@ -45,10 +45,11 @@ async function start(container: HTMLElement) {
   // Only the faults build (T1.27, T2.16) reaches the fault hooks; production builds drop this branch.
   const faults = import.meta.env.MODE === 'faults' ? await import('./delivery/faults.ts') : undefined;
   const host = faults ? faults.faultyHost(browserHost()) : browserHost();
+  const clock = faults ? faults.pinnedClock(window.location.search, systemClock) : systemClock;
   const app = await createApplication({
     indexedDB: window.indexedDB,
     host,
-    clock: systemClock,
+    clock,
     ids: randomIds,
     releaseId: RELEASE_ID,
     capacityRequirement: CAPACITY_REQUIREMENT,
@@ -66,7 +67,7 @@ async function start(container: HTMLElement) {
     capabilities: app.capabilities,
   };
   const useZone = () => useRuntime().timeZone ?? 'UTC';
-  const now = () => systemClock.now();
+  const now = () => clock.now();
   const setUnsaved = (unsaved: boolean) => updates.setUnsaved(unsaved);
   const screens: Screens = {
     trades: function Trades() {
