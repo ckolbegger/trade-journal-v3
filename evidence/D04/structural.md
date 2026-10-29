@@ -1305,3 +1305,10 @@ Verification:
 - Mutation 2, sliced by two, an empty list (restored): `FAIL workspace-v2: ... fx-0040.conditions (0 of 2 plan conditions), ...`. Before the fix this mutation passed.
 - Restored; `verify:fixtures` green again.
 - `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`: see the commit run, all exit 0.
+
+### ocr review of T4.29
+
+| Commit | Finding | Assessment | Outcome |
+|---|---|---|---|
+| `f419119` | `tools/verify-fixtures.ts:39`: a missing or empty `current.conditions` reads as `[]`, so the A51 check passes without Stop and Target results | Valid: the v1 and v2 snapshots predate D4 and hold no `current` fields, so `compareSnapshot` does not cover it | Fixed by T4.29-B1 (`96182e3`) |
+| `96182e3` | none | | clean |
