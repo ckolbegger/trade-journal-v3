@@ -1,0 +1,105 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 15065,
+    "input_tokens": 14879,
+    "output_tokens": 186,
+    "cache_read_tokens": 3840,
+    "elapsed": "10s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_search": 2,
+      "file_find": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        ".dependency-cruiser.js",
+        "tools/dep-fixtures/ui-imports-session-policy/src/domain/session-policy/policy.ts",
+        "tools/dep-fixtures/ui-imports-session-policy/src/ui/view.ts"
+      ]
+    }
+  ],
+  "session_id": "3d72c75a-b348-4c28-b3e3-76a76738a9ae",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3d72c75a-b348-4c28-b3e3-76a76738a9ae",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f2784dc",
+      "resolved_base": "7942e50aa2c551204869e6f89e9b20c73fa2902d",
+      "resolved_head": "f2784dc691fb0238066a8e6a576ff7ff0b37cc1f",
+      "exact_range": "7942e50aa2c551204869e6f89e9b20c73fa2902d..f2784dc691fb0238066a8e6a576ff7ff0b37cc1f",
+      "source_artifact_sha256": "70a7be80134e99ec93a8d6bf98859d368c25e3e685bc0e4039f09388c3071a20"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "217dd453d55255c6095c1ceb7b4d05e5d7f650afccff11395377b197126fbb92",
+          "path": "tools/dep-fixtures/ui-imports-session-policy/src/domain/session-policy/policy.ts",
+          "fingerprint": "420671fe1d163401e49c96b0f6e9c3e980a0d55c1e9bea6b0032c3287e74f1f2"
+        },
+        {
+          "item_id": "dacd19f86a0a60c1aa7afa9f87fe15e9f1a23d05e6103d21798aa46c9282aceb",
+          "path": "tools/dep-fixtures/ui-imports-session-policy/src/ui/view.ts",
+          "fingerprint": "abd91546c05f45e70ba510492e026f953b2d26925fa300ff9dfb1573f84d65b3"
+        },
+        {
+          "item_id": "deafff7a16a942708260861a7a9ae681b18495e29abe2510e3ee21b1ff8f4d5d",
+          "path": ".dependency-cruiser.js",
+          "fingerprint": "8d44c56ae0cf6ab7b048a5e257beb5ff58cbb684a6079de853dd63750a903203"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "217dd453d55255c6095c1ceb7b4d05e5d7f650afccff11395377b197126fbb92",
+          "path": "tools/dep-fixtures/ui-imports-session-policy/src/domain/session-policy/policy.ts",
+          "fingerprint": "420671fe1d163401e49c96b0f6e9c3e980a0d55c1e9bea6b0032c3287e74f1f2"
+        },
+        {
+          "item_id": "dacd19f86a0a60c1aa7afa9f87fe15e9f1a23d05e6103d21798aa46c9282aceb",
+          "path": "tools/dep-fixtures/ui-imports-session-policy/src/ui/view.ts",
+          "fingerprint": "abd91546c05f45e70ba510492e026f953b2d26925fa300ff9dfb1573f84d65b3"
+        },
+        {
+          "item_id": "deafff7a16a942708260861a7a9ae681b18495e29abe2510e3ee21b1ff8f4d5d",
+          "path": ".dependency-cruiser.js",
+          "fingerprint": "8d44c56ae0cf6ab7b048a5e257beb5ff58cbb684a6079de853dd63750a903203"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 9893
+  }
+}

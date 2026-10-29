@@ -892,3 +892,7 @@ ocr review of `df9eea2`: session `fe7e9594-0361-4cc9-a154-3586edd421c0` (scratch
 
 ### T4.19-B1 Only Market Data imports the session policy
 - `lint:deps` on a new fixture where the UI (or another non-Market-Data module) imports the session policy fails with the general rule; `src` passes
+
+`f2784dc` (B1): rule `only-market-data-sees-session-policy` forbids `src/` imports of `src/domain/session-policy/` except from `src/modules/market-data/`, the policy's own files, `src/app/compose.ts` and `*.test.ts(x)`. `lint:deps` exit 0 on `src`; `tools/dep-fixtures/ui-imports-session-policy` fails with `only-market-data-sees-session-policy`; the two T4.19 fixtures still fail with their named rules (and the general one); `ui-imports-module` still fails with `ui-only-through-facade`. The narrow rules are kept for their names (the plan row names them) and are now redundant for enforcement.
+
+ocr review of `f2784dc` (B1): session `3d72c75a-b348-4c28-b3e3-76a76738a9ae`, 3 files, no findings. `ocr/T4.19-B1-f2784dc.json`. The reviewer confirmed the exemptions are anchored (no other `market-data` or `compose.ts` path, no non-test helper is exempt) and an index re-export inside the policy folder is caught. Noted, not a defect: a Market Data file re-exporting the policy would bypass a direct-import rule; none does.
