@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 20368,
+    "input_tokens": 20223,
+    "output_tokens": 145,
+    "cache_read_tokens": 1920,
+    "elapsed": "16s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/modules/journal/section.ts",
+        "src/ui/readiness-copy.ts"
+      ]
+    }
+  ],
+  "session_id": "572e6143-3eb6-40d8-b4da-2ca0872a1c3b",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "572e6143-3eb6-40d8-b4da-2ca0872a1c3b",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "367baf0",
+      "resolved_base": "9e752d8a4b117b7be6866d91d67f9a9d3b3d988e",
+      "resolved_head": "367baf0cf3b22d83eb18630dff017d92cbec2a3f",
+      "exact_range": "9e752d8a4b117b7be6866d91d67f9a9d3b3d988e..367baf0cf3b22d83eb18630dff017d92cbec2a3f",
+      "source_artifact_sha256": "034a1330483d3dde45758bf8a88a0cc7a25fbbd5171a0af831b864bd85dd4220"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "157b410229dcea7bf91b0064c04c074dd52c9469f111e4031b05d2715012ae80",
+          "path": "src/modules/journal/section.ts",
+          "fingerprint": "debcdce591327e5fd6b2dac234e78f0ea1186128a1fe95cac267c111670933a7"
+        },
+        {
+          "item_id": "57e2573986855744064977daaf8fb9d0228298dbb7e8482c0f1bc2051658e860",
+          "path": "src/ui/readiness-copy.ts",
+          "fingerprint": "1a9951c71c2b9af6826c9b8577516a6636830bd04992a7c0dc2a164d0acc8199"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "157b410229dcea7bf91b0064c04c074dd52c9469f111e4031b05d2715012ae80",
+          "path": "src/modules/journal/section.ts",
+          "fingerprint": "debcdce591327e5fd6b2dac234e78f0ea1186128a1fe95cac267c111670933a7"
+        },
+        {
+          "item_id": "57e2573986855744064977daaf8fb9d0228298dbb7e8482c0f1bc2051658e860",
+          "path": "src/ui/readiness-copy.ts",
+          "fingerprint": "1a9951c71c2b9af6826c9b8577516a6636830bd04992a7c0dc2a164d0acc8199"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 15895
+  }
+}

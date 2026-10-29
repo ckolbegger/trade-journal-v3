@@ -1,0 +1,81 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 8990,
+    "input_tokens": 8925,
+    "output_tokens": 65,
+    "cache_read_tokens": 3840,
+    "elapsed": "11s"
+  },
+  "tool_calls": {
+    "total": 1,
+    "by_tool": {
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/modules/journal/section.ts",
+      "files": [
+        "src/modules/journal/section.ts"
+      ]
+    }
+  ],
+  "session_id": "e5ceeac5-17ca-4bae-a8a9-2549bb94bd3a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e5ceeac5-17ca-4bae-a8a9-2549bb94bd3a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "2877686",
+      "resolved_base": "367baf0cf3b22d83eb18630dff017d92cbec2a3f",
+      "resolved_head": "2877686fb00a2ee4617bff8be8259643d7d3ad47",
+      "exact_range": "367baf0cf3b22d83eb18630dff017d92cbec2a3f..2877686fb00a2ee4617bff8be8259643d7d3ad47",
+      "source_artifact_sha256": "726fa8fd00ce022f4003e873651418d8337e3b686c95306342d6c649489262b1"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "157b410229dcea7bf91b0064c04c074dd52c9469f111e4031b05d2715012ae80",
+          "path": "src/modules/journal/section.ts",
+          "fingerprint": "c16cf27e9cd4e744d0a9488b219ff3db504b99a748acd877880de43570a0508b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "157b410229dcea7bf91b0064c04c074dd52c9469f111e4031b05d2715012ae80",
+          "path": "src/modules/journal/section.ts",
+          "fingerprint": "c16cf27e9cd4e744d0a9488b219ff3db504b99a748acd877880de43570a0508b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 11326
+  }
+}

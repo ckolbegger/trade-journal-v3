@@ -181,7 +181,7 @@ Update this section at the end of each task.
 
 | | |
 |---|---|
-| Tasks done | T5.1 (`ec8e6c1`, with T5.1-S1 `fc2dfd7`); T5.18 (`f901511`); T5.2 (`cf85b93`); T5.3 (`ce6d64f`, T5.3-B1 `56f4dc9`); T5.4 (`fcd9132`). Cumulative run after T5.4: green except `verify:capacity` and one TradeList flake. |
-| Next task | **T5.5 Journal: section validator for Debt; seed manifest v4.** |
-| Last commit | the evidence and handoff commit after T5.4 |
+| Tasks done | T5.1 (`ec8e6c1`, with T5.1-S1 `fc2dfd7`); T5.18 (`f901511`); T5.2 (`cf85b93`); T5.3 (`ce6d64f`, T5.3-B1 `56f4dc9`); T5.4 (`fcd9132`); T5.5 (`12c927c`, T5.5-B1 `851f6b1`, B2 `367baf0`, B3 `2877686`). Cumulative run after T5.5: green except `verify:capacity`. |
+| Next task | **T5.6 Trade Workflows: `recordPositionChange` with Defer.** |
+| Last commit | the evidence and handoff commit after T5.5 |
 | Open questions | **Flagged flake:** `src/ui/screens/TradeList.test.tsx:133` (`tj:open-list-ready` mark count 1 instead of 2) failed once in the T5.4 cumulative run; passes alone and in a full unit rerun. **Temporary rule:** `getTradeDetail` filters Debt items from the narrative until T5.11. **Flagged first-run passes:** T5.3 "validate the answers against the Debt snapshot revision" (mutation-checked). **Flagged:** B4.13 "Hold radio inside its chip at 375" (`e2e/d4/responsive-a11y.spec.ts:68`) failed twice in T5.18's combined d1+d2+d4 run, passing alone and in the cumulative run; likely a layout race after `setViewportSize`. **Before T5.11 and T5.17 (plan question for the user):** how an Outstanding Debt is classified on Trade Detail outside session-policy coverage, where there is no Expected Mark Date (decision 54 and A69); recommended answer in section 3. **Pending the user (raised 2026-10-29, not blocking):** `npm audit` reports vite 8.3.2 (high, dev server only; fixed in 8.3.5) and zod 4.6.5 (high, memory exhaustion on huge collections; fixed in 4.6.7; no app code imports zod until D8). Moving either pin is a plan revision (r15) with a full suite run; ask before doing it. |

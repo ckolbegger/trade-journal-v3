@@ -182,7 +182,28 @@ ocr review of `851f6b1`: session `bf860000-a728-4143-882f-5d2e5b4e2bc0`, 1 file 
 Defect: a Debt for one Position Change and an Entry for another that name each other pass validation.
 - it should report a settling Entry or decline whose obligation key differs from the Debt it settled
 
+Implemented in `367baf0`: a new issue `DebtObligationMismatch` (with copy in `readiness-copy.ts`) is reported when a settling outcome's obligation key differs from the Debt's. Red then green; the first red run was invalid (an "it " prefix in the filter matched nothing) and was logged and rerun.
+
+ocr review of `367baf0`: session `572e6143-3eb6-40d8-b4da-2ca0872a1c3b`, 2 files reviewed, **No findings.** Raw output: `ocr/T5.5-B2-367baf0.json`.
+
 ### T5.5-B3 Reverse links are keyed by store
 
 Defect: an Entry and a decline sharing an identity, both naming one Debt, hide each other's missing reverse link.
 - it should report the missing reverse link of a decline when an Entry with the same identity names the same Debt
+
+Implemented in `2877686`: the reverse-link key is `store|debtId|id` at both uses. Red then green. The first fixture failed for the wrong reason (`DuplicateObligationOutcome`), so the decline got its own obligation and red was rerun.
+
+ocr review of `2877686`: session `e5ceeac5-17ca-4bae-a8a9-2549bb94bd3a`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.5-B3-2877686.json`.
+
+### Cumulative run after T5.5
+
+Run 2026-10-29 19:50 EDT on commit `2877686`, Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 65 passed (65)`, `Tests 842 passed (842)`, exit 0 | `suite-runs/t5.5-debt-validator-seed-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 41 passed (41)`, `Tests 73 passed (73)`, exit 0 | `suite-runs/t5.5-debt-validator-seed-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `142 passed (4.9m)`, exit 0 | `suite-runs/t5.5-debt-validator-seed-browser.txt` |
+| Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.5-debt-validator-seed-checks.txt` |
+
+Failures: `verify:capacity` only (expected until T5.19). The TradeList flake did not recur.
