@@ -1,0 +1,90 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 16116,
+    "input_tokens": 15976,
+    "output_tokens": 140,
+    "cache_read_tokens": 3840,
+    "elapsed": "9s"
+  },
+  "tool_calls": {
+    "total": 2,
+    "by_tool": {
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/MarkEntry.spec-renamed.tsx",
+        "src/ui/screens/MarkEntry.tsx"
+      ]
+    }
+  ],
+  "session_id": "7536aa12-cd10-4883-b178-0635fc3d2fdc",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7536aa12-cd10-4883-b178-0635fc3d2fdc",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "65bfa9cec05f1720cd15522789b8d856ba25803f",
+      "resolved_head": "6d972fd1cf28357933efc83ccb1099e4c534f86a",
+      "exact_range": "65bfa9cec05f1720cd15522789b8d856ba25803f..6d972fd1cf28357933efc83ccb1099e4c534f86a",
+      "source_artifact_sha256": "ab11d5316e10db68077d44d7e19c3839f394d05d052255045ecb3431454bfdd9"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "bceaddcb5e7b9cc54f003279807892f3fbfc572dd9524ae547f1282b18378313",
+          "path": "src/ui/screens/MarkEntry.spec-renamed.tsx",
+          "fingerprint": "993a415e452da7e42c148df5fdb6d76875202fbd67a3065fc82ce656cb9852c3"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "950f646d8057392de2a5fc1c91a7e12aea5488c0c5f7b896792873ecdc6e5d93"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "bceaddcb5e7b9cc54f003279807892f3fbfc572dd9524ae547f1282b18378313",
+          "path": "src/ui/screens/MarkEntry.spec-renamed.tsx",
+          "fingerprint": "993a415e452da7e42c148df5fdb6d76875202fbd67a3065fc82ce656cb9852c3"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "950f646d8057392de2a5fc1c91a7e12aea5488c0c5f7b896792873ecdc6e5d93"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 9111
+  }
+}

@@ -933,3 +933,14 @@ ocr review of `7d9327d`: session `1e477ea0-275b-419c-8071-4b032755e271` (scratch
 
 ### T4.20-B3 Realistic Saved fixtures
 - no new case; the MarkEntry test's Saved results are typed and carry the intention's classification and binding
+
+ocr review of `1a8f153` (B1): session `7536aa12-cd10-4883-b178-0635fc3d2fdc` (scratch clone), 2 files, no ocr comments. `ocr/T4.20-B1-1a8f153.json`. Save, Enter, Can't get a price, Correct and Withdraw are disabled while a save is in flight; Cancel stays enabled. First-run pass, flagged: Correct's in-flight disabling has no isolated assertion (the mutation disabled all at once). Code ahead of red, flagged: the `try/finally` that re-enables after a thrown save has no case.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| low | `src/ui/screens/MarkEntry.tsx:79` | Cancel mid-save, then a late Conflict or Rejected sets the banner ("your values are kept below", now false) or issues with no form open; neither is cleared when a form next opens | Valid (reviewer's reading) | Bug task T4.20-B4 |
+| info | `MarkEntry.tsx:85` | A late Saved after Cancel reopens or overwrites | Wrong: Saved closes the form and the openers are disabled while saving | Dismissed |
+| info | `MarkEntry.tsx:91` | Two submits before re-render (Enter key) | Doubtful: the disabled default button blocks implicit submission and React flushes the discrete event; only a programmatic submit gets through, with no path in the app | Dismissed |
+
+### T4.20-B4 Nothing stale after a cancelled save
+- it should keep Cancel disabled while a save is in flight, and open each form with no earlier Conflict or issues
