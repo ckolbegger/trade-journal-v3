@@ -966,3 +966,9 @@ ocr review of `1408741` (B3, test only): session `5e0c73cf-bdab-4cb8-8f53-c41c75
 - no new case; every MarkEntry fixture is typed from the facade's save result with no `as never`
 
 ocr review of `2f83437` (B4): session `d95eb4de-645f-4117-8d6d-5fc6805c4874` (scratch clone), no findings. `ocr/T4.20-B4-2f83437.json`. Cancel is disabled while a save is in flight; `openForm(mode)` is the only setter of the mode and clears Conflict, the storage-failure notice and issues; a Withdraw result with no form open stays shown until a form opens. The genuine stale case was a Withdraw Conflict followed by Correct (Cancel already cleared state). First-run passes, each mutation-checked: Cancel clears Conflict, the notice and issues; Conflict and the notice never show together. B1's in-flight case now expects Cancel disabled. Noted, not a defect: a second Conflict while one shows does not re-focus the notice.
+
+ocr review of `709169b` (B5): session `3f0c199a-e200-4f6e-8dad-1fb3f65c5d1d` (scratch clone), 2 files, 1 comment. `ocr/T4.20-B5-709169b.json`. `storageFailed` is `false | 'form' | 'withdraw'`; a failed Withdraw says "The acknowledgment could not be withdrawn. Nothing was saved, so you can try again." The reviewer confirmed every reader treats both values as truthy (focus, render, clearing) and Conflict stays exclusive. No first-run passes, no code ahead of red.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| low | `src/ui/screens/MarkEntry.tsx:89` | A nested ternary sets `storageFailed` | Doubtful: style only, correct; no project rule, as for the earlier T4.20 ternary | Dismissed |

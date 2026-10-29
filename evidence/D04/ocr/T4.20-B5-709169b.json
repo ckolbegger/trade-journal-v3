@@ -1,0 +1,102 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 35741,
+    "input_tokens": 35311,
+    "output_tokens": 430,
+    "cache_read_tokens": 7680,
+    "elapsed": "24s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/MarkEntry.tsx",
+      "content": "This introduces a nested ternary, which the review checklist explicitly prohibits. Compute the failure kind with an `if` statement before updating state to keep the command-specific distinction readable.",
+      "suggestion_code": "    let failureKind: false | 'form' | 'withdraw' = false;\n    if (result.kind === 'StorageFailure') {\n      failureKind = command.intention === 'WithdrawAcknowledgment' ? 'withdraw' : 'form';\n    }\n    setStorageFailed(failureKind);",
+      "existing_code": "    setStorageFailed(result.kind === 'StorageFailure' ? (command.intention === 'WithdrawAcknowledgment' ? 'withdraw' : 'form') : false);",
+      "start_line": 89,
+      "end_line": 89,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/MarkEntry.tsx",
+        "src/ui/screens/MarkEntryCheck.tsx"
+      ]
+    }
+  ],
+  "session_id": "3f0c199a-e200-4f6e-8dad-1fb3f65c5d1d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3f0c199a-e200-4f6e-8dad-1fb3f65c5d1d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "b99900e0cb95429719fb4d803dfbc13535758489",
+      "resolved_head": "f242614c9fe396d39193b0b452e4b2bb8bd16949",
+      "exact_range": "b99900e0cb95429719fb4d803dfbc13535758489..f242614c9fe396d39193b0b452e4b2bb8bd16949",
+      "source_artifact_sha256": "f00fe290e4f6ad6daa3776d5851ff5ad08f94d28ee2650f4e347f4a26cc46b8d"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0ddf1b3b04aad1b0d00378a052721b51808534b1647d850a38511cfaca720213",
+          "path": "src/ui/screens/MarkEntryCheck.tsx",
+          "fingerprint": "baa2bf23fe57d58be55984737bd00467b7d009fd0232e09b7ddbae91b81701ca"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "7732bce2c3f9d265da915ac80f78d8ef0ca87d42125487a9fd6ee89c4e0698fa"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0ddf1b3b04aad1b0d00378a052721b51808534b1647d850a38511cfaca720213",
+          "path": "src/ui/screens/MarkEntryCheck.tsx",
+          "fingerprint": "baa2bf23fe57d58be55984737bd00467b7d009fd0232e09b7ddbae91b81701ca"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "7732bce2c3f9d265da915ac80f78d8ef0ca87d42125487a9fd6ee89c4e0698fa"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 23672
+  }
+}
