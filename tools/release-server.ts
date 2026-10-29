@@ -35,7 +35,7 @@ async function fileAt(dir: string, pathname: string): Promise<string | undefined
   return info?.isFile() ? file : undefined;
 }
 
-// A release is a built folder under the root: a harness release (v1, v2, v2-corrupt, d1, d2, d4) by
+// A release is a built folder under the root: a harness release (v1, v2, v2-corrupt, d1, d2, d4, d5) by
 // default, or, with the project folder as root, `dist-releases/<name>` or another build such as
 // dist-faults.
 export interface ReleaseServer {

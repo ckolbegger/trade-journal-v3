@@ -48,3 +48,19 @@ Run 2026-10-29 18:30 EDT on commit `fc2dfd7` (uncommitted: evidence only), Node 
 Failures, both consequences of `SCHEMA_VERSION` becoming 4, neither a T5.1 defect:
 - `e2e/d4/update.spec.ts:6` (B4.7): About shows schema 4, expected 3, because the harness's `d4` folder is built from current source. Fixed by T5.18 (build `d4` from the `claude-opus-5.5-d4` tag, add a current `d5`), which runs next, ahead of graph order, as T4.27 did in D4. `verify:releases` itself passed, since it checks `d4` against the current `SCHEMA_VERSION`.
 - `verify:capacity`: "basis measured at schema version 3, current is 4" — expected until T5.19.
+
+## T5.18 Previous-release harness
+
+Change: `tools/build-releases.ts` builds `d4` with `buildTaggedRelease('d4')` from `PREVIOUS_RELEASE_TAG` (now `claude-opus-5.5-d4`, commit `4ab43d58931f2966d6a2d05f6b41be9bc239dd1c`; `git archive` into scratch `tj-release-d4-4ab43d58931f`, cached by commit, never a worktree), keeps `d2` on the new `D2_RELEASE_TAG` constant, and builds `d5` from the current source with build label d5. `tools/verify-releases.ts` verifies d4 reports schema 3 and d5 reports `SCHEMA_VERSION` (4), with distinct identities across v1, v2, d1, d2, d4, d5. `tools/release-server.ts` comment lists d5.
+
+e2e uses of the `d4` folder:
+- `e2e/d4/update.spec.ts` lines 22 and 40 (B4.7, switch d2 to d4, About schema 3, `identity('d4')`): meant "the previous release"; unchanged, now exercises the real D4.
+- `e2e/d4/support.ts` line 14 (auto fixture serving the routine build): meant "the current release"; switched to `dist-releases/d5`.
+- No other e2e file refers to the d4 folder. `test:e2e` left at `e2e/d1 e2e/d2 e2e/d4` (T5.24 extends it).
+
+Commands and results:
+- `npm run build:releases && npm run verify:releases`: d4 built in `tj-release-d4-4ab43d58931f` (claude-opus-5.5-d4 at 4ab43d58931f2966d6a2d05f6b41be9bc239dd1c); `verify:releases OK: ... d1 9c8b5b3d... schema 1, d2 01736544... schema 2, d4 ecd9bbff... schema 3, d5 8a968f9d... schema 4`.
+- `npx playwright test e2e/d4/update.spec.ts --project=chromium`: 1 passed (B4.7 passes again).
+- `npx playwright test e2e/d1 e2e/d2 e2e/d4 --project=chromium`: run twice, each 141 passed, 1 failed: `e2e/d4/responsive-a11y.spec.ts:68` (B4.13 chips), "Hold radio inside its chip at 375". It passes alone (`-g`), as the whole file (5 passed) and as all of `e2e/d4` (18 passed), and it passed in the T5.1 cumulative run on the same source. The assertion reads bounding boxes straight after `page.setViewportSize` with no wait, so it looks like a layout race that appears only after d1 and d2 have run; not investigated further (outside T5.18). Flagged for the main session.
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`: exit 0.
+- `verify:capacity` not run or touched (fails until T5.19).

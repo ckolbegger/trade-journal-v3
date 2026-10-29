@@ -1,17 +1,17 @@
 // Shared support for the D4 browser suite (plan section 6.2): D2's steps and probe helpers, the
-// production d4 release as the default served build, the Playwright clock that sets the date, the
+// production d5 release (the current source) as the default served build, the Playwright clock that sets the date, the
 // four-Trade fixture (the five-Trade fixture without T-D) created through the UI, and the Review steps.
 import type { BrowserContext, Locator, Page } from '@playwright/test';
 import { backToTrade, confirmReference, expect, fillPlan, firstPage, onboardedPage, PLAN, READY, recordEntry, test as d1Test, type PlanValues, type Profile, type ProbedDatabase } from '../d2/support.ts';
 
 export * from '../d2/support.ts';
 
-// Routine D4 cases run the production build (dist-releases/d4); the faults build is only for the
+// Routine D4 cases run the production build (dist-releases/d5); the faults build is only for the
 // cases that need its hooks, which switch with `server.use('dist-faults')` before launching.
 export const test = d1Test.extend<{ d4Release: void }>({
   d4Release: [
     async ({ server }, provide) => {
-      server.use('dist-releases/d4');
+      server.use('dist-releases/d5');
       await provide();
     },
     { auto: true },
