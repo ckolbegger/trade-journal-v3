@@ -53,5 +53,16 @@ describe('I4.11 session-policy revision change', () => {
     const current = (await openItem(third, tradeId)).current;
     expect(current.expectedMarkDate).toBe(MONDAY);
     expect(current.markResolution).toEqual({ kind: 'Available', mark: expect.objectContaining({ price: '52' }) as unknown });
+
+    // Other contexts skip it too: a Historical query for the closed day is rejected, not answered from the kept record.
+    const historical = await third.MarketData.query({ kind: 'ResolveFrames', context: { kind: 'Historical', tradingDate: TUESDAY }, instruments: ['XYZ'] });
+    expect(historical).toEqual({ kind: 'Rejected', issues: [{ field: 'tradingDate', code: 'NotASession' }] });
+
+    // After Wednesday's close with no Wednesday Mark, the Missing frame's Stale context is Monday's 52, never the kept Tuesday record.
+    const wednesday = await third.MarketData.query({ kind: 'ResolveFrames', context: { kind: 'Current', asOf: '2026-10-14T21:00:00Z' }, instruments: ['XYZ'] });
+    expect(wednesday).toMatchObject({
+      kind: 'Frames',
+      frames: [{ instrumentKey: 'XYZ', tradingDate: '2026-10-14', resolution: { kind: 'Missing', stale: { tradingDate: MONDAY, price: '52' } } }],
+    });
   });
 });

@@ -1460,3 +1460,8 @@ I4.6 (`review-shared-mark.test.ts`, so `d4/review` selects it; part 3 adds `revi
 - ocr finding on fff0fc0: I4.3 asserted the figures after PC3 on the Open-list item only. The Detail now asserts `current.evaluation` has currentMarkedPnl 199 and ongoingRiskToStop 540 after PC3. The pre-PC3 Detail and list already asserted every listed figure (180.00, 0.72R, 450, 5200, 400, Unbounded); none missing.
 - Mutation on the Detail path after PC3 only (stale P&L): the case failed with an assertion error at value-trade.test.ts:39; restored, `git diff -- src` empty. Logged in `tdd-log.md`.
 - `npm run test:integration`: 35 files, 67 tests passed. typecheck, tsc6, lint, lint:deps: exit 0.
+
+### T4.32-B3
+- ocr finding on 209ae80: I4.11 under revision 3 checked only the Current resolution. It now also asserts, through `MarketData.query`, that a Historical query for 2026-10-13 is Rejected with `NotASession`, and that a Current query at 2026-10-14T21:00:00Z (Wednesday after close, no Wednesday Mark) gives a Missing frame whose Stale context is 2026-10-12 at 52, not the kept Tuesday record. The Tuesday 17:00 clock is unchanged; the plan's Wednesday wording stays a plan issue.
+- Mutation: the Stale selection no longer requires a Session day; the case failed with an assertion error at policy-revision.test.ts:63. Restored, `git diff -- src` empty. Logged in `tdd-log.md`.
+- `npm run test:integration`: 35 files, 67 tests passed. typecheck, tsc6, lint, lint:deps: exit 0.
