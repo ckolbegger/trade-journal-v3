@@ -159,7 +159,7 @@ describe('Trade in the walk', () => {
         incrementalRewardToTarget: unavailable,
         atEntry: { label: 'AtEntry', quantity: Rational.of(20n), averageEntry: Rational.of(60n), riskFromEntry: Rational.of(60n), rewardFromEntry: Rational.of(200n) },
       }),
-      datedLastClose: { tradingDate: '2026-10-09', evaluation: evaluation({ currentMarkedPnl: value(-50n), currentMarkedPnlInPlanR: value(-1n, 5n), ongoingRiskToStop: value(300n), incrementalRewardToTarget: value(900n) }) },
+      datedLastClose: { tradingDate: '2026-10-09', evaluation: evaluation({ currentMarkedPnl: value(-50n), currentMarkedPnlInPlanR: value(-1n, 5n), ongoingRiskToStop: value(300n), ongoingRiskToStopInPlanR: value(6n, 5n), worstCaseOngoingRisk: value(2600n), worstCaseOngoingRiskInPlanR: value(52n, 5n), incrementalRewardToTarget: value(900n), incrementalRewardToTargetInPlanR: value(18n, 5n) }) },
     });
     const again = walkFacade(ready([limited]), missing);
     renderWalk(again);
@@ -169,7 +169,9 @@ describe('Trade in the walk', () => {
     expect(within(second).queryByText('Mark $52.00 for XYZ, Mon Oct 12')).toBeNull();
     const dated = within(second).getByRole('group', { name: 'Fri Oct 9 close' });
     expect(figure2(dated, 'Current Marked Trade P&L')).toBe('−$50.00 · −0.20R');
-    expect(figure2(dated, 'Ongoing Risk to Stop')).toBe('$300.00 · 1.60R');
+    expect(figure2(dated, 'Ongoing Risk to Stop')).toBe('$300.00 · 1.20R');
+    expect(figure2(dated, 'Worst-Case Ongoing Risk')).toBe('$2,600.00 · 10.40R');
+    expect(figure2(dated, 'Incremental Reward to Target')).toBe('$900.00 · 3.60R');
     const atEntry = within(second).getByRole('group', { name: 'At entry' });
     expect(figure2(atEntry, 'Risk to stop')).toBe('$60.00');
     expect(figure2(atEntry, 'Reward to target')).toBe('$200.00');

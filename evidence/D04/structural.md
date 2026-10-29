@@ -1735,3 +1735,11 @@ The Action form's Intent field is labelled with the definition prompt plus its m
 - `npm run build:releases` + `npx playwright test e2e/d4` : first run 16 passed, 1 failed (B4.11 runtime-failure, a timing flake under load; passes alone, 2 passed); rerun of e2e/d4 : 17 passed
 - `npm run test:e2e` : exit 0; 141 passed
 - `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` : each exit 0
+
+### T4.34-B5
+
+Test-strengthening fix to `src/ui/screens/ReviewTrade.test.tsx` (the ocr finding on 1988052): the dated close line's fixture now carries Plan-R fields consistent with a 1R of $250 and distinct from the current line, and the test asserts the dated line's Ongoing Risk ($300.00 · 1.20R), Worst-Case Ongoing Risk ($2,600.00 · 10.40R) and Reward ($900.00 · 3.60R).
+
+- Mutation (dated line rendered with the current evaluation's Ongoing Risk R): the case failed, `expected '$300.00 · 1.60R' to be '$300.00 · 1.20R'`; restored, `git diff -- src/ui/screens/ReviewTrade.tsx` empty.
+- `npx vitest run src/ui` : exit 0; 19 files, 296 passed
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` : each exit 0
