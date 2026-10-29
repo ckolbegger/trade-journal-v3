@@ -433,3 +433,32 @@ describe('a failure after the commit', () => {
     expect(result.review).toEqual({ kind: 'ChangedDuringAssembly' });
   }, 30_000);
 });
+
+// T4.30-B1: the Review a save returns reads today's frames only; the historical Mark-gap scan is for `open`.
+describe('the Review after a save (T4.30-B1)', () => {
+  it('should read the post-save Review without the historical gap scan and return the binding a fresh open would give', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a, b } = await fiveTradeFixture(stack);
+    const binding = await bindingFor(stack, a);
+    let recoveries = 0;
+    const recover = (async (...args: Parameters<typeof stack.marketData.recover>) => {
+      recoveries++;
+      return stack.marketData.recover(...args);
+    }) as typeof stack.marketData.recover;
+    const review = createDailyReview({ ...stack, marketData: { ...stack.marketData, recover } });
+
+    const result = saved(await review.save({ kind: 'SaveTradeAction', binding, action: 'Hold' }));
+
+    expect(recoveries).toBe(0);
+    const ready = result.review;
+    if (ready.kind !== 'Ready') throw new Error(`expected Ready, got ${ready.kind}`);
+    const reopened = await stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: MONDAY_1700 });
+    if (reopened.kind !== 'Ready') throw new Error(`expected Ready, got ${reopened.kind}`);
+    expect(ready.binding).toEqual(reopened.binding);
+    expect(ready.completion).toEqual(reopened.completion);
+    // The returned binding is still accepted by getTrade and by the next save.
+    const trade = await stack.dailyReview.getTrade({ reviewDate: binding.reviewDate, tradeId: b, binding: ready.binding });
+    if (trade.kind !== 'Ready') throw new Error(`expected Ready, got ${trade.kind}`);
+    expect(saved(await saveAction(stack, trade.trade.saveBinding)).action).toEqual(expect.objectContaining({ action: 'Hold' }));
+  }, 30_000);
+});

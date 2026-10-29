@@ -205,8 +205,17 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     return { kind: 'ChangedDuringAssembly' };
   }
 
+  // Today's frames in the shape of a recovery, without the gaps or per-Instrument resolution revisions.
+  async function framesOnly(reviewDate: string, instruments: readonly string[]) {
+    const frames = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Review', reviewDate }, instruments });
+    if (frames.kind === 'Rejected') return frames;
+    if (frames.kind !== 'Frames') throw new Error(`unexpected frames result: ${frames.kind}`);
+    return { kind: 'Recovered' as const, frames: frames.frames, resolutions: [], gaps: [], snapshotId: frames.snapshotId };
+  }
+
   // One pass over the module reads. Its Review carries what the pass itself learned of the binding.
-  async function assemble(context: FrameContext): Promise<Pass> {
+  // `withGaps` false skips the historical Mark-gap scan: the frames and snapshot are the ones `recover` gives, the gaps are left empty.
+  async function assemble(context: FrameContext, withGaps = true): Promise<Pass> {
     const session = await deps.marketData.query({ kind: 'ResolveSession', context });
     if (session.kind === 'Rejected') return session;
     if (session.kind !== 'Session') throw new Error(`unexpected session result: ${session.kind}`);
@@ -215,10 +224,10 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     if (!derivations) return { kind: 'Expired' };
     if (derivations.length === 0) return { kind: 'Empty', reviewDate, cutoff };
     const { requirements, earliest } = observationNeeds(derivations);
-    const recovered = await deps.marketData.recover({
-      context: { kind: 'Review', reviewDate },
-      instruments: [...earliest].map(([instrumentKey, earliestExposure]) => ({ instrumentKey, earliestExposure })),
-    });
+    const instruments = [...earliest].map(([instrumentKey, earliestExposure]) => ({ instrumentKey, earliestExposure }));
+    const recovered = withGaps
+      ? await deps.marketData.recover({ context: { kind: 'Review', reviewDate }, instruments })
+      : await framesOnly(reviewDate, instruments.map((i) => i.instrumentKey));
     if (recovered.kind === 'Rejected') throw new Error('Market Data rejected the Review recovery request');
 
     const today = recovered.frames.map(
@@ -473,7 +482,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
   // (the Trade left the eligible set) is for the trader to open afresh.
   async function postSaveReview(reviewDate: string): Promise<PostSaveReview> {
     const read = await coherently<Omit<Extract<PostSaveReview, { kind: 'Ready' }>, 'nextStep'> & { nextTask: NextTask } | Extract<PostSaveReview, { kind: 'ChangedDuringAssembly' }>>(async () => {
-      const pass = await assemble({ kind: 'Review', reviewDate });
+      const pass = await assemble({ kind: 'Review', reviewDate }, false);
       if (pass.kind === 'Expired') return { retry: true };
       if (pass.kind !== 'Ready') return { done: { kind: 'ChangedDuringAssembly' } };
       return { settle: (binding) => ({ kind: 'Ready', progress: pass.progress, completion: pass.review.completion, nextTask: pass.nextTask, binding: { ...binding, ...pass.evidence } }) };

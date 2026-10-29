@@ -1318,3 +1318,15 @@ Verification:
 - code at `96182e3`, 2026-10-29 03:28 EDT: unit 798, integration 52, browser 124; checks 12 of 12. `suite-runs/t4.29-*`.
 
 Fully green. T4.29 is complete.
+
+### T4.30-B1
+
+Defect: every `DailyReview.save` rebuilt the whole Review after its commit, and that rebuild re-ran the full historical Mark-gap scan (`marketData.recover`, `historicalGaps`) for every eligible Instrument back to its earliest exposure. The scan cost about 0.027 ms per Instrument-session, 70-95% of each save, which projects to about 0.5-1 s per Action save at the mature profile and 5-10 hours for the bench generator.
+
+Cause: `postSaveReview` called `assemble`, which always called `recover`; the post-save result uses only progress, completion, next task and binding, none of which read the gaps.
+
+Fix: `assemble` takes `withGaps` (default true). `postSaveReview` passes false, and the pass then reads today's frames with `marketData.query({ kind: 'ResolveFrames' })` (same `frameResult`, so the snapshot id equals the one `recover` gives). `open` keeps the full `recover`. The redundant per-Trade derives are not merged (out of scope).
+
+Evidence: `src/coordinators/daily-review/save.test.ts` "should read the post-save Review without the historical gap scan and return the binding a fresh open would give" counts `recover` calls across a save, and checks the returned binding and completion equal a fresh `open`'s and that `getTrade` and the next save accept the binding.
+- red: `AssertionError: expected 1 to be +0`
+- green: exit 0, 1 passed; daily-review, market-data and `tests/integration/d4` units 131 passed; typecheck, tsc6 and lint exit 0. `lint:deps` exit 1 on `src/app/bench-generator.ts` -> session-policy (uncommitted T4.30 work, not part of this fix).
