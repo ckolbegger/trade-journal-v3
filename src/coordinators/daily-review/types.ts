@@ -188,12 +188,16 @@ export type GetDailyTradeReviewResult =
 // The Action the trader chose; Hold has an optional Intent, the other three require it.
 export type ActionChoice = 'Hold' | 'Exit' | 'Roll' | 'Adjust';
 
-// SaveTradeAction: the exact binding `getTrade` returned, the chosen Action, and its Intent.
+// SaveTradeAction: the exact binding `getTrade` returned, the chosen Action, its Intent, and the definition's optional answers
+// (Conviction now, the Anything-considered text, the Note). A blank text is unanswered; an answer left out is not recorded.
 export interface SaveTradeActionRequest {
   readonly kind: 'SaveTradeAction';
   readonly binding: TradeSaveBinding;
   readonly action: ActionChoice;
   readonly intent?: string;
+  readonly conviction?: number;
+  readonly considered?: string;
+  readonly note?: string;
 }
 
 // ResolveReviewDebt arrives with D5.

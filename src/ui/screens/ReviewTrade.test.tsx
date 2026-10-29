@@ -659,6 +659,116 @@ describe('After a save', () => {
   });
 });
 
+const CONSIDERED = 'Anything you considered doing and decided against?';
+
+describe('the definition optional questions (T4.33-B3)', () => {
+  const closed = { kind: 'Saved', action: savedAction('Hold'), review: { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding } } as const;
+  const fill = async (user: ReturnType<typeof userEvent.setup>, trade: HTMLElement) => {
+    await user.selectOptions(within(trade).getByRole('combobox', { name: 'Conviction now' }), '3');
+    await user.type(within(trade).getByRole('textbox', { name: CONSIDERED }), ' Selling the call. ');
+    await user.type(within(trade).getByRole('textbox', { name: 'Note' }), ' Earnings Thursday. ');
+  };
+
+  it('should show Conviction now, the considered question, and Note after Intent in definition order, labelled with the definition text', async () => {
+    const user = userEvent.setup();
+    renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ')));
+    const trade = await openTrade(user, 'XYZ');
+
+    const form = within(trade).getByRole('form', { name: 'Action' });
+    // The fields in document order, each by the question text of its label.
+    const questions = [...form.querySelectorAll('textarea, select')].map((field) => field.closest('label')!.firstChild!.textContent);
+    expect(questions).toEqual(['Intent (optional)', 'Conviction now', CONSIDERED, 'Note']);
+    const conviction = within(trade).getByRole('combobox', { name: 'Conviction now' });
+    expect(within(conviction).getAllByRole('option').map((o) => o.textContent)).toEqual(['Not answered', '1', '2', '3', '4', '5']);
+    expect(conviction).toHaveProperty('value', '');
+  });
+
+  it('should save the answered optional questions with the Action, trimmed, and send none that were left unanswered', async () => {
+    const user = userEvent.setup();
+    const first = tradeReview('t1', 'XYZ');
+    const facade = walkFacade(ready([item('t1', 'XYZ')]), first);
+    vi.mocked(facade.DailyReview.save).mockResolvedValue(closed);
+    renderWalk(facade);
+    const trade = await openTrade(user, 'XYZ');
+    await fill(user, trade);
+    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    expect(vi.mocked(facade.DailyReview.save)).toHaveBeenCalledExactlyOnceWith({ kind: 'SaveTradeAction', binding: first.saveBinding, action: 'Hold', conviction: 3, considered: 'Selling the call.', note: 'Earnings Thursday.' });
+  });
+
+  it('should hold the form back as unsaved while an optional answer differs from the returned state', async () => {
+    const user = userEvent.setup();
+    const onDirtyChange = vi.fn();
+    renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ')), { onDirtyChange });
+    const trade = await openTrade(user, 'XYZ');
+    expect(onDirtyChange).not.toHaveBeenCalledWith(true);
+    await user.type(within(trade).getByRole('textbox', { name: 'Note' }), 'x');
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+    await user.clear(within(trade).getByRole('textbox', { name: 'Note' }));
+    expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+    await user.selectOptions(within(trade).getByRole('combobox', { name: 'Conviction now' }), '2');
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+    await user.selectOptions(within(trade).getByRole('combobox', { name: 'Conviction now' }), '');
+    expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+    await user.type(within(trade).getByRole('textbox', { name: CONSIDERED }), 'x');
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+  });
+
+  it('should disable the optional fields while a save is in flight and keep their values after a Conflict', async () => {
+    const user = userEvent.setup();
+    const facade = walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ'));
+    const held = deferred<SaveDailyReviewResult>();
+    vi.mocked(facade.DailyReview.save).mockReturnValue(held.promise);
+    renderWalk(facade);
+    const trade = await openTrade(user, 'XYZ');
+    await fill(user, trade);
+    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    for (const field of [within(trade).getByRole('combobox', { name: 'Conviction now' }), within(trade).getByRole('textbox', { name: CONSIDERED }), within(trade).getByRole('textbox', { name: 'Note' })]) expect(field).toHaveProperty('disabled', true);
+
+    held.resolve({ kind: 'Conflict' });
+    await within(trade).findByRole('alert');
+    expect(within(trade).getByRole('combobox', { name: 'Conviction now' })).toHaveProperty('value', '3');
+    expect(within(trade).getByRole('textbox', { name: CONSIDERED })).toHaveProperty('value', ' Selling the call. ');
+    expect(within(trade).getByRole('textbox', { name: 'Note' })).toHaveProperty('value', ' Earnings Thursday. ');
+    expect(within(trade).getByRole('textbox', { name: 'Note' })).toHaveProperty('disabled', false);
+  });
+
+  it('should keep the optional values on screen, disabled, when the shell turns read only', async () => {
+    const facade = walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ'));
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'RuntimeNotWritable', runtimeReadiness: 'RecoveryOnly', failedChecks: [], workspaceStatus: 'RecoveryOnly', safeActions: [] });
+    renderWalk(facade, { shellLike: true });
+    const user = userEvent.setup();
+    const trade = await openTrade(user, 'XYZ');
+    await fill(user, trade);
+    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await vi.waitFor(() => expect(within(trade).getByRole('button', { name: 'Save' })).toHaveProperty('disabled', true));
+    expect(within(trade).getByRole('combobox', { name: 'Conviction now' })).toHaveProperty('value', '3');
+    expect(within(trade).getByRole('combobox', { name: 'Conviction now' })).toHaveProperty('disabled', true);
+    expect(within(trade).getByRole('textbox', { name: CONSIDERED })).toHaveProperty('disabled', true);
+    expect(within(trade).getByRole('textbox', { name: 'Note' })).toHaveProperty('value', ' Earnings Thursday. ');
+  });
+
+  it('should show each answered optional value in the saved Action and pre-fill them on Change', async () => {
+    const user = userEvent.setup();
+    const saved = savedAction('Hold', undefined, 2, OPTIONAL_ANSWERS);
+    const first = tradeReview('t1', 'XYZ', { form: { kind: 'Saved', action: saved }, saveBinding: savedBinding({ expectedEntryRevision: 2 }) });
+    const facade = walkFacade(ready([item('t1', 'XYZ')], []), first);
+    vi.mocked(facade.DailyReview.save).mockResolvedValue(closed);
+    renderWalk(facade);
+    const trade = await openTrade(user, 'XYZ');
+
+    expect(within(trade).getByText('Conviction now: 4')).toBeTruthy();
+    expect(within(trade).getByText(`${CONSIDERED} Selling the call.`)).toBeTruthy();
+    expect(within(trade).getByText('Note: Earnings Thursday.')).toBeTruthy();
+    await user.click(within(trade).getByRole('button', { name: 'Change' }));
+    expect(within(trade).getByRole('combobox', { name: 'Conviction now' })).toHaveProperty('value', '4');
+    expect(within(trade).getByRole('textbox', { name: CONSIDERED })).toHaveProperty('value', 'Selling the call.');
+    expect(within(trade).getByRole('textbox', { name: 'Note' })).toHaveProperty('value', 'Earnings Thursday.');
+    await user.clear(within(trade).getByRole('textbox', { name: 'Note' }));
+    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    expect(vi.mocked(facade.DailyReview.save)).toHaveBeenCalledExactlyOnceWith({ kind: 'SaveTradeAction', binding: { ...first.saveBinding, expectedEntryRevision: 2 }, action: 'Hold', conviction: 4, considered: 'Selling the call.' });
+  });
+});
+
 // A result held until the test releases it.
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -892,7 +1002,14 @@ describe('Results for a Trade no longer open', () => {
   });
 });
 
-function savedAction(action: string, intent?: string, entryRevision = 1): Extract<SaveDailyReviewResult, { kind: 'Saved' }>['action'] {
+type Responses = Extract<SaveDailyReviewResult, { kind: 'Saved' }>['action']['responses'];
+// The definition's optional answers as the Journal narrates them (the prompt text, then the answer).
+const OPTIONAL_ANSWERS: Responses = [
+  { prompt: 'Conviction now', answer: { kind: 'Scale', value: 4 } },
+  { prompt: 'Anything you considered doing and decided against?', answer: { kind: 'Text', text: 'Selling the call.' } },
+  { prompt: 'Note', answer: { kind: 'Text', text: 'Earnings Thursday.' } },
+];
+function savedAction(action: string, intent?: string, entryRevision = 1, extra: Responses = []): Extract<SaveDailyReviewResult, { kind: 'Saved' }>['action'] {
   return {
     id: 'e1',
     entryType: 'Daily Trade Review',
@@ -900,7 +1017,7 @@ function savedAction(action: string, intent?: string, entryRevision = 1): Extrac
     anchor: { kind: 'Trade', tradeId: 't1' },
     momentTime: '2026-10-12T20:00:00Z',
     authoredTime: '2026-10-12T21:00:00Z',
-    responses: [{ prompt: 'Action', answer: { kind: 'Option', label: action } }, ...(intent === undefined ? [] : [{ prompt: 'Intent', answer: { kind: 'Text' as const, text: intent } }])],
+    responses: [{ prompt: 'Action', answer: { kind: 'Option', label: action } }, ...(intent === undefined ? [] : [{ prompt: 'Intent', answer: { kind: 'Text' as const, text: intent } }]), ...extra],
     entryRevision,
     action,
     definitionId: 'def1',

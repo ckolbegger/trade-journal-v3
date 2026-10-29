@@ -15,8 +15,8 @@ async function bindingFor(stack: ReviewStack, tradeId: string): Promise<TradeSav
   return trade.trade.saveBinding;
 }
 
-const saveAction = (stack: ReviewStack, binding: TradeSaveBinding, action: ActionChoice = 'Hold', intent?: string): Promise<SaveDailyReviewResult> =>
-  stack.dailyReview.save({ kind: 'SaveTradeAction', binding, action, ...(intent === undefined ? {} : { intent }) });
+const saveAction = (stack: ReviewStack, binding: TradeSaveBinding, action: ActionChoice = 'Hold', intent?: string, optional: { conviction?: number; considered?: string; note?: string } = {}): Promise<SaveDailyReviewResult> =>
+  stack.dailyReview.save({ kind: 'SaveTradeAction', binding, action, ...(intent === undefined ? {} : { intent }), ...optional });
 
 function saved(result: SaveDailyReviewResult) {
   if (result.kind !== 'Saved') throw new Error(`expected Saved, got ${result.kind}`);
@@ -122,6 +122,49 @@ describe('SaveTradeAction (AC-REV-003)', () => {
     const { review } = saved(await saveAction(stack, binding));
 
     expect(review).toEqual(expect.objectContaining({ kind: 'Ready', completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, progress: { tradesWithAction: 4, tradesEligible: 4 } }));
+  }, 30_000);
+});
+
+describe('the definition optional questions (T4.33-B3)', () => {
+  const CONVICTION = { prompt: 'Conviction now', answer: { kind: 'Scale', value: 4 } };
+  const CONSIDERED = { prompt: 'Anything you considered doing and decided against?', answer: { kind: 'Text', text: 'Selling the call.' } };
+  const NOTE = { prompt: 'Note', answer: { kind: 'Text', text: 'Earnings Thursday.' } };
+  // The Journal lists every prompt of the definition; one the trader did not answer is recorded as Unanswered.
+  const answered = (responses: readonly { prompt: string; answer: { kind: string } }[]) => responses.filter((r) => r.answer.kind !== 'Unanswered');
+
+  it('should record each answered optional question as a response in definition order, trimming text and leaving blank or unanswered ones Unanswered', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a, b } = await fiveTradeFixture(stack);
+
+    const all = saved(await saveAction(stack, await bindingFor(stack, a), 'Exit', 'Taking profit.', { conviction: 4, considered: '  Selling the call. ', note: ' Earnings Thursday. ' }));
+    expect(all.action.responses.map((r) => r.prompt)).toEqual(['Action', 'Why are you taking this action?', 'Conviction now', 'Anything you considered doing and decided against?', 'Note']);
+    expect(answered(all.action.responses).slice(2)).toEqual([CONVICTION, CONSIDERED, NOTE]);
+
+    const some = saved(await saveAction(stack, await bindingFor(stack, b), 'Hold', undefined, { considered: '   ', note: 'Earnings Thursday.' }));
+    expect(answered(some.action.responses)).toEqual([{ prompt: 'Action', answer: { kind: 'Option', label: 'Hold' } }, NOTE]);
+  }, 30_000);
+
+  it('should replace the optional answers on an edit, so an answer left out is removed', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a } = await fiveTradeFixture(stack);
+    saved(await saveAction(stack, await bindingFor(stack, a), 'Hold', undefined, { conviction: 4, note: 'Earnings Thursday.' }));
+
+    const edited = saved(await saveAction(stack, await bindingFor(stack, a), 'Hold', undefined, { conviction: 2, considered: 'Selling the call.' }));
+
+    expect(edited.action.entryRevision).toBe(2);
+    expect(answered(edited.action.responses).slice(1)).toEqual([{ prompt: 'Conviction now', answer: { kind: 'Scale', value: 2 } }, CONSIDERED]);
+  }, 30_000);
+
+  it('should reject a Conviction that is not an integer from 1 to 5 with InvalidScaleValue and write nothing', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a } = await fiveTradeFixture(stack);
+    const binding = await bindingFor(stack, a);
+    const before = await dumpAll(stack.factory);
+
+    for (const conviction of [0, 6, 2.5, Number.NaN]) {
+      expect(await saveAction(stack, binding, 'Hold', undefined, { conviction })).toEqual({ kind: 'Rejected', issues: [{ code: 'InvalidScaleValue', promptId: 'prompt.daily-trade-review.conviction' }] });
+    }
+    expect(await dumpAll(stack.factory)).toEqual(before);
   }, 30_000);
 });
 

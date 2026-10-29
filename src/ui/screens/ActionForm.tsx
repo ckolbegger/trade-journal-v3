@@ -48,11 +48,39 @@ const INTENT_REQUIRED = (field: string, code: string): FieldIssue => ({ field, m
 // Any other rejection (the definition or the Trade is no longer what the form was rendered from) is about the Action as a whole.
 const COULD_NOT_SAVE = 'This Action could not be saved. Reopen the Trade and try again.';
 
-// What the form was returned with: the saved Action and its Intent, or Hold with none.
-function returnedValues(form: ActionFormState): { readonly action: ActionChoice; readonly intent: string } {
-  if (form.kind === 'New') return { action: form.viewState.selectedAction, intent: '' };
-  const intent = form.action.responses.find((r) => r.answer.kind === 'Text')?.answer;
-  return { action: form.action.action as ActionChoice, intent: intent?.kind === 'Text' ? intent.text : '' };
+// The definition's wording for its optional questions; a saved Action's responses are told apart by it.
+const CONVICTION = 'Conviction now';
+const CONSIDERED = 'Anything you considered doing and decided against?';
+const NOTE = 'Note';
+const SCALE = [1, 2, 3, 4, 5] as const;
+
+interface Values {
+  readonly action: ActionChoice;
+  readonly intent: string;
+  // The Conviction select's value: '' is unanswered.
+  readonly conviction: string;
+  readonly considered: string;
+  readonly note: string;
+}
+
+// What the form was returned with: the saved Action and its answers, or Hold with none.
+function returnedValues(form: ActionFormState): Values {
+  if (form.kind === 'New') return { action: form.viewState.selectedAction, intent: '', conviction: '', considered: '', note: '' };
+  const { responses } = form.action;
+  const text = (prompt: string) => {
+    const answer = responses.find((r) => r.prompt === prompt)?.answer;
+    return answer?.kind === 'Text' ? answer.text : '';
+  };
+  // Intent is the Text answer that is none of the optional questions.
+  const intent = responses.find((r) => r.answer.kind === 'Text' && r.prompt !== CONSIDERED && r.prompt !== NOTE)?.answer;
+  const conviction = responses.find((r) => r.prompt === CONVICTION)?.answer;
+  return {
+    action: form.action.action as ActionChoice,
+    intent: intent?.kind === 'Text' ? intent.text : '',
+    conviction: conviction?.kind === 'Scale' ? String(conviction.value) : '',
+    considered: text(CONSIDERED),
+    note: text(NOTE),
+  };
 }
 
 // The Action for one Trade on the Review Date. Hold is preselected as view state only; nothing is recorded until Save.
@@ -64,6 +92,9 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   const [changing, setChanging] = useState(false);
   // One save at a time: a second would carry the same binding.
   const [intent, setIntent] = useState(returned.intent);
+  const [conviction, setConviction] = useState(returned.conviction);
+  const [considered, setConsidered] = useState(returned.considered);
+  const [note, setNote] = useState(returned.note);
   const [issues, setIssues] = useState<readonly FieldIssue[]>([]);
   const uid = useId();
   const intentField = `${uid}-intent`;
@@ -75,7 +106,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
     const first = issues[0];
     if (first) document.getElementById(first.field)?.focus();
   }, [issues]);
-  const dirty = action !== returned.action || intent !== returned.intent;
+  const dirty = action !== returned.action || intent !== returned.intent || conviction !== returned.conviction || considered !== returned.considered || note !== returned.note;
   // Once the shell is read only the values can no longer be saved, so they hold nothing back: the trader can leave the Trade.
   useEffect(() => onDirtyChange(dirty && writable), [dirty, writable, onDirtyChange]);
   // Leaving abandons the values, so the form no longer holds an update back.
@@ -101,6 +132,8 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     const text = intent.trim();
+    const consideredText = considered.trim();
+    const noteText = note.trim();
     // Exit, Roll, and Adjust need Intent; a blank one is no Intent, and nothing is sent.
     const missing = required && text === '';
     setIssues(missing ? [INTENT_REQUIRED(intentField, 'RequiredAnswerMissing')] : []);
@@ -108,7 +141,15 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
     setSaving(true);
     let result;
     try {
-      result = await facade.DailyReview.save({ kind: 'SaveTradeAction', binding, action, ...(text === '' ? {} : { intent: text }) });
+      result = await facade.DailyReview.save({
+        kind: 'SaveTradeAction',
+        binding,
+        action,
+        ...(text === '' ? {} : { intent: text }),
+        ...(conviction === '' ? {} : { conviction: Number(conviction) }),
+        ...(consideredText === '' ? {} : { considered: consideredText }),
+        ...(noteText === '' ? {} : { note: noteText }),
+      });
     } finally {
       setSaving(false);
     }
@@ -126,6 +167,9 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
     <>
       <p>Saved Action: {form.action.action}</p>
       {returned.intent !== '' && <p>Intent: {returned.intent}</p>}
+      {returned.conviction !== '' && <p>{CONVICTION}: {returned.conviction}</p>}
+      {returned.considered !== '' && <p>{CONSIDERED} {returned.considered}</p>}
+      {returned.note !== '' && <p>{NOTE}: {returned.note}</p>}
     </>
   );
   if (form.kind === 'Saved' && (readOnlyEmpty || (writable && !changing && !dirty))) {
@@ -173,6 +217,31 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
           <textarea id={intentField} value={intent} disabled={saving || !writable} onChange={(e) => setIntent(e.target.value)} {...describedBy(intentField)} />
         </label>
         {fieldError(intentField)}
+      </div>
+      <div className="field">
+        <label>
+          {CONVICTION}
+          <select value={conviction} disabled={saving || !writable} onChange={(e) => setConviction(e.target.value)}>
+            <option value="">Not answered</option>
+            {SCALE.map((n) => (
+              <option key={n} value={String(n)}>
+                {n}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <div className="field">
+        <label>
+          {CONSIDERED}
+          <textarea value={considered} disabled={saving || !writable} onChange={(e) => setConsidered(e.target.value)} />
+        </label>
+      </div>
+      <div className="field">
+        <label>
+          {NOTE}
+          <textarea value={note} disabled={saving || !writable} onChange={(e) => setNote(e.target.value)} />
+        </label>
       </div>
       <button type="submit" className="pill primary" disabled={saving || refreshing || !writable}>
         Save

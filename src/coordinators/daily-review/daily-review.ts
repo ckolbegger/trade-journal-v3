@@ -373,6 +373,12 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
   // The prompts of the Daily Trade Review definition, by the option each Action chooses.
   const ACTION_PROMPT = 'prompt.daily-trade-review.action';
   const INTENT_PROMPT = 'prompt.daily-trade-review.intent';
+  const CONVICTION_PROMPT = 'prompt.daily-trade-review.conviction';
+  const CONSIDERED_PROMPT = 'prompt.daily-trade-review.considered';
+  const NOTE_PROMPT = 'prompt.daily-trade-review.note';
+
+  // An optional Text answer: blank is unanswered, and the text is trimmed.
+  const optionalText = (promptId: string, text: string | undefined) => (text === undefined || text.trim() === '' ? {} : { [promptId]: { kind: 'Text' as const, text: text.trim() } });
 
   // The Trade's facts and the Review-date evidence as they are now, against what the form was rendered from.
   type Checked = { readonly kind: 'Checked'; readonly cutoff: string; readonly marks: readonly (readonly [instrumentKey: string, tradingDate: string, resolutionRevision: number | 'None'])[] } | Extract<SaveDailyReviewResult, { kind: 'ReviewChanged' | 'Rejected' }>;
@@ -439,6 +445,9 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           answers: {
             [ACTION_PROMPT]: { kind: 'Option', optionId: `option.daily-trade-review.action.${request.action.toLowerCase()}` },
             ...(request.intent === undefined ? {} : { [INTENT_PROMPT]: { kind: 'Text', text: request.intent } }),
+            ...(request.conviction === undefined ? {} : { [CONVICTION_PROMPT]: { kind: 'Scale', value: request.conviction } }),
+            ...optionalText(CONSIDERED_PROMPT, request.considered),
+            ...optionalText(NOTE_PROMPT, request.note),
           },
         },
       },

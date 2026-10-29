@@ -3,8 +3,8 @@ import { actionEntriesOf, actionForm, continueToTrades, createTrades, enterMark,
 
 const DATE = 'Mon Oct 12';
 // Distinctive values, so any trace of them in storage is unmistakable.
-const TYPED = { markPrice: '43.71', correctedPrice: '51.37', reason: 'Unsaved correction reason marker 7c2a.', intent: 'Unsaved intent marker 5d8e.' };
-const TEXT = [TYPED.reason, TYPED.intent];
+const TYPED = { markPrice: '43.71', correctedPrice: '51.37', reason: 'Unsaved correction reason marker 7c2a.', intent: 'Unsaved intent marker 5d8e.', considered: 'Unsaved considered marker 3b91.', note: 'Unsaved note marker 9f40.' };
+const TEXT = [TYPED.reason, TYPED.intent, TYPED.considered, TYPED.note];
 const NUMBERS = [TYPED.markPrice, TYPED.correctedPrice];
 
 const webStorage = (page: Page): Promise<unknown> => page.evaluate(() => ({ local: { ...localStorage }, session: { ...sessionStorage } }));
@@ -35,7 +35,7 @@ function traces(dump: unknown): string[] {
 }
 
 test.describe('B4.12 Nothing saved without Save (AC-JOUR-001)', () => {
-  test('should store no observation revision, Entry, or Web Storage value after typing a Mark price, a correction, and an Action with Intent, resizing, leaving, and restarting', async ({ profile }) => {
+  test('should store no observation revision, Entry, or Web Storage value after typing a Mark price, a correction, and an Action with Intent, Conviction, considered text, and Note, resizing, leaving, and restarting', async ({ profile }) => {
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     await createTrades(page, [FOUR_TRADES[0]!, FOUR_TRADES[1]!, FOUR_TRADES[2]!]);
     await openReview(page);
@@ -46,7 +46,7 @@ test.describe('B4.12 Nothing saved without Save (AC-JOUR-001)', () => {
     await expect(actionForm(page)).toBeVisible();
     const before = workspaceOf(await probe(page));
 
-    // Type, and save nothing: an initial Mark price, a correction with its reason, and an Exit with Intent.
+    // Type, and save nothing: an initial Mark price, a correction with its reason, and an Exit with Intent, Conviction, considered text, and Note.
     await markEntry(page, 'DEF', DATE).getByRole('button', { name: 'Enter', exact: true }).click();
     await markEntry(page, 'DEF', DATE).getByLabel('Price').fill(TYPED.markPrice);
     await markEntry(page, 'ABC', DATE).getByRole('button', { name: 'Correct' }).click();
@@ -54,12 +54,17 @@ test.describe('B4.12 Nothing saved without Save (AC-JOUR-001)', () => {
     await markEntry(page, 'ABC', DATE).getByLabel('Reason (required)').fill(TYPED.reason);
     await actionForm(page).getByRole('radio', { name: 'Exit', exact: true }).check();
     await actionForm(page).getByLabel(/^Intent/).fill(TYPED.intent);
+    await actionForm(page).getByLabel('Conviction now').selectOption('4');
+    await actionForm(page).getByLabel('Anything you considered doing and decided against?').fill(TYPED.considered);
+    await actionForm(page).getByLabel(/^Note/).fill(TYPED.note);
 
     // Resize and back: the typed values are still there, none of them saved.
     await page.setViewportSize({ width: 390, height: 844 });
     await page.setViewportSize({ width: 1280, height: 900 });
     await expect(markEntry(page, 'DEF', DATE).getByLabel('Price')).toHaveValue(TYPED.markPrice);
     await expect(actionForm(page).getByLabel(/^Intent/)).toHaveValue(TYPED.intent);
+    await expect(actionForm(page).getByLabel('Conviction now')).toHaveValue('4');
+    await expect(actionForm(page).getByLabel(/^Note/)).toHaveValue(TYPED.note);
     expect(traces(await webStorage(page))).toEqual([]);
     expect(workspaceOf(await probe(page))).toEqual(before);
 

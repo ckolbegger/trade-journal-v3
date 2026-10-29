@@ -1620,3 +1620,17 @@ Fix for the B4.11 finding: an Action or Mark form that holds entered values when
 | `0f06986` | `no-save.spec.ts`: B4.12 names an Action "with Intent and Note" but the form has no Note | Valid: the Daily Trade Review definition has three optional questions (Conviction now, Considered and decided against, Note) that T4.22's form does not offer | The user chose (2026-10-29) to add all three: bug task T4.33-B3 |
 
 B4.11 (product defect found by T4.33 part 2): a refused write hid the entered Action and Mark values. T4.22's ocr had dismissed this as "matches MarkEntry"; the B4.11 row shows that was wrong. Fixed by T4.33-B2 (`cdc8eee`).
+
+### T4.33-B3
+
+The Action form offers the Daily Trade Review definition's optional questions (user decision, 2026-10-29).
+
+| Command | Result |
+|---|---|
+| `npx vitest run src` | exit 0; 61 files, 812 passed |
+| `npm run test:integration` | exit 0; 41 files, 73 passed |
+| `npm run build:releases` then `npx playwright test e2e/d4` | 16 passed (the d4 specs include B4.11 and B4.12) |
+| `npm run test:e2e` | exit 0; 140 passed |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run verify:capabilities` | all exit 0 |
+
+Changes: `SaveTradeActionRequest` gains `conviction?`, `considered?`, `note?`; the coordinator records each answered one as a response (text trimmed, blank omitted; the Journal validates the Scale and rejects with InvalidScaleValue); `ActionForm` shows Conviction now (select, Not answered or 1 to 5), the considered question, and Note after Intent, in dirty tracking, disabled while saving or read only, shown in the saved display, pre-filled by Change. The Detail narrative lists all responses of the Action Entry already, so it is unchanged. B4.12 types all three and asserts no Web Storage trace. Journal definition and seed unchanged.
