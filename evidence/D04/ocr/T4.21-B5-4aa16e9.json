@@ -1,0 +1,119 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 67605,
+    "input_tokens": 66886,
+    "output_tokens": 719,
+    "cache_read_tokens": 23296,
+    "elapsed": "20s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_search": 5,
+      "file_read": 7,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Daily review types and review screen",
+      "files": [
+        "src/coordinators/daily-review/types.ts",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    },
+    {
+      "label": "Market data and mark entry",
+      "files": [
+        "src/modules/market-data/market-data.ts",
+        "src/ui/screens/MarkEntry.tsx"
+      ]
+    }
+  ],
+  "session_id": "abeeb039-e398-4ac5-8484-69fe62075b06",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "abeeb039-e398-4ac5-8484-69fe62075b06",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "a3b212f47b125dde62551f313a41301ea36a4fec",
+      "resolved_head": "243b7b67d032571b4456e456fbb52103d92458c9",
+      "exact_range": "a3b212f47b125dde62551f313a41301ea36a4fec..243b7b67d032571b4456e456fbb52103d92458c9",
+      "source_artifact_sha256": "018c55fa6e3989e31f9fd7b546b9e188c41a5b82d291e8726cc0a41e7146a365"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "f57a8be33f7d1ccc6106b0d71a789db50fb030085315aa688e973a85c9cfce89"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "31421f8154f4ef5fc1c124e9725c3eed1135c9e63f475f3dcf51d52911aad1d1"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "589225b8d75b1d2463a853ae7fd898f9d4d1d3bb00d603883228c5867de39b49"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "e47c7753bc0d47db53abd15fbdd6879d484a4df6be50aadfb1fd3053c485a632"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "f57a8be33f7d1ccc6106b0d71a789db50fb030085315aa688e973a85c9cfce89"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "31421f8154f4ef5fc1c124e9725c3eed1135c9e63f475f3dcf51d52911aad1d1"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "589225b8d75b1d2463a853ae7fd898f9d4d1d3bb00d603883228c5867de39b49"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "e47c7753bc0d47db53abd15fbdd6879d484a4df6be50aadfb1fd3053c485a632"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 20304
+  }
+}
