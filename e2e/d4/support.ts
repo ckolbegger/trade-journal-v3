@@ -28,8 +28,7 @@ export const FRIDAY_1700 = '2026-10-09T21:00:00Z';
 
 // Launches the profile with Date pinned by Playwright's clock (timers and performance.now stay
 // real in setFixedTime); the app reads the system clock, so every page of the context sees it.
-export async function launchAt(profile: Profile, instant: string, options: { offline?: boolean; width?: number } = {}): Promise<BrowserContext> {
-  const context = await profile.launch(options);
+export async function pinClock(context: BrowserContext, instant: string): Promise<void> {
   await context.clock.setFixedTime(new Date(instant));
   // Chromium's native Temporal (which the application's clock uses when present) is not covered by
   // Playwright's clock, so its Now.instant is pointed at the pinned Date. Nothing else changes.
@@ -37,6 +36,11 @@ export async function launchAt(profile: Profile, instant: string, options: { off
     const native = (globalThis as unknown as { Temporal?: { Now: { instant: () => unknown }; Instant: { fromEpochMilliseconds: (ms: number) => unknown } } }).Temporal;
     if (native) native.Now.instant = () => native.Instant.fromEpochMilliseconds(Date.now());
   });
+}
+
+export async function launchAt(profile: Profile, instant: string, options: { offline?: boolean; width?: number } = {}): Promise<BrowserContext> {
+  const context = await profile.launch(options);
+  await pinClock(context, instant);
   return context;
 }
 

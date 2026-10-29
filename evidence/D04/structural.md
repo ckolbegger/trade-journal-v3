@@ -1576,3 +1576,17 @@ Defect confirmed: the browser context was closed only on the success path in `to
 | `npm run bench:expected` then `git diff --stat bench/` | OK, 200 rows; no diff |
 | `npm run bench:run` (changed `tools/bench-run.ts`) | exit 0; cold p95 107.2 ms, warm p95 44.4 ms; `evidence/D04/bench.md` rewritten |
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | exit 0 each |
+
+## T4.33 part 2
+
+Browser cases B4.8 to B4.14 in `e2e/d4/` (kill.spec.ts, offline.spec.ts, runtime-failure.spec.ts, no-save.spec.ts, responsive-a11y.spec.ts, breach-overrun.spec.ts). `pinClock` added to `e2e/d4/support.ts` (used by `launchAt` and by the killed-browser case). B4.11 is not committed: it fails against the product (see below).
+
+| Command | Result |
+|---|---|
+| `npx playwright test e2e/d4` (twice) | 15 passed each time |
+| `npm run test:e2e` | 139 passed (4.7 m), exit 0 |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | exit 0 each |
+
+First-run passes and their mutations are in `tdd-log.md`.
+
+Open finding, B4.11 (Mid-session failure, AC-DEL-006): after `DailyReview.save` returns `RuntimeNotWritable` the read-only banner explains it, but `ActionForm` (`src/ui/screens/ActionForm.tsx`, `if (!writable && form.kind === 'New') return <p>No Action saved.</p>`) replaces the form, so the Exit choice and the typed Intent are no longer shown; the Review also keeps its "Save your Action or put back its saved values to leave this Trade." hold with no form to act on. The Mark entry has the same shape (`{!writable ? null : mode ? ...}` in `MarkEntry.tsx`). The row expects "values kept". The case is written (kept in the session scratchpad as `runtime-failure.full.spec.ts`) but not committed.
