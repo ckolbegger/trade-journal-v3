@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import type { UiFacade } from '../../app/compose.ts';
-import type { ExpectedResolutionRevision, MarketDataSaveResult, MarkResolution } from '../../app/types.ts';
+import type { ExpectedResolutionRevision, MarketDataIssue, MarketDataSaveResult, MarkResolution } from '../../app/types.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { MarkEntry } from './MarkEntry.tsx';
 
@@ -16,6 +16,9 @@ const mark = (price: string, revisionNumber = 1, correctionReason?: string) =>
     kind: 'Available',
     mark: { revisionId: `r${revisionNumber}`, revisionNumber, price, source: 'Manual', savedAt: '2026-10-12T21:00:00Z', ...(correctionReason && { correctionReason }) },
   }) as const satisfies MarkResolution;
+type FacadeSaveResult = Awaited<ReturnType<UiFacade['MarketData']['save']>>;
+const rejected = (...issues: MarketDataIssue[]): Extract<FacadeSaveResult, { kind: 'Rejected' }> => ({ kind: 'Rejected', issues });
+const storageFailure: Extract<FacadeSaveResult, { kind: 'StorageFailure' }> = { kind: 'StorageFailure', reason: 'QuotaExceededError' };
 type Saved = Extract<MarketDataSaveResult, { kind: 'Saved' }>;
 type Acknowledgment = Extract<Saved, { acknowledgment: unknown }>['acknowledgment'];
 type Available = Extract<MarkResolution, { kind: 'Available' }>;
@@ -153,7 +156,6 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
   });
 
   it('should show InvalidPrice, ReasonRequired, ReasonTooLong, CorrectionUnchanged, and MarkExists beside their fields and move focus to the first', async () => {
-    const rejected = (...issues: { field: string; code: string }[]) => ({ kind: 'Rejected', issues }) as never;
     const facade = facadeDouble();
     const save = vi.mocked(facade.MarketData.save);
     renderEntry({ kind: 'Missing' }, 'None', { facade });
@@ -203,7 +205,6 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
   });
 
   it('should show PriceNegative beside the price and any other rejection for the Mark as a whole, even with no form open', async () => {
-    const rejected = (...issues: { field: string; code: string }[]) => ({ kind: 'Rejected', issues }) as never;
     const facade = facadeDouble();
     const save = vi.mocked(facade.MarketData.save);
     renderEntry({ kind: 'Missing' }, 'None', { facade });
@@ -244,7 +245,7 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
     expect(screen.getByLabelText<HTMLInputElement>('Price').value).toBe('52.5');
 
     // Saving again binds to the revision the Conflict returned.
-    save.mockResolvedValueOnce({ kind: 'Rejected', issues: [{ field: 'key', code: 'MarkExists' }] } as never);
+    save.mockResolvedValueOnce(rejected({ field: 'key', code: 'MarkExists' }));
     await user.click(screen.getByRole('button', { name: 'Save Mark' }));
     expect(save).toHaveBeenLastCalledWith({ intention: 'RecordInitialManualMark', ...key, price: '52.5', expectedResolutionRevision: 1 });
   });
@@ -293,7 +294,13 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
 
   it('should report a refused write to the shell and keep the entered values', async () => {
     const facade = facadeDouble();
-    const refused = { kind: 'RuntimeNotWritable' } as never;
+    const refused: Extract<FacadeSaveResult, { kind: 'RuntimeNotWritable' }> = {
+      kind: 'RuntimeNotWritable',
+      runtimeReadiness: 'RecoveryOnly',
+      failedChecks: [{ check: 'control', reason: 'ControlRecordUnreadable' }],
+      workspaceStatus: 'RecoveryOnly',
+      safeActions: [{ action: 'Reload', explanation: 'Reload the page.' }],
+    };
     vi.mocked(facade.MarketData.save).mockResolvedValue(refused);
     const report = vi.fn();
     renderEntry({ kind: 'Missing' }, 'None', { facade, report });
@@ -342,7 +349,7 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
   it('should show that the Mark was not saved, keep the entered values, and allow a retry when the save returns StorageFailure', async () => {
     const facade = facadeDouble();
     const save = vi.mocked(facade.MarketData.save);
-    save.mockResolvedValueOnce({ kind: 'StorageFailure', reason: 'QuotaExceededError' } as never);
+    save.mockResolvedValueOnce(storageFailure);
     save.mockResolvedValueOnce(savedMark(mark('52.5'), 'None'));
     renderEntry({ kind: 'Missing' }, 'None', { facade });
     const user = userEvent.setup();
@@ -366,7 +373,7 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
   it('should show that nothing was saved and keep Withdraw available when Withdraw returns StorageFailure', async () => {
     const facade = facadeDouble();
     const save = vi.mocked(facade.MarketData.save);
-    save.mockResolvedValueOnce({ kind: 'StorageFailure', reason: 'QuotaExceededError' } as never);
+    save.mockResolvedValueOnce(storageFailure);
     save.mockResolvedValueOnce(savedAcknowledgment(withdrawn, 2, 1));
     renderEntry({ kind: 'AcknowledgedUnavailable', acknowledgment: { versionId: 'a1', kind: 'Asserted', savedAt: '2026-10-12T21:00:00Z' } }, 1, { facade });
     const user = userEvent.setup();
@@ -406,7 +413,7 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
 
     // A StorageFailure notice is gone after Cancel and reopen, and never shows with the Conflict banner.
     cleanup();
-    save.mockResolvedValueOnce({ kind: 'StorageFailure', reason: 'QuotaExceededError' } as never);
+    save.mockResolvedValueOnce(storageFailure);
     renderEntry({ kind: 'Missing' }, 'None', { facade });
     await user.click(screen.getByRole('button', { name: 'Enter' }));
     await user.type(screen.getByLabelText('Price'), '52.5');
@@ -421,7 +428,7 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
 
     // Field issues are gone after Cancel and reopen.
     cleanup();
-    save.mockResolvedValueOnce({ kind: 'Rejected', issues: [{ field: 'price', code: 'InvalidPrice' }] } as never);
+    save.mockResolvedValueOnce(rejected({ field: 'price', code: 'InvalidPrice' }));
     renderEntry({ kind: 'Missing' }, 'None', { facade });
     await user.click(screen.getByRole('button', { name: 'Enter' }));
     await user.type(screen.getByLabelText('Price'), 'abc');
