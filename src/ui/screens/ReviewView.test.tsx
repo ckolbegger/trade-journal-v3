@@ -367,6 +367,43 @@ describe('moving on', () => {
     expect(screen.getByLabelText<HTMLInputElement>('Price').value).toBe('12.5');
   });
 
+  it('should keep an earlier-session Mark\'s saved resolution when the Review re-renders without a newer revision', async () => {
+    const gap = { instrumentKey: 'DEF', missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, blocking: false } as const;
+    const returned = ready({ today: [markRow('DEF', ['t1'], available('12'), 1)], earlier: [gap], trades: [tradeItem('t1', 'DEF')] });
+    const facade = reviewFacade(returned);
+    const key = { instrumentKey: 'DEF', tradingDate: '2026-10-09' };
+    const mark = { revisionId: 'r9', revisionNumber: 1, price: '9', source: 'Manual', savedAt: '2026-10-12T21:00:00Z' } as const;
+    vi.mocked(facade.MarketData.save).mockResolvedValueOnce({
+      kind: 'Saved',
+      key,
+      resolution: { kind: 'Available', mark },
+      resolutionRevision: 1,
+      classification: 'InitialManual',
+      revision: { revisionId: 'r9', revisionNumber: 1, price: '9', source: 'Manual', intention: 'InitialManual', observedAt: '2026-10-12T21:00:00Z', savedAt: '2026-10-12T21:00:00Z' },
+      binding: { ...key, expectedResolutionRevision: 'None' },
+    });
+    renderReview(facade);
+    const user = userEvent.setup();
+    const [, earlierEntry] = await screen.findAllByRole('region', { name: 'DEF Mark' });
+    await user.click(within(earlierEntry!).getByRole('button', { name: 'Enter' }));
+    await user.type(within(earlierEntry!).getByLabelText('Price'), '9');
+    await user.click(within(earlierEntry!).getByRole('button', { name: 'Save Mark' }));
+    await within(earlierEntry!).findByText('$9.00', { exact: false });
+
+    // Continue re-renders the Review with the same stale revision for that date.
+    await user.click(screen.getByRole('button', { name: 'Continue to Trades' }));
+    await screen.findByRole('region', { name: 'Trades' });
+
+    const [, again] = screen.getAllByRole('region', { name: 'DEF Mark' });
+    expect(within(again!).getByText('$9.00', { exact: false })).toBeTruthy();
+    vi.mocked(facade.MarketData.save).mockResolvedValue({ kind: 'Conflict', key, resolution: { kind: 'Available', mark }, resolutionRevision: 1 });
+    await user.click(within(again!).getByRole('button', { name: 'Correct' }));
+    await user.type(within(again!).getByLabelText('Price'), '9.5');
+    await user.type(within(again!).getByLabelText('Reason (required)'), 'typo');
+    await user.click(within(again!).getByRole('button', { name: 'Save correction' }));
+    expect(facade.MarketData.save).toHaveBeenLastCalledWith({ intention: 'CorrectMark', ...key, price: '9.5', reason: 'typo', expectedResolutionRevision: 1 });
+  });
+
   it('should resume from the returned state after a reload, showing saved Actions and Marks without any stored session', async () => {
     const stored = vi.spyOn(Storage.prototype, 'setItem');
     const read = vi.spyOn(Storage.prototype, 'getItem');

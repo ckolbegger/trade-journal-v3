@@ -28,10 +28,11 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
   const { writable, report } = useRuntime();
   const [resolution, setResolution] = useState(initial);
   const [revision, setRevision] = useState(initialRevision);
-  // A refreshed Review hands this key a newer resolution and revision; entered values and the open form stay.
-  const [seen, setSeen] = useState({ initial, initialRevision });
-  if (seen.initial !== initial || seen.initialRevision !== initialRevision) {
-    setSeen({ initial, initialRevision });
+  // A refreshed Review hands this key a newer resolution with a newer revision; entered values and the open form stay.
+  // The resolution follows its revision, so an equivalent stale prop never undoes a save.
+  const [seenRevision, setSeenRevision] = useState(initialRevision);
+  if (seenRevision !== initialRevision) {
+    setSeenRevision(initialRevision);
     setResolution(initial);
     setRevision(initialRevision);
   }

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { UiFacade } from '../../app/compose.ts';
 import { Link, useSearchParams } from 'react-router';
-import type { IncompleteReason, MarkRow, OpenDailyReviewResult, ReviewFamily, ReviewTradeItem, ReviewCompletion } from '../../app/types.ts';
+import type { IncompleteReason, MarkResolution, MarkRow, OpenDailyReviewResult, ReviewFamily, ReviewTradeItem, ReviewCompletion } from '../../app/types.ts';
 import { Rational, formatDecimal } from '../../domain/values/index.ts';
 import { Badge } from '../Badge.tsx';
 import { PageTitle } from '../PageTitle.tsx';
@@ -114,6 +114,8 @@ function TodayRow({ facade, row, underlying, focus, onEntryDirty }: { readonly f
 }
 
 const GAPS_PER_PAGE = 20;
+// A gap row has no effective Mark; one constant keeps the prop stable across renders.
+const MISSING: MarkResolution = { kind: 'Missing' };
 const EARLIER_HEADING = 'Earlier sessions without Marks — optional';
 type GapGroup = Extract<ReviewFamily, { family: 'Marks' }>['earlier'][number];
 
@@ -135,7 +137,7 @@ function GapList({ facade, group, focus, onEntryDirty }: { readonly facade: UiFa
                 <strong>Acknowledged unavailable</strong>
               </p>
             ) : (
-              <ReviewMarkEntry facade={facade} instrumentKey={group.instrumentKey} tradingDate={date} resolution={{ kind: 'Missing' }} resolutionRevision={group.revisions[date] ?? 'None'} onEntryDirty={onEntryDirty} />
+              <ReviewMarkEntry facade={facade} instrumentKey={group.instrumentKey} tradingDate={date} resolution={MISSING} resolutionRevision={group.revisions[date] ?? 'None'} onEntryDirty={onEntryDirty} />
             )}
           </li>
         ))}
