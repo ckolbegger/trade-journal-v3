@@ -1166,3 +1166,5 @@ ocr review of `f22bf7b` (B1): session `35bb25c5-0286-4e55-a1ef-92cee918c9e0` (sc
 
 ### T4.23-B2 An unknown reason reads as not available
 - it should word an Unavailable result with an unknown reason as not available, with no Mark missing link
+
+ocr review of `535bb76` (B2): session `3dcf1860-b2cd-4523-a320-bc80b02ae213` (scratch clone; the reviewer read the tests itself), no findings. `ocr/T4.23-B2-535bb76.json`. `calculation` names AwaitingClose, MarkMissing and AcknowledgedUnavailable explicitly and words anything else "Not available"; `missingMark` links only MarkMissing and AcknowledgedUnavailable with a dated detail. The reviewer traced every code `unavailableResult` emits reading as before (ReviewTrade included), and no crash or link for an undated MarkMissing or AcknowledgedUnavailable. Reviewer note, dismissed (Doubtful): the "Mark missing" badge does not check for a date, but `unavailableResult` always dates MarkMissing. No first-run passes, no code ahead of red. Behaviour change: an undated Unavailable with a reason other than AwaitingClose now reads "Not available".
