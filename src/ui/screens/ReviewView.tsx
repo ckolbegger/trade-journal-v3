@@ -292,8 +292,16 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
   const [walk, setWalk] = useState(false);
   // The last Continue could not produce a Review: nothing changed, and the trader may press it again.
   const [failed, setFailed] = useState(false);
+  // A refresh is in flight: Continue is disabled, so overlapping opens cannot race.
+  const [refreshing, setRefreshing] = useState(false);
+  const inFlight = useRef(false);
   const proceed = async () => {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setRefreshing(true);
     const result = await facade.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: now() }).catch(() => undefined);
+    inFlight.current = false;
+    setRefreshing(false);
     setFailed(result?.kind !== 'Ready');
     if (result?.kind === 'Ready') {
       setReview(result);
@@ -310,7 +318,7 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
         </div>
       )}
       {walk && <TradeWalk review={review} />}
-      <button type="button" className="pill primary" onClick={() => void proceed()}>
+      <button type="button" className="pill primary" onClick={() => void proceed()} disabled={refreshing}>
         Continue to Trades
       </button>
     </>

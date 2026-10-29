@@ -387,6 +387,26 @@ describe('moving on', () => {
     expect(facade.MarketData.save).toHaveBeenLastCalledWith({ intention: 'CorrectMark', instrumentKey: 'XYZ', tradingDate: '2026-10-12', price: '56', reason: 'typo', expectedResolutionRevision: 2 });
   });
 
+  it('should send one open and disable Continue to Trades while a refresh is in flight', async () => {
+    const first = ready({ trades: [tradeItem('t1', 'XYZ')] });
+    const facade = reviewFacade(first);
+    renderReview(facade);
+    const user = userEvent.setup();
+    const button = await screen.findByRole('button', { name: 'Continue to Trades' });
+    let settle: (result: OpenDailyReviewResult) => void = () => undefined;
+    vi.mocked(facade.DailyReview.open).mockReturnValueOnce(new Promise<OpenDailyReviewResult>((resolve) => (settle = resolve)));
+    await user.click(button);
+    await user.click(button);
+    expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledTimes(2);
+    expect(button).toHaveProperty('disabled', true);
+
+    settle(first);
+    await screen.findByRole('region', { name: 'Trades' });
+    expect(screen.getByRole('button', { name: 'Continue to Trades' })).toHaveProperty('disabled', false);
+    await user.click(screen.getByRole('button', { name: 'Continue to Trades' }));
+    await waitFor(() => expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledTimes(3));
+  });
+
   it('should keep a value typed into a Mark entry when a refresh brings that key a newer revision', async () => {
     const first = ready({ today: [markRow('DEF', ['t1'])], trades: [tradeItem('t1', 'DEF')] });
     // The refreshed key is acknowledged unavailable, so the open Enter form still fits it.
