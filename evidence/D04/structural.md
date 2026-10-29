@@ -1202,3 +1202,5 @@ ocr review of `6d91277`: session `39948aae-9b84-42d7-a379-5ea64f6109d1` (scratch
 
 ### T4.24-B1 Realized to date carries its sign
 - it should show a realized gain with a plus sign and a loss with a minus sign
+
+ocr review of `c363144` (B1): session `d9aa5a7f-4dd1-4de1-a929-cd099751c1ee` (scratch clone with the test renamed), no findings. `ocr/T4.24-B1-c363144.json`. Realized to date uses `signed(money)` in `ValuationFigures`, which the "At <date> close" section reuses. The reviewer traced that no other realized or P&L figure is unsigned, fees stay unsigned, and unavailable results still read as words. No first-run passes, no code ahead of red.
