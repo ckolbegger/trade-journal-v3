@@ -849,3 +849,18 @@ ocr review of `ec4bbf6` (B2): session `a5093269-065f-43d1-8405-25aa15f3ee99` (sc
 T4.18-B1 is paused on a user decision: P8 names `Unavailable(SessionPolicyNotCovered)` but no shape for Open items and Detail when the as-of date is outside coverage (no Expected Mark Date, no resolution).
 
 The user decided (plan revision 13, decision 54): outside coverage every figure that needs a Mark is `Unavailable(SessionPolicyNotCovered)`, and the shell shows a calendar warning icon like the browser-storage icon saying "Coming soon - update calendar" (the icon belongs to T4.25).
+
+ocr review of `26257e4` (B1): session `a73762e4-bbc6-41b3-8903-d989eb30a4d7` (scratch clone), 2 files, 1 comment. `ocr/T4.18-B1-26257e4.json`. Outside coverage `evaluate` gets an `UncoveredObservation {instrument, date}`, so every Mark-dependent figure (market value, remaining-open and current marked P&L, risk and reward with their Plan-R forms, every condition) is `Unavailable(SessionPolicyNotCovered)`; Mark-free figures keep values; Expected Mark Date, Mark resolution, Mark provenance and dated line are absent; at-entry lines remain (they use execution prices, no Mark); Detail coverage is `NotCovered`. The detail is `{instrument, date}` so Daily Review's narrowing is untouched. First-run passes, each mutation-checked: the item's other figures and conditions, Mark-free values, the Detail figures, absent provenance and dated line, Planned unaffected. Two log rows labelled green exited 1; each was the next assertion's genuine red (note rows). No code ahead of red.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| low | `src/domain/trade-analysis/evaluate.ts:187` | `latestExactClose` nests two ternaries | Valid (style); the logic is correct | Bug task T4.18-B3 |
+| (reviewer) | `evaluate.ts:243` | `usableMark!` relies on `marked()` having checked it | Doubtful as a defect, Valid as a smell | Bug task T4.18-B3 |
+| (reviewer) | `src/coordinators/trade-views/trade-views.ts` | Trade Views derives the as-of exchange date with its own `EXCHANGE_ZONE`, duplicating the session policy's; Market Data's rejection carries no date | Doubtful: agrees today, but can drift; Market Data should say which date is uncovered | Bug task T4.18-B4 |
+| (reviewer) | `trade-views.ts`, the mapping | `every(code === 'SessionPolicyCoverage')` is true for an empty issue list | Doubtful (Market Data always gives an issue) | Folded into T4.18-B4 |
+
+### T4.18-B3 Explicit Mark guards in evaluate (refactor)
+- no new case; the existing evaluation and current-evaluation tests pass before and after
+
+### T4.18-B4 Market Data names the uncovered date
+- it should return SessionPolicyCoverage with the as-of exchange date when the as-of instant is outside coverage

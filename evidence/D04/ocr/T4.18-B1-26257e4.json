@@ -1,0 +1,102 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 132279,
+    "input_tokens": 130928,
+    "output_tokens": 1351,
+    "cache_read_tokens": 15360,
+    "elapsed": "1m5s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 6,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/domain/trade-analysis/evaluate.ts",
+      "content": "This introduces a nested ternary, which the review checklist prohibits. Split the coverage check and the available-versus-stale close selection into separate statements or a small helper so the three fallback cases remain explicit.",
+      "existing_code": "  const latestExactClose = covered === undefined ? undefined : covered.resolution.kind === 'Available' ? covered.closeInstant : covered.resolution.stale?.closeInstant;",
+      "start_line": 187,
+      "end_line": 187,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/domain/trade-analysis/evaluate.ts"
+      ]
+    }
+  ],
+  "session_id": "a73762e4-bbc6-41b3-8903-d989eb30a4d7",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a73762e4-bbc6-41b3-8903-d989eb30a4d7",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "f4b3913681b9da53d14de4e5ad3b6446d8108bc0",
+      "resolved_head": "c22da5bf656d382823c0c63deb35ddbe988dce35",
+      "exact_range": "f4b3913681b9da53d14de4e5ad3b6446d8108bc0..c22da5bf656d382823c0c63deb35ddbe988dce35",
+      "source_artifact_sha256": "ba9a0dfab32590c53e2b5b005ebcfcd4d64e8ee32598f7af5edc4d87bde8919a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "e3ab7e7b2275dfc53e0c0ce565e067fdfc6649058f99bd6fe2e7ae5cbdacffac"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "b2ccb0b52ac7fefe84244feba30a39618441998a3b95dbd6e4229ff56b3c7421"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2cdfac52e8ab493575d7f44a1a39167101fcd433edd529507860ca0fdba1d8b0",
+          "path": "src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "e3ab7e7b2275dfc53e0c0ce565e067fdfc6649058f99bd6fe2e7ae5cbdacffac"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "b2ccb0b52ac7fefe84244feba30a39618441998a3b95dbd6e4229ff56b3c7421"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 65485
+  }
+}
