@@ -1,0 +1,113 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 42785,
+    "input_tokens": 42459,
+    "output_tokens": 326,
+    "cache_read_tokens": 5760,
+    "elapsed": "23s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Market data records and queries, tests, and trade-view integration",
+      "files": [
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/modules/market-data/market-data.spec-renamed.ts",
+        "src/modules/market-data/query.spec-renamed.ts",
+        "src/modules/market-data/records.ts"
+      ]
+    }
+  ],
+  "session_id": "a5093269-065f-43d1-8405-25aa15f3ee99",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a5093269-065f-43d1-8405-25aa15f3ee99",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "ee7bf973289352c6b2d35416f6bcb07b4e9773c0",
+      "resolved_head": "d417628711b446781128adbe601a440956ca20ac",
+      "exact_range": "ee7bf973289352c6b2d35416f6bcb07b4e9773c0..d417628711b446781128adbe601a440956ca20ac",
+      "source_artifact_sha256": "3e0e657aa73b8ef05a29b84aecb5de40295b44b540c3b5ababd6eaa1f1ce9da9"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0f30a98b37647d5c66aa5b6c8143c0749aeeb9c7ad819c56f28b1a793961d13a",
+          "path": "src/modules/market-data/records.ts",
+          "fingerprint": "5d897cdc955d451600e506899bcb0506f1786acc8e470adde9902299946683db"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "7f84942c0f0e2681929e002874ab136392ba541d79b14a967981617a71d5e2cb"
+        },
+        {
+          "item_id": "7b8d1a9e68b1584967d0c067119ef658624278017633e373f184c90ffab231c2",
+          "path": "src/modules/market-data/market-data.spec-renamed.ts",
+          "fingerprint": "5de2ba5a5a0ad50718472f4a08da2032f6447f0190773038f938e6038b0d548e"
+        },
+        {
+          "item_id": "b5f0a0b0f190c77a38e094579042a2f975781a3912d686f9ed845a3dfebaf431",
+          "path": "src/modules/market-data/query.spec-renamed.ts",
+          "fingerprint": "7bbf350822b9885dfdbb4ff93cb5457eac892508aa4f222f77f836dfa9b00430"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0f30a98b37647d5c66aa5b6c8143c0749aeeb9c7ad819c56f28b1a793961d13a",
+          "path": "src/modules/market-data/records.ts",
+          "fingerprint": "5d897cdc955d451600e506899bcb0506f1786acc8e470adde9902299946683db"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "7f84942c0f0e2681929e002874ab136392ba541d79b14a967981617a71d5e2cb"
+        },
+        {
+          "item_id": "7b8d1a9e68b1584967d0c067119ef658624278017633e373f184c90ffab231c2",
+          "path": "src/modules/market-data/market-data.spec-renamed.ts",
+          "fingerprint": "5de2ba5a5a0ad50718472f4a08da2032f6447f0190773038f938e6038b0d548e"
+        },
+        {
+          "item_id": "b5f0a0b0f190c77a38e094579042a2f975781a3912d686f9ed845a3dfebaf431",
+          "path": "src/modules/market-data/query.spec-renamed.ts",
+          "fingerprint": "7bbf350822b9885dfdbb4ff93cb5457eac892508aa4f222f77f836dfa9b00430"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 22592
+  }
+}

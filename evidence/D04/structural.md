@@ -843,3 +843,7 @@ ocr review of `f7d457a`: session `7ce6a91b-091e-4ba2-b73b-3deda5c25ee7` (scratch
 
 ### T4.18-B2 Market Data owns Mark provenance
 - it should give the frame's Mark its save time and correction reason from Market Data
+
+ocr review of `ec4bbf6` (B2): session `a5093269-065f-43d1-8405-25aa15f3ee99` (scratch clone with tests renamed), 4 files, no findings. `ocr/T4.18-B2-ec4bbf6.json`. Market Data's frame Mark (`FrameMark`) carries `savedAt` and, for a Correction, `correctionReason`, from the same record and transaction that pick the effective Mark; Trade Views no longer reads `observations`. The digest and `MarketDataSnapshotId` use revision ids only, so they are unchanged and still move whenever the provenance does. Two first-run passes (the correction reason and its absence), mutation-checked; five exact-shape Market Data expectations gained the new fields.
+
+T4.18-B1 is paused on a user decision: P8 names `Unavailable(SessionPolicyNotCovered)` but no shape for Open items and Detail when the as-of date is outside coverage (no Expected Mark Date, no resolution).
