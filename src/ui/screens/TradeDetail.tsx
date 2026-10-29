@@ -280,7 +280,7 @@ type Evaluation = OpenTradeDetail['current']['evaluation'];
 function ValuationFigures({ evaluation }: { readonly evaluation: Evaluation }) {
   return (
     <>
-      <Figure term="Realized to date">{calculation(evaluation.realizedToDate, money)}</Figure>
+      <Figure term="Realized to date">{calculation(evaluation.realizedToDate, signed(money))}</Figure>
       <Figure term="Open P&L">{calculation(evaluation.remainingOpenPnl, signed(money))}</Figure>
       <Figure term="Current Marked Trade P&L">{pnlText(evaluation.currentMarkedPnl, evaluation.currentMarkedPnlInPlanR)}</Figure>
       <Figure term="Incurred fees">{calculation(evaluation.incurredFees, money)}</Figure>

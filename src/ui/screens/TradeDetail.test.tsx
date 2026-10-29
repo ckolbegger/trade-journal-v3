@@ -21,6 +21,7 @@ import {
 import { plannedDetail } from '../../../tests/support/views-fixtures.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import type { NarrativeItem, TradeDetailView } from '../../app/types.ts';
+import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { TradeDetail } from './TradeDetail.tsx';
 
@@ -820,6 +821,25 @@ describe('valuation', () => {
     expect(termValue(missing, 'Incurred fees')).toBe('$2.00');
     expect(termValue(missing, 'Open P&L')).toBe('Mark missing: XYZ, Tue Oct 13');
     expect(termValue(missing, 'Current Marked Trade P&L')).toBe('Mark missing: XYZ, Tue Oct 13');
+  });
+  it('should show realized to date with a plus sign for a gain and a minus sign for a loss, in the current and the dated figures', async () => {
+    const withRealized = (value: bigint) => {
+      const detail = openDetailAt([PC1, PC2], tuesday({ kind: 'Missing', stale: monContext }));
+      const realizedToDate = { kind: 'Value' as const, value: Rational.of(value) };
+      const { datedLine } = detail.current;
+      if (!datedLine) throw new Error('fixture needs a dated line');
+      return { ...detail, current: { ...detail.current, evaluation: { ...detail.current.evaluation, realizedToDate }, datedLine: { ...datedLine, evaluation: { ...datedLine.evaluation, realizedToDate } } } };
+    };
+    renderView(withRealized(120n));
+    const gain = await screen.findByRole('region', { name: 'Valuation' });
+    expect(termValue(gain, 'Realized to date')).toBe('+$120.00');
+    expect(termValue(screen.getByRole('region', { name: 'At Mon Oct 12 close' }), 'Realized to date')).toBe('+$120.00');
+    cleanup();
+
+    renderView(withRealized(-75n));
+    const loss = await screen.findByRole('region', { name: 'Valuation' });
+    expect(termValue(loss, 'Realized to date')).toBe('−$75.00');
+    expect(termValue(screen.getByRole('region', { name: 'At Mon Oct 12 close' }), 'Realized to date')).toBe('−$75.00');
   });
 });
 
