@@ -1669,3 +1669,20 @@ B4.14 asserts the Stop row's Status, Boundary, Distance, and Overrun cells, and 
 - `npx playwright test e2e/d4/breach-overrun.spec.ts` : 1 passed
 - `npx playwright test e2e/d4` : 16 passed
 - `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` : each exit 0
+
+### ocr reviews of T4.33-B2 to B7
+
+| Commit | Finding | Assessment | Outcome |
+|---|---|---|---|
+| `cdc8eee` | `MarkEntry.tsx`: an open but empty Mark form stays rendered, disabled, when the shell turns read only | Valid (minor) | Fixed by T4.33-B6 (`a105e38`) |
+| `cdc8eee` | `MarkEntry.tsx:209` nested ternary | Valid, style only | folded into T4.33-B6 |
+| `cdc8eee` | releasing the Action hold when read only lets a pending update reload away kept values | Doubtful: the values cannot be saved in that state; B4.11 asks for them on screen, which holds | dismissed |
+| `f50262e` | `ActionForm.tsx` finds Intent by elimination, so a reworded or added Text prompt would show and re-send as Intent | Doubtful, with a failure scenario | Fixed by T4.33-B7 (`5997ea0`) |
+| `a105e38`, `d73fd2d`, `5997ea0` | none beyond scratch-rename artifacts | | clean |
+| `2550208` | `conditionCell`: a mistyped column name gives `nth(-1)`, the last cell | Doubtful with no current failure: every call names a real column | dismissed |
+
+### Cumulative run after T4.33
+
+- code at `2550208`, 2026-10-29 15:31 EDT: unit 814, integration 73, browser 140; checks 12 of 12. `suite-runs/t4.33-*`.
+
+Fully green: every section 6.2 case of D1, D2 and D4 passes. T4.33 is complete.
