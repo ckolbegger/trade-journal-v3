@@ -6,7 +6,7 @@ import type { Rational } from '../../domain/values/index.ts';
 import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { StorageFailure } from '../mutation-guard.ts';
 import type { DailyAction, JournalIssue, JournalObligationKey } from '../../modules/journal/index.ts';
-import type { ExpectedResolutionRevision, MarkFrame, MarketDataIssue, MarkResolution } from '../../modules/market-data/index.ts';
+import type { AcknowledgmentVersion, ExpectedResolutionRevision, MarkFrame, MarketDataIssue, MarkResolution } from '../../modules/market-data/index.ts';
 
 // The request names the date and the as-of instant (Daily Review, "Date, eligibility, and ordering").
 // D4 opens LatestCompleted only (P15); an exact date arrives in D15.
@@ -80,6 +80,8 @@ export interface HistoricalGapGroup {
   readonly acknowledged: readonly string[];
   // The resolutionRevision of each listed date, the binding a save of its Mark presents.
   readonly revisions: Readonly<Record<string, ExpectedResolutionRevision>>;
+  // The effective acknowledgment of each acknowledged date, for its AcknowledgedUnavailable resolution.
+  readonly acknowledgments: Readonly<Record<string, AcknowledgmentVersion>>;
   readonly blocking: false;
 }
 

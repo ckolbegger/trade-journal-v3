@@ -133,6 +133,15 @@ describe('recover without a provider (A56)', () => {
     expect(result.gaps[0]!.revisions).toEqual({ '2026-10-12': 'None', '2026-10-09': 1 });
   });
 
+  it('should carry the effective acknowledgment of each acknowledged gap date', async () => {
+    const { marketData } = await fixture(WEDNESDAY_NOON);
+    await marketData.save(acknowledge('MNO', '2026-10-09'));
+    const result = await marketData.recover(review([MNO], '2026-10-13'));
+    if (result.kind !== 'Recovered') throw new Error('expected a recovery');
+    expect(Object.keys(result.gaps[0]!.acknowledgments)).toEqual(['2026-10-09']);
+    expect(result.gaps[0]!.acknowledgments['2026-10-09']).toMatchObject({ kind: 'Asserted', reason: 'no quote' });
+  });
+
   it('should return the current-date Missing keys of MNO and XYZ on 2026-10-12 as Manual tasks', async () => {
     const { marketData } = await fixture();
     const result = await marketData.recover(review([MNO, XYZ]));

@@ -162,6 +162,8 @@ export interface HistoricalGaps {
   readonly acknowledged: readonly string[];
   // The resolutionRevision of each listed date, the binding a save of it presents.
   readonly revisions: Readonly<Record<string, ExpectedResolutionRevision>>;
+  // The effective acknowledgment of each acknowledged date, as its resolution carries it.
+  readonly acknowledgments: Readonly<Record<string, AcknowledgmentVersion>>;
 }
 
 // Transient: it is never stored and creates no fact.
@@ -385,14 +387,20 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
             const relevant = sessions.ok ? sessions.value.filter((s) => Temporal.Instant.compare(Temporal.Instant.from(s.close), exposure) >= 0) : [];
             const stored = relevant.length === 0 ? [] : await tx.getAllFromIndex('observations', 'byInstrumentDate', IDBKeyRange.bound([instrumentKey, relevant[0]!.date], [instrumentKey, relevant[relevant.length - 1]!.date]));
             const storedOn = new Map(stored.map((r) => [r['tradingDate'] as string, r]));
-            const resolutionOf = new Map([...storedOn].map(([date, r]) => [date, resolve(stripRevision(r)).kind]));
-            const kinds = relevant.map((s) => ({ date: s.date, kind: resolutionOf.get(s.date) ?? 'Missing' }));
+            const resolutionOf = new Map([...storedOn].map(([date, r]) => [date, resolve(stripRevision(r))]));
+            const kinds = relevant.map((s) => ({ date: s.date, kind: resolutionOf.get(s.date)?.kind ?? 'Missing' }));
             const gaps: HistoricalGaps = {
               instrumentKey,
               missing: kinds.filter((k) => k.kind === 'Missing').map((k) => k.date),
               acknowledged: kinds.filter((k) => k.kind === 'AcknowledgedUnavailable').map((k) => k.date),
               revisions: Object.fromEntries(
                 kinds.filter((k) => k.kind !== 'Available').map((k) => [k.date, revisionOf(stripRevision(storedOn.get(k.date)))]),
+              ),
+              acknowledgments: Object.fromEntries(
+                kinds.flatMap((k) => {
+                  const resolution = resolutionOf.get(k.date);
+                  return resolution?.kind === 'AcknowledgedUnavailable' ? [[k.date, resolution.acknowledgment]] : [];
+                }),
               ),
             };
             return { gaps, beforeCoverage };

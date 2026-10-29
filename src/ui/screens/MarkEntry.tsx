@@ -14,6 +14,8 @@ export interface MarkEntryProps {
   // The key's resolution and the revision it was read at; every save binds to that revision.
   readonly resolution: MarkResolution;
   readonly resolutionRevision: ExpectedResolutionRevision;
+  // Whether an acknowledged key offers Withdraw; the Review's earlier sessions do not (A57).
+  readonly withdraw?: boolean;
   // Reports whether a value has been entered (update deferral, D1 A5).
   readonly onDirtyChange: (dirty: boolean) => void;
 }
@@ -31,7 +33,7 @@ const FITS: Record<'Enter' | 'Correct' | 'Acknowledge', readonly MarkResolution[
 };
 
 // One Instrument's Mark for one session: its resolution and the actions that change it.
-export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: initial, resolutionRevision: initialRevision, onDirtyChange }: MarkEntryProps) {
+export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: initial, resolutionRevision: initialRevision, withdraw = true, onDirtyChange }: MarkEntryProps) {
   const { writable, report } = useRuntime();
   const [resolution, setResolution] = useState(initial);
   const [revision, setRevision] = useState(initialRevision);
@@ -216,7 +218,7 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
               {CANT_GET_A_PRICE}
             </button>
           )}
-          {resolution.kind === 'AcknowledgedUnavailable' && (
+          {withdraw && resolution.kind === 'AcknowledgedUnavailable' && (
             <button type="button" className="pill secondary" onClick={() => void save({ intention: 'WithdrawAcknowledgment', ...key })} disabled={saving}>
               Withdraw
             </button>

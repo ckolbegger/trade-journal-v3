@@ -197,13 +197,14 @@ describe('Marks family (P11, P15)', () => {
     const day = (n: number) => `2026-09-${String(n).padStart(2, '0')}`;
     const missing = Array.from({ length: 25 }, (_, i) => day(i + 1)).filter((d) => d !== day(10));
     const revisions: Record<string, ExpectedResolutionRevision> = Object.fromEntries([...missing, day(10)].map((d) => [d, d === day(24) ? 4 : d === day(10) ? 1 : 'None']));
+    const acknowledgments = { [day(10)]: { versionId: 'a1', kind: 'Asserted', reason: 'no quote', savedAt: '2026-09-11T21:00:00Z' } } as const;
     const facade = reviewFacade(
       ready({
         today: [markRow('MNO', ['t1'])],
         trades: [tradeItem('t1', 'MNO')],
         earlier: [
-          { instrumentKey: 'MNO', missing, acknowledged: [day(10)], revisions, blocking: false },
-          { instrumentKey: 'ABC', missing: ['2026-09-30'], acknowledged: [], revisions: { '2026-09-30': 'None' }, blocking: false },
+          { instrumentKey: 'MNO', missing, acknowledged: [day(10)], revisions, acknowledgments, blocking: false },
+          { instrumentKey: 'ABC', missing: ['2026-09-30'], acknowledged: [], revisions: { '2026-09-30': 'None' }, acknowledgments: {}, blocking: false },
         ],
         completion: incomplete({ code: 'MarkMissing', instrumentKey: 'MNO', tradingDate: '2026-10-12', trades: ['t1'] }),
       }),
@@ -224,10 +225,9 @@ describe('Marks family (P11, P15)', () => {
     expect(page1).toHaveLength(20);
     expect(within(page1[0]!).getByText('Fri Sep 25')).toBeTruthy();
     expect(within(page1[19]!).getByText('Sun Sep 6')).toBeTruthy();
-    // The acknowledged session is listed in order and carries no entry controls.
+    // The acknowledged session is listed in order among the others.
     const acknowledged = page1.find((row) => within(row).queryByText('Thu Sep 10'));
-    expect(within(acknowledged!).getByText('Acknowledged unavailable')).toBeTruthy();
-    expect(within(acknowledged!).queryByRole('button')).toBeNull();
+    expect(within(acknowledged!).getByText(/Acknowledged Unavailable/)).toBeTruthy();
     // ABC has its own single-row list, so it has no pager.
     expect(within(within(group).getByRole('region', { name: 'ABC earlier sessions' })).queryByRole('button', { name: 'Next page' })).toBeNull();
 
@@ -258,7 +258,7 @@ describe('Marks family (P11, P15)', () => {
       ready({
         today: [markRow('MNO', ['t1'])],
         trades: [tradeItem('t1', 'MNO')],
-        earlier: [{ instrumentKey: 'MNO', missing, acknowledged: [], revisions: Object.fromEntries(missing.map((d) => [d, 'None'])), blocking: false }],
+        earlier: [{ instrumentKey: 'MNO', missing, acknowledged: [], revisions: Object.fromEntries(missing.map((d) => [d, 'None'])), acknowledgments: {}, blocking: false }],
         completion: incomplete({ code: 'MarkMissing', instrumentKey: 'MNO', tradingDate: '2026-10-12', trades: ['t1'] }),
       }),
     );
@@ -288,7 +288,7 @@ describe('Marks family (P11, P15)', () => {
       reviewFacade(
         ready({
           today: [markRow('DEF', ['t3']), markRow('XYZ', ['t1'])],
-          earlier: [{ instrumentKey: 'MNO', missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, blocking: false }],
+          earlier: [{ instrumentKey: 'MNO', missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false }],
           trades: [tradeItem('t1', 'XYZ'), tradeItem('t3', 'DEF')],
           completion: incomplete({ code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-12', trades: ['t3'] }),
         }),
@@ -407,6 +407,28 @@ describe('moving on', () => {
     await waitFor(() => expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledTimes(3));
   });
 
+  it('should offer Enter on an acknowledged earlier-session date, saved under that date revision, without Withdraw', async () => {
+    const acknowledgment = { versionId: 'a1', kind: 'Asserted', reason: 'no quote', savedAt: '2026-10-10T21:00:00Z' } as const;
+    const facade = reviewFacade(
+      ready({
+        today: [markRow('DEF', ['t1'], available('12'), 1)],
+        trades: [tradeItem('t1', 'DEF')],
+        earlier: [{ instrumentKey: 'DEF', missing: [], acknowledged: ['2026-10-09'], revisions: { '2026-10-09': 2 }, acknowledgments: { '2026-10-09': acknowledgment }, blocking: false }],
+      }),
+    );
+    vi.mocked(facade.MarketData.save).mockResolvedValue({ kind: 'Conflict', key: { instrumentKey: 'DEF', tradingDate: '2026-10-09' }, resolution: { kind: 'AcknowledgedUnavailable', acknowledgment }, resolutionRevision: 2 });
+    renderReview(facade);
+    const user = userEvent.setup();
+
+    const row = within(await screen.findByRole('region', { name: 'DEF earlier sessions' })).getByRole('listitem');
+    expect(within(row).getByText(/no quote/)).toBeTruthy();
+    expect(within(row).queryByRole('button', { name: 'Withdraw' })).toBeNull();
+    await user.click(within(row).getByRole('button', { name: 'Enter' }));
+    await user.type(within(row).getByLabelText('Price'), '9.5');
+    await user.click(within(row).getByRole('button', { name: 'Save Mark' }));
+    expect(facade.MarketData.save).toHaveBeenCalledWith(expect.objectContaining({ instrumentKey: 'DEF', tradingDate: '2026-10-09', price: '9.5', expectedResolutionRevision: 2 }));
+  });
+
   it('should keep a value typed into a Mark entry when a refresh brings that key a newer revision', async () => {
     const first = ready({ today: [markRow('DEF', ['t1'])], trades: [tradeItem('t1', 'DEF')] });
     // The refreshed key is acknowledged unavailable, so the open Enter form still fits it.
@@ -424,7 +446,7 @@ describe('moving on', () => {
   });
 
   it('should keep an earlier-session Mark\'s saved resolution when the Review re-renders without a newer revision', async () => {
-    const gap = { instrumentKey: 'DEF', missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, blocking: false } as const;
+    const gap = { instrumentKey: 'DEF', missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false } as const;
     const returned = ready({ today: [markRow('DEF', ['t1'], available('12'), 1)], earlier: [gap], trades: [tradeItem('t1', 'DEF')] });
     const facade = reviewFacade(returned);
     const key = { instrumentKey: 'DEF', tradingDate: '2026-10-09' };
@@ -512,7 +534,7 @@ describe('moving on', () => {
     const facade = reviewFacade(
       ready({
         today: [markRow('DEF', ['t1'])],
-        earlier: [{ instrumentKey: 'DEF', missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, blocking: false }],
+        earlier: [{ instrumentKey: 'DEF', missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false }],
         trades: [tradeItem('t1', 'DEF')],
         completion: incomplete({ code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-12', trades: ['t1'] }),
       }),
@@ -538,7 +560,7 @@ describe('moving on', () => {
     const facade = reviewFacade(
       ready({
         today: [markRow('DEF', ['t1']), markRow('XYZ', ['t2'], available('52'), 1)],
-        earlier: [{ instrumentKey: 'DEF', missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, blocking: false }],
+        earlier: [{ instrumentKey: 'DEF', missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false }],
         trades: [tradeItem('t1', 'DEF'), tradeItem('t2', 'XYZ')],
         completion: incomplete({ code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-12', trades: ['t1'] }),
       }),

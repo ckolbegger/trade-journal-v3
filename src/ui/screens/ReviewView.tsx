@@ -75,10 +75,10 @@ function Status({ review, completion }: { readonly review: Ready; readonly compl
 type EntryDirty = (id: string, dirty: boolean) => void;
 
 // A Mark entry that reports whether it holds a value under its own id.
-function ReviewMarkEntry({ facade, instrumentKey, tradingDate, resolution, resolutionRevision, onEntryDirty }: Omit<MarkEntryProps, 'onDirtyChange'> & { readonly onEntryDirty: EntryDirty }) {
+function ReviewMarkEntry({ facade, instrumentKey, tradingDate, resolution, resolutionRevision, withdraw, onEntryDirty }: Omit<MarkEntryProps, 'onDirtyChange'> & { readonly onEntryDirty: EntryDirty }) {
   const id = `${instrumentKey}:${tradingDate}`;
   const report = useCallback((dirty: boolean) => onEntryDirty(id, dirty), [id, onEntryDirty]);
-  return <MarkEntry facade={facade} instrumentKey={instrumentKey} tradingDate={tradingDate} resolution={resolution} resolutionRevision={resolutionRevision} onDirtyChange={report} />;
+  return <MarkEntry facade={facade} instrumentKey={instrumentKey} tradingDate={tradingDate} resolution={resolution} resolutionRevision={resolutionRevision} withdraw={withdraw} onDirtyChange={report} />;
 }
 
 // An Instrument's name over its rows; it takes focus when the Review was opened from a link to it.
@@ -116,6 +116,11 @@ function TodayRow({ facade, row, underlying, focus, onEntryDirty }: { readonly f
 const GAPS_PER_PAGE = 20;
 // A gap row has no effective Mark; one constant keeps the prop stable across renders.
 const MISSING: MarkResolution = { kind: 'Missing' };
+// The resolution an earlier-session row starts from: acknowledged when its date holds an acknowledgment.
+function resolutionOf(group: GapGroup, date: string): MarkResolution {
+  const acknowledgment = group.acknowledgments[date];
+  return acknowledgment ? { kind: 'AcknowledgedUnavailable', acknowledgment } : MISSING;
+}
 const EARLIER_HEADING = 'Earlier sessions without Marks — optional';
 type GapGroup = Extract<ReviewFamily, { family: 'Marks' }>['earlier'][number];
 
@@ -139,23 +144,25 @@ function GapList({ facade, group, focus, onEntryDirty: reportDirty }: { readonly
   );
   const blocked = dirtyIds.size > 0;
   const holdId = useId();
-  const sessions = [...group.missing.map((date) => ({ date, acknowledged: false })), ...group.acknowledged.map((date) => ({ date, acknowledged: true }))].sort((a, b) => (a.date < b.date ? 1 : -1));
+  const sessions = [...group.missing, ...group.acknowledged].sort((a, b) => (a < b ? 1 : -1));
   const first = page * GAPS_PER_PAGE;
   const shown = sessions.slice(first, first + GAPS_PER_PAGE);
   return (
     <section aria-label={`${group.instrumentKey} earlier sessions`}>
       <InstrumentHeading name={group.instrumentKey} focus={focus} />
       <ul className="review-rows">
-        {shown.map(({ date, acknowledged }) => (
+        {shown.map((date) => (
           <li key={date}>
             <p>{shortDate(date)}</p>
-            {acknowledged ? (
-              <p>
-                <strong>Acknowledged unavailable</strong>
-              </p>
-            ) : (
-              <ReviewMarkEntry facade={facade} instrumentKey={group.instrumentKey} tradingDate={date} resolution={MISSING} resolutionRevision={group.revisions[date] ?? 'None'} onEntryDirty={onEntryDirty} />
-            )}
+            <ReviewMarkEntry
+              facade={facade}
+              instrumentKey={group.instrumentKey}
+              tradingDate={date}
+              resolution={resolutionOf(group, date)}
+              resolutionRevision={group.revisions[date] ?? 'None'}
+              withdraw={false}
+              onEntryDirty={onEntryDirty}
+            />
           </li>
         ))}
       </ul>
