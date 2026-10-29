@@ -43,7 +43,8 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
   // The key changed after the form opened: nothing was saved, and the values stay for review.
   const [conflict, setConflict] = useState(false);
   // The write failed in storage: nothing was saved, and the values stay for a retry.
-  const [storageFailed, setStorageFailed] = useState(false);
+  // Which save could not write: a Withdraw has no entered values to keep, so its notice differs.
+  const [storageFailed, setStorageFailed] = useState<false | 'form' | 'withdraw'>(false);
   const noticeRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (conflict || storageFailed) noticeRef.current?.focus();
@@ -85,7 +86,7 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
     report(result);
     setIssues(result.kind === 'Rejected' ? describeMarkIssues(result.issues, uid) : []);
     setConflict(result.kind === 'Conflict');
-    setStorageFailed(result.kind === 'StorageFailure');
+    setStorageFailed(result.kind === 'StorageFailure' ? (command.intention === 'WithdrawAcknowledgment' ? 'withdraw' : 'form') : false);
     if (result.kind === 'Conflict') {
       setResolution(result.resolution);
       setRevision(result.resolutionRevision);
@@ -136,7 +137,15 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
       {storageFailed && (
         <div ref={noticeRef} role="alert" tabIndex={-1} className="banner warning">
           <p>
-            <strong>This Mark could not be saved.</strong> Nothing was saved. Your values are kept, so you can try again.
+            {storageFailed === 'withdraw' ? (
+              <>
+                <strong>The acknowledgment could not be withdrawn.</strong> Nothing was saved, so you can try again.
+              </>
+            ) : (
+              <>
+                <strong>This Mark could not be saved.</strong> Nothing was saved. Your values are kept, so you can try again.
+              </>
+            )}
           </p>
         </div>
       )}

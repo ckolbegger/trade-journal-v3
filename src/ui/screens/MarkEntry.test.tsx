@@ -374,6 +374,8 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
 
     const alert = await screen.findByRole('alert');
     expect(alert.textContent).toContain('Nothing was saved');
+    expect(alert.textContent).toContain('The acknowledgment could not be withdrawn.');
+    expect(alert.textContent).not.toContain('Your values');
     expect(screen.getByText('Acknowledged Unavailable')).toBeTruthy();
     expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Withdraw' }).disabled).toBe(false);
 
