@@ -462,3 +462,26 @@ describe('the Review after a save (T4.30-B1)', () => {
     expect(saved(await saveAction(stack, trade.trade.saveBinding)).action).toEqual(expect.objectContaining({ action: 'Hold' }));
   }, 30_000);
 });
+
+// T4.30-B2: the post-save Mark rows carry the stored resolution revision, as a fresh open gives them.
+describe('the Mark rows after a save (T4.30-B2)', () => {
+  it('should keep the stored resolution revision on the next-step Mark row after a withdrawn acknowledgment', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a } = await fiveTradeFixture(stack);
+    await stack.acknowledge('DEF');
+    const withdrawn = await stack.marketData.save({ intention: 'WithdrawAcknowledgment', instrumentKey: 'DEF', tradingDate: '2026-10-12', expectedResolutionRevision: 1 });
+    expect(withdrawn.kind).toBe('Saved');
+    const binding = await bindingFor(stack, a);
+
+    const { review } = saved(await saveAction(stack, binding));
+
+    if (review.kind !== 'Ready' || review.nextStep.kind !== 'Mark') throw new Error('expected a Mark next step');
+    const reopened = await stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: MONDAY_1700 });
+    if (reopened.kind !== 'Ready') throw new Error(`expected Ready, got ${reopened.kind}`);
+    const fresh = reopened.families.find((f) => f.family === 'Marks')?.today.find((row) => row.instrumentKey === 'DEF');
+    expect(fresh?.resolutionRevision).toBe(2);
+    expect(review.nextStep.row.resolutionRevision).toBe(2);
+    const entered = await stack.marketData.save({ intention: 'RecordInitialManualMark', instrumentKey: 'DEF', tradingDate: review.nextStep.row.tradingDate, price: '39.00', expectedResolutionRevision: review.nextStep.row.resolutionRevision });
+    expect(entered.kind).toBe('Saved');
+  }, 30_000);
+});

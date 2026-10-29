@@ -1330,3 +1330,11 @@ Fix: `assemble` takes `withGaps` (default true). `postSaveReview` passes false, 
 Evidence: `src/coordinators/daily-review/save.test.ts` "should read the post-save Review without the historical gap scan and return the binding a fresh open would give" counts `recover` calls across a save, and checks the returned binding and completion equal a fresh `open`'s and that `getTrade` and the next save accept the binding.
 - red: `AssertionError: expected 1 to be +0`
 - green: exit 0, 1 passed; daily-review, market-data and `tests/integration/d4` units 131 passed; typecheck, tsc6 and lint exit 0. `lint:deps` exit 1 on `src/app/bench-generator.ts` -> session-policy (uncommitted T4.30 work, not part of this fix).
+
+### T4.30-B2
+
+Bug fix, post-save Mark rows keep their resolution revision. `framesOnly` returned `resolutions: []`, so every post-save Mark row (including the next-step Missing row) carried revision 'None', a spurious Conflict after a withdrawn acknowledgment. The Frames query result now carries `resolutionRevisions` for the queried keys (today's session only); no historical scan is reintroduced.
+
+- `npx vitest run src/coordinators/daily-review src/modules/market-data tests/integration/d4`: exit 0, 9 files, 132 passed.
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`: exit 0.
+- `npm run lint:deps`: one violation, only-market-data-sees-session-policy from the uncommitted `src/app/bench-generator.ts` (not this task).

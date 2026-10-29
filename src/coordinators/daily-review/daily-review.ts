@@ -205,12 +205,12 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     return { kind: 'ChangedDuringAssembly' };
   }
 
-  // Today's frames in the shape of a recovery, without the gaps or per-Instrument resolution revisions.
+  // Today's frames in the shape of a recovery, without the gaps; the resolution revisions are today's keys only.
   async function framesOnly(reviewDate: string, instruments: readonly string[]) {
     const frames = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Review', reviewDate }, instruments });
     if (frames.kind === 'Rejected') return frames;
     if (frames.kind !== 'Frames') throw new Error(`unexpected frames result: ${frames.kind}`);
-    return { kind: 'Recovered' as const, frames: frames.frames, resolutions: [], gaps: [], snapshotId: frames.snapshotId };
+    return { kind: 'Recovered' as const, frames: frames.frames, resolutions: frames.frames.map(({ instrumentKey, tradingDate }) => ({ instrumentKey, tradingDate, resolutionRevision: frames.resolutionRevisions[instrumentKey] ?? ('None' as const) })), gaps: [], snapshotId: frames.snapshotId };
   }
 
   // One pass over the module reads. Its Review carries what the pass itself learned of the binding.

@@ -130,6 +130,8 @@ export type MarketDataQueryResult =
   | {
       readonly kind: 'Frames';
       readonly frames: readonly MarkFrame[];
+      // The resolutionRevision each frame's key was read at, by Instrument: the binding a save of it presents.
+      readonly resolutionRevisions: Readonly<Record<string, ExpectedResolutionRevision>>;
       // Opaque token holding the session-policy revision and the evidence digest (A45).
       readonly snapshotId: string;
       readonly evidenceDigest: string;
@@ -477,6 +479,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
       ...(nextSession && { nextSession }),
       resolution: resolve(evidence[i]!.record, evidence[i]!.stale),
     })),
+    resolutionRevisions: Object.fromEntries(instruments.map((instrumentKey, i) => [instrumentKey, revisionOf(evidence[i]!.record)])),
     snapshotId,
     evidenceDigest,
   };
