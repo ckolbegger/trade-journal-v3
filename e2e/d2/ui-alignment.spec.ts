@@ -41,6 +41,9 @@ async function expectLayout(page: Page, width: number): Promise<void> {
 
 const WIDTHS = [390, 320] as const;
 
+// Primary navigation destinations in the bottom bar (src/app/routes.ts): Trades, Review, New Plan, Accounts, About.
+const NAV_LINK_COUNT = 5;
+
 test.describe('T2.36-B1 bottom navigation fit', () => {
   test('should keep every bottom bar link inside the viewport with no horizontal overflow in the bar', async ({ server, profile }) => {
     void server;
@@ -59,7 +62,7 @@ test.describe('T2.36-B1 bottom navigation fit', () => {
           return { name: a.textContent ?? '', left: box.left, right: box.right };
         }),
       }));
-      expect(bar.links.length, `links at ${width}`).toBe(4);
+      expect(bar.links.length, `links at ${width}`).toBe(NAV_LINK_COUNT);
       for (const link of bar.links) {
         expect(link.left, `${link.name} left at ${width}`).toBeGreaterThanOrEqual(0);
         expect(link.right, `${link.name} right at ${width}`).toBeLessThanOrEqual(width);
@@ -115,7 +118,7 @@ test.describe('T2.37 navigation styling', () => {
         return { name: a.textContent ?? '', iconBottom: icon.bottom, labelTop: label.top };
       }),
     );
-    expect(boxes.length).toBe(4);
+    expect(boxes.length).toBe(NAV_LINK_COUNT);
     for (const box of boxes) expect(box.iconBottom, box.name).toBeLessThanOrEqual(box.labelTop + 0.5);
     await context.close();
   });
