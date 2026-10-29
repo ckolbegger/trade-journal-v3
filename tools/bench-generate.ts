@@ -20,6 +20,7 @@ import {
   type BenchStamp,
   type ExpectedOpenRows,
 } from './bench/profile.ts';
+import { pinAsOf } from './bench/pin.ts';
 import { listFiles } from './release.ts';
 import { startReleaseServer } from './release-server.ts';
 
@@ -74,7 +75,8 @@ try {
   result = await page.evaluate(() => window.__tjBench!.generate());
   generationMs = Math.round(performance.now() - started);
 
-  // The Open list as the trader sees it, for T2.21's before-and-after comparison.
+  // The Open list as the trader sees it at the as-of instant, for T2.21's before-and-after comparison.
+  await pinAsOf(context, new Date(result.asOf));
   await page.goto(origin);
   const table = page.getByRole('table', { name: 'Open Trades' });
   await table.locator('tbody tr').nth(result.counts.openTrades - 1).waitFor({ timeout: 60_000 });

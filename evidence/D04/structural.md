@@ -1524,3 +1524,18 @@ Browser cases B4.1 to B4.7 added under `e2e/d4/` (`review`, `hold`, `acknowledge
 | `npm run lint:deps` | exit 0 |
 
 Notes: every case passed on first run (behavior from earlier D4 tasks) and carries a mutation note in `tdd-log.md`. Playwright's clock pins only `Date`, but this Chromium has a native Temporal, which the production `systemClock` (`Temporal.Now.instant()`) uses, so `launchAt` in `e2e/d4/support.ts` also points `Temporal.Now.instant` at the pinned `Date.now()` in an init script; without it the app saw real time. T4.31's `tools/bench-run.ts` pins only `Date`, so its as-of pin may not reach the app in Chromium (not changed here). B4.5 expects the plan's "last 51.20 on Fri Oct 9 (stale)" as the product's wording "Stale context: $51.20 from Fri Oct 9 close (stale, not used in any current figure)".
+
+### T4.31-B1
+
+Defect confirmed. Playwright's `clock.setFixedTime` pins only `Date`; the production `systemClock` reads native `Temporal.Now.instant()`, so `bench:run` (T4.31) ran the app at real time, not 2028-12-29T21:35:00Z. `bench/expected-open-rows.json` was captured the same way in T4.30 (`bench-generate.ts` rendered the table at real time), so both sides agreed while wrong. Diagnosis on the cached profile with `Date` pinned: without the Temporal patch 87 of 200 rows showed `Awaiting the next close` in P&L and none `Mark missing`; with it, 0 awaiting and the Missing Instruments' rows show `Mark missing`. The expected rows had 87 awaiting rows and 0 `Mark missing` rows. The facade `items` in the expected file already carried `expectedMarkDate` 2028-12-29 for all 200 (the generator uses its own clock), so only headers and rows were wrong. The generated data is not wrong; the cached profile and generator version are unchanged.
+
+Fix (test harness only): `tools/bench/pin.ts` (`pinAsOf` pins `Date` and points `Temporal.Now.instant` at it; `assertPinned` fails when the page's Date or Temporal instant differs from the as-of instant; `assertMissingRendered` fails unless exactly the Missing Instruments' rows show `Mark missing`). `tools/bench-run.ts` uses all three on every comparison. `tools/bench-generate.ts` pins before rendering the expected rows (not re-run; generation takes about an hour). New `tools/bench-expected-rows.ts` (`npm run bench:expected`) re-rendered the headers and rows of `bench/expected-open-rows.json` from the cached profile; items untouched.
+
+| Command | Result |
+|---|---|
+| `npm run build && npm run bench:expected` | `bench:expected OK: 200 rows rendered at 2028-12-29T21:35:00.000Z`; expected rows now 0 `Awaiting the next close`, `Mark missing` rows only for the 10 Missing Instruments |
+| `npm run bench:run` | exit 0; cold p95 107.3 ms (median 95.7), warm p95 46.1 ms (median 42.4); rows equal before, after and at each cold start |
+| Mutation: Temporal patch disabled in `pin.ts` (`if (false && native)`), `npm run bench:run` | exit 1: `Error: the page is not pinned to the as-of instant 2028-12-29T21:35:00.000Z: Date 2028-12-29T21:35:00.000Z, Temporal.Now.instant 2026-10-29T10:59:11.2379Z`; restored (`git diff` of pin.ts clean) |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | exit 0 each |
+
+Earlier T4.31 numbers (cold p95 98.9 ms, median 93.0; warm p95 44.4 ms, median 41.1) are kept in `evidence/D04/bench.md` marked superseded. Plan note: A52's "pins Date" wording should say Date and Temporal.Now.instant.

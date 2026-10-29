@@ -12,1601 +12,1601 @@
   "rows": [
     [
       "QAJ",
-      "Long 120 shares @ $300.97 Net cost $36,118.83 · P&L Awaiting the next close",
+      "Long 120 shares @ $300.97 Net cost $36,118.83 · P&L −$19,460.43 · −10.78R Stop breached",
       "$36,118.83",
-      "Awaiting the next close",
+      "−$19,460.43 · −10.78R",
       "Resolved · 120 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QAI",
-      "Long 84 shares @ $282.36 Net cost $23,720.51 · P&L Awaiting the next close",
+      "Long 84 shares @ $282.36 Net cost $23,720.51 · P&L −$12,894.59 · −13.06R Stop breached",
       "$23,720.51",
-      "Awaiting the next close",
+      "−$12,894.59 · −13.06R",
       "Resolved · 84 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "QAH",
-      "Long 170 shares @ $263.59 Net cost $44,812.93 · P&L Awaiting the next close",
+      "Long 170 shares @ $263.59 Net cost $44,812.93 · P&L −$24,593.13 · −10.98R Stop breached",
       "$44,812.93",
-      "Awaiting the next close",
+      "−$24,593.13 · −10.98R",
       "Resolved · 170 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "QAG",
-      "Long 72 shares @ $244.82 Net cost $17,627.69 · P&L Awaiting the next close",
+      "Long 72 shares @ $244.82 Net cost $17,627.69 · P&L −$9,779.69 · −6.66R Stop breached",
       "$17,627.69",
-      "Awaiting the next close",
+      "−$9,779.69 · −6.66R",
       "Entering · 72 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "QAF",
-      "Long 70 shares @ $226.06 Net cost $15,826.94 · P&L Awaiting the next close",
+      "Long 70 shares @ $226.06 Net cost $15,826.94 · P&L −$8,892.74 · −11.24R Stop breached",
       "$15,826.94",
-      "Awaiting the next close",
+      "−$8,892.74 · −11.24R",
       "Resolved · 70 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "QAE",
-      "Long 170 shares @ $207.28 Net cost $35,240.23 · P&L Awaiting the next close",
+      "Long 170 shares @ $207.28 Net cost $35,240.23 · P&L −$20,089.83 · −11.41R Stop breached",
       "$35,240.23",
-      "Awaiting the next close",
+      "−$20,089.83 · −11.41R",
       "Resolved · 170 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "QAD",
-      "Long 144 shares @ $188.51 Net cost $27,148.60 · P&L Awaiting the next close",
+      "Long 144 shares @ $188.51 Net cost $27,148.60 · P&L −$15,746.68 · −13.92R Stop breached",
       "$27,148.60",
-      "Awaiting the next close",
+      "−$15,746.68 · −13.92R",
       "Resolved · 144 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QAC",
-      "Long 70 shares @ $169.74 Net cost $11,881.80 · P&L Awaiting the next close",
+      "Long 70 shares @ $169.74 Net cost $11,881.80 · P&L −$7,035.00 · −11.84R Stop breached",
       "$11,881.80",
-      "Awaiting the next close",
+      "−$7,035.00 · −11.84R",
       "Resolved · 70 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "QAB",
-      "Long 102 shares @ $150.98 Net cost $15,402.10 · P&L Awaiting the next close",
+      "Long 102 shares @ $150.98 Net cost $15,402.10 · P&L −$9,353.50 · −7.29R Stop breached",
       "$15,402.10",
-      "Awaiting the next close",
+      "−$9,353.50 · −7.29R",
       "Entering · 102 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "QAA",
-      "Long 120 shares @ $132.20 Net cost $15,867.08 · P&L Awaiting the next close",
+      "Long 120 shares @ $132.20 Net cost $15,867.08 · P&L −$9,943.88 · −12.54R Stop breached",
       "$15,867.08",
-      "Awaiting the next close",
+      "−$9,943.88 · −12.54R",
       "Resolved · 120 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "GS",
-      "Long 70 shares @ $113.48 Net cost $7,945.27 · P&L Awaiting the next close",
+      "Long 70 shares @ $113.48 Net cost $7,945.27 · P&L −$4,975.17 · −12.51R Stop breached",
       "$7,945.27",
-      "Awaiting the next close",
+      "−$4,975.17 · −12.51R",
       "Resolved · 70 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "DE",
-      "Long 204 shares @ $94.87 Net cost $19,354.13 · P&L Awaiting the next close",
+      "Long 204 shares @ $94.87 Net cost $19,354.13 · P&L −$12,726.17 · −15.79R Stop breached",
       "$19,354.13",
-      "Awaiting the next close",
+      "−$12,726.17 · −15.79R",
       "Resolved · 204 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "CAT",
-      "Long 120 shares @ $76.11 Net cost $9,135.39 · P&L Awaiting the next close",
+      "Long 120 shares @ $76.11 Net cost $9,135.39 · P&L Mark missing: CAT, Fri Dec 29 Thu Dec 28 close −$6,586.59 · −14.44R Mark missing",
       "$9,135.39",
-      "Awaiting the next close",
+      "Mark missing: CAT, Fri Dec 29 Thu Dec 28 close −$6,586.59 · −14.44R",
       "Resolved · 120 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "BA",
-      "Long 42 shares @ $57.33 Net cost $2,409.96 · P&L Awaiting the next close",
+      "Long 42 shares @ $57.33 Net cost $2,409.96 · P&L +$5,679.66 · +28.37R Target reached",
       "$2,409.96",
-      "Awaiting the next close",
+      "+$5,679.66 · +28.37R",
       "Entering · 42 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "MCD",
-      "Long 170 shares @ $38.56 Net cost $6,557.83 · P&L Awaiting the next close",
+      "Long 170 shares @ $38.56 Net cost $6,557.83 · P&L +$24,496.07 · +74.66R Target reached",
       "$6,557.83",
-      "Awaiting the next close",
+      "+$24,496.07 · +74.66R",
       "Resolved · 170 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "NKE",
-      "Long 120 shares @ $399.79 Net cost $47,975.45 · P&L Awaiting the next close",
+      "Long 120 shares @ $399.79 Net cost $47,975.45 · P&L −$27,247.85 · −11.36R Stop breached",
       "$47,975.45",
-      "Awaiting the next close",
+      "−$27,247.85 · −11.36R",
       "Resolved · 120 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "DIS",
-      "Long 84 shares @ $381.03 Net cost $32,009.28 · P&L Awaiting the next close",
+      "Long 84 shares @ $381.03 Net cost $32,009.28 · P&L −$18,334.92 · −13.75R Stop breached",
       "$32,009.28",
-      "Awaiting the next close",
+      "−$18,334.92 · −13.75R",
       "Resolved · 84 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "WMT",
-      "Long 170 shares @ $362.25 Net cost $61,585.13 · P&L Awaiting the next close",
+      "Long 170 shares @ $362.25 Net cost $61,585.13 · P&L −$35,600.63 · −11.56R Stop breached",
       "$61,585.13",
-      "Awaiting the next close",
+      "−$35,600.63 · −11.56R",
       "Resolved · 170 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "TXN",
-      "Long 72 shares @ $343.48 Net cost $24,733.43 · P&L Awaiting the next close",
+      "Long 72 shares @ $343.48 Net cost $24,733.43 · P&L −$14,443.91 · −7.01R Stop breached",
       "$24,733.43",
-      "Awaiting the next close",
+      "−$14,443.91 · −7.01R",
       "Entering · 72 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QCOM",
-      "Long 70 shares @ $324.71 Net cost $22,729.70 · P&L Awaiting the next close",
+      "Long 70 shares @ $324.71 Net cost $22,729.70 · P&L −$13,421.80 · −11.81R Stop breached",
       "$22,729.70",
-      "Awaiting the next close",
+      "−$13,421.80 · −11.81R",
       "Resolved · 70 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "INTC",
-      "Long 170 shares @ $305.95 Net cost $52,013.79 · P&L Awaiting the next close",
+      "Long 170 shares @ $305.95 Net cost $52,013.79 · P&L −$31,098.69 · −11.96R Stop breached",
       "$52,013.79",
-      "Awaiting the next close",
+      "−$31,098.69 · −11.96R",
       "Resolved · 170 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "AMD",
-      "Long 144 shares @ $287.30 Net cost $41,373.91 · P&L Awaiting the next close",
+      "Long 144 shares @ $287.30 Net cost $41,373.91 · P&L −$25,088.95 · −14.56R Stop breached",
       "$41,373.91",
-      "Awaiting the next close",
+      "−$25,088.95 · −14.56R",
       "Resolved · 144 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "ORCL",
-      "Long 70 shares @ $268.61 Net cost $18,804.93 · P&L Awaiting the next close",
+      "Long 70 shares @ $268.61 Net cost $18,804.93 · P&L −$11,584.43 · −12.32R Stop breached",
       "$18,804.93",
-      "Awaiting the next close",
+      "−$11,584.43 · −12.32R",
       "Resolved · 70 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "CRM",
-      "Long 102 shares @ $249.84 Net cost $25,484.33 · P&L Awaiting the next close",
+      "Long 102 shares @ $249.84 Net cost $25,484.33 · P&L −$15,976.91 · −7.52R Stop breached",
       "$25,484.33",
-      "Awaiting the next close",
+      "−$15,976.91 · −7.52R",
       "Entering · 102 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "ADBE",
-      "Long 120 shares @ $231.08 Net cost $27,731.79 · P&L Awaiting the next close",
+      "Long 120 shares @ $231.08 Net cost $27,731.79 · P&L −$17,739.39 · −12.80R Stop breached",
       "$27,731.79",
-      "Awaiting the next close",
+      "−$17,739.39 · −12.80R",
       "Resolved · 120 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "PEP",
-      "Long 70 shares @ $212.30 Net cost $14,863.23 · P&L Awaiting the next close",
+      "Long 70 shares @ $212.30 Net cost $14,863.23 · P&L −$9,730.13 · −13.10R Stop breached",
       "$14,863.23",
-      "Awaiting the next close",
+      "−$9,730.13 · −13.10R",
       "Resolved · 70 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "MRK",
-      "Long 204 shares @ $193.53 Net cost $39,482.87 · P&L Awaiting the next close",
+      "Long 204 shares @ $193.53 Net cost $39,482.87 · P&L −$26,551.31 · −16.13R Stop breached",
       "$39,482.87",
-      "Awaiting the next close",
+      "−$26,551.31 · −16.13R",
       "Resolved · 204 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "ABBV",
-      "Long 120 shares @ $174.76 Net cost $20,971.85 · P&L Awaiting the next close",
+      "Long 120 shares @ $174.76 Net cost $20,971.85 · P&L Mark missing: ABBV, Fri Dec 29 Thu Dec 28 close −$14,353.85 · −13.69R Mark missing",
       "$20,971.85",
-      "Awaiting the next close",
+      "Mark missing: ABBV, Fri Dec 29 Thu Dec 28 close −$14,353.85 · −13.69R",
       "Resolved · 120 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "LLY",
-      "Long 42 shares @ $156.00 Net cost $6,554.67 · P&L Awaiting the next close",
+      "Long 42 shares @ $156.00 Net cost $6,554.67 · P&L −$4,600.83 · −8.43R Stop breached",
       "$6,554.67",
-      "Awaiting the next close",
+      "−$4,600.83 · −8.43R",
       "Entering · 42 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "CVX",
-      "Long 170 shares @ $137.22 Net cost $23,330.03 · P&L Awaiting the next close",
+      "Long 170 shares @ $137.22 Net cost $23,330.03 · P&L −$17,111.43 · −14.67R Stop breached",
       "$23,330.03",
-      "Awaiting the next close",
+      "−$17,111.43 · −14.67R",
       "Resolved · 170 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "XOM",
-      "Long 120 shares @ $118.45 Net cost $14,217.08 · P&L Awaiting the next close",
+      "Long 120 shares @ $118.45 Net cost $14,217.08 · P&L −$11,020.28 · −15.49R Stop breached",
       "$14,217.08",
-      "Awaiting the next close",
+      "−$11,020.28 · −15.49R",
       "Resolved · 120 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "PG",
-      "Long 84 shares @ $99.68 Net cost $8,373.12 · P&L Awaiting the next close",
+      "Long 84 shares @ $99.68 Net cost $8,373.12 · P&L +$8,149.68 · +23.33R Target reached",
       "$8,373.12",
-      "Awaiting the next close",
+      "+$8,149.68 · +23.33R",
       "Resolved · 84 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "HD",
-      "Long 170 shares @ $81.05 Net cost $13,780.11 · P&L Awaiting the next close",
+      "Long 170 shares @ $81.05 Net cost $13,780.11 · P&L +$17,969.09 · +26.10R Target reached",
       "$13,780.11",
-      "Awaiting the next close",
+      "+$17,969.09 · +26.10R",
       "Resolved · 170 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "UNH",
-      "Long 72 shares @ $62.35 Net cost $4,492.07 · P&L Awaiting the next close",
+      "Long 72 shares @ $62.35 Net cost $4,492.07 · P&L +$8,238.97 · +22.08R Target reached",
       "$4,492.07",
-      "Awaiting the next close",
+      "+$8,238.97 · +22.08R",
       "Entering · 72 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "MA",
-      "Long 70 shares @ $43.58 Net cost $3,052.83 · P&L Awaiting the next close",
+      "Long 70 shares @ $43.58 Net cost $3,052.83 · P&L +$8,628.77 · +56.55R Target reached",
       "$3,052.83",
-      "Awaiting the next close",
+      "+$8,628.77 · +56.55R",
       "Resolved · 70 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "V",
-      "Long 170 shares @ $24.81 Net cost $4,218.35 · P&L Awaiting the next close",
+      "Long 170 shares @ $24.81 Net cost $4,218.35 · P&L +$22,461.45 · +106.55R Target reached",
       "$4,218.35",
-      "Awaiting the next close",
+      "+$22,461.45 · +106.55R",
       "Resolved · 170 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "JPM",
-      "Long 144 shares @ $386.05 Net cost $55,593.43 · P&L Awaiting the next close",
+      "Long 144 shares @ $386.05 Net cost $55,593.43 · P&L −$34,425.43 · −14.86R Stop breached",
       "$55,593.43",
-      "Awaiting the next close",
+      "−$34,425.43 · −14.86R",
       "Resolved · 144 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "PFE",
-      "Long 70 shares @ $367.27 Net cost $25,711.13 · P&L Awaiting the next close",
+      "Long 70 shares @ $367.27 Net cost $25,711.13 · P&L −$16,116.93 · −12.54R Stop breached",
       "$25,711.13",
-      "Awaiting the next close",
+      "−$16,116.93 · −12.54R",
       "Resolved · 70 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "KO",
-      "Long 102 shares @ $348.50 Net cost $35,549.34 · P&L Awaiting the next close",
+      "Long 102 shares @ $348.50 Net cost $35,549.34 · P&L −$22,583.10 · −7.62R Stop breached",
       "$35,549.34",
-      "Awaiting the next close",
+      "−$22,583.10 · −7.62R",
       "Entering · 102 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "CSCO",
-      "Long 120 shares @ $329.73 Net cost $39,568.25 · P&L Awaiting the next close",
+      "Long 120 shares @ $329.73 Net cost $39,568.25 · P&L −$25,506.65 · −12.89R Stop breached",
       "$39,568.25",
-      "Awaiting the next close",
+      "−$25,506.65 · −12.89R",
       "Resolved · 120 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "NFLX",
-      "Long 70 shares @ $310.97 Net cost $21,770.64 · P&L Awaiting the next close",
+      "Long 70 shares @ $310.97 Net cost $21,770.64 · P&L −$14,263.84 · −13.10R Stop breached",
       "$21,770.64",
-      "Awaiting the next close",
+      "−$14,263.84 · −13.10R",
       "Resolved · 70 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "COST",
-      "Long 204 shares @ $292.19 Net cost $59,609.51 · P&L Awaiting the next close",
+      "Long 204 shares @ $292.19 Net cost $59,609.51 · P&L −$39,760.31 · −16.01R Stop breached",
       "$59,609.51",
-      "Awaiting the next close",
+      "−$39,760.31 · −16.01R",
       "Resolved · 204 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "AVGO",
-      "Long 120 shares @ $273.55 Net cost $32,828.60 · P&L Awaiting the next close",
+      "Long 120 shares @ $273.55 Net cost $32,828.60 · P&L Mark missing: AVGO, Fri Dec 29 Thu Dec 28 close −$22,141.40 · −13.49R Mark missing",
       "$32,828.60",
-      "Awaiting the next close",
+      "Mark missing: AVGO, Fri Dec 29 Thu Dec 28 close −$22,141.40 · −13.49R",
       "Resolved · 120 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "TSLA",
-      "Long 42 shares @ $254.86 Net cost $10,704.12 · P&L Awaiting the next close",
+      "Long 42 shares @ $254.86 Net cost $10,704.12 · P&L −$7,452.48 · −8.36R Stop breached",
       "$10,704.12",
-      "Awaiting the next close",
+      "−$7,452.48 · −8.36R",
       "Entering · 42 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "META",
-      "Long 170 shares @ $236.10 Net cost $40,139.29 · P&L Awaiting the next close",
+      "Long 170 shares @ $236.10 Net cost $40,139.29 · P&L −$28,667.69 · −14.29R Stop breached",
       "$40,139.29",
-      "Awaiting the next close",
+      "−$28,667.69 · −14.29R",
       "Resolved · 170 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "GOOGL",
-      "Long 120 shares @ $217.32 Net cost $26,081.48 · P&L Awaiting the next close",
+      "Long 120 shares @ $217.32 Net cost $26,081.48 · P&L −$18,815.48 · −14.44R Stop breached",
       "$26,081.48",
-      "Awaiting the next close",
+      "−$18,815.48 · −14.44R",
       "Resolved · 120 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "AMZN",
-      "Long 84 shares @ $198.55 Net cost $16,680.47 · P&L Awaiting the next close",
+      "Long 84 shares @ $198.55 Net cost $16,680.47 · P&L −$12,429.23 · −17.88R Stop breached",
       "$16,680.47",
-      "Awaiting the next close",
+      "−$12,429.23 · −17.88R",
       "Resolved · 84 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "NVDA",
-      "Long 170 shares @ $179.78 Net cost $30,563.25 · P&L Awaiting the next close",
+      "Long 170 shares @ $179.78 Net cost $30,563.25 · P&L −$23,649.35 · −15.47R Stop breached",
       "$30,563.25",
-      "Awaiting the next close",
+      "−$23,649.35 · −15.47R",
       "Resolved · 170 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "MSFT",
-      "Long 72 shares @ $161.02 Net cost $11,595.52 · P&L Awaiting the next close",
+      "Long 72 shares @ $161.02 Net cost $11,595.52 · P&L −$9,382.96 · −9.71R Stop breached",
       "$11,595.52",
-      "Awaiting the next close",
+      "−$9,382.96 · −9.71R",
       "Entering · 72 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "AAPL",
-      "Long 70 shares @ $142.24 Net cost $9,959.03 · P&L Awaiting the next close",
+      "Long 70 shares @ $142.24 Net cost $9,959.03 · P&L −$8,503.73 · −17.09R Stop breached",
       "$9,959.03",
-      "Awaiting the next close",
+      "−$8,503.73 · −17.09R",
       "Resolved · 70 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "QEF",
-      "Long 170 shares @ $123.47 Net cost $20,992.53 · P&L Awaiting the next close",
+      "Long 170 shares @ $123.47 Net cost $20,992.53 · P&L −$15,083.33 · −14.36R Stop breached",
       "$20,992.53",
-      "Awaiting the next close",
+      "−$15,083.33 · −14.36R",
       "Resolved · 170 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "QEE",
-      "Long 144 shares @ $104.70 Net cost $15,077.45 · P&L Awaiting the next close",
+      "Long 144 shares @ $104.70 Net cost $15,077.45 · P&L −$11,503.37 · −18.29R Stop breached",
       "$15,077.45",
-      "Awaiting the next close",
+      "−$11,503.37 · −18.29R",
       "Resolved · 144 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "QED",
-      "Long 70 shares @ $85.94 Net cost $6,018.54 · P&L Awaiting the next close",
+      "Long 70 shares @ $85.94 Net cost $6,018.54 · P&L +$7,623.06 · +25.33R Target reached",
       "$6,018.54",
-      "Awaiting the next close",
+      "+$7,623.06 · +25.33R",
       "Resolved · 70 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "QEC",
-      "Long 102 shares @ $67.33 Net cost $6,869.88 · P&L Awaiting the next close",
+      "Long 102 shares @ $67.33 Net cost $6,869.88 · P&L +$11,994.00 · +21.00R Target reached",
       "$6,869.88",
-      "Awaiting the next close",
+      "+$11,994.00 · +21.00R",
       "Entering · 102 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "QEB",
-      "Long 120 shares @ $48.60 Net cost $5,835.08 · P&L Awaiting the next close",
+      "Long 120 shares @ $48.60 Net cost $5,835.08 · P&L +$15,526.12 · +53.24R Target reached",
       "$5,835.08",
-      "Awaiting the next close",
+      "+$15,526.12 · +53.24R",
       "Resolved · 120 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QEA",
-      "Long 70 shares @ $29.83 Net cost $2,088.10 · P&L Awaiting the next close",
+      "Long 70 shares @ $29.83 Net cost $2,088.10 · P&L +$9,676.80 · +92.78R Target reached",
       "$2,088.10",
-      "Awaiting the next close",
+      "+$9,676.80 · +92.78R",
       "Resolved · 70 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "QDZ",
-      "Long 204 shares @ $391.07 Net cost $79,780.63 · P&L Awaiting the next close",
+      "Long 204 shares @ $391.07 Net cost $79,780.63 · P&L −$47,522.11 · −14.30R Stop breached",
       "$79,780.63",
-      "Awaiting the next close",
+      "−$47,522.11 · −14.30R",
       "Resolved · 204 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "QDY",
-      "Long 120 shares @ $372.29 Net cost $44,677.88 · P&L Awaiting the next close",
+      "Long 120 shares @ $372.29 Net cost $44,677.88 · P&L Mark missing: QDY, Fri Dec 29 Thu Dec 28 close −$27,052.28 · −12.11R Mark missing",
       "$44,677.88",
-      "Awaiting the next close",
+      "Mark missing: QDY, Fri Dec 29 Thu Dec 28 close −$27,052.28 · −12.11R",
       "Resolved · 120 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "QDX",
-      "Long 42 shares @ $353.52 Net cost $14,849.94 · P&L Awaiting the next close",
+      "Long 42 shares @ $353.52 Net cost $14,849.94 · P&L −$9,043.44 · −7.31R Stop breached",
       "$14,849.94",
-      "Awaiting the next close",
+      "−$9,043.44 · −7.31R",
       "Entering · 42 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "QDW",
-      "Long 170 shares @ $334.75 Net cost $56,908.15 · P&L Awaiting the next close",
+      "Long 170 shares @ $334.75 Net cost $56,908.15 · P&L −$35,095.45 · −12.33R Stop breached",
       "$56,908.15",
-      "Awaiting the next close",
+      "−$35,095.45 · −12.33R",
       "Resolved · 170 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "QDV",
-      "Long 120 shares @ $315.99 Net cost $37,920.99 · P&L Awaiting the next close",
+      "Long 120 shares @ $315.99 Net cost $37,920.99 · P&L −$23,716.59 · −12.51R Stop breached",
       "$37,920.99",
-      "Awaiting the next close",
+      "−$23,716.59 · −12.51R",
       "Resolved · 120 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QDU",
-      "Long 84 shares @ $297.21 Net cost $24,967.91 · P&L Awaiting the next close",
+      "Long 84 shares @ $297.21 Net cost $24,967.91 · P&L −$15,859.79 · −15.25R Stop breached",
       "$24,967.91",
-      "Awaiting the next close",
+      "−$15,859.79 · −15.25R",
       "Resolved · 84 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "QDT",
-      "Long 170 shares @ $278.44 Net cost $47,337.43 · P&L Awaiting the next close",
+      "Long 170 shares @ $278.44 Net cost $47,337.43 · P&L −$30,594.13 · −12.92R Stop breached",
       "$47,337.43",
-      "Awaiting the next close",
+      "−$30,594.13 · −12.92R",
       "Resolved · 170 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "QDS",
-      "Long 72 shares @ $259.88 Net cost $18,712.01 · P&L Awaiting the next close",
+      "Long 72 shares @ $259.88 Net cost $18,712.01 · P&L −$12,336.41 · −7.91R Stop breached",
       "$18,712.01",
-      "Awaiting the next close",
+      "−$12,336.41 · −7.91R",
       "Entering · 72 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "QDR",
-      "Long 70 shares @ $241.12 Net cost $16,881.14 · P&L Awaiting the next close",
+      "Long 70 shares @ $241.12 Net cost $16,881.14 · P&L −$11,378.44 · −13.49R Stop breached",
       "$16,881.14",
-      "Awaiting the next close",
+      "−$11,378.44 · −13.49R",
       "Resolved · 70 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "QDQ",
-      "Long 170 shares @ $222.34 Net cost $37,800.43 · P&L Awaiting the next close",
+      "Long 170 shares @ $222.34 Net cost $37,800.43 · P&L −$26,126.53 · −13.83R Stop breached",
       "$37,800.43",
-      "Awaiting the next close",
+      "−$26,126.53 · −13.83R",
       "Resolved · 170 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "QDP",
-      "Long 144 shares @ $203.57 Net cost $29,317.24 · P&L Awaiting the next close",
+      "Long 144 shares @ $203.57 Net cost $29,317.24 · P&L −$20,860.12 · −17.08R Stop breached",
       "$29,317.24",
-      "Awaiting the next close",
+      "−$20,860.12 · −17.08R",
       "Resolved · 144 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QDO",
-      "Long 70 shares @ $184.80 Net cost $12,936.00 · P&L Awaiting the next close",
+      "Long 70 shares @ $184.80 Net cost $12,936.00 · P&L −$9,520.70 · −14.72R Stop breached",
       "$12,936.00",
-      "Awaiting the next close",
+      "−$9,520.70 · −14.72R",
       "Resolved · 70 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "QDN",
-      "Long 102 shares @ $166.04 Net cost $16,938.22 · P&L Awaiting the next close",
+      "Long 102 shares @ $166.04 Net cost $16,938.22 · P&L −$12,975.52 · −9.20R Stop breached",
       "$16,938.22",
-      "Awaiting the next close",
+      "−$12,975.52 · −9.20R",
       "Entering · 102 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "QDM",
-      "Long 120 shares @ $147.26 Net cost $17,674.28 · P&L Awaiting the next close",
+      "Long 120 shares @ $147.26 Net cost $17,674.28 · P&L −$14,205.08 · −16.08R Stop breached",
       "$17,674.28",
-      "Awaiting the next close",
+      "−$14,205.08 · −16.08R",
       "Resolved · 120 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "QDL",
-      "Long 70 shares @ $128.49 Net cost $8,996.53 · P&L Awaiting the next close",
+      "Long 70 shares @ $128.49 Net cost $8,996.53 · P&L −$7,668.63 · −17.04R Stop breached",
       "$8,996.53",
-      "Awaiting the next close",
+      "−$7,668.63 · −17.04R",
       "Resolved · 70 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "QDK",
-      "Long 204 shares @ $109.72 Net cost $22,383.53 · P&L Awaiting the next close",
+      "Long 204 shares @ $109.72 Net cost $22,383.53 · P&L +$16,792.63 · +17.99R Target reached",
       "$22,383.53",
-      "Awaiting the next close",
+      "+$16,792.63 · +17.99R",
       "Resolved · 204 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "QDJ",
-      "Long 120 shares @ $90.96 Net cost $10,917.39 · P&L Awaiting the next close",
+      "Long 120 shares @ $90.96 Net cost $10,917.39 · P&L Mark missing: QDJ, Fri Dec 29 Thu Dec 28 close +$10,777.41 · +19.74R Mark missing",
       "$10,917.39",
-      "Awaiting the next close",
+      "Mark missing: QDJ, Fri Dec 29 Thu Dec 28 close +$10,777.41 · +19.74R",
       "Resolved · 120 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QDI",
-      "Long 42 shares @ $72.23 Net cost $3,035.55 · P&L Awaiting the next close",
+      "Long 42 shares @ $72.23 Net cost $3,035.55 · P&L +$4,195.17 · +16.60R Target reached",
       "$3,035.55",
-      "Awaiting the next close",
+      "+$4,195.17 · +16.60R",
       "Entering · 42 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "QDH",
-      "Long 170 shares @ $53.58 Net cost $9,110.89 · P&L Awaiting the next close",
+      "Long 170 shares @ $53.58 Net cost $9,110.89 · P&L +$18,466.51 · +40.53R Target reached",
       "$9,110.89",
-      "Awaiting the next close",
+      "+$18,466.51 · +40.53R",
       "Resolved · 170 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "QDG",
-      "Long 120 shares @ $34.85 Net cost $4,182.65 · P&L Awaiting the next close",
+      "Long 120 shares @ $34.85 Net cost $4,182.65 · P&L +$14,090.95 · +67.49R Target reached",
       "$4,182.65",
-      "Awaiting the next close",
+      "+$14,090.95 · +67.49R",
       "Resolved · 120 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "QDF",
-      "Long 84 shares @ $396.09 Net cost $33,274.32 · P&L Awaiting the next close",
+      "Long 84 shares @ $396.09 Net cost $33,274.32 · P&L −$21,317.76 · −15.38R Stop breached",
       "$33,274.32",
-      "Awaiting the next close",
+      "−$21,317.76 · −15.38R",
       "Resolved · 84 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "QDE",
-      "Long 170 shares @ $377.31 Net cost $64,145.33 · P&L Awaiting the next close",
+      "Long 170 shares @ $377.31 Net cost $64,145.33 · P&L −$41,637.33 · −12.99R Stop breached",
       "$64,145.33",
-      "Awaiting the next close",
+      "−$41,637.33 · −12.99R",
       "Resolved · 170 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "QDD",
-      "Long 72 shares @ $358.54 Net cost $25,817.75 · P&L Awaiting the next close",
+      "Long 72 shares @ $358.54 Net cost $25,817.75 · P&L −$17,000.63 · −7.90R Stop breached",
       "$25,817.75",
-      "Awaiting the next close",
+      "−$17,000.63 · −7.90R",
       "Entering · 72 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QDC",
-      "Long 70 shares @ $339.77 Net cost $23,783.90 · P&L Awaiting the next close",
+      "Long 70 shares @ $339.77 Net cost $23,783.90 · P&L −$15,907.50 · −13.38R Stop breached",
       "$23,783.90",
-      "Awaiting the next close",
+      "−$15,907.50 · −13.38R",
       "Resolved · 70 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "QDB",
-      "Long 170 shares @ $321.01 Net cost $54,573.99 · P&L Awaiting the next close",
+      "Long 170 shares @ $321.01 Net cost $54,573.99 · P&L −$37,135.39 · −13.61R Stop breached",
       "$54,573.99",
-      "Awaiting the next close",
+      "−$37,135.39 · −13.61R",
       "Resolved · 170 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "QDA",
-      "Long 144 shares @ $302.23 Net cost $43,524.28 · P&L Awaiting the next close",
+      "Long 144 shares @ $302.23 Net cost $43,524.28 · P&L −$30,184.12 · −16.65R Stop breached",
       "$43,524.28",
-      "Awaiting the next close",
+      "−$30,184.12 · −16.65R",
       "Resolved · 144 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "QCZ",
-      "Long 70 shares @ $283.46 Net cost $19,844.43 · P&L Awaiting the next close",
+      "Long 70 shares @ $283.46 Net cost $19,844.43 · P&L −$14,055.43 · −14.16R Stop breached",
       "$19,844.43",
-      "Awaiting the next close",
+      "−$14,055.43 · −14.16R",
       "Resolved · 70 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "QCY",
-      "Long 102 shares @ $264.69 Net cost $26,999.03 · P&L Awaiting the next close",
+      "Long 102 shares @ $264.69 Net cost $26,999.03 · P&L −$19,577.51 · −8.70R Stop breached",
       "$26,999.03",
-      "Awaiting the next close",
+      "−$19,577.51 · −8.70R",
       "Entering · 102 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "QCX",
-      "Long 120 shares @ $245.97 Net cost $29,518.83 · P&L Awaiting the next close",
+      "Long 120 shares @ $245.97 Net cost $29,518.83 · P&L −$21,980.43 · −14.89R Stop breached",
       "$29,518.83",
-      "Awaiting the next close",
+      "−$21,980.43 · −14.89R",
       "Resolved · 120 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QCW",
-      "Long 70 shares @ $227.36 Net cost $15,917.43 · P&L Awaiting the next close",
+      "Long 70 shares @ $227.36 Net cost $15,917.43 · P&L −$12,215.83 · −15.36R Stop breached",
       "$15,917.43",
-      "Awaiting the next close",
+      "−$12,215.83 · −15.36R",
       "Resolved · 70 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "QCV",
-      "Long 204 shares @ $208.59 Net cost $42,555.11 · P&L Awaiting the next close",
+      "Long 204 shares @ $208.59 Net cost $42,555.11 · P&L −$33,795.35 · −19.06R Stop breached",
       "$42,555.11",
-      "Awaiting the next close",
+      "−$33,795.35 · −19.06R",
       "Resolved · 204 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "QCU",
-      "Long 120 shares @ $189.82 Net cost $22,779.05 · P&L −$18,684.65 · −16.41R Stop breached",
+      "Long 120 shares @ $189.82 Net cost $22,779.05 · P&L Mark missing: QCU, Fri Dec 29 Thu Dec 28 close −$18,615.05 · −16.35R Mark missing",
       "$22,779.05",
-      "−$18,684.65 · −16.41R",
+      "Mark missing: QCU, Fri Dec 29 Thu Dec 28 close −$18,615.05 · −16.35R",
       "Resolved · 120 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "QCT",
-      "Long 42 shares @ $171.06 Net cost $7,187.19 · P&L −$6,171.63 · −10.31R Stop breached",
+      "Long 42 shares @ $171.06 Net cost $7,187.19 · P&L −$6,218.67 · −10.39R Stop breached",
       "$7,187.19",
-      "−$6,171.63 · −10.31R",
+      "−$6,218.67 · −10.39R",
       "Entering · 42 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "QCS",
-      "Long 170 shares @ $152.28 Net cost $25,890.23 · P&L +$7,130.57 · +5.51R Target reached",
+      "Long 170 shares @ $152.28 Net cost $25,890.23 · P&L +$7,451.87 · +5.76R Target reached",
       "$25,890.23",
-      "+$7,130.57 · +5.51R",
+      "+$7,451.87 · +5.76R",
       "Resolved · 170 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "QCR",
-      "Long 120 shares @ $133.51 Net cost $16,024.28 · P&L +$6,091.72 · +7.60R Target reached",
+      "Long 120 shares @ $133.51 Net cost $16,024.28 · P&L +$6,318.52 · +7.88R Target reached",
       "$16,024.28",
-      "+$6,091.72 · +7.60R",
+      "+$6,318.52 · +7.88R",
       "Resolved · 120 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QCQ",
-      "Long 84 shares @ $114.74 Net cost $9,638.16 · P&L +$5,008.08 · +12.46R Target reached",
+      "Long 84 shares @ $114.74 Net cost $9,638.16 · P&L +$5,166.84 · +12.86R Target reached",
       "$9,638.16",
-      "+$5,008.08 · +12.46R",
+      "+$5,166.84 · +12.86R",
       "Resolved · 84 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "QCP",
-      "Long 170 shares @ $95.98 Net cost $16,318.89 · P&L +$11,632.51 · +14.26R Target reached",
+      "Long 170 shares @ $95.98 Net cost $16,318.89 · P&L +$11,953.81 · +14.65R Target reached",
       "$16,318.89",
-      "+$11,632.51 · +14.26R",
+      "+$11,953.81 · +14.65R",
       "Resolved · 170 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "QCO",
-      "Long 72 shares @ $77.20 Net cost $5,561.27 · P&L +$5,561.29 · +12.01R Target reached",
+      "Long 72 shares @ $77.20 Net cost $5,561.27 · P&L +$5,698.09 · +12.30R Target reached",
       "$5,561.27",
-      "+$5,561.29 · +12.01R",
+      "+$5,698.09 · +12.30R",
       "Entering · 72 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "QCN",
-      "Long 70 shares @ $58.48 Net cost $4,095.27 · P&L +$6,022.53 · +29.36R Target reached",
+      "Long 70 shares @ $58.48 Net cost $4,095.27 · P&L +$6,154.83 · +30.01R Target reached",
       "$4,095.27",
-      "+$6,022.53 · +29.36R",
+      "+$6,154.83 · +30.01R",
       "Resolved · 70 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "QCM",
-      "Long 170 shares @ $39.87 Net cost $6,778.55 · P&L +$16,103.45 · +47.60R Target reached",
+      "Long 170 shares @ $39.87 Net cost $6,778.55 · P&L +$16,424.75 · +48.55R Target reached",
       "$6,778.55",
-      "+$16,103.45 · +47.60R",
+      "+$16,424.75 · +48.55R",
       "Resolved · 170 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "QCL",
-      "Long 144 shares @ $21.11 Net cost $3,042.07 · P&L +$15,342.41 · +121.77R Target reached",
+      "Long 144 shares @ $21.11 Net cost $3,042.07 · P&L +$15,181.13 · +120.49R Target reached",
       "$3,042.07",
-      "+$15,342.41 · +121.77R",
+      "+$15,181.13 · +120.49R",
       "Resolved · 144 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QCK",
-      "Long 70 shares @ $382.33 Net cost $26,765.33 · P&L −$18,524.23 · −13.85R Stop breached",
+      "Long 70 shares @ $382.33 Net cost $26,765.33 · P&L −$18,602.63 · −13.91R Stop breached",
       "$26,765.33",
-      "−$18,524.23 · −13.85R",
+      "−$18,602.63 · −13.91R",
       "Resolved · 70 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "QCJ",
-      "Long 102 shares @ $363.56 Net cost $37,085.46 · P&L −$26,090.88 · −8.44R Stop breached",
+      "Long 102 shares @ $363.56 Net cost $37,085.46 · P&L −$26,205.12 · −8.48R Stop breached",
       "$37,085.46",
-      "−$26,090.88 · −8.44R",
+      "−$26,205.12 · −8.48R",
       "Entering · 102 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "QCI",
-      "Long 120 shares @ $344.79 Net cost $41,375.45 · P&L −$29,633.45 · −14.32R Stop breached",
+      "Long 120 shares @ $344.79 Net cost $41,375.45 · P&L −$29,767.85 · −14.39R Stop breached",
       "$41,375.45",
-      "−$29,633.45 · −14.32R",
+      "−$29,767.85 · −14.39R",
       "Resolved · 120 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "QCH",
-      "Long 70 shares @ $326.03 Net cost $22,824.84 · P&L −$16,670.44 · −14.61R Stop breached",
+      "Long 70 shares @ $326.03 Net cost $22,824.84 · P&L −$16,749.54 · −14.68R Stop breached",
       "$22,824.84",
-      "−$16,670.44 · −14.61R",
+      "−$16,749.54 · −14.68R",
       "Resolved · 70 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "QCG",
-      "Long 204 shares @ $307.25 Net cost $62,681.75 · P&L −$46,775.87 · −17.91R Stop breached",
+      "Long 204 shares @ $307.25 Net cost $62,681.75 · P&L −$47,004.35 · −18.00R Stop breached",
       "$62,681.75",
-      "−$46,775.87 · −17.91R",
+      "−$47,004.35 · −18.00R",
       "Resolved · 204 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "QCF",
-      "Long 120 shares @ $288.48 Net cost $34,620.68 · P&L −$26,457.08 · −15.28R Stop breached",
+      "Long 120 shares @ $288.48 Net cost $34,620.68 · P&L Mark missing: QCF, Fri Dec 29 Thu Dec 28 close −$26,387.48 · −15.24R Mark missing",
       "$34,620.68",
-      "−$26,457.08 · −15.28R",
+      "Mark missing: QCF, Fri Dec 29 Thu Dec 28 close −$26,387.48 · −15.24R",
       "Resolved · 120 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QCE",
-      "Long 42 shares @ $269.71 Net cost $11,327.82 · P&L −$8,888.04 · −9.41R Stop breached",
+      "Long 42 shares @ $269.71 Net cost $11,327.82 · P&L −$8,935.08 · −9.46R Stop breached",
       "$11,327.82",
-      "−$8,888.04 · −9.41R",
+      "−$8,935.08 · −9.46R",
       "Entering · 42 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "QCD",
-      "Long 170 shares @ $250.95 Net cost $42,663.79 · P&L −$34,478.29 · −16.16R Stop breached",
+      "Long 170 shares @ $250.95 Net cost $42,663.79 · P&L −$34,668.69 · −16.25R Stop breached",
       "$42,663.79",
-      "−$34,478.29 · −16.16R",
+      "−$34,668.69 · −16.25R",
       "Resolved · 170 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "QCC",
-      "Long 120 shares @ $232.30 Net cost $27,878.60 · P&L −$23,293.40 · −16.72R Stop breached",
+      "Long 120 shares @ $232.30 Net cost $27,878.60 · P&L −$23,427.80 · −16.82R Stop breached",
       "$27,878.60",
-      "−$23,293.40 · −16.72R",
+      "−$23,427.80 · −16.82R",
       "Resolved · 120 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "QCB",
-      "Long 84 shares @ $213.61 Net cost $17,945.51 · P&L −$15,570.83 · −20.83R Stop breached",
+      "Long 84 shares @ $213.61 Net cost $17,945.51 · P&L −$15,664.91 · −20.95R Stop breached",
       "$17,945.51",
-      "−$15,570.83 · −20.83R",
+      "−$15,664.91 · −20.95R",
       "Resolved · 84 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "QCA",
-      "Long 170 shares @ $194.84 Net cost $33,123.45 · P&L +$592.65 · +0.36R",
+      "Long 170 shares @ $194.84 Net cost $33,123.45 · P&L +$913.95 · +0.55R",
       "$33,123.45",
-      "+$592.65 · +0.36R",
+      "+$913.95 · +0.55R",
       "Resolved · 170 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "QBZ",
-      "Long 72 shares @ $176.08 Net cost $12,679.84 · P&L +$884.24 · +0.84R",
+      "Long 72 shares @ $176.08 Net cost $12,679.84 · P&L +$1,020.32 · +0.97R",
       "$12,679.84",
-      "+$884.24 · +0.84R",
+      "+$1,020.32 · +0.97R",
       "Entering · 72 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QBY",
-      "Long 70 shares @ $157.30 Net cost $11,013.23 · P&L +$1,478.27 · +2.69R Target reached",
+      "Long 70 shares @ $157.30 Net cost $11,013.23 · P&L +$1,610.57 · +2.93R Target reached",
       "$11,013.23",
-      "+$1,478.27 · +2.69R",
+      "+$1,610.57 · +2.93R",
       "Resolved · 70 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "QBX",
-      "Long 170 shares @ $138.53 Net cost $23,552.73 · P&L +$5,093.97 · +4.32R Target reached",
+      "Long 170 shares @ $138.53 Net cost $23,552.73 · P&L +$5,415.27 · +4.60R Target reached",
       "$23,552.73",
-      "+$5,093.97 · +4.32R",
+      "+$5,415.27 · +4.60R",
       "Resolved · 170 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "QBW",
-      "Long 144 shares @ $119.76 Net cost $17,246.09 · P&L +$5,587.99 · +7.77R Target reached",
+      "Long 144 shares @ $119.76 Net cost $17,246.09 · P&L +$5,860.15 · +8.15R Target reached",
       "$17,246.09",
-      "+$5,587.99 · +7.77R",
+      "+$5,860.15 · +8.15R",
       "Resolved · 144 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "QBV",
-      "Long 70 shares @ $101.00 Net cost $7,072.74 · P&L +$3,331.36 · +9.42R Target reached",
+      "Long 70 shares @ $101.00 Net cost $7,072.74 · P&L +$3,463.66 · +9.80R Target reached",
       "$7,072.74",
-      "+$3,331.36 · +9.42R",
+      "+$3,463.66 · +9.80R",
       "Resolved · 70 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "QBU",
-      "Long 102 shares @ $82.22 Net cost $8,388.78 · P&L +$6,064.62 · +8.68R Target reached",
+      "Long 102 shares @ $82.22 Net cost $8,388.78 · P&L +$5,950.38 · +8.52R Target reached",
       "$8,388.78",
-      "+$6,064.62 · +8.68R",
+      "+$5,950.38 · +8.52R",
       "Entering · 102 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "QBT",
-      "Long 120 shares @ $63.45 Net cost $7,617.08 · P&L +$8,194.12 · +21.47R Target reached",
+      "Long 120 shares @ $63.45 Net cost $7,617.08 · P&L +$8,059.72 · +21.12R Target reached",
       "$7,617.08",
-      "+$8,194.12 · +21.47R",
+      "+$8,059.72 · +21.12R",
       "Resolved · 120 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QBS",
-      "Long 70 shares @ $44.68 Net cost $3,127.60 · P&L +$5,399.80 · +34.44R Target reached",
+      "Long 70 shares @ $44.68 Net cost $3,127.60 · P&L +$5,321.40 · +33.94R Target reached",
       "$3,127.60",
-      "+$5,399.80 · +34.44R",
+      "+$5,321.40 · +33.94R",
       "Resolved · 70 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "QBR",
-      "Long 204 shares @ $26.05 Net cost $5,315.86 · P&L +$17,507.66 · +79.22R Target reached",
+      "Long 204 shares @ $26.05 Net cost $5,315.86 · P&L +$17,279.18 · +78.19R Target reached",
       "$5,315.86",
-      "+$17,507.66 · +79.22R",
+      "+$17,279.18 · +78.19R",
       "Resolved · 204 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "QBQ",
-      "Long 120 shares @ $387.35 Net cost $46,485.08 · P&L −$34,252.28 · −14.74R Stop breached",
+      "Long 120 shares @ $387.35 Net cost $46,485.08 · P&L Mark missing: QBQ, Fri Dec 29 Thu Dec 28 close −$34,182.68 · −14.71R Mark missing",
       "$46,485.08",
-      "−$34,252.28 · −14.74R",
+      "Mark missing: QBQ, Fri Dec 29 Thu Dec 28 close −$34,182.68 · −14.71R",
       "Resolved · 120 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "QBP",
-      "Long 42 shares @ $368.58 Net cost $15,482.46 · P&L −$11,618.46 · −9.01R Stop breached",
+      "Long 42 shares @ $368.58 Net cost $15,482.46 · P&L −$11,665.50 · −9.04R Stop breached",
       "$15,482.46",
-      "−$11,618.46 · −9.01R",
+      "−$11,665.50 · −9.04R",
       "Entering · 42 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "QBO",
-      "Long 170 shares @ $349.81 Net cost $59,468.35 · P&L −$45,518.15 · −15.31R Stop breached",
+      "Long 170 shares @ $349.81 Net cost $59,468.35 · P&L −$45,708.55 · −15.37R Stop breached",
       "$59,468.35",
-      "−$45,518.15 · −15.31R",
+      "−$45,708.55 · −15.37R",
       "Resolved · 170 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "QBN",
-      "Long 120 shares @ $331.05 Net cost $39,728.19 · P&L −$31,073.79 · −15.65R Stop breached",
+      "Long 120 shares @ $331.05 Net cost $39,728.19 · P&L −$31,208.19 · −15.71R Stop breached",
       "$39,728.19",
-      "−$31,073.79 · −15.65R",
+      "−$31,208.19 · −15.71R",
       "Resolved · 120 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QBM",
-      "Long 84 shares @ $312.27 Net cost $26,232.95 · P&L −$21,009.83 · −19.23R Stop breached",
+      "Long 84 shares @ $312.27 Net cost $26,232.95 · P&L −$21,103.91 · −19.31R Stop breached",
       "$26,232.95",
-      "−$21,009.83 · −19.23R",
+      "−$21,103.91 · −19.31R",
       "Resolved · 84 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "QBL",
-      "Long 170 shares @ $293.50 Net cost $49,897.63 · P&L −$41,016.83 · −16.44R Stop breached",
+      "Long 170 shares @ $293.50 Net cost $49,897.63 · P&L −$41,207.23 · −16.51R Stop breached",
       "$49,897.63",
-      "−$41,016.83 · −16.44R",
+      "−$41,207.23 · −16.51R",
       "Resolved · 170 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "QBK",
-      "Long 72 shares @ $274.73 Net cost $19,781.21 · P&L −$16,735.61 · −10.15R Stop breached",
+      "Long 72 shares @ $274.73 Net cost $19,781.21 · P&L −$16,816.25 · −10.20R Stop breached",
       "$19,781.21",
-      "−$16,735.61 · −10.15R",
+      "−$16,816.25 · −10.20R",
       "Entering · 72 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "QBJ",
-      "Long 70 shares @ $255.97 Net cost $17,920.64 · P&L −$15,655.44 · −17.47R Stop breached",
+      "Long 70 shares @ $255.97 Net cost $17,920.64 · P&L −$15,523.14 · −17.32R Stop breached",
       "$17,920.64",
-      "−$15,655.44 · −17.47R",
+      "−$15,523.14 · −17.32R",
       "Resolved · 70 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "QBI",
-      "Long 170 shares @ $237.19 Net cost $40,324.93 · P&L −$36,513.53 · −18.11R Stop breached",
+      "Long 170 shares @ $237.19 Net cost $40,324.93 · P&L −$36,192.23 · −17.95R Stop breached",
       "$40,324.93",
-      "−$36,513.53 · −18.11R",
+      "−$36,192.23 · −17.95R",
       "Resolved · 170 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "QBH",
-      "Long 144 shares @ $218.55 Net cost $31,473.91 · P&L −$3,756.79 · −2.86R Stop breached",
+      "Long 144 shares @ $218.55 Net cost $31,473.91 · P&L −$3,484.63 · −2.66R Stop breached",
       "$31,473.91",
-      "−$3,756.79 · −2.86R",
+      "−$3,484.63 · −2.66R",
       "Resolved · 144 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QBG",
-      "Long 70 shares @ $199.86 Net cost $13,990.20 · P&L −$1,212.40 · −1.73R Stop breached",
+      "Long 70 shares @ $199.86 Net cost $13,990.20 · P&L −$1,080.10 · −1.54R Stop breached",
       "$13,990.20",
-      "−$1,212.40 · −1.73R",
+      "−$1,080.10 · −1.54R",
       "Resolved · 70 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "QBF",
-      "Long 102 shares @ $181.10 Net cost $18,474.34 · P&L −$869.14 · −0.56R",
+      "Long 102 shares @ $181.10 Net cost $18,474.34 · P&L −$676.36 · −0.44R",
       "$18,474.34",
-      "−$869.14 · −0.56R",
+      "−$676.36 · −0.44R",
       "Entering · 102 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "QBE",
-      "Long 120 shares @ $162.32 Net cost $19,481.48 · P&L +$37.72 · +0.04R",
+      "Long 120 shares @ $162.32 Net cost $19,481.48 · P&L +$264.52 · +0.27R",
       "$19,481.48",
-      "+$37.72 · +0.04R",
+      "+$264.52 · +0.27R",
       "Resolved · 120 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "QBD",
-      "Long 70 shares @ $143.55 Net cost $10,050.73 · P&L +$639.67 · +1.27R",
+      "Long 70 shares @ $143.55 Net cost $10,050.73 · P&L +$771.97 · +1.54R",
       "$10,050.73",
-      "+$639.67 · +1.27R",
+      "+$771.97 · +1.54R",
       "Resolved · 70 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "QBC",
-      "Long 204 shares @ $124.78 Net cost $25,455.77 · P&L +$4,285.39 · +4.04R Target reached",
+      "Long 204 shares @ $124.78 Net cost $25,455.77 · P&L +$4,056.91 · +3.82R Target reached",
       "$25,455.77",
-      "+$4,285.39 · +4.04R",
+      "+$4,056.91 · +3.82R",
       "Resolved · 204 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "QBB",
-      "Long 120 shares @ $106.02 Net cost $12,724.59 · P&L +$3,577.41 · +5.62R Target reached",
+      "Long 120 shares @ $106.02 Net cost $12,724.59 · P&L Mark missing: QBB, Fri Dec 29 Thu Dec 28 close +$3,285.81 · +5.17R Mark missing",
       "$12,724.59",
-      "+$3,577.41 · +5.62R",
+      "Mark missing: QBB, Fri Dec 29 Thu Dec 28 close +$3,285.81 · +5.17R",
       "Resolved · 120 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QBA",
-      "Long 42 shares @ $87.24 Net cost $3,666.18 · P&L +$1,622.04 · +5.31R Target reached",
+      "Long 42 shares @ $87.24 Net cost $3,666.18 · P&L +$1,575.00 · +5.16R Target reached",
       "$3,666.18",
-      "+$1,622.04 · +5.31R",
+      "+$1,575.00 · +5.16R",
       "Entering · 42 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "QAZ",
-      "Long 170 shares @ $68.47 Net cost $11,642.53 · P&L +$8,072.37 · +13.84R Target reached",
+      "Long 170 shares @ $68.47 Net cost $11,642.53 · P&L +$7,881.97 · +13.52R Target reached",
       "$11,642.53",
-      "+$8,072.37 · +13.84R",
+      "+$7,881.97 · +13.52R",
       "Resolved · 170 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "QAY",
-      "Long 120 shares @ $49.70 Net cost $5,964.65 · P&L +$6,758.95 · +22.62R Target reached",
+      "Long 120 shares @ $49.70 Net cost $5,964.65 · P&L +$6,624.55 · +22.17R Target reached",
       "$5,964.65",
-      "+$6,758.95 · +22.62R",
+      "+$6,624.55 · +22.17R",
       "Resolved · 120 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "QAX",
-      "Long 84 shares @ $30.94 Net cost $2,601.72 · P&L +$5,469.84 · +50.41R Target reached",
+      "Long 84 shares @ $30.94 Net cost $2,601.72 · P&L +$5,375.76 · +49.55R Target reached",
       "$2,601.72",
-      "+$5,469.84 · +50.41R",
+      "+$5,375.76 · +49.55R",
       "Resolved · 84 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "QAW",
-      "Long 170 shares @ $392.33 Net cost $66,698.39 · P&L −$52,052.89 · −15.61R Stop breached",
+      "Long 170 shares @ $392.33 Net cost $66,698.39 · P&L −$52,243.29 · −15.67R Stop breached",
       "$66,698.39",
-      "−$52,052.89 · −15.61R",
+      "−$52,243.29 · −15.67R",
       "Resolved · 170 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "QAV",
-      "Long 72 shares @ $373.60 Net cost $26,902.07 · P&L −$21,414.95 · −9.55R Stop breached",
+      "Long 72 shares @ $373.60 Net cost $26,902.07 · P&L −$21,495.59 · −9.59R Stop breached",
       "$26,902.07",
-      "−$21,414.95 · −9.55R",
+      "−$21,495.59 · −9.59R",
       "Entering · 72 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QAU",
-      "Long 70 shares @ $354.83 Net cost $24,838.10 · P&L −$20,199.20 · −16.27R Stop breached",
+      "Long 70 shares @ $354.83 Net cost $24,838.10 · P&L −$20,277.60 · −16.33R Stop breached",
       "$24,838.10",
-      "−$20,199.20 · −16.27R",
+      "−$20,277.60 · −16.33R",
       "Resolved · 70 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "QAT",
-      "Long 170 shares @ $336.07 Net cost $57,134.19 · P&L −$47,558.09 · −16.65R Stop breached",
+      "Long 170 shares @ $336.07 Net cost $57,134.19 · P&L −$47,748.49 · −16.72R Stop breached",
       "$57,134.19",
-      "−$47,558.09 · −16.65R",
+      "−$47,748.49 · −16.72R",
       "Resolved · 170 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "QAS",
-      "Long 144 shares @ $317.29 Net cost $45,692.92 · P&L −$39,012.76 · −20.50R Stop breached",
+      "Long 144 shares @ $317.29 Net cost $45,692.92 · P&L −$39,174.04 · −20.58R Stop breached",
       "$45,692.92",
-      "−$39,012.76 · −20.50R",
+      "−$39,174.04 · −20.58R",
       "Resolved · 144 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "QAR",
-      "Long 70 shares @ $298.52 Net cost $20,898.63 · P&L −$18,347.13 · −17.56R Stop breached",
+      "Long 70 shares @ $298.52 Net cost $20,898.63 · P&L −$18,214.83 · −17.43R Stop breached",
       "$20,898.63",
-      "−$18,347.13 · −17.56R",
+      "−$18,214.83 · −17.43R",
       "Resolved · 70 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "QAQ",
-      "Long 102 shares @ $279.75 Net cost $28,535.15 · P&L −$25,831.13 · −10.86R Stop breached",
+      "Long 102 shares @ $279.75 Net cost $28,535.15 · P&L −$25,638.35 · −10.78R Stop breached",
       "$28,535.15",
-      "−$25,831.13 · −10.86R",
+      "−$25,638.35 · −10.78R",
       "Entering · 102 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "QAP",
-      "Long 120 shares @ $260.99 Net cost $31,320.99 · P&L −$7,732.59 · −4.94R Stop breached",
+      "Long 120 shares @ $260.99 Net cost $31,320.99 · P&L −$7,505.79 · −4.79R Stop breached",
       "$31,320.99",
-      "−$7,732.59 · −4.94R",
+      "−$7,505.79 · −4.79R",
       "Resolved · 120 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QAO",
-      "Long 70 shares @ $242.21 Net cost $16,956.93 · P&L −$3,892.83 · −4.59R Stop breached",
+      "Long 70 shares @ $242.21 Net cost $16,956.93 · P&L −$3,760.53 · −4.44R Stop breached",
       "$16,956.93",
-      "−$3,892.83 · −4.59R",
+      "−$3,760.53 · −4.44R",
       "Resolved · 70 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "QAN",
-      "Long 204 shares @ $223.44 Net cost $45,584.51 · P&L −$9,539.75 · −5.02R Stop breached",
+      "Long 204 shares @ $223.44 Net cost $45,584.51 · P&L −$9,154.19 · −4.82R Stop breached",
       "$45,584.51",
-      "−$9,539.75 · −5.02R",
+      "−$9,154.19 · −4.82R",
       "Resolved · 204 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "QAM",
-      "Long 120 shares @ $204.88 Net cost $24,586.25 · P&L −$4,576.25 · −3.72R Stop breached",
+      "Long 120 shares @ $204.88 Net cost $24,586.25 · P&L Mark missing: QAM, Fri Dec 29 Thu Dec 28 close −$4,506.65 · −3.67R Mark missing",
       "$24,586.25",
-      "−$4,576.25 · −3.72R",
+      "Mark missing: QAM, Fri Dec 29 Thu Dec 28 close −$4,506.65 · −3.67R",
       "Resolved · 120 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "QAL",
-      "Long 42 shares @ $186.12 Net cost $7,819.71 · P&L −$1,233.69 · −1.90R Stop breached",
+      "Long 42 shares @ $186.12 Net cost $7,819.71 · P&L −$1,154.31 · −1.77R Stop breached",
       "$7,819.71",
-      "−$1,233.69 · −1.90R",
+      "−$1,154.31 · −1.77R",
       "Entering · 42 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "QAK",
-      "Long 170 shares @ $167.34 Net cost $28,450.43 · P&L −$2,970.83 · −2.09R Stop breached",
+      "Long 170 shares @ $167.34 Net cost $28,450.43 · P&L −$3,161.23 · −2.22R Stop breached",
       "$28,450.43",
-      "−$2,970.83 · −2.09R",
+      "−$3,161.23 · −2.22R",
       "Resolved · 170 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "QAJ",
-      "Long 120 shares @ $148.57 Net cost $17,831.48 · P&L −$1,038.68 · −1.16R Stop breached",
+      "Long 120 shares @ $148.57 Net cost $17,831.48 · P&L −$1,173.08 · −1.32R Stop breached",
       "$17,831.48",
-      "−$1,038.68 · −1.16R",
+      "−$1,173.08 · −1.32R",
       "Resolved · 120 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QAI",
-      "Long 84 shares @ $129.80 Net cost $10,903.20 · P&L +$16.80 · +0.04R",
+      "Long 84 shares @ $129.80 Net cost $10,903.20 · P&L −$77.28 · −0.17R",
       "$10,903.20",
-      "+$16.80 · +0.04R",
+      "−$77.28 · −0.17R",
       "Resolved · 84 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "QAH",
-      "Long 170 shares @ $111.04 Net cost $18,879.09 · P&L +$1,531.11 · +1.62R",
+      "Long 170 shares @ $111.04 Net cost $18,879.09 · P&L +$1,340.71 · +1.42R",
       "$18,879.09",
-      "+$1,531.11 · +1.62R",
+      "+$1,340.71 · +1.42R",
       "Resolved · 170 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "QAG",
-      "Long 72 shares @ $92.26 Net cost $6,645.59 · P&L +$1,283.05 · +2.32R Target reached",
+      "Long 72 shares @ $92.26 Net cost $6,645.59 · P&L +$1,202.41 · +2.17R Target reached",
       "$6,645.59",
-      "+$1,283.05 · +2.32R",
+      "+$1,202.41 · +2.17R",
       "Entering · 72 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "QAF",
-      "Long 70 shares @ $73.49 Net cost $5,146.53 · P&L +$1,866.07 · +7.24R Target reached",
+      "Long 70 shares @ $73.49 Net cost $5,146.53 · P&L +$1,787.67 · +6.94R Target reached",
       "$5,146.53",
-      "+$1,866.07 · +7.24R",
+      "+$1,787.67 · +6.94R",
       "Resolved · 70 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "QAE",
-      "Long 170 shares @ $54.72 Net cost $9,303.05 · P&L +$6,037.75 · +12.96R Target reached",
+      "Long 170 shares @ $54.72 Net cost $9,303.05 · P&L +$5,847.35 · +12.55R Target reached",
       "$9,303.05",
-      "+$6,037.75 · +12.96R",
+      "+$5,847.35 · +12.55R",
       "Resolved · 170 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "QAD",
-      "Long 144 shares @ $35.96 Net cost $5,180.47 · P&L +$6,382.73 · +29.55R Target reached",
+      "Long 144 shares @ $35.96 Net cost $5,180.47 · P&L +$6,221.45 · +28.80R Target reached",
       "$5,180.47",
-      "+$6,382.73 · +29.55R",
+      "+$6,221.45 · +28.80R",
       "Resolved · 144 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QAC",
-      "Long 70 shares @ $397.23 Net cost $27,807.77 · P&L −$22,882.57 · −16.46R Stop breached",
+      "Long 70 shares @ $397.23 Net cost $27,807.77 · P&L −$22,960.97 · −16.52R Stop breached",
       "$27,807.77",
-      "−$22,882.57 · −16.46R",
+      "−$22,960.97 · −16.52R",
       "Resolved · 70 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "QAB",
-      "Long 102 shares @ $378.58 Net cost $38,617.38 · P&L −$32,454.54 · −10.09R Stop breached",
+      "Long 102 shares @ $378.58 Net cost $38,617.38 · P&L −$32,568.78 · −10.12R Stop breached",
       "$38,617.38",
-      "−$32,454.54 · −10.09R",
+      "−$32,568.78 · −10.12R",
       "Entering · 102 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "QAA",
-      "Long 120 shares @ $359.85 Net cost $43,182.65 · P&L −$37,125.05 · −17.20R Stop breached",
+      "Long 120 shares @ $359.85 Net cost $43,182.65 · P&L −$37,259.45 · −17.26R Stop breached",
       "$43,182.65",
-      "−$37,125.05 · −17.20R",
+      "−$37,259.45 · −17.26R",
       "Resolved · 120 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "GS",
-      "Long 70 shares @ $341.09 Net cost $23,879.04 · P&L −$21,041.24 · −17.63R Stop breached",
+      "Long 70 shares @ $341.09 Net cost $23,879.04 · P&L −$20,908.94 · −17.52R Stop breached",
       "$23,879.04",
-      "−$21,041.24 · −17.63R",
+      "−$20,908.94 · −17.52R",
       "Resolved · 70 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "DE",
-      "Long 204 shares @ $322.31 Net cost $65,753.99 · P&L −$59,511.59 · −21.73R Stop breached",
+      "Long 204 shares @ $322.31 Net cost $65,753.99 · P&L −$59,126.03 · −21.59R Stop breached",
       "$65,753.99",
-      "−$59,511.59 · −21.73R",
+      "−$59,126.03 · −21.59R",
       "Resolved · 204 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "CAT",
-      "Long 120 shares @ $303.54 Net cost $36,427.88 · P&L −$33,948.68 · −18.64R Stop breached",
+      "Long 120 shares @ $303.54 Net cost $36,427.88 · P&L Mark missing: CAT, Fri Dec 29 Thu Dec 28 close −$33,879.08 · −18.60R Mark missing",
       "$36,427.88",
-      "−$33,948.68 · −18.64R",
+      "Mark missing: CAT, Fri Dec 29 Thu Dec 28 close −$33,879.08 · −18.60R",
       "Resolved · 120 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "BA",
-      "Long 42 shares @ $284.77 Net cost $11,960.34 · P&L −$3,950.10 · −3.96R Stop breached",
+      "Long 42 shares @ $284.77 Net cost $11,960.34 · P&L −$3,870.72 · −3.88R Stop breached",
       "$11,960.34",
-      "−$3,950.10 · −3.96R",
+      "−$3,870.72 · −3.88R",
       "Entering · 42 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "MCD",
-      "Long 170 shares @ $266.01 Net cost $45,223.99 · P&L −$14,491.39 · −6.41R Stop breached",
+      "Long 170 shares @ $266.01 Net cost $45,223.99 · P&L −$14,170.09 · −6.27R Stop breached",
       "$45,223.99",
-      "−$14,491.39 · −6.41R",
+      "−$14,170.09 · −6.27R",
       "Resolved · 170 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "NKE",
-      "Long 120 shares @ $247.23 Net cost $29,670.68 · P&L −$9,169.88 · −6.18R Stop breached",
+      "Long 120 shares @ $247.23 Net cost $29,670.68 · P&L −$8,943.08 · −6.03R Stop breached",
       "$29,670.68",
-      "−$9,169.88 · −6.18R",
+      "−$8,943.08 · −6.03R",
       "Resolved · 120 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "DIS",
-      "Long 84 shares @ $228.46 Net cost $19,192.91 · P&L −$5,424.47 · −6.78R Stop breached",
+      "Long 84 shares @ $228.46 Net cost $19,192.91 · P&L −$5,518.55 · −6.90R Stop breached",
       "$19,192.91",
-      "−$5,424.47 · −6.78R",
+      "−$5,518.55 · −6.90R",
       "Resolved · 84 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "WMT",
-      "Long 170 shares @ $209.69 Net cost $35,647.95 · P&L −$9,473.05 · −5.31R Stop breached",
+      "Long 170 shares @ $209.69 Net cost $35,647.95 · P&L −$9,663.45 · −5.42R Stop breached",
       "$35,647.95",
-      "−$9,473.05 · −5.31R",
+      "−$9,663.45 · −5.42R",
       "Resolved · 170 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "TXN",
-      "Long 72 shares @ $190.98 Net cost $13,752.19 · P&L −$3,382.03 · −2.95R Stop breached",
+      "Long 72 shares @ $190.98 Net cost $13,752.19 · P&L −$3,462.67 · −3.02R Stop breached",
       "$13,752.19",
-      "−$3,382.03 · −2.95R",
+      "−$3,462.67 · −3.02R",
       "Entering · 72 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "QCOM",
-      "Long 70 shares @ $172.36 Net cost $12,067.43 · P&L −$2,681.13 · −4.45R Stop breached",
+      "Long 70 shares @ $172.36 Net cost $12,067.43 · P&L −$2,759.53 · −4.58R Stop breached",
       "$12,067.43",
-      "−$2,681.13 · −4.45R",
+      "−$2,759.53 · −4.58R",
       "Resolved · 70 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "INTC",
-      "Long 170 shares @ $153.59 Net cost $26,112.93 · P&L −$5,007.43 · −3.84R Stop breached",
+      "Long 170 shares @ $153.59 Net cost $26,112.93 · P&L −$5,197.83 · −3.98R Stop breached",
       "$26,112.93",
-      "−$5,007.43 · −3.84R",
+      "−$5,197.83 · −3.98R",
       "Resolved · 170 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "AMD",
-      "Long 144 shares @ $134.82 Net cost $19,414.73 · P&L −$2,968.49 · −3.67R Stop breached",
+      "Long 144 shares @ $134.82 Net cost $19,414.73 · P&L −$3,129.77 · −3.87R Stop breached",
       "$19,414.73",
-      "−$2,968.49 · −3.67R",
+      "−$3,129.77 · −3.87R",
       "Resolved · 144 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "ORCL",
-      "Long 70 shares @ $116.06 Net cost $8,126.94 · P&L −$828.04 · −2.04R Stop breached",
+      "Long 70 shares @ $116.06 Net cost $8,126.94 · P&L −$906.44 · −2.23R Stop breached",
       "$8,126.94",
-      "−$828.04 · −2.04R",
+      "−$906.44 · −2.23R",
       "Resolved · 70 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "CRM",
-      "Long 102 shares @ $97.28 Net cost $9,924.90 · P&L −$303.24 · −0.37R",
+      "Long 102 shares @ $97.28 Net cost $9,924.90 · P&L −$417.48 · −0.51R",
       "$9,924.90",
-      "−$303.24 · −0.37R",
+      "−$417.48 · −0.51R",
       "Entering · 102 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "ADBE",
-      "Long 120 shares @ $78.51 Net cost $9,424.28 · P&L +$702.52 · +1.49R",
+      "Long 120 shares @ $78.51 Net cost $9,424.28 · P&L +$568.12 · +1.20R",
       "$9,424.28",
-      "+$702.52 · +1.49R",
+      "+$568.12 · +1.20R",
       "Resolved · 120 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "PEP",
-      "Long 70 shares @ $59.74 Net cost $4,181.80 · P&L +$1,029.70 · +4.92R Target reached",
+      "Long 70 shares @ $59.74 Net cost $4,181.80 · P&L +$951.30 · +4.55R Target reached",
       "$4,181.80",
-      "+$1,029.70 · +4.92R",
+      "+$951.30 · +4.55R",
       "Resolved · 70 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "MRK",
-      "Long 204 shares @ $40.98 Net cost $8,362.27 · P&L +$4,797.77 · +13.77R Target reached",
+      "Long 204 shares @ $40.98 Net cost $8,362.27 · P&L +$4,569.29 · +13.11R Target reached",
       "$8,362.27",
-      "+$4,797.77 · +13.77R",
+      "+$4,569.29 · +13.11R",
       "Resolved · 204 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "ABBV",
-      "Long 120 shares @ $22.20 Net cost $2,667.08 · P&L +$3,881.32 · +29.14R Target reached",
+      "Long 120 shares @ $22.20 Net cost $2,667.08 · P&L Mark missing: ABBV, Fri Dec 29 Thu Dec 28 close +$3,950.92 · +29.66R Mark missing",
       "$2,667.08",
-      "+$3,881.32 · +29.14R",
+      "Mark missing: ABBV, Fri Dec 29 Thu Dec 28 close +$3,950.92 · +29.66R",
       "Resolved · 120 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "LLY",
-      "Long 42 shares @ $383.48 Net cost $16,108.05 · P&L −$14,233.59 · −10.60R Stop breached",
+      "Long 42 shares @ $383.48 Net cost $16,108.05 · P&L −$14,154.21 · −10.54R Stop breached",
       "$16,108.05",
-      "−$14,233.59 · −10.60R",
+      "−$14,154.21 · −10.54R",
       "Entering · 42 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "CVX",
-      "Long 170 shares @ $364.87 Net cost $62,028.55 · P&L −$56,131.25 · −18.10R Stop breached",
+      "Long 170 shares @ $364.87 Net cost $62,028.55 · P&L −$55,809.95 · −18.00R Stop breached",
       "$62,028.55",
-      "−$56,131.25 · −18.10R",
+      "−$55,809.95 · −18.00R",
       "Resolved · 170 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "XOM",
-      "Long 120 shares @ $346.11 Net cost $41,535.39 · P&L −$38,565.39 · −18.58R Stop breached",
+      "Long 120 shares @ $346.11 Net cost $41,535.39 · P&L −$38,338.59 · −18.47R Stop breached",
       "$41,535.39",
-      "−$38,565.39 · −18.58R",
+      "−$38,338.59 · −18.47R",
       "Resolved · 120 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "PG",
-      "Long 84 shares @ $327.33 Net cost $27,497.99 · P&L −$11,133.95 · −9.72R Stop breached",
+      "Long 84 shares @ $327.33 Net cost $27,497.99 · P&L −$10,975.19 · −9.58R Stop breached",
       "$27,497.99",
-      "−$11,133.95 · −9.72R",
+      "−$10,975.19 · −9.58R",
       "Resolved · 84 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "HD",
-      "Long 170 shares @ $308.56 Net cost $52,457.83 · P&L −$21,029.93 · −8.02R Stop breached",
+      "Long 170 shares @ $308.56 Net cost $52,457.83 · P&L −$20,708.63 · −7.89R Stop breached",
       "$52,457.83",
-      "−$21,029.93 · −8.02R",
+      "−$20,708.63 · −7.89R",
       "Resolved · 170 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "UNH",
-      "Long 72 shares @ $289.79 Net cost $20,865.53 · P&L −$8,270.57 · −4.76R Stop breached",
+      "Long 72 shares @ $289.79 Net cost $20,865.53 · P&L −$8,134.49 · −4.68R Stop breached",
       "$20,865.53",
-      "−$8,270.57 · −4.76R",
+      "−$8,134.49 · −4.68R",
       "Entering · 72 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "MA",
-      "Long 70 shares @ $271.03 Net cost $18,974.84 · P&L −$7,214.84 · −7.61R Stop breached",
+      "Long 70 shares @ $271.03 Net cost $18,974.84 · P&L −$7,293.24 · −7.69R Stop breached",
       "$18,974.84",
-      "−$7,214.84 · −7.61R",
+      "−$7,293.24 · −7.69R",
       "Resolved · 70 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "V",
-      "Long 170 shares @ $252.25 Net cost $42,885.13 · P&L −$16,014.93 · −7.47R Stop breached",
+      "Long 170 shares @ $252.25 Net cost $42,885.13 · P&L −$16,205.33 · −7.56R Stop breached",
       "$42,885.13",
-      "−$16,014.93 · −7.47R",
+      "−$16,205.33 · −7.56R",
       "Resolved · 170 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "JPM",
-      "Long 144 shares @ $233.48 Net cost $33,624.28 · P&L −$12,295.00 · −8.77R Stop breached",
+      "Long 144 shares @ $233.48 Net cost $33,624.28 · P&L −$12,456.28 · −8.89R Stop breached",
       "$33,624.28",
-      "−$12,295.00 · −8.77R",
+      "−$12,456.28 · −8.89R",
       "Resolved · 144 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "PFE",
-      "Long 70 shares @ $214.71 Net cost $15,029.70 · P&L −$5,357.10 · −7.13R Stop breached",
+      "Long 70 shares @ $214.71 Net cost $15,029.70 · P&L −$5,435.50 · −7.23R Stop breached",
       "$15,029.70",
-      "−$5,357.10 · −7.13R",
+      "−$5,435.50 · −7.23R",
       "Resolved · 70 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "KO",
-      "Long 102 shares @ $195.95 Net cost $19,989.04 · P&L −$6,908.56 · −4.15R Stop breached",
+      "Long 102 shares @ $195.95 Net cost $19,989.04 · P&L −$7,022.80 · −4.22R Stop breached",
       "$19,989.04",
-      "−$6,908.56 · −4.15R",
+      "−$7,022.80 · −4.22R",
       "Entering · 102 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "CSCO",
-      "Long 120 shares @ $177.30 Net cost $21,278.60 · P&L −$7,082.60 · −6.66R Stop breached",
+      "Long 120 shares @ $177.30 Net cost $21,278.60 · P&L −$7,217.00 · −6.79R Stop breached",
       "$21,278.60",
-      "−$7,082.60 · −6.66R",
+      "−$7,217.00 · −6.79R",
       "Resolved · 120 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "NFLX",
-      "Long 70 shares @ $158.61 Net cost $11,104.93 · P&L −$3,519.73 · −6.34R Stop breached",
+      "Long 70 shares @ $158.61 Net cost $11,104.93 · P&L −$3,598.13 · −6.48R Stop breached",
       "$11,104.93",
-      "−$3,519.73 · −6.34R",
+      "−$3,598.13 · −6.48R",
       "Resolved · 70 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "COST",
-      "Long 204 shares @ $139.84 Net cost $28,528.01 · P&L −$8,450.33 · −7.11R Stop breached",
+      "Long 204 shares @ $139.84 Net cost $28,528.01 · P&L −$8,678.81 · −7.30R Stop breached",
       "$28,528.01",
-      "−$8,450.33 · −7.11R",
+      "−$8,678.81 · −7.30R",
       "Resolved · 204 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "AVGO",
-      "Long 120 shares @ $121.08 Net cost $14,531.79 · P&L −$3,914.19 · −5.39R Stop breached",
+      "Long 120 shares @ $121.08 Net cost $14,531.79 · P&L Mark missing: AVGO, Fri Dec 29 Thu Dec 28 close −$3,844.59 · −5.30R Mark missing",
       "$14,531.79",
-      "−$3,914.19 · −5.39R",
+      "Mark missing: AVGO, Fri Dec 29 Thu Dec 28 close −$3,844.59 · −5.30R",
       "Resolved · 120 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "TSLA",
-      "Long 42 shares @ $102.30 Net cost $4,298.70 · P&L −$1,000.02 · −2.80R Stop breached",
+      "Long 42 shares @ $102.30 Net cost $4,298.70 · P&L −$1,047.06 · −2.93R Stop breached",
       "$4,298.70",
-      "−$1,000.02 · −2.80R",
+      "−$1,047.06 · −2.93R",
       "Entering · 42 of 70",
       "Charles Schwab — Joint Brokerage"
     ],
     [
       "META",
-      "Long 170 shares @ $83.53 Net cost $14,202.73 · P&L −$2,540.73 · −3.58R Stop breached",
+      "Long 170 shares @ $83.53 Net cost $14,202.73 · P&L −$2,731.13 · −3.84R Stop breached",
       "$14,202.73",
-      "−$2,540.73 · −3.58R",
+      "−$2,731.13 · −3.84R",
       "Resolved · 170 of 170",
       "Charles Schwab — Traditional IRA"
     ],
     [
       "GOOGL",
-      "Long 120 shares @ $64.76 Net cost $7,771.85 · P&L −$732.65 · −1.88R Stop breached",
+      "Long 120 shares @ $64.76 Net cost $7,771.85 · P&L −$505.85 · −1.30R Stop breached",
       "$7,771.85",
-      "−$732.65 · −1.88R",
+      "−$505.85 · −1.30R",
       "Resolved · 120 of 120",
       "Interactive Brokers — Margin"
     ],
     [
       "AMZN",
-      "Long 84 shares @ $46.00 Net cost $3,866.76 · P&L +$225.72 · +1.40R",
+      "Long 84 shares @ $46.00 Net cost $3,866.76 · P&L +$384.48 · +2.39R",
       "$3,866.76",
-      "+$225.72 · +1.40R",
+      "+$384.48 · +2.39R",
       "Resolved · 84 of 70",
       "Interactive Brokers — Cash"
     ],
     [
       "NVDA",
-      "Long 170 shares @ $27.22 Net cost $4,630.03 · P&L +$1,962.57 · +8.49R Target reached",
+      "Long 170 shares @ $27.22 Net cost $4,630.03 · P&L +$2,283.87 · +9.88R Target reached",
       "$4,630.03",
-      "+$1,962.57 · +8.49R",
+      "+$2,283.87 · +9.88R",
       "Resolved · 170 of 170",
       "Fidelity — Individual Brokerage"
     ],
     [
       "MSFT",
-      "Long 72 shares @ $388.45 Net cost $27,971.27 · P&L −$25,894.79 · −11.11R Stop breached",
+      "Long 72 shares @ $388.45 Net cost $27,971.27 · P&L −$25,758.71 · −11.05R Stop breached",
       "$27,971.27",
-      "−$25,894.79 · −11.11R",
+      "−$25,758.71 · −11.05R",
       "Entering · 72 of 120",
       "Fidelity — Roth IRA"
     ],
     [
       "AAPL",
-      "Long 70 shares @ $369.68 Net cost $25,877.60 · P&L −$24,554.60 · −18.97R Stop breached",
+      "Long 70 shares @ $369.68 Net cost $25,877.60 · P&L −$24,422.30 · −18.87R Stop breached",
       "$25,877.60",
-      "−$24,554.60 · −18.97R",
+      "−$24,422.30 · −18.87R",
       "Resolved · 70 of 70",
       "Charles Schwab — Joint Brokerage"
     ]

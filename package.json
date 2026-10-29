@@ -24,6 +24,7 @@
     "build:bench": "vite build --mode bench --outDir dist-bench",
     "bench:generate": "node tools/bench-generate.ts",
     "bench:run": "node tools/bench-run.ts",
+    "bench:expected": "node tools/bench-expected-rows.ts",
     "preview:faults": "vite preview --outDir dist-faults",
     "measure:capacity": "node tools/measure-capacity.ts",
     "verify:capacity": "node tools/verify-capacity.ts",
