@@ -1227,3 +1227,13 @@ Cumulative run, code at `34c3ffc`, 2026-10-29 02:49 EDT: unit 795, integration 5
 
 ### T4.25-B1 One release identity in About
 - the D1 identity, accessibility and update cases pass again: About's session-policy values do not share the release identity's `identity` class
+
+`2316ee9` (B1): About's session-policy id uses class `policy-id` (styled with `.identity`), so the release digest is the only `.identity`. Red unit case first (`expected [ 'release-1', 'nyse' ] to deeply equal [ 'release-1' ]`), then green; the six D1 cases pass on rebuilt `dist-faults` and `dist-releases`. No first-run passes, no code ahead of red.
+
+ocr review of `2316ee9`: session `4e403694-20d7-4572-b034-fe9c2478bd83` (scratch clone; the reviewer read the test), no findings. `ocr/T4.25-B1-2316ee9.json`. The reviewer confirmed no other element in the app carries `identity`, `policy-id` is used only here, and the CSS change affects nothing else.
+
+### Cumulative run after T4.25
+
+- code at `2316ee9` (T4.25 and B1), 2026-10-29 02:55 EDT: unit 796, integration 50, browser 124; checks 11 of 12. `suite-runs/t4.25-b1-*`.
+
+Only `verify:capacity` failed (expected until T4.28). T4.25 is complete.

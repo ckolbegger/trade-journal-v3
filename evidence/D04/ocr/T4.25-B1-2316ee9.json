@@ -1,0 +1,91 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 0,
+    "total_tokens": 15387,
+    "input_tokens": 15180,
+    "output_tokens": 207,
+    "cache_read_tokens": 3840,
+    "elapsed": "11s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/app.css",
+        "src/ui/screens/AboutView.tsx"
+      ]
+    }
+  ],
+  "session_id": "4e403694-20d7-4572-b034-fe9c2478bd83",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "4e403694-20d7-4572-b034-fe9c2478bd83",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "ddf3f447380f9085816213e3ab18fbec100d1788",
+      "resolved_head": "ba287018472f409eea045dfb7ff797ac489123c9",
+      "exact_range": "ddf3f447380f9085816213e3ab18fbec100d1788..ba287018472f409eea045dfb7ff797ac489123c9",
+      "source_artifact_sha256": "7d245f9c76d209f04bdfe969621745db8cdaf7057e2919cbaa92a720c81df847"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "408ab49ac41f35250c874c3722ab6b0d598913e41fcb3d8f460c91378fc767ee"
+        },
+        {
+          "item_id": "8650c2637949522eaaa02e5ed749ec7b8b6ab8151b0cd0060f9a966595e84af1",
+          "path": "src/ui/screens/AboutView.tsx",
+          "fingerprint": "8df7adec6f4fc1364b2a37c1504cbcd20e62d2b0d0091790472d38a5112bd625"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "408ab49ac41f35250c874c3722ab6b0d598913e41fcb3d8f460c91378fc767ee"
+        },
+        {
+          "item_id": "8650c2637949522eaaa02e5ed749ec7b8b6ab8151b0cd0060f9a966595e84af1",
+          "path": "src/ui/screens/AboutView.tsx",
+          "fingerprint": "8df7adec6f4fc1364b2a37c1504cbcd20e62d2b0d0091790472d38a5112bd625"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 10571
+  }
+}
