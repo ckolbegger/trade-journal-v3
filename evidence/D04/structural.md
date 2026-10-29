@@ -1455,3 +1455,8 @@ I4.6 (`review-shared-mark.test.ts`, so `d4/review` selects it; part 3 adds `revi
 - ocr finding on fff0fc0: I4.5 asserted the corrected figures on the Open-list item only. The Detail now asserts `evaluation` is Evaluated with currentMarkedPnl 130, ongoingRiskToStop 400 and incrementalRewardToTarget 450, and its Mark revisionNumber 2.
 - The view exposes no Corrected flag: Corrected is `correctionReason` present on the effective revision (TradeDetail.tsx shows the badge from it), so the test asserts `correctionReason` and `revisionNumber: 2`.
 - Mutation on the Detail path only (stale P&L 150): the case failed with an assertion error; restored, `git diff -- src` empty. Logged in `tdd-log.md`.
+
+### T4.32-B2
+- ocr finding on fff0fc0: I4.3 asserted the figures after PC3 on the Open-list item only. The Detail now asserts `current.evaluation` has currentMarkedPnl 199 and ongoingRiskToStop 540 after PC3. The pre-PC3 Detail and list already asserted every listed figure (180.00, 0.72R, 450, 5200, 400, Unbounded); none missing.
+- Mutation on the Detail path after PC3 only (stale P&L): the case failed with an assertion error at value-trade.test.ts:39; restored, `git diff -- src` empty. Logged in `tdd-log.md`.
+- `npm run test:integration`: 35 files, 67 tests passed. typecheck, tsc6, lint, lint:deps: exit 0.

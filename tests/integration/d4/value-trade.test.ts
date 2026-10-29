@@ -36,6 +36,9 @@ describe('I4.3 value a Trade', () => {
     expect(after.currentMarkedPnl).toEqual(value('199'));
     expect(after.ongoingRiskToStop).toEqual(value('540'));
     const afterDetail = await detail(again, tradeId);
+    expect(afterDetail.current.evaluation).toEqual(
+      expect.objectContaining({ currentMarkedPnl: value('199'), ongoingRiskToStop: value('540') }),
+    );
     expect(afterDetail.baseline.oneR).toEqual(view.baseline.oneR);
     expect(afterDetail.entryQuality).toEqual(view.entryQuality);
 
