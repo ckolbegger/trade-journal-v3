@@ -1291,3 +1291,17 @@ Mutation checks (each restored, then `verify:fixtures` green again):
 - Changed the asserted reason in `isMarkMissing` from `MarkMissing` to `AwaitingClose`: `FAIL workspace-v2: not Unavailable(MarkMissing) after migration: fx-0040.remainingOpenPnl, ...`, exit 1.
 
 Checks: `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` all exit 0. `src/coordinators/workspace/migration.test.ts` and `tests/integration/d2/migration.test.ts` (callers of `viewsOf`): 26 passed.
+
+### T4.29-B1 Require condition results on migrated Open Trades
+
+Finding (ocr on `f419119`, Valid): `tools/verify-fixtures.ts` read a missing or empty `current.conditions` as `[]`, so the A51 check on migrated v1 and v2 Open Trades passed without confirming that each Open Trade's Stop and Target condition results exist and are `Unavailable(MarkMissing)`. The v1 and v2 `expected-views.json` snapshots predate D4 and hold no `current` fields, so `compareSnapshot` does not cover it; the explicit check is the only guard.
+
+Fix: `markMissingViolations` now takes the Trade's plan from the views' `details` and expects one condition result per plan Stop and Target (derived, not hard-coded; 2 for each of v2's 3 Open Trades). A missing, short, or zero-plan list reports `<tradeId>.conditions (<n> of <m> plan conditions)`. No product code changed.
+
+Verification:
+
+- `npm run verify:fixtures` exit 0: v1, v2 (migrated to 3) and v3 views equal; `verify:fixtures OK`.
+- Mutation 1, read of `conditions` sliced by one (restored): `FAIL workspace-v2: not Unavailable(MarkMissing) after migration: fx-0040.conditions (1 of 2 plan conditions), fx-0056.conditions (1 of 2 plan conditions), fx-0068.conditions (1 of 2 plan conditions)`.
+- Mutation 2, sliced by two, an empty list (restored): `FAIL workspace-v2: ... fx-0040.conditions (0 of 2 plan conditions), ...`. Before the fix this mutation passed.
+- Restored; `verify:fixtures` green again.
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`: see the commit run, all exit 0.

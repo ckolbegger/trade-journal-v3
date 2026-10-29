@@ -31,15 +31,22 @@ const isMarkMissing = (figure: unknown): boolean =>
 
 // Names each Open Trade figure of a pre-schema-3 fixture's migrated views that is not Unavailable(MarkMissing).
 function markMissingViolations(views: unknown): string[] {
-  const open = (views as { open?: { tradeId: string; current?: Record<string, unknown> }[] }).open ?? [];
+  const { open = [], details = [] } = views as {
+    open?: { tradeId: string; current?: Record<string, unknown> }[];
+    details?: { tradeId: string; plan?: { stops?: unknown[]; targets?: unknown[] } }[];
+  };
   return open.flatMap((row) => {
     const current = row.current;
     if (!current) return [`${row.tradeId}: no current figures`];
     const bad = CURRENT_FIGURES.filter((name) => !isMarkMissing(current[name])).map((name) => `${row.tradeId}.${name}`);
+    // One result per Stop and Target of the Trade's plan; a missing or short list is a violation, not an empty pass.
+    const plan = details.find((d) => d.tradeId === row.tradeId);
+    const planned = (plan?.plan?.stops?.length ?? 0) + (plan?.plan?.targets?.length ?? 0);
     const conditions = (current['conditions'] as { id: string; result: unknown }[] | undefined) ?? [];
+    const missingConditions = planned > 0 && conditions.length === planned ? [] : [`${row.tradeId}.conditions (${conditions.length} of ${planned} plan conditions)`];
     const badConditions = conditions.filter((c) => !isMarkMissing(c.result)).map((c) => `${row.tradeId}.conditions.${c.id}`);
     const resolution = (current['markResolution'] as { kind?: string } | undefined)?.kind === 'Missing' ? [] : [`${row.tradeId}.markResolution`];
-    return [...bad, ...badConditions, ...resolution];
+    return [...bad, ...missingConditions, ...badConditions, ...resolution];
   });
 }
 
