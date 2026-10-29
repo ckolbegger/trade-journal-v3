@@ -1,0 +1,145 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 3,
+    "total_tokens": 216523,
+    "input_tokens": 214044,
+    "output_tokens": 2479,
+    "cache_read_tokens": 17280,
+    "elapsed": "1m58s"
+  },
+  "tool_calls": {
+    "total": 25,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 7,
+      "file_find": 2,
+      "file_read": 15
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/journal/section.ts",
+      "content": "A Debt with a missing anchor throws here instead of returning a validation issue; an anchor object without tradeId instead inserts undefined into the Trade-reference set. Unlike the existing Entry/decline scan, this bypasses MissingAnchor handling. Read the anchor defensively and report MissingAnchor with debt.debtId before collecting the reference.",
+      "existing_code": "      anchorTradeIds.add(debt.anchor.tradeId);",
+      "start_line": 98,
+      "end_line": 98,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/journal/section.ts",
+      "content": "Reciprocal IDs and matching definitions do not establish that the outcome answers the same obligation. A Debt for pc-1 and an Entry for pc-2 can point to each other and pass validation; the Debt is then excluded from current outcomes even though no outcome holds its obligation key. Retain the outcome's obligationKey in SettlementLink and reject mismatches for both Entries and declines.",
+      "existing_code": "        if (link.settledDebtId !== debt.debtId) issues.push({ code: 'DebtLinkNotReciprocated', debtId: debt.debtId, id: link.id });\n        else if (store === 'journalEntries' \u0026\u0026 link.definitionId !== debt.definitionId) issues.push({ code: 'DebtEntryDefinitionChanged', debtId: debt.debtId, entryId: link.id });",
+      "start_line": 112,
+      "end_line": 113,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/journal/section.ts",
+      "content": "The reverse-link key loses the outcome's store. If an Entry and a decline share an ID but have different obligation keys, and both name the same Debt, a Settled version naming only the Entry adds a key that also satisfies the decline's reverse check. This inconsistent decline is accepted without an issue. Include the store in both tracking keys (or keep separate sets), since these records are keyed independently in their respective stores.",
+      "existing_code": "        named.add(`${debt.debtId}|${link.id}`);",
+      "start_line": 111,
+      "end_line": 111,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Journal module integration and readiness messaging",
+      "files": [
+        "src/modules/journal/index.ts",
+        "src/modules/journal/manifest.ts",
+        "src/modules/journal/section.ts",
+        "src/ui/readiness-copy.ts"
+      ]
+    }
+  ],
+  "session_id": "8a5b92a9-1cd7-4cdd-9fff-df22a5077226",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "8a5b92a9-1cd7-4cdd-9fff-df22a5077226",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "12c927c",
+      "resolved_base": "b2d5eaf154ceab27548b7941b790b6672b193789",
+      "resolved_head": "12c927caa70a874abfef78e2637a66091cbf00aa",
+      "exact_range": "b2d5eaf154ceab27548b7941b790b6672b193789..12c927caa70a874abfef78e2637a66091cbf00aa",
+      "source_artifact_sha256": "3d5769448cda33d74b90df8b937bd81d4d3e341ab0fbe5f5750d9a0e4f3568bd"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "157b410229dcea7bf91b0064c04c074dd52c9469f111e4031b05d2715012ae80",
+          "path": "src/modules/journal/section.ts",
+          "fingerprint": "5a73d3e2020c3a075587cf00537b270c1cb94999d8e98ac54dcfc972d8b167b0"
+        },
+        {
+          "item_id": "265139fa195a485874d9acb508d60d0ba58df1a60a8c61f10a5dc5af23536c70",
+          "path": "src/modules/journal/manifest.ts",
+          "fingerprint": "9d9c676035ab7535045fde0e95d516675e8932a23ad226aac3c9d9b4406186d1"
+        },
+        {
+          "item_id": "2f64c03c681bb0e4cb769794bfa15cb393d2414f28f9249686cc06d16338bb98",
+          "path": "src/modules/journal/index.ts",
+          "fingerprint": "fbdd5a0552e3b4a70b4d2ac3520f5f3a10656459b2a7f4ec28fdb44122e06d9c"
+        },
+        {
+          "item_id": "57e2573986855744064977daaf8fb9d0228298dbb7e8482c0f1bc2051658e860",
+          "path": "src/ui/readiness-copy.ts",
+          "fingerprint": "e90bb0815b93acdcf485d883a61ab61d3d3d2b763e6073603dc68e907e56f85b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "157b410229dcea7bf91b0064c04c074dd52c9469f111e4031b05d2715012ae80",
+          "path": "src/modules/journal/section.ts",
+          "fingerprint": "5a73d3e2020c3a075587cf00537b270c1cb94999d8e98ac54dcfc972d8b167b0"
+        },
+        {
+          "item_id": "265139fa195a485874d9acb508d60d0ba58df1a60a8c61f10a5dc5af23536c70",
+          "path": "src/modules/journal/manifest.ts",
+          "fingerprint": "9d9c676035ab7535045fde0e95d516675e8932a23ad226aac3c9d9b4406186d1"
+        },
+        {
+          "item_id": "2f64c03c681bb0e4cb769794bfa15cb393d2414f28f9249686cc06d16338bb98",
+          "path": "src/modules/journal/index.ts",
+          "fingerprint": "fbdd5a0552e3b4a70b4d2ac3520f5f3a10656459b2a7f4ec28fdb44122e06d9c"
+        },
+        {
+          "item_id": "57e2573986855744064977daaf8fb9d0228298dbb7e8482c0f1bc2051658e860",
+          "path": "src/ui/readiness-copy.ts",
+          "fingerprint": "e90bb0815b93acdcf485d883a61ab61d3d3d2b763e6073603dc68e907e56f85b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 118240
+  }
+}

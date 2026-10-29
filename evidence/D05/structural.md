@@ -153,3 +153,32 @@ Run 2026-10-29 19:32 EDT on commit `028df87`, Node v26.12.0.
 | Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.4-debt-queries-checks.txt` |
 
 Failures: `verify:capacity` (expected until T5.19), and `src/ui/screens/TradeList.test.tsx:133` ("should render distinct Loading, Ready, Empty … and Error with Retry states"): `expect(marks('tj:open-list-ready')).toBe(2)` got 1. Reproduced in the main session: the case passed three times alone (`npx vitest run src/ui/screens/TradeList.test.tsx -t "should render distinct Loading"`) and the whole unit suite passed once (`npx vitest run src`: 64 files, 836 tests). T5.4 touched no UI or Trade List code; recorded as a load-dependent flake in a D4 UI test, flagged for the user, and fixed by a bug task if it fails a later run.
+
+## T5.5 Journal: section validator for Debt; seed manifest v4
+
+Implementation commit `12c927c`. Three cases red then green; no first-run pass (case 1 gives a Debt an Anchor on a Trade no Entry names, so its red is real). One "green" row failed on the test fixture (a Source record's revision is the Journal revision plus one) and was rerun after fixing the test; a note row explains it. New issue codes `DebtResolutionMissing`, `DebtVersionAfterResolution`, `DebtEntryDefinitionChanged`, `DebtLinkNotReciprocated`, with plain-language copy added to `src/ui/readiness-copy.ts` because its Record is exhaustive. A Debt is a current outcome only while Outstanding. `D4_JOURNAL_MANIFEST` adds `source.trade-detail` ("Trade Detail"); **T5.12 must switch Workspace from `D3_JOURNAL_MANIFEST`.**
+
+### ocr review of `12c927c`
+
+Session `8a5b92a9-1cd7-4cdd-9fff-df22a5077226`, model gpt-6.1-sol, 4 files reviewed, 3 comments. Raw output: `ocr/T5.5-12c927c.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/modules/journal/section.ts:98` | A Debt with no anchor throws, or adds `undefined` to the Trade references, instead of reporting `MissingAnchor` | Valid | Bug task T5.5-B1 |
+| medium | `src/modules/journal/section.ts:112` | Reciprocal links are not checked to answer the same obligation key | Valid | Bug task T5.5-B2 |
+| medium | `src/modules/journal/section.ts:111` | The reverse-link key omits the store, so an Entry and a decline with one id can mask each other | Doubtful | Bug task T5.5-B3 |
+
+### T5.5-B1 A Debt without an anchor is reported, not thrown
+
+Defect: a backup or migration candidate with a Debt lacking `anchor` (or `anchor.tradeId`) crashes `validateSection` instead of returning an issue.
+- it should report MissingAnchor for a Debt whose anchor or anchor Trade is absent, and add nothing undefined to the Trade references
+
+### T5.5-B2 A settlement link answers the Debt's own obligation
+
+Defect: a Debt for one Position Change and an Entry for another that name each other pass validation.
+- it should report a settling Entry or decline whose obligation key differs from the Debt it settled
+
+### T5.5-B3 Reverse links are keyed by store
+
+Defect: an Entry and a decline sharing an identity, both naming one Debt, hide each other's missing reverse link.
+- it should report the missing reverse link of a decline when an Entry with the same identity names the same Debt
