@@ -1173,3 +1173,18 @@ Cumulative run, code at `535bb76`, 2026-10-29 02:11 EDT: unit 782, integration 5
 
 ### T4.23-B3 Each figure once on narrow
 - the D2 case "should pin Underlying, keep Underlying and Trade in view and show each figure once in both tables" at 320 and 390 passes again with the P&L on the Trade cell's second line
+
+`06a497e` (B3, test only): the product shows the Net cost once; the D2 helper `occurrences` counted both Playwright's joined `cell "…"` line and its text child once the Open Trade cell held a link and badge (T4.23). It now drops a cell line that has children. Red at 390 and 320 (`Open at 390 "$3,007.00" in the accessibility tree`, received 2), green at all three widths; mutation: the `.trade-line` rendered twice still fails the helper (received 2). The Open figure count stays 1 (the seed has no Mark, so the P&L is not a dollar figure). Rows written by hand (`tdd.sh` is vitest-only).
+
+ocr review of `06a497e`: session `c0aebc00-658c-41ff-af20-00def69cc751`, ocr skipped the spec ("no items were selected"); the reviewer read it. `ocr/T4.23-B3-06a497e.json`. The reviewer traced that a real duplicate is still caught, a plain-text cell counts once, and the filter cannot drop a child line.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `e2e/d2/ui-alignment.spec.ts:1397`, `:1444` | Two other ariaSnapshot counts use the old unfiltered form and may double-count | Doubtful: both pass in the full run below at every width | Dismissed |
+| low | `ui-alignment.spec.ts:492` | The filter could be one shared helper | Doubtful: maintainability only | Dismissed |
+
+### Cumulative run after T4.23
+
+- code at `06a497e` (T4.23 and B1–B3), 2026-10-29 02:22 EDT: unit 782, integration 50, browser 124; checks 11 of 12. `suite-runs/t4.23-b3-*`.
+
+Only `verify:capacity` failed (expected until T4.28). T4.23 is complete.
