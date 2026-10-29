@@ -377,7 +377,7 @@ describe('moving on', () => {
     const blockers = within(screen.getByRole('list', { name: 'Blockers' })).getAllByRole('listitem');
     expect(blockers.map((b) => b.textContent)).toEqual(['Action missing for DEF']);
     // The Mark entry for the unchanged key shows the refreshed resolution and saves against its revision.
-    const xyz = screen.getByRole('region', { name: 'XYZ Mark' });
+    const xyz = screen.getByRole('region', { name: 'XYZ Mark, Mon Oct 12' });
     expect(within(xyz).getByText('$55.00', { exact: false })).toBeTruthy();
     vi.mocked(facade.MarketData.save).mockResolvedValue({ kind: 'Conflict', key: { instrumentKey: 'XYZ', tradingDate: '2026-10-12' }, resolution: available('55'), resolutionRevision: 2 });
     await user.click(within(xyz).getByRole('button', { name: 'Correct' }));
@@ -462,23 +462,23 @@ describe('moving on', () => {
     });
     renderReview(facade);
     const user = userEvent.setup();
-    const [, earlierEntry] = await screen.findAllByRole('region', { name: 'DEF Mark' });
-    await user.click(within(earlierEntry!).getByRole('button', { name: 'Enter' }));
-    await user.type(within(earlierEntry!).getByLabelText('Price'), '9');
-    await user.click(within(earlierEntry!).getByRole('button', { name: 'Save Mark' }));
-    await within(earlierEntry!).findByText('$9.00', { exact: false });
+    const earlierEntry = await screen.findByRole('region', { name: 'DEF Mark, Fri Oct 9' });
+    await user.click(within(earlierEntry).getByRole('button', { name: 'Enter' }));
+    await user.type(within(earlierEntry).getByLabelText('Price'), '9');
+    await user.click(within(earlierEntry).getByRole('button', { name: 'Save Mark' }));
+    await within(earlierEntry).findByText('$9.00', { exact: false });
 
     // Continue re-renders the Review with the same stale revision for that date.
     await user.click(screen.getByRole('button', { name: 'Continue to Trades' }));
     await screen.findByRole('region', { name: 'Trades' });
 
-    const [, again] = screen.getAllByRole('region', { name: 'DEF Mark' });
-    expect(within(again!).getByText('$9.00', { exact: false })).toBeTruthy();
+    const again = screen.getByRole('region', { name: 'DEF Mark, Fri Oct 9' });
+    expect(within(again).getByText('$9.00', { exact: false })).toBeTruthy();
     vi.mocked(facade.MarketData.save).mockResolvedValue({ kind: 'Conflict', key, resolution: { kind: 'Available', mark }, resolutionRevision: 1 });
-    await user.click(within(again!).getByRole('button', { name: 'Correct' }));
-    await user.type(within(again!).getByLabelText('Price'), '9.5');
-    await user.type(within(again!).getByLabelText('Reason (required)'), 'typo');
-    await user.click(within(again!).getByRole('button', { name: 'Save correction' }));
+    await user.click(within(again).getByRole('button', { name: 'Correct' }));
+    await user.type(within(again).getByLabelText('Price'), '9.5');
+    await user.type(within(again).getByLabelText('Reason (required)'), 'typo');
+    await user.click(within(again).getByRole('button', { name: 'Save correction' }));
     expect(facade.MarketData.save).toHaveBeenLastCalledWith({ intention: 'CorrectMark', ...key, price: '9.5', reason: 'typo', expectedResolutionRevision: 1 });
   });
 
@@ -495,9 +495,9 @@ describe('moving on', () => {
     const user = userEvent.setup();
 
     // The saved Mark comes from the returned state alone.
-    const xyz = await screen.findByRole('region', { name: 'XYZ Mark' });
+    const xyz = await screen.findByRole('region', { name: 'XYZ Mark, Mon Oct 12' });
     expect(within(xyz).getByText('$52.00', { exact: false })).toBeTruthy();
-    expect(within(screen.getByRole('region', { name: 'DEF Mark' })).getByText('Missing')).toBeTruthy();
+    expect(within(screen.getByRole('region', { name: 'DEF Mark, Mon Oct 12' })).getByText('Missing')).toBeTruthy();
     await user.click(screen.getByRole('button', { name: 'Continue to Trades' }));
     const rows = within(await screen.findByRole('region', { name: 'Trades' })).getAllByRole('listitem');
     expect(within(rows[0]!).getByText('Action saved')).toBeTruthy();
@@ -529,6 +529,20 @@ describe('moving on', () => {
     expect(screen.getByRole('button', { name: 'Enter' })).toBeTruthy();
   });
 
+  it('should name each Mark entry region by Instrument and date', async () => {
+    const facade = reviewFacade(
+      ready({
+        today: [markRow('DEF', ['t1'])],
+        earlier: [{ instrumentKey: 'DEF', missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false }],
+        trades: [tradeItem('t1', 'DEF')],
+        completion: incomplete({ code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-12', trades: ['t1'] }),
+      }),
+    );
+    renderReview(facade);
+    await screen.findByRole('region', { name: 'DEF Mark, Mon Oct 12' });
+    expect(screen.getByRole('region', { name: 'DEF Mark, Fri Oct 9' })).toBeTruthy();
+  });
+
   it('should register as unsaved while any Mark entry holds a value, today or earlier, and clear when the last is cancelled', async () => {
     const dirty = vi.fn<(dirty: boolean) => void>();
     const facade = reviewFacade(
@@ -541,18 +555,19 @@ describe('moving on', () => {
     );
     renderReview(facade, { onDirtyChange: dirty });
     const user = userEvent.setup();
-    const [todayEntry, earlierEntry] = await screen.findAllByRole('region', { name: 'DEF Mark' });
+    const todayEntry = await screen.findByRole('region', { name: 'DEF Mark, Mon Oct 12' });
+    const earlierEntry = screen.getByRole('region', { name: 'DEF Mark, Fri Oct 9' });
     expect(dirty).not.toHaveBeenCalledWith(true);
 
-    await user.click(within(todayEntry!).getByRole('button', { name: 'Enter' }));
-    await user.type(within(todayEntry!).getByLabelText('Price'), '1');
+    await user.click(within(todayEntry).getByRole('button', { name: 'Enter' }));
+    await user.type(within(todayEntry).getByLabelText('Price'), '1');
     expect(dirty).toHaveBeenLastCalledWith(true);
-    await user.click(within(earlierEntry!).getByRole('button', { name: 'Enter' }));
-    await user.type(within(earlierEntry!).getByLabelText('Price'), '2');
-    await user.click(within(todayEntry!).getByRole('button', { name: 'Cancel' }));
+    await user.click(within(earlierEntry).getByRole('button', { name: 'Enter' }));
+    await user.type(within(earlierEntry).getByLabelText('Price'), '2');
+    await user.click(within(todayEntry).getByRole('button', { name: 'Cancel' }));
     // One entry still holds a value.
     expect(dirty).toHaveBeenLastCalledWith(true);
-    await user.click(within(earlierEntry!).getByRole('button', { name: 'Cancel' }));
+    await user.click(within(earlierEntry).getByRole('button', { name: 'Cancel' }));
     expect(dirty).toHaveBeenLastCalledWith(false);
   });
 
@@ -586,7 +601,7 @@ describe('moving on', () => {
     await user.click(await screen.findByRole('button', { name: 'Continue to Trades' }));
     expect((await screen.findByRole('alert')).textContent).toContain('We couldn’t refresh the Review. Nothing was changed.');
     expect(screen.queryByRole('region', { name: 'Trades' })).toBeNull();
-    expect(screen.getByRole('region', { name: 'XYZ Mark' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'XYZ Mark, Mon Oct 12' })).toBeTruthy();
 
     // A refused refresh says the same, and the next press succeeds.
     await user.click(screen.getByRole('button', { name: 'Continue to Trades' }));

@@ -137,7 +137,7 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
     expect(await screen.findByText('Acknowledged Unavailable')).toBeTruthy();
     expect(screen.getByText(/You said you can’t get a price/)).toBeTruthy();
     expect(screen.getByText(/Vendor outage/)).toBeTruthy();
-    expect(screen.getByRole('region', { name: 'XYZ Mark' }).textContent).not.toContain('$');
+    expect(screen.getByRole('region', { name: 'XYZ Mark, Mon Oct 12' }).textContent).not.toContain('$');
   });
 
   it('should offer Withdraw on an acknowledged key and render Missing afterwards', async () => {

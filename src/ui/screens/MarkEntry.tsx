@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import type { UiFacade } from '../../app/compose.ts';
 import type { ExpectedResolutionRevision, MarkResolution } from '../../app/types.ts';
-import { decimalMoney } from '../format.ts';
+import { decimalMoney, shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { fieldIssues } from './form-issues.tsx';
 import { describeMarkIssues } from './mark-issues.ts';
@@ -132,7 +132,7 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
   };
 
   return (
-    <section aria-label={`${instrumentKey} Mark`}>
+    <section aria-label={`${instrumentKey} Mark, ${shortDate(tradingDate)}`}>
       {resolution.kind === 'Available' && (
         <p>
           <span className="number">{decimalMoney(resolution.mark.price)}</span> · {resolution.mark.source}
