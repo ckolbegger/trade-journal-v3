@@ -1234,3 +1234,9 @@ At the user's direction (2026-10-11), the clause-by-clause check of each accepta
 4. **D12:** mark AC-LIFE-003 full, adding Stop Discipline to its disagreement fixtures. Its Mark-evidence checks during Restore read the candidate's observations (decision 34), and the Stop Discipline coverage start (decision 12) joins the `workspace` section.
 5. **D13 and D15:** Void and Replace versions, Debt reopening, and corrected facts join the round trip and the section validators; their Restore repairs follow decision 23.
 
+## Tech debt
+
+Known gaps accepted for now, each with what a fix would need. Added at the user's direction.
+
+1. **Late Stale-context Mark at a Daily Review save (D4, T4.16-B1 ocr; accepted 2026-10-29).** `DailyReview.save` binds the exact keys it read, but a Mark that newly becomes a Trade's Stale-context source between the save's read and its commit is not caught. Accepted because Stale context is disclosure only and the Action Entry stores no evidence. A fix needs a range binding in persistence `commit`, beyond ADR 0011's exact-key checks.
+2. **Older tab writes after a session-policy change (D4, T4.17-B1; accepted 2026-10-29).** A tab still on an older release can keep writing observations after a newer release recorded its session-policy identity: no write-gate check compares policies, and a policy-only release keeps schema 3. A key on a newly closed date written then is never listed as an A40 finding, though it is never selected as a Mark. A fix needs the write gate to compare the release's session-policy identity with the stored one.
