@@ -1237,3 +1237,13 @@ ocr review of `2316ee9`: session `4e403694-20d7-4572-b034-fe9c2478bd83` (scratch
 - code at `2316ee9` (T4.25 and B1), 2026-10-29 02:55 EDT: unit 796, integration 50, browser 124; checks 11 of 12. `suite-runs/t4.25-b1-*`.
 
 Only `verify:capacity` failed (expected until T4.28). T4.25 is complete.
+
+## T4.26 Faults-build clock pin
+
+`133f98f`. `src/delivery/faults.ts` adds `pinnedClock(search, real)` (a frozen clock at `?clock=`'s instant; absent or invalid, including zone-less, keeps the real clock), `CLOCK_PIN_MARKER` and `window.__tjClockPin`; `src/main.tsx` uses it only when `import.meta.env.MODE === 'faults'`, feeding both `createApplication({clock})` and the screens' `now`; `tools/verify-no-fault-hooks.ts` checks the marker. A49 read as a frozen instant for the launch at the host boundary (the injected Clock), not a patched global `Date`; every in-app "now" reads that clock. Verification: `npm run build:faults` (exit 0, marker present in `dist-faults`), `npm run build && npm run verify:no-fault-hooks` (exit 0, "OK: dist has no fault or bench hooks"), the same check on `dist-faults` exits 1 listing the marker; a throwaway Playwright launch at `?clock=2026-10-13T16:00:00Z` showed "Review Date Mon Oct 12". Unit cases red then green. Code ahead of red, flagged: the absent/invalid fallback existed before its case's red (`tdd.sh` logged an invalid red); a forced failure gave the genuine red, then the code was restored. For T4.32/T4.33: every launch or reload must carry `?clock=`.
+
+ocr review of `133f98f`: session `3959a6ce-e501-493f-87a9-9f5b2c68974a` (scratch clone with the test renamed), 4 files, 1 comment. `ocr/T4.26-133f98f.json`. The reviewer confirmed the production build drops the pin (no `clock-pin`, `__tjClockPin` or `pinnedClock` in `dist/`), the only wall-clock read is `systemClock`, the Service Worker reads no time, and a malformed `?clock=` cannot throw at startup. Noted, not a defect: a browser test reading `new Date()` directly would not see the pin.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/delivery/clock-pin-cases.ts:1` | The tests are not discovered by vitest | Wrong: a scratch-clone rename; the real file is `clock-pin.test.ts` | Dismissed |

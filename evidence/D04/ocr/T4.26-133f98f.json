@@ -1,0 +1,125 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 1,
+    "total_tokens": 59872,
+    "input_tokens": 59230,
+    "output_tokens": 642,
+    "cache_read_tokens": 9600,
+    "elapsed": "40s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_find": 1,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/delivery/clock-pin-cases.ts",
+      "content": "This file is not discovered by the unit test suite: `vite.config.ts` only includes `src/**/*.test.{ts,tsx}`, so neither new clock-pin test runs under `npm run test:unit`. Rename it to `clock-pin-cases.test.ts` (or another matching name) so the valid/invalid clock behavior is actually checked.",
+      "existing_code": "import { describe, expect, it } from 'vitest';",
+      "start_line": 1,
+      "end_line": 1,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Delivery clock-pin fault cases and hook integration checks",
+      "files": [
+        "src/delivery/clock-pin-cases.ts",
+        "src/delivery/faults.ts",
+        "src/main.tsx",
+        "tools/verify-no-fault-hooks.ts"
+      ]
+    }
+  ],
+  "session_id": "3959a6ce-e501-493f-87a9-9f5b2c68974a",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3959a6ce-e501-493f-87a9-9f5b2c68974a",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "c0bba77",
+      "resolved_base": "b86ca7fa555e20a4836f15fd2db193eefe331ce9",
+      "resolved_head": "c0bba774deabe1cdd73ac53a7b6e590b5bc1b0f7",
+      "exact_range": "b86ca7fa555e20a4836f15fd2db193eefe331ce9..c0bba774deabe1cdd73ac53a7b6e590b5bc1b0f7",
+      "source_artifact_sha256": "5d4cb33facdc0a578e3132bb05596ecaee67ac583e660d9ca59f89abe695ab50"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0e13bcad75d711a06abf4064e2c8a379c07c65f5f770258baacfce54e8c1c107",
+          "path": "tools/verify-no-fault-hooks.ts",
+          "fingerprint": "bb25cf4c7ffda06e1132e6e21fc0d2cafcaa43ec76207db53fb2611e47f6768d"
+        },
+        {
+          "item_id": "210655ac4673b21959b7e9baf42b14bc585032005a61639efe3cbcfc75c6ec3e",
+          "path": "src/delivery/clock-pin-cases.ts",
+          "fingerprint": "388ddf0594abfb1ef80fc874e899d64088c1aa602465b19fc7336c99dd26faec"
+        },
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "9c82d3b888aa96aade64d7574e3a87ab098d205e093de8e9dc75302ac25a8b54"
+        },
+        {
+          "item_id": "955b0a25a840a5072c8df601153dbe08c59e5a6c317ff6b226f794b7de1330b8",
+          "path": "src/delivery/faults.ts",
+          "fingerprint": "11849c75766714595820ed7617ac5805aeaa9a90376978d21053e95b6fc8dbed"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0e13bcad75d711a06abf4064e2c8a379c07c65f5f770258baacfce54e8c1c107",
+          "path": "tools/verify-no-fault-hooks.ts",
+          "fingerprint": "bb25cf4c7ffda06e1132e6e21fc0d2cafcaa43ec76207db53fb2611e47f6768d"
+        },
+        {
+          "item_id": "210655ac4673b21959b7e9baf42b14bc585032005a61639efe3cbcfc75c6ec3e",
+          "path": "src/delivery/clock-pin-cases.ts",
+          "fingerprint": "388ddf0594abfb1ef80fc874e899d64088c1aa602465b19fc7336c99dd26faec"
+        },
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "9c82d3b888aa96aade64d7574e3a87ab098d205e093de8e9dc75302ac25a8b54"
+        },
+        {
+          "item_id": "955b0a25a840a5072c8df601153dbe08c59e5a6c317ff6b226f794b7de1330b8",
+          "path": "src/delivery/faults.ts",
+          "fingerprint": "11849c75766714595820ed7617ac5805aeaa9a90376978d21053e95b6fc8dbed"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 39669
+  }
+}
