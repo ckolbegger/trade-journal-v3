@@ -273,4 +273,40 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
     await vi.waitFor(() => expect(report).toHaveBeenCalledExactlyOnceWith(refused));
     expect(screen.getByLabelText<HTMLInputElement>('Price').value).toBe('52.5');
   });
+
+  it('should send one save and disable the Mark actions while a save is in flight', async () => {
+    const facade = facadeDouble();
+    let finish: (result: never) => void = () => undefined;
+    vi.mocked(facade.MarketData.save).mockReturnValue(new Promise((resolve) => (finish = resolve)));
+    renderEntry({ kind: 'Missing' }, 'None', { facade });
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Enter' }));
+    await user.type(screen.getByLabelText('Price'), '52.5');
+    const save = screen.getByRole('button', { name: 'Save Mark' });
+    await user.click(save);
+    await user.click(save);
+    expect(facade.MarketData.save).toHaveBeenCalledOnce();
+    expect((save as HTMLButtonElement).disabled).toBe(true);
+    // Cancel leaves the form open to the entry buttons, which stay disabled until the result arrives.
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Enter' }).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: "Can't get a price" }).disabled).toBe(true);
+
+    finish(saved(mark('52.5'), 1));
+    expect(await screen.findByText('$52.50')).toBeTruthy();
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Correct' }).disabled).toBe(false);
+    cleanup();
+
+    // Withdraw sends one save and is disabled until the result arrives.
+    const withdrawFacade = facadeDouble();
+    vi.mocked(withdrawFacade.MarketData.save).mockReturnValue(new Promise((resolve) => (finish = resolve)));
+    renderEntry({ kind: 'AcknowledgedUnavailable', acknowledgment: { reason: 'Halted' } } as never, 1, { facade: withdrawFacade });
+    const withdraw = screen.getByRole<HTMLButtonElement>('button', { name: 'Withdraw' });
+    await user.click(withdraw);
+    await user.click(withdraw);
+    expect(withdrawFacade.MarketData.save).toHaveBeenCalledOnce();
+    expect(withdraw.disabled).toBe(true);
+    finish(saved({ kind: 'Missing' }, 2, 'Withdrawn'));
+    await vi.waitFor(() => expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Enter' }).disabled).toBe(false));
+  });
 });

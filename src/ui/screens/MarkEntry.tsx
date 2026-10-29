@@ -64,8 +64,16 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
     setConflict(false);
   };
   const key = { instrumentKey, tradingDate, expectedResolutionRevision: revision };
+  // One save at a time: a second would carry the same expected revision, and a late Saved would close the form over newer input.
+  const [saving, setSaving] = useState(false);
   const save = async (command: Parameters<UiFacade['MarketData']['save']>[0]) => {
-    const result = await facade.MarketData.save(command);
+    setSaving(true);
+    let result;
+    try {
+      result = await facade.MarketData.save(command);
+    } finally {
+      setSaving(false);
+    }
     // A refusal to write switches the whole shell to read only; the form keeps its values.
     report(result);
     setIssues(result.kind === 'Rejected' ? describeMarkIssues(result.issues, uid) : []);
@@ -143,7 +151,7 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
               {fieldError(`${uid}-reason`)}
             </div>
           )}
-          <button type="submit" className="pill primary">
+          <button type="submit" className="pill primary" disabled={saving}>
             {SAVE_LABEL[mode]}
           </button>
           <button type="button" className="pill secondary" onClick={closeForm}>
@@ -154,21 +162,21 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
         <>
           {resolution.kind === 'Missing' && (
             <>
-              <button type="button" className="pill secondary" onClick={() => setMode('Enter')}>
+              <button type="button" className="pill secondary" onClick={() => setMode('Enter')} disabled={saving}>
                 Enter
               </button>
-              <button type="button" className="pill secondary" onClick={() => setMode('Acknowledge')}>
+              <button type="button" className="pill secondary" onClick={() => setMode('Acknowledge')} disabled={saving}>
                 {CANT_GET_A_PRICE}
               </button>
             </>
           )}
           {resolution.kind === 'AcknowledgedUnavailable' && (
-            <button type="button" className="pill secondary" onClick={() => void save({ intention: 'WithdrawAcknowledgment', ...key })}>
+            <button type="button" className="pill secondary" onClick={() => void save({ intention: 'WithdrawAcknowledgment', ...key })} disabled={saving}>
               Withdraw
             </button>
           )}
           {resolution.kind === 'Available' && (
-            <button type="button" className="pill secondary" onClick={() => setMode('Correct')}>
+            <button type="button" className="pill secondary" onClick={() => setMode('Correct')} disabled={saving}>
               Correct
             </button>
           )}
