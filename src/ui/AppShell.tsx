@@ -21,6 +21,7 @@ import type {
   RuntimeNotWritable,
 } from "../delivery/runtime-not-writable.ts";
 import { isRouteInstalled, ROUTES } from "../app/routes.ts";
+import { toWorkspaceLocal } from "../domain/time/index.ts";
 import { explainFailure, explainMigrationIssue } from "./readiness-copy.ts";
 import {
   AboutIcon,
@@ -350,6 +351,16 @@ export function AppShell({
   const storageKept = durability !== undefined && durability.kind !== "NotImproved";
   const showStorageIcon =
     status.protection !== "Protected" && !storageKept && aboutRoute !== undefined;
+  // Outside the session policy's coverage no session can be resolved (P8): today is the Workspace-zone date.
+  const { coverage } = facade.capabilities.sessionPolicy;
+  const today =
+    "timeZone" in status
+      ? toWorkspaceLocal(status.observedAt, status.timeZone).slice(0, 10)
+      : undefined;
+  const showCalendarIcon =
+    today !== undefined &&
+    (today < coverage.first || today > coverage.last) &&
+    aboutRoute !== undefined;
   const report = (result: { readonly kind: string }) => {
     if (result.kind === "RuntimeNotWritable") {
       setRefusal(result as RuntimeNotWritable);
@@ -367,6 +378,7 @@ export function AppShell({
         requestingDurability: requesting,
         durabilityRequestFailed: requestFailed,
         storageIconTo: showStorageIcon ? ABOUT_PATH : undefined,
+        calendarIconTo: showCalendarIcon ? ABOUT_PATH : undefined,
         timeZone: "timeZone" in status ? status.timeZone : undefined,
       }}
     >

@@ -754,3 +754,24 @@ describe('write route while not Writable', () => {
     expect(screen.getByRole('heading', { name: /read only: this browser can.t save right now/i })).toBeTruthy();
   });
 });
+
+describe('session-policy coverage', () => {
+  const ICON = { name: 'Coming soon - update calendar' };
+  const accounts: Partial<Screens> = { accounts: () => <><PageTitle>Accounts</PageTitle><AccountsStub /></> };
+
+  it('should show a warning icon whose message is Coming soon - update calendar when today is outside coverage, while every other control stays enabled', async () => {
+    // Coverage ends 2028-12-31; the Workspace zone date is 2029-01-03.
+    const facade = facadeDouble({ status: readyStatus({ observedAt: '2029-01-03T15:00:00Z' }) });
+    renderShell(facade, '/accounts', accounts);
+    const icon = await screen.findByRole('link', ICON);
+    expect(icon.getAttribute('href')).toBe('/about');
+    expect(screen.getByRole('button', { name: 'Add Account' }).hasAttribute('disabled')).toBe(false);
+    const nav = screen.getByRole('navigation', { name: 'Primary' });
+    expect(Array.from(nav.querySelectorAll('a')).map((a) => a.textContent)).toEqual(['Trades', 'Review', 'New Plan', 'Accounts', 'About']);
+    cleanup();
+    // The last covered day in the Workspace zone, though already the next day in UTC: no icon.
+    renderShell(facadeDouble({ status: readyStatus({ observedAt: '2029-01-01T03:00:00Z' }) }), '/accounts', accounts);
+    await screen.findByRole('button', { name: 'Add Account' });
+    expect(screen.queryByRole('link', ICON)).toBeNull();
+  });
+});

@@ -6,10 +6,15 @@ import { useRuntime } from './runtime.tsx';
 // A screen's page h1 with the storage warning icon at the far right of its row (T2.60-B4). The shell
 // alone decides whether the icon shows (RuntimeState.storageIconTo), so no screen repeats the condition.
 export function PageTitle(props: ComponentProps<'h1'>) {
-  const { storageIconTo } = useRuntime();
+  const { storageIconTo, calendarIconTo } = useRuntime();
   return (
     <div className="title-row">
       <h1 {...props} />
+      {calendarIconTo !== undefined && (
+        <Link className="storage-flag" to={calendarIconTo} aria-label="Coming soon - update calendar" title="Coming soon - update calendar">
+          <WarningIcon />
+        </Link>
+      )}
       {storageIconTo !== undefined && (
         <Link className="storage-flag" to={storageIconTo} aria-label="Storage not protected: see About">
           <WarningIcon />

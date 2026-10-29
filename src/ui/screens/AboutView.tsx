@@ -62,6 +62,12 @@ export function AboutView({ facade, updates }: AboutViewProps) {
           <dd>{MANIFEST_ID}</dd>
           <dt>Release</dt>
           <dd className="identity">{capabilities.releaseId}</dd>
+          <dt>Session policy</dt>
+          <dd className="identity">{capabilities.sessionPolicy.id}</dd>
+          <dt>Session policy revision</dt>
+          <dd className="number">{String(capabilities.sessionPolicy.revision)}</dd>
+          <dt>Calendar coverage</dt>
+          <dd className="number">{capabilities.sessionPolicy.coverage.first} to {capabilities.sessionPolicy.coverage.last}</dd>
           <dt>Schema version</dt>
           <dd className="number">{'schemaVersion' in status ? String(status.schemaVersion) : 'Unknown'}</dd>
           <dt>Offline assets</dt>

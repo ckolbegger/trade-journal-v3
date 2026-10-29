@@ -82,3 +82,14 @@ describe('About this release', () => {
     expect(await screen.findByText('An update was found. Use Reload in the update notice.')).toBeTruthy();
   });
 });
+
+describe('session-policy coverage', () => {
+  it('should show in About the session policy id, revision, and coverage range', async () => {
+    render(<AboutView facade={facadeDouble({ status })} updates={controller()} />);
+    const about = await screen.findByRole('region', { name: 'This release' });
+    const value = (term: string) => within(about).getByText(term, { selector: 'dt' }).nextElementSibling?.textContent;
+    expect(value('Session policy')).toBe('nyse');
+    expect(value('Session policy revision')).toBe('1');
+    expect(value('Calendar coverage')).toBe('2024-01-01 to 2028-12-31');
+  });
+});

@@ -21,6 +21,8 @@ export interface RuntimeState {
   readonly durabilityRequestFailed?: boolean;
   // Where the storage warning icon on the page title links (About), present only while the icon shows.
   readonly storageIconTo?: string;
+  // Where the calendar warning icon links (About), present only while today is outside the session policy's coverage.
+  readonly calendarIconTo?: string;
 }
 
 export const RuntimeContext = createContext<RuntimeState>({ writable: false, report: () => undefined });
