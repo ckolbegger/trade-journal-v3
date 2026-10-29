@@ -1168,3 +1168,8 @@ ocr review of `f22bf7b` (B1): session `35bb25c5-0286-4e55-a1ef-92cee918c9e0` (sc
 - it should word an Unavailable result with an unknown reason as not available, with no Mark missing link
 
 ocr review of `535bb76` (B2): session `3dcf1860-b2cd-4523-a320-bc80b02ae213` (scratch clone; the reviewer read the tests itself), no findings. `ocr/T4.23-B2-535bb76.json`. `calculation` names AwaitingClose, MarkMissing and AcknowledgedUnavailable explicitly and words anything else "Not available"; `missingMark` links only MarkMissing and AcknowledgedUnavailable with a dated detail. The reviewer traced every code `unavailableResult` emits reading as before (ReviewTrade included), and no crash or link for an undated MarkMissing or AcknowledgedUnavailable. Reviewer note, dismissed (Doubtful): the "Mark missing" badge does not check for a date, but `unavailableResult` always dates MarkMissing. No first-run passes, no code ahead of red. Behaviour change: an undated Unavailable with a reason other than AwaitingClose now reads "Not available".
+
+Cumulative run, code at `535bb76`, 2026-10-29 02:11 EDT: unit 782, integration 50; browser 122 passed, 2 failed; checks 11 of 12 (only `verify:capacity`, expected). `suite-runs/t4.23-b2-*`. Both browser failures are `e2e/d2/ui-alignment.spec.ts:576` ("should pin Underlying, keep Underlying and Trade in view and show each figure once in both tables") at 390 and 320: the Open table's "$3,007.00" appears twice in the accessibility tree (expected 1). T4.23 is not complete.
+
+### T4.23-B3 Each figure once on narrow
+- the D2 case "should pin Underlying, keep Underlying and Trade in view and show each figure once in both tables" at 320 and 390 passes again with the P&L on the Trade cell's second line
