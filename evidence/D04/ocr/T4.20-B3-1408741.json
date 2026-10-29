@@ -1,0 +1,80 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 41029,
+    "input_tokens": 40723,
+    "output_tokens": 306,
+    "cache_read_tokens": 9600,
+    "elapsed": "21s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/ui/screens/MarkEntryCheck.tsx",
+      "files": [
+        "src/ui/screens/MarkEntryCheck.tsx"
+      ]
+    }
+  ],
+  "session_id": "5e0c73cf-bdab-4cb8-8f53-c41c75940a1d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "5e0c73cf-bdab-4cb8-8f53-c41c75940a1d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "3aed19a12fcbb6d2601d6b76ff18d130f9ba8ecb",
+      "resolved_head": "0fffb8768267b15bd6a99282529b5ad207c2a395",
+      "exact_range": "3aed19a12fcbb6d2601d6b76ff18d130f9ba8ecb..0fffb8768267b15bd6a99282529b5ad207c2a395",
+      "source_artifact_sha256": "cd67954bd948fe2f4a6ed45a3d0b94ec129a445d098e8e7420ecd9f20ce42f2b"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0ddf1b3b04aad1b0d00378a052721b51808534b1647d850a38511cfaca720213",
+          "path": "src/ui/screens/MarkEntryCheck.tsx",
+          "fingerprint": "3f608ed7ae1ac63665d8a1f9efdd0f7689f0ebd9e7feda470758e8c11b129113"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0ddf1b3b04aad1b0d00378a052721b51808534b1647d850a38511cfaca720213",
+          "path": "src/ui/screens/MarkEntryCheck.tsx",
+          "fingerprint": "3f608ed7ae1ac63665d8a1f9efdd0f7689f0ebd9e7feda470758e8c11b129113"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 21461
+  }
+}

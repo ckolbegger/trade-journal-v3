@@ -954,3 +954,13 @@ ocr review of `fad60b0` (B2): session `37a826d8-0a51-4b74-b8ae-621c9b207c1b` (sc
 
 ### T4.20-B5 Withdraw's failure says what failed
 - it should say the acknowledgment was not withdrawn, with no claim about entered values, when Withdraw returns StorageFailure
+
+ocr review of `1408741` (B3, test only): session `5e0c73cf-bdab-4cb8-8f53-c41c75940a1d` (scratch clone), no ocr comments. `ocr/T4.20-B3-1408741.json`. `savedMark` and `savedAcknowledgment` return typed `Saved` results per intention with the request's binding; MarkEntry reads no field wrongly. 12 MarkEntry cases before and after.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| low | `src/ui/screens/MarkEntry.test.tsx:156,206,247` | `Rejected` fixtures cast with `as never`, so a renamed issue code would not fail to compile | Valid (reviewer's reading) | Bug task T4.20-B6 |
+| low | `MarkEntry.test.tsx:296,347,371` | `RuntimeNotWritable` and `StorageFailure` fixtures cast with `as never` | Doubtful: type them from the facade's result type if it carries them | Folded into T4.20-B6 |
+
+### T4.20-B6 Typed rejection fixtures
+- no new case; every MarkEntry fixture is typed from the facade's save result with no `as never`
