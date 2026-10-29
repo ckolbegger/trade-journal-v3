@@ -52,6 +52,9 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
   const [reason, setReason] = useState('');
   // Unsaved while a value has been entered; opening a form enters nothing.
   const dirty = price !== '' || reason !== '';
+  // Read only: an open form stays (disabled) only while it holds entered values, and no action is offered.
+  const showForm = writable || dirty;
+  const showActions = writable && !mode;
   useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange]);
   // Leaving abandons the values, so the form no longer holds an update back.
   useEffect(() => () => onDirtyChange(false), [onDirtyChange]);
@@ -178,7 +181,7 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
           {keyIssue.message}
         </p>
       )}
-      {mode ? (
+      {showForm && mode && (
         <form aria-label={FORM_LABEL[mode]} noValidate onSubmit={submit}>
           {mode === 'Correct' && resolution.kind === 'Available' && <p>{`Current price ${decimalMoney(resolution.mark.price)}`}</p>}
           {mode !== 'Acknowledge' && (
@@ -206,7 +209,8 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
             Cancel
           </button>
         </form>
-      ) : !writable ? null : (
+      )}
+      {showActions && (
         <>
           {resolution.kind !== 'Available' && (
             <button type="button" className="pill secondary" onClick={() => openForm('Enter')} disabled={saving}>

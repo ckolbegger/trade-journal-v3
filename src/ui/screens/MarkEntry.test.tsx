@@ -356,6 +356,33 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
     expect(screen.getByLabelText<HTMLTextAreaElement>('Reason (required)').value).toBe('Fat finger.');
   });
 
+  it('should close an open Mark form that holds no values when the shell turns read only', async () => {
+    function Flip({ children }: { readonly children: ReactNode }) {
+      const [writable, setWritable] = useState(true);
+      return (
+        <RuntimeContext.Provider value={{ writable, report: () => undefined }}>
+          <button type="button" onClick={() => setWritable(false)}>
+            Turn read only
+          </button>
+          {children}
+        </RuntimeContext.Provider>
+      );
+    }
+    render(
+      <Flip>
+        <MarkEntry facade={facadeDouble()} instrumentKey="XYZ" tradingDate="2026-10-12" resolution={{ kind: 'Missing' }} resolutionRevision="None" onDirtyChange={() => undefined} />
+      </Flip>,
+    );
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Enter' }));
+    expect(screen.getByLabelText('Price')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'Turn read only' }));
+
+    expect(screen.queryByLabelText('Price')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Save Mark' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
+  });
+
   it('should send one save and disable the Mark actions while a save is in flight', async () => {
     const facade = facadeDouble();
     let finish: (result: MarketDataSaveResult) => void = () => undefined;

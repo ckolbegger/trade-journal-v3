@@ -1634,3 +1634,11 @@ The Action form offers the Daily Trade Review definition's optional questions (u
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`, `npm run verify:capabilities` | all exit 0 |
 
 Changes: `SaveTradeActionRequest` gains `conviction?`, `considered?`, `note?`; the coordinator records each answered one as a response (text trimmed, blank omitted; the Journal validates the Scale and rejects with InvalidScaleValue); `ActionForm` shows Conviction now (select, Not answered or 1 to 5), the considered question, and Note after Intent, in dirty tracking, disabled while saving or read only, shown in the saved display, pre-filled by Change. The Detail narrative lists all responses of the Action Entry already, so it is unchanged. B4.12 types all three and asserts no Web Storage trace. Journal definition and seed unchanged.
+
+### T4.33-B6
+
+An empty open Mark form closes when the shell turns read only; a form holding values stays, disabled (B2).
+
+- `npx vitest run src/ui` : exit 0; 19 files, 290 passed
+- `npm run build:faults` then `npx playwright test e2e/d4/runtime-failure.spec.ts` : exit 0; 2 passed
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` : each exit 0
