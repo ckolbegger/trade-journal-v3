@@ -1651,3 +1651,12 @@ B4.12 re-checks the ABC correction price and reason after the 390 px resize and 
 - `npx playwright test e2e/d4/no-save.spec.ts` : 1 passed
 - `npx playwright test e2e/d4` : 16 passed
 - `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` : each exit 0
+
+### T4.33-B7
+
+The Action form identifies Intent by its own prompt text (the shared constant the seed uses), not as the Text answer that is none of the others.
+
+- `tdd.sh red` / `green` for "should not show or re-send a Text answer under an unrecognised prompt as the Intent" : red (`expected <p></p> to be null`), then green
+- `npx vitest run src` : exit 0; 61 files, 814 passed
+- `npm run build:releases` then `npx playwright test e2e/d4` : 16 passed
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` : each exit 0

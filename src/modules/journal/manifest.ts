@@ -1,3 +1,4 @@
+import { DAILY_TRADE_REVIEW_PROMPTS as PROMPT } from '../../domain/daily-trade-review-prompts.ts';
 import type { PromptDefinition, PromptOption } from './records.ts';
 
 export interface JournalSeedManifest {
@@ -108,7 +109,7 @@ export const D3_JOURNAL_MANIFEST: JournalSeedManifest = {
         {
           id: ACTION,
           kind: 'SingleSelect',
-          text: 'Action',
+          text: PROMPT.action,
           required: true,
           role: 'Action',
           options: ACTIONS.map((label) => ({ id: actionOption(label), label })),
@@ -116,14 +117,14 @@ export const D3_JOURNAL_MANIFEST: JournalSeedManifest = {
         {
           id: 'prompt.daily-trade-review.intent',
           kind: 'Text',
-          text: 'Why are you taking this action?',
+          text: PROMPT.intent,
           required: false,
           role: 'Intent',
           requiredWhen: { promptId: ACTION, optionIds: ['Exit', 'Roll', 'Adjust'].map(actionOption) },
         },
-        { id: 'prompt.daily-trade-review.conviction', kind: 'Scale', text: 'Conviction now', required: false, min: 1, max: 5 },
-        { id: 'prompt.daily-trade-review.considered', kind: 'Text', text: 'Anything you considered doing and decided against?', required: false },
-        { id: 'prompt.daily-trade-review.note', kind: 'Text', text: 'Note', required: false },
+        { id: 'prompt.daily-trade-review.conviction', kind: 'Scale', text: PROMPT.conviction, required: false, min: 1, max: 5 },
+        { id: 'prompt.daily-trade-review.considered', kind: 'Text', text: PROMPT.considered, required: false },
+        { id: 'prompt.daily-trade-review.note', kind: 'Text', text: PROMPT.note, required: false },
       ],
     },
   ],

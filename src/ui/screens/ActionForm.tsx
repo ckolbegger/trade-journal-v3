@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import type { UiFacade } from '../../app/compose.ts';
+import { DAILY_TRADE_REVIEW_PROMPTS } from '../../domain/daily-trade-review-prompts.ts';
 import { useRuntime } from '../runtime.tsx';
 import { fieldIssues } from './form-issues.tsx';
 import type { FieldIssue } from './plan-issues.ts';
@@ -49,9 +50,7 @@ const INTENT_REQUIRED = (field: string, code: string): FieldIssue => ({ field, m
 const COULD_NOT_SAVE = 'This Action could not be saved. Reopen the Trade and try again.';
 
 // The definition's wording for its optional questions; a saved Action's responses are told apart by it.
-const CONVICTION = 'Conviction now';
-const CONSIDERED = 'Anything you considered doing and decided against?';
-const NOTE = 'Note';
+const { intent: INTENT, conviction: CONVICTION, considered: CONSIDERED, note: NOTE } = DAILY_TRADE_REVIEW_PROMPTS;
 const SCALE = [1, 2, 3, 4, 5] as const;
 
 interface Values {
@@ -71,12 +70,10 @@ function returnedValues(form: ActionFormState): Values {
     const answer = responses.find((r) => r.prompt === prompt)?.answer;
     return answer?.kind === 'Text' ? answer.text : '';
   };
-  // Intent is the Text answer that is none of the optional questions.
-  const intent = responses.find((r) => r.answer.kind === 'Text' && r.prompt !== CONSIDERED && r.prompt !== NOTE)?.answer;
   const conviction = responses.find((r) => r.prompt === CONVICTION)?.answer;
   return {
     action: form.action.action as ActionChoice,
-    intent: intent?.kind === 'Text' ? intent.text : '',
+    intent: text(INTENT),
     conviction: conviction?.kind === 'Scale' ? String(conviction.value) : '',
     considered: text(CONSIDERED),
     note: text(NOTE),

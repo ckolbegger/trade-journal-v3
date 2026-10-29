@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import type { DailyTradeReview, OpenDailyReviewResult, ReviewBinding, ReviewTradeItem, SaveDailyReviewResult } from '../../app/types.ts';
+import { DAILY_TRADE_REVIEW_PROMPTS } from '../../domain/daily-trade-review-prompts.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { ReviewView } from './ReviewView.tsx';
@@ -278,6 +279,27 @@ describe('Saved Action', () => {
     await user.click(within(trade).getByRole('button', { name: 'Save' }));
 
     expect(vi.mocked(facade.DailyReview.save)).toHaveBeenCalledExactlyOnceWith({ kind: 'SaveTradeAction', binding: { ...first.saveBinding, expectedEntryRevision: 2 }, action: 'Roll', intent: 'Roll to November.' });
+  });
+});
+
+describe('Saved Action answers', () => {
+  it('should not show or re-send a Text answer under an unrecognised prompt as the Intent', async () => {
+    // A later definition revision reworded Note, so its answer is not one the form knows.
+    const saved = savedAction('Hold', undefined, 2, [{ prompt: 'Remarks', answer: { kind: 'Text', text: 'Earnings Thursday.' } }]);
+    const first = tradeReview('t1', 'XYZ', { form: { kind: 'Saved', action: saved }, saveBinding: savedBinding({ expectedEntryRevision: 2 }) });
+    const facade = walkFacade(ready([item('t1', 'XYZ')], []), first);
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: savedAction('Hold', undefined, 3), review: { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding } });
+    renderWalk(facade);
+    const user = userEvent.setup();
+
+    const trade = await openTrade(user, 'XYZ');
+    expect(within(trade).queryByText(/Intent:/)).toBeNull();
+    expect(within(trade).queryByText(/Earnings Thursday/)).toBeNull();
+    await user.click(within(trade).getByRole('button', { name: 'Change' }));
+    expect(within(trade).getByRole('textbox', { name: /Intent/ })).toHaveProperty('value', '');
+    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+
+    expect(vi.mocked(facade.DailyReview.save)).toHaveBeenCalledExactlyOnceWith({ kind: 'SaveTradeAction', binding: { ...first.saveBinding, expectedEntryRevision: 2 }, action: 'Hold' });
   });
 });
 
@@ -1017,7 +1039,7 @@ function savedAction(action: string, intent?: string, entryRevision = 1, extra: 
     anchor: { kind: 'Trade', tradeId: 't1' },
     momentTime: '2026-10-12T20:00:00Z',
     authoredTime: '2026-10-12T21:00:00Z',
-    responses: [{ prompt: 'Action', answer: { kind: 'Option', label: action } }, ...(intent === undefined ? [] : [{ prompt: 'Intent', answer: { kind: 'Text' as const, text: intent } }]), ...extra],
+    responses: [{ prompt: 'Action', answer: { kind: 'Option', label: action } }, ...(intent === undefined ? [] : [{ prompt: DAILY_TRADE_REVIEW_PROMPTS.intent, answer: { kind: 'Text' as const, text: intent } }]), ...extra],
     entryRevision,
     action,
     definitionId: 'def1',
