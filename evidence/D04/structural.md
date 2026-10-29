@@ -878,3 +878,17 @@ ocr review of `444ea29` (B4): session `9953f4f3-eb7d-406e-b2b2-3c3153d83f5c` (sc
 - `8044d83` (code at `0a8f52a`, B1–B4), 2026-10-28 23:12 EDT: unit 704, integration 49, browser 124; checks 11 of 12. `suite-runs/t4.18-b4-*`.
 
 Only `verify:capacity` failed (expected until T4.28); `verify:fixtures` passed. T4.18 is complete.
+
+## T4.19 Capability manifest, composition, dependency rules
+
+`df9eea2`. `npm run verify:capabilities` exit 0 (18 operations, 7 variant-qualified, 8 routes, 3 Entry Types, schema 3); `npm run lint:deps` exit 0 on `src`; `lint:deps` on `tools/dep-fixtures/trade-analysis-imports-session-policy` fails with `trade-analysis-never-sees-session-policy`, and on `daily-review-imports-session-policy` with `daily-review-never-sees-session-policy`; the D1 `ui-imports-module` fixture still fails with `ui-only-through-facade`. The manifest adds `MarketData.save` (`RecordInitialManualMark`, `CorrectMark`, `AssertUnavailable`, `WithdrawAcknowledgment`, `Stock`), `MarketData.query` (`ResolveFrames`, `ResolveSession`, `Current`, `Review`, `Historical`), `MarketData.recover`, `DailyReview.open` (`LatestCompleted`), `getTrade`, `save` (`SaveTradeAction`), `CurrentEvaluation` on `browseTrades` and `getTradeDetail`, `entry-type.daily-trade-review` and `sessionPolicy`. `FACADE_GROUPS` adds MarketData and DailyReview; `MarketData.save` runs through the mutation guard; Daily Review is composed over the one Market Data; T4.6's query types are re-exported unchanged from `src/app/types.ts`. A `/review` route (placeholder screen, `readOnly: true`) presents every new variant; T4.21 and T4.22 replace it. Test-first: the manifest case and `tests/integration/d4/facade.test.ts` (save refused while the inventory check fails), each red then green. `AppShell.test.tsx` navigation expectations gained Review. No first-run passes, no code ahead of red.
+
+ocr review of `df9eea2`: session `fe7e9594-0361-4cc9-a154-3586edd421c0` (scratch clone with tests renamed), 19 files, 1 comment. `ocr/T4.19-df9eea2.json`. The reviewer found no unguarded mutating operation and the manifest variants equal to what routes present.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `.dependency-cruiser.js:90` | Two narrow rules do not enforce A39's "only Market Data imports the session policy"; UI, Journal and other coordinators could import it | Valid: today only `src/modules/market-data/` and the composition root import it, so a general rule with those exceptions (and tests and tools) passes | Bug task T4.19-B1 |
+| (reviewer) | `src/app/routes.ts`, `/review` | `readOnly: true` offers the Review in Recovery Only although it saves Marks and Actions | Doubtful: the guard refuses saves, Accounts has the same pattern, and reading the Review in Recovery Only is useful | Carried to T4.21 and T4.22: the Review screens disable their writes when not writable |
+
+### T4.19-B1 Only Market Data imports the session policy
+- `lint:deps` on a new fixture where the UI (or another non-Market-Data module) imports the session policy fails with the general rule; `src` passes

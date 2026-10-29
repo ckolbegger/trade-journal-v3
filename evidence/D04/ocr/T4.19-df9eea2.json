@@ -1,0 +1,318 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 19 selected item(s).",
+  "summary": {
+    "files_reviewed": 19,
+    "comments": 1,
+    "total_tokens": 197100,
+    "input_tokens": 194745,
+    "output_tokens": 2355,
+    "cache_read_tokens": 32768,
+    "elapsed": "1m0s"
+  },
+  "tool_calls": {
+    "total": 32,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_find": 3,
+      "file_read": 24,
+      "file_read_diff": 1
+    },
+    "failure": 2,
+    "failure_by_tool": {
+      "file_read": 2
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 4,
+        "tool_name": "file_read",
+        "file_path": "src/coordinators/workspace/capabilities.ts,src/coordinators/workspace/workspace.chk.ts,src/coordinators/workspace/workspace.ts,tests/integration/d4/facade.chk.ts,tests/support/facade-double.ts,tools/verify-capabilities.ts",
+        "arguments": "{\"file_path\": \"src/coordinators/workspace/types.ts\"}",
+        "error": "file \"src/coordinators/workspace/types.ts\" not found: git show HEAD:src/coordinators/workspace/types.ts: exit status 128: fatal: path 'src/coordinators/workspace/types.ts' does not exist in 'HEAD'\n"
+      },
+      {
+        "tool_call_number": 9,
+        "tool_name": "file_read",
+        "file_path": "src/coordinators/workspace/capabilities.ts,src/coordinators/workspace/workspace.chk.ts,src/coordinators/workspace/workspace.ts,tests/integration/d4/facade.chk.ts,tests/support/facade-double.ts,tools/verify-capabilities.ts",
+        "arguments": "{\"file_path\": \"src/modules/market-data/types.ts\", \"start_line\": 1, \"end_line\": 180}",
+        "error": "file \"src/modules/market-data/types.ts\" not found: git show HEAD:src/modules/market-data/types.ts: exit status 128: fatal: path 'src/modules/market-data/types.ts' does not exist in 'HEAD'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": ".dependency-cruiser.js",
+      "content": "These two deny rules do not enforce A39's requirement that only Market Data may import session policy. For example, an import from `src/ui/`, `src/modules/journal/`, or another coordinator still passes `lint:deps`; no existing rule restricts those edges. Add a rule targeting session-policy imports from all application source paths except `modules/market-data` (and session-policy's own internal imports), with a fixture for another disallowed caller.",
+      "existing_code": "      from: { path: layer('coordinators/daily-review') },\n      to: { path: layer('domain/session-policy') },",
+      "start_line": 90,
+      "end_line": 91,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Application composition, routing, and shell integration",
+      "files": [
+        "src/app/compose.ts",
+        "src/app/routes.ts",
+        "src/app/types.ts",
+        "src/main.tsx",
+        "src/ui/AppShell.chk.tsx",
+        "src/ui/AppShell.tsx",
+        "src/ui/icons.tsx",
+        "src/ui/screens/Onboarding.chk.tsx"
+      ]
+    },
+    {
+      "label": "Workspace capabilities and facade verification",
+      "files": [
+        "src/coordinators/workspace/capabilities.ts",
+        "src/coordinators/workspace/workspace.chk.ts",
+        "src/coordinators/workspace/workspace.ts",
+        "tests/integration/d4/facade.chk.ts",
+        "tests/support/facade-double.ts",
+        "tools/verify-capabilities.ts"
+      ]
+    },
+    {
+      "label": "Session-policy dependency boundaries and fixtures",
+      "files": [
+        ".dependency-cruiser.js",
+        "tools/dep-fixtures/daily-review-imports-session-policy/src/coordinators/daily-review/open.ts",
+        "tools/dep-fixtures/daily-review-imports-session-policy/src/domain/session-policy/policy.ts",
+        "tools/dep-fixtures/trade-analysis-imports-session-policy/src/domain/session-policy/policy.ts",
+        "tools/dep-fixtures/trade-analysis-imports-session-policy/src/domain/trade-analysis/evaluate.ts"
+      ]
+    }
+  ],
+  "session_id": "fe7e9594-0361-4cc9-a154-3586edd421c0",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "fe7e9594-0361-4cc9-a154-3586edd421c0",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "9a1c595da2d89bfb91d98d3cf0602537807a7b76",
+      "resolved_head": "2fab588117321c0201a763b6988a06d9b6591ba7",
+      "exact_range": "9a1c595da2d89bfb91d98d3cf0602537807a7b76..2fab588117321c0201a763b6988a06d9b6591ba7",
+      "source_artifact_sha256": "8c4237316f1ac376213908e35dffc269b3dc86830320f01bef1970801990f42d"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "8f176f1b96fad329a64b2db3c251f383241a5e165f8d8de1ab76bdf552e72745"
+        },
+        {
+          "item_id": "119afd5d45e247a3b121468d1d16eb1e60ebfbe08da6f804f026cdfcf67737e3",
+          "path": "tools/dep-fixtures/daily-review-imports-session-policy/src/domain/session-policy/policy.ts",
+          "fingerprint": "76b89b9b979b4a924a00a6e21d598be93d1d762455578d721b96609e084044f2"
+        },
+        {
+          "item_id": "13dbc2c8cca9f0d3104cffe3086788f771b1be30692657b8f13c232b7450b436",
+          "path": "src/ui/icons.tsx",
+          "fingerprint": "022f81c217e5e7873e7bab7d345490412131dc0e81238d8d6c943128a5a41b53"
+        },
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "31fa58853c44ec17d505614b3e7f7f9eabc13c48a10909c0e2f0b58c23fc734c"
+        },
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "413e726c0527ea94c3692af76fd76fdccf9444fe54c52e1ba2b67773f0410bd8"
+        },
+        {
+          "item_id": "2f51d0a0d63e2abe80494c41d81f206db555019de560aea3e23e4c80c04a50ed",
+          "path": "tools/dep-fixtures/trade-analysis-imports-session-policy/src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "54e6f69ea6677507bbfb79557d15721058cb21045c797c41b1a26365d9177f1b"
+        },
+        {
+          "item_id": "380216528ad83b01b02641ffd0f2cd2f8bb2451cda14805c4067953376d672d1",
+          "path": "src/ui/AppShell.chk.tsx",
+          "fingerprint": "6444295f5bfa9789e2a75b0616083ce6cca7dffb7350fd0fb5c5af4167cc32c5"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "dfca0787621892619c6132896b85eb1031c64f55c5b28122bcd0c98e903a56a0"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "27386526603a55411af3feecd485225d5bb9d5fba13582059a1756c1b71bd899"
+        },
+        {
+          "item_id": "576163b4eb3e849937e1ce9583972349d7efcba04b6d519e527e2e2442ff10cd",
+          "path": "tools/verify-capabilities.ts",
+          "fingerprint": "5e15b430a0a9eb31776ba36c5af49218b45c867fbfaa875b2811a1885c11ec83"
+        },
+        {
+          "item_id": "6ca0c6c0813830f33669fd14a5c282e4c463e88da121572b5acd4c9cd296523c",
+          "path": "src/ui/screens/Onboarding.chk.tsx",
+          "fingerprint": "33d0f042a19ab5a0f994fb0ac25a22798ecc1c94b965bc3fd0e3f992488e0eec"
+        },
+        {
+          "item_id": "6e7d02f2dce21403f224c076e38494318259a8ee86684d10c8046c72a60cf8ec",
+          "path": "tests/support/facade-double.ts",
+          "fingerprint": "ad4ec0f151a0425a06cee899843f154fa20bcb6766013ccc1b83c00aeb04b604"
+        },
+        {
+          "item_id": "91539de63f9c084b4bd8166c155de6d64a0a809a3ab0f7e54d8e4ed68fc30c4f",
+          "path": "src/app/compose.ts",
+          "fingerprint": "da84599b0dabc2212a07707335d69a6111df1bd9e399634ba98b04d0d78d9eef"
+        },
+        {
+          "item_id": "b5c3045a5d63a93f5dd6d8d74cbe2b6853b078df327c06ededd48fcb8a2411d9",
+          "path": "tools/dep-fixtures/daily-review-imports-session-policy/src/coordinators/daily-review/open.ts",
+          "fingerprint": "b107e22b911396fe986f43a080f5de2976df772d6d69b5373875f0dfd83299a6"
+        },
+        {
+          "item_id": "c25a7eb0e422553ec5d574638cfd04587fe34352d7b36bfb0c434a5e163503e0",
+          "path": "src/coordinators/workspace/workspace.chk.ts",
+          "fingerprint": "dd070224ac7b0f97d4194e74c22f09c466790f9900ba06ed4e7e297e4c3b686c"
+        },
+        {
+          "item_id": "dd41bddc3b7dd5b42ec9549788e8b9f3740caf36dc62a51bc5d7b21ec7258ad9",
+          "path": "tools/dep-fixtures/trade-analysis-imports-session-policy/src/domain/session-policy/policy.ts",
+          "fingerprint": "63febf725557fed68abfa4dbbdf1d0072ff12301cdd64d2b647e3b54be116b46"
+        },
+        {
+          "item_id": "deafff7a16a942708260861a7a9ae681b18495e29abe2510e3ee21b1ff8f4d5d",
+          "path": ".dependency-cruiser.js",
+          "fingerprint": "46f654a76176e0502aea565802d3f3b74d013f97a118485d70cfff9c72529742"
+        },
+        {
+          "item_id": "f1030df827c5901440ba4c43d43635aef3e7698f2ea00255a635dc2b120e73e9",
+          "path": "src/coordinators/workspace/workspace.ts",
+          "fingerprint": "5b01f4924fbd241c99c1b32efbba0ed90b519c686b8c421473bfb638415c099f"
+        },
+        {
+          "item_id": "f982030629921b3dc399a2e69396cb3f563f4601640daccf7f7993f76a91331d",
+          "path": "tests/integration/d4/facade.chk.ts",
+          "fingerprint": "df366f1e530f69c98b0d4aafc3991efd50a56fa493ad39ed3a90494ecc7772ce"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "8f176f1b96fad329a64b2db3c251f383241a5e165f8d8de1ab76bdf552e72745"
+        },
+        {
+          "item_id": "119afd5d45e247a3b121468d1d16eb1e60ebfbe08da6f804f026cdfcf67737e3",
+          "path": "tools/dep-fixtures/daily-review-imports-session-policy/src/domain/session-policy/policy.ts",
+          "fingerprint": "76b89b9b979b4a924a00a6e21d598be93d1d762455578d721b96609e084044f2"
+        },
+        {
+          "item_id": "13dbc2c8cca9f0d3104cffe3086788f771b1be30692657b8f13c232b7450b436",
+          "path": "src/ui/icons.tsx",
+          "fingerprint": "022f81c217e5e7873e7bab7d345490412131dc0e81238d8d6c943128a5a41b53"
+        },
+        {
+          "item_id": "1728d6fbf13ec180a4f8fea35d8e89f022632ae57123bc93848ff5e96777505c",
+          "path": "src/ui/AppShell.tsx",
+          "fingerprint": "31fa58853c44ec17d505614b3e7f7f9eabc13c48a10909c0e2f0b58c23fc734c"
+        },
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "413e726c0527ea94c3692af76fd76fdccf9444fe54c52e1ba2b67773f0410bd8"
+        },
+        {
+          "item_id": "2f51d0a0d63e2abe80494c41d81f206db555019de560aea3e23e4c80c04a50ed",
+          "path": "tools/dep-fixtures/trade-analysis-imports-session-policy/src/domain/trade-analysis/evaluate.ts",
+          "fingerprint": "54e6f69ea6677507bbfb79557d15721058cb21045c797c41b1a26365d9177f1b"
+        },
+        {
+          "item_id": "380216528ad83b01b02641ffd0f2cd2f8bb2451cda14805c4067953376d672d1",
+          "path": "src/ui/AppShell.chk.tsx",
+          "fingerprint": "6444295f5bfa9789e2a75b0616083ce6cca7dffb7350fd0fb5c5af4167cc32c5"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "dfca0787621892619c6132896b85eb1031c64f55c5b28122bcd0c98e903a56a0"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "27386526603a55411af3feecd485225d5bb9d5fba13582059a1756c1b71bd899"
+        },
+        {
+          "item_id": "576163b4eb3e849937e1ce9583972349d7efcba04b6d519e527e2e2442ff10cd",
+          "path": "tools/verify-capabilities.ts",
+          "fingerprint": "5e15b430a0a9eb31776ba36c5af49218b45c867fbfaa875b2811a1885c11ec83"
+        },
+        {
+          "item_id": "6ca0c6c0813830f33669fd14a5c282e4c463e88da121572b5acd4c9cd296523c",
+          "path": "src/ui/screens/Onboarding.chk.tsx",
+          "fingerprint": "33d0f042a19ab5a0f994fb0ac25a22798ecc1c94b965bc3fd0e3f992488e0eec"
+        },
+        {
+          "item_id": "6e7d02f2dce21403f224c076e38494318259a8ee86684d10c8046c72a60cf8ec",
+          "path": "tests/support/facade-double.ts",
+          "fingerprint": "ad4ec0f151a0425a06cee899843f154fa20bcb6766013ccc1b83c00aeb04b604"
+        },
+        {
+          "item_id": "91539de63f9c084b4bd8166c155de6d64a0a809a3ab0f7e54d8e4ed68fc30c4f",
+          "path": "src/app/compose.ts",
+          "fingerprint": "da84599b0dabc2212a07707335d69a6111df1bd9e399634ba98b04d0d78d9eef"
+        },
+        {
+          "item_id": "b5c3045a5d63a93f5dd6d8d74cbe2b6853b078df327c06ededd48fcb8a2411d9",
+          "path": "tools/dep-fixtures/daily-review-imports-session-policy/src/coordinators/daily-review/open.ts",
+          "fingerprint": "b107e22b911396fe986f43a080f5de2976df772d6d69b5373875f0dfd83299a6"
+        },
+        {
+          "item_id": "c25a7eb0e422553ec5d574638cfd04587fe34352d7b36bfb0c434a5e163503e0",
+          "path": "src/coordinators/workspace/workspace.chk.ts",
+          "fingerprint": "dd070224ac7b0f97d4194e74c22f09c466790f9900ba06ed4e7e297e4c3b686c"
+        },
+        {
+          "item_id": "dd41bddc3b7dd5b42ec9549788e8b9f3740caf36dc62a51bc5d7b21ec7258ad9",
+          "path": "tools/dep-fixtures/trade-analysis-imports-session-policy/src/domain/session-policy/policy.ts",
+          "fingerprint": "63febf725557fed68abfa4dbbdf1d0072ff12301cdd64d2b647e3b54be116b46"
+        },
+        {
+          "item_id": "deafff7a16a942708260861a7a9ae681b18495e29abe2510e3ee21b1ff8f4d5d",
+          "path": ".dependency-cruiser.js",
+          "fingerprint": "46f654a76176e0502aea565802d3f3b74d013f97a118485d70cfff9c72529742"
+        },
+        {
+          "item_id": "f1030df827c5901440ba4c43d43635aef3e7698f2ea00255a635dc2b120e73e9",
+          "path": "src/coordinators/workspace/workspace.ts",
+          "fingerprint": "5b01f4924fbd241c99c1b32efbba0ed90b519c686b8c421473bfb638415c099f"
+        },
+        {
+          "item_id": "f982030629921b3dc399a2e69396cb3f563f4601640daccf7f7993f76a91331d",
+          "path": "tests/integration/d4/facade.chk.ts",
+          "fingerprint": "df366f1e530f69c98b0d4aafc3991efd50a56fa493ad39ed3a90494ecc7772ce"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 60292
+  }
+}
