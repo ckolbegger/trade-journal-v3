@@ -144,7 +144,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
         <div ref={noticeRef} role="alert" tabIndex={-1} className="banner warning">
           <p>{NOTICE[notice]}</p>
           {notice !== 'StorageFailure' && (
-            <button type="button" className="pill secondary" disabled={saving} onClick={() => void refresh()}>
+            <button type="button" className="pill secondary" disabled={saving || refreshing} onClick={() => void refresh()}>
               Refresh
             </button>
           )}

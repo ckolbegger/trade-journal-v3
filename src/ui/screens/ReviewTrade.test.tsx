@@ -684,6 +684,26 @@ describe('Action form while saving', () => {
     held.resolve(ready([item('t1', 'XYZ')]));
     await vi.waitFor(() => expect(within(screen.getByRole('region', { name: 'XYZ review' })).getByRole('button', { name: 'Save' })).toHaveProperty('disabled', false));
   });
+
+  it('should disable the notice Refresh while a Refresh is in flight so Save stays disabled until it settles', async () => {
+    const user = userEvent.setup();
+    const facade = walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ'));
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'Conflict' });
+    renderWalk(facade);
+    const trade = await openTrade(user, 'XYZ');
+    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await within(trade).findByRole('alert');
+    const held = deferred<Ready>();
+    vi.mocked(facade.DailyReview.open).mockReturnValue(held.promise);
+    vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'Ready', reviewDate: '2026-10-12', cutoff: ready([]).cutoff, trade: tradeReview('t1', 'XYZ') });
+    await user.click(within(trade).getByRole('button', { name: 'Refresh' }));
+
+    expect(within(trade).getByRole('button', { name: 'Refresh' })).toHaveProperty('disabled', true);
+    expect(within(trade).getByRole('button', { name: 'Save' })).toHaveProperty('disabled', true);
+
+    held.resolve(ready([item('t1', 'XYZ')]));
+    await vi.waitFor(() => expect(within(screen.getByRole('region', { name: 'XYZ review' })).getByRole('button', { name: 'Save' })).toHaveProperty('disabled', false));
+  });
 });
 
 describe('Results for a Trade no longer open', () => {
