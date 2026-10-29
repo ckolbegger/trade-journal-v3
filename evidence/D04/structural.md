@@ -1751,3 +1751,15 @@ ocr finding on 2bdf619: a disabled Action chip looked clickable. Added `label.ch
 - `npx playwright test e2e/d4/responsive-a11y.spec.ts -g "disabled Action chip"` : red against old CSS (`Expected "not-allowed" Received "pointer"`), green after; whole spec 5 passed
 - `npx vitest run src/ui` : exit 0; 19 files, 296 passed
 - `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` : each exit 0
+
+### ocr reviews of T4.34-B1 to B6
+
+| Commit | Finding | Assessment | Outcome |
+|---|---|---|---|
+| `1988052` | `ReviewTrade.test.tsx`: the dated close line's fixture keeps the current line's Plan-R (1.60R for $300 at 1R $250), so a swap of the dated and current R is not caught; the dated worst case is not asserted | Valid, test quality | Fixed by T4.34-B5 (`70c9de8`) |
+| `2bdf619` | `app.css` has no disabled chip style, so a locked Action choice looks clickable | Valid | Fixed by T4.34-B6 (`8ddfc97`) |
+| `652b39c`, `0b21dca`, `70c9de8`, `8ddfc97` | none | | clean |
+
+### Cumulative run after T4.34-B1 to B6
+
+- code at `8ddfc97`, 2026-10-29 16:20 EDT: unit 819, integration 73, browser 142; checks 12 of 12. `suite-runs/run-20261029-1620-*`.
