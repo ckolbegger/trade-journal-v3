@@ -349,10 +349,10 @@ describe('moving on', () => {
     const rows = within(walk).getAllByRole('listitem');
     expect(rows.map((row) => within(row).getByRole('link').textContent)).toEqual(['DEF', 'GHI', 'XYZ', 'ABC']);
     expect(rows.map((row) => row.textContent)).toEqual([
-      'DEF Boundary reachedStop breachedAction missing',
-      'GHI Evidence limitedMark missing for GHI on Mon Oct 12Awaiting the next close after Fri Oct 9Action missing',
-      'XYZ Quantified pressure50% of the way from entry to the StopAction saved',
-      'ABC RoutineNo pressure toward the Stop or the TargetAction missing',
+      'DEF Boundary reachedStop breachedAction missingReview DEF',
+      'GHI Evidence limitedMark missing for GHI on Mon Oct 12Awaiting the next close after Fri Oct 9Action missingReview GHI',
+      'XYZ Quantified pressure50% of the way from entry to the StopAction savedReview XYZ',
+      'ABC RoutineNo pressure toward the Stop or the TargetAction missingReview ABC',
     ]);
     // The refreshed Review replaces the first: its Mark and completion are the returned ones.
     expect(screen.getByText('Incomplete')).toBeTruthy();

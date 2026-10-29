@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { UiFacade } from '../../app/compose.ts';
 import { Link, useSearchParams } from 'react-router';
-import type { IncompleteReason, MarkResolution, MarkRow, OpenDailyReviewResult, ReviewFamily, ReviewTradeItem, ReviewCompletion } from '../../app/types.ts';
-import { Rational, formatDecimal } from '../../domain/values/index.ts';
+import type { DailyTradeReview, IncompleteReason, MarkResolution, MarkRow, OpenDailyReviewResult, ReviewFamily, ReviewCompletion } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
 import { PageTitle } from '../PageTitle.tsx';
 import { shortDate } from '../format.ts';
+import type { SavedAction } from './ActionForm.tsx';
 import { MarkEntry, type MarkEntryProps } from './MarkEntry.tsx';
+import { BAND_TEXT, reasonText } from './review-attention.ts';
+import { ReviewTrade } from './ReviewTrade.tsx';
 
 export interface ReviewViewProps {
   readonly facade: UiFacade;
@@ -222,46 +224,17 @@ type ViewState =
   | { readonly kind: 'Empty'; readonly reviewDate: string }
   | { readonly kind: 'Error' };
 
-const BAND_TEXT: Record<ReviewTradeItem['band'], string> = {
-  Blocker: 'Blocker',
-  BoundaryReached: 'Boundary reached',
-  EvidenceLimited: 'Evidence limited',
-  QuantifiedPressure: 'Quantified pressure',
-  Routine: 'Routine',
-};
+const AFTER_SAVE = {
+  Done: 'Every Trade has an Action.',
+  Mark: 'A Mark is needed before the next Trade. It is listed under Marks.',
+  Assembly: 'The Action is saved. Continue to Trades to refresh the Review.',
+} as const;
 
-// The share of the planned range travelled, as a whole percent.
-const percent = (share: Rational): string => formatDecimal(Rational.of(share.numerator * 100n, share.denominator), 0);
+// The Trade the walk has open, or what happened when it was asked for.
+type Selected = { readonly tradeId: string; readonly state: 'Loading' | 'Unavailable' | { readonly trade: DailyTradeReview } };
 
-// Why a Trade is in its band, in words.
-function reasonText(reason: ReviewTradeItem['reasons'][number], basis: ReviewTradeItem['basis']): string {
-  switch (reason.code) {
-    case 'IntegrityDisagreement':
-      return 'Recorded facts disagree';
-    case 'IncoherentFacts':
-      return 'Recorded facts cannot be replayed';
-    case 'StopBreached':
-      return 'Stop breached';
-    case 'TargetReached':
-      return 'Target reached';
-    case 'MarkMissing':
-      return `Mark missing for ${reason.instrumentKey} on ${shortDate(reason.date)}`;
-    case 'AcknowledgedUnavailable':
-      return `Mark acknowledged unavailable for ${reason.instrumentKey} on ${shortDate(reason.date)}`;
-    case 'AwaitingClose':
-      return `Awaiting the next close after ${shortDate(reason.after)}`;
-    case 'PressureTowardStop':
-    case 'PressureTowardTarget': {
-      const boundary = reason.code === 'PressureTowardStop' ? 'Stop' : 'Target';
-      return basis.kind === 'Comparable' && basis.side !== 'None' ? `${percent(basis.share)}% of the way from entry to the ${boundary}` : `Pressure toward the ${boundary}`;
-    }
-    case 'NoPressure':
-      return 'No pressure toward the Stop or the Target';
-  }
-}
-
-// The Trade walk in the order the Review returned, each with its band and reasons.
-function TradeWalk({ review }: { readonly review: Ready }) {
+// The Trade walk in the order the Review returned, each with its band and reasons; any Trade opens below.
+function TradeWalk({ facade, review, selected, afterSave, onSelect, onSaved, onRefresh, onEntryDirty }: { readonly facade: UiFacade; readonly review: Ready; readonly selected: Selected | undefined; readonly afterSave: string | undefined; readonly onSelect: (tradeId: string) => void; readonly onSaved: (saved: SavedAction) => void; readonly onRefresh: (tradeId: string) => Promise<boolean>; readonly onEntryDirty: EntryDirty }) {
   const trades = review.families.flatMap((f) => (f.family === 'Trades' ? f.trades : []));
   const missing = new Set(review.completion.kind === 'Incomplete' ? review.completion.reasons.flatMap((r) => (r.code === 'ActionMissing' ? [r.tradeId] : [])) : []);
   return (
@@ -275,9 +248,20 @@ function TradeWalk({ review }: { readonly review: Ready }) {
               <p key={i}>{reasonText(reason, trade.basis)}</p>
             ))}
             <p>{missing.has(trade.tradeId) ? 'Action missing' : 'Action saved'}</p>
+            <button type="button" className="pill secondary" onClick={() => onSelect(trade.tradeId)}>
+              Review {trade.underlying}
+            </button>
           </li>
         ))}
       </ol>
+      {afterSave && <p role="status">{afterSave}</p>}
+      {selected?.state === 'Loading' && <p role="status">Loading the Trade…</p>}
+      {selected?.state === 'Unavailable' && (
+        <div role="alert" className="banner warning">
+          <p>We couldn’t load this Trade. Nothing was changed.</p>
+        </div>
+      )}
+      {typeof selected?.state === 'object' && <ReviewTrade key={selected.tradeId} facade={facade} trade={selected.state.trade} onSaved={onSaved} onRefresh={() => onRefresh(selected.tradeId)} onEntryDirty={onEntryDirty} />}
     </section>
   );
 }
@@ -297,23 +281,60 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
     [onDirtyChange],
   );
   const [walk, setWalk] = useState(false);
+  const [selected, setSelected] = useState<Selected>();
+  // What follows a save when no Trade is next.
+  const [afterSave, setAfterSave] = useState<string>();
+  // The save's result is the Review from here on: its completion and binding replace the overview's, and its next step is the Trade shown.
+  const saved = ({ review: post }: SavedAction) => {
+    if (post.kind !== 'Ready') {
+      setSelected(undefined);
+      setAfterSave(AFTER_SAVE.Assembly);
+      return;
+    }
+    setReview((current) => ({ ...current, completion: post.completion, binding: post.binding }));
+    const next = post.nextStep;
+    setSelected(next.kind === 'Trade' ? { tradeId: next.trade.tradeId, state: { trade: next.trade } } : undefined);
+    setAfterSave(next.kind === 'Done' ? AFTER_SAVE.Done : next.kind === 'Mark' ? AFTER_SAVE.Mark : undefined);
+  };
+  const select = async (tradeId: string) => {
+    setAfterSave(undefined);
+    setSelected({ tradeId, state: 'Loading' });
+    const result = await facade.DailyReview.getTrade({ reviewDate: review.reviewDate, tradeId, binding: review.binding }).catch(() => undefined);
+    setSelected({ tradeId, state: result?.kind === 'Ready' ? { trade: result.trade } : 'Unavailable' });
+  };
   // The last Continue could not produce a Review: nothing changed, and the trader may press it again.
   const [failed, setFailed] = useState(false);
   // A refresh is in flight: Continue is disabled, so overlapping opens cannot race.
   const [refreshing, setRefreshing] = useState(false);
   const inFlight = useRef(false);
-  const proceed = async () => {
-    if (inFlight.current) return;
+  // Asks for the Review again, one at a time; undefined when it could not be produced.
+  const reopen = async (): Promise<Ready | undefined> => {
+    if (inFlight.current) return undefined;
     inFlight.current = true;
     setRefreshing(true);
     const result = await facade.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: now() }).catch(() => undefined);
     inFlight.current = false;
     setRefreshing(false);
-    setFailed(result?.kind !== 'Ready');
-    if (result?.kind === 'Ready') {
+    return result?.kind === 'Ready' ? result : undefined;
+  };
+  const proceed = async () => {
+    if (inFlight.current) return;
+    const result = await reopen();
+    setFailed(result === undefined);
+    if (result) {
       setReview(result);
       setWalk(true);
     }
+  };
+  // The Review and one Trade again, under the new binding. The Trade replaces the shown one without a loading state, so the form keeps its values.
+  const refreshTrade = async (tradeId: string): Promise<boolean> => {
+    const result = await reopen();
+    if (!result) return false;
+    setReview(result);
+    const trade = await facade.DailyReview.getTrade({ reviewDate: result.reviewDate, tradeId, binding: result.binding }).catch(() => undefined);
+    if (trade?.kind !== 'Ready') return false;
+    setSelected({ tradeId, state: { trade: trade.trade } });
+    return true;
   };
   return (
     <>
@@ -324,7 +345,7 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
           <p>We couldn’t refresh the Review. Nothing was changed.</p>
         </div>
       )}
-      {walk && <TradeWalk review={review} />}
+      {walk && <TradeWalk facade={facade} review={review} selected={selected} afterSave={afterSave} onSelect={(tradeId) => void select(tradeId)} onSaved={saved} onRefresh={refreshTrade} onEntryDirty={onEntryDirty} />}
       <button type="button" className="pill primary" onClick={() => void proceed()} disabled={refreshing}>
         Continue to Trades
       </button>
