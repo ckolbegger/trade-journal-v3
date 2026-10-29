@@ -409,6 +409,17 @@ describe('Open list current evaluation', () => {
     expect(within(cells[1]!).queryByText('Mark missing')).toBeNull();
   });
 
+  it('should word an Acknowledged Unavailable P&L as the trader acknowledgment, linked to the Review, with no Mark missing badge', async () => {
+    const acknowledged = { kind: 'Unavailable', reason: 'AcknowledgedUnavailable', detail: { instrument: { kind: 'Stock', symbol: 'ABC' }, date: '2026-10-13' } };
+    const item = { ...openItem, current: { currentMarkedPnl: acknowledged, currentMarkedPnlInPlanR: acknowledged, conditions: [], atEntry: null } };
+    const table = await openTable([item]);
+    const [, row] = within(table).getAllByRole('row');
+    const cells = within(row!).getAllByRole('cell');
+    expect(cells[3]!.textContent).toBe('Acknowledged unavailable: ABC, Tue Oct 13');
+    expect(within(cells[3]!).getByRole('link').getAttribute('href')).toBe('/review?instrument=ABC');
+    expect(within(cells[1]!).queryByText('Mark missing')).toBeNull();
+  });
+
   it('should carry the P&L after Net cost in the second line of the Trade cell, with the Review link for a missing Mark, for the narrow layout', async () => {
     const missing = { ...valued({ currentMarkedPnl: unavailableMark, currentMarkedPnlInPlanR: unavailableMark }), tradeId: 'trade-3', underlying: 'DEF' };
     const table = await openTable([valued(), missing]);

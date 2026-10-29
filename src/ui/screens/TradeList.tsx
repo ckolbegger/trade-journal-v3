@@ -211,7 +211,7 @@ function missingMark(current: Current) {
 function Pnl({ current }: { readonly current: Current }) {
   const { currentMarkedPnl: pnl, currentMarkedPnlInPlanR: planR, datedLine } = current;
   const missing = missingMark(current);
-  const text = pnl.kind === 'Unavailable' && pnl.reason === 'SessionPolicyNotCovered' ? NOT_AVAILABLE : pnlText(pnl, planR);
+  const text = pnlText(pnl, planR);
   return (
     <>
       {missing ? <Link to={`/review?instrument=${encodeURIComponent(missing.instrument.symbol)}`}>{text}</Link> : text}
@@ -224,7 +224,7 @@ function Pnl({ current }: { readonly current: Current }) {
 function StatusBadges({ current }: { readonly current: Current }) {
   return (
     <>
-      {missingMark(current) && (
+      {current.currentMarkedPnl.kind === 'Unavailable' && current.currentMarkedPnl.reason === 'MarkMissing' && (
         <>
           {' '}
           <Badge tone="warning">Mark missing</Badge>

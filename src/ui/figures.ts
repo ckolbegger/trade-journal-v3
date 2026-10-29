@@ -6,6 +6,14 @@ const ZERO = Rational.of(0n);
 // A gain carries a plus sign; a loss carries the minus the formats already give.
 export const signed = (format: (value: Rational) => string) => (value: Rational): string => (value.compare(ZERO) > 0 ? `+${format(value)}` : format(value));
 
+// Each reason in its own words: a missing Mark, the trader's acknowledgment that no price can be had, a date outside coverage, a close not yet come.
+function unavailable(reason: string, detail: Extract<CalculationResult<Rational>, { kind: 'Unavailable' }>['detail']): string {
+  if (!('date' in detail)) return 'Awaiting the next close';
+  if (reason === 'SessionPolicyNotCovered') return 'Not available';
+  const where = `${detail.instrument.symbol}, ${shortDate(detail.date)}`;
+  return reason === 'AcknowledgedUnavailable' ? `Acknowledged unavailable: ${where}` : `Mark missing: ${where}`;
+}
+
 // A figure that may lack its Mark says so in words, never as a number or a zero.
 export function calculation(result: CalculationResult<Rational>, format: (value: Rational) => string): string {
   switch (result.kind) {
@@ -16,7 +24,7 @@ export function calculation(result: CalculationResult<Rational>, format: (value:
     case 'NotApplicable':
       return 'Not applicable';
     case 'Unavailable':
-      return 'date' in result.detail ? `Mark missing: ${result.detail.instrument.symbol}, ${shortDate(result.detail.date)}` : 'Awaiting the next close';
+      return unavailable(result.reason, result.detail);
   }
 }
 
