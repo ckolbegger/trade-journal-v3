@@ -121,3 +121,16 @@ Defect: when one prepared batch carries several Debt resolutions (or an Answer a
 Implemented in `56f4dc9`: `applyPreparedEffects` finds each resolution's outcome by `settledDebtId`. Red then green. (Process slip: the test was appended with a here-doc.)
 
 ocr review of `56f4dc9`: session `77d92327-f414-4cf2-b362-dcc69f001bf7`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.3-B1-56f4dc9.json`.
+
+### Cumulative run after T5.3
+
+Run 2026-10-29 19:20 EDT on commit `c54e4c2`, Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 63 passed (63)`, `Tests 834 passed (834)`, exit 0 | `suite-runs/t5.3-debt-resolution-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 41 passed (41)`, `Tests 73 passed (73)`, exit 0 | `suite-runs/t5.3-debt-resolution-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `142 passed (5.0m)`, exit 0 | `suite-runs/t5.3-debt-resolution-browser.txt` |
+| Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.3-debt-resolution-checks.txt` |
+
+Failure: `verify:capacity` only — expected until T5.19.
