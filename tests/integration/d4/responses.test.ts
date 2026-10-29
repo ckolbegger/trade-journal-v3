@@ -51,7 +51,11 @@ describe('I4.5 correct a Mark', () => {
     expect(current.incrementalRewardToTarget).toEqual(value('450'));
     expect(current.markResolution).toEqual(saved.resolution);
     const view = (await detail(again, tradeId)).current;
-    expect(view.markResolution).toEqual({ kind: 'Available', mark: expect.objectContaining({ price: '51.5', correctionReason: 'Misread the quote.' }) as unknown });
+    expect(view.evaluation).toEqual(
+      expect.objectContaining({ kind: 'Evaluated', currentMarkedPnl: value('130'), ongoingRiskToStop: value('400'), incrementalRewardToTarget: value('450') }),
+    );
+    // The view exposes no Corrected flag: the UI shows Corrected from `correctionReason` on a revision past the first.
+    expect(view.markResolution).toEqual({ kind: 'Available', mark: expect.objectContaining({ price: '51.5', revisionNumber: 2, correctionReason: 'Misread the quote.' }) as unknown });
 
     // Two revisions in the stored record, the resolution revision equal to the result's.
     const [stored] = await observations(d.factory);
