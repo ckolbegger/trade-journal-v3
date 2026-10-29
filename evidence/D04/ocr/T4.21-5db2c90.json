@@ -1,0 +1,264 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 5 finding(s) across 12 selected item(s).",
+  "summary": {
+    "files_reviewed": 12,
+    "comments": 5,
+    "total_tokens": 392085,
+    "input_tokens": 388575,
+    "output_tokens": 3510,
+    "cache_read_tokens": 40320,
+    "elapsed": "1m47s"
+  },
+  "tool_calls": {
+    "total": 28,
+    "by_tool": {
+      "code_comment": 3,
+      "code_search": 4,
+      "file_read": 19,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/market-data/market-data.ts",
+      "content": "Each gap now scans the entire `stored` array to find its revision. With G gaps and R stored sessions, recovery adds O(G × R) work per instrument (quadratic for histories with a mix of saved and missing sessions), synchronously inside the read transaction. Build a date-to-record/revision Map once alongside `resolutionOf` and use constant-time lookups when constructing `revisions`.",
+      "existing_code": "                kinds.filter((k) =\u003e k.kind !== 'Available').map((k) =\u003e [k.date, revisionOf(stripRevision(stored.find((r) =\u003e r['tradingDate'] === k.date)))]),",
+      "start_line": 394,
+      "end_line": 394,
+      "category": "performance",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "Changing pages unmounts the current MarkEntry components, whose prices and reasons exist only in local state. Entering a price, pressing Next page, then returning therefore silently loses the draft; onDirtyChange only defers release updates and does not protect this transition. Preserve drafts across pages, or require saving/cancelling (or explicit discard confirmation) before changing pages. Add a test that types a value before paging away and back.",
+      "existing_code": "            \u003cbutton type=\"button\" className=\"pill secondary\" onClick={() =\u003e setPage(page + 1)}\u003e",
+      "start_line": 152,
+      "end_line": 152,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "Continue remains enabled while this read is pending, so repeated clicks can run multiple opens concurrently. Responses are applied in arrival order: an older snapshot can overwrite a newer one, or a late failure can display a refresh error after the walk has successfully opened. Track an in-flight request and disable the button, or ignore superseded responses; cover out-of-order results with deferred promises.",
+      "existing_code": "    const result = await facade.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: now() }).catch(() =\u003e undefined);\n    setFailed(result?.kind !== 'Ready');",
+      "start_line": 276,
+      "end_line": 277,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "A successful refresh does not update existing MarkEntry state for an unchanged instrument/date key. MarkEntry initializes its resolution and revision with useState and does not synchronize subsequent props, while TodayRow retains the same key here. If another tab saves or corrects a Mark before Continue is pressed, the refreshed status and Trade walk use the new snapshot but the Mark still shows the old value and saves against the old revision. Reconcile refreshed resolutions/revisions into entries without discarding active drafts, and test a refresh that changes a Mark for the same date.",
+      "existing_code": "      setReview(result);\n      setWalk(true);",
+      "start_line": 279,
+      "end_line": 280,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "Marks remain editable after the walk opens, but a successful MarkEntry save updates only its local state. The status, attention reasons, and trade ordering therefore retain the pre-save snapshot, and Continue to Trades is now removed, leaving no way to refresh them without leaving/reloading the page. For example, filling a missing Mark here still leaves the Review reporting that Mark as missing. Propagate successful Mark saves to refresh the Review (and invalidate/rebuild the walk), or retain an explicit refresh/continue action.",
+      "existing_code": "      {walk ? (\n        \u003cTradeWalk review={review} /\u003e",
+      "start_line": 292,
+      "end_line": 293,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Daily review coordinator and types",
+      "files": [
+        "src/coordinators/daily-review/daily-review.spec-x.ts",
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/types.ts"
+      ]
+    },
+    {
+      "label": "Market data recovery",
+      "files": [
+        "src/modules/market-data/market-data.ts",
+        "src/modules/market-data/recover.spec-x.ts"
+      ]
+    },
+    {
+      "label": "Review view, app integration, and shared UI presentation",
+      "files": [
+        "src/main.tsx",
+        "src/ui/app.css",
+        "src/ui/format.ts",
+        "src/ui/screens/ReviewView.spec-x.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    },
+    {
+      "label": "Mark entry screen and tests",
+      "files": [
+        "src/ui/screens/MarkEntry.spec-x.tsx",
+        "src/ui/screens/MarkEntry.tsx"
+      ]
+    }
+  ],
+  "session_id": "ee3a5158-527e-42ff-961f-361da6d1c388",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "ee3a5158-527e-42ff-961f-361da6d1c388",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "bbd840c3bad02c81e10cd31b0549a81daa751a50",
+      "resolved_head": "98bb5027b0de9c20a96e13324e8d41b139431213",
+      "exact_range": "bbd840c3bad02c81e10cd31b0549a81daa751a50..98bb5027b0de9c20a96e13324e8d41b139431213",
+      "source_artifact_sha256": "06cb6242a667a84611e72ebcb6600a81ed5e02beacc89efda7a6c841c6801c2b"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "e52648fff0e6ade70702ba51ce6af03fd356f4b5af5062dc18f29842e5bb966f"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "a5d07b2dca6645ee1184ebbe2e2df1a54cc88edb58ed58e2ce1fcd60ad3e6b18"
+        },
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "5fb5ec1a6cd8ea365ae3bce87d24b490bf70ce749619d59e6d07cc91f7c59db1"
+        },
+        {
+          "item_id": "35f38609ba9baf4f60e0a85d11469fda6ae7d2500848681cb9a9f311e4ec0973",
+          "path": "src/coordinators/daily-review/daily-review.spec-x.ts",
+          "fingerprint": "041e1e5dcd5702c6c4676c30e02c9c1c13052782e3f70914158ec837e149d426"
+        },
+        {
+          "item_id": "4a7609f0f3b62230b250def2de92bef5b7f8aac46f59977d4d8539d7160b06c6",
+          "path": "src/ui/screens/MarkEntry.spec-x.tsx",
+          "fingerprint": "126aed74bf58a09347054bba098da38bc6ebc7cc13572a5fb9e18865ea1bfa6e"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "8617814abb4a7a2f672b2968f55a834792538fbb4dfd3b734688f16fd57dd7e3"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "9f3b292316eb5e1ffb86c7488932df79ec9164e5cab1ef08b1a340213ccda039"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "777acb614e878d12c784075e6895911144b84965746c871f61eb494575b5498f"
+        },
+        {
+          "item_id": "ba5fbb04fca03ff1953f3df04141a6756ee49b97455790da564dbc547ad53e17",
+          "path": "src/ui/format.ts",
+          "fingerprint": "ac8cf4325b983161331b29049bb3074f43d214507fee9130927135d49fabb8e7"
+        },
+        {
+          "item_id": "bdf51583480440aae26c50b7b10ccd50ede80a1ec52de2d746c9217c45ad022c",
+          "path": "src/modules/market-data/recover.spec-x.ts",
+          "fingerprint": "785d8a66b5d0cd9fe44defb40ba6223664435f8aefc2fe4954b55957c31d0816"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "41d2b70031891d26e966a50c89da65ee814e00a55fde790074e5de6108fcbd87"
+        },
+        {
+          "item_id": "f9992182bb6df7d00c760124f76dd3f63c3d6f2aa553a4719a76728c2a224960",
+          "path": "src/ui/screens/ReviewView.spec-x.tsx",
+          "fingerprint": "4ce8a1a337f671e97482a719a9d6a25c81397a1ea6c264c280584a5045e48dd7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "e52648fff0e6ade70702ba51ce6af03fd356f4b5af5062dc18f29842e5bb966f"
+        },
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "a5d07b2dca6645ee1184ebbe2e2df1a54cc88edb58ed58e2ce1fcd60ad3e6b18"
+        },
+        {
+          "item_id": "2cea7a8f0a615fab36f0772e4ab911b1ac0ac370d3fd3b63456d0f119394ed5e",
+          "path": "src/main.tsx",
+          "fingerprint": "5fb5ec1a6cd8ea365ae3bce87d24b490bf70ce749619d59e6d07cc91f7c59db1"
+        },
+        {
+          "item_id": "35f38609ba9baf4f60e0a85d11469fda6ae7d2500848681cb9a9f311e4ec0973",
+          "path": "src/coordinators/daily-review/daily-review.spec-x.ts",
+          "fingerprint": "041e1e5dcd5702c6c4676c30e02c9c1c13052782e3f70914158ec837e149d426"
+        },
+        {
+          "item_id": "4a7609f0f3b62230b250def2de92bef5b7f8aac46f59977d4d8539d7160b06c6",
+          "path": "src/ui/screens/MarkEntry.spec-x.tsx",
+          "fingerprint": "126aed74bf58a09347054bba098da38bc6ebc7cc13572a5fb9e18865ea1bfa6e"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "8617814abb4a7a2f672b2968f55a834792538fbb4dfd3b734688f16fd57dd7e3"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "9f3b292316eb5e1ffb86c7488932df79ec9164e5cab1ef08b1a340213ccda039"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "777acb614e878d12c784075e6895911144b84965746c871f61eb494575b5498f"
+        },
+        {
+          "item_id": "ba5fbb04fca03ff1953f3df04141a6756ee49b97455790da564dbc547ad53e17",
+          "path": "src/ui/format.ts",
+          "fingerprint": "ac8cf4325b983161331b29049bb3074f43d214507fee9130927135d49fabb8e7"
+        },
+        {
+          "item_id": "bdf51583480440aae26c50b7b10ccd50ede80a1ec52de2d746c9217c45ad022c",
+          "path": "src/modules/market-data/recover.spec-x.ts",
+          "fingerprint": "785d8a66b5d0cd9fe44defb40ba6223664435f8aefc2fe4954b55957c31d0816"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "41d2b70031891d26e966a50c89da65ee814e00a55fde790074e5de6108fcbd87"
+        },
+        {
+          "item_id": "f9992182bb6df7d00c760124f76dd3f63c3d6f2aa553a4719a76728c2a224960",
+          "path": "src/ui/screens/ReviewView.spec-x.tsx",
+          "fingerprint": "4ce8a1a337f671e97482a719a9d6a25c81397a1ea6c264c280584a5045e48dd7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 106615
+  }
+}

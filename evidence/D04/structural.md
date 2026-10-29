@@ -980,3 +980,37 @@ ocr review of `eff33c9` (B6, test only): session `7f1b9272-70a6-4016-9a38-58daf8
 - `bbca240` (code at `eff33c9`, B1–B6), 2026-10-29 00:11 EDT: unit 717, integration 50, browser 124; checks 11 of 12. `suite-runs/t4.20-b6-*`.
 
 Only `verify:capacity` failed (expected until T4.28). T4.20 is complete.
+
+## T4.21 UI: Review overview and Marks family
+
+`5db2c90`. `src/ui/screens/ReviewView.tsx` replaces T4.19's `/review` placeholder. Carried items: Market Data `recover` adds `ResolvedKey.resolutionRevision` and `HistoricalGaps.revisions` (read from the same records, frames and digest unchanged); Daily Review's `MarkRow.resolutionRevision` and `HistoricalGapGroup.revisions`; each `MarkEntry` keyed by Instrument and date; MarkEntry offers Enter on an acknowledged key (A57; T4.5 accepts a Mark after an acknowledgment); no Mark controls while not writable. Choices where the specs are silent: the link into the Review is `/review?instrument=XYZ` (T4.23 and T4.24 must produce it); walk rows show "Action saved" or "Action missing". Extra cases of the subagent's, each red then green: Enter on an acknowledged key, the two `recover` revisions, the Daily Review rows, a Review Date remount, unsaved aggregation, Continue failure. First-run passes, each mutation-checked: Complete as text with no blockers; resume after reload; no Mark controls while not writable. Code ahead of red, flagged: the completion text for all three kinds in the first overview green.
+
+ocr review of `5db2c90`: session `ee3a5158-527e-42ff-961f-361da6d1c388` (scratch clone with tests renamed), 12 files, 5 comments. `ocr/T4.21-5db2c90.json`. The reviewer confirmed revisions come from the same records and transaction as resolutions, paging is newest first by 20, focus by `?instrument=`, and Recovery Only hides Mark actions.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/ui/screens/ReviewView.tsx:292` | After the walk opens, Marks stay editable but nothing refreshes status, blockers or order: Continue to Trades is gone | Valid (design gap; A48 refreshes on Continue) | Bug task T4.21-B1 |
+| medium | `ReviewView.tsx:279` | After a refresh, a MarkEntry for an unchanged key keeps its old resolution and revision | Doubtful: a save then returns Conflict, which MarkEntry adopts; but the shown state is stale | Folded into T4.21-B1 |
+| medium | `ReviewView.tsx:152` | Paging away from a gap page discards typed drafts with no unsaved prompt | Valid: the unsaved registration exists to guard leaving | Bug task T4.21-B2 |
+| medium | `ReviewView.tsx:276` | `proceed` has no in-flight guard; a late failure can show the error beside an opened walk | Valid | Bug task T4.21-B3 |
+| medium | `src/modules/market-data/market-data.ts:394` | Each gap scans `stored` with `find` | Valid (negligible; bounded, no extra I/O) | Bug task T4.21-B4 (refactor) |
+| (reviewer) | `ReviewView.tsx`, `GapList` | Acknowledged earlier-session dates are text only, but A57 gives each earlier gap Enter or Can't get a price | Valid (deviation from A57) | Bug task T4.21-B5 |
+| (reviewer) | `MarkEntry.tsx` region name | Every MarkEntry region is "<Instrument> Mark", repeated for Today and each gap date | Valid (accessibility) | Bug task T4.21-B6 |
+
+### T4.21-B1 The Review refreshes after the walk opens
+- it should keep Continue to Trades available after the walk opens, refresh status, blockers and order on it, and show each Mark entry's refreshed resolution
+
+### T4.21-B2 Paging keeps unsaved Marks
+- it should not page away from earlier sessions while a Mark on the page holds an unsaved value
+
+### T4.21-B3 One refresh at a time
+- it should send one open and disable Continue to Trades while a refresh is in flight
+
+### T4.21-B4 Gap revisions by lookup (refactor)
+- no new case; `recover` tests pass before and after
+
+### T4.21-B5 Acknowledged earlier sessions offer Enter
+- it should offer Enter on an acknowledged earlier-session date, saved under that date's revision
+
+### T4.21-B6 Mark regions name their date
+- it should name each Mark entry region by Instrument and date
