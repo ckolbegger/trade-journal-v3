@@ -1554,3 +1554,14 @@ Fix (test helper only): `saveAction` takes the form's element handle before pres
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | exit 0 each |
 
 Product observation (not changed): with an untouched form (one-click Hold) the form is not dirty, so the walk buttons (disabled only while an Action form is dirty) and Continue to Trades (disabled only while refreshing or dirty) stay clickable during the save. Probed with the delayed build: Review DEF and Continue were both enabled during the save. Opening DEF then, and saving it, ended Complete with both Actions saved and no notice in that run, so the stale-binding outcome (a Review changed or Conflict notice on the next Save) was not reproduced; the window exists but the visible effect depends on timing.
+
+### T4.31-B2
+
+Defect confirmed: `assertMissingRendered` checked only the rendered rows, so a recorded Missing Instrument absent from the list passed. Fix in `tools/bench/pin.ts` (signature unchanged): the set of symbols rendered with "Mark missing" must equal the recorded Missing set, with a message naming both differences; zero flagged still fails.
+
+| Command | Result |
+|---|---|
+| Scratch script with rows [AAA flagged, BBB not] against recorded sets [AAA], [AAA, CCC], and with AAA's row removed, and [AAA, BBB] | pass; throws (CCC not flagged); throws (AAA not flagged, none flagged); throws (BBB not flagged) |
+| `npm run bench:expected` then `git diff --stat bench/` | OK, 200 rows; no diff |
+| `npm run bench:run` | exit 0; cold p95 108.9 ms, warm p95 44.7 ms; `evidence/D04/bench.md` rewritten by the harness |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | exit 0 each |

@@ -24,11 +24,17 @@ export async function assertPinned(page: Page, asOf: Date): Promise<void> {
   }
 }
 
-// The Open list rendered: the Missing Instruments (and only those) show "Mark missing" in P&L.
+// The Open list rendered: the symbols showing "Mark missing" in P&L are exactly the recorded Missing
+// Instruments, in both directions (a Missing Instrument absent from the list fails too).
 export function assertMissingRendered(rows: readonly (readonly string[])[], missing: readonly string[]): void {
-  const flagged = rows.filter((r) => r[3]!.startsWith('Mark missing')).map((r) => r[0]!);
-  const wrong = rows.filter((r) => missing.includes(r[0]!) !== r[3]!.startsWith('Mark missing')).map((r) => r[0]!);
-  if (wrong.length > 0 || flagged.length === 0) {
-    throw new Error(`the Open list's Mark-missing rows (${[...new Set(flagged)].join(', ') || 'none'}) are not the Missing Instruments (${missing.join(', ')})`);
+  const flagged = new Set(rows.filter((r) => r[3]!.startsWith('Mark missing')).map((r) => r[0]!));
+  const want = new Set(missing);
+  const extra = [...flagged].filter((s) => !want.has(s));
+  const absent = [...want].filter((s) => !flagged.has(s));
+  if (flagged.size === 0 || extra.length > 0 || absent.length > 0) {
+    throw new Error(
+      `the Open list's Mark-missing symbols (${[...flagged].join(', ') || 'none'}) are not the ${want.size} Missing Instruments (${[...want].join(', ')}): ` +
+        `not recorded as Missing: ${extra.join(', ') || 'none'}; recorded as Missing but not flagged: ${absent.join(', ') || 'none'}`,
+    );
   }
 }
