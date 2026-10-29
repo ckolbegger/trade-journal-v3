@@ -91,6 +91,22 @@ export default {
       to: { path: layer('domain/session-policy') },
     },
     {
+      name: 'only-market-data-sees-session-policy',
+      comment:
+        'Only Market Data (and the composition root that hands it the policy) imports the session policy (D4 A39). Test files are exempt.',
+      severity: 'error',
+      from: {
+        path: '(^|/)src/',
+        pathNot: [
+          layer('modules/market-data'),
+          layer('domain/session-policy'),
+          '(^|/)src/app/compose\\.ts$',
+          '\\.test\\.tsx?$',
+        ],
+      },
+      to: { path: layer('domain/session-policy') },
+    },
+    {
       name: 'trade-analysis-never-calls-performance-analysis',
       severity: 'error',
       from: { path: layer('domain/trade-analysis') },
