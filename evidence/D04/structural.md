@@ -1495,3 +1495,11 @@ Cases I4.13, I4.14, I4.15, I4.16, I4.17 and I4.10 added under `tests/integration
 | `npm run lint:deps` | exit 0 |
 
 Notes: all six cases passed on first run (behavior from earlier D4 tasks) and carry mutation notes in `tdd-log.md`. I4.13 and I4.10 build the Five-Trade fixture without T-D through the facade (`fourTrades`: T-A XYZ, T-B ABC, T-C DEF, T-E JKL). I4.14 uses ABC for Trade Q and a 15:00 fill as the earlier-dated fill. I4.15 interprets "acknowledge and withdraw" as two separate failed saves, each from a freshly rendered binding.
+
+### ocr review of T4.32 part 3
+
+| Commit | Finding | Assessment | Outcome |
+|---|---|---|---|
+| `63650c8` | `review.cases.ts:2`: files not collected | Wrong: the review's scratch rename | dismissed |
+| `63650c8` | `eligibility.test.ts:37`: nested ternary | Valid but cosmetic, no failure scenario | dismissed |
+| `63650c8` | I4.10: index equality would hold if `rebuildPrivateState` did nothing | Wrong: rebuild drops and recreates the indexes; the T4.32 part 3 mutation (no `createWorkspaceIndexes`) failed with `NotFoundError`, so the case does prove the rebuild writes them | dismissed |
