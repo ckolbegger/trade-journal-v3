@@ -1,0 +1,110 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 55346,
+    "input_tokens": 54760,
+    "output_tokens": 586,
+    "cache_read_tokens": 7680,
+    "elapsed": "40s"
+  },
+  "tool_calls": {
+    "total": 5,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 4
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/MarkEntry.tsx",
+      "content": "This banner is also shown after Withdraw fails, but that action has no entered values and is withdrawing an acknowledgment rather than saving a Mark. The current copy therefore does not meet the requested accurate Withdraw messaging. Use operation-neutral copy (for example, “This change could not be saved. Nothing was changed. You can try again.”), or choose withdrawal-specific copy based on the failed command.",
+      "existing_code": "            \u003cstrong\u003eThis Mark could not be saved.\u003c/strong\u003e Nothing was saved. Your values are kept, so you can try again.",
+      "start_line": 135,
+      "end_line": 135,
+      "category": "bug",
+      "severity": "low"
+    },
+    {
+      "path": "src/ui/screens/MarkEntryCheck.tsx",
+      "content": "The new tests cover clearing the alert on success, but not the explicitly requested Cancel and other-result transitions or mutual exclusion with Conflict. Add checks for StorageFailure → Cancel, StorageFailure → Rejected, and transitions between StorageFailure and Conflict, asserting that only the appropriate alert remains. The Withdraw test should also verify the full operation-appropriate copy rather than only “Nothing was saved”.",
+      "existing_code": "    expect(save).toHaveBeenCalledTimes(2);",
+      "start_line": 334,
+      "end_line": 334,
+      "category": "test",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/MarkEntry.tsx",
+        "src/ui/screens/MarkEntryCheck.tsx"
+      ]
+    }
+  ],
+  "session_id": "37a826d8-0a51-4b74-b8ae-621c9b207c1b",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "37a826d8-0a51-4b74-b8ae-621c9b207c1b",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "b7df744917aa473045a65157cb6ce2cf65bdef69",
+      "resolved_base": "3223c6573a8d97e4affe330ec9fd3fa4a7b0d983",
+      "resolved_head": "b7df744917aa473045a65157cb6ce2cf65bdef69",
+      "exact_range": "3223c6573a8d97e4affe330ec9fd3fa4a7b0d983..b7df744917aa473045a65157cb6ce2cf65bdef69",
+      "source_artifact_sha256": "fee83be5447414b369bd036804540f5e2f3be57b7c21d7c9d145847c477bf7de"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0ddf1b3b04aad1b0d00378a052721b51808534b1647d850a38511cfaca720213",
+          "path": "src/ui/screens/MarkEntryCheck.tsx",
+          "fingerprint": "029fb85c0f64d6e0359bd79921b021509e6f644c40fb1369743a2cb0cacd53e0"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "c4465c2bf0b153fa7b2c35ce688ab21f90004e1827766031e49160d801be8503"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0ddf1b3b04aad1b0d00378a052721b51808534b1647d850a38511cfaca720213",
+          "path": "src/ui/screens/MarkEntryCheck.tsx",
+          "fingerprint": "029fb85c0f64d6e0359bd79921b021509e6f644c40fb1369743a2cb0cacd53e0"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "c4465c2bf0b153fa7b2c35ce688ab21f90004e1827766031e49160d801be8503"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 39837
+  }
+}

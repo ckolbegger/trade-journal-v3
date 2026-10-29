@@ -943,4 +943,14 @@ ocr review of `1a8f153` (B1): session `7536aa12-cd10-4883-b178-0635fc3d2fdc` (sc
 | info | `MarkEntry.tsx:91` | Two submits before re-render (Enter key) | Doubtful: the disabled default button blocks implicit submission and React flushes the discrete event; only a programmatic submit gets through, with no path in the app | Dismissed |
 
 ### T4.20-B4 Nothing stale after a cancelled save
-- it should keep Cancel disabled while a save is in flight, and open each form with no earlier Conflict or issues
+- it should keep Cancel disabled while a save is in flight, and open each form with no earlier Conflict, storage-failure notice or issues
+
+ocr review of `fad60b0` (B2): session `37a826d8-0a51-4b74-b8ae-621c9b207c1b` (scratch clone), 2 files, 2 comments. `ocr/T4.20-B2-fad60b0.json`. A StorageFailure result shows a `role="alert"` warning (copy chosen by the subagent; neither specs nor plan define it), keeps the form and values, and clears on the next result or on Cancel; Conflict and the notice come from one result kind, so they cannot both show. The Withdraw case is a first-run pass, mutation-checked. No code ahead of red.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| low | `src/ui/screens/MarkEntry.tsx:135` | "This Mark could not be saved … Your values are kept" is wrong for a failed Withdraw, which has no entered values | Valid (copy) | Bug task T4.20-B5 |
+| low | `MarkEntry.test.tsx` | No test for StorageFailure then Cancel, then Rejected, or Conflict and the notice excluding each other | Valid (coverage); behaviour correct | Folded into T4.20-B4 |
+
+### T4.20-B5 Withdraw's failure says what failed
+- it should say the acknowledgment was not withdrawn, with no claim about entered values, when Withdraw returns StorageFailure
