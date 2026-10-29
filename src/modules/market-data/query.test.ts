@@ -175,12 +175,13 @@ describe('Current and Review contexts', () => {
     expect(framesOf(review)).toEqual(framesOf(currentResult));
   });
 
-  it('should return SessionPolicyCoverage and no frames when the as-of instant is outside coverage', async () => {
+  it('should return SessionPolicyCoverage with the as-of exchange date when the as-of instant is outside coverage', async () => {
     const { marketData } = await setup();
+    const coverage = nyseSessionPolicy.identity.coverage;
     const early = await marketData.query(current(['XYZ'], '2023-12-29T21:00:00Z'));
-    expect(early).toEqual({ kind: 'Rejected', issues: [{ field: 'asOf', code: 'SessionPolicyCoverage' }] });
-    const late = await marketData.query(current(['XYZ'], '2029-01-05T21:00:00Z'));
-    expect(late).toEqual({ kind: 'Rejected', issues: [{ field: 'asOf', code: 'SessionPolicyCoverage' }] });
+    expect(early).toEqual({ kind: 'Rejected', issues: [{ field: 'asOf', code: 'SessionPolicyCoverage', date: '2023-12-29', coverage }] });
+    const late = await marketData.query(current(['XYZ'], '2029-01-05T02:00:00Z'));
+    expect(late).toEqual({ kind: 'Rejected', issues: [{ field: 'asOf', code: 'SessionPolicyCoverage', date: '2029-01-04', coverage }] });
   });
 
   it('should reject a Current context whose asOf is not an ISO instant with an asOf issue', async () => {
@@ -384,6 +385,9 @@ describe('ResolveSession (T4.14: Daily Review resolves its date through Market D
       closeInstant: '2026-10-12T20:00:00Z',
     });
     const outside = await marketData.query({ kind: 'ResolveSession', context: { kind: 'Current', asOf: '2020-01-02T21:00:00Z' } });
-    expect(outside).toEqual({ kind: 'Rejected', issues: [{ field: 'asOf', code: 'SessionPolicyCoverage' }] });
+    expect(outside).toEqual({
+      kind: 'Rejected',
+      issues: [{ field: 'asOf', code: 'SessionPolicyCoverage', date: '2020-01-02', coverage: nyseSessionPolicy.identity.coverage }],
+    });
   });
 });

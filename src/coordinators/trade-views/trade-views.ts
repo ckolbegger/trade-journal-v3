@@ -1,4 +1,3 @@
-import { Temporal } from 'temporal-polyfill';
 import {
   derive,
   evaluate,
@@ -164,9 +163,6 @@ export type ReadViewResult<T> =
   | { readonly kind: 'Rejected'; readonly reason: 'CursorExpired' };
 
 const ASSEMBLY_ATTEMPTS = 3;
-
-// The exchange's calendar day; the session policy itself is Market Data's alone (A39).
-const EXCHANGE_ZONE = 'America/New_York';
 
 export interface TradeDetailRequest {
   readonly tradeId: string;
@@ -425,10 +421,9 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
     const instruments = [...new Set(symbols)].sort();
     const asOf = deps.clock.now();
     const result = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Current', asOf }, instruments });
-    if (result.kind === 'Rejected' && result.issues.every((issue) => issue.code === 'SessionPolicyCoverage')) {
-      const date = Temporal.Instant.from(asOf).toZonedDateTimeISO(EXCHANGE_ZONE).toPlainDate().toString();
-      return { frames: instruments.map(() => ({ date })) };
-    }
+    const uncovered = result.kind === 'Rejected' ? result.issues.find((issue) => issue.code === 'SessionPolicyCoverage') : undefined;
+    const date = uncovered?.date;
+    if (date !== undefined) return { frames: instruments.map(() => ({ date })) };
     if (result.kind !== 'Frames') throw new Error(`Market Data returned ${result.kind} for the current frames`);
     return { frames: result.frames, snapshotId: result.snapshotId };
   }

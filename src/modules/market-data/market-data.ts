@@ -60,6 +60,9 @@ export interface MarketDataIssue {
   readonly code: MarketDataIssueCode;
   // Set when the issue concerns one entry of a multi-Instrument request.
   readonly instrumentKey?: string;
+  // Set on a SessionPolicyCoverage issue for an as-of instant: the uncovered exchange date and the coverage.
+  readonly date?: string;
+  readonly coverage?: CoverageRange;
 }
 
 export type MarketDataSaveResult =
@@ -406,7 +409,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
     if (issues.length > 0) return { kind: 'Rejected', issues };
     day = { ok: true, value: deps.sessionPolicy.classify(date) as Session };
   }
-  if (!day.ok) return { kind: 'Rejected', issues: [{ field: 'asOf', code: 'SessionPolicyCoverage' }] };
+  if (!day.ok) return { kind: 'Rejected', issues: [{ field: 'asOf', code: 'SessionPolicyCoverage', date: day.diagnostic.date, coverage: day.diagnostic.coverage }] };
   return { kind: 'Day', day: day.value };
   }
 
