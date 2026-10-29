@@ -65,6 +65,37 @@ test.describe('B4.13 Responsive and accessible', () => {
     await context.close();
   });
 
+  test('should lay the Action choices out as compact chips, each radio inside its label, at 375 and 320 px', async ({ profile }) => {
+    const { context, page } = await onboardedAt(profile, MONDAY_1700);
+    await createTrades(page, [FOUR_TRADES[0]!]);
+    await openReview(page);
+    await enterMark(page, 'XYZ', DATE, '52.00');
+    await continueToTrades(page);
+    await tradesFamily(page).getByRole('button', { name: 'Review XYZ' }).click();
+    for (const width of [375, 320]) {
+      await page.setViewportSize({ width, height: 800 });
+      for (const choice of ['Hold', 'Exit', 'Roll', 'Adjust']) {
+        const radio = actionForm(page).getByRole('radio', { name: choice, exact: true });
+        const label = actionForm(page).locator('label', { hasText: new RegExp(`^${choice}$`) });
+        const [r, l] = [await radio.boundingBox(), await label.boundingBox()];
+        expect(r && l, `${choice} boxes at ${width}`).toBeTruthy();
+        expect(r!.width, `${choice} radio width at ${width}`).toBeLessThanOrEqual(120);
+        // The chip contains the radio and its text: one box, on one line.
+        expect(r!.x >= l!.x - 1 && r!.x + r!.width <= l!.x + l!.width + 1 && r!.y >= l!.y - 1 && r!.y + r!.height <= l!.y + l!.height + 1, `${choice} radio inside its chip at ${width}`).toBe(true);
+        expect(l!.width, `${choice} chip width at ${width}`).toBeLessThanOrEqual(200);
+        expect(l!.height, `${choice} chip height at ${width}`).toBeLessThanOrEqual(60);
+      }
+      await actionForm(page).getByRole('group', { name: 'Action' }).scrollIntoViewIfNeeded();
+      await page.screenshot({ path: `test-results/critic-d04-1/b2-${width}-actionform.png` });
+    }
+    // Arrow keys move within the group.
+    await actionForm(page).getByRole('radio', { name: 'Hold', exact: true }).focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(actionForm(page).getByRole('radio', { name: 'Exit', exact: true })).toBeChecked();
+    await expectAccessible(page, 'Action form chips');
+    await context.close();
+  });
+
   test('should report no WCAG 2.1 AA violations on the Review, the Action form, the Open list, and Detail in every evaluation state, with each state distinguishable by its words', async ({ profile }) => {
     test.setTimeout(240_000);
     const { context, page } = await onboardedAt(profile, MONDAY_1700);

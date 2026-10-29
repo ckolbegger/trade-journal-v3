@@ -199,10 +199,10 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
           {wholeIssue.message}
         </p>
       )}
-      <fieldset>
+      <fieldset className="choices">
         <legend>Action</legend>
         {CHOICES.map((choice) => (
-          <label key={choice}>
+          <label key={choice} className="chip">
             <input type="radio" name="action" value={choice} checked={action === choice} disabled={saving || !writable} onChange={() => setAction(choice)} />
             {choice}
           </label>

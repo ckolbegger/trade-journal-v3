@@ -234,6 +234,20 @@ describe('Action form (AC-REV-003)', () => {
     expect(vi.mocked(facade.DailyReview.save)).not.toHaveBeenCalled();
   });
 
+  it('should render the Action choices as the shared chip radio group, each label wrapping its radio', async () => {
+    renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ')));
+    const user = userEvent.setup();
+
+    const trade = await openTrade(user, 'XYZ');
+    const group = within(trade).getByRole('group', { name: 'Action' });
+    expect(group.className).toBe('choices');
+    for (const radio of within(group).getAllByRole('radio')) {
+      const label = (radio as HTMLInputElement).labels?.[0];
+      expect(label?.className).toBe('chip');
+      expect(label?.contains(radio)).toBe(true);
+    }
+  });
+
   it('should save Hold with one press of Save and move to the next Trade from the returned next step without calling open or getTrade', async () => {
     const trades = [item('t1', 'XYZ'), item('t2', 'DEF')];
     const first = tradeReview('t1', 'XYZ');

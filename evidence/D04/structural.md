@@ -1717,3 +1717,11 @@ The acknowledgment form's blank-reason message speaks of the acknowledgment: "En
 - `tdd.sh red` / `green` for the acknowledgment-versus-correction message case : red (`Unable to find an element with the text: Enter why you can't get a price.`), then green
 - `npx vitest run src/ui` : exit 0; 19 files, 294 passed
 - `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` : each exit 0
+
+### T4.34-B2
+
+- `tdd.sh red` / `green` for the Action chip radio group case (ReviewTrade.test.tsx): red (`expected '' to be 'choices'`), then green
+- Browser case B4.13 "should lay the Action choices out as compact chips ... at 375 and 320 px" (e2e/d4/responsive-a11y.spec.ts): before the fix failed `Hold radio width at 375: Expected <= 120, Received 311`; after the fix passed. Screenshots: `test-results/critic-d04-1/b2-375-actionform.png`, `b2-320-actionform.png`
+- `npx vitest run src` : exit 0; 61 files, 818 passed
+- `npm run build:releases` + `npm run test:e2e` : exit 0; 141 passed
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` : each exit 0
