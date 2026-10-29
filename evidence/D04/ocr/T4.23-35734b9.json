@@ -1,0 +1,147 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 1,
+    "total_tokens": 153694,
+    "input_tokens": 151950,
+    "output_tokens": 1744,
+    "cache_read_tokens": 17280,
+    "elapsed": "1m19s"
+  },
+  "tool_calls": {
+    "total": 20,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 11,
+      "file_find": 1,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/TradeList.tsx",
+      "content": "This nested ternary violates the review checklist's prohibition on nested ternary expressions. Select the Stop and Target badges with explicit `if`/`else if` branches (leaving other conditions as `null`) so the mapping stays straightforward to extend.",
+      "existing_code": "        const badge = c.role === 'Stop' \u0026\u0026 status === 'Breached' ? \u003cBadge tone=\"warning\"\u003eStop breached\u003c/Badge\u003e : c.role === 'Target' \u0026\u0026 status === 'Reached' ? \u003cBadge tone=\"info\"\u003eTarget reached\u003c/Badge\u003e : null;",
+      "start_line": 236,
+      "end_line": 236,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Trade display updates and supporting test fixtures",
+      "files": [
+        "e2e/d2/support.ts",
+        "src/ui/figures.ts",
+        "src/ui/screens/ReviewTrade.tsx",
+        "src/ui/screens/TradeList.tsx",
+        "src/ui/screens/TradeListT.tsx",
+        "tests/support/views-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "4928e670-2234-4095-b16c-897b1d2a4685",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "4928e670-2234-4095-b16c-897b1d2a4685",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "5a35073d32472d4e81b6676bba90cb5935f76201",
+      "resolved_head": "9ab6a056cf002e63a7bc341a2d51d4ad8d9d6699",
+      "exact_range": "5a35073d32472d4e81b6676bba90cb5935f76201..9ab6a056cf002e63a7bc341a2d51d4ad8d9d6699",
+      "source_artifact_sha256": "57c91fa17626997f9f600bd57306a336156c4b46785ddd6d87f9af0739421db3"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "03305087f493c43c473009ae76919a3f1406cbe14fff7737a0abf254ad6a9f4b",
+          "path": "e2e/d2/support.ts",
+          "fingerprint": "a9c7ad1f8920e67015324a707eb41bd314927da9ceacd2f4247964f7fdc16a1a"
+        },
+        {
+          "item_id": "12227846100d1e2f6ca2b8e95879dcfc7565775dd2ebcf39a1469d82c3d0415b",
+          "path": "src/ui/figures.ts",
+          "fingerprint": "ce845d99c9d965af7556e5a67f4573878245a6bfd3ca9f76fc57f30e25d11f05"
+        },
+        {
+          "item_id": "a341212169240e8636dc8299ba520381d797373a7d052c3d8e3b8f272a830bda",
+          "path": "src/ui/screens/TradeListT.tsx",
+          "fingerprint": "5159f90e8d60cdde03eb93ffcade891233d452d5d88a49e3ef5182b6246421cf"
+        },
+        {
+          "item_id": "b1b49860ae86359d6cb60ef22ce9c56a11639a48aef8680943ba8c67f8fd810b",
+          "path": "src/ui/screens/ReviewTrade.tsx",
+          "fingerprint": "1ddb4cd6741f915cc375503791d67f8115064ba94e84515bfbf65ea938eddafa"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "3d738431664a70cb5382d7ebab5ee4f6bf204208e80d4529a684575f360fa79c"
+        },
+        {
+          "item_id": "c9e9f246e500244763618c2c1915221226e1263a66329b573fc1c56ca5b14e79",
+          "path": "tests/support/views-fixtures.ts",
+          "fingerprint": "038f7c5ed403e77de695dab862414d6dc9448f03ebac2857cd67bd941bcc72be"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "03305087f493c43c473009ae76919a3f1406cbe14fff7737a0abf254ad6a9f4b",
+          "path": "e2e/d2/support.ts",
+          "fingerprint": "a9c7ad1f8920e67015324a707eb41bd314927da9ceacd2f4247964f7fdc16a1a"
+        },
+        {
+          "item_id": "12227846100d1e2f6ca2b8e95879dcfc7565775dd2ebcf39a1469d82c3d0415b",
+          "path": "src/ui/figures.ts",
+          "fingerprint": "ce845d99c9d965af7556e5a67f4573878245a6bfd3ca9f76fc57f30e25d11f05"
+        },
+        {
+          "item_id": "a341212169240e8636dc8299ba520381d797373a7d052c3d8e3b8f272a830bda",
+          "path": "src/ui/screens/TradeListT.tsx",
+          "fingerprint": "5159f90e8d60cdde03eb93ffcade891233d452d5d88a49e3ef5182b6246421cf"
+        },
+        {
+          "item_id": "b1b49860ae86359d6cb60ef22ce9c56a11639a48aef8680943ba8c67f8fd810b",
+          "path": "src/ui/screens/ReviewTrade.tsx",
+          "fingerprint": "1ddb4cd6741f915cc375503791d67f8115064ba94e84515bfbf65ea938eddafa"
+        },
+        {
+          "item_id": "bd89945794b582a5dc4c1bd60d9b38e3f6b1c7c01eebcd61eec907922b0a0a0f",
+          "path": "src/ui/screens/TradeList.tsx",
+          "fingerprint": "3d738431664a70cb5382d7ebab5ee4f6bf204208e80d4529a684575f360fa79c"
+        },
+        {
+          "item_id": "c9e9f246e500244763618c2c1915221226e1263a66329b573fc1c56ca5b14e79",
+          "path": "tests/support/views-fixtures.ts",
+          "fingerprint": "038f7c5ed403e77de695dab862414d6dc9448f03ebac2857cd67bd941bcc72be"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 79148
+  }
+}

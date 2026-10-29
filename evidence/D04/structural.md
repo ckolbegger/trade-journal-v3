@@ -1142,3 +1142,17 @@ ocr review of `9109023` (B10): session `2be15175-17ef-494b-9693-c983304f4b4d` (s
 - code at `9109023` (T4.22 and B1–B10), 2026-10-29 01:49 EDT: unit 771, integration 50, browser 124; checks 11 of 12. `suite-runs/t4.22-b10-*`.
 
 Only `verify:capacity` failed (expected until T4.28). T4.22 is complete.
+
+## T4.23 UI: Open list figures
+
+`35734b9`. `src/ui/screens/TradeList.tsx`: a P&L column after Net cost on wide (hidden below 960 px, heading named "Current Marked Trade P&L"), the P&L on the Trade cell's second line on narrow, and "Mark missing", "Stop breached" and "Target reached" text badges in the Trade cell. A missing Mark shows a link "Mark missing: ABC, Tue Oct 13" to `/review?instrument=ABC` in place of the P&L, followed by the dated line's P&L labelled with its date; AwaitingClose shows "Awaiting the next close"; outside coverage (decision 54) "Not available" with no link or badge. `browseTrades` already carried `OpenTradeItem.current` (T4.18). New `src/ui/figures.ts` holds `signed`, `calculation` and `pnlText`, moved from ReviewTrade. How plan revision 8 amended the cases: no Risk to stop or Reward to target columns; the at-entry risk is not in the list (the amendment keeps risk on the Detail and in the Review; no spec puts it in the list); the canonical-name case applies to the P&L heading; "Mark status" is the "Mark missing" badge. On narrow the badges sit on their own line under the second line's figures. Extra cases, each red then green: outside coverage; the narrow second line. First-run passes, mutation-checked: AwaitingClose (case 3), the heading name (case 4). Code ahead of red, flagged: the SessionPolicyNotCovered branch, reverted for its red, then restored. Two green rows exited 1 (a test typo: losses use U+2212). D2 e2e edits: Trade link lookups `exact: true` (a "Mark missing: XYZ" link also matches "XYZ"), `MOVED.Open` gains P&L.
+
+ocr review of `35734b9`: session `4928e670-2234-4095-b16c-897b1d2a4685` (scratch clone with the test renamed), 6 files, 1 comment. `ocr/T4.23-35734b9.json`. The reviewer traced every `CalculationResult` variant (none shows a number when unavailable), the link's Instrument and date from the row's own missing key, Incoherent rows, `figures.ts` moved verbatim, and cell counts matching headers at both widths.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| (reviewer) | `src/ui/figures.ts` `calculation`, `TradeList.tsx` `missingMark` | An AcknowledgedUnavailable P&L shows "Mark missing: …" with the Review link and the Mark missing badge, because any detail with a date is treated as missing | Valid: ui-contract, Calculation display: "Acknowledged Unavailable is visibly a trader acknowledgment, not a price", and Missing and Acknowledged Unavailable stay distinct; `calculation` would also word a SessionPolicyNotCovered result as "Mark missing" where a screen does not catch it first (ReviewTrade, T4.24) | Bug task T4.23-B1 |
+| low | `TradeList.tsx:236` | Nested ternary choosing the Stop or Target badge | Doubtful: style only, correct | Dismissed |
+
+### T4.23-B1 Each unavailable reason in its own words
+- it should word an Acknowledged Unavailable Mark as the trader's acknowledgment, not as missing, with no Mark missing badge, and word a figure outside calendar coverage as not available, wherever `calculation` is used
