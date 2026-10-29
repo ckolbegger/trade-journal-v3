@@ -490,8 +490,10 @@ const measure = (page: Page, tab: (typeof TABS)[number]): Promise<Measured> =>
 
 // How often a figure appears in the accessibility tree of a row: hidden cells are not in it.
 async function occurrences(row: Locator, figure: string): Promise<number> {
-  // The row's own line carries a name made of its cells' text, so only the lines beneath it count.
-  const tree = (await row.ariaSnapshot()).split('\n').slice(1).join('\n');
+  // The row's own line carries a name made of its cells' text, and so does a cell line that has children (the snapshot
+  // lists a cell's text under its name when it holds a link or badge); a cell of plain text is one line, its name the text.
+  const lines = (await row.ariaSnapshot()).split('\n').slice(1);
+  const tree = lines.filter((line) => !(/^\s*- '?cell "/.test(line) && line.endsWith(':'))).join('\n');
   const escaped = figure.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return tree.match(new RegExp(`(?<![\\d.,])${escaped}(?![\\d])`, 'g'))?.length ?? 0;
 }
