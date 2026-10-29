@@ -1,0 +1,121 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 40054,
+    "input_tokens": 39728,
+    "output_tokens": 326,
+    "cache_read_tokens": 7680,
+    "elapsed": "19s"
+  },
+  "tool_calls": {
+    "total": 6,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 4,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Release build, serving, and verification tooling",
+      "files": [
+        "tools/build-releases.ts",
+        "tools/release-server.ts",
+        "tools/verify-releases.ts"
+      ]
+    },
+    {
+      "label": "End-to-end test support",
+      "files": [
+        "e2e/d4/support.ts"
+      ]
+    }
+  ],
+  "session_id": "4a9fb436-0d5b-4c15-b5f0-893776443508",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "4a9fb436-0d5b-4c15-b5f0-893776443508",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f901511",
+      "resolved_base": "3c06d5c8fdb1b0805ad8b58ac0bedabc69235d56",
+      "resolved_head": "f901511150e220e603a443f6f7c9457cb3d4e290",
+      "exact_range": "3c06d5c8fdb1b0805ad8b58ac0bedabc69235d56..f901511150e220e603a443f6f7c9457cb3d4e290",
+      "source_artifact_sha256": "f9b5139d915d7e72165312f1f1a5851791e29f16262e6035977d057c6a68337b"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "03c1ba2b84b53a2147664cc5be448929d0f431984b6f6753951ef7b32159340d",
+          "path": "tools/release-server.ts",
+          "fingerprint": "144a359875fd9787d194cb7b556d3849d41100f4f9dff368df3ed9b6f29a0f68"
+        },
+        {
+          "item_id": "305942210661647b5b7cd0302a2714873146b73002c7e16827a4791f2918916e",
+          "path": "tools/verify-releases.ts",
+          "fingerprint": "609264a70cb476f3701af9bcff7e7fdab969c79e7b248c8c9483782da64f0c32"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "cfb87abf9d73525cb103aa17d48003abb8944e3216d705e1c8d63a017b848a43"
+        },
+        {
+          "item_id": "d44f59486d424c04258c508dfe5085256801c054f64ba88feadbe92dd7ff10d2",
+          "path": "tools/build-releases.ts",
+          "fingerprint": "44f753d55c555cebd9e52cfa5341939faf8b2e38a1e95429dfa92af909c571a3"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "03c1ba2b84b53a2147664cc5be448929d0f431984b6f6753951ef7b32159340d",
+          "path": "tools/release-server.ts",
+          "fingerprint": "144a359875fd9787d194cb7b556d3849d41100f4f9dff368df3ed9b6f29a0f68"
+        },
+        {
+          "item_id": "305942210661647b5b7cd0302a2714873146b73002c7e16827a4791f2918916e",
+          "path": "tools/verify-releases.ts",
+          "fingerprint": "609264a70cb476f3701af9bcff7e7fdab969c79e7b248c8c9483782da64f0c32"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "cfb87abf9d73525cb103aa17d48003abb8944e3216d705e1c8d63a017b848a43"
+        },
+        {
+          "item_id": "d44f59486d424c04258c508dfe5085256801c054f64ba88feadbe92dd7ff10d2",
+          "path": "tools/build-releases.ts",
+          "fingerprint": "44f753d55c555cebd9e52cfa5341939faf8b2e38a1e95429dfa92af909c571a3"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 18646
+  }
+}

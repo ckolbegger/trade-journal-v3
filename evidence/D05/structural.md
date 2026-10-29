@@ -64,3 +64,7 @@ Commands and results:
 - `npx playwright test e2e/d1 e2e/d2 e2e/d4 --project=chromium`: run twice, each 141 passed, 1 failed: `e2e/d4/responsive-a11y.spec.ts:68` (B4.13 chips), "Hold radio inside its chip at 375". It passes alone (`-g`), as the whole file (5 passed) and as all of `e2e/d4` (18 passed), and it passed in the T5.1 cumulative run on the same source. The assertion reads bounding boxes straight after `page.setViewportSize` with no wait, so it looks like a layout race that appears only after d1 and d2 have run; not investigated further (outside T5.18). Flagged for the main session.
 - `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`: exit 0.
 - `verify:capacity` not run or touched (fails until T5.19).
+
+ocr review of `f901511`: session `4a9fb436-0d5b-4c15-b5f0-893776443508`, 4 files reviewed, **No findings.** Raw output: `ocr/T5.18-f901511.json`.
+
+The implementer's combined run (`e2e/d1 e2e/d2 e2e/d4`) failed B4.13's "Hold radio inside its chip at 375" (`e2e/d4/responsive-a11y.spec.ts:68`) twice, while it passes alone, with its file, and with all of `e2e/d4`; suspected layout race after `setViewportSize`. Handled through the cumulative run below.
