@@ -42,10 +42,12 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
   const uid = useId();
   // The key changed after the form opened: nothing was saved, and the values stay for review.
   const [conflict, setConflict] = useState(false);
-  const conflictRef = useRef<HTMLDivElement>(null);
+  // The write failed in storage: nothing was saved, and the values stay for a retry.
+  const [storageFailed, setStorageFailed] = useState(false);
+  const noticeRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (conflict) conflictRef.current?.focus();
-  }, [conflict]);
+    if (conflict || storageFailed) noticeRef.current?.focus();
+  }, [conflict, storageFailed]);
   const { fieldError, describedBy } = fieldIssues(issues);
   // An issue about the Mark as a whole has no field to sit beside.
   const keyIssue = issues.find((i) => i.field === `${uid}-key`);
@@ -62,6 +64,7 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
     setReason('');
     setIssues([]);
     setConflict(false);
+    setStorageFailed(false);
   };
   const key = { instrumentKey, tradingDate, expectedResolutionRevision: revision };
   // One save at a time: a second would carry the same expected revision, and a late Saved would close the form over newer input.
@@ -78,6 +81,7 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
     report(result);
     setIssues(result.kind === 'Rejected' ? describeMarkIssues(result.issues, uid) : []);
     setConflict(result.kind === 'Conflict');
+    setStorageFailed(result.kind === 'StorageFailure');
     if (result.kind === 'Conflict') {
       setResolution(result.resolution);
       setRevision(result.resolutionRevision);
@@ -119,9 +123,16 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
         </p>
       )}
       {conflict && (
-        <div ref={conflictRef} role="alert" tabIndex={-1} className="banner warning">
+        <div ref={noticeRef} role="alert" tabIndex={-1} className="banner warning">
           <p>
             <strong>This Mark changed after you opened it.</strong> Nothing was saved. The current Mark is shown above, and your values are kept below.
+          </p>
+        </div>
+      )}
+      {storageFailed && (
+        <div ref={noticeRef} role="alert" tabIndex={-1} className="banner warning">
+          <p>
+            <strong>This Mark could not be saved.</strong> Nothing was saved. Your values are kept, so you can try again.
           </p>
         </div>
       )}

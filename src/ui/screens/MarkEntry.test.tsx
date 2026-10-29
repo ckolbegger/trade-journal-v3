@@ -309,4 +309,47 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
     finish(saved({ kind: 'Missing' }, 2, 'Withdrawn'));
     await vi.waitFor(() => expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Enter' }).disabled).toBe(false));
   });
+
+  it('should show that the Mark was not saved, keep the entered values, and allow a retry when the save returns StorageFailure', async () => {
+    const facade = facadeDouble();
+    const save = vi.mocked(facade.MarketData.save);
+    save.mockResolvedValueOnce({ kind: 'StorageFailure', reason: 'QuotaExceededError' } as never);
+    save.mockResolvedValueOnce(saved(mark('52.5'), 1));
+    renderEntry({ kind: 'Missing' }, 'None', { facade });
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Enter' }));
+    await user.type(screen.getByLabelText('Price'), '52.5');
+    await user.click(screen.getByRole('button', { name: 'Save Mark' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toContain('Nothing was saved');
+    expect(document.activeElement).toBe(alert);
+    expect(screen.getByLabelText<HTMLInputElement>('Price').value).toBe('52.5');
+    expect(screen.getByRole('form', { name: 'Enter the Mark' })).toBeTruthy();
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Save Mark' }).disabled).toBe(false);
+
+    await user.click(screen.getByRole('button', { name: 'Save Mark' }));
+    expect(await screen.findByText('$52.50')).toBeTruthy();
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(save).toHaveBeenCalledTimes(2);
+  });
+
+  it('should show that nothing was saved and keep Withdraw available when Withdraw returns StorageFailure', async () => {
+    const facade = facadeDouble();
+    const save = vi.mocked(facade.MarketData.save);
+    save.mockResolvedValueOnce({ kind: 'StorageFailure', reason: 'QuotaExceededError' } as never);
+    save.mockResolvedValueOnce(saved({ kind: 'Missing' }, 2, 'Withdrawn'));
+    renderEntry({ kind: 'AcknowledgedUnavailable', acknowledgment: { versionId: 'a1', kind: 'Asserted', savedAt: '2026-10-12T21:00:00Z' } }, 1, { facade });
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Withdraw' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toContain('Nothing was saved');
+    expect(screen.getByText('Acknowledged Unavailable')).toBeTruthy();
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Withdraw' }).disabled).toBe(false);
+
+    await user.click(screen.getByRole('button', { name: 'Withdraw' }));
+    expect(await screen.findByText('Missing')).toBeTruthy();
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
 });
