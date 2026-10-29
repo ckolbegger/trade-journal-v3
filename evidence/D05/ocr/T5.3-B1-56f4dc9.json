@@ -1,0 +1,82 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 29033,
+    "input_tokens": 28882,
+    "output_tokens": 151,
+    "cache_read_tokens": 7680,
+    "elapsed": "13s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/modules/journal/journal.ts",
+      "files": [
+        "src/modules/journal/journal.ts"
+      ]
+    }
+  ],
+  "session_id": "77d92327-f414-4cf2-b362-dcc69f001bf7",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "77d92327-f414-4cf2-b362-dcc69f001bf7",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "56f4dc9",
+      "resolved_base": "65283578cfcd8ee6133d754befa28eb10d2e8cdc",
+      "resolved_head": "56f4dc94df074fd91710976b048727df15fc6fbb",
+      "exact_range": "65283578cfcd8ee6133d754befa28eb10d2e8cdc..56f4dc94df074fd91710976b048727df15fc6fbb",
+      "source_artifact_sha256": "5ba65ca11c851cd51c3868c66fc4f6aa819c93334354fb3b198727703ce25295"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "39f219dcf8366d303558e7eaadb4001a7d23f04b2c6da2278dcc15bfb045adc7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "39f219dcf8366d303558e7eaadb4001a7d23f04b2c6da2278dcc15bfb045adc7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 13282
+  }
+}

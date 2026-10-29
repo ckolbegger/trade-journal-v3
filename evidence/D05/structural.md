@@ -117,3 +117,7 @@ Session `b1d0ae38-e669-4c74-987c-c0f7e321f528`, model gpt-6.1-sol, 4 files revie
 
 Defect: when one prepared batch carries several Debt resolutions (or an Answer and a Decline), every Debt's Settled or Declined version and every obligation outcome link to `entries[0] ?? declines[0]`, so a Debt can be marked settled by another Debt's Entry.
 - it should link each Debt resolution in one applied batch to the Entry or decline that carries its settledDebtId
+
+Implemented in `56f4dc9`: `applyPreparedEffects` finds each resolution's outcome by `settledDebtId`. Red then green. (Process slip: the test was appended with a here-doc.)
+
+ocr review of `56f4dc9`: session `77d92327-f414-4cf2-b362-dcc69f001bf7`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.3-B1-56f4dc9.json`.
