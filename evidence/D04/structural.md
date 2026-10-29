@@ -1132,3 +1132,5 @@ ocr review of `032eb67` (B8): session `6180f37f-f600-43ae-871e-aac6c3ce7de6` (sc
 
 ### T4.22-B10 One Refresh at a time
 - it should disable the notice's Refresh while a Refresh is in flight, so Save stays disabled until it settles
+
+Interim cumulative run, code at `032eb67` (before B10), 2026-10-29 01:42 EDT: unit 770, integration 50, browser 124; checks 11 of 12 (only `verify:capacity`, expected). `suite-runs/t4.22-b8-*`.
