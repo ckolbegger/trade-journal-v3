@@ -32,6 +32,20 @@ export interface EngineMeasurement {
   readonly bytesPerPositionChange: number;
   readonly bytesPerExecution: number;
   readonly bytesPerPositionChangeReflection: number;
+  // The Review phase (D4): Marks (some corrected), acknowledgments, and Daily Trade Review Actions,
+  // each stored JSON per record and scaled by the phase's own on-disk overhead.
+  readonly marks: number;
+  readonly correctedMarks: number;
+  readonly acknowledgments: number;
+  readonly actions: number;
+  // On-disk bytes per JSON byte over the Review phase (estimate().usage delta / JSON delta).
+  readonly reviewOverheadRatio: number;
+  readonly jsonBytesPerMark: number;
+  readonly jsonBytesPerAcknowledgment: number;
+  readonly jsonBytesPerAction: number;
+  readonly bytesPerMark: number;
+  readonly bytesPerAcknowledgment: number;
+  readonly bytesPerAction: number;
 }
 
 // Measured kinds and their mature counts (D1 plan, section 1.3). Executions stand in for the
@@ -43,15 +57,17 @@ export const MEASURED = {
   positionChanges: 100_000,
   executions: 200_000,
   positionChangeReflectionOutcomes: 100_000,
+  // Replaced the D1 allowances in D4 (T4.28): the Mark count includes corrections. Acknowledgments
+  // have no mature count in the profile, so they are measured and recorded but not projected.
+  marks: 190_000,
+  dailyTradeReviewActions: 126_000,
 } as const;
 
 // Kinds that do not exist yet: count × estimated JSON bytes from the planned shape, scaled by the
 // measured overhead ratio. Each schema-changing deliverable replaces its allowance.
 export const ALLOWANCES = [
   { kind: 'Close Review outcomes', count: 24_700, jsonBytes: 1_200, until: 'D6', shape: 'review answers and grades' },
-  { kind: 'Daily Trade Review Actions', count: 126_000, jsonBytes: 350, until: 'D4', shape: 'action kind, session, short note' },
   { kind: 'Review Notes and Trader Reflections', count: 5_000, jsonBytes: 1_500, until: 'D13', shape: 'free text' },
-  { kind: 'Marks', count: 190_000, jsonBytes: 180, until: 'D4', shape: 'instrument, session, price, source' },
   { kind: 'Daily Bars', count: 190_000, jsonBytes: 220, until: 'D11', shape: 'instrument, session, OHLC, volume' },
   { kind: 'Correction versions', count: 4_000, jsonBytes: 700, until: 'D15', shape: 'superseded fact copy and reason' },
 ] as const;
@@ -67,7 +83,9 @@ export function project(m: EngineMeasurement): Projection {
     MEASURED.catalogRecords * m.jsonBytesPerCatalogRecord * m.overheadRatio +
     MEASURED.positionChanges * m.bytesPerPositionChange +
     MEASURED.executions * m.bytesPerExecution +
-    MEASURED.positionChangeReflectionOutcomes * m.bytesPerPositionChangeReflection;
+    MEASURED.positionChangeReflectionOutcomes * m.bytesPerPositionChangeReflection +
+    MEASURED.marks * m.bytesPerMark +
+    MEASURED.dailyTradeReviewActions * m.bytesPerAction;
   const allowed = ALLOWANCES.reduce((sum, a) => sum + a.count * a.jsonBytes * m.overheadRatio, 0);
   const projectedWorkspaceBytes = Math.ceil(measured + allowed);
   return { projectedWorkspaceBytes, requiredQuotaBytes: 3 * projectedWorkspaceBytes };

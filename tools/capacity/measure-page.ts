@@ -1,10 +1,12 @@
 // Runs in the browser under `measure:capacity`: confirms deterministic Plans, then opens some of
-// them with Position Changes (D2 plan, section 1.3), through the production application facade
-// on the engine's real IndexedDB, and reports the storage growth of each phase.
+// them with Position Changes (D2 plan, section 1.3), then adds Marks, acknowledgments and Daily
+// Trade Review Actions (D4 T4.28), through the production application facade on the engine's
+// real IndexedDB, and reports the storage growth of each phase.
 // Readiness inputs come from NodeTestHost (no service worker here); storage is the real engine's.
 import { createApplication } from '../../src/app/compose.ts';
 import { createWebLocksLifecycleLock } from '../../src/persistence/index.ts';
 import { randomIds } from '../../src/app/system.ts';
+import { nyseSessionPolicy } from '../../src/domain/session-policy/index.ts';
 import { fixedClock } from '../../src/domain/time/index.ts';
 import { nodeTestHost } from '../../tests/support/node-test-host.ts';
 
@@ -57,7 +59,131 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 2_000));
 // of each on average), and about 80% of the reflections are Entries and 20% declines.
 const PATTERN = [1, 2, 3, 2] as const;
 
+// Review phase (T4.28): 200 real sessions × the 10 Instruments the Open Trades hold = 2,000 Marks, 1%
+// corrected; 10 earlier sessions × the 10 Instruments = 100 acknowledgments; and 10 Review Dates ×
+// the 200 Open Trades = 2,000 Actions, 85% Hold and 15% Exit, Roll or Adjust with an Intent.
+const MARK_SESSIONS = 200;
+const ACK_SESSIONS = 10;
+const REVIEW_DATES = 10;
+const REVIEW_FROM = '2026-02-02';
+// The last completed session the pinned clock allows; Marks and Review Dates all fall on or before it.
+const LAST_SESSION = '2026-10-09';
+const CORRECTED_EVERY = 100;
+const ACTIONS = ['Exit', 'Roll', 'Adjust'] as const;
+
 const usage = async () => (await navigator.storage.estimate()).usage ?? 0;
+
+type Application = Awaited<ReturnType<typeof createApplication>>;
+
+async function measureReviewPhase(app: Application, workspace: string, openTrades: number) {
+  const covered = nyseSessionPolicy.sessionsBetween('2025-11-01', LAST_SESSION);
+  if (!covered.ok) throw new Error('sessions not covered');
+  const sessions = covered.value.map((s) => s.date).slice(-(MARK_SESSIONS + ACK_SESSIONS));
+  const ackDates = sessions.slice(0, ACK_SESSIONS);
+  const markDates = sessions.slice(ACK_SESSIONS);
+  const reviewDates = markDates.filter((d) => d >= REVIEW_FROM).slice(0, REVIEW_DATES);
+  if (markDates.length !== MARK_SESSIONS || reviewDates.length !== REVIEW_DATES) throw new Error('too few sessions');
+
+  const usageBefore = await usage();
+  const observationsBefore = await storeRecords(workspace, 'observations');
+  const journalBefore = await reflectionJsonBytes(workspace);
+
+  let marks = 0;
+  let corrected = 0;
+  for (const tradingDate of markDates) {
+    for (const [s, symbol] of SYMBOLS.entries()) {
+      const n = marks++;
+      const price = `${40 + (s % 160)}.${String(10 + (n % 90)).padStart(2, '0')}`;
+      const saved = await app.MarketData.save({
+        intention: 'RecordInitialManualMark',
+        instrumentKey: symbol,
+        tradingDate,
+        expectedResolutionRevision: 'None',
+        price,
+      });
+      if (saved.kind !== 'Saved') throw new Error(`mark ${symbol} ${tradingDate}: ${saved.kind}`);
+      if (n % CORRECTED_EVERY === 0) {
+        const fix = await app.MarketData.save({
+          intention: 'CorrectMark',
+          instrumentKey: symbol,
+          tradingDate,
+          expectedResolutionRevision: saved.resolutionRevision,
+          price: `${40 + (s % 160)}.${String(10 + ((n + 1) % 90)).padStart(2, '0')}`,
+          reason: 'Keyed the wrong digit from the broker statement.',
+        });
+        if (fix.kind !== 'Saved') throw new Error(`correction ${symbol} ${tradingDate}: ${fix.kind}`);
+        corrected++;
+      }
+    }
+  }
+  const observationsAfterMarks = await storeRecords(workspace, 'observations');
+
+  let acknowledgments = 0;
+  for (const tradingDate of ackDates) {
+    for (const symbol of SYMBOLS) {
+      acknowledgments++;
+      const saved = await app.MarketData.save({
+        intention: 'AssertUnavailable',
+        instrumentKey: symbol,
+        tradingDate,
+        expectedResolutionRevision: 'None',
+        reason: 'No quote available from my broker that day.',
+      });
+      if (saved.kind !== 'Saved') throw new Error(`acknowledgment ${symbol} ${tradingDate}: ${saved.kind}`);
+    }
+  }
+  const observationsAfter = await storeRecords(workspace, 'observations');
+  const journalBeforeActions = await reflectionJsonBytes(workspace);
+
+  let actions = 0;
+  for (const date of reviewDates) {
+    const opened = await app.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: `${date}T23:30:00Z` });
+    if (opened.kind !== 'Ready' || opened.reviewDate !== date) throw new Error(`open ${date}: ${opened.kind}`);
+    const trades = opened.families.flatMap((f) => (f.family === 'Trades' ? f.trades : []));
+    if (trades.length !== openTrades) throw new Error(`${date}: ${trades.length} eligible Trades, expected ${openTrades}`);
+    let binding = opened.binding;
+    for (const item of trades) {
+      const n = actions++;
+      const form = await app.DailyReview.getTrade({ reviewDate: date, tradeId: item.tradeId, binding });
+      if (form.kind !== 'Ready') throw new Error(`getTrade ${date}: ${form.kind}`);
+      const choice = n % 20 < 3 ? ACTIONS[n % 20] : undefined;
+      const saved = await app.DailyReview.save({
+        kind: 'SaveTradeAction',
+        binding: form.trade.saveBinding,
+        action: choice ?? 'Hold',
+        ...(choice && { intent: `Cut the ${item.underlying} exposure if the next close is below the stop; action ${n}.` }),
+      });
+      if (saved.kind !== 'Saved') throw new Error(`save ${date}: ${saved.kind}`);
+      if (saved.review.kind === 'Ready') binding = saved.review.binding;
+    }
+  }
+  await settle();
+  const usageAfter = await usage();
+  const observationsEnd = await storeRecords(workspace, 'observations');
+  const journalAfter = await reflectionJsonBytes(workspace);
+
+  const markRecordBytes = jsonBytes(observationsAfterMarks) - jsonBytes(observationsBefore);
+  const ackRecordBytes = jsonBytes(observationsAfter) - jsonBytes(observationsAfterMarks);
+  const actionBytes = journalAfter - journalBeforeActions;
+  const reviewOverheadRatio =
+    (usageAfter - usageBefore) / (jsonBytes(observationsEnd) - jsonBytes(observationsBefore) + journalAfter - journalBefore);
+  const jsonBytesPerMark = markRecordBytes / marks;
+  const jsonBytesPerAcknowledgment = ackRecordBytes / acknowledgments;
+  const jsonBytesPerAction = actionBytes / actions;
+  return {
+    marks,
+    correctedMarks: corrected,
+    acknowledgments,
+    actions,
+    reviewOverheadRatio,
+    jsonBytesPerMark,
+    jsonBytesPerAcknowledgment,
+    jsonBytesPerAction,
+    bytesPerMark: jsonBytesPerMark * reviewOverheadRatio,
+    bytesPerAcknowledgment: jsonBytesPerAcknowledgment * reviewOverheadRatio,
+    bytesPerAction: jsonBytesPerAction * reviewOverheadRatio,
+  };
+}
 
 async function measure(plans: number, openTrades: number) {
   const testHost = await nodeTestHost(indexedDB);
@@ -203,7 +329,9 @@ async function measure(plans: number, openTrades: number) {
   const jsonBytesPerPositionChange = (tradesOpen.bytes - trades.bytes - (executions.bytes - executionsBefore.bytes)) / positionChanges;
   const jsonBytesPerPositionChangeReflection = (reflectionAfter - journal) / positionChanges;
   const positionChangeOverheadRatio = (afterOpen - after) / (tradesOpen.bytes - trades.bytes + reflectionAfter - journal);
+  const review = await measureReviewPhase(app, workspace, openTrades);
   return {
+    ...review,
     plans,
     usageBefore: before,
     usageAfter: after,

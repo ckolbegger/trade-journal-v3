@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 2,
-  "measuredAt": "2026-10-21T18:40:46.495Z",
+  "schemaVersion": 3,
+  "measuredAt": "2026-10-29T07:13:03.147Z",
   "formula": "requiredQuotaBytes = 3 × projectedWorkspaceBytes (M); M = measured kinds + allowances × overheadRatio, largest engine",
   "profile": {
     "measured": {
@@ -8,7 +8,9 @@
       "catalogRecords": 60,
       "positionChanges": 100000,
       "executions": 200000,
-      "positionChangeReflectionOutcomes": 100000
+      "positionChangeReflectionOutcomes": 100000,
+      "marks": 190000,
+      "dailyTradeReviewActions": 126000
     },
     "allowances": [
       {
@@ -19,25 +21,11 @@
         "shape": "review answers and grades"
       },
       {
-        "kind": "Daily Trade Review Actions",
-        "count": 126000,
-        "jsonBytes": 350,
-        "until": "D4",
-        "shape": "action kind, session, short note"
-      },
-      {
         "kind": "Review Notes and Trader Reflections",
         "count": 5000,
         "jsonBytes": 1500,
         "until": "D13",
         "shape": "free text"
-      },
-      {
-        "kind": "Marks",
-        "count": 190000,
-        "jsonBytes": 180,
-        "until": "D4",
-        "shape": "instrument, session, price, source"
       },
       {
         "kind": "Daily Bars",
@@ -59,28 +47,39 @@
     {
       "engine": "chromium",
       "version": "153.0.8010.12",
+      "marks": 2000,
+      "correctedMarks": 20,
+      "acknowledgments": 100,
+      "actions": 2000,
+      "reviewOverheadRatio": 1.477312189192619,
+      "jsonBytesPerMark": 420.5725,
+      "jsonBytesPerAcknowledgment": 370.1,
+      "jsonBytesPerAction": 1306.276,
+      "bytesPerMark": 621.3168806892128,
+      "bytesPerAcknowledgment": 546.7532412201883,
+      "bytesPerAction": 1929.7774572497779,
       "plans": 500,
-      "usageBefore": 147456,
-      "usageAfter": 1986560,
-      "bytesPerTradeWithReflection": 3678.208,
+      "usageBefore": 155648,
+      "usageAfter": 1978368,
+      "bytesPerTradeWithReflection": 3645.44,
       "jsonBytesPerTradeWithReflection": 2501.43,
-      "overheadRatio": 1.4704421071147304,
+      "overheadRatio": 1.457342400147116,
       "jsonBytesPerCatalogRecord": 237.33333333333334,
       "openTrades": 200,
       "positionChanges": 400,
       "executions": 800,
       "reflectionEntries": 320,
       "reflectionDeclines": 80,
-      "usageAfterOpen": 2985984,
-      "positionChangeOverheadRatio": 1.0319106098182997,
-      "jsonBytesPerPositionChange": 449.255,
+      "usageAfterOpen": 2998272,
+      "positionChangeOverheadRatio": 1.0446432412390225,
+      "jsonBytesPerPositionChange": 468.755,
       "jsonBytesPerExecution": 366.95,
       "jsonBytesPerPositionChangeReflection": 1238.14,
-      "bytesPerPositionChange": 463.5910010139202,
-      "bytesPerExecution": 378.65959827282506,
-      "bytesPerPositionChangeReflection": 1277.6498024404298
+      "bytesPerPositionChange": 489.681742546998,
+      "bytesPerExecution": 383.3318373726593,
+      "bytesPerPositionChangeReflection": 1293.4145827076834
     }
   ],
-  "projectedWorkspaceBytes": 577161694,
-  "requiredQuotaBytes": 1731485082
+  "projectedWorkspaceBytes": 826458088,
+  "requiredQuotaBytes": 2479374264
 }

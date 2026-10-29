@@ -1,5 +1,6 @@
 // npm run measure:capacity [engine...]: measures storage per Trade with its Plan Reflection, and
-// per Position Change, Execution, and Position Change Reflection outcome (D2 T2.18), in each engine (default chromium; RC adds firefox and webkit) and rewrites the capacity basis
+// per Position Change, Execution, and Position Change Reflection outcome (D2 T2.18), and per Mark,
+// acknowledgment, and Daily Trade Review Action (D4 T4.28), in each engine (default chromium; RC adds firefox and webkit) and rewrites the capacity basis
 // with the largest projection (D1 T1.19, decision 18).
 import { readFile, writeFile } from 'node:fs/promises';
 import { chromium, firefox, webkit } from '@playwright/test';
