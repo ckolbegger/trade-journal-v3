@@ -1503,3 +1503,9 @@ Notes: all six cases passed on first run (behavior from earlier D4 tasks) and ca
 | `63650c8` | `review.cases.ts:2`: files not collected | Wrong: the review's scratch rename | dismissed |
 | `63650c8` | `eligibility.test.ts:37`: nested ternary | Valid but cosmetic, no failure scenario | dismissed |
 | `63650c8` | I4.10: index equality would hold if `rebuildPrivateState` did nothing | Wrong: rebuild drops and recreates the indexes; the T4.32 part 3 mutation (no `createWorkspaceIndexes`) failed with `NotFoundError`, so the case does prove the rebuild writes them | dismissed |
+
+### Cumulative run after T4.32
+
+- code at `63650c8`, 2026-10-29 06:28 EDT: unit 800, integration 73, browser 124; checks 12 of 12. `suite-runs/t4.32-*`.
+
+Fully green: every section 6.1 case of D1, D2 and D4 passes. T4.32 is complete.
