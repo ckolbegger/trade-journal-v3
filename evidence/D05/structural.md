@@ -100,3 +100,20 @@ Run 2026-10-29 19:01 EDT on commit `fb9b8b3`, Node v26.12.0.
 | Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.2-defer-creates-debt-checks.txt` |
 
 Failure: `verify:capacity` only — expected until T5.19.
+
+## T5.3 Journal: Debt resolution
+
+Implementation commit `ce6d64f`. Nine planned cases red then green, plus one added case (ADR 0011 counter retry: retried when only the Journal counter moves, up to 3 attempts, then Conflict with nothing resolved), red first. **First-run pass, flagged:** "validate the answers against the Debt snapshot revision" passed first because the Answer case already reads the Debt's own definition revision; mutation (read the Entry Type's latest revision instead) failed with an assertion, logged in `tdd-log.md`. The A74 definition-revision fixture writer is `tests/support/definition-revision.ts` (Reactive relabelled "Impulsive", one required Text prompt "Lesson" added; id `fixture-position-change-reflection-2`). Apply binds `obligation@<key>:<debtId>` and `debt@<debtId>:<expectedRevision>` as subject bindings; `Journal.save` adds the Journal counter binding. The mutation-boundary readiness recheck is the facade's guard (T5.13); the module returns `commit`'s `RuntimeNotWritable`. **Process slip:** two here-doc appends (one to the test file, one to the log) against the Edit-only rule; text as intended.
+
+### ocr review of `ce6d64f`
+
+Session `b1d0ae38-e669-4c74-987c-c0f7e321f528`, model gpt-6.1-sol, 4 files reviewed, 1 comment. Raw output: `ocr/T5.3-ce6d64f.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/modules/journal/journal.ts:767` | Each Debt resolution links to the batch's first Entry or decline, not its own outcome | Doubtful (one resolution per prepared batch today; wrong when a batch carries several) | Bug task T5.3-B1 |
+
+### T5.3-B1 Each resolution links its own outcome
+
+Defect: when one prepared batch carries several Debt resolutions (or an Answer and a Decline), every Debt's Settled or Declined version and every obligation outcome link to `entries[0] ?? declines[0]`, so a Debt can be marked settled by another Debt's Entry.
+- it should link each Debt resolution in one applied batch to the Entry or decline that carries its settledDebtId
