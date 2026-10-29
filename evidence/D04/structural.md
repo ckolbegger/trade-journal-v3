@@ -1469,3 +1469,15 @@ I4.6 (`review-shared-mark.test.ts`, so `d4/review` selects it; part 3 adds `revi
 ### T4.32-B4
 - ocr finding on 209ae80: the I4.18 loops `[x.app, await restart(x.app, x.d)]` closed the first application before its pass read it. I4.18 now reads and asserts on `x.app` first, then restarts and runs the same assertions on the restarted app (`check` and `checkMissing`). A temporary close-flag probe confirmed the first read happens on an open application (passes new order, fails old order); removed. No other D4 integration file uses the pattern.
 - `npm run test:integration`: 35 files, 67 tests passed. typecheck, tsc6, lint, lint:deps: exit 0.
+
+### ocr review of T4.32 parts 1 and 2 and their bug tasks
+
+| Commit | Finding | Assessment | Outcome |
+|---|---|---|---|
+| `fff0fc0` | `responses.test.ts:54`: I4.5 asserts the corrected figures on the Open list only, not the Detail | Valid | Fixed by T4.32-B1 (`cedb2de`) |
+| `fff0fc0` | `value-trade.test.ts:38-40`: after PC3 only the Open list is checked | Valid | Fixed by T4.32-B2 (`c76981b`) |
+| `fff0fc0` | `.chk.ts` files not discovered | Wrong: the review's scratch rename | dismissed |
+| `209ae80` | `policy-revision.test.ts:54-55`: "frames skip it" asserted only for the Current resolution | Valid | Fixed by T4.32-B3 (`877f563`) |
+| `209ae80` | `intraday.test.ts:36,53`: the "before restart" pass runs after `restart` closes the app | Doubtful, with a failure scenario | Fixed by T4.32-B4 (`6953021`) |
+| `209ae80` | `policy-revision.test.ts`: Tuesday 17:00 where the row says Wednesday 17:00 | Doubtful: the row's literal clock cannot give 2026-10-12 (Wednesday is itself a completed session); a plan wording issue | for the user |
+| `cedb2de`, `c76981b`, `877f563` | none beyond scratch-rename artifacts | | clean |
