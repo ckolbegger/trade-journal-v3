@@ -1,6 +1,6 @@
 export { createJournal, prepareJournalSeed, type GetDefinitionsRequest, type GetDefinitionsResult, type Journal, type PreparedJournalSeed, type JournalDeps, type SeedJournalResult, type JournalSaveResult, type PrepareResolveDebtResult } from './journal.ts';
 export { validateSection, type JournalSectionIssue, type JournalSectionValidation } from './section.ts';
-export { D1_JOURNAL_MANIFEST, D2_JOURNAL_MANIFEST, D3_JOURNAL_MANIFEST, type JournalSeedManifest } from './manifest.ts';
+export { D1_JOURNAL_MANIFEST, D2_JOURNAL_MANIFEST, D3_JOURNAL_MANIFEST, D4_JOURNAL_MANIFEST, type JournalSeedManifest } from './manifest.ts';
 export type { EntryDefinitionRecord, JournalSnapshot, JournalTypeRecord, PromptDefinition, PromptOption, PromptRole } from './records.ts';
 export type {
   AnswerInput,

@@ -130,3 +130,10 @@ export const D3_JOURNAL_MANIFEST: JournalSeedManifest = {
   ],
   sources: [...D2_JOURNAL_MANIFEST.sources, { productKey: 'source.daily-review', label: 'Daily Review' }],
 };
+
+// D5 adds the Trade Detail Source, where a Debt is resolved from a Trade (P17).
+export const D4_JOURNAL_MANIFEST: JournalSeedManifest = {
+  version: 4,
+  entryTypes: D3_JOURNAL_MANIFEST.entryTypes,
+  sources: [...D3_JOURNAL_MANIFEST.sources, { productKey: 'source.trade-detail', label: 'Trade Detail' }],
+};
