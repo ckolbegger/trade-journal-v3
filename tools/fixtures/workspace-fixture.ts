@@ -122,7 +122,9 @@ function normalize(value: unknown): unknown {
 // The normalized views the release that froze a fixture of this schema version presented: the
 // Planned list (and from schema 2 the Open list) and every listed Trade's Detail. Bindings are opaque
 // revision tokens and omitted.
-export async function viewsOf(app: Pick<Application, 'TradeViewsAndReporting'>, schemaVersion: number): Promise<unknown> {
+// From schema 3 it adds the Daily Review (D4 T4.29): its overview and each eligible Trade's Action form,
+// without their bindings, which are opaque revision tokens like the views' own.
+export async function viewsOf(app: Pick<Application, 'TradeViewsAndReporting'> & Partial<Pick<Application, 'DailyReview'>>, schemaVersion: number, asOf?: string): Promise<unknown> {
   const planned = await app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Planned' });
   if (planned.kind !== 'Ready') throw new Error(`browseTrades Planned: ${planned.kind}`);
   const open = schemaVersion >= 2 ? await app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Open' }) : undefined;
@@ -133,5 +135,24 @@ export async function viewsOf(app: Pick<Application, 'TradeViewsAndReporting'>, 
     if (detail.kind !== 'Ready') throw new Error(`getTradeDetail ${item.tradeId}: ${detail.kind}`);
     details.push(detail.view);
   }
-  return normalize(open ? { planned: planned.view.items, open: open.view.items, details } : { planned: planned.view.items, details });
+  const lists = open ? { planned: planned.view.items, open: open.view.items, details } : { planned: planned.view.items, details };
+  if (schemaVersion < 3) return normalize(lists);
+  if (!app.DailyReview || asOf === undefined) throw new Error('viewsOf: schema 3 needs DailyReview and the as-of instant');
+  return normalize({ ...lists, ...(await reviewViews(app.DailyReview, asOf)) });
+}
+
+async function reviewViews(dailyReview: Application['DailyReview'], asOf: string) {
+  const opened = await dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf });
+  if (opened.kind !== 'Ready') throw new Error(`DailyReview.open: ${opened.kind}`);
+  const { binding, ...review } = opened;
+  const trades = [];
+  for (const family of opened.families) {
+    if (family.family !== 'Trades') continue;
+    for (const item of family.trades) {
+      const form = await dailyReview.getTrade({ reviewDate: opened.reviewDate, tradeId: item.tradeId, binding });
+      if (form.kind !== 'Ready') throw new Error(`DailyReview.getTrade ${item.tradeId}: ${form.kind}`);
+      trades.push({ ...form.trade, saveBinding: undefined });
+    }
+  }
+  return { review, reviewTrades: trades };
 }

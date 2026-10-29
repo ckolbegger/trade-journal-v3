@@ -1,0 +1,4067 @@
+{
+  "planned": [
+    {
+      "tradeId": "fx-0035",
+      "underlying": "BRK.B",
+      "strategy": "Long Stock",
+      "account": "Individual",
+      "institution": "Fidelity",
+      "planTime": "2026-10-16T19:20:00Z",
+      "oneR": "1175/4",
+      "originalPlannedReward": "2675/4",
+      "rewardRiskRatio": "107/47",
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": "25/1",
+        "price": "1851/4"
+      },
+      "entryReadiness": "Awaiting entry"
+    },
+    {
+      "tradeId": "fx-0029",
+      "underlying": "COST",
+      "strategy": "Long Stock",
+      "account": "Roth IRA",
+      "institution": "Fidelity",
+      "planTime": "2026-10-15T16:10:00Z",
+      "oneR": "250/1",
+      "originalPlannedReward": "550/1",
+      "rewardRiskRatio": "11/5",
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": "10/1",
+        "price": "905/1"
+      },
+      "entryReadiness": "Awaiting entry"
+    },
+    {
+      "tradeId": "fx-0023",
+      "underlying": "NVDA",
+      "strategy": "Long Stock",
+      "account": "Brokerage",
+      "institution": "Charles Schwab",
+      "planTime": "2026-10-14T13:45:00Z",
+      "oneR": "774/1",
+      "originalPlannedReward": "2238/1",
+      "rewardRiskRatio": "373/129",
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": "120/1",
+        "price": "525/4"
+      },
+      "entryReadiness": "Awaiting entry"
+    },
+    {
+      "tradeId": "fx-0017",
+      "underlying": "MSFT",
+      "strategy": "Long Stock",
+      "account": "Individual",
+      "institution": "Fidelity",
+      "planTime": "2026-10-13T15:30:00Z",
+      "oneR": "378/1",
+      "originalPlannedReward": "747/1",
+      "rewardRiskRatio": "83/42",
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": "30/1",
+        "price": "4151/10"
+      },
+      "entryReadiness": "Awaiting entry"
+    },
+    {
+      "tradeId": "fx-0011",
+      "underlying": "AAPL",
+      "strategy": "Long Stock",
+      "account": "Roth IRA",
+      "institution": "Fidelity",
+      "planTime": "2026-10-12T14:00:00Z",
+      "oneR": "370/1",
+      "originalPlannedReward": "830/1",
+      "rewardRiskRatio": "83/37",
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": "50/1",
+        "price": "1142/5"
+      },
+      "entryReadiness": "Awaiting entry"
+    }
+  ],
+  "open": [
+    {
+      "tradeId": "fx-0041",
+      "underlying": "CSCO",
+      "strategy": "Long Stock",
+      "account": "Roth IRA",
+      "institution": "Fidelity",
+      "openQuantity": "120/1",
+      "plannedQuantity": "100/1",
+      "averageOpenCost": {
+        "kind": "Value",
+        "value": "3019/60"
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": "120/1",
+        "price": "3019/60"
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": "6041/1"
+      },
+      "incurredFees": "3/1",
+      "entryStatus": "Resolved",
+      "deviationCount": 1,
+      "integrity": "Agrees",
+      "lastActivity": "2026-10-12T18:00:00Z",
+      "current": {
+        "expectedMarkDate": "2026-10-19",
+        "markResolution": {
+          "kind": "Available",
+          "mark": {
+            "revisionId": "fx-0079",
+            "revisionNumber": 1,
+            "price": "51.6",
+            "source": "Manual",
+            "savedAt": "2026-10-19T21:00:00Z"
+          }
+        },
+        "remainingOpenPnl": {
+          "kind": "Value",
+          "value": "151/1"
+        },
+        "currentMarkedPnl": {
+          "kind": "Value",
+          "value": "151/1"
+        },
+        "currentMarkedPnlInPlanR": {
+          "kind": "Value",
+          "value": "151/250"
+        },
+        "ongoingRiskToStop": {
+          "kind": "Value",
+          "value": "492/1"
+        },
+        "ongoingRiskToStopInPlanR": {
+          "kind": "Value",
+          "value": "246/125"
+        },
+        "worstCaseOngoingRisk": {
+          "kind": "Value",
+          "value": "6192/1"
+        },
+        "worstCaseOngoingRiskInPlanR": {
+          "kind": "Value",
+          "value": "3096/125"
+        },
+        "incrementalRewardToTarget": {
+          "kind": "Value",
+          "value": "528/1"
+        },
+        "incrementalRewardToTargetInPlanR": {
+          "kind": "Value",
+          "value": "264/125"
+        },
+        "maximumIncrementalReward": {
+          "kind": "Unbounded",
+          "direction": "Above",
+          "explanation": "A long Stock Position has no price ceiling"
+        },
+        "conditions": [
+          {
+            "id": "stop-1",
+            "role": "Stop",
+            "kind": "UnderlyingPrice",
+            "boundary": "47.5",
+            "result": {
+              "kind": "Value",
+              "value": {
+                "status": "Active",
+                "distance": {
+                  "dollars": "492/1",
+                  "planR": "246/125"
+                },
+                "overrun": null,
+                "evidence": {
+                  "instrument": {
+                    "kind": "Stock",
+                    "symbol": "CSCO"
+                  },
+                  "date": "2026-10-19",
+                  "mark": {
+                    "revisionId": "fx-0079",
+                    "revisionNumber": 1,
+                    "price": "51.6",
+                    "source": "Manual",
+                    "savedAt": "2026-10-19T21:00:00Z"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "target-1",
+            "role": "Target",
+            "kind": "UnderlyingPrice",
+            "boundary": "56",
+            "result": {
+              "kind": "Value",
+              "value": {
+                "status": "Active",
+                "distance": {
+                  "dollars": "528/1",
+                  "planR": "264/125"
+                },
+                "overrun": null,
+                "evidence": {
+                  "instrument": {
+                    "kind": "Stock",
+                    "symbol": "CSCO"
+                  },
+                  "date": "2026-10-19",
+                  "mark": {
+                    "revisionId": "fx-0079",
+                    "revisionNumber": 1,
+                    "price": "51.6",
+                    "source": "Manual",
+                    "savedAt": "2026-10-19T21:00:00Z"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "atEntry": null
+      }
+    },
+    {
+      "tradeId": "fx-0057",
+      "underlying": "KO",
+      "strategy": "Long Stock",
+      "account": "Individual",
+      "institution": "Fidelity",
+      "openQuantity": "100/1",
+      "plannedQuantity": "100/1",
+      "averageOpenCost": {
+        "kind": "Value",
+        "value": "2509/50"
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": "100/1",
+        "price": "2509/50"
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": "5020/1"
+      },
+      "incurredFees": "2/1",
+      "entryStatus": "Resolved",
+      "deviationCount": 0,
+      "integrity": "Agrees",
+      "lastActivity": "2026-10-12T15:00:00Z",
+      "current": {
+        "expectedMarkDate": "2026-10-19",
+        "markResolution": {
+          "kind": "Available",
+          "mark": {
+            "revisionId": "fx-0081",
+            "revisionNumber": 2,
+            "price": "49.5",
+            "source": "Manual",
+            "savedAt": "2026-10-19T21:00:00Z",
+            "correctionReason": "Keyed the wrong digit from the broker statement."
+          }
+        },
+        "remainingOpenPnl": {
+          "kind": "Value",
+          "value": "-70/1"
+        },
+        "currentMarkedPnl": {
+          "kind": "Value",
+          "value": "-70/1"
+        },
+        "currentMarkedPnlInPlanR": {
+          "kind": "Value",
+          "value": "-7/25"
+        },
+        "ongoingRiskToStop": {
+          "kind": "Value",
+          "value": "200/1"
+        },
+        "ongoingRiskToStopInPlanR": {
+          "kind": "Value",
+          "value": "4/5"
+        },
+        "worstCaseOngoingRisk": {
+          "kind": "Value",
+          "value": "4950/1"
+        },
+        "worstCaseOngoingRiskInPlanR": {
+          "kind": "Value",
+          "value": "99/5"
+        },
+        "incrementalRewardToTarget": {
+          "kind": "Value",
+          "value": "650/1"
+        },
+        "incrementalRewardToTargetInPlanR": {
+          "kind": "Value",
+          "value": "13/5"
+        },
+        "maximumIncrementalReward": {
+          "kind": "Unbounded",
+          "direction": "Above",
+          "explanation": "A long Stock Position has no price ceiling"
+        },
+        "conditions": [
+          {
+            "id": "stop-1",
+            "role": "Stop",
+            "kind": "UnderlyingPrice",
+            "boundary": "47.5",
+            "result": {
+              "kind": "Value",
+              "value": {
+                "status": "Active",
+                "distance": {
+                  "dollars": "200/1",
+                  "planR": "4/5"
+                },
+                "overrun": null,
+                "evidence": {
+                  "instrument": {
+                    "kind": "Stock",
+                    "symbol": "KO"
+                  },
+                  "date": "2026-10-19",
+                  "mark": {
+                    "revisionId": "fx-0081",
+                    "revisionNumber": 2,
+                    "price": "49.5",
+                    "source": "Manual",
+                    "savedAt": "2026-10-19T21:00:00Z",
+                    "correctionReason": "Keyed the wrong digit from the broker statement."
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "target-1",
+            "role": "Target",
+            "kind": "UnderlyingPrice",
+            "boundary": "56",
+            "result": {
+              "kind": "Value",
+              "value": {
+                "status": "Active",
+                "distance": {
+                  "dollars": "650/1",
+                  "planR": "13/5"
+                },
+                "overrun": null,
+                "evidence": {
+                  "instrument": {
+                    "kind": "Stock",
+                    "symbol": "KO"
+                  },
+                  "date": "2026-10-19",
+                  "mark": {
+                    "revisionId": "fx-0081",
+                    "revisionNumber": 2,
+                    "price": "49.5",
+                    "source": "Manual",
+                    "savedAt": "2026-10-19T21:00:00Z",
+                    "correctionReason": "Keyed the wrong digit from the broker statement."
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "atEntry": null
+      }
+    },
+    {
+      "tradeId": "fx-0069",
+      "underlying": "PFE",
+      "strategy": "Long Stock",
+      "account": "Brokerage",
+      "institution": "Charles Schwab",
+      "openQuantity": "60/1",
+      "plannedQuantity": "100/1",
+      "averageOpenCost": {
+        "kind": "Value",
+        "value": "501/10"
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": "60/1",
+        "price": "501/10"
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": "3007/1"
+      },
+      "incurredFees": "1/1",
+      "entryStatus": "Entering",
+      "deviationCount": 0,
+      "integrity": "Agrees",
+      "lastActivity": "2026-10-12T14:00:00Z",
+      "current": {
+        "expectedMarkDate": "2026-10-19",
+        "markResolution": {
+          "kind": "Available",
+          "mark": {
+            "revisionId": "fx-0082",
+            "revisionNumber": 1,
+            "price": "47.9",
+            "source": "Manual",
+            "savedAt": "2026-10-19T21:00:00Z"
+          }
+        },
+        "remainingOpenPnl": {
+          "kind": "Value",
+          "value": "-133/1"
+        },
+        "currentMarkedPnl": {
+          "kind": "Value",
+          "value": "-133/1"
+        },
+        "currentMarkedPnlInPlanR": {
+          "kind": "Value",
+          "value": "-133/250"
+        },
+        "ongoingRiskToStop": {
+          "kind": "Value",
+          "value": "24/1"
+        },
+        "ongoingRiskToStopInPlanR": {
+          "kind": "Value",
+          "value": "12/125"
+        },
+        "worstCaseOngoingRisk": {
+          "kind": "Value",
+          "value": "2874/1"
+        },
+        "worstCaseOngoingRiskInPlanR": {
+          "kind": "Value",
+          "value": "1437/125"
+        },
+        "incrementalRewardToTarget": {
+          "kind": "Value",
+          "value": "486/1"
+        },
+        "incrementalRewardToTargetInPlanR": {
+          "kind": "Value",
+          "value": "243/125"
+        },
+        "maximumIncrementalReward": {
+          "kind": "Unbounded",
+          "direction": "Above",
+          "explanation": "A long Stock Position has no price ceiling"
+        },
+        "conditions": [
+          {
+            "id": "stop-1",
+            "role": "Stop",
+            "kind": "UnderlyingPrice",
+            "boundary": "47.5",
+            "result": {
+              "kind": "Value",
+              "value": {
+                "status": "Active",
+                "distance": {
+                  "dollars": "24/1",
+                  "planR": "12/125"
+                },
+                "overrun": null,
+                "evidence": {
+                  "instrument": {
+                    "kind": "Stock",
+                    "symbol": "PFE"
+                  },
+                  "date": "2026-10-19",
+                  "mark": {
+                    "revisionId": "fx-0082",
+                    "revisionNumber": 1,
+                    "price": "47.9",
+                    "source": "Manual",
+                    "savedAt": "2026-10-19T21:00:00Z"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "target-1",
+            "role": "Target",
+            "kind": "UnderlyingPrice",
+            "boundary": "56",
+            "result": {
+              "kind": "Value",
+              "value": {
+                "status": "Active",
+                "distance": {
+                  "dollars": "486/1",
+                  "planR": "243/125"
+                },
+                "overrun": null,
+                "evidence": {
+                  "instrument": {
+                    "kind": "Stock",
+                    "symbol": "PFE"
+                  },
+                  "date": "2026-10-19",
+                  "mark": {
+                    "revisionId": "fx-0082",
+                    "revisionNumber": 1,
+                    "price": "47.9",
+                    "source": "Manual",
+                    "savedAt": "2026-10-19T21:00:00Z"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "atEntry": null
+      }
+    }
+  ],
+  "details": [
+    {
+      "tradeId": "fx-0035",
+      "factRevision": 1,
+      "plan": {
+        "underlying": "BRK.B",
+        "planTime": "2026-10-16T19:20:00Z",
+        "thesis": "BRK.B: base breakout on rising volume.",
+        "invalidation": "A daily close below 451.00.",
+        "legs": [
+          {
+            "factId": "fx-0037",
+            "side": "Long",
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "BRK.B"
+            },
+            "quantity": "25",
+            "intendedEntry": "462.75"
+          }
+        ],
+        "stops": [
+          {
+            "factId": "fx-0038",
+            "kind": "UnderlyingPrice",
+            "price": "451"
+          }
+        ],
+        "targets": [
+          {
+            "factId": "fx-0039",
+            "kind": "UnderlyingPrice",
+            "price": "489.5"
+          }
+        ]
+      },
+      "labels": {
+        "strategy": "Long Stock",
+        "account": "Individual",
+        "institution": "Fidelity"
+      },
+      "lifecycle": {
+        "stored": "Planned",
+        "agreement": {
+          "kind": "Agrees"
+        }
+      },
+      "baseline": {
+        "originalPlannedRisk": "1175/4",
+        "originalPlannedReward": "2675/4",
+        "rewardRiskRatio": "107/47",
+        "oneR": "1175/4",
+        "stopBasis": [
+          {
+            "condition": {
+              "factId": "fx-0038",
+              "kind": "UnderlyingPrice",
+              "price": "451"
+            },
+            "distance": "1175/4"
+          }
+        ],
+        "targetBasis": [
+          {
+            "condition": {
+              "factId": "fx-0039",
+              "kind": "UnderlyingPrice",
+              "price": "489.5"
+            },
+            "distance": "2675/4"
+          }
+        ]
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": "25/1",
+        "price": "1851/4"
+      },
+      "journal": [
+        {
+          "id": "fx-0040",
+          "entryType": "Plan Reflection",
+          "source": "Plan Confirmation",
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "fx-0035"
+          },
+          "momentTime": "2026-10-16T19:20:00Z",
+          "authoredTime": "2026-10-19T21:00:00Z",
+          "responses": [
+            {
+              "prompt": "Why this trade, why now?",
+              "answer": {
+                "kind": "Text",
+                "text": "BRK.B: base breakout on rising volume."
+              }
+            },
+            {
+              "prompt": "What would invalidate the thesis?",
+              "answer": {
+                "kind": "Text",
+                "text": "A daily close below 451.00."
+              }
+            },
+            {
+              "prompt": "Conviction",
+              "answer": {
+                "kind": "Scale",
+                "value": 4
+              }
+            },
+            {
+              "prompt": "Primary emotion",
+              "answer": {
+                "kind": "Option",
+                "label": "Relieved"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tradeId": "fx-0029",
+      "factRevision": 1,
+      "plan": {
+        "underlying": "COST",
+        "planTime": "2026-10-15T16:10:00Z",
+        "thesis": "COST: base breakout on rising volume.",
+        "invalidation": "A daily close below 880.00.",
+        "legs": [
+          {
+            "factId": "fx-0031",
+            "side": "Long",
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "COST"
+            },
+            "quantity": "10",
+            "intendedEntry": "905"
+          }
+        ],
+        "stops": [
+          {
+            "factId": "fx-0032",
+            "kind": "UnderlyingPrice",
+            "price": "880"
+          }
+        ],
+        "targets": [
+          {
+            "factId": "fx-0033",
+            "kind": "UnderlyingPrice",
+            "price": "960"
+          }
+        ]
+      },
+      "labels": {
+        "strategy": "Long Stock",
+        "account": "Roth IRA",
+        "institution": "Fidelity"
+      },
+      "lifecycle": {
+        "stored": "Planned",
+        "agreement": {
+          "kind": "Agrees"
+        }
+      },
+      "baseline": {
+        "originalPlannedRisk": "250/1",
+        "originalPlannedReward": "550/1",
+        "rewardRiskRatio": "11/5",
+        "oneR": "250/1",
+        "stopBasis": [
+          {
+            "condition": {
+              "factId": "fx-0032",
+              "kind": "UnderlyingPrice",
+              "price": "880"
+            },
+            "distance": "250/1"
+          }
+        ],
+        "targetBasis": [
+          {
+            "condition": {
+              "factId": "fx-0033",
+              "kind": "UnderlyingPrice",
+              "price": "960"
+            },
+            "distance": "550/1"
+          }
+        ]
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": "10/1",
+        "price": "905/1"
+      },
+      "journal": [
+        {
+          "id": "fx-0034",
+          "entryType": "Plan Reflection",
+          "source": "Plan Confirmation",
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "fx-0029"
+          },
+          "momentTime": "2026-10-15T16:10:00Z",
+          "authoredTime": "2026-10-19T21:00:00Z",
+          "responses": [
+            {
+              "prompt": "Why this trade, why now?",
+              "answer": {
+                "kind": "Text",
+                "text": "COST: base breakout on rising volume."
+              }
+            },
+            {
+              "prompt": "What would invalidate the thesis?",
+              "answer": {
+                "kind": "Text",
+                "text": "A daily close below 880.00."
+              }
+            },
+            {
+              "prompt": "Conviction",
+              "answer": {
+                "kind": "Scale",
+                "value": 2
+              }
+            },
+            {
+              "prompt": "Primary emotion",
+              "answer": {
+                "kind": "Option",
+                "label": "Calm"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tradeId": "fx-0023",
+      "factRevision": 1,
+      "plan": {
+        "underlying": "NVDA",
+        "planTime": "2026-10-14T13:45:00Z",
+        "thesis": "NVDA: base breakout on rising volume.",
+        "invalidation": "A daily close below 124.80.",
+        "legs": [
+          {
+            "factId": "fx-0025",
+            "side": "Long",
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "NVDA"
+            },
+            "quantity": "120",
+            "intendedEntry": "131.25"
+          }
+        ],
+        "stops": [
+          {
+            "factId": "fx-0026",
+            "kind": "UnderlyingPrice",
+            "price": "124.8"
+          }
+        ],
+        "targets": [
+          {
+            "factId": "fx-0027",
+            "kind": "UnderlyingPrice",
+            "price": "149.9"
+          }
+        ]
+      },
+      "labels": {
+        "strategy": "Long Stock",
+        "account": "Brokerage",
+        "institution": "Charles Schwab"
+      },
+      "lifecycle": {
+        "stored": "Planned",
+        "agreement": {
+          "kind": "Agrees"
+        }
+      },
+      "baseline": {
+        "originalPlannedRisk": "774/1",
+        "originalPlannedReward": "2238/1",
+        "rewardRiskRatio": "373/129",
+        "oneR": "774/1",
+        "stopBasis": [
+          {
+            "condition": {
+              "factId": "fx-0026",
+              "kind": "UnderlyingPrice",
+              "price": "124.8"
+            },
+            "distance": "774/1"
+          }
+        ],
+        "targetBasis": [
+          {
+            "condition": {
+              "factId": "fx-0027",
+              "kind": "UnderlyingPrice",
+              "price": "149.9"
+            },
+            "distance": "2238/1"
+          }
+        ]
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": "120/1",
+        "price": "525/4"
+      },
+      "journal": [
+        {
+          "id": "fx-0028",
+          "entryType": "Plan Reflection",
+          "source": "Plan Confirmation",
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "fx-0023"
+          },
+          "momentTime": "2026-10-14T13:45:00Z",
+          "authoredTime": "2026-10-19T21:00:00Z",
+          "responses": [
+            {
+              "prompt": "Why this trade, why now?",
+              "answer": {
+                "kind": "Text",
+                "text": "NVDA: base breakout on rising volume."
+              }
+            },
+            {
+              "prompt": "What would invalidate the thesis?",
+              "answer": {
+                "kind": "Text",
+                "text": "A daily close below 124.80."
+              }
+            },
+            {
+              "prompt": "Conviction",
+              "answer": {
+                "kind": "Scale",
+                "value": 5
+              }
+            },
+            {
+              "prompt": "Primary emotion",
+              "answer": {
+                "kind": "Option",
+                "label": "Anxious"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tradeId": "fx-0017",
+      "factRevision": 1,
+      "plan": {
+        "underlying": "MSFT",
+        "planTime": "2026-10-13T15:30:00Z",
+        "thesis": "MSFT: base breakout on rising volume.",
+        "invalidation": "A daily close below 402.50.",
+        "legs": [
+          {
+            "factId": "fx-0019",
+            "side": "Long",
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "MSFT"
+            },
+            "quantity": "30",
+            "intendedEntry": "415.1"
+          }
+        ],
+        "stops": [
+          {
+            "factId": "fx-0020",
+            "kind": "UnderlyingPrice",
+            "price": "402.5"
+          }
+        ],
+        "targets": [
+          {
+            "factId": "fx-0021",
+            "kind": "UnderlyingPrice",
+            "price": "440"
+          }
+        ]
+      },
+      "labels": {
+        "strategy": "Long Stock",
+        "account": "Individual",
+        "institution": "Fidelity"
+      },
+      "lifecycle": {
+        "stored": "Planned",
+        "agreement": {
+          "kind": "Agrees"
+        }
+      },
+      "baseline": {
+        "originalPlannedRisk": "378/1",
+        "originalPlannedReward": "747/1",
+        "rewardRiskRatio": "83/42",
+        "oneR": "378/1",
+        "stopBasis": [
+          {
+            "condition": {
+              "factId": "fx-0020",
+              "kind": "UnderlyingPrice",
+              "price": "402.5"
+            },
+            "distance": "378/1"
+          }
+        ],
+        "targetBasis": [
+          {
+            "condition": {
+              "factId": "fx-0021",
+              "kind": "UnderlyingPrice",
+              "price": "440"
+            },
+            "distance": "747/1"
+          }
+        ]
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": "30/1",
+        "price": "4151/10"
+      },
+      "journal": [
+        {
+          "id": "fx-0022",
+          "entryType": "Plan Reflection",
+          "source": "Plan Confirmation",
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "fx-0017"
+          },
+          "momentTime": "2026-10-13T15:30:00Z",
+          "authoredTime": "2026-10-19T21:00:00Z",
+          "responses": [
+            {
+              "prompt": "Why this trade, why now?",
+              "answer": {
+                "kind": "Text",
+                "text": "MSFT: base breakout on rising volume."
+              }
+            },
+            {
+              "prompt": "What would invalidate the thesis?",
+              "answer": {
+                "kind": "Text",
+                "text": "A daily close below 402.50."
+              }
+            },
+            {
+              "prompt": "Conviction",
+              "answer": {
+                "kind": "Scale",
+                "value": 3
+              }
+            },
+            {
+              "prompt": "Primary emotion",
+              "answer": {
+                "kind": "Option",
+                "label": "Eager"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tradeId": "fx-0011",
+      "factRevision": 1,
+      "plan": {
+        "underlying": "AAPL",
+        "planTime": "2026-10-12T14:00:00Z",
+        "thesis": "AAPL: base breakout on rising volume.",
+        "invalidation": "A daily close below 221.00.",
+        "legs": [
+          {
+            "factId": "fx-0013",
+            "side": "Long",
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "AAPL"
+            },
+            "quantity": "50",
+            "intendedEntry": "228.4"
+          }
+        ],
+        "stops": [
+          {
+            "factId": "fx-0014",
+            "kind": "UnderlyingPrice",
+            "price": "221"
+          }
+        ],
+        "targets": [
+          {
+            "factId": "fx-0015",
+            "kind": "UnderlyingPrice",
+            "price": "245"
+          }
+        ]
+      },
+      "labels": {
+        "strategy": "Long Stock",
+        "account": "Roth IRA",
+        "institution": "Fidelity"
+      },
+      "lifecycle": {
+        "stored": "Planned",
+        "agreement": {
+          "kind": "Agrees"
+        }
+      },
+      "baseline": {
+        "originalPlannedRisk": "370/1",
+        "originalPlannedReward": "830/1",
+        "rewardRiskRatio": "83/37",
+        "oneR": "370/1",
+        "stopBasis": [
+          {
+            "condition": {
+              "factId": "fx-0014",
+              "kind": "UnderlyingPrice",
+              "price": "221"
+            },
+            "distance": "370/1"
+          }
+        ],
+        "targetBasis": [
+          {
+            "condition": {
+              "factId": "fx-0015",
+              "kind": "UnderlyingPrice",
+              "price": "245"
+            },
+            "distance": "830/1"
+          }
+        ]
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": "50/1",
+        "price": "1142/5"
+      },
+      "journal": [
+        {
+          "id": "fx-0016",
+          "entryType": "Plan Reflection",
+          "source": "Plan Confirmation",
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "fx-0011"
+          },
+          "momentTime": "2026-10-12T14:00:00Z",
+          "authoredTime": "2026-10-19T21:00:00Z",
+          "responses": [
+            {
+              "prompt": "Why this trade, why now?",
+              "answer": {
+                "kind": "Text",
+                "text": "AAPL: base breakout on rising volume."
+              }
+            },
+            {
+              "prompt": "What would invalidate the thesis?",
+              "answer": {
+                "kind": "Text",
+                "text": "A daily close below 221.00."
+              }
+            },
+            {
+              "prompt": "Conviction",
+              "answer": {
+                "kind": "Scale",
+                "value": 4
+              }
+            },
+            {
+              "prompt": "Primary emotion",
+              "answer": {
+                "kind": "Option",
+                "label": "Calm"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tradeId": "fx-0041",
+      "factRevision": 4,
+      "plan": {
+        "underlying": "CSCO",
+        "planTime": "2026-10-12T13:00:00Z",
+        "thesis": "CSCO: reclaiming 50 after a higher low.",
+        "invalidation": "A daily close below 47.50.",
+        "legs": [
+          {
+            "factId": "fx-0043",
+            "side": "Long",
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "CSCO"
+            },
+            "quantity": "100",
+            "intendedEntry": "50"
+          }
+        ],
+        "stops": [
+          {
+            "factId": "fx-0044",
+            "kind": "UnderlyingPrice",
+            "price": "47.5"
+          }
+        ],
+        "targets": [
+          {
+            "factId": "fx-0045",
+            "kind": "UnderlyingPrice",
+            "price": "56"
+          }
+        ]
+      },
+      "labels": {
+        "strategy": "Long Stock",
+        "account": "Roth IRA",
+        "institution": "Fidelity"
+      },
+      "lifecycle": {
+        "stored": "Open",
+        "agreement": {
+          "kind": "Agrees"
+        }
+      },
+      "baseline": {
+        "originalPlannedRisk": "250/1",
+        "originalPlannedReward": "600/1",
+        "rewardRiskRatio": "12/5",
+        "oneR": "250/1",
+        "stopBasis": [
+          {
+            "condition": {
+              "factId": "fx-0044",
+              "kind": "UnderlyingPrice",
+              "price": "47.5"
+            },
+            "distance": "250/1"
+          }
+        ],
+        "targetBasis": [
+          {
+            "condition": {
+              "factId": "fx-0045",
+              "kind": "UnderlyingPrice",
+              "price": "56"
+            },
+            "distance": "600/1"
+          }
+        ]
+      },
+      "positions": [
+        {
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "quantity": "120/1",
+          "openLots": [
+            {
+              "openingExecutionId": "fx-0048",
+              "quantity": "60/1",
+              "price": "501/10",
+              "unconsumedOpeningFee": "1/1"
+            },
+            {
+              "openingExecutionId": "fx-0051",
+              "quantity": "40/1",
+              "price": "503/10",
+              "unconsumedOpeningFee": "1/1"
+            },
+            {
+              "openingExecutionId": "fx-0054",
+              "quantity": "20/1",
+              "price": "51/1",
+              "unconsumedOpeningFee": "1/1"
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": "120/1",
+        "price": "3019/60"
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": "6041/1"
+      },
+      "lastActivity": "2026-10-12T18:00:00Z",
+      "fees": {
+        "incurredOpening": "3/1"
+      },
+      "positionChanges": [
+        {
+          "factId": "fx-0047",
+          "economicTime": "2026-10-12T14:00:00Z",
+          "recordedSequence": 5,
+          "executions": [
+            {
+              "factId": "fx-0048",
+              "recordedSequence": 6,
+              "action": "Buy",
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "CSCO"
+              },
+              "intent": {
+                "kind": "ServesPlannedLeg",
+                "plannedLegId": "fx-0043"
+              },
+              "quantity": "60",
+              "price": "50.10",
+              "fee": "1.00",
+              "economicTime": "2026-10-12T14:00:00Z"
+            }
+          ]
+        },
+        {
+          "factId": "fx-0050",
+          "economicTime": "2026-10-12T15:00:00Z",
+          "recordedSequence": 7,
+          "executions": [
+            {
+              "factId": "fx-0051",
+              "recordedSequence": 8,
+              "action": "Buy",
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "CSCO"
+              },
+              "intent": {
+                "kind": "ServesPlannedLeg",
+                "plannedLegId": "fx-0043"
+              },
+              "quantity": "40",
+              "price": "50.30",
+              "fee": "1.00",
+              "economicTime": "2026-10-12T15:00:00Z"
+            }
+          ]
+        },
+        {
+          "factId": "fx-0053",
+          "economicTime": "2026-10-12T18:00:00Z",
+          "recordedSequence": 9,
+          "executions": [
+            {
+              "factId": "fx-0054",
+              "recordedSequence": 10,
+              "action": "Buy",
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "CSCO"
+              },
+              "intent": {
+                "kind": "ServesPlannedLeg",
+                "plannedLegId": "fx-0043"
+              },
+              "quantity": "20",
+              "price": "51.00",
+              "fee": "1.00",
+              "economicTime": "2026-10-12T18:00:00Z"
+            }
+          ]
+        }
+      ],
+      "entryStatus": "Resolved",
+      "entryResolution": {
+        "kind": "Resolved",
+        "positionChangeId": "fx-0050"
+      },
+      "entryQuality": {
+        "kind": "Value",
+        "value": {
+          "averageEntry": {
+            "kind": "Value",
+            "value": "2509/50"
+          },
+          "windowQuantity": {
+            "kind": "Value",
+            "value": "100/1"
+          },
+          "windowFees": {
+            "kind": "Value",
+            "value": "2/1"
+          },
+          "actualInitialRisk": {
+            "kind": "Value",
+            "value": "270/1"
+          },
+          "actualInitialReward": {
+            "kind": "Value",
+            "value": "580/1"
+          },
+          "riskInPlanR": {
+            "kind": "Value",
+            "value": "27/25"
+          },
+          "slippage": {
+            "kind": "Value",
+            "value": "18/1"
+          },
+          "sizeRatio": {
+            "kind": "Value",
+            "value": "1/1"
+          },
+          "plannedRewardRisk": {
+            "kind": "Value",
+            "value": "12/5"
+          },
+          "actualRewardRisk": {
+            "kind": "Value",
+            "value": "58/27"
+          },
+          "flags": []
+        }
+      },
+      "legFulfillment": [
+        {
+          "plannedLegId": "fx-0043",
+          "fulfillment": "FilledWithDeviation"
+        }
+      ],
+      "deviations": [
+        {
+          "occurrenceId": "fx-0055",
+          "versions": [
+            {
+              "fingerprint": {
+                "tradeId": "fx-0041",
+                "plannedLegId": "fx-0043",
+                "positionChangeId": "fx-0053"
+              },
+              "type": "EntrySize",
+              "form": "Excess",
+              "quantityAbovePlan": "20",
+              "causingPositionChangeId": "fx-0053",
+              "economicTime": "2026-10-12T18:00:00Z",
+              "status": "Active"
+            }
+          ]
+        }
+      ],
+      "findings": [],
+      "journal": [
+        {
+          "kind": "Entry",
+          "id": "fx-0046",
+          "entryType": "Plan Reflection",
+          "source": "Plan Confirmation",
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "fx-0041"
+          },
+          "momentTime": "2026-10-12T13:00:00Z",
+          "authoredTime": "2026-10-19T21:00:00Z",
+          "responses": [
+            {
+              "prompt": "Why this trade, why now?",
+              "answer": {
+                "kind": "Text",
+                "text": "CSCO: reclaiming 50 after a higher low."
+              }
+            },
+            {
+              "prompt": "What would invalidate the thesis?",
+              "answer": {
+                "kind": "Text",
+                "text": "A daily close below 47.50."
+              }
+            },
+            {
+              "prompt": "Conviction",
+              "answer": {
+                "kind": "Unanswered"
+              }
+            },
+            {
+              "prompt": "Primary emotion",
+              "answer": {
+                "kind": "Unanswered"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Entry",
+          "id": "fx-0049",
+          "entryType": "Position Change Reflection",
+          "source": "Position Change",
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "fx-0041"
+          },
+          "momentTime": "2026-10-12T14:00:00Z",
+          "authoredTime": "2026-10-19T21:00:00Z",
+          "positionChangeId": "fx-0047",
+          "responses": [
+            {
+              "prompt": "Decision mode",
+              "answer": {
+                "kind": "Option",
+                "label": "As Planned"
+              }
+            },
+            {
+              "prompt": "Primary emotion",
+              "answer": {
+                "kind": "Option",
+                "label": "Calm"
+              }
+            },
+            {
+              "prompt": "Decision confidence",
+              "answer": {
+                "kind": "Scale",
+                "value": 4
+              }
+            },
+            {
+              "prompt": "Note",
+              "answer": {
+                "kind": "Unanswered"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Entry",
+          "id": "fx-0052",
+          "entryType": "Position Change Reflection",
+          "source": "Position Change",
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "fx-0041"
+          },
+          "momentTime": "2026-10-12T15:00:00Z",
+          "authoredTime": "2026-10-19T21:00:00Z",
+          "positionChangeId": "fx-0050",
+          "responses": [
+            {
+              "prompt": "Decision mode",
+              "answer": {
+                "kind": "Option",
+                "label": "As Planned"
+              }
+            },
+            {
+              "prompt": "Primary emotion",
+              "answer": {
+                "kind": "Option",
+                "label": "Calm"
+              }
+            },
+            {
+              "prompt": "Decision confidence",
+              "answer": {
+                "kind": "Scale",
+                "value": 4
+              }
+            },
+            {
+              "prompt": "Note",
+              "answer": {
+                "kind": "Unanswered"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Decline",
+          "id": "fx-0056",
+          "entryType": "Position Change Reflection",
+          "source": "Position Change",
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "fx-0041"
+          },
+          "momentTime": "2026-10-12T18:00:00Z",
+          "authoredTime": "2026-10-19T21:00:00Z",
+          "positionChangeId": "fx-0053",
+          "reason": "Added into strength; reflecting later."
+        },
+        {
+          "kind": "Entry",
+          "id": "fx-0084",
+          "entryType": "Daily Trade Review",
+          "source": "Daily Review",
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "fx-0041"
+          },
+          "momentTime": "2026-10-19T20:00:00Z",
+          "authoredTime": "2026-10-19T21:00:00Z",
+          "reviewDate": "2026-10-19",
+          "responses": [
+            {
+              "prompt": "Action",
+              "answer": {
+                "kind": "Option",
+                "label": "Hold"
+              }
+            },
+            {
+              "prompt": "Why are you taking this action?",
+              "answer": {
+                "kind": "Text",
+                "text": "Let the position work; the Stop at 47.50 still stands."
+              }
+            },
+            {
+              "prompt": "Conviction now",
+              "answer": {
+                "kind": "Unanswered"
+              }
+            },
+            {
+              "prompt": "Anything you considered doing and decided against?",
+              "answer": {
+                "kind": "Unanswered"
+              }
+            },
+            {
+              "prompt": "Note",
+              "answer": {
+                "kind": "Unanswered"
+              }
+            }
+          ]
+        }
+      ],
+      "current": {
+        "expectedMarkDate": "2026-10-19",
+        "markResolution": {
+          "kind": "Available",
+          "mark": {
+            "revisionId": "fx-0079",
+            "revisionNumber": 1,
+            "price": "51.6",
+            "source": "Manual",
+            "savedAt": "2026-10-19T21:00:00Z"
+          }
+        },
+        "mark": {
+          "source": "Manual",
+          "revisionId": "fx-0079",
+          "revisionNumber": 1,
+          "price": "51.6",
+          "savedAt": "2026-10-19T21:00:00Z"
+        },
+        "coverage": [
+          {
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "CSCO"
+            },
+            "coverage": {
+              "kind": "Available",
+              "revisionId": "fx-0079",
+              "revisionNumber": 1
+            }
+          }
+        ],
+        "evaluation": {
+          "kind": "Evaluated",
+          "valuationDate": "2026-10-19",
+          "coverage": {
+            "kind": "Available",
+            "revisionId": "fx-0079",
+            "revisionNumber": 1
+          },
+          "openQuantity": {
+            "kind": "Value",
+            "value": "120/1"
+          },
+          "openCost": {
+            "kind": "Value",
+            "value": "6038/1"
+          },
+          "unconsumedOpeningFees": {
+            "kind": "Value",
+            "value": "3/1"
+          },
+          "marketValue": {
+            "kind": "Value",
+            "value": "6192/1"
+          },
+          "remainingOpenPnl": {
+            "kind": "Value",
+            "value": "151/1"
+          },
+          "realizedToDate": {
+            "kind": "Value",
+            "value": "0/1"
+          },
+          "currentMarkedPnl": {
+            "kind": "Value",
+            "value": "151/1"
+          },
+          "currentMarkedPnlInPlanR": {
+            "kind": "Value",
+            "value": "151/250"
+          },
+          "incurredFees": {
+            "kind": "Value",
+            "value": "3/1"
+          },
+          "ongoingRiskToStop": {
+            "kind": "Value",
+            "value": "492/1"
+          },
+          "worstCaseOngoingRisk": {
+            "kind": "Value",
+            "value": "6192/1"
+          },
+          "incrementalRewardToTarget": {
+            "kind": "Value",
+            "value": "528/1"
+          },
+          "ongoingRiskToStopInPlanR": {
+            "kind": "Value",
+            "value": "246/125"
+          },
+          "worstCaseOngoingRiskInPlanR": {
+            "kind": "Value",
+            "value": "3096/125"
+          },
+          "incrementalRewardToTargetInPlanR": {
+            "kind": "Value",
+            "value": "264/125"
+          },
+          "maximumIncrementalReward": {
+            "kind": "Unbounded",
+            "direction": "Above",
+            "explanation": "A long Stock Position has no price ceiling"
+          },
+          "conditions": [
+            {
+              "id": "stop-1",
+              "role": "Stop",
+              "kind": "UnderlyingPrice",
+              "boundary": "47.5",
+              "result": {
+                "kind": "Value",
+                "value": {
+                  "status": "Active",
+                  "distance": {
+                    "dollars": "492/1",
+                    "planR": "246/125"
+                  },
+                  "overrun": null,
+                  "evidence": {
+                    "instrument": {
+                      "kind": "Stock",
+                      "symbol": "CSCO"
+                    },
+                    "date": "2026-10-19",
+                    "mark": {
+                      "revisionId": "fx-0079",
+                      "revisionNumber": 1,
+                      "price": "51.6",
+                      "source": "Manual",
+                      "savedAt": "2026-10-19T21:00:00Z"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "id": "target-1",
+              "role": "Target",
+              "kind": "UnderlyingPrice",
+              "boundary": "56",
+              "result": {
+                "kind": "Value",
+                "value": {
+                  "status": "Active",
+                  "distance": {
+                    "dollars": "528/1",
+                    "planR": "264/125"
+                  },
+                  "overrun": null,
+                  "evidence": {
+                    "instrument": {
+                      "kind": "Stock",
+                      "symbol": "CSCO"
+                    },
+                    "date": "2026-10-19",
+                    "mark": {
+                      "revisionId": "fx-0079",
+                      "revisionNumber": 1,
+                      "price": "51.6",
+                      "source": "Manual",
+                      "savedAt": "2026-10-19T21:00:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "observation": {
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "CSCO"
+            },
+            "tradingDate": "2026-10-19",
+            "mark": {
+              "revisionId": "fx-0079",
+              "revisionNumber": 1,
+              "price": "51.6",
+              "source": "Manual",
+              "savedAt": "2026-10-19T21:00:00Z"
+            }
+          },
+          "deviations": [],
+          "coveredSubtotal": null,
+          "atEntry": null,
+          "planBaseline": {
+            "kind": "Value",
+            "value": {
+              "originalPlannedRisk": "250/1",
+              "originalPlannedReward": "600/1",
+              "rewardRiskRatio": "12/5",
+              "oneR": "250/1",
+              "stopBasis": [
+                {
+                  "condition": {
+                    "factId": "fx-0044",
+                    "kind": "UnderlyingPrice",
+                    "price": "47.5"
+                  },
+                  "distance": "250/1"
+                }
+              ],
+              "targetBasis": [
+                {
+                  "condition": {
+                    "factId": "fx-0045",
+                    "kind": "UnderlyingPrice",
+                    "price": "56"
+                  },
+                  "distance": "600/1"
+                }
+              ]
+            }
+          },
+          "oneR": {
+            "kind": "Value",
+            "value": "250/1"
+          },
+          "entryQuality": {
+            "kind": "Value",
+            "value": {
+              "averageEntry": {
+                "kind": "Value",
+                "value": "2509/50"
+              },
+              "windowQuantity": {
+                "kind": "Value",
+                "value": "100/1"
+              },
+              "windowFees": {
+                "kind": "Value",
+                "value": "2/1"
+              },
+              "actualInitialRisk": {
+                "kind": "Value",
+                "value": "270/1"
+              },
+              "actualInitialReward": {
+                "kind": "Value",
+                "value": "580/1"
+              },
+              "riskInPlanR": {
+                "kind": "Value",
+                "value": "27/25"
+              },
+              "slippage": {
+                "kind": "Value",
+                "value": "18/1"
+              },
+              "sizeRatio": {
+                "kind": "Value",
+                "value": "1/1"
+              },
+              "plannedRewardRisk": {
+                "kind": "Value",
+                "value": "12/5"
+              },
+              "actualRewardRisk": {
+                "kind": "Value",
+                "value": "58/27"
+              },
+              "flags": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "tradeId": "fx-0057",
+      "factRevision": 3,
+      "plan": {
+        "underlying": "KO",
+        "planTime": "2026-10-12T13:00:00Z",
+        "thesis": "KO: reclaiming 50 after a higher low.",
+        "invalidation": "A daily close below 47.50.",
+        "legs": [
+          {
+            "factId": "fx-0059",
+            "side": "Long",
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "KO"
+            },
+            "quantity": "100",
+            "intendedEntry": "50"
+          }
+        ],
+        "stops": [
+          {
+            "factId": "fx-0060",
+            "kind": "UnderlyingPrice",
+            "price": "47.5"
+          }
+        ],
+        "targets": [
+          {
+            "factId": "fx-0061",
+            "kind": "UnderlyingPrice",
+            "price": "56"
+          }
+        ]
+      },
+      "labels": {
+        "strategy": "Long Stock",
+        "account": "Individual",
+        "institution": "Fidelity"
+      },
+      "lifecycle": {
+        "stored": "Open",
+        "agreement": {
+          "kind": "Agrees"
+        }
+      },
+      "baseline": {
+        "originalPlannedRisk": "250/1",
+        "originalPlannedReward": "600/1",
+        "rewardRiskRatio": "12/5",
+        "oneR": "250/1",
+        "stopBasis": [
+          {
+            "condition": {
+              "factId": "fx-0060",
+              "kind": "UnderlyingPrice",
+              "price": "47.5"
+            },
+            "distance": "250/1"
+          }
+        ],
+        "targetBasis": [
+          {
+            "condition": {
+              "factId": "fx-0061",
+              "kind": "UnderlyingPrice",
+              "price": "56"
+            },
+            "distance": "600/1"
+          }
+        ]
+      },
+      "positions": [
+        {
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "quantity": "100/1",
+          "openLots": [
+            {
+              "openingExecutionId": "fx-0064",
+              "quantity": "60/1",
+              "price": "501/10",
+              "unconsumedOpeningFee": "1/1"
+            },
+            {
+              "openingExecutionId": "fx-0067",
+              "quantity": "40/1",
+              "price": "503/10",
+              "unconsumedOpeningFee": "1/1"
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": "100/1",
+        "price": "2509/50"
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": "5020/1"
+      },
+      "lastActivity": "2026-10-12T15:00:00Z",
+      "fees": {
+        "incurredOpening": "2/1"
+      },
+      "positionChanges": [
+        {
+          "factId": "fx-0063",
+          "economicTime": "2026-10-12T14:00:00Z",
+          "recordedSequence": 5,
+          "executions": [
+            {
+              "factId": "fx-0064",
+              "recordedSequence": 6,
+              "action": "Buy",
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "KO"
+              },
+              "intent": {
+                "kind": "ServesPlannedLeg",
+                "plannedLegId": "fx-0059"
+              },
+              "quantity": "60",
+              "price": "50.10",
+              "fee": "1.00",
+              "economicTime": "2026-10-12T14:00:00Z"
+            }
+          ]
+        },
+        {
+          "factId": "fx-0066",
+          "economicTime": "2026-10-12T15:00:00Z",
+          "recordedSequence": 7,
+          "executions": [
+            {
+              "factId": "fx-0067",
+              "recordedSequence": 8,
+              "action": "Buy",
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "KO"
+              },
+              "intent": {
+                "kind": "ServesPlannedLeg",
+                "plannedLegId": "fx-0059"
+              },
+              "quantity": "40",
+              "price": "50.30",
+              "fee": "1.00",
+              "economicTime": "2026-10-12T15:00:00Z"
+            }
+          ]
+        }
+      ],
+      "entryStatus": "Resolved",
+      "entryResolution": {
+        "kind": "Resolved",
+        "positionChangeId": "fx-0066"
+      },
+      "entryQuality": {
+        "kind": "Value",
+        "value": {
+          "averageEntry": {
+            "kind": "Value",
+            "value": "2509/50"
+          },
+          "windowQuantity": {
+            "kind": "Value",
+            "value": "100/1"
+          },
+          "windowFees": {
+            "kind": "Value",
+            "value": "2/1"
+          },
+          "actualInitialRisk": {
+            "kind": "Value",
+            "value": "270/1"
+          },
+          "actualInitialReward": {
+            "kind": "Value",
+            "value": "580/1"
+          },
+          "riskInPlanR": {
+            "kind": "Value",
+            "value": "27/25"
+          },
+          "slippage": {
+            "kind": "Value",
+            "value": "18/1"
+          },
+          "sizeRatio": {
+            "kind": "Value",
+            "value": "1/1"
+          },
+          "plannedRewardRisk": {
+            "kind": "Value",
+            "value": "12/5"
+          },
+          "actualRewardRisk": {
+            "kind": "Value",
+            "value": "58/27"
+          },
+          "flags": []
+        }
+      },
+      "legFulfillment": [
+        {
+          "plannedLegId": "fx-0059",
+          "fulfillment": "FilledAsPlanned"
+        }
+      ],
+      "deviations": [],
+      "findings": [],
+      "journal": [
+        {
+          "kind": "Entry",
+          "id": "fx-0062",
+          "entryType": "Plan Reflection",
+          "source": "Plan Confirmation",
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "fx-0057"
+          },
+          "momentTime": "2026-10-12T13:00:00Z",
+          "authoredTime": "2026-10-19T21:00:00Z",
+          "responses": [
+            {
+              "prompt": "Why this trade, why now?",
+              "answer": {
+                "kind": "Text",
+                "text": "KO: reclaiming 50 after a higher low."
+              }
+            },
+            {
+              "prompt": "What would invalidate the thesis?",
+              "answer": {
+                "kind": "Text",
+                "text": "A daily close below 47.50."
+              }
+            },
+            {
+              "prompt": "Conviction",
+              "answer": {
+                "kind": "Unanswered"
+              }
+            },
+            {
+              "prompt": "Primary emotion",
+              "answer": {
+                "kind": "Unanswered"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Entry",
+          "id": "fx-0065",
+          "entryType": "Position Change Reflection",
+          "source": "Position Change",
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "fx-0057"
+          },
+          "momentTime": "2026-10-12T14:00:00Z",
+          "authoredTime": "2026-10-19T21:00:00Z",
+          "positionChangeId": "fx-0063",
+          "responses": [
+            {
+              "prompt": "Decision mode",
+              "answer": {
+                "kind": "Option",
+                "label": "As Planned"
+              }
+            },
+            {
+              "prompt": "Primary emotion",
+              "answer": {
+                "kind": "Option",
+                "label": "Eager"
+              }
+            },
+            {
+              "prompt": "Decision confidence",
+              "answer": {
+                "kind": "Scale",
+                "value": 3
+              }
+            },
+            {
+              "prompt": "Note",
+              "answer": {
+                "kind": "Unanswered"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Decline",
+          "id": "fx-0068",
+          "entryType": "Position Change Reflection",
+          "source": "Position Change",
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "fx-0057"
+          },
+          "momentTime": "2026-10-12T15:00:00Z",
+          "authoredTime": "2026-10-19T21:00:00Z",
+          "positionChangeId": "fx-0066"
+        },
+        {
+          "kind": "Entry",
+          "id": "fx-0085",
+          "entryType": "Daily Trade Review",
+          "source": "Daily Review",
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "fx-0057"
+          },
+          "momentTime": "2026-10-19T20:00:00Z",
+          "authoredTime": "2026-10-19T21:00:00Z",
+          "reviewDate": "2026-10-19",
+          "edited": true,
+          "responses": [
+            {
+              "prompt": "Action",
+              "answer": {
+                "kind": "Option",
+                "label": "Exit"
+              }
+            },
+            {
+              "prompt": "Why are you taking this action?",
+              "answer": {
+                "kind": "Text",
+                "text": "Sell at tomorrow open if it fails to hold 49; take the loss on a close below 48.50."
+              }
+            },
+            {
+              "prompt": "Conviction now",
+              "answer": {
+                "kind": "Unanswered"
+              }
+            },
+            {
+              "prompt": "Anything you considered doing and decided against?",
+              "answer": {
+                "kind": "Unanswered"
+              }
+            },
+            {
+              "prompt": "Note",
+              "answer": {
+                "kind": "Unanswered"
+              }
+            }
+          ]
+        }
+      ],
+      "current": {
+        "expectedMarkDate": "2026-10-19",
+        "markResolution": {
+          "kind": "Available",
+          "mark": {
+            "revisionId": "fx-0081",
+            "revisionNumber": 2,
+            "price": "49.5",
+            "source": "Manual",
+            "savedAt": "2026-10-19T21:00:00Z",
+            "correctionReason": "Keyed the wrong digit from the broker statement."
+          }
+        },
+        "mark": {
+          "source": "Manual",
+          "revisionId": "fx-0081",
+          "revisionNumber": 2,
+          "price": "49.5",
+          "savedAt": "2026-10-19T21:00:00Z",
+          "correctionReason": "Keyed the wrong digit from the broker statement."
+        },
+        "coverage": [
+          {
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "KO"
+            },
+            "coverage": {
+              "kind": "Available",
+              "revisionId": "fx-0081",
+              "revisionNumber": 2
+            }
+          }
+        ],
+        "evaluation": {
+          "kind": "Evaluated",
+          "valuationDate": "2026-10-19",
+          "coverage": {
+            "kind": "Available",
+            "revisionId": "fx-0081",
+            "revisionNumber": 2
+          },
+          "openQuantity": {
+            "kind": "Value",
+            "value": "100/1"
+          },
+          "openCost": {
+            "kind": "Value",
+            "value": "5018/1"
+          },
+          "unconsumedOpeningFees": {
+            "kind": "Value",
+            "value": "2/1"
+          },
+          "marketValue": {
+            "kind": "Value",
+            "value": "4950/1"
+          },
+          "remainingOpenPnl": {
+            "kind": "Value",
+            "value": "-70/1"
+          },
+          "realizedToDate": {
+            "kind": "Value",
+            "value": "0/1"
+          },
+          "currentMarkedPnl": {
+            "kind": "Value",
+            "value": "-70/1"
+          },
+          "currentMarkedPnlInPlanR": {
+            "kind": "Value",
+            "value": "-7/25"
+          },
+          "incurredFees": {
+            "kind": "Value",
+            "value": "2/1"
+          },
+          "ongoingRiskToStop": {
+            "kind": "Value",
+            "value": "200/1"
+          },
+          "worstCaseOngoingRisk": {
+            "kind": "Value",
+            "value": "4950/1"
+          },
+          "incrementalRewardToTarget": {
+            "kind": "Value",
+            "value": "650/1"
+          },
+          "ongoingRiskToStopInPlanR": {
+            "kind": "Value",
+            "value": "4/5"
+          },
+          "worstCaseOngoingRiskInPlanR": {
+            "kind": "Value",
+            "value": "99/5"
+          },
+          "incrementalRewardToTargetInPlanR": {
+            "kind": "Value",
+            "value": "13/5"
+          },
+          "maximumIncrementalReward": {
+            "kind": "Unbounded",
+            "direction": "Above",
+            "explanation": "A long Stock Position has no price ceiling"
+          },
+          "conditions": [
+            {
+              "id": "stop-1",
+              "role": "Stop",
+              "kind": "UnderlyingPrice",
+              "boundary": "47.5",
+              "result": {
+                "kind": "Value",
+                "value": {
+                  "status": "Active",
+                  "distance": {
+                    "dollars": "200/1",
+                    "planR": "4/5"
+                  },
+                  "overrun": null,
+                  "evidence": {
+                    "instrument": {
+                      "kind": "Stock",
+                      "symbol": "KO"
+                    },
+                    "date": "2026-10-19",
+                    "mark": {
+                      "revisionId": "fx-0081",
+                      "revisionNumber": 2,
+                      "price": "49.5",
+                      "source": "Manual",
+                      "savedAt": "2026-10-19T21:00:00Z",
+                      "correctionReason": "Keyed the wrong digit from the broker statement."
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "id": "target-1",
+              "role": "Target",
+              "kind": "UnderlyingPrice",
+              "boundary": "56",
+              "result": {
+                "kind": "Value",
+                "value": {
+                  "status": "Active",
+                  "distance": {
+                    "dollars": "650/1",
+                    "planR": "13/5"
+                  },
+                  "overrun": null,
+                  "evidence": {
+                    "instrument": {
+                      "kind": "Stock",
+                      "symbol": "KO"
+                    },
+                    "date": "2026-10-19",
+                    "mark": {
+                      "revisionId": "fx-0081",
+                      "revisionNumber": 2,
+                      "price": "49.5",
+                      "source": "Manual",
+                      "savedAt": "2026-10-19T21:00:00Z",
+                      "correctionReason": "Keyed the wrong digit from the broker statement."
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "observation": {
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "KO"
+            },
+            "tradingDate": "2026-10-19",
+            "mark": {
+              "revisionId": "fx-0081",
+              "revisionNumber": 2,
+              "price": "49.5",
+              "source": "Manual",
+              "savedAt": "2026-10-19T21:00:00Z",
+              "correctionReason": "Keyed the wrong digit from the broker statement."
+            }
+          },
+          "deviations": [],
+          "coveredSubtotal": null,
+          "atEntry": null,
+          "planBaseline": {
+            "kind": "Value",
+            "value": {
+              "originalPlannedRisk": "250/1",
+              "originalPlannedReward": "600/1",
+              "rewardRiskRatio": "12/5",
+              "oneR": "250/1",
+              "stopBasis": [
+                {
+                  "condition": {
+                    "factId": "fx-0060",
+                    "kind": "UnderlyingPrice",
+                    "price": "47.5"
+                  },
+                  "distance": "250/1"
+                }
+              ],
+              "targetBasis": [
+                {
+                  "condition": {
+                    "factId": "fx-0061",
+                    "kind": "UnderlyingPrice",
+                    "price": "56"
+                  },
+                  "distance": "600/1"
+                }
+              ]
+            }
+          },
+          "oneR": {
+            "kind": "Value",
+            "value": "250/1"
+          },
+          "entryQuality": {
+            "kind": "Value",
+            "value": {
+              "averageEntry": {
+                "kind": "Value",
+                "value": "2509/50"
+              },
+              "windowQuantity": {
+                "kind": "Value",
+                "value": "100/1"
+              },
+              "windowFees": {
+                "kind": "Value",
+                "value": "2/1"
+              },
+              "actualInitialRisk": {
+                "kind": "Value",
+                "value": "270/1"
+              },
+              "actualInitialReward": {
+                "kind": "Value",
+                "value": "580/1"
+              },
+              "riskInPlanR": {
+                "kind": "Value",
+                "value": "27/25"
+              },
+              "slippage": {
+                "kind": "Value",
+                "value": "18/1"
+              },
+              "sizeRatio": {
+                "kind": "Value",
+                "value": "1/1"
+              },
+              "plannedRewardRisk": {
+                "kind": "Value",
+                "value": "12/5"
+              },
+              "actualRewardRisk": {
+                "kind": "Value",
+                "value": "58/27"
+              },
+              "flags": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "tradeId": "fx-0069",
+      "factRevision": 2,
+      "plan": {
+        "underlying": "PFE",
+        "planTime": "2026-10-12T13:00:00Z",
+        "thesis": "PFE: reclaiming 50 after a higher low.",
+        "invalidation": "A daily close below 47.50.",
+        "legs": [
+          {
+            "factId": "fx-0071",
+            "side": "Long",
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "PFE"
+            },
+            "quantity": "100",
+            "intendedEntry": "50"
+          }
+        ],
+        "stops": [
+          {
+            "factId": "fx-0072",
+            "kind": "UnderlyingPrice",
+            "price": "47.5"
+          }
+        ],
+        "targets": [
+          {
+            "factId": "fx-0073",
+            "kind": "UnderlyingPrice",
+            "price": "56"
+          }
+        ]
+      },
+      "labels": {
+        "strategy": "Long Stock",
+        "account": "Brokerage",
+        "institution": "Charles Schwab"
+      },
+      "lifecycle": {
+        "stored": "Open",
+        "agreement": {
+          "kind": "Agrees"
+        }
+      },
+      "baseline": {
+        "originalPlannedRisk": "250/1",
+        "originalPlannedReward": "600/1",
+        "rewardRiskRatio": "12/5",
+        "oneR": "250/1",
+        "stopBasis": [
+          {
+            "condition": {
+              "factId": "fx-0072",
+              "kind": "UnderlyingPrice",
+              "price": "47.5"
+            },
+            "distance": "250/1"
+          }
+        ],
+        "targetBasis": [
+          {
+            "condition": {
+              "factId": "fx-0073",
+              "kind": "UnderlyingPrice",
+              "price": "56"
+            },
+            "distance": "600/1"
+          }
+        ]
+      },
+      "positions": [
+        {
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "quantity": "60/1",
+          "openLots": [
+            {
+              "openingExecutionId": "fx-0076",
+              "quantity": "60/1",
+              "price": "501/10",
+              "unconsumedOpeningFee": "1/1"
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": "60/1",
+        "price": "501/10"
+      },
+      "netCost": {
+        "kind": "Value",
+        "value": "3007/1"
+      },
+      "lastActivity": "2026-10-12T14:00:00Z",
+      "fees": {
+        "incurredOpening": "1/1"
+      },
+      "positionChanges": [
+        {
+          "factId": "fx-0075",
+          "economicTime": "2026-10-12T14:00:00Z",
+          "recordedSequence": 5,
+          "executions": [
+            {
+              "factId": "fx-0076",
+              "recordedSequence": 6,
+              "action": "Buy",
+              "instrument": {
+                "kind": "Stock",
+                "symbol": "PFE"
+              },
+              "intent": {
+                "kind": "ServesPlannedLeg",
+                "plannedLegId": "fx-0071"
+              },
+              "quantity": "60",
+              "price": "50.10",
+              "fee": "1.00",
+              "economicTime": "2026-10-12T14:00:00Z"
+            }
+          ]
+        }
+      ],
+      "entryStatus": "Entering",
+      "entryResolution": {
+        "kind": "Unresolved"
+      },
+      "entryQuality": {
+        "kind": "NotApplicable",
+        "reason": "EntryNotResolved"
+      },
+      "legFulfillment": [
+        {
+          "plannedLegId": "fx-0071",
+          "fulfillment": "PartiallyFilled"
+        }
+      ],
+      "deviations": [],
+      "findings": [],
+      "journal": [
+        {
+          "kind": "Entry",
+          "id": "fx-0074",
+          "entryType": "Plan Reflection",
+          "source": "Plan Confirmation",
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "fx-0069"
+          },
+          "momentTime": "2026-10-12T13:00:00Z",
+          "authoredTime": "2026-10-19T21:00:00Z",
+          "responses": [
+            {
+              "prompt": "Why this trade, why now?",
+              "answer": {
+                "kind": "Text",
+                "text": "PFE: reclaiming 50 after a higher low."
+              }
+            },
+            {
+              "prompt": "What would invalidate the thesis?",
+              "answer": {
+                "kind": "Text",
+                "text": "A daily close below 47.50."
+              }
+            },
+            {
+              "prompt": "Conviction",
+              "answer": {
+                "kind": "Unanswered"
+              }
+            },
+            {
+              "prompt": "Primary emotion",
+              "answer": {
+                "kind": "Unanswered"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Decline",
+          "id": "fx-0077",
+          "entryType": "Position Change Reflection",
+          "source": "Position Change",
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "fx-0069"
+          },
+          "momentTime": "2026-10-12T14:00:00Z",
+          "authoredTime": "2026-10-19T21:00:00Z",
+          "positionChangeId": "fx-0075",
+          "reason": "Entered between meetings."
+        }
+      ],
+      "current": {
+        "expectedMarkDate": "2026-10-19",
+        "markResolution": {
+          "kind": "Available",
+          "mark": {
+            "revisionId": "fx-0082",
+            "revisionNumber": 1,
+            "price": "47.9",
+            "source": "Manual",
+            "savedAt": "2026-10-19T21:00:00Z"
+          }
+        },
+        "mark": {
+          "source": "Manual",
+          "revisionId": "fx-0082",
+          "revisionNumber": 1,
+          "price": "47.9",
+          "savedAt": "2026-10-19T21:00:00Z"
+        },
+        "coverage": [
+          {
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "PFE"
+            },
+            "coverage": {
+              "kind": "Available",
+              "revisionId": "fx-0082",
+              "revisionNumber": 1
+            }
+          }
+        ],
+        "evaluation": {
+          "kind": "Evaluated",
+          "valuationDate": "2026-10-19",
+          "coverage": {
+            "kind": "Available",
+            "revisionId": "fx-0082",
+            "revisionNumber": 1
+          },
+          "openQuantity": {
+            "kind": "Value",
+            "value": "60/1"
+          },
+          "openCost": {
+            "kind": "Value",
+            "value": "3006/1"
+          },
+          "unconsumedOpeningFees": {
+            "kind": "Value",
+            "value": "1/1"
+          },
+          "marketValue": {
+            "kind": "Value",
+            "value": "2874/1"
+          },
+          "remainingOpenPnl": {
+            "kind": "Value",
+            "value": "-133/1"
+          },
+          "realizedToDate": {
+            "kind": "Value",
+            "value": "0/1"
+          },
+          "currentMarkedPnl": {
+            "kind": "Value",
+            "value": "-133/1"
+          },
+          "currentMarkedPnlInPlanR": {
+            "kind": "Value",
+            "value": "-133/250"
+          },
+          "incurredFees": {
+            "kind": "Value",
+            "value": "1/1"
+          },
+          "ongoingRiskToStop": {
+            "kind": "Value",
+            "value": "24/1"
+          },
+          "worstCaseOngoingRisk": {
+            "kind": "Value",
+            "value": "2874/1"
+          },
+          "incrementalRewardToTarget": {
+            "kind": "Value",
+            "value": "486/1"
+          },
+          "ongoingRiskToStopInPlanR": {
+            "kind": "Value",
+            "value": "12/125"
+          },
+          "worstCaseOngoingRiskInPlanR": {
+            "kind": "Value",
+            "value": "1437/125"
+          },
+          "incrementalRewardToTargetInPlanR": {
+            "kind": "Value",
+            "value": "243/125"
+          },
+          "maximumIncrementalReward": {
+            "kind": "Unbounded",
+            "direction": "Above",
+            "explanation": "A long Stock Position has no price ceiling"
+          },
+          "conditions": [
+            {
+              "id": "stop-1",
+              "role": "Stop",
+              "kind": "UnderlyingPrice",
+              "boundary": "47.5",
+              "result": {
+                "kind": "Value",
+                "value": {
+                  "status": "Active",
+                  "distance": {
+                    "dollars": "24/1",
+                    "planR": "12/125"
+                  },
+                  "overrun": null,
+                  "evidence": {
+                    "instrument": {
+                      "kind": "Stock",
+                      "symbol": "PFE"
+                    },
+                    "date": "2026-10-19",
+                    "mark": {
+                      "revisionId": "fx-0082",
+                      "revisionNumber": 1,
+                      "price": "47.9",
+                      "source": "Manual",
+                      "savedAt": "2026-10-19T21:00:00Z"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "id": "target-1",
+              "role": "Target",
+              "kind": "UnderlyingPrice",
+              "boundary": "56",
+              "result": {
+                "kind": "Value",
+                "value": {
+                  "status": "Active",
+                  "distance": {
+                    "dollars": "486/1",
+                    "planR": "243/125"
+                  },
+                  "overrun": null,
+                  "evidence": {
+                    "instrument": {
+                      "kind": "Stock",
+                      "symbol": "PFE"
+                    },
+                    "date": "2026-10-19",
+                    "mark": {
+                      "revisionId": "fx-0082",
+                      "revisionNumber": 1,
+                      "price": "47.9",
+                      "source": "Manual",
+                      "savedAt": "2026-10-19T21:00:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "observation": {
+            "instrument": {
+              "kind": "Stock",
+              "symbol": "PFE"
+            },
+            "tradingDate": "2026-10-19",
+            "mark": {
+              "revisionId": "fx-0082",
+              "revisionNumber": 1,
+              "price": "47.9",
+              "source": "Manual",
+              "savedAt": "2026-10-19T21:00:00Z"
+            }
+          },
+          "deviations": [],
+          "coveredSubtotal": null,
+          "atEntry": null,
+          "planBaseline": {
+            "kind": "Value",
+            "value": {
+              "originalPlannedRisk": "250/1",
+              "originalPlannedReward": "600/1",
+              "rewardRiskRatio": "12/5",
+              "oneR": "250/1",
+              "stopBasis": [
+                {
+                  "condition": {
+                    "factId": "fx-0072",
+                    "kind": "UnderlyingPrice",
+                    "price": "47.5"
+                  },
+                  "distance": "250/1"
+                }
+              ],
+              "targetBasis": [
+                {
+                  "condition": {
+                    "factId": "fx-0073",
+                    "kind": "UnderlyingPrice",
+                    "price": "56"
+                  },
+                  "distance": "600/1"
+                }
+              ]
+            }
+          },
+          "oneR": {
+            "kind": "Value",
+            "value": "250/1"
+          },
+          "entryQuality": {
+            "kind": "NotApplicable",
+            "reason": "EntryNotResolved"
+          }
+        }
+      }
+    }
+  ],
+  "review": {
+    "kind": "Ready",
+    "reviewDate": "2026-10-19",
+    "cutoff": "2026-10-19T20:00:00Z",
+    "families": [
+      {
+        "family": "Marks",
+        "today": [
+          {
+            "instrumentKey": "CSCO",
+            "tradingDate": "2026-10-19",
+            "trades": [
+              "fx-0041"
+            ],
+            "resolution": {
+              "kind": "Available",
+              "mark": {
+                "revisionId": "fx-0079",
+                "revisionNumber": 1,
+                "price": "51.6",
+                "source": "Manual",
+                "savedAt": "2026-10-19T21:00:00Z"
+              }
+            },
+            "resolutionRevision": 1,
+            "task": null
+          },
+          {
+            "instrumentKey": "KO",
+            "tradingDate": "2026-10-19",
+            "trades": [
+              "fx-0057"
+            ],
+            "resolution": {
+              "kind": "Available",
+              "mark": {
+                "revisionId": "fx-0081",
+                "revisionNumber": 2,
+                "price": "49.5",
+                "source": "Manual",
+                "savedAt": "2026-10-19T21:00:00Z",
+                "correctionReason": "Keyed the wrong digit from the broker statement."
+              }
+            },
+            "resolutionRevision": 2,
+            "task": null
+          },
+          {
+            "instrumentKey": "PFE",
+            "tradingDate": "2026-10-19",
+            "trades": [
+              "fx-0069"
+            ],
+            "resolution": {
+              "kind": "Available",
+              "mark": {
+                "revisionId": "fx-0082",
+                "revisionNumber": 1,
+                "price": "47.9",
+                "source": "Manual",
+                "savedAt": "2026-10-19T21:00:00Z"
+              }
+            },
+            "resolutionRevision": 1,
+            "task": null
+          }
+        ],
+        "earlier": [
+          {
+            "instrumentKey": "CSCO",
+            "missing": [
+              "2026-10-12",
+              "2026-10-13",
+              "2026-10-14",
+              "2026-10-16"
+            ],
+            "acknowledged": [],
+            "revisions": {
+              "2026-10-12": "None",
+              "2026-10-13": "None",
+              "2026-10-14": "None",
+              "2026-10-16": "None"
+            },
+            "acknowledgments": {},
+            "blocking": false
+          },
+          {
+            "instrumentKey": "KO",
+            "missing": [
+              "2026-10-12",
+              "2026-10-13",
+              "2026-10-14",
+              "2026-10-15",
+              "2026-10-16"
+            ],
+            "acknowledged": [],
+            "revisions": {
+              "2026-10-12": "None",
+              "2026-10-13": "None",
+              "2026-10-14": "None",
+              "2026-10-15": "None",
+              "2026-10-16": "None"
+            },
+            "acknowledgments": {},
+            "blocking": false
+          },
+          {
+            "instrumentKey": "PFE",
+            "missing": [
+              "2026-10-12",
+              "2026-10-13",
+              "2026-10-14",
+              "2026-10-15"
+            ],
+            "acknowledged": [
+              "2026-10-16"
+            ],
+            "revisions": {
+              "2026-10-12": "None",
+              "2026-10-13": "None",
+              "2026-10-14": "None",
+              "2026-10-15": "None",
+              "2026-10-16": 1
+            },
+            "acknowledgments": {
+              "2026-10-16": {
+                "versionId": "fx-0083",
+                "kind": "Asserted",
+                "reason": "No quote available from my broker that day.",
+                "savedAt": "2026-10-19T21:00:00Z"
+              }
+            },
+            "blocking": false
+          }
+        ]
+      },
+      {
+        "family": "Trades",
+        "trades": [
+          {
+            "tradeId": "fx-0069",
+            "underlying": "PFE",
+            "lastActivity": "2026-10-12T14:00:00Z",
+            "band": "QuantifiedPressure",
+            "reasons": [
+              {
+                "code": "PressureTowardStop"
+              }
+            ],
+            "basis": {
+              "kind": "Comparable",
+              "side": "Losing",
+              "share": "11/13",
+              "atEntry": "156/1",
+              "now": "24/1"
+            }
+          },
+          {
+            "tradeId": "fx-0057",
+            "underlying": "KO",
+            "lastActivity": "2026-10-12T15:00:00Z",
+            "band": "QuantifiedPressure",
+            "reasons": [
+              {
+                "code": "PressureTowardStop"
+              }
+            ],
+            "basis": {
+              "kind": "Comparable",
+              "side": "Losing",
+              "share": "17/67",
+              "atEntry": "268/1",
+              "now": "200/1"
+            }
+          },
+          {
+            "tradeId": "fx-0041",
+            "underlying": "CSCO",
+            "lastActivity": "2026-10-12T18:00:00Z",
+            "band": "QuantifiedPressure",
+            "reasons": [
+              {
+                "code": "PressureTowardTarget"
+              }
+            ],
+            "basis": {
+              "kind": "Comparable",
+              "side": "Winning",
+              "share": "7/31",
+              "atEntry": "682/1",
+              "now": "528/1"
+            }
+          }
+        ]
+      }
+    ],
+    "completion": {
+      "kind": "Incomplete",
+      "reasons": [
+        {
+          "code": "ActionMissing",
+          "tradeId": "fx-0069"
+        }
+      ]
+    }
+  },
+  "reviewTrades": [
+    {
+      "tradeId": "fx-0069",
+      "underlying": "PFE",
+      "attention": {
+        "tradeId": "fx-0069",
+        "underlying": "PFE",
+        "lastActivity": "2026-10-12T14:00:00Z",
+        "band": "QuantifiedPressure",
+        "reasons": [
+          {
+            "code": "PressureTowardStop"
+          }
+        ],
+        "basis": {
+          "kind": "Comparable",
+          "side": "Losing",
+          "share": "11/13",
+          "atEntry": "156/1",
+          "now": "24/1"
+        }
+      },
+      "labels": {
+        "strategy": "Long Stock",
+        "account": "Brokerage",
+        "institution": "Charles Schwab"
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": "60/1",
+        "price": "501/10"
+      },
+      "frame": {
+        "instrumentKey": "PFE",
+        "tradingDate": "2026-10-19",
+        "closeInstant": "2026-10-19T20:00:00Z",
+        "resolution": {
+          "kind": "Available",
+          "mark": {
+            "revisionId": "fx-0082",
+            "revisionNumber": 1,
+            "price": "47.9",
+            "source": "Manual",
+            "savedAt": "2026-10-19T21:00:00Z"
+          }
+        }
+      },
+      "evaluation": {
+        "kind": "Evaluated",
+        "valuationDate": "2026-10-19",
+        "coverage": {
+          "kind": "Available",
+          "revisionId": "fx-0082",
+          "revisionNumber": 1
+        },
+        "openQuantity": {
+          "kind": "Value",
+          "value": "60/1"
+        },
+        "openCost": {
+          "kind": "Value",
+          "value": "3006/1"
+        },
+        "unconsumedOpeningFees": {
+          "kind": "Value",
+          "value": "1/1"
+        },
+        "marketValue": {
+          "kind": "Value",
+          "value": "2874/1"
+        },
+        "remainingOpenPnl": {
+          "kind": "Value",
+          "value": "-133/1"
+        },
+        "realizedToDate": {
+          "kind": "Value",
+          "value": "0/1"
+        },
+        "currentMarkedPnl": {
+          "kind": "Value",
+          "value": "-133/1"
+        },
+        "currentMarkedPnlInPlanR": {
+          "kind": "Value",
+          "value": "-133/250"
+        },
+        "incurredFees": {
+          "kind": "Value",
+          "value": "1/1"
+        },
+        "ongoingRiskToStop": {
+          "kind": "Value",
+          "value": "24/1"
+        },
+        "worstCaseOngoingRisk": {
+          "kind": "Value",
+          "value": "2874/1"
+        },
+        "incrementalRewardToTarget": {
+          "kind": "Value",
+          "value": "486/1"
+        },
+        "ongoingRiskToStopInPlanR": {
+          "kind": "Value",
+          "value": "12/125"
+        },
+        "worstCaseOngoingRiskInPlanR": {
+          "kind": "Value",
+          "value": "1437/125"
+        },
+        "incrementalRewardToTargetInPlanR": {
+          "kind": "Value",
+          "value": "243/125"
+        },
+        "maximumIncrementalReward": {
+          "kind": "Unbounded",
+          "direction": "Above",
+          "explanation": "A long Stock Position has no price ceiling"
+        },
+        "conditions": [
+          {
+            "id": "stop-1",
+            "role": "Stop",
+            "kind": "UnderlyingPrice",
+            "boundary": "47.5",
+            "result": {
+              "kind": "Value",
+              "value": {
+                "status": "Active",
+                "distance": {
+                  "dollars": "24/1",
+                  "planR": "12/125"
+                },
+                "overrun": null,
+                "evidence": {
+                  "instrument": {
+                    "kind": "Stock",
+                    "symbol": "PFE"
+                  },
+                  "date": "2026-10-19",
+                  "mark": {
+                    "revisionId": "fx-0082",
+                    "revisionNumber": 1,
+                    "price": "47.9",
+                    "source": "Manual",
+                    "savedAt": "2026-10-19T21:00:00Z"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "target-1",
+            "role": "Target",
+            "kind": "UnderlyingPrice",
+            "boundary": "56",
+            "result": {
+              "kind": "Value",
+              "value": {
+                "status": "Active",
+                "distance": {
+                  "dollars": "486/1",
+                  "planR": "243/125"
+                },
+                "overrun": null,
+                "evidence": {
+                  "instrument": {
+                    "kind": "Stock",
+                    "symbol": "PFE"
+                  },
+                  "date": "2026-10-19",
+                  "mark": {
+                    "revisionId": "fx-0082",
+                    "revisionNumber": 1,
+                    "price": "47.9",
+                    "source": "Manual",
+                    "savedAt": "2026-10-19T21:00:00Z"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "observation": {
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "PFE"
+          },
+          "tradingDate": "2026-10-19",
+          "mark": {
+            "revisionId": "fx-0082",
+            "revisionNumber": 1,
+            "price": "47.9",
+            "source": "Manual",
+            "savedAt": "2026-10-19T21:00:00Z"
+          }
+        },
+        "deviations": [],
+        "coveredSubtotal": null,
+        "atEntry": null,
+        "planBaseline": {
+          "kind": "Value",
+          "value": {
+            "originalPlannedRisk": "250/1",
+            "originalPlannedReward": "600/1",
+            "rewardRiskRatio": "12/5",
+            "oneR": "250/1",
+            "stopBasis": [
+              {
+                "condition": {
+                  "factId": "fx-0072",
+                  "kind": "UnderlyingPrice",
+                  "price": "47.5"
+                },
+                "distance": "250/1"
+              }
+            ],
+            "targetBasis": [
+              {
+                "condition": {
+                  "factId": "fx-0073",
+                  "kind": "UnderlyingPrice",
+                  "price": "56"
+                },
+                "distance": "600/1"
+              }
+            ]
+          }
+        },
+        "oneR": {
+          "kind": "Value",
+          "value": "250/1"
+        },
+        "entryQuality": {
+          "kind": "NotApplicable",
+          "reason": "EntryNotResolved"
+        }
+      },
+      "form": {
+        "kind": "New",
+        "viewState": {
+          "selectedAction": "Hold"
+        }
+      },
+      "definitionRevision": "fx-0004"
+    },
+    {
+      "tradeId": "fx-0057",
+      "underlying": "KO",
+      "attention": {
+        "tradeId": "fx-0057",
+        "underlying": "KO",
+        "lastActivity": "2026-10-12T15:00:00Z",
+        "band": "QuantifiedPressure",
+        "reasons": [
+          {
+            "code": "PressureTowardStop"
+          }
+        ],
+        "basis": {
+          "kind": "Comparable",
+          "side": "Losing",
+          "share": "17/67",
+          "atEntry": "268/1",
+          "now": "200/1"
+        }
+      },
+      "labels": {
+        "strategy": "Long Stock",
+        "account": "Individual",
+        "institution": "Fidelity"
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": "100/1",
+        "price": "2509/50"
+      },
+      "frame": {
+        "instrumentKey": "KO",
+        "tradingDate": "2026-10-19",
+        "closeInstant": "2026-10-19T20:00:00Z",
+        "resolution": {
+          "kind": "Available",
+          "mark": {
+            "revisionId": "fx-0081",
+            "revisionNumber": 2,
+            "price": "49.5",
+            "source": "Manual",
+            "savedAt": "2026-10-19T21:00:00Z",
+            "correctionReason": "Keyed the wrong digit from the broker statement."
+          }
+        }
+      },
+      "evaluation": {
+        "kind": "Evaluated",
+        "valuationDate": "2026-10-19",
+        "coverage": {
+          "kind": "Available",
+          "revisionId": "fx-0081",
+          "revisionNumber": 2
+        },
+        "openQuantity": {
+          "kind": "Value",
+          "value": "100/1"
+        },
+        "openCost": {
+          "kind": "Value",
+          "value": "5018/1"
+        },
+        "unconsumedOpeningFees": {
+          "kind": "Value",
+          "value": "2/1"
+        },
+        "marketValue": {
+          "kind": "Value",
+          "value": "4950/1"
+        },
+        "remainingOpenPnl": {
+          "kind": "Value",
+          "value": "-70/1"
+        },
+        "realizedToDate": {
+          "kind": "Value",
+          "value": "0/1"
+        },
+        "currentMarkedPnl": {
+          "kind": "Value",
+          "value": "-70/1"
+        },
+        "currentMarkedPnlInPlanR": {
+          "kind": "Value",
+          "value": "-7/25"
+        },
+        "incurredFees": {
+          "kind": "Value",
+          "value": "2/1"
+        },
+        "ongoingRiskToStop": {
+          "kind": "Value",
+          "value": "200/1"
+        },
+        "worstCaseOngoingRisk": {
+          "kind": "Value",
+          "value": "4950/1"
+        },
+        "incrementalRewardToTarget": {
+          "kind": "Value",
+          "value": "650/1"
+        },
+        "ongoingRiskToStopInPlanR": {
+          "kind": "Value",
+          "value": "4/5"
+        },
+        "worstCaseOngoingRiskInPlanR": {
+          "kind": "Value",
+          "value": "99/5"
+        },
+        "incrementalRewardToTargetInPlanR": {
+          "kind": "Value",
+          "value": "13/5"
+        },
+        "maximumIncrementalReward": {
+          "kind": "Unbounded",
+          "direction": "Above",
+          "explanation": "A long Stock Position has no price ceiling"
+        },
+        "conditions": [
+          {
+            "id": "stop-1",
+            "role": "Stop",
+            "kind": "UnderlyingPrice",
+            "boundary": "47.5",
+            "result": {
+              "kind": "Value",
+              "value": {
+                "status": "Active",
+                "distance": {
+                  "dollars": "200/1",
+                  "planR": "4/5"
+                },
+                "overrun": null,
+                "evidence": {
+                  "instrument": {
+                    "kind": "Stock",
+                    "symbol": "KO"
+                  },
+                  "date": "2026-10-19",
+                  "mark": {
+                    "revisionId": "fx-0081",
+                    "revisionNumber": 2,
+                    "price": "49.5",
+                    "source": "Manual",
+                    "savedAt": "2026-10-19T21:00:00Z",
+                    "correctionReason": "Keyed the wrong digit from the broker statement."
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "target-1",
+            "role": "Target",
+            "kind": "UnderlyingPrice",
+            "boundary": "56",
+            "result": {
+              "kind": "Value",
+              "value": {
+                "status": "Active",
+                "distance": {
+                  "dollars": "650/1",
+                  "planR": "13/5"
+                },
+                "overrun": null,
+                "evidence": {
+                  "instrument": {
+                    "kind": "Stock",
+                    "symbol": "KO"
+                  },
+                  "date": "2026-10-19",
+                  "mark": {
+                    "revisionId": "fx-0081",
+                    "revisionNumber": 2,
+                    "price": "49.5",
+                    "source": "Manual",
+                    "savedAt": "2026-10-19T21:00:00Z",
+                    "correctionReason": "Keyed the wrong digit from the broker statement."
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "observation": {
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "KO"
+          },
+          "tradingDate": "2026-10-19",
+          "mark": {
+            "revisionId": "fx-0081",
+            "revisionNumber": 2,
+            "price": "49.5",
+            "source": "Manual",
+            "savedAt": "2026-10-19T21:00:00Z",
+            "correctionReason": "Keyed the wrong digit from the broker statement."
+          }
+        },
+        "deviations": [],
+        "coveredSubtotal": null,
+        "atEntry": null,
+        "planBaseline": {
+          "kind": "Value",
+          "value": {
+            "originalPlannedRisk": "250/1",
+            "originalPlannedReward": "600/1",
+            "rewardRiskRatio": "12/5",
+            "oneR": "250/1",
+            "stopBasis": [
+              {
+                "condition": {
+                  "factId": "fx-0060",
+                  "kind": "UnderlyingPrice",
+                  "price": "47.5"
+                },
+                "distance": "250/1"
+              }
+            ],
+            "targetBasis": [
+              {
+                "condition": {
+                  "factId": "fx-0061",
+                  "kind": "UnderlyingPrice",
+                  "price": "56"
+                },
+                "distance": "600/1"
+              }
+            ]
+          }
+        },
+        "oneR": {
+          "kind": "Value",
+          "value": "250/1"
+        },
+        "entryQuality": {
+          "kind": "Value",
+          "value": {
+            "averageEntry": {
+              "kind": "Value",
+              "value": "2509/50"
+            },
+            "windowQuantity": {
+              "kind": "Value",
+              "value": "100/1"
+            },
+            "windowFees": {
+              "kind": "Value",
+              "value": "2/1"
+            },
+            "actualInitialRisk": {
+              "kind": "Value",
+              "value": "270/1"
+            },
+            "actualInitialReward": {
+              "kind": "Value",
+              "value": "580/1"
+            },
+            "riskInPlanR": {
+              "kind": "Value",
+              "value": "27/25"
+            },
+            "slippage": {
+              "kind": "Value",
+              "value": "18/1"
+            },
+            "sizeRatio": {
+              "kind": "Value",
+              "value": "1/1"
+            },
+            "plannedRewardRisk": {
+              "kind": "Value",
+              "value": "12/5"
+            },
+            "actualRewardRisk": {
+              "kind": "Value",
+              "value": "58/27"
+            },
+            "flags": []
+          }
+        }
+      },
+      "form": {
+        "kind": "Saved",
+        "action": {
+          "id": "fx-0085",
+          "entryType": "Daily Trade Review",
+          "source": "Daily Review",
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "fx-0057"
+          },
+          "momentTime": "2026-10-19T20:00:00Z",
+          "authoredTime": "2026-10-19T21:00:00Z",
+          "reviewDate": "2026-10-19",
+          "edited": true,
+          "responses": [
+            {
+              "prompt": "Action",
+              "answer": {
+                "kind": "Option",
+                "label": "Exit"
+              }
+            },
+            {
+              "prompt": "Why are you taking this action?",
+              "answer": {
+                "kind": "Text",
+                "text": "Sell at tomorrow open if it fails to hold 49; take the loss on a close below 48.50."
+              }
+            },
+            {
+              "prompt": "Conviction now",
+              "answer": {
+                "kind": "Unanswered"
+              }
+            },
+            {
+              "prompt": "Anything you considered doing and decided against?",
+              "answer": {
+                "kind": "Unanswered"
+              }
+            },
+            {
+              "prompt": "Note",
+              "answer": {
+                "kind": "Unanswered"
+              }
+            }
+          ],
+          "entryRevision": 2,
+          "definitionId": "fx-0004",
+          "action": "Exit"
+        }
+      },
+      "definitionRevision": "fx-0004"
+    },
+    {
+      "tradeId": "fx-0041",
+      "underlying": "CSCO",
+      "attention": {
+        "tradeId": "fx-0041",
+        "underlying": "CSCO",
+        "lastActivity": "2026-10-12T18:00:00Z",
+        "band": "QuantifiedPressure",
+        "reasons": [
+          {
+            "code": "PressureTowardTarget"
+          }
+        ],
+        "basis": {
+          "kind": "Comparable",
+          "side": "Winning",
+          "share": "7/31",
+          "atEntry": "682/1",
+          "now": "528/1"
+        }
+      },
+      "labels": {
+        "strategy": "Long Stock",
+        "account": "Roth IRA",
+        "institution": "Fidelity"
+      },
+      "summary": {
+        "kind": "Stock",
+        "direction": "Long",
+        "quantity": "120/1",
+        "price": "3019/60"
+      },
+      "frame": {
+        "instrumentKey": "CSCO",
+        "tradingDate": "2026-10-19",
+        "closeInstant": "2026-10-19T20:00:00Z",
+        "resolution": {
+          "kind": "Available",
+          "mark": {
+            "revisionId": "fx-0079",
+            "revisionNumber": 1,
+            "price": "51.6",
+            "source": "Manual",
+            "savedAt": "2026-10-19T21:00:00Z"
+          }
+        }
+      },
+      "evaluation": {
+        "kind": "Evaluated",
+        "valuationDate": "2026-10-19",
+        "coverage": {
+          "kind": "Available",
+          "revisionId": "fx-0079",
+          "revisionNumber": 1
+        },
+        "openQuantity": {
+          "kind": "Value",
+          "value": "120/1"
+        },
+        "openCost": {
+          "kind": "Value",
+          "value": "6038/1"
+        },
+        "unconsumedOpeningFees": {
+          "kind": "Value",
+          "value": "3/1"
+        },
+        "marketValue": {
+          "kind": "Value",
+          "value": "6192/1"
+        },
+        "remainingOpenPnl": {
+          "kind": "Value",
+          "value": "151/1"
+        },
+        "realizedToDate": {
+          "kind": "Value",
+          "value": "0/1"
+        },
+        "currentMarkedPnl": {
+          "kind": "Value",
+          "value": "151/1"
+        },
+        "currentMarkedPnlInPlanR": {
+          "kind": "Value",
+          "value": "151/250"
+        },
+        "incurredFees": {
+          "kind": "Value",
+          "value": "3/1"
+        },
+        "ongoingRiskToStop": {
+          "kind": "Value",
+          "value": "492/1"
+        },
+        "worstCaseOngoingRisk": {
+          "kind": "Value",
+          "value": "6192/1"
+        },
+        "incrementalRewardToTarget": {
+          "kind": "Value",
+          "value": "528/1"
+        },
+        "ongoingRiskToStopInPlanR": {
+          "kind": "Value",
+          "value": "246/125"
+        },
+        "worstCaseOngoingRiskInPlanR": {
+          "kind": "Value",
+          "value": "3096/125"
+        },
+        "incrementalRewardToTargetInPlanR": {
+          "kind": "Value",
+          "value": "264/125"
+        },
+        "maximumIncrementalReward": {
+          "kind": "Unbounded",
+          "direction": "Above",
+          "explanation": "A long Stock Position has no price ceiling"
+        },
+        "conditions": [
+          {
+            "id": "stop-1",
+            "role": "Stop",
+            "kind": "UnderlyingPrice",
+            "boundary": "47.5",
+            "result": {
+              "kind": "Value",
+              "value": {
+                "status": "Active",
+                "distance": {
+                  "dollars": "492/1",
+                  "planR": "246/125"
+                },
+                "overrun": null,
+                "evidence": {
+                  "instrument": {
+                    "kind": "Stock",
+                    "symbol": "CSCO"
+                  },
+                  "date": "2026-10-19",
+                  "mark": {
+                    "revisionId": "fx-0079",
+                    "revisionNumber": 1,
+                    "price": "51.6",
+                    "source": "Manual",
+                    "savedAt": "2026-10-19T21:00:00Z"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "target-1",
+            "role": "Target",
+            "kind": "UnderlyingPrice",
+            "boundary": "56",
+            "result": {
+              "kind": "Value",
+              "value": {
+                "status": "Active",
+                "distance": {
+                  "dollars": "528/1",
+                  "planR": "264/125"
+                },
+                "overrun": null,
+                "evidence": {
+                  "instrument": {
+                    "kind": "Stock",
+                    "symbol": "CSCO"
+                  },
+                  "date": "2026-10-19",
+                  "mark": {
+                    "revisionId": "fx-0079",
+                    "revisionNumber": 1,
+                    "price": "51.6",
+                    "source": "Manual",
+                    "savedAt": "2026-10-19T21:00:00Z"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "observation": {
+          "instrument": {
+            "kind": "Stock",
+            "symbol": "CSCO"
+          },
+          "tradingDate": "2026-10-19",
+          "mark": {
+            "revisionId": "fx-0079",
+            "revisionNumber": 1,
+            "price": "51.6",
+            "source": "Manual",
+            "savedAt": "2026-10-19T21:00:00Z"
+          }
+        },
+        "deviations": [],
+        "coveredSubtotal": null,
+        "atEntry": null,
+        "planBaseline": {
+          "kind": "Value",
+          "value": {
+            "originalPlannedRisk": "250/1",
+            "originalPlannedReward": "600/1",
+            "rewardRiskRatio": "12/5",
+            "oneR": "250/1",
+            "stopBasis": [
+              {
+                "condition": {
+                  "factId": "fx-0044",
+                  "kind": "UnderlyingPrice",
+                  "price": "47.5"
+                },
+                "distance": "250/1"
+              }
+            ],
+            "targetBasis": [
+              {
+                "condition": {
+                  "factId": "fx-0045",
+                  "kind": "UnderlyingPrice",
+                  "price": "56"
+                },
+                "distance": "600/1"
+              }
+            ]
+          }
+        },
+        "oneR": {
+          "kind": "Value",
+          "value": "250/1"
+        },
+        "entryQuality": {
+          "kind": "Value",
+          "value": {
+            "averageEntry": {
+              "kind": "Value",
+              "value": "2509/50"
+            },
+            "windowQuantity": {
+              "kind": "Value",
+              "value": "100/1"
+            },
+            "windowFees": {
+              "kind": "Value",
+              "value": "2/1"
+            },
+            "actualInitialRisk": {
+              "kind": "Value",
+              "value": "270/1"
+            },
+            "actualInitialReward": {
+              "kind": "Value",
+              "value": "580/1"
+            },
+            "riskInPlanR": {
+              "kind": "Value",
+              "value": "27/25"
+            },
+            "slippage": {
+              "kind": "Value",
+              "value": "18/1"
+            },
+            "sizeRatio": {
+              "kind": "Value",
+              "value": "1/1"
+            },
+            "plannedRewardRisk": {
+              "kind": "Value",
+              "value": "12/5"
+            },
+            "actualRewardRisk": {
+              "kind": "Value",
+              "value": "58/27"
+            },
+            "flags": []
+          }
+        }
+      },
+      "form": {
+        "kind": "Saved",
+        "action": {
+          "id": "fx-0084",
+          "entryType": "Daily Trade Review",
+          "source": "Daily Review",
+          "anchor": {
+            "kind": "Trade",
+            "tradeId": "fx-0041"
+          },
+          "momentTime": "2026-10-19T20:00:00Z",
+          "authoredTime": "2026-10-19T21:00:00Z",
+          "reviewDate": "2026-10-19",
+          "responses": [
+            {
+              "prompt": "Action",
+              "answer": {
+                "kind": "Option",
+                "label": "Hold"
+              }
+            },
+            {
+              "prompt": "Why are you taking this action?",
+              "answer": {
+                "kind": "Text",
+                "text": "Let the position work; the Stop at 47.50 still stands."
+              }
+            },
+            {
+              "prompt": "Conviction now",
+              "answer": {
+                "kind": "Unanswered"
+              }
+            },
+            {
+              "prompt": "Anything you considered doing and decided against?",
+              "answer": {
+                "kind": "Unanswered"
+              }
+            },
+            {
+              "prompt": "Note",
+              "answer": {
+                "kind": "Unanswered"
+              }
+            }
+          ],
+          "entryRevision": 1,
+          "definitionId": "fx-0004",
+          "action": "Hold"
+        }
+      },
+      "definitionRevision": "fx-0004"
+    }
+  ]
+}

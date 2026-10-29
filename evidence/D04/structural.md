@@ -1265,3 +1265,29 @@ ocr review of `6307a17`: session `c6e46d70-e43a-4349-8bf8-bb803fbc72f4` (scratch
 - code at `6307a17`, 2026-10-29 03:16 EDT: unit 798, integration 52, browser 124; checks 12 of 12. `suite-runs/t4.28-*`.
 
 Fully green: `verify:capacity` passes at schema 3. T4.28 is complete.
+
+## T4.29 Freeze the schema-v3 fixture; migrate the v1 and v2 fixtures
+
+Commands and results:
+
+- `npm run fixtures:freeze -- --schema 3` exit 0: "fixtures:freeze OK: tests/fixtures/workspace-v3 (schema 3, 5 Planned and 3 Open Trades, 3 Accounts)". It writes `tests/fixtures/workspace-v3/dump.json` and `expected-views.json`. The existing `workspace-v1/` and `workspace-v2/` are untouched (A51; `git diff --stat` on them is empty).
+- `npm run verify:fixtures` exit 0:
+  - `workspace-v1: schema 1, migrated to 3 into tj-ws-verify-0001, views equal`
+  - `workspace-v2: schema 2, migrated to 3 into tj-ws-verify-0001, views equal`
+  - `workspace-v3: schema 3, opened without migration, views equal`
+  - `verify:fixtures OK: workspace-v1, workspace-v2, workspace-v3 open Ready at schema 3 with views equal to their snapshots`
+
+What the v3 dump holds, as of Monday 2026-10-19 17:00 America/New_York (`2026-10-19T21:00:00Z`; v1 and v2 stay at Friday 2026-10-16T21:00:00Z; the 19th is inside the session-policy calendar's coverage and is the latest completed session, so it is the Review Date): D2's content (5 Planned, 3 Open Trades) plus Marks (CSCO 10-15 and 10-19; KO 10-19 recorded at 49.40 and corrected to 49.50; PFE 10-19), an acknowledgment (PFE 2026-10-16 AssertUnavailable), the skipped-session gap (CSCO 10-16 sits between its 10-15 and 10-19 Marks, listed as earlier and non-blocking), and Actions for 2026-10-19: CSCO Hold with an Intent, KO Exit with an Intent edited once (entry revision 2, `edited`), PFE without an Action, so the Review is Incomplete with ActionMissing.
+
+Field rule and defined value:
+
+- `viewsOf(app, schemaVersion, asOf)` adds, for schema 3, the Review overview and each eligible Trade's Action form (`review`, `reviewTrades`), with the opaque `binding` and `saveBinding` left out. The older callers keep passing two arguments; schema 1 and 2 views are unchanged.
+- The snapshot comparison is D2's `compareSnapshot` (T2.56), reused unchanged: fields the snapshot holds must equal, added fields are allowed.
+- For a fixture older than schema 3, `verify:fixtures` also asserts the defined value: each Open row's nine current figures (`remainingOpenPnl`, `currentMarkedPnl` and its R, `ongoingRiskToStop` and its R, `worstCaseOngoingRisk` and its R, `incrementalRewardToTarget` and its R) and every condition result are `Unavailable` with reason `MarkMissing`, and `markResolution` is `Missing`. v2 has 3 Open Trades; the check fails if there are none. No conflict with SessionPolicyNotCovered: 2026-10-16 is covered.
+
+Mutation checks (each restored, then `verify:fixtures` green again):
+
+- Changed the KO Mark price `"49.5"` to `"49.6"` in the v3 `expected-views.json`: `FAIL workspace-v3: views differ from expected-views.json at open[1].current.markResolution.mark.price`, exit 1.
+- Changed the asserted reason in `isMarkMissing` from `MarkMissing` to `AwaitingClose`: `FAIL workspace-v2: not Unavailable(MarkMissing) after migration: fx-0040.remainingOpenPnl, ...`, exit 1.
+
+Checks: `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` all exit 0. `src/coordinators/workspace/migration.test.ts` and `tests/integration/d2/migration.test.ts` (callers of `viewsOf`): 26 passed.

@@ -1,7 +1,8 @@
 // npm run fixtures:freeze -- --schema <n>: builds the schema-<n> Workspace fixture through the
 // facade only and writes its raw dump and expected views (D1 T1.31). A committed fixture is never
 // regenerated, so an existing one is refused. Schema 2 (D2 T2.19) adds three Open Trades to D1's
-// content.
+// content. Schema 3 (D4 T4.29) adds Marks, an acknowledgment, and Daily Trade Review Actions for the
+// Review Date of Monday 2026-10-19, 17:00 America/New_York.
 import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -10,7 +11,11 @@ import type { ConfirmPlanResult, PositionChangeMember, ReflectionDisposition } f
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
 import { dumpDatabases, FIXTURES_DIR, GENERATOR_VERSION, launchOn, viewsOf, type WorkspaceDump } from './fixtures/workspace-fixture.ts';
 
-const AS_OF = '2026-10-16T21:00:00Z';
+// Schemas 1 and 2 were frozen at Friday 17:00 America/New_York; schema 3 is frozen at the following
+// Monday 17:00 (EDT, so 21:00Z), a session date inside the session-policy calendar's coverage, after
+// which that Monday is the latest completed session and so the Review Date.
+const AS_OF = '2026-10-19T21:00:00Z';
+const REVIEW_DATE = '2026-10-19';
 
 const flag = process.argv.indexOf('--schema');
 const schema = Number(process.argv[flag + 1]);
@@ -159,8 +164,48 @@ for (const [i, open] of openTrades.entries()) {
   }
 }
 
+// Schema 3 (D4 T4.29): Marks through the facade. CSCO has Marks for the 15th and the Review Date (the
+// 16th is a skipped session, a gap), KO's Review-date Mark carries one Correction, and PFE's 16th is
+// acknowledged as unavailable while its Review-date Mark is recorded.
+async function markSaved(command: Parameters<typeof app.MarketData.save>[0]) {
+  const result = await app.MarketData.save(command);
+  if (result.kind !== 'Saved') throw new Error(`MarketData.save ${command.instrumentKey} ${command.tradingDate}: ${result.kind}`);
+  return result;
+}
+const manualMark = (instrumentKey: string, tradingDate: string, price: string) =>
+  markSaved({ intention: 'RecordInitialManualMark', instrumentKey, tradingDate, expectedResolutionRevision: 'None', price });
+await manualMark('CSCO', '2026-10-15', '50.80');
+await manualMark('CSCO', REVIEW_DATE, '51.60');
+const koMark = await manualMark('KO', REVIEW_DATE, '49.40');
+await markSaved({ intention: 'CorrectMark', instrumentKey: 'KO', tradingDate: REVIEW_DATE, expectedResolutionRevision: koMark.resolutionRevision, price: '49.50', reason: 'Keyed the wrong digit from the broker statement.' });
+await manualMark('PFE', REVIEW_DATE, '47.90');
+await markSaved({ intention: 'AssertUnavailable', instrumentKey: 'PFE', tradingDate: '2026-10-16', expectedResolutionRevision: 'None', reason: 'No quote available from my broker that day.' });
+
+// Actions for the Review Date: CSCO Hold; KO Exit with an Intent, then edited once; PFE left without
+// an Action, so the Review is Incomplete.
+const review = await app.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: AS_OF });
+if (review.kind !== 'Ready' || review.reviewDate !== REVIEW_DATE) throw new Error(`DailyReview.open: ${review.kind}`);
+let reviewBinding = review.binding;
+const reviewed = review.families.flatMap((f) => (f.family === 'Trades' ? f.trades : []));
+async function actionForm(underlying: string) {
+  const item = reviewed.find((t) => t.underlying === underlying);
+  if (!item) throw new Error(`${underlying} is not in the Review`);
+  const form = await app.DailyReview.getTrade({ reviewDate: REVIEW_DATE, tradeId: item.tradeId, binding: reviewBinding });
+  if (form.kind !== 'Ready') throw new Error(`DailyReview.getTrade ${underlying}: ${form.kind}`);
+  return form.trade;
+}
+async function saveAction(underlying: string, action: 'Hold' | 'Exit', intent: string) {
+  const trade = await actionForm(underlying);
+  const result = await app.DailyReview.save({ kind: 'SaveTradeAction', binding: trade.saveBinding, action, intent });
+  if (result.kind !== 'Saved') throw new Error(`DailyReview.save ${underlying}: ${result.kind}`);
+  if (result.review.kind === 'Ready') reviewBinding = result.review.binding;
+}
+await saveAction('CSCO', 'Hold', 'Let the position work; the Stop at 47.50 still stands.');
+await saveAction('KO', 'Exit', 'Sell at tomorrow open if it fails to hold 49.');
+await saveAction('KO', 'Exit', 'Sell at tomorrow open if it fails to hold 49; take the loss on a close below 48.50.');
+
 const dump: WorkspaceDump = { schemaVersion: SCHEMA_VERSION, generatorVersion: GENERATOR_VERSION, asOf: AS_OF, databases: await dumpDatabases(factory) };
-const views = await viewsOf(app, SCHEMA_VERSION);
+const views = await viewsOf(app, SCHEMA_VERSION, AS_OF);
 await mkdir(dir, { recursive: true });
 await writeFile(path.join(dir, 'dump.json'), `${JSON.stringify(dump, null, 2)}\n`);
 await writeFile(path.join(dir, 'expected-views.json'), `${JSON.stringify(views, null, 2)}\n`);
