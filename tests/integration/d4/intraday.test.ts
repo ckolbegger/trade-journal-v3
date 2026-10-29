@@ -33,7 +33,7 @@ describe('I4.18 intraday and missing lines', () => {
   it('should show AwaitingClose figures with the Monday close line of 60 shares and the 40-share at-entry line on Tuesday noon, and Missing Tuesday figures with only the Monday line on Tuesday 17:00', async () => {
     const intraday = await book(TUESDAY_NOON);
     const awaiting = { kind: 'Unavailable', reason: 'AwaitingClose', detail: { after: MONDAY } };
-    for (const app of [intraday.app, await restart(intraday.app, intraday.d)]) {
+    const check = async (app: typeof intraday.app) => {
       const item = (await openItem(app, intraday.tradeId)).current;
       const view = (await detail(app, intraday.tradeId)).current;
       if (view.evaluation.kind !== 'Evaluated') throw new Error('no evaluation');
@@ -45,12 +45,14 @@ describe('I4.18 intraday and missing lines', () => {
         expect(where.datedLine?.tradingDate).toBe(MONDAY);
         mondayLine(where.datedLine?.evaluation);
       }
-    }
+    };
+    await check(intraday.app);
+    await check(await restart(intraday.app, intraday.d));
 
     // Tuesday 17:00 with no Tuesday Mark: Tuesday is the Expected Mark Date and its Mark is Missing.
     const missing = await book(TUESDAY_1700);
     const unavailable = { kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument, date: TUESDAY } };
-    for (const app of [missing.app, await restart(missing.app, missing.d)]) {
+    const checkMissing = async (app: typeof missing.app) => {
       const item = (await openItem(app, missing.tradeId)).current;
       const view = (await detail(app, missing.tradeId)).current;
       if (view.evaluation.kind !== 'Evaluated') throw new Error('no evaluation');
@@ -67,6 +69,8 @@ describe('I4.18 intraday and missing lines', () => {
         mondayLine(where.datedLine?.evaluation);
         expect(figures.atEntry).toEqual(atEntry);
       }
-    }
+    };
+    await checkMissing(missing.app);
+    await checkMissing(await restart(missing.app, missing.d));
   });
 });
