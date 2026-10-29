@@ -1397,3 +1397,19 @@ Bug fix, post-save Mark rows keep their resolution revision. `framesOnly` return
 - code at `8584a1b`, 2026-10-29 05:41 EDT: unit 800, integration 52, browser 124; checks 12 of 12. `suite-runs/t4.30-*`.
 
 Fully green. T4.30 is complete.
+
+## T4.31 Latency harness and query-count proof, extended
+
+Change: `tools/bench-run.ts` now writes `evidence/D04/bench.md`; each launch pins `Date` to `bench/dataset.json`'s `asOf` (2028-12-29T21:35:00Z) with Playwright `context.clock.setFixedTime` (A52); timers and `performance.now` are real; the production build is measured. The Open list (figures included) is compared with `bench/expected-open-rows.json` before the runs, after each of the 30 cold starts, and after the runs; the 10 Missing Instruments' rows are in that list. New Node test `tests/integration/d4/query-count.test.ts`. No product change.
+
+Deviation to know: Playwright's clock replaces `window.performance` with a fake whose `mark` records nothing (`getEntries()` is empty) while `now` stays real, so `tj:interactive` never appeared under `setFixedTime`. The harness keeps the real `performance` in an init script before the pin and points the fake's `mark` at it in a second init script after, so the app's own marks are recorded. Only the harness changed.
+
+`tj:interactive` / `tj:open-list-ready` already require every row's figures: the marks fire when the Open list is Ready, and `browseTrades` returns each item with its Position, Net cost and current Mark figures in the same response (no second fetch), so no UI change was made. Each cold run's rendered table is also checked cell by cell against the expected rows, untimed.
+
+Commands and results:
+- `npm run bench:run`: exit 0. Cold p95 98.9 ms (budget 2,500), warm p95 44.4 ms (budget 1,500); medians cold 93.0 ms, warm 41.1 ms; Open list 200 rows equal before and after, and after each cold start. Raw timings in `evidence/D04/bench.md`.
+- `npm run test:integration -- d4/query-count`: 1 passed. Counts, identical at 100 and 1,255 sessions per Instrument (4 Open Trades on 3 Instruments, one Missing on the as-of date):
+  - Open page: trades `byLifecycleActivity` getAll (count 201) x1; observations getAll x1; `byInstrumentDate` openCursor x1 (the Missing Instrument).
+  - Review open: the same three, then `byInstrumentDate` getAll x3 (one gap request per Instrument), then `journalObligations` getAll x1.
+- The history size is 1,255 sessions, the most the session policy covers from 2024-01-02, in place of the plan's round 1,260.
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`: exit 0.
