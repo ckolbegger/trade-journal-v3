@@ -140,7 +140,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
         <legend>Action</legend>
         {CHOICES.map((choice) => (
           <label key={choice}>
-            <input type="radio" name="action" value={choice} checked={action === choice} onChange={() => setAction(choice)} />
+            <input type="radio" name="action" value={choice} checked={action === choice} disabled={saving} onChange={() => setAction(choice)} />
             {choice}
           </label>
         ))}
@@ -148,7 +148,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
       <div className="field">
         <label>
           {required ? 'Intent (required)' : 'Intent (optional)'}
-          <textarea id={intentField} value={intent} onChange={(e) => setIntent(e.target.value)} {...describedBy(intentField)} />
+          <textarea id={intentField} value={intent} disabled={saving} onChange={(e) => setIntent(e.target.value)} {...describedBy(intentField)} />
         </label>
         {fieldError(intentField)}
       </div>

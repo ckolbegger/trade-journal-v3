@@ -490,6 +490,30 @@ function deferred<T>() {
   return { promise, resolve };
 }
 
+describe('Action form while saving', () => {
+  it('should disable the Action choices and Intent while a save is in flight', async () => {
+    const user = userEvent.setup();
+    const facade = walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ'));
+    const held = deferred<SaveDailyReviewResult>();
+    vi.mocked(facade.DailyReview.save).mockReturnValue(held.promise);
+    renderWalk(facade);
+    const trade = await openTrade(user, 'XYZ');
+    await user.click(within(trade).getByRole('radio', { name: 'Exit' }));
+    await user.type(within(trade).getByRole('textbox', { name: /Intent/ }), 'Plan changed.');
+    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+
+    for (const radio of within(trade).getAllByRole('radio')) expect(radio).toHaveProperty('disabled', true);
+    expect(within(trade).getByRole('textbox', { name: /Intent/ })).toHaveProperty('disabled', true);
+
+    held.resolve({ kind: 'Conflict' });
+    await within(trade).findByRole('alert');
+    for (const radio of within(trade).getAllByRole('radio')) expect(radio).toHaveProperty('disabled', false);
+    const intent = within(trade).getByRole('textbox', { name: /Intent/ });
+    expect(intent).toHaveProperty('disabled', false);
+    expect(intent).toHaveProperty('value', 'Plan changed.');
+  });
+});
+
 describe('Results for a Trade no longer open', () => {
   const post = (nextStep: Extract<NonNullable<Extract<SaveDailyReviewResult, { kind: 'Saved' }>['review']>, { kind: 'Ready' }>['nextStep']) =>
     ({ kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 3 }, completion: { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't2' }, { code: 'ActionMissing', tradeId: 't3' }] }, nextStep, binding }) as const;
