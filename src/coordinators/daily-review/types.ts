@@ -6,7 +6,7 @@ import type { Rational } from '../../domain/values/index.ts';
 import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { StorageFailure } from '../mutation-guard.ts';
 import type { DailyAction, JournalIssue, JournalObligationKey } from '../../modules/journal/index.ts';
-import type { MarkFrame, MarketDataIssue, MarkResolution } from '../../modules/market-data/index.ts';
+import type { ExpectedResolutionRevision, MarkFrame, MarketDataIssue, MarkResolution } from '../../modules/market-data/index.ts';
 
 // The request names the date and the as-of instant (Daily Review, "Date, eligibility, and ordering").
 // D4 opens LatestCompleted only (P15); an exact date arrives in D15.
@@ -66,6 +66,8 @@ export interface MarkRow {
   readonly tradingDate: string;
   readonly trades: readonly string[];
   readonly resolution: MarkResolution;
+  // The revision the key was read at: the binding a save of its Mark presents.
+  readonly resolutionRevision: ExpectedResolutionRevision;
   readonly task: 'Manual' | null;
 }
 
@@ -76,6 +78,8 @@ export interface HistoricalGapGroup {
   readonly missing: readonly string[];
   // Sessions the trader acknowledged as unavailable; also listed apart from the Missing ones.
   readonly acknowledged: readonly string[];
+  // The resolutionRevision of each listed date, the binding a save of its Mark presents.
+  readonly revisions: Readonly<Record<string, ExpectedResolutionRevision>>;
   readonly blocking: false;
 }
 

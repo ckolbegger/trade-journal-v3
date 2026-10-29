@@ -87,7 +87,7 @@ describe('recover without a provider (A56)', () => {
     const { marketData } = await fixture();
     const result = await marketData.recover(review([MNO, XYZ]));
     if (result.kind !== 'Recovered') throw new Error('expected a recovery');
-    expect(result.gaps).toEqual([
+    expect(result.gaps).toMatchObject([
       { instrumentKey: 'MNO', missing: ['2026-10-09'], acknowledged: [] },
       { instrumentKey: 'XYZ', missing: [], acknowledged: [] },
     ]);
@@ -99,7 +99,7 @@ describe('recover without a provider (A56)', () => {
     const result = await marketData.recover(review([MNO], '2026-10-13'));
     if (result.kind !== 'Recovered') throw new Error('expected a recovery');
     // 2026-10-12 is a Missing session now historical; 2026-10-09 is acknowledged and stays recoverable.
-    expect(result.gaps).toEqual([{ instrumentKey: 'MNO', missing: ['2026-10-12'], acknowledged: ['2026-10-09'] }]);
+    expect(result.gaps).toMatchObject([{ instrumentKey: 'MNO', missing: ['2026-10-12'], acknowledged: ['2026-10-09'] }]);
   });
 
   it('should start relevance at the first session whose close is at or after the earliest exposure, so a first fill at Monday 17:00 starts relevance on Tuesday', async () => {
@@ -110,11 +110,27 @@ describe('recover without a provider (A56)', () => {
     const atClose = { instrumentKey: 'CCC', earliestExposure: '2026-10-12T20:00:00Z' };
     const result = await marketData.recover(review([duringSession, afterClose, atClose], '2026-10-14'));
     if (result.kind !== 'Recovered') throw new Error('expected a recovery');
-    expect(result.gaps).toEqual([
+    expect(result.gaps).toMatchObject([
       { instrumentKey: 'AAA', missing: ['2026-10-12', '2026-10-13'], acknowledged: [] },
       { instrumentKey: 'BBB', missing: ['2026-10-13'], acknowledged: [] },
       { instrumentKey: 'CCC', missing: ['2026-10-12', '2026-10-13'], acknowledged: [] },
     ]);
+  });
+
+  it('should carry each Review-date key resolutionRevision, None for a key without a record', async () => {
+    const { marketData } = await fixture();
+    await marketData.save(acknowledge('XYZ', '2026-10-12'));
+    const result = await marketData.recover(review([MNO, XYZ]));
+    if (result.kind !== 'Recovered') throw new Error('expected a recovery');
+    expect(result.resolutions.map((r) => [r.instrumentKey, r.resolutionRevision])).toEqual([['MNO', 'None'], ['XYZ', 1]]);
+  });
+
+  it('should carry the resolutionRevision of each listed gap date, None where no record exists', async () => {
+    const { marketData } = await fixture(WEDNESDAY_NOON);
+    await marketData.save(acknowledge('MNO', '2026-10-09'));
+    const result = await marketData.recover(review([MNO], '2026-10-13'));
+    if (result.kind !== 'Recovered') throw new Error('expected a recovery');
+    expect(result.gaps[0]!.revisions).toEqual({ '2026-10-12': 'None', '2026-10-09': 1 });
   });
 
   it('should return the current-date Missing keys of MNO and XYZ on 2026-10-12 as Manual tasks', async () => {
@@ -158,7 +174,7 @@ describe('recover without a provider (A56)', () => {
     expect(reads).toBe(1);
     // Both parts reflect the same snapshot: before either late Mark.
     expect(result.frames[0]!.resolution.kind).toBe('Missing');
-    expect(result.gaps).toEqual([{ instrumentKey: 'MNO', missing: ['2026-10-09'], acknowledged: [] }]);
+    expect(result.gaps).toMatchObject([{ instrumentKey: 'MNO', missing: ['2026-10-09'], acknowledged: [] }]);
   });
 
   it('should issue one gap request per Instrument, whatever the history length', async () => {
@@ -209,7 +225,7 @@ describe('recover without a provider (A56)', () => {
     );
     if (result.kind !== 'Recovered') throw new Error('expected a recovery');
     // The earliest exposure governs (A56): relevance starts Wednesday 2026-10-07, not Friday.
-    expect(result.gaps).toEqual([{ instrumentKey: 'MNO', missing: ['2026-10-07', '2026-10-08', '2026-10-09'], acknowledged: [] }]);
+    expect(result.gaps).toMatchObject([{ instrumentKey: 'MNO', missing: ['2026-10-07', '2026-10-08', '2026-10-09'], acknowledged: [] }]);
     expect(requests.filter((r) => r.store === 'observations' && r.index === 'byInstrumentDate' && r.method === 'getAll')).toHaveLength(1);
   });
 });
@@ -222,7 +238,7 @@ describe('recover outside session policy coverage (P8)', () => {
     const { marketData } = await setup(TUESDAY_NOON, policyFrom(coverage.first));
     const result = await marketData.recover(review([MNO, XYZ]));
     if (result.kind !== 'Recovered') throw new Error('expected a recovery');
-    expect(result.gaps).toEqual([
+    expect(result.gaps).toMatchObject([
       { instrumentKey: 'MNO', missing: ['2026-10-09'], acknowledged: [] },
       { instrumentKey: 'XYZ', missing: [], acknowledged: [] },
     ]);
@@ -233,7 +249,7 @@ describe('recover outside session policy coverage (P8)', () => {
     const { marketData } = await setup(TUESDAY_NOON, policyFrom('2026-10-07'));
     const result = await marketData.recover(review([MNO]));
     if (result.kind !== 'Recovered') throw new Error('expected a recovery');
-    expect(result.gaps).toEqual([{ instrumentKey: 'MNO', missing: ['2026-10-07', '2026-10-08', '2026-10-09'], acknowledged: [] }]);
+    expect(result.gaps).toMatchObject([{ instrumentKey: 'MNO', missing: ['2026-10-07', '2026-10-08', '2026-10-09'], acknowledged: [] }]);
     expect(result.diagnostics).toEqual([{ kind: 'NotConfigured' }]);
   });
 

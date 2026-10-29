@@ -122,10 +122,27 @@ describe('task families (AC-REV-002, AC-MARK-004)', () => {
       tradingDate: '2026-10-12',
       trades: [trades.c],
       resolution: { kind: 'Missing' },
+      resolutionRevision: 'None',
       task: 'Manual',
     });
     // An Instrument with an exact Mark has a row for correction but no task.
     expect(today.find((row) => row.instrumentKey === 'XYZ')).toEqual(expect.objectContaining({ trades: [trades.a], task: null, resolution: expect.objectContaining({ kind: 'Available' }) as unknown }));
+  }, 30_000);
+
+  it('should carry each Mark row and gap date the resolutionRevision its key was read at', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    await fiveTradeFixture(stack);
+    const mno = await stack.confirm({ symbol: 'MNO', shares: '100', entry: '10.00', stop: '9.00', target: '14.00', planTime: '2026-10-07T13:00:00Z' });
+    await stack.fill(mno, '2026-10-07T14:00:00Z', '100', '10.00');
+    await stack.saveMark('MNO', '10.00', '2026-10-07');
+    await stack.saveMark('MNO', '11.00', '2026-10-08');
+
+    const family = marks(await open(stack, MONDAY_1700));
+
+    // DEF has no record; XYZ has one Mark revision; the Friday gap has no record.
+    expect(family.today.find((row) => row.instrumentKey === 'DEF')?.resolutionRevision).toBe('None');
+    expect(family.today.find((row) => row.instrumentKey === 'XYZ')?.resolutionRevision).toBe(1);
+    expect(family.earlier[0]?.revisions).toEqual({ '2026-10-09': 'None' });
   }, 30_000);
 
   it('should list one Mark task for an Instrument shared by two eligible Trades, naming both', async () => {
@@ -152,7 +169,7 @@ describe('task families (AC-REV-002, AC-MARK-004)', () => {
 
     const family = marks(await open(stack, MONDAY_1700));
 
-    expect(family.earlier).toEqual([{ instrumentKey: 'MNO', missing: ['2026-10-09'], acknowledged: [], blocking: false }]);
+    expect(family.earlier).toMatchObject([{ instrumentKey: 'MNO', missing: ['2026-10-09'], acknowledged: [], blocking: false }]);
   });
 
   it('should write nothing', async () => {

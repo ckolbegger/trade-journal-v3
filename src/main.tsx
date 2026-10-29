@@ -8,12 +8,12 @@ import { browserHost } from './delivery/browser-host.ts';
 import { CAPACITY_REQUIREMENT } from './delivery/capacity.ts';
 import { RELEASE_ID } from './delivery/release-identity.ts';
 import { AppShell, type Screens } from './ui/AppShell.tsx';
-import { PageTitle } from './ui/PageTitle.tsx';
 import { useRuntime } from './ui/runtime.tsx';
 import { AboutView } from './ui/screens/AboutView.tsx';
 import { AccountsView } from './ui/screens/AccountsView.tsx';
 import { PlanForm } from './ui/screens/PlanForm.tsx';
 import { PositionChangeForm } from './ui/screens/PositionChangeForm.tsx';
+import { ReviewView } from './ui/screens/ReviewView.tsx';
 import { TradeDetail } from './ui/screens/TradeDetail.tsx';
 import { TradeList } from './ui/screens/TradeList.tsx';
 import { createReleaseUpdateController } from './ui/update/controller.ts';
@@ -81,8 +81,9 @@ async function start(container: HTMLElement) {
     'new-plan': function NewPlan() {
       return <PlanForm facade={facade} timeZone={useZone()} now={now} onDirtyChange={setUnsaved} />;
     },
-    // Placeholder until the Review screens (T4.21, T4.22) replace it.
-    review: () => <PageTitle>Review</PageTitle>,
+    review: function Review() {
+      return <ReviewView facade={facade} now={now} onDirtyChange={setUnsaved} />;
+    },
     accounts: () => <AccountsView facade={facade} />,
     about: () => <AboutView facade={facade} updates={updates} />,
     start: () => null,

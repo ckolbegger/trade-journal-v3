@@ -989,3 +989,15 @@ table.lots td:first-child {
   width: 24px;
   height: 24px;
 }
+
+/* The Review's rows (Marks and Trades): plain lists separated by a rule, each row a block of its own. */
+.review-rows {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 1rem;
+}
+
+.review-rows > li {
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--line);
+}

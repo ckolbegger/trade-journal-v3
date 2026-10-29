@@ -32,3 +32,10 @@ export const tradeSummary = (summary: PlannedTradeItem['summary']): string =>
 // Signed cost of the open exposure: a debit as Money, a credit (negative) as its magnitude then "credit".
 export const netCost = (value: Rational): string =>
   value.numerator < 0n ? `${money(Rational.of(-value.numerator, value.denominator))} credit` : money(value);
+
+// A session date as "Mon Oct 12" (a calendar date has no time zone, so UTC reads it back unchanged).
+export const shortDate = (date: string): string => {
+  const parts = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }).formatToParts(new Date(`${date}T00:00:00Z`));
+  const part = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+  return `${part('weekday')} ${part('month')} ${part('day')}`;
+};

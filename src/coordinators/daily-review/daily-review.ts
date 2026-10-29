@@ -227,6 +227,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         tradingDate,
         trades: requirements.filter((r) => r.instrument.symbol === instrumentKey).map((r) => r.tradeId),
         resolution,
+        resolutionRevision: recovered.resolutions.find((r) => r.instrumentKey === instrumentKey)?.resolutionRevision ?? 'None',
         task: resolution.kind === 'Missing' ? 'Manual' : null,
       }),
     );

@@ -184,15 +184,15 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
         </form>
       ) : (
         <>
+          {resolution.kind !== 'Available' && (
+            <button type="button" className="pill secondary" onClick={() => openForm('Enter')} disabled={saving}>
+              Enter
+            </button>
+          )}
           {resolution.kind === 'Missing' && (
-            <>
-              <button type="button" className="pill secondary" onClick={() => openForm('Enter')} disabled={saving}>
-                Enter
-              </button>
-              <button type="button" className="pill secondary" onClick={() => openForm('Acknowledge')} disabled={saving}>
-                {CANT_GET_A_PRICE}
-              </button>
-            </>
+            <button type="button" className="pill secondary" onClick={() => openForm('Acknowledge')} disabled={saving}>
+              {CANT_GET_A_PRICE}
+            </button>
           )}
           {resolution.kind === 'AcknowledgedUnavailable' && (
             <button type="button" className="pill secondary" onClick={() => void save({ intention: 'WithdrawAcknowledgment', ...key })} disabled={saving}>

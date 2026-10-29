@@ -151,6 +151,8 @@ export interface RecoverRequest {
 
 export interface ResolvedKey extends ObservationKey {
   readonly resolution: MarkResolution;
+  // The revision the key was read at: the optimistic binding a save of it presents.
+  readonly resolutionRevision: ExpectedResolutionRevision;
 }
 
 // Sessions before the Review Date that lack an effective Mark: Missing and acknowledged ones are kept apart.
@@ -158,6 +160,8 @@ export interface HistoricalGaps {
   readonly instrumentKey: string;
   readonly missing: readonly string[];
   readonly acknowledged: readonly string[];
+  // The resolutionRevision of each listed date, the binding a save of it presents.
+  readonly revisions: Readonly<Record<string, ExpectedResolutionRevision>>;
 }
 
 // Transient: it is never stored and creates no fact.
@@ -386,6 +390,9 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
               instrumentKey,
               missing: kinds.filter((k) => k.kind === 'Missing').map((k) => k.date),
               acknowledged: kinds.filter((k) => k.kind === 'AcknowledgedUnavailable').map((k) => k.date),
+              revisions: Object.fromEntries(
+                kinds.filter((k) => k.kind !== 'Available').map((k) => [k.date, revisionOf(stripRevision(stored.find((r) => r['tradingDate'] === k.date)))]),
+              ),
             };
             return { gaps, beforeCoverage };
           }),
@@ -559,7 +566,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
       return {
         kind: 'Recovered',
         frames: queried.frames,
-        resolutions: queried.frames.map(({ instrumentKey, tradingDate, resolution }) => ({ instrumentKey, tradingDate, resolution })),
+        resolutions: queried.frames.map(({ instrumentKey, tradingDate, resolution }, i) => ({ instrumentKey, tradingDate, resolution, resolutionRevision: revisionOf(read.evidence[i]!.record) })),
         gaps,
         manualTasks: queried.frames.filter((f) => f.resolution.kind === 'Missing').map(({ instrumentKey, tradingDate }) => ({ instrumentKey, tradingDate })),
         snapshotId: queried.snapshotId,

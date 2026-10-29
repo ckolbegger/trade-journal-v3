@@ -155,6 +155,19 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
     expect(screen.getByRole('button', { name: 'Enter' })).toBeTruthy();
   });
 
+  it('should offer Enter on an acknowledged key and save the Mark under that key revision', async () => {
+    const facade = facadeDouble();
+    vi.mocked(facade.MarketData.save).mockResolvedValue(savedMark(mark('52.5', 3), 2));
+    renderEntry({ kind: 'AcknowledgedUnavailable', acknowledgment: { versionId: 'a1', kind: 'Asserted', savedAt: '2026-10-12T21:00:00Z' } }, 2, { facade });
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Enter' }));
+    await user.type(screen.getByLabelText('Price'), '52.5');
+    await user.click(screen.getByRole('button', { name: 'Save Mark' }));
+
+    expect(facade.MarketData.save).toHaveBeenCalledExactlyOnceWith({ intention: 'RecordInitialManualMark', ...key, price: '52.5', expectedResolutionRevision: 2 });
+    expect(await screen.findByText('$52.50', { exact: false })).toBeTruthy();
+  });
+
   it('should show InvalidPrice, ReasonRequired, ReasonTooLong, CorrectionUnchanged, and MarkExists beside their fields and move focus to the first', async () => {
     const facade = facadeDouble();
     const save = vi.mocked(facade.MarketData.save);
