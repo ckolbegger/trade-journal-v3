@@ -1,0 +1,151 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 2,
+    "total_tokens": 149452,
+    "input_tokens": 147352,
+    "output_tokens": 2100,
+    "cache_read_tokens": 13440,
+    "elapsed": "1m37s"
+  },
+  "tool_calls": {
+    "total": 25,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 7,
+      "file_read": 16,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/TradeDetail.tsx",
+      "content": "Positive realized gains lose their plus sign because `money` only formats the amount. This affects both the current valuation and dated-close sections, which share this component. Use `signed(money)` here, as for Open P\u0026L, to meet the signed P\u0026L display requirement; add coverage with a profitable partial close (the current assertions only cover zero realized P\u0026L).",
+      "suggestion_code": "      \u003cFigure term=\"Realized to date\"\u003e{calculation(evaluation.realizedToDate, signed(money))}\u003c/Figure\u003e",
+      "existing_code": "      \u003cFigure term=\"Realized to date\"\u003e{calculation(evaluation.realizedToDate, money)}\u003c/Figure\u003e",
+      "start_line": 283,
+      "end_line": 283,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/TradeDetail.tsx",
+      "content": "This nests the overrun ternary inside the availability ternary, contrary to the review checklist. Derive the overrun display text before returning the row, using explicit branches for unavailable, no overrun, and a measured overrun.",
+      "existing_code": "                  \u003ctd className=\"number\"\u003e{reading ? (reading.overrun ? measureText(reading.overrun) : 'None') : '—'}\u003c/td\u003e",
+      "start_line": 367,
+      "end_line": 367,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Journal state and effects",
+      "files": [
+        "src/modules/journal/effects.ts",
+        "src/modules/journal/journal.ts"
+      ]
+    },
+    {
+      "label": "Trade detail UI, figures, and test fixtures",
+      "files": [
+        "src/ui/figures.ts",
+        "src/ui/screens/TradeDetail.tsx",
+        "tests/support/open-detail-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "39948aae-9b84-42d7-a379-5ea64f6109d1",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "39948aae-9b84-42d7-a379-5ea64f6109d1",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "addd9f5ca5808fdfffe732bf965bda271490c792",
+      "resolved_head": "771b37468b6c0fa17c57f34f61b44ff26ec2f7c7",
+      "exact_range": "addd9f5ca5808fdfffe732bf965bda271490c792..771b37468b6c0fa17c57f34f61b44ff26ec2f7c7",
+      "source_artifact_sha256": "d09bd3d24939d2337a5dcbc1f5874b86d6b4fc2f84f788e521ba862d14ac3d89"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "12227846100d1e2f6ca2b8e95879dcfc7565775dd2ebcf39a1469d82c3d0415b",
+          "path": "src/ui/figures.ts",
+          "fingerprint": "e096f4c69f023e682c5a5d2f1a7bd26ea53921a567e92fd0d2b1eca78fffbdb8"
+        },
+        {
+          "item_id": "751cfcaab7a5f97af3fd3f54b18520951be6a69dbe6fc0905dda4b53eb1ee309",
+          "path": "tests/support/open-detail-fixtures.ts",
+          "fingerprint": "1ab6ddfb0aa1077be5585706e54dab7cd5c251664bba85b0aaa75f222b01cf5f"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "2b8689e4431e5f9b240ba5f8c66002da5290e06a9548d0d3e1c457f24acf9b8b"
+        },
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "cb90988e36ae22b0017f51772e9091533c7806a079b25b6fcbc652f4aa0bdf41"
+        },
+        {
+          "item_id": "fd1c910f754a206e66b4e66d854fe19ed7ac30adb9c39111b3b1ccc9e7046634",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "772de496b4b10f5a2a08508ba86cecdf08be6d102703267eebab48bc64c93773"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "12227846100d1e2f6ca2b8e95879dcfc7565775dd2ebcf39a1469d82c3d0415b",
+          "path": "src/ui/figures.ts",
+          "fingerprint": "e096f4c69f023e682c5a5d2f1a7bd26ea53921a567e92fd0d2b1eca78fffbdb8"
+        },
+        {
+          "item_id": "751cfcaab7a5f97af3fd3f54b18520951be6a69dbe6fc0905dda4b53eb1ee309",
+          "path": "tests/support/open-detail-fixtures.ts",
+          "fingerprint": "1ab6ddfb0aa1077be5585706e54dab7cd5c251664bba85b0aaa75f222b01cf5f"
+        },
+        {
+          "item_id": "7a11420bfbb41bf1786c11a97abc2efd178f61cda0a62e22d7d52f9d87dbe6ab",
+          "path": "src/ui/screens/TradeDetail.tsx",
+          "fingerprint": "2b8689e4431e5f9b240ba5f8c66002da5290e06a9548d0d3e1c457f24acf9b8b"
+        },
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "cb90988e36ae22b0017f51772e9091533c7806a079b25b6fcbc652f4aa0bdf41"
+        },
+        {
+          "item_id": "fd1c910f754a206e66b4e66d854fe19ed7ac30adb9c39111b3b1ccc9e7046634",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "772de496b4b10f5a2a08508ba86cecdf08be6d102703267eebab48bc64c93773"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 96987
+  }
+}

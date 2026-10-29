@@ -1188,3 +1188,17 @@ ocr review of `06a497e`: session `c0aebc00-658c-41ff-af20-00def69cc751`, ocr ski
 - code at `06a497e` (T4.23 and B1–B3), 2026-10-29 02:22 EDT: unit 782, integration 50, browser 124; checks 11 of 12. `suite-runs/t4.23-b3-*`.
 
 Only `verify:capacity` failed (expected until T4.28). T4.23 is complete.
+
+## T4.24 UI: Trade Detail
+
+`6d91277`. `src/ui/screens/TradeDetail.tsx` adds Valuation (Expected Mark Date, Mark, Source, save time in the Workspace zone, Corrected badge with reason, Realized to date, Open P&L, Current Marked Trade P&L, Incurred fees; "Mark missing for XYZ on Tue Oct 13" linking to `/review?instrument=XYZ`; "Stale context: $51.20 from Mon Oct 12 close (stale, not used in any current figure)"; "Acknowledged unavailable for XYZ on Tue Oct 13: your acknowledgment, not a price", not a link; outside coverage no Expected Mark Date and "Not available"), Risk and reward (dollars and R; Unbounded as "Unbounded above/below"), a Conditions table (Boundary, Status, Distance, Overrun), "At <date> close" and "At entry" sections ("Risk from entry", "Reward from entry", no P&L), and Daily Trade Review Actions in the narrative (Review Date, Action, Intent, "Edited" for more than one version). The Journal's DailyReview origin and `NarrativeEntry` gain `reviewDate`, on both the staged and the committed Action. Trade Views needed no change. `src/ui/figures.ts` gains `dollarsAndR`; `calculation` is generic. Extra cases, each red then green: the narrative Entry's Review Date (Journal); Acknowledged unavailable. First-run pass, mutation-checked: every Mark-dependent figure Not available outside coverage (decision 54). No code ahead of red (two existing Journal tests went red when the staged Action lacked `reviewDate`, and were the evidence for that fix). One green row exited 1 (a test arithmetic slip). No e2e spec changed.
+
+ocr review of `6d91277`: session `39948aae-9b84-42d7-a379-5ea64f6109d1` (scratch clone; the reviewer read the tests), 5 files, 2 comments. `ocr/T4.24-6d91277.json`. The reviewer traced that every figure renders unavailable as words, all R figures use the Plan's 1R, Distance and Overrun are magnitudes, the save time uses the screen's Workspace-zone formatter, Edited follows the Journal spec, origins without `reviewDate` read safely (the row is omitted), and the Open list and Review output are unchanged. Note for the user: Actions saved before this commit show no Review Date; no Action data has shipped (schema 3 is new in D4 and T4.29's fixtures are not yet frozen).
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/ui/screens/TradeDetail.tsx:283` | Realized to date is unsigned while the sibling P&L figures are signed | Valid (ui-contract: units and sign where ambiguity is possible; untested beyond $0.00) | Bug task T4.24-B1 |
+| low | `TradeDetail.tsx:367` | Nested ternary in the Overrun cell | Doubtful: style only, correct | Dismissed |
+
+### T4.24-B1 Realized to date carries its sign
+- it should show a realized gain with a plus sign and a loss with a minus sign
