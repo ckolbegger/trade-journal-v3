@@ -1539,3 +1539,18 @@ Fix (test harness only): `tools/bench/pin.ts` (`pinAsOf` pins `Date` and points 
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | exit 0 each |
 
 Earlier T4.31 numbers (cold p95 98.9 ms, median 93.0; warm p95 44.4 ms, median 41.1) are kept in `evidence/D04/bench.md` marked superseded. Plan note: A52's "pins Date" wording should say Date and Temporal.Now.instant.
+
+### T4.33-B1
+
+Defect confirmed: `saveAction` in `e2e/d4/support.ts` returned after clicking Save, before `DailyReview.save` resolved. `select()` in `ReviewView.tsx` sends the Review's current binding to `getTrade`; a late `saved()` updates the binding but does not move the selection, so a form opened in between keeps the old binding. Affected `review.spec.ts` (four saves in a row) and `acknowledge.spec.ts` (two).
+
+Fix (test helper only): `saveAction` takes the form's element handle before pressing Save and waits for it to become hidden (detached) after. The form is replaced only once the save result is applied. `enterMark` and `acknowledgeMark` already end on a result-only text ("Manual", "Acknowledged Unavailable") and need no change.
+
+| Command | Result |
+|---|---|
+| Scratch build with a 1.5 s delay before `DailyReview.save` in `ActionForm.tsx` (restored afterwards; `npm run build:releases` rebuilt d4), scratch spec reading state at helper return | old helper: form still open, row "Action missing"; new helper: form gone, row "Action saved" |
+| `npx playwright test e2e/d4` three times | 7 passed each time |
+| `npm run test:e2e` | 131 passed (4.0m) |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | exit 0 each |
+
+Product observation (not changed): with an untouched form (one-click Hold) the form is not dirty, so the walk buttons (disabled only while an Action form is dirty) and Continue to Trades (disabled only while refreshing or dirty) stay clickable during the save. Probed with the delayed build: Review DEF and Continue were both enabled during the save. Opening DEF then, and saving it, ended Complete with both Actions saved and no notice in that run, so the stale-binding outcome (a Review changed or Conflict notice on the next Save) was not reproduced; the window exists but the visible effect depends on timing.

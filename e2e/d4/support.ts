@@ -156,12 +156,16 @@ export async function continueToTrades(page: Page): Promise<void> {
 
 export const actionForm = (page: Page): Locator => page.getByRole('form', { name: 'Action' });
 
-// Fills the open Action form and presses Save; Hold needs no Intent.
+// Fills the open Action form and presses Save; Hold needs no Intent. Returns once the save result has
+// rendered: a Saved result replaces the form (the next Trade's form, or none), so the element that was
+// pressed is gone. Until then the Review's binding is the old one, and opening another Trade would use it.
 export async function saveAction(page: Page, action: 'Hold' | 'Exit' | 'Roll' | 'Adjust', intent?: string): Promise<void> {
   const form = actionForm(page);
+  const pressed = await form.elementHandle();
   await form.getByRole('radio', { name: action, exact: true }).check();
   if (intent !== undefined) await form.getByLabel(/^Intent/).fill(intent);
   await form.getByRole('button', { name: 'Save' }).click();
+  await pressed?.waitForElementState('hidden', READY);
 }
 
 // ---- Stored records, read through the probe ---------------------------------------------------
