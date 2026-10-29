@@ -225,6 +225,30 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
     expect(document.activeElement).toBe(exists);
   });
 
+  it('should ask the acknowledgment form for why the trader cannot get a price, and the correction form for the reason for the correction', async () => {
+    const facade = facadeDouble();
+    const save = vi.mocked(facade.MarketData.save);
+    renderEntry({ kind: 'Missing' }, 'None', { facade });
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: "Can't get a price" }));
+    const reason = screen.getByLabelText('Reason (required)');
+    save.mockResolvedValueOnce(rejected({ field: 'reason', code: 'ReasonRequired' }));
+    await user.click(screen.getByRole('button', { name: 'Save acknowledgment' }));
+    const asked = await screen.findByText("Enter why you can't get a price.");
+    expect(screen.queryByText('Enter the reason for the correction.')).toBeNull();
+    expect(reason.getAttribute('aria-describedby')).toBe(asked.id);
+    expect(document.activeElement).toBe(reason);
+    cleanup();
+
+    renderEntry(mark('52.5'), 1, { facade });
+    await user.click(screen.getByRole('button', { name: 'Correct' }));
+    await user.type(screen.getByLabelText('Price'), '53');
+    save.mockResolvedValueOnce(rejected({ field: 'reason', code: 'ReasonRequired' }));
+    await user.click(screen.getByRole('button', { name: 'Save correction' }));
+    expect(await screen.findByText('Enter the reason for the correction.')).toBeTruthy();
+    expect(screen.queryByText("Enter why you can't get a price.")).toBeNull();
+  });
+
   it('should show PriceNegative beside the price and any other rejection for the Mark as a whole, even with no form open', async () => {
     const facade = facadeDouble();
     const save = vi.mocked(facade.MarketData.save);

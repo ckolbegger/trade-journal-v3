@@ -1709,3 +1709,11 @@ The Review's Trade shows Worst-Case Ongoing Risk after Ongoing Risk to Stop, and
 - `npx vitest run src` : exit 0; 61 files, 816 passed
 - `npm run build:releases` then `npx playwright test e2e/d4` : 16 passed
 - `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` : each exit 0
+
+### T4.34-B3
+
+The acknowledgment form's blank-reason message speaks of the acknowledgment: "Enter why you can't get a price." (the correction form keeps "Enter the reason for the correction."). Withdraw has no reason field. Substituted in `MarkEntry.tsx` for an AssertUnavailable save, since `mark-issues.ts` is outside this task's scope.
+
+- `tdd.sh red` / `green` for the acknowledgment-versus-correction message case : red (`Unable to find an element with the text: Enter why you can't get a price.`), then green
+- `npx vitest run src/ui` : exit 0; 19 files, 294 passed
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` : each exit 0

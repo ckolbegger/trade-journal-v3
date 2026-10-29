@@ -22,7 +22,8 @@ export interface MarkEntryProps {
 
 // The plan's and the acceptance rows' exact label, with a straight apostrophe.
 const CANT_GET_A_PRICE = "Can't get a price";
-const FORM_LABEL = { Enter: 'Enter the Mark', Correct: 'Correct the Mark', Acknowledge: CANT_GET_A_PRICE } as const;
+const ACKNOWLEDGMENT_REASON_REQUIRED = "Enter why you can't get a price.";
+const FORM_LABEL ={ Enter: 'Enter the Mark', Correct: 'Correct the Mark', Acknowledge: CANT_GET_A_PRICE } as const;
 const SAVE_LABEL = { Enter: 'Save Mark', Correct: 'Save correction', Acknowledge: 'Save acknowledgment' } as const;
 
 // The resolution kinds each form's intention can be saved under.
@@ -110,7 +111,12 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
     }
     // A refusal to write switches the whole shell to read only; the form keeps its values.
     report(result);
-    setIssues(result.kind === 'Rejected' ? describeMarkIssues(result.issues, uid) : []);
+    // The shared message names a correction; an acknowledgment has none, so its reason is asked for in its own words.
+    setIssues(
+      result.kind === 'Rejected'
+        ? describeMarkIssues(result.issues, uid).map((issue) => (command.intention === 'AssertUnavailable' && issue.code === 'ReasonRequired' ? { ...issue, message: ACKNOWLEDGMENT_REASON_REQUIRED } : issue))
+        : [],
+    );
     setConflict(result.kind === 'Conflict' ? 'kept' : false);
     setStorageFailed(result.kind === 'StorageFailure' ? (command.intention === 'WithdrawAcknowledgment' ? 'withdraw' : 'form') : false);
     if (result.kind === 'Conflict') {
