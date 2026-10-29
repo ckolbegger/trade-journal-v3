@@ -1,0 +1,170 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 6 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 6,
+    "total_tokens": 309638,
+    "input_tokens": 305601,
+    "output_tokens": 4037,
+    "cache_read_tokens": 66944,
+    "elapsed": "1m45s"
+  },
+  "tool_calls": {
+    "total": 42,
+    "by_tool": {
+      "code_comment": 3,
+      "code_search": 13,
+      "file_find": 4,
+      "file_read": 20,
+      "file_read_diff": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/MarkEntryCases.tsx",
+      "content": "This file is not collected by either Vitest project: vite.config.ts includes only `src/**/*.test.{ts,tsx}` for unit tests, and no collected suite imports `MarkEntryCases`. Consequently none of these regression checks run under `npm run test:unit`. Rename it to `MarkEntry.test.tsx` (or explicitly include/import it in the test configuration).",
+      "existing_code": "// @vitest-environment jsdom",
+      "start_line": 1,
+      "end_line": 1,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/MarkEntryCases.tsx",
+      "content": "The `as never` assertion hides invalid Saved fixtures: the facade requires a `revision` for InitialManual/Correction or an `acknowledgment` for Asserted/Withdrawn. This helper supplies neither, labels correction and assertion results as InitialManual, and binds corrections/withdrawals to 'None' instead of the submitted revision. Use typed Saved fixtures with the appropriate payload, classification, and accepted binding so these tests exercise realistic facade responses and contract changes are caught by TypeScript.",
+      "existing_code": "const saved = (resolution: MarkResolution, resolutionRevision: number, classification = 'InitialManual') =\u003e\n  ({ kind: 'Saved', key, resolution, resolutionRevision, classification, binding: { ...key, expectedResolutionRevision: 'None' } }) as never;",
+      "start_line": 19,
+      "end_line": 20,
+      "category": "test",
+      "severity": "low"
+    },
+    {
+      "path": "src/ui/screens/MarkEntry.tsx",
+      "content": "These state initializers only run on mount. If the parent switches Instrument/date or supplies a refreshed resolution without remounting, the component keeps the previous Mark and revision while `key` uses the new Instrument/date. This can display one Instrument's price under another and submit against the wrong revision. Reset the local resolution, revision, and form state when the observation key changes, and define how refreshed props are applied (or enforce a keyed remount contract). Add a rerender case for switching keys.",
+      "existing_code": "  const [resolution, setResolution] = useState(initial);\n  const [revision, setRevision] = useState(initialRevision);",
+      "start_line": 29,
+      "end_line": 30,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/MarkEntry.tsx",
+      "content": "There is no in-flight guard, and the form remains editable and cancellable while this request is pending. For example, submit a Mark, cancel, reopen Enter, and type another value before the first save resolves: its successful response calls `closeForm()` and silently discards the new input. Repeated submissions also allow Saved/Conflict responses to race. Track pending state and prevent conflicting actions/edits until completion, or associate responses with the submitting form generation so stale responses cannot clear a newer draft. Cover this with a deferred-save test.",
+      "existing_code": "    const result = await facade.MarketData.save(command);",
+      "start_line": 68,
+      "end_line": 68,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/MarkEntry.tsx",
+      "content": "The command selection uses a nested ternary, contrary to the supplied checklist; the writable/form rendering below does so as well. Use explicit branches (or a small command-building helper) for intention-specific payloads and separate rendering branches for read-only, open-form, and action states.",
+      "existing_code": "      mode === 'Acknowledge'\n        ? { intention: 'AssertUnavailable', ...key, reason }\n        : mode === 'Correct'\n          ? { intention: 'CorrectMark', ...key, price: price.trim(), reason }\n          : { intention: 'RecordInitialManualMark', ...key, price: price.trim() },",
+      "start_line": 86,
+      "end_line": 90,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "src/ui/screens/MarkEntry.tsx",
+      "content": "Handle `StorageFailure` explicitly with a visible save-failed message. The mutation guard returns this outcome when storage fails but readiness still passes, and the shell's `report` only handles `RuntimeNotWritable`. Currently this outcome clears existing errors and leaves the form unchanged without telling the trader that nothing was saved (especially invisible for Withdraw). Keep the entered values and show an accessible retryable error.",
+      "existing_code": "    setIssues(result.kind === 'Rejected' ? describeMarkIssues(result.issues, uid) : []);",
+      "start_line": 71,
+      "end_line": 71,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/ui/screens/MarkEntry.tsx",
+      "files": [
+        "src/ui/screens/MarkEntry.tsx"
+      ]
+    },
+    {
+      "label": "src/ui/screens/MarkEntryCases.tsx",
+      "files": [
+        "src/ui/screens/MarkEntryCases.tsx"
+      ]
+    },
+    {
+      "label": "src/ui/screens/mark-issues.ts",
+      "files": [
+        "src/ui/screens/mark-issues.ts"
+      ]
+    }
+  ],
+  "session_id": "1e477ea0-275b-419c-8071-4b032755e271",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "1e477ea0-275b-419c-8071-4b032755e271",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "56aae56d1d3a314d50193c604320e28cafc3e10d",
+      "resolved_head": "097d57658eefbc0b9435cf806b66f110c341cd20",
+      "exact_range": "56aae56d1d3a314d50193c604320e28cafc3e10d..097d57658eefbc0b9435cf806b66f110c341cd20",
+      "source_artifact_sha256": "062e1db50780effb69ddc716cf6a339d9544ba8fc8d7b6e2b6e1278dda1f6a1b"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0a9fd40bc95b1d3a5a733cf98571139252e618eba01ab7d4dc580b530145eef0",
+          "path": "src/ui/screens/MarkEntryCases.tsx",
+          "fingerprint": "16425158c26c1803773bfaadfe21c750a12ceb2c1b3ec33ef289e1e8ed73a0a5"
+        },
+        {
+          "item_id": "1920314835f6283032209392f4cb9c5f803d88dbb1d717dcb931c0ec0d5fc3e6",
+          "path": "src/ui/screens/mark-issues.ts",
+          "fingerprint": "2a675daef4495f1025789e800485e940b14f8d107e81e0da7051517c8fd15c5c"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "a8b5992bce816854fbf7ba289fc2fba576db1a05174e6a1b9760881ef41a1587"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0a9fd40bc95b1d3a5a733cf98571139252e618eba01ab7d4dc580b530145eef0",
+          "path": "src/ui/screens/MarkEntryCases.tsx",
+          "fingerprint": "16425158c26c1803773bfaadfe21c750a12ceb2c1b3ec33ef289e1e8ed73a0a5"
+        },
+        {
+          "item_id": "1920314835f6283032209392f4cb9c5f803d88dbb1d717dcb931c0ec0d5fc3e6",
+          "path": "src/ui/screens/mark-issues.ts",
+          "fingerprint": "2a675daef4495f1025789e800485e940b14f8d107e81e0da7051517c8fd15c5c"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "a8b5992bce816854fbf7ba289fc2fba576db1a05174e6a1b9760881ef41a1587"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 104676
+  }
+}

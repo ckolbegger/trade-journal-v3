@@ -909,3 +909,27 @@ Cumulative run at `572482c` (code at `f2784dc`), 2026-10-28 23:26 EDT: unit 704,
 - `e8f8a20` (code at `ddf5c49`, B1–B2), 2026-10-28 23:38 EDT: unit 704, integration 50, browser 124; checks 11 of 12. `suite-runs/t4.19-b2-*`.
 
 Only `verify:capacity` failed (expected until T4.28). T4.19 is complete.
+
+## T4.20 UI: Mark entry
+
+`7d9327d`. `src/ui/screens/MarkEntry.tsx` with `mark-issues.ts` (issue copy, like `position-change-issues.ts`). Issue mapping: `InvalidPrice`, `PriceNegative`, `CorrectionUnchanged` beside Price; `ReasonRequired`, `ReasonTooLong` beside Reason; `MarkExists` and the other codes as one whole-Mark message. Two extra cases of the subagent's (PriceNegative and a whole-Mark rejection; a refused write reported to the shell), each red then green. First-run passes, each mutation-checked: no price on Acknowledged Unavailable, no Correct on an acknowledged key, a later issue set replaces the earlier, the Conflict revision kept. One log row labelled green exited 1 (the unmount red; note row). No code ahead of red. Carried to T4.21: the Review must supply each key's `resolutionRevision` (frames and `recover` do not carry it today); whether Enter is offered on an acknowledged key follows A57; Withdraw is one click with no reason (the reason is optional).
+
+ocr review of `7d9327d`: session `1e477ea0-275b-419c-8071-4b032755e271` (scratch clone with the test renamed), 3 files, 6 comments. `ocr/T4.20-7d9327d.json`. The reviewer confirmed the four intentions' requests, Saved and Conflict state, unsaved registration, writable gating, focus, unique ids, and that an acknowledged key never shows a price.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/ui/screens/MarkEntry.tsx:68` | No in-flight guard: a second click sends a second save with the same revision; a late Saved closes over newer input | Valid | Bug task T4.20-B1 |
+| medium | `MarkEntry.tsx:71` | `StorageFailure` is not handled; the trader is not told the save failed | Valid; no screen under `src/ui` handles it today (a cross-screen gap, for the user) | Bug task T4.20-B2 (Mark entry only) |
+| medium | `MarkEntry.tsx:29` | State seeds only on mount, so new props for another key keep the old resolution | Doubtful: one key per mount by contract | Carried to T4.21: key each MarkEntry by Instrument and date |
+| low | `MarkEntry.test.tsx:19` | The `saved` helper casts with `as never` and always binds 'None' | Valid (test realism) | Bug task T4.20-B3 |
+| low | `MarkEntry.tsx:86` | Nested ternary builds the command | Doubtful: readable, no project rule | Dismissed |
+| medium | renamed test file | Not collected by Vitest | Wrong: an artifact of the scratch rename | Dismissed |
+
+### T4.20-B1 One save at a time
+- it should send one save and disable the Mark actions while a save is in flight
+
+### T4.20-B2 A storage failure is shown
+- it should show that the Mark was not saved, keep the entered values, and allow a retry when the save returns StorageFailure
+
+### T4.20-B3 Realistic Saved fixtures
+- no new case; the MarkEntry test's Saved results are typed and carry the intention's classification and binding
