@@ -63,7 +63,7 @@ export function AboutView({ facade, updates }: AboutViewProps) {
           <dt>Release</dt>
           <dd className="identity">{capabilities.releaseId}</dd>
           <dt>Session policy</dt>
-          <dd className="identity">{capabilities.sessionPolicy.id}</dd>
+          <dd className="policy-id">{capabilities.sessionPolicy.id}</dd>
           <dt>Session policy revision</dt>
           <dd className="number">{String(capabilities.sessionPolicy.revision)}</dd>
           <dt>Calendar coverage</dt>

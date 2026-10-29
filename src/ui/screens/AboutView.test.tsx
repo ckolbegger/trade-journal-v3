@@ -84,6 +84,13 @@ describe('About this release', () => {
 });
 
 describe('session-policy coverage', () => {
+  it('should carry the release identity class on exactly one element so the session policy id is not a second release identity', async () => {
+    const { container } = render(<AboutView facade={facadeDouble({ status })} updates={controller()} />);
+    await screen.findByRole('region', { name: 'This release' });
+    const identities = container.querySelectorAll('.identity');
+    expect(Array.from(identities).map((e) => e.textContent)).toEqual(['release-1']);
+  });
+
   it('should show in About the session policy id, revision, and coverage range', async () => {
     render(<AboutView facade={facadeDouble({ status })} updates={controller()} />);
     const about = await screen.findByRole('region', { name: 'This release' });

@@ -582,7 +582,8 @@ dd {
   overflow-wrap: anywhere;
 }
 
-.identity {
+.identity,
+.policy-id {
   overflow-wrap: anywhere;
   font-family: ui-monospace, monospace;
   font-size: 0.85rem;
