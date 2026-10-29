@@ -972,3 +972,5 @@ ocr review of `709169b` (B5): session `3f0c199a-e200-4f6e-8dad-1fb3f65c5d1d` (sc
 | Severity | Location | Claim | Assessment | Disposition |
 |---|---|---|---|---|
 | low | `src/ui/screens/MarkEntry.tsx:89` | A nested ternary sets `storageFailed` | Doubtful: style only, correct; no project rule, as for the earlier T4.20 ternary | Dismissed |
+
+ocr review of `eff33c9` (B6, test only): session `7f1b9272-70a6-4016-9a38-58daf8ebf74e` (scratch clone), no findings. `ocr/T4.20-B6-eff33c9.json`. Every MarkEntry fixture is typed from `Awaited<ReturnType<UiFacade['MarketData']['save']>>` with no `as never`; no type gap (the guard's result union already carries `RuntimeNotWritable` and `StorageFailure`); no assertion changed; 13 MarkEntry cases before and after.
