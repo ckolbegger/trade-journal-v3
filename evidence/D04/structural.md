@@ -1014,3 +1014,16 @@ ocr review of `5db2c90`: session `ee3a5158-527e-42ff-961f-361da6d1c388` (scratch
 
 ### T4.21-B6 Mark regions name their date
 - it should name each Mark entry region by Instrument and date
+
+ocr review of `c0ab563` (B1): session `bea48656-2f1f-4a13-a70d-532669c8e052` (scratch clone), 2 files, 2 comments. `ocr/T4.21-B1-c0ab563.json`. Continue to Trades stays rendered after the walk opens; MarkEntry syncs its resolution and revision from props with the render-phase pattern, keeping typed values and the open form (an extra first-run-pass case, mutation-checked). The reviewer found the render-phase sync is correct React.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| high | `src/ui/screens/MarkEntry.tsx:33` | The sync compares object identity; gap rows pass an inline `{kind:'Missing'}`, so any parent re-render resets a just-saved gap row to Missing and its old revision | Valid | Bug task T4.21-B7 |
+| medium | `MarkEntry.tsx:35` | After a sync changes the key's kind, an open form submits its old intention (Correct on a now-Missing key) with no explanation | Valid (edge) | Bug task T4.21-B8 |
+
+### T4.21-B7 A saved gap row stays saved
+- it should keep an earlier-session Mark's saved resolution when the Review re-renders without a newer revision
+
+### T4.21-B8 A form that no longer fits its Mark closes with a notice
+- it should close an open form whose intention no longer fits the refreshed Mark and say the Mark changed and nothing was saved
