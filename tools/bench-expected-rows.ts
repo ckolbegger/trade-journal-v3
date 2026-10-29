@@ -4,7 +4,7 @@
 import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { chromium } from '@playwright/test';
+import { type BrowserContext, chromium } from '@playwright/test';
 import { assertMissingRendered, assertPinned, pinAsOf } from './bench/pin.ts';
 import { BENCH_DATASET_FILE, BENCH_EXPECTED_ROWS_FILE, BENCH_PORT, BENCH_PROFILE_DIR, type ExpectedOpenRows } from './bench/profile.ts';
 import { startReleaseServer } from './release-server.ts';
@@ -16,8 +16,9 @@ const workDir = await mkdtemp(path.join(os.tmpdir(), 'tj-bench-expected-'));
 const profile = path.join(workDir, 'profile');
 await cp(BENCH_PROFILE_DIR, profile, { recursive: true });
 const server = await startReleaseServer({ root: process.cwd(), release: 'dist', port: BENCH_PORT });
+let context: BrowserContext | undefined;
 try {
-  const context = await chromium.launchPersistentContext(profile, { headless: true });
+  context = await chromium.launchPersistentContext(profile, { headless: true });
   await pinAsOf(context, asOf);
   const page = context.pages()[0] ?? (await context.newPage());
   await page.goto(server.url);
@@ -35,6 +36,8 @@ try {
   await writeFile(BENCH_EXPECTED_ROWS_FILE, `${JSON.stringify(rows, (_, v: unknown) => (typeof v === 'bigint' ? v.toString() : v), 2)}\n`);
   console.log(`bench:expected OK: ${rendered.rows.length} rows rendered at ${asOf.toISOString()}`);
 } finally {
+  // Closing an already closed context is a no-op; a failed wait or guard must not leave Chromium on a removed profile.
+  await context?.close();
   await server.close();
   await rm(workDir, { recursive: true, force: true });
 }

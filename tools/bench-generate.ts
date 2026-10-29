@@ -7,7 +7,7 @@
 // A profile whose stamp matches is reused; any other is deleted and regenerated.
 import { readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
-import { chromium, type Page } from '@playwright/test';
+import { chromium, type BrowserContext, type Page } from '@playwright/test';
 import { BENCH_CLOCK_START, BENCH_GENERATOR_MARKER, BENCH_GENERATOR_VERSION, BENCH_SEED, BENCH_TIME_ZONE, type BenchAsOf, type BenchCounts } from '../src/app/bench.ts';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
 import {
@@ -62,8 +62,10 @@ let expected: Pick<ExpectedOpenRows, 'headers' | 'rows'>;
 let release: string;
 let generationMs: number;
 let engine: string;
+const launched: BrowserContext[] = [];
 try {
   const context = await chromium.launchPersistentContext(BENCH_PROFILE_DIR, { headless: true });
+  launched.push(context);
   engine = `chromium ${context.browser()?.version() ?? ''}`.trim();
   const page = context.pages()[0] ?? (await context.newPage());
   page.on('console', (message) => {
@@ -94,6 +96,7 @@ try {
 
   // Reopen the profile on a blank page of the same origin (nothing served) and confirm.
   const check = await chromium.launchPersistentContext(BENCH_PROFILE_DIR, { headless: true });
+  launched.push(check);
   await check.route(`${origin}/**`, (route) => route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>check</title>' }));
   await server.close();
   const checkPage = check.pages()[0] ?? (await check.newPage());
@@ -107,6 +110,8 @@ try {
   if (left.registrations !== 0 || left.caches !== 0) throw new Error(`profile still holds ${left.registrations} registrations and ${left.caches} caches`);
   console.log(`bench:generate: profile has 0 service-worker registrations, 0 caches, databases ${left.databases.sort().join(', ')}`);
 } finally {
+  // Closing an already closed context is a no-op; a failure must not leave Chromium running.
+  for (const context of launched) await context.close();
   await server.close();
 }
 

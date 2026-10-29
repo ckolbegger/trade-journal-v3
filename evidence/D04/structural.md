@@ -1565,3 +1565,14 @@ Defect confirmed: `assertMissingRendered` checked only the rendered rows, so a r
 | `npm run bench:expected` then `git diff --stat bench/` | OK, 200 rows; no diff |
 | `npm run bench:run` | exit 0; cold p95 108.9 ms, warm p95 44.7 ms; `evidence/D04/bench.md` rewritten by the harness |
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | exit 0 each |
+
+### T4.31-B3
+
+Defect confirmed: the browser context was closed only on the success path in `tools/bench-expected-rows.ts`, and the same in `tools/bench-run.ts` (warm-up, cold and warm contexts) and `tools/bench-generate.ts` (profile and check contexts). Each now closes every launched context in `finally` (before the temp profile is removed in the two scripts that remove one); errors still propagate.
+
+| Command | Result |
+|---|---|
+| `npm run bench:expected` with a forced `assertPinned(page, new Date(0))` | exit 1 with the guard's error; `pgrep -fl tj-bench-expected-` finds nothing; forced throw removed and file diffed equal to the original |
+| `npm run bench:expected` then `git diff --stat bench/` | OK, 200 rows; no diff |
+| `npm run bench:run` (changed `tools/bench-run.ts`) | exit 0; cold p95 107.2 ms, warm p95 44.4 ms; `evidence/D04/bench.md` rewritten |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | exit 0 each |

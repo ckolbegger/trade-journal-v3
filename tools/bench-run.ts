@@ -62,8 +62,10 @@ const missing = (dataset['missingInstruments'] as string[] | undefined) ?? [];
 const asOf = new Date(String(dataset['asOf']));
 if (Number.isNaN(asOf.getTime())) throw new Error('bench/dataset.json has no asOf instant; regenerate the profile');
 // A52: `Date` and Temporal are pinned; timers and `performance.now` stay real.
+const launched: BrowserContext[] = [];
 const launch = async (offline: boolean) => {
   const context = await chromium.launchPersistentContext(profile, { headless: true, offline });
+  launched.push(context);
   // Playwright's clock also replaces `window.performance` with a fake whose marks are never recorded
   // (getEntries is empty), though its `now` is real. So the real object is kept before the pin, and
   // the fake's `mark` is pointed at it after, so the app's `tj:` marks land where the harness reads.
@@ -155,6 +157,8 @@ try {
   after = await compareOpenList(warmPage, 'after the runs');
   await context.close();
 } finally {
+  // Closing an already closed context is a no-op; a failure must not leave Chromium on a removed profile.
+  for (const context of launched) await context.close();
   if (serving) await server.close();
   await rm(workDir, { recursive: true, force: true });
 }
