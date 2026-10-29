@@ -1413,3 +1413,9 @@ Commands and results:
   - Review open: the same three, then `byInstrumentDate` getAll x3 (one gap request per Instrument), then `journalObligations` getAll x1.
 - The history size is 1,255 sessions, the most the session policy covers from 2024-01-02, in place of the plan's round 1,260.
 - `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`: exit 0.
+
+### ocr review of T4.31
+
+| Commit | Finding | Assessment | Outcome |
+|---|---|---|---|
+| `b6e2527` | `query-count-check.ts:121`: not matched by the integration include glob | Wrong: an artifact of the review's scratch rename; the committed `query-count.test.ts` matches `tests/integration/**/*.test.ts` (`vite.config.ts:20`) | dismissed |
