@@ -261,7 +261,7 @@ function TradeWalk({ facade, review, selected, afterSave, holdId, onSelect, onSa
           <p>We couldn’t load this Trade. Nothing was changed.</p>
         </div>
       )}
-      {typeof selected?.state === 'object' && <ReviewTrade key={selected.tradeId} facade={facade} trade={selected.state.trade} onSaved={(saved) => onSaved(saved, selected.opening)} onRefresh={() => onRefresh(selected.tradeId)} onEntryDirty={onEntryDirty} />}
+      {typeof selected?.state === 'object' && <ReviewTrade key={`${selected.tradeId}:${selected.state.trade.saveBinding.reviewDate}`}facade={facade} trade={selected.state.trade} onSaved={(saved) => onSaved(saved, selected.opening)} onRefresh={() => onRefresh(selected.tradeId)} onEntryDirty={onEntryDirty} />}
     </section>
   );
 }
@@ -351,10 +351,13 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
     const request = selection.current;
     const result = await reopen();
     if (!result) return false;
+    const moved = result.reviewDate !== review.reviewDate;
     setReview(result);
     const trade = await facade.DailyReview.getTrade({ reviewDate: result.reviewDate, tradeId, binding: result.binding }).catch(() => undefined);
     if (trade?.kind !== 'Ready') return false;
     if (selection.current !== request) return true;
+    // An Action belongs to one Review Date: the form is keyed by it, so the old date's draft is dropped, and the trader is told.
+    if (moved) setAfterSave(`The Review moved to ${shortDate(result.reviewDate)}. This Trade’s form starts afresh for that date.`);
     setSelected({ tradeId, opening: request, state: { trade: trade.trade } });
     return true;
   };

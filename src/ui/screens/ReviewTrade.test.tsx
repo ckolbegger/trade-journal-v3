@@ -489,6 +489,42 @@ describe('Conflict refresh with a saved Action', () => {
   });
 });
 
+describe('Refresh to a different Review Date', () => {
+  it('should start the form afresh when a Refresh returns a different Review Date', async () => {
+    const onDirtyChange = vi.fn();
+    const first = tradeReview('t1', 'XYZ');
+    const newBinding = savedBinding({ reviewDate: '2026-10-13', obligationKey: { entryType: 'DailyTradeReview', trade: 't1', reviewDate: '2026-10-13' } });
+    const moved = tradeReview('t1', 'XYZ', { saveBinding: newBinding });
+    const facade = walkFacade(ready([item('t1', 'XYZ')]), first);
+    vi.mocked(facade.DailyReview.getTrade).mockResolvedValueOnce({ kind: 'Ready', reviewDate: '2026-10-13', cutoff: '2026-10-13T20:00:00Z', trade: moved });
+    vi.mocked(facade.DailyReview.open)
+      .mockResolvedValueOnce(ready([item('t1', 'XYZ')]))
+      .mockResolvedValueOnce(ready([item('t1', 'XYZ')]))
+      .mockResolvedValue(ready([item('t1', 'XYZ')], undefined, { reviewDate: '2026-10-13' }));
+    const save = vi.mocked(facade.DailyReview.save);
+    save.mockResolvedValueOnce({ kind: 'Conflict' });
+    renderWalk(facade, { onDirtyChange });
+    const user = userEvent.setup();
+    const trade = await openTrade(user, 'XYZ');
+    await user.click(within(trade).getByRole('radio', { name: 'Exit' }));
+    await user.type(within(trade).getByRole('textbox', { name: /Intent/ }), 'Plan changed.');
+    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    await user.click(await within(trade).findByRole('button', { name: 'Refresh' }));
+
+    // The old date's draft does not carry over; the trader is told why.
+    const again = await screen.findByRole('status');
+    expect(again.textContent).toBe('The Review moved to Tue Oct 13. This Trade’s form starts afresh for that date.');
+    const form = screen.getByRole('region', { name: 'XYZ review' });
+    expect(within(form).getByRole('radio', { name: 'Hold' })).toHaveProperty('checked', true);
+    expect(within(form).getByRole('textbox', { name: /Intent/ })).toHaveProperty('value', '');
+    expect(within(form).queryByRole('alert')).toBeNull();
+    expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+    save.mockResolvedValueOnce({ kind: 'Conflict' });
+    await user.click(within(form).getByRole('button', { name: 'Save' }));
+    expect(save).toHaveBeenLastCalledWith({ kind: 'SaveTradeAction', binding: newBinding, action: 'Hold' });
+  });
+});
+
 describe('After a save', () => {
   it('should start the next Trade form afresh, and say what follows when no Trade is next', async () => {
     const user = userEvent.setup();
