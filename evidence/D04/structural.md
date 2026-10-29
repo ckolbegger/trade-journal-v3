@@ -1312,3 +1312,9 @@ Verification:
 |---|---|---|---|
 | `f419119` | `tools/verify-fixtures.ts:39`: a missing or empty `current.conditions` reads as `[]`, so the A51 check passes without Stop and Target results | Valid: the v1 and v2 snapshots predate D4 and hold no `current` fields, so `compareSnapshot` does not cover it | Fixed by T4.29-B1 (`96182e3`) |
 | `96182e3` | none | | clean |
+
+### Cumulative run after T4.29
+
+- code at `96182e3`, 2026-10-29 03:28 EDT: unit 798, integration 52, browser 124; checks 12 of 12. `suite-runs/t4.29-*`.
+
+Fully green. T4.29 is complete.
