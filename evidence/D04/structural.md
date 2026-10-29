@@ -1047,3 +1047,36 @@ ocr review of `c8f2c8a` (B6): session `44057de5-f03a-4c79-964d-63a5b8d44d7e` (sc
 - code at `c8f2c8a` (T4.21 and B1–B8), 2026-10-29 00:53 EDT: unit 743, integration 50, browser 124; checks 11 of 12. `suite-runs/t4.21-b6-*`.
 
 Only `verify:capacity` failed (expected until T4.28). T4.21 is complete.
+
+## T4.22 UI: Trade walk and Action form
+
+`feffc03`. New `src/ui/screens/ReviewTrade.tsx` (one Trade of the walk read with `getTrade`: labels, attention reasons, the Mark line, Current Marked Trade P&L, Ongoing Risk to Stop, Incremental Reward to Target, the dated and at-entry lines), `ActionForm.tsx` (fieldset "Action" with four radios, Hold selected, Intent required for Exit, Roll and Adjust, one Save; a saved Action shows with Change), `review-attention.ts` (`BAND_TEXT`, `reasonText` moved from ReviewView). Each walk row has a "Review <Underlying>" button; after a save the walk takes completion and binding from the result and a next-step Trade shows with no `open` or `getTrade`. `ReadyReview.proceed` split into `reopen()` and `proceed`. Extra cases, each red then green: no Save while not writable; values kept on Conflict, storage failure, rejection and a refused write; the next Trade's form starts afresh, and what follows when no Trade is next. Code ahead of red, flagged: `key={selected.tradeId}` went in with the ReviewChanged case; the later case covers it (mutation-checked). First-run sub-assertions, each mutation-checked: at-entry reward value, completion copied after save, `expectedEntryRevision`, notice focus, Refresh rebinds `getTrade` (test strengthened after the first mutation passed), trimmed Intent, dirty on Intent, unmount reports clean. Two green rows exited 1 (test fixes; the next green passed). Untested: a `getTrade` that fails or is not Ready; a hidden saved Action made dirty by a refresh. Copy chosen where specs are silent is listed in the handoff. The walk-order test's row texts gained "Review <Underlying>". No e2e spec queries the walk.
+
+ocr review of `feffc03`: session `c65d1edc-dcb1-4858-9fd6-c213f3d24c33` (scratch clone with tests renamed), 6 files, 8 comments. `ocr/T4.22-feffc03.json`. The reviewer confirmed every `PostSaveReview` variant is handled, completion and binding after a save come from the result, Refresh rebinds `getTrade`, and the `reopen` split keeps T4.21-B3's guard.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| high | `src/ui/screens/ReviewView.tsx:296` | A late save result for Trade A replaces Trade B's editor: `saved` sets the selection to the next step whichever Trade is open | Valid (slow save plus a switch) | Bug task T4.22-B1 |
+| medium | `ReviewView.tsx:302` | `select` and `refreshTrade` can settle out of order, so a stale Trade replaces the current one | Valid | Folded into T4.22-B1 |
+| medium | `ReviewView.tsx:324` | Continue to Trades after a Trade is open or saved refreshes `review` but leaves the open Trade and the after-save message stale | Valid (low impact: a later save returns ReviewChanged) | Folded into T4.22-B1 |
+| medium | `src/ui/screens/ActionForm.tsx:139` | Only Save is disabled while saving; the radios and Intent stay editable, and a Saved result then navigates away from newer edits | Valid | Bug task T4.22-B2 |
+| medium | `ActionForm.tsx:109` | After a Conflict refreshed from a new form to a saved Action, `changing` is false, so the saved view hides the kept values while they stay dirty | Valid (breaks "values kept") | Bug task T4.22-B3 |
+| medium | `ReviewView.tsx:334` | A Refresh that returns a different Review Date keeps the old date's draft in the form under the new binding (keyed by `tradeId` only) | Valid (across a session boundary) | Bug task T4.22-B4 |
+| medium | (reviewer) `ActionForm.tsx` `submit` | The top-level `ChangedDuringAssembly` save result is not handled: Save shows nothing | Valid | Bug task T4.22-B5 |
+| medium | `ActionForm.tsx:108` | A refused write flips `writable` to false and the form hides the entered values while still registered unsaved | Doubtful: matches MarkEntry (T4.20), which shows no controls while not writable; noted for the user | Dismissed |
+| low | `ReviewView.tsx:297` | Nested ternary for the after-save message | Doubtful: style only, correct | Dismissed |
+
+### T4.22-B1 Only the open Trade's results apply
+- it should apply a save, a Trade read or a refresh only to the Trade still open, and Continue to Trades should replace an open Trade and the after-save message with the refreshed Review's
+
+### T4.22-B2 The form is locked while saving
+- it should disable the Action choices and Intent while a save is in flight
+
+### T4.22-B3 A refreshed Conflict keeps the values in view
+- it should keep the entered values in an open form after a Conflict refresh shows a saved Action
+
+### T4.22-B4 A new Review Date starts the form afresh
+- it should start the form afresh when a Refresh returns a different Review Date
+
+### T4.22-B5 ChangedDuringAssembly on save is shown
+- it should say what happened and offer Refresh when a save returns ChangedDuringAssembly

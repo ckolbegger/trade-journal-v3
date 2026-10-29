@@ -1,0 +1,210 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 8 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 8,
+    "total_tokens": 308945,
+    "input_tokens": 305698,
+    "output_tokens": 3247,
+    "cache_read_tokens": 61440,
+    "elapsed": "2m4s"
+  },
+  "tool_calls": {
+    "total": 19,
+    "by_tool": {
+      "code_comment": 3,
+      "code_search": 7,
+      "file_find": 2,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "Trade requests can complete out of order: selecting A and then B can show B first and subsequently replace it with A, discarding any edits made in B. refreshTrade() can similarly reopen a Trade after the user has selected another one. Track a selection/request generation and ignore responses that no longer belong to the current selection, including refresh responses.",
+      "existing_code": "    const result = await facade.DailyReview.getTrade({ reviewDate: review.reviewDate, tradeId, binding: review.binding }).catch(() =\u003e undefined);\n    setSelected({ tradeId, state: result?.kind === 'Ready' ? { trade: result.trade } : 'Unavailable' });",
+      "start_line": 302,
+      "end_line": 303,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "reopen() resolves LatestCompleted using the current time, so Refresh can return a different Review Date after a session boundary. Because the component key is only tradeId, ActionForm retains the previous date's Action/Intent while receiving the new date's save binding; the next Save silently records that draft against another date. Detect a changed reviewDate and explicitly reset or require confirmation rather than rebinding the retained draft.",
+      "existing_code": "    const trade = await facade.DailyReview.getTrade({ reviewDate: result.reviewDate, tradeId, binding: result.binding }).catch(() =\u003e undefined);\n    if (trade?.kind !== 'Ready') return false;\n    setSelected({ tradeId, state: { trade: trade.trade } });",
+      "start_line": 334,
+      "end_line": 336,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "Continue to Trades remains available after a Trade is open or a save has completed. Reopening here updates the overview but leaves selected and afterSave untouched, so refreshed status/Marks can appear alongside an old Trade evaluation and binding, or an obsolete 'Every Trade has an Action' message. Clear the selection and post-save message on successful Continue, or reload the selected Trade under the returned binding with explicit draft handling.",
+      "existing_code": "    if (result) {\n      setReview(result);\n      setWalk(true);\n    }",
+      "start_line": 324,
+      "end_line": 327,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ActionForm.tsx",
+      "content": "Reporting RuntimeNotWritable makes the shell set writable=false. These branches then hide the draft immediately: a new Action becomes 'No Action saved', and an edited saved Action displays its original persisted values. Keep an already-open editor and its entered values visible in read-only mode, disabling mutation controls instead. The refusal test currently uses a report spy that never changes writable, so it misses the real shell transition.",
+      "existing_code": "  if (!writable \u0026\u0026 form.kind === 'New') return \u003cp\u003eNo Action saved.\u003c/p\u003e;\n  if (form.kind === 'Saved' \u0026\u0026 (!changing || !writable)) {",
+      "start_line": 108,
+      "end_line": 109,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ActionForm.tsx",
+      "content": "Only Save is disabled while the request is pending; the radios and Intent remain editable. With a slow save, the trader can change these values after the payload was captured, then a Saved response calls onSaved() and navigates away, silently discarding the newer edits. Disable the editable fields while saving (including the textarea), or preserve edits made after submission instead of automatically navigating away.",
+      "existing_code": "      \u003cfieldset\u003e\n        \u003clegend\u003eAction\u003c/legend\u003e",
+      "start_line": 139,
+      "end_line": 140,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "This nested ternary violates the checklist's explicit prohibition. Use a switch on next.kind or explicit branches to select the post-save message.",
+      "existing_code": "    setAfterSave(next.kind === 'Done' ? AFTER_SAVE.Done : next.kind === 'Mark' ? AFTER_SAVE.Mark : undefined);",
+      "start_line": 297,
+      "end_line": 297,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "src/ui/screens/ActionForm.tsx",
+      "content": "A Conflict can occur when this form started as New and another tab saved an Action. Refresh then supplies a Saved form, but `changing` is still false, so this branch hides the trader's retained draft and replaces it with the persisted Action. Keep an already-open editor open across refresh (including New → Saved), and test this transition so Refresh actually preserves the entered values as promised.",
+      "existing_code": "  if (form.kind === 'Saved' \u0026\u0026 (!changing || !writable)) {",
+      "start_line": 109,
+      "end_line": 109,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "A pending save can replace a different Trade's editor. While A is saving, the Review buttons remain active, so the user can open B and enter values. When A's save completes, this callback unconditionally selects its returned next step (or clears selection), unmounting B and discarding those edits. Either prevent switching Trades while a save is pending or associate save callbacks with a selection generation; update completion for a stale callback without navigating away from the current editor.",
+      "existing_code": "    setSelected(next.kind === 'Trade' ? { tradeId: next.trade.tradeId, state: { trade: next.trade } } : undefined);",
+      "start_line": 296,
+      "end_line": 296,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Trade review workflow, action form, and attention handling",
+      "files": [
+        "src/ui/screens/ActionForm.tsx",
+        "src/ui/screens/ReviewTrade.chk.tsx",
+        "src/ui/screens/ReviewTrade.tsx",
+        "src/ui/screens/ReviewView.chk.tsx",
+        "src/ui/screens/ReviewView.tsx",
+        "src/ui/screens/review-attention.ts"
+      ]
+    }
+  ],
+  "session_id": "c65d1edc-dcb1-4858-9fd6-c213f3d24c33",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c65d1edc-dcb1-4858-9fd6-c213f3d24c33",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "5dad1d63cb89b1aa4766376566242d6bbc12a9d7",
+      "resolved_head": "e6551692846d82ed56e49eace6348b741ffdb7ae",
+      "exact_range": "5dad1d63cb89b1aa4766376566242d6bbc12a9d7..e6551692846d82ed56e49eace6348b741ffdb7ae",
+      "source_artifact_sha256": "57e71f17bc35b9cc61dc1bf09d29614d3a600ef68e9eb54dce037767bab4a1a5"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "12211c082db5ab70252e01597f0febd37e9ec28592b40a2b8db388459e8b115d",
+          "path": "src/ui/screens/ReviewTrade.chk.tsx",
+          "fingerprint": "65d6f5b21be5c4b617c40d13d27e654728fb83affbd7ecf8345fca0d7252a91e"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "ef3d29666de1b6cb0c416920e64a5798902f9e3d09742c9dc6e01172d5f3288d"
+        },
+        {
+          "item_id": "4b43b41bec4a328e092ddb437822373c33800d78492f84bc1d4f4924d6ff3266",
+          "path": "src/ui/screens/ReviewView.chk.tsx",
+          "fingerprint": "545aca5536dbe8550ca15f982eafc56b409b6a9ee6289ada28d8f16df56b7bb4"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "4386d33588b25acf66fd23eea821317f475df7fa3b33fbba68cfd33aa142c6d7"
+        },
+        {
+          "item_id": "6c4cc8015b3f916d6301b317630fa7d30fddbf47de85645f85b2f3b1830b15fe",
+          "path": "src/ui/screens/review-attention.ts",
+          "fingerprint": "088d4443a8cf2f92aa3ae86cfeb16af3d40eff9a9c78eb7b8edec9de5bf15f05"
+        },
+        {
+          "item_id": "b1b49860ae86359d6cb60ef22ce9c56a11639a48aef8680943ba8c67f8fd810b",
+          "path": "src/ui/screens/ReviewTrade.tsx",
+          "fingerprint": "fe3282bf8ef9399ebf310022a10bbcc01bbc7b8aeb0b02dd4aebda9b06c24eb1"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "12211c082db5ab70252e01597f0febd37e9ec28592b40a2b8db388459e8b115d",
+          "path": "src/ui/screens/ReviewTrade.chk.tsx",
+          "fingerprint": "65d6f5b21be5c4b617c40d13d27e654728fb83affbd7ecf8345fca0d7252a91e"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "ef3d29666de1b6cb0c416920e64a5798902f9e3d09742c9dc6e01172d5f3288d"
+        },
+        {
+          "item_id": "4b43b41bec4a328e092ddb437822373c33800d78492f84bc1d4f4924d6ff3266",
+          "path": "src/ui/screens/ReviewView.chk.tsx",
+          "fingerprint": "545aca5536dbe8550ca15f982eafc56b409b6a9ee6289ada28d8f16df56b7bb4"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "4386d33588b25acf66fd23eea821317f475df7fa3b33fbba68cfd33aa142c6d7"
+        },
+        {
+          "item_id": "6c4cc8015b3f916d6301b317630fa7d30fddbf47de85645f85b2f3b1830b15fe",
+          "path": "src/ui/screens/review-attention.ts",
+          "fingerprint": "088d4443a8cf2f92aa3ae86cfeb16af3d40eff9a9c78eb7b8edec9de5bf15f05"
+        },
+        {
+          "item_id": "b1b49860ae86359d6cb60ef22ce9c56a11639a48aef8680943ba8c67f8fd810b",
+          "path": "src/ui/screens/ReviewTrade.tsx",
+          "fingerprint": "fe3282bf8ef9399ebf310022a10bbcc01bbc7b8aeb0b02dd4aebda9b06c24eb1"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 124265
+  }
+}
