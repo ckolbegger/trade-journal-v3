@@ -184,7 +184,12 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   );
   // At-entry Lots are relative to the latest exact Mark: this frame's, else its Stale context's, else none.
   // A frame for another Instrument holds no exact Mark for this Position, so every Lot is at entry.
-  const latestExactClose = covered === undefined ? undefined : covered.resolution.kind === 'Available' ? covered.closeInstant : covered.resolution.stale?.closeInstant;
+  const latestExactCloseOf = () => {
+    if (covered === undefined) return undefined;
+    if (covered.resolution.kind === 'Available') return covered.closeInstant;
+    return covered.resolution.stale?.closeInstant;
+  };
+  const latestExactClose = latestExactCloseOf();
   const atEntryLots = foreign || latestExactClose === undefined ? lots : openedAfter(latestExactClose);
   const unavailableResult = (): CalculationResult<never> => {
     if (!covered) return { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', detail: { instrument: frame.instrument, date } };
@@ -203,9 +208,9 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   const unavailable = unavailableResult();
   // The frame's Mark values the Position only when one remains, it is Available, and it applies to every Lot.
   const usableMark = lots.length > 0 && covered?.resolution.kind === 'Available' && !openedAfterClose && !foreign ? covered.resolution.mark : null;
-  const marked = <T>(of: (mark: Rational) => T): CalculationResult<T> => {
+  const marked = <T>(of: (mark: Rational, source: NonNullable<typeof usableMark>) => T): CalculationResult<T> => {
     if (lots.length === 0) return noRemainingPosition;
-    if (usableMark) return value(of(decimal(usableMark.price)));
+    if (usableMark) return value(of(decimal(usableMark.price), usableMark));
     return unavailable;
   };
   // Facts about the remaining Position, shown only while one remains.
@@ -233,14 +238,14 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     role,
     kind: 'UnderlyingPrice',
     boundary,
-    result: marked((mark): ConditionReading => {
+    result: marked((mark, source): ConditionReading => {
       const toward = quantity.mul(role === 'Stop' ? mark.sub(decimal(boundary)) : decimal(boundary).sub(mark));
       const crossed = toward.compare(ZERO) <= 0;
       return {
         status: statusOf(role, crossed),
         distance: measure(atLeastZero(toward)),
         overrun: crossed ? measure(ZERO.sub(toward)) : null,
-        evidence: { instrument: frame.instrument, date, mark: usableMark! },
+        evidence: { instrument: frame.instrument, date, mark: source },
       };
     }),
   });
