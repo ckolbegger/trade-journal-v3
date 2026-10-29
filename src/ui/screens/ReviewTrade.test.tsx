@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react';
+import { useState, type ReactNode } from 'react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -87,13 +88,23 @@ function tradeReview(tradeId: string, underlying: string, over: Partial<DailyTra
   };
 }
 
-function renderWalk(facade: UiFacade, options: { writable?: boolean; onDirtyChange?: (dirty: boolean) => void; report?: (result: { kind: string }) => void } = {}) {
+// Like the shell: a RuntimeNotWritable result reported by a screen turns the whole runtime read only.
+function ShellLike({ children }: { readonly children: ReactNode }) {
+  const [writable, setWritable] = useState(true);
+  return <RuntimeContext.Provider value={{ writable, report: (result) => result.kind === 'RuntimeNotWritable' && setWritable(false) }}>{children}</RuntimeContext.Provider>;
+}
+function renderWalk(facade: UiFacade, options: { writable?: boolean; onDirtyChange?: (dirty: boolean) => void; report?: (result: { kind: string }) => void; shellLike?: boolean } = {}) {
+  const review = (
+    <MemoryRouter initialEntries={['/review']}>
+      <ReviewView facade={facade} now={() => '2026-10-12T21:00:00Z'} onDirtyChange={options.onDirtyChange ?? (() => undefined)} />
+    </MemoryRouter>
+  );
   render(
-    <RuntimeContext.Provider value={{ writable: options.writable ?? true, report: options.report ?? (() => undefined) }}>
-      <MemoryRouter initialEntries={['/review']}>
-        <ReviewView facade={facade} now={() => '2026-10-12T21:00:00Z'} onDirtyChange={options.onDirtyChange ?? (() => undefined)} />
-      </MemoryRouter>
-    </RuntimeContext.Provider>,
+    options.shellLike ? (
+      <ShellLike>{review}</ShellLike>
+    ) : (
+      <RuntimeContext.Provider value={{ writable: options.writable ?? true, report: options.report ?? (() => undefined) }}>{review}</RuntimeContext.Provider>
+    ),
   );
 }
 function walkFacade(review: Ready, ...trades: DailyTradeReview[]): UiFacade {
@@ -411,6 +422,38 @@ describe('Action form extras', () => {
     const other = await screen.findByRole('region', { name: 'DEF review' });
     expect(within(other).getByText('Saved Action: Hold')).toBeTruthy();
     expect(within(other).queryByRole('button', { name: 'Change' })).toBeNull();
+  });
+});
+
+describe('Action form when the shell turns read only after a refused write', () => {
+  const refused = { kind: 'RuntimeNotWritable', runtimeReadiness: 'RecoveryOnly', failedChecks: [], workspaceStatus: 'RecoveryOnly', safeActions: [] } as const;
+  async function refusedSave() {
+    const facade = walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ'));
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce(refused);
+    renderWalk(facade, { shellLike: true });
+    const user = userEvent.setup();
+    const trade = await openTrade(user, 'XYZ');
+    await user.click(within(trade).getByRole('radio', { name: 'Exit' }));
+    await user.type(within(trade).getByRole('textbox', { name: /Intent/ }), 'Plan changed.');
+    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+    return { facade, trade };
+  }
+
+  it('should keep the form on screen with the Exit choice and the Intent text, and offer no working Save', async () => {
+    const { facade, trade } = await refusedSave();
+    await vi.waitFor(() => expect(facade.DailyReview.save).toHaveBeenCalledOnce());
+    const exit = await within(trade).findByRole('radio', { name: 'Exit' });
+    expect(exit).toHaveProperty('checked', true);
+    expect(within(trade).getByRole('textbox', { name: /Intent/ })).toHaveProperty('value', 'Plan changed.');
+    expect(within(trade).getByRole('button', { name: 'Save' })).toHaveProperty('disabled', true);
+    expect(within(trade).queryByText('No Action saved.')).toBeNull();
+  });
+
+  it('should release the unsaved hold so Continue to Trades works', async () => {
+    const { trade } = await refusedSave();
+    await within(trade).findByRole('radio', { name: 'Exit' });
+    await vi.waitFor(() => expect(screen.getByRole('button', { name: 'Continue to Trades' })).toHaveProperty('disabled', false));
+    expect(screen.queryByText(/Save your Action or put back its saved values/)).toBeNull();
   });
 });
 

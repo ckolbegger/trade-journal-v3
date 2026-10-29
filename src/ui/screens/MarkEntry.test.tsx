@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState, type ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import type { UiFacade } from '../../app/compose.ts';
@@ -53,14 +54,21 @@ const savedAcknowledgment = (acknowledgment: Acknowledgment, resolutionRevision:
 });
 const withdrawn: Acknowledgment = { versionId: 'a2', kind: 'Withdrawn', savedAt: '2026-10-12T21:00:00Z' };
 
+// Like the shell: a RuntimeNotWritable result reported by a screen turns the whole runtime read only.
+function ShellLike({ children }: { readonly children: ReactNode }) {
+  const [writable, setWritable] = useState(true);
+  return <RuntimeContext.Provider value={{ writable, report: (result) => result.kind === 'RuntimeNotWritable' && setWritable(false) }}>{children}</RuntimeContext.Provider>;
+}
+
 function renderEntry(
   resolution: MarkResolution = { kind: 'Missing' },
   resolutionRevision: ExpectedResolutionRevision = 'None',
-  options: { writable?: boolean; onDirtyChange?: (dirty: boolean) => void; report?: (result: { kind: string }) => void; facade?: UiFacade } = {},
+  options: { writable?: boolean; onDirtyChange?: (dirty: boolean) => void; report?: (result: { kind: string }) => void; facade?: UiFacade; shellLike?: boolean } = {},
 ) {
   const facade = options.facade ?? facadeDouble();
+  const Provider = options.shellLike ? ShellLike : ({ children }: { children: ReactNode }) => <RuntimeContext.Provider value={{ writable: options.writable ?? true, report: options.report ?? (() => undefined) }}>{children}</RuntimeContext.Provider>;
   render(
-    <RuntimeContext.Provider value={{ writable: options.writable ?? true, report: options.report ?? (() => undefined) }}>
+    <Provider>
       <MarkEntry
         facade={facade}
         instrumentKey="XYZ"
@@ -69,7 +77,7 @@ function renderEntry(
         resolutionRevision={resolutionRevision}
         onDirtyChange={options.onDirtyChange ?? (() => undefined)}
       />
-    </RuntimeContext.Provider>,
+    </Provider>,
   );
   return facade;
 }
@@ -323,6 +331,29 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
     await user.click(screen.getByRole('button', { name: 'Save Mark' }));
     await vi.waitFor(() => expect(report).toHaveBeenCalledExactlyOnceWith(refused));
     expect(screen.getByLabelText<HTMLInputElement>('Price').value).toBe('52.5');
+  });
+
+  it('should keep an entered price, and a correction with its reason, on screen when the shell turns read only, with no working Save', async () => {
+    const refused = { kind: 'RuntimeNotWritable', runtimeReadiness: 'RecoveryOnly', failedChecks: [], workspaceStatus: 'RecoveryOnly', safeActions: [] } as const;
+    const facade = facadeDouble();
+    vi.mocked(facade.MarketData.save).mockResolvedValue(refused);
+    renderEntry({ kind: 'Missing' }, 'None', { facade, shellLike: true });
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Enter' }));
+    await user.type(screen.getByLabelText('Price'), '52.5');
+    await user.click(screen.getByRole('button', { name: 'Save Mark' }));
+    await vi.waitFor(() => expect(screen.getByRole('button', { name: 'Save Mark' })).toHaveProperty('disabled', true));
+    expect(screen.getByLabelText<HTMLInputElement>('Price').value).toBe('52.5');
+    cleanup();
+
+    renderEntry(mark('52.5'), 1, { facade, shellLike: true });
+    await user.click(screen.getByRole('button', { name: 'Correct' }));
+    await user.type(screen.getByLabelText('Price'), '53');
+    await user.type(screen.getByLabelText('Reason (required)'), 'Fat finger.');
+    await user.click(screen.getByRole('button', { name: 'Save correction' }));
+    await vi.waitFor(() => expect(screen.getByRole('button', { name: 'Save correction' })).toHaveProperty('disabled', true));
+    expect(screen.getByLabelText<HTMLInputElement>('Price').value).toBe('53');
+    expect(screen.getByLabelText<HTMLTextAreaElement>('Reason (required)').value).toBe('Fat finger.');
   });
 
   it('should send one save and disable the Mark actions while a save is in flight', async () => {

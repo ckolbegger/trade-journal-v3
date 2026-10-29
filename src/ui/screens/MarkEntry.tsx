@@ -178,14 +178,14 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
           {keyIssue.message}
         </p>
       )}
-      {!writable ? null : mode ? (
+      {mode ? (
         <form aria-label={FORM_LABEL[mode]} noValidate onSubmit={submit}>
           {mode === 'Correct' && resolution.kind === 'Available' && <p>{`Current price ${decimalMoney(resolution.mark.price)}`}</p>}
           {mode !== 'Acknowledge' && (
             <div className="field">
               <label>
                 Price
-                <input id={`${uid}-price`} inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} {...describedBy(`${uid}-price`)} />
+                <input id={`${uid}-price`} inputMode="decimal" value={price} disabled={!writable} onChange={(e) => setPrice(e.target.value)} {...describedBy(`${uid}-price`)} />
               </label>
               {fieldError(`${uid}-price`)}
             </div>
@@ -194,19 +194,19 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
             <div className="field">
               <label>
                 Reason (required)
-                <textarea id={`${uid}-reason`} value={reason} onChange={(e) => setReason(e.target.value)} {...describedBy(`${uid}-reason`)} />
+                <textarea id={`${uid}-reason`} value={reason} disabled={!writable} onChange={(e) => setReason(e.target.value)} {...describedBy(`${uid}-reason`)} />
               </label>
               {fieldError(`${uid}-reason`)}
             </div>
           )}
-          <button type="submit" className="pill primary" disabled={saving}>
+          <button type="submit" className="pill primary" disabled={saving || !writable}>
             {SAVE_LABEL[mode]}
           </button>
           <button type="button" className="pill secondary" onClick={closeForm} disabled={saving}>
             Cancel
           </button>
         </form>
-      ) : (
+      ) : !writable ? null : (
         <>
           {resolution.kind !== 'Available' && (
             <button type="button" className="pill secondary" onClick={() => openForm('Enter')} disabled={saving}>

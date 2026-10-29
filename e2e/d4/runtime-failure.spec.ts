@@ -1,4 +1,4 @@
-import { actionForm, completion, continueToTrades, createTrades, enterMark, expect, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt, openReview, probe, READY, saveAction, status, test, tradesFamily, markEntry } from './support.ts';
+import { actionEntriesOf, actionForm, completion, continueToTrades, createTrades, enterMark, expect, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt, openReview, probe, READY, saveAction, status, test, tradesFamily, workspaceOf, markEntry } from './support.ts';
 
 const DATE = 'Mon Oct 12';
 const READ_ONLY = "Read only: this browser can't save right now";
@@ -51,6 +51,37 @@ test.describe('B4.10 Recovery Only (faults build)', () => {
     await expect(page.getByRole('region', { name: 'Valuation', exact: true })).toContainText('Mark missing');
 
     expect(await probe(page)).toEqual(before);
+    await context.close();
+  });
+});
+
+test.describe('B4.11 Mid-session failure (faults build, AC-DEL-006)', () => {
+  test('should explain RuntimeNotWritable, keep the Action values, and record no Entry', async ({ server, profile }) => {
+    server.use('dist-faults');
+    const { context, page } = await onboardedAt(profile, MONDAY_1700);
+    await createTrades(page, [FOUR_TRADES[0]!]);
+    await openReview(page);
+    await enterMark(page, 'XYZ', DATE, '52.00');
+    await continueToTrades(page);
+    await tradesFamily(page).getByRole('button', { name: 'Review XYZ' }).click();
+    const form = actionForm(page);
+    await form.getByRole('radio', { name: 'Exit', exact: true }).check();
+    await form.getByLabel(/^Intent/).fill('Taking the profit before the gap risk.');
+    const before = workspaceOf(await probe(page))!;
+
+    await page.evaluate(() => window.__tjFaults?.set(['inventory']));
+    await form.getByRole('button', { name: 'Save' }).click();
+
+    const banner = page.getByRole('region', { name: READ_ONLY });
+    await expect(banner).toBeVisible(READY);
+    await expect(banner.getByRole('listitem')).toHaveText(["The app's offline copy is missing or damaged, so it could not reopen without a network."]);
+    // The values are kept and nothing is recorded.
+    await expect(actionForm(page).getByRole('radio', { name: 'Exit', exact: true })).toBeChecked();
+    await expect(actionForm(page).getByLabel(/^Intent/)).toHaveValue('Taking the profit before the gap risk.');
+    await expect(completion(page)).toHaveText('Incomplete');
+    const workspace = workspaceOf(await probe(page))!;
+    expect(actionEntriesOf(workspace)).toEqual([]);
+    expect(workspace).toEqual(before);
     await context.close();
   });
 });

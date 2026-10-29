@@ -76,7 +76,8 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
     if (first) document.getElementById(first.field)?.focus();
   }, [issues]);
   const dirty = action !== returned.action || intent !== returned.intent;
-  useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange]);
+  // Once the shell is read only the values can no longer be saved, so they hold nothing back: the trader can leave the Trade.
+  useEffect(() => onDirtyChange(dirty && writable), [dirty, writable, onDirtyChange]);
   // Leaving abandons the values, so the form no longer holds an update back.
   useEffect(() => () => onDirtyChange(false), [onDirtyChange]);
   // The save wrote nothing and the values stay: the Review or the Action changed since the form was opened, or storage failed.
@@ -117,7 +118,9 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
     setIssues(result.kind === 'Rejected' ? result.issues.map((issue) => (issue.code === 'RequiredAnswerMissing' ? INTENT_REQUIRED(intentField, issue.code) : { field: wholeField, message: COULD_NOT_SAVE, code: issue.code })) : []);
     if (result.kind === 'Saved') onSaved(result);
   };
-  if (!writable && form.kind === 'New') return <p>No Action saved.</p>;
+  // A form opened read only has no entry controls. One that held values when the shell turned read only stays, disabled, so the values are visibly kept.
+  const readOnlyEmpty = !writable && !dirty;
+  if (readOnlyEmpty && form.kind === 'New') return <p>No Action saved.</p>;
   // Values held over a Conflict refresh differ from the saved Action it now shows: they stay open, as if Change were pressed.
   const savedLines = form.kind === 'Saved' && (
     <>
@@ -125,7 +128,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
       {returned.intent !== '' && <p>Intent: {returned.intent}</p>}
     </>
   );
-  if (form.kind === 'Saved' && (!writable || (!changing && !dirty))) {
+  if (form.kind === 'Saved' && (readOnlyEmpty || (writable && !changing && !dirty))) {
     return (
       <section aria-label="Saved Action">
         {savedLines}
@@ -159,7 +162,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
         <legend>Action</legend>
         {CHOICES.map((choice) => (
           <label key={choice}>
-            <input type="radio" name="action" value={choice} checked={action === choice} disabled={saving} onChange={() => setAction(choice)} />
+            <input type="radio" name="action" value={choice} checked={action === choice} disabled={saving || !writable} onChange={() => setAction(choice)} />
             {choice}
           </label>
         ))}
@@ -167,11 +170,11 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
       <div className="field">
         <label>
           {required ? 'Intent (required)' : 'Intent (optional)'}
-          <textarea id={intentField} value={intent} disabled={saving} onChange={(e) => setIntent(e.target.value)} {...describedBy(intentField)} />
+          <textarea id={intentField} value={intent} disabled={saving || !writable} onChange={(e) => setIntent(e.target.value)} {...describedBy(intentField)} />
         </label>
         {fieldError(intentField)}
       </div>
-      <button type="submit" className="pill primary" disabled={saving || refreshing}>
+      <button type="submit" className="pill primary" disabled={saving || refreshing || !writable}>
         Save
       </button>
     </form>

@@ -1590,3 +1590,15 @@ Browser cases B4.8 to B4.14 in `e2e/d4/` (kill.spec.ts, offline.spec.ts, runtime
 First-run passes and their mutations are in `tdd-log.md`.
 
 Open finding, B4.11 (Mid-session failure, AC-DEL-006): after `DailyReview.save` returns `RuntimeNotWritable` the read-only banner explains it, but `ActionForm` (`src/ui/screens/ActionForm.tsx`, `if (!writable && form.kind === 'New') return <p>No Action saved.</p>`) replaces the form, so the Exit choice and the typed Intent are no longer shown; the Review also keeps its "Save your Action or put back its saved values to leave this Trade." hold with no form to act on. The Mark entry has the same shape (`{!writable ? null : mode ? ...}` in `MarkEntry.tsx`). The row expects "values kept". The case is written (kept in the session scratchpad as `runtime-failure.full.spec.ts`) but not committed.
+
+### T4.33-B2
+
+Fix for the B4.11 finding: an Action or Mark form that holds entered values when the shell turns read only now stays on screen with its values (controls disabled, Save disabled; the shell banner explains why). A form opened read only is unchanged. The Review's Action hold is released while read only (ActionForm reports dirty only while writable). B4.11 re-added to `e2e/d4/runtime-failure.spec.ts`.
+
+| Command | Result |
+|---|---|
+| `npx playwright test e2e/d4/runtime-failure.spec.ts` | 2 passed (B4.10, B4.11) |
+| `npx playwright test e2e/d4` | 16 passed |
+| `npm run test:e2e` | 140 passed (4.7 m), exit 0 |
+| `npx vitest run src/ui` | 283 passed |
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | exit 0 each |
