@@ -1,5 +1,6 @@
 import { IDBFactory } from 'fake-indexeddb';
 import { describe, expect, it } from 'vitest';
+import { nyseSessionPolicy } from '../../domain/session-policy/index.ts';
 import { dumpAll, testStack } from '../../../tests/support/stack.ts';
 import { createWorkspace, installedCapabilities } from './index.ts';
 
@@ -352,9 +353,10 @@ describe('requestDurability', () => {
 });
 
 describe('Installed Capability Manifest', () => {
-  it('should list exactly the public operations and variants through D2, the Long Stock Strategy, the Plan Reflection and Position Change Reflection Entry Types, schema version 2, no backup schema range, and no provider adapters, bound to the release identity', () => {
-    expect(installedCapabilities('release-1')).toEqual({
+  it('should list exactly the public operations and variants through D4, the Long Stock Strategy, the Plan Reflection, Position Change Reflection and Daily Trade Review Entry Types, schema version 3, no backup schema range, and no provider adapters, bound to the release identity and the session-policy identity', () => {
+    expect(installedCapabilities('release-1', nyseSessionPolicy.identity)).toEqual({
       releaseId: 'release-1',
+      sessionPolicy: nyseSessionPolicy.identity,
       operations: {
         'Workspace.initialize': ['FreshWorkspace', 'ExistingWorkspace'],
         'Workspace.getStatus': [],
@@ -366,11 +368,17 @@ describe('Installed Capability Manifest', () => {
         'Journal.query': ['TradeNarrative'],
         'TradeWorkflows.confirmPlan': ['LongStock'],
         'TradeWorkflows.recordPositionChange': ['Opening', 'Increase', 'Stock', 'SingleTrade', 'Complete', 'Decline'],
-        'TradeViewsAndReporting.browseTrades': ['Planned', 'Open'],
-        'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open'],
+        'TradeViewsAndReporting.browseTrades': ['Planned', 'Open', 'CurrentEvaluation'],
+        'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'CurrentEvaluation'],
+        'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock'],
+        'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical'],
+        'MarketData.recover': [],
+        'DailyReview.open': ['LatestCompleted'],
+        'DailyReview.getTrade': [],
+        'DailyReview.save': ['SaveTradeAction'],
       },
       strategies: ['strategy.long-stock'],
-      entryTypes: ['entry-type.plan-reflection', 'entry-type.position-change-reflection'],
+      entryTypes: ['entry-type.plan-reflection', 'entry-type.position-change-reflection', 'entry-type.daily-trade-review'],
       schemaVersion: 3,
       backupSchemaRange: null,
       providerAdapters: [],

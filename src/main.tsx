@@ -8,6 +8,7 @@ import { browserHost } from './delivery/browser-host.ts';
 import { CAPACITY_REQUIREMENT } from './delivery/capacity.ts';
 import { RELEASE_ID } from './delivery/release-identity.ts';
 import { AppShell, type Screens } from './ui/AppShell.tsx';
+import { PageTitle } from './ui/PageTitle.tsx';
 import { useRuntime } from './ui/runtime.tsx';
 import { AboutView } from './ui/screens/AboutView.tsx';
 import { AccountsView } from './ui/screens/AccountsView.tsx';
@@ -60,6 +61,8 @@ async function start(container: HTMLElement) {
     Journal: app.Journal,
     TradeWorkflows: app.TradeWorkflows,
     TradeViewsAndReporting: app.TradeViewsAndReporting,
+    MarketData: app.MarketData,
+    DailyReview: app.DailyReview,
     capabilities: app.capabilities,
   };
   const useZone = () => useRuntime().timeZone ?? 'UTC';
@@ -78,6 +81,8 @@ async function start(container: HTMLElement) {
     'new-plan': function NewPlan() {
       return <PlanForm facade={facade} timeZone={useZone()} now={now} onDirtyChange={setUnsaved} />;
     },
+    // Placeholder until the Review screens (T4.21, T4.22) replace it.
+    review: () => <PageTitle>Review</PageTitle>,
     accounts: () => <AccountsView facade={facade} />,
     about: () => <AboutView facade={facade} updates={updates} />,
     start: () => null,

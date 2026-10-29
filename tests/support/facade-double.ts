@@ -1,6 +1,7 @@
 // A facade test double for UI unit tests: every operation is a vi.fn with a Ready default.
 import { vi } from 'vitest';
 import type { UiFacade } from '../../src/app/compose.ts';
+import { nyseSessionPolicy } from '../../src/domain/session-policy/index.ts';
 import { installedCapabilities } from '../../src/coordinators/workspace/index.ts';
 
 const passed = { passed: true } as const;
@@ -18,7 +19,7 @@ export function readyStatus(overrides: Record<string, unknown> = {}) {
     binding: { databaseName: 'tj-ws-1', contentRevision: 3 },
     timeZone: 'America/New_York',
     onboarding: 'ReadyForTradePlanning',
-    installedCapabilities: installedCapabilities('release-1'),
+    installedCapabilities: installedCapabilities('release-1', nyseSessionPolicy.identity),
     readiness: writableReadiness,
     protection: 'Protected',
     schemaVersion: 1,
@@ -29,7 +30,7 @@ export function readyStatus(overrides: Record<string, unknown> = {}) {
 
 export function facadeDouble(overrides: { status?: unknown } = {}): UiFacade {
   return {
-    capabilities: installedCapabilities('release-1'),
+    capabilities: installedCapabilities('release-1', nyseSessionPolicy.identity),
     Workspace: {
       initialize: vi.fn(),
       getStatus: vi.fn(() => Promise.resolve(overrides.status ?? readyStatus())),
@@ -39,5 +40,7 @@ export function facadeDouble(overrides: { status?: unknown } = {}): UiFacade {
     Journal: { getDefinitions: vi.fn(), query: vi.fn() },
     TradeWorkflows: { confirmPlan: vi.fn(), recordPositionChange: vi.fn() },
     TradeViewsAndReporting: { browseTrades: vi.fn(), getTradeDetail: vi.fn() },
+    MarketData: { save: vi.fn(), query: vi.fn(), recover: vi.fn() },
+    DailyReview: { open: vi.fn(), getTrade: vi.fn(), save: vi.fn() },
   } as unknown as UiFacade;
 }

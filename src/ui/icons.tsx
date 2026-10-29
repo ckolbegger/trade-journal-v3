@@ -36,6 +36,13 @@ export const NewPlanIcon = () => (
   </Icon>
 );
 
+export const ReviewIcon = () => (
+  <Icon>
+    <rect x="5" y="4" width="14" height="17" rx="2" />
+    <path d="M9 4V3h6v1M9 12l2 2 4-4" />
+  </Icon>
+);
+
 export const AccountsIcon = () => (
   <Icon>
     <rect x="3" y="6" width="18" height="13" rx="2" />

@@ -3,9 +3,11 @@
 // From D2 (T2.11): no route presents an absent variant, every installed variant of an operation
 // a route qualifies by variant is presented by some route, the manifest names the schema version
 // this release writes, and every declared Entry Type is seeded in a fresh Workspace.
+// From D4 (T4.19): the manifest names the session-policy identity the release applies.
 import { IDBFactory } from 'fake-indexeddb';
 import { createApplication, facadeOperations } from '../src/app/compose.ts';
 import { ROUTES, type RouteDefinition } from '../src/app/routes.ts';
+import { nyseSessionPolicy } from '../src/domain/session-policy/index.ts';
 import { fixedClock } from '../src/domain/time/index.ts';
 import { createInProcessLifecycleLock, SCHEMA_VERSION } from '../src/persistence/index.ts';
 import { nodeTestHost } from '../tests/support/node-test-host.ts';
@@ -60,6 +62,9 @@ for (const [op, variants] of presented) {
 
 if (app.capabilities.schemaVersion !== SCHEMA_VERSION) {
   problems.push(`manifest names schema version ${app.capabilities.schemaVersion}, but this release writes ${SCHEMA_VERSION}`);
+}
+if (JSON.stringify(app.capabilities.sessionPolicy) !== JSON.stringify(nyseSessionPolicy.identity)) {
+  problems.push('manifest session-policy identity is not the identity of the policy this release applies');
 }
 const opened = await app.Workspace.initialize({ timeZone: 'America/New_York' });
 if (opened.kind !== 'Opened') problems.push(`a fresh Workspace did not open: ${opened.kind}`);

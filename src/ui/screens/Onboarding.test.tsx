@@ -17,6 +17,7 @@ const screens: Screens = {
   ),
   'trade-detail': () => null,
   'record-entry': () => null,
+  review: () => null,
   'new-plan': () => null,
   accounts: () => null,
   about: () => null,

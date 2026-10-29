@@ -22,6 +22,7 @@ function AccountsStub() {
 const screens: Screens = {
   trades: () => <><PageTitle>Trades</PageTitle><p>Trades screen</p></>,
   'trade-detail': () => <><PageTitle>XYZ</PageTitle><p>Trade detail</p></>,
+  review: () => <p>Review screen</p>,
   'record-entry': () => <p>Record entry form</p>,
   'new-plan': () => <p>New Plan form</p>,
   accounts: AccountsStub,
@@ -103,7 +104,7 @@ describe('readiness gate presentation', () => {
     expect(screen.queryByRole('navigation')).toBeNull();
   });
 
-  it('should render Recovery Only with one clear reason, the failed checks, read-only navigation (Trades, Accounts, About), no New Plan or Add Account control, and the separate-storage explanation (A13)', async () => {
+  it('should render Recovery Only with one clear reason, the failed checks, read-only navigation (Trades, Review, Accounts, About), no New Plan or Add Account control, and the separate-storage explanation (A13)', async () => {
     const facade = facadeDouble({
       status: {
         kind: 'RecoveryOnly',
@@ -120,7 +121,7 @@ describe('readiness gate presentation', () => {
     expect(await screen.findByRole('heading', { name: /read only: this browser can.t save right now/i })).toBeTruthy();
     expect(screen.getByText(/offline copy is missing or damaged/i)).toBeTruthy();
     const nav = screen.getByRole('navigation', { name: 'Primary' });
-    expect(Array.from(nav.querySelectorAll('a')).map((a) => a.textContent)).toEqual(['Trades', 'Accounts', 'About']);
+    expect(Array.from(nav.querySelectorAll('a')).map((a) => a.textContent)).toEqual(['Trades', 'Review', 'Accounts', 'About']);
     expect(screen.queryByRole('button', { name: 'Add Account' })).toBeNull();
     expect(screen.getByText('Accounts (read only)')).toBeTruthy();
     expect(
@@ -167,7 +168,7 @@ describe('readiness gate presentation', () => {
     expect(screen.getByLabelText<HTMLInputElement>('Underlying').value).toBe('XYZ');
     expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Confirm Plan' }).disabled).toBe(true);
     const nav = screen.getByRole('navigation', { name: 'Primary' });
-    expect(Array.from(nav.querySelectorAll('a')).map((a) => a.textContent)).toEqual(['Trades', 'Accounts', 'About']);
+    expect(Array.from(nav.querySelectorAll('a')).map((a) => a.textContent)).toEqual(['Trades', 'Review', 'Accounts', 'About']);
   });
 
   it('should show "Updated in another tab: reload when ready", keeping the open form\'s entered values on screen, when the session is superseded by a version change', async () => {
@@ -480,7 +481,7 @@ describe('responsive navigation', () => {
     const limited = { ...facade, capabilities: { ...facade.capabilities, operations: withoutConfirm } };
     renderShell(limited);
     const nav = await screen.findByRole('navigation', { name: 'Primary' });
-    expect(Array.from(nav.querySelectorAll('a')).map((a) => a.textContent)).toEqual(['Trades', 'Accounts', 'About']);
+    expect(Array.from(nav.querySelectorAll('a')).map((a) => a.textContent)).toEqual(['Trades', 'Review', 'Accounts', 'About']);
   });
 });
 
@@ -494,6 +495,7 @@ describe('primary navigation', () => {
       const nav = await screen.findByRole('navigation', { name: 'Primary' });
       expect(links(nav).map((a) => [a.textContent, a.getAttribute('aria-current')])).toEqual([
         ['Trades', null],
+        ['Review', null],
         ['New Plan', null],
         ['Accounts', 'page'],
         ['About', null],
@@ -533,7 +535,7 @@ describe('primary navigation', () => {
       const icon = link.querySelector('svg');
       expect(icon?.getAttribute('aria-hidden')).toBe('true');
     }
-    expect(screen.getAllByRole('link').map((a) => a.textContent)).toEqual(['Trades', 'New Plan', 'Accounts', 'About']);
+    expect(screen.getAllByRole('link').map((a) => a.textContent)).toEqual(['Trades', 'Review', 'New Plan', 'Accounts', 'About']);
     expect(screen.getByRole('link', { name: 'New Plan' })).toBeTruthy();
   });
 });

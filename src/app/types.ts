@@ -93,3 +93,48 @@ export type {
   RecordedDeviation,
   RecordedDeviationVersion,
 } from '../domain/trade-analysis/index.ts';
+
+// Market Data (D4): Manual Mark save, point-context frames and sessions, and recovery.
+export type {
+  ExpectedResolutionRevision,
+  FrameContext,
+  HistoricalGaps,
+  MarkFrame,
+  MarketDataIssue,
+  MarketDataIssueCode,
+  MarketDataQuery,
+  MarketDataQueryResult,
+  MarketDataSaveCommand,
+  MarketDataSaveResult,
+  RecoverDiagnostic,
+  RecoverRequest,
+  RecoverResult,
+  ResolveSessionQuery,
+  ResolvedKey,
+} from '../modules/market-data/index.ts';
+export type { MarkResolution, MarkRevision, ObservationKey, StaleMarkContext } from '../modules/market-data/index.ts';
+
+// Daily Review (D4): open at the latest completed session, one Trade, and the Action save.
+export type {
+  ActionChoice,
+  ActionForm,
+  DailyTradeReview,
+  GetDailyTradeReviewRequest,
+  GetDailyTradeReviewResult,
+  IncompleteReason,
+  MarkRow,
+  OpenDailyReviewRequest,
+  OpenDailyReviewResult,
+  PostSaveReview,
+  RefreshedEvidence,
+  ReviewBinding,
+  ReviewCompletion,
+  ReviewFamily,
+  ReviewNextStep,
+  ReviewProgress,
+  ReviewTradeItem,
+  SaveDailyReviewRequest,
+  SaveDailyReviewResult,
+  SaveTradeActionRequest,
+  TradeSaveBinding,
+} from '../coordinators/daily-review/index.ts';

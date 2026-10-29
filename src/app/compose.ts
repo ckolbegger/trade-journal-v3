@@ -1,4 +1,5 @@
 import { createMutationGuard } from '../coordinators/mutation-guard.ts';
+import { createDailyReview } from '../coordinators/daily-review/index.ts';
 import { createTradeViews, type TradeBrowseRequest, type TradeDetailRequest } from '../coordinators/trade-views/index.ts';
 import { createTradeWorkflows, type PositionChangeCommand } from '../coordinators/trade-workflows/index.ts';
 import { createWorkspace, installedCapabilities, type MigrationStageHooks } from '../coordinators/workspace/index.ts';
@@ -65,6 +66,8 @@ export async function createApplication(deps: ApplicationDeps) {
   const workspace = createWorkspace({ persistence, session, catalog, journal, host: deps.host, ids: deps.ids, clock: deps.clock, releaseId: deps.releaseId, sessionPolicy, locks: deps.locks, migrationHooks: deps.migrationHooks });
   const tradeWorkflows = createTradeWorkflows({ persistence, catalog, journal, tradeRecord, clock: deps.clock, guard });
   const marketData = createMarketData({ persistence, ids: deps.ids, clock: deps.clock, sessionPolicy });
+  // Daily Review shares this one Market Data (D4 A39): it never builds its own or sees the policy.
+  const dailyReview = createDailyReview({ persistence, tradeRecord, catalog, journal, marketData, guard });
   const tradeViews = createTradeViews({ persistence, catalog, journal, tradeRecord, marketData, clock: deps.clock });
 
   return {
@@ -91,7 +94,19 @@ export async function createApplication(deps: ApplicationDeps) {
       browseTrades: <L extends 'Planned' | 'Open'>(request: TradeBrowseRequest<L>) => tradeViews.browseTrades(request),
       getTradeDetail: (request: TradeDetailRequest) => tradeViews.getTradeDetail(request),
     },
-    capabilities: installedCapabilities(deps.releaseId),
+    // Market Data mutates only through the guard; queries and recovery read. DailyReview.save is
+    // guarded inside the coordinator, which owns its commit.
+    MarketData: {
+      save: (command: Parameters<typeof marketData.save>[0]) => guard.run('MarketData.save', () => marketData.save(command)),
+      query: (query: Parameters<typeof marketData.query>[0]) => marketData.query(query),
+      recover: (request: Parameters<typeof marketData.recover>[0]) => marketData.recover(request),
+    },
+    DailyReview: {
+      open: (request: Parameters<typeof dailyReview.open>[0]) => dailyReview.open(request),
+      getTrade: (request: Parameters<typeof dailyReview.getTrade>[0]) => dailyReview.getTrade(request),
+      save: (request: Parameters<typeof dailyReview.save>[0]) => dailyReview.save(request),
+    },
+    capabilities: installedCapabilities(deps.releaseId, sessionPolicy.identity),
     session,
     persistence,
   };
@@ -100,7 +115,7 @@ export async function createApplication(deps: ApplicationDeps) {
 export type Application = Awaited<ReturnType<typeof createApplication>>;
 
 // The operation groups of the facade, named as in the Installed Capability Manifest.
-export const FACADE_GROUPS = ['Workspace', 'ReferenceCatalog', 'Journal', 'TradeWorkflows', 'TradeViewsAndReporting'] as const;
+export const FACADE_GROUPS = ['Workspace', 'ReferenceCatalog', 'Journal', 'TradeWorkflows', 'TradeViewsAndReporting', 'MarketData', 'DailyReview'] as const;
 
 export function facadeOperations(app: Application): string[] {
   return FACADE_GROUPS.flatMap((group) => Object.keys(app[group]).map((op) => `${group}.${op}`)).sort();

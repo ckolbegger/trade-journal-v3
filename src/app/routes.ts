@@ -21,7 +21,30 @@ export const ROUTES = [
     label: 'Trades',
     // The Open (default) and Planned tabs (D2 A32).
     requires: ['TradeViewsAndReporting.browseTrades'],
-    variants: { 'TradeViewsAndReporting.browseTrades': ['Open', 'Planned'] },
+    variants: { 'TradeViewsAndReporting.browseTrades': ['Open', 'Planned', 'CurrentEvaluation'] },
+    navigation: true,
+    readOnly: true,
+  },
+  {
+    // The Daily Trade Review opens the latest completed session (D4 A60, P15). Mark entry and the
+    // Action form are presented inside it, and its Marks family needs the Market Data operations.
+    id: 'review',
+    path: '/review',
+    label: 'Review',
+    requires: [
+      'DailyReview.open',
+      'DailyReview.getTrade',
+      'DailyReview.save',
+      'MarketData.save',
+      'MarketData.query',
+      'MarketData.recover',
+    ],
+    variants: {
+      'DailyReview.open': ['LatestCompleted'],
+      'DailyReview.save': ['SaveTradeAction'],
+      'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock'],
+      'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical'],
+    },
     navigation: true,
     readOnly: true,
   },
@@ -30,7 +53,7 @@ export const ROUTES = [
     path: '/trades/:tradeId',
     label: 'Trade',
     requires: ['TradeViewsAndReporting.getTradeDetail', 'Journal.query'],
-    variants: { 'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open'] },
+    variants: { 'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'CurrentEvaluation'] },
     navigation: false,
     readOnly: true,
   },

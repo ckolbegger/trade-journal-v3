@@ -77,6 +77,20 @@ export default {
       },
     },
     {
+      name: 'trade-analysis-never-sees-session-policy',
+      comment: 'Trade Analysis takes dates and instants, never a calendar (D4 A39).',
+      severity: 'error',
+      from: { path: layer('domain/trade-analysis') },
+      to: { path: layer('domain/session-policy') },
+    },
+    {
+      name: 'daily-review-never-sees-session-policy',
+      comment: 'Daily Review gets sessions from Market Data, never the policy (D4 A39).',
+      severity: 'error',
+      from: { path: layer('coordinators/daily-review') },
+      to: { path: layer('domain/session-policy') },
+    },
+    {
       name: 'trade-analysis-never-calls-performance-analysis',
       severity: 'error',
       from: { path: layer('domain/trade-analysis') },

@@ -168,7 +168,7 @@ export function createWorkspace(deps: WorkspaceDeps): Workspace {
       binding,
       timeZone: (value as { timeZone: string }).timeZone,
       onboarding: accounts.kind === 'Page' && accounts.items.length > 0 ? 'ReadyForTradePlanning' : 'NeedsInstitutionAndAccount',
-      installedCapabilities: installedCapabilities(deps.releaseId),
+      installedCapabilities: installedCapabilities(deps.releaseId, deps.sessionPolicy.identity),
       readiness,
       protection: protectionOf(readiness),
       schemaVersion: SCHEMA_VERSION,
@@ -245,7 +245,7 @@ export function createWorkspace(deps: WorkspaceDeps): Workspace {
       const inspection = readiness.rootInspection;
       const base: StatusBase = {
         observedAt: deps.clock.now(),
-        installedCapabilities: installedCapabilities(deps.releaseId),
+        installedCapabilities: installedCapabilities(deps.releaseId, deps.sessionPolicy.identity),
         readiness,
         protection: protectionOf(readiness),
       };

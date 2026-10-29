@@ -26,6 +26,7 @@ import {
   AboutIcon,
   AccountsIcon,
   NewPlanIcon,
+  ReviewIcon,
   TradesIcon,
 } from "./icons.tsx";
 import { RuntimeContext, type Durability } from "./runtime.tsx";
@@ -71,6 +72,7 @@ function useWide(): boolean {
 
 const NAV_ICONS: Partial<Record<RouteId, ComponentType>> = {
   trades: TradesIcon,
+  review: ReviewIcon,
   "new-plan": NewPlanIcon,
   accounts: AccountsIcon,
   about: AboutIcon,
