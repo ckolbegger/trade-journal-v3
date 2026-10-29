@@ -12,7 +12,7 @@ import {
   type RecordedDeviationVersion,
 } from '../../domain/trade-analysis/index.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
-import type { DeclineProjection, EntryProjection, ReflectionDisposition } from '../../modules/journal/index.ts';
+import type { DebtProjection, DeclineProjection, EntryProjection, ReflectionDisposition } from '../../modules/journal/index.ts';
 import { beginSemanticTransaction, type WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { TradeMutationSuccess, TradeWorkflowsDeps, WorkflowIssue } from './types.ts';
 
@@ -42,7 +42,8 @@ export interface PositionChangeCommand {
 // The one Position Change Reflection outcome: its identity in the receipt, its projection after commit.
 export type PositionChangeSuccess = TradeMutationSuccess<
   {
-    readonly reflection: { readonly kind: 'Entry' | 'Decline'; readonly id: string };
+    // A Defer names the Outstanding Debt it created instead of an Entry or decline (D5 A66).
+    readonly reflection: { readonly kind: 'Entry' | 'Decline' | 'Debt'; readonly id: string };
     // What the commit did to each recorded Deviation occurrence, by fingerprint (D2 A26).
     readonly deviationReconciliation: readonly DeviationReconciliationItem[];
     // Disclosed when the change, typically an earlier-dated one, moved a resolved entry (P5).
@@ -53,7 +54,8 @@ export type PositionChangeSuccess = TradeMutationSuccess<
   {
     readonly reflection:
       | { readonly kind: 'Entry'; readonly entry: EntryProjection }
-      | { readonly kind: 'Decline'; readonly decline: DeclineProjection };
+      | { readonly kind: 'Decline'; readonly decline: DeclineProjection }
+      | { readonly kind: 'Debt'; readonly debt: DebtProjection };
   }
 >;
 
@@ -253,9 +255,15 @@ export async function recordPositionChange(deps: TradeWorkflowsDeps, command: Po
   // The candidate was derived above, so the before-state's coherent facts derive too.
   const beforeDerivation = derive({ record: prepared.beforeAnalysisInput! });
   if (beforeDerivation.kind !== 'Derived') throw new Error('incoherent');
-  // Exactly one outcome: the completed Entry or the explicit decline.
+  // Exactly one outcome: the completed Entry, the explicit decline, or the deferred Debt.
   const entry = journal.entries[0];
   const decline = journal.declines[0];
+  const debt = journal.debts?.[0];
+  const outcome: PositionChangeSuccess['postCommit']['reflection'] = entry
+    ? { kind: 'Entry', entry }
+    : decline
+      ? { kind: 'Decline', decline }
+      : { kind: 'Debt', debt: debt! };
   return {
     kind: 'Recorded',
     receipt: {
@@ -268,9 +276,9 @@ export async function recordPositionChange(deps: TradeWorkflowsDeps, command: Po
       deviationReconciliation: reconciliationOf(derived.reconciliation.deviationActions, trade.recordedDeviations ?? [], staged.mapping),
       repairs: staged.repairs ?? [],
       entryChanges: entryChangesOf(beforeDerivation, derivation),
-      reflection: entry ? { kind: 'Entry', id: entry.id } : { kind: 'Decline', id: decline!.id },
+      reflection: entry ? { kind: 'Entry', id: entry.id } : decline ? { kind: 'Decline', id: decline.id } : { kind: 'Debt', id: debt!.debtId },
     },
-    postCommit: { trade, derivation, reflection: entry ? { kind: 'Entry', entry } : { kind: 'Decline', decline: decline! } },
+    postCommit: { trade, derivation, reflection: outcome },
     // The Open list reorders by Last Activity; the list the Trade left loses it.
     affected: [trade.storedLifecycle, ...(before === trade.storedLifecycle ? [] : [before])].map((lifecycle) => ({ scope: 'TradeList', lifecycle })),
   };

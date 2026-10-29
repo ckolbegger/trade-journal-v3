@@ -127,7 +127,9 @@ export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceip
       <p>
         {reflection.kind === 'Entry'
           ? 'Reflection saved.'
-          : `Reflection declined${reflection.decline.reason ? `: ${reflection.decline.reason}` : '.'}`}
+          : reflection.kind === 'Debt'
+            ? 'Reflection deferred.'
+            : `Reflection declined${reflection.decline.reason ? `: ${reflection.decline.reason}` : '.'}`}
       </p>
       <Link className="pill primary" to={`/trades/${receipt.tradeId}`}>Back to the Trade</Link>
     </section>

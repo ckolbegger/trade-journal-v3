@@ -483,3 +483,55 @@ describe('rejected', () => {
     expect(await dumpAll(ref.stack.factory)).toEqual(before);
   });
 });
+
+describe('Defer (AC-JOUR-003)', () => {
+  it('should commit the Position Change, its Executions, the lifecycle move, the Deviation actions, and one Outstanding Debt in one semantic commit, with no Entry or decline', async () => {
+    const ref = await referenceTrade();
+    const before = workspaceStores(await dumpAll(ref.stack.factory));
+    const result = await ref.stack.tradeWorkflows.recordPositionChange(command(ref, 1, [buy(ref, PC1, '60', '50.10')], { kind: 'Defer' }));
+    expect(result.kind).toBe('Recorded');
+    const after = workspaceStores(await dumpAll(ref.stack.factory));
+    const trade = (after['trades'] as { lifecycle: string; factRevision: number; facts: { kind: string; factId: string }[]; deviations?: unknown[] }[])[0]!;
+    expect(trade).toEqual(expect.objectContaining({ lifecycle: 'Open', factRevision: 2, lastActivity: PC1 }));
+    expect(trade.facts.map((f) => f.kind)).toEqual(['Plan', 'PlannedLeg', 'Stop', 'Target', 'PositionChange', 'Execution']);
+    expect(trade.deviations).toEqual([]);
+    const pcId = trade.facts[4]!.factId;
+    // No new Entry (only the Plan Reflection) and no decline.
+    expect(after['journalEntries']).toEqual([expect.objectContaining({ entryTypeKey: 'entry-type.plan-reflection' })]);
+    expect(after['journalDeclines']).toEqual([]);
+    expect(after['journalDebts']).toEqual([
+      expect.objectContaining({
+        obligationKey: `PositionChangeReflection:${pcId}`,
+        anchor: { kind: 'Trade', tradeId: ref.trade.tradeId },
+        origin: { kind: 'PositionChange', factId: pcId },
+        momentTime: PC1,
+        dueAnchor: PC1,
+      }),
+    ]);
+    expect(after['journalObligations']).toContainEqual(
+      expect.objectContaining({ obligationKey: `PositionChangeReflection:${pcId}`, outcome: expect.objectContaining({ kind: 'Debt' }) as unknown }),
+    );
+    expect(contentRevision(after)).toBe(contentRevision(before) + 1);
+  });
+
+  it('should return TradeMutationSuccess with the Debt identity in the receipt and the Debt projection with snapshot revision, due anchor, and status in the post-commit Journal outcomes, equal to the stored Debt, AC-RESP-001', async () => {
+    const ref = await referenceTrade();
+    const result = await ref.stack.tradeWorkflows.recordPositionChange(command(ref, 1, [buy(ref, PC1, '60', '50.10')], { kind: 'Defer' }));
+    if (result.kind !== 'Recorded') throw new Error(`expected Recorded, got ${result.kind}`);
+    const stored = (workspaceStores(await dumpAll(ref.stack.factory))['journalDebts'] as { debtId: string; definitionId: string; versions: { versionId: string; status: string }[] }[])[0]!;
+    expect(result.receipt.reflection).toEqual({ kind: 'Debt', id: stored.debtId });
+    expect(result.receipt.lifecycleTransitions).toEqual([{ tradeId: ref.trade.tradeId, from: 'Planned', to: 'Open' }]);
+    expect(result.postCommit.reflection).toEqual({
+      kind: 'Debt',
+      debt: expect.objectContaining({
+        debtId: stored.debtId,
+        definitionId: ref.reflectionDefinitionId,
+        dueAnchor: PC1,
+        status: 'Outstanding',
+        revision: stored.versions.at(-1)!.versionId,
+      }) as unknown,
+    });
+    expect(stored.definitionId).toBe(ref.reflectionDefinitionId);
+    expect(stored.versions.at(-1)!.status).toBe('Outstanding');
+  });
+});
