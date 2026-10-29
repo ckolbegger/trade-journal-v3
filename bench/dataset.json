@@ -1,12 +1,26 @@
 {
-  "generatorVersion": 1,
-  "schemaVersion": 2,
+  "generatorVersion": 2,
+  "schemaVersion": 3,
   "seed": 20211011,
-  "clockStart": "2021-10-11T13:00:00Z",
+  "clockStart": "2024-01-02T13:00:00Z",
   "timeZone": "America/New_York",
   "origin": "http://localhost:5181",
   "buildDir": "dist-bench",
-  "benchRelease": "0e54da97acaef6a226b463f5f742337fb6920758cd56474f4f97a2056f21d4be",
+  "benchRelease": "290485a213580a468506ceb82844d7af759de4f9b907dde7db298b3c18b6ebc6",
+  "asOf": "2028-12-29T21:35:00Z",
+  "reviewDate": "2028-12-29",
+  "missingInstruments": [
+    "ABBV",
+    "AVGO",
+    "CAT",
+    "QAM",
+    "QBB",
+    "QBQ",
+    "QCF",
+    "QCU",
+    "QDJ",
+    "QDY"
+  ],
   "counts": {
     "trades": 25000,
     "openTrades": 200,
@@ -18,10 +32,24 @@
     "positionChangeReflectionDeclines": 80,
     "institutions": 3,
     "accounts": 6,
-    "strategies": 1
+    "strategies": 1,
+    "sessions": 1255,
+    "openInstruments": 150,
+    "sharedInstruments": 50,
+    "marks": 188240,
+    "markCorrections": 1882,
+    "acknowledgments": 0,
+    "actions": 125404,
+    "editedActions": 2509
   },
-  "generationMs": 37855,
-  "generatedAt": "2026-10-25T05:08:52.713Z",
+  "actionsByChoice": {
+    "Exit": 6271,
+    "Roll": 6271,
+    "Adjust": 6271,
+    "Hold": 106591
+  },
+  "generationMs": 5445378,
+  "generatedAt": "2026-10-29T09:38:59.354Z",
   "engine": "chromium 153.0.8010.12",
   "host": {
     "platform": "darwin",

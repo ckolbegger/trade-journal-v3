@@ -1319,6 +1319,46 @@ Verification:
 
 Fully green. T4.29 is complete.
 
+## T4.30 Benchmark generator: Marks and Actions
+
+Change: generator version 1 to 2 (`BENCH_GENERATOR_VERSION`, marker `tj-bench-generator-v2`), clock start 2021-10-11 to 2024-01-02 (revision 10, decision 51). `src/app/bench-generator.ts` now simulates the trader session by session through the production facade: it applies the day's Plans and Position Changes, sets its injected Clock to five minutes after the session's completion, saves that session's Mark for each of the 150 Instruments (`MarketData.save`, `RecordInitialManualMark`; every 100th corrected with `CorrectMark`), opens the Review (`DailyReview.open`, `LatestCompleted`), and saves an Action for each eligible Trade (`getTrade` unless the previous save's `nextStep` already carries the form, then `save`). 85% Hold, 15% Exit, Roll or Adjust with an Intent, every 50th Action (2%) edited once under the new binding. Open Trade k holds Instrument k mod 150, so 50 Instruments are shared by two Trades. The as-of session leaves 10 Instruments without a Mark (every 15th from the 8th); the Missing Instruments are read from the final Review's Marks family.
+
+Decisions (coordinator, 2026-10-29):
+- Sessions: the session policy's coverage ends 2028-12-31, so 2024-01-02 through 2028-12-29 holds 1,255 real sessions; accepted as "about 1,260". The as-of instant is 2028-12-29T21:35:00Z (the last completion, 21:30:00Z, plus five minutes).
+- The generator takes sessions from Market Data, not the policy (`only-market-data-sees-session-policy`): `MarketData.query` `ResolveSession` with `Current` as of each calendar day's end names the day exactly when it is a session; completion is the close plus the policy's 30-minute buffer.
+- The Clock is injected (as in D2's generator), so it is the "pinned clock" during generation. Playwright's clock is pinned at measurement (T4.31, A52); the as-of instant is recorded in `bench/dataset.json` for that.
+- Origin stays D2's bench origin, `http://localhost:5181`.
+
+Commands and results:
+
+- `npm run build:bench && npm run bench:generate`: exit 0. "bench:generate: no cached profile; generating for generator 2, schema 3", then progress lines, then "bench:generate OK: {...} in 5445378 ms".
+- Duration: 5,445,378 ms (90.8 minutes), Apple M4 Max, chromium 153.0.8010.12. After T4.30-B1 and B2 the per-Action cost fell: the first measured run (before the fixes, stopped at session 325 after 772 s with 8,390 Actions, 145 ms per Action) took 159 s to the same point; the whole run's final 25 sessions took about 270 s.
+- Counts in `bench/dataset.json` (stored counts, checked by the generator against its own tallies before it returns):
+
+| Kind | Stored count | Plan (section 1.3 at D4) |
+|---|---|---|
+| Trades / Open / Planned | 25,000 / 200 / 24,800 | as at D2 |
+| Position Changes / Executions | 400 / 800 | as at D2 |
+| Plan Reflection Entries | 25,000 | as at D2 |
+| Position Change reflection Entries / declines | 320 / 80 | as at D2 |
+| Sessions | 1,255 | about 1,260 |
+| Distinct Instruments of the Open Trades / shared by two Trades | 150 / 50 | 150 / 50 |
+| Marks (initial) | 188,240 = 1,255 x 150 - 10 | about 189,000 |
+| Mark corrections | 1,882 (1% of Marks) | about 1,900 |
+| Acknowledgments | 0 | none |
+| Daily Trade Review Actions (entries) | 125,404 | about 126,000 |
+| Actions edited once | 2,509 (2.0%) | 2% |
+| Actions by choice (first save) | Hold 106,591 (85.0%); Exit 6,271, Roll 6,271, Adjust 6,271 (15.0%) | 85% / 15% |
+
+  The Action count is the sum, over sessions, of the Trades open at each session (200 by the end), so it is a consequence of when each Trade opens; it agrees with the 126,000 of `tools/capacity/profile.ts` (`MEASURED.dailyTradeReviewActions`) to 0.5%, and Marks plus corrections (190,122) with its 190,000 to 0.1%.
+- As-of: `asOf` 2028-12-29T21:35:00Z, `reviewDate` 2028-12-29. Missing Instruments on the as-of date (10, from the final Review): ABBV, AVGO, CAT, QAM, QBB, QBQ, QCF, QCU, QDJ, QDY.
+- `bench/expected-open-rows.json` regenerated (the Open list as rendered after generation).
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`: exit 0.
+
+Mutation check (version bump forces regeneration):
+- Cached profile: a second `npm run bench:generate` printed "bench:generate OK: reusing the cached profile .../.cache/bench/profile (generator 2, schema 3)" in 0.33 s and left `bench/dataset.json` and `bench/expected-open-rows.json` unchanged.
+- Version bump: with `BENCH_GENERATOR_VERSION = 3` in `src/app/bench.ts` (profile copied aside first), the run printed "bench:generate: cached profile is generator 2, schema 3; regenerating for generator 3, schema 3" and began generating ("bench: session 25 of 1255 ... 3750 Marks, 48 Actions"). I stopped it after six seconds, restored the profile and the version (2), and confirmed `bench/dataset.json` and `bench/expected-open-rows.json` were byte-identical to the pre-check files and the stamp read `{"generatorVersion":2,"schemaVersion":3}`.
+
 ### T4.30-B1
 
 Defect: every `DailyReview.save` rebuilt the whole Review after its commit, and that rebuild re-ran the full historical Mark-gap scan (`marketData.recover`, `historicalGaps`) for every eligible Instrument back to its earliest exposure. The scan cost about 0.027 ms per Instrument-session, 70-95% of each save, which projects to about 0.5-1 s per Action save at the mature profile and 5-10 hours for the bench generator.

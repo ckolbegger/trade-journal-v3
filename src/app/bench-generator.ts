@@ -2,15 +2,19 @@
 // module; the production bundle never imports it (`verify:no-fault-hooks` searches dist/ for the
 // marker and `__tjBench`). It creates the plan's section 1.3 dataset through the production
 // application facade on the real browser host, with seeded identities and a clock that starts at
-// 2021-10-11 and moves forward with the generated Economic Times. While it runs, and only then,
+// 2024-01-02 and moves forward with the generated Economic Times. From D4 (T4.30) it simulates the
+// trader session by session: after each session's completion it saves that session's Marks for
+// the 150 Instruments the Open Trades hold, opens the Daily Review, and saves an Action for each
+// eligible Trade. While it runs, and only then,
 // mutations skip the per-mutation readiness recheck (D1 A4, D2 section 6.0).
 import { CAPACITY_REQUIREMENT } from '../delivery/capacity.ts';
 import { browserHost } from '../delivery/browser-host.ts';
 import { RELEASE_ID } from '../delivery/release-identity.ts';
 import type { Clock } from '../domain/time/index.ts';
 import { createWebLocksLifecycleLock, type IdGenerator } from '../persistence/index.ts';
-import { BENCH_CLOCK_START, BENCH_GENERATOR_MARKER, BENCH_GENERATOR_VERSION, BENCH_PROFILE, BENCH_SEED, BENCH_TIME_ZONE, type BenchCounts } from './bench.ts';
-import { createApplication } from './compose.ts';
+import { BENCH_CLOCK_START, BENCH_GENERATOR_MARKER, BENCH_GENERATOR_VERSION, BENCH_PROFILE, BENCH_SEED, BENCH_TIME_ZONE, type BenchAsOf, type BenchCounts } from './bench.ts';
+import { createApplication, type Application } from './compose.ts';
+import type { ActionChoice, DailyTradeReview } from '../coordinators/daily-review/index.ts';
 
 // mulberry32: a small seeded generator, so every run produces the same identities.
 function seededRandom(seed: number): () => number {
@@ -37,23 +41,42 @@ function seededIds(seed: number): IdGenerator {
 }
 
 const MINUTE = 60_000;
-const DAY = 86_400_000;
+const ACTIONS = ['Exit', 'Roll', 'Adjust'] as const;
 const iso = (ms: number) => new Date(ms).toISOString().replace('.000Z', 'Z');
 
-// Weekday sessions from the clock start: about five years of 252 sessions.
-function sessionDays(count: number): number[] {
-  const days: number[] = [];
-  for (let day = Date.parse(BENCH_CLOCK_START.slice(0, 10)); days.length < count; day += DAY) {
-    const weekday = new Date(day).getUTCDay();
-    if (weekday !== 0 && weekday !== 6) days.push(day);
+// One simulated session. The completion is the close plus the policy's 30-minute buffer.
+interface Session {
+  readonly date: string;
+  readonly close: string;
+  readonly completion: string;
+}
+const COMPLETION_BUFFER = 30 * MINUTE;
+const COVERAGE_END = '2028-12-31';
+
+// The real sessions from the clock start through the end of session-policy coverage, asked of Market
+// Data (only it sees the policy, A39): for each calendar day, the latest completed session as of that
+// day's end is the day itself exactly when the day is a session. 1,255 sessions, the last on
+// 2028-12-29 (the plan says about 1,260).
+async function realSessions(app: Application): Promise<readonly Session[]> {
+  const sessions: Session[] = [];
+  for (let day = Date.parse(BENCH_CLOCK_START.slice(0, 10)); new Date(day).toISOString().slice(0, 10) <= COVERAGE_END; day += 86_400_000) {
+    const date = new Date(day).toISOString().slice(0, 10);
+    const found = await app.MarketData.query({ kind: 'ResolveSession', context: { kind: 'Current', asOf: `${date}T23:59:00Z` } });
+    if (found.kind !== 'Session') throw new Error(`session ${date}: ${found.kind}`);
+    if (found.tradingDate === date) sessions.push({ date, close: found.closeInstant, completion: iso(Date.parse(found.closeInstant) + COMPLETION_BUFFER) });
   }
-  return days;
+  return sessions;
 }
 
 const SYMBOLS = [
   'AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL', 'META', 'TSLA', 'AVGO', 'COST', 'NFLX', 'CSCO', 'KO', 'PFE', 'JPM', 'V', 'MA', 'UNH', 'HD',
   'PG', 'XOM', 'CVX', 'LLY', 'ABBV', 'MRK', 'PEP', 'ADBE', 'CRM', 'ORCL', 'AMD', 'INTC', 'QCOM', 'TXN', 'WMT', 'DIS', 'NKE', 'MCD',
   'BA', 'CAT', 'DE', 'GS',
+];
+// The 150 Instruments the Open Trades hold: the 40 above and 110 synthetic three-letter symbols.
+const INSTRUMENTS: readonly string[] = [
+  ...SYMBOLS,
+  ...Array.from({ length: BENCH_PROFILE.instruments - SYMBOLS.length }, (_, k) => `Q${String.fromCharCode(65 + Math.floor(k / 26))}${String.fromCharCode(65 + (k % 26))}`),
 ];
 const PLAN_EMOTIONS = ['calm', 'eager', 'anxious', 'fomo', 'relieved'];
 const DECISION_MODES = ['as-planned', 'deliberate-adjustment', 'reactive'];
@@ -66,6 +89,9 @@ const FILL_TENTHS = [10, 6, 10, 12, 10] as const;
 // Every 125th Trade (from the 62nd) is opened, so Open Trades span the five years.
 const OPEN_EVERY = BENCH_PROFILE.trades / BENCH_PROFILE.openTrades;
 const OPEN_OFFSET = Math.floor(OPEN_EVERY / 2);
+// Open Trade k holds Instrument k mod 150, so 50 Instruments are shared by two Trades.
+const symbolOf = (index: number) =>
+  index % OPEN_EVERY === OPEN_OFFSET ? INSTRUMENTS[((index - OPEN_OFFSET) / OPEN_EVERY) % INSTRUMENTS.length]! : SYMBOLS[index % SYMBOLS.length]!;
 
 const cents = (value: number) => `${Math.floor(value / 100)}.${String(value % 100).padStart(2, '0')}`;
 
@@ -83,14 +109,13 @@ interface ChangeEvent {
 }
 
 // The whole dataset as a time-ordered list of Plan confirmations and Position Changes.
-function schedule(): (PlanEvent | ChangeEvent)[] {
-  const days = sessionDays(BENCH_PROFILE.sessions);
+function schedule(days: readonly number[]): (PlanEvent | ChangeEvent)[] {
   const events: (PlanEvent | ChangeEvent)[] = [];
   let sequence = 0;
   let session = -1;
   let slot = 0;
   for (let index = 0; index < BENCH_PROFILE.trades; index++) {
-    const s = Math.floor((index * BENCH_PROFILE.sessions) / BENCH_PROFILE.trades);
+    const s = Math.floor((index * days.length) / BENCH_PROFILE.trades);
     slot = s === session ? slot + 1 : 0;
     session = s;
     events.push({ kind: 'Plan', time: days[s]! + 13 * 60 * MINUTE + 45 * MINUTE + slot * 15 * MINUTE, index });
@@ -117,8 +142,10 @@ function intendedEntryCents(index: number): number {
   return 2_000 + ((index * 7_919) % 38_000);
 }
 
-// Counts the stored Workspace's records directly, as provenance for `bench/dataset.json`.
-async function countStored(): Promise<BenchCounts> {
+// Counts the stored Workspace's records directly, as provenance for `bench/dataset.json`. The Open
+// Trades' underlyings come from the Open list, since the Instruments they hold are not counted
+// from the stored Trades.
+async function countStored(openUnderlyings: readonly string[] = []): Promise<BenchCounts> {
   const open = (name: string) =>
     new Promise<IDBDatabase>((resolve, reject) => {
       const request = indexedDB.open(name);
@@ -131,30 +158,68 @@ async function countStored(): Promise<BenchCounts> {
       request.onsuccess = () => resolve(request.result as Record<string, unknown>[]);
       request.onerror = () => reject(request.error ?? new Error(`read ${store} failed`));
     });
+  // A cursor, so the 190,000 observations and 126,000 Actions are never all in memory at once.
+  const each = (db: IDBDatabase, store: string, visit: (record: unknown) => void) =>
+    new Promise<void>((resolve, reject) => {
+      const request = db.transaction(store).objectStore(store).openCursor();
+      request.onsuccess = () => {
+        const cursor = request.result;
+        if (!cursor) return resolve();
+        visit(cursor.value);
+        cursor.continue();
+      };
+      request.onerror = () => reject(request.error ?? new Error(`read ${store} failed`));
+    });
   const root = await open('tj-root');
   const pointer = (await all(root, 'pointer')).find((r) => r.key === 'current') as { databaseName: string };
   root.close();
   const db = await open(pointer.databaseName);
+  const sessionDates = new Set<string>();
+  let marks = 0;
+  let markCorrections = 0;
+  let acknowledgments = 0;
+  await each(db, 'observations', (r) => {
+    const record = r as { tradingDate: string; marks: { intention: string }[]; acknowledgments: unknown[] };
+    sessionDates.add(record.tradingDate);
+    marks += record.marks.filter((m) => m.intention === 'InitialManual').length;
+    markCorrections += record.marks.filter((m) => m.intention === 'Correction').length;
+    acknowledgments += record.acknowledgments.length;
+  });
+  const entryCounts: Record<string, number> = {};
+  let editedActions = 0;
+  await each(db, 'journalEntries', (r) => {
+    const entry = r as { entryTypeKey: string; versions: unknown[] };
+    entryCounts[entry.entryTypeKey] = (entryCounts[entry.entryTypeKey] ?? 0) + 1;
+    if (entry.entryTypeKey === 'entry-type.daily-trade-review' && entry.versions.length > 1) editedActions++;
+  });
   const trades = (await all(db, 'trades')) as { lifecycle: string; facts: { kind: string }[] }[];
-  const entries = (await all(db, 'journalEntries')) as { entryTypeKey: string }[];
   const declines = await all(db, 'journalDeclines');
   const catalog = (await all(db, 'catalog')) as { kind: string }[];
   db.close();
   const facts = (kind: string) => trades.reduce((sum, t) => sum + t.facts.filter((f) => f.kind === kind).length, 0);
-  const entriesOf = (key: string) => entries.filter((e) => e.entryTypeKey === key).length;
   const catalogOf = (kind: string) => catalog.filter((r) => r.kind === kind).length;
+  const held = new Map<string, number>();
+  for (const underlying of openUnderlyings) held.set(underlying, (held.get(underlying) ?? 0) + 1);
   return {
     trades: trades.length,
     openTrades: trades.filter((t) => t.lifecycle === 'Open').length,
     plannedTrades: trades.filter((t) => t.lifecycle === 'Planned').length,
     positionChanges: facts('PositionChange'),
     executions: facts('Execution'),
-    planReflectionEntries: entriesOf('entry-type.plan-reflection'),
-    positionChangeReflectionEntries: entriesOf('entry-type.position-change-reflection'),
+    planReflectionEntries: entryCounts['entry-type.plan-reflection'] ?? 0,
+    positionChangeReflectionEntries: entryCounts['entry-type.position-change-reflection'] ?? 0,
     positionChangeReflectionDeclines: declines.length,
     institutions: catalogOf('Institution'),
     accounts: catalogOf('Account'),
     strategies: catalogOf('Strategy'),
+    sessions: sessionDates.size,
+    openInstruments: held.size,
+    sharedInstruments: [...held.values()].filter((n) => n > 1).length,
+    marks,
+    markCorrections,
+    acknowledgments,
+    actions: entryCounts['entry-type.daily-trade-review'] ?? 0,
+    editedActions,
   };
 }
 
@@ -172,6 +237,87 @@ async function generate() {
     locks: createWebLocksLifecycleLock(navigator.locks),
     skipMutationRecheck: () => generating,
   });
+  const stats = { marks: 0, corrections: 0, actions: 0, edited: 0, byChoice: {} as Record<string, number> };
+  const final: { asOf?: BenchAsOf } = {};
+
+  // The Marks of one session: every one of the 150 Instruments, except that the as-of session leaves
+  // 10 of them Missing (the disclosed fraction). Every 100th Mark is corrected once.
+  async function saveMarks(session: Session, sessionNumber: number, last: boolean) {
+    for (const [k, instrumentKey] of INSTRUMENTS.entries()) {
+      if (last && k % (BENCH_PROFILE.instruments / BENCH_PROFILE.missingAsOfInstruments) === 7) continue;
+      const price = 2_000 + ((k * 977) % 18_000) + ((sessionNumber * 131 + k * 17) % 301) - 150;
+      const saved = await app.MarketData.save({
+        intention: 'RecordInitialManualMark',
+        instrumentKey,
+        tradingDate: session.date,
+        expectedResolutionRevision: 'None',
+        price: cents(price),
+      });
+      if (saved.kind !== 'Saved') throw new Error(`mark ${instrumentKey} ${session.date}: ${saved.kind}`);
+      if (++stats.marks % BENCH_PROFILE.correctedMarkEvery !== 0) continue;
+      const fix = await app.MarketData.save({
+        intention: 'CorrectMark',
+        instrumentKey,
+        tradingDate: session.date,
+        expectedResolutionRevision: saved.resolutionRevision,
+        price: cents(price + 1),
+        reason: 'Keyed the wrong digit from the broker statement.',
+      });
+      if (fix.kind !== 'Saved') throw new Error(`correction ${instrumentKey} ${session.date}: ${fix.kind}`);
+      stats.corrections++;
+    }
+  }
+
+  // Opens the Review and saves an Action for each eligible Trade: 85% Hold, 15% Exit, Roll or
+  // Adjust with an Intent, and 2% of them edited once (a second save under the new binding).
+  async function reviewSession(session: Session, last: boolean) {
+    const opened = await app.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: now });
+    // Before the first Trade opens there is nothing to review.
+    if (opened.kind === 'Empty' && !last) return;
+    if (opened.kind !== 'Ready' || opened.reviewDate !== session.date) throw new Error(`open ${session.date}: ${opened.kind}`);
+    if (last) {
+      const marks = opened.families.find((f) => f.family === 'Marks');
+      final.asOf = { asOf: now, reviewDate: session.date, actionsByChoice: {}, missingInstruments: (marks?.family === 'Marks' ? marks.today : []).filter((r) => r.task === 'Manual').map((r) => r.instrumentKey).sort() };
+    }
+    let binding = opened.binding;
+    let carried: DailyTradeReview | undefined;
+    const save = async (item: { tradeId: string; underlying: string }, action: ActionChoice, n: number) => {
+      // The previous save's next step already carries this Trade's form when it is the next in the walk.
+      let trade = carried?.tradeId === item.tradeId ? carried : undefined;
+      if (!trade) {
+        const form = await app.DailyReview.getTrade({ reviewDate: session.date, tradeId: item.tradeId, binding });
+        if (form.kind !== 'Ready') throw new Error(`getTrade ${session.date}: ${form.kind}`);
+        trade = form.trade;
+      }
+      const saved = await app.DailyReview.save({
+        kind: 'SaveTradeAction',
+        binding: trade.saveBinding,
+        action,
+        ...(action !== 'Hold' && { intent: `Cut the ${item.underlying} exposure if the next close is below the stop; action ${n}.` }),
+      });
+      if (saved.kind !== 'Saved') throw new Error(`save ${session.date} ${item.underlying}: ${saved.kind}`);
+      carried = saved.review.kind === 'Ready' && saved.review.nextStep.kind === 'Trade' ? saved.review.nextStep.trade : undefined;
+      if (saved.review.kind === 'Ready') binding = saved.review.binding;
+      else {
+        const reopened = await app.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: now });
+        if (reopened.kind !== 'Ready') throw new Error(`reopen ${session.date}: ${reopened.kind}`);
+        binding = reopened.binding;
+      }
+    };
+    for (const family of opened.families) {
+      if (family.family !== 'Trades') continue;
+      for (const item of family.trades) {
+        const n = stats.actions++;
+        const choice = n % 20 < 3 ? ACTIONS[n % 3]! : 'Hold';
+        await save(item, choice, n);
+        stats.byChoice[choice] = (stats.byChoice[choice] ?? 0) + 1;
+        if (n % BENCH_PROFILE.editedActionEvery !== 0) continue;
+        await save(item, choice === 'Hold' ? 'Adjust' : 'Hold', n);
+        stats.edited++;
+      }
+    }
+  }
+
   try {
     const initialized = await app.Workspace.initialize({ timeZone: BENCH_TIME_ZONE });
     if (initialized.kind !== 'Opened') throw new Error(`initialize: ${initialized.kind}`);
@@ -197,11 +343,13 @@ async function generate() {
     const strategy = strategies.items[0]!;
 
     const tradeIds: string[] = [];
-    for (const event of schedule()) {
+    const sessions = await realSessions(app);
+    const events = schedule(sessions.map((session) => Date.parse(session.date)));
+    const applyEvent = async (event: PlanEvent | ChangeEvent) => {
       // Authored five minutes after the event's Economic Time, so nothing is in the future.
       now = iso(event.time + 5 * MINUTE);
       const i = event.index;
-      const symbol = SYMBOLS[i % SYMBOLS.length]!;
+      const symbol = symbolOf(i);
       const entry = intendedEntryCents(i);
       if (event.kind === 'Plan') {
         const account = accounts[i % accounts.length]!;
@@ -230,7 +378,7 @@ async function generate() {
         if (result.kind !== 'Confirmed') throw new Error(`plan ${i}: ${result.kind}`);
         tradeIds[i] = result.receipt.tradeId;
         if ((i + 1) % 2_500 === 0) console.log(`bench: ${i + 1} plans`);
-        continue;
+        return;
       }
       const tradeId = tradeIds[i]!;
       const n = event.sequence;
@@ -278,13 +426,34 @@ async function generate() {
         reflection,
       });
       if (recorded.kind !== 'Recorded') throw new Error(`trade ${i} change ${n}: ${recorded.kind}`);
+    };
+
+    // The trader, session by session: the day's Plans and Position Changes, then (after the
+    // session's completion) its Marks, the Review, and an Action for each eligible Trade.
+    const started = performance.now();
+    let next = 0;
+    for (const [n, session] of sessions.entries()) {
+      while (events[next] && events[next]!.time < Date.parse(session.completion)) await applyEvent(events[next++]!);
+      // Five minutes after the session's completion: the pinned clock for the rest of the session.
+      now = iso(Date.parse(session.completion) + 5 * MINUTE);
+      const last = n === sessions.length - 1;
+      await saveMarks(session, n, last);
+      await reviewSession(session, last);
+      if ((n + 1) % 25 === 0) console.log(`bench: session ${n + 1} of ${sessions.length} (${session.date}), ${Math.round((performance.now() - started) / 1000)} s, ${stats.marks} Marks, ${stats.actions} Actions`);
     }
+    if (next !== events.length) throw new Error(`${events.length - next} events after the last session`);
   } finally {
     generating = false;
   }
   const open = await app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Open' });
   if (open.kind !== 'Ready') throw new Error(`browse Open: ${open.kind}`);
-  return { generatorVersion: BENCH_GENERATOR_VERSION, counts: await countStored(), openItems: open.view.items };
+  if (!final.asOf) throw new Error('no session was simulated');
+  const counts = await countStored(open.view.items.map((item) => item.underlying));
+  // The facade's own tallies must agree with what is stored.
+  if (counts.marks !== stats.marks || counts.markCorrections !== stats.corrections || counts.actions !== stats.actions || counts.editedActions !== stats.edited) {
+    throw new Error(`stored ${counts.marks}/${counts.markCorrections}/${counts.actions}/${counts.editedActions} Marks/corrections/Actions/edited, saved ${stats.marks}/${stats.corrections}/${stats.actions}/${stats.edited}`);
+  }
+  return { generatorVersion: BENCH_GENERATOR_VERSION, counts, openItems: open.view.items, ...final.asOf, actionsByChoice: stats.byChoice };
 }
 
 declare global {

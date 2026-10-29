@@ -8,7 +8,7 @@
 import { readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import { chromium, type Page } from '@playwright/test';
-import { BENCH_CLOCK_START, BENCH_GENERATOR_MARKER, BENCH_GENERATOR_VERSION, BENCH_SEED, BENCH_TIME_ZONE, type BenchCounts } from '../src/app/bench.ts';
+import { BENCH_CLOCK_START, BENCH_GENERATOR_MARKER, BENCH_GENERATOR_VERSION, BENCH_SEED, BENCH_TIME_ZONE, type BenchAsOf, type BenchCounts } from '../src/app/bench.ts';
 import { SCHEMA_VERSION } from '../src/persistence/schema.ts';
 import {
   BENCH_BUILD_DIR,
@@ -24,6 +24,7 @@ import { listFiles } from './release.ts';
 import { startReleaseServer } from './release-server.ts';
 
 const wanted: BenchStamp = { generatorVersion: BENCH_GENERATOR_VERSION, schemaVersion: SCHEMA_VERSION };
+// Generation takes on the order of an hour (D4 T4.30); `bench:` progress lines are echoed below.
 const stamp = (await readFile(BENCH_STAMP_FILE, 'utf8').then(JSON.parse, () => undefined)) as BenchStamp | undefined;
 if (stamp?.generatorVersion === wanted.generatorVersion && stamp.schemaVersion === wanted.schemaVersion) {
   console.log(`bench:generate OK: reusing the cached profile ${BENCH_PROFILE_DIR} (generator ${stamp.generatorVersion}, schema ${stamp.schemaVersion})`);
@@ -55,7 +56,7 @@ async function controlled(page: Page) {
   await page.waitForLoadState('load');
 }
 
-let result: { counts: BenchCounts; openItems: readonly unknown[] };
+let result: { counts: BenchCounts; openItems: readonly unknown[] } & BenchAsOf;
 let expected: Pick<ExpectedOpenRows, 'headers' | 'rows'>;
 let release: string;
 let generationMs: number;
@@ -116,7 +117,11 @@ const provenance = {
   origin,
   buildDir: BENCH_BUILD_DIR,
   benchRelease: release,
+  asOf: result.asOf,
+  reviewDate: result.reviewDate,
+  missingInstruments: result.missingInstruments,
   counts: result.counts,
+  actionsByChoice: result.actionsByChoice,
   generationMs,
   generatedAt: new Date().toISOString(),
   engine,
