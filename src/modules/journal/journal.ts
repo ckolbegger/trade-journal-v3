@@ -1,6 +1,6 @@
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
 import type { Clock } from '../../domain/time/index.ts';
-import { requireOpen, type BindingCheck, type IdGenerator, type Persistence, type SemanticTransaction, type Write } from '../../persistence/index.ts';
+import { beginSemanticTransaction, requireOpen, type BindingCheck, type IdGenerator, type Persistence, type SemanticTransaction, type Write } from '../../persistence/index.ts';
 import type {
   AnswerInput,
   CandidateRef,
@@ -23,6 +23,9 @@ import type {
   PlanReflectionRequest,
   PlanSemantics,
   PositionChangeReflectionRequest,
+  ObligationOutcome,
+  ResolveDebtCommand,
+  ResolveDebtRequest,
   PreparedEntry,
   PreparedEntryEdit,
   PreparedJournalOutcome,
@@ -64,6 +67,28 @@ interface JournalMeta {
   readonly journalRevision: number;
 }
 
+// A Debt resolution validated without writing; a coordinator stages it in its own transaction.
+export type PrepareResolveDebtResult =
+  | PreparedJournalOutcome
+  | { readonly kind: 'Rejected'; readonly issues: readonly JournalIssue[] }
+  // The expected Debt revision is stale or the Debt is no longer Outstanding.
+  | { readonly kind: 'Conflict'; readonly currentOutcome: ObligationOutcome }
+  | { readonly kind: 'NotFound' };
+
+export type JournalSaveResult =
+  // The complete outcome at the new Journal revision: the Entry or decline, the Debt's transition,
+  // and the key's current outcome, so a caller renders it without a Journal query.
+  | {
+      readonly kind: 'Saved';
+      readonly entry?: EntryProjection;
+      readonly decline?: DeclineProjection;
+      readonly debt: DebtProjection;
+      readonly currentOutcome: ObligationOutcome;
+      readonly snapshot: { readonly journalRevision: number };
+    }
+  | Exclude<PrepareResolveDebtResult, PreparedJournalOutcome>
+  | RuntimeNotWritable;
+
 export type GetDefinitionsRequest = { readonly latestFor: string } | { readonly revision: string };
 
 export type GetDefinitionsResult =
@@ -73,6 +98,10 @@ export type GetDefinitionsResult =
 export interface Journal {
   seedDefaults(manifest: JournalSeedManifest): Promise<SeedJournalResult>;
   getDefinitions(request: GetDefinitionsRequest): Promise<GetDefinitionsResult>;
+  // Journal-only Debt resolution from Trade Detail, in its own semantic commit (D5 A64).
+  save(command: ResolveDebtCommand): Promise<JournalSaveResult>;
+  // The same resolution as `save`, with Source Daily Review, for a coordinator to stage in its own transaction.
+  prepareEffects(request: ResolveDebtRequest): Promise<PrepareResolveDebtResult>;
   // Validates a workflow's Journal obligation and prepares its outcome without writing.
   prepareEffects(request: PlanReflectionRequest): Promise<PreparePlanReflectionResult>;
   prepareEffects(request: DailyTradeReviewRequest): Promise<PrepareJournalEffectsResult>;
@@ -112,6 +141,24 @@ interface StoredDecline {
   readonly authoredTime: string;
   readonly origin: { readonly kind: string; readonly factId: string };
   readonly reason?: string;
+}
+
+// A stored Debt (D5 A61, A62): the projection's fields, the private index fields, and its version chain.
+interface StoredDebt {
+  readonly debtId: string;
+  readonly obligationKey: string;
+  readonly entryTypeKey: string;
+  readonly sourceKey: string;
+  readonly definitionId: string;
+  readonly anchor: { readonly kind: 'Trade'; readonly tradeId: string };
+  readonly origin: { readonly kind: 'PositionChange'; readonly factId: string };
+  readonly momentTime: string;
+  readonly dueAnchor: string;
+  readonly dueRule: 'OneSessionGrace';
+  readonly route: 'JournalOnly';
+  readonly anchorTradeId: string;
+  readonly outstandingDue?: string;
+  readonly versions: readonly { readonly versionId: string; readonly status: string; readonly savedAt: string }[];
 }
 
 // Drops persistence's write stamp so callers see exactly the immutable definition revision.
@@ -193,6 +240,15 @@ function validateForm(definition: EntryDefinitionRecord, answers: Readonly<Recor
   return issues;
 }
 
+// One response per prompt of the definition revision, in its order; a blank answer is saved as
+// Unanswered, never as declined.
+function responsesOf(definition: EntryDefinitionRecord, answers: Readonly<Record<string, AnswerInput>>) {
+  return definition.prompts.map((prompt): { promptId: string; value: ResponseValue } => {
+    const answer = answers[prompt.id];
+    return { promptId: prompt.id, value: answer === undefined || isBlank(answer) ? { kind: 'Unanswered' } : answer };
+  });
+}
+
 // Renders an Entry with the exact prompt wording and option labels of the definition revision
 // it was saved against, never the current ones.
 function narrativeEntry(
@@ -253,8 +309,12 @@ const OBLIGATIONS = {
 
 export function createJournal(deps: JournalDeps): Journal {
   async function prepareEffects(
-    request: JournalEffectRequest,
-  ): Promise<PrepareJournalEffectsResult | PreparePlanReflectionResult> {
+    request: JournalEffectRequest | ResolveDebtRequest,
+  ): Promise<PrepareJournalEffectsResult | PreparePlanReflectionResult | PrepareResolveDebtResult> {
+    if (request.obligation === 'ResolveDebt') {
+      const { debtId, expectedDebtRevision, resolution } = request;
+      return prepareResolution({ intention: 'ResolveDebt', debtId, expectedDebtRevision, resolution }, 'source.daily-review');
+    }
     const { disposition } = request;
     // Plan Reflection requires completion now; Position Change Reflection may also be declined.
     // Defer is installed for the Position Change Reflection only (D5 A66).
@@ -367,10 +427,7 @@ export function createJournal(deps: JournalDeps): Journal {
               ? { edit: { entryId: existing.id, expectedRevision: existing.versions.length, savedAt: deps.clock.now(), current: existing as unknown as Record<string, unknown> } }
               : {}),
             // A blank optional answer is saved as Unanswered, never as declined.
-            responses: definition.prompts.map((prompt) => {
-              const answer = form.answers[prompt.id];
-              return { promptId: prompt.id, value: answer === undefined || isBlank(answer) ? { kind: 'Unanswered' } : answer };
-            }),
+            responses: responsesOf(definition, form.answers),
           },
         ],
         declines: [],
@@ -425,8 +482,115 @@ export function createJournal(deps: JournalDeps): Journal {
     return { kind: 'Actions', reviewDate, actions, snapshot: { journalRevision: value.meta?.journalRevision ?? 0 } };
   }
 
-  return {
+  async function currentOutcome(obligationKey: string): Promise<ObligationOutcome> {
+    const { value } = await deps.persistence.readSnapshot(['journalObligations'], (tx) => tx.get('journalObligations', obligationKey));
+    return (value as unknown as { outcome: ObligationOutcome }).outcome;
+  }
+
+  // Reads the Debt and what its resolution needs, and prepares the Entry that answers it.
+  async function prepareResolution(
+    command: ResolveDebtCommand,
+    sourceKey: string,
+  ): Promise<PrepareResolveDebtResult> {
+    const { value } = await deps.persistence.readSnapshot(['journalDebts', 'journalObligations', 'journalDefinitions', 'meta'], async (tx) => {
+      const debt = (await tx.get('journalDebts', command.debtId)) as unknown as StoredDebt | undefined;
+      if (!debt) return undefined;
+      return {
+        debt,
+        obligation: (await tx.get('journalObligations', debt.obligationKey)) as unknown as { outcome: ObligationOutcome },
+        definition: (await tx.get('journalDefinitions', debt.definitionId)) as unknown as EntryDefinitionRecord,
+        meta: (await tx.get('meta', 'journal')) as JournalMeta | undefined,
+      };
+    });
+    if (!value) return { kind: 'NotFound' };
+    const { debt, definition } = value;
+    // Only an Outstanding Debt, still at the revision the trader was shown, can be resolved.
+    if (debt.versions.at(-1)!.versionId !== command.expectedDebtRevision || value.obligation.outcome.kind !== 'Debt') {
+      return { kind: 'Conflict', currentOutcome: value.obligation.outcome };
+    }
+    const { resolution } = command;
+    const outcome = {
+      entryTypeKey: debt.entryTypeKey,
+      definitionId: debt.definitionId,
+      sourceKey,
+      obligationKey: { entryType: 'PositionChangeReflection', positionChange: debt.origin.factId } as const,
+      anchor: { kind: 'Trade', ref: debt.anchor.tradeId } as const,
+      origin: { kind: 'PositionChange', ref: debt.origin.factId } as const,
+      momentTime: debt.momentTime,
+      authoredTime: deps.clock.now(),
+      settledDebtId: debt.debtId,
+    };
+    const transition = (status: 'Settled' | 'Declined') => ({
+      debtId: debt.debtId,
+      expectedRevision: command.expectedDebtRevision,
+      status,
+      savedAt: deps.clock.now(),
+      current: debt as unknown as Record<string, unknown>,
+    });
+    const snapshot = { journalRevision: value.meta?.journalRevision ?? 0 };
+    if (resolution.kind === 'Decline') {
+      if ([...(resolution.reason ?? '')].length > MAX_DECLINE_REASON) return { kind: 'Rejected', issues: [{ code: 'ReasonTooLong' }] };
+      return {
+        kind: 'Prepared',
+        effects: {
+          entries: [],
+          declines: [{ ...outcome, ...(resolution.reason === undefined ? {} : { reason: resolution.reason }) }],
+          debtResolutions: [transition('Declined')],
+        },
+        snapshot,
+      };
+    }
+    const { form } = resolution;
+    // The answers are validated against the Debt's snapshot revision, never a later one.
+    if (form.definitionId !== debt.definitionId) return { kind: 'Rejected', issues: [{ code: 'DefinitionRevisionMismatch' }] };
+    const issues = validateForm(definition, form.answers);
+    if (issues.length > 0) return { kind: 'Rejected', issues };
+    return {
+      kind: 'Prepared',
+      effects: {
+        entries: [
+          {
+            ...outcome,
+            responses: responsesOf(definition, form.answers),
+          },
+        ],
+        declines: [],
+        debtResolutions: [transition('Settled')],
+      },
+      snapshot,
+    };
+  }
+
+  const journal: Journal = {
     queryActions: ({ reviewDate }) => queryActions(reviewDate),
+
+    async save(command) {
+      for (let attempt = 1; ; attempt++) {
+        const prepared = await prepareResolution(command, 'source.trade-detail');
+        if (prepared.kind !== 'Prepared') return prepared;
+        const tx = beginSemanticTransaction();
+        const staged = journal.applyPreparedEffects(tx, prepared, {});
+        const { checks, writes } = tx.close();
+        const committed = await deps.persistence.commit({ checks: [...checks, journalUnchanged(prepared.snapshot.journalRevision)], writes });
+        if (committed.kind === 'RuntimeNotWritable') return committed;
+        if (committed.kind !== 'Committed') {
+          // Only the shared Journal counter moved: read, validate, and prepare afresh (ADR 0011).
+          if (committed.kind === 'Conflict' && committed.binding.startsWith('journal@') && attempt < MAX_ATTEMPTS) continue;
+          return { kind: 'Conflict', currentOutcome: await currentOutcome(prepared.effects.debtResolutions![0]!.current['obligationKey'] as string) };
+        }
+        const [entry] = staged.entries;
+        const [decline] = staged.declines;
+        const outcome = (entry ?? decline)!;
+        return {
+          kind: 'Saved',
+          ...(entry && { entry }),
+          ...(decline && { decline }),
+          debt: staged.debts![0]!,
+          currentOutcome: { kind: entry ? 'Entry' : 'Decline', id: outcome.id },
+          snapshot: { journalRevision: prepared.snapshot.journalRevision + 1 },
+        };
+      }
+    },
 
     async query(query) {
       const { value } = await deps.persistence.readSnapshot(
@@ -478,6 +642,16 @@ export function createJournal(deps: JournalDeps): Journal {
       // the key already has an outcome (D2 A28).
       const stageObligation = (obligationKey: string | string[], outcome: { kind: 'Entry' | 'Decline' | 'Debt'; id: string }) =>
         tx.stage({ op: 'add', store: 'journalObligations', value: { obligationKey, outcome } });
+      // A resolution moves the key's outcome from its Outstanding Debt, which the commit rechecks (A62).
+      const moveObligation = (obligationKey: string | string[], debtId: string, outcome: { kind: 'Entry' | 'Decline'; id: string }) => {
+        tx.require({
+          name: `obligation@${String(obligationKey)}:${debtId}`,
+          store: 'journalObligations',
+          key: obligationKey,
+          verify: (stored) => (stored?.['outcome'] as { kind: string; id: string } | undefined)?.id === debtId,
+        });
+        tx.stage({ op: 'put', store: 'journalObligations', value: { obligationKey, outcome } });
+      };
       // An edit appends a version to the same Entry identity; the version count it was prepared
       // against is rechecked inside the commit.
       const stageEdit = (entry: PreparedEntry, edit: PreparedEntryEdit): EntryProjection => {
@@ -514,6 +688,7 @@ export function createJournal(deps: JournalDeps): Journal {
           authoredTime: entry.authoredTime,
           definitionId: entry.definitionId,
           responses: entry.responses,
+          ...(entry.settledDebtId === undefined ? {} : { settledDebtId: entry.settledDebtId }),
         };
         const { definitionId, responses, ...identity } = projection;
         const obligationKey = keyOf(entry.obligationKey);
@@ -528,7 +703,8 @@ export function createJournal(deps: JournalDeps): Journal {
             versions: [{ versionNumber: 1, definitionId, responses, savedAt: projection.authoredTime }],
           },
         });
-        stageObligation(obligationKey, { kind: 'Entry', id: projection.id });
+        if (entry.settledDebtId === undefined) stageObligation(obligationKey, { kind: 'Entry', id: projection.id });
+        else moveObligation(obligationKey, entry.settledDebtId, { kind: 'Entry', id: projection.id });
         return projection;
       });
       const declines = prepared.effects.declines.map((decline): DeclineProjection => {
@@ -542,10 +718,12 @@ export function createJournal(deps: JournalDeps): Journal {
           ...(decline.reason === undefined ? {} : { reason: decline.reason }),
           momentTime: decline.momentTime,
           authoredTime: decline.authoredTime,
+          ...(decline.settledDebtId === undefined ? {} : { settledDebtId: decline.settledDebtId }),
         };
         const obligationKey = keyOf(decline.obligationKey);
         tx.stage({ op: 'add', store: 'journalDeclines', value: { ...projection, obligationKey, anchorTradeId: projection.anchor.tradeId } });
-        stageObligation(obligationKey, { kind: 'Decline', id: projection.id });
+        if (decline.settledDebtId === undefined) stageObligation(obligationKey, { kind: 'Decline', id: projection.id });
+        else moveObligation(obligationKey, decline.settledDebtId, { kind: 'Decline', id: projection.id });
         return projection;
       });
       const debts = (prepared.effects.debts ?? []).map((debt): DebtProjection => {
@@ -580,6 +758,40 @@ export function createJournal(deps: JournalDeps): Journal {
         stageObligation(projection.obligationKey, { kind: 'Debt', id: projection.debtId });
         return projection;
       });
+      // A Debt transition appends a version linking the outcome and leaves byOutstandingDue (A62);
+      // the commit rechecks the revision it was prepared against.
+      const resolved = (prepared.effects.debtResolutions ?? []).map((resolution): DebtProjection => {
+        const current = resolution.current as unknown as StoredDebt;
+        // The private due field is removed, so the Debt leaves byOutstandingDue.
+        const rest = Object.fromEntries(Object.entries(current).filter(([field]) => field !== 'outstandingDue'));
+        const outcome = entries[0] ?? declines[0]!;
+        const link = entries[0] ? { entryId: outcome.id } : { declineId: outcome.id };
+        const version = { versionId: deps.ids.next(), status: resolution.status, ...link, savedAt: resolution.savedAt };
+        tx.require({
+          name: `debt@${resolution.debtId}:${resolution.expectedRevision}`,
+          store: 'journalDebts',
+          key: resolution.debtId,
+          verify: (stored) => (stored?.['versions'] as StoredDebt['versions'] | undefined)?.at(-1)?.versionId === resolution.expectedRevision,
+        });
+        tx.stage({ op: 'put', store: 'journalDebts', value: { ...rest, versions: [...current.versions, version] } });
+        return {
+          debtId: current.debtId,
+          obligationKey: current.obligationKey,
+          entryTypeKey: current.entryTypeKey,
+          sourceKey: current.sourceKey,
+          definitionId: current.definitionId,
+          anchor: current.anchor,
+          origin: current.origin,
+          momentTime: current.momentTime,
+          dueAnchor: current.dueAnchor,
+          dueRule: current.dueRule,
+          route: current.route,
+          status: resolution.status,
+          revision: version.versionId,
+          ...link,
+        };
+      });
+      debts.push(...resolved);
       tx.stage({ op: 'put', store: 'meta', value: { key: 'journal', journalRevision: prepared.snapshot.journalRevision + 1 } });
       return { kind: 'Staged', entries, declines, ...(debts.length > 0 && { debts }), ...(prepared.action && { action: { ...prepared.action, id: entries[0]!.id } }) };
     },
@@ -625,4 +837,5 @@ export function createJournal(deps: JournalDeps): Journal {
       }
     },
   };
+  return journal;
 }

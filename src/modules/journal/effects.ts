@@ -52,6 +52,33 @@ export interface DailyTradeReviewRequest {
 
 export type JournalEffectRequest = PlanReflectionRequest | PositionChangeReflectionRequest | DailyTradeReviewRequest;
 
+// How an Outstanding Debt is resolved (D5 A64): answered against its snapshot revision, or declined.
+export type DebtResolution =
+  | { readonly kind: 'Answer'; readonly form: { readonly definitionId: string; readonly answers: Readonly<Record<string, AnswerInput>> } }
+  | { readonly kind: 'Decline'; readonly reason?: string };
+
+// Resolves one Outstanding Debt at the revision the trader was shown. `Journal.save` takes it as a
+// command (Source Trade Detail); `prepareEffects` takes it as a request (Source Daily Review).
+export interface ResolveDebtCommand {
+  readonly intention: 'ResolveDebt';
+  readonly debtId: string;
+  readonly expectedDebtRevision: string;
+  readonly resolution: DebtResolution;
+}
+
+// The obligation's current outcome (Journal, "Debt and obligation semantics").
+export interface ObligationOutcome {
+  readonly kind: 'Entry' | 'Decline' | 'Debt';
+  readonly id: string;
+}
+
+export interface ResolveDebtRequest {
+  readonly obligation: 'ResolveDebt';
+  readonly debtId: string;
+  readonly expectedDebtRevision: string;
+  readonly resolution: DebtResolution;
+}
+
 // One obligation has exactly one current outcome (Journal, "Debt and obligation semantics").
 export type JournalObligationKey =
   | { readonly entryType: 'PlanReflection'; readonly trade: CandidateRef }
@@ -76,6 +103,8 @@ export interface PreparedEntry {
   readonly responses: readonly { readonly promptId: string; readonly value: ResponseValue }[];
   // Present when this appends a version to the obligation's existing Entry instead of creating one.
   readonly edit?: PreparedEntryEdit;
+  // Present when this answers a Debt: the Entry carries the Debt's identity (D5 A62, A64).
+  readonly settledDebtId?: string;
 }
 
 // An edit appends a version under the same Entry identity; `current` is the stored Entry the edit
@@ -98,6 +127,18 @@ export interface PreparedDecline {
   readonly reason?: string;
   readonly momentTime: Instant;
   readonly authoredTime: Instant;
+  // Present when this declines a Debt.
+  readonly settledDebtId?: string;
+}
+
+// The transition of one Outstanding Debt, bound to the revision it was prepared against (D5 A62).
+// `current` is the stored Debt that revision names.
+export interface PreparedDebtResolution {
+  readonly debtId: string;
+  readonly expectedRevision: string;
+  readonly status: 'Settled' | 'Declined';
+  readonly savedAt: Instant;
+  readonly current: Readonly<Record<string, unknown>>;
 }
 
 // A deferred reflection (D5 A61): an Outstanding Debt for one Position Change. The definition is
@@ -120,6 +161,8 @@ export interface PreparedJournalEffects {
   readonly declines: readonly PreparedDecline[];
   // Present only for a Defer.
   readonly debts?: readonly PreparedDebt[];
+  // Present only for a Debt resolution; its Entry or decline is the one in `entries` or `declines`.
+  readonly debtResolutions?: readonly PreparedDebtResolution[];
 }
 
 export interface JournalIssue {
@@ -171,6 +214,8 @@ export interface EntryProjection {
   readonly authoredTime: Instant;
   readonly definitionId: string;
   readonly responses: readonly { readonly promptId: string; readonly value: ResponseValue }[];
+  // The Debt this Entry settled.
+  readonly settledDebtId?: string;
 }
 
 // The durable projection of a staged or saved decline.
@@ -184,6 +229,8 @@ export interface DeclineProjection {
   readonly reason?: string;
   readonly momentTime: Instant;
   readonly authoredTime: Instant;
+  // The Debt this decline settled.
+  readonly settledDebtId?: string;
 }
 
 // The durable projection of a staged Debt: its current (and, in D5, only) version flattened.
@@ -201,9 +248,12 @@ export interface DebtProjection {
   readonly dueAnchor: Instant;
   readonly dueRule: 'OneSessionGrace';
   readonly route: 'JournalOnly';
-  readonly status: 'Outstanding';
+  readonly status: 'Outstanding' | 'Settled' | 'Declined';
   // The Debt's last version identity, its optimistic binding.
   readonly revision: string;
+  // The outcome a Settled or Declined Debt links.
+  readonly entryId?: string;
+  readonly declineId?: string;
 }
 
 export type JournalApplyResult = {
