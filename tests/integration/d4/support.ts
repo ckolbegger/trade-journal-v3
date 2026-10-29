@@ -8,7 +8,8 @@ import type { SessionPolicy } from '../../../src/domain/session-policy/index.ts'
 import { fixedClock } from '../../../src/domain/time/index.ts';
 import { TEST_CAPACITY } from '../../support/stack.ts';
 import { loadDump, type WorkspaceDump } from '../../../tools/fixtures/workspace-fixture.ts';
-import { confirmReference, dec, device, onboarded, PC1, PC2, record, type Device, type MutableDump } from '../d2/support.ts';
+import { planCommand } from '../d1/support.ts';
+import { confirmReference, dec, device, onboarded, PC1, PC1_TIME, PC2, PLAN_TIME, record, type Device, type MutableDump } from '../d2/support.ts';
 
 export * from '../d2/support.ts';
 
@@ -120,4 +121,56 @@ export async function openReview(app: Application, d: Device) {
   const opened = await app.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: d.now });
   if (opened.kind !== 'Ready') throw new Error(`DailyReview.open: ${opened.kind}`);
   return opened;
+}
+
+// --- Part 3 additions ---
+
+// Confirms a Long Stock Plan of 100 shares through the facade and returns its Trade identity.
+export async function planStock(app: Application, symbol: string, entry: string, stop: string, target: string, shares = '100', planTime = PLAN_TIME): Promise<string> {
+  const command = await planCommand(app, { underlying: symbol, economicTime: planTime });
+  const leg = { ...command.plan.legs[0]!, quantity: shares, intendedEntry: entry };
+  const plan = { ...command.plan, legs: [leg], stops: [{ kind: 'UnderlyingPrice' as const, price: stop }], targets: [{ kind: 'UnderlyingPrice' as const, price: target }] };
+  const result = await app.TradeWorkflows.confirmPlan({ ...command, plan });
+  if (result.kind !== 'Confirmed') throw new Error(`confirmPlan: ${result.kind}`);
+  return result.receipt.tradeId;
+}
+
+export interface FourTrades {
+  readonly a: string;
+  readonly b: string;
+  readonly c: string;
+  readonly e: string;
+}
+
+// The Five-Trade fixture without T-D, through the facade: T-A XYZ (the reference Trade through PC2),
+// T-B ABC, T-C DEF and T-E JKL, each filled at 10:00 Monday. No Marks are saved.
+export async function fourTrades(app: Application): Promise<FourTrades> {
+  const a = await planStock(app, 'XYZ', '50.00', '47.50', '56.00');
+  await record(app, a, PC1);
+  await record(app, a, PC2);
+  const single = async (symbol: string, entry: string, stop: string, target: string) => {
+    const tradeId = await planStock(app, symbol, entry, stop, target);
+    await record(app, tradeId, { quantity: '100', price: entry, economicTime: PC1_TIME });
+    return tradeId;
+  };
+  const b = await single('ABC', '30.00', '28.00', '36.00');
+  const c = await single('DEF', '40.00', '38.00', '46.00');
+  const e = await single('JKL', '20.00', '19.00', '30.00');
+  return { a, b, c, e };
+}
+
+// The Review as `open` returns it, with the Trade's save binding as `getTrade` renders it.
+export async function bindingFor(app: Application, d: Device, tradeId: string) {
+  const opened = await openReview(app, d);
+  const trade = await app.DailyReview.getTrade({ reviewDate: opened.reviewDate, tradeId, binding: opened.binding });
+  if (trade.kind !== 'Ready') throw new Error(`getTrade: ${trade.kind}`);
+  return { opened, form: trade.trade, binding: trade.trade.saveBinding };
+}
+
+// Saves an Action for the Trade from a freshly rendered form and requires it to be Saved.
+export async function saveAction(app: Application, d: Device, tradeId: string, action: 'Hold' | 'Exit' | 'Roll' | 'Adjust' = 'Hold', intent?: string) {
+  const { binding } = await bindingFor(app, d, tradeId);
+  const result = await app.DailyReview.save({ kind: 'SaveTradeAction', binding, action, ...(intent === undefined ? {} : { intent }) });
+  if (result.kind !== 'Saved') throw new Error(`DailyReview.save: ${result.kind}`);
+  return result;
 }

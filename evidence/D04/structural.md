@@ -1481,3 +1481,17 @@ I4.6 (`review-shared-mark.test.ts`, so `d4/review` selects it; part 3 adds `revi
 | `209ae80` | `intraday.test.ts:36,53`: the "before restart" pass runs after `restart` closes the app | Doubtful, with a failure scenario | Fixed by T4.32-B4 (`6953021`) |
 | `209ae80` | `policy-revision.test.ts`: Tuesday 17:00 where the row says Wednesday 17:00 | Doubtful: the row's literal clock cannot give 2026-10-12 (Wednesday is itself a completed session); a plan wording issue | for the user |
 | `cedb2de`, `c76981b`, `877f563` | none beyond scratch-rename artifacts | | clean |
+
+## T4.32 part 3
+
+Cases I4.13, I4.14, I4.15, I4.16, I4.17 and I4.10 added under `tests/integration/d4/` (`review`, `eligibility`, `changed-evidence`, `action-edit`, `gaps`, `rebuild`), with fixture helpers (`planStock`, `fourTrades`, `bindingFor`, `saveAction`) in `support.ts`.
+
+| Command | Result |
+|---|---|
+| `npm run test:integration` | exit 0; 41 test files, 73 tests passed (every case in sections 6.1 of D1, D2 and D4) |
+| `npm run typecheck` | exit 0 |
+| `npx tsc6 --noEmit` | exit 0 |
+| `npm run lint` | exit 0 |
+| `npm run lint:deps` | exit 0 |
+
+Notes: all six cases passed on first run (behavior from earlier D4 tasks) and carry mutation notes in `tdd-log.md`. I4.13 and I4.10 build the Five-Trade fixture without T-D through the facade (`fourTrades`: T-A XYZ, T-B ABC, T-C DEF, T-E JKL). I4.14 uses ABC for Trade Q and a 15:00 fill as the earlier-dated fill. I4.15 interprets "acknowledge and withdraw" as two separate failed saves, each from a freshly rendered binding.
