@@ -18,4 +18,8 @@ describe('calculation Unavailable wording', () => {
     const awaiting = { kind: 'Unavailable', reason: 'AwaitingClose', detail: { after: '2026-10-13' } } as unknown as CalculationResult<Rational>;
     expect(calculation(awaiting, money)).toBe('Awaiting the next close');
   });
+
+  it('should word an unknown reason as Not available, with no Mark missing text', () => {
+    expect(calculation(unavailable('SomeFutureReason'), money)).toBe('Not available');
+  });
 });

@@ -200,10 +200,10 @@ const NOT_AVAILABLE = 'Not available';
 
 type Current = OpenTradeItem['current'];
 
-// The Instrument and date lacking an exact Mark; absent when the P&L has its Mark or the date is outside coverage (decision 54).
+// The Instrument and date lacking an exact Mark; absent when the P&L has its Mark, the date is outside coverage (decision 54) or the reason is not a known one.
 function missingMark(current: Current) {
   const pnl = current.currentMarkedPnl;
-  return pnl.kind === 'Unavailable' && pnl.reason !== 'SessionPolicyNotCovered' && 'date' in pnl.detail ? pnl.detail : undefined;
+  return pnl.kind === 'Unavailable' && (pnl.reason === 'MarkMissing' || pnl.reason === 'AcknowledgedUnavailable') && 'date' in pnl.detail ? pnl.detail : undefined;
 }
 
 // Current Marked Trade P&L: the figure, or in its place the words for what is missing; the Mark missing
