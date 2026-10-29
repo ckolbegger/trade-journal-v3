@@ -1338,3 +1338,10 @@ Bug fix, post-save Mark rows keep their resolution revision. `framesOnly` return
 - `npx vitest run src/coordinators/daily-review src/modules/market-data tests/integration/d4`: exit 0, 9 files, 132 passed.
 - `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`: exit 0.
 - `npm run lint:deps`: one violation, only-market-data-sees-session-policy from the uncommitted `src/app/bench-generator.ts` (not this task).
+
+### ocr review of T4.30-B1 and T4.30-B2
+
+| Commit | Finding | Assessment | Outcome |
+|---|---|---|---|
+| `573971d` | `daily-review.ts:213`: `framesOnly` returns no resolutions, so the post-save `nextStep` Mark row carries `resolutionRevision: 'None'` | Valid: after a withdrawn acknowledgment the stored revision is numeric, so entering that Mark gets a spurious Conflict | Fixed by T4.30-B2 (`2904ba3`) |
+| `2904ba3` | none (post-save Mark rows equal a fresh open's on resolution and revision; no added reads) | | clean |
