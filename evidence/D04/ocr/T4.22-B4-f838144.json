@@ -1,0 +1,91 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 86912,
+    "input_tokens": 86367,
+    "output_tokens": 545,
+    "cache_read_tokens": 17280,
+    "elapsed": "36s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "Detect the date change against the displayed Trade's `saveBinding.reviewDate`, not just the overview date. If reopening advances to date B but `getTrade` fails, `setReview(result)` still advances the overview while the form stays on date A. On a successful retry for B, `moved` is false, yet the new key remounts the form and drops its draft without the required explanation. Comparing with the selected Trade's date also covers this retry path.",
+      "existing_code": "    const moved = result.reviewDate !== review.reviewDate;",
+      "start_line": 354,
+      "end_line": 354,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/ui/screens/ReviewView.tsx",
+      "files": [
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    }
+  ],
+  "session_id": "ab0b36c3-7401-4301-870e-6b1d8a011cbd",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "ab0b36c3-7401-4301-870e-6b1d8a011cbd",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "4daa492d6a4e8099d29e334d34c3e0449851d4ec",
+      "resolved_head": "0380866a492cb2e952942aa2cd51aa215504e63b",
+      "exact_range": "4daa492d6a4e8099d29e334d34c3e0449851d4ec..0380866a492cb2e952942aa2cd51aa215504e63b",
+      "source_artifact_sha256": "ea70bb79217fca60824451209efe48de5b1890e106057383a3316193e3000a26"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "7284d9efad7301dc83fbb1db993a727c3569b74a669e79fcda4acf8fb42efadf"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "7284d9efad7301dc83fbb1db993a727c3569b74a669e79fcda4acf8fb42efadf"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 36362
+  }
+}

@@ -1109,3 +1109,13 @@ ocr review of `2abeba4` (B2): session `3a85fd59-70ff-43ac-8d0e-80e277e9cba2` (sc
 - it should disable the notice's Refresh while a save is in flight
 
 ocr review of `081e23a` (B3): session `bbe9ebdd-a441-43dc-9e1a-20ca8eb0eb0a` (scratch clone), no findings. `ocr/T4.22-B3-081e23a.json`. The saved view shows only when `!writable || (!changing && !dirty)`; while kept values differ from a refreshed saved Action, the form stays open under the refreshed `saveBinding` with the existing "Saved Action:" and "Intent:" lines above it (no new copy). The reviewer did not audit the cases, so I checked them against the code: a Saved form's first render seeds `action` and `intent` from it, so it is clean and shows the saved view; a ReviewChanged refresh that turns up a saved Action behaves as the Conflict one; putting the values back makes it clean, and the saved view holds the same values; dirty registration and the open form both follow `dirty`; a saved view that is not open cannot receive a new form, because `refreshTrade` is reached only from the open form's notice and Continue to Trades closes the Trade. First-run pass, mutation-checked: equal kept values show the saved view. No code ahead of red.
+
+ocr review of `f838144` (B4): session `ab0b36c3-7401-4301-870e-6b1d8a011cbd` (scratch clone; the test file was still skipped), 1 file, 1 comment. `ocr/T4.22-B4-f838144.json`. `ReviewTrade` is keyed by Trade and Review Date; `refreshTrade` sets "The Review moved to <short date>. This Trade’s form starts afresh for that date." when the reopened Review's date differs. The reviewer traced the remount clearing the old draft's registration and B7's hold, the walk rows following the new Review, and a same-date refresh keeping the form. No first-run passes, no code ahead of red (an extra mutation, the key back to `tradeId`, fails the case).
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/ui/screens/ReviewView.tsx:354` | `moved` compares with the overview's date, not the shown Trade's: after a refresh moves the Review but `getTrade` fails, the next successful refresh remounts the form and drops its draft with no message | Valid (`setReview` runs before `getTrade`) | Bug task T4.22-B9 |
+| low | `ReviewView.tsx:264` | `}facade=` with no space after the key | Doubtful: formatting only, valid JSX | Dismissed |
+
+### T4.22-B9 The move is judged by the Trade's own date
+- it should say the form starts afresh whenever the refreshed Trade's Review Date differs from the date its form was opened under, including after a refresh whose Trade read failed
