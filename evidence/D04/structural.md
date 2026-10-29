@@ -1686,3 +1686,15 @@ B4.14 asserts the Stop row's Status, Boundary, Distance, and Overrun cells, and 
 - code at `2550208`, 2026-10-29 15:31 EDT: unit 814, integration 73, browser 140; checks 12 of 12. `suite-runs/t4.33-*`.
 
 Fully green: every section 6.2 case of D1, D2 and D4 passes. T4.33 is complete.
+
+## T4.34 Browser-critic gate
+
+critic-1 on `d08b5e3`: **FAIL**, four defects (`evidence/D04/critic-1.md`). Each becomes a bug task, reproduced by a failing test first: T4.34-B1 the Review's Trade view shows worst case and the R of risk and reward (C4.1); T4.34-B2 the Action radio group's layout; T4.34-B3 the acknowledgment form's reason message; T4.34-B4 the Intent field shows its prompt text. Minor observations go to the user in the final report.
+
+## Critic cost
+
+Figures from each critic's completion notice (the harness's own token count). Brief v2 = `.claude/docs/critic-brief.md` with setup helpers from `e2e/d4/support.ts`.
+
+| Critic | Commit | Brief | Tokens | Tool calls | Duration | Defects |
+|---|---|---|---|---|---|---|
+| critic-1 (T4.34) | `d08b5e3` | v2 | 179,621 | 61 | 14 min 21 s | 4 |
