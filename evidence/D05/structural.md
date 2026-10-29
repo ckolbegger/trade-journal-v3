@@ -68,3 +68,16 @@ Commands and results:
 ocr review of `f901511`: session `4a9fb436-0d5b-4c15-b5f0-893776443508`, 4 files reviewed, **No findings.** Raw output: `ocr/T5.18-f901511.json`.
 
 The implementer's combined run (`e2e/d1 e2e/d2 e2e/d4`) failed B4.13's "Hold radio inside its chip at 375" (`e2e/d4/responsive-a11y.spec.ts:68`) twice, while it passes alone, with its file, and with all of `e2e/d4`; suspected layout race after `setViewportSize`. Handled through the cumulative run below.
+
+### Cumulative run after T5.18
+
+Run 2026-10-29 18:51 EDT on commit `ffafa07`, Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 62 passed (62)`, `Tests 822 passed (822)`, exit 0 | `suite-runs/t5.18-d4-release-build-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 41 passed (41)`, `Tests 73 passed (73)`, exit 0 | `suite-runs/t5.18-d4-release-build-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `142 passed (4.9m)`, exit 0 | `suite-runs/t5.18-d4-release-build-browser.txt` |
+| Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.18-d4-release-build-checks.txt` |
+
+Failure: `verify:capacity` only, "basis measured at schema version 3, current is 4" — expected until T5.19. B4.13's chip case passed here; it is recorded as a load-dependent flake (failed twice in the implementer's combined run, passed alone and here), flagged for the user, and fixed if it fails a cumulative run.

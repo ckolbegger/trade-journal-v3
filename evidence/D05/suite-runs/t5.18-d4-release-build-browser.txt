@@ -1,0 +1,195 @@
+
+> trade-journal-v3@0.0.0 test:e2e
+> npm run build:faults && npm run build:releases && playwright test e2e/d1 e2e/d2 e2e/d4
+
+
+> trade-journal-v3@0.0.0 build:faults
+> vite build --mode faults --outDir dist-faults
+
+vite v8.3.2 building client environment for faults...
+transforming...
+✓ 144 modules transformed.
+rendering chunks...
+computing gzip size...
+dist-faults/index.html                   0.50 kB │ gzip:   0.30 kB
+dist-faults/assets/index-oSmyI_WG.css   12.28 kB │ gzip:   3.28 kB
+dist-faults/assets/faults-DgRSU_Cr.js    1.78 kB │ gzip:   0.90 kB
+dist-faults/assets/index-CQcGM0go.js   557.42 kB │ gzip: 168.82 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 102ms
+
+> trade-journal-v3@0.0.0 build:releases
+> node tools/build-releases.ts
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+build:releases: d1 reused from /var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-release-d1-402b94835793 (claude-opus-5.5-d1 at 402b94835793587df2d10de1f3564e276843618b)
+build:releases: d2 reused from /var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-release-d2-de3fa276a263 (claude-opus-5.5-d2 at de3fa276a2632b568296040fd56efd2825708a39)
+build:releases: d4 reused from /var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-release-d4-4ab43d58931f (claude-opus-5.5-d4 at 4ab43d58931f2966d6a2d05f6b41be9bc239dd1c)
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+build:releases OK: v1, v2, v2-corrupt, d1, d2, d4, d5 in /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/dist-releases; v2-corrupt alters /assets/index-oSmyI_WG.css
+
+Running 142 tests using 1 worker
+
+  ✓    1 [chromium] › e2e/d1/identity.spec.ts:6:5 › B1.1 identity and Writable tab › should serve a complete manifest and digest-valid inventory and reach Writable with all four checks passing (863ms)
+  ✓    2 [chromium] › e2e/d1/identity.spec.ts:6:5 › B1.1 identity and Writable tab › should serve a complete manifest and digest-valid inventory and reach Writable with all four checks passing under an unknown user agent (779ms)
+  ✓    3 [chromium] › e2e/d1/integrity-blocked.spec.ts:6:3 › B1.8 Integrity Blocked › should block a root at version 99 created before launch, offering only Retry and leaving the root untouched (513ms)
+  ✓    4 [chromium] › e2e/d1/integrity-blocked.spec.ts:38:3 › B1.8 Integrity Blocked › should block a pointer whose Workspace database was deleted, keeping the pointer and creating no new Workspace (800ms)
+  ✓    5 [chromium] › e2e/d1/no-save.spec.ts:50:3 › B1.14 nothing is saved without Save › should store no Entry, Trade, draft, or Web Storage value after typing, resizing, leaving, and restarting (1.4s)
+  ✓    6 [chromium] › e2e/d1/offline.spec.ts:4:3 › B1.4 offline cold restart › should open Writable without a network, confirm a second Plan and add an Account, and keep both across another offline restart (2.2s)
+  ✓    7 [chromium] › e2e/d1/onboarding.spec.ts:5:3 › onboarding after a partly failed attempt (critic-2) › should show the protection warning on first run and onboarding, and reuse an Institution saved without its Account after a reload (855ms)
+  ✓    8 [chromium] › e2e/d1/plan.spec.ts:7:3 › B1.2 onboarding and first Plan › should show the Plan, 1R, and reflection after relaunch, with one Trade, one Entry, and Planned in the index (1.4s)
+  ✓    9 [chromium] › e2e/d1/plan.spec.ts:37:3 › B1.3 kill after commit › should keep the complete Plan, with its Entry, after the browser process is killed once the confirmation renders (1.3s)
+  ✓   10 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly diagnostic, with Retry and the another-browser recommendation, creating no Workspace (514ms)
+  ✓   11 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly capacity, with Retry and the another-browser recommendation, creating no Workspace (436ms)
+  ✓   12 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly control, with Retry and the another-browser recommendation, creating no Workspace (484ms)
+  ✓   13 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly inventory, with Retry and the another-browser recommendation, creating no Workspace (466ms)
+  ✓   14 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly diagnostic and capacity, with Retry and the another-browser recommendation, creating no Workspace (469ms)
+  ✓   15 [chromium] › e2e/d1/readiness.spec.ts:5:5 › B1.5 Unsupported matrix (faults build) › should show Unsupported naming exactly control and inventory, with Retry and the another-browser recommendation, creating no Workspace (455ms)
+  ✓   16 [chromium] › e2e/d1/readiness.spec.ts:25:3 › B1.7 protection is advisory › should stay Writable with the warning and durability action while unprotected, and report the request honestly (1.1s)
+  ✓   17 [chromium] › e2e/d1/recovery-only.spec.ts:4:3 › B1.6 Recovery Only matrix (existing Workspace, faults build) › should open Recovery Only with the failed checks for each fault set, keeping the Plan readable and the stores unchanged (5.0s)
+  ✓   18 [chromium] › e2e/d1/responsive-a11y.spec.ts:33:3 › B1.15 responsive and accessible › should switch layout at 960 px with the route and entered values intact (829ms)
+  ✓   19 [chromium] › e2e/d1/responsive-a11y.spec.ts:57:3 › B1.15 responsive and accessible › should report no WCAG 2.1 AA violations in any D1 view state (4.3s)
+  ✓   20 [chromium] › e2e/d1/responsive-a11y.spec.ts:135:3 › B1.15 responsive and accessible › should complete onboarding and a Plan with the keyboard only, with visible focus throughout (754ms)
+  ✓   21 [chromium] › e2e/d1/runtime-failure.spec.ts:5:5 › B1.9 mid-session failure (faults build) › should explain RuntimeNotWritable, keep the form values, and switch to Recovery Only when inventory starts failing before Confirm (910ms)
+  ✓   22 [chromium] › e2e/d1/runtime-failure.spec.ts:5:5 › B1.9 mid-session failure (faults build) › should explain RuntimeNotWritable, keep the form values, and switch to Recovery Only when diagnostic starts failing before Confirm (913ms)
+  ✓   23 [chromium] › e2e/d1/update.spec.ts:42:3 › B1.10 update with unsaved work › should notify only once v2 is waiting, defer Reload while the form is unsaved, then activate v2 with the Workspace unchanged (3.7s)
+  ✓   24 [chromium] › e2e/d1/update.spec.ts:74:3 › B1.11 corrupt update › should show no notice, keep v1 in control, and leave no v2 cache when the update fails verification (2.6s)
+  ✓   25 [chromium] › e2e/d1/update.spec.ts:90:3 › B1.12 offline keeps the installed release › should show no notice offline and keep v1 running and Writable (2.5s)
+  ✓   26 [chromium] › e2e/d1/update.spec.ts:111:3 › B1.13 two tabs, one unsaved › should explain in the clean tab that another tab has unsaved work, keeping Reload disabled until that form is cancelled (2.6s)
+  ✓   27 [chromium] › e2e/d1/update.spec.ts:133:3 › B1.13 two tabs, the clean one opened after the form became unsaved (critic-1) › should defer Reload and explain in a tab opened later, where "Check for updates" reports the waiting update once (2.8s)
+  ✓   28 [chromium] › e2e/d2/after-save.spec.ts:14:3 › reload after save › should replace the entry form history entry with the Trade Detail once saved, so reload, Back and Forward never show the form (1.2s)
+  ✓   29 [chromium] › e2e/d2/durability.spec.ts:23:3 › B2.7 kill after commit › should keep the Position Change, its Executions, lifecycle Open, and the reflection after the browser is killed once the result renders (1.6s)
+  ✓   30 [chromium] › e2e/d2/integrity.spec.ts:18:3 › B2.13 integrity surfaced › should show the integrity panel in Detail and the badge in the list for an Open Trade stored as Planned, writing nothing after viewing (2.1s)
+  ✓   31 [chromium] › e2e/d2/integrity.spec.ts:57:3 › Planned list row for an incoherent Trade › should show the row with Records disagree and Not available in each derived cell, linking to its Detail (2.7s)
+  ✓   32 [chromium] › e2e/d2/integrity.spec.ts:91:3 › incoherent Trade Detail › should not offer Record entry on an incoherent Detail, explain why beside the Records disagree panel, and show the same explanation on the entry route (2.2s)
+  ✓   33 [chromium] › e2e/d2/migration.spec.ts:47:3 › B2.3 update from D1 with data › should show the migration message, then list both Plans under Planned with Record entry working and About at schema 2, on a new database with the old one gone (4.0s)
+  ✓   34 [chromium] › e2e/d2/migration.spec.ts:86:3 › B2.4 Migration Blocked (faults build) › should show Migration Blocked with "Your data is unchanged" and Retry, leave the old stores unchanged with no candidate, and show the Plans after the fault is cleared and Retry pressed (3.7s)
+  ✓   35 [chromium] › e2e/d2/migration.spec.ts:122:3 › B2.5 old tab during migration › should show "Updated in another tab" in the old tab with its values on screen, return RuntimeNotWritable on Confirm, and write nothing to the old database after the snapshot (3.6s)
+  ✓   36 [chromium] › e2e/d2/migration.spec.ts:170:3 › B2.6 kill during migration (faults build) › should complete the migration on relaunch without faults, with the pre-update data and no candidate database (4.7s)
+  ✓   37 [chromium] › e2e/d2/narrow.spec.ts:51:3 › critic-1 defect 1 narrow reflow › should keep the Open list page within 375 and 320 px with the table scrolling inside its own region (1.3s)
+  ✓   38 [chromium] › e2e/d2/narrow.spec.ts:69:3 › critic-1 defect 1 narrow reflow › should keep the Open Trade Detail within 375 and 320 px with every table inside a scroll container (2.8s)
+  ✓   39 [chromium] › e2e/d2/narrow.spec.ts:103:3 › critic-2 defects narrow reflow › should keep the Planned list page within 375 and 320 px with the table inside its own scroll region (1.2s)
+  ✓   40 [chromium] › e2e/d2/narrow.spec.ts:122:3 › critic-2 defects narrow reflow › should keep About within 375 and 320 px with its long identifiers wrapping (770ms)
+  ✓   41 [chromium] › e2e/d2/narrow.spec.ts:136:3 › critic-2 defects narrow reflow › should keep first run, onboarding, Accounts, the New Plan form and the Planned Detail within 375 and 320 px (1.1s)
+  ✓   42 [chromium] › e2e/d2/no-save.spec.ts:62:3 › B2.11 nothing saved without Save › should store no Position Change, Entry, decline, draft, or Web Storage value after filling rows and the reflection, resizing, leaving, and restarting (1.6s)
+  ✓   43 [chromium] › e2e/d2/no-save.spec.ts:111:3 › F4 saving again after a Conflict › should keep the entered values through Load the latest Trade and then record a second Position Change, one from each page (1.6s)
+  ✓   44 [chromium] › e2e/d2/offline.spec.ts:18:3 › B2.8 offline cold restart › should open Writable offline, record PC2, and keep it across another offline restart (2.5s)
+  ✓   45 [chromium] › e2e/d2/open-position.spec.ts:24:3 › B2.1 open a position › should show Open, Position 60, two Lots, one Position Change with two Executions, and 60 of 100 after relaunch, with one Position Change, two Executions, and one Entry stored (1.8s)
+  ✓   46 [chromium] › e2e/d2/open-position.spec.ts:59:3 › B2.2 scale-in and decline › should show Entry Quality, an Entry Size Deviation of 20 naming its causing Position Change, and the declined reflection in the narrative (2.0s)
+  ✓   47 [chromium] › e2e/d2/open-position.spec.ts:93:3 › C2.6 earlier-dated entry (P5) › should say on the receipt that the Entry Size Deviation changed from 20 to 60 shares above plan, caused by the Position Change at 11:00 (2.0s)
+  ✓   48 [chromium] › e2e/d2/responsive-a11y.spec.ts:58:3 › B2.12 responsive and accessible › should keep three Execution rows and the reflection answers through 390 px and back, switching layout at 960 px (1.2s)
+  ✓   49 [chromium] › e2e/d2/responsive-a11y.spec.ts:90:3 › B2.12 responsive and accessible › should report no WCAG 2.1 AA violations on the entry form, the Open list in every state, the Open Detail, and the migration views (9.5s)
+  ✓   50 [chromium] › e2e/d2/responsive-a11y.spec.ts:179:3 › B2.12 responsive and accessible › should report no WCAG 2.1 AA violations on the entry form Not Found and Error states (2.4s)
+  ✓   51 [chromium] › e2e/d2/responsive-a11y.spec.ts:205:3 › B2.12 responsive and accessible › should complete an entry with the keyboard only, with visible focus throughout (1.1s)
+  ✓   52 [chromium] › e2e/d2/runtime-failure.spec.ts:22:3 › B2.9 Recovery Only (faults build) › should keep the Open list and Detail readable with no Record entry, and leave the stores unchanged (1.7s)
+  ✓   53 [chromium] › e2e/d2/runtime-failure.spec.ts:47:3 › F6 direct entry-form link (faults build) › should explain Record entry isn't available on a direct link while Recovery Only, with a link back to the Trade (1.5s)
+  ✓   54 [chromium] › e2e/d2/runtime-failure.spec.ts:69:3 › B2.10 mid-session failure (faults build) › should explain RuntimeNotWritable, keep the entry form values, and record no Position Change (1.2s)
+  ✓   55 [chromium] › e2e/d2/ui-alignment.spec.ts:48:3 › T2.36-B1 bottom navigation fit › should keep every bottom bar link inside the viewport with no horizontal overflow in the bar (793ms)
+  ✓   56 [chromium] › e2e/d2/ui-alignment.spec.ts:82:3 › T2.37 navigation styling › should fill the current sidebar link with ink and white text (769ms)
+  ✓   57 [chromium] › e2e/d2/ui-alignment.spec.ts:104:3 › T2.37 navigation styling › should stack each bottom bar icon above its label (784ms)
+  ✓   58 [chromium] › e2e/d2/ui-alignment.spec.ts:132:5 › T2.60 storage warning icon › should show a focusable warning icon linking to About and no storage card outside About at 320 (1.3s)
+  ✓   59 [chromium] › e2e/d2/ui-alignment.spec.ts:132:5 › T2.60 storage warning icon › should show a focusable warning icon linking to About and no storage card outside About at 390 (1.4s)
+  ✓   60 [chromium] › e2e/d2/ui-alignment.spec.ts:132:5 › T2.60 storage warning icon › should show a focusable warning icon linking to About and no storage card outside About at 1280 (1.4s)
+  ✓   61 [chromium] › e2e/d2/ui-alignment.spec.ts:211:5 › T2.60-B4 storage icon on the page title row › should put the storage icon at the far right of the title row on Trades, a Detail, New Plan and About at 320 (2.5s)
+  ✓   62 [chromium] › e2e/d2/ui-alignment.spec.ts:211:5 › T2.60-B4 storage icon on the page title row › should put the storage icon at the far right of the title row on Trades, a Detail, New Plan and About at 390 (2.3s)
+  ✓   63 [chromium] › e2e/d2/ui-alignment.spec.ts:211:5 › T2.60-B4 storage icon on the page title row › should put the storage icon at the far right of the title row on Trades, a Detail, New Plan and About at 1280 (2.3s)
+  ✓   64 [chromium] › e2e/d2/ui-alignment.spec.ts:301:5 › T2.37-B1 durability banner before the shell renders › should keep the storage banner compact with the warning ground on first run at 390 (507ms)
+  ✓   65 [chromium] › e2e/d2/ui-alignment.spec.ts:301:5 › T2.37-B1 durability banner before the shell renders › should keep the storage banner compact with the warning ground on account onboarding at 390 (566ms)
+  ✓   66 [chromium] › e2e/d2/ui-alignment.spec.ts:352:3 › T2.38 one content column and side gutters › should keep the heading, tabs and first card on one left edge on Trades and Open Detail at 1280 (1.4s)
+  ✓   67 [chromium] › e2e/d2/ui-alignment.spec.ts:383:5 › T2.38 one content column and side gutters › should keep a 16 px gutter on first run and onboarding at 390 (690ms)
+  ✓   68 [chromium] › e2e/d2/ui-alignment.spec.ts:396:5 › T2.38 one content column and side gutters › should keep a 16 px gutter on Trades and Open Detail at 390 (1.5s)
+  ✓   69 [chromium] › e2e/d2/ui-alignment.spec.ts:383:5 › T2.38 one content column and side gutters › should keep a 16 px gutter on first run and onboarding at 320 (562ms)
+  ✓   70 [chromium] › e2e/d2/ui-alignment.spec.ts:396:5 › T2.38 one content column and side gutters › should keep a 16 px gutter on Trades and Open Detail at 320 (1.5s)
+  ✓   71 [chromium] › e2e/d2/ui-alignment.spec.ts:411:3 › T2.38 one content column and side gutters › should keep a 16 px gutter on Migration Blocked at 390 and 320 (3.7s)
+  ✓   72 [chromium] › e2e/d2/ui-alignment.spec.ts:578:5 › T2.40 Trades tables › should pin Underlying, keep Underlying and Trade in view and show each figure once in both tables at 390 (2.7s)
+  ✓   73 [chromium] › e2e/d2/ui-alignment.spec.ts:578:5 › T2.40 Trades tables › should pin Underlying, keep Underlying and Trade in view and show each figure once in both tables at 320 (2.7s)
+  ✓   74 [chromium] › e2e/d2/ui-alignment.spec.ts:578:5 › T2.40 Trades tables › should pin Underlying, keep Underlying and Trade in view and show each figure once in both tables at 1280 (2.7s)
+  ✓   75 [chromium] › e2e/d2/ui-alignment.spec.ts:591:5 › T2.40 Trades tables › should keep a Records disagree badge inside the viewport with the Trade cell at 390 (3.4s)
+  ✓   76 [chromium] › e2e/d2/ui-alignment.spec.ts:591:5 › T2.40 Trades tables › should keep a Records disagree badge inside the viewport with the Trade cell at 320 (3.4s)
+  ✓   77 [chromium] › e2e/d2/ui-alignment.spec.ts:622:3 › T2.41 wide Trades table styling › should show one-line uppercase headers, a bold symbol link and right-aligned tabular figures at 1280 (2.2s)
+  ✓   78 [chromium] › e2e/d2/ui-alignment.spec.ts:668:3 › T2.41 wide Trades table styling › should keep a Records disagree badge and dates on one line in a wide row (2.0s)
+  ✓   79 [chromium] › e2e/d2/ui-alignment.spec.ts:693:3 › T2.42 semantic badge tones › should give every tone text that reaches 4.5:1 on its background and use neither the green nor the red tokens (694ms)
+  ✓   80 [chromium] › e2e/d2/ui-alignment.spec.ts:814:3 › T2.43 prompt chip groups › should render prompt chips as borderless groups with an ink checked chip and a visible focus ring on New Plan and Record entry (1.6s)
+  ✓   81 [chromium] › e2e/d2/ui-alignment.spec.ts:829:3 › T2.43-B1 prompt chips in forced colors › should distinguish a checked chip from an unchecked chip and keep the focus ring in forced colors (930ms)
+  ✓   82 [chromium] › e2e/d2/ui-alignment.spec.ts:863:3 › T2.44 execution rows as panels › should render each Execution as a rounded panel with Quantity, Price and Fee in a grid and Economic Time on its own row (1.1s)
+  ✓   83 [chromium] › e2e/d2/ui-alignment.spec.ts:928:3 › T2.45 New Plan grouped into cards › should group the New Plan controls into Trade, Risk and Plan Reflection cards with a two-column Risk grid (881ms)
+  ✓   84 [chromium] › e2e/d2/ui-alignment.spec.ts:972:3 › T2.50 Executions as expandable rows › should stack the expanded labels above their values at 320, keep each row time on one line, and clip nothing (1.4s)
+  ✓   85 [chromium] › e2e/d2/ui-alignment.spec.ts:1097:3 › T2.53 Detail, receipt and Accounts styling › should set the summary card figures at 18 px or more, bold and tabular (1.5s)
+  ✓   86 [chromium] › e2e/d2/ui-alignment.spec.ts:1121:3 › T2.53 Detail, receipt and Accounts styling › should show Stop and Target with their labels in colours that reach 4.5:1 on white (1.5s)
+  ✓   87 [chromium] › e2e/d2/ui-alignment.spec.ts:1139:3 › T2.53 Detail, receipt and Accounts styling › should lay Plan Baseline and Entry Quality out as a two-column figure grid at 1280 with no row wider than 480 px (1.6s)
+  ✓   88 [chromium] › e2e/d2/ui-alignment.spec.ts:1167:3 › T2.53 Detail, receipt and Accounts styling › should show Plan Reflection answers as prose sections with hairline dividers (1.1s)
+  ✓   89 [chromium] › e2e/d2/ui-alignment.spec.ts:1200:3 › T2.53 Detail, receipt and Accounts styling › should put each Execution row on the tint (1.6s)
+  ✓   90 [chromium] › e2e/d2/ui-alignment.spec.ts:1217:3 › T2.53 Detail, receipt and Accounts styling › should style the receipt rows as Execution rows and Back to the Trade as an ink pill link (1.4s)
+  ✓   91 [chromium] › e2e/d2/ui-alignment.spec.ts:1248:3 › T2.53 Detail, receipt and Accounts styling › should list Accounts as rows with no bullets (975ms)
+  ✓   92 [chromium] › e2e/d2/ui-alignment.spec.ts:1279:3 › T2.53 Detail, receipt and Accounts styling › should not overflow at 320 and 390 and stay axe clean on the Detail, the receipt and Accounts (3.6s)
+  ✓   93 [chromium] › e2e/d2/ui-alignment.spec.ts:1311:3 › T2.55-B1 Planned Detail Trade Summary › should lead the summary card of a just-confirmed Planned Detail, and of the same Detail reloaded, with the Trade Summary (1.0s)
+  ✓   94 [chromium] › e2e/d2/ui-alignment.spec.ts:1338:3 › T2.55-B2 capped Detail label/value rows › should keep every label/value row on the Planned and Open Details at most 480 px wide at 1280, with the summary values on one right edge (1.3s)
+  ✓   95 [chromium] › e2e/d2/ui-alignment.spec.ts:1364:3 › T2.55-B3 Last activity on the Open Detail › should show Last activity in the Position card as the latest Position Change time (1.6s)
+  ✓   96 [chromium] › e2e/d2/ui-alignment.spec.ts:1382:5 › T2.55-B4 narrow Net cost on an incoherent Open row › should show Net cost once in the accessibility tree of an incoherent Open row at 1280 (2.0s)
+  ✓   97 [chromium] › e2e/d2/ui-alignment.spec.ts:1382:5 › T2.55-B4 narrow Net cost on an incoherent Open row › should show Net cost once in the accessibility tree of an incoherent Open row at 390 (2.0s)
+  ✓   98 [chromium] › e2e/d2/ui-alignment.spec.ts:1382:5 › T2.55-B4 narrow Net cost on an incoherent Open row › should show Net cost once in the accessibility tree of an incoherent Open row at 320 (2.1s)
+  ✓   99 [chromium] › e2e/d2/ui-alignment.spec.ts:1409:5 › T2.55-B5 price issues on the field that fails › should mark a blank Stop, not the valid Intended entry, after Confirm Plan (899ms)
+  ✓  100 [chromium] › e2e/d2/ui-alignment.spec.ts:1409:5 › T2.55-B5 price issues on the field that fails › should mark a blank Target, not the valid Intended entry, after Confirm Plan (1.1s)
+  ✓  101 [chromium] › e2e/d2/ui-alignment.spec.ts:1427:5 › T2.55-B6 narrow 1R and Reward : risk on an incoherent Planned row › should show 1R and Reward : risk once in the accessibility tree of an incoherent Planned row at 1280 (2.5s)
+  ✓  102 [chromium] › e2e/d2/ui-alignment.spec.ts:1427:5 › T2.55-B6 narrow 1R and Reward : risk on an incoherent Planned row › should show 1R and Reward : risk once in the accessibility tree of an incoherent Planned row at 390 (2.6s)
+  ✓  103 [chromium] › e2e/d2/ui-alignment.spec.ts:1427:5 › T2.55-B6 narrow 1R and Reward : risk on an incoherent Planned row › should show 1R and Reward : risk once in the accessibility tree of an incoherent Planned row at 320 (2.5s)
+  ✓  104 [chromium] › e2e/d2/ui-alignment.spec.ts:1520:5 › T2.62 line breaks › should keep the Underlying header on one line and each Trade cell's "@" with its price at 320 (2.5s)
+  ✓  105 [chromium] › e2e/d2/ui-alignment.spec.ts:1520:5 › T2.62 line breaks › should keep the Underlying header on one line and each Trade cell's "@" with its price at 390 (2.7s)
+  ✓  106 [chromium] › e2e/d2/ui-alignment.spec.ts:1520:5 › T2.62 line breaks › should keep the Underlying header on one line and each Trade cell's "@" with its price at 1280 (2.3s)
+  ✓  107 [chromium] › e2e/d2/ui-alignment.spec.ts:1547:3 › T2.62 line breaks › should keep "@" with its price in the Detail summary card Trade text at 320, 340 and 390 (1.8s)
+  ✓  108 [chromium] › e2e/d2/ui-alignment.spec.ts:1597:5 › T2.62 line breaks › should keep the Underlying and Trade cells, with the second line and any badge, inside the scroll region at 320 (2.5s)
+  ✓  109 [chromium] › e2e/d2/ui-alignment.spec.ts:1612:5 › T2.62 line breaks › should keep a Records disagree badge inside the scroll region at 320 (2.1s)
+  ✓  110 [chromium] › e2e/d2/ui-alignment.spec.ts:1630:5 › T2.62 line breaks › should keep the UNDERLYING header inside its own cell on one line at 320 (2.2s)
+  ✓  111 [chromium] › e2e/d2/ui-alignment.spec.ts:1597:5 › T2.62 line breaks › should keep the Underlying and Trade cells, with the second line and any badge, inside the scroll region at 390 (2.2s)
+  ✓  112 [chromium] › e2e/d2/ui-alignment.spec.ts:1612:5 › T2.62 line breaks › should keep a Records disagree badge inside the scroll region at 390 (2.1s)
+  ✓  113 [chromium] › e2e/d2/ui-alignment.spec.ts:1630:5 › T2.62 line breaks › should keep the UNDERLYING header inside its own cell on one line at 390 (2.3s)
+  ✓  114 [chromium] › e2e/d2/ui-alignment.spec.ts:1672:3 › T2.62 line breaks › should read each Detail Execution as one phrase with the price straight after the "@" at 320, 390 and 1280 (1.7s)
+  ✓  115 [chromium] › e2e/d2/ui-alignment.spec.ts:1690:3 › T2.62 line breaks › should read each receipt row as one phrase with the price after the "@" and "fee" beside its amount at 320, 390 and 1280 (1.3s)
+  ✓  116 [chromium] › e2e/d2/ui-alignment.spec.ts:1730:3 › T2.63 R lines › should put the second line at or below the amount on the receipt and in Entry Quality at 320 and 1280 (1.7s)
+  ✓  117 [chromium] › e2e/d2/ui-alignment.spec.ts:1760:3 › T2.64 Detail cards › should align the Fulfillment row with the other rows, set Journal answers below their questions, and stay accessible at 1280 and 320 (1.9s)
+  ✓  118 [chromium] › e2e/d2/ui-alignment.spec.ts:1810:5 › T2.67 leftovers › should keep the date and time of the receipt heading on one line at 320 (1.4s)
+  ✓  119 [chromium] › e2e/d2/ui-alignment.spec.ts:1810:5 › T2.67 leftovers › should keep the date and time of the receipt heading on one line at 340 (1.5s)
+  ✓  120 [chromium] › e2e/d2/ui-alignment.spec.ts:1810:5 › T2.67 leftovers › should keep the date and time of the receipt heading on one line at 390 (1.5s)
+  ✓  121 [chromium] › e2e/d2/ui-alignment.spec.ts:1844:5 › T2.67 leftovers › should draw Open Lots without a pinned hairline and with its last row on the card's row edges at 1280 (1.3s)
+  ✓  122 [chromium] › e2e/d2/ui-alignment.spec.ts:1844:5 › T2.67 leftovers › should draw Open Lots without a pinned hairline and with its last row on the card's row edges at 320 (1.3s)
+  ✓  123 [chromium] › e2e/d2/ui-alignment.spec.ts:1887:5 › T2.67 leftovers › should keep the Trades table caption in view after scrolling the region fully right at 320 (2.6s)
+  ✓  124 [chromium] › e2e/d2/ui-alignment.spec.ts:1887:5 › T2.67 leftovers › should keep the Trades table caption in view after scrolling the region fully right at 390 (2.6s)
+  ✓  125 [chromium] › e2e/d4/acknowledge.spec.ts:6:3 › B4.3 Can't get a price › should complete with Unavailable Marks naming DEF, go Incomplete when withdrawn, and complete after the Mark with the acknowledgment history kept (3.1s)
+  ✓  126 [chromium] › e2e/d4/breach-overrun.spec.ts:15:3 › B4.14 Breach, overrun, and intraday lines › should show Stop Breached with Risk to stop $0.00 and Stop Overrun $50.00 and no Deviation, then Awaiting the next close with Mon Oct 12 close and At entry sections for the 40 shares (2.2s)
+  ✓  127 [chromium] › e2e/d4/correct-mark.spec.ts:6:3 › B4.4 Correct a Mark › should show Corrected with the reason and +$130.00 on the Detail, with two revisions stored (2.0s)
+  ✓  128 [chromium] › e2e/d4/expected-mark.spec.ts:16:3 › B4.5 Expected Mark Date (AC-MARK-001) › should show Missing with the stale Friday Mark as context and no current dollar figure at Tuesday noon, then Available for Oct 12 and not stale after Monday is entered (1.8s)
+  ✓  129 [chromium] › e2e/d4/gaps.spec.ts:9:3 › B4.6 Skipped sessions › should list Friday as optional, reach Complete without it, and show an empty list after Friday is entered (2.6s)
+  ✓  130 [chromium] › e2e/d4/hold.spec.ts:4:3 › B4.2 One-click Hold and Intent › should record nothing on leaving, show the error for Exit without Intent, save it with Intent, and add no Trade fact (2.5s)
+  ✓  131 [chromium] › e2e/d4/kill.spec.ts:4:3 › B4.8 Kill after commit › should keep the Action after the browser is killed once its save result renders, and resume the Review from it (2.3s)
+  ✓  132 [chromium] › e2e/d4/no-save.spec.ts:38:3 › B4.12 Nothing saved without Save (AC-JOUR-001) › should store no observation revision, Entry, or Web Storage value after typing a Mark price, a correction, and an Action with Intent, Conviction, considered text, and Note, resizing, leaving, and restarting (3.4s)
+  ✓  133 [chromium] › e2e/d4/offline.spec.ts:21:3 › B4.9 Offline cold restart (AC-DEL-001) › should complete the next session’s Review offline after a full stop and keep its Marks and Actions across another offline restart (6.3s)
+  ✓  134 [chromium] › e2e/d4/responsive-a11y.spec.ts:43:3 › B4.13 Responsive and accessible › should keep a half-filled Action form through 390 px and back, switching layout at 960 px (1.8s)
+  ✓  135 [chromium] › e2e/d4/responsive-a11y.spec.ts:68:3 › B4.13 Responsive and accessible › should lay the Action choices out as compact chips, each radio inside its label, at 375 and 320 px (2.5s)
+  ✓  136 [chromium] › e2e/d4/responsive-a11y.spec.ts:99:3 › B4.13 Responsive and accessible › should show a disabled Action chip as disabled with a not-allowed cursor and reduced opacity (1.8s)
+  ✓  137 [chromium] › e2e/d4/responsive-a11y.spec.ts:118:3 › B4.13 Responsive and accessible › should report no WCAG 2.1 AA violations on the Review, the Action form, the Open list, and Detail in every evaluation state, with each state distinguishable by its words (19.2s)
+  ✓  138 [chromium] › e2e/d4/responsive-a11y.spec.ts:248:3 › B4.13 Responsive and accessible › should complete a Review using the keyboard only, with visible focus throughout (2.4s)
+  ✓  139 [chromium] › e2e/d4/review.spec.ts:6:3 › B4.1 Daily Review end to end › should show the Marks family before Trades in attention order with reasons and, after relaunch, Complete with every Action shown, with four Action Entries and four observation records stored (4.9s)
+  ✓  140 [chromium] › e2e/d4/runtime-failure.spec.ts:7:3 › B4.10 Recovery Only (faults build) › should keep the Review, Open list, and Detail readable with no Mark entry or Save, and leave the stores unchanged (3.1s)
+  ✓  141 [chromium] › e2e/d4/runtime-failure.spec.ts:59:3 › B4.11 Mid-session failure (faults build, AC-DEL-006) › should explain RuntimeNotWritable, keep the Action values, and record no Entry (1.8s)
+  ✓  142 [chromium] › e2e/d4/update.spec.ts:6:3 › B4.7 update from D2 with data › should show Updating your journal, then the Review with both Instruments, a working Mark and Action, About at schema 3 with the session policy, and the new database pointed to with the old one gone (4.1s)
+
+  142 passed (4.9m)
+EXIT 0
