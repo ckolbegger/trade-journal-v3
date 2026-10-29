@@ -406,3 +406,58 @@ describe('prepareEffects: ResolveDebt for a coordinator', () => {
     expect(await stored(setup.persistence)).toEqual(settled);
   });
 });
+
+describe('applyPreparedEffects: several Debt resolutions in one batch', () => {
+  it('should link each Debt resolution in one applied batch to the Entry or decline that carries its settledDebtId', async () => {
+    const setup = await withDebt();
+    // A second Outstanding Debt for another Position Change.
+    const deferred = await setup.journal.prepareEffects({
+      obligation: 'PositionChangeReflection',
+      disposition: { kind: 'Defer' },
+      anchor: { kind: 'Trade', ref: 'trade-1' },
+      origin: { kind: 'PositionChange', ref: 'candidate:pc-2' },
+      momentTime: PC1_TIME,
+    });
+    if (deferred.kind !== 'Prepared') throw new Error('expected Prepared');
+    const deferTx = beginSemanticTransaction();
+    const second = setup.journal.applyPreparedEffects(deferTx, deferred, { 'candidate:pc-2': 'pc-2' }).debts![0]!;
+    expect((await setup.persistence.commit(deferTx.close())).kind).toBe('Committed');
+
+    // The first Debt is answered, the second declined; one batch carries both.
+    const answered = await setup.journal.prepareEffects({ obligation: 'ResolveDebt', ...answer(setup) });
+    const declined = await setup.journal.prepareEffects({
+      obligation: 'ResolveDebt',
+      debtId: second.debtId,
+      expectedDebtRevision: second.revision,
+      resolution: { kind: 'Decline' },
+    });
+    if (answered.kind !== 'Prepared' || declined.kind !== 'Prepared') throw new Error('expected Prepared');
+    const batch = {
+      ...answered,
+      effects: {
+        entries: [...answered.effects.entries, ...declined.effects.entries],
+        declines: [...answered.effects.declines, ...declined.effects.declines],
+        debtResolutions: [...answered.effects.debtResolutions!, ...declined.effects.debtResolutions!],
+      },
+    };
+    const tx = beginSemanticTransaction();
+    const staged = setup.journal.applyPreparedEffects(tx, batch, {});
+    expect((await setup.persistence.commit(tx.close())).kind).toBe('Committed');
+
+    const entryId = staged.entries[0]!.id;
+    const declineId = staged.declines[0]!.id;
+    expect(staged.debts).toEqual([
+      expect.objectContaining({ debtId: setup.debt.debtId, status: 'Settled', entryId }),
+      expect.objectContaining({ debtId: second.debtId, status: 'Declined', declineId }),
+    ]);
+    expect(staged.debts![1]).not.toHaveProperty('entryId');
+    const after = await stored(setup.persistence);
+    const versionOf = (debtId: string) => (after.debts.find((debt) => debt.debtId === debtId) as { versions: unknown[] }).versions.at(-1);
+    expect(versionOf(setup.debt.debtId)).toEqual(expect.objectContaining({ status: 'Settled', entryId }));
+    expect(versionOf(second.debtId)).toEqual(expect.objectContaining({ status: 'Declined', declineId }));
+    expect(versionOf(second.debtId)).not.toHaveProperty('entryId');
+    expect(after.obligations).toEqual(
+      expect.arrayContaining([expect.objectContaining({ outcome: { kind: 'Entry', id: entryId } }), expect.objectContaining({ outcome: { kind: 'Decline', id: declineId } })]),
+    );
+  });
+});

@@ -764,8 +764,12 @@ export function createJournal(deps: JournalDeps): Journal {
         const current = resolution.current as unknown as StoredDebt;
         // The private due field is removed, so the Debt leaves byOutstandingDue.
         const rest = Object.fromEntries(Object.entries(current).filter(([field]) => field !== 'outstandingDue'));
-        const outcome = entries[0] ?? declines[0]!;
-        const link = entries[0] ? { entryId: outcome.id } : { declineId: outcome.id };
+        // The outcome is the Entry or decline carrying this Debt's identity (A64); the projections
+        // keep the order of the prepared records.
+        const entryAt = prepared.effects.entries.findIndex((entry) => entry.settledDebtId === resolution.debtId);
+        const link = entryAt >= 0
+          ? { entryId: entries[entryAt]!.id }
+          : { declineId: declines[prepared.effects.declines.findIndex((decline) => decline.settledDebtId === resolution.debtId)]!.id };
         const version = { versionId: deps.ids.next(), status: resolution.status, ...link, savedAt: resolution.savedAt };
         tx.require({
           name: `debt@${resolution.debtId}:${resolution.expectedRevision}`,
