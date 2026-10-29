@@ -318,10 +318,8 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
     await user.click(save);
     expect(facade.MarketData.save).toHaveBeenCalledOnce();
     expect((save as HTMLButtonElement).disabled).toBe(true);
-    // Cancel leaves the form open to the entry buttons, which stay disabled until the result arrives.
-    await user.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Enter' }).disabled).toBe(true);
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: "Can't get a price" }).disabled).toBe(true);
+    // Cancel is disabled too, so the form stays open for the late result.
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Cancel' }).disabled).toBe(true);
 
     finish(savedMark(mark('52.5'), 'None'));
     expect(await screen.findByText('$52.50')).toBeTruthy();
@@ -381,6 +379,64 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
 
     await user.click(screen.getByRole('button', { name: 'Withdraw' }));
     expect(await screen.findByText('Missing')).toBeTruthy();
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('should keep Cancel disabled while a save is in flight, and open each form with no earlier Conflict, storage-failure notice or issues', async () => {
+    const facade = facadeDouble();
+    const save = vi.mocked(facade.MarketData.save);
+    let finish: (result: MarketDataSaveResult) => void = () => undefined;
+    save.mockReturnValueOnce(new Promise((resolve) => (finish = resolve)));
+    renderEntry({ kind: 'Missing' }, 'None', { facade });
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Enter' }));
+    await user.type(screen.getByLabelText('Price'), '52.5');
+    await user.click(screen.getByRole('button', { name: 'Save Mark' }));
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Cancel' }).disabled).toBe(true);
+    finish({ kind: 'Conflict', key, resolution: mark('51'), resolutionRevision: 1 });
+    expect((await screen.findByRole('alert')).textContent).toContain('This Mark changed after you opened it');
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Cancel' }).disabled).toBe(false);
+
+    // Cancel, then reopen: the earlier Conflict is gone.
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    await user.click(screen.getByRole('button', { name: 'Correct' }));
+    expect(screen.queryByRole('alert')).toBeNull();
+
+    // A StorageFailure notice is gone after Cancel and reopen, and never shows with the Conflict banner.
+    cleanup();
+    save.mockResolvedValueOnce({ kind: 'StorageFailure', reason: 'QuotaExceededError' } as never);
+    renderEntry({ kind: 'Missing' }, 'None', { facade });
+    await user.click(screen.getByRole('button', { name: 'Enter' }));
+    await user.type(screen.getByLabelText('Price'), '52.5');
+    await user.click(screen.getByRole('button', { name: 'Save Mark' }));
+    const notice = await screen.findByRole('alert');
+    expect(notice.textContent).toContain('could not be saved');
+    expect(notice.textContent).not.toContain('changed after you opened it');
+    expect(screen.getAllByRole('alert')).toHaveLength(1);
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    await user.click(screen.getByRole('button', { name: 'Enter' }));
+    expect(screen.queryByRole('alert')).toBeNull();
+
+    // Field issues are gone after Cancel and reopen.
+    cleanup();
+    save.mockResolvedValueOnce({ kind: 'Rejected', issues: [{ field: 'price', code: 'InvalidPrice' }] } as never);
+    renderEntry({ kind: 'Missing' }, 'None', { facade });
+    await user.click(screen.getByRole('button', { name: 'Enter' }));
+    await user.type(screen.getByLabelText('Price'), 'abc');
+    await user.click(screen.getByRole('button', { name: 'Save Mark' }));
+    expect(await screen.findByText('Enter a price as a number, with at most 6 decimal places.')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    await user.click(screen.getByRole('button', { name: 'Enter' }));
+    expect(screen.queryByText('Enter a price as a number, with at most 6 decimal places.')).toBeNull();
+    expect(screen.getByLabelText('Price').getAttribute('aria-invalid')).toBeNull();
+
+    // A Conflict from Withdraw has no form open; opening one next does not carry the banner along.
+    cleanup();
+    save.mockResolvedValueOnce({ kind: 'Conflict', key, resolution: mark('51'), resolutionRevision: 2 });
+    renderEntry({ kind: 'AcknowledgedUnavailable', acknowledgment: { versionId: 'a1', kind: 'Asserted', savedAt: '2026-10-12T21:00:00Z' } }, 1, { facade });
+    await user.click(screen.getByRole('button', { name: 'Withdraw' }));
+    expect((await screen.findByRole('alert')).textContent).toContain('changed after you opened it');
+    await user.click(screen.getByRole('button', { name: 'Correct' }));
     expect(screen.queryByRole('alert')).toBeNull();
   });
 });

@@ -57,14 +57,18 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
     if (first) document.getElementById(first.field)?.focus();
   }, [issues]);
 
-  // Closing the form discards what was entered; nothing is kept as a draft.
-  const closeForm = () => {
-    setMode(undefined);
-    setPrice('');
-    setReason('');
+  // A form opens with the last result's Conflict, storage-failure notice and issues cleared, since they belonged to an earlier attempt.
+  const openForm = (next: 'Enter' | 'Correct' | 'Acknowledge' | undefined) => {
+    setMode(next);
     setIssues([]);
     setConflict(false);
     setStorageFailed(false);
+  };
+  // Closing the form discards what was entered; nothing is kept as a draft.
+  const closeForm = () => {
+    openForm(undefined);
+    setPrice('');
+    setReason('');
   };
   const key = { instrumentKey, tradingDate, expectedResolutionRevision: revision };
   // One save at a time: a second would carry the same expected revision, and a late Saved would close the form over newer input.
@@ -165,7 +169,7 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
           <button type="submit" className="pill primary" disabled={saving}>
             {SAVE_LABEL[mode]}
           </button>
-          <button type="button" className="pill secondary" onClick={closeForm}>
+          <button type="button" className="pill secondary" onClick={closeForm} disabled={saving}>
             Cancel
           </button>
         </form>
@@ -173,10 +177,10 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
         <>
           {resolution.kind === 'Missing' && (
             <>
-              <button type="button" className="pill secondary" onClick={() => setMode('Enter')} disabled={saving}>
+              <button type="button" className="pill secondary" onClick={() => openForm('Enter')} disabled={saving}>
                 Enter
               </button>
-              <button type="button" className="pill secondary" onClick={() => setMode('Acknowledge')} disabled={saving}>
+              <button type="button" className="pill secondary" onClick={() => openForm('Acknowledge')} disabled={saving}>
                 {CANT_GET_A_PRICE}
               </button>
             </>
@@ -187,7 +191,7 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
             </button>
           )}
           {resolution.kind === 'Available' && (
-            <button type="button" className="pill secondary" onClick={() => setMode('Correct')} disabled={saving}>
+            <button type="button" className="pill secondary" onClick={() => openForm('Correct')} disabled={saving}>
               Correct
             </button>
           )}
