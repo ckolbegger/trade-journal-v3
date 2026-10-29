@@ -1509,3 +1509,18 @@ Notes: all six cases passed on first run (behavior from earlier D4 tasks) and ca
 - code at `63650c8`, 2026-10-29 06:28 EDT: unit 800, integration 73, browser 124; checks 12 of 12. `suite-runs/t4.32-*`.
 
 Fully green: every section 6.1 case of D1, D2 and D4 passes. T4.32 is complete.
+
+## T4.33 part 1
+
+Browser cases B4.1 to B4.7 added under `e2e/d4/` (`review`, `hold`, `acknowledge`, `correct-mark`, `expected-mark`, `gaps`, `update` specs) with `e2e/d4/support.ts`; `test:e2e` in `package.json` now runs `e2e/d1 e2e/d2 e2e/d4`. The cases run against the production d4 release (`dist-releases/d4`), with Date set by Playwright's clock.
+
+| Command | Result |
+|---|---|
+| `npx playwright test e2e/d4` | exit 0; 7 passed |
+| `npm run test:e2e` | exit 0; 131 passed (D1, D2 and D4 part 1) |
+| `npm run typecheck` | exit 0 |
+| `npx tsc6 --noEmit` | exit 0 |
+| `npm run lint` | exit 0 |
+| `npm run lint:deps` | exit 0 |
+
+Notes: every case passed on first run (behavior from earlier D4 tasks) and carries a mutation note in `tdd-log.md`. Playwright's clock pins only `Date`, but this Chromium has a native Temporal, which the production `systemClock` (`Temporal.Now.instant()`) uses, so `launchAt` in `e2e/d4/support.ts` also points `Temporal.Now.instant` at the pinned `Date.now()` in an init script; without it the app saw real time. T4.31's `tools/bench-run.ts` pins only `Date`, so its as-of pin may not reach the app in Chromium (not changed here). B4.5 expects the plan's "last 51.20 on Fri Oct 9 (stale)" as the product's wording "Stale context: $51.20 from Fri Oct 9 close (stale, not used in any current figure)".
