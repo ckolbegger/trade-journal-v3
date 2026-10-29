@@ -1385,3 +1385,15 @@ Bug fix, post-save Mark rows keep their resolution revision. `framesOnly` return
 |---|---|---|---|
 | `573971d` | `daily-review.ts:213`: `framesOnly` returns no resolutions, so the post-save `nextStep` Mark row carries `resolutionRevision: 'None'` | Valid: after a withdrawn acknowledgment the stored revision is numeric, so entering that Mark gets a spurious Conflict | Fixed by T4.30-B2 (`2904ba3`) |
 | `2904ba3` | none (post-save Mark rows equal a fresh open's on resolution and revision; no added reads) | | clean |
+
+### ocr review of T4.30
+
+| Commit | Finding | Assessment | Outcome |
+|---|---|---|---|
+| `8584a1b` | none | | clean |
+
+### Cumulative run after T4.30
+
+- code at `8584a1b`, 2026-10-29 05:41 EDT: unit 800, integration 52, browser 124; checks 12 of 12. `suite-runs/t4.30-*`.
+
+Fully green. T4.30 is complete.
