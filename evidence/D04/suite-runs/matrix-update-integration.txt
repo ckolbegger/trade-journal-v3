@@ -1,0 +1,36 @@
+== d4/expected-mark
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+== d4/eligibility
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+== d4/review
+ Test Files  2 passed (2)
+      Tests  2 passed (2)
+== d4/changed-evidence
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+== d4/gaps
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+== d4/value-trade
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+== d4/conditions
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+== d4/action-edit
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+== d4/seed
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+== d4/migration
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+== d4/responses
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+== d4/rebuild
+ Test Files  1 passed (1)
+      Tests  1 passed (1)

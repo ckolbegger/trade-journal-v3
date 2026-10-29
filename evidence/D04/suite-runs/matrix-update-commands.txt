@@ -1,0 +1,65 @@
+
+> trade-journal-v3@0.0.0 verify:capabilities
+> node tools/verify-capabilities.ts
+
+verify:capabilities OK: 18 operations, 7 variant-qualified, 8 routes, 3 Entry Types, schema 3, release 853915999821e451dab53a036014cc8b75c550437222e52b40765fad954a9b29
+
+> trade-journal-v3@0.0.0 build:faults
+> vite build --mode faults --outDir dist-faults
+
+vite v8.3.2 building client environment for faults...
+transforming...
+✓ 143 modules transformed.
+rendering chunks...
+computing gzip size...
+dist-faults/index.html                   0.50 kB │ gzip:   0.30 kB
+dist-faults/assets/index-oSmyI_WG.css   12.28 kB │ gzip:   3.28 kB
+dist-faults/assets/faults-DYOg2K3d.js    1.78 kB │ gzip:   0.90 kB
+dist-faults/assets/index-f4CV1_ov.js   556.67 kB │ gzip: 168.64 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 111ms
+
+> trade-journal-v3@0.0.0 build:releases
+> node tools/build-releases.ts
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+build:releases: d1 reused from /var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-release-d1-402b94835793 (claude-opus-5.5-d1 at 402b94835793587df2d10de1f3564e276843618b)
+build:releases: d2 reused from /var/folders/ks/n63g0mm937v5rdb147g4txg40000gn/T/tj-release-d2-de3fa276a263 (claude-opus-5.5-d2 at de3fa276a2632b568296040fd56efd2825708a39)
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+build:releases OK: v1, v2, v2-corrupt, d1, d2, d4 in /Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5/dist-releases; v2-corrupt alters /assets/index-oSmyI_WG.css
+
+Running 13 tests using 1 worker
+
+  ✓   1 [chromium] › e2e/d4/acknowledge.spec.ts:6:3 › B4.3 Can't get a price › should complete with Unavailable Marks naming DEF, go Incomplete when withdrawn, and complete after the Mark with the acknowledgment history kept (3.6s)
+  ✓   2 [chromium] › e2e/d4/expected-mark.spec.ts:16:3 › B4.5 Expected Mark Date (AC-MARK-001) › should show Missing with the stale Friday Mark as context and no current dollar figure at Tuesday noon, then Available for Oct 12 and not stale after Monday is entered (1.8s)
+  ✓   3 [chromium] › e2e/d4/hold.spec.ts:4:3 › B4.2 One-click Hold and Intent › should record nothing on leaving, show the error for Exit without Intent, save it with Intent, and add no Trade fact (2.2s)
+  ✓   4 [chromium] › e2e/d4/no-save.spec.ts:38:3 › B4.12 Nothing saved without Save (AC-JOUR-001) › should store no observation revision, Entry, or Web Storage value after typing a Mark price, a correction, and an Action with Intent, Conviction, considered text, and Note, resizing, leaving, and restarting (3.4s)
+  ✓   5 [chromium] › e2e/d4/offline.spec.ts:21:3 › B4.9 Offline cold restart (AC-DEL-001) › should complete the next session’s Review offline after a full stop and keep its Marks and Actions across another offline restart (6.2s)
+  ✓   6 [chromium] › e2e/d4/responsive-a11y.spec.ts:43:3 › B4.13 Responsive and accessible › should keep a half-filled Action form through 390 px and back, switching layout at 960 px (1.8s)
+  ✓   7 [chromium] › e2e/d4/responsive-a11y.spec.ts:68:3 › B4.13 Responsive and accessible › should lay the Action choices out as compact chips, each radio inside its label, at 375 and 320 px (2.4s)
+  ✓   8 [chromium] › e2e/d4/responsive-a11y.spec.ts:99:3 › B4.13 Responsive and accessible › should show a disabled Action chip as disabled with a not-allowed cursor and reduced opacity (1.8s)
+  ✓   9 [chromium] › e2e/d4/responsive-a11y.spec.ts:118:3 › B4.13 Responsive and accessible › should report no WCAG 2.1 AA violations on the Review, the Action form, the Open list, and Detail in every evaluation state, with each state distinguishable by its words (18.2s)
+  ✓  10 [chromium] › e2e/d4/responsive-a11y.spec.ts:248:3 › B4.13 Responsive and accessible › should complete a Review using the keyboard only, with visible focus throughout (2.4s)
+  ✓  11 [chromium] › e2e/d4/runtime-failure.spec.ts:7:3 › B4.10 Recovery Only (faults build) › should keep the Review, Open list, and Detail readable with no Mark entry or Save, and leave the stores unchanged (3.2s)
+  ✓  12 [chromium] › e2e/d4/runtime-failure.spec.ts:59:3 › B4.11 Mid-session failure (faults build, AC-DEL-006) › should explain RuntimeNotWritable, keep the Action values, and record no Entry (1.9s)
+  ✓  13 [chromium] › e2e/d4/update.spec.ts:6:3 › B4.7 update from D2 with data › should show Updating your journal, then the Review with both Instruments, a working Mark and Action, About at schema 3 with the session policy, and the new database pointed to with the old one gone (4.1s)
+
+  13 passed (55.5s)

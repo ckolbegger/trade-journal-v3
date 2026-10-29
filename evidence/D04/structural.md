@@ -1768,3 +1768,14 @@ ocr finding on 2bdf619: a disabled Action chip looked clickable. Added `label.ch
 ### critic-2
 
 critic-2 on `f7a9056`: **PASS**, no defects (`evidence/D04/critic-2.md`); every flow C4.1 to C4.12 and the 375 and 320 px checks pass. Its minor observations go to the user in the final report. T4.34 is complete.
+
+## Acceptance-matrix commands
+
+Run 2026-10-29 on `cb34401` (tag `claude-opus-5.5-d4`), before marking section 8's rows covered at the user's direction. Every row's command, as written:
+
+- Integration (`npm run test:integration -- d4/<name>`): expected-mark, eligibility, review, changed-evidence, gaps, value-trade, conditions, action-edit, seed, migration, responses, rebuild: each passes (`suite-runs/matrix-update-integration.txt`).
+- AC-MARK-003's `npm run test:integration -- d4/acknowledge` named no file ("No test files found", exit 1). Its integration case I4.13 is `tests/integration/d4/review.test.ts`, so the row's command now reads `d4/review`, plus `npx playwright test e2e/d4/acknowledge.spec.ts` for B4.3 (a plan text correction, no code change).
+- `npm run verify:capabilities` OK; `npx playwright test` of expected-mark, hold, no-save, offline, runtime-failure, update, responsive-a11y and acknowledge specs: 13 passed (`suite-runs/matrix-update-commands.txt`).
+- `npm run bench:run` OK: cold p95 103.9 ms (budget 2,500), warm p95 44.6 ms (budget 1,500); 200 Open rows equal to expected after the runs (`suite-runs/matrix-update-bench.txt`, `bench.md` rewritten).
+
+In `plan/acceptance-matrix.md`, only the scenarios full in D4 (AC-MARK-001, AC-REV-003, AC-JOUR-001) move to covered, as D1 did; partial and cumulative scenarios keep their matrix status until their full deliverable, and are covered in D4's section 8.

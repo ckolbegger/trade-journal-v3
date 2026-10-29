@@ -1,0 +1,87 @@
+
+> trade-journal-v3@0.0.0 bench:run
+> node tools/bench-run.ts
+
+
+> trade-journal-v3@0.0.0 build
+> vite build
+
+vite v8.3.2 building client environment for production...
+transforming...
+✓ 142 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.50 kB │ gzip:   0.30 kB
+dist/assets/index-oSmyI_WG.css   12.28 kB │ gzip:   3.28 kB
+dist/assets/index-g5URwUo4.js   556.53 kB │ gzip: 168.55 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 95ms
+bench:run: Open list before the runs: 200 rows, equal to the expected rows
+bench:run: cold 1/30 95.8 ms
+bench:run: cold 2/30 96.7 ms
+bench:run: cold 3/30 94.4 ms
+bench:run: cold 4/30 94.5 ms
+bench:run: cold 5/30 94.6 ms
+bench:run: cold 6/30 99.2 ms
+bench:run: cold 7/30 93.3 ms
+bench:run: cold 8/30 101.2 ms
+bench:run: cold 9/30 96.7 ms
+bench:run: cold 10/30 94.4 ms
+bench:run: cold 11/30 104.1 ms
+bench:run: cold 12/30 100.6 ms
+bench:run: cold 13/30 97.5 ms
+bench:run: cold 14/30 95.3 ms
+bench:run: cold 15/30 103.4 ms
+bench:run: cold 16/30 99.9 ms
+bench:run: cold 17/30 98.5 ms
+bench:run: cold 18/30 95.3 ms
+bench:run: cold 19/30 95.8 ms
+bench:run: cold 20/30 95.4 ms
+bench:run: cold 21/30 99.5 ms
+bench:run: cold 22/30 95.5 ms
+bench:run: cold 23/30 95.1 ms
+bench:run: cold 24/30 95.7 ms
+bench:run: cold 25/30 102.4 ms
+bench:run: cold 26/30 99.8 ms
+bench:run: cold 27/30 98.0 ms
+bench:run: cold 28/30 103.9 ms
+bench:run: cold 29/30 97.1 ms
+bench:run: cold 30/30 98.2 ms
+bench:run: warm 1/30 45.4 ms
+bench:run: warm 2/30 44.3 ms
+bench:run: warm 3/30 44.2 ms
+bench:run: warm 4/30 43.5 ms
+bench:run: warm 5/30 43.6 ms
+bench:run: warm 6/30 44.5 ms
+bench:run: warm 7/30 42.1 ms
+bench:run: warm 8/30 42.6 ms
+bench:run: warm 9/30 43.5 ms
+bench:run: warm 10/30 43.7 ms
+bench:run: warm 11/30 41.9 ms
+bench:run: warm 12/30 43.0 ms
+bench:run: warm 13/30 41.8 ms
+bench:run: warm 14/30 43.1 ms
+bench:run: warm 15/30 42.0 ms
+bench:run: warm 16/30 43.0 ms
+bench:run: warm 17/30 42.8 ms
+bench:run: warm 18/30 41.4 ms
+bench:run: warm 19/30 44.6 ms
+bench:run: warm 20/30 42.0 ms
+bench:run: warm 21/30 41.3 ms
+bench:run: warm 22/30 42.1 ms
+bench:run: warm 23/30 41.8 ms
+bench:run: warm 24/30 42.4 ms
+bench:run: warm 25/30 41.9 ms
+bench:run: warm 26/30 41.1 ms
+bench:run: warm 27/30 42.8 ms
+bench:run: warm 28/30 41.1 ms
+bench:run: warm 29/30 42.4 ms
+bench:run: warm 30/30 42.2 ms
+bench:run: Open list after the runs: 200 rows, equal to the expected rows
+bench:run: cold p95 103.9 ms (budget 2500), warm p95 44.6 ms (budget 1500); wrote evidence/D04/bench.md
+bench:run OK
