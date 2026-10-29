@@ -203,6 +203,23 @@ describe('Journal section, Debt obligation', () => {
   });
 });
 
+describe('Journal section, Debt reverse links', () => {
+  it('should report the missing reverse link of a decline when an Entry with the same identity names the same Debt', async () => {
+    const { types, definitions, positionChangeReflection: def } = seeded();
+    const source = recordSourceOf({
+      journalTypes: types,
+      journalDefinitions: definitions,
+      journalDebts: [debt('debt-1', 'pc-1', def, [outstanding('v-1'), settled('v-2', 'shared-id')])],
+      journalEntries: [entry('shared-id', 'pc-1', def, 'debt-1')],
+      journalDeclines: [decline('shared-id', 'pc-2', def, 'debt-1')],
+    });
+
+    const result = await validateSection(source);
+
+    expect(result.issues).toEqual([{ code: 'DebtLinkNotReciprocated', debtId: 'debt-1', id: 'shared-id' }]);
+  });
+});
+
 describe('seedDefaults: manifest v4 (P17)', () => {
   it('should add the Trade Detail Source, and nothing else, to a v3-seeded Journal, and add nothing when run again', async () => {
     const { persistence } = await emptyWorkspace();

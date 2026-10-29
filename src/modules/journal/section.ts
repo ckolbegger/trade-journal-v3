@@ -113,7 +113,7 @@ export async function validateSection(source: RecordSource): Promise<JournalSect
           issues.push({ code: 'DebtResolutionMissing', debtId: debt.debtId, versionId: version.versionId, status: version.status });
           continue;
         }
-        named.add(`${debt.debtId}|${link.id}`);
+        named.add(`${store}|${debt.debtId}|${link.id}`);
         if (link.settledDebtId !== debt.debtId) issues.push({ code: 'DebtLinkNotReciprocated', debtId: debt.debtId, id: link.id });
         else if (link.obligationKey !== debt.obligationKey) issues.push({ code: 'DebtObligationMismatch', debtId: debt.debtId, id: link.id });
         else if (store === 'journalEntries' && link.definitionId !== debt.definitionId) issues.push({ code: 'DebtEntryDefinitionChanged', debtId: debt.debtId, entryId: link.id });
@@ -129,7 +129,7 @@ export async function validateSection(source: RecordSource): Promise<JournalSect
   // The other direction: an Entry or decline that names a Debt no version of which names it back.
   for (const store of ['journalEntries', 'journalDeclines'] as const) {
     for (const link of links[store].values()) {
-      if (link.settledDebtId !== undefined && !named.has(`${link.settledDebtId}|${link.id}`)) {
+      if (link.settledDebtId !== undefined && !named.has(`${store}|${link.settledDebtId}|${link.id}`)) {
         issues.push({ code: 'DebtLinkNotReciprocated', debtId: link.settledDebtId, id: link.id });
       }
     }
