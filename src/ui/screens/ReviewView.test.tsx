@@ -237,6 +237,8 @@ describe('Marks family (P11, P15)', () => {
     await user.click(within(page1[1]!).getByRole('button', { name: 'Save Mark' }));
     expect(facade.MarketData.save).toHaveBeenLastCalledWith({ intention: 'RecordInitialManualMark', instrumentKey: 'MNO', tradingDate: day(24), price: '9', expectedResolutionRevision: 4 });
 
+    // The Conflict keeps the typed value, which holds paging; clear it so the pager is free.
+    await user.clear(within(page1[1]!).getByLabelText('Price'));
     expect(within(mno).getByText('Sessions 1 to 20 of 25')).toBeTruthy();
     expect(within(mno).queryByRole('button', { name: 'Previous page' })).toBeNull();
     await user.click(within(mno).getByRole('button', { name: 'Next page' }));
@@ -247,6 +249,38 @@ describe('Marks family (P11, P15)', () => {
     expect(within(mno).queryByRole('button', { name: 'Next page' })).toBeNull();
     await user.click(within(mno).getByRole('button', { name: 'Previous page' }));
     expect(within(mno).getAllByRole('listitem')).toHaveLength(20);
+  });
+
+  it('should not page away from earlier sessions while a Mark on the page holds an unsaved value', async () => {
+    const day = (n: number) => `2026-09-${String(n).padStart(2, '0')}`;
+    const missing = Array.from({ length: 25 }, (_, i) => day(i + 1));
+    const facade = reviewFacade(
+      ready({
+        today: [markRow('MNO', ['t1'])],
+        trades: [tradeItem('t1', 'MNO')],
+        earlier: [{ instrumentKey: 'MNO', missing, acknowledged: [], revisions: Object.fromEntries(missing.map((d) => [d, 'None'])), blocking: false }],
+        completion: incomplete({ code: 'MarkMissing', instrumentKey: 'MNO', tradingDate: '2026-10-12', trades: ['t1'] }),
+      }),
+    );
+    renderReview(facade);
+    const user = userEvent.setup();
+    const mno = await screen.findByRole('region', { name: 'MNO earlier sessions' });
+    const row = within(mno).getAllByRole('listitem')[2]!;
+    await user.click(within(row).getByRole('button', { name: 'Enter' }));
+    await user.type(within(row).getByLabelText('Price'), '9');
+
+    const next = within(mno).getByRole('button', { name: 'Next page' });
+    expect((next as HTMLButtonElement).disabled).toBe(true);
+    expect(next.getAttribute('aria-describedby')).toBeTruthy();
+    expect(within(mno).getByText(/Save or clear the value/)).toBeTruthy();
+    await user.click(next);
+    expect(within(mno).getByText('Sessions 1 to 20 of 25')).toBeTruthy();
+
+    await user.clear(within(row).getByLabelText('Price'));
+    expect(within(mno).getByRole<HTMLButtonElement>('button', { name: 'Next page' }).disabled).toBe(false);
+    expect(within(mno).queryByText(/Save or clear the value/)).toBeNull();
+    await user.click(within(mno).getByRole('button', { name: 'Next page' }));
+    expect(within(mno).getByText('Sessions 21 to 25 of 25')).toBeTruthy();
   });
 
   it('should focus the Instrument named by the link it was opened from', async () => {

@@ -120,8 +120,25 @@ const EARLIER_HEADING = 'Earlier sessions without Marks — optional';
 type GapGroup = Extract<ReviewFamily, { family: 'Marks' }>['earlier'][number];
 
 // One Instrument's earlier sessions without an effective Mark, newest first, a page at a time.
-function GapList({ facade, group, focus, onEntryDirty }: { readonly facade: UiFacade; readonly group: GapGroup; readonly focus: boolean; readonly onEntryDirty: EntryDirty }) {
+function GapList({ facade, group, focus, onEntryDirty: reportDirty }: { readonly facade: UiFacade; readonly group: GapGroup; readonly focus: boolean; readonly onEntryDirty: EntryDirty }) {
   const [page, setPage] = useState(0);
+  // Paging would unmount the rows and drop what was typed, so it waits while any row holds a value.
+  const [dirtyIds, setDirtyIds] = useState<ReadonlySet<string>>(new Set());
+  const onEntryDirty = useCallback<EntryDirty>(
+    (id, dirty) => {
+      setDirtyIds((prev) => {
+        if (prev.has(id) === dirty) return prev;
+        const next = new Set(prev);
+        if (dirty) next.add(id);
+        else next.delete(id);
+        return next;
+      });
+      reportDirty(id, dirty);
+    },
+    [reportDirty],
+  );
+  const blocked = dirtyIds.size > 0;
+  const holdId = useId();
   const sessions = [...group.missing.map((date) => ({ date, acknowledged: false })), ...group.acknowledged.map((date) => ({ date, acknowledged: true }))].sort((a, b) => (a.date < b.date ? 1 : -1));
   const first = page * GAPS_PER_PAGE;
   const shown = sessions.slice(first, first + GAPS_PER_PAGE);
@@ -145,13 +162,14 @@ function GapList({ facade, group, focus, onEntryDirty }: { readonly facade: UiFa
       {sessions.length > GAPS_PER_PAGE && (
         <p>
           Sessions {first + 1} to {first + shown.length} of {sessions.length}
+          {blocked && <span id={holdId}> Save or clear the value you entered on this page to change pages.</span>}
           {page > 0 && (
-            <button type="button" className="pill secondary" onClick={() => setPage(page - 1)}>
+            <button type="button" className="pill secondary" disabled={blocked} aria-describedby={blocked ? holdId : undefined} onClick={() => setPage(page - 1)}>
               Previous page
             </button>
           )}
           {first + GAPS_PER_PAGE < sessions.length && (
-            <button type="button" className="pill secondary" onClick={() => setPage(page + 1)}>
+            <button type="button" className="pill secondary" disabled={blocked} aria-describedby={blocked ? holdId : undefined} onClick={() => setPage(page + 1)}>
               Next page
             </button>
           )}
