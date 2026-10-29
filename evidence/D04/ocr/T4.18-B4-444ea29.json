@@ -1,0 +1,113 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 127957,
+    "input_tokens": 126982,
+    "output_tokens": 975,
+    "cache_read_tokens": 17280,
+    "elapsed": "52s"
+  },
+  "tool_calls": {
+    "total": 17,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 14
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/market-data/market-data.ts",
+      "content": "`latestCompleted()` can return a diagnostic for a date reached while scanning backward, not the as-of exchange date. For example, at `2024-01-02T12:00:00Z`, no covered session has completed yet, so the diagnostic date is `2023-12-31` although the as-of exchange date is `2024-01-02`. Forwarding that date now makes `currentFrames()` use December 31 as its fallback, changing the previously correct date. Ensure the returned as-of date is resolved separately from the uncovered search date, and add a coverage-start regression test.",
+      "existing_code": "  if (!day.ok) return { kind: 'Rejected', issues: [{ field: 'asOf', code: 'SessionPolicyCoverage', date: day.diagnostic.date, coverage: day.diagnostic.coverage }] };",
+      "start_line": 412,
+      "end_line": 412,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/modules/market-data/market-data.ts",
+        "src/modules/market-data/query.check.ts"
+      ]
+    }
+  ],
+  "session_id": "9953f4f3-eb7d-406e-b2b2-3c3153d83f5c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "9953f4f3-eb7d-406e-b2b2-3c3153d83f5c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "d1223db3a0281debf205bcacd736fa8aef379362",
+      "resolved_head": "435dd35b27dba67903b18242dc182a7ee039d002",
+      "exact_range": "d1223db3a0281debf205bcacd736fa8aef379362..435dd35b27dba67903b18242dc182a7ee039d002",
+      "source_artifact_sha256": "9c189993407532bbd4e1b36a65dde9062ed6d8113a8475eeaf579a700db097aa"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0f535784472d4cb0cbccd8639e96d04ba5a1fb94b2484c500c811a6708c74f92",
+          "path": "src/modules/market-data/query.check.ts",
+          "fingerprint": "f2d8a49bd96fe3edeaf4f5c6aa422494a2a534ddd7014e54f0f5567f3bcab053"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "52681ff241de932c27fb2f9df00500ff2ea6f89616e25937612a0fe536113745"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "8ba0f68e753b5c6195519f36516db0a25d5a9f5cb53428cfe0e3101c1df82973"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0f535784472d4cb0cbccd8639e96d04ba5a1fb94b2484c500c811a6708c74f92",
+          "path": "src/modules/market-data/query.check.ts",
+          "fingerprint": "f2d8a49bd96fe3edeaf4f5c6aa422494a2a534ddd7014e54f0f5567f3bcab053"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "52681ff241de932c27fb2f9df00500ff2ea6f89616e25937612a0fe536113745"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "8ba0f68e753b5c6195519f36516db0a25d5a9f5cb53428cfe0e3101c1df82973"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 51848
+  }
+}

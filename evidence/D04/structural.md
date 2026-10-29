@@ -864,3 +864,11 @@ ocr review of `26257e4` (B1): session `a73762e4-bbc6-41b3-8903-d989eb30a4d7` (sc
 
 ### T4.18-B4 Market Data names the uncovered date
 - it should return SessionPolicyCoverage with the as-of exchange date when the as-of instant is outside coverage
+
+ocr review of `0a8f52a` (B3, refactor): session `612e097d-b5b5-4aef-8a85-195567864400`, no findings. `ocr/T4.18-B3-0a8f52a.json`. `latestExactCloseOf()` keeps the ternary's three branches; `marked()` passes its checked Mark to the callback, removing `usableMark!`. The trade-analysis, trade-views and daily-review files passed 174 before and after.
+
+ocr review of `444ea29` (B4): session `9953f4f3-eb7d-406e-b2b2-3c3153d83f5c` (scratch clone), 3 files, 1 comment. `ocr/T4.18-B4-444ea29.json`. Market Data's `asOf` `SessionPolicyCoverage` issue carries `date` and `coverage` from the session policy's diagnostic; Trade Views takes the date from it, `EXCHANGE_ZONE` is gone, and an issue list with no dated coverage issue still throws (untested). One existing ResolveSession expectation gained the fields. First-run pass on the Trade Views side, mutation-checked. Callers checked: Daily Review passes the Rejected through; Mark save and Workspace build their own issues; no UI copy reads them.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/modules/market-data/market-data.ts:412` | At the lower coverage edge (as-of 2024-01-02 before completion) the issue names 2023-12-31, where the backward scan left coverage, not the as-of date 2024-01-02 | Wrong as a defect: 2024-01-02 is covered; the date the policy cannot classify is the one the scan reached, which is the true fact behind `SessionPolicyNotCovered`. Only the B4 case's title ("with the as-of exchange date") overstates it; both probes it uses are themselves uncovered | Dismissed; the issue's date means "the uncovered date" |
