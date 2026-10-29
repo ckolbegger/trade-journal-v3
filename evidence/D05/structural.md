@@ -81,3 +81,9 @@ Run 2026-10-29 18:51 EDT on commit `ffafa07`, Node v26.12.0.
 | Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.18-d4-release-build-checks.txt` |
 
 Failure: `verify:capacity` only, "basis measured at schema version 3, current is 4" — expected until T5.19. B4.13's chip case passed here; it is recorded as a load-dependent flake (failed twice in the implementer's combined run, passed alone and here), flagged for the user, and fixed if it fails a cumulative run.
+
+## T5.2 Journal: Defer creates Debt
+
+Implementation commit `cf85b93`. Both cases red then green; no first-run pass. Case 1 is D2 T2.5's "reject Defer" test changed in place (section 1.2). Case 2 also checks that both indexes find the Debt right after commit, without a rebuild, and that the Journal counter advances. Implementer's choices: the snapshot reference is named `definitionId`, as on Entries (A61 calls it `definitionRevision`); `debts` is optional on `PreparedJournalEffects` and `JournalApplyResult`; `DebtProjection.status` is `'Outstanding'` only until T5.3 widens it. **Process slip:** the first test edit was made with a script against the Edit-only rule, then reverted and redone with Edit; the text is identical, so the first red row stands.
+
+ocr review of `cf85b93`: session `9acabd75-158a-44ec-bccc-6f93c9e6d5e6`, 3 files reviewed, **No findings.** Raw output: `ocr/T5.2-cf85b93.json`.
