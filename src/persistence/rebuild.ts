@@ -16,6 +16,7 @@ export async function rebuildPrivateState(indexedDB: IDBFactory, databaseName: s
       for (const index of Array.from(store.indexNames)) store.deleteIndex(index);
     }
     recomputePrivateTradeFields(tx.objectStore('trades'));
+    recomputePrivateDebtFields(tx.objectStore('journalDebts'));
     rebuildObligations(tx);
     createWorkspaceIndexes((name) => tx.objectStore(name));
   });
@@ -40,6 +41,36 @@ function recomputePrivateTradeFields(trades: IDBObjectStore): void {
   };
 }
 
+interface StoredDebt {
+  readonly obligationKey: string;
+  readonly anchor: { readonly tradeId: string };
+  readonly dueAnchor: string;
+  readonly versions: readonly { readonly status: string }[];
+  readonly debtId: string;
+  readonly revision?: number;
+}
+
+// A Debt's private fields, from its authoritative record (D5 A62): the Trade it is anchored to, and
+// the due anchor only while its latest version is Outstanding, so the sparse `byOutstandingDue`
+// index holds only Outstanding Debt.
+function recomputePrivateDebtFields(debts: IDBObjectStore): void {
+  const request = debts.openCursor();
+  request.onsuccess = () => {
+    const cursor = request.result;
+    if (!cursor) return;
+    const debt = { ...(cursor.value as Record<string, unknown>) } as Record<string, unknown> & StoredDebt;
+    delete debt['outstandingDue'];
+    debt['anchorTradeId'] = debt.anchor.tradeId;
+    if (isOutstanding(debt)) debt['outstandingDue'] = debt.dueAnchor;
+    cursor.update(debt);
+    cursor.continue();
+  };
+}
+
+function isOutstanding(debt: StoredDebt): boolean {
+  return debt.versions[debt.versions.length - 1]!.status === 'Outstanding';
+}
+
 interface StoredFact {
   readonly kind: string;
   readonly versions: readonly { readonly value: { readonly economicTime: string } }[];
@@ -55,7 +86,7 @@ function exposureStartOf(facts: unknown): string | undefined {
 }
 
 // The Journal obligation index (D2 A28): one record per obligation key naming its current outcome,
-// rebuilt from the Entries and declines that hold the key, each at the content revision its
+// rebuilt from the Entries, declines, and Outstanding Debt that hold the key, each at the content revision its
 // outcome was written at, since both were written by the same commit.
 function rebuildObligations(tx: IDBTransaction): void {
   const obligations = tx.objectStore('journalObligations');
@@ -72,4 +103,16 @@ function rebuildObligations(tx: IDBTransaction): void {
       cursor.continue();
     };
   }
+  // An Outstanding Debt names its key's current outcome; a Settled or Declined Debt's outcome is the
+  // Entry or decline above that carries its `settledDebtId` (D5 A62).
+  const debts = tx.objectStore('journalDebts').openCursor();
+  debts.onsuccess = () => {
+    const cursor = debts.result;
+    if (!cursor) return;
+    const debt = cursor.value as StoredDebt;
+    if (isOutstanding(debt)) {
+      obligations.put({ obligationKey: debt.obligationKey, outcome: { kind: 'Debt', id: debt.debtId }, revision: debt.revision });
+    }
+    cursor.continue();
+  };
 }

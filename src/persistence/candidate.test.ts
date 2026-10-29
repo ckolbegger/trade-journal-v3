@@ -48,7 +48,7 @@ describe('schema v2 layout', () => {
     if (created.kind !== 'Created') throw new Error('workspace not created');
     p.close();
 
-    expect(await p.inspectRoot()).toEqual(expect.objectContaining({ kind: 'KnownWorkspace', schemaVersion: 3 }));
+    expect(await p.inspectRoot()).toEqual(expect.objectContaining({ kind: 'KnownWorkspace', schemaVersion: 4 }));
     const db = await rawOpen(created.databaseName);
     const stores = Array.from(db.objectStoreNames);
     const tx = db.transaction(stores);
@@ -61,7 +61,7 @@ describe('schema v2 layout', () => {
     const declines = tx.objectStore('journalDeclines');
     db.close();
 
-    expect(meta).toEqual({ key: 'schema', schemaVersion: 3 });
+    expect(meta).toEqual({ key: 'schema', schemaVersion: 4 });
     expect(stores).toEqual(expect.arrayContaining(['journalDeclines', 'journalObligations']));
     expect(index.keyPath).toEqual(['lifecycle', 'activityDesc', 'tradeId']);
     expect(obligations.keyPath).toBe('obligationKey');
@@ -189,7 +189,7 @@ describe('candidate and activation', () => {
     expect(onSource).toHaveLength(1);
     expect(onSource[0]?.[1] ?? 'readonly').toBe('readonly');
     expect([...(onSource[0]?.[0] as string[])].sort()).toEqual(
-      ['catalog', 'journalDeclines', 'journalDefinitions', 'journalEntries', 'journalTypes', 'meta', 'observations', 'trades'],
+      ['catalog', 'journalDebts', 'journalDeclines', 'journalDefinitions', 'journalEntries', 'journalTypes', 'meta', 'observations', 'trades'],
     );
     // Transforms see authoritative records only: no persistence stamp, no private store.
     expect(seen.map((r) => r.store).sort()).toEqual(['catalog', 'journalDeclines', 'journalEntries', 'meta', 'meta', 'trades']);
@@ -204,7 +204,7 @@ describe('candidate and activation', () => {
     expect(await rawGetAll(candidate, 'journalObligations')).toEqual([]);
     expect(await rawGetAll(candidate, 'meta')).toEqual([
       { key: 'content', contentRevision: 1 },
-      { key: 'schema', schemaVersion: 3 },
+      { key: 'schema', schemaVersion: 4 },
       { key: 'sessionPolicy', policy: TEST_SESSION_POLICY, copied: true, revision: 1 },
       { key: 'settings', timeZone: 'America/New_York', copied: true, revision: 1 },
     ]);

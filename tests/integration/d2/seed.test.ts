@@ -9,7 +9,7 @@ describe('I2.12 fresh initialization at schema 2', () => {
     const app = await launch(d);
     const opened = await app.Workspace.initialize({ timeZone: 'America/New_York' });
     if (opened.kind !== 'Opened') throw new Error(`initialize: ${opened.kind}`);
-    expect(opened.status.schemaVersion).toBe(3);
+    expect(opened.status.schemaVersion).toBe(4);
     expect(opened.receipt.fresh).toBe(true);
     expect(opened.receipt.migration).toBeUndefined();
     expect(opened.receipt.seeds.journal).toEqual({
@@ -28,7 +28,7 @@ describe('I2.12 fresh initialization at schema 2', () => {
     const dump = await dumpAll(d.factory);
     expect(Object.keys(dump).filter((name) => name.startsWith('tj-ws-'))).toEqual([opened.status.binding.databaseName]);
     const stores = workspaceStores(dump);
-    expect(stores['meta']).toEqual(expect.arrayContaining([expect.objectContaining({ key: 'schema', schemaVersion: 3 })]));
+    expect(stores['meta']).toEqual(expect.arrayContaining([expect.objectContaining({ key: 'schema', schemaVersion: 4 })]));
     // The v2 stores exist from the start.
     expect(Object.keys(stores)).toEqual(expect.arrayContaining(['journalDeclines', 'journalObligations']));
     const types = (stores['journalTypes'] as { productKey: string }[]).map((t) => t.productKey).sort();

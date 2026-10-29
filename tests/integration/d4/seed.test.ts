@@ -10,7 +10,7 @@ describe('I4.12 fresh initialization at schema 3', () => {
     const app = await launch(d);
     const opened = await app.Workspace.initialize({ timeZone: 'America/New_York' });
     if (opened.kind !== 'Opened') throw new Error(`initialize: ${opened.kind}`);
-    expect(opened.status.schemaVersion).toBe(3);
+    expect(opened.status.schemaVersion).toBe(4);
     expect(opened.receipt.fresh).toBe(true);
     expect(opened.receipt.migration).toBeUndefined();
     expect(opened.receipt.seeds.journal).toEqual({
@@ -30,7 +30,7 @@ describe('I4.12 fresh initialization at schema 3', () => {
     const stores = workspaceStores(dump);
     expect(stores['meta']).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ key: 'schema', schemaVersion: 3 }),
+        expect.objectContaining({ key: 'schema', schemaVersion: 4 }),
         expect.objectContaining({ key: 'sessionPolicy', policy: nyseSessionPolicy.identity }),
       ]),
     );

@@ -6,7 +6,7 @@ export const WORKSPACE_PREFIX = 'tj-ws-';
 export const POINTER_KEY = 'current';
 
 // The Workspace schema this release reads and writes.
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 export function upgradeRoot(db: IDBDatabase, oldVersion: number): void {
   if (oldVersion < 1) {
@@ -32,6 +32,7 @@ export type WorkspaceStore =
   | 'journalEntries'
   | 'journalDeclines'
   | 'journalObligations'
+  | 'journalDebts'
   | 'trades'
   | 'observations';
 
@@ -45,6 +46,8 @@ export const WORKSPACE_KEY_PATHS: Readonly<Record<WorkspaceStore, string | reado
   // A private index: one current outcome per obligation key, rebuildable from journalEntries
   // and journalDeclines (D2 A28).
   journalObligations: 'obligationKey',
+  // Journal Debt records, each with its version chain (D5 A61, A62).
+  journalDebts: 'debtId',
   trades: 'tradeId',
   // One record per Market Data key, with its Mark and acknowledgment chains (D4 A38).
   observations: ['tradingDate', 'instrumentKey'],
@@ -69,6 +72,10 @@ export function createWorkspaceIndexes(store: (name: WorkspaceStore) => IDBObjec
   entries.createIndex('byAnchorTrade', 'anchorTradeId');
   // A Trade's declines, for its narrative.
   store('journalDeclines').createIndex('byAnchorTrade', 'anchorTradeId');
+  // Sparse: `outstandingDue` exists only while the Debt's latest version is Outstanding, so this
+  // index lists exactly the Outstanding Debt in due order (D5 A62).
+  store('journalDebts').createIndex('byOutstandingDue', ['outstandingDue', 'debtId']);
+  store('journalDebts').createIndex('byAnchorTrade', 'anchorTradeId');
   // The authoritative stored Lifecycle State, ordered by Plan time, for current-state lists.
   store('trades').createIndex('byLifecycle', ['lifecycle', 'planTime', 'tradeId']);
   // The Open list, most recent activity first: `activityDesc` is a descending sort key (D2 A28).
