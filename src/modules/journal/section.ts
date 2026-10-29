@@ -10,7 +10,9 @@ export type JournalSectionIssue =
   | { readonly code: 'DebtVersionAfterResolution'; readonly debtId: string; readonly versionId: string }
   | { readonly code: 'DebtEntryDefinitionChanged'; readonly debtId: string; readonly entryId: string }
   // `id` is the Entry or decline on the other side of a settlement link that does not point back.
-  | { readonly code: 'DebtLinkNotReciprocated'; readonly debtId: string; readonly id: string };
+  | { readonly code: 'DebtLinkNotReciprocated'; readonly debtId: string; readonly id: string }
+  // `id` is the Entry or decline that settled the Debt but answers a different obligation key.
+  | { readonly code: 'DebtObligationMismatch'; readonly debtId: string; readonly id: string };
 
 export interface JournalSectionValidation {
   readonly issues: readonly JournalSectionIssue[];
@@ -37,6 +39,7 @@ interface SettlementLink {
   readonly id: string;
   readonly settledDebtId: string | undefined;
   readonly definitionId: string;
+  readonly obligationKey: string;
 }
 
 // The authoritative fields a section validator reads from a stored Debt (D5 A61); the private
@@ -71,7 +74,8 @@ export async function validateSection(source: RecordSource): Promise<JournalSect
   for (const store of ['journalEntries', 'journalDeclines'] as const) {
     for await (const batch of source.batches(store)) {
       for (const outcome of batch as unknown as readonly StoredOutcome[]) {
-        links[store].set(outcome.id, { id: outcome.id, settledDebtId: outcome.settledDebtId, definitionId: outcome.versions?.[0]?.definitionId ?? outcome.definitionId ?? '' });
+        const obligationKey = typeof outcome.obligationKey === 'string' ? outcome.obligationKey : outcome.obligationKey.join(':');
+        links[store].set(outcome.id, { id: outcome.id, settledDebtId: outcome.settledDebtId, definitionId: outcome.versions?.[0]?.definitionId ?? outcome.definitionId ?? '', obligationKey });
         const revisions = outcome.versions?.map((v) => v.definitionId) ?? [outcome.definitionId ?? ''];
         for (const definitionId of new Set(revisions)) {
           if (!definitionIds.has(definitionId)) issues.push({ code: 'MissingDefinitionRevision', id: outcome.id, definitionId });
@@ -84,7 +88,6 @@ export async function validateSection(source: RecordSource): Promise<JournalSect
         const tradeId = outcome.anchor?.tradeId;
         if (tradeId === undefined) issues.push({ code: 'MissingAnchor', id: outcome.id });
         else anchorTradeIds.add(tradeId);
-        const obligationKey = typeof outcome.obligationKey === 'string' ? outcome.obligationKey : outcome.obligationKey.join(':');
         const first = outcomes.get(obligationKey);
         if (first === undefined) outcomes.set(obligationKey, outcome.id);
         else issues.push({ code: 'DuplicateObligationOutcome', obligationKey, ids: [first, outcome.id] });
@@ -112,6 +115,7 @@ export async function validateSection(source: RecordSource): Promise<JournalSect
         }
         named.add(`${debt.debtId}|${link.id}`);
         if (link.settledDebtId !== debt.debtId) issues.push({ code: 'DebtLinkNotReciprocated', debtId: debt.debtId, id: link.id });
+        else if (link.obligationKey !== debt.obligationKey) issues.push({ code: 'DebtObligationMismatch', debtId: debt.debtId, id: link.id });
         else if (store === 'journalEntries' && link.definitionId !== debt.definitionId) issues.push({ code: 'DebtEntryDefinitionChanged', debtId: debt.debtId, entryId: link.id });
       }
       // A Debt still Outstanding is a current outcome of its obligation; a resolved one is replaced by its Entry or decline.

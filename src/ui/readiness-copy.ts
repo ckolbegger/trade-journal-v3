@@ -28,6 +28,7 @@ const MIGRATION_ISSUES: Record<MigrationIssue['code'], string> = {
   DebtVersionAfterResolution: 'A reflection debt changed after it was settled or declined.',
   DebtEntryDefinitionChanged: 'A reflection that settled a debt names a different form revision than the debt.',
   DebtLinkNotReciprocated: 'A reflection debt and the reflection that settled it do not name each other.',
+  DebtObligationMismatch: 'A reflection debt was settled or declined by a reflection about a different position change.',
   UnknownAccount: 'A Trade names an Account that does not exist.',
   DuplicateFactIdentity: 'A Trade records the same fact identity twice.',
   UnknownAnchorTrade: 'A reflection belongs to a Trade that does not exist.',

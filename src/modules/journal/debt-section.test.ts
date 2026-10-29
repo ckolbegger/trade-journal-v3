@@ -180,6 +180,29 @@ describe('Journal section, Debt anchor', () => {
   });
 });
 
+describe('Journal section, Debt obligation', () => {
+  it('should report a settling Entry or decline whose obligation key differs from the Debt it settled', async () => {
+    const { types, definitions, positionChangeReflection: def } = seeded();
+    const source = recordSourceOf({
+      journalTypes: types,
+      journalDefinitions: definitions,
+      journalDebts: [
+        debt('debt-1', 'pc-1', def, [outstanding('v-1'), settled('v-2', 'e-1')]),
+        debt('debt-2', 'pc-3', def, [outstanding('v-3'), declined('v-4', 'd-1')]),
+      ],
+      journalEntries: [entry('e-1', 'pc-2', def, 'debt-1')],
+      journalDeclines: [decline('d-1', 'pc-4', def, 'debt-2')],
+    });
+
+    const result = await validateSection(source);
+
+    expect(result.issues).toEqual([
+      { code: 'DebtObligationMismatch', debtId: 'debt-1', id: 'e-1' },
+      { code: 'DebtObligationMismatch', debtId: 'debt-2', id: 'd-1' },
+    ]);
+  });
+});
+
 describe('seedDefaults: manifest v4 (P17)', () => {
   it('should add the Trade Detail Source, and nothing else, to a v3-seeded Journal, and add nothing when run again', async () => {
     const { persistence } = await emptyWorkspace();
