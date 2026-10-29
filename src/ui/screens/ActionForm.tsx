@@ -27,6 +27,11 @@ const NOTICE = {
       <strong>The Review changed after you opened this Trade.</strong> Nothing was saved. Your values are kept below. Refresh to see the current Review.
     </>
   ),
+  ChangedDuringAssembly: (
+    <>
+      <strong>The Review kept changing while this Action was checked.</strong> Nothing was saved. Your values are kept below. Refresh to see the current Review.
+    </>
+  ),
   Conflict: (
     <>
       <strong>This Action changed after you opened it.</strong> Nothing was saved. Your values are kept below. Refresh to see the current Action.
@@ -75,7 +80,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   // Leaving abandons the values, so the form no longer holds an update back.
   useEffect(() => () => onDirtyChange(false), [onDirtyChange]);
   // The save wrote nothing and the values stay: the Review or the Action changed since the form was opened, or storage failed.
-  const [notice, setNotice] = useState<'ReviewChanged' | 'Conflict' | 'StorageFailure' | undefined>();
+  const [notice, setNotice] = useState<'ReviewChanged' | 'ChangedDuringAssembly' | 'Conflict' | 'StorageFailure' | undefined>();
   const noticeRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (notice) noticeRef.current?.focus();
@@ -101,7 +106,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
     }
     // A refusal to write switches the whole shell to read only; the form keeps its values.
     report(result);
-    setNotice(result.kind === 'ReviewChanged' || result.kind === 'Conflict' || result.kind === 'StorageFailure' ? result.kind : undefined);
+    setNotice(result.kind === 'ReviewChanged' || result.kind === 'ChangedDuringAssembly' || result.kind === 'Conflict' || result.kind === 'StorageFailure' ? result.kind : undefined);
     setIssues(result.kind === 'Rejected' ? result.issues.map((issue) => (issue.code === 'RequiredAnswerMissing' ? INTENT_REQUIRED(intentField, issue.code) : { field: wholeField, message: COULD_NOT_SAVE, code: issue.code })) : []);
     if (result.kind === 'Saved') onSaved(result);
   };

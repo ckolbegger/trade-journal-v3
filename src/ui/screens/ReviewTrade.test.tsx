@@ -307,6 +307,27 @@ describe('Changed review', () => {
     await user.click(within(again).getByRole('button', { name: 'Save' }));
     expect(vi.mocked(facade.DailyReview.save)).toHaveBeenLastCalledWith({ kind: 'SaveTradeAction', binding: refreshed.saveBinding, action: 'Exit', intent: 'Stopped out.' });
   });
+
+  it('should say the Review kept changing and offer Refresh when a save returns ChangedDuringAssembly', async () => {
+    const first = tradeReview('t1', 'XYZ');
+    const facade = walkFacade(ready([item('t1', 'XYZ')]), first, first);
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'ChangedDuringAssembly' });
+    renderWalk(facade);
+    const user = userEvent.setup();
+
+    const trade = await openTrade(user, 'XYZ');
+    await user.click(within(trade).getByRole('radio', { name: 'Exit' }));
+    await user.type(within(trade).getByRole('textbox', { name: /Intent/ }), 'Stopped out.');
+    await user.click(within(trade).getByRole('button', { name: 'Save' }));
+
+    const alert = await within(trade).findByRole('alert');
+    expect(alert.textContent).toContain('The Review kept changing while this Action was checked. Nothing was saved.');
+    expect(alert.textContent).toContain('Your values are kept');
+    expect(document.activeElement).toBe(alert);
+    expect(within(alert).getByRole('button', { name: 'Refresh' })).toBeTruthy();
+    expect(within(trade).getByRole('radio', { name: 'Exit' })).toHaveProperty('checked', true);
+    expect(within(trade).getByRole('textbox', { name: /Intent/ })).toHaveProperty('value', 'Stopped out.');
+  });
 });
 
 describe('Leaving the form', () => {
