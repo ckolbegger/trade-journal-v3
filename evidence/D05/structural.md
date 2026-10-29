@@ -140,3 +140,16 @@ Failure: `verify:capacity` only — expected until T5.19.
 Implementation commit `fcd9132`. Both cases red then green; no first-run pass. `Journal.query({ scope: 'OutstandingDebt' })` returns every Outstanding Debt with one `getAll` on `byOutstandingDue` (fixture order D-3, D-1, D-4, D-2, D-5, D-6, D-7, created in a scrambled order so the index decides it). The Trade narrative holds one item per obligation (`TradeNarrativeItem = NarrativeItem | NarrativeDebt`; Entries carry `answeredLater`, declines `declinedLater`), with one `getAll` on `byAnchorTrade`. **Temporary rule until T5.11:** `getTradeDetail` filters Debt items out of the narrative, so the Detail view type is unchanged. The Trade Detail Source is not seeded until T5.5, so its label falls back to the raw key until then.
 
 ocr review of `fcd9132`: session `8e8d6754-eea2-4368-91e4-c5d8ee30e8ef`, 4 files reviewed, **No findings.** Raw output: `ocr/T5.4-fcd9132.json`.
+
+### Cumulative run after T5.4
+
+Run 2026-10-29 19:32 EDT on commit `028df87`, Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 1 failed, 63 passed (64)`, `Tests 1 failed, 835 passed (836)`, exit 1 | `suite-runs/t5.4-debt-queries-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 41 passed (41)`, `Tests 73 passed (73)`, exit 0 | `suite-runs/t5.4-debt-queries-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `142 passed (5.1m)`, exit 0 | `suite-runs/t5.4-debt-queries-browser.txt` |
+| Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.4-debt-queries-checks.txt` |
+
+Failures: `verify:capacity` (expected until T5.19), and `src/ui/screens/TradeList.test.tsx:133` ("should render distinct Loading, Ready, Empty … and Error with Retry states"): `expect(marks('tj:open-list-ready')).toBe(2)` got 1. Reproduced in the main session: the case passed three times alone (`npx vitest run src/ui/screens/TradeList.test.tsx -t "should render distinct Loading"`) and the whole unit suite passed once (`npx vitest run src`: 64 files, 836 tests). T5.4 touched no UI or Trade List code; recorded as a load-dependent flake in a D4 UI test, flagged for the user, and fixed by a bug task if it fails a later run.
