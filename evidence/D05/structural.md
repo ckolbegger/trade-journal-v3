@@ -134,3 +134,9 @@ Run 2026-10-29 19:20 EDT on commit `c54e4c2`, Node v26.12.0.
 | Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.3-debt-resolution-checks.txt` |
 
 Failure: `verify:capacity` only — expected until T5.19.
+
+## T5.4 Journal: Debt queries and the Trade narrative
+
+Implementation commit `fcd9132`. Both cases red then green; no first-run pass. `Journal.query({ scope: 'OutstandingDebt' })` returns every Outstanding Debt with one `getAll` on `byOutstandingDue` (fixture order D-3, D-1, D-4, D-2, D-5, D-6, D-7, created in a scrambled order so the index decides it). The Trade narrative holds one item per obligation (`TradeNarrativeItem = NarrativeItem | NarrativeDebt`; Entries carry `answeredLater`, declines `declinedLater`), with one `getAll` on `byAnchorTrade`. **Temporary rule until T5.11:** `getTradeDetail` filters Debt items out of the narrative, so the Detail view type is unchanged. The Trade Detail Source is not seeded until T5.5, so its label falls back to the raw key until then.
+
+ocr review of `fcd9132`: session `8e8d6754-eea2-4368-91e4-c5d8ee30e8ef`, 4 files reviewed, **No findings.** Raw output: `ocr/T5.4-fcd9132.json`.

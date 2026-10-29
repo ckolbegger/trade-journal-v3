@@ -1,0 +1,115 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 56147,
+    "input_tokens": 55247,
+    "output_tokens": 900,
+    "cache_read_tokens": 7680,
+    "elapsed": "43s"
+  },
+  "tool_calls": {
+    "total": 8,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Journal module updates and trade-view coordination",
+      "files": [
+        "src/coordinators/trade-views/trade-views.ts",
+        "src/modules/journal/effects.ts",
+        "src/modules/journal/index.ts",
+        "src/modules/journal/journal.ts"
+      ]
+    }
+  ],
+  "session_id": "8e8d6754-eea2-4368-91e4-c5d8ee30e8ef",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "8e8d6754-eea2-4368-91e4-c5d8ee30e8ef",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "fcd9132",
+      "resolved_base": "2eda9874532f5fd71eeb584f012811f7561fb5a5",
+      "resolved_head": "fcd91321fcbd011885402ca91eebb84a51fb4919",
+      "exact_range": "2eda9874532f5fd71eeb584f012811f7561fb5a5..fcd91321fcbd011885402ca91eebb84a51fb4919",
+      "source_artifact_sha256": "bfaab3a42c6317ae4559740dc3c4336d815e22cd94d1d75efda3b2dbc9c5848f"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "2f64c03c681bb0e4cb769794bfa15cb393d2414f28f9249686cc06d16338bb98",
+          "path": "src/modules/journal/index.ts",
+          "fingerprint": "39b75593c91b1bd9e06a56e111cb24dd1425d2943bf6e3ba9115bb7da11ba380"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "3c703e9fc78bc06c73cda064e4c63aea65f3b33bf9eaf7e88a80181f5c5eb883"
+        },
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "87330a03901e678b683a10153e49fb712cd241a312081b393b73057a929dc348"
+        },
+        {
+          "item_id": "fd1c910f754a206e66b4e66d854fe19ed7ac30adb9c39111b3b1ccc9e7046634",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "fe95056fee4059bfe7ae8728418e83bd8c6a182359bde207c8b90902f0aa5067"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "2f64c03c681bb0e4cb769794bfa15cb393d2414f28f9249686cc06d16338bb98",
+          "path": "src/modules/journal/index.ts",
+          "fingerprint": "39b75593c91b1bd9e06a56e111cb24dd1425d2943bf6e3ba9115bb7da11ba380"
+        },
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "3c703e9fc78bc06c73cda064e4c63aea65f3b33bf9eaf7e88a80181f5c5eb883"
+        },
+        {
+          "item_id": "d5ca0db109bd5eca3585475c4cd3739bada34094523b44a916a4118276e691b6",
+          "path": "src/modules/journal/journal.ts",
+          "fingerprint": "87330a03901e678b683a10153e49fb712cd241a312081b393b73057a929dc348"
+        },
+        {
+          "item_id": "fd1c910f754a206e66b4e66d854fe19ed7ac30adb9c39111b3b1ccc9e7046634",
+          "path": "src/modules/journal/effects.ts",
+          "fingerprint": "fe95056fee4059bfe7ae8728418e83bd8c6a182359bde207c8b90902f0aa5067"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 43095
+  }
+}
