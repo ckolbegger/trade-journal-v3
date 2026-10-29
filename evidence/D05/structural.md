@@ -173,6 +173,10 @@ Session `8a5b92a9-1cd7-4cdd-9fff-df22a5077226`, model gpt-6.1-sol, 4 files revie
 Defect: a backup or migration candidate with a Debt lacking `anchor` (or `anchor.tradeId`) crashes `validateSection` instead of returning an issue.
 - it should report MissingAnchor for a Debt whose anchor or anchor Trade is absent, and add nothing undefined to the Trade references
 
+Implemented in `851f6b1`: the Debt scan reads `anchor?.tradeId` and reports `MissingAnchor` with the Debt's id. Red (TypeError) then green.
+
+ocr review of `851f6b1`: session `bf860000-a728-4143-882f-5d2e5b4e2bc0`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.5-B1-851f6b1.json`.
+
 ### T5.5-B2 A settlement link answers the Debt's own obligation
 
 Defect: a Debt for one Position Change and an Entry for another that name each other pass validation.
