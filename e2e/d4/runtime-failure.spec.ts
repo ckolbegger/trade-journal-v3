@@ -66,7 +66,7 @@ test.describe('B4.11 Mid-session failure (faults build, AC-DEL-006)', () => {
     await tradesFamily(page).getByRole('button', { name: 'Review XYZ' }).click();
     const form = actionForm(page);
     await form.getByRole('radio', { name: 'Exit', exact: true }).check();
-    await form.getByLabel(/^Intent/).fill('Taking the profit before the gap risk.');
+    await form.getByLabel(/^Why are you taking this action\?/).fill('Taking the profit before the gap risk.');
     const before = workspaceOf(await probe(page))!;
 
     await page.evaluate(() => window.__tjFaults?.set(['inventory']));
@@ -77,7 +77,7 @@ test.describe('B4.11 Mid-session failure (faults build, AC-DEL-006)', () => {
     await expect(banner.getByRole('listitem')).toHaveText(["The app's offline copy is missing or damaged, so it could not reopen without a network."]);
     // The values are kept and nothing is recorded.
     await expect(actionForm(page).getByRole('radio', { name: 'Exit', exact: true })).toBeChecked();
-    await expect(actionForm(page).getByLabel(/^Intent/)).toHaveValue('Taking the profit before the gap risk.');
+    await expect(actionForm(page).getByLabel(/^Why are you taking this action\?/)).toHaveValue('Taking the profit before the gap risk.');
     await expect(completion(page)).toHaveText('Incomplete');
     const workspace = workspaceOf(await probe(page))!;
     expect(actionEntriesOf(workspace)).toEqual([]);

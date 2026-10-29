@@ -1725,3 +1725,13 @@ The acknowledgment form's blank-reason message speaks of the acknowledgment: "En
 - `npx vitest run src` : exit 0; 61 files, 818 passed
 - `npm run build:releases` + `npm run test:e2e` : exit 0; 141 passed
 - `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` : each exit 0
+
+### T4.34-B4
+
+The Action form's Intent field is labelled with the definition prompt plus its marker ("Why are you taking this action? (required)" or "(optional)"). The saved-Action display shows the prompt text then the answer, like the considered question. The blank-Intent message is now "Say why you are taking this action." Browser helpers and specs find the field by the prompt.
+
+- `tdd.sh red` / `green` for the Intent label case (ReviewTrade.test.tsx): red (`Unable to find an accessible element with the role "textbox" and name "Why are you taking this action? (optional)"`), then green
+- `npx vitest run src` : exit 0; 61 files, 819 passed
+- `npm run build:releases` + `npx playwright test e2e/d4` : first run 16 passed, 1 failed (B4.11 runtime-failure, a timing flake under load; passes alone, 2 passed); rerun of e2e/d4 : 17 passed
+- `npm run test:e2e` : exit 0; 141 passed
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` : each exit 0

@@ -48,7 +48,7 @@ test.describe('B4.13 Responsive and accessible', () => {
     await continueToTrades(page);
     await tradesFamily(page).getByRole('button', { name: 'Review XYZ' }).click();
     await actionForm(page).getByRole('radio', { name: 'Adjust', exact: true }).check();
-    await actionForm(page).getByLabel(/^Intent/).fill('Move the Stop to break even.');
+    await actionForm(page).getByLabel(/^Why are you taking this action\?/).fill('Move the Stop to break even.');
     await expect(nav(page)).toHaveAttribute('data-placement', 'sidebar');
 
     await page.setViewportSize({ width: 390, height: 844 });
@@ -60,7 +60,7 @@ test.describe('B4.13 Responsive and accessible', () => {
     await page.setViewportSize({ width: 1280, height: 900 });
 
     await expect(actionForm(page).getByRole('radio', { name: 'Adjust', exact: true })).toBeChecked();
-    await expect(actionForm(page).getByLabel(/^Intent/)).toHaveValue('Move the Stop to break even.');
+    await expect(actionForm(page).getByLabel(/^Why are you taking this action\?/)).toHaveValue('Move the Stop to break even.');
     await expect(completion(page)).toHaveText('Incomplete');
     await context.close();
   });
@@ -167,7 +167,7 @@ test.describe('B4.13 Responsive and accessible', () => {
     await expectAccessible(page, 'Action form');
     await actionForm(page).getByRole('radio', { name: 'Exit', exact: true }).check();
     await actionForm(page).getByRole('button', { name: 'Save' }).click();
-    await expect(actionForm(page).getByText('Enter your Intent for this Action.')).toBeVisible();
+    await expect(actionForm(page).getByText('Say why you are taking this action.')).toBeVisible();
     await expectAccessible(page, 'Action form with an Intent error');
     await page.setViewportSize({ width: 390, height: 844 });
     await expectAccessible(page, 'Action form with an Intent error, narrow');

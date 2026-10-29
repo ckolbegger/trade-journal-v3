@@ -28,7 +28,7 @@ test.describe('B4.2 One-click Hold and Intent', () => {
     await tradesFamily(page).getByRole('button', { name: 'Review XYZ' }).click();
     await actionForm(page).getByRole('radio', { name: 'Exit', exact: true }).check();
     await actionForm(page).getByRole('button', { name: 'Save' }).click();
-    await expect(actionForm(page).getByText('Enter your Intent for this Action.')).toBeVisible();
+    await expect(actionForm(page).getByText('Say why you are taking this action.')).toBeVisible();
     await expect(completion(page)).toHaveText('Incomplete');
     workspace = workspaceOf(await probe(page))!;
     expect(actionEntriesOf(workspace)).toHaveLength(0);

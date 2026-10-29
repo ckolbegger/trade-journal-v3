@@ -53,7 +53,7 @@ test.describe('B4.12 Nothing saved without Save (AC-JOUR-001)', () => {
     await markEntry(page, 'ABC', DATE).getByLabel('Price').fill(TYPED.correctedPrice);
     await markEntry(page, 'ABC', DATE).getByLabel('Reason (required)').fill(TYPED.reason);
     await actionForm(page).getByRole('radio', { name: 'Exit', exact: true }).check();
-    await actionForm(page).getByLabel(/^Intent/).fill(TYPED.intent);
+    await actionForm(page).getByLabel(/^Why are you taking this action\?/).fill(TYPED.intent);
     await actionForm(page).getByLabel('Conviction now').selectOption('4');
     await actionForm(page).getByLabel('Anything you considered doing and decided against?').fill(TYPED.considered);
     await actionForm(page).getByLabel(/^Note/).fill(TYPED.note);
@@ -64,7 +64,7 @@ test.describe('B4.12 Nothing saved without Save (AC-JOUR-001)', () => {
     await expect(markEntry(page, 'DEF', DATE).getByLabel('Price')).toHaveValue(TYPED.markPrice);
     await expect(markEntry(page, 'ABC', DATE).getByLabel('Price')).toHaveValue(TYPED.correctedPrice);
     await expect(markEntry(page, 'ABC', DATE).getByLabel('Reason (required)')).toHaveValue(TYPED.reason);
-    await expect(actionForm(page).getByLabel(/^Intent/)).toHaveValue(TYPED.intent);
+    await expect(actionForm(page).getByLabel(/^Why are you taking this action\?/)).toHaveValue(TYPED.intent);
     await expect(actionForm(page).getByLabel('Conviction now')).toHaveValue('4');
     await expect(actionForm(page).getByLabel(/^Note/)).toHaveValue(TYPED.note);
     expect(traces(await webStorage(page))).toEqual([]);

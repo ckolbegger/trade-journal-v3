@@ -45,7 +45,7 @@ const NOTICE = {
   ),
 } as const;
 
-const INTENT_REQUIRED = (field: string, code: string): FieldIssue => ({ field, message: 'Enter your Intent for this Action.', code });
+const INTENT_REQUIRED = (field: string, code: string): FieldIssue => ({ field, message: 'Say why you are taking this action.', code });
 // Any other rejection (the definition or the Trade is no longer what the form was rendered from) is about the Action as a whole.
 const COULD_NOT_SAVE = 'This Action could not be saved. Reopen the Trade and try again.';
 
@@ -163,7 +163,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
   const savedLines = form.kind === 'Saved' && (
     <>
       <p>Saved Action: {form.action.action}</p>
-      {returned.intent !== '' && <p>Intent: {returned.intent}</p>}
+      {returned.intent !== '' && <p>{INTENT} {returned.intent}</p>}
       {returned.conviction !== '' && <p>{CONVICTION}: {returned.conviction}</p>}
       {returned.considered !== '' && <p>{CONSIDERED} {returned.considered}</p>}
       {returned.note !== '' && <p>{NOTE}: {returned.note}</p>}
@@ -210,7 +210,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
       </fieldset>
       <div className="field">
         <label>
-          {required ? 'Intent (required)' : 'Intent (optional)'}
+          {required ? `${INTENT} (required)` : `${INTENT} (optional)`}
           <textarea id={intentField} value={intent} disabled={saving || !writable} onChange={(e) => setIntent(e.target.value)} {...describedBy(intentField)} />
         </label>
         {fieldError(intentField)}

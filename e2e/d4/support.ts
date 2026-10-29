@@ -167,7 +167,7 @@ export async function saveAction(page: Page, action: 'Hold' | 'Exit' | 'Roll' | 
   const form = actionForm(page);
   const pressed = await form.elementHandle();
   await form.getByRole('radio', { name: action, exact: true }).check();
-  if (intent !== undefined) await form.getByLabel(/^Intent/).fill(intent);
+  if (intent !== undefined) await form.getByLabel(/^Why are you taking this action\?/).fill(intent);
   await form.getByRole('button', { name: 'Save' }).click();
   await pressed?.waitForElementState('hidden', READY);
 }
