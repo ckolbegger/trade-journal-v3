@@ -62,7 +62,7 @@ describe('migration from schema 1', () => {
     const result = await workspace.initialize({});
     expect(result).toEqual({
       kind: 'Opened',
-      status: expect.objectContaining({ kind: 'Ready', schemaVersion: 3 }) as unknown,
+      status: expect.objectContaining({ kind: 'Ready', schemaVersion: 4 }) as unknown,
       receipt: {
         fresh: false,
         readiness: expect.objectContaining({ outcome: 'Writable' }) as unknown,
@@ -76,7 +76,7 @@ describe('migration from schema 1', () => {
         sessionPolicy: { recorded: nyseSessionPolicy.identity, findings: [] },
         migration: {
           fromVersion: 1,
-          toVersion: 3,
+          toVersion: 4,
           sourceDatabase: V1_DATABASE,
           databaseName: expect.stringMatching(/^tj-ws-/) as string,
           counts: { catalog: 6, journalDefinitions: 1, journalEntries: 5, journalTypes: 2, meta: 3, trades: 5 },
@@ -91,7 +91,7 @@ describe('migration from schema 1', () => {
     expect(dump['tj-root']!['pointer']).toEqual(
       expect.arrayContaining([{ key: 'current', databaseName: result.receipt.migration.databaseName }]),
     );
-    expect(migrated['meta']).toEqual(expect.arrayContaining([{ key: 'schema', schemaVersion: 3 }]));
+    expect(migrated['meta']).toEqual(expect.arrayContaining([{ key: 'schema', schemaVersion: 4 }]));
     expect(migrated['trades']).toEqual(expect.arrayContaining([expect.objectContaining({ tradeId: 'fx-0009', lifecycle: 'Planned' })]));
     expect(migrated['journalTypes']).toHaveLength(6);
     expect(migrated['journalObligations']).toHaveLength(5);
@@ -141,7 +141,7 @@ describe('migration failure AC-REST-004', () => {
       stage: 'Validate',
       issues: [{ code: 'UnknownAccount', tradeId: 'fx-0009', accountId: 'fx-unknown' }],
       fromVersion: 1,
-      toVersion: 3,
+      toVersion: 4,
       unchangedData: {
         databaseName: V1_DATABASE,
         contentRevision: 11,
@@ -186,10 +186,10 @@ describe('migration failure AC-REST-004', () => {
     expect(retried).toEqual(
       expect.objectContaining({
         kind: 'Opened',
-        receipt: expect.objectContaining({ migration: expect.objectContaining({ fromVersion: 1, toVersion: 3 }) as unknown }) as unknown,
+        receipt: expect.objectContaining({ migration: expect.objectContaining({ fromVersion: 1, toVersion: 4 }) as unknown }) as unknown,
       }),
     );
-    expect(await workspace.getStatus()).toEqual(expect.objectContaining({ kind: 'Ready', schemaVersion: 3 }));
+    expect(await workspace.getStatus()).toEqual(expect.objectContaining({ kind: 'Ready', schemaVersion: 4 }));
   });
 });
 
@@ -209,7 +209,7 @@ describe('activation failure', () => {
       stage: 'Activate',
       issues: [{ code: 'ActivationFailed' }],
       fromVersion: 1,
-      toVersion: 3,
+      toVersion: 4,
       unchangedData: {
         databaseName: V1_DATABASE,
         contentRevision: 11,
@@ -259,7 +259,7 @@ describe('unsupported versions', () => {
   it('should return IntegrityBlocked UnsupportedNewerSchema and write nothing when the stored schema is newer than the release', async () => {
     const { workspace, factory } = await v1Stack((dump) => {
       const schema = v1Records(dump, 'meta').find((record) => record['key'] === 'schema')!;
-      schema['schemaVersion'] = 4;
+      schema['schemaVersion'] = 5;
     });
     const before = await dumpAll(factory);
     expect(await workspace.initialize({})).toEqual({
@@ -281,12 +281,12 @@ async function v2Stack(edit?: (dump: MutableDump) => void, migrationHooks?: Migr
   return { ...stack, workspace, views: () => viewsOf({ TradeViewsAndReporting: createTradeViews(stack) }, V2_DUMP.schemaVersion) };
 }
 
-describe('migration to schema 3', () => {
-  it('should migrate a v2 Workspace and return Opened with a receipt naming 2 → 3, per-store counts, seed additions Daily Trade Review and Daily Review Source, and the recorded session-policy identity', async () => {
+describe('migration to the current schema', () => {
+  it('should migrate a v2 Workspace and return Opened with a receipt naming 2 → the current schema, per-store counts, seed additions Daily Trade Review and Daily Review Source, and the recorded session-policy identity', async () => {
     const { workspace } = await v2Stack();
     expect(await workspace.initialize({})).toEqual({
       kind: 'Opened',
-      status: expect.objectContaining({ kind: 'Ready', schemaVersion: 3 }) as unknown,
+      status: expect.objectContaining({ kind: 'Ready', schemaVersion: 4 }) as unknown,
       receipt: {
         fresh: false,
         readiness: expect.objectContaining({ outcome: 'Writable' }) as unknown,
@@ -297,7 +297,7 @@ describe('migration to schema 3', () => {
         sessionPolicy: { recorded: nyseSessionPolicy.identity, findings: [] },
         migration: {
           fromVersion: 2,
-          toVersion: 3,
+          toVersion: 4,
           sourceDatabase: V2_DATABASE,
           databaseName: expect.stringMatching(/^tj-ws-/) as string,
           counts: { catalog: 6, journalDeclines: 3, journalDefinitions: 2, journalEntries: 11, journalTypes: 4, meta: 4, trades: 8 },
@@ -308,7 +308,7 @@ describe('migration to schema 3', () => {
     });
   });
 
-  it('should migrate a v1 Workspace to schema 3 in one candidate', async () => {
+  it('should migrate a v1 Workspace to the current schema in one candidate', async () => {
     const { workspace, factory } = await v1Stack();
     const opened = new Set<string>();
     const open = factory.open.bind(factory);
@@ -320,7 +320,7 @@ describe('migration to schema 3', () => {
     if (result.kind !== 'Opened' || !result.receipt.migration) throw new Error('expected a migration receipt');
     // Exactly one candidate database was ever opened beside the root and the source, even one deleted afterwards.
     expect([...opened].filter((name) => name !== 'tj-root' && name !== V1_DATABASE)).toEqual([result.receipt.migration.databaseName]);
-    expect(result.receipt.migration).toMatchObject({ fromVersion: 1, toVersion: 3, sourceDatabase: V1_DATABASE });
+    expect(result.receipt.migration).toMatchObject({ fromVersion: 1, toVersion: 4, sourceDatabase: V1_DATABASE });
     expect(result.receipt.seeds.journal).toEqual({
       manifestVersion: 3,
       additions: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'source.position-change', 'source.daily-review'],
@@ -330,7 +330,7 @@ describe('migration to schema 3', () => {
     expect(Object.keys(dump).sort()).toEqual(['tj-root', result.receipt.migration.databaseName]);
     const migrated = dump[result.receipt.migration.databaseName]!;
     expect(migrated['meta']).toEqual(
-      expect.arrayContaining([{ key: 'schema', schemaVersion: 3 }, expect.objectContaining({ key: 'sessionPolicy', policy: nyseSessionPolicy.identity })]),
+      expect.arrayContaining([{ key: 'schema', schemaVersion: 4 }, expect.objectContaining({ key: 'sessionPolicy', policy: nyseSessionPolicy.identity })]),
     );
     expect(migrated['journalTypes']).toHaveLength(6);
     expect(migrated['observations']).toEqual([]);
@@ -395,7 +395,7 @@ describe('migration to schema 3', () => {
         stage: 'Validate',
         issues: [{ code: 'UnknownAccount', tradeId: 'fx-0010', accountId: 'fx-unknown' }],
         fromVersion: 2,
-        toVersion: 3,
+        toVersion: 4,
       }),
     );
     const after = await dumpAll(factory);
@@ -406,10 +406,10 @@ describe('migration to schema 3', () => {
     expect(await workspace.initialize({})).toEqual(
       expect.objectContaining({
         kind: 'Opened',
-        receipt: expect.objectContaining({ migration: expect.objectContaining({ fromVersion: 2, toVersion: 3 }) as unknown }) as unknown,
+        receipt: expect.objectContaining({ migration: expect.objectContaining({ fromVersion: 2, toVersion: 4 }) as unknown }) as unknown,
       }),
     );
-    expect(await workspace.getStatus()).toEqual(expect.objectContaining({ kind: 'Ready', schemaVersion: 3 }));
+    expect(await workspace.getStatus()).toEqual(expect.objectContaining({ kind: 'Ready', schemaVersion: 4 }));
   });
 });
 

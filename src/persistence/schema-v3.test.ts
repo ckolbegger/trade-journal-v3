@@ -130,7 +130,7 @@ describe('v2 → v3 transform', () => {
     expect(await rawGetAll(candidate, 'observations')).toEqual([]);
     expect(await rawGetAll(candidate, 'meta')).toEqual([
       { key: 'content', contentRevision: 1 },
-      { key: 'schema', schemaVersion: 3 },
+      { key: 'schema', schemaVersion: 4 },
       { key: 'sessionPolicy', policy: TEST_SESSION_POLICY },
       { key: 'settings', timeZone: 'America/New_York', revision: 1 },
     ]);

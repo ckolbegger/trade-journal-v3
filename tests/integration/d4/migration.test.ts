@@ -32,13 +32,13 @@ const CURRENT_FIGURES = [
 
 describe('I4.1 migrate earlier fixtures', () => {
   for (const version of [1, 2] as const) {
-    it(`v${version}: should open with a migration receipt naming the seed additions and the session-policy identity, then after restart be Ready at schema 3 with the fixture views, no observations, a new database in the pointer, and no candidate`, async () => {
+    it(`v${version}: should open with a migration receipt naming the seed additions and the session-policy identity, then after restart be Ready at the current schema with the fixture views, no observations, a new database in the pointer, and no candidate`, async () => {
       const d = await fixtureDevice(version);
       const app = await launch(d);
       const opened = await app.Workspace.initialize({});
       if (opened.kind !== 'Opened') throw new Error(`initialize: ${opened.kind}`);
       expect(opened.receipt.migration).toEqual(
-        expect.objectContaining({ fromVersion: version, toVersion: 3, sourceDatabase: fixtureDatabase(version), databaseName: expect.stringMatching(/^tj-ws-/) as string }),
+        expect.objectContaining({ fromVersion: version, toVersion: 4, sourceDatabase: fixtureDatabase(version), databaseName: expect.stringMatching(/^tj-ws-/) as string }),
       );
       expect(opened.receipt.seeds.journal).toEqual({ manifestVersion: 3, additions: JOURNAL_ADDITIONS[version] });
       expect(opened.receipt.sessionPolicy).toEqual({ recorded: nyseSessionPolicy.identity, findings: [] });
@@ -46,7 +46,7 @@ describe('I4.1 migrate earlier fixtures', () => {
 
       const again = await restart(app, d);
       const status = await again.Workspace.getStatus();
-      expect(status.kind === 'Ready' && [status.schemaVersion, status.binding.databaseName]).toEqual([3, newDatabase]);
+      expect(status.kind === 'Ready' && [status.schemaVersion, status.binding.databaseName]).toEqual([4, newDatabase]);
 
       // A51: every field the snapshot holds is equal; each later field has its defined value.
       const views = await viewsOf(again, version);
@@ -97,7 +97,7 @@ describe('I4.2 migration failure and retry', () => {
     // The cause is removed, then Retry is initialize again.
     await rawUpdate(d.factory, source, 'trades', originalAccount.tradeId, (trade) => ({ ...trade, accountId: originalAccount.accountId }));
     const retried = await app.Workspace.initialize({});
-    expect(retried.kind === 'Opened' && retried.receipt.migration).toEqual(expect.objectContaining({ fromVersion: 2, toVersion: 3 }));
+    expect(retried.kind === 'Opened' && retried.receipt.migration).toEqual(expect.objectContaining({ fromVersion: 2, toVersion: 4 }));
     const again = await restart(app, d);
     expect((await again.Workspace.getStatus()).kind).toBe('Ready');
   });
