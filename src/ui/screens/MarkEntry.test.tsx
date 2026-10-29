@@ -461,4 +461,36 @@ describe('entering, correcting, acknowledging, withdrawing', () => {
     await user.click(screen.getByRole('button', { name: 'Correct' }));
     expect(screen.queryByRole('alert')).toBeNull();
   });
+  it('should close an open form whose intention no longer fits the refreshed Mark and say the Mark changed and nothing was saved', async () => {
+    const facade = facadeDouble();
+    const user = userEvent.setup();
+    const entry = (resolution: MarkResolution, resolutionRevision: ExpectedResolutionRevision) => (
+      <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
+        <MarkEntry facade={facade} instrumentKey="XYZ" tradingDate="2026-10-12" resolution={resolution} resolutionRevision={resolutionRevision} onDirtyChange={() => undefined} />
+      </RuntimeContext.Provider>
+    );
+    const { rerender } = render(entry(mark('50'), 1));
+    await user.click(screen.getByRole('button', { name: 'Correct' }));
+    await user.type(screen.getByLabelText('Price'), '52');
+
+    // The key is now Missing: a correction no longer fits.
+    rerender(entry({ kind: 'Missing' }, 2));
+    expect(screen.queryByRole('form')).toBeNull();
+    const notice = screen.getByRole('alert');
+    expect(notice.textContent).toContain('This Mark changed after you opened it');
+    expect(notice.textContent).toContain('Nothing was saved');
+    expect(notice.textContent).not.toContain('values are kept');
+    expect(document.activeElement).toBe(notice);
+    expect(screen.getByText('Missing')).toBeTruthy();
+
+    // Reopening a form clears the notice.
+    await user.click(screen.getByRole('button', { name: 'Enter' }));
+    expect(screen.queryByRole('alert')).toBeNull();
+
+    // Enter no longer fits an Available key.
+    rerender(entry(mark('51', 3), 3));
+    expect(screen.queryByRole('form')).toBeNull();
+    expect(screen.getByRole('alert').textContent).toContain('Nothing was saved');
+    expect(facade.MarketData.save).not.toHaveBeenCalled();
+  });
 });

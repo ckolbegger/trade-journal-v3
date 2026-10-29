@@ -355,7 +355,9 @@ describe('moving on', () => {
 
   it('should keep a value typed into a Mark entry when a refresh brings that key a newer revision', async () => {
     const first = ready({ today: [markRow('DEF', ['t1'])], trades: [tradeItem('t1', 'DEF')] });
-    const second = ready({ today: [markRow('DEF', ['t1'], available('12'), 1)], trades: [tradeItem('t1', 'DEF')] });
+    // The refreshed key is acknowledged unavailable, so the open Enter form still fits it.
+    const acknowledged: MarkResolution = { kind: 'AcknowledgedUnavailable', acknowledgment: { versionId: 'a1', kind: 'Asserted', savedAt: '2026-10-12T21:00:00Z' } };
+    const second = ready({ today: [markRow('DEF', ['t1'], acknowledged, 1)], trades: [tradeItem('t1', 'DEF')] });
     renderReview(reviewFacade(first, second));
     const user = userEvent.setup();
     await user.click(await screen.findByRole('button', { name: 'Enter' }));

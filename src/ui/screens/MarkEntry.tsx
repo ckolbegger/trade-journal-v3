@@ -23,6 +23,13 @@ const CANT_GET_A_PRICE = "Can't get a price";
 const FORM_LABEL = { Enter: 'Enter the Mark', Correct: 'Correct the Mark', Acknowledge: CANT_GET_A_PRICE } as const;
 const SAVE_LABEL = { Enter: 'Save Mark', Correct: 'Save correction', Acknowledge: 'Save acknowledgment' } as const;
 
+// The resolution kinds each form's intention can be saved under.
+const FITS: Record<'Enter' | 'Correct' | 'Acknowledge', readonly MarkResolution['kind'][]> = {
+  Correct: ['Available'],
+  Enter: ['Missing', 'AcknowledgedUnavailable'],
+  Acknowledge: ['Missing'],
+};
+
 // One Instrument's Mark for one session: its resolution and the actions that change it.
 export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: initial, resolutionRevision: initialRevision, onDirtyChange }: MarkEntryProps) {
   const { writable, report } = useRuntime();
@@ -31,7 +38,8 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
   // A refreshed Review hands this key a newer resolution with a newer revision; entered values and the open form stay.
   // The resolution follows its revision, so an equivalent stale prop never undoes a save.
   const [seenRevision, setSeenRevision] = useState(initialRevision);
-  if (seenRevision !== initialRevision) {
+  const resynced = seenRevision !== initialRevision;
+  if (resynced) {
     setSeenRevision(initialRevision);
     setResolution(initial);
     setRevision(initialRevision);
@@ -49,7 +57,7 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
   // Field names and element ids are prefixed, since several Instruments share a page.
   const uid = useId();
   // The key changed after the form opened: nothing was saved, and the values stay for review.
-  const [conflict, setConflict] = useState(false);
+  const [conflict, setConflict] = useState<false | 'kept' | 'closed'>(false);
   // The write failed in storage: nothing was saved, and the values stay for a retry.
   // Which save could not write: a Withdraw has no entered values to keep, so its notice differs.
   const [storageFailed, setStorageFailed] = useState<false | 'form' | 'withdraw'>(false);
@@ -79,6 +87,11 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
     setPrice('');
     setReason('');
   };
+  // A refresh that leaves the open form's intention without a fitting key closes it: the form would submit something the Mark no longer allows.
+  if (resynced && mode && !FITS[mode].includes(initial.kind)) {
+    closeForm();
+    setConflict('closed');
+  }
   const key = { instrumentKey, tradingDate, expectedResolutionRevision: revision };
   // One save at a time: a second would carry the same expected revision, and a late Saved would close the form over newer input.
   const [saving, setSaving] = useState(false);
@@ -93,7 +106,7 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
     // A refusal to write switches the whole shell to read only; the form keeps its values.
     report(result);
     setIssues(result.kind === 'Rejected' ? describeMarkIssues(result.issues, uid) : []);
-    setConflict(result.kind === 'Conflict');
+    setConflict(result.kind === 'Conflict' ? 'kept' : false);
     setStorageFailed(result.kind === 'StorageFailure' ? (command.intention === 'WithdrawAcknowledgment' ? 'withdraw' : 'form') : false);
     if (result.kind === 'Conflict') {
       setResolution(result.resolution);
@@ -138,7 +151,8 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
       {conflict && (
         <div ref={noticeRef} role="alert" tabIndex={-1} className="banner warning">
           <p>
-            <strong>This Mark changed after you opened it.</strong> Nothing was saved. The current Mark is shown above, and your values are kept below.
+            <strong>This Mark changed after you opened it.</strong> Nothing was saved.{' '}
+            {conflict === 'closed' ? 'The form was closed, and the current Mark is shown above.' : 'The current Mark is shown above, and your values are kept below.'}
           </p>
         </div>
       )}
