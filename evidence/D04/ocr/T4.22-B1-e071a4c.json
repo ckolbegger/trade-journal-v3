@@ -1,0 +1,111 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 86880,
+    "input_tokens": 85375,
+    "output_tokens": 1505,
+    "cache_read_tokens": 11520,
+    "elapsed": "59s"
+  },
+  "tool_calls": {
+    "total": 10,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "Capture the selection token before awaiting `reopen()`, and check it before applying the refreshed Trade. If XYZ's refresh is waiting for `DailyReview.open` and the user opens DEF, this line captures DEF's token; the subsequent XYZ read then passes the guard and replaces DEF. `openTrade.current` also remains DEF because the replacement uses `setSelected` directly. Add coverage that defers `DailyReview.open`, rather than only the subsequent `getTrade`.",
+      "existing_code": "    const request = selection.current;\n    const trade = await facade.DailyReview.getTrade({ reviewDate: result.reviewDate, tradeId, binding: result.binding }).catch(() =\u003e undefined);",
+      "start_line": 352,
+      "end_line": 353,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "Trade ID alone does not identify the opening that submitted the save. If a save for XYZ is pending, the user opens DEF, then reopens XYZ and enters new values, the old save still passes this check and advances or clears the newly opened form. Carry the originating selection generation through the save callback and require it to match before changing selection/after-save state, while still applying completion/binding. Cover the switch-away-and-back sequence with a deferred save.",
+      "existing_code": "    const open = openTrade.current === tradeId;",
+      "start_line": 298,
+      "end_line": 298,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/ReviewTrade.checks.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    }
+  ],
+  "session_id": "e967dccd-16a0-477c-8c66-e9af6fdee320",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e967dccd-16a0-477c-8c66-e9af6fdee320",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "3ffbb5fc9ad3f34a97f8a5a00c19039e91f1d2c2",
+      "resolved_head": "44d1e392e590113fc8b99161e73e886495e7b026",
+      "exact_range": "3ffbb5fc9ad3f34a97f8a5a00c19039e91f1d2c2..44d1e392e590113fc8b99161e73e886495e7b026",
+      "source_artifact_sha256": "dcac49af3c6da00ea955d3855392347775ba5d9abadfd3d242c428207ea67618"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0bdc31336a03183d5ff72a7a9faec1a8d077ab58f503971321d1976055900ae6",
+          "path": "src/ui/screens/ReviewTrade.checks.tsx",
+          "fingerprint": "c162dd27882797796843fcd5653a72334ce14d836487a537528be7632598846f"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "3cf700939b2f583480316f4488628ef3104cd5a0a52c56c6d2333d28359287e4"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0bdc31336a03183d5ff72a7a9faec1a8d077ab58f503971321d1976055900ae6",
+          "path": "src/ui/screens/ReviewTrade.checks.tsx",
+          "fingerprint": "c162dd27882797796843fcd5653a72334ce14d836487a537528be7632598846f"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "3cf700939b2f583480316f4488628ef3104cd5a0a52c56c6d2333d28359287e4"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 59339
+  }
+}

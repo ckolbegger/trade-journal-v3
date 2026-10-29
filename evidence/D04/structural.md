@@ -1080,3 +1080,17 @@ ocr review of `feffc03`: session `c65d1edc-dcb1-4858-9fd6-c213f3d24c33` (scratch
 
 ### T4.22-B5 ChangedDuringAssembly on save is shown
 - it should say what happened and offer Refresh when a save returns ChangedDuringAssembly
+
+ocr review of `e071a4c` (B1): session `e967dccd-16a0-477c-8c66-e9af6fdee320` (scratch clone), 2 files, 2 comments. `ocr/T4.22-B1-e071a4c.json`. Refs `openTrade` and `selection` (bumped by `show()`) gate a save's next step, a Trade read and a refresh; Continue to Trades clears the open Trade and the after-save message (the subagent's choice over re-reading). Five tests, each red then green; no first-run passes, no code ahead of red.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/ui/screens/ReviewView.tsx:352` | `refreshTrade` reads the selection token after `await reopen()`, so a Trade opened during that wait is replaced by the stale refresh | Valid | Bug task T4.22-B6 (second round) |
+| medium | `ReviewView.tsx:298` | `saved` compares Trade ids, not the opening: a save that settles after the trader left and came back moves the new form | Valid (narrow) | Folded into T4.22-B6 |
+| (reviewer) | `ReviewView.tsx`, `proceed` and `select` | Continue to Trades, or opening another Trade, unmounts an Action form holding unsaved values with no hold; unmount reports clean, so the leave guard no longer fires (T4.21-B2 holds paging instead) | Valid | Bug task T4.22-B7 (second round) |
+
+### T4.22-B6 Results bind the opening, not the Trade
+- it should drop a refresh or a save result when the Trade was left or opened again since it was asked for
+
+### T4.22-B7 An unsaved Action holds the walk
+- it should not open another Trade or continue to Trades while the open Action form holds an unsaved value, and say why
