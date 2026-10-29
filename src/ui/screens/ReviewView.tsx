@@ -231,10 +231,10 @@ const AFTER_SAVE = {
 } as const;
 
 // The Trade the walk has open, or what happened when it was asked for.
-type Selected = { readonly tradeId: string; readonly state: 'Loading' | 'Unavailable' | { readonly trade: DailyTradeReview } };
+type Selected = { readonly tradeId: string; readonly opening: number; readonly state: 'Loading' | 'Unavailable' | { readonly trade: DailyTradeReview } };
 
 // The Trade walk in the order the Review returned, each with its band and reasons; any Trade opens below.
-function TradeWalk({ facade, review, selected, afterSave, onSelect, onSaved, onRefresh, onEntryDirty }: { readonly facade: UiFacade; readonly review: Ready; readonly selected: Selected | undefined; readonly afterSave: string | undefined; readonly onSelect: (tradeId: string) => void; readonly onSaved: (saved: SavedAction, tradeId: string) => void; readonly onRefresh: (tradeId: string) => Promise<boolean>; readonly onEntryDirty: EntryDirty }) {
+function TradeWalk({ facade, review, selected, afterSave, onSelect, onSaved, onRefresh, onEntryDirty }: { readonly facade: UiFacade; readonly review: Ready; readonly selected: Selected | undefined; readonly afterSave: string | undefined; readonly onSelect: (tradeId: string) => void; readonly onSaved: (saved: SavedAction, opening: number) => void; readonly onRefresh: (tradeId: string) => Promise<boolean>; readonly onEntryDirty: EntryDirty }) {
   const trades = review.families.flatMap((f) => (f.family === 'Trades' ? f.trades : []));
   const missing = new Set(review.completion.kind === 'Incomplete' ? review.completion.reasons.flatMap((r) => (r.code === 'ActionMissing' ? [r.tradeId] : [])) : []);
   return (
@@ -261,7 +261,7 @@ function TradeWalk({ facade, review, selected, afterSave, onSelect, onSaved, onR
           <p>We couldn’t load this Trade. Nothing was changed.</p>
         </div>
       )}
-      {typeof selected?.state === 'object' && <ReviewTrade key={selected.tradeId} facade={facade} trade={selected.state.trade} onSaved={(saved) => onSaved(saved, selected.tradeId)} onRefresh={() => onRefresh(selected.tradeId)} onEntryDirty={onEntryDirty} />}
+      {typeof selected?.state === 'object' && <ReviewTrade key={selected.tradeId} facade={facade} trade={selected.state.trade} onSaved={(saved) => onSaved(saved, selected.opening)} onRefresh={() => onRefresh(selected.tradeId)} onEntryDirty={onEntryDirty} />}
     </section>
   );
 }
@@ -282,20 +282,19 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
   );
   const [walk, setWalk] = useState(false);
   const [selected, setSelected] = useState<Selected>();
-  // The Trade the trader has open, and a count of the changes to it: a result that was for a Trade no longer open is not applied.
-  const openTrade = useRef<string | undefined>(undefined);
+  // A count of the changes to what is open; each opening carries the count it was shown at, so a result for an earlier opening is not applied.
   const selection = useRef(0);
-  const show = (next: Selected | undefined) => {
-    openTrade.current = next?.tradeId;
+  const show = (next: { readonly tradeId: string; readonly state: Selected['state'] } | undefined): number => {
     selection.current += 1;
-    setSelected(next);
+    setSelected(next && { ...next, opening: selection.current });
+    return selection.current;
   };
   // What follows a save when no Trade is next.
   const [afterSave, setAfterSave] = useState<string>();
   // The save's result is the Review from here on: its completion and binding replace the overview's, and its next step is the Trade shown.
-  // Only a save for the Trade still open moves the selection; the Review it returned applies whatever is open.
-  const saved = ({ review: post }: SavedAction, tradeId: string) => {
-    const open = openTrade.current === tradeId;
+  // Only a save for the opening still shown moves the selection; the Review it returned applies whatever is open.
+  const saved = ({ review: post }: SavedAction, opening: number) => {
+    const open = selection.current === opening;
     if (post.kind !== 'Ready') {
       if (open) {
         show(undefined);
@@ -311,11 +310,10 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
   };
   const select = async (tradeId: string) => {
     setAfterSave(undefined);
-    show({ tradeId, state: 'Loading' });
-    const request = selection.current;
+    const request = show({ tradeId, state: 'Loading' });
     const result = await facade.DailyReview.getTrade({ reviewDate: review.reviewDate, tradeId, binding: review.binding }).catch(() => undefined);
     if (selection.current !== request) return;
-    setSelected({ tradeId, state: result?.kind === 'Ready' ? { trade: result.trade } : 'Unavailable' });
+    setSelected({ tradeId, opening: request, state: result?.kind === 'Ready' ? { trade: result.trade } : 'Unavailable' });
   };
   // The last Continue could not produce a Review: nothing changed, and the trader may press it again.
   const [failed, setFailed] = useState(false);
@@ -346,14 +344,14 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
   };
   // The Review and one Trade again, under the new binding. The Trade replaces the shown one without a loading state, so the form keeps its values.
   const refreshTrade = async (tradeId: string): Promise<boolean> => {
+    const request = selection.current;
     const result = await reopen();
     if (!result) return false;
     setReview(result);
-    const request = selection.current;
     const trade = await facade.DailyReview.getTrade({ reviewDate: result.reviewDate, tradeId, binding: result.binding }).catch(() => undefined);
     if (trade?.kind !== 'Ready') return false;
     if (selection.current !== request) return true;
-    setSelected({ tradeId, state: { trade: trade.trade } });
+    setSelected({ tradeId, opening: request, state: { trade: trade.trade } });
     return true;
   };
   return (
