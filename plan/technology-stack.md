@@ -114,7 +114,7 @@ Pinned 2026-10-17 at the plan freeze (implementation plan, decision 42) and amen
 | `@typescript/native`, as the alias `npm:typescript@7.0.2` | 7.0.2 | 2026-07-08 |
 | `vite` | 8.3.2 | 2026-10-01 |
 | `@vitejs/plugin-react` | 6.1.1 | 2026-08-28 |
-| `vitest` | 4.1.11 | 2026-08-18 |
+| `vitest` | 4.1.12 | 2026-10-15 |
 | `fake-indexeddb` | 6.2.5 | 2025-11-07 |
 | `@playwright/test` | 1.63.0 | 2026-09-04 |
 | `@axe-core/playwright` | 4.13.0 | 2026-08-11 |
@@ -129,12 +129,13 @@ Pinned 2026-10-17 at the plan freeze (implementation plan, decision 42) and amen
 | `eslint-plugin-react-hooks` | 7.1.1 | 2026-04-17 |
 | `@types/react`, `@types/react-dom` | 19.3.0 | 2026-09-09 |
 | `@types/node` | 26.6.4 | 2026-10-01 |
-| `wrangler` | 4.147.0 | 2026-10-02 |
+| `wrangler` | 4.153.0 | 2026-10-26 |
 
 **Choices made while pinning**
 
 - **TypeScript 7.0.2 and 6.0.3 side by side (decision 44).** `typescript-eslint` 8.71.0 supports TypeScript `>=4.8.4 <6.1.0`, and TypeScript 7.0 has no programmatic API, so typed linting cannot run on 7.0. Following Microsoft's TypeScript 7.0 announcement, `package.json` aliases `typescript` to `@typescript/typescript6`, a thin wrapper that re-exports its `@typescript/old` dependency (`npm:typescript@^6`) and provides `tsc6`, and aliases `@typescript/native` to `typescript@7.0.2`, which provides `tsc`. An `overrides` entry pins `@typescript/old` to `npm:typescript@6.0.3`, so every tool that imports `typescript` (typed linting) runs on exactly 6.0.3, while `npm run typecheck` runs the 7.0 native compiler. Revisit, and move to one version, when `typescript-eslint` supports TypeScript 7's API.
 - **React Router 7.18.4 and Vitest 4.1.11, not React Router 8.4.0 and Vitest 5.0.3.** The approved stack names React Router 7 and Vitest 4.1. Both newer majors appeared after approval, and adopting them would reopen the stack choice for no planned benefit.
+- **Vitest 4.1.12 and Wrangler 4.153.0 (decision 55, plan revision 14).** Moved from 4.1.11 and 4.147.0 at the user's direction to clear `npm audit` findings: `@vitest/mocker` (moderate) and, through Wrangler's Miniflare, `sharp` and `undici` (high). 4.153.0 is the earliest Wrangler whose Miniflare is past the vulnerable range, chosen over the newest (4.156.0, published that day). Both are development and deploy tools; nothing in the shipped app changed.
 - **`@testing-library/dom`** is added because `@testing-library/react` 16 requires it as a peer dependency.
 - **`eslint`, `@eslint/js`, `typescript-eslint`, and `eslint-plugin-react-hooks`** serve D1 T1.1's `npm run lint`, which the stack implied but did not name.
 
