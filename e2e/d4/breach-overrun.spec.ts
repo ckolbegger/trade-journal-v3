@@ -7,6 +7,10 @@ const figure = (page: Page, section: string, term: string) =>
 
 const conditionRow = (page: Page, boundary: string) => page.getByRole('row', { name: new RegExp(`^${boundary} `) });
 
+// One cell of a Condition row, by the column's header, so a value in another column cannot satisfy it.
+const COLUMNS = ['Condition', 'Boundary', 'Status', 'Distance', 'Overrun'];
+const conditionCell = (page: Page, boundary: string, column: string) => conditionRow(page, boundary).getByRole('cell').nth(COLUMNS.indexOf(column));
+
 test.describe('B4.14 Breach, overrun, and intraday lines', () => {
   test('should show Stop Breached with Risk to stop $0.00 and Stop Overrun $50.00 and no Deviation, then Awaiting the next close with Mon Oct 12 close and At entry sections for the 40 shares', async ({ profile }) => {
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
@@ -18,12 +22,12 @@ test.describe('B4.14 Breach, overrun, and intraday lines', () => {
 
     // Monday 17:00, Mark 47.00 below the Stop at 47.50.
     await expect(figure(page, 'Valuation', 'Mark')).toHaveText('$47.00');
-    await expect(conditionRow(page, 'Stop')).toContainText('Breached');
-    await expect(conditionRow(page, 'Stop')).toContainText('$47.50');
+    await expect(conditionCell(page, 'Stop', 'Status')).toHaveText('Breached');
+    await expect(conditionCell(page, 'Stop', 'Boundary')).toHaveText('$47.50');
     await expect(figure(page, 'Risk and reward', 'Risk to stop')).toHaveText('$0.00 · 0.00R');
-    await expect(conditionRow(page, 'Stop')).toContainText('$0.00 · 0.00R');
-    await expect(conditionRow(page, 'Stop')).toContainText('$50.00 · 0.20R');
-    await expect(conditionRow(page, 'Target')).toContainText('Active');
+    await expect(conditionCell(page, 'Stop', 'Distance')).toHaveText('$0.00 · 0.00R');
+    await expect(conditionCell(page, 'Stop', 'Overrun')).toHaveText('$50.00 · 0.20R');
+    await expect(conditionCell(page, 'Target', 'Status')).toHaveText('Active');
     await expect(page.getByRole('region', { name: 'Deviations', exact: true })).toContainText('No Deviations recorded.');
 
     // Tuesday noon, after 40 more shares at Tuesday 10:00: the Mark is not yet this session's.
@@ -35,8 +39,8 @@ test.describe('B4.14 Breach, overrun, and intraday lines', () => {
     await expect(page.getByText('Long 140 shares')).toBeVisible();
     for (const term of ['Open P&L', 'Current Marked Trade P&L']) await expect(figure(page, 'Valuation', term)).toHaveText('Awaiting the next close');
     for (const term of ['Risk to stop', 'Worst case', 'Reward to target']) await expect(figure(page, 'Risk and reward', term)).toHaveText('Awaiting the next close');
-    await expect(conditionRow(page, 'Stop')).toContainText('Awaiting the next close');
-    await expect(conditionRow(page, 'Target')).toContainText('Awaiting the next close');
+    await expect(conditionCell(page, 'Stop', 'Status')).toHaveText('Awaiting the next close');
+    await expect(conditionCell(page, 'Target', 'Status')).toHaveText('Awaiting the next close');
 
     // The dated line: the Position held at Monday's close with its own figures.
     const dated = 'At Mon Oct 12 close';

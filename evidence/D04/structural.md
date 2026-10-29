@@ -1660,3 +1660,12 @@ The Action form identifies Intent by its own prompt text (the shared constant th
 - `npx vitest run src` : exit 0; 61 files, 814 passed
 - `npm run build:releases` then `npx playwright test e2e/d4` : 16 passed
 - `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` : each exit 0
+
+### T4.33-B5
+
+B4.14 asserts the Stop row's Status, Boundary, Distance, and Overrun cells, and the Target and awaiting Status cells, each by its own column (test strengthening; no production change).
+
+- Mutation (Distance and Overrun cells swapped in `TradeDetail.tsx`), `npm run build:releases`, `npx playwright test e2e/d4/breach-overrun.spec.ts` : failed on `toHaveText`, Expected `$0.00 · 0.00R`, Received `$50.00 · 0.20R`. Restored; `git diff -- src` empty; rebuilt.
+- `npx playwright test e2e/d4/breach-overrun.spec.ts` : 1 passed
+- `npx playwright test e2e/d4` : 16 passed
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` : each exit 0
