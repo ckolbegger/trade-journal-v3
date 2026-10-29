@@ -1,7 +1,7 @@
 import { useCallback, useId, type ReactNode } from 'react';
 import type { DailyTradeReview } from '../../app/types.ts';
 import { decimalMoney, money, shortDate } from '../format.ts';
-import { calculation, pnlText } from '../figures.ts';
+import { dollarsAndR, pnlText } from '../figures.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import { ActionForm, type SavedAction } from './ActionForm.tsx';
 import { reasonText } from './review-attention.ts';
@@ -26,8 +26,9 @@ function Figures({ evaluation }: { readonly evaluation: Evaluation }) {
       <Figure term="Current Marked Trade P&L">
         {pnlText(pnl, planR)}
       </Figure>
-      <Figure term="Ongoing Risk to Stop">{calculation(evaluation.ongoingRiskToStop, money)}</Figure>
-      <Figure term="Incremental Reward to Target">{calculation(evaluation.incrementalRewardToTarget, money)}</Figure>
+      <Figure term="Ongoing Risk to Stop">{dollarsAndR(evaluation.ongoingRiskToStop, evaluation.ongoingRiskToStopInPlanR)}</Figure>
+      <Figure term="Worst-Case Ongoing Risk">{dollarsAndR(evaluation.worstCaseOngoingRisk, evaluation.worstCaseOngoingRiskInPlanR)}</Figure>
+      <Figure term="Incremental Reward to Target">{dollarsAndR(evaluation.incrementalRewardToTarget, evaluation.incrementalRewardToTargetInPlanR)}</Figure>
     </dl>
   );
 }

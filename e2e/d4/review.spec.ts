@@ -36,6 +36,13 @@ test.describe('B4.1 Daily Review end to end', () => {
     // T-A's form opens with Hold preselected: Save alone records the Action.
     await tradesFamily(page).getByRole('button', { name: 'Review XYZ' }).click();
     await expect(page.getByRole('radio', { name: 'Hold', exact: true })).toBeChecked();
+    // The Trade's figures carry the worst case and the R of risk and reward.
+    const figures = page.getByRole('region', { name: 'XYZ review' });
+    const figure = (term: string) => figures.locator('dt', { hasText: new RegExp(`^${term}$`) }).locator('xpath=following-sibling::dd[1]');
+    await expect(figure('Current Marked Trade P&L')).toHaveText('+$180.00 · +0.72R');
+    await expect(figure('Ongoing Risk to Stop')).toHaveText('$450.00 · 1.80R');
+    await expect(figure('Worst-Case Ongoing Risk')).toHaveText('$5,200.00 · 20.80R');
+    await expect(figure('Incremental Reward to Target')).toHaveText('$400.00 · 1.60R');
     await saveAction(page, 'Hold');
     await expect(status(page)).toContainText('Incomplete');
     await tradesFamily(page).getByRole('button', { name: 'Review ABC' }).click();

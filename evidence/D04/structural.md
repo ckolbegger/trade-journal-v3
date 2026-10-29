@@ -1698,3 +1698,14 @@ Figures from each critic's completion notice (the harness's own token count). Br
 | Critic | Commit | Brief | Tokens | Tool calls | Duration | Defects |
 |---|---|---|---|---|---|---|
 | critic-1 (T4.34) | `d08b5e3` | v2 | 179,621 | 61 | 14 min 21 s | 4 |
+
+### T4.34-B1
+
+The Review's Trade shows Worst-Case Ongoing Risk after Ongoing Risk to Stop, and the R of risk to stop and reward to target, through the Trade Detail's `dollarsAndR` (the Daily Review's `getTrade` evaluation already carries the worst case and the Plan-R figures; no coordinator change).
+
+- `tdd.sh red` / `green` for the reference Trade figures case and the Mark-missing worst case case : red (`expected '$450.00' to be '$450.00 · 1.80R'`; `Unable to find an element with the text: Worst-Case Ongoing Risk`), then green
+- Existing ReviewTrade assertions on the figures ($400.00, $300.00, $150.00, $350.00) now include the R; fixture default evaluation carries the Plan-R and worst case fields
+- B4.1 (`e2e/d4/review.spec.ts`) asserts XYZ: `+$180.00 · +0.72R`, `$450.00 · 1.80R`, `$5,200.00 · 20.80R`, `$400.00 · 1.60R`
+- `npx vitest run src` : exit 0; 61 files, 816 passed
+- `npm run build:releases` then `npx playwright test e2e/d4` : 16 passed
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` : each exit 0
