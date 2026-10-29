@@ -1119,3 +1119,5 @@ ocr review of `f838144` (B4): session `ab0b36c3-7401-4301-870e-6b1d8a011cbd` (sc
 
 ### T4.22-B9 The move is judged by the Trade's own date
 - it should say the form starts afresh whenever the refreshed Trade's Review Date differs from the date its form was opened under, including after a refresh whose Trade read failed
+
+ocr review of `c696394` (B9): session `fcb5c82e-cd48-4e77-9d03-420a72c79c45` (scratch clone; the test file read by the reviewer), no findings. `ocr/T4.22-B9-c696394.json`. The "moved" status compares the refreshed Trade's `saveBinding.reviewDate` with the shown Trade's, the same comparison that changes `ReviewTrade`'s key. The reviewer traced `selected` from the click-time render (used only when the opening gate passes; `inFlight` blocks overlapping refreshes), Loading and Unavailable (no message; `onRefresh` is unreachable there), and that the message shows exactly when the key changes. No first-run passes, no code ahead of red.
