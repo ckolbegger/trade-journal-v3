@@ -1642,3 +1642,12 @@ An empty open Mark form closes when the shell turns read only; a form holding va
 - `npx vitest run src/ui` : exit 0; 19 files, 290 passed
 - `npm run build:faults` then `npx playwright test e2e/d4/runtime-failure.spec.ts` : exit 0; 2 passed
 - `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` : each exit 0
+
+### T4.33-B4
+
+B4.12 re-checks the ABC correction price and reason after the 390 px resize and back (test strengthening; no production change).
+
+- Mutation (reason cleared on resize in `MarkEntry`), `npm run build:releases`, `npx playwright test e2e/d4/no-save.spec.ts` : failed on `toHaveValue`, Expected the reason marker, Received empty. Restored; `git diff -- src` empty; rebuilt.
+- `npx playwright test e2e/d4/no-save.spec.ts` : 1 passed
+- `npx playwright test e2e/d4` : 16 passed
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` : each exit 0

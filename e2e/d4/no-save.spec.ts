@@ -62,6 +62,8 @@ test.describe('B4.12 Nothing saved without Save (AC-JOUR-001)', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.setViewportSize({ width: 1280, height: 900 });
     await expect(markEntry(page, 'DEF', DATE).getByLabel('Price')).toHaveValue(TYPED.markPrice);
+    await expect(markEntry(page, 'ABC', DATE).getByLabel('Price')).toHaveValue(TYPED.correctedPrice);
+    await expect(markEntry(page, 'ABC', DATE).getByLabel('Reason (required)')).toHaveValue(TYPED.reason);
     await expect(actionForm(page).getByLabel(/^Intent/)).toHaveValue(TYPED.intent);
     await expect(actionForm(page).getByLabel('Conviction now')).toHaveValue('4');
     await expect(actionForm(page).getByLabel(/^Note/)).toHaveValue(TYPED.note);
