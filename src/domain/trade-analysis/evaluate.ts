@@ -23,6 +23,13 @@ export interface ObservationFrame {
     | { readonly kind: 'AcknowledgedUnavailable'; readonly stale?: StaleContext };
 }
 
+// The as-of date lies outside session-policy coverage, so there is no Expected Mark Date or frame:
+// Trade Analysis learns only the date and that nothing can be valued.
+export interface UncoveredObservation {
+  readonly instrument: ObservationFrame['instrument'];
+  readonly date: string;
+}
+
 // The latest earlier Mark, disclosed as context and never used in a current figure.
 export interface StaleContext {
   readonly tradingDate: string;
@@ -59,7 +66,7 @@ export interface ConditionStatus {
 
 export interface TradeEvaluationInput {
   readonly state: DerivedTradeState;
-  readonly frame: ObservationFrame;
+  readonly frame: ObservationFrame | UncoveredObservation;
 }
 
 export interface AtEntryFigures {
@@ -76,7 +83,9 @@ export interface TradeEvaluation {
   readonly coverage:
     | { readonly kind: 'Available'; readonly revisionId: string; readonly revisionNumber: number }
     | { readonly kind: 'Missing' }
-    | { readonly kind: 'AcknowledgedUnavailable' };
+    | { readonly kind: 'AcknowledgedUnavailable' }
+    // The as-of date is outside session-policy coverage, so no Mark could apply.
+    | { readonly kind: 'NotCovered' };
   readonly openQuantity: CalculationResult<Rational>;
   readonly openCost: CalculationResult<Rational>;
   readonly unconsumedOpeningFees: CalculationResult<Rational>;
@@ -150,7 +159,9 @@ const noRemainingPosition: CalculationResult<never> = { kind: 'NotApplicable', r
 export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   const { state, frame } = input;
   const lots = state.positions.flatMap((p) => p.openLots);
-  const { resolution } = frame;
+  // Outside coverage there is no frame, so no Mark can value anything.
+  const covered = 'resolution' in frame ? frame : undefined;
+  const date = 'resolution' in frame ? frame.tradingDate : frame.date;
   const quantity = sum(lots.map((l) => l.quantity));
   const cost = sum(lots.map((l) => l.quantity.mul(l.price)));
   const openingFees = sum(lots.map((l) => l.unconsumedOpeningFee));
@@ -165,7 +176,7 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
       const opening = state.facts.find((f) => f.factId === l.openingExecutionId)!;
       return Temporal.Instant.compare(opening.economicTime, close) > 0;
     });
-  const openedAfterClose = openedAfter(frame.closeInstant).length > 0;
+  const openedAfterClose = covered !== undefined && openedAfter(covered.closeInstant).length > 0;
   // Every Mark-dependent figure is computed from the exact Mark, or is Unavailable naming why not.
   // A Mark for another Instrument values nothing here; the Position's Instrument is named instead.
   const foreign = state.positions.find(
@@ -173,24 +184,25 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   );
   // At-entry Lots are relative to the latest exact Mark: this frame's, else its Stale context's, else none.
   // A frame for another Instrument holds no exact Mark for this Position, so every Lot is at entry.
-  const latestExactClose = resolution.kind === 'Available' ? frame.closeInstant : resolution.stale?.closeInstant;
+  const latestExactClose = covered === undefined ? undefined : covered.resolution.kind === 'Available' ? covered.closeInstant : covered.resolution.stale?.closeInstant;
   const atEntryLots = foreign || latestExactClose === undefined ? lots : openedAfter(latestExactClose);
   const unavailableResult = (): CalculationResult<never> => {
+    if (!covered) return { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', detail: { instrument: frame.instrument, date } };
     if (foreign) {
-      return { kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument: foreign.instrument, date: frame.tradingDate } };
+      return { kind: 'Unavailable', reason: 'MarkMissing', detail: { instrument: foreign.instrument, date } };
     }
     if (openedAfterClose) {
-      return { kind: 'Unavailable', reason: 'AwaitingClose', detail: { after: frame.tradingDate } };
+      return { kind: 'Unavailable', reason: 'AwaitingClose', detail: { after: date } };
     }
     return {
       kind: 'Unavailable',
-      reason: resolution.kind === 'Missing' ? 'MarkMissing' : 'AcknowledgedUnavailable',
-      detail: { instrument: frame.instrument, date: frame.tradingDate },
+      reason: covered.resolution.kind === 'Missing' ? 'MarkMissing' : 'AcknowledgedUnavailable',
+      detail: { instrument: frame.instrument, date },
     };
   };
   const unavailable = unavailableResult();
   // The frame's Mark values the Position only when one remains, it is Available, and it applies to every Lot.
-  const usableMark = lots.length > 0 && resolution.kind === 'Available' && !openedAfterClose && !foreign ? resolution.mark : null;
+  const usableMark = lots.length > 0 && covered?.resolution.kind === 'Available' && !openedAfterClose && !foreign ? covered.resolution.mark : null;
   const marked = <T>(of: (mark: Rational) => T): CalculationResult<T> => {
     if (lots.length === 0) return noRemainingPosition;
     if (usableMark) return value(of(decimal(usableMark.price)));
@@ -201,7 +213,9 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
   const remainingOpen = (mark: Rational) => quantity.mul(mark).sub(cost).sub(openingFees);
   const currentMarked = (mark: Rational) => realized.add(remainingOpen(mark));
   const coverageOf = (): TradeEvaluation['coverage'] => {
+    if (!covered) return { kind: 'NotCovered' };
     if (foreign) return { kind: 'Missing' };
+    const { resolution } = covered;
     if (resolution.kind === 'Available') {
       return { kind: 'Available', revisionId: resolution.mark.revisionId, revisionNumber: resolution.mark.revisionNumber };
     }
@@ -226,13 +240,13 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
         status: statusOf(role, crossed),
         distance: measure(atLeastZero(toward)),
         overrun: crossed ? measure(ZERO.sub(toward)) : null,
-        evidence: { instrument: frame.instrument, date: frame.tradingDate, mark: (resolution as { mark: MarkEvidence }).mark },
+        evidence: { instrument: frame.instrument, date, mark: usableMark! },
       };
     }),
   });
   return {
     kind: 'Evaluated',
-    valuationDate: frame.tradingDate,
+    valuationDate: date,
     coverage: coverageOf(),
     openQuantity: current(quantity),
     openCost: current(cost),
@@ -255,13 +269,13 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
       ...state.baseline.stopBasis.map((basis, i) => conditionOf('Stop', i, basis.condition.price)),
       ...state.baseline.targetBasis.map((basis, i) => conditionOf('Target', i, basis.condition.price)),
     ],
-    observation: { instrument: frame.instrument, tradingDate: frame.tradingDate, mark: usableMark },
+    observation: { instrument: frame.instrument, tradingDate: date, mark: usableMark },
     deviations: [],
     coveredSubtotal: null,
     atEntry: atEntryOf(atEntryLots, stop, target),
     planBaseline: { kind: 'Value', value: state.baseline },
     oneR: value(state.baseline.oneR),
     entryQuality: state.entryQuality,
-    ...(!foreign && resolution.kind !== 'Available' && resolution.stale && { staleContext: resolution.stale }),
+    ...(!foreign && covered && covered.resolution.kind !== 'Available' && covered.resolution.stale && { staleContext: covered.resolution.stale }),
   };
 }

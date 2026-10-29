@@ -331,3 +331,77 @@ describe('getTradeDetail: Open with current evaluation', () => {
     expect(await dumpAll(stack.factory)).toEqual(before);
   });
 });
+
+describe('Open views outside session-policy coverage', () => {
+  // Coverage ends 2028-12-31, so this Wednesday has no Expected Mark Date.
+  const OUTSIDE = '2029-01-03T17:00:00Z';
+  const OUTSIDE_DATE = '2029-01-03';
+  const notCovered = { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', detail: { instrument: { kind: 'Stock', symbol: 'XYZ' }, date: OUTSIDE_DATE } };
+
+  it('should return Open items and Detail with every Mark-dependent figure Unavailable SessionPolicyNotCovered when the as-of date is outside coverage', async () => {
+    const stack = await openBook(OUTSIDE);
+    const trade = await stack.confirm(PLAN);
+    await stack.fill(trade, TEN_AM, '100', '50.00');
+    await stack.saveMark('XYZ', '52.00');
+
+    const { view } = await openItems(stack.views);
+
+    const [item] = view.items;
+    if (!item || !('current' in item)) throw new Error('expected a coherent Open item with current figures');
+    expect(item.current).toEqual(
+      expect.objectContaining({
+        remainingOpenPnl: notCovered,
+        currentMarkedPnl: notCovered,
+        currentMarkedPnlInPlanR: notCovered,
+        ongoingRiskToStop: notCovered,
+        ongoingRiskToStopInPlanR: notCovered,
+        worstCaseOngoingRisk: notCovered,
+        worstCaseOngoingRiskInPlanR: notCovered,
+        incrementalRewardToTarget: notCovered,
+        incrementalRewardToTargetInPlanR: notCovered,
+        conditions: [expect.objectContaining({ result: notCovered }), expect.objectContaining({ result: notCovered })],
+      }),
+    );
+    // Figures that need no Mark keep their values.
+    expect(item.current.maximumIncrementalReward).toEqual(expect.objectContaining({ kind: 'Unbounded' }));
+    expect(item.incurredFees).toEqual(Rational.of(1n));
+    // There is no Expected Mark Date or Mark resolution.
+    expect(item.current).not.toHaveProperty('expectedMarkDate');
+    expect(item.current).not.toHaveProperty('markResolution');
+
+    const { current } = (await openDetail(stack.views, trade.tradeId)).view;
+    expect(current.evaluation).toEqual(
+      expect.objectContaining({
+        marketValue: notCovered,
+        remainingOpenPnl: notCovered,
+        currentMarkedPnl: notCovered,
+        currentMarkedPnlInPlanR: notCovered,
+        ongoingRiskToStop: notCovered,
+        worstCaseOngoingRisk: notCovered,
+        incrementalRewardToTarget: notCovered,
+        conditions: [expect.objectContaining({ result: notCovered }), expect.objectContaining({ result: notCovered })],
+        // Figures that need no Mark keep their values.
+        openQuantity: value(Rational.of(100n)),
+        openCost: value(Rational.of(5000n)),
+        unconsumedOpeningFees: value(Rational.of(1n)),
+        realizedToDate: value(Rational.of(0n)),
+        incurredFees: value(Rational.of(1n)),
+        maximumIncrementalReward: expect.objectContaining({ kind: 'Unbounded' }) as unknown,
+      }),
+    );
+    expect(current).not.toHaveProperty('expectedMarkDate');
+    expect(current).not.toHaveProperty('markResolution');
+    expect(current).not.toHaveProperty('mark');
+    expect(current).not.toHaveProperty('datedLine');
+    expect(current.coverage).toEqual([{ instrument: { kind: 'Stock', symbol: 'XYZ' }, coverage: { kind: 'NotCovered' } }]);
+
+    // Planned items are unaffected: they have no current figures.
+    const planned = await stack.confirm({ ...PLAN, symbol: 'ABC' });
+    const browsed = await stack.views.browseTrades({ lifecycle: 'Planned' });
+    if (browsed.kind !== 'Ready') throw new Error(`expected Ready, got ${browsed.kind}`);
+    expect(browsed.view.items.map((i) => i.tradeId)).toEqual([planned.tradeId]);
+    expect(browsed.view.items[0]).not.toHaveProperty('current');
+    expect((await stack.views.getTradeDetail({ tradeId: planned.tradeId })).kind).toBe('Ready');
+  });
+});
+

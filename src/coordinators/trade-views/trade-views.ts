@@ -1,3 +1,4 @@
+import { Temporal } from 'temporal-polyfill';
 import {
   derive,
   evaluate,
@@ -70,8 +71,9 @@ export interface PlannedTradeItem {
 
 // The Open list item's figures at the Expected Mark Date, each with its own availability (A41).
 export interface OpenCurrentFigures {
-  readonly expectedMarkDate: string;
-  readonly markResolution: MarkResolution;
+  // Absent outside session-policy coverage, where there is no Expected Mark Date (decision 54).
+  readonly expectedMarkDate?: string;
+  readonly markResolution?: MarkResolution;
   readonly remainingOpenPnl: CalculationResult<Rational>;
   readonly currentMarkedPnl: CalculationResult<Rational>;
   readonly currentMarkedPnlInPlanR: CalculationResult<Rational>;
@@ -163,6 +165,9 @@ export type ReadViewResult<T> =
 
 const ASSEMBLY_ATTEMPTS = 3;
 
+// The exchange's calendar day; the session policy itself is Market Data's alone (A39).
+const EXCHANGE_ZONE = 'America/New_York';
+
 export interface TradeDetailRequest {
   readonly tradeId: string;
 }
@@ -202,8 +207,9 @@ export interface MarkProvenance {
 // The Open Detail's valuation at the Expected Mark Date: the evaluation in full, with the Mark's
 // provenance and the dated line when the current figures need one (P12, P13).
 export interface OpenCurrentEvaluation {
-  readonly expectedMarkDate: string;
-  readonly markResolution: MarkResolution;
+  // Absent outside session-policy coverage, where there is no Expected Mark Date (decision 54).
+  readonly expectedMarkDate?: string;
+  readonly markResolution?: MarkResolution;
   // Present when an exact Mark valued the figures.
   readonly mark?: MarkProvenance;
   // Per Instrument; a Long Stock Trade has one.
@@ -306,9 +312,15 @@ const entryStatusOf = (derived: DerivedTradeState) => (derived.entryResolution.k
 
 const optional = <K extends string, V>(key: K, value: V | undefined) => (value === undefined ? {} : ({ [key]: value } as Record<K, V>));
 
-function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels, frame: MarkFrame): OpenTradeItem {
-  const evaluation = evaluate({ state: derived, frame: observationFrame(frame) });
-  const datedLine = datedLineOf(analysis, frame, evaluation);
+// The current frame of an Instrument, or the as-of date when it lies outside session-policy coverage.
+type CurrentFrame = MarkFrame | { readonly date: string };
+
+const evaluateCurrent = (derived: DerivedTradeState, analysis: TradeAnalysisRecord, frame: CurrentFrame): TradeEvaluation =>
+  evaluate({ state: derived, frame: 'resolution' in frame ? observationFrame(frame) : { instrument: { kind: 'Stock', symbol: analysis.plan.underlying }, date: frame.date } });
+
+function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived: DerivedTradeState, labels: Labels, frame: CurrentFrame): OpenTradeItem {
+  const evaluation = evaluateCurrent(derived, analysis, frame);
+  const datedLine = 'resolution' in frame ? datedLineOf(analysis, frame, evaluation) : undefined;
   const open = openLongStockSummary(derived);
   return {
     tradeId: summary.tradeId,
@@ -325,8 +337,7 @@ function openItem(summary: RecordSummary, analysis: TradeAnalysisRecord, derived
     integrity: derived.findings.length === 0 ? 'Agrees' : 'Disagrees',
     lastActivity: summary.lastActivity ?? summary.planTime,
     current: {
-      expectedMarkDate: frame.tradingDate,
-      markResolution: frame.resolution,
+      ...('resolution' in frame && { expectedMarkDate: frame.tradingDate, markResolution: frame.resolution }),
       remainingOpenPnl: evaluation.remainingOpenPnl,
       currentMarkedPnl: evaluation.currentMarkedPnl,
       currentMarkedPnlInPlanR: evaluation.currentMarkedPnlInPlanR,
@@ -408,17 +419,23 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
   }
 
   // The frames at the Expected Mark Date for the current instant, one per Instrument.
-  async function currentFrames(symbols: readonly string[]): Promise<{ readonly frames: readonly MarkFrame[]; readonly snapshotId?: string }> {
+  // Outside session-policy coverage there are no frames, only the as-of exchange date.
+  async function currentFrames(symbols: readonly string[]): Promise<{ readonly frames: readonly CurrentFrame[]; readonly snapshotId?: string }> {
     if (symbols.length === 0) return { frames: [] };
     const instruments = [...new Set(symbols)].sort();
-    const result = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Current', asOf: deps.clock.now() }, instruments });
+    const asOf = deps.clock.now();
+    const result = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Current', asOf }, instruments });
+    if (result.kind === 'Rejected' && result.issues.every((issue) => issue.code === 'SessionPolicyCoverage')) {
+      const date = Temporal.Instant.from(asOf).toZonedDateTimeISO(EXCHANGE_ZONE).toPlainDate().toString();
+      return { frames: instruments.map(() => ({ date })) };
+    }
     if (result.kind !== 'Frames') throw new Error(`Market Data returned ${result.kind} for the current frames`);
     return { frames: result.frames, snapshotId: result.snapshotId };
   }
 
   // The effective Mark revision's provenance, as Market Data describes it on the frame.
-  function markProvenance(frame: MarkFrame): MarkProvenance | undefined {
-    if (frame.resolution.kind !== 'Available') return undefined;
+  function markProvenance(frame: CurrentFrame): MarkProvenance | undefined {
+    if (!('resolution' in frame) || frame.resolution.kind !== 'Available') return undefined;
     const { source, revisionId, revisionNumber, price, savedAt, correctionReason } = frame.resolution.mark;
     return { source, revisionId, revisionNumber, price, savedAt, ...(correctionReason !== undefined && { correctionReason }) };
   }
@@ -503,12 +520,11 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         }
         const { frames, snapshotId } = await currentFrames([analysis.plan.underlying]);
         const frame = frames[0]!;
-        const evaluation = evaluate({ state: derived, frame: observationFrame(frame) });
+        const evaluation = evaluateCurrent(derived, analysis, frame);
         const mark = markProvenance(frame);
-        const datedLine = datedLineOf(analysis, frame, evaluation);
+        const datedLine = 'resolution' in frame ? datedLineOf(analysis, frame, evaluation) : undefined;
         const current: OpenCurrentEvaluation = {
-          expectedMarkDate: frame.tradingDate,
-          markResolution: frame.resolution,
+          ...('resolution' in frame && { expectedMarkDate: frame.tradingDate, markResolution: frame.resolution }),
           ...optional('mark', mark),
           coverage: [{ instrument: evaluation.observation.instrument, coverage: evaluation.coverage }],
           evaluation,
@@ -554,7 +570,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         const items = derivations.map(({ summary, analysis, derived }) => {
           if (request.lifecycle === 'Open') {
             if (derived.kind !== 'Derived') return incoherentItem(summary, analysis, labelsOf(summary));
-            const frame = frames.find((f) => f.instrumentKey === analysis.plan.underlying);
+            const frame = frames.find((f) => !('instrumentKey' in f) || f.instrumentKey === analysis.plan.underlying);
             if (!frame) throw new Error(`Market Data returned no frame for ${analysis.plan.underlying}`);
             return openItem(summary, analysis, derived, labelsOf(summary), frame);
           }
