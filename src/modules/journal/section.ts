@@ -95,7 +95,9 @@ export async function validateSection(source: RecordSource): Promise<JournalSect
   const named = new Set<string>();
   for await (const batch of source.batches('journalDebts')) {
     for (const debt of batch as unknown as readonly StoredDebt[]) {
-      anchorTradeIds.add(debt.anchor.tradeId);
+      const anchorTradeId = (debt.anchor as Partial<StoredDebt['anchor']> | undefined)?.tradeId;
+      if (anchorTradeId === undefined) issues.push({ code: 'MissingAnchor', id: debt.debtId });
+      else anchorTradeIds.add(anchorTradeId);
       if (!definitionIds.has(debt.definitionId)) issues.push({ code: 'MissingDefinitionRevision', id: debt.debtId, definitionId: debt.definitionId });
       let resolved = false;
       for (const version of debt.versions) {

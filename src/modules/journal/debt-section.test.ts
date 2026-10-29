@@ -162,6 +162,24 @@ async function stored(persistence: Persistence) {
   return value;
 }
 
+describe('Journal section, Debt anchor', () => {
+  it('should report MissingAnchor for a Debt whose anchor or anchor Trade is absent, and add nothing undefined to the Trade references', async () => {
+    const { types, definitions, positionChangeReflection: def } = seeded();
+    const noAnchor: Record<string, unknown> = debt('debt-1', 'pc-1', def, [outstanding('v-1')]);
+    delete noAnchor['anchor'];
+    const noTrade = { ...debt('debt-2', 'pc-2', def, [outstanding('v-2')]), anchor: { kind: 'Trade' } };
+    const source = recordSourceOf({ journalTypes: types, journalDefinitions: definitions, journalDebts: [noAnchor, noTrade] });
+
+    const result = await validateSection(source);
+
+    expect(result.issues).toEqual([
+      { code: 'MissingAnchor', id: 'debt-1' },
+      { code: 'MissingAnchor', id: 'debt-2' },
+    ]);
+    expect([...result.references.anchorTradeIds]).toEqual([]);
+  });
+});
+
 describe('seedDefaults: manifest v4 (P17)', () => {
   it('should add the Trade Detail Source, and nothing else, to a v3-seeded Journal, and add nothing when run again', async () => {
     const { persistence } = await emptyWorkspace();
