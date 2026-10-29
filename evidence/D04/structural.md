@@ -1779,3 +1779,10 @@ Run 2026-10-29 on `cb34401` (tag `claude-opus-5.5-d4`), before marking section 8
 - `npm run bench:run` OK: cold p95 103.9 ms (budget 2,500), warm p95 44.6 ms (budget 1,500); 200 Open rows equal to expected after the runs (`suite-runs/matrix-update-bench.txt`, `bench.md` rewritten).
 
 In `plan/acceptance-matrix.md`, only the scenarios full in D4 (AC-MARK-001, AC-REV-003, AC-JOUR-001) move to covered, as D1 did; partial and cumulative scenarios keep their matrix status until their full deliverable, and are covered in D4's section 8.
+
+### Dependency bump: wrangler and vitest
+
+- Versions: vitest 4.1.11 to 4.1.12 (pulls @vitest/mocker 4.1.12); wrangler 4.147.0 to 4.153.0 (miniflare 5.20261023.0-beta, sharp 0.35.5, undici 7.30.1 under miniflare). 4.153.0 was clean, so no later wrangler was needed. Exact pins kept.
+- `npx wrangler --version` prints 4.153.0.
+- Audit before: 8 findings (3 moderate, 5 high) including sharp, undici 7.0.0-7.30.0, @vitest/mocker. Audit after: 2 high (vite 8.3.0-8.3.2, zod <4.6.6), neither in the bumped chains; output in suite-runs/deps-bump-audit.txt.
+- Run after the bump: unit 819 passed; integration 73 passed; browser 142 passed (5.1m, no reruns); 12 of 12 checks exit 0. Outputs: suite-runs/deps-bump-{unit,integration,browser,checks,audit}.txt.
