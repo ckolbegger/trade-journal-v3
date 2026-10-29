@@ -896,3 +896,10 @@ ocr review of `df9eea2`: session `fe7e9594-0361-4cc9-a154-3586edd421c0` (scratch
 `f2784dc` (B1): rule `only-market-data-sees-session-policy` forbids `src/` imports of `src/domain/session-policy/` except from `src/modules/market-data/`, the policy's own files, `src/app/compose.ts` and `*.test.ts(x)`. `lint:deps` exit 0 on `src`; `tools/dep-fixtures/ui-imports-session-policy` fails with `only-market-data-sees-session-policy`; the two T4.19 fixtures still fail with their named rules (and the general one); `ui-imports-module` still fails with `ui-only-through-facade`. The narrow rules are kept for their names (the plan row names them) and are now redundant for enforcement.
 
 ocr review of `f2784dc` (B1): session `3d72c75a-b348-4c28-b3e3-76a76738a9ae`, 3 files, no findings. `ocr/T4.19-B1-f2784dc.json`. The reviewer confirmed the exemptions are anchored (no other `market-data` or `compose.ts` path, no non-test helper is exempt) and an index re-export inside the policy folder is caught. Noted, not a defect: a Market Data file re-exporting the policy would bypass a direct-import rule; none does.
+
+Cumulative run at `572482c` (code at `f2784dc`), 2026-10-28 23:26 EDT: unit 704, integration 50, browser 122 of 124, checks 11 of 12 (`verify:capacity`, expected). `suite-runs/t4.19-b1-*`. The two browser failures were D2's `e2e/d2/ui-alignment.spec.ts` T2.36-B1 and T2.37 cases, which hardcoded four bottom-bar links; T4.19's Review route made five. Bug task T4.19-B2.
+
+### T4.19-B2 The bottom bar carries Review
+- the T2.36-B1 fit and T2.37 icon-over-label cases hold with five links at 390 and 320
+
+`ddf5c49` (B2, test only): `NAV_LINK_COUNT = 5` (Trades, Review, New Plan, Accounts, About) replaces the hardcoded 4; five links fit at 390 and 320 with no overflow, so no CSS change; the spec file passed 70, `test:e2e` 124. ocr review: session `7083a28d-1836-4419-a11c-200683d14b89` (scratch clone with the spec moved so ocr includes it), no findings. `ocr/T4.19-B2-ddf5c49.json`. The reviewer confirmed `routes.ts` has exactly five navigation routes and neither test was weakened.
