@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { onboardedStack } from '../../../tests/support/onboarded.ts';
 import type { ConfirmPlanCommand } from '../trade-workflows/index.ts';
 import { Rational } from '../../domain/values/index.ts';
+import type { JournalQuery } from '../../modules/journal/index.ts';
 import { createTradeViews } from './index.ts';
 
 type Stack = Awaited<ReturnType<typeof onboardedStack>>;
@@ -145,7 +146,7 @@ describe('getTradeDetail: Planned', () => {
     let journalReads = 0;
     const racingJournal = {
       ...stack.journal,
-      query: async (query: Parameters<typeof stack.journal.query>[0]) => {
+      query: async <Q extends JournalQuery>(query: Q) => {
         journalReads++;
         // A commit lands in the middle of the first assembly.
         if (journalReads === 1) await stack.confirm('2026-10-12T13:45:00Z', 'ABC');

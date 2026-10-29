@@ -266,10 +266,17 @@ export type JournalApplyResult = {
   readonly action?: DailyAction;
 };
 
-export interface JournalQuery {
-  readonly scope: 'TradeNarrative';
-  readonly tradeId: string;
-}
+export type JournalQuery =
+  | { readonly scope: 'TradeNarrative'; readonly tradeId: string }
+  // Every Outstanding Debt, due classification left to the caller (D5 A63).
+  | { readonly scope: 'OutstandingDebt' };
+
+// Outstanding Debt in [due anchor, Debt identity] order.
+export type OutstandingDebtPage = {
+  readonly kind: 'Debts';
+  readonly debts: readonly DebtProjection[];
+  readonly snapshot: { readonly journalRevision: number };
+};
 
 // Every Daily Trade Review Action saved for one Review Date.
 export interface ReviewDateQuery {
@@ -282,6 +289,12 @@ export type NarrativeAnswer =
   | { readonly kind: 'Scale'; readonly value: number }
   | { readonly kind: 'Option'; readonly label: string }
   | { readonly kind: 'Unanswered' };
+
+// The Debt a narrative item settled later: it shows once, inside that item (D5 A69).
+export interface NarrativeSettledDebt {
+  readonly debtId: string;
+  readonly dueAnchor: Instant;
+}
 
 export interface NarrativeEntry {
   readonly id: string;
@@ -296,6 +309,8 @@ export interface NarrativeEntry {
   readonly reviewDate?: string;
   // True once the Entry has more than one version; absent otherwise.
   readonly edited?: true;
+  // Present when this Entry answered a deferred Debt ("Deferred, answered").
+  readonly answeredLater?: NarrativeSettledDebt;
   readonly responses: readonly { readonly prompt: string; readonly answer: NarrativeAnswer }[];
 }
 
@@ -311,13 +326,37 @@ export interface NarrativeDecline {
   // The Position Change whose reflection was declined.
   readonly positionChangeId?: string;
   readonly reason?: string;
+  // Present when this decline settled a deferred Debt ("Declined later").
+  readonly declinedLater?: NarrativeSettledDebt;
 }
 
+// An Outstanding Debt in a Trade's narrative: "Reflection owed" next to its Position Change.
+// Due classification is the caller's (D5 A63, A69).
+export interface NarrativeDebt {
+  readonly kind: 'Debt';
+  // The Debt identity.
+  readonly id: string;
+  readonly entryType: string;
+  readonly source: string;
+  readonly anchor: { readonly kind: 'Trade'; readonly tradeId: string };
+  readonly momentTime: Instant;
+  readonly positionChangeId: string;
+  // The snapshot definition revision.
+  readonly definitionId: string;
+  readonly dueAnchor: Instant;
+  // The Debt's revision, its optimistic binding for a resolution.
+  readonly revision: string;
+}
+
+// A recorded outcome in a Trade's narrative: an Entry or a decline.
 export type NarrativeItem = ({ readonly kind: 'Entry' } & NarrativeEntry) | NarrativeDecline;
+
+// One item per obligation, in moment-time order: an outcome, or the Debt still owed (D5 A69).
+export type TradeNarrativeItem = NarrativeItem | NarrativeDebt;
 
 export type JournalPage = {
   readonly kind: 'Page';
-  readonly items: readonly NarrativeItem[];
+  readonly items: readonly TradeNarrativeItem[];
   readonly snapshot: { readonly journalRevision: number };
 };
 

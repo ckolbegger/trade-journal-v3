@@ -467,7 +467,9 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           { name: 'account', kind: 'Account', id: s.accountId, mode: 'DisplayOnly' },
           { name: 'strategy', kind: 'Strategy', id: s.strategyId, mode: 'DisplayOnly' },
         ]);
-        const narrative = await deps.journal.query({ scope: 'TradeNarrative', tradeId: request.tradeId });
+        const page = await deps.journal.query({ scope: 'TradeNarrative', tradeId: request.tradeId });
+        // Debt items are not shown until Trade Detail renders Debt (T5.11).
+        const narrative = { ...page, items: page.items.filter((item): item is NarrativeItem => item.kind !== 'Debt') };
         // Derived once and reused for every figure in the view.
         const derived = derive({ record: analysis });
         const resolved = labels.kind === 'Resolved' ? labels.resolved : {};

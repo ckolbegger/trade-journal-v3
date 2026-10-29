@@ -14,11 +14,12 @@ import type {
   JournalIssue,
   JournalPage,
   JournalQuery,
+  OutstandingDebtPage,
   ReviewDateActions,
   ReviewDateQuery,
   NarrativeAnswer,
   NarrativeEntry,
-  NarrativeItem,
+  TradeNarrativeItem,
   JournalEffectRequest,
   PlanReflectionRequest,
   PlanSemantics,
@@ -113,7 +114,9 @@ export interface Journal {
     prepared: PreparedJournalOutcome,
     mapping: Readonly<Record<CandidateRef, string>>,
   ): JournalApplyResult;
-  query(query: JournalQuery): Promise<JournalPage>;
+  // `TradeNarrative`: a Trade's narrative, one item per obligation (D5 A69). `OutstandingDebt`:
+  // every Outstanding Debt in due-anchor then Debt-identity order, with one index read (D5 A63).
+  query<Q extends JournalQuery>(query: Q): Promise<Q extends { scope: 'OutstandingDebt' } ? OutstandingDebtPage : JournalPage>;
   // Every Daily Trade Review Action for a Review Date, keyed by Trade.
   queryActions(query: ReviewDateQuery): Promise<ReviewDateActions>;
 }
@@ -126,6 +129,7 @@ interface StoredEntry {
   readonly momentTime: string;
   readonly authoredTime: string;
   readonly origin: { readonly kind: string; readonly factId: string; readonly reviewDate?: string };
+  readonly settledDebtId?: string;
   readonly versions: readonly {
     readonly definitionId: string;
     readonly responses: readonly { readonly promptId: string; readonly value: ResponseValue }[];
@@ -141,6 +145,7 @@ interface StoredDecline {
   readonly authoredTime: string;
   readonly origin: { readonly kind: string; readonly factId: string };
   readonly reason?: string;
+  readonly settledDebtId?: string;
 }
 
 // A stored Debt (D5 A61, A62): the projection's fields, the private index fields, and its version chain.
@@ -158,7 +163,35 @@ interface StoredDebt {
   readonly route: 'JournalOnly';
   readonly anchorTradeId: string;
   readonly outstandingDue?: string;
-  readonly versions: readonly { readonly versionId: string; readonly status: string; readonly savedAt: string }[];
+  readonly versions: readonly {
+    readonly versionId: string;
+    readonly status: DebtProjection['status'];
+    readonly entryId?: string;
+    readonly declineId?: string;
+    readonly savedAt: string;
+  }[];
+}
+
+// A stored Debt as its current version reads (D5 A61).
+function debtProjection(debt: StoredDebt): DebtProjection {
+  const current = debt.versions.at(-1)!;
+  return {
+    debtId: debt.debtId,
+    obligationKey: debt.obligationKey,
+    entryTypeKey: debt.entryTypeKey,
+    sourceKey: debt.sourceKey,
+    definitionId: debt.definitionId,
+    anchor: debt.anchor,
+    origin: debt.origin,
+    momentTime: debt.momentTime,
+    dueAnchor: debt.dueAnchor,
+    dueRule: debt.dueRule,
+    route: debt.route,
+    status: current.status,
+    revision: current.versionId,
+    ...(current.entryId === undefined ? {} : { entryId: current.entryId }),
+    ...(current.declineId === undefined ? {} : { declineId: current.declineId }),
+  };
 }
 
 // Drops persistence's write stamp so callers see exactly the immutable definition revision.
@@ -296,6 +329,9 @@ function dailyAction(
   const chosen = narrative.responses[latest.responses.findIndex((r) => r.promptId === actionPromptId)]?.answer;
   return { ...narrative, entryRevision: entry.versions.length, definitionId: entry.versions[0]!.definitionId, action: chosen?.kind === 'Option' ? chosen.label : '' };
 }
+
+// Sorts after every key string, to bound a whole-index range read.
+const HIGH_KEY = String.fromCharCode(0xffff);
 
 // A decline's optional reason, in characters (Unicode code points) (D2 A29).
 const MAX_DECLINE_REASON = 500;
@@ -592,12 +628,21 @@ export function createJournal(deps: JournalDeps): Journal {
       }
     },
 
-    async query(query) {
+    query: (async (query: JournalQuery) => {
+      if (query.scope === 'OutstandingDebt') {
+        const { value } = await deps.persistence.readSnapshot(['journalDebts', 'meta'], async (tx) => ({
+          // Only Outstanding Debt is indexed (A62): the full range is every one, already in order.
+          debts: (await tx.getAllFromIndex('journalDebts', 'byOutstandingDue', IDBKeyRange.bound(['', ''], [HIGH_KEY, HIGH_KEY]))) as unknown as StoredDebt[],
+          meta: (await tx.get('meta', 'journal')) as JournalMeta | undefined,
+        }));
+        return { kind: 'Debts', debts: value.debts.map(debtProjection), snapshot: { journalRevision: value.meta?.journalRevision ?? 0 } };
+      }
       const { value } = await deps.persistence.readSnapshot(
-        ['journalEntries', 'journalDeclines', 'journalDefinitions', 'journalTypes', 'meta'],
+        ['journalEntries', 'journalDeclines', 'journalDebts', 'journalDefinitions', 'journalTypes', 'meta'],
         async (tx) => ({
           entries: (await tx.getAllFromIndex('journalEntries', 'byAnchorTrade', query.tradeId)) as unknown as StoredEntry[],
           declines: (await tx.getAllFromIndex('journalDeclines', 'byAnchorTrade', query.tradeId)) as unknown as StoredDecline[],
+          debts: (await tx.getAllFromIndex('journalDebts', 'byAnchorTrade', query.tradeId)) as unknown as StoredDebt[],
           definitions: (await tx.getAll('journalDefinitions')) as unknown as EntryDefinitionRecord[],
           types: (await tx.getAll('journalTypes')) as unknown as JournalTypeRecord[],
           meta: (await tx.get('meta', 'journal')) as JournalMeta | undefined,
@@ -606,10 +651,36 @@ export function createJournal(deps: JournalDeps): Journal {
       const definitions = new Map(value.definitions.map((d) => [d.id, d]));
       const labels = new Map(value.types.map((t) => [t.productKey, t.label]));
       const label = (key: string) => labels.get(key) ?? key;
-      const items: NarrativeItem[] = [
-        ...value.entries.map((entry): NarrativeItem => ({ kind: 'Entry', ...narrativeEntry(entry, definitions, labels) })),
+      const debts = new Map(value.debts.map((d) => [d.debtId, d]));
+      // A settled Debt shows once, inside the Entry or decline that settled it.
+      const settledMark = (debtId: string | undefined) => {
+        const debt = debtId === undefined ? undefined : debts.get(debtId);
+        return debt && { debtId: debt.debtId, dueAnchor: debt.dueAnchor };
+      };
+      const declinedLater = Object.fromEntries(value.declines.map((decline) => [decline.id, settledMark(decline.settledDebtId)]));
+      const items: TradeNarrativeItem[] = [
+        ...value.entries.map((entry): TradeNarrativeItem => {
+          const answeredLater = settledMark(entry.settledDebtId);
+          return { kind: 'Entry', ...narrativeEntry(entry, definitions, labels), ...(answeredLater && { answeredLater }) };
+        }),
+        ...value.debts
+          .filter((debt) => debt.versions.at(-1)!.status === 'Outstanding')
+          .map(
+            (debt): TradeNarrativeItem => ({
+              kind: 'Debt',
+              id: debt.debtId,
+              entryType: label(debt.entryTypeKey),
+              source: label(debt.sourceKey),
+              anchor: debt.anchor,
+              momentTime: debt.momentTime,
+              positionChangeId: debt.origin.factId,
+              definitionId: debt.definitionId,
+              dueAnchor: debt.dueAnchor,
+              revision: debt.versions.at(-1)!.versionId,
+            }),
+          ),
         ...value.declines.map(
-          (decline): NarrativeItem => ({
+          (decline): TradeNarrativeItem => ({
             kind: 'Decline',
             id: decline.id,
             entryType: label(decline.entryTypeKey),
@@ -619,6 +690,7 @@ export function createJournal(deps: JournalDeps): Journal {
             authoredTime: decline.authoredTime,
             ...(decline.origin.kind === 'PositionChange' ? { positionChangeId: decline.origin.factId } : {}),
             ...(decline.reason === undefined ? {} : { reason: decline.reason }),
+            ...(declinedLater[decline.id] && { declinedLater: declinedLater[decline.id] }),
           }),
         ),
       ];
@@ -626,7 +698,7 @@ export function createJournal(deps: JournalDeps): Journal {
         a.momentTime !== b.momentTime ? (a.momentTime < b.momentTime ? -1 : 1) : a.id < b.id ? -1 : a.id > b.id ? 1 : 0,
       );
       return { kind: 'Page', items, snapshot: { journalRevision: value.meta?.journalRevision ?? 0 } };
-    },
+    }) as unknown as Journal['query'],
 
     applyPreparedEffects(tx, prepared, mapping) {
       requireOpen(tx);
