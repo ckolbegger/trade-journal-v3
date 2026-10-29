@@ -1602,3 +1602,21 @@ Fix for the B4.11 finding: an Action or Mark form that holds entered values when
 | `npm run test:e2e` | 140 passed (4.7 m), exit 0 |
 | `npx vitest run src/ui` | 283 passed |
 | `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | exit 0 each |
+
+### ocr reviews of T4.31-B1 to B3, T4.33 parts 1 and 2, and T4.33-B1
+
+| Commit | Finding | Assessment | Outcome |
+|---|---|---|---|
+| `ff60047` | `e2e/d4/support.ts:164`: `saveAction` returns before the save resolves, so the next walk click can take a stale binding | Valid | Fixed by T4.33-B1 (`fa1a608`) |
+| `fa1a608` | the "hidden" wait could pass early, hang on Rejected or ReviewChanged, or hang on Change then re-save | Wrong (early) / Doubtful with no current caller (hang): the form leaves the DOM only on Saved; other results time out instead of passing | dismissed |
+| `8736121` | `tools/bench/pin.ts:31`: `assertMissingRendered` passes when a recorded Missing Instrument's row is absent | Valid | Fixed by T4.31-B2 (`60a16a1`) |
+| `8736121` | `tools/bench-expected-rows.ts:20`: the browser context is closed only on success | Valid (low) | Fixed by T4.31-B3 (`c28f8eb`) |
+| `60a16a1`, `c28f8eb` | none | | clean |
+| `0f06986` | `.chk.ts` files not matched | Wrong: the review's scratch rename | dismissed |
+| `0f06986` | `kill.spec.ts:~21`: a Complete check before the SIGKILL delays the kill | Doubtful: `saveAction` already waits for the rendered result, so the commit is done before it | dismissed |
+| `0f06986` | B4.11 present in `runtime-failure.spec.ts` | Wrong: `0f06986` holds only B4.10; B4.11 was restored by T4.33-B2 | dismissed |
+| `0f06986` | `no-save.spec.ts`: after the resize only the DEF price and Intent are re-checked, not the ABC correction price and reason | Valid (minor) | Bug task T4.33-B4 |
+| `0f06986` | `breach-overrun.spec.ts`: "Stop Overrun $50.00" matched on the whole Stop row | Valid (minor) | Bug task T4.33-B5 |
+| `0f06986` | `no-save.spec.ts`: B4.12 names an Action "with Intent and Note" but the form has no Note | Valid: the Daily Trade Review definition has three optional questions (Conviction now, Considered and decided against, Note) that T4.22's form does not offer | The user chose (2026-10-29) to add all three: bug task T4.33-B3 |
+
+B4.11 (product defect found by T4.33 part 2): a refused write hid the entered Action and Mark values. T4.22's ocr had dismissed this as "matches MarkEntry"; the B4.11 row shows that was wrong. Fixed by T4.33-B2 (`cdc8eee`).
