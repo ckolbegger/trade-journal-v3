@@ -903,3 +903,9 @@ Cumulative run at `572482c` (code at `f2784dc`), 2026-10-28 23:26 EDT: unit 704,
 - the T2.36-B1 fit and T2.37 icon-over-label cases hold with five links at 390 and 320
 
 `ddf5c49` (B2, test only): `NAV_LINK_COUNT = 5` (Trades, Review, New Plan, Accounts, About) replaces the hardcoded 4; five links fit at 390 and 320 with no overflow, so no CSS change; the spec file passed 70, `test:e2e` 124. ocr review: session `7083a28d-1836-4419-a11c-200683d14b89` (scratch clone with the spec moved so ocr includes it), no findings. `ocr/T4.19-B2-ddf5c49.json`. The reviewer confirmed `routes.ts` has exactly five navigation routes and neither test was weakened.
+
+### Cumulative run after T4.19
+
+- `e8f8a20` (code at `ddf5c49`, B1–B2), 2026-10-28 23:38 EDT: unit 704, integration 50, browser 124; checks 11 of 12. `suite-runs/t4.19-b2-*`.
+
+Only `verify:capacity` failed (expected until T4.28). T4.19 is complete.
