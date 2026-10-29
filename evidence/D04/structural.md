@@ -1247,3 +1247,9 @@ ocr review of `133f98f`: session `3959a6ce-e501-493f-87a9-9f5b2c68974a` (scratch
 | Severity | Location | Claim | Assessment | Disposition |
 |---|---|---|---|---|
 | medium | `src/delivery/clock-pin-cases.ts:1` | The tests are not discovered by vitest | Wrong: a scratch-clone rename; the real file is `clock-pin.test.ts` | Dismissed |
+
+### Cumulative run after T4.26
+
+- code at `133f98f`, 2026-10-29 03:04 EDT: unit 798, integration 50, browser 124; checks 11 of 12. `suite-runs/t4.26-*`.
+
+Only `verify:capacity` failed (expected until T4.28). T4.26 is complete.
