@@ -3,7 +3,10 @@
 // only, as in D1 and D2. Test code touches stored records only before an application opens them
 // (the fixture loader and the integrity fixture writer). Clocks are fixed per case.
 import { readFileSync } from 'node:fs';
-import type { Application } from '../../../src/app/compose.ts';
+import { createApplication, type Application } from '../../../src/app/compose.ts';
+import type { SessionPolicy } from '../../../src/domain/session-policy/index.ts';
+import { fixedClock } from '../../../src/domain/time/index.ts';
+import { TEST_CAPACITY } from '../../support/stack.ts';
 import { loadDump, type WorkspaceDump } from '../../../tools/fixtures/workspace-fixture.ts';
 import { confirmReference, dec, device, onboarded, PC1, PC2, record, type Device, type MutableDump } from '../d2/support.ts';
 
@@ -88,4 +91,33 @@ export interface StoredObservation {
   readonly marks: { readonly revisionId: string; readonly price: string; readonly [field: string]: unknown }[];
   readonly effectiveMarkId: string | null;
   readonly acknowledgments: unknown[];
+}
+
+// --- Part 2 additions ---
+
+// A device's application built with another session policy, as a later release would carry (I4.11).
+export function launchWithPolicy(d: Device, sessionPolicy: SessionPolicy): Promise<Application> {
+  return createApplication({
+    indexedDB: d.factory,
+    host: d.testHost.host,
+    clock: fixedClock(d.now),
+    ids: d.ids,
+    releaseId: d.testHost.releaseId,
+    capacityRequirement: TEST_CAPACITY,
+    locks: d.locks,
+    sessionPolicy,
+  });
+}
+
+// Closes the application and builds a new one on the same storage with another session policy.
+export function restartWithPolicy(app: Application, d: Device, sessionPolicy: SessionPolicy): Promise<Application> {
+  app.persistence.close();
+  return launchWithPolicy(d, sessionPolicy);
+}
+
+// The latest completed Review, as the Review opens it; `asOf` is the device clock.
+export async function openReview(app: Application, d: Device) {
+  const opened = await app.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: d.now });
+  if (opened.kind !== 'Ready') throw new Error(`DailyReview.open: ${opened.kind}`);
+  return opened;
 }

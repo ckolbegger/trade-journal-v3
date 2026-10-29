@@ -1440,3 +1440,13 @@ Node mock-free integration cases I4.1, I4.2, I4.12, I4.3, I4.4, I4.5 (plan secti
 | I4.5 correct a Mark | `tests/integration/d4/responses.test.ts` | the correction footprint drops the ConditionStatus domain (`market-data.ts`) | AssertionError: expected { revisionId: 'id-0021', ... } to deeply equal ObjectContaining{...} |
 
 All six passed at first run (behavior built by earlier D4 tasks); each is flagged in `tdd-log.md`. Run: `npm run test:integration` exit 0, 29 files, 61 tests passed. `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` exit 0.
+
+## T4.32 part 2
+
+I4.6 (`review-shared-mark.test.ts`, so `d4/review` selects it; part 3 adds `review.test.ts`), I4.7 (`conditions.test.ts`), I4.8 (`rejections.test.ts`), I4.9 (`write-gate.test.ts`), I4.11 (`policy-revision.test.ts`), I4.18 (`intraday.test.ts`). Helpers added to `tests/integration/d4/support.ts`: `launchWithPolicy`, `restartWithPolicy`, `openReview`.
+
+- `npm run test:integration`: 35 files, 67 tests passed.
+- `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`: exit 0.
+- Plan deviation, I4.11: the plan says "at Wednesday 17:00 the Expected Mark Date is 2026-10-12", but with 2026-10-13 closed, Wednesday 2026-10-14 is still an ordinary completed session at 17:00 and would be the Expected Mark Date. The test uses Tuesday 17:00, where closing 2026-10-13 moves the date to 2026-10-12. Plan text to correct.
+- I4.8: the 2030 date returns `SessionPolicyCoverage` (decision 54).
+- First-run passes with mutations are recorded in `tdd-log.md`.
