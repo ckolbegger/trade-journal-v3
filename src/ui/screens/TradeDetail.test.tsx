@@ -7,7 +7,9 @@ import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import {
   execution,
   incoherentDetailOf,
+  openDetailAt,
   openDetailOf,
+  openDetailUncovered,
   PC1,
   PC2,
   pc1Reflection,
@@ -766,5 +768,191 @@ describe('deviations', () => {
     renderView(openDetailOf([PC1, PC2, PC3], { recordedDeviations: [pc3Excess] }));
     const card = await screen.findByRole('region', { name: 'Summary' });
     expect(within(card).getByText('Deviation active').getAttribute('data-tone')).toBe('warning');
+  });
+});
+
+const TUE_CLOSE = '2026-10-13T20:00:00Z';
+const available = (price: string, extra: { correctionReason?: string } = {}) =>
+  ({ kind: 'Available', mark: { revisionId: 'm-1', revisionNumber: extra.correctionReason ? 2 : 1, price, source: 'Manual', savedAt: '2026-10-13T21:30:00Z', ...extra } }) as const;
+const tuesday = (resolution: Parameters<typeof openDetailAt>[1]['resolution']): Parameters<typeof openDetailAt>[1] => ({
+  instrumentKey: 'XYZ',
+  tradingDate: '2026-10-13',
+  closeInstant: TUE_CLOSE,
+  resolution,
+});
+
+describe('valuation', () => {
+  it('should show the Expected Mark Date, the Mark price, source Manual, save time in the Workspace zone, and a Corrected badge with its reason when the effective revision is a Correction', async () => {
+    renderView(openDetailAt([PC1, PC2], tuesday(available('52.00', { correctionReason: 'Typo in the first save.' }))));
+    const valuation = await screen.findByRole('region', { name: 'Valuation' });
+    expect(termValue(valuation, 'Expected Mark Date')).toBe('Tue Oct 13');
+    expect(termValue(valuation, 'Mark')).toBe('$52.00');
+    expect(termValue(valuation, 'Source')).toBe('Manual');
+    expect(termValue(valuation, 'Saved')).toBe('2026-10-13 17:30');
+    expect(within(valuation).getByText('Corrected', { selector: '.badge' })).toBeTruthy();
+    expect(within(valuation).getByText('Typo in the first save.')).toBeTruthy();
+    cleanup();
+
+    renderView(openDetailAt([PC1, PC2], tuesday(available('52.00'))));
+    const plain = await screen.findByRole('region', { name: 'Valuation' });
+    expect(within(plain).queryByText('Corrected')).toBeNull();
+  });
+
+  it('should show realized to date, open, Current Marked Trade P&L, and incurred fees as separate figures with units and signs', async () => {
+    renderView(openDetailAt([PC1, PC2], tuesday(available('52.00'))));
+    const valuation = await screen.findByRole('region', { name: 'Valuation' });
+    expect(termValue(valuation, 'Realized to date')).toBe('$0.00');
+    expect(termValue(valuation, 'Open P&L')).toBe('+$180.00');
+    expect(termValue(valuation, 'Current Marked Trade P&L')).toBe('+$180.00 · +0.72R');
+    expect(termValue(valuation, 'Incurred fees')).toBe('$2.00');
+    cleanup();
+
+    // A loss carries its minus; realized and fees keep their values when the Mark is missing.
+    renderView(openDetailAt([PC1, PC2], tuesday(available('48.00'))));
+    const loss = await screen.findByRole('region', { name: 'Valuation' });
+    expect(termValue(loss, 'Open P&L')).toBe('−$220.00');
+    expect(termValue(loss, 'Current Marked Trade P&L')).toBe('−$220.00 · −0.88R');
+    cleanup();
+
+    renderView(openDetailAt([PC1, PC2], tuesday({ kind: 'Missing' })));
+    const missing = await screen.findByRole('region', { name: 'Valuation' });
+    expect(termValue(missing, 'Realized to date')).toBe('$0.00');
+    expect(termValue(missing, 'Incurred fees')).toBe('$2.00');
+    expect(termValue(missing, 'Open P&L')).toBe('Mark missing: XYZ, Tue Oct 13');
+    expect(termValue(missing, 'Current Marked Trade P&L')).toBe('Mark missing: XYZ, Tue Oct 13');
+  });
+});
+
+describe('risk and reward', () => {
+  it('should show Original risk, Risk to stop, Worst case, Reward to target, Max reward, and Original reward with dollars and R, rendering Unbounded as Unbounded and Unavailable with its reason, never as 0', async () => {
+    renderView(openDetailAt([PC1, PC2], tuesday(available('52.00'))));
+    const risk = await screen.findByRole('region', { name: 'Risk and reward' });
+    expect(termValue(risk, 'Original risk')).toBe('$250.00 · 1.00R');
+    expect(termValue(risk, 'Risk to stop')).toBe('$450.00 · 1.80R');
+    expect(termValue(risk, 'Worst case')).toBe('$5,200.00 · 20.80R');
+    expect(termValue(risk, 'Reward to target')).toBe('$400.00 · 1.60R');
+    expect(termValue(risk, 'Max reward')).toBe('Unbounded above');
+    expect(termValue(risk, 'Original reward')).toBe('$600.00 · 2.40R');
+    cleanup();
+
+    renderView(openDetailAt([PC1, PC2], tuesday({ kind: 'Missing' })));
+    const missing = await screen.findByRole('region', { name: 'Risk and reward' });
+    for (const term of ['Risk to stop', 'Worst case', 'Reward to target']) expect(termValue(missing, term)).toBe('Mark missing: XYZ, Tue Oct 13');
+    expect(termValue(missing, 'Max reward')).toBe('Unbounded above');
+    expect(termValue(missing, 'Original risk')).toBe('$250.00 · 1.00R');
+  });
+
+  it('should show each condition with its boundary, status as text, distance, and Overrun when crossed', async () => {
+    renderView(openDetailAt([PC1, PC2], tuesday(available('52.00'))));
+    const conditions = await screen.findByRole('table', { name: 'Conditions' });
+    expect(rowsOf(conditions)).toEqual([
+      ['Stop', '$47.50', 'Active', '$450.00 · 1.80R', 'None'],
+      ['Target', '$56.00', 'Active', '$400.00 · 1.60R', 'None'],
+    ]);
+    cleanup();
+
+    renderView(openDetailAt([PC1, PC2], tuesday(available('57.00'))));
+    expect(rowsOf(await screen.findByRole('table', { name: 'Conditions' }))[1]).toEqual(['Target', '$56.00', 'Reached', '$0.00 · 0.00R', '$100.00 · 0.40R']);
+    cleanup();
+
+    renderView(openDetailAt([PC1, PC2], tuesday(available('47.00'))));
+    expect(rowsOf(await screen.findByRole('table', { name: 'Conditions' }))[0]).toEqual(['Stop', '$47.50', 'Breached', '$0.00 · 0.00R', '$50.00 · 0.20R']);
+    cleanup();
+
+    // Without a Mark the status says why, and no distance or Overrun is invented.
+    renderView(openDetailAt([PC1, PC2], tuesday({ kind: 'Missing' })));
+    expect(rowsOf(await screen.findByRole('table', { name: 'Conditions' }))[0]).toEqual(['Stop', '$47.50', 'Mark missing: XYZ, Tue Oct 13', '—', '—']);
+  });
+});
+
+const MON_CLOSE = '2026-10-12T20:00:00Z';
+const monContext = { tradingDate: '2026-10-12', price: '51.20', revisionId: 'm-0', revisionNumber: 1, closeInstant: MON_CLOSE };
+
+describe('missing or later evidence (P12, P13)', () => {
+  it('should show Mark missing for XYZ on Tue Oct 13, the Stale context labelled stale, an At Mon Oct 12 close section with its own figures, and a link to the Review Marks family', async () => {
+    renderView(openDetailAt([PC1, PC2], tuesday({ kind: 'Missing', stale: monContext })));
+    const valuation = await screen.findByRole('region', { name: 'Valuation' });
+    const link = within(valuation).getByRole('link', { name: 'Mark missing for XYZ on Tue Oct 13' });
+    expect(link.getAttribute('href')).toBe('/review?instrument=XYZ');
+    expect(within(valuation).getByText('Stale context: $51.20 from Mon Oct 12 close (stale, not used in any current figure)')).toBeTruthy();
+    expect(termValue(valuation, 'Current Marked Trade P&L')).toBe('Mark missing: XYZ, Tue Oct 13');
+
+    const dated = screen.getByRole('region', { name: 'At Mon Oct 12 close' });
+    expect(termValue(dated, 'Mark')).toBe('$51.20');
+    expect(termValue(dated, 'Open P&L')).toBe('+$100.00');
+    expect(termValue(dated, 'Current Marked Trade P&L')).toBe('+$100.00 · +0.40R');
+    expect(termValue(dated, 'Risk to stop')).toBe('$370.00 · 1.48R');
+    expect(termValue(dated, 'Reward to target')).toBe('$480.00 · 1.92R');
+  });
+
+  it('should word every Mark-dependent figure Not available outside calendar coverage while realized and fees keep their values', async () => {
+    renderView(openDetailUncovered([PC1, PC2], '2031-01-02'));
+    const valuation = await screen.findByRole('region', { name: 'Valuation' });
+    expect(within(valuation).queryByText('Expected Mark Date')).toBeNull();
+    expect(termValue(valuation, 'Realized to date')).toBe('$0.00');
+    expect(termValue(valuation, 'Incurred fees')).toBe('$2.00');
+    expect(termValue(valuation, 'Current Marked Trade P&L')).toBe('Not available');
+    expect(within(valuation).queryByText(/Mark missing/)).toBeNull();
+    const risk = screen.getByRole('region', { name: 'Risk and reward' });
+    expect(termValue(risk, 'Risk to stop')).toBe('Not available');
+    expect(termValue(risk, 'Max reward')).toBe('Unbounded above');
+  });
+
+  it('should show an acknowledged unavailable Mark as the trader acknowledgment it is, not a link and not a price', async () => {
+    const acknowledgment = { versionId: 'ack-1', kind: 'Asserted', observedAt: '2026-10-13T21:00:00Z', savedAt: '2026-10-13T21:30:00Z' };
+    renderView(openDetailAt([PC1, PC2], tuesday({ kind: 'AcknowledgedUnavailable', acknowledgment, stale: monContext } as never)));
+    const valuation = await screen.findByRole('region', { name: 'Valuation' });
+    expect(within(valuation).getByText('Acknowledged unavailable for XYZ on Tue Oct 13: your acknowledgment, not a price')).toBeTruthy();
+    expect(within(valuation).queryByRole('link')).toBeNull();
+    expect(within(valuation).queryByText(/Mark missing for/)).toBeNull();
+    expect(termValue(valuation, 'Current Marked Trade P&L')).toBe('Acknowledged unavailable: XYZ, Tue Oct 13');
+    expect(within(valuation).getByText(/^Stale context: \$51\.20/)).toBeTruthy();
+  });
+
+  it('should show an At entry section for shares bought after the dated close, with risk and reward labelled from entry and no P&L', async () => {
+    const afterClose = positionChange('pc-9', 3, [execution('ex-9', '2026-10-12T21:00:00Z', 4, '40', '50.30', '1.00')]);
+    const monday = { instrumentKey: 'XYZ', tradingDate: '2026-10-12', closeInstant: MON_CLOSE, resolution: available('51.20') } as const;
+    renderView(openDetailAt([PC1, afterClose], monday));
+    const entry = await screen.findByRole('region', { name: 'At entry' });
+    expect(termValue(entry, 'Quantity')).toBe('40 shares');
+    expect(termValue(entry, 'Average entry')).toBe('$50.30');
+    expect(termValue(entry, 'Risk from entry')).toBe('$112.00 · 0.45R');
+    expect(termValue(entry, 'Reward from entry')).toBe('$228.00 · 0.91R');
+    expect(within(entry).queryByText(/P&L/)).toBeNull();
+    // The earlier close keeps its own line, and the current P&L waits for the next close.
+    expect(termValue(screen.getByRole('region', { name: 'At Mon Oct 12 close' }), 'Current Marked Trade P&L')).toBe('+$65.00 · +0.26R');
+    expect(termValue(screen.getByRole('region', { name: 'Valuation' }), 'Current Marked Trade P&L')).toBe('Awaiting the next close');
+  });
+});
+
+describe('Actions', () => {
+  const action = (id: string, reviewDate: string, label: string, intent: string | undefined, edited = false): NarrativeItem => ({
+    kind: 'Entry',
+    id,
+    entryType: 'Daily Trade Review',
+    source: 'Daily Review',
+    anchor: { kind: 'Trade', tradeId: 'trade-1' },
+    momentTime: `${reviewDate}T21:00:00Z`,
+    authoredTime: `${reviewDate}T21:05:00Z`,
+    reviewDate,
+    ...(edited && { edited: true as const }),
+    responses: [
+      { prompt: 'Action', answer: { kind: 'Option', label } },
+      { prompt: 'Intent', answer: intent === undefined ? { kind: 'Unanswered' } : { kind: 'Text', text: intent } },
+    ],
+  });
+
+  it('should list Daily Trade Review Actions in the narrative with Review Date, Action, Intent, and an Edited indicator', async () => {
+    renderView(openDetailOf([PC1, PC2], { journal: [action('a-1', '2026-10-12', 'Hold', undefined), action('a-2', '2026-10-13', 'Exit', 'Take the gain.', true)] }));
+    const journal = await screen.findByRole('region', { name: 'Journal (2)' });
+    const [hold, exit] = within(journal).getAllByRole('listitem');
+    expect(termValue(hold!, 'Review Date')).toBe('Mon Oct 12');
+    expect(termValue(hold!, 'Action')).toBe('Hold');
+    expect(termValue(hold!, 'Intent')).toBe('Not answered');
+    expect(within(hold!).queryByText('Edited')).toBeNull();
+    expect(termValue(exit!, 'Review Date')).toBe('Tue Oct 13');
+    expect(termValue(exit!, 'Action')).toBe('Exit');
+    expect(termValue(exit!, 'Intent')).toBe('Take the gain.');
+    expect(within(exit!).getByText('Edited', { selector: '.badge' })).toBeTruthy();
   });
 });

@@ -203,6 +203,8 @@ export interface NarrativeEntry {
   readonly authoredTime: Instant;
   // The Position Change whose reflection this is; absent on any other Entry.
   readonly positionChangeId?: string;
+  // The Review Date of a Daily Trade Review Action; absent on any other Entry.
+  readonly reviewDate?: string;
   // True once the Entry has more than one version; absent otherwise.
   readonly edited?: true;
   readonly responses: readonly { readonly prompt: string; readonly answer: NarrativeAnswer }[];

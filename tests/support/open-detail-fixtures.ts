@@ -12,6 +12,8 @@ import { Rational } from '../../src/domain/values/index.ts';
 import { derive, evaluate, type TradeAnalysisRecord } from '../../src/domain/trade-analysis/index.ts';
 import { LEG_ID, referenceRecord } from '../../src/domain/trade-analysis/reference-trade.ts';
 import { plannedDetail } from './views-fixtures.ts';
+import { datedLineOf, observationFrame } from '../../src/coordinators/valuation.ts';
+import type { MarkFrame } from '../../src/modules/market-data/index.ts';
 
 export { execution, PC1, PC2, PC3, positionChange } from '../../src/domain/trade-analysis/reference-trade.ts';
 
@@ -95,6 +97,42 @@ export function openDetailOf(positionChanges: readonly PositionChangeFact[], opt
       }),
     },
   };
+}
+
+// The Open Detail valued at a Mark frame, as Trade Views assembles its current evaluation: the
+// provenance of an exact Mark, the evaluation, and the dated line when the figures need one.
+export function openDetailAt(positionChanges: readonly PositionChangeFact[], frame: MarkFrame, options: OpenDetailOptions = {}): OpenTradeDetail {
+  const base = openDetailOf(positionChanges, options);
+  const record = referenceRecord(positionChanges, options.storedLifecycle ?? 'Open');
+  const derived = derive({ record });
+  if (derived.kind !== 'Derived') throw new Error('incoherent fixture');
+  const evaluation = evaluate({ state: derived, frame: observationFrame(frame) });
+  const datedLine = datedLineOf(record, frame, evaluation);
+  const { resolution } = frame;
+  const mark =
+    resolution.kind === 'Available'
+      ? { source: 'Manual' as const, revisionId: resolution.mark.revisionId, revisionNumber: resolution.mark.revisionNumber, price: resolution.mark.price, savedAt: resolution.mark.savedAt, ...(resolution.mark.correctionReason !== undefined && { correctionReason: resolution.mark.correctionReason }) }
+      : undefined;
+  return {
+    ...base,
+    current: {
+      expectedMarkDate: frame.tradingDate,
+      markResolution: resolution,
+      ...(mark && { mark }),
+      coverage: [{ instrument: evaluation.observation.instrument, coverage: evaluation.coverage }],
+      evaluation,
+      ...(datedLine && { datedLine }),
+    },
+  };
+}
+
+// The Open Detail when the as-of date lies outside session-policy coverage: no Expected Mark Date, no frame (decision 54).
+export function openDetailUncovered(positionChanges: readonly PositionChangeFact[], date: string, options: OpenDetailOptions = {}): OpenTradeDetail {
+  const derived = derive({ record: referenceRecord(positionChanges, options.storedLifecycle ?? 'Open') });
+  if (derived.kind !== 'Derived') throw new Error('incoherent fixture');
+  const instrument = { kind: 'Stock', symbol: 'XYZ' } as const;
+  const evaluation = evaluate({ state: derived, frame: { instrument, date } });
+  return { ...openDetailOf(positionChanges, options), current: { coverage: [{ instrument, coverage: evaluation.coverage }], evaluation } };
 }
 
 // The Detail of a Trade whose recorded facts cannot be replayed: only stored values and the findings.

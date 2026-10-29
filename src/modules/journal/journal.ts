@@ -95,7 +95,7 @@ interface StoredEntry {
   readonly anchor: { readonly kind: 'Trade'; readonly tradeId: string };
   readonly momentTime: string;
   readonly authoredTime: string;
-  readonly origin: { readonly kind: string; readonly factId: string };
+  readonly origin: { readonly kind: string; readonly factId: string; readonly reviewDate?: string };
   readonly versions: readonly {
     readonly definitionId: string;
     readonly responses: readonly { readonly promptId: string; readonly value: ResponseValue }[];
@@ -209,6 +209,7 @@ function narrativeEntry(
     momentTime: entry.momentTime,
     authoredTime: entry.authoredTime,
     ...(entry.origin.kind === 'PositionChange' ? { positionChangeId: entry.origin.factId } : {}),
+    ...(entry.origin.kind === 'DailyReview' ? { reviewDate: entry.origin.reviewDate } : {}),
     // A discreet Edited indicator once an Entry has more than one version.
     ...(entry.versions.length > 1 ? { edited: true as const } : {}),
     responses: version.responses.map(({ promptId, value }) => {
@@ -357,7 +358,7 @@ export function createJournal(deps: JournalDeps): Journal {
         anchor: { kind: 'Trade', tradeId: entry!.anchor.ref },
         momentTime: entry!.momentTime,
         authoredTime: entry!.authoredTime,
-        origin: { kind: entry!.origin.kind, factId: entry!.origin.ref },
+        origin: { kind: entry!.origin.kind, factId: entry!.origin.ref, ...(entry!.origin.kind === 'DailyReview' ? { reviewDate: entry!.origin.reviewDate } : {}) },
         // The Entry as this save leaves it: the versions it was prepared against, then the new one.
         versions: [...(existing?.versions ?? []), { definitionId: entry!.definitionId, responses: entry!.responses }],
       };

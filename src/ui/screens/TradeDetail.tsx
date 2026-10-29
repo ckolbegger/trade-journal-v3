@@ -19,9 +19,10 @@ import { PageTitle } from '../PageTitle.tsx';
 import { Badge } from '../Badge.tsx';
 import { WithSecondLine } from '../SecondLine.tsx';
 import { TradeText } from '../TradeText.tsx';
-import { decimalMoney as price, localTime, money, netCost, quantity, ratio, rMultiple, tradeSummary } from '../format.ts';
+import { decimalMoney as price, localTime, money, netCost, quantity, ratio, rMultiple, shortDate, tradeSummary } from '../format.ts';
 import { BackIcon, ChevronIcon } from '../icons.tsx';
 import { useRuntime } from '../runtime.tsx';
+import { calculation, dollarsAndR, pnlText, signed } from '../figures.ts';
 
 export interface TradeDetailProps {
   readonly facade: UiFacade;
@@ -235,12 +236,155 @@ function changeTime(view: OpenTradeDetail, positionChangeId: string, timeZone: s
   return localTime(view.positionChanges.find((c) => c.factId === positionChangeId)?.economicTime ?? '', timeZone);
 }
 
+// The Mark that valued the figures at the Expected Mark Date: its price, source, and save time, and
+// the reason when the effective revision is a Correction.
+function ValuationSection({ current, timeZone }: { readonly current: OpenTradeDetail['current']; readonly timeZone: string }) {
+  const { mark, markResolution, evaluation } = current;
+  const symbol = evaluation.observation.instrument.symbol;
+  const stale = evaluation.staleContext;
+  return (
+    <section className="card" aria-labelledby="valuation-heading">
+      <h2 id="valuation-heading">Valuation</h2>
+      {markResolution?.kind === 'Missing' && (
+        <p>
+          <Link to={`/review?instrument=${encodeURIComponent(symbol)}`}>{`Mark missing for ${symbol} on ${shortDate(evaluation.valuationDate)}`}</Link>
+        </p>
+      )}
+      {markResolution?.kind === 'AcknowledgedUnavailable' && <p>{`Acknowledged unavailable for ${symbol} on ${shortDate(evaluation.valuationDate)}: your acknowledgment, not a price`}</p>}
+      {stale && <p>{`Stale context: ${price(stale.price)} from ${shortDate(stale.tradingDate)} close (stale, not used in any current figure)`}</p>}
+      <dl className="figure-grid">
+        {current.expectedMarkDate && <Figure term="Expected Mark Date" plain>{shortDate(current.expectedMarkDate)}</Figure>}
+        {mark && (
+          <>
+            <Figure term="Mark">{price(mark.price)}</Figure>
+            <Figure term="Source" plain>{mark.source}</Figure>
+            <Figure term="Saved" plain>{localTime(mark.savedAt, timeZone)}</Figure>
+          </>
+        )}
+        <ValuationFigures evaluation={current.evaluation} />
+      </dl>
+      {mark?.correctionReason !== undefined && (
+        <p>
+          <Badge tone="info">Corrected</Badge> {mark.correctionReason}
+        </p>
+      )}
+    </section>
+  );
+}
+
+const measureText = (measure: { readonly dollars: Rational; readonly planR: Rational }) => `${money(measure.dollars)} · ${rMultiple(measure.planR)}`;
+
+type Evaluation = OpenTradeDetail['current']['evaluation'];
+
+// Realized, open, and Current Marked Trade P&L and incurred fees, each its own figure; the dated line uses the same.
+function ValuationFigures({ evaluation }: { readonly evaluation: Evaluation }) {
+  return (
+    <>
+      <Figure term="Realized to date">{calculation(evaluation.realizedToDate, money)}</Figure>
+      <Figure term="Open P&L">{calculation(evaluation.remainingOpenPnl, signed(money))}</Figure>
+      <Figure term="Current Marked Trade P&L">{pnlText(evaluation.currentMarkedPnl, evaluation.currentMarkedPnlInPlanR)}</Figure>
+      <Figure term="Incurred fees">{calculation(evaluation.incurredFees, money)}</Figure>
+    </>
+  );
+}
+
+// The Mark-dependent risk and reward in dollars and R.
+function ExposureFigures({ evaluation }: { readonly evaluation: Evaluation }) {
+  return (
+    <>
+      <Figure term="Risk to stop">{dollarsAndR(evaluation.ongoingRiskToStop, evaluation.ongoingRiskToStopInPlanR)}</Figure>
+      <Figure term="Worst case">{dollarsAndR(evaluation.worstCaseOngoingRisk, evaluation.worstCaseOngoingRiskInPlanR)}</Figure>
+      <Figure term="Reward to target">{dollarsAndR(evaluation.incrementalRewardToTarget, evaluation.incrementalRewardToTargetInPlanR)}</Figure>
+    </>
+  );
+}
+
+// The Position held at an earlier close, valued with that session's own exact Mark (P12, P13).
+function DatedSection({ line }: { readonly line: NonNullable<OpenTradeDetail['current']['datedLine']> }) {
+  const mark = line.evaluation.observation.mark;
+  return (
+    <section className="card" aria-labelledby="dated-heading">
+      <h2 id="dated-heading">{`At ${shortDate(line.tradingDate)} close`}</h2>
+      <dl className="figure-grid">
+        {mark && <Figure term="Mark">{price(mark.price)}</Figure>}
+        <ValuationFigures evaluation={line.evaluation} />
+        <ExposureFigures evaluation={line.evaluation} />
+      </dl>
+    </section>
+  );
+}
+
+// Lots bought after the last close with an exact Mark: risk and reward measured from their prices, never a P&L (A54).
+function AtEntrySection({ atEntry, oneR }: { readonly atEntry: NonNullable<Evaluation['atEntry']>; readonly oneR: Rational }) {
+  const inR = (dollars: Rational) => `${money(dollars)} · ${rMultiple(dollars.div(oneR))}`;
+  return (
+    <section className="card" aria-labelledby="at-entry-heading">
+      <h2 id="at-entry-heading">At entry</h2>
+      <dl className="figure-grid">
+        <Figure term="Quantity">{`${quantity(atEntry.quantity)} shares`}</Figure>
+        <Figure term="Average entry">{money(atEntry.averageEntry)}</Figure>
+        <Figure term="Risk from entry">{inR(atEntry.riskFromEntry)}</Figure>
+        <Figure term="Reward from entry">{inR(atEntry.rewardFromEntry)}</Figure>
+      </dl>
+    </section>
+  );
+}
+
+// Original risk and reward from the frozen Plan, beside the current Mark-dependent risk and reward; a
+// figure the Mark cannot give says why, never a zero.
+function RiskRewardSection({ evaluation, baseline }: { readonly evaluation: OpenTradeDetail['current']['evaluation']; readonly baseline: OpenTradeDetail['baseline'] }) {
+  return (
+    <section className="card" aria-labelledby="risk-reward-heading">
+      <h2 id="risk-reward-heading">Risk and reward</h2>
+      <dl className="figure-grid">
+        <Figure term="Original risk">{dollarsAndR(evaluation.oneR, { kind: 'Value', value: Rational.of(1n) })}</Figure>
+        <ExposureFigures evaluation={evaluation} />
+        <Figure term="Max reward">{calculation(evaluation.maximumIncrementalReward, money)}</Figure>
+        <Figure term="Original reward">{`${money(baseline.originalPlannedReward)} · ${rMultiple(baseline.rewardRiskRatio)}`}</Figure>
+      </dl>
+      <div className="table-scroll" role="region" aria-label="Stop and Target conditions" tabIndex={0}>
+        <table className="trades">
+          <caption>Conditions</caption>
+          <thead>
+            <tr>
+              <th scope="col">Condition</th>
+              <th scope="col" className="number">Boundary</th>
+              <th scope="col">Status</th>
+              <th scope="col" className="number">Distance</th>
+              <th scope="col" className="number">Overrun</th>
+            </tr>
+          </thead>
+          <tbody>
+            {evaluation.conditions.map((condition) => {
+              const { result } = condition;
+              const reading = result.kind === 'Value' ? result.value : undefined;
+              return (
+                <tr key={condition.id}>
+                  <td>{condition.role}</td>
+                  <td className="number">{price(condition.boundary)}</td>
+                  <td>{reading ? reading.status : calculation(result, () => '')}</td>
+                  <td className="number">{reading ? measureText(reading.distance) : '—'}</td>
+                  <td className="number">{reading ? (reading.overrun ? measureText(reading.overrun) : 'None') : '—'}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
 // The Open form's derived Position and its recorded Position Changes (D2).
 function OpenSections({ view, timeZone }: { readonly view: OpenTradeDetail; readonly timeZone: string }) {
   const executions = view.positionChanges.flatMap((change) => change.executions);
   const openedAt = (executionId: string) => localTime(executions.find((e) => e.factId === executionId)?.economicTime ?? '', timeZone);
   return (
     <>
+      <ValuationSection current={view.current} timeZone={timeZone} />
+      {view.current.datedLine && <DatedSection line={view.current.datedLine} />}
+      {view.current.evaluation.atEntry && <AtEntrySection atEntry={view.current.evaluation.atEntry} oneR={view.baseline.oneR} />}
+      <RiskRewardSection evaluation={view.current.evaluation} baseline={view.baseline} />
       <section className="card" aria-labelledby="position-heading">
         <h2 id="position-heading">Position</h2>
         <dl className="figure-grid">
@@ -572,8 +716,15 @@ function JournalSection({ journal, symbol, timeZone }: { readonly journal: reado
           <li key={item.id}>
             <h3>
               <Badge tone="neutral">{item.entryType}</Badge>
+              {item.kind === 'Entry' && item.edited && <Badge tone="info">Edited</Badge>}
             </h3>
             <dl>
+              {item.kind === 'Entry' && item.reviewDate !== undefined && (
+                <>
+                  <dt>Review Date</dt>
+                  <dd>{shortDate(item.reviewDate)}</dd>
+                </>
+              )}
               <dt>Anchor</dt>
               <dd>{`Trade ${symbol}`}</dd>
               <dt>Source</dt>

@@ -389,4 +389,23 @@ describe('query: Trade narrative', () => {
     ]);
     expect(items[0]).not.toHaveProperty('edited');
   });
+
+  it('should carry the Review Date on a Daily Trade Review Entry in the Trade narrative', async () => {
+    const { journal: j, persistence } = await seeded();
+    const req = {
+      ...complete({ [ACTION]: option('Hold') }),
+      origin: { kind: 'DailyReview', ref: 'trade-1', reviewDate: '2026-10-12' },
+      // The moment is the next day in UTC, so the Review Date cannot be read back from it.
+      momentTime: '2026-10-13T01:00:00Z',
+    } as Request;
+    const prepared = await j.prepareEffects(req);
+    if (prepared.kind !== 'Prepared') throw new Error('expected Prepared');
+    const tx = beginSemanticTransaction();
+    j.applyPreparedEffects(tx, prepared, {});
+    expect((await persistence.commit(tx.close())).kind).toBe('Committed');
+
+    const page = await j.query({ scope: 'TradeNarrative', tradeId: 'trade-1' });
+
+    expect(page.items.filter((item) => item.kind === 'Entry')).toEqual([expect.objectContaining({ entryType: 'Daily Trade Review', reviewDate: '2026-10-12' })]);
+  });
 });
