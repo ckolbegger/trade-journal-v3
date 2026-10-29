@@ -1419,3 +1419,9 @@ Commands and results:
 | Commit | Finding | Assessment | Outcome |
 |---|---|---|---|
 | `b6e2527` | `query-count-check.ts:121`: not matched by the integration include glob | Wrong: an artifact of the review's scratch rename; the committed `query-count.test.ts` matches `tests/integration/**/*.test.ts` (`vite.config.ts:20`) | dismissed |
+
+### Cumulative run after T4.31
+
+- code at `b6e2527`, 2026-10-29 05:56 EDT: unit 800, integration 53, browser 124; checks 12 of 12. `suite-runs/t4.31-*`.
+
+Fully green. T4.31 is complete.
