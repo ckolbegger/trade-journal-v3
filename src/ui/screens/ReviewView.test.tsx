@@ -571,6 +571,26 @@ describe('moving on', () => {
     expect(dirty).toHaveBeenLastCalledWith(false);
   });
 
+  it('should keep Continue to Trades available while a Mark entry holds a value', async () => {
+    const facade = reviewFacade(
+      ready({
+        today: [markRow('DEF', ['t1'])],
+        trades: [tradeItem('t1', 'DEF')],
+        completion: incomplete({ code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-12', trades: ['t1'] }),
+      }),
+    );
+    renderReview(facade);
+    const user = userEvent.setup();
+    const entry = await screen.findByRole('region', { name: 'DEF Mark, Mon Oct 12' });
+    await user.click(within(entry).getByRole('button', { name: 'Enter' }));
+    await user.type(within(entry).getByLabelText('Price'), '1');
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Continue to Trades' }).disabled).toBe(false);
+    expect(screen.queryByText(/Save your Action/)).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Continue to Trades' }));
+    expect(await screen.findByRole('button', { name: 'Review DEF' })).toBeTruthy();
+    expect(within(entry).getByLabelText<HTMLInputElement>('Price').value).toBe('1');
+  });
+
   it('should offer no Mark entry controls while the runtime is not writable, and still allow Continue to Trades', async () => {
     const facade = reviewFacade(
       ready({

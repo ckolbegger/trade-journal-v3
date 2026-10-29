@@ -341,6 +341,40 @@ describe('Leaving the form', () => {
   });
 });
 
+describe('Leaving an unsaved Action', () => {
+  it('should hold Continue to Trades and the other Reviews while the open Action form holds an unsaved value, and say why', async () => {
+    const facade = walkFacade(ready([item('t1', 'XYZ'), item('t2', 'DEF')]), tradeReview('t1', 'XYZ'));
+    renderWalk(facade);
+    const user = userEvent.setup();
+    const trade = await openTrade(user, 'XYZ');
+    const opens = vi.mocked(facade.DailyReview.open).mock.calls.length;
+    const reasonText = /Save your Action or put back its saved values to leave this Trade/;
+
+    expect(screen.queryByText(reasonText)).toBeNull();
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Continue to Trades' }).disabled).toBe(false);
+
+    await user.click(within(trade).getByRole('radio', { name: 'Exit' }));
+    const proceed = screen.getByRole<HTMLButtonElement>('button', { name: 'Continue to Trades' });
+    const other = screen.getByRole<HTMLButtonElement>('button', { name: 'Review DEF' });
+    expect(proceed.disabled).toBe(true);
+    expect(other.disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Review XYZ' }).disabled).toBe(true);
+    expect(screen.getByText(reasonText)).toBeTruthy();
+    expect(proceed.getAttribute('aria-describedby')).toBe(other.getAttribute('aria-describedby'));
+    expect(proceed.getAttribute('aria-describedby')).toBe(screen.getByText(reasonText).id);
+    await user.click(proceed);
+    await user.click(other);
+    expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledTimes(opens);
+    expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('region', { name: 'XYZ review' })).toBeTruthy();
+
+    await user.click(within(trade).getByRole('radio', { name: 'Hold' }));
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Continue to Trades' }).disabled).toBe(false);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Review DEF' }).disabled).toBe(false);
+    expect(screen.queryByText(reasonText)).toBeNull();
+  });
+});
+
 describe('Action form extras', () => {
   it('should offer no Save while the runtime is not writable, and still show a saved Action', async () => {
     const saved = tradeReview('t2', 'DEF', { form: { kind: 'Saved', action: savedAction('Hold') } });

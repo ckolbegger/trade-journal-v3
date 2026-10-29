@@ -234,7 +234,7 @@ const AFTER_SAVE = {
 type Selected = { readonly tradeId: string; readonly opening: number; readonly state: 'Loading' | 'Unavailable' | { readonly trade: DailyTradeReview } };
 
 // The Trade walk in the order the Review returned, each with its band and reasons; any Trade opens below.
-function TradeWalk({ facade, review, selected, afterSave, onSelect, onSaved, onRefresh, onEntryDirty }: { readonly facade: UiFacade; readonly review: Ready; readonly selected: Selected | undefined; readonly afterSave: string | undefined; readonly onSelect: (tradeId: string) => void; readonly onSaved: (saved: SavedAction, opening: number) => void; readonly onRefresh: (tradeId: string) => Promise<boolean>; readonly onEntryDirty: EntryDirty }) {
+function TradeWalk({ facade, review, selected, afterSave, holdId, onSelect, onSaved, onRefresh, onEntryDirty }: { readonly facade: UiFacade; readonly review: Ready; readonly selected: Selected | undefined; readonly afterSave: string | undefined; readonly holdId: string | undefined; readonly onSelect: (tradeId: string) => void; readonly onSaved: (saved: SavedAction, opening: number) => void; readonly onRefresh: (tradeId: string) => Promise<boolean>; readonly onEntryDirty: EntryDirty }) {
   const trades = review.families.flatMap((f) => (f.family === 'Trades' ? f.trades : []));
   const missing = new Set(review.completion.kind === 'Incomplete' ? review.completion.reasons.flatMap((r) => (r.code === 'ActionMissing' ? [r.tradeId] : [])) : []);
   return (
@@ -248,7 +248,7 @@ function TradeWalk({ facade, review, selected, afterSave, onSelect, onSaved, onR
               <p key={i}>{reasonText(reason, trade.basis)}</p>
             ))}
             <p>{missing.has(trade.tradeId) ? 'Action missing' : 'Action saved'}</p>
-            <button type="button" className="pill secondary" onClick={() => onSelect(trade.tradeId)}>
+            <button type="button" className="pill secondary" disabled={holdId !== undefined} aria-describedby={holdId} onClick={() => onSelect(trade.tradeId)}>
               Review {trade.underlying}
             </button>
           </li>
@@ -270,12 +270,16 @@ function TradeWalk({ facade, review, selected, afterSave, onSelect, onSaved, onR
 // for the Review again, so figures the Mark saves changed are fresh (A48).
 function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade: UiFacade; readonly now: () => string; readonly initial: Ready; readonly onDirtyChange: (dirty: boolean) => void }) {
   const [review, setReview] = useState(initial);
+  // The open Action form holds a value: leaving the Trade would drop it, so the walk waits. Mark entries stay mounted, so only this holds.
+  const [actionDirty, setActionDirty] = useState(false);
+  const holdId = useId();
   // The entries holding a value; the page is unsaved while any does.
   const dirty = useRef(new Set<string>());
   const onEntryDirty = useCallback<EntryDirty>(
     (id, isDirty) => {
       if (isDirty) dirty.current.add(id);
       else dirty.current.delete(id);
+      if (id.startsWith('action:')) setActionDirty(isDirty);
       onDirtyChange(dirty.current.size > 0);
     },
     [onDirtyChange],
@@ -363,8 +367,9 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
           <p>We couldn’t refresh the Review. Nothing was changed.</p>
         </div>
       )}
-      {walk && <TradeWalk facade={facade} review={review} selected={selected} afterSave={afterSave} onSelect={(tradeId) => void select(tradeId)} onSaved={saved} onRefresh={refreshTrade} onEntryDirty={onEntryDirty} />}
-      <button type="button" className="pill primary" onClick={() => void proceed()} disabled={refreshing}>
+      {walk && <TradeWalk facade={facade} review={review} selected={selected} afterSave={afterSave} holdId={actionDirty ? holdId : undefined} onSelect={(tradeId) => void select(tradeId)} onSaved={saved} onRefresh={refreshTrade} onEntryDirty={onEntryDirty} />}
+      {actionDirty && <p id={holdId}>Save your Action or put back its saved values to leave this Trade.</p>}
+      <button type="button" className="pill primary" onClick={() => void proceed()} disabled={refreshing || actionDirty} aria-describedby={actionDirty ? holdId : undefined}>
         Continue to Trades
       </button>
     </>
