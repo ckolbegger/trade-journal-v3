@@ -89,7 +89,7 @@ test.describe('critic-1 defect 1 narrow reflow', () => {
     const context = await profile.launch();
     const app = await firstPage(context);
     await app.goto('/?lifecycle=Planned');
-    await app.getByRole('row', { name: /XYZ/ }).getByRole('link', { name: 'XYZ' }).click(READY);
+    await app.getByRole('row', { name: /XYZ/ }).getByRole('link', { name: 'XYZ', exact: true }).click(READY);
     await expect(app.getByRole('table', { name: 'Stored versus expected' })).toBeVisible();
     for (const width of WIDTHS) {
       await app.setViewportSize({ width, height: 800 });

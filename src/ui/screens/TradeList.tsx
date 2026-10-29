@@ -1,11 +1,12 @@
-import { useEffect, useState, type KeyboardEvent } from 'react';
+import { Fragment, useEffect, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { IncoherentOpenTradeItem, IncoherentPlannedTradeItem, OpenTradeItem, PlannedTradeItem } from '../../app/types.ts';
 import { PageTitle } from '../PageTitle.tsx';
 import { Badge } from '../Badge.tsx';
 import { TradeText } from '../TradeText.tsx';
-import { money, netCost, quantity, ratio, tradeSummary } from '../format.ts';
+import { pnlText } from '../figures.ts';
+import { money, netCost, quantity, ratio, shortDate, tradeSummary } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 
 export interface TradeListProps {
@@ -148,6 +149,9 @@ function OpenList({
             <th scope="col" className="number wide-only">
               Net cost
             </th>
+            <th scope="col" className="number wide-only" aria-label="Current Marked Trade P&L">
+              P&amp;L
+            </th>
             <th scope="col">Entry</th>
             <th scope="col">Account</th>
           </tr>
@@ -165,10 +169,22 @@ function OpenList({
                   <TradeCell
                     disagrees={item.integrity === 'Disagrees'}
                     text={derived?.summary ? tradeSummary(derived.summary) : NOT_AVAILABLE}
-                    line={`Net cost ${derived && derived.netCost.kind === 'Value' ? netCost(derived.netCost.value) : NOT_AVAILABLE}`}
+                    line={
+                      <>
+                        Net cost {derived && derived.netCost.kind === 'Value' ? netCost(derived.netCost.value) : NOT_AVAILABLE}
+                        {derived && (
+                          <>
+                            {' · P&L '}
+                            <Pnl current={derived.current} />
+                          </>
+                        )}
+                      </>
+                    }
+                    badges={derived && <StatusBadges current={derived.current} />}
                   />
                 </td>
                 <td className="number wide-only">{derived && derived.netCost.kind === 'Value' ? netCost(derived.netCost.value) : NOT_AVAILABLE}</td>
+                <td className="number wide-only">{derived ? <Pnl current={derived.current} /> : NOT_AVAILABLE}</td>
                 <td>{derived ? `${derived.entryStatus} · ${quantity(derived.openQuantity)} of ${quantity(item.plannedQuantity)}` : NOT_AVAILABLE}</td>
                 <td>{`${item.institution} — ${item.account}`}</td>
               </tr>
@@ -182,9 +198,68 @@ function OpenList({
 
 const NOT_AVAILABLE = 'Not available';
 
+type Current = OpenTradeItem['current'];
+
+// The Instrument and date lacking an exact Mark; absent when the P&L has its Mark or the date is outside coverage (decision 54).
+function missingMark(current: Current) {
+  const pnl = current.currentMarkedPnl;
+  return pnl.kind === 'Unavailable' && pnl.reason !== 'SessionPolicyNotCovered' && 'date' in pnl.detail ? pnl.detail : undefined;
+}
+
+// Current Marked Trade P&L: the figure, or in its place the words for what is missing; the Mark missing
+// words link to the Review's Marks family. The dated line's P&L follows, labelled with its date.
+function Pnl({ current }: { readonly current: Current }) {
+  const { currentMarkedPnl: pnl, currentMarkedPnlInPlanR: planR, datedLine } = current;
+  const missing = missingMark(current);
+  const text = pnl.kind === 'Unavailable' && pnl.reason === 'SessionPolicyNotCovered' ? NOT_AVAILABLE : pnlText(pnl, planR);
+  return (
+    <>
+      {missing ? <Link to={`/review?instrument=${encodeURIComponent(missing.instrument.symbol)}`}>{text}</Link> : text}
+      {datedLine && ` ${shortDate(datedLine.tradingDate)} close ${pnlText(datedLine.evaluation.currentMarkedPnl, datedLine.evaluation.currentMarkedPnlInPlanR)}`}
+    </>
+  );
+}
+
+// The Mark status and a crossed Stop or reached Target are said in text, at every width; an active condition says nothing.
+function StatusBadges({ current }: { readonly current: Current }) {
+  return (
+    <>
+      {missingMark(current) && (
+        <>
+          {' '}
+          <Badge tone="warning">Mark missing</Badge>
+        </>
+      )}
+      {current.conditions.map((c) => {
+        if (c.result.kind !== 'Value') return null;
+        const { status } = c.result.value;
+        const badge = c.role === 'Stop' && status === 'Breached' ? <Badge tone="warning">Stop breached</Badge> : c.role === 'Target' && status === 'Reached' ? <Badge tone="info">Target reached</Badge> : null;
+        return (
+          badge && (
+            <Fragment key={c.id}>
+              {' '}
+              {badge}
+            </Fragment>
+          )
+        );
+      })}
+    </>
+  );
+}
+
 // The Trade cell: the summary text, then on a narrow screen a second line with the figures whose
 // columns are hidden there (plan section 2a). The wide layout hides the line instead.
-function TradeCell({ text, disagrees, line }: { readonly text: string; readonly disagrees: boolean; readonly line: string | undefined }) {
+function TradeCell({
+  text,
+  disagrees,
+  line,
+  badges,
+}: {
+  readonly text: string;
+  readonly disagrees: boolean;
+  readonly line: ReactNode;
+  readonly badges?: ReactNode;
+}) {
   return (
     <>
       <TradeText text={text} />
@@ -202,6 +277,7 @@ function TradeCell({ text, disagrees, line }: { readonly text: string; readonly 
           <span className="trade-line">{line}</span>
         </>
       )}
+      {badges}
     </>
   );
 }

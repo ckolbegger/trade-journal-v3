@@ -201,11 +201,11 @@ describe('Trades table columns', () => {
     return screen.findByRole('table', { name: 'Planned Trades' });
   }
 
-  it('should show the Open columns in order Underlying, Trade, Net cost, Entry, Account, with Underlying a link named by the symbol, and no Fees, Integrity, Deviations or Last activity column', async () => {
+  it('should show the Open columns in order Underlying, Trade, Net cost, P&L, Entry, Account, with Underlying a link named by the symbol, and no Fees, Integrity, Deviations or Last activity column', async () => {
     const table = await openTable([openItem]);
-    expect(within(table).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Underlying', 'Trade', 'Net cost', 'Entry', 'Account']);
+    expect(within(table).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Underlying', 'Trade', 'Net cost', 'P&L', 'Entry', 'Account']);
     const row = within(table).getAllByRole('row')[1]!;
-    expect(within(row).getAllByRole('cell')).toHaveLength(5);
+    expect(within(row).getAllByRole('cell')).toHaveLength(6);
     expect(within(row).getAllByRole('cell')[0]!.textContent).toBe('ABC');
     expect(within(row).getByRole('link', { name: 'ABC' }).getAttribute('href')).toBe('/trades/trade-2');
   });
@@ -221,10 +221,10 @@ describe('Trades table columns', () => {
   it('should show the Trade cell summary text and, on a second line, Net cost 3,007.00 for Open or 1R 250.00 and Reward : risk 2.4 for Planned', async () => {
     const open = await openTable([openItem]);
     const openCell = within(within(open).getAllByRole('row')[1]!).getAllByRole('cell')[1]!;
-    expect(openCell.textContent).toBe('Long 60 shares @ $50.10 Net cost $3,007.00');
+    expect(openCell.textContent).toBe('Long 60 shares @ $50.10 Net cost $3,007.00 · P&L Awaiting the next close');
     // T2.62: the "@" and its price sit in one no-wrap span, so the summary text has no break between them.
     expect(within(openCell).getByText('@ $50.10').className).toBe('nowrap');
-    expect(within(openCell).getByText('Net cost $3,007.00').className).toBe('trade-line');
+    expect(within(openCell).getByText('Net cost $3,007.00 · P&L Awaiting the next close').className).toBe('trade-line');
     // The Net cost column carries the same figure for the wide layout.
     expect(within(within(open).getAllByRole('row')[1]!).getAllByRole('cell')[2]!.textContent).toBe('$3,007.00');
     cleanup();
@@ -238,15 +238,15 @@ describe('Trades table columns', () => {
   it("should separate the Trade cell's summary, badge and second line with a space", async () => {
     const open = await openTable([openItem, disagreeing]);
     const [, agreeing, coherent] = within(open).getAllByRole('row');
-    expect(within(agreeing!).getAllByRole('cell')[1]!.textContent).toBe('Long 60 shares @ $50.10 Net cost $3,007.00');
-    expect(within(coherent!).getAllByRole('cell')[1]!.textContent).toBe('Long 60 shares @ $50.10 Records disagree Net cost $3,007.00');
+    expect(within(agreeing!).getAllByRole('cell')[1]!.textContent).toBe('Long 60 shares @ $50.10 Net cost $3,007.00 · P&L Awaiting the next close');
+    expect(within(coherent!).getAllByRole('cell')[1]!.textContent).toBe('Long 60 shares @ $50.10 Records disagree Net cost $3,007.00 · P&L Awaiting the next close');
   });
 
   it('should show Entering · 60 of 100 or Resolved · 120.5 of 100 in the Open Entry cell', async () => {
     const table = await openTable([openItem, disagreeing]);
     const [, entering, resolved] = within(table).getAllByRole('row');
-    expect(within(entering!).getAllByRole('cell')[3]!.textContent).toBe('Entering · 60 of 100');
-    expect(within(resolved!).getAllByRole('cell')[3]!.textContent).toBe('Resolved · 120.5 of 100');
+    expect(within(entering!).getAllByRole('cell')[4]!.textContent).toBe('Entering · 60 of 100');
+    expect(within(resolved!).getAllByRole('cell')[4]!.textContent).toBe('Resolved · 120.5 of 100');
   });
 
   describe('badge meanings', () => {
@@ -288,11 +288,11 @@ describe('Trades table columns', () => {
     expect(within(agreeing!).queryByText(/records (dis)?agree/i)).toBeNull();
     const coherentCell = within(coherent!).getAllByRole('cell')[1]!;
     expect(within(coherentCell).getByText('Records disagree').className).toBe('badge');
-    expect(coherentCell.textContent).toBe('Long 60 shares @ $50.10 Records disagree Net cost $3,007.00');
+    expect(coherentCell.textContent).toBe('Long 60 shares @ $50.10 Records disagree Net cost $3,007.00 · P&L Awaiting the next close');
     const brokenCells = within(broken!).getAllByRole('cell');
     expect(brokenCells[1]!.textContent).toBe('Not available Records disagree Net cost Not available');
     expect(within(brokenCells[1]!).getByText('Records disagree').className).toBe('badge');
-    expect(brokenCells.map((c) => c.textContent).slice(2)).toEqual(['Not available', 'Not available', 'Fidelity — Roth IRA']);
+    expect(brokenCells.map((c) => c.textContent).slice(2)).toEqual(['Not available', 'Not available', 'Not available', 'Fidelity — Roth IRA']);
     expect(within(broken!).getByRole('link', { name: 'GHI' }).getAttribute('href')).toBe('/trades/trade-4');
     cleanup();
 
@@ -307,5 +307,115 @@ describe('Trades table columns', () => {
     expect(flaggedCells[4]!.textContent).toBe('Awaiting entry');
     const lostCells = within(lost!).getAllByRole('cell');
     expect(lostCells.map((c) => c.textContent)).toEqual(['JKL', 'Not available Records disagree 1R Not available · Reward : risk Not available', 'Not available', 'Not available', 'Not available', 'Fidelity — Roth IRA']);
+  });
+});
+
+// The Open item's current evaluation at the Expected Mark Date (T4.18), each figure its own result.
+const value = (n: bigint, d = 1n) => ({ kind: 'Value' as const, value: Rational.of(n, d) });
+const unavailableMark = { kind: 'Unavailable' as const, reason: 'MarkMissing', detail: { instrument: { kind: 'Stock', symbol: 'ABC' }, date: '2026-10-13' } };
+const awaitingClose = { kind: 'Unavailable' as const, reason: 'AwaitingClose', detail: { after: '2026-10-13' } };
+const condition = (role: 'Stop' | 'Target', status: 'Active' | 'Breached' | 'Reached') => ({
+  id: `${role}-1`,
+  role,
+  kind: 'UnderlyingPrice',
+  boundary: '47.5',
+  result: { kind: 'Value', value: { status } },
+});
+const valued = (over: Record<string, unknown> = {}) => ({
+  ...openItem,
+  current: {
+    expectedMarkDate: '2026-10-13',
+    currentMarkedPnl: value(582n),
+    currentMarkedPnlInPlanR: value(582n, 250n),
+    ongoingRiskToStop: value(400n),
+    incrementalRewardToTarget: value(1200n),
+    conditions: [],
+    atEntry: null,
+    ...over,
+  },
+});
+
+describe('Open list current evaluation', () => {
+  async function openTable(items: readonly unknown[]) {
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeViewsAndReporting.browseTrades).mockResolvedValue(readyPage(items));
+    renderOpen(facade);
+    return screen.findByRole('table', { name: 'Open Trades' });
+  }
+
+  it('should show per row the signed Current Marked Trade P&L in dollars and R right-aligned in tabular numerals and Stop breached or Target reached badges with text in the Trade cell, with no Risk to stop or Reward to target column', async () => {
+    const stopped = { ...valued({ currentMarkedPnl: value(-320n), currentMarkedPnlInPlanR: value(-32n, 25n), conditions: [condition('Stop', 'Breached'), condition('Target', 'Active')] }), tradeId: 'trade-3', underlying: 'DEF' };
+    const target = { ...valued({ conditions: [condition('Stop', 'Active'), condition('Target', 'Reached')] }), tradeId: 'trade-4', underlying: 'GHI' };
+    const table = await openTable([valued(), stopped, target]);
+    expect(within(table).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Underlying', 'Trade', 'Net cost', 'P&L', 'Entry', 'Account']);
+    const [, gain, loss, reached] = within(table).getAllByRole('row');
+    const pnl = (row: HTMLElement) => within(row).getAllByRole('cell')[3]!;
+    expect(pnl(gain!).textContent).toBe('+$582.00 · +2.33R');
+    expect(pnl(loss!).textContent).toBe('−$320.00 · −1.28R');
+    expect(pnl(gain!).className).toContain('number');
+    // The badges sit in the Trade cell, as text; an active condition shows none.
+    const tradeCell = (row: HTMLElement) => within(row).getAllByRole('cell')[1]!;
+    expect(within(tradeCell(loss!)).getByText('Stop breached').className).toBe('badge');
+    expect(within(tradeCell(reached!)).getByText('Target reached').className).toBe('badge');
+    expect(within(tradeCell(gain!)).queryByText(/breached|reached/i)).toBeNull();
+    // Risk and reward stay on the Detail and the Review.
+    expect(within(table).queryByText(/risk to stop|reward to target/i)).toBeNull();
+  });
+
+  it('should show Mark missing linking to the Review Marks family in place of the P&L, never a number, plus the dated line P&L labelled with its date when present', async () => {
+    const dated = { tradingDate: '2026-10-12', evaluation: { currentMarkedPnl: value(120n), currentMarkedPnlInPlanR: value(120n, 250n) } };
+    const missing = valued({ currentMarkedPnl: unavailableMark, currentMarkedPnlInPlanR: unavailableMark, datedLine: dated });
+    const bare = { ...valued({ currentMarkedPnl: unavailableMark, currentMarkedPnlInPlanR: unavailableMark }), tradeId: 'trade-3', underlying: 'DEF' };
+    const table = await openTable([missing, bare]);
+    const [, withDated, without] = within(table).getAllByRole('row');
+    const cell = (row: HTMLElement) => within(row).getAllByRole('cell')[3]!;
+    const link = within(cell(withDated!)).getByRole('link', { name: 'Mark missing: ABC, Tue Oct 13' });
+    expect(link.getAttribute('href')).toBe('/review?instrument=ABC');
+    expect(cell(withDated!).textContent).toBe('Mark missing: ABC, Tue Oct 13 Mon Oct 12 close +$120.00 · +0.48R');
+    // With no dated line the cell holds the words alone: no figure.
+    expect(cell(without!).textContent).toBe('Mark missing: ABC, Tue Oct 13');
+    // The status is also a text badge in the Trade cell.
+    expect(within(within(withDated!).getAllByRole('cell')[1]!).getByText('Mark missing').className).toBe('badge');
+  });
+
+  it('should show Awaiting the next close in place of the P&L when the evaluation reports AwaitingClose, with no at-entry risk in the list, and the dated line when present', async () => {
+    const atEntry = { label: 'AtEntry', quantity: Rational.of(40n), averageEntry: Rational.of(503n, 10n), riskFromEntry: Rational.of(130n), rewardFromEntry: Rational.of(230n) };
+    const dated = { tradingDate: '2026-10-12', evaluation: { currentMarkedPnl: value(120n), currentMarkedPnlInPlanR: value(120n, 250n) } };
+    const awaiting = valued({ currentMarkedPnl: awaitingClose, currentMarkedPnlInPlanR: awaitingClose, atEntry, datedLine: dated });
+    const table = await openTable([awaiting]);
+    const [, row] = within(table).getAllByRole('row');
+    const cells = within(row!).getAllByRole('cell');
+    expect(cells[3]!.textContent).toBe('Awaiting the next close Mon Oct 12 close +$120.00 · +0.48R');
+    // Awaiting a close is not a missing Mark: no link, no Mark missing badge.
+    expect(within(cells[3]!).queryByRole('link')).toBeNull();
+    expect(within(cells[1]!).queryByText('Mark missing')).toBeNull();
+    // Risk at entry is a risk figure, which stays on the Detail and the Review.
+    expect(within(row!).queryByText(/at entry|\$130\.00/i)).toBeNull();
+  });
+
+  it('should give the compact P&L heading its canonical term Current Marked Trade P&L in its accessible name', async () => {
+    const table = await openTable([valued()]);
+    expect(within(table).getByRole('columnheader', { name: 'Current Marked Trade P&L' }).textContent).toBe('P&L');
+  });
+
+  it('should show Not available with no Review link and no Mark missing badge when the date lies outside session-policy coverage', async () => {
+    const uncovered = { kind: 'Unavailable', reason: 'SessionPolicyNotCovered', detail: { instrument: { kind: 'Stock', symbol: 'ABC' }, date: '2030-01-02' } };
+    const outside = { ...openItem, current: { currentMarkedPnl: uncovered, currentMarkedPnlInPlanR: uncovered, conditions: [], atEntry: null } };
+    const table = await openTable([outside]);
+    const [, row] = within(table).getAllByRole('row');
+    const cells = within(row!).getAllByRole('cell');
+    expect(cells[3]!.textContent).toBe('Not available');
+    expect(within(row!).queryByRole('link', { name: /mark missing/i })).toBeNull();
+    expect(within(cells[1]!).queryByText('Mark missing')).toBeNull();
+  });
+
+  it('should carry the P&L after Net cost in the second line of the Trade cell, with the Review link for a missing Mark, for the narrow layout', async () => {
+    const missing = { ...valued({ currentMarkedPnl: unavailableMark, currentMarkedPnlInPlanR: unavailableMark }), tradeId: 'trade-3', underlying: 'DEF' };
+    const table = await openTable([valued(), missing]);
+    const [, gain, lost] = within(table).getAllByRole('row');
+    const line = (row: HTMLElement) => row.querySelector('.trade-line') as HTMLElement;
+    expect(line(gain!).textContent).toBe('Net cost $3,007.00 · P&L +$582.00 · +2.33R');
+    expect(line(lost!).textContent).toBe('Net cost $3,007.00 · P&L Mark missing: ABC, Tue Oct 13');
+    expect(within(line(lost!)).getByRole('link', { name: 'Mark missing: ABC, Tue Oct 13' }).getAttribute('href')).toBe('/review?instrument=ABC');
   });
 });

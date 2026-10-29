@@ -66,7 +66,7 @@ test.describe('B2.3 update from D1 with data', () => {
     await expectBothPlans(page);
     expect(await sawUpdatingMessage(page)).toBe(true);
 
-    await page.getByRole('row', { name: /XYZ/ }).getByRole('link', { name: 'XYZ' }).click();
+    await page.getByRole('row', { name: /XYZ/ }).getByRole('link', { name: 'XYZ', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
     await recordEntry(page, NOW_ROW);
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'About' }).click();

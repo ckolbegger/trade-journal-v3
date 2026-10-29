@@ -41,7 +41,7 @@ test.describe('B2.13 integrity surfaced', () => {
     await expect(row).toBeVisible();
     await expect(row).toContainText('Records disagree');
 
-    await row.getByRole('link', { name: 'XYZ' }).click();
+    await row.getByRole('link', { name: 'XYZ', exact: true }).click();
     await expect(app.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
     const panel = app.getByRole('region', { name: 'Records disagree' });
     await expect(panel).toBeVisible();
@@ -79,7 +79,7 @@ test.describe('Planned list row for an incoherent Trade', () => {
     // The agreeing Planned Trade keeps its figures.
     await expect(table.getByRole('row', { name: /ABC/ })).not.toContainText('Not available');
 
-    await row.getByRole('link', { name: 'XYZ' }).click();
+    await row.getByRole('link', { name: 'XYZ', exact: true }).click();
     await expect(app.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible();
     await expect(app.getByRole('region', { name: 'Records disagree' })).toBeVisible();
     expect(await probe(app)).toEqual(before);

@@ -429,7 +429,7 @@ test.describe('T2.38 one content column and side gutters', () => {
 // ---- T2.40 Trades tables: Underlying and Trade columns, pinned Underlying, scroll shadows (U1, I1; F9) ----
 
 // The columns whose figures the Trade cell's second line carries; they are hidden on narrow.
-const MOVED = { Open: ['Net cost'], Planned: ['1R', 'Reward : risk'] } as const;
+const MOVED = { Open: ['Net cost', 'P&L'], Planned: ['1R', 'Reward : risk'] } as const;
 const OUTLINE = 5; // the 3 px focus outline plus its 2 px offset
 const TABS = ['Open', 'Planned'] as const;
 

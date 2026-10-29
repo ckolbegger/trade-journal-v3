@@ -96,7 +96,7 @@ export async function backToTrade(page: Page, symbol = PLAN.symbol): Promise<voi
 
 // Opens a Trade's Detail from the Open list.
 export async function openTradeFromOpenList(page: Page, symbol = PLAN.symbol): Promise<void> {
-  await page.getByRole('table', { name: 'Open Trades' }).getByRole('link', { name: symbol }).click(READY);
+  await page.getByRole('table', { name: 'Open Trades' }).getByRole('link', { name: symbol, exact: true }).click(READY);
   await expect(page.getByRole('heading', { name: symbol, level: 1 })).toBeVisible();
 }
 

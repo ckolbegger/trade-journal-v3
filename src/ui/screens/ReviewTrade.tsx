@@ -1,31 +1,12 @@
 import { useCallback, useId, type ReactNode } from 'react';
 import type { DailyTradeReview } from '../../app/types.ts';
-import { Rational } from '../../domain/values/index.ts';
-import { decimalMoney, money, rMultiple, shortDate } from '../format.ts';
+import { decimalMoney, money, shortDate } from '../format.ts';
+import { calculation, pnlText } from '../figures.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import { ActionForm, type SavedAction } from './ActionForm.tsx';
 import { reasonText } from './review-attention.ts';
 
 type Evaluation = NonNullable<DailyTradeReview['evaluation']>;
-type Calculation = Evaluation['currentMarkedPnl'];
-
-const ZERO = Rational.of(0n);
-// A gain carries a plus sign; a loss carries the minus the formats already give.
-const signed = (format: (value: Rational) => string) => (value: Rational): string => (value.compare(ZERO) > 0 ? `+${format(value)}` : format(value));
-
-// A figure that may lack its Mark says so in words, never as a number or a zero.
-function calculation(result: Calculation, format: (value: Rational) => string): string {
-  switch (result.kind) {
-    case 'Value':
-      return format(result.value);
-    case 'Unbounded':
-      return `Unbounded ${result.direction.toLowerCase()}`;
-    case 'NotApplicable':
-      return 'Not applicable';
-    case 'Unavailable':
-      return 'date' in result.detail ? `Mark missing: ${result.detail.instrument.symbol}, ${shortDate(result.detail.date)}` : 'Awaiting the next close';
-  }
-}
 
 function Figure({ term, children }: { readonly term: string; readonly children: ReactNode }) {
   return (
@@ -43,7 +24,7 @@ function Figures({ evaluation }: { readonly evaluation: Evaluation }) {
   return (
     <dl>
       <Figure term="Current Marked Trade P&L">
-        {pnl.kind === 'Value' && planR.kind === 'Value' ? `${signed(money)(pnl.value)} · ${signed(rMultiple)(planR.value)}` : calculation(pnl, signed(money))}
+        {pnlText(pnl, planR)}
       </Figure>
       <Figure term="Ongoing Risk to Stop">{calculation(evaluation.ongoingRiskToStop, money)}</Figure>
       <Figure term="Incremental Reward to Target">{calculation(evaluation.incrementalRewardToTarget, money)}</Figure>
