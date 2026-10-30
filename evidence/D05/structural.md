@@ -1116,3 +1116,16 @@ Before and after the runs: 200 Open rows equal `bench/expected-open-rows.json` (
 Readings: the harness reads due reflections from the Review overview's blockers ("Reflection due for X" / "N reflections due for X") after opening Review from the navigation, failing on any difference in Review Date, total or per-Trade grouping. No latency scenarios were added beyond the two gated budgets; the time from clicking Review to its status appearing is disclosed ungated (about 2.3 s before, 2.2 s after; no plan budget covers it). `bench.md` stamps commit `7ea3384` plus uncommitted harness changes because the run preceded the commit; `7c933dd` holds that harness. D4's "Superseded run" section was dropped from the report template.
 
 ocr review of `7c933dd` (scratch clone, the query-count test relocated to `src/itg/d5/query-count.ts`; `ocr/T5.22-7c933dd.json`): 2 files reviewed, 2 comments, both relocation artifacts and dismissed — unresolved `../../support/...` imports (the real `tests/support/request-counter.ts` and `stack.ts` exist) and the suite not discovered (the real path matches `tests/integration/**/*.test.ts`). No finding on `tools/bench-run.ts`.
+
+### Cumulative run after T5.24
+
+Run 2026-10-30 12:28 EDT on commit `82865d5`, Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | 69 files, 893 passed, exit 0 | `suite-runs/t5.24--unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | 53 files, 105 passed, exit 0 | `suite-runs/t5.24--integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | 155 passed (5.6 min), exit 0 | `suite-runs/t5.24--browser.txt` |
+| Static and verification checks (12 commands) | as at the end of D4 | 12 of 12 exit 0 | `suite-runs/t5.24--checks.txt` |
+
+Failures: none. The run covers T5.21's bug tasks, T5.22 and T5.24 with T5.24-B1 (output files carry a double hyphen from the label). It was taken before revision 18 and the tech-debt entry, which change plan text only.
