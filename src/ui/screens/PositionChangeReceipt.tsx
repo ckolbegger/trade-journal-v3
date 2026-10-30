@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { Badge } from '../Badge.tsx';
 import { PageTitle } from '../PageTitle.tsx';
 import { WithSecondLine } from '../SecondLine.tsx';
 import { Link } from 'react-router';
@@ -28,12 +29,13 @@ function repairText(finding: IntegrityFinding): string {
 
 type Reflection = Recorded['postCommit']['reflection'];
 
-function reflectionMessage(reflection: Reflection): string {
+// A deferred reflection is not a message of its own: the saved Position Change shows it as owed.
+function reflectionMessage(reflection: Reflection): string | undefined {
   switch (reflection.kind) {
     case 'Entry':
       return 'Reflection saved.';
     case 'Debt':
-      return 'Reflection deferred.';
+      return undefined;
     case 'Decline':
       return `Reflection declined${reflection.decline.reason ? `: ${reflection.decline.reason}` : '.'}`;
   }
@@ -73,6 +75,7 @@ export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceip
     return d.action === 'Supersede' ? [{ key: d.occurrenceId, text: 'Entry Size Deviation no longer applies.' }] : [];
   });
   const reflection = postCommit.reflection;
+  const message = reflectionMessage(reflection);
 
   return (
     <section className="card" aria-labelledby="receipt-heading">
@@ -92,6 +95,7 @@ export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceip
             </li>
           ))}
         </ul>
+        {reflection.kind === 'Debt' && <Badge tone="warning">Reflection owed</Badge>}
       </section>
       {figures && (
         <section aria-labelledby="entry-quality-heading">
@@ -137,9 +141,7 @@ export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceip
           </ul>
         </section>
       )}
-      <p>
-        {reflectionMessage(reflection)}
-      </p>
+      {message && <p>{message}</p>}
       <Link className="pill primary" to={`/trades/${receipt.tradeId}`}>Back to the Trade</Link>
     </section>
   );

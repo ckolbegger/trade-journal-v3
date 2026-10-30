@@ -89,8 +89,8 @@ describe('rendering', () => {
 
   it('should offer Decline to reflect with an optional reason as the explicit alternative to completing the form', async () => {
     renderForm();
-    const decline = await screen.findByRole('checkbox', { name: 'Decline to reflect' });
-    // Nothing is chosen for the trader: the form starts as a reflection to complete.
+    const decline = await screen.findByRole('radio', { name: 'Decline to reflect' });
+    // The form starts as a reflection to complete.
     expect((decline as HTMLInputElement).checked).toBe(false);
     expect(screen.queryByLabelText('Reason for declining (optional)')).toBeNull();
     const user = userEvent.setup();
@@ -99,7 +99,7 @@ describe('rendering', () => {
     expect(screen.getByLabelText('Reason for declining (optional)').tagName).toBe('TEXTAREA');
     expect(screen.queryByRole('radiogroup', { name: 'Decision mode' })).toBeNull();
     // Choosing to complete after all brings back what was already answered.
-    await user.click(decline);
+    await user.click(screen.getByRole('radio', { name: 'Reflect now' }));
     expect(screen.queryByLabelText('Reason for declining (optional)')).toBeNull();
     const reactive = within(screen.getByRole('radiogroup', { name: 'Decision mode' })).getByLabelText<HTMLInputElement>('Reactive');
     expect(reactive.checked).toBe(true);
@@ -247,7 +247,7 @@ describe('submission', () => {
     });
 
     // Declining instead submits the decline, naming the definition revision shown, with its reason.
-    await user.click(screen.getByRole('checkbox', { name: 'Decline to reflect' }));
+    await user.click(screen.getByRole('radio', { name: 'Decline to reflect' }));
     await user.type(screen.getByLabelText('Reason for declining (optional)'), 'Nothing new to add.');
     await user.click(screen.getByRole('button', { name: 'Save entry' }));
     expect(facade.TradeWorkflows.recordPositionChange).toHaveBeenLastCalledWith(
@@ -432,9 +432,9 @@ describe('submission', () => {
     expect(dirty).toHaveBeenLastCalledWith(true);
     await user.click(screen.getByRole('button', { name: 'Remove Execution 2' }));
     expect(dirty).toHaveBeenLastCalledWith(false);
-    await user.click(screen.getByRole('checkbox', { name: 'Decline to reflect' }));
+    await user.click(screen.getByRole('radio', { name: 'Decline to reflect' }));
     expect(dirty).toHaveBeenLastCalledWith(true);
-    await user.click(screen.getByRole('checkbox', { name: 'Decline to reflect' }));
+    await user.click(screen.getByRole('radio', { name: 'Reflect now' }));
     expect(dirty).toHaveBeenLastCalledWith(false);
     await user.click(within(screen.getByRole('radiogroup', { name: 'Primary emotion' })).getByLabelText('Calm'));
     expect(dirty).toHaveBeenLastCalledWith(true);
@@ -652,7 +652,7 @@ describe('Record entry load attempts', () => {
     expect(screen.queryByText('Long 100 shares of XYZ')).toBeNull();
 
     vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(rejected as never);
-    await user.click(screen.getByRole('checkbox', { name: 'Decline to reflect' }));
+    await user.click(screen.getByRole('radio', { name: 'Decline to reflect' }));
     await user.click(screen.getByRole('button', { name: 'Save entry' }));
     expect(facade.TradeWorkflows.recordPositionChange).toHaveBeenLastCalledWith(
       expect.objectContaining({
@@ -751,7 +751,7 @@ describe('Record entry on another Trade', () => {
       ['30', '50.20', '0.50', '2026-10-12T10:01'],
     ]);
     await completeReflection(user);
-    await user.click(screen.getByRole('checkbox', { name: 'Decline to reflect' }));
+    await user.click(screen.getByRole('radio', { name: 'Decline to reflect' }));
     await user.type(screen.getByLabelText('Reason for declining (optional)'), 'Rushed.');
 
     clock.now = '2026-10-12T15:30:00Z';
@@ -761,7 +761,7 @@ describe('Record entry on another Trade', () => {
     expect(screen.getAllByRole('group', { name: /^Execution \d+$/ })).toHaveLength(1);
     for (const label of ['Quantity', 'Price', 'Fee']) expect(within(row(1)).getByLabelText<HTMLInputElement>(label).value).toBe('');
     expect(within(row(1)).getByLabelText<HTMLInputElement>('Economic Time').value).toBe('2026-10-12T11:30');
-    expect(screen.getByRole<HTMLInputElement>('checkbox', { name: 'Decline to reflect' }).checked).toBe(false);
+    expect(screen.getByRole<HTMLInputElement>('radio', { name: 'Decline to reflect' }).checked).toBe(false);
     expect(screen.queryByLabelText('Reason for declining (optional)')).toBeNull();
     for (const name of ['Decision mode', 'Primary emotion', 'Decision confidence']) {
       expect(
@@ -772,7 +772,7 @@ describe('Record entry on another Trade', () => {
     }
     expect(screen.getByLabelText<HTMLTextAreaElement>('Note').value).toBe('');
     // Declining afterwards starts with an empty reason too.
-    await user.click(screen.getByRole('checkbox', { name: 'Decline to reflect' }));
+    await user.click(screen.getByRole('radio', { name: 'Decline to reflect' }));
     expect(screen.getByLabelText<HTMLTextAreaElement>('Reason for declining (optional)').value).toBe('');
   });
 
@@ -846,7 +846,7 @@ describe('Record entry on another Trade', () => {
     renderAcrossTrades(positionChangeFormFacade(), { now: '2026-10-12T14:05:00Z' }, dirty);
     const user = userEvent.setup();
     await user.type(await within(await screen.findByRole('group', { name: 'Execution 1' })).findByLabelText('Quantity'), '30');
-    await user.click(screen.getByRole('checkbox', { name: 'Decline to reflect' }));
+    await user.click(screen.getByRole('radio', { name: 'Decline to reflect' }));
     expect(dirty).toHaveBeenLastCalledWith(true);
 
     await user.click(screen.getByRole('link', { name: 'Other Trade' }));
@@ -1187,5 +1187,81 @@ describe('R lines', () => {
     expect(valueOf(quality, 'Actual initial risk').textContent).toBe('$270.00 1.08R');
     expect(valueOf(quality, 'Reward : risk').textContent).toBe('2.15 planned 2.4');
     expect(within(quality).getAllByRole('definition')).toHaveLength(5);
+  });
+});
+
+describe('disposition (P18, A70)', () => {
+  const disposition = () => screen.getByRole('radiogroup', { name: 'Reflection' });
+  const choose = (name: string) => within(disposition()).getByLabelText(name);
+
+  it('should render Reflect now, Reflect later, and Decline to reflect as a radio group in a labelled fieldset, with Reflect now selected and its prompts shown', async () => {
+    renderForm();
+    await screen.findByRole('radiogroup', { name: 'Decision mode' });
+    expect(disposition().tagName).toBe('FIELDSET');
+    const radios = within(disposition()).getAllByRole('radio');
+    expect(radios.map((r) => (r.closest('label') as HTMLElement).textContent)).toEqual(['Reflect now', 'Reflect later', 'Decline to reflect']);
+    expect(radios.map((r) => (r as HTMLInputElement).checked)).toEqual([true, false, false]);
+    expect(screen.getByLabelText('Note')).toBeTruthy();
+  });
+
+  it('should hide the prompts and submit Defer explicitly, with no answers, when Reflect later is chosen and Save is pressed', async () => {
+    const facade = renderForm();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(rejected as never);
+    const user = userEvent.setup();
+    await fillRows(user, [['30', '50.00', '0.50', '2026-10-12T10:00']]);
+    await user.click(await screen.findByLabelText('Reflect later'));
+    expect(screen.queryByRole('radiogroup', { name: 'Decision mode' })).toBeNull();
+    expect(screen.queryByLabelText('Note')).toBeNull();
+    expect(screen.queryByLabelText('Reason for declining (optional)')).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    expect(facade.TradeWorkflows.recordPositionChange).toHaveBeenCalledTimes(1);
+    expect(facade.TradeWorkflows.recordPositionChange).toHaveBeenCalledWith(
+      expect.objectContaining({ members: [member('30', '50.00', '0.50', '2026-10-12T14:00:00Z')], reflection: { kind: 'Defer' } }),
+    );
+  });
+
+  it('should keep answers typed under Reflect now when the trader switches to Reflect later and back, and submit them only with Reflect now', async () => {
+    const facade = renderForm();
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(rejected as never);
+    const user = userEvent.setup();
+    await fillRows(user, [['30', '50.00', '0.50', '2026-10-12T10:00']]);
+    await screen.findByRole('radiogroup', { name: 'Decision mode' });
+    await completeReflection(user);
+    await user.click(choose('Reflect later'));
+    await user.click(choose('Reflect now'));
+    expect(within(screen.getByRole('radiogroup', { name: 'Decision mode' })).getByLabelText<HTMLInputElement>('As Planned').checked).toBe(true);
+    expect(screen.getByLabelText<HTMLTextAreaElement>('Note').value).toBe('Filled at the open.');
+
+    // Hidden answers are not submitted with Reflect later, nor kept anywhere the command can see.
+    await user.click(choose('Reflect later'));
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    expect(facade.TradeWorkflows.recordPositionChange).toHaveBeenLastCalledWith(expect.objectContaining({ reflection: { kind: 'Defer' } }));
+    // Back under Reflect now they are submitted.
+    await user.click(choose('Reflect now'));
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+    expect(facade.TradeWorkflows.recordPositionChange).toHaveBeenCalledTimes(2);
+    const call = vi.mocked(facade.TradeWorkflows.recordPositionChange).mock.calls[1]![0];
+    expect(call.reflection).toMatchObject({ kind: 'Complete', form: { definitionId: 'def-pcr-1' } });
+    expect(Object.keys((call.reflection as { form: { answers: object } }).form.answers)).toHaveLength(4);
+  });
+
+  it('should render "Reflection owed" on the saved Position Change from the returned Debt projection, without a read call', async () => {
+    const facade = renderForm();
+    const recorded = recordedResult() as unknown as { receipt: { reflection: unknown }; postCommit: { reflection: unknown } };
+    recorded.receipt.reflection = { kind: 'Debt', id: 'debt-1' };
+    recorded.postCommit.reflection = { kind: 'Debt', debt: { debtId: 'debt-1', status: 'Outstanding', revision: 'v-1' } };
+    vi.mocked(facade.TradeWorkflows.recordPositionChange).mockResolvedValue(recorded as never);
+    const user = userEvent.setup();
+    await fillRows(user, [['20', '51.00', '1.00', '2026-10-12T10:00']]);
+    await user.click(await screen.findByLabelText('Reflect later'));
+    await user.click(screen.getByRole('button', { name: 'Save entry' }));
+
+    const receipt = await screen.findByRole('region', { name: 'Entry recorded' });
+    const saved = within(receipt).getByRole('region', { name: 'Position Change at 2026-10-12 14:00' });
+    expect(within(saved).getByText('Reflection owed')).toBeTruthy();
+    expect(within(receipt).queryByText('Reflection deferred.')).toBeNull();
+    // Only the load read the Trade; the Debt came from the result alone.
+    expect(facade.TradeViewsAndReporting.getTradeDetail).toHaveBeenCalledTimes(1);
+    expect(facade.Journal.query).not.toHaveBeenCalled();
   });
 });

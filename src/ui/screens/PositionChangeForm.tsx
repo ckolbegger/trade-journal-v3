@@ -44,6 +44,14 @@ const MAX_ROWS = 20;
 // The codes fromWorkspaceLocal can fail with: the form judges all of them itself.
 const LOCAL_TIME_CODES = new Set(['InvalidLocalTime', 'NonexistentLocalTime', 'AmbiguousLocalTime']);
 
+// How the trader meets the reflection: write it now, owe it for later, or decline (P18, A70).
+type Choice = 'now' | 'later' | 'decline';
+const CHOICES: readonly (readonly [Choice, string])[] = [
+  ['now', 'Reflect now'],
+  ['later', 'Reflect later'],
+  ['decline', 'Decline to reflect'],
+];
+
 // One Position Change on the Trade's single Planned Leg: Buy rows of the Plan's Stock (D2 A18, A33).
 export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: PositionChangeFormProps) {
   const { tradeId = '' } = useParams();
@@ -66,7 +74,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   const [answers, setAnswers] = useState<Answers>({});
   // Declining is the trader's explicit alternative to completing the reflection; answers already
   // given stay on screen in case they complete it after all.
-  const [declined, setDeclined] = useState(false);
+  const [choice, setChoice] = useState<Choice>('now');
   const [reason, setReason] = useState('');
   const nextKey = useRef(1);
   const blankRow = (): Row => ({ key: nextKey.current++, quantity: '', price: '', fee: '', time: toWorkspaceLocal(now(), timeZone) });
@@ -89,7 +97,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
       setRows([row]);
       setInitialRow(row);
       setAnswers({});
-      setDeclined(false);
+      setChoice('now');
       setReason('');
       setIssues([]);
       setReported(undefined);
@@ -104,7 +112,7 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
   const values = (r: Row) => [r.quantity, r.price, r.fee, r.time].join('\u0000');
   const dirty =
     !recorded &&
-    (rows.length !== 1 || values(rows[0]!) !== values(initialRow) || Object.keys(answers).length > 0 || declined || reason !== '');
+    (rows.length !== 1 || values(rows[0]!) !== values(initialRow) || Object.keys(answers).length > 0 || choice !== 'now' || reason !== '');
   useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange]);
   // Leaving the form abandons it, so it no longer holds an update back.
   useEffect(() => () => onDirtyChange(false), [onDirtyChange]);
@@ -243,9 +251,13 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
         economicTime: instants[index]!,
       }),
     );
-    const reflection: ReflectionDisposition = declined
-      ? { kind: 'Decline', definitionId: definition.id, ...(reason.trim() !== '' && { reason }) }
-      : { kind: 'Complete', form: { definitionId: definition.id, answers } };
+    // Hidden answers and reason are never submitted; only the chosen disposition is.
+    const dispositions: Record<Choice, ReflectionDisposition> = {
+      now: { kind: 'Complete', form: { definitionId: definition.id, answers } },
+      later: { kind: 'Defer' },
+      decline: { kind: 'Decline', definitionId: definition.id, ...(reason.trim() !== '' && { reason }) },
+    };
+    const reflection = dispositions[choice];
     loadEpoch.current += 1;
     const result = await facade.TradeWorkflows.recordPositionChange({
       originTradeId: tradeId,
@@ -385,11 +397,16 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
       </button>
       <section className="card" aria-labelledby="reflection-heading">
         <h2 id="reflection-heading">Position Change Reflection</h2>
-        <label className="chip">
-          <input type="checkbox" checked={declined} onChange={(e) => setDeclined(e.target.checked)} />
-          Decline to reflect
-        </label>
-        {declined ? (
+        <fieldset role="radiogroup" aria-labelledby="disposition-legend" className="choices">
+          <legend id="disposition-legend">Reflection</legend>
+          {CHOICES.map(([value, label]) => (
+            <label key={value} className="chip">
+              <input type="radio" name="disposition" checked={choice === value} onChange={() => setChoice(value)} />
+              {label}
+            </label>
+          ))}
+        </fieldset>
+        {choice === 'decline' && (
           <div className="field">
             <label>
               Reason for declining (optional)
@@ -397,7 +414,8 @@ export function PositionChangeForm({ facade, timeZone, now, onDirtyChange }: Pos
             </label>
             {fieldError('reason')}
           </div>
-        ) : (
+        )}
+        {choice === 'now' && (
           <ReflectionPrompts definition={definition} answers={answers} onChange={setAnswers} errors={promptErrors(definition)} />
         )}
       </section>
