@@ -8,7 +8,10 @@
 // `clock.setFixedTime` pins only `Date`, so tools/bench/pin.ts points native Temporal at it, T4.31-B1); timers and
 // `performance.now` stay real. Before and after the runs, and
 // after each cold start, it compares the rendered Open list (figures included, with the Missing
-// Instruments' rows) with bench/expected-open-rows.json. It writes evidence/D04/bench.md and fails
+// Instruments' rows) with bench/expected-open-rows.json. D5 (T5.22) also opens the as-of Review before
+// and after the runs and compares the reflections it lists as due (its blockers, by Trade) with the
+// generator's `asOfDueReflections` and `outstandingDebts` in bench/dataset.json; the time to render
+// that Review is disclosed, not gated. It writes evidence/D05/bench.md and fails
 // when either nearest-rank p95 exceeds its budget (cold 2,500 ms, warm 1,500 ms).
 import { execFileSync } from 'node:child_process';
 import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
@@ -26,7 +29,7 @@ const RUNS = 30;
 const COLD_BUDGET_MS = 2_500;
 const WARM_BUDGET_MS = 1_500;
 const BUILD_DIR = 'dist';
-const EVIDENCE_FILE = path.resolve('evidence/D04/bench.md');
+const EVIDENCE_FILE = path.resolve('evidence/D05/bench.md');
 const WAIT_MS = 60_000;
 
 // Nearest-rank p95: the ceil(0.95 × n)-th smallest value (the 29th of 30).
@@ -100,6 +103,43 @@ async function compareOpenList(page: Page, when: string, log = true) {
   return rendered.rows.length;
 }
 
+// The reflections the as-of Review lists as due: its blockers read "Reflection due for X" or
+// "N reflections due for X" for each Trade with due Debt. They must equal the generator's expected
+// count and the Trades of its Outstanding Debts (both due at the as-of Review, decision 58).
+const expectedDue = (dataset['asOfDueReflections'] as number | undefined) ?? Number.NaN;
+const expectedDueByTrade = new Map<string, number>();
+for (const debt of (dataset['outstandingDebts'] as { underlying: string }[] | undefined) ?? []) {
+  expectedDueByTrade.set(debt.underlying, (expectedDueByTrade.get(debt.underlying) ?? 0) + 1);
+}
+interface DueComparison {
+  readonly total: number;
+  readonly byTrade: ReadonlyMap<string, number>;
+  readonly renderMs: number;
+}
+const dueComparisons: { when: string; due: DueComparison }[] = [];
+async function compareDueReflections(page: Page, when: string) {
+  const pressed = Date.now();
+  await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Review' }).click();
+  const status = page.getByRole('region', { name: 'Review status' });
+  await status.waitFor({ timeout: WAIT_MS });
+  const renderMs = Date.now() - pressed;
+  const reviewDate = await status.locator('time').first().getAttribute('datetime');
+  const blockers = await status.getByRole('list', { name: 'Blockers' }).getByRole('listitem').allTextContents();
+  const byTrade = new Map<string, number>();
+  let total = 0;
+  for (const text of blockers) {
+    const found = /^(?:Reflection|(\d+) reflections) due for (.+)$/.exec(text.trim());
+    if (!found) continue;
+    const count = found[1] === undefined ? 1 : Number(found[1]);
+    byTrade.set(found[2]!, (byTrade.get(found[2]!) ?? 0) + count);
+    total += count;
+  }
+  const equal = reviewDate === dataset['reviewDate'] && total === expectedDue && isDeepStrictEqual([...byTrade].sort(), [...expectedDueByTrade].sort());
+  console.log(`bench:run: as-of Review ${reviewDate} ${when}: ${total} due reflections (${[...byTrade].map(([t, n]) => `${t} ${n}`).join(', ') || 'none'}), ${equal ? 'equal to' : 'DIFFERENT from'} the expected ${expectedDue}`);
+  dueComparisons.push({ when, due: { total, byTrade, renderMs } });
+  if (!equal) throw new Error(`the as-of Review's due reflections ${when} differ from bench/dataset.json (${expectedDue} expected, Review Date ${String(dataset['reviewDate'])})`);
+}
+
 let engine: string;
 const cold: number[] = [];
 // Disclosed, not gated: from the call that launches the browser process to the same mark.
@@ -116,6 +156,7 @@ try {
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: WAIT_MS });
   await markTime(page, 'tj:interactive');
   before = await compareOpenList(page, 'before the runs');
+  await compareDueReflections(page, 'before the runs');
   await warmUp.close();
 
   // No network from here on: the server is stopped and every launch is offline.
@@ -155,6 +196,7 @@ try {
     console.log(`bench:run: warm ${run}/${RUNS} ${warm.at(-1)!.toFixed(1)} ms`);
   }
   after = await compareOpenList(warmPage, 'after the runs');
+  await compareDueReflections(warmPage, 'after the runs');
   await context.close();
 } finally {
   // Closing an already closed context is a no-op; a failure must not leave Chromium on a removed profile.
@@ -171,9 +213,14 @@ const ms = (v: number) => v.toFixed(1);
 const playwrightVersion = (JSON.parse(await readFile('node_modules/@playwright/test/package.json', 'utf8')) as { version: string }).version;
 const cpus = os.cpus();
 
-const report = `# D4 benchmark run (AC-PERF-001)
+const dueLine = (c: { when: string; due: DueComparison }) =>
+  `| ${c.when} | ${c.due.total} (${[...c.due.byTrade].map(([t, n]) => `${t} ${n}`).join(', ')}) | ${expectedDue} (${[...expectedDueByTrade].map(([t, n]) => `${t} ${n}`).join(', ')}) | equal | ${c.due.renderMs} ms |`;
+const commit = execFileSync('git', ['rev-parse', 'HEAD']).toString().trim();
+const dirty = execFileSync('git', ['status', '--porcelain', '--', 'src', 'tools', 'bench', 'package.json']).toString().trim() !== '';
 
-Written by \`npm run bench:run\` (T2.21, extended by T4.31) on ${new Date().toISOString()}.
+const report = `# D5 benchmark run (AC-PERF-001)
+
+Written by \`npm run bench:run\` (T2.21, extended by T4.31 and T5.22) on ${new Date().toISOString()}, at commit ${commit}${dirty ? ' plus uncommitted changes to src, tools, bench or package.json' : ''}.
 
 ## Result
 
@@ -184,9 +231,13 @@ Written by \`npm run bench:run\` (T2.21, extended by T4.31) on ${new Date().toIS
 
 Open list compared with \`bench/expected-open-rows.json\`: before the runs ${before} rows equal, after the runs ${after} rows equal, and each of the ${RUNS} cold starts rendered the same ${expected.rows.length} rows (figures included). The ${missing.length} Missing Instruments on the as-of date (${missing.join(', ')}) have rows in that list, each showing \`Mark missing\` in P&L (and no other row does).
 
-## Superseded run (T4.31, before T4.31-B1)
+## As-of Review's due reflections (T5.22)
 
-The earlier run pinned only \`Date\`, so the application's Temporal clock read the real day and the Open list (and the expected rows captured the same way) was rendered for a different Expected Mark Date: 87 rows showed \`Awaiting the next close\` and no row showed \`Mark missing\`. Its figures are not valid evidence for the as-of dataset: cold p95 98.9 ms (median 93.0 ms), warm p95 44.4 ms (median 41.1 ms), process launch to mark p95 171.4 ms.
+The harness opens the Review from the primary navigation and reads its blockers: each "Reflection due for X" or "N reflections due for X" is a reflection due at the as-of Review (Review Date ${String(dataset['reviewDate'])}). The expected values are \`asOfDueReflections\` and the Trades of \`outstandingDebts\` in \`bench/dataset.json\` (the Outstanding Debts are from ${((dataset['outstandingDebts'] as { momentDate: string }[] | undefined) ?? []).map((d) => d.momentDate).join(' and ')}, both due at the as-of Review, decision 58). A difference fails the run.
+
+| When | Due reflections listed (by Trade) | Expected | Result | Time from the click on Review to its status (disclosed, not gated) |
+|---|---|---|---|---|
+${dueComparisons.map(dueLine).join('\n')}
 
 ## Method
 
