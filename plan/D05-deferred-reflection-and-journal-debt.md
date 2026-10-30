@@ -37,7 +37,7 @@ Numbering continues from D4's A35–A60. These are implementation-level choices 
 | A66 | **Defer is installed for the Position Change Reflection only.** Close Review gains Defer in D6. Plan Reflection and Daily Trade Review still reject it with `DispositionNotAllowed`. A Debt in D5 always has route JournalOnly. Management Debt, its place in the Trade card, and `NeedsTradeWorkflow` arrive with D20; D5 builds no route handling. |
 | A67 | **Post-commit Review result:** after an Action save (T4.16) or a Debt resolution (T5.10), the coordinator assembles the revised progress, completion, and next step from one coherent read at the committed Workspace content revision, retrying under A46's rule. This is result assembly inside the owning coordinator, not a caller read-back (ADR 0002). If a later write has already landed, the result says so, and the next step is to refresh. |
 | A68 | **Reflections in the Review (P17):** `open` reads every Outstanding Debt once (A63), groups it by Trade, and returns for each walked Trade its due and not-yet-due reflection counts. Completion lists due reflections among its blockers, by Trade. `getTrade` returns the Trade's Outstanding reflections, oldest anchor first then Debt identity, each with its snapshot definition rendered as a form, the Position Change's Economic Time and Executions, its due classification, and its save binding (Debt revision and definition revision). A walked Trade is done when its Action is saved and it has no due reflection. The next step after any Review save is the first Trade in attention order, starting from the current one, that is not done. Attention bands are unchanged: an owed reflection does not move a Trade between bands. |
-| A69 | **Debt on Trade Detail:** an Outstanding Debt reads "Reflection owed" next to its Position Change. Trade Views already resolves the Expected Mark Date E with its close and, from D5, the previous session's close (A75). The Debt is marked "Due" when its anchor is at or before the close of the session before E. It is marked "Due in the next Review" when its anchor is after that but at or before E's close. Otherwise it is marked "Due in the Review after next". No new calendar operation is needed. A settled reflection appears once, as its Entry marked "Deferred, answered" with the authored time and Source. A declined one appears once, as its decline marked "Declined later". The narrative shows one item per obligation. Its Debt history is available on the item, and a full View history arrives in D13. |
+| A69 | **Debt on Trade Detail:** an Outstanding Debt reads "Reflection owed" next to its Position Change. Trade Views already resolves the Expected Mark Date E with its close and, from D5, the previous session's close (A75). The Debt is marked "Due" when its anchor is at or before the close of the session before E. It is marked "Due in the next Review" when its anchor is after that but at or before E's close. Otherwise it is marked "Due in the Review after next". No new calendar operation is needed. A settled reflection appears once, as its Entry marked "Deferred, answered" with the authored time and Source. A declined one appears once, as its decline marked "Declined later". The narrative shows one item per obligation. Its Debt history is available on the item, and a full View history arrives in D13. **Amended by decision 56 (revision 15):** when E is outside session-policy coverage, an Outstanding Debt has no due classification and reads "Reflection owed" alone; Reflect now and Decline still work. |
 | A70 | **Entry form disposition (P18):** a radio group in a labelled fieldset with Reflect now selected. The prompts show only while Reflect now is selected. Answers typed and then hidden by choosing another disposition stay in view state, are never written anywhere (AC-JOUR-001), and are submitted only with Reflect now. Decline to reflect keeps its optional reason. |
 | A71 | **Review screen (extends A57):** the Marks family, then the Trade walk. Each Trade card shows a "Reflections" section above the Action form when the Trade has Outstanding reflections, each labelled "Due", "Due in the next Review", or "Due in the Review after next" as text, and each opening the Debt form inline with Answer and Decline. After a save the reflection renders from the result, and focus moves to the next reflection in the card, or to the Action form when none remains. Moving on without resolving records nothing; a due reflection keeps the Review Incomplete and is named in the overview's blockers. |
 | A72 | **Previous release:** the harness builds the D4 release from the tag `claude-opus-5.5-d4`, exported with `git archive` and never as a worktree (D2 A34). |
@@ -277,6 +277,12 @@ describe("Debt status (A69)")
   it should show a settled Debt once, inside its Entry item marked deferred and answered with authored time and Source, and a declined Debt once, inside its decline item
 ```
 
+**Amended by decision 56 (revision 15):** one more case, under the same describe.
+
+```text
+  it should include an Outstanding Debt with no due classification when the as-of date is outside session-policy coverage
+```
+
 ### T5.12 Workspace: migration to schema 4
 
 Seam: `Workspace.initialize` and `getStatus`.
@@ -338,6 +344,12 @@ describe("Debt on Trade Detail (A69, P17)")
   it should show each Outstanding Debt as "Reflection owed" beside its Position Change, with "Due" or "Due in the next Review" as text, and Reflect now and Decline actions only while Writable
   it should show a settled reflection once, marked "Deferred, answered" with its time, and a declined one once, marked "Declined later"
   it should open DebtForm with the Debt's snapshot definition loaded through getDefinitions by exact revision, and render the result after Save without reading the Trade again
+```
+
+**Amended by decision 56 (revision 15):** one more case, under the same describe.
+
+```text
+  it should show an unclassified Outstanding Debt as "Reflection owed" with no due text, with Reflect now and Decline still offered while Writable
 ```
 
 ---

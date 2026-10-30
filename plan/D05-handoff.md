@@ -21,7 +21,7 @@ The repository hosts several independent implementations of the same spec, each 
 | Worktree path | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | Branch | `claude-opus-5.5` |
 | Dev server port | `5175`, from the gitignored `.env.local` |
-| Frozen plan | tag `claude-opus-5.5-plan-r14` (revision 14) |
+| Frozen plan | tag `claude-opus-5.5-plan-r14` (revision 14) at the start of D5; revision 15 (tag `claude-opus-5.5-plan-r15`) added decision 56 during D5 |
 | D4 release | tag `claude-opus-5.5-d4` (`4ab43d5`) |
 | D5 starting point | tag `claude-opus-5.5-pre-d5` (the commit that added this note) |
 
@@ -74,7 +74,7 @@ You may read D6–D8's breakdowns for context, since some of them amend D5 (D8's
 2. Name the affected specification passages, acceptance scenarios and durable compatibility.
 3. Ask for approval to revise the plan.
 
-An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`; the next one is r15, and the next decision is 56. Updating an acceptance row's status from `planned` to `covered` once evidence exists is not a revision, but ask the user before doing it, as was done for D1, D2 and D4. Run each row's command as written before marking it (D4 found one that named no file).
+An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`; the next one is r16, and the next decision is 57 (r15 added decision 56 on 2026-10-29). Updating an acceptance row's status from `planned` to `covered` once evidence exists is not a revision, but ask the user before doing it, as was done for D1, D2 and D4. Run each row's command as written before marking it (D4 found one that named no file).
 
 ## 3. D5 specifics
 
@@ -171,7 +171,7 @@ Never push.
 - **The tech-debt items** at the end of `plan/implementation-plan.md` (the late Stale-context Mark at a save, and an older tab writing after a calendar change). The user accepted both.
 - D1's and D2's optional polish, and the D2 items the user triaged as "leave" (`plan/D04-handoff.md`, section 6).
 - F12, the section-validator gaps, carried into D8's T8.6.
-- Breakdowns for D9–D28 and RC. D9's numbering will start at P36, A150 and decision 56.
+- Breakdowns for D9–D28 and RC. D9's numbering will start at P36, A150 and decision 57 (decision 56 went to D5's coverage question).
 - Editing `specs/`, or editing the frozen plan without an approved revision.
 - Cloudflare setup, which the user will do, and verifying Marketdata.app's CORS support (due before D11's breakdown, decision 15).
 
@@ -184,4 +184,4 @@ Update this section at the end of each task.
 | Tasks done | T5.1 (`ec8e6c1`, with T5.1-S1 `fc2dfd7`); T5.18 (`f901511`); T5.2 (`cf85b93`); T5.3 (`ce6d64f`, T5.3-B1 `56f4dc9`); T5.4 (`fcd9132`); T5.5 (`12c927c`, T5.5-B1 `851f6b1`, B2 `367baf0`, B3 `2877686`); T5.6 (`3297f6b`, T5.6-B1 `710a16b`, B2 `42a16e4`; case 2 a flagged first-run pass); T5.7 (`7856037`, T5.7-B1 `d65cf1a`; case 2 a flagged first-run pass); T5.8 (`d83949d`, T5.8-B1 `880e6c0`, B2 `2f2d8c2`); T5.9 (`04a7f8f`, T5.9-B1 `fa3d504`); T5.10 (`c40845f`, T5.10-B1 `d872076`; cases 2–4 flagged first-run passes; T4.16 next-step expectation changed under A68). Cumulative run after T5.10: green except `verify:capacity`. |
 | Next task | **T5.11 Trade Views: Debt on Trade Detail.** |
 | Last commit | the evidence and handoff commit after T5.10 |
-| Open questions | **Flagged flake:** `src/ui/screens/TradeList.test.tsx:133` (`tj:open-list-ready` mark count 1 instead of 2) failed once in the T5.4 cumulative run; passes alone and in a full unit rerun. **Temporary rule:** `getTradeDetail` filters Debt items from the narrative until T5.11. **Flagged first-run passes:** T5.3 "validate the answers against the Debt snapshot revision" (mutation-checked). **Flagged:** B4.13 "Hold radio inside its chip at 375" (`e2e/d4/responsive-a11y.spec.ts:68`) failed twice in T5.18's combined d1+d2+d4 run, passing alone and in the cumulative run; likely a layout race after `setViewportSize`. **Before T5.11 and T5.17 (plan question for the user):** how an Outstanding Debt is classified on Trade Detail outside session-policy coverage, where there is no Expected Mark Date (decision 54 and A69); recommended answer in section 3. **Pending the user (raised 2026-10-29, not blocking):** `npm audit` reports vite 8.3.2 (high, dev server only; fixed in 8.3.5) and zod 4.6.5 (high, memory exhaustion on huge collections; fixed in 4.6.7; no app code imports zod until D8). Moving either pin is a plan revision (r15) with a full suite run; ask before doing it. |
+| Open questions | **Flagged flake:** `src/ui/screens/TradeList.test.tsx:133` (`tj:open-list-ready` mark count 1 instead of 2) failed once in the T5.4 cumulative run; passes alone and in a full unit rerun. **Temporary rule:** `getTradeDetail` filters Debt items from the narrative until T5.11. **Flagged first-run passes:** T5.3 "validate the answers against the Debt snapshot revision" (mutation-checked). **Flagged:** B4.13 "Hold radio inside its chip at 375" (`e2e/d4/responsive-a11y.spec.ts:68`) failed twice in T5.18's combined d1+d2+d4 run, passing alone and in the cumulative run; likely a layout race after `setViewportSize`. **Settled 2026-10-29 (decision 56, plan revision 15, tag `claude-opus-5.5-plan-r15`):** outside session-policy coverage, an Outstanding Debt on Trade Detail reads "Reflection owed" with no due classification, and Reflect now and Decline still work; T5.11 and T5.17 each gained one case. **Pending the user (raised 2026-10-29, not blocking):** `npm audit` reports vite 8.3.2 (high, dev server only; fixed in 8.3.5) and zod 4.6.5 (high, memory exhaustion on huge collections; fixed in 4.6.7; no app code imports zod until D8). Moving either pin is a plan revision (r16) with a full suite run; ask before doing it. |
