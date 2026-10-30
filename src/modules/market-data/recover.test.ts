@@ -275,6 +275,18 @@ describe('recover outside session policy coverage (P8)', () => {
   });
 });
 
+describe('recover rejection of its frames (A75)', () => {
+  it('should reject recover with the SessionPolicyCoverage issue when the session before the Review Date is not covered', async () => {
+    const { marketData } = await setup(TUESDAY_NOON, createSessionPolicy({ id: 'nyse', revision: 1, coverage: { first: '2026-10-12', last: '2028-12-31' }, table: NYSE_TABLE }));
+    const queried = await marketData.query({ kind: 'ResolveFrames', context: { kind: 'Review', reviewDate: '2026-10-12' }, instruments: ['XYZ'] });
+    const result = await marketData.recover(review([XYZ]));
+    expect(queried.kind).toBe('Rejected');
+    expect(result).toEqual(queried);
+    if (result.kind !== 'Rejected') throw new Error('expected a rejection');
+    expect(result.issues).toMatchObject([{ field: 'asOf', code: 'SessionPolicyCoverage' }]);
+  });
+});
+
 describe("previous session's close (A75)", () => {
   it('should return the same field with the Review Date resolved by recover', async () => {
     const { marketData } = await fixture();

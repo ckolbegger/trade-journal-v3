@@ -579,7 +579,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
         historical: await historicalGaps(tx, request.instruments, resolved.day.date),
       }));
       const queried = frameResult({ kind: 'ResolveFrames', context: request.context, instruments }, resolved.day, sorted, read.evidence);
-      if (queried.kind !== 'Frames') return { kind: 'Rejected', issues: [] };
+      if (queried.kind !== 'Frames') return { kind: 'Rejected', issues: queried.kind === 'Rejected' ? queried.issues : [] };
       const { gaps, diagnostics } = read.historical;
       return {
         kind: 'Recovered',
