@@ -33,23 +33,23 @@ async function openAt(fixture: DebtFixture, asOf: string) {
   return ready(await reviewAt(fixture, asOf).open({ date: { kind: 'LatestCompleted' }, asOf }));
 }
 
-// The Debts the Review marks Due, found through each walked Trade's card, in the Journal's
-// Outstanding Debt order (due anchor, then Debt identity: the T5.8 order).
+// The Debts the Review marks Due, in the order the Review presents them (T5.8): the Trades in the
+// walk's order, and within each Trade's card the reflections in anchor order. The order is taken
+// from the Review's own cards, never re-sorted by the Journal.
 async function dueDebts(fixture: DebtFixture, asOf: string): Promise<DebtName[]> {
   const review = reviewAt(fixture, asOf);
   const opened = ready(await review.open({ date: { kind: 'LatestCompleted' }, asOf }));
-  const due = new Set<string>();
+  const due: string[] = [];
   for (const family of opened.families) {
     if (family.family !== 'Trades') continue;
     for (const item of family.trades) {
       const card = await review.getTrade({ reviewDate: opened.reviewDate, tradeId: item.tradeId, binding: opened.binding });
       if (card.kind !== 'Ready') throw new Error(`getTrade: ${card.kind}`);
-      for (const reflection of card.trade.reflections) if (reflection.classification === 'Due') due.add(reflection.debtId);
+      for (const reflection of card.trade.reflections) if (reflection.classification === 'Due') due.push(reflection.debtId);
     }
   }
-  const outstanding = await fixture.stack.journal.query({ scope: 'OutstandingDebt' });
   const names = Object.entries(fixture.debts).map(([name, debt]) => [debt.debtId, name as DebtName] as const);
-  return outstanding.debts.filter((debt) => due.has(debt.debtId)).map((debt) => names.find(([id]) => id === debt.debtId)![1]);
+  return due.map((debtId) => names.find(([id]) => id === debtId)![1]);
 }
 
 const dueCount = (review: ReturnType<typeof ready>) =>
@@ -65,14 +65,19 @@ describe('I5.5 Due timing', () => {
 
     const tuesday = await openAt(fixture, TUESDAY_1700);
     expect(dueCount(tuesday)).toBe(5);
-    expect(await dueDebts(fixture, TUESDAY_1700)).toEqual(['D-3', 'D-1', 'D-4', 'D-2', 'D-5']);
-    // The Journal's order is by due anchor, then Debt identity, and D-6 and D-7 are owed but not yet due.
+    // The Review's own order: Trades in the walk's order (T-A, T-F, T-G, T-E), anchor order within a card.
+    expect(await dueDebts(fixture, TUESDAY_1700)).toEqual(['D-1', 'D-2', 'D-3', 'D-5', 'D-4']);
+    const tuesdayReasons = tuesday.completion.kind === 'Incomplete' ? tuesday.completion.reasons : [];
+    expect(tuesdayReasons.flatMap((reason) => (reason.code === 'ReflectionDue' ? reason.debtIds : []))).toEqual(
+      ['D-1', 'D-2', 'D-3', 'D-5', 'D-4'].map((name) => fixture.debts[name as DebtName].debtId),
+    );
+    // The Journal's own list is by due anchor, then Debt identity, and D-6 and D-7 are owed but not yet due.
     const outstanding = await fixture.stack.journal.query({ scope: 'OutstandingDebt' });
     expect(outstanding.debts.map((d) => d.debtId)).toEqual(['D-3', 'D-1', 'D-4', 'D-2', 'D-5', 'D-6', 'D-7'].map((name) => fixture.debts[name as DebtName].debtId));
 
     const wednesday = await openAt(fixture, WEDNESDAY_1700);
     expect(dueCount(wednesday)).toBe(7);
-    expect(await dueDebts(fixture, WEDNESDAY_1700)).toEqual(['D-3', 'D-1', 'D-4', 'D-2', 'D-5', 'D-6', 'D-7']);
+    expect(await dueDebts(fixture, WEDNESDAY_1700)).toEqual(['D-1', 'D-2', 'D-7', 'D-6', 'D-5', 'D-4', 'D-3']);
   }, 60_000);
 
   it('should leave a completed Tuesday Review Complete after a Tuesday-dated deferral, turn it Incomplete naming a Monday-dated one, and complete it again when answered', async () => {
