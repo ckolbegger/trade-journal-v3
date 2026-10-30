@@ -132,6 +132,8 @@ export type MarketDataQueryResult =
   | {
       readonly kind: 'Frames';
       readonly frames: readonly MarkFrame[];
+      // The close of the session before the resolved date, whether or not any frame is asked for (A75).
+      readonly previousCloseInstant: string;
       // The resolutionRevision each frame's key was read at, by Instrument: the binding a save of it presents.
       readonly resolutionRevisions: Readonly<Record<string, ExpectedResolutionRevision>>;
       // Opaque token holding the session-policy revision and the evidence digest (A45).
@@ -142,6 +144,7 @@ export type MarketDataQueryResult =
   | {
       readonly kind: 'SnapshotChanged';
       readonly frames: readonly MarkFrame[];
+      readonly previousCloseInstant: string;
       readonly snapshotId: string;
       readonly evidenceDigest: string;
     }
@@ -180,6 +183,8 @@ export type RecoverResult =
   | {
       readonly kind: 'Recovered';
       readonly frames: readonly MarkFrame[];
+      // The close of the session before the Review Date: the Debt due boundary, independent of the frames (A75).
+      readonly previousCloseInstant: string;
       readonly resolutions: readonly ResolvedKey[];
       readonly gaps: readonly HistoricalGaps[];
       // The Review Date's Missing keys: the Marks task asks the trader for each (A56).
@@ -477,6 +482,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
   if (query.expectedSnapshot === snapshotId) return { kind: 'SnapshotUnchanged', snapshotId, evidenceDigest };
   return {
     kind: query.expectedSnapshot === undefined ? 'Frames' : 'SnapshotChanged',
+    previousCloseInstant,
     frames: instruments.map((instrumentKey, i) => ({
       instrumentKey,
       tradingDate: day.date,
@@ -584,6 +590,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
       return {
         kind: 'Recovered',
         frames: queried.frames,
+        previousCloseInstant: queried.previousCloseInstant,
         resolutions: queried.frames.map(({ instrumentKey, tradingDate, resolution }, i) => ({ instrumentKey, tradingDate, resolution, resolutionRevision: revisionOf(read.evidence[i]!.record) })),
         gaps,
         manualTasks: queried.frames.filter((f) => f.resolution.kind === 'Missing').map(({ instrumentKey, tradingDate }) => ({ instrumentKey, tradingDate })),

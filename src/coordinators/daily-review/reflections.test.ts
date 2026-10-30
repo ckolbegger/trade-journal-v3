@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { debtFixture, TUESDAY_1700, TUESDAY_CUTOFF, type DebtFixture } from '../../../tests/support/debt-fixture.ts';
-import { reviewStack } from '../../../tests/support/review-fixture.ts';
+import { breakFirstExecution, reviewStack, TEN_AM } from '../../../tests/support/review-fixture.ts';
 import type { OpenDailyReviewResult } from './index.ts';
 
 const open = (fixture: DebtFixture) => fixture.stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: TUESDAY_1700 });
@@ -44,6 +44,25 @@ describe('due classification (A75)', () => {
     const walk = review.families[1]!;
     if (walk.family !== 'Trades') throw new Error('no Trades family');
     expect(walk.trades.map((t) => t.reflections)).toEqual([{ due: 0, later: 1 }]);
+  }, 60_000);
+});
+
+describe('due classification without frames (A75)', () => {
+  it('should report a due reflection for a walked Trade that needs no Mark frame', async () => {
+    const stack = await reviewStack(TUESDAY_1700);
+    const trade = await stack.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '56.00' });
+    await stack.fill(trade, TEN_AM, '100', '50.00', { kind: 'Defer' });
+    // Its facts cannot be replayed, so the Trade is walked but derives no Mark requirement and recovery returns no frame.
+    await breakFirstExecution(stack, trade.tradeId);
+
+    const review = ready(await stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: TUESDAY_1700 }));
+    const walk = review.families[1]!;
+    if (walk.family !== 'Trades') throw new Error('no Trades family');
+    expect(walk.trades.map((t) => t.reflections)).toEqual([{ due: 1, later: 0 }]);
+    expect(review.completion).toEqual({
+      kind: 'Incomplete',
+      reasons: expect.arrayContaining([{ code: 'ReflectionDue', tradeId: trade.tradeId, debtIds: [expect.any(String)] }]) as unknown,
+    });
   }, 60_000);
 });
 

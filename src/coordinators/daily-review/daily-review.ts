@@ -213,7 +213,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const frames = await deps.marketData.query({ kind: 'ResolveFrames', context: { kind: 'Review', reviewDate }, instruments });
     if (frames.kind === 'Rejected') return frames;
     if (frames.kind !== 'Frames') throw new Error(`unexpected frames result: ${frames.kind}`);
-    return { kind: 'Recovered' as const, frames: frames.frames, resolutions: frames.frames.map(({ instrumentKey, tradingDate }) => ({ instrumentKey, tradingDate, resolutionRevision: frames.resolutionRevisions[instrumentKey] ?? ('None' as const) })), gaps: [], snapshotId: frames.snapshotId };
+    return { kind: 'Recovered' as const, frames: frames.frames, previousCloseInstant: frames.previousCloseInstant, resolutions: frames.frames.map(({ instrumentKey, tradingDate }) => ({ instrumentKey, tradingDate, resolutionRevision: frames.resolutionRevisions[instrumentKey] ?? ('None' as const) })), gaps: [], snapshotId: frames.snapshotId };
   }
 
   // One pass over the module reads. Its Review carries what the pass itself learned of the binding.
@@ -251,10 +251,10 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       .map((trade) => reviewItem(trade, recovered.frames))
       .sort((a, b) => byAttention(a.item, b.item));
     // Outstanding Debt, read once (A63), classified against the close of the session before the Review Date (A75).
-    const previousClose = recovered.frames[0]?.previousCloseInstant;
+    const previousClose = recovered.previousCloseInstant;
     const outstanding = (await deps.journal.query({ scope: 'OutstandingDebt' })).debts;
     const dueDebtIds = (tradeId: string) =>
-      outstanding.filter((debt) => debt.anchor.tradeId === tradeId && previousClose !== undefined && Temporal.Instant.compare(debt.dueAnchor, previousClose) <= 0).map((debt) => debt.debtId);
+      outstanding.filter((debt) => debt.anchor.tradeId === tradeId && Temporal.Instant.compare(debt.dueAnchor, previousClose) <= 0).map((debt) => debt.debtId);
     const reflectionsOf = (tradeId: string): ReflectionCounts => {
       const due = dueDebtIds(tradeId).length;
       return { due, later: outstanding.filter((debt) => debt.anchor.tradeId === tradeId).length - due };
