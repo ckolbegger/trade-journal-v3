@@ -1,0 +1,82 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 12066,
+    "input_tokens": 11964,
+    "output_tokens": 102,
+    "cache_read_tokens": 5760,
+    "elapsed": "13s"
+  },
+  "tool_calls": {
+    "total": 2,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "tools/capacity/measure-page.ts",
+      "files": [
+        "tools/capacity/measure-page.ts"
+      ]
+    }
+  ],
+  "session_id": "163d9c3f-6f83-4b54-9d1e-6f82c85b35ef",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "163d9c3f-6f83-4b54-9d1e-6f82c85b35ef",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f9e35f1",
+      "resolved_base": "8b11719f463bd330ccb46688981a86c9fea74a1b",
+      "resolved_head": "f9e35f16f1acf2a76092002d65fb9737d06e5da1",
+      "exact_range": "8b11719f463bd330ccb46688981a86c9fea74a1b..f9e35f16f1acf2a76092002d65fb9737d06e5da1",
+      "source_artifact_sha256": "212a0555f241329b985a516307d174629ef0456a1b72530f876fb43da3236e07"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "cf2ac68c6e191740f30b486e0adf92d2971328f9c8ec4ab363dbb3863de2c006",
+          "path": "tools/capacity/measure-page.ts",
+          "fingerprint": "e4ac54fecb71ad4ad2685a014b70ad1a77cba841fdf0cd1eb9e55e96e63af111"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "cf2ac68c6e191740f30b486e0adf92d2971328f9c8ec4ab363dbb3863de2c006",
+          "path": "tools/capacity/measure-page.ts",
+          "fingerprint": "e4ac54fecb71ad4ad2685a014b70ad1a77cba841fdf0cd1eb9e55e96e63af111"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 13210
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 2,
+    "total_tokens": 167893,
+    "input_tokens": 166019,
+    "output_tokens": 1874,
+    "cache_read_tokens": 15360,
+    "elapsed": "1m47s"
+  },
+  "tool_calls": {
+    "total": 16,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 3,
+      "file_read": 11
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tools/capacity/measure-page.ts",
+      "content": "This nested ternary violates the supplied checklist's prohibition on nested ternary expressions. Use explicit if/else branches to select the entry or decline, keeping the lookup precedence clear.",
+      "suggestion_code": "    let outcome;\n    if (last.entryId !== undefined) {\n      outcome = entries.get(last.entryId);\n    } else if (last.declineId !== undefined) {\n      outcome = declines.get(last.declineId);\n    }",
+      "existing_code": "    const outcome = last.entryId !== undefined ? entries.get(last.entryId) : last.declineId !== undefined ? declines.get(last.declineId) : undefined;",
+      "start_line": 306,
+      "end_line": 306,
+      "category": "style",
+      "severity": "low"
+    },
+    {
+      "path": "tools/capacity/profile.ts",
+      "content": "The at-capture projection still uses a blended measurement containing 320 Entries and 80 declines (80%/20%). Multiplying that by 80,000 projects 64,000 completed and 16,000 declined reflections, rather than the required 65,000/15,000 split. Since Entries and declines have different sizes, this understates the completed-reflection storage. Measure and weight the two outcomes separately, or change the capture sample to the required conditional ratio of 65:15 before using this aggregate.",
+      "existing_code": "    MEASURED.positionChangeReflectionsAtCapture * m.bytesPerPositionChangeReflection +",
+      "start_line": 105,
+      "end_line": 105,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Capacity measurement, profiling, and delivery basis",
+      "files": [
+        "src/delivery/capacity-basis.json",
+        "tools/capacity/measure-page.ts",
+        "tools/capacity/profile.ts",
+        "tools/measure-capacity.ts"
+      ]
+    }
+  ],
+  "session_id": "a9f4e7aa-4522-40f7-80fb-14c26f9484bd",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a9f4e7aa-4522-40f7-80fb-14c26f9484bd",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "79ebcc5",
+      "resolved_base": "1bd705a0d8fa109327d35fc132684e1fed122a38",
+      "resolved_head": "79ebcc5ff1597656ddc4656879da8751c6953952",
+      "exact_range": "1bd705a0d8fa109327d35fc132684e1fed122a38..79ebcc5ff1597656ddc4656879da8751c6953952",
+      "source_artifact_sha256": "8654369cbcf71b0c2b2771a4c0ba39d8a497deed7908e728d832b1ed3c859f25"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1bd77995c1c0456cf681d7f6fc85ca374537dce55156bd4f5795b554fecce2a0",
+          "path": "src/delivery/capacity-basis.json",
+          "fingerprint": "f0dbe2fb68709de96db53c62cc3702abc70f5e64a0051a666a46ee0ee0dd6e0b"
+        },
+        {
+          "item_id": "229a3a93872ed40c502a4b0cb56f2ac95957c78db0a414e7997985bb1defba8f",
+          "path": "tools/capacity/profile.ts",
+          "fingerprint": "49ce0e1e0fb0d0e8de3888479d82945091532dedfe679fa08d7bfb3716c81e2f"
+        },
+        {
+          "item_id": "a2fbf86bdfdddc692f77e3ff3974d8ebd60c6354ae81e573e7021416d65178d2",
+          "path": "tools/measure-capacity.ts",
+          "fingerprint": "9c85a74131695070b098e9a051a1ae73dacea3a28b41613007c787080403ef67"
+        },
+        {
+          "item_id": "cf2ac68c6e191740f30b486e0adf92d2971328f9c8ec4ab363dbb3863de2c006",
+          "path": "tools/capacity/measure-page.ts",
+          "fingerprint": "194d7df7bf78cf161c9e9d326e3ffa53dd1642f7e86ee71bd178deaaf25c1135"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1bd77995c1c0456cf681d7f6fc85ca374537dce55156bd4f5795b554fecce2a0",
+          "path": "src/delivery/capacity-basis.json",
+          "fingerprint": "f0dbe2fb68709de96db53c62cc3702abc70f5e64a0051a666a46ee0ee0dd6e0b"
+        },
+        {
+          "item_id": "229a3a93872ed40c502a4b0cb56f2ac95957c78db0a414e7997985bb1defba8f",
+          "path": "tools/capacity/profile.ts",
+          "fingerprint": "49ce0e1e0fb0d0e8de3888479d82945091532dedfe679fa08d7bfb3716c81e2f"
+        },
+        {
+          "item_id": "a2fbf86bdfdddc692f77e3ff3974d8ebd60c6354ae81e573e7021416d65178d2",
+          "path": "tools/measure-capacity.ts",
+          "fingerprint": "9c85a74131695070b098e9a051a1ae73dacea3a28b41613007c787080403ef67"
+        },
+        {
+          "item_id": "cf2ac68c6e191740f30b486e0adf92d2971328f9c8ec4ab363dbb3863de2c006",
+          "path": "tools/capacity/measure-page.ts",
+          "fingerprint": "194d7df7bf78cf161c9e9d326e3ffa53dd1642f7e86ee71bd178deaaf25c1135"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 107391
+  }
+}

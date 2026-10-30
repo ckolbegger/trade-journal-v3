@@ -791,3 +791,60 @@ Run 2026-10-29 23:17 EDT on commit `0edcc04`, Node v26.12.0.
 | Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.17-detail-debt-ui-checks.txt` |
 
 Failures: `verify:capacity` only (expected until T5.19).
+
+## T5.19 Capacity basis recomputed for schema 4
+
+Implementation commit `79ebcc5` (structural; exact verification `npm run measure:capacity`, then `npm run verify:capacity`). A new Debt phase in `tools/capacity/measure-page.ts`, run after the Review phase, records 2,000 Position Changes with a deferred reflection through `TradeWorkflows.recordPositionChange` (10 sessions from 2026-03-02 × the 200 Open Trades). In the next session's Review it resolves them through `DailyReview.open`, `getTrade` and `save({kind:'ResolveReviewDebt'})`: of every 50, 45 answered, 4 declined, 1 left Outstanding (1,800 / 160 / 40, the plan's 90% and 8%). Bytes on disk are JSON bytes × the phase's own overhead ratio (1.18405), as in T4.28. Chromium 153:
+
+| Item | Count | JSON bytes | On-disk bytes |
+|---|---|---|---|
+| Deferred, answered | 1,800 | 2,318.8 | 2,745.6 |
+| Deferred, declined | 160 | 1,728 | 2,046.0 |
+| Deferred, still Outstanding | 40 | 954 | 1,129.6 |
+
+A capture-time reflection stays at 1,277.8 bytes; an Action is 1,931.3.
+
+| | Schema 3 | Schema 4 |
+|---|---|---|
+| M | 826,458,088 | 851,734,424 (+25.3 MB) |
+| Required quota (3 × M) | 2,479,374,264 | 2,555,203,272 |
+
+`measure:capacity` exit 0 (about 4m45s); `verify:capacity OK: required quota 2555203272 = 3 × 851734424, schema 4`.
+
+Section 1.4 mapping recorded by the implementer: the 100,000 Position Change Reflection outcomes are now `positionChangeReflectionsAtCapture` 80,000 (65% completed + 15% declined), `debtsAnswered` 18,000, `debtsDeclined` 1,600, `debtsOutstanding` 400, each priced by its own bytes. The Debt figures cover the journal records only (Debt, obligation, and the Entry or decline that settled it); the Position Change and Execution are already priced under their own rows. The capture-time figure keeps the Open phase's 80/20 Entry/decline mix rather than 65:15 (81:19), a small and conservative-neutral difference left as is.
+
+Other changes: `tools/measure-capacity.ts` hard-coded dev-server port 5179; it now uses 5175, the assigned port. `tests/integration/d4/capacity-profile.test.ts` gained the new `EngineMeasurement` fields (zeros) and its expected total moved from 197,820,000 to 197,220,000, because the 20,000 deferred outcomes are no longer priced at the capture-time figure; the new `tests/integration/d5/capacity-profile.test.ts` covers the split and the Debt pricing. A later Firefox or WebKit entry merged from an older basis would lack the Debt fields until re-measured; the basis holds Chromium only.
+
+ocr review of `79ebcc5`: session `a9f4e7aa-4522-40f7-80fb-14c26f9484bd`, 4 files reviewed, 2 comments. Raw output: `ocr/T5.19-79ebcc5.json`.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `tools/capacity/profile.ts:105` | The 80,000 capture-time outcomes are priced at an 80/20 Entry/decline sample, not the section 1.4 split of 65,000 completed and 15,000 declined | Doubtful (about 1.25 points of mix; the sampling predates T5.19, but T5.19 is the task that applies the section 1.4 split) | Bug task T5.19-B1 |
+| low | `tools/capacity/measure-page.ts:306` | A nested ternary picks the Entry or the decline for each Debt | Valid, style only | Bug task T5.19-B2 |
+
+A cumulative run on `79ebcc5` (2026-10-29 23:33 EDT, label `t5.19-capacity-basis`) was fully green: unit 893, integration 75 (42 files), browser 142 (4.8m), checks 12 of 12, `verify:capacity` among them for the first time in D5. It is superseded by the run after the bug tasks.
+
+### T5.19-B1 The capture-time reflections follow the section 1.4 split
+- it should price 65,000 completed-at-capture and 15,000 declined-at-capture outcomes at their own bytes
+
+Implemented in `8b11719`. The measurement page had no Entry/decline separation, so `captureReflectionShare` in `measure-page.ts` measures each capture-time Entry or decline with its obligation record and splits them by outcome kind. It asserts the Open phase's 320 Entries and 80 declines. `EngineMeasurement` replaces the blended `bytesPerPositionChangeReflection` with `bytesPerReflectionCompletedAtCapture` 1,409.7 (JSON 1,354.9) and `bytesPerReflectionDeclinedAtCapture` 802.2 (JSON 771); the blended figure was 1,277.8. `MEASURED` prices 65,000 and 15,000. Red (`expected undefined to be 65000`) then green. The existing d5 projection case now expects 65,000 × 10 + 15,000 × 50 instead of 80,000 × 10, an assertion change the new shape forces. Re-measured: M 849,065,876, required quota 2,547,197,628 (T5.19: 851,734,424 and 2,555,203,272; part of the difference is run-to-run variation in the overhead ratios). `verify:capacity OK ... schema 4`.
+
+ocr review of `8b11719`: session `e85e8113-df3b-4fcb-a400-9087737478ba`, 3 files reviewed, **No findings.** Raw output: `ocr/T5.19-B1-8b11719.json`.
+
+### T5.19-B2 The settling-record lookup is plain code
+Refactor in `f9e35f1`. The ocr finding's nested ternary picks the Entry or decline that settled each Debt (my brief described it as the 45/4/1 outcome choice, which at HEAD is already an `if`/`continue` and one plain ternary; the implementer correctly took the finding's own wording). It is now a small `settlingRecord` function with `if`/`return`. Behaviour identical; `measure:capacity` not rerun, so the figures are unchanged. Both capacity-profile files (5 tests), the four static checks and `verify:capacity` exit 0.
+
+ocr review of `f9e35f1`: session `163d9c3f-6f83-4b54-9d1e-6f82c85b35ef`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.19-B2-f9e35f1.json`.
+
+### Cumulative run after T5.19
+
+Run 2026-10-29 23:46 EDT on commit `f9e35f1`, Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 69 passed (69)`, `Tests 893 passed (893)`, exit 0 | `suite-runs/t5.19-b2-capacity-basis-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 42 passed (42)`, `Tests 76 passed (76)`, exit 0 | `suite-runs/t5.19-b2-capacity-basis-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `142 passed (4.8m)`, exit 0 | `suite-runs/t5.19-b2-capacity-basis-browser.txt` |
+| Static and verification checks (12 commands) | as at the end of D4 | 12 of 12 exit 0 | `suite-runs/t5.19-b2-capacity-basis-checks.txt` |
+
+Failures: none. T5.19 is complete.

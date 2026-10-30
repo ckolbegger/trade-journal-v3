@@ -1,0 +1,104 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 0,
+    "total_tokens": 41042,
+    "input_tokens": 40832,
+    "output_tokens": 210,
+    "cache_read_tokens": 7680,
+    "elapsed": "20s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "code_search": 1,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/delivery/capacity-basis.json",
+        "tools/capacity/measure-page.ts",
+        "tools/capacity/profile.ts"
+      ]
+    }
+  ],
+  "session_id": "e85e8113-df3b-4fcb-a400-9087737478ba",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "e85e8113-df3b-4fcb-a400-9087737478ba",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "8b11719",
+      "resolved_base": "79ebcc5ff1597656ddc4656879da8751c6953952",
+      "resolved_head": "8b11719f463bd330ccb46688981a86c9fea74a1b",
+      "exact_range": "79ebcc5ff1597656ddc4656879da8751c6953952..8b11719f463bd330ccb46688981a86c9fea74a1b",
+      "source_artifact_sha256": "14e7af5232a35b2d2e353338aedb84d718c2fe087fc3773c76e987fea0b2fd14"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1bd77995c1c0456cf681d7f6fc85ca374537dce55156bd4f5795b554fecce2a0",
+          "path": "src/delivery/capacity-basis.json",
+          "fingerprint": "9e6083afb157f1fe03cc492b91e9ae1ff8664d34b2abcf9a99bb541d1149480b"
+        },
+        {
+          "item_id": "229a3a93872ed40c502a4b0cb56f2ac95957c78db0a414e7997985bb1defba8f",
+          "path": "tools/capacity/profile.ts",
+          "fingerprint": "13da0da945f29aa81713e6a3577fdf5a4ac77ffe5423b06cc9bab9182c5032a4"
+        },
+        {
+          "item_id": "cf2ac68c6e191740f30b486e0adf92d2971328f9c8ec4ab363dbb3863de2c006",
+          "path": "tools/capacity/measure-page.ts",
+          "fingerprint": "596b903edf15453be7d67d003d65f25009469504c0b101b1fc26a21fac9b47cf"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1bd77995c1c0456cf681d7f6fc85ca374537dce55156bd4f5795b554fecce2a0",
+          "path": "src/delivery/capacity-basis.json",
+          "fingerprint": "9e6083afb157f1fe03cc492b91e9ae1ff8664d34b2abcf9a99bb541d1149480b"
+        },
+        {
+          "item_id": "229a3a93872ed40c502a4b0cb56f2ac95957c78db0a414e7997985bb1defba8f",
+          "path": "tools/capacity/profile.ts",
+          "fingerprint": "13da0da945f29aa81713e6a3577fdf5a4ac77ffe5423b06cc9bab9182c5032a4"
+        },
+        {
+          "item_id": "cf2ac68c6e191740f30b486e0adf92d2971328f9c8ec4ab363dbb3863de2c006",
+          "path": "tools/capacity/measure-page.ts",
+          "fingerprint": "596b903edf15453be7d67d003d65f25009469504c0b101b1fc26a21fac9b47cf"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 19891
+  }
+}
