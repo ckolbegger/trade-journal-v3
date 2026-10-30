@@ -19,6 +19,7 @@ export function OwedDebtItem({
   onOpen,
   onClose,
   onResolved,
+  onDirtyChange,
 }: {
   readonly facade: UiFacade;
   readonly debt: TradeDetailDebt;
@@ -28,6 +29,7 @@ export function OwedDebtItem({
   readonly onOpen: () => void;
   readonly onClose: () => void;
   readonly onResolved: () => void;
+  readonly onDirtyChange?: (dirty: boolean) => void;
 }) {
   const { writable, report } = useRuntime();
   const [definition, setDefinition] = useState<EntryDefinitionRecord>();
@@ -118,6 +120,7 @@ export function OwedDebtItem({
             submit={submit}
             onResolved={resolved}
             onCancel={close}
+            onDirtyChange={onDirtyChange}
           />
         </div>
       ) : (

@@ -29,6 +29,8 @@ import { OwedDebtItem } from './OwedDebtItem.tsx';
 export interface TradeDetailProps {
   readonly facade: UiFacade;
   readonly timeZone: string;
+  // The page holds an unsaved reflection (only one form is open at a time).
+  readonly onDirtyChange?: (dirty: boolean) => void;
 }
 
 // Why an incoherent Trade offers no Record entry; the entry route shows the same words.
@@ -57,7 +59,7 @@ function BackToTrades({ lifecycle }: { readonly lifecycle?: string }) {
   );
 }
 
-export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
+export function TradeDetail({ facade, timeZone, onDirtyChange }: TradeDetailProps) {
   const { tradeId = '' } = useParams();
   // A Plan just confirmed arrives with its post-commit view, so it is shown without a read.
   const confirmed = (useLocation().state as { confirmed?: PlannedTradeDetail } | null)?.confirmed;
@@ -159,11 +161,11 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
           </dl>
         </section>
       )}
-      {'positionChanges' in view && <OpenSections facade={facade} view={view} timeZone={timeZone} />}
+      {'positionChanges' in view && <OpenSections facade={facade} view={view} timeZone={timeZone} onDirtyChange={onDirtyChange} />}
       {'recordedPositionChanges' in view && (
         <>
           <ExecutionsSection positionChanges={view.recordedPositionChanges} journal={outcomesOnly(view.journal)} timeZone={timeZone} />
-          <JournalSection facade={facade} journal={view.journal} symbol={view.plan.underlying} timeZone={timeZone} />
+          <JournalSection facade={facade} journal={view.journal} symbol={view.plan.underlying} timeZone={timeZone} onDirtyChange={onDirtyChange} />
         </>
       )}
       {!('findings' in view) && entry && 'responses' in entry && (
@@ -378,7 +380,7 @@ function RiskRewardSection({ evaluation, baseline }: { readonly evaluation: Open
 }
 
 // The Open form's derived Position and its recorded Position Changes (D2).
-function OpenSections({ facade, view, timeZone }: { readonly facade: UiFacade; readonly view: OpenTradeDetail; readonly timeZone: string }) {
+function OpenSections({ facade, view, timeZone, onDirtyChange }: { readonly facade: UiFacade; readonly view: OpenTradeDetail; readonly timeZone: string; readonly onDirtyChange?: (dirty: boolean) => void }) {
   const executions = view.positionChanges.flatMap((change) => change.executions);
   const openedAt = (executionId: string) => localTime(executions.find((e) => e.factId === executionId)?.economicTime ?? '', timeZone);
   return (
@@ -431,7 +433,7 @@ function OpenSections({ facade, view, timeZone }: { readonly facade: UiFacade; r
       <EntryQualitySection view={view} timeZone={timeZone} />
       <FulfillmentSection view={view} />
       <DeviationsSection view={view} timeZone={timeZone} />
-      <JournalSection facade={facade} journal={view.journal} symbol={view.plan.underlying} timeZone={timeZone} />
+      <JournalSection facade={facade} journal={view.journal} symbol={view.plan.underlying} timeZone={timeZone} onDirtyChange={onDirtyChange} />
     </>
   );
 }
@@ -715,11 +717,13 @@ function JournalSection({
   journal,
   symbol,
   timeZone,
+  onDirtyChange,
 }: {
   readonly facade: UiFacade;
   readonly journal: readonly TradeDetailNarrativeItem[];
   readonly symbol: string;
   readonly timeZone: string;
+  readonly onDirtyChange?: (dirty: boolean) => void;
 }) {
   // At most one Debt form is open at a time; a resolved one stays as the result rendered it.
   const [active, setActive] = useState<{ readonly debtId: string; readonly resolved: boolean }>();
@@ -739,6 +743,7 @@ function JournalSection({
                 onOpen={() => setActive({ debtId: item.id, resolved: false })}
                 onClose={() => setActive(undefined)}
                 onResolved={() => setActive({ debtId: item.id, resolved: true })}
+                onDirtyChange={onDirtyChange}
               />
             );
           }

@@ -1197,6 +1197,44 @@ describe('Debt on Trade Detail (A69, P17)', () => {
     }
   });
 
+  it('should register an unsaved reflection on Trade Detail with the update guard and clear it after a save or cancel', async () => {
+    const journal = [owedDebt('debt-1', 'pc-1', '2026-10-12T14:00:00Z', 'Due')];
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: openDetailOf([PC1, PC2], { journal }), binding: {} } as never);
+    vi.mocked(facade.Journal.getDefinitions).mockResolvedValue({ kind: 'Found', definition: reflectionDefinition } as never);
+    vi.mocked(facade.Journal.save).mockResolvedValue({ kind: 'Saved', decline: { id: 'decl-1' }, debt: { debtId: 'debt-1' }, currentOutcome: { kind: 'Decline', id: 'decl-1' }, snapshot: { journalRevision: 5 } } as never);
+    const onDirtyChange = vi.fn();
+    render(
+      <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
+        <MemoryRouter initialEntries={['/trades/trade-1']}>
+          <Routes>
+            <Route path="/trades/:tradeId" element={<TradeDetail facade={facade} timeZone="America/New_York" onDirtyChange={onDirtyChange} />} />
+          </Routes>
+        </MemoryRouter>
+      </RuntimeContext.Provider>,
+    );
+    const user = userEvent.setup();
+    const answerMode = async () => {
+      const form = await screen.findByRole('form', { name: 'Reflection' });
+      await user.click(within(within(form).getByRole('radiogroup', { name: 'Decision mode' })).getByLabelText('Reactive'));
+      return form;
+    };
+
+    await user.click(await screen.findByRole('button', { name: 'Reflect now' }));
+    const form = await answerMode();
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+    await user.click(within(form).getByRole('button', { name: 'Cancel' }));
+    expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+
+    onDirtyChange.mockClear();
+    await user.click(screen.getByRole('button', { name: 'Reflect now' }));
+    await answerMode();
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+    await user.click(screen.getByRole('button', { name: 'Decline' }));
+    await screen.findByRole('region', { name: 'Saved reflection' });
+    expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+  });
+
   it('should move focus to the saved reflection after a Debt is resolved', async () => {
     const facade = facadeDouble();
     vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({

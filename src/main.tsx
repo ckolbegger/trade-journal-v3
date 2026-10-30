@@ -74,7 +74,7 @@ async function start(container: HTMLElement) {
       return <TradeList facade={facade} />;
     },
     'trade-detail': function Detail() {
-      return <TradeDetail facade={facade} timeZone={useZone()} />;
+      return <TradeDetail facade={facade} timeZone={useZone()} onDirtyChange={setUnsaved} />;
     },
     'record-entry': function RecordEntry() {
       return <PositionChangeForm facade={facade} timeZone={useZone()} now={now} onDirtyChange={setUnsaved} />;
