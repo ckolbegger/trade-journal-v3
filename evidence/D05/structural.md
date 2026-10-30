@@ -1092,3 +1092,25 @@ ocr review of `582b184` (scratch clone, the four spec files relocated under `src
 Revision 17 (decision 58) rewords B5.4. Commit `351fcf6` adds to the B5.4 case in `e2e/d5/due-timing.spec.ts` an exact "Due in the next Review" in Monday's XYZ Reflections region, keeping no exact "Due" on Monday, Monday Complete, and Tuesday "Due" with Incomplete; the title now reads "should list the reflection as due in the next Review in Monday's Review, which reaches Complete, and list it as Due in Tuesday's". First-run pass, flagged; mutation `DUE_TEXT.DueInNextReview` gains a trailing full stop, failing on the new locator (element not found), restored with `git diff -- src` empty. A first mutated run built into the default `dist` instead of `dist-releases/d5` and was discarded. `due-timing.spec.ts` after a clean d5 rebuild: 2 passed; the four static checks reported no errors (exit codes not captured; the cumulative run rechecks them).
 
 ocr review of `351fcf6` (scratch clone, `due-timing.spec.ts` and `support.ts` relocated under `src/itg/d5/`; `ocr/T5.24-B1-351fcf6.json`): 1 file reviewed, no findings.
+
+## T5.22 Latency harness and query-count proof, extended
+Commit `7c933dd`: `tests/integration/d5/query-count.test.ts` (new), `tools/bench-run.ts`, `evidence/D05/bench.md` (new), tdd-log rows. Static checks exit 0; `test:integration -- d5/query-count` 3 passed, `d4/query-count` 1 passed.
+
+Query count (all three first-run passes, flagged, mutations restored with `git diff -- src` empty):
+
+| Case | Mutation | Failure |
+|---|---|---|
+| Review `open` adds exactly one `getAll` on `byOutstandingDue` to D4's counts | a second `journal.query({ scope: 'OutstandingDebt' })` in `daily-review.ts` | request list deep-equal fails (2 entries, expected 1) |
+| Trade Detail adds exactly one `getAll` on `byAnchorTrade` | a second `journal.query({ scope: 'TradeNarrative' })` in `trade-views.ts` | same assertion |
+| Same Debt requests with 10 or 2,000 settled Debts (built through the facade, Defer then Answer) | the `OutstandingDebt` query also reads every Debt by key | 2,003 requests against 13 |
+
+Bench (`npm run bench:run`, port 5181, cached generator 3 / schema 4 profile, not regenerated; `bench.md`):
+
+| Measure | Runs | p95 | Budget | Result |
+|---|---|---|---|---|
+| Cold start to `tj:interactive` | 30 | 104.8 ms | 2,500 ms | pass |
+| Warm Planned-to-Open switch to `tj:open-list-ready` | 30 | 43.6 ms | 1,500 ms | pass |
+
+Before and after the runs: 200 Open rows equal `bench/expected-open-rows.json` (and every cold start rendered the same 200); the as-of Review (2028-12-29) lists 2 due reflections, both on QAJ, equal to `asOfDueReflections` and the two `outstandingDebts` (2028-12-27 and 2028-12-28, decision 58).
+
+Readings: the harness reads due reflections from the Review overview's blockers ("Reflection due for X" / "N reflections due for X") after opening Review from the navigation, failing on any difference in Review Date, total or per-Trade grouping. No latency scenarios were added beyond the two gated budgets; the time from clicking Review to its status appearing is disclosed ungated (about 2.3 s before, 2.2 s after; no plan budget covers it). `bench.md` stamps commit `7ea3384` plus uncommitted harness changes because the run preceded the commit; `7c933dd` holds that harness. D4's "Superseded run" section was dropped from the report template.
