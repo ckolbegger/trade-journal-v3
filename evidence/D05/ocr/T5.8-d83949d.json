@@ -1,0 +1,146 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 2,
+    "total_tokens": 171618,
+    "input_tokens": 169191,
+    "output_tokens": 2427,
+    "cache_read_tokens": 19200,
+    "elapsed": "1m55s"
+  },
+  "tool_calls": {
+    "total": 29,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 13,
+      "file_read": 15
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "Compare these values as instants rather than strings. Debt.dueAnchor preserves the supplied economic time, so valid timestamps need not have the same offset or fractional-second representation as previousCloseInstant. For example, `2026-10-12T16:00:00-04:00` is exactly the Monday close, but an instant after that close such as `2026-10-12T16:30:00-04:00` also compares less than `2026-10-12T20:00:00Z` and is incorrectly marked due. Use Temporal.Instant.compare (as other time comparisons in the codebase do), and test offset and fractional-second inputs.",
+      "existing_code": "      outstanding.filter((debt) =\u003e debt.anchor.tradeId === tradeId \u0026\u0026 previousClose !== undefined \u0026\u0026 debt.dueAnchor \u003c= previousClose).map((debt) =\u003e debt.debtId);",
+      "start_line": 256,
+      "end_line": 256,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "The cutoff is unavailable when the walk has no mark requirements. observationNeeds excludes trades with incoherent derivations or integrity disagreements, so a nonempty walk consisting of those trades can legitimately produce an empty frames array. In that case every outstanding reflection is counted as later and no ReflectionDue blocker is emitted, even for old debts. Obtain the previous-session close independently of the instrument frames so due counts remain correct for these walked trades too.",
+      "existing_code": "    const previousClose = recovered.frames[0]?.previousCloseInstant;",
+      "start_line": 253,
+      "end_line": 253,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Daily review coordination, UI integration, and supporting test fixtures",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/types.ts",
+        "src/ui/screens/ReviewView.tsx",
+        "tests/support/debt-fixture.ts",
+        "tests/support/review-fixture.ts"
+      ]
+    }
+  ],
+  "session_id": "dc000bf4-1d6b-4a82-a152-8c4c04df2137",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "dc000bf4-1d6b-4a82-a152-8c4c04df2137",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "d83949d",
+      "resolved_base": "da7b3403c5c42449586c92c8c44f6aca1c8f3a7c",
+      "resolved_head": "d83949ddcb8de17d860dd478cee9c7e33710e5c7",
+      "exact_range": "da7b3403c5c42449586c92c8c44f6aca1c8f3a7c..d83949ddcb8de17d860dd478cee9c7e33710e5c7",
+      "source_artifact_sha256": "f4710e779bae1c494a3e4b4d4afa35ef8cf6ab19075100e4f201bf86bc83ed19"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "6090f6049fe14dae410e710e8f12c8c388d99c2b020cf20a5e71d99080ce9b77"
+        },
+        {
+          "item_id": "599ca15ab8b28d2e9222189ea6bfce2f96bd5502c97c93eefc361f12ab05de8b",
+          "path": "tests/support/debt-fixture.ts",
+          "fingerprint": "02ffdd4c1dd02e58d5dab4e196ec8e4734ee5ba09b8ce7595afa27a4e4109a74"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "e1c16e48a8f238072390d1b3d960911b7cb7f67fadb8ccd601dd260969cc8241"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "8fd6aae951636ebd95ba3e9d5d85fff141072ec3e5315164434c1a39f5ebde15"
+        },
+        {
+          "item_id": "9fcc9106e1f1d3b34a703c3af12c8e441b2327bf74a78dbb4748f627b9a5c7a9",
+          "path": "tests/support/review-fixture.ts",
+          "fingerprint": "73585764232e8bd40cb00c246e7e43add5899ee407768ae26f47e57e22ac72c7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "6090f6049fe14dae410e710e8f12c8c388d99c2b020cf20a5e71d99080ce9b77"
+        },
+        {
+          "item_id": "599ca15ab8b28d2e9222189ea6bfce2f96bd5502c97c93eefc361f12ab05de8b",
+          "path": "tests/support/debt-fixture.ts",
+          "fingerprint": "02ffdd4c1dd02e58d5dab4e196ec8e4734ee5ba09b8ce7595afa27a4e4109a74"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "e1c16e48a8f238072390d1b3d960911b7cb7f67fadb8ccd601dd260969cc8241"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "8fd6aae951636ebd95ba3e9d5d85fff141072ec3e5315164434c1a39f5ebde15"
+        },
+        {
+          "item_id": "9fcc9106e1f1d3b34a703c3af12c8e441b2327bf74a78dbb4748f627b9a5c7a9",
+          "path": "tests/support/review-fixture.ts",
+          "fingerprint": "73585764232e8bd40cb00c246e7e43add5899ee407768ae26f47e57e22ac72c7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 114715
+  }
+}

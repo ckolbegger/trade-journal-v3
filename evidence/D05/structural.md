@@ -279,3 +279,47 @@ Run 2026-10-29 20:13 EDT on commit `d65cf1a`, Node v26.12.0.
 | Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.7-previous-close-checks.txt` |
 
 Failures: `verify:capacity` only (expected until T5.19).
+
+## T5.8 Daily Review: `open` with reflections per Trade
+
+Implementation commit `d83949d`. Both cases red (no `reflections` on any Trade; `Complete` instead of `Incomplete`) then green; no first-run pass. `assemble` reads Outstanding Debt once (`Journal.query({ scope: 'OutstandingDebt' })`) and classifies a Debt as due when its anchor is at or before the Review frames' `previousCloseInstant` (A75). Public types: `ReflectionCounts { due; later }`, `WalkedTrade extends ReviewTradeItem` with `reflections`, and the `IncompleteReason` `{ code: 'ReflectionDue'; tradeId; debtIds }`, listed after the Trade's `ActionMissing`. The Debt fixture is `tests/support/debt-fixture.ts` (`debtFixture()`, built through `recordPositionChange` with Defer; `review-fixture.ts` `fill`/`fillTogether` gained an optional disposition). Compile-driven UI edits: `ReviewView.tsx` `blockerText` gained a placeholder "Reflection due for <underlying>" (T5.16 replaces it), and the `ready()` factories in `ReviewView.test.tsx` and `ReviewTrade.test.tsx` add zero counts; the getTrade attention-equality test now drops `reflections` from the overview item.
+
+ocr review of `d83949d`: session `dc000bf4-1d6b-4a82-a152-8c4c04df2137`, 5 files reviewed, 2 comments. Raw output: `ocr/T5.8-d83949d.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/coordinators/daily-review/daily-review.ts:256` | `dueAnchor <= previousClose` compares ISO strings, misordering instants with other offsets or fractional seconds | Valid (latent: `dueAnchor` is the caller's `momentTime`, unnormalized) | Bug task T5.8-B1 |
+| medium | `src/coordinators/daily-review/daily-review.ts:253` | The previous close comes from `recovered.frames[0]`; a walk whose Trades need no frames classifies every Debt as later and emits no `ReflectionDue` | Valid | Bug task T5.8-B2 |
+
+### T5.8-B1 Due classification compares instants
+
+Defect: a Debt anchored at an instant written with an offset (or fractional seconds) is classified by string order.
+- it should classify a Debt as later when its anchor, written with a New York offset, is after the previous session close
+
+The case was first planned as "due … at or before"; that cannot fail under string order (a New York local time reads earlier than UTC, so string order can only wrongly call a later anchor due), so the case was inverted. Its first, invalid red row is noted in the log.
+
+Implemented in `880e6c0`: the comparison is `Temporal.Instant.compare(dueAnchor, previousClose) <= 0`. Red (`{ due: 1, later: 0 }` for a fill at `2026-10-12T16:30:00-04:00`) then green. The file's other ordered comparison orders trading dates and was left alone.
+
+ocr review of `880e6c0`: session `950d07d5-4c04-41ae-813a-6e657797b6b9`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.8-B1-880e6c0.json`.
+
+### T5.8-B2 Due classification does not depend on frames
+
+Defect: when no walked Trade needs a Mark frame, no Debt is classified as due and completion omits due reflections.
+- it should report a due reflection for a walked Trade that needs no Mark frame
+
+Implemented in `2f2d8c2`: red (`{ due: 0, later: 1 }`) then green, with a walked Trade whose first Execution is broken (IncoherentFacts, so no Mark requirement and no frames). `frameResult` sets a result-level `previousCloseInstant` from the resolved day, independent of frames: `Recovered`, `Frames` and `SnapshotChanged` all carry it, because Daily Review's post-save path reads `ResolveFrames` rather than `recover`. Daily Review classifies against it; the undefined guard is gone. This places A75's field on the query results as well as on `recover`'s Review Date resolution (the per-frame field is unchanged); no spec passage is affected.
+
+ocr review of `2f2d8c2`: session `624b3dec-7529-433a-a7a2-db67dec8d41c`, 2 files reviewed, **No findings.** Raw output: `ocr/T5.8-B2-2f2d8c2.json`.
+
+### Cumulative run after T5.8
+
+Run 2026-10-29 20:29 EDT on commit `2f2d8c2`, Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 66 passed (66)`, `Tests 851 passed (851)`, exit 0 | `suite-runs/t5.8-review-reflections-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 41 passed (41)`, `Tests 73 passed (73)`, exit 0 | `suite-runs/t5.8-review-reflections-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `142 passed (4.8m)`, exit 0 | `suite-runs/t5.8-review-reflections-browser.txt` |
+| Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.8-review-reflections-checks.txt` |
+
+Failures: `verify:capacity` only (expected until T5.19).
