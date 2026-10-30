@@ -532,7 +532,7 @@ async function generate() {
       }
       if (recorded.receipt.reflection.kind !== 'Debt') throw new Error(`trade ${i} change ${n}: deferred but recorded ${recorded.receipt.reflection.kind}`);
       const debtId = recorded.receipt.reflection.id;
-      deferred.set(debtId, { debtId, tradeId, underlying: symbol, positionChange: n, recordedSession: iso(event.time).slice(0, 10), disposition });
+      deferred.set(debtId, { debtId, tradeId, underlying: symbol, positionChange: n, momentDate: iso(event.time).slice(0, 10), disposition });
       if (disposition === 'outstanding') stats.dispositions.outstanding++;
     };
 
@@ -566,7 +566,7 @@ async function generate() {
   for (const kind of Object.keys(BENCH_DISPOSITIONS) as BenchDisposition[]) {
     if (d[kind] !== BENCH_DISPOSITIONS[kind]) throw new Error(`disposition ${kind}: ${d[kind]} applied, ${BENCH_DISPOSITIONS[kind]} planned`);
   }
-  const outstandingDebts = [...deferred.values()].map((debt): BenchOutstandingDebt => ({ debtId: debt.debtId, tradeId: debt.tradeId, underlying: debt.underlying, positionChange: debt.positionChange, recordedSession: debt.recordedSession }));
+  const outstandingDebts = [...deferred.values()].map((debt): BenchOutstandingDebt => ({ debtId: debt.debtId, tradeId: debt.tradeId, underlying: debt.underlying, positionChange: debt.positionChange, momentDate: debt.momentDate }));
   if (
     counts.positionChangeReflectionEntries !== d.complete + d.answered ||
     counts.positionChangeReflectionDeclines !== d.declined + d.declinedLater ||

@@ -66,14 +66,14 @@
       "tradeId": "ef17880b-a237-41d9-9a39-70e330564820",
       "underlying": "QAJ",
       "positionChange": 398,
-      "recordedSession": "2028-12-27"
+      "momentDate": "2028-12-27"
     },
     {
       "debtId": "6df73331-56a1-4d8f-867b-ca5796e75d9d",
       "tradeId": "ef17880b-a237-41d9-9a39-70e330564820",
       "underlying": "QAJ",
       "positionChange": 399,
-      "recordedSession": "2028-12-28"
+      "momentDate": "2028-12-28"
     }
   ],
   "generationMs": 5980286,

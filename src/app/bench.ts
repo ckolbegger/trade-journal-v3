@@ -64,13 +64,14 @@ export interface BenchCounts {
 }
 
 // An Outstanding Debt at the as-of instant: the Trade it follows, the Position Change's number
-// in the generated order, and the session it was recorded in.
+// in the generated order, and the UTC calendar day of that Position Change's Economic Time
+// (the Debt's `momentTime` in the Journal).
 export interface BenchOutstandingDebt {
   readonly debtId: string;
   readonly tradeId: string;
   readonly underlying: string;
   readonly positionChange: number;
-  readonly recordedSession: string;
+  readonly momentDate: string;
 }
 
 // What `generate` returns besides the counts: the pinned as-of instant (the last session's
