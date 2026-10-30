@@ -217,7 +217,7 @@ export function DebtForm({ definition, binding, submit, onResolved, onCancel, on
       )}
       {/* Leaving records nothing: entered values are never saved as a draft. */}
       {onCancel && (
-        <button type="button" className="pill secondary" onClick={onCancel}>
+        <button type="button" className="pill secondary" disabled={pending} onClick={onCancel}>
           Cancel
         </button>
       )}

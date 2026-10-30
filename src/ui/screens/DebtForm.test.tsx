@@ -196,6 +196,25 @@ describe('one submission at a time', () => {
     expect(screen.getByRole('button', { name: 'Answer' }).matches(':disabled')).toBe(false);
     expect(screen.getByRole('button', { name: 'Decline' }).matches(':disabled')).toBe(false);
   });
+
+  it('should disable Cancel while a reflection save is pending', async () => {
+    let finish: (result: DebtSubmitResult) => void = () => undefined;
+    const onCancel = vi.fn();
+    renderForm(() => new Promise<DebtSubmitResult>((resolve) => (finish = resolve)), { onCancel });
+    const user = userEvent.setup();
+    expect(screen.getByRole('button', { name: 'Cancel' }).matches(':disabled')).toBe(false);
+    await user.click(screen.getByRole('button', { name: 'Answer' }));
+
+    expect(screen.getByRole('button', { name: 'Cancel' }).matches(':disabled')).toBe(true);
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(onCancel).not.toHaveBeenCalled();
+
+    await act(() => {
+      finish({ kind: 'Conflict' });
+      return Promise.resolve();
+    });
+    expect(screen.getByRole('button', { name: 'Cancel' }).matches(':disabled')).toBe(false);
+  });
 });
 
 describe('adapter failure', () => {
