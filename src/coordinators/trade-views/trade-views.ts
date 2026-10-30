@@ -19,10 +19,11 @@ import {
   type PlanBaseline,
   type TradeAnalysisRecord,
 } from '../../domain/trade-analysis/index.ts';
+import { Temporal } from 'temporal-polyfill';
 import { openLongStockSummary, plannedLongStockSummary, type TradeSummary } from '../../domain/trade-summary.ts';
 import type { Clock } from '../../domain/time/index.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
-import type { Journal, NarrativeEntry, NarrativeItem } from '../../modules/journal/index.ts';
+import type { Journal, NarrativeDebt, NarrativeEntry, NarrativeItem, TradeNarrativeItem } from '../../modules/journal/index.ts';
 import type { MarkFrame, MarketData, MarkResolution } from '../../modules/market-data/index.ts';
 import type { ReferenceCatalog } from '../../modules/reference-catalog/index.ts';
 import type { BrowseRecord, TradeRecord, TradeSummary as RecordSummary } from '../../modules/trade-record/index.ts';
@@ -214,6 +215,18 @@ export interface OpenCurrentEvaluation {
   readonly datedLine?: DatedLine;
 }
 
+// When an Outstanding Debt falls due, against the Expected Mark Date's Review (A69).
+export type DebtDueStatus = 'Due' | 'DueInNextReview' | 'DueInReviewAfterNext';
+
+// An Outstanding Debt in the narrative: "Reflection owed" beside its Position Change, with its snapshot
+// revision (the NarrativeDebt revision and definition). Without a due status outside session-policy
+// coverage, where there is no Expected Mark Date (decision 56).
+export interface TradeDetailDebt extends NarrativeDebt {
+  readonly dueStatus?: DebtDueStatus;
+}
+
+export type TradeDetailNarrativeItem = NarrativeItem | TradeDetailDebt;
+
 // The Open form of Trade Detail (D2): the Planned form's Plan, lifecycle, Baseline, and labels, plus
 // the derived Position and entry, the recorded Deviations, any integrity findings, and the whole
 // narrative with declines. No valuation, Marks, or risk (D4).
@@ -234,7 +247,7 @@ export interface OpenTradeDetail extends Omit<PlannedTradeDetail, 'journal'> {
   readonly deviations: readonly RecordedDeviation[];
   // Where stored records disagree with what the facts imply: surfaced, never repaired (AC-LIFE-003).
   readonly findings: readonly IntegrityFinding[];
-  readonly journal: readonly NarrativeItem[];
+  readonly journal: readonly TradeDetailNarrativeItem[];
   readonly current: OpenCurrentEvaluation;
 }
 
@@ -250,7 +263,8 @@ export interface IncoherentTradeDetail extends Omit<PlannedTradeDetail, 'journal
   readonly recordedPositionChanges: readonly PositionChangeFact[];
   readonly deviations: readonly RecordedDeviation[];
   readonly findings: readonly IncoherentFactFinding[];
-  readonly journal: readonly NarrativeItem[];
+  // Debt is listed without a due status: the facts cannot be replayed, so no Expected Mark Date is resolved.
+  readonly journal: readonly TradeDetailNarrativeItem[];
 }
 
 export type TradeDetailView = PlannedTradeDetail | OpenTradeDetail | IncoherentTradeDetail;
@@ -373,11 +387,24 @@ function inFactOrder(analysis: TradeAnalysisRecord, derived: DerivedTradeState):
     .map((pc) => ({ ...pc, executions: [...pc.executions].sort(byRank) }));
 }
 
+// Each Outstanding Debt's due status against the Expected Mark Date E (A69): Due when its anchor is at
+// or before the close of the session before E, in the next Review when it is at or before E's close,
+// otherwise in the Review after next. Both closes come from the frame (A75). Outside session-policy
+// coverage there is no frame, and a Debt carries no status (decision 56).
+function withDueStatus(narrative: readonly TradeNarrativeItem[], frame: CurrentFrame): TradeDetailNarrativeItem[] {
+  return narrative.map((item): TradeDetailNarrativeItem => {
+    if (item.kind !== 'Debt' || !('resolution' in frame)) return item;
+    const anchored = (close: string) => Temporal.Instant.compare(item.dueAnchor, close) <= 0;
+    const dueStatus: DebtDueStatus = anchored(frame.previousCloseInstant) ? 'Due' : anchored(frame.closeInstant) ? 'DueInNextReview' : 'DueInReviewAfterNext';
+    return { ...item, dueStatus };
+  });
+}
+
 function openDetail(
   planned: Omit<PlannedTradeDetail, 'journal'>,
   analysis: TradeAnalysisRecord,
   derived: DerivedTradeState,
-  narrative: readonly NarrativeItem[],
+  narrative: readonly TradeDetailNarrativeItem[],
   lastActivity: string,
   current: OpenCurrentEvaluation,
 ): OpenTradeDetail {
@@ -468,8 +495,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           { name: 'strategy', kind: 'Strategy', id: s.strategyId, mode: 'DisplayOnly' },
         ]);
         const page = await deps.journal.query({ scope: 'TradeNarrative', tradeId: request.tradeId });
-        // Debt items are not shown until Trade Detail renders Debt (T5.11).
-        const narrative = { ...page, items: page.items.filter((item): item is NarrativeItem => item.kind !== 'Debt') };
+        const narrative = page.items;
         // Derived once and reused for every figure in the view.
         const derived = derive({ record: analysis });
         const resolved = labels.kind === 'Resolved' ? labels.resolved : {};
@@ -500,7 +526,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
             recordedPositionChanges: analysis.positionChanges,
             deviations: analysis.recordedDeviations ?? [],
             findings: derived.findings,
-            journal: narrative.items,
+            journal: narrative,
           };
           return { binding, view };
         }
@@ -512,7 +538,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
         // A Trade that is Planned by both its stored lifecycle and its facts keeps D1's Detail, whose
         // narrative holds Entries only, without the item kind; any other Trade gets the Open form.
         if (analysis.storedLifecycle === 'Planned' && derived.expectedLifecycle === 'Planned') {
-          const view: TradeDetailView = { ...planned, summary: plannedLongStockSummary(analysis.plan.legs), journal: narrative.items.flatMap((item) => (item.kind === 'Entry' ? [withoutKind(item)] : [])) };
+          const view: TradeDetailView = { ...planned, summary: plannedLongStockSummary(analysis.plan.legs), journal: narrative.flatMap((item) => (item.kind === 'Entry' ? [withoutKind(item)] : [])) };
           return { binding, view };
         }
         const { frames, snapshotId } = await currentFrames([analysis.plan.underlying]);
@@ -527,7 +553,7 @@ export function createTradeViews(deps: TradeViewsDeps): TradeViews {
           evaluation,
           ...optional('datedLine', datedLine),
         };
-        const view: TradeDetailView = openDetail(planned, analysis, derived, narrative.items, s.lastActivity ?? s.planTime, current);
+        const view: TradeDetailView = openDetail(planned, analysis, derived, withDueStatus(narrative, frame), s.lastActivity ?? s.planTime, current);
         return { binding, view, ...optional('marketDataSnapshotId', snapshotId) };
       });
     },

@@ -12,6 +12,7 @@ import type {
   OpenTradeDetail,
   PlannedTradeDetail,
   PositionChangeFact,
+  TradeDetailNarrativeItem,
   TradeDetailView,
 } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
@@ -160,8 +161,8 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
       {'positionChanges' in view && <OpenSections view={view} timeZone={timeZone} />}
       {'recordedPositionChanges' in view && (
         <>
-          <ExecutionsSection positionChanges={view.recordedPositionChanges} journal={view.journal} timeZone={timeZone} />
-          <JournalSection journal={view.journal} symbol={view.plan.underlying} timeZone={timeZone} />
+          <ExecutionsSection positionChanges={view.recordedPositionChanges} journal={outcomesOnly(view.journal)} timeZone={timeZone} />
+          <JournalSection journal={outcomesOnly(view.journal)} symbol={view.plan.underlying} timeZone={timeZone} />
         </>
       )}
       {!('findings' in view) && entry && 'responses' in entry && (
@@ -425,14 +426,18 @@ function OpenSections({ view, timeZone }: { readonly view: OpenTradeDetail; read
           </table>
         </div>
       </section>
-      <ExecutionsSection positionChanges={view.positionChanges} journal={view.journal} timeZone={timeZone} />
+      <ExecutionsSection positionChanges={view.positionChanges} journal={outcomesOnly(view.journal)} timeZone={timeZone} />
       <EntryQualitySection view={view} timeZone={timeZone} />
       <FulfillmentSection view={view} />
       <DeviationsSection view={view} timeZone={timeZone} />
-      <JournalSection journal={view.journal} symbol={view.plan.underlying} timeZone={timeZone} />
+      <JournalSection journal={outcomesOnly(view.journal)} symbol={view.plan.underlying} timeZone={timeZone} />
     </>
   );
 }
+
+// Placeholder until T5.17 renders "Reflection owed" and the due status: Debt items are not shown yet.
+const outcomesOnly = (journal: readonly TradeDetailNarrativeItem[]): NarrativeItem[] =>
+  journal.filter((item): item is NarrativeItem => item.kind !== 'Debt');
 
 // The Reflection on an Execution's Position Change: its answers, the decline, or none.
 function ExecutionReflection({ reflection }: { readonly reflection: NarrativeItem | undefined }) {

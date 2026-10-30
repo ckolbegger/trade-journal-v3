@@ -29,7 +29,7 @@ describe('I2.5 open a position, AC-RESP-001 responses', () => {
     expect(view.legFulfillment).toEqual(postCommit.derivation.legFulfillment);
     expect(view.findings).toEqual(postCommit.derivation.findings);
     expect(view.deviations).toEqual(postCommit.trade.recordedDeviations ?? []);
-    const narrativeEntry = view.journal.find((item) => item.id === entry.id);
+    const narrativeEntry = view.journal.flatMap((item) => (item.kind !== 'Debt' && item.id === entry.id ? [item] : []))[0];
     expect(narrativeEntry && [narrativeEntry.kind, narrativeEntry.anchor, narrativeEntry.momentTime, narrativeEntry.authoredTime]).toEqual([
       'Entry',
       entry.anchor,

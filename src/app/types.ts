@@ -40,6 +40,7 @@ export type {
 
 // Trade Views and Reporting: the Planned and Open lists and Trade Detail.
 export type {
+  DebtDueStatus,
   IncoherentFactFinding,
   IncoherentOpenTradeItem,
   IncoherentPlannedTradeItem,
@@ -52,6 +53,8 @@ export type {
   TradeBrowseItem,
   TradeBrowseRequest,
   TradeBrowseView,
+  TradeDetailDebt,
+  TradeDetailNarrativeItem,
   TradeDetailRequest,
   TradeDetailView,
   ViewBinding,
