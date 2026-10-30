@@ -104,6 +104,8 @@ export function DebtForm({ definition, binding, submit, onResolved, onCancel, on
   const inFlight = useRef(false);
   // The last submission threw before any result came back.
   const [failed, setFailed] = useState(false);
+  // The host reports that the Debt no longer exists, so nothing can be saved against it.
+  const [gone, setGone] = useState(false);
   const send = async (resolution: DebtResolutionInput) => {
     if (inFlight.current) return;
     inFlight.current = true;
@@ -130,6 +132,7 @@ export function DebtForm({ definition, binding, submit, onResolved, onCancel, on
         : [],
     );
     setConflict(result.kind === 'Conflict' ? result : undefined);
+    setGone(result.kind === 'NotFound');
     if (result.kind === 'Resolved') {
       setResolved(result);
       onResolved?.(result);
@@ -161,6 +164,11 @@ export function DebtForm({ definition, binding, submit, onResolved, onCancel, on
           {conflict.currentOutcome && <p>Current outcome: {OUTCOME[conflict.currentOutcome.kind]}</p>}
         </div>
       )}
+      {gone && (
+        <div role="alert" className="banner warning">
+          <strong>This reflection no longer exists.</strong> Nothing was saved.
+        </div>
+      )}
       {failed && (
         <div role="alert" className="banner warning">
           <strong>This reflection could not be saved.</strong> Nothing was saved. Your values are kept, so you can try again.
@@ -174,7 +182,7 @@ export function DebtForm({ definition, binding, submit, onResolved, onCancel, on
         </label>
         {fieldError(reasonField)}
       </div>
-      {writable && (
+      {writable && !gone && (
         <>
           <button type="submit" className="pill primary" disabled={pending}>
             Answer

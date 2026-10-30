@@ -208,6 +208,22 @@ describe('adapter failure', () => {
   });
 });
 
+describe('not found', () => {
+  it('should show that the reflection no longer exists and offer no Answer or Decline when the result is NotFound', async () => {
+    renderForm(() => Promise.resolve({ kind: 'NotFound' }));
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText('Lesson'), 'Wait for the close.');
+    await user.click(screen.getByRole('button', { name: 'Answer' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toContain('This reflection no longer exists');
+    expect(alert.textContent).toContain('Nothing was saved');
+    expect(screen.queryByRole('button', { name: 'Answer' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Decline' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Saved reflection' })).toBeNull();
+  });
+});
+
 describe('conflict and leaving', () => {
   it('should show Conflict with the current outcome displayed and the entered values kept', async () => {
     renderForm(() => Promise.resolve({ kind: 'Conflict', currentOutcome: { kind: 'Decline', id: 'decline-9' } }));
