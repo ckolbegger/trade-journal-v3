@@ -318,9 +318,15 @@ async function measureDebtPhase(app: Application, workspace: string, tradeIds: r
   const entries = new Map(((await storeRecords(workspace, 'journalEntries')) as { id: string }[]).map((e) => [e.id, e]));
   const declines = new Map(((await storeRecords(workspace, 'journalDeclines')) as { id: string }[]).map((e) => [e.id, e]));
   const share = { Settled: { bytes: 0, count: 0 }, Declined: { bytes: 0, count: 0 }, Outstanding: { bytes: 0, count: 0 } } as Record<string, { bytes: number; count: number }>;
+  // The Entry or decline that settled a Debt version; an Outstanding Debt has neither.
+  const settlingRecord = (version: StoredDebtRecord['versions'][number]) => {
+    if (version.entryId !== undefined) return entries.get(version.entryId);
+    if (version.declineId !== undefined) return declines.get(version.declineId);
+    return undefined;
+  };
   for (const debt of debts) {
     const last = debt.versions.at(-1)!;
-    const outcome = last.entryId !== undefined ? entries.get(last.entryId) : last.declineId !== undefined ? declines.get(last.declineId) : undefined;
+    const outcome = settlingRecord(last);
     const bucket = share[last.status]!;
     bucket.bytes += jsonBytes([debt, obligations.get(JSON.stringify(debt.obligationKey)), ...(outcome ? [outcome] : [])]);
     bucket.count++;
