@@ -520,3 +520,34 @@ Run 2026-10-29 21:57 EDT on commit `f2fae68`, Node v26.12.0.
 | Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.13-manifest-checks.txt` |
 
 Failures: `verify:capacity` only (expected until T5.19).
+
+## T5.14 UI: reflection disposition on the entry form
+
+Implementation commit `71e9df3`. Cases 1, 2 and 4 went red then green:
+- Case 1: no radiogroup named Reflection.
+- Case 2: the prompts were still shown. One green attempt first failed on a test bug (a UTC time instead of Workspace-local, and a missing mock); it was logged and fixed.
+- Case 4: no "Reflection owed" text.
+
+**Case 3 is a flagged first-run pass.** Case 2 already kept the answers independent of the disposition. Mutation check: submitting Complete with empty answers failed with `expected [] to have a length of 4 but got +0`; the code was restored.
+
+The changes:
+- **Disposition control.** It is a `fieldset` with the legend "Reflection" and three native radios. Reflect now is the default. Reflect later submits `{ kind: 'Defer' }`. The form counts as unsaved when the choice is not Reflect now.
+- **Receipt.** The receipt shows a warning-tone "Reflection owed" badge for a Debt outcome. This replaces the T5.6 placeholder.
+- **D2 tests.** The D2 checkbox became one radio of the group, so 7 selectors in `PositionChangeForm.test.tsx` changed from checkbox to radio role. The two "uncheck" steps now choose Reflect now. No D2 expectation changed. The browser helper `declineReflection` uses `getByLabel('Decline to reflect').check()`, which works on a radio.
+
+Process slip: four of those selector swaps were made with `sed -i` instead of the Edit tool. The ui tests passed: 300.
+
+ocr review of `71e9df3`: session `70d85468-7503-4dfd-9761-2ec0bfdfaa75`, 2 files reviewed, **No findings.** Raw output: `ocr/T5.14-71e9df3.json`.
+
+### Cumulative run after T5.14
+
+Run 2026-10-29 22:08 EDT on commit `71e9df3`, Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 68 passed (68)`, `Tests 866 passed (866)`, exit 0 | `suite-runs/t5.14-entry-disposition-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 41 passed (41)`, `Tests 73 passed (73)`, exit 0 | `suite-runs/t5.14-entry-disposition-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `142 passed (4.8m)`, exit 0 | `suite-runs/t5.14-entry-disposition-browser.txt` |
+| Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.14-entry-disposition-checks.txt` |
+
+Failures: `verify:capacity` only (expected until T5.19).
