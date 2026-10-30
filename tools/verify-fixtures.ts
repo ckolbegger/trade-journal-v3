@@ -55,7 +55,7 @@ function markMissingViolations(views: unknown): string[] {
 function debtViolations(views: unknown, hasOpenTrades: boolean): string[] {
   const { debts, details, reviewTrades, review } = views as {
     debts?: unknown[];
-    details?: { tradeId: string; journal?: { kind?: string; answeredLater?: unknown; settledDebtId?: unknown }[] }[];
+    details?: { tradeId: string; journal?: { kind?: string; answeredLater?: unknown; declinedLater?: unknown }[] }[];
     reviewTrades?: { tradeId: string; reflections?: unknown[] }[];
     review?: { families?: { family: string; trades?: { tradeId: string; reflections?: { due: number; later: number } }[] }[] };
   };
@@ -63,7 +63,8 @@ function debtViolations(views: unknown, hasOpenTrades: boolean): string[] {
   if (!Array.isArray(debts) || debts.length > 0) out.push(`debts (${Array.isArray(debts) ? debts.length : 'missing'})`);
   for (const detail of details ?? []) {
     if (detail.journal === undefined) out.push(`${detail.tradeId}.journal (missing)`);
-    if ((detail.journal ?? []).some((item) => item.kind === 'Debt' || item.answeredLater !== undefined || item.settledDebtId !== undefined)) out.push(`${detail.tradeId}.journal (Debt item)`);
+    // The Trade narrative marks a settled Debt on the Entry (answeredLater) or the Decline (declinedLater); it never exposes settledDebtId.
+    if ((detail.journal ?? []).some((item) => item.kind === 'Debt' || item.answeredLater !== undefined || item.declinedLater !== undefined)) out.push(`${detail.tradeId}.journal (Debt item)`);
   }
   for (const trade of reviewTrades ?? []) {
     if (!Array.isArray(trade.reflections) || trade.reflections.length > 0) out.push(`${trade.tradeId}.reflections (${Array.isArray(trade.reflections) ? trade.reflections.length : 'missing'})`);
