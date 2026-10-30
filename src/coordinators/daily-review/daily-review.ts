@@ -1,3 +1,4 @@
+import { Temporal } from 'temporal-polyfill';
 import { openLongStockSummary } from '../../domain/trade-summary.ts';
 import { derive, evaluate, type DerivedTradeState, type IncoherentFacts, type TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import type { Journal } from '../../modules/journal/index.ts';
@@ -253,7 +254,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const previousClose = recovered.frames[0]?.previousCloseInstant;
     const outstanding = (await deps.journal.query({ scope: 'OutstandingDebt' })).debts;
     const dueDebtIds = (tradeId: string) =>
-      outstanding.filter((debt) => debt.anchor.tradeId === tradeId && previousClose !== undefined && debt.dueAnchor <= previousClose).map((debt) => debt.debtId);
+      outstanding.filter((debt) => debt.anchor.tradeId === tradeId && previousClose !== undefined && Temporal.Instant.compare(debt.dueAnchor, previousClose) <= 0).map((debt) => debt.debtId);
     const reflectionsOf = (tradeId: string): ReflectionCounts => {
       const due = dueDebtIds(tradeId).length;
       return { due, later: outstanding.filter((debt) => debt.anchor.tradeId === tradeId).length - due };
