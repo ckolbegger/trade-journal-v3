@@ -106,6 +106,8 @@ export function DebtForm({ definition, binding, submit, onResolved, onCancel, on
   const [failed, setFailed] = useState(false);
   // The host reports that the Debt no longer exists, so nothing can be saved against it.
   const [gone, setGone] = useState(false);
+  // The last rejection named no prompt, so it is about the reflection as a whole.
+  const [rejected, setRejected] = useState(false);
   const send = async (resolution: DebtResolutionInput) => {
     if (inFlight.current) return;
     inFlight.current = true;
@@ -131,6 +133,8 @@ export function DebtForm({ definition, binding, submit, onResolved, onCancel, on
           )
         : [],
     );
+    // An issue about neither a prompt nor the reason concerns the reflection as a whole.
+    setRejected(result.kind === 'Rejected' && result.issues.some((i) => i.promptId === undefined && i.code !== 'ReasonTooLong'));
     setConflict(result.kind === 'Conflict' ? result : undefined);
     setGone(result.kind === 'NotFound');
     if (result.kind === 'Resolved') {
@@ -167,6 +171,11 @@ export function DebtForm({ definition, binding, submit, onResolved, onCancel, on
       {gone && (
         <div role="alert" className="banner warning">
           <strong>This reflection no longer exists.</strong> Nothing was saved.
+        </div>
+      )}
+      {rejected && (
+        <div role="alert" className="banner warning">
+          <strong>This reflection could not be saved.</strong> Reopen it and try again. Your values are kept.
         </div>
       )}
       {failed && (

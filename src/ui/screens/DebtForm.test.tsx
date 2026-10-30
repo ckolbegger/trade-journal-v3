@@ -224,6 +224,20 @@ describe('not found', () => {
   });
 });
 
+describe('form-level rejection', () => {
+  it('should show a Rejected issue that names no prompt as a form-level error', async () => {
+    renderForm(() => Promise.resolve({ kind: 'Rejected', issues: [{ code: 'DefinitionRevisionMismatch' }] }));
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText('Lesson'), 'Wait for the close.');
+    await user.click(screen.getByRole('button', { name: 'Answer' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toContain('This reflection could not be saved. Reopen it and try again.');
+    expect(screen.getByLabelText<HTMLTextAreaElement>('Lesson').value).toBe('Wait for the close.');
+    expect(screen.queryByRole('region', { name: 'Saved reflection' })).toBeNull();
+  });
+});
+
 describe('conflict and leaving', () => {
   it('should show Conflict with the current outcome displayed and the entered values kept', async () => {
     renderForm(() => Promise.resolve({ kind: 'Conflict', currentOutcome: { kind: 'Decline', id: 'decline-9' } }));
