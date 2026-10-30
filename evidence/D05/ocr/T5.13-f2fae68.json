@@ -1,0 +1,137 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 0,
+    "total_tokens": 49047,
+    "input_tokens": 48394,
+    "output_tokens": 653,
+    "cache_read_tokens": 7680,
+    "elapsed": "38s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_search": 4,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Application capability wiring, routing, and coordinator integration",
+      "files": [
+        "src/app/compose.ts",
+        "src/app/routes.ts",
+        "src/app/types.ts",
+        "src/coordinators/daily-review/index.ts",
+        "src/coordinators/workspace/capabilities.ts",
+        "tests/support/facade-double.ts"
+      ]
+    }
+  ],
+  "session_id": "cac239fa-6470-4c05-820c-fac6b0c5f544",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "cac239fa-6470-4c05-820c-fac6b0c5f544",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "f2fae68",
+      "resolved_base": "a3b015a872c9dc068b60e3f9c5d47a7a879cfa97",
+      "resolved_head": "f2fae682632ef51b8062aa63b245bda48cb8c945",
+      "exact_range": "a3b015a872c9dc068b60e3f9c5d47a7a879cfa97..f2fae682632ef51b8062aa63b245bda48cb8c945",
+      "source_artifact_sha256": "72681bc65318145d0c83311dfae62c6d62bc5a385b710205e7b72ac50f2e0425"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "f34bc870292f6c5f09f53e61453d445f038f111ff460b866758ef61917c45ee6"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "b040ffa47bef8b5eea6788d1574a00b1f10af94bf3c6f461deacdb89c3292380"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "3b3f217e6401ff0a493d8f2638e76ce33efdc9162ee2af3e63d323f8f9fe19dd"
+        },
+        {
+          "item_id": "6e7d02f2dce21403f224c076e38494318259a8ee86684d10c8046c72a60cf8ec",
+          "path": "tests/support/facade-double.ts",
+          "fingerprint": "ccbb0f74d2c5f0715dbc239d012d4dc0bf274b6f7180b2cee796a090a1a5de16"
+        },
+        {
+          "item_id": "91539de63f9c084b4bd8166c155de6d64a0a809a3ab0f7e54d8e4ed68fc30c4f",
+          "path": "src/app/compose.ts",
+          "fingerprint": "b082594d998d911d3cec6be14c8b2c7b50c6d4435c9bd13c0af5eef79976d32d"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "79b553731ea72a5d7e52268a6734f8f5d6d802a69feb9a82dd9cc6856cff24ce"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0f41d19ccbb61d1a664235ee5301f06784615cdc8ddb16035e108900527ee722",
+          "path": "src/app/routes.ts",
+          "fingerprint": "f34bc870292f6c5f09f53e61453d445f038f111ff460b866758ef61917c45ee6"
+        },
+        {
+          "item_id": "3f548f1ae81ab4049dfea9d702e6a61b509722ca36f81ecd61e08037be77aa16",
+          "path": "src/coordinators/workspace/capabilities.ts",
+          "fingerprint": "b040ffa47bef8b5eea6788d1574a00b1f10af94bf3c6f461deacdb89c3292380"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "3b3f217e6401ff0a493d8f2638e76ce33efdc9162ee2af3e63d323f8f9fe19dd"
+        },
+        {
+          "item_id": "6e7d02f2dce21403f224c076e38494318259a8ee86684d10c8046c72a60cf8ec",
+          "path": "tests/support/facade-double.ts",
+          "fingerprint": "ccbb0f74d2c5f0715dbc239d012d4dc0bf274b6f7180b2cee796a090a1a5de16"
+        },
+        {
+          "item_id": "91539de63f9c084b4bd8166c155de6d64a0a809a3ab0f7e54d8e4ed68fc30c4f",
+          "path": "src/app/compose.ts",
+          "fingerprint": "b082594d998d911d3cec6be14c8b2c7b50c6d4435c9bd13c0af5eef79976d32d"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "79b553731ea72a5d7e52268a6734f8f5d6d802a69feb9a82dd9cc6856cff24ce"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 37555
+  }
+}

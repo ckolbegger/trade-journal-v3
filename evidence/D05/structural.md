@@ -498,3 +498,25 @@ Facade: `Journal.save` runs through `guard.run`. `src/app/types.ts` lifts `DebtP
 Changed expectation: the manifest case in `src/coordinators/workspace/workspace.test.ts`, to match the plan row.
 
 `npm run verify:capabilities`: OK (19 operations, 10 variant-qualified, 8 routes, schema 4). `typecheck`, `tsc6 --noEmit`, `lint`, `lint:deps` exit 0. `npx vitest run src/app src/coordinators/workspace src/ui tests/integration`: 409 passed.
+
+Implementation commit `f2fae68`. Notes from the main session:
+- The variant names are the implementer's choice: `Defer`, `Debt`, `PreviousClose`, `OwedReflections`, `ResolveReviewDebt`, `Answer`, `Decline`, `TradeDetailSource`. The Trade Detail Source is named as a `Journal.save` variant because the manifest has no other place for a Source.
+- `Journal.query`'s `OutstandingDebt` is used by Daily Review internally and has no UI caller. It is listed among the `trade-detail` route's variants so the reachability check covers it.
+- `trade-detail` and `review` remain `readOnly: true` while hosting writes. The mutation guard refuses writes in Recovery Only, as it does for the Action save since D4.
+- The manifest case's name in `workspace.test.ts` still says "through D4".
+- Process slip: the section above was appended with a here-doc instead of the Edit tool.
+
+ocr review of `f2fae68`: session `cac239fa-6470-4c05-820c-fac6b0c5f544`, 6 files reviewed, **No findings.** Raw output: `ocr/T5.13-f2fae68.json`.
+
+### Cumulative run after T5.13
+
+Run 2026-10-29 21:57 EDT on commit `f2fae68`, Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 68 passed (68)`, `Tests 862 passed (862)`, exit 0 | `suite-runs/t5.13-manifest-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 41 passed (41)`, `Tests 73 passed (73)`, exit 0 | `suite-runs/t5.13-manifest-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `142 passed (4.8m)`, exit 0 | `suite-runs/t5.13-manifest-browser.txt` |
+| Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.13-manifest-checks.txt` |
+
+Failures: `verify:capacity` only (expected until T5.19).
