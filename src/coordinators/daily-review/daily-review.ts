@@ -541,7 +541,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     // The Action this commit wrote, built when the save was prepared; no read follows the commit.
     const action = applied.action!;
     // The Action is committed; a read that fails from here on only costs the next step, never the save.
-    const review = await postSaveReview(binding.reviewDate).catch((): PostSaveReview => ({ kind: 'ChangedDuringAssembly' }));
+    const review = await postSaveReview(binding.reviewDate, binding.tradeId).catch((): PostSaveReview => ({ kind: 'ChangedDuringAssembly' }));
     return { kind: 'Saved', action, review };
   }
 

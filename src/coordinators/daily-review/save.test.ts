@@ -51,19 +51,44 @@ describe('SaveTradeAction (AC-REV-003)', () => {
     expect(result.review.kind === 'Ready' && result.review.nextStep).toEqual({ kind: 'Mark', row: expect.objectContaining({ instrumentKey: 'DEF', task: 'Manual', trades: [c] }) as unknown });
   }, 30_000);
 
-  it('should continue with the first Trade of the walk that has no Action, with the form getTrade would return', async () => {
+  it('should continue with the first Trade after the saved one that has no Action, with the form getTrade would return', async () => {
     const stack = await reviewStack(MONDAY_1700);
-    const { a, d } = await fiveTradeFixture(stack);
+    const { a } = await fiveTradeFixture(stack);
     await stack.saveMark('DEF', '40.50');
+    const opened = await stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: MONDAY_1700 });
+    if (opened.kind !== 'Ready') throw new Error(`expected Ready, got ${opened.kind}`);
+    const family = opened.families.find((f) => f.family === 'Trades');
+    if (family?.family !== 'Trades') throw new Error('no Trades family');
+    const order = family.trades.map((t) => t.tradeId);
     const binding = await bindingFor(stack, a);
 
     const { review } = saved(await saveAction(stack, binding));
 
-    // The walk is T-D, T-B, T-C, T-A, T-E: T-A is saved, so T-D is next.
+    // The walk continues after the saved T-A (A68), wrapping around only when none follows.
+    const after = [...order.slice(order.indexOf(a) + 1), ...order.slice(0, order.indexOf(a))];
     if (review.kind !== 'Ready' || review.nextStep.kind !== 'Trade') throw new Error(`expected a Trade next step, got ${review.kind === 'Ready' ? review.nextStep.kind : review.kind}`);
-    const again = await stack.dailyReview.getTrade({ reviewDate: binding.reviewDate, tradeId: d, binding: review.binding });
+    expect(review.nextStep.trade.tradeId).toBe(after[0]);
+    const again = await stack.dailyReview.getTrade({ reviewDate: binding.reviewDate, tradeId: after[0]!, binding: review.binding });
     expect(again.kind === 'Ready' && again.trade).toEqual(review.nextStep.trade);
     expect(review.nextStep.trade.form).toEqual({ kind: 'New', viewState: { selectedAction: 'Hold' } });
+  }, 30_000);
+
+  it('should, after an Action save, return as the next step the first Trade that is not done starting from the saved Trade, not from the head of the walk', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    await fiveTradeFixture(stack);
+    await stack.saveMark('DEF', '40.50');
+    const opened = await stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: MONDAY_1700 });
+    if (opened.kind !== 'Ready') throw new Error(`expected Ready, got ${opened.kind}`);
+    const family = opened.families.find((f) => f.family === 'Trades');
+    if (family?.family !== 'Trades') throw new Error('no Trades family');
+    const order = family.trades.map((t) => t.tradeId);
+    // Save the second Trade of the walk: the first is still open, but the walk continues after the saved one.
+    const binding = await bindingFor(stack, order[1]!);
+
+    const { review } = saved(await saveAction(stack, binding));
+
+    if (review.kind !== 'Ready' || review.nextStep.kind !== 'Trade') throw new Error(`expected a Trade next step, got ${review.kind === 'Ready' ? review.nextStep.kind : review.kind}`);
+    expect(review.nextStep.trade.tradeId).toBe(order[2]);
   }, 30_000);
 
   it('should reject Exit, Roll, or Adjust without Intent, and save them with Intent while creating no Trade fact', async () => {
