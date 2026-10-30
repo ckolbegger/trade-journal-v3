@@ -28,6 +28,7 @@ import type {
   ReviewNextStep,
   ReflectionCounts,
   ReviewProgress,
+  ResolveReviewDebtRequest,
   ReviewTradeItem,
   WalkedTrade,
   SaveDailyReviewRequest,
@@ -123,11 +124,13 @@ type Attempt<R> =
   | { readonly done: R }
   | { readonly settle: (binding: { workspace: WorkspaceSnapshotBinding; catalogRevision: number; journalRevision: number }) => R };
 
-// Marks come first, then the first Trade of the walk without an Action (Daily Review, task families).
-function nextTaskOf(today: readonly MarkRow[], walkOrder: readonly string[], actions: Readonly<Record<string, unknown>>): NextTask {
+// Marks come first, then the first Trade of the walk that is not done: its Action is saved and it owes no due
+// reflection (A68). The walk starts from the Trade just saved when there is one, and wraps around.
+function nextTaskOf(today: readonly MarkRow[], walkOrder: readonly string[], actions: Readonly<Record<string, unknown>>, dueTrades: ReadonlySet<string>, from?: string): NextTask {
   const mark = today.find((row) => row.task === 'Manual');
   if (mark) return { kind: 'Mark', row: mark };
-  const tradeId = walkOrder.find((id) => !(id in actions));
+  const start = Math.max(0, from === undefined ? 0 : walkOrder.indexOf(from));
+  const tradeId = [...walkOrder.slice(start), ...walkOrder.slice(0, start)].find((id) => !(id in actions) || dueTrades.has(id));
   return tradeId === undefined ? { kind: 'Done' } : { kind: 'Trade', tradeId };
 }
 
@@ -230,7 +233,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
 
   // One pass over the module reads. Its Review carries what the pass itself learned of the binding.
   // `withGaps` false skips the historical Mark-gap scan: the frames and snapshot are the ones `recover` gives, the gaps are left empty.
-  async function assemble(context: FrameContext, withGaps = true): Promise<Pass> {
+  // `from` is the Trade a save just resolved: the next step is looked for from it.
+  async function assemble(context: FrameContext, withGaps = true, from?: string): Promise<Pass> {
     const session = await deps.marketData.query({ kind: 'ResolveSession', context });
     if (session.kind === 'Rejected') return session;
     if (session.kind !== 'Session') throw new Error(`unexpected session result: ${session.kind}`);
@@ -315,7 +319,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           derivations.map(({ analysis }) => analysis.tradeId),
         ),
       },
-      nextTask: nextTaskOf(today, ranked.map(({ item }) => item.tradeId), actions.actions),
+      nextTask: nextTaskOf(today, ranked.map(({ item }) => item.tradeId), actions.actions, new Set(walked.filter((item) => item.reflections.due > 0).map((item) => item.tradeId)), from),
       progress: { tradesWithAction: ranked.filter(({ item }) => item.tradeId in actions.actions).length, tradesEligible: ranked.length },
     };
   }
@@ -543,9 +547,9 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
 
   // The Review under the facts the save left, read like `open`. A Review that is no longer Ready
   // (the Trade left the eligible set) is for the trader to open afresh.
-  async function postSaveReview(reviewDate: string): Promise<PostSaveReview> {
+  async function postSaveReview(reviewDate: string, from?: string): Promise<PostSaveReview> {
     const read = await coherently<Omit<Extract<PostSaveReview, { kind: 'Ready' }>, 'nextStep'> & { nextTask: NextTask } | Extract<PostSaveReview, { kind: 'ChangedDuringAssembly' }>>(async () => {
-      const pass = await assemble({ kind: 'Review', reviewDate }, false);
+      const pass = await assemble({ kind: 'Review', reviewDate }, false, from);
       if (pass.kind === 'Expired') return { retry: true };
       if (pass.kind !== 'Ready') return { done: { kind: 'ChangedDuringAssembly' } };
       return { settle: (binding) => ({ kind: 'Ready', progress: pass.progress, completion: pass.review.completion, nextTask: pass.nextTask, binding: { ...binding, ...pass.evidence } }) };
@@ -558,8 +562,39 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     return { ...review, nextStep: { kind: 'Trade', trade: next.trade } };
   }
 
+  // The Debt's resolution is prepared with Source Daily Review and staged in this coordinator's own commit (A64).
+  async function resolveReviewDebt(request: ResolveReviewDebtRequest): Promise<SaveDailyReviewResult> {
+    const { binding, resolution } = request;
+    for (let i = 0; i < ASSEMBLY_ATTEMPTS; i++) {
+      const prepared = await deps.journal.prepareEffects({
+        obligation: 'ResolveDebt',
+        debtId: binding.debtId,
+        expectedDebtRevision: binding.debtRevision,
+        resolution: resolution.kind === 'Answer' ? { kind: 'Answer', form: { definitionId: binding.definitionRevision, answers: resolution.answers } } : resolution,
+      });
+      if (prepared.kind !== 'Prepared') return prepared;
+      const tx = beginSemanticTransaction();
+      tx.require({
+        name: `journal@${prepared.snapshot.journalRevision}`,
+        store: 'meta',
+        key: 'journal',
+        verify: (current) => ((current?.['journalRevision'] as number | undefined) ?? 0) === prepared.snapshot.journalRevision,
+      });
+      const applied = deps.journal.applyPreparedEffects(tx, prepared, {});
+      const committed = await deps.persistence.commit(tx.close());
+      // Only the Journal counter moved: prepare again, which reports a Debt resolved meanwhile.
+      if (committed.kind === 'Conflict') continue;
+      if (committed.kind !== 'Committed') throw new Error(`unexpected commit result: ${committed.kind}`);
+      const [entry] = applied.entries;
+      const [decline] = applied.declines;
+      const review = await postSaveReview(request.reviewDate, applied.debts![0]!.anchor.tradeId).catch((): PostSaveReview => ({ kind: 'ChangedDuringAssembly' }));
+      return { kind: 'DebtResolved', ...(entry && { entry }), ...(decline && { decline }), debt: applied.debts![0]!, review };
+    }
+    return { kind: 'ChangedDuringAssembly' };
+  }
+
   return {
-    save: (request) => deps.guard.run('DailyReview.save', () => saveTradeAction(request)),
+    save: (request) => deps.guard.run('DailyReview.save', () => (request.kind === 'ResolveReviewDebt' ? resolveReviewDebt(request) : saveTradeAction(request))),
 
     // A Review is accepted only if the Workspace is unchanged across its assembly (A46).
     open: (request) =>

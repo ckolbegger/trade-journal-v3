@@ -5,7 +5,7 @@ import type { TradeSummary } from '../../domain/trade-summary.ts';
 import type { Rational } from '../../domain/values/index.ts';
 import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { StorageFailure } from '../mutation-guard.ts';
-import type { DailyAction, EntryDefinitionRecord, JournalIssue, JournalObligationKey } from '../../modules/journal/index.ts';
+import type { AnswerInput, DailyAction, DebtProjection, DeclineProjection, EntryDefinitionRecord, EntryProjection, JournalIssue, JournalObligationKey, ObligationOutcome } from '../../modules/journal/index.ts';
 import type { AcknowledgmentVersion, ExpectedResolutionRevision, MarkFrame, MarketDataIssue, MarkResolution } from '../../modules/market-data/index.ts';
 
 // The request names the date and the as-of instant (Daily Review, "Date, eligibility, and ordering").
@@ -237,8 +237,17 @@ export interface SaveTradeActionRequest {
   readonly note?: string;
 }
 
-// ResolveReviewDebt arrives with D5.
-export type SaveDailyReviewRequest = SaveTradeActionRequest;
+// ResolveReviewDebt: one Outstanding reflection answered against its snapshot definition (the binding's revision) or declined (A64).
+export interface ResolveReviewDebtRequest {
+  readonly kind: 'ResolveReviewDebt';
+  readonly reviewDate: string;
+  readonly binding: ReflectionSaveBinding;
+  readonly resolution:
+    | { readonly kind: 'Answer'; readonly answers: Readonly<Record<string, AnswerInput>> }
+    | { readonly kind: 'Decline'; readonly reason?: string };
+}
+
+export type SaveDailyReviewRequest = SaveTradeActionRequest | ResolveReviewDebtRequest;
 
 // How many of the eligible Trades have an Action for the Review Date.
 export interface ReviewProgress {
@@ -276,10 +285,13 @@ export interface RefreshedEvidence {
 
 export type SaveDailyReviewResult =
   | { readonly kind: 'Saved'; readonly action: DailyAction; readonly review: PostSaveReview }
+  // A reflection resolved: its Entry or decline, the Debt's transition, and the Review under the facts it left (A67).
+  | { readonly kind: 'DebtResolved'; readonly entry?: EntryProjection; readonly decline?: DeclineProjection; readonly debt: DebtProjection; readonly review: PostSaveReview }
   // A Mark, an acknowledgment, or the Trade's facts changed since the binding; nothing was written.
   | { readonly kind: 'ReviewChanged'; readonly evidence: RefreshedEvidence }
-  // Another Action was saved for the Trade and date since the binding; nothing was written.
-  | { readonly kind: 'Conflict' }
+  // Another Action was saved for the Trade and date since the binding, or the Debt was resolved elsewhere (with the obligation's current outcome); nothing was written.
+  | { readonly kind: 'Conflict'; readonly currentOutcome?: ObligationOutcome }
+  | { readonly kind: 'NotFound' }
   | { readonly kind: 'Rejected'; readonly issues: readonly (JournalIssue | MarketDataIssue)[] }
   | { readonly kind: 'ChangedDuringAssembly' }
   | RuntimeNotWritable
