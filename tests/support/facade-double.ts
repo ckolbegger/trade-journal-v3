@@ -37,7 +37,7 @@ export function facadeDouble(overrides: { status?: unknown } = {}): UiFacade {
       requestDurability: vi.fn(),
     },
     ReferenceCatalog: { save: vi.fn(), query: vi.fn(() => Promise.resolve({ kind: 'Page', items: [], snapshot: { catalogRevision: 1 } })), resolve: vi.fn() },
-    Journal: { getDefinitions: vi.fn(), query: vi.fn() },
+    Journal: { getDefinitions: vi.fn(), query: vi.fn(), save: vi.fn() },
     TradeWorkflows: { confirmPlan: vi.fn(), recordPositionChange: vi.fn() },
     TradeViewsAndReporting: { browseTrades: vi.fn(), getTradeDetail: vi.fn() },
     MarketData: { save: vi.fn(), query: vi.fn(), recover: vi.fn() },

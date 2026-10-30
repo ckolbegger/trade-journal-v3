@@ -84,6 +84,8 @@ export async function createApplication(deps: ApplicationDeps) {
     Journal: {
       getDefinitions: (request: Parameters<typeof journal.getDefinitions>[0]) => journal.getDefinitions(request),
       query: (query: Parameters<typeof journal.query>[0]) => journal.query(query),
+      // ResolveDebt from Trade Detail (Source Trade Detail, P17): the one Journal write the UI reaches.
+      save: (command: Parameters<typeof journal.save>[0]) => guard.run('Journal.save', () => journal.save(command)),
     },
     TradeWorkflows: {
       confirmPlan: (command: Parameters<typeof tradeWorkflows.confirmPlan>[0]) => tradeWorkflows.confirmPlan(command),

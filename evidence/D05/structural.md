@@ -481,3 +481,20 @@ Run 2026-10-29 21:49 EDT on commit `b27f1e1`, Node v26.12.0.
 | Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.12-migration-v4-checks.txt` |
 
 Failures: `verify:capacity` only (expected until T5.19).
+
+## T5.13 Installed Capability Manifest and composition root for D5
+
+Manifest additions (`src/coordinators/workspace/capabilities.ts`), mirrored in `routes.ts`:
+- `Journal.save`: `ResolveDebt`, `Answer`, `Decline`, `TradeDetailSource` (new; Trade Detail route only).
+- `Journal.query`: `TradeNarrative`, `OutstandingDebt`.
+- `TradeWorkflows.recordPositionChange`: adds `Defer` (record-entry route).
+- `TradeViewsAndReporting.getTradeDetail`: adds `Debt`.
+- `MarketData.query`: adds `PreviousClose`.
+- `DailyReview.open`: adds `OwedReflections`; `DailyReview.getTrade`: `OwedReflections`; `DailyReview.save`: adds `ResolveReviewDebt`.
+- `DailyReview.getDebt` absent (P17). Schema version 4 (already `SCHEMA_VERSION`).
+
+Facade: `Journal.save` runs through `guard.run`. `src/app/types.ts` lifts `DebtProjection`, `DebtResolution`, `ResolveDebtCommand`, `JournalSaveResult`, `JournalQuery`, `OutstandingDebtPage`, `NarrativeDebt`, `NarrativeSettledDebt`, `ObligationOutcome`, `OwedReflection`, `ReflectionClassification`, `ReflectionCounts`, `ReflectionSaveBinding`, `ResolveReviewDebtRequest`, `WalkedTrade` (daily-review index exports the last four new ones). Facade double gains `Journal.save`.
+
+Changed expectation: the manifest case in `src/coordinators/workspace/workspace.test.ts`, to match the plan row.
+
+`npm run verify:capabilities`: OK (19 operations, 10 variant-qualified, 8 routes, schema 4). `typecheck`, `tsc6 --noEmit`, `lint`, `lint:deps` exit 0. `npx vitest run src/app src/coordinators/workspace src/ui tests/integration`: 409 passed.

@@ -75,6 +75,16 @@ export type {
   PromptDefinition,
   PromptOption,
   ReflectionDisposition,
+  // Debt (D5): the Outstanding Debt page, and resolving one by Answer or Decline (P17, A64).
+  DebtProjection,
+  DebtResolution,
+  JournalQuery,
+  JournalSaveResult,
+  NarrativeDebt,
+  NarrativeSettledDebt,
+  ObligationOutcome,
+  OutstandingDebtPage,
+  ResolveDebtCommand,
 } from '../modules/journal/index.ts';
 
 // Trade Analysis results carried by the Open views and the Position Change receipt.
@@ -128,6 +138,13 @@ export type {
   MarkRow,
   OpenDailyReviewRequest,
   OpenDailyReviewResult,
+  // Owed reflections inside the walk (D5 P17, A68) and their resolution.
+  OwedReflection,
+  ReflectionClassification,
+  ReflectionCounts,
+  ReflectionSaveBinding,
+  ResolveReviewDebtRequest,
+  WalkedTrade,
   PostSaveReview,
   RefreshedEvidence,
   ReviewBinding,

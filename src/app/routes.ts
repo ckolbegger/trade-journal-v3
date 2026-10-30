@@ -40,10 +40,12 @@ export const ROUTES = [
       'MarketData.recover',
     ],
     variants: {
-      'DailyReview.open': ['LatestCompleted'],
-      'DailyReview.save': ['SaveTradeAction'],
+      // D5 P17: each Trade's card lists its owed reflections and resolves them (no Debt family).
+      'DailyReview.open': ['LatestCompleted', 'OwedReflections'],
+      'DailyReview.getTrade': ['OwedReflections'],
+      'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt'],
       'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock'],
-      'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical'],
+      'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical', 'PreviousClose'],
     },
     navigation: true,
     readOnly: true,
@@ -52,8 +54,13 @@ export const ROUTES = [
     id: 'trade-detail',
     path: '/trades/:tradeId',
     label: 'Trade',
-    requires: ['TradeViewsAndReporting.getTradeDetail', 'Journal.query'],
-    variants: { 'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'CurrentEvaluation'] },
+    // D5 P17: Debt status, and answering or declining an owed reflection here (Source Trade Detail).
+    requires: ['TradeViewsAndReporting.getTradeDetail', 'Journal.query', 'Journal.save'],
+    variants: {
+      'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'CurrentEvaluation', 'Debt'],
+      'Journal.query': ['TradeNarrative', 'OutstandingDebt'],
+      'Journal.save': ['ResolveDebt', 'Answer', 'Decline', 'TradeDetailSource'],
+    },
     navigation: false,
     readOnly: true,
   },
@@ -65,7 +72,7 @@ export const ROUTES = [
     label: 'Record entry',
     requires: ['TradeWorkflows.recordPositionChange', 'TradeViewsAndReporting.getTradeDetail', 'Journal.getDefinitions'],
     variants: {
-      'TradeWorkflows.recordPositionChange': ['Opening', 'Increase', 'Stock', 'SingleTrade', 'Complete', 'Decline'],
+      'TradeWorkflows.recordPositionChange': ['Opening', 'Increase', 'Stock', 'SingleTrade', 'Complete', 'Decline', 'Defer'],
     },
     navigation: false,
     readOnly: false,

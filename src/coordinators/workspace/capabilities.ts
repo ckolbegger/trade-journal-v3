@@ -32,22 +32,27 @@ const OPERATIONS: Readonly<Record<string, readonly string[]>> = {
   'ReferenceCatalog.query': ['Institution', 'Account', 'Strategy'],
   'ReferenceCatalog.resolve': ['NewSelection', 'DisplayOnly'],
   'Journal.getDefinitions': [],
-  'Journal.query': ['TradeNarrative'],
+  // D5: every Outstanding Debt, besides the Trade narrative (which now carries Debt).
+  'Journal.query': ['TradeNarrative', 'OutstandingDebt'],
+  // D5 P17, A64: resolve one Debt by Answer or Decline, from Trade Detail (Source Trade Detail).
+  'Journal.save': ['ResolveDebt', 'Answer', 'Decline', 'TradeDetailSource'],
   'TradeWorkflows.confirmPlan': ['LongStock'],
   // D2 A18: opening and increase Buys of a Stock serving its Planned Leg, every member in one
-  // Trade, with the Position Change Reflection completed or declined.
-  'TradeWorkflows.recordPositionChange': ['Opening', 'Increase', 'Stock', 'SingleTrade', 'Complete', 'Decline'],
-  // D4: the Open list and Detail carry the current evaluation.
+  // Trade, with the Position Change Reflection completed or declined. D5: or deferred.
+  'TradeWorkflows.recordPositionChange': ['Opening', 'Increase', 'Stock', 'SingleTrade', 'Complete', 'Decline', 'Defer'],
+  // D4: the Open list and Detail carry the current evaluation. D5: Detail carries Debt status and actions.
   'TradeViewsAndReporting.browseTrades': ['Planned', 'Open', 'CurrentEvaluation'],
-  'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'CurrentEvaluation'],
+  'TradeViewsAndReporting.getTradeDetail': ['Planned', 'Open', 'CurrentEvaluation', 'Debt'],
   // D4: Manual Marks, acknowledgments, and withdrawals of Stock Instruments; point-context frames
   // and the session a context names; recovery from stored observations (no provider adapter).
   'MarketData.save': ['RecordInitialManualMark', 'CorrectMark', 'AssertUnavailable', 'WithdrawAcknowledgment', 'Stock'],
-  'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical'],
+  // D5: frames carry the previous session's close.
+  'MarketData.query': ['ResolveFrames', 'ResolveSession', 'Current', 'Review', 'Historical', 'PreviousClose'],
   'MarketData.recover': [],
-  'DailyReview.open': ['LatestCompleted'],
-  'DailyReview.getTrade': [],
-  'DailyReview.save': ['SaveTradeAction'],
+  // D5 P17: owed reflections inside the walk; there is no DailyReview.getDebt.
+  'DailyReview.open': ['LatestCompleted', 'OwedReflections'],
+  'DailyReview.getTrade': ['OwedReflections'],
+  'DailyReview.save': ['SaveTradeAction', 'ResolveReviewDebt'],
 };
 
 export function installedCapabilities(releaseId: string, sessionPolicy: SessionPolicyIdentity): InstalledCapabilityManifest {
