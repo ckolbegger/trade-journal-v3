@@ -286,7 +286,7 @@ function TradeWalk({ facade, review, selected, afterSave, holdId, onSelect, onSa
 // for the Review again, so figures the Mark saves changed are fresh (A48).
 function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade: UiFacade; readonly now: () => string; readonly initial: Ready; readonly onDirtyChange: (dirty: boolean) => void }) {
   const [review, setReview] = useState(initial);
-  // The open Action form holds a value: leaving the Trade would drop it, so the walk waits. Mark entries stay mounted, so only this holds.
+  // The open Action form or a reflection form holds a value: leaving the Trade would drop it, so the walk waits. Mark entries stay mounted, so only these hold.
   const [actionDirty, setActionDirty] = useState(false);
   const holdId = useId();
   // The entries holding a value; the page is unsaved while any does.
@@ -295,7 +295,7 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
     (id, isDirty) => {
       if (isDirty) dirty.current.add(id);
       else dirty.current.delete(id);
-      if (id.startsWith('action:')) setActionDirty(isDirty);
+      setActionDirty([...dirty.current].some((entry) => entry.startsWith('action:') || entry.startsWith('debt:')));
       onDirtyChange(dirty.current.size > 0);
     },
     [onDirtyChange],

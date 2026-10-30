@@ -502,6 +502,31 @@ describe('Leaving an unsaved Action', () => {
   });
 });
 
+describe('Leaving an unsaved reflection', () => {
+  it('should hold Trade selection, Continue and the blocker links while a reflection draft has a value, as it does for an Action draft', async () => {
+    const user = userEvent.setup();
+    const reflections = [owed('d1', 'Due', '2026-10-09T14:30:00Z', [{}])];
+    const review = ready([item('t1', 'XYZ'), item('t2', 'DEF')], [], { completion: { kind: 'Incomplete', reasons: [{ code: 'ReflectionDue', tradeId: 't2', debtIds: ['d9'] }] } });
+    const facade = walkFacade(review, tradeReview('t1', 'XYZ', { reflections }));
+    renderWalk(facade);
+    const trade = await openTrade(user, 'XYZ');
+    const opens = vi.mocked(facade.DailyReview.open).mock.calls.length;
+
+    await user.click(within(trade).getByRole('button', { name: /Reflect on 2026-10-09 10:30/ }));
+    await user.type(within(trade).getByLabelText('Reason for declining (optional)'), 'No time.');
+
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Continue to Trades' }).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Review DEF' }).disabled).toBe(true);
+    const blocker = screen.getByText(/Reflection due for/).closest('li')!;
+    await user.click(within(blocker).getByRole('link', { name: 'DEF' }));
+    await user.click(screen.getByRole('button', { name: 'Review DEF' }));
+    expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledTimes(opens);
+    expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('region', { name: 'XYZ review' })).toBeTruthy();
+    expect(within(trade).getByLabelText<HTMLTextAreaElement>('Reason for declining (optional)').value).toBe('No time.');
+  });
+});
+
 describe('Action form extras', () => {
   it('should offer no Save while the runtime is not writable, and still show a saved Action', async () => {
     const saved = tradeReview('t2', 'DEF', { form: { kind: 'Saved', action: savedAction('Hold') } });
