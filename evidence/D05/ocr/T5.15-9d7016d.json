@@ -1,0 +1,160 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 6 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 6,
+    "total_tokens": 127452,
+    "input_tokens": 125231,
+    "output_tokens": 2221,
+    "cache_read_tokens": 18176,
+    "elapsed": "1m49s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 5,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/DebtForm.tsx",
+      "content": "There is no in-flight submission guard, and both resolution buttons and the fields remain enabled while awaiting the adapter. A trader can submit Answer and then Decline against the same binding before either completes; whichever request succeeds first determines the saved outcome, regardless of the later choice. Add a shared pending guard and disable resolution controls and editing until the request finishes, as ActionForm does.",
+      "existing_code": "  const send = async (resolution: DebtResolutionInput) =\u003e {\n    const result = await submit({ binding, resolution });",
+      "start_line": 102,
+      "end_line": 103,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/DebtForm.tsx",
+      "content": "If the submit adapter rejects, send also rejects, and both event handlers discard that promise with `void`. This produces an unhandled rejection with no visible explanation of the failed save. Catch adapter failures, retain entered values, and show a user-facing failure notice (with any pending state reset in finally).",
+      "existing_code": "    const result = await submit({ binding, resolution });",
+      "start_line": 103,
+      "end_line": 103,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/DebtForm.tsx",
+      "content": "A NotFound result falls through with no feedback, clearing previous validation/conflict messages and leaving an apparently actionable form. Handle this result explicitly with an unavailable-reflection notice and a way to leave or reload, rather than allowing repeated unexplained save attempts.",
+      "existing_code": "    setConflict(result.kind === 'Conflict' ? result : undefined);",
+      "start_line": 113,
+      "end_line": 113,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/DebtForm.tsx",
+      "content": "Non-prompt rejections are never rendered. describeJournalIssue maps an issue without promptId (for example DefinitionRevisionMismatch) to field '', but this form renders only prompt errors and fieldError(reasonField). Add a visible form-level error or issue summary for unmatched issues, so these rejected submissions do not fail silently.",
+      "existing_code": "  const { promptErrors, fieldError, describedBy } = fieldIssues(issues);",
+      "start_line": 119,
+      "end_line": 119,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/DebtForm.tsx",
+      "content": "The rejection-focus effect considers only prompt fields. A ReasonTooLong rejection is mapped to reasonField, so declining with an overlong reason displays an error but leaves focus on the Decline button instead of the invalid textarea. Include the reason field in focus handling, using its id or a ref when no earlier prompt has an issue.",
+      "existing_code": "    const first = definition.prompts.find((p) =\u003e issues.some((i) =\u003e i.field === p.id));\n    if (first) formRef.current?.querySelector\u003cHTMLElement\u003e(`[name=\"${first.id}\"]`)?.focus();",
+      "start_line": 99,
+      "end_line": 100,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/DebtForm.tsx",
+      "content": "This response formatter uses multiple nested ternaries, contrary to the supplied checklist. Extract a formatting helper with explicit branching or a switch on value.kind; that also makes the SingleSelect option-label fallback easier to follow.",
+      "existing_code": "        const text =\n          value?.kind === 'Text'\n            ? value.text\n            : value?.kind === 'Scale'\n              ? String(value.value)\n              : value?.kind === 'Option' \u0026\u0026 prompt.kind === 'SingleSelect'\n                ? (prompt.options.find((o) =\u003e o.id === value.optionId)?.label ?? value.optionId)\n                : 'Not answered';",
+      "start_line": 59,
+      "end_line": 66,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/DebtForm.tsx",
+        "src/ui/screens/ReflectionPrompts.tsx",
+        "src/ui/screens/position-change-issues.ts"
+      ]
+    }
+  ],
+  "session_id": "d6f17d9d-5efc-4115-8fa2-4a8e0329eb37",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "d6f17d9d-5efc-4115-8fa2-4a8e0329eb37",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "9d7016d",
+      "resolved_base": "e564917b6d20963de2eaae57f5224dfb857291a5",
+      "resolved_head": "9d7016d7d7c4dd9bb7a04a4d7ed8ef082f19c0c2",
+      "exact_range": "e564917b6d20963de2eaae57f5224dfb857291a5..9d7016d7d7c4dd9bb7a04a4d7ed8ef082f19c0c2",
+      "source_artifact_sha256": "dd3cb6240792bb02e8a72879b5b2be9563cc6c5b24c8be0d1af4ad45a359cc0c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "150741dcc4cc2f3b9795937c853b6881d9158f89b78c2fa680263d1a4ef46829",
+          "path": "src/ui/screens/DebtForm.tsx",
+          "fingerprint": "f385faa72d68434ef525f9c87f097004f98690f44481930877046c4c2391422d"
+        },
+        {
+          "item_id": "65f33867831aeb054dd88dcf09a0d610354447756e080f06541a165045b74826",
+          "path": "src/ui/screens/position-change-issues.ts",
+          "fingerprint": "55275dc0aea3593ae9ab5c6755c88ad1b1ad062167f8a3e2a22231ad9f3232b0"
+        },
+        {
+          "item_id": "e3ddf8122bc736b0309df4458fed964987e048a7af3ad05c41e33fa897907818",
+          "path": "src/ui/screens/ReflectionPrompts.tsx",
+          "fingerprint": "5ce3fcd5877372e24b44af6937296049e8a2d48aca69251e8d611820298b87e5"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "150741dcc4cc2f3b9795937c853b6881d9158f89b78c2fa680263d1a4ef46829",
+          "path": "src/ui/screens/DebtForm.tsx",
+          "fingerprint": "f385faa72d68434ef525f9c87f097004f98690f44481930877046c4c2391422d"
+        },
+        {
+          "item_id": "65f33867831aeb054dd88dcf09a0d610354447756e080f06541a165045b74826",
+          "path": "src/ui/screens/position-change-issues.ts",
+          "fingerprint": "55275dc0aea3593ae9ab5c6755c88ad1b1ad062167f8a3e2a22231ad9f3232b0"
+        },
+        {
+          "item_id": "e3ddf8122bc736b0309df4458fed964987e048a7af3ad05c41e33fa897907818",
+          "path": "src/ui/screens/ReflectionPrompts.tsx",
+          "fingerprint": "5ce3fcd5877372e24b44af6937296049e8a2d48aca69251e8d611820298b87e5"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 109468
+  }
+}

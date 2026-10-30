@@ -624,7 +624,26 @@ ocr review of `0e1ab54`: session `7e860d54-128d-408a-9416-78ec8c206790`, 1 file 
 ### T5.15-B5 ReasonTooLong focuses the reason
 - it should move focus to the reason field when Decline is rejected with ReasonTooLong
 
-Implemented in the T5.15-B5 commit: the focus effect keeps the first-prompt focus and, when no prompt has an issue, focuses the reason field by id (it has no name). Red (focus stayed on the Decline button) then green.
+Implemented in `cd62ea3`: the focus effect keeps the first-prompt focus and, when no prompt has an issue, focuses the reason field by id (it has no name). Red (focus stayed on the Decline button) then green.
+
+ocr review of `cd62ea3`: session `fd482f53-ce78-4384-9435-07f8f08ea760`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.15-B5-cd62ea3.json`.
 
 ### T5.15-B6 Saved-response formatting without nested ternaries
 Structural: format each saved response with a helper; ui tests pass before and after.
+
+Implemented in `992c991`: `savedResponseText(prompt, value)` switches on the value's kind, same rendered text. ui tests 311 passed before and after; the four static checks exit 0.
+
+ocr review of `992c991`: session `08dc9741-9b13-4bf6-bfbb-c53677f9eecb`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.15-B6-992c991.json`.
+
+### Cumulative run after T5.15
+
+Run 2026-10-29 22:29 EDT on commit `992c991`, Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 69 passed (69)`, `Tests 877 passed (877)`, exit 0 | `suite-runs/t5.15-debt-form-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 41 passed (41)`, `Tests 73 passed (73)`, exit 0 | `suite-runs/t5.15-debt-form-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `142 passed (4.8m)`, exit 0 | `suite-runs/t5.15-debt-form-browser.txt` |
+| Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.15-debt-form-checks.txt` |
+
+Failures: `verify:capacity` only (expected until T5.19).
