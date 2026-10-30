@@ -21,7 +21,7 @@ The repository hosts several independent implementations of the same spec, each 
 | Worktree path | `/Users/ckolbegger/src/trade-journal-v3/worktrees/claude-opus-5.5` |
 | Branch | `claude-opus-5.5` |
 | Dev server port | `5175`, from the gitignored `.env.local` |
-| Frozen plan | tag `claude-opus-5.5-plan-r14` (revision 14) at the start of D5; revision 15 (tag `claude-opus-5.5-plan-r15`) added decision 56 and revision 16 (tag `claude-opus-5.5-plan-r16`) decision 57 during D5 |
+| Frozen plan | tag `claude-opus-5.5-plan-r14` (revision 14) at the start of D5; revision 15 (tag `claude-opus-5.5-plan-r15`) added decision 56 revision 16 (tag `claude-opus-5.5-plan-r16`) decision 57, and revision 17 (tag `claude-opus-5.5-plan-r17`) decision 58 during D5 |
 | D4 release | tag `claude-opus-5.5-d4` (`4ab43d5`) |
 | D5 starting point | tag `claude-opus-5.5-pre-d5` (the commit that added this note) |
 
@@ -74,7 +74,7 @@ You may read D6–D8's breakdowns for context, since some of them amend D5 (D8's
 2. Name the affected specification passages, acceptance scenarios and durable compatibility.
 3. Ask for approval to revise the plan.
 
-An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`; the next one is r17, and the next decision is 58 (r15 added decision 56 on 2026-10-29; r16 added decision 57 on 2026-10-30). Updating an acceptance row's status from `planned` to `covered` once evidence exists is not a revision, but ask the user before doing it, as was done for D1, D2 and D4. Run each row's command as written before marking it (D4 found one that named no file).
+An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`; the next one is r18, and the next decision is 59 (r15 added decision 56 on 2026-10-29; r16 added decision 57 and r17 decision 58 on 2026-10-30). Updating an acceptance row's status from `planned` to `covered` once evidence exists is not a revision, but ask the user before doing it, as was done for D1, D2 and D4. Run each row's command as written before marking it (D4 found one that named no file).
 
 ## 3. D5 specifics
 
@@ -171,7 +171,7 @@ Never push.
 - **The tech-debt items** at the end of `plan/implementation-plan.md` (the late Stale-context Mark at a save, and an older tab writing after a calendar change). The user accepted both.
 - D1's and D2's optional polish, and the D2 items the user triaged as "leave" (`plan/D04-handoff.md`, section 6).
 - F12, the section-validator gaps, carried into D8's T8.6.
-- Breakdowns for D9–D28 and RC. D9's numbering will start at P36, A150 and decision 58 (decisions 56 and 57 went to D5's coverage question and I5.10).
+- Breakdowns for D9–D28 and RC. D9's numbering will start at P36, A150 and decision 59 (decisions 56, 57 and 58 went to D5's coverage question, I5.10, and the benchmark Debts with B5.4).
 - Editing `specs/`, or editing the frozen plan without an approved revision.
 - Cloudflare setup, which the user will do, and verifying Marketdata.app's CORS support (due before D11's breakdown, decision 15).
 

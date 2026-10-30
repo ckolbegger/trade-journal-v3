@@ -916,7 +916,7 @@ Generator code `ed84422` (generator 3: `src/app/bench.ts`, `src/app/bench-genera
 | Sessions; Marks / corrections; Actions / edited | 1,255; 188,240 / 1,882; 125,404 / 2,509 | | same |
 
 - As-of `2028-12-29T21:35:00Z`, Review Date 2028-12-29, 2 reflections due in the as-of Review (asserted by the generator). Outstanding Debts: `aff4aed7-…` (Trade QAJ, Position Change 398, 2028-12-27) and `6df73331-…` (QAJ, Position Change 399, 2028-12-28). `bench/dataset.json` adds `dispositions`, `asOfDueReflections`, `outstandingDebts` and the Debt counts; `expected-open-rows.json` differs from D4's in ids only (the Debts shift the seeded id stream).
-- **Deviation, with the user:** section 1.4 says "The two Outstanding Debts are from the session before the as-of session". D4's unchanged schedule has one Position Change in that session, so the second comes from 2028-12-27, and the 2028-12-28 Review in the history stays Incomplete. Both are due at the as-of Review.
+- **Deviation, resolved by plan revision 17 (decision 58, the user's choice on 2026-10-30 to accept the dataset and reword section 1.4):** section 1.4 said "The two Outstanding Debts are from the session before the as-of session". D4's unchanged schedule has one Position Change in that session, so the second comes from 2028-12-27, and the 2028-12-28 Review in the history stays Incomplete. Both are due at the as-of Review.
 - Mutation check: a second run reused the cache in 0.34 s; with `BENCH_GENERATOR_VERSION = 4` it printed "cached profile is generator 3, schema 4; regenerating for generator 4, schema 4" and began; stopped after about 12 s, version and profile restored, dataset shasums unchanged.
 - Static checks exit 0.
 
@@ -924,7 +924,7 @@ ocr review of `ed84422^..09e752a`: session `998fe589-7996-4458-a450-fff58c0883d5
 
 | Severity | Location | Claim | Assessment | Outcome |
 |---|---|---|---|---|
-| medium | `src/app/bench-generator.ts:166` | The two Outstanding Debts come from different sessions | Valid; the deviation above, with the user | Pending the user's decision |
+| medium | `src/app/bench-generator.ts:166` | The two Outstanding Debts come from different sessions | Valid; the deviation above | Plan revision 17, decision 58: section 1.4 reworded, dataset kept |
 | low | `src/app/bench-generator.ts:512` | A nested ternary picks the Decline/Complete/Defer disposition | Valid, style only | Bug task T5.21-B1 |
 
 ## T5.23 part 1
@@ -1046,7 +1046,7 @@ All six cases passed on their first run; each was flagged and given a mutation c
 | B5.6 | `update.spec.ts` | `AboutView.tsx` shows schema version minus 1 | Schema version expected "4", received "3" |
 
 Readings of the rows:
-- B5.4 "Monday's Review does not list it": B5.1's row says Monday's Review shows the same Monday deferral as "Due in the next Review" in XYZ's card, so the two rows disagree. The test asserts no exact "Due" in Monday's card and a Complete Monday Review, then "Due" on Tuesday. Raised with the user.
+- B5.4 "Monday's Review does not list it": B5.1's row says Monday's Review shows the same Monday deferral as "Due in the next Review" in XYZ's card, so the two rows disagree. The test asserts no exact "Due" in Monday's card and a Complete Monday Review, then "Due" on Tuesday. The user (2026-10-30): every deferral is surfaced in every Review until it is resolved; plan revision 17 (decision 58) rewords B5.4 to expect "Due in the next Review" on Monday. The test's Monday check is strengthened in bug task T5.24-B1.
 - B5.2: Hold is saved first and the Review asserted Incomplete while the reflection is owed, then the decline, then Complete.
 - B5.3: Tuesday's and Wednesday's Marks are entered; Wednesday's XYZ card has no Reflections region, no "Reflect on" button and no reflection text in its status.
 - B5.5: the later Reflect-now entry is dated at the clock (Tuesday 17:00); the first reflection must read "Due"; the probe still shows one Debt and no Entry settling it.
@@ -1054,3 +1054,5 @@ Readings of the rows:
 - "The probe shows the Debt's Settled version": the Debt's last version contains "Settled" (B5.2: a decline) and an Entry's `settledDebtId` equals the Debt id.
 
 UI text matched the plan's quoted strings ("Reflection owed", "Due", "Due in the next Review", "Due in the Review after next", "Deferred, answered", "Declined later"); the form opens on "Reflect now" with the prompts shown.
+
+ocr review of `8d0b166` (scratch clone, the five `e2e/d5` files relocated under `src/itg/d5/`; `ocr/T5.24p1-8d0b166.json`): 5 files reviewed, 2 comments, both relocation artifacts and dismissed — an unresolved `../d4/support.ts` import (the real `e2e/d4/support.ts` exists) and suites not discovered without `.spec` names (the real files are `e2e/d5/*.spec.ts` and `test:e2e` runs `e2e/d5`).

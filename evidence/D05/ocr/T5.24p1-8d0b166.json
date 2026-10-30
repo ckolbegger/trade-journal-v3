@@ -1,0 +1,155 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 2,
+    "total_tokens": 172705,
+    "input_tokens": 170890,
+    "output_tokens": 1815,
+    "cache_read_tokens": 15360,
+    "elapsed": "1m41s"
+  },
+  "tool_calls": {
+    "total": 19,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 6,
+      "file_find": 3,
+      "file_read": 9
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 1,
+        "tool_name": "file_read",
+        "file_path": "src/itg/d5/detail-debt.ts,src/itg/d5/due-timing.ts,src/itg/d5/review-debt.ts,src/itg/d5/support.ts,src/itg/d5/update.ts",
+        "arguments": "{\"file_path\":\"src/itg/d4/support.ts\"}",
+        "error": "file \"src/itg/d4/support.ts\" not found: git show HEAD:src/itg/d4/support.ts: exit status 128: fatal: path 'src/itg/d4/support.ts' does not exist in 'HEAD'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/itg/d5/support.ts",
+      "content": "This import (and the re-export below) resolves to src/itg/d4/support.ts, which does not exist; the shared helper is at e2e/d4/support.ts. All five new files depend on this module, so the suites cannot load and npm run typecheck fails because tsconfig includes src. Correct the relative paths or place the suite alongside the existing browser tests.",
+      "existing_code": "import { continueToTrades, enterMark, expect, fillRows, openEntryForm, reflectionSection, tradesFamily, type ProbedDatabase, type Row } from '../d4/support.ts';",
+      "start_line": 5,
+      "end_line": 5,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/d5/review-debt.ts",
+      "content": "None of the four new browser suites are discovered: playwright.config.ts restricts testDir to e2e, these filenames lack the default .test/.spec suffix, and test:e2e explicitly selects only e2e/d1, e2e/d2, and e2e/d4. Register the relocated suites and use matching filenames (or explicitly configure discovery), including updating the test command, so this D5 regression coverage actually runs.",
+      "existing_code": "test.describe('B5.1 Defer, then answer in the Review', () =\u003e {",
+      "start_line": 34,
+      "end_line": 34,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D5 debt integration workflows and shared support",
+      "files": [
+        "src/itg/d5/detail-debt.ts",
+        "src/itg/d5/due-timing.ts",
+        "src/itg/d5/review-debt.ts",
+        "src/itg/d5/support.ts",
+        "src/itg/d5/update.ts"
+      ]
+    }
+  ],
+  "session_id": "734c577f-9de3-4a2b-b72b-7b8393544506",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "734c577f-9de3-4a2b-b72b-7b8393544506",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "464624ac355ba1321177dc6d7d6bb2f011ff6175",
+      "resolved_head": "da8cc906b62e9fd328c255b102a71e84350cfcca",
+      "exact_range": "464624ac355ba1321177dc6d7d6bb2f011ff6175..da8cc906b62e9fd328c255b102a71e84350cfcca",
+      "source_artifact_sha256": "425a0f40ed664875f716c86325005cea011ffde2baa011ed1e02659c69643ceb"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0591704fa2ca193fba19059fe29c8db037320d60edbdf1faa7a15bacacc6b9b3",
+          "path": "src/itg/d5/detail-debt.ts",
+          "fingerprint": "3e15f2f02b5b784c2ba0fb2c86f29fbe4015facd5a47f65043753faf573ecdb0"
+        },
+        {
+          "item_id": "34bfb3579f35371905ee6c79f73033a7ddd4372416ca9b891336a3730f7f096f",
+          "path": "src/itg/d5/review-debt.ts",
+          "fingerprint": "71ece02b2136dafe055bbca1e48dcf27af61e180c420cd24d00754a9a5788911"
+        },
+        {
+          "item_id": "3ff693118bd1b79bc4493254e234474c0fd3b8f098149deb433ba991d3fc443d",
+          "path": "src/itg/d5/due-timing.ts",
+          "fingerprint": "051446a6b8d06a677f1707c0e9e868f39836bc7ed491b5c32f7f90441b07106a"
+        },
+        {
+          "item_id": "7957fd63969f7c1cd8eb5114debca26678a2547e294f758b51d34f0339a36fd7",
+          "path": "src/itg/d5/support.ts",
+          "fingerprint": "0bb94ad942175774788fffa40a691a2bad10c8cf422417e1fd87d3c0eb620bba"
+        },
+        {
+          "item_id": "aa4b3dde722234afb3cc6464af25aaa4098ff4db171030d18f2919f17da9ed31",
+          "path": "src/itg/d5/update.ts",
+          "fingerprint": "c57d19ba8e0f7dfaf7397ac2b78dbac74d85ad555ec19bfe1fac8bf1bc426c6a"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0591704fa2ca193fba19059fe29c8db037320d60edbdf1faa7a15bacacc6b9b3",
+          "path": "src/itg/d5/detail-debt.ts",
+          "fingerprint": "3e15f2f02b5b784c2ba0fb2c86f29fbe4015facd5a47f65043753faf573ecdb0"
+        },
+        {
+          "item_id": "34bfb3579f35371905ee6c79f73033a7ddd4372416ca9b891336a3730f7f096f",
+          "path": "src/itg/d5/review-debt.ts",
+          "fingerprint": "71ece02b2136dafe055bbca1e48dcf27af61e180c420cd24d00754a9a5788911"
+        },
+        {
+          "item_id": "3ff693118bd1b79bc4493254e234474c0fd3b8f098149deb433ba991d3fc443d",
+          "path": "src/itg/d5/due-timing.ts",
+          "fingerprint": "051446a6b8d06a677f1707c0e9e868f39836bc7ed491b5c32f7f90441b07106a"
+        },
+        {
+          "item_id": "7957fd63969f7c1cd8eb5114debca26678a2547e294f758b51d34f0339a36fd7",
+          "path": "src/itg/d5/support.ts",
+          "fingerprint": "0bb94ad942175774788fffa40a691a2bad10c8cf422417e1fd87d3c0eb620bba"
+        },
+        {
+          "item_id": "aa4b3dde722234afb3cc6464af25aaa4098ff4db171030d18f2919f17da9ed31",
+          "path": "src/itg/d5/update.ts",
+          "fingerprint": "c57d19ba8e0f7dfaf7397ac2b78dbac74d85ad555ec19bfe1fac8bf1bc426c6a"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 100681
+  }
+}
