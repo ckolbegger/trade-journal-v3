@@ -1020,3 +1020,35 @@ Run 2026-10-30 01:55 EDT on commit `09e752a`, Node v26.12.0.
 | Static and verification checks (12 commands) | as at the end of D4 | 12 of 12 exit 0 | `suite-runs/t5.23-node-suite-checks.txt` |
 
 Failures: none. The run is at `09e752a`, which holds all of T5.23, plan revision 16 and the T5.21 dataset. T5.23 is complete.
+
+### T5.21-B1 The generator's disposition choice is plain code
+Refactor in `1f2c5ca`: the nested ternary choosing Decline / Complete / Defer at capture is now `captureReflection(disposition, n, symbol, definitionId)` with `if`/`return`; branch bodies copied verbatim, and `answered`, `declinedLater` and `outstanding` still fall through to Defer, so every Position Change gets the same disposition and the dataset is unchanged. Generator version not bumped, `bench:generate` not run. Static checks and `npm run build:bench` exit 0.
+
+ocr review of `1f2c5ca` (`ocr/T5.21-B1-1f2c5ca.json`): 1 file reviewed, no findings.
+
+### T5.21-B2 The bench's Outstanding Debt date is named `momentDate`
+At the user's direction (2026-10-30): the dataset field `recordedSession` is the calendar day of the Position Change's Economic Time, the Debt's `momentTime`, not when anything was recorded; it is renamed `momentDate`. Refactor in `464624a`: the field in `BenchOutstandingDebt` (`src/app/bench.ts`), the generator's `deferred.set(...)` entry and its `outstandingDebts` mapping (`src/app/bench-generator.ts`), and the two keys in `bench/dataset.json` (2 insertions, 2 deletions, values `2028-12-27` and `2028-12-28` unchanged). The type comment now says the date is the UTC calendar day of the Economic Time, since `iso()` is `toISOString()`. No tool or test read the field; `grep -rn recordedSession` over src, tools, bench, tests and e2e is empty. Cache: `.cache/bench/profile/tj-bench.json` holds only the generator and schema versions and nothing under `.cache` holds the old key, so a run reusing the cached profile has no stale Debt metadata to write back. Generator version not bumped, `bench:generate` not run. Static checks and `npm run build:bench` exit 0.
+
+## T5.24 part 1 Browser cases B5.1 to B5.6
+Commit `8d0b166`: `e2e/d5/support.ts` (re-exports D4's `launchAt`, `pinClock` and `setClock`, so both Date and Temporal are patched; adds the deferred-entry step, Debt form steps, Review card locators and probe readers), `review-debt.spec.ts`, `detail-debt.spec.ts`, `due-timing.spec.ts`, `update.spec.ts`; `package.json`'s `test:e2e` now runs `e2e/d1 e2e/d2 e2e/d4 e2e/d5`. No product code changed. Static checks exit 0; `npm run test:e2e` exits 0 with 148 passed (5.3 min).
+
+All six cases passed on their first run; each was flagged and given a mutation check (assertion failure), restored afterwards with `git diff -- src` empty. Mutation builds rebuilt only `dist-releases/d5`; the closing `test:e2e` rebuilt every release from clean source.
+
+| Case | File | Mutation | Failure |
+|---|---|---|---|
+| B5.1 | `review-debt.spec.ts` | `ReviewReflections.tsx` `DUE_TEXT.Due` reads "Overdue" (a first mutation, dropping `onReview(result.review)`, still passed and was discarded) | exact "Due" in XYZ's Reflections not found |
+| B5.2 | `review-debt.spec.ts` | `TradeDetail.tsx` badge reads "Declined" | "Declined later" not found |
+| B5.3 | `detail-debt.spec.ts` | `TradeDetail.tsx` badge reads "Answered" | "Deferred, answered" not found |
+| B5.4 | `due-timing.spec.ts` | `daily-review.ts` classifies a Debt due by the cutoff as `Due` instead of `DueInNextReview` | exact "Due" count expected 0, received 1 |
+| B5.5 | `due-timing.spec.ts` | `record-position-change.ts` rejects a Complete reflection whenever an Outstanding Debt exists (a first mutation, Save disabled, failed on an actionability timeout and was discarded) | "Entry recorded" heading not found |
+| B5.6 | `update.spec.ts` | `AboutView.tsx` shows schema version minus 1 | Schema version expected "4", received "3" |
+
+Readings of the rows:
+- B5.4 "Monday's Review does not list it": B5.1's row says Monday's Review shows the same Monday deferral as "Due in the next Review" in XYZ's card, so the two rows disagree. The test asserts no exact "Due" in Monday's card and a Complete Monday Review, then "Due" on Tuesday. Raised with the user.
+- B5.2: Hold is saved first and the Review asserted Incomplete while the reflection is owed, then the decline, then Complete.
+- B5.3: Tuesday's and Wednesday's Marks are entered; Wednesday's XYZ card has no Reflections region, no "Reflect on" button and no reflection text in its status.
+- B5.5: the later Reflect-now entry is dated at the clock (Tuesday 17:00); the first reflection must read "Due"; the probe still shows one Debt and no Entry settling it.
+- B5.6: the clock is moved to Tuesday 17:00 and the deferred entry dated Monday 14:00, so the reflection is due rather than "next Review".
+- "The probe shows the Debt's Settled version": the Debt's last version contains "Settled" (B5.2: a decline) and an Entry's `settledDebtId` equals the Debt id.
+
+UI text matched the plan's quoted strings ("Reflection owed", "Due", "Due in the next Review", "Due in the Review after next", "Deferred, answered", "Declined later"); the form opens on "Reflect now" with the prompts shown.
