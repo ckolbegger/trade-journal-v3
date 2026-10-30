@@ -848,3 +848,51 @@ Run 2026-10-29 23:46 EDT on commit `f9e35f1`, Node v26.12.0.
 | Static and verification checks (12 commands) | as at the end of D4 | 12 of 12 exit 0 | `suite-runs/t5.19-b2-capacity-basis-checks.txt` |
 
 Failures: none. T5.19 is complete.
+
+## T5.20 Freeze the schema-v4 fixture; migrate the v1, v2, and v3 fixtures
+
+Implementation commit `8aaf69b`. `workspace-v1`, `-v2` and `-v3` are byte-identical (`git diff --stat` on them is empty).
+
+- `npm run fixtures:freeze -- --schema 4` exit 0: "fixtures:freeze OK: tests/fixtures/workspace-v4 (schema 4, 5 Planned and 3 Open Trades, 3 Accounts)".
+- `npm run verify:fixtures` exit 0: v1, v2 and v3 "migrated to 4 into tj-ws-verify-0001, views equal"; "workspace-v4: schema 4, opened without migration, views equal"; "verify:fixtures OK: workspace-v1, workspace-v2, workspace-v3, workspace-v4 open Ready at schema 4 with views equal to their snapshots".
+
+The v4 dump, as of Monday 2026-10-19 17:00 America/New_York (`2026-10-19T21:00:00Z`), is D4's content plus four deferred Position Changes on the existing Open Trades, each recorded with `Defer` through `recordPositionChange`:
+
+| Debt | Trade | Position Change | State at the as-of instant |
+|---|---|---|---|
+| Outstanding, due | CSCO `fx-0041`, Debt `fx-0060` | 2026-10-14T15:00Z, Buy 10 @ 51.20 | `Due` |
+| Outstanding, not yet due | CSCO, Debt `fx-0065` | 2026-10-19T20:05Z (Monday 16:05, after the close), Buy 10 @ 51.50 | `DueInReviewAfterNext`: its own session is Tuesday, so it falls due in Wednesday's Review (P16) |
+| Answered in the Review | KO `fx-0067`, Debt `fx-0082` | 2026-10-12T18:00Z | `DailyReview.save` `ResolveReviewDebt`, all three answers; the Entry's source reads "Daily Review", `answeredLater` |
+| Declined on Trade Detail | PFE `fx-0084` | 2026-10-12T15:00Z | `Journal.save` `ResolveDebt` Decline with a reason; source "Trade Detail" |
+
+CSCO's Review card shows two reflections (due 1, later 1); KO and PFE none. The extra Buys change v4's CSCO, KO and PFE figures relative to v3 (CSCO holds 140 shares against a 100-share plan); this affects only the v4 snapshot.
+
+For schema 4, `viewsOf` adds `debts` (the Outstanding Debt list without each Debt's `revision`) and keeps the Review walk's per-Trade `reflections` without `saveBinding`; each Trade's Debt items are in `details[].journal`. `compareSnapshot` is reused unchanged. For migrated v1–v3, `verify:fixtures` checks the A73 defined value: an empty `debts` list, no Debt, `answeredLater` or `settledDebtId` item in any `journal`, empty `reflections` and due/later counts 0/0 on every Review walk Trade, and a non-empty walk where the fixture has Open Trades so the check cannot pass vacuously.
+
+Mutation checks (each restored, then green again): v4 `debts[0].momentTime` changed: `FAIL workspace-v4: views differ from expected-views.json at debts[0].momentTime`; a `dueStatus` `Due` → `DueInNextReview`: `FAIL ... at details[5].journal[4].dueStatus`; the A73 check inverted: `FAIL workspace-v2: not Debt-free after migration: debts (0)` (v1 and v3 likewise). Static checks exit 0; the three `viewsOf` callers' test files, 30 passed.
+
+ocr review of `8aaf69b`: session `0ef8eda5-323f-4314-8851-ccb6e312d2b7`, 2 files reviewed (6 generated fixture files excluded), 1 comment. Raw output: `ocr/T5.20-8aaf69b.json`.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `tools/verify-fixtures.ts:66` | The A73 check matches `kind === 'Debt'`, `answeredLater` and `settledDebtId`, never `declinedLater`; the narrative view marks a Decline that settled a Debt with `declinedLater` and does not expose `settledDebtId`, so a migrated Decline settling a Debt would pass | Valid | Bug task T5.20-B1 |
+
+A cumulative run on `8aaf69b` (2026-10-29 23:57 EDT, label `t5.20-schema-fixtures`) was fully green: unit 893, integration 76, browser 142 (4.8m), checks 12 of 12. It is superseded by the run after the bug task.
+
+### T5.20-B1 The Debt-free check sees a Decline that settled a Debt
+Implemented in `73f8ae5`. `debtViolations` now flags `kind === 'Debt'`, `answeredLater` or `declinedLater`. `settledDebtId` was removed from the predicate and its item type: no Trade narrative item exposes it (it exists only on stored and projected records), so the term could never match. Proof by mutation check (`debtViolations` is private to a top-level script; recorded in `tdd-log.md`): a `{kind:'Decline', declinedLater:{…}}` item injected into each migrated view's first Trade Detail journal gave `FAIL workspace-v1|v2|v3: not Debt-free after migration: fx-00xx.journal (Debt item)`, exit 1; restored, `verify:fixtures` exit 0 with the four fixture lines. The injection was not run against the old predicate, so the mutation shows the new term catches it rather than showing the old check missed it; the ocr finding's reading of the old predicate (no `declinedLater` term) stands on the code. Fixtures unchanged; static checks exit 0.
+
+ocr review of `73f8ae5`: session `8fd502c5-c958-4e65-a13f-4b5927582ffb`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.20-B1-73f8ae5.json`.
+
+### Cumulative run after T5.20
+
+Run 2026-10-30 00:04 EDT on commit `73f8ae5`, Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 69 passed (69)`, `Tests 893 passed (893)`, exit 0 | `suite-runs/t5.20-b1-schema-fixtures-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 42 passed (42)`, `Tests 76 passed (76)`, exit 0 | `suite-runs/t5.20-b1-schema-fixtures-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `142 passed (4.9m)`, exit 0 | `suite-runs/t5.20-b1-schema-fixtures-browser.txt` |
+| Static and verification checks (12 commands) | as at the end of D4 | 12 of 12 exit 0 | `suite-runs/t5.20-b1-schema-fixtures-checks.txt` |
+
+Failures: none. T5.20 is complete.

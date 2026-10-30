@@ -1,0 +1,104 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 230626,
+    "input_tokens": 229475,
+    "output_tokens": 1151,
+    "cache_read_tokens": 38400,
+    "elapsed": "1m16s"
+  },
+  "tool_calls": {
+    "total": 20,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 5,
+      "file_read": 14
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "tools/verify-fixtures.ts",
+      "content": "Also reject `declinedLater`, the actual narrative field indicating a decline that settled a Debt (`NarrativeDecline`). `settledDebtId` is not exposed by this narrative view. As written, a migrated legacy decline incorrectly marked as settling a Debt passes this check; the snapshot comparison also allows it because newly added fields are ignored. Include `declinedLater` in the local type and predicate to cover both kinds of settled Debt under A73.",
+      "existing_code": "    if ((detail.journal ?? []).some((item) =\u003e item.kind === 'Debt' || item.answeredLater !== undefined || item.settledDebtId !== undefined)) out.push(`${detail.tradeId}.journal (Debt item)`);",
+      "start_line": 66,
+      "end_line": 66,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "tools/fixtures-freeze.ts",
+        "tools/verify-fixtures.ts"
+      ]
+    }
+  ],
+  "session_id": "0ef8eda5-323f-4314-8851-ccb6e312d2b7",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "0ef8eda5-323f-4314-8851-ccb6e312d2b7",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "8aaf69b",
+      "resolved_base": "18edaab0bf5ddbd99b3cbce0ea0931ad8ce37028",
+      "resolved_head": "8aaf69b69502673d90b7155f3ab69e6a4344a6ac",
+      "exact_range": "18edaab0bf5ddbd99b3cbce0ea0931ad8ce37028..8aaf69b69502673d90b7155f3ab69e6a4344a6ac",
+      "source_artifact_sha256": "366e224477dc3c04761b0106482614cb9760c4e5d1ca710089585b8bd6fd12bd"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3532c6b0422439763c01a2526fdcffd9bc1164a5c905da0e13e9e4c85f95ddec",
+          "path": "tools/fixtures-freeze.ts",
+          "fingerprint": "e63cced8cc4b6bb45b1e20005ae2a964f2cfc8323d729281b501c9bdd5316225"
+        },
+        {
+          "item_id": "8ce87f8a73f8a4627d9c0cc173b9fcf6befcd9709c44c120ef136169c5a71ac0",
+          "path": "tools/verify-fixtures.ts",
+          "fingerprint": "4ddcd238f49fa7d1794073716c2d269cf522c875ed70f95f97f41bfc96eb475c"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3532c6b0422439763c01a2526fdcffd9bc1164a5c905da0e13e9e4c85f95ddec",
+          "path": "tools/fixtures-freeze.ts",
+          "fingerprint": "e63cced8cc4b6bb45b1e20005ae2a964f2cfc8323d729281b501c9bdd5316225"
+        },
+        {
+          "item_id": "8ce87f8a73f8a4627d9c0cc173b9fcf6befcd9709c44c120ef136169c5a71ac0",
+          "path": "tools/verify-fixtures.ts",
+          "fingerprint": "4ddcd238f49fa7d1794073716c2d269cf522c875ed70f95f97f41bfc96eb475c"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 76203
+  }
+}
