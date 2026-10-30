@@ -323,3 +323,34 @@ Run 2026-10-29 20:29 EDT on commit `2f2d8c2`, Node v26.12.0.
 | Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.8-review-reflections-checks.txt` |
 
 Failures: `verify:capacity` only (expected until T5.19).
+
+## T5.9 Daily Review: `getTrade` with the Trade's owed reflections
+
+Implementation commit `04a7f8f`. Both cases red (`reflections` undefined; `Ready` instead of `ReviewChanged`) then green; no first-run pass. Case 2 sits in its own describe, "owed reflections resolved elsewhere (A68)", for its own fixture; it declines D-2 through `Journal.save` (`ResolveDebt`). `getTrade` returns `reflections: OwedReflection[]` (Journal's anchor-then-identity order), each with the snapshot `EntryDefinitionRecord`, the Position Change's Economic Time and Executions, a `ReflectionClassification` (`Due`, `DueInNextReview`, `DueInReviewAfterNext`, by `Temporal.Instant.compare` against the previous close and the Review Date's close) and a `ReflectionSaveBinding { debtId; debtRevision; definitionRevision }`. **Binding change:** `ReviewBinding` gains `outstandingDebts` (Trade identity to its Outstanding Debt identities); `getTrade` returns `ReviewChanged` when the Trade's list differs. The Journal revision was not used because every Action save moves it. Compile-driven fixture edits in `daily-review.test.ts`, `ReviewView.test.tsx` and `ReviewTrade.test.tsx`; no UI code changed.
+
+ocr review of `04a7f8f`: session `bcf9d0e0-610d-451e-aa60-6e6d7d29b800`, 2 files reviewed, 1 comment. Raw output: `ocr/T5.9-04a7f8f.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| low | `src/coordinators/daily-review/daily-review.ts:360` | The reflection classification is a nested ternary | Valid (style) | Bug task T5.9-B1 (structural) |
+
+### T5.9-B1 Reflection classification without nested ternaries
+
+Structural: classify with an if/else chain. Verified by the daily-review tests passing before and after.
+
+Implemented in `fa3d504`: an if/else chain with the same comparisons in the same order. Daily-review tests 70 passed before and after; the four static checks exit 0.
+
+ocr review of `fa3d504`: session `affc5a17-3bb6-4753-968a-1da13d5e779e`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.9-B1-fa3d504.json`.
+
+### Cumulative run after T5.9
+
+Run 2026-10-29 20:40 EDT on commit `fa3d504`, Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 66 passed (66)`, `Tests 853 passed (853)`, exit 0 | `suite-runs/t5.9-owed-reflections-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 41 passed (41)`, `Tests 73 passed (73)`, exit 0 | `suite-runs/t5.9-owed-reflections-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `142 passed (4.8m)`, exit 0 | `suite-runs/t5.9-owed-reflections-browser.txt` |
+| Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.9-owed-reflections-checks.txt` |
+
+Failures: `verify:capacity` only (expected until T5.19).
