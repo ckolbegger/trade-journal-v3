@@ -4,7 +4,7 @@ import {
 } from './support.ts';
 
 test.describe('B5.4 Due timing', () => {
-  test('should not list the reflection as due in Monday’s Review, which reaches Complete, and list it as Due in Tuesday’s', async ({ profile }) => {
+  test('should list the reflection as due in the next Review in Monday’s Review, which reaches Complete, and list it as Due in Tuesday’s', async ({ profile }) => {
     const { context, page } = await onboardedAt(profile, MONDAY_1100);
     await confirmReference(page);
     await deferEntry(page, [AT_10]);
@@ -12,7 +12,8 @@ test.describe('B5.4 Due timing', () => {
     await setClock(context, page, MONDAY_1700);
     await openReview(page);
     await markAndOpenCard(page, 'XYZ', MONDAY, '52.00');
-    // Not due on Monday: nothing in the card reads Due, and Hold completes the Review.
+    // Not due on Monday: the card lists the reflection as due in the next Review (never Due), and Hold completes the Review.
+    await expect(reflectionsOf(page, 'XYZ').getByText('Due in the next Review', { exact: true })).toBeVisible();
     await expect(reflectionsOf(page, 'XYZ').getByText('Due', { exact: true })).toHaveCount(0);
     await saveAction(page, 'Hold');
     await expect(completion(page)).toHaveText('Complete');
