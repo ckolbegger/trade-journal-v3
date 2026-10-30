@@ -3,34 +3,11 @@
 import { describe, expect, it } from 'vitest';
 import type { Application } from '../../../src/app/compose.ts';
 import {
-  bindingFor, device, dumpAll, journalStores, MONDAY, MONDAY_1700, onboarded, openReview, PC1, PC2, planStock, PC1_TIME, record,
-  recordDeferred, reflectionForm, restart, saveAction, saveMark, TUESDAY_1700, type Device,
+  bindingFor, device, dumpAll, fixture, journalStores, MONDAY, MONDAY_1700, onboarded, openReview,
+  reflectionForm, restart, saveAction, saveMarks, TUESDAY_1700, type Device,
 } from './support.ts';
 
 const TUESDAY = '2026-10-13';
-const SYMBOLS = ['XYZ', 'ABC', 'DEF', 'JKL'] as const;
-const PRICES = { XYZ: '52.00', ABC: '27.50', DEF: '40.50', JKL: '21.00' } as const;
-
-// T-A (XYZ) with PC1 deferred and PC2 completed, then T-B ABC, T-C DEF and T-E JKL, each filled at 10:00 Monday.
-async function fixture(app: Application) {
-  const a = await planStock(app, 'XYZ', '50.00', '47.50', '56.00');
-  await recordDeferred(app, a, PC1);
-  await record(app, a, PC2);
-  const single = async (symbol: string, entry: string, stop: string, target: string) => {
-    const tradeId = await planStock(app, symbol, entry, stop, target);
-    await record(app, tradeId, { quantity: '100', price: entry, economicTime: PC1_TIME });
-    return tradeId;
-  };
-  const b = await single('ABC', '30.00', '28.00', '36.00');
-  const c = await single('DEF', '40.00', '38.00', '46.00');
-  const e = await single('JKL', '20.00', '19.00', '30.00');
-  return { a, b, c, e, all: [a, b, c, e] };
-}
-
-async function saveMarks(app: Application, date: string) {
-  for (const symbol of SYMBOLS) await saveMark(app, symbol, date, PRICES[symbol]);
-}
-
 // T-A's card as getTrade renders it for the latest completed Review.
 async function cardOf(app: Application, d: Device, tradeId: string) {
   const { form } = await bindingFor(app, d, tradeId);

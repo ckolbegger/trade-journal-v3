@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   bindingFor, confirmReference, detail, device, dumpAll, journalStores, MONDAY_1005, onboarded, openReview, outstandingDebts,
-  PC1, positionChange, buy, recordDeferred, reflectionForm, restart, type Device,
+  PC1, positionChange, buy, recordDeferred, reflectionForm, restart, withDebt, type Device,
 } from './support.ts';
 
 const TUESDAY_1005 = '2026-10-13T14:05:00Z';
@@ -80,16 +80,6 @@ function expectOneCurrentOutcomePerKey(dump: Awaited<ReturnType<typeof dumpAll>>
       expect(entries.filter((e) => e.settledDebtId === debt.debtId)).toHaveLength(0);
     }
   }
-}
-
-// An onboarded Workspace on Monday 17:00 holding the reference Trade with PC1 deferred (D-1), and its binding.
-async function withDebt() {
-  const d = await device(undefined, MONDAY_1005);
-  const app = await onboarded(d);
-  const tradeId = await confirmReference(app);
-  await recordDeferred(app, tradeId, PC1);
-  const debt = (await outstandingDebts(app))[0]!;
-  return { d, app, tradeId, debt };
 }
 
 describe('I5.8 Retries and concurrency', () => {

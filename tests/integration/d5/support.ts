@@ -5,7 +5,9 @@
 // a new application over the same factory.
 import type { Application } from '../../../src/app/compose.ts';
 import type { DebtProjection } from '../../../src/modules/journal/index.ts';
-import { buy, complete, type Dump, type Fill, positionChange, workspaceStores } from '../d4/support.ts';
+import {
+  buy, complete, confirmReference, device, type Dump, type Fill, onboarded, PC1, PC1_TIME, PC2, planStock, positionChange, record, saveMark, workspaceStores,
+} from '../d4/support.ts';
 
 export * from '../d4/support.ts';
 
@@ -27,6 +29,41 @@ export async function outstandingDebts(app: Application): Promise<readonly DebtP
   const page = await app.Journal.query({ scope: 'OutstandingDebt' });
   if (!('debts' in page)) throw new Error(`Journal.query OutstandingDebt: ${page.kind}`);
   return page.debts;
+}
+
+// An onboarded Workspace on Monday 10:05 holding the reference Trade with PC1 deferred (D-1).
+export async function withDebt() {
+  const d = await device(undefined, MONDAY_1005);
+  const app = await onboarded(d);
+  const tradeId = await confirmReference(app);
+  await recordDeferred(app, tradeId, PC1);
+  const debt = (await outstandingDebts(app))[0]!;
+  return { d, app, tradeId, debt };
+}
+
+export const SYMBOLS = ['XYZ', 'ABC', 'DEF', 'JKL'] as const;
+export const PRICES = { XYZ: '52.00', ABC: '27.50', DEF: '40.50', JKL: '21.00' } as const;
+
+// D4's five-Trade fixture without T-D: T-A (XYZ) with PC1 deferred and PC2 completed, then T-B ABC,
+// T-C DEF and T-E JKL, each filled at 10:00 Monday.
+export async function fixture(app: Application) {
+  const a = await planStock(app, 'XYZ', '50.00', '47.50', '56.00');
+  await recordDeferred(app, a, PC1);
+  await record(app, a, PC2);
+  const single = async (symbol: string, entry: string, stop: string, target: string) => {
+    const tradeId = await planStock(app, symbol, entry, stop, target);
+    await record(app, tradeId, { quantity: '100', price: entry, economicTime: PC1_TIME });
+    return tradeId;
+  };
+  const b = await single('ABC', '30.00', '28.00', '36.00');
+  const c = await single('DEF', '40.00', '38.00', '46.00');
+  const e = await single('JKL', '20.00', '19.00', '30.00');
+  return { a, b, c, e, all: [a, b, c, e] };
+}
+
+// Saves the four fixture Marks for one trading date.
+export async function saveMarks(app: Application, date: string) {
+  for (const symbol of SYMBOLS) await saveMark(app, symbol, date, PRICES[symbol]);
 }
 
 // The completed Position Change Reflection's form: the definition revision and its three answers.
