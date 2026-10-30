@@ -357,12 +357,10 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       const definition = await deps.journal.getDefinitions({ revision: debt.definitionId });
       if (definition.kind !== 'Found') throw new Error(`no definition ${debt.definitionId}`);
       const positionChange = analysis.positionChanges.find((pc) => pc.factId === debt.origin.factId);
-      const classification: ReflectionClassification =
-        Temporal.Instant.compare(debt.dueAnchor, frames.previousCloseInstant) <= 0
-          ? 'Due'
-          : Temporal.Instant.compare(debt.dueAnchor, cutoff) <= 0
-            ? 'DueInNextReview'
-            : 'DueInReviewAfterNext';
+      let classification: ReflectionClassification;
+      if (Temporal.Instant.compare(debt.dueAnchor, frames.previousCloseInstant) <= 0) classification = 'Due';
+      else if (Temporal.Instant.compare(debt.dueAnchor, cutoff) <= 0) classification = 'DueInNextReview';
+      else classification = 'DueInReviewAfterNext';
       reflections.push({
         debtId: debt.debtId,
         definition: definition.definition,
