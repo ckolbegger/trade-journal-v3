@@ -4,7 +4,7 @@ import type { EntryDefinitionRecord, TradeDetailDebt } from '../../app/types.ts'
 import { Badge } from '../Badge.tsx';
 import { localTime } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
-import { DebtForm, type DebtFormProps, type DebtSubmitResult } from './DebtForm.tsx';
+import { DebtForm, type DebtFormProps, type DebtResolved, type DebtSubmitResult } from './DebtForm.tsx';
 import { DUE_TEXT } from './ReviewReflections.tsx';
 
 // An Outstanding Debt in a Trade's narrative: "Reflection owed" beside its Position Change, with its
@@ -52,12 +52,18 @@ export function OwedDebtItem({
   };
   // The form that took focus is replaced by the saved reflection, so focus moves to it.
   const formArea = useRef<HTMLDivElement>(null);
-  const [wasResolved, setWasResolved] = useState(false);
+  // What the save returned: the item is relabelled from it, without reading the Trade again.
+  const [settled, setSettled] = useState<{ readonly label: string; readonly timeLabel: string; readonly time?: string }>();
   useEffect(() => {
-    if (wasResolved) formArea.current?.focus();
-  }, [wasResolved]);
-  const resolved = () => {
-    setWasResolved(true);
+    if (settled) formArea.current?.focus();
+  }, [settled]);
+  const resolved = (result: DebtResolved) => {
+    const answered = result.entry !== undefined;
+    setSettled({
+      label: answered ? 'Deferred, answered' : 'Declined later',
+      timeLabel: answered ? 'Answered' : 'Declined',
+      time: (result.entry ?? result.decline)?.authoredTime,
+    });
     onResolved();
   };
   const close = () => {
@@ -96,12 +102,18 @@ export function OwedDebtItem({
   return (
     <li>
       <h3>
-        <Badge tone="warning">Reflection owed</Badge>
+        {settled ? <Badge tone="info">{settled.label}</Badge> : <Badge tone="warning">Reflection owed</Badge>}
       </h3>
       <p>
         Position Change at <span className="nowrap">{localTime(debt.momentTime, timeZone)}</span>
       </p>
-      {debt.dueStatus && (
+      {settled?.time && (
+        <dl>
+          <dt>{settled.timeLabel}</dt>
+          <dd>{localTime(settled.time, timeZone)}</dd>
+        </dl>
+      )}
+      {!settled && debt.dueStatus && (
         <dl>
           <dt>Due</dt>
           <dd>{DUE_TEXT[debt.dueStatus]}</dd>

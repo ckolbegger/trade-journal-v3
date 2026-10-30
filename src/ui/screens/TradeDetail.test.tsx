@@ -1120,6 +1120,44 @@ describe('Debt on Trade Detail (A69, P17)', () => {
     expect(facade.TradeViewsAndReporting.getTradeDetail).toHaveBeenCalledTimes(1);
   });
 
+  it('should relabel a reflection resolved on Trade Detail as "Deferred, answered" or "Declined later" with its time, without "Reflection owed" or a due status', async () => {
+    const cases = [
+      { label: 'Deferred, answered', term: 'Answered', time: '2026-10-13 09:05', button: 'Answer', saved: { entry: { id: 'entry-9', authoredTime: '2026-10-13T13:05:00Z', responses: [] } } },
+      { label: 'Declined later', term: 'Declined', time: '2026-10-13 09:10', button: 'Decline', saved: { decline: { id: 'decl-1', authoredTime: '2026-10-13T13:10:00Z' } } },
+    ];
+    for (const { label, term, time, button, saved } of cases) {
+      const facade = facadeDouble();
+      vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: openDetailOf([PC1, PC2], { journal: [owedDebt('debt-1', 'pc-1', '2026-10-12T14:00:00Z', 'Due')] }), binding: {} } as never);
+      vi.mocked(facade.Journal.getDefinitions).mockResolvedValue({ kind: 'Found', definition: reflectionDefinition } as never);
+      vi.mocked(facade.Journal.save).mockResolvedValue({ kind: 'Saved', ...saved, debt: { debtId: 'debt-1' }, currentOutcome: { kind: 'Entry', id: 'x' }, snapshot: { journalRevision: 5 } } as never);
+      render(
+        <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
+          <MemoryRouter initialEntries={['/trades/trade-1']}>
+            <Routes>
+              <Route path="/trades/:tradeId" element={<TradeDetail facade={facade} timeZone="America/New_York" />} />
+            </Routes>
+          </MemoryRouter>
+        </RuntimeContext.Provider>,
+      );
+      const user = userEvent.setup();
+      await user.click(await screen.findByRole('button', { name: 'Reflect now' }));
+      const form = await screen.findByRole('form', { name: 'Reflection' });
+      if (button === 'Answer') {
+        await user.click(within(within(form).getByRole('radiogroup', { name: 'Decision mode' })).getAllByRole('radio')[0] as HTMLElement);
+        await user.click(within(within(form).getByRole('radiogroup', { name: 'Primary emotion' })).getAllByRole('radio')[0] as HTMLElement);
+        await user.click(within(within(form).getByRole('radiogroup', { name: 'Decision confidence' })).getAllByRole('radio')[0] as HTMLElement);
+      }
+      await user.click(within(form).getByRole('button', { name: button }));
+      const item = (await screen.findByRole('region', { name: 'Saved reflection' })).closest('li') as HTMLElement;
+      expect(within(item).getByText(label, { selector: '.badge' })).toBeTruthy();
+      expect(termValue(item, term)).toBe(time);
+      expect(within(item).queryByText('Reflection owed')).toBeNull();
+      expect(within(item).queryByText('Due', { selector: 'dt' })).toBeNull();
+      expect(facade.TradeViewsAndReporting.getTradeDetail).toHaveBeenCalledTimes(1);
+      cleanup();
+    }
+  });
+
   it('should show an unclassified Outstanding Debt as "Reflection owed" with no due text, with Reflect now and Decline still offered while Writable', async () => {
     const journal = [owedDebt('debt-1', 'pc-1', '2026-10-12T14:00:00Z')];
     renderView(openDetailUncovered([PC1, PC2], '2026-10-12', { journal }));
