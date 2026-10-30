@@ -1056,3 +1056,32 @@ Readings of the rows:
 UI text matched the plan's quoted strings ("Reflection owed", "Due", "Due in the next Review", "Due in the Review after next", "Deferred, answered", "Declined later"); the form opens on "Reflect now" with the prompts shown.
 
 ocr review of `8d0b166` (scratch clone, the five `e2e/d5` files relocated under `src/itg/d5/`; `ocr/T5.24p1-8d0b166.json`): 5 files reviewed, 2 comments, both relocation artifacts and dismissed — an unresolved `../d4/support.ts` import (the real `e2e/d4/support.ts` exists) and suites not discovered without `.spec` names (the real files are `e2e/d5/*.spec.ts` and `test:e2e` runs `e2e/d5`).
+
+## T5.24 part 2 Browser cases B5.7 to B5.12
+Commit `582b184`: `e2e/d5/kill-offline.spec.ts` (B5.7, B5.8), `faults.spec.ts` (B5.9, B5.10), `no-save.spec.ts` (B5.11), `responsive.spec.ts` (B5.12 as two tests: resize, then axe, text and keyboard). `support.ts` unchanged, no product code changed. Static checks exit 0; `npm run test:e2e` exits 0 with 155 passed.
+
+All seven tests passed on their first run; each was flagged and given a mutation check that failed on an assertion, restored afterwards with `git diff -- src` empty (d5 rebuilt per mutation, and the faults build for B5.9 and B5.10).
+
+| Case | Mutation | Failure |
+|---|---|---|
+| B5.7 | `journal.ts` answer path commits the Debt as Declined instead of Settled | expected "Settled", received a `"status":"Declined"` version |
+| B5.8 | `OwedDebtItem.tsx` labels an answered Debt "Answered" | "Deferred, answered" not found |
+| B5.9 | `OwedDebtItem.tsx` offers Reflect now and Decline when not Writable | "Reflect now" button count expected 0, received 1 |
+| B5.10 | `ReviewReflections.tsx` stops passing the save result to `report` | the "Read only: this browser can't save right now" region not found |
+| B5.11 | `DebtForm.tsx` writes its answers and reason to localStorage | Web Storage expected `[]`, received a `draft` entry |
+| B5.12 resize | `AppShell.tsx` `WIDE_LAYOUT_MIN_WIDTH` 961 | expected "sidebar", received "bottom" |
+| B5.12 axe, text, keyboard | `ReviewReflections.tsx` `DUE_TEXT.DueInNextReview` reads "Next" | expected "Due in the next Review" |
+
+The axe checks and the keyboard-only resolution in B5.12 were not mutated separately.
+
+Readings of the rows:
+- B5.9: in Recovery Only the Review card still shows its "Reflect on <time>" button, which opens the Debt form with its prompts disabled and no Answer, Decline or Save; Trade Detail hides Reflect now and Decline. "No Reflect now, Decline, or Save" is read as no control that answers, declines or saves, which the test asserts; this matches C5.9 ("the owed reflection is readable; no answer or decline controls"). Kept as is.
+- B5.7: clock Tuesday 17:00 with a Monday 10:00 deferral, answered in the Review card, SIGKILL right after the saved result renders, relaunch.
+- B5.8: the Plan is confirmed online; both offline launches open the Trade's Detail path directly (a Planned Trade is not in the Open list).
+- B5.10: the failure is injected in the Review's Debt form.
+- B5.11: entry-form values typed through all three dispositions plus a Debt answer and decline reason in the Review; marker scan of Web Storage and the IndexedDB probe (D4's method). No dirty-leave dialog appeared on navigating away.
+- B5.12: one Workspace with three Monday deferrals and one Tuesday deferral; one answered by keyboard only on Detail, one declined, two left Outstanding; axe on the entry form in each disposition (and narrow), Detail and the Review card wide and narrow, and the Debt form on Detail and in the Review.
+
+UI observations: Detail at Tuesday 12:30 shows a Monday deferral as "Due in the next Review" (as A69 requires: at Tuesday 12:30 the Expected Mark Date E is Monday, the session before E is Friday, and a Monday 10:00 anchor falls after Friday's close and by Monday's, so "Due in the next Review"; the Review at Tuesday 17:00 reads "Due"); settled and declined items on Detail render as Entry or decline items with a "Moment" line rather than "Position Change at …".
+
+Process slip: the implementer used `sed -i` once (a temporary B5.7 mutation) and a node script once (rewriting `kill-offline.spec.ts`) despite the brief; nothing from either remains in src.
