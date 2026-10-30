@@ -48,13 +48,17 @@ describe('I5.3 Defer at capture', () => {
     expect(stored.definitionId).toBe((await again.Journal.getDefinitions({ latestFor: 'entry-type.position-change-reflection' }).then((r) => (r.kind === 'Found' ? r.definition.id : ''))));
     expect(stored.anchor).toEqual({ kind: 'Trade', tradeId });
     expect(stored.origin.kind).toBe('PositionChange');
+    // The origin names PC1, the Position Change the commit created first (the receipt lists it before its members).
+    const pc1Id = recorded.receipt.createdFactIds[0]!;
+    expect(stored.origin).toEqual({ kind: 'PositionChange', factId: pc1Id });
+    expect(stored.obligationKey).toBe(`PositionChangeReflection:${pc1Id}`);
     expect(stored.dueAnchor).toBe(PC1_TIME);
 
-    const obligations = (stores['journalObligations'] as { obligationKey: string; outcome: { kind: string; id?: string } }[]).filter((o) => o.obligationKey === stored.obligationKey);
+    const obligations = (stores['journalObligations'] as { obligationKey: string; outcome: { kind: string; id?: string } }[]).filter((o) => o.obligationKey === `PositionChangeReflection:${pc1Id}`);
     expect(obligations).toEqual([expect.objectContaining({ outcome: { kind: 'Debt', id: stored.debtId } })]);
     // No Entry and no decline for that key.
     const entries = stores['journalEntries'] as { obligationKey: unknown }[];
-    expect(entries.filter((e) => JSON.stringify(e).includes(stored.origin.factId))).toEqual([]);
+    expect(entries.filter((e) => JSON.stringify(e).includes(pc1Id))).toEqual([]);
     expect(entries).toHaveLength(1);
     expect(stores['journalDeclines']).toEqual([]);
     expect((stores['trades'] as { lifecycle: string }[]).map((t) => t.lifecycle)).toEqual(['Open']);
