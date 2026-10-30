@@ -37,13 +37,25 @@ const MEASUREMENT: EngineMeasurement = {
   bytesPerMark: 5,
   bytesPerAcknowledgment: 7,
   bytesPerAction: 3,
+  debtsDeferred: 0,
+  debtsAnswered: 0,
+  debtsDeclined: 0,
+  debtsOutstanding: 0,
+  debtOverheadRatio: 1,
+  jsonBytesPerDebtAnswered: 0,
+  jsonBytesPerDebtDeclined: 0,
+  jsonBytesPerDebtOutstanding: 0,
+  bytesPerDebtAnswered: 0,
+  bytesPerDebtDeclined: 0,
+  bytesPerDebtOutstanding: 0,
 };
 
 describe('capacity projection at schema 3', () => {
   it('should project Marks and Daily Trade Review Actions from measured bytes at their mature counts', () => {
-    // Measured kinds: 25,000,000 + 12,000 + 1,000,000 + 4,000,000 + 3,000,000 + 190,000 × 5 + 126,000 × 3.
+    // Measured kinds: 25,000,000 + 12,000 + 1,000,000 + 4,000,000 + 2,400,000 (the 80,000 outcomes at capture;
+    // the 20,000 deferred ones are priced from Debt bytes since D5, zero here) + 190,000 × 5 + 126,000 × 3.
     // Allowances (Close Review outcomes, Review Notes, Daily Bars, Correction versions): 81,740,000 JSON bytes × 2.
-    expect(project(MEASUREMENT).projectedWorkspaceBytes).toBe(197_820_000);
+    expect(project(MEASUREMENT).projectedWorkspaceBytes).toBe(197_220_000);
   });
 
   it('should keep allowances only for the kinds not yet built, Daily Bars among them until D11', () => {

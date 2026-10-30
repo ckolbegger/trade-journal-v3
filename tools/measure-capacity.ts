@@ -1,6 +1,7 @@
 // npm run measure:capacity [engine...]: measures storage per Trade with its Plan Reflection, and
 // per Position Change, Execution, and Position Change Reflection outcome (D2 T2.18), and per Mark,
-// acknowledgment, and Daily Trade Review Action (D4 T4.28), in each engine (default chromium; RC adds firefox and webkit) and rewrites the capacity basis
+// acknowledgment, and Daily Trade Review Action (D4 T4.28), and per deferred Position Change
+// Reflection answered, declined, or left Outstanding (D5 T5.19), in each engine (default chromium; RC adds firefox and webkit) and rewrites the capacity basis
 // with the largest projection (D1 T1.19, decision 18).
 import { readFile, writeFile } from 'node:fs/promises';
 import { chromium, firefox, webkit } from '@playwright/test';
@@ -16,13 +17,13 @@ const requested = (process.argv.slice(2).length > 0 ? process.argv.slice(2) : ['
 const previous = JSON.parse(await readFile(BASIS_FILE, 'utf8')) as { engines?: EngineMeasurement[] };
 const engines = new Map((previous.engines ?? []).map((m) => [m.engine, m]));
 
-const server = await createServer({ logLevel: 'warn', server: { port: 5179, strictPort: true } });
+const server = await createServer({ logLevel: 'warn', server: { port: 5175, strictPort: true } });
 await server.listen();
 try {
   for (const name of requested) {
     const browser = await ENGINES[name].launch();
     const page = await browser.newPage();
-    await page.goto('http://localhost:5179/tools/capacity/measure.html');
+    await page.goto('http://localhost:5175/tools/capacity/measure.html');
     await page.waitForFunction(() => typeof window.measureCapacity === 'function');
     const result = await page.evaluate(([plans, open]) => window.measureCapacity!(plans, open), [PLANS, OPEN_TRADES] as const);
     engines.set(name, { engine: name, version: browser.version(), ...result });

@@ -46,17 +46,36 @@ export interface EngineMeasurement {
   readonly bytesPerMark: number;
   readonly bytesPerAcknowledgment: number;
   readonly bytesPerAction: number;
+  // The Debt phase (D5): Position Changes recorded with the Defer disposition, then resolved in Reviews.
+  // Each Debt's share is its record with the version chain, its obligation record, and the Entry or
+  // decline that settled it, scaled by the phase's own on-disk overhead.
+  readonly debtsDeferred: number;
+  readonly debtsAnswered: number;
+  readonly debtsDeclined: number;
+  readonly debtsOutstanding: number;
+  readonly debtOverheadRatio: number;
+  readonly jsonBytesPerDebtAnswered: number;
+  readonly jsonBytesPerDebtDeclined: number;
+  readonly jsonBytesPerDebtOutstanding: number;
+  readonly bytesPerDebtAnswered: number;
+  readonly bytesPerDebtDeclined: number;
+  readonly bytesPerDebtOutstanding: number;
 }
 
 // Measured kinds and their mature counts (D1 plan, section 1.3). Executions stand in for the
-// whole "Executions and settlement facts" count until D7 adds settlement facts, and Position
-// Change Reflection Entries and declines for the whole outcome count until D5 adds Debt.
+// whole "Executions and settlement facts" count until D7 adds settlement facts. The 100,000
+// Position Change Reflection outcomes are split as D5 section 1.4 does: 65% completed and 15%
+// declined at capture (measured as Entries and declines), 18% deferred then answered, 1.6%
+// deferred then declined, and 0.4% still Outstanding (measured as Debts).
 export const MEASURED = {
   tradesWithPlanReflection: 25_000,
   catalogRecords: 60,
   positionChanges: 100_000,
   executions: 200_000,
-  positionChangeReflectionOutcomes: 100_000,
+  positionChangeReflectionsAtCapture: 80_000,
+  debtsAnswered: 18_000,
+  debtsDeclined: 1_600,
+  debtsOutstanding: 400,
   // Replaced the D1 allowances in D4 (T4.28): the Mark count includes corrections. Acknowledgments
   // have no mature count in the profile, so they are measured and recorded but not projected.
   marks: 190_000,
@@ -83,7 +102,10 @@ export function project(m: EngineMeasurement): Projection {
     MEASURED.catalogRecords * m.jsonBytesPerCatalogRecord * m.overheadRatio +
     MEASURED.positionChanges * m.bytesPerPositionChange +
     MEASURED.executions * m.bytesPerExecution +
-    MEASURED.positionChangeReflectionOutcomes * m.bytesPerPositionChangeReflection +
+    MEASURED.positionChangeReflectionsAtCapture * m.bytesPerPositionChangeReflection +
+    MEASURED.debtsAnswered * m.bytesPerDebtAnswered +
+    MEASURED.debtsDeclined * m.bytesPerDebtDeclined +
+    MEASURED.debtsOutstanding * m.bytesPerDebtOutstanding +
     MEASURED.marks * m.bytesPerMark +
     MEASURED.dailyTradeReviewActions * m.bytesPerAction;
   const allowed = ALLOWANCES.reduce((sum, a) => sum + a.count * a.jsonBytes * m.overheadRatio, 0);

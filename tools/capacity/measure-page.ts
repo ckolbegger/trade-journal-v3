@@ -1,6 +1,7 @@
 // Runs in the browser under `measure:capacity`: confirms deterministic Plans, then opens some of
 // them with Position Changes (D2 plan, section 1.3), then adds Marks, acknowledgments and Daily
-// Trade Review Actions (D4 T4.28), through the production application facade on the engine's
+// Trade Review Actions (D4 T4.28), then deferred Position Change Reflections resolved in Reviews
+// (D5 T5.19), through the production application facade on the engine's
 // real IndexedDB, and reports the storage growth of each phase.
 // Readiness inputs come from NodeTestHost (no service worker here); storage is the real engine's.
 import { createApplication } from '../../src/app/compose.ts';
@@ -185,6 +186,147 @@ async function measureReviewPhase(app: Application, workspace: string, openTrade
   };
 }
 
+// Debt phase (T5.19): 10 sessions × the 200 Open Trades = 2,000 Position Changes recorded with the
+// Defer disposition, one per Trade per session. In each next session's Review, 90% of that session's
+// deferred reflections are answered, 8% declined, and 2% left Outstanding (the section 1.4 split of
+// the 20% that are deferred: 18%, 1.6%, 0.4%).
+const DEBT_SESSIONS = 10;
+const DEBT_FROM = '2026-03-02';
+const DEBT_STORES = ['journalEntries', 'journalDeclines', 'journalObligations', 'journalDebts'] as const;
+const DEBT_CYCLE = 50;
+const DEBT_ANSWERED_BELOW = 45;
+const DEBT_DECLINED_BELOW = 49;
+const DEBT_ANSWERS = {
+  'prompt.position-change-reflection.decision-mode': { kind: 'Option', optionId: 'option.position-change-reflection.decision-mode.as-planned' },
+  'prompt.position-change-reflection.primary-emotion': { kind: 'Option', optionId: 'option.position-change-reflection.primary-emotion.calm' },
+} as const;
+
+async function debtStoresJsonBytes(name: string): Promise<number> {
+  let sum = 0;
+  for (const store of DEBT_STORES) sum += (await storeJsonBytes(name, store)).bytes;
+  return sum;
+}
+
+interface StoredDebtRecord {
+  obligationKey: unknown;
+  versions: { status: string; entryId?: string; declineId?: string }[];
+}
+
+async function measureDebtPhase(app: Application, workspace: string, tradeIds: readonly string[], openTrades: number) {
+  const covered = nyseSessionPolicy.sessionsBetween(DEBT_FROM, LAST_SESSION);
+  if (!covered.ok) throw new Error('sessions not covered');
+  const dates = covered.value.map((s) => s.date).slice(0, DEBT_SESSIONS + 1);
+  if (dates.length !== DEBT_SESSIONS + 1) throw new Error('too few sessions');
+
+  const usageBefore = await usage();
+  const tradesBefore = (await storeJsonBytes(workspace, 'trades')).bytes;
+  const storesBefore = await debtStoresJsonBytes(workspace);
+
+  let deferred = 0;
+  for (const [d, date] of dates.slice(0, DEBT_SESSIONS).entries()) {
+    const reviewDate = dates[d + 1]!;
+    const times: string[] = [];
+    for (let i = 0; i < openTrades; i++) {
+      const tradeId = tradeIds[i]!;
+      const symbol = SYMBOLS[i % SYMBOLS.length]!;
+      const detail = await app.TradeViewsAndReporting.getTradeDetail({ tradeId });
+      if (detail.kind !== 'Ready') throw new Error(`trade ${i}: ${detail.kind}`);
+      const economicTime = new Date(Date.parse(`${date}T15:00:00Z`) + i * 60_000).toISOString().replace('.000Z', 'Z');
+      times.push(economicTime);
+      const recorded = await app.TradeWorkflows.recordPositionChange({
+        originTradeId: tradeId,
+        trades: [{ tradeId, expectedFactRevision: detail.view.factRevision }],
+        members: [
+          {
+            kind: 'Execution' as const,
+            tradeId,
+            action: 'Buy' as const,
+            instrument: { kind: 'Stock' as const, symbol },
+            intent: { kind: 'ServesPlannedLeg' as const, plannedLegId: detail.view.plan.legs[0]!.factId },
+            quantity: '1',
+            price: `${40 + (i % 160)}.${String(10 + (deferred % 90)).padStart(2, '0')}`,
+            fee: '0.65',
+            economicTime,
+          },
+        ],
+        reflection: { kind: 'Defer' },
+      });
+      if (recorded.kind !== 'Recorded') throw new Error(`defer ${date} trade ${i}: ${recorded.kind}`);
+      deferred++;
+    }
+
+    const opened = await app.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: `${reviewDate}T23:30:00Z` });
+    if (opened.kind !== 'Ready' || opened.reviewDate !== reviewDate) throw new Error(`open ${reviewDate}: ${opened.kind}`);
+    let binding = opened.binding;
+    for (let i = 0; i < openTrades; i++) {
+      const slot = (d * openTrades + i) % DEBT_CYCLE;
+      if (slot >= DEBT_DECLINED_BELOW) continue;
+      const form = await app.DailyReview.getTrade({ reviewDate, tradeId: tradeIds[i]!, binding });
+      if (form.kind !== 'Ready') throw new Error(`getTrade ${reviewDate}: ${form.kind}`);
+      const owed = form.trade.reflections.find((r) => r.economicTime === times[i]);
+      if (!owed) throw new Error(`no reflection for trade ${i} at ${times[i]}`);
+      const saved = await app.DailyReview.save({
+        kind: 'ResolveReviewDebt',
+        reviewDate,
+        binding: owed.saveBinding,
+        resolution:
+          slot < DEBT_ANSWERED_BELOW
+            ? {
+                kind: 'Answer',
+                answers: {
+                  ...DEBT_ANSWERS,
+                  'prompt.position-change-reflection.decision-confidence': { kind: 'Scale', value: 1 + (slot % 5) },
+                  ...(slot % 2 === 0 && {
+                    'prompt.position-change-reflection.note': { kind: 'Text', text: `Scaled in at the planned level on ${SYMBOLS[i % SYMBOLS.length]!}; recalled at the Review ${slot}.` },
+                  }),
+                },
+              }
+            : { kind: 'Decline', ...(slot % 2 === 0 && { reason: 'Cannot recall the moment well enough to say.' }) },
+      });
+      if (saved.kind !== 'DebtResolved') throw new Error(`resolve ${reviewDate} trade ${i}: ${saved.kind}`);
+      if (saved.review.kind === 'Ready') binding = saved.review.binding;
+    }
+  }
+  await settle();
+  const usageAfter = await usage();
+  const tradesAfter = (await storeJsonBytes(workspace, 'trades')).bytes;
+  const storesAfter = await debtStoresJsonBytes(workspace);
+
+  // Each Debt's share: its record with the version chain, its obligation record, and the Entry or
+  // decline that settled it. Every record of the four stores that these reach was written here.
+  const debts = (await storeRecords(workspace, 'journalDebts')) as StoredDebtRecord[];
+  const obligations = new Map(
+    ((await storeRecords(workspace, 'journalObligations')) as { obligationKey: unknown }[]).map((o) => [JSON.stringify(o.obligationKey), o]),
+  );
+  const entries = new Map(((await storeRecords(workspace, 'journalEntries')) as { id: string }[]).map((e) => [e.id, e]));
+  const declines = new Map(((await storeRecords(workspace, 'journalDeclines')) as { id: string }[]).map((e) => [e.id, e]));
+  const share = { Settled: { bytes: 0, count: 0 }, Declined: { bytes: 0, count: 0 }, Outstanding: { bytes: 0, count: 0 } } as Record<string, { bytes: number; count: number }>;
+  for (const debt of debts) {
+    const last = debt.versions.at(-1)!;
+    const outcome = last.entryId !== undefined ? entries.get(last.entryId) : last.declineId !== undefined ? declines.get(last.declineId) : undefined;
+    const bucket = share[last.status]!;
+    bucket.bytes += jsonBytes([debt, obligations.get(JSON.stringify(debt.obligationKey)), ...(outcome ? [outcome] : [])]);
+    bucket.count++;
+  }
+  if (debts.length !== deferred) throw new Error(`${debts.length} Debts for ${deferred} deferrals`);
+
+  const debtOverheadRatio = (usageAfter - usageBefore) / (tradesAfter - tradesBefore + storesAfter - storesBefore);
+  const perDebt = (status: string) => share[status]!.bytes / share[status]!.count;
+  return {
+    debtsDeferred: deferred,
+    debtsAnswered: share['Settled']!.count,
+    debtsDeclined: share['Declined']!.count,
+    debtsOutstanding: share['Outstanding']!.count,
+    debtOverheadRatio,
+    jsonBytesPerDebtAnswered: perDebt('Settled'),
+    jsonBytesPerDebtDeclined: perDebt('Declined'),
+    jsonBytesPerDebtOutstanding: perDebt('Outstanding'),
+    bytesPerDebtAnswered: perDebt('Settled') * debtOverheadRatio,
+    bytesPerDebtDeclined: perDebt('Declined') * debtOverheadRatio,
+    bytesPerDebtOutstanding: perDebt('Outstanding') * debtOverheadRatio,
+  };
+}
+
 async function measure(plans: number, openTrades: number) {
   const testHost = await nodeTestHost(indexedDB);
   const app = await createApplication({
@@ -330,8 +472,10 @@ async function measure(plans: number, openTrades: number) {
   const jsonBytesPerPositionChangeReflection = (reflectionAfter - journal) / positionChanges;
   const positionChangeOverheadRatio = (afterOpen - after) / (tradesOpen.bytes - trades.bytes + reflectionAfter - journal);
   const review = await measureReviewPhase(app, workspace, openTrades);
+  const debt = await measureDebtPhase(app, workspace, tradeIds, openTrades);
   return {
     ...review,
+    ...debt,
     plans,
     usageBefore: before,
     usageAfter: after,
