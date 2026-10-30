@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import type { UiFacade } from '../../app/compose.ts';
 import { Link, useSearchParams } from 'react-router';
-import type { DailyTradeReview, IncompleteReason, MarkResolution, MarkRow, OpenDailyReviewResult, ReviewFamily, ReviewCompletion } from '../../app/types.ts';
+import type { DailyTradeReview, IncompleteReason, MarkResolution, MarkRow, OpenDailyReviewResult, PostSaveReview, ReviewFamily, ReviewCompletion } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
 import { PageTitle } from '../PageTitle.tsx';
 import { shortDate } from '../format.ts';
@@ -25,15 +25,28 @@ type CalculationFamily = Extract<ReviewCompletion, { kind: 'CompleteWithUnavaila
 const FAMILY_TEXT: Record<CalculationFamily, string> = { Valuation: 'Valuation', Risk: 'Risk', Reward: 'Reward', ConditionStatus: 'Condition status' };
 
 // The Trade a blocker names, by its Underlying.
-function blockerText(reason: IncompleteReason, underlying: (tradeId: string) => string): string {
+function blockerText(reason: IncompleteReason, underlying: (tradeId: string) => string, openTrade: (tradeId: string) => void): ReactNode {
   switch (reason.code) {
     case 'MarkMissing':
       return `Mark missing for ${reason.instrumentKey} on ${shortDate(reason.tradingDate)}`;
     case 'ActionMissing':
       return `Action missing for ${underlying(reason.tradeId)}`;
-    // The reflection UI is T5.16; this names the blocker until then.
+    // The Trade links to its card, where the reflections are resolved (A71).
     case 'ReflectionDue':
-      return `Reflection due for ${underlying(reason.tradeId)}`;
+      return (
+        <>
+          {reason.debtIds.length === 1 ? 'Reflection' : `${reason.debtIds.length} reflections`} due for{' '}
+          <a
+            href={`/review?trade=${reason.tradeId}`}
+            onClick={(event) => {
+              event.preventDefault();
+              openTrade(reason.tradeId);
+            }}
+          >
+            {underlying(reason.tradeId)}
+          </a>
+        </>
+      );
     case 'IntegrityDisagreement':
       return `${underlying(reason.tradeId)}: recorded facts disagree`;
     case 'IncoherentFacts':
@@ -49,7 +62,7 @@ function ReviewDate({ date }: { readonly date: string }) {
   );
 }
 
-function Status({ review, completion }: { readonly review: Ready; readonly completion: ReviewCompletion }) {
+function Status({ review, completion, openTrade }: { readonly review: Ready; readonly completion: ReviewCompletion; readonly openTrade: (tradeId: string) => void }) {
   const trades = review.families.flatMap((f) => (f.family === 'Trades' ? f.trades : []));
   const underlying = (tradeId: string) => trades.find((t) => t.tradeId === tradeId)?.underlying ?? tradeId;
   return (
@@ -68,7 +81,7 @@ function Status({ review, completion }: { readonly review: Ready; readonly compl
       {completion.kind === 'Incomplete' && (
         <ul aria-label="Blockers">
           {completion.reasons.map((reason, i) => (
-            <li key={i}>{blockerText(reason, underlying)}</li>
+            <li key={i}>{blockerText(reason, underlying, openTrade)}</li>
           ))}
         </ul>
       )}
@@ -237,7 +250,7 @@ const AFTER_SAVE = {
 type Selected = { readonly tradeId: string; readonly opening: number; readonly state: 'Loading' | 'Unavailable' | { readonly trade: DailyTradeReview } };
 
 // The Trade walk in the order the Review returned, each with its band and reasons; any Trade opens below.
-function TradeWalk({ facade, review, selected, afterSave, holdId, onSelect, onSaved, onRefresh, onEntryDirty }: { readonly facade: UiFacade; readonly review: Ready; readonly selected: Selected | undefined; readonly afterSave: string | undefined; readonly holdId: string | undefined; readonly onSelect: (tradeId: string) => void; readonly onSaved: (saved: SavedAction, opening: number) => void; readonly onRefresh: (tradeId: string) => Promise<boolean>; readonly onEntryDirty: EntryDirty }) {
+function TradeWalk({ facade, review, selected, afterSave, holdId, onSelect, onSaved, onReflectionResolved, onRefresh, onEntryDirty }: { readonly facade: UiFacade; readonly review: Ready; readonly selected: Selected | undefined; readonly afterSave: string | undefined; readonly holdId: string | undefined; readonly onSelect: (tradeId: string) => void; readonly onSaved: (saved: SavedAction, opening: number) => void; readonly onReflectionResolved: (review: PostSaveReview) => void;readonly onRefresh: (tradeId: string) => Promise<boolean>; readonly onEntryDirty: EntryDirty }) {
   const trades = review.families.flatMap((f) => (f.family === 'Trades' ? f.trades : []));
   const missing = new Set(review.completion.kind === 'Incomplete' ? review.completion.reasons.flatMap((r) => (r.code === 'ActionMissing' ? [r.tradeId] : [])) : []);
   return (
@@ -264,7 +277,7 @@ function TradeWalk({ facade, review, selected, afterSave, holdId, onSelect, onSa
           <p>We couldn’t load this Trade. Nothing was changed.</p>
         </div>
       )}
-      {typeof selected?.state === 'object' && <ReviewTrade key={`${selected.tradeId}:${selected.state.trade.saveBinding.reviewDate}`}facade={facade} trade={selected.state.trade} onSaved={(saved) => onSaved(saved, selected.opening)} onRefresh={() => onRefresh(selected.tradeId)} onEntryDirty={onEntryDirty} />}
+      {typeof selected?.state === 'object' && <ReviewTrade key={`${selected.tradeId}:${selected.state.trade.saveBinding.reviewDate}`}facade={facade} trade={selected.state.trade} onSaved={(saved) => onSaved(saved, selected.opening)} onReflectionResolved={onReflectionResolved} onRefresh={() => onRefresh(selected.tradeId)} onEntryDirty={onEntryDirty} />}
     </section>
   );
 }
@@ -315,10 +328,14 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
     show(next.kind === 'Trade' ? { tradeId: next.trade.tradeId, state: { trade: next.trade } } : undefined);
     setAfterSave(next.kind === 'Done' ? AFTER_SAVE.Done : next.kind === 'Mark' ? AFTER_SAVE.Mark : undefined);
   };
-  const select = async (tradeId: string) => {
+  // A resolved reflection leaves the card open to show it resolved, so only the overview's completion and binding follow the result.
+  const reflectionResolved = (post: PostSaveReview) => {
+    if (post.kind === 'Ready') setReview((current) => ({ ...current, completion: post.completion, binding: post.binding }));
+  };
+  const select = async (tradeId: string, from: Ready = review) => {
     setAfterSave(undefined);
     const request = show({ tradeId, state: 'Loading' });
-    const result = await facade.DailyReview.getTrade({ reviewDate: review.reviewDate, tradeId, binding: review.binding }).catch(() => undefined);
+    const result = await facade.DailyReview.getTrade({ reviewDate: from.reviewDate, tradeId, binding: from.binding }).catch(() => undefined);
     if (selection.current !== request) return;
     setSelected({ tradeId, opening: request, state: result?.kind === 'Ready' ? { trade: result.trade } : 'Unavailable' });
   };
@@ -349,6 +366,16 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
       setWalk(true);
     }
   };
+  // A blocker's link: the Review is asked for again as Continue does, then the Trade's card opens. An Action form holding a value keeps the walk where it is.
+  const openCard = async (tradeId: string) => {
+    if (inFlight.current || actionDirty) return;
+    const result = await reopen();
+    setFailed(result === undefined);
+    if (!result) return;
+    setReview(result);
+    setWalk(true);
+    await select(tradeId, result);
+  };
   // The Review and one Trade again, under the new binding. The Trade replaces the shown one without a loading state, so the form keeps its values.
   const refreshTrade = async (tradeId: string): Promise<boolean> => {
     const request = selection.current;
@@ -367,14 +394,14 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
   };
   return (
     <>
-      <Status review={review} completion={review.completion} />
+      <Status review={review} completion={review.completion} openTrade={(tradeId) => void openCard(tradeId)} />
       <MarksFamily facade={facade} review={review} onEntryDirty={onEntryDirty} />
       {failed && (
         <div role="alert" className="banner warning">
           <p>We couldn’t refresh the Review. Nothing was changed.</p>
         </div>
       )}
-      {walk && <TradeWalk facade={facade} review={review} selected={selected} afterSave={afterSave} holdId={actionDirty ? holdId : undefined} onSelect={(tradeId) => void select(tradeId)} onSaved={saved} onRefresh={refreshTrade} onEntryDirty={onEntryDirty} />}
+      {walk && <TradeWalk facade={facade} review={review} selected={selected} afterSave={afterSave} holdId={actionDirty ? holdId : undefined} onSelect={(tradeId) => void select(tradeId)} onSaved={saved} onReflectionResolved={reflectionResolved} onRefresh={refreshTrade} onEntryDirty={onEntryDirty} />}
       {actionDirty && <p id={holdId}>Save your Action or put back its saved values to leave this Trade.</p>}
       <button type="button" className="pill primary" onClick={() => void proceed()} disabled={refreshing || actionDirty} aria-describedby={actionDirty ? holdId : undefined}>
         Continue to Trades

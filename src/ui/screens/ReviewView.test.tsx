@@ -100,6 +100,28 @@ describe('overview', () => {
     ]);
   });
 
+  it('should name the due reflections by Trade among the blockers while completion is Incomplete, each linking to its Trade card', async () => {
+    const trades = [tradeItem('t1', 'XYZ'), tradeItem('t2', 'DEF')];
+    const facade = reviewFacade(
+      ready({
+        trades,
+        completion: incomplete({ code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1', 'd2'] }, { code: 'ReflectionDue', tradeId: 't2', debtIds: ['d3'] }),
+      }),
+    );
+    vi.mocked(facade.DailyReview.getTrade).mockResolvedValue({ kind: 'ReviewChanged' });
+    renderReview(facade);
+
+    const header = await screen.findByRole('region', { name: 'Review status' });
+    const blockers = within(within(header).getByRole('list', { name: 'Blockers' })).getAllByRole('listitem');
+    expect(blockers.map((b) => b.textContent)).toEqual(['2 reflections due for XYZ', 'Reflection due for DEF']);
+    expect(screen.queryByRole('region', { name: 'Trades' })).toBeNull();
+
+    await userEvent.setup().click(within(blockers[0]!).getByRole('link', { name: 'XYZ' }));
+
+    expect(await screen.findByRole('region', { name: 'Trades' })).toBeTruthy();
+    expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenCalledExactlyOnceWith({ reviewDate: '2026-10-12', tradeId: 't1', binding });
+  });
+
   it('should show Complete as text with no blockers when every obligation is resolved', async () => {
     renderReview(reviewFacade(ready({ trades: [tradeItem('t1', 'XYZ')], completion: { kind: 'Complete' } })));
 

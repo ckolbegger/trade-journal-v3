@@ -1,9 +1,10 @@
-import { useCallback, useId, type ReactNode } from 'react';
-import type { DailyTradeReview } from '../../app/types.ts';
+import { useCallback, useId, useRef, type ReactNode } from 'react';
+import type { DailyTradeReview, PostSaveReview } from '../../app/types.ts';
 import { decimalMoney, money, shortDate } from '../format.ts';
 import { dollarsAndR, pnlText } from '../figures.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import { ActionForm, type SavedAction } from './ActionForm.tsx';
+import { ReviewReflections } from './ReviewReflections.tsx';
 import { reasonText } from './review-attention.ts';
 
 type Evaluation = NonNullable<DailyTradeReview['evaluation']>;
@@ -34,8 +35,11 @@ function Figures({ evaluation }: { readonly evaluation: Evaluation }) {
 }
 
 // One Trade of the walk: its figures at the Review Date, the dated close and at-entry lines when present, and why it needs attention.
-export function ReviewTrade({ facade, trade, onSaved, onRefresh, onEntryDirty }: { readonly facade: UiFacade; readonly trade: DailyTradeReview; readonly onSaved: (saved: SavedAction) => void; readonly onRefresh: () => Promise<boolean>; readonly onEntryDirty: (id: string, dirty: boolean) => void }) {
+export function ReviewTrade({ facade, trade, onSaved, onReflectionResolved, onRefresh, onEntryDirty }: { readonly facade: UiFacade; readonly trade: DailyTradeReview; readonly onSaved: (saved: SavedAction) => void; readonly onReflectionResolved: (review: PostSaveReview) => void; readonly onRefresh: () => Promise<boolean>; readonly onEntryDirty: (id: string, dirty: boolean) => void }) {
   const uid = useId();
+  // Resolving the last reflection moves focus to the Action form.
+  const actionRef = useRef<HTMLDivElement>(null);
+  const focusAction = useCallback(() => actionRef.current?.focus(), []);
   // The Action form reports under its Trade, so the Review's unsaved state counts it with the Mark entries.
   const tradeId = trade.tradeId;
   const report = useCallback((dirty: boolean) => onEntryDirty(`action:${tradeId}`, dirty), [tradeId, onEntryDirty]);
@@ -75,7 +79,10 @@ export function ReviewTrade({ facade, trade, onSaved, onRefresh, onEntryDirty }:
           </dl>
         </div>
       )}
-      <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} />
+      <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={focusAction} onEntryDirty={onEntryDirty} />
+      <div ref={actionRef} tabIndex={-1}>
+        <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} />
+      </div>
     </section>
   );
 }

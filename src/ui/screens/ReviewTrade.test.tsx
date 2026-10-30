@@ -6,7 +6,8 @@ import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import type { UiFacade } from '../../app/compose.ts';
-import type { DailyTradeReview, OpenDailyReviewResult, ReviewBinding, ReviewTradeItem, SaveDailyReviewResult } from '../../app/types.ts';
+import type { DailyTradeReview, OpenDailyReviewResult, OwedReflection, ReviewBinding, ReviewCompletion, ReviewTradeItem, SaveDailyReviewResult } from '../../app/types.ts';
+import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
 import { DAILY_TRADE_REVIEW_PROMPTS } from '../../domain/daily-trade-review-prompts.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
@@ -110,7 +111,7 @@ function renderWalk(facade: UiFacade, options: { writable?: boolean; onDirtyChan
     options.shellLike ? (
       <ShellLike>{review}</ShellLike>
     ) : (
-      <RuntimeContext.Provider value={{ writable: options.writable ?? true, report: options.report ?? (() => undefined) }}>{review}</RuntimeContext.Provider>
+      <RuntimeContext.Provider value={{ writable: options.writable ?? true, timeZone: 'America/New_York', report: options.report ?? (() => undefined) }}>{review}</RuntimeContext.Provider>
     ),
   );
 }
@@ -1117,3 +1118,86 @@ function savedAction(action: string, intent?: string, entryRevision = 1, extra: 
     definitionId: 'def1',
   };
 }
+
+// An Outstanding reflection of Trade t1 on the snapshot definition, anchored at the given instant.
+function owed(debtId: string, classification: OwedReflection['classification'], economicTime: string, executions: readonly Partial<OwedReflection['executions'][number]>[] = []): OwedReflection {
+  return {
+    debtId,
+    definition: reflectionDefinition,
+    economicTime,
+    executions: executions.map((e, i) => ({ factId: `${debtId}-x${i}`, economicTime, recordedSequence: i + 1, action: 'Buy', instrument: symbol, quantity: '100', price: '50.00', fee: '1.00', ...e })) as unknown as OwedReflection['executions'],
+    classification,
+    saveBinding: { debtId, debtRevision: `${debtId}-rev-1`, definitionRevision: 'def-pcr-1' },
+  };
+}
+
+describe('reflections in the Trade card (A71)', () => {
+  it('should show a "Reflections" section above the Action form listing the Trade\'s owed reflections with the Position Change\'s date and Executions and "Due", "Due in the next Review", or "Due in the Review after next" as text, and no section when the Trade has none', async () => {
+    const user = userEvent.setup();
+    const reflections = [
+      owed('d1', 'Due', '2026-10-09T14:30:00Z', [{ quantity: '100', price: '50.00' }, { quantity: '20', price: '51.25' }]),
+      owed('d2', 'DueInNextReview', '2026-10-12T14:30:00Z', [{ quantity: '5', price: '52.00' }]),
+      owed('d3', 'DueInReviewAfterNext', '2026-10-12T15:30:00Z', [{ quantity: '1', price: '53.00' }]),
+    ];
+    const facade = walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { reflections }));
+    renderWalk(facade);
+    const trade = await openTrade(user, 'XYZ');
+
+    const section = within(trade).getByRole('region', { name: 'Reflections' });
+    const rows = Array.from(within(section).getAllByRole('list')[0]!.children) as HTMLElement[];
+    expect(rows.map((r) => r.textContent)).toEqual([
+      expect.stringContaining('2026-10-09 10:30'),
+      expect.stringContaining('2026-10-12 10:30'),
+      expect.stringContaining('2026-10-12 11:30'),
+    ]);
+    expect(within(rows[0]!).getByText('Due')).toBeTruthy();
+    expect(within(rows[0]!).getByText('Buy 100 XYZ @ $50.00')).toBeTruthy();
+    expect(within(rows[0]!).getByText('Buy 20 XYZ @ $51.25')).toBeTruthy();
+    expect(within(rows[1]!).getByText('Due in the next Review')).toBeTruthy();
+    expect(within(rows[2]!).getByText('Due in the Review after next')).toBeTruthy();
+    const action = within(trade).getByRole('form', { name: 'Action' });
+    expect(section.compareDocumentPosition(action) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    cleanup();
+
+    const none = walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ'));
+    renderWalk(none);
+    const bare = await openTrade(user, 'XYZ');
+    expect(within(bare).queryByRole('region', { name: 'Reflections' })).toBeNull();
+  });
+
+  it('should open DebtForm for a reflection and, after Save, render it resolved from the result and move focus to the next reflection in the card, or to the Action form when none remains', async () => {
+    const user = userEvent.setup();
+    const reflections = [owed('d1', 'Due', '2026-10-09T14:30:00Z', [{}]), owed('d2', 'Due', '2026-10-12T14:30:00Z', [{}])];
+    const facade = walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { reflections }));
+    const post = (completion: ReviewCompletion) =>
+      ({ kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 1 }, completion, nextStep: { kind: 'Done' }, binding }) as const;
+    const debt = { debtId: 'd1', status: 'Settled', revision: 'd1-rev-2' } as never;
+    vi.mocked(facade.DailyReview.save)
+      .mockResolvedValueOnce({ kind: 'DebtResolved', decline: { id: 'decl-1', reason: 'No time.' } as never, debt, review: post({ kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't1' }] }) })
+      .mockResolvedValueOnce({ kind: 'DebtResolved', decline: { id: 'decl-2' } as never, debt, review: post({ kind: 'Complete' }) });
+    const report = vi.fn();
+    renderWalk(facade, { report });
+    const trade = await openTrade(user, 'XYZ');
+    const section = within(trade).getByRole('region', { name: 'Reflections' });
+
+    await user.click(within(section).getByRole('button', { name: /Reflect on 2026-10-09 10:30/ }));
+    await user.type(within(section).getByLabelText('Reason for declining (optional)'), 'No time.');
+    await user.click(within(section).getByRole('button', { name: 'Decline' }));
+
+    expect(vi.mocked(facade.DailyReview.save)).toHaveBeenLastCalledWith({ kind: 'ResolveReviewDebt', reviewDate: '2026-10-12', binding: reflections[0]!.saveBinding, resolution: { kind: 'Decline', reason: 'No time.' } });
+    expect(report).toHaveBeenLastCalledWith(expect.objectContaining({ kind: 'DebtResolved' }));
+    expect(await within(section).findByText('Declined to reflect. Reason: No time.')).toBeTruthy();
+    expect(document.activeElement).toBe(within(section).getByRole('button', { name: /Reflect on 2026-10-12 10:30/ }));
+    expect(screen.queryByText('Complete')).toBeNull();
+
+    await user.click(within(section).getByRole('button', { name: /Reflect on 2026-10-12 10:30/ }));
+    await user.click(within(section).getByRole('button', { name: 'Decline' }));
+
+    expect(vi.mocked(facade.DailyReview.save)).toHaveBeenLastCalledWith({ kind: 'ResolveReviewDebt', reviewDate: '2026-10-12', binding: reflections[1]!.saveBinding, resolution: { kind: 'Decline' } });
+    expect((await screen.findByText('Complete')).tagName).toBe('STRONG');
+    const action = within(trade).getByRole('form', { name: 'Action' });
+    expect(document.activeElement?.contains(action)).toBe(true);
+    // The card stays open, with both reflections shown resolved.
+    expect(within(section).getAllByRole('region', { name: 'Saved reflection' })).toHaveLength(2);
+  });
+});
