@@ -78,7 +78,8 @@ export async function reviewStack(now = MONDAY_1700) {
   };
 
   // One Position Change holding an Execution per fill, at the Trade's current FactRevision.
-  const fillTogether = async (trade: TradeAnalysisRecord, fills: readonly { economicTime: string; quantity: string; price: string }[]): Promise<void> => {
+  // `disposition` defaults to the completed reflection; a Debt fixture passes Defer.
+  const fillTogether = async (trade: TradeAnalysisRecord, fills: readonly { economicTime: string; quantity: string; price: string }[], disposition: ReflectionDisposition = reflection): Promise<void> => {
     const current = await stack.tradeRecord.getRecord({ tradeId: trade.tradeId, projection: 'AnalysisInput' });
     if (current.kind !== 'Found') throw new Error('no Trade');
     const members: PositionChangeMember[] = fills.map(({ economicTime, quantity, price }) => ({
@@ -96,13 +97,14 @@ export async function reviewStack(now = MONDAY_1700) {
       originTradeId: trade.tradeId,
       trades: [{ tradeId: trade.tradeId, expectedFactRevision: current.factRevision }],
       members,
-      reflection,
+      reflection: disposition,
     });
     if (result.kind !== 'Recorded') throw new Error(`expected Recorded, got ${result.kind}`);
   };
 
   // One single-Execution Position Change.
-  const fill = (trade: TradeAnalysisRecord, economicTime: string, quantity: string, price: string): Promise<void> => fillTogether(trade, [{ economicTime, quantity, price }]);
+  const fill = (trade: TradeAnalysisRecord, economicTime: string, quantity: string, price: string, disposition?: ReflectionDisposition): Promise<void> =>
+    fillTogether(trade, [{ economicTime, quantity, price }], disposition);
 
   const saveMark = async (instrumentKey: string, price: string, tradingDate = REVIEW_DATE): Promise<MarketDataSaveResult> => {
     const saved = await marketData.save({ intention: 'RecordInitialManualMark', instrumentKey, tradingDate, price, expectedResolutionRevision: 'None' });

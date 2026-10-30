@@ -40,7 +40,7 @@ function ready(trades: readonly ReviewTradeItem[], missing: readonly string[] = 
     cutoff: '2026-10-12T20:00:00Z',
     families: [
       { family: 'Marks', today: [], earlier: [] },
-      { family: 'Trades', trades },
+      { family: 'Trades', trades: trades.map((t) => ({ ...t, reflections: { due: 0, later: 0 } })) },
     ],
     completion: missing.length > 0 ? { kind: 'Incomplete', reasons: missing.map((tradeId) => ({ code: 'ActionMissing' as const, tradeId })) } : { kind: 'Complete' },
     binding,

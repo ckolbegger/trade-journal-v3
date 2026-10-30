@@ -59,6 +59,17 @@ export interface ReviewTradeItem {
   readonly basis: PressureBasis;
 }
 
+// A walked Trade's Outstanding reflections (P16, A68): due in this Review, or falling due in a later one.
+export interface ReflectionCounts {
+  readonly due: number;
+  readonly later: number;
+}
+
+// A Trade of the walk, with its reflection counts; an owed reflection never moves its band.
+export interface WalkedTrade extends ReviewTradeItem {
+  readonly reflections: ReflectionCounts;
+}
+
 // One Instrument needing the Review-date Mark, with the eligible Trades that hold it. The task is
 // Manual while the Mark is Missing; an exact Mark or an acknowledgment resolves it.
 export interface MarkRow {
@@ -89,12 +100,14 @@ export interface HistoricalGapGroup {
 // D4 has Marks and Trades; Debt and settlement arrive in D5 and D7.
 export type ReviewFamily =
   | { readonly family: 'Marks'; readonly today: readonly MarkRow[]; readonly earlier: readonly HistoricalGapGroup[] }
-  | { readonly family: 'Trades'; readonly trades: readonly ReviewTradeItem[] };
+  | { readonly family: 'Trades'; readonly trades: readonly WalkedTrade[] };
 
 // What keeps the Review from being complete, Marks first and then the Trades in the walk's order.
 export type IncompleteReason =
   | { readonly code: 'MarkMissing'; readonly instrumentKey: string; readonly tradingDate: string; readonly trades: readonly string[] }
   | { readonly code: 'ActionMissing'; readonly tradeId: string }
+  // Deferred reflections of the Trade that are due in this Review, in anchor order (P17, AC-REV-006).
+  | { readonly code: 'ReflectionDue'; readonly tradeId: string; readonly debtIds: readonly string[] }
   // An Action can be saved, but completion waits until a Trade mutation repairs the disagreement (A59).
   | { readonly code: 'IntegrityDisagreement'; readonly tradeId: string; readonly findings: readonly IntegrityFinding[] }
   | { readonly code: 'IncoherentFacts'; readonly tradeId: string; readonly findings: IncoherentFacts['findings'] };

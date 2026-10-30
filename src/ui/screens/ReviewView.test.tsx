@@ -50,7 +50,7 @@ function ready(over: { today?: readonly MarkRow[]; earlier?: Extract<Ready['fami
     cutoff: CUTOFF,
     families: [
       { family: 'Marks', today: over.today ?? [], earlier: over.earlier ?? [] },
-      { family: 'Trades', trades: over.trades ?? [] },
+      { family: 'Trades', trades: (over.trades ?? []).map((t) => ({ ...t, reflections: { due: 0, later: 0 } })) },
     ],
     completion: over.completion ?? { kind: 'Complete' },
     binding,

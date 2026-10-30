@@ -23,8 +23,10 @@ import type {
   ReviewCompletion,
   ReviewFamily,
   ReviewNextStep,
+  ReflectionCounts,
   ReviewProgress,
   ReviewTradeItem,
+  WalkedTrade,
   SaveDailyReviewRequest,
   SaveDailyReviewResult,
   SaveTradeActionRequest,
@@ -247,9 +249,19 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     const ranked = derivations
       .map((trade) => reviewItem(trade, recovered.frames))
       .sort((a, b) => byAttention(a.item, b.item));
+    // Outstanding Debt, read once (A63), classified against the close of the session before the Review Date (A75).
+    const previousClose = recovered.frames[0]?.previousCloseInstant;
+    const outstanding = (await deps.journal.query({ scope: 'OutstandingDebt' })).debts;
+    const dueDebtIds = (tradeId: string) =>
+      outstanding.filter((debt) => debt.anchor.tradeId === tradeId && previousClose !== undefined && debt.dueAnchor <= previousClose).map((debt) => debt.debtId);
+    const reflectionsOf = (tradeId: string): ReflectionCounts => {
+      const due = dueDebtIds(tradeId).length;
+      return { due, later: outstanding.filter((debt) => debt.anchor.tradeId === tradeId).length - due };
+    };
+    const walked = ranked.map(({ item }): WalkedTrade => ({ ...item, reflections: reflectionsOf(item.tradeId) }));
     const families: ReviewFamily[] = [
       { family: 'Marks', today, earlier },
-      { family: 'Trades', trades: ranked.map((r) => r.item) },
+      { family: 'Trades', trades: walked },
     ];
 
     const actions = await deps.journal.queryActions({ reviewDate });
@@ -257,11 +269,12 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       ...today
         .filter((row) => row.task === 'Manual')
         .map((row): IncompleteReason => ({ code: 'MarkMissing', instrumentKey: row.instrumentKey, tradingDate: row.tradingDate, trades: row.trades })),
-      ...ranked.flatMap(({ item }): IncompleteReason[] => [
+      ...walked.flatMap((item): IncompleteReason[] => [
         ...item.reasons.flatMap((reason): IncompleteReason[] =>
           reason.code === 'IntegrityDisagreement' || reason.code === 'IncoherentFacts' ? [{ ...reason, tradeId: item.tradeId }] : [],
         ),
         ...(item.tradeId in actions.actions ? [] : [{ code: 'ActionMissing' as const, tradeId: item.tradeId }]),
+        ...(item.reflections.due > 0 ? [{ code: 'ReflectionDue' as const, tradeId: item.tradeId, debtIds: dueDebtIds(item.tradeId) }] : []),
       ]),
     ];
     const acknowledged = today.filter((row) => row.resolution.kind === 'AcknowledgedUnavailable');

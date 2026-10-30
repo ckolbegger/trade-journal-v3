@@ -806,7 +806,8 @@ describe('getTrade', () => {
     await breakFirstExecution(stack, e);
     const review = await overview(stack);
     const { reviewDate, binding } = review;
-    const items = walk(review);
+    // The Trade card's attention is the overview item without its reflection counts (T5.8).
+    const items = walk(review).map((t) => Object.fromEntries(Object.entries(t).filter(([key]) => key !== 'reflections')));
 
     // A disagreement between stored records and facts keeps its Blocker reason, with the figures still evaluated.
     const disagreeing = await stack.dailyReview.getTrade({ reviewDate, tradeId: d, binding });

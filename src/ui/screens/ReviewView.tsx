@@ -31,6 +31,9 @@ function blockerText(reason: IncompleteReason, underlying: (tradeId: string) => 
       return `Mark missing for ${reason.instrumentKey} on ${shortDate(reason.tradingDate)}`;
     case 'ActionMissing':
       return `Action missing for ${underlying(reason.tradeId)}`;
+    // The reflection UI is T5.16; this names the blocker until then.
+    case 'ReflectionDue':
+      return `Reflection due for ${underlying(reason.tradeId)}`;
     case 'IntegrityDisagreement':
       return `${underlying(reason.tradeId)}: recorded facts disagree`;
     case 'IncoherentFacts':
