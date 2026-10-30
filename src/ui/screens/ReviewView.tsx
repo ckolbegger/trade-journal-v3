@@ -369,11 +369,14 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
   // A blocker's link: the Review is asked for again as Continue does, then the Trade's card opens. An Action form holding a value keeps the walk where it is.
   const openCard = async (tradeId: string) => {
     if (inFlight.current || actionDirty) return;
+    const request = selection.current;
     const result = await reopen();
     setFailed(result === undefined);
     if (!result) return;
     setReview(result);
     setWalk(true);
+    // A Trade selected while the Review was being asked for wins over this link.
+    if (selection.current !== request) return;
     await select(tradeId, result);
   };
   // The Review and one Trade again, under the new binding. The Trade replaces the shown one without a loading state, so the form keeps its values.

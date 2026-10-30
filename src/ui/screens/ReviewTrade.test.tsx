@@ -1072,6 +1072,28 @@ describe('Results for a Trade no longer open', () => {
     expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
   });
 
+  it('should keep a Trade selected while a blocker link\'s reopen is in flight', async () => {
+    const user = userEvent.setup();
+    const review = ready(trades, [], { completion: { kind: 'Incomplete', reasons: [{ code: 'ReflectionDue', tradeId: 't2', debtIds: ['d9'] }] } });
+    const facade = walkFacade(review);
+    vi.mocked(facade.DailyReview.getTrade).mockImplementation(((query: { tradeId: string }) => Promise.resolve(ready1(query.tradeId === 't1' ? tradeReview('t1', 'XYZ') : tradeReview('t2', 'DEF')))));
+    renderWalk(facade);
+    await user.click(await screen.findByRole('button', { name: 'Continue to Trades' }));
+    await screen.findByRole('button', { name: 'Review XYZ' });
+    const heldOpen = deferred<Ready>();
+    vi.mocked(facade.DailyReview.open).mockReturnValueOnce(heldOpen.promise);
+    const blocker = screen.getByText(/Reflection due for/).closest('li')!;
+    await user.click(within(blocker).getByRole('link', { name: 'DEF' }));
+    await user.click(screen.getByRole('button', { name: 'Review XYZ' }));
+    await screen.findByRole('region', { name: 'XYZ review' });
+
+    heldOpen.resolve(review);
+    await new Promise((r) => setTimeout(r, 20));
+
+    expect(screen.getByRole('region', { name: 'XYZ review' })).toBeTruthy();
+    expect(screen.queryByRole('region', { name: 'DEF review' })).toBeNull();
+  });
+
   it('should keep the form opened again when a save for the earlier opening of the same Trade settles late', async () => {
     const user = userEvent.setup();
     const facade = walkFacade(ready(trades));
