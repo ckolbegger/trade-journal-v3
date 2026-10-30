@@ -59,6 +59,23 @@ export type PositionChangeSuccess = TradeMutationSuccess<
   }
 >;
 
+type ReflectionOutcome = PositionChangeSuccess['postCommit']['reflection'];
+
+// Selects the one outcome the commit produced, and the identity the receipt names for it.
+function reflectionOutcome(journal: {
+  readonly entries: readonly EntryProjection[];
+  readonly declines: readonly DeclineProjection[];
+  readonly debts?: readonly DebtProjection[];
+}): { outcome: ReflectionOutcome; ref: PositionChangeSuccess['receipt']['reflection'] } {
+  const [entry] = journal.entries;
+  if (entry) return { outcome: { kind: 'Entry', entry }, ref: { kind: 'Entry', id: entry.id } };
+  const [decline] = journal.declines;
+  if (decline) return { outcome: { kind: 'Decline', decline }, ref: { kind: 'Decline', id: decline.id } };
+  const [debt] = journal.debts ?? [];
+  if (!debt) throw new Error('no reflection outcome');
+  return { outcome: { kind: 'Debt', debt }, ref: { kind: 'Debt', id: debt.debtId } };
+}
+
 export type PositionChangeResult =
   | ({ readonly kind: 'Recorded' } & PositionChangeSuccess)
   // The command needs an operation variant this release does not install (D2 A18); nothing was written.
@@ -256,14 +273,7 @@ export async function recordPositionChange(deps: TradeWorkflowsDeps, command: Po
   const beforeDerivation = derive({ record: prepared.beforeAnalysisInput! });
   if (beforeDerivation.kind !== 'Derived') throw new Error('incoherent');
   // Exactly one outcome: the completed Entry, the explicit decline, or the deferred Debt.
-  const entry = journal.entries[0];
-  const decline = journal.declines[0];
-  const debt = journal.debts?.[0];
-  const outcome: PositionChangeSuccess['postCommit']['reflection'] = entry
-    ? { kind: 'Entry', entry }
-    : decline
-      ? { kind: 'Decline', decline }
-      : { kind: 'Debt', debt: debt! };
+  const { outcome, ref } = reflectionOutcome(journal);
   return {
     kind: 'Recorded',
     receipt: {
@@ -276,7 +286,7 @@ export async function recordPositionChange(deps: TradeWorkflowsDeps, command: Po
       deviationReconciliation: reconciliationOf(derived.reconciliation.deviationActions, trade.recordedDeviations ?? [], staged.mapping),
       repairs: staged.repairs ?? [],
       entryChanges: entryChangesOf(beforeDerivation, derivation),
-      reflection: entry ? { kind: 'Entry', id: entry.id } : decline ? { kind: 'Decline', id: decline.id } : { kind: 'Debt', id: debt!.debtId },
+      reflection: ref,
     },
     postCommit: { trade, derivation, reflection: outcome },
     // The Open list reorders by Last Activity; the list the Trade left loses it.
