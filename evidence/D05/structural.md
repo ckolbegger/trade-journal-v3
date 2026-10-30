@@ -715,3 +715,79 @@ Run 2026-10-29 22:55 EDT on commit `4dafa91`, Node v26.12.0.
 | Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.16-review-reflections-ui-checks.txt` |
 
 Failures: `verify:capacity` only (expected until T5.19). A first run with this label was interrupted when the session ended; this is its complete rerun.
+
+## T5.17 UI: Trade Detail Debt status and actions
+
+Implementation commit `bde6ddd`.
+
+**Cases.** Cases 1–3 went red then green:
+- Case 1: no Journal region of 3 items.
+- Case 2: no "Deferred, answered".
+- Case 3: no Reflection form. Its name drops an apostrophe for the `-t` filter.
+
+**Case 4 (decision 56) is a flagged first-run pass.** Case 1 already rendered due text only when a status is present. Mutation check: always render "Due" failed with `Found multiple elements with the text: Due`, and the code was restored.
+
+**Extra cases.**
+- One form open at a time: red then green.
+- Focus moves to the saved reflection after a save: red then green.
+- `RuntimeNotWritable` is reported to the shell and the form is kept. **This is a flagged first-run pass:** case 3 had already built `report(result)`. Mutation check: `void report` failed with `expected last "vi.fn()" call to have been called with [ { kind: 'RuntimeNotWritable' } ]`, and the code was restored.
+
+**What was built.** A new `OwedDebtItem` shows each Outstanding Debt in the Journal narrative of Open and Incoherent Trade Detail:
+- It reads "Reflection owed" with "Position Change at <moment time>" and the due text from `DUE_TEXT`, shared with the Review. There is no due text when the status is absent.
+- Reflect now and Decline are offered only while the Workspace is Writable. Both open `DebtForm`, which has its own Decline button and optional reason.
+- The form loads its definition through `getDefinitions({ revision })`.
+- The adapter calls `Journal.save` (`ResolveDebt`):
+  - `Saved` maps to `Resolved`; `Rejected`, `Conflict`, `NotFound` and `RuntimeNotWritable` pass through.
+  - `StorageFailure` is thrown, so the form shows its "could not be saved" banner. No test covers this.
+- Settled and declined items show "Deferred, answered" or "Declined later" with their times.
+- The Executions list still hides Debt items through `outcomesOnly`, which is now intended rather than a placeholder.
+
+**Noted gaps:**
+- A `getDefinitions` failure that throws is unhandled.
+- `TradeDetail` does not report a reflection draft as unsaved to the app shell, so an unsaved Debt form does not hold app updates. This is followed up below.
+
+**Process slip.** The first describe block was appended with a here-doc instead of the Edit tool.
+
+The ui tests passed: 324.
+
+ocr review of `bde6ddd`: session `85e42cc1-1271-43f4-a419-01b245a2fdb8`, 4 files reviewed, 3 comments. Raw output: `ocr/T5.17-bde6ddd.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/ui/screens/OwedDebtItem.tsx:36` | A rejected `getDefinitions` never closes the item (other Debts stay disabled; unhandled rejection), and NotFound closes with no feedback | Valid | Bug task T5.17-B1 |
+| medium | `src/ui/screens/OwedDebtItem.tsx:104` | `DebtForm` gets no `onDirtyChange`, so an unsaved reflection is not registered with the shell's update guard and a waiting update's Reload can discard it | Valid (the gap noted above) | Bug task T5.17-B2 |
+| medium | `src/ui/screens/OwedDebtItem.tsx:47` | After a save the item still reads "Reflection owed" with its due status, with no "Deferred, answered" or "Declined later" label until reload | Valid | Bug task T5.17-B3 |
+
+### T5.17-B1 A failed definition load is shown and releases the item
+- it should show that the reflection could not be opened, and re-enable the other reflections, when its definition cannot be loaded
+
+Implemented in `9435a81`: `open()` catches a rejected load and treats a non-Found result the same way: it shows "This reflection could not be opened. Try again." as an alert and calls `onClose()`, re-enabling the other reflections. Red (`Unable to find role="alert"`, plus the unhandled rejection) then green, for both a rejection and NotFound.
+
+ocr review of `9435a81`: session `791abe5c-593b-4b29-9620-0854b33581eb`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.17-B1-9435a81.json`.
+
+### T5.17-B2 An unsaved reflection on Trade Detail holds app updates
+- it should register an unsaved reflection on Trade Detail with the update guard and clear it after a save or cancel
+
+Implemented in `09fed4f`: `TradeDetail` gains an optional `onDirtyChange`, passed through `OwedDebtItem` to `DebtForm` (one form is open at a time, so no aggregation is needed); `main.tsx` passes `setUnsaved` (one line, no wiring test exists for these props). A first red was invalid (a fixture option label) and was logged; the valid red was `onDirtyChange` never called with true, then green.
+
+ocr review of `09fed4f`: session `03e42846-1823-4742-b2da-d383d8d2a80a`, 3 files reviewed, **No findings.** Raw output: `ocr/T5.17-B2-09fed4f.json`.
+
+### T5.17-B3 A resolved reflection reads as settled without a reload
+- it should relabel a reflection resolved on Trade Detail as "Deferred, answered" or "Declined later" with its time, without "Reflection owed" or a due status
+
+Implemented in `0edcc04`: after a save the item renders from the result: the badge becomes "Deferred, answered" or "Declined later", an "Answered" or "Declined" row shows the local authored time, and "Reflection owed" and the due status are gone; focus is kept. Red (`Unable to find … Deferred, answered`) then green, for Answer and Decline.
+
+ocr review of `0edcc04`: session `39f54bef-8980-4e8a-9965-3e3ddd1dc494`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.17-B3-0edcc04.json`.
+
+### Cumulative run after T5.17
+
+Run 2026-10-29 23:17 EDT on commit `0edcc04`, Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 69 passed (69)`, `Tests 893 passed (893)`, exit 0 | `suite-runs/t5.17-detail-debt-ui-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 41 passed (41)`, `Tests 73 passed (73)`, exit 0 | `suite-runs/t5.17-detail-debt-ui-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `142 passed (4.9m)`, exit 0 | `suite-runs/t5.17-detail-debt-ui-browser.txt` |
+| Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.17-detail-debt-ui-checks.txt` |
+
+Failures: `verify:capacity` only (expected until T5.19).
