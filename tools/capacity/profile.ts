@@ -27,11 +27,14 @@ export interface EngineMeasurement {
   readonly positionChangeOverheadRatio: number;
   readonly jsonBytesPerPositionChange: number;
   readonly jsonBytesPerExecution: number;
-  readonly jsonBytesPerPositionChangeReflection: number;
+  // A Position Change Reflection settled at capture: its Entry or decline plus its obligation record.
+  readonly jsonBytesPerReflectionCompletedAtCapture: number;
+  readonly jsonBytesPerReflectionDeclinedAtCapture: number;
   // Each kind's JSON bytes × the Open phase's overhead ratio.
   readonly bytesPerPositionChange: number;
   readonly bytesPerExecution: number;
-  readonly bytesPerPositionChangeReflection: number;
+  readonly bytesPerReflectionCompletedAtCapture: number;
+  readonly bytesPerReflectionDeclinedAtCapture: number;
   // The Review phase (D4): Marks (some corrected), acknowledgments, and Daily Trade Review Actions,
   // each stored JSON per record and scaled by the phase's own on-disk overhead.
   readonly marks: number;
@@ -65,14 +68,15 @@ export interface EngineMeasurement {
 // Measured kinds and their mature counts (D1 plan, section 1.3). Executions stand in for the
 // whole "Executions and settlement facts" count until D7 adds settlement facts. The 100,000
 // Position Change Reflection outcomes are split as D5 section 1.4 does: 65% completed and 15%
-// declined at capture (measured as Entries and declines), 18% deferred then answered, 1.6%
+// declined at capture (each priced from its own measured bytes), 18% deferred then answered, 1.6%
 // deferred then declined, and 0.4% still Outstanding (measured as Debts).
 export const MEASURED = {
   tradesWithPlanReflection: 25_000,
   catalogRecords: 60,
   positionChanges: 100_000,
   executions: 200_000,
-  positionChangeReflectionsAtCapture: 80_000,
+  positionChangeReflectionsCompletedAtCapture: 65_000,
+  positionChangeReflectionsDeclinedAtCapture: 15_000,
   debtsAnswered: 18_000,
   debtsDeclined: 1_600,
   debtsOutstanding: 400,
@@ -102,7 +106,8 @@ export function project(m: EngineMeasurement): Projection {
     MEASURED.catalogRecords * m.jsonBytesPerCatalogRecord * m.overheadRatio +
     MEASURED.positionChanges * m.bytesPerPositionChange +
     MEASURED.executions * m.bytesPerExecution +
-    MEASURED.positionChangeReflectionsAtCapture * m.bytesPerPositionChangeReflection +
+    MEASURED.positionChangeReflectionsCompletedAtCapture * m.bytesPerReflectionCompletedAtCapture +
+    MEASURED.positionChangeReflectionsDeclinedAtCapture * m.bytesPerReflectionDeclinedAtCapture +
     MEASURED.debtsAnswered * m.bytesPerDebtAnswered +
     MEASURED.debtsDeclined * m.bytesPerDebtDeclined +
     MEASURED.debtsOutstanding * m.bytesPerDebtOutstanding +

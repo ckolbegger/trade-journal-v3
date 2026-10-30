@@ -54,6 +54,23 @@ async function executionJsonBytes(name: string): Promise<{ bytes: number; count:
   return { bytes: jsonBytes(executions), count: executions.length };
 }
 
+// The Position Change Reflections settled at capture, split as the section 1.4 prices them: each
+// Entry or decline with its obligation record. Called when only the Plan Reflections (which are not
+// Position Change Reflections) and the Open phase's outcomes exist.
+async function captureReflectionShare(name: string) {
+  const entries = ((await storeRecords(name, 'journalEntries')) as { entryTypeKey: string }[]).filter(
+    (e) => e.entryTypeKey === 'entry-type.position-change-reflection',
+  );
+  const declines = await storeRecords(name, 'journalDeclines');
+  const obligations = (await storeRecords(name, 'journalObligations')) as { obligationKey: string; outcome: { kind: string } }[];
+  const owed = obligations.filter((o) => o.obligationKey.startsWith('PositionChangeReflection:'));
+  const share = (outcomes: readonly unknown[], kind: string) => {
+    const records = owed.filter((o) => o.outcome.kind === kind);
+    return { bytes: jsonBytes([...outcomes, ...records]), count: outcomes.length };
+  };
+  return { completed: share(entries, 'Entry'), declined: share(declines, 'Decline') };
+}
+
 const settle = () => new Promise((resolve) => setTimeout(resolve, 2_000));
 
 // Section 1.3 at D2: each Open Trade has 1–3 Position Changes, each with 1–3 Executions (about two
@@ -469,7 +486,12 @@ async function measure(plans: number, openTrades: number) {
   // Change fact, Last Activity, counters, any recorded Deviations) is the Position Change's.
   const jsonBytesPerExecution = (executions.bytes - executionsBefore.bytes) / (executions.count - executionsBefore.count);
   const jsonBytesPerPositionChange = (tradesOpen.bytes - trades.bytes - (executions.bytes - executionsBefore.bytes)) / positionChanges;
-  const jsonBytesPerPositionChangeReflection = (reflectionAfter - journal) / positionChanges;
+  const atCapture = await captureReflectionShare(workspace);
+  if (atCapture.completed.count !== positionChanges - declines || atCapture.declined.count !== declines) {
+    throw new Error(`${atCapture.completed.count} Entries and ${atCapture.declined.count} declines for ${positionChanges} Position Changes`);
+  }
+  const jsonBytesPerReflectionCompletedAtCapture = atCapture.completed.bytes / atCapture.completed.count;
+  const jsonBytesPerReflectionDeclinedAtCapture = atCapture.declined.bytes / atCapture.declined.count;
   const positionChangeOverheadRatio = (afterOpen - after) / (tradesOpen.bytes - trades.bytes + reflectionAfter - journal);
   const review = await measureReviewPhase(app, workspace, openTrades);
   const debt = await measureDebtPhase(app, workspace, tradeIds, openTrades);
@@ -492,10 +514,12 @@ async function measure(plans: number, openTrades: number) {
     positionChangeOverheadRatio,
     jsonBytesPerPositionChange,
     jsonBytesPerExecution,
-    jsonBytesPerPositionChangeReflection,
+    jsonBytesPerReflectionCompletedAtCapture,
+    jsonBytesPerReflectionDeclinedAtCapture,
     bytesPerPositionChange: jsonBytesPerPositionChange * positionChangeOverheadRatio,
     bytesPerExecution: jsonBytesPerExecution * positionChangeOverheadRatio,
-    bytesPerPositionChangeReflection: jsonBytesPerPositionChangeReflection * positionChangeOverheadRatio,
+    bytesPerReflectionCompletedAtCapture: jsonBytesPerReflectionCompletedAtCapture * positionChangeOverheadRatio,
+    bytesPerReflectionDeclinedAtCapture: jsonBytesPerReflectionDeclinedAtCapture * positionChangeOverheadRatio,
   };
 }
 
