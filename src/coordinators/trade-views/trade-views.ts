@@ -395,7 +395,10 @@ function withDueStatus(narrative: readonly TradeNarrativeItem[], frame: CurrentF
   return narrative.map((item): TradeDetailNarrativeItem => {
     if (item.kind !== 'Debt' || !('resolution' in frame)) return item;
     const anchored = (close: string) => Temporal.Instant.compare(item.dueAnchor, close) <= 0;
-    const dueStatus: DebtDueStatus = anchored(frame.previousCloseInstant) ? 'Due' : anchored(frame.closeInstant) ? 'DueInNextReview' : 'DueInReviewAfterNext';
+    let dueStatus: DebtDueStatus;
+    if (anchored(frame.previousCloseInstant)) dueStatus = 'Due';
+    else if (anchored(frame.closeInstant)) dueStatus = 'DueInNextReview';
+    else dueStatus = 'DueInReviewAfterNext';
     return { ...item, dueStatus };
   });
 }
