@@ -354,3 +354,54 @@ Run 2026-10-29 20:40 EDT on commit `fa3d504`, Node v26.12.0.
 | Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.9-owed-reflections-checks.txt` |
 
 Failures: `verify:capacity` only (expected until T5.19).
+
+## T5.10 Daily Review: `save` (`ResolveReviewDebt`)
+
+Implementation commit `c40845f`. Case 1 red (`expected DebtResolved, got Rejected`) then green. **Cases 2, 3 and 4 are flagged first-run passes**, each proven by a mutation check and restored:
+- Case 2 (decline): building the decline without its reason failed with an `AssertionError` on the decline record. Case 1 had already built this behavior.
+- Case 3 (Conflict): returning a bare `Conflict` without the current outcome failed. Journal's Conflict result passes through.
+- Case 4 (RuntimeNotWritable): moving the branch outside `guard.run` failed. The existing guard on `DailyReview.save` covers it.
+
+Case 3 resolves the Debt through `Journal.save` with Source `source.trade-detail`, which Journal already accepts.
+
+New public types:
+- `ResolveReviewDebtRequest { kind: 'ResolveReviewDebt'; reviewDate; binding: ReflectionSaveBinding; resolution: Answer | Decline }`.
+- `SaveDailyReviewRequest` is now the union of the two save requests.
+- Result kinds `DebtResolved { entry?; decline?; debt; review }` and `NotFound`.
+- `Conflict` gains an optional `currentOutcome`.
+
+The commit retries up to 3 attempts, then returns `ChangedDuringAssembly`.
+
+**Next-step rule:** a Trade is now skipped only when its Action is saved and it owes no due reflection. This applies to every Review save (A68). A Debt save starts from the current Trade with wrap-around. An Action save still starts from the head of the walk; this is followed up below.
+
+Left for T5.12 and T5.13:
+- The capability lists (`capabilities.ts`, `routes.ts`) still name only `SaveTradeAction`.
+- `src/app/types.ts` does not export `ResolveReviewDebtRequest` yet.
+
+ocr review of `c40845f`: session `bb75d6f9-588b-4393-87c3-8f82eece23e8`, 3 files reviewed, 1 comment. Raw output: `ocr/T5.10-c40845f.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/coordinators/daily-review/daily-review.ts:550` | The Action-save path assembles the next step without the saved Trade, so it can jump back to an earlier unfinished Trade | Valid. The reviewer rated it Doubtful because it found no requiring text, but A68 says "the next step after any Review save is the first Trade in attention order, starting from the current one, that is not done" | Bug task T5.10-B1 |
+
+### T5.10-B1 An Action save continues from the saved Trade
+
+Defect: after an Action save, the next step is the first Trade in the walk that is not done, counted from the head of the walk rather than from the saved Trade (A68).
+- it should, after an Action save, return as the next step the first Trade that is not done starting from the saved Trade, not from the head of the walk
+
+Implemented in `d872076`: the Action-save path passes the saved Trade as `from`. Red (`expected 'id-0047' to be 'id-0008'`, the head-of-walk Trade) then green. **Changed D4 expectation (flagged):** the T4.16 case "should continue with the first Trade of the walk that has no Action, with the form getTrade would return" encoded head-of-walk continuation. The D4 plan never stated that rule, and the D5 plan's A68 replaces it for every Review save. Its name and expectation became "should continue with the first Trade after the saved one that has no Action, with the form getTrade would return", reading the walk order from `open`. The log's first red/green pair for this task is superseded and noted. daily-review and ui tests: 371 passed.
+
+ocr review of `d872076`: session `b89e61f6-c1ea-4731-b84e-cfb3871bc647`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.10-B1-d872076.json`.
+
+### Cumulative run after T5.10
+
+Run 2026-10-29 20:56 EDT on commit `d872076`, Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 67 passed (67)`, `Tests 858 passed (858)`, exit 0 | `suite-runs/t5.10-review-resolve-debt-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 41 passed (41)`, `Tests 73 passed (73)`, exit 0 | `suite-runs/t5.10-review-resolve-debt-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `142 passed (4.8m)`, exit 0 | `suite-runs/t5.10-review-resolve-debt-browser.txt` |
+| Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.10-review-resolve-debt-checks.txt` |
+
+Failures: `verify:capacity` only (expected until T5.19).

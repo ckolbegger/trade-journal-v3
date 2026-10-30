@@ -1,0 +1,116 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 1,
+    "total_tokens": 200168,
+    "input_tokens": 198217,
+    "output_tokens": 1951,
+    "cache_read_tokens": 23040,
+    "elapsed": "2m58s"
+  },
+  "tool_calls": {
+    "total": 22,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 6,
+      "file_find": 1,
+      "file_read": 14
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "The Action-save path still calls `postSaveReview(binding.reviewDate)` without the saved Trade ID, so this new resume-from-Trade behavior only works for Debt resolutions. For example, when an earlier Trade is unfinished and the trader saves an Action on a later Trade that still owes a due reflection, the response jumps back to the earlier Trade instead of keeping the current Trade's reflection as the next task. Pass `binding.tradeId` from `attemptSave` as well so both save paths use the same continuation rule.",
+      "existing_code": "  async function postSaveReview(reviewDate: string, from?: string): Promise\u003cPostSaveReview\u003e {",
+      "start_line": 550,
+      "end_line": 550,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/index.ts",
+        "src/coordinators/daily-review/types.ts"
+      ]
+    }
+  ],
+  "session_id": "bb75d6f9-588b-4393-87c3-8f82eece23e8",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "bb75d6f9-588b-4393-87c3-8f82eece23e8",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "c40845f",
+      "resolved_base": "eb1a590b79962ac18acbc320b2e401ced4d68c94",
+      "resolved_head": "c40845f35d886393eb12e93b88f5123dce317d13",
+      "exact_range": "eb1a590b79962ac18acbc320b2e401ced4d68c94..c40845f35d886393eb12e93b88f5123dce317d13",
+      "source_artifact_sha256": "8dac9898995d84f79a5b3436ea508f3228a5662b4d6b9f3ea4a0f28148c7b0ae"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "945c4206976ebc351f4ef5de4f6ec4ff770af83f1d1d3caa91f624a5c008e630"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "ea1d5e5378e0dd8d0d62e55a10e38939364fea43e071441c6ee154bab4b6a7ce"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "cdfc2bfa276d6e842f9fd45a2dafe3830653465c3c13ed9d842a751d10bef592"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "945c4206976ebc351f4ef5de4f6ec4ff770af83f1d1d3caa91f624a5c008e630"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "ea1d5e5378e0dd8d0d62e55a10e38939364fea43e071441c6ee154bab4b6a7ce"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "cdfc2bfa276d6e842f9fd45a2dafe3830653465c3c13ed9d842a751d10bef592"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 177589
+  }
+}
