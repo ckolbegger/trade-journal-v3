@@ -50,20 +50,32 @@ export interface DebtFormProps {
 
 const OUTCOME: Record<ObligationOutcome['kind'], string> = { Entry: 'answered', Decline: 'declined', Debt: 'still owed' };
 
+type SavedPrompt = EntryDefinitionRecord['prompts'][number];
+type SavedValue = EntryProjection['responses'][number]['value'];
+
+// One saved response as the trader saw it: option and scale values by label and number.
+function savedResponseText(prompt: SavedPrompt, value: SavedValue | undefined): string {
+  switch (value?.kind) {
+    case 'Text':
+      return value.text;
+    case 'Scale':
+      return String(value.value);
+    case 'Option': {
+      if (prompt.kind !== 'SingleSelect') return 'Not answered';
+      return prompt.options.find((o) => o.id === value.optionId)?.label ?? value.optionId;
+    }
+    default:
+      return 'Not answered';
+  }
+}
+
 // A saved Entry's responses in the snapshot's prompt order, with option and scale values as the trader saw them.
 function SavedEntry({ definition, entry }: { readonly definition: EntryDefinitionRecord; readonly entry: EntryProjection }) {
   return (
     <dl>
       {definition.prompts.map((prompt) => {
         const value = entry.responses.find((r) => r.promptId === prompt.id)?.value;
-        const text =
-          value?.kind === 'Text'
-            ? value.text
-            : value?.kind === 'Scale'
-              ? String(value.value)
-              : value?.kind === 'Option' && prompt.kind === 'SingleSelect'
-                ? (prompt.options.find((o) => o.id === value.optionId)?.label ?? value.optionId)
-                : 'Not answered';
+        const text = savedResponseText(prompt, value);
         return (
           <div key={prompt.id}>
             <dt>{prompt.text}</dt>
