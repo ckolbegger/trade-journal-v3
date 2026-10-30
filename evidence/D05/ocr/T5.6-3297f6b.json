@@ -1,0 +1,113 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 87607,
+    "input_tokens": 86906,
+    "output_tokens": 701,
+    "cache_read_tokens": 23808,
+    "elapsed": "47s"
+  },
+  "tool_calls": {
+    "total": 10,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/trade-workflows/record-position-change.ts",
+      "content": "The new outcome selection uses nested ternaries here and in the receipt's reflection field, contrary to the review checklist. Use an explicit if/else or a helper that builds both the receipt identity and post-commit outcome so the three-way selection is readable and not duplicated.",
+      "existing_code": "  const outcome: PositionChangeSuccess['postCommit']['reflection'] = entry\n    ? { kind: 'Entry', entry }\n    : decline\n      ? { kind: 'Decline', decline }\n      : { kind: 'Debt', debt: debt! };",
+      "start_line": 262,
+      "end_line": 266,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "src/ui/screens/PositionChangeReceipt.tsx",
+      "content": "Adding the Debt branch introduces a nested ternary, which the review checklist explicitly prohibits. Compute the reflection message with a switch or if/else before returning JSX, including the optional decline reason.",
+      "existing_code": "          : reflection.kind === 'Debt'\n            ? 'Reflection deferred.'\n            : `Reflection declined${reflection.decline.reason ? `: ${reflection.decline.reason}` : '.'}`}",
+      "start_line": 130,
+      "end_line": 132,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/coordinators/trade-workflows/record-position-change.ts",
+        "src/ui/screens/PositionChangeReceipt.tsx"
+      ]
+    }
+  ],
+  "session_id": "aabda6c8-18f1-4ffe-a041-8ca1c51e2045",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "aabda6c8-18f1-4ffe-a041-8ca1c51e2045",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "3297f6b",
+      "resolved_base": "7c2bf2e32a9c841dbc5fab1a5ac30d2a4cff82ad",
+      "resolved_head": "3297f6bff3999c58633f711645bc597858967340",
+      "exact_range": "7c2bf2e32a9c841dbc5fab1a5ac30d2a4cff82ad..3297f6bff3999c58633f711645bc597858967340",
+      "source_artifact_sha256": "c0111c30ff2bc0b1f1640af5dec935986a2281c0bdaf972a6a41f914573430e5"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3b19891a8713f43c2aa08f50a42cf3abbe4d166f7d44b7ccfe76ba2b19a154b8",
+          "path": "src/ui/screens/PositionChangeReceipt.tsx",
+          "fingerprint": "af437d7438e92d8b12425a5177ba4ddaf1eccd11c60ea8e1883446adb9374cf6"
+        },
+        {
+          "item_id": "f5361c4fd75f977f1898251826a612f6ea83d6729570ae276fdef8fb7944213f",
+          "path": "src/coordinators/trade-workflows/record-position-change.ts",
+          "fingerprint": "ab4ac5cb4ed390401aebf01ec520b5ca863abeaee348d60ac931344c8fb20cbc"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3b19891a8713f43c2aa08f50a42cf3abbe4d166f7d44b7ccfe76ba2b19a154b8",
+          "path": "src/ui/screens/PositionChangeReceipt.tsx",
+          "fingerprint": "af437d7438e92d8b12425a5177ba4ddaf1eccd11c60ea8e1883446adb9374cf6"
+        },
+        {
+          "item_id": "f5361c4fd75f977f1898251826a612f6ea83d6729570ae276fdef8fb7944213f",
+          "path": "src/coordinators/trade-workflows/record-position-change.ts",
+          "fingerprint": "ab4ac5cb4ed390401aebf01ec520b5ca863abeaee348d60ac931344c8fb20cbc"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 47070
+  }
+}

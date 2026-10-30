@@ -207,3 +207,43 @@ Run 2026-10-29 19:50 EDT on commit `2877686`, Node v26.12.0.
 | Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.5-debt-validator-seed-checks.txt` |
 
 Failures: `verify:capacity` only (expected until T5.19). The TradeList flake did not recur.
+
+## T5.6 Trade Workflows: `recordPositionChange` with Defer
+
+Implementation commit `3297f6b`. Case 1 red (`StorageFailure` rather than `Recorded`: the old code dereferenced the absent decline after the commit) then green. **Case 2 is a flagged first-run pass:** case 1's green already produced the receipt identity and the post-commit Debt, because the widened result union required both. Mutation check: the receipt's Debt id set to `debt.revision` failed with `expected { kind: 'Debt', id: 'id-0017' } to deeply equal { kind: 'Debt', id: 'id-0016' }`, and the code was restored. The case name drops the plan's "(AC-RESP-001)" because parentheses break the `-t` filter; the criterion is still named in the describe and the log. `receipt.reflection.kind` gains `'Debt'` (id is the `debtId`), and `postCommit.reflection` gains `{ kind: 'Debt'; debt: DebtProjection }`. To keep the build compiling, `PositionChangeReceipt.tsx` gets a minimal "Reflection deferred." branch, which T5.14 replaces.
+
+ocr review of `3297f6b`: session `aabda6c8-18f1-4ffe-a041-8ca1c51e2045`, 2 files reviewed, 2 comments. Raw output: `ocr/T5.6-3297f6b.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| low | `src/coordinators/trade-workflows/record-position-change.ts:262` | The Entry/Decline/Debt outcome is selected with nested ternaries, twice (post-commit outcome and receipt) | Doubtful (style; the duplication is real) | Bug task T5.6-B1 (structural) |
+| low | `src/ui/screens/PositionChangeReceipt.tsx:130` | The Debt branch deepens a nested ternary in the receipt message | Doubtful (style; placeholder until T5.14) | Bug task T5.6-B2 (structural) |
+
+### T5.6-B1 One outcome selection in `recordPositionChange`
+
+Structural: select the outcome once, without nested ternaries, and derive the receipt's reflection from it. Verified by the trade-workflows tests passing before and after.
+
+Implemented in `710a16b`: a private helper `reflectionOutcome(journal)` selects the outcome once with if/else and returns both the post-commit outcome and the receipt's `{ kind, id }`; the `debt!` assertion is gone (an absent outcome throws `no reflection outcome`, unreachable). Trade-workflows tests 26 passed before and after; the four static checks exit 0. Process slip: the log row was appended with `printf >>` instead of the Edit tool.
+
+ocr review of `710a16b`: session `85190539-bef2-4d3e-9adb-1e3342ad85b5`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.6-B1-710a16b.json`.
+
+### T5.6-B2 Receipt reflection message without nested ternaries
+
+Structural: compute the receipt's reflection message with a switch on its kind. Verified by the ui/screens tests passing before and after.
+
+Implemented in `42a16e4`: a private `reflectionMessage(reflection)` switch over Entry, Debt and Decline, same rendered text. ui/screens tests 233 passed before and after; the four static checks exit 0.
+
+ocr review of `42a16e4`: session `766409b0-cc2c-4dbd-9b39-b51a9a814a8d`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.6-B2-42a16e4.json`.
+
+### Cumulative run after T5.6
+
+Run 2026-10-29 20:02 EDT on commit `42a16e4`, Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 65 passed (65)`, `Tests 844 passed (844)`, exit 0 | `suite-runs/t5.6-record-defer-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 41 passed (41)`, `Tests 73 passed (73)`, exit 0 | `suite-runs/t5.6-record-defer-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `142 passed (5.0m)`, exit 0 | `suite-runs/t5.6-record-defer-browser.txt` |
+| Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.6-record-defer-checks.txt` |
+
+Failures: `verify:capacity` only (expected until T5.19).
