@@ -1,12 +1,12 @@
 {
-  "generatorVersion": 2,
-  "schemaVersion": 3,
+  "generatorVersion": 3,
+  "schemaVersion": 4,
   "seed": 20211011,
   "clockStart": "2024-01-02T13:00:00Z",
   "timeZone": "America/New_York",
   "origin": "http://localhost:5181",
   "buildDir": "dist-bench",
-  "benchRelease": "290485a213580a468506ceb82844d7af759de4f9b907dde7db298b3c18b6ebc6",
+  "benchRelease": "e7f6c6328dfbada449cfca715d6f95629d513fb81db5a7d2ce03ba542866a73b",
   "asOf": "2028-12-29T21:35:00Z",
   "reviewDate": "2028-12-29",
   "missingInstruments": [
@@ -28,8 +28,8 @@
     "positionChanges": 400,
     "executions": 800,
     "planReflectionEntries": 25000,
-    "positionChangeReflectionEntries": 320,
-    "positionChangeReflectionDeclines": 80,
+    "positionChangeReflectionEntries": 332,
+    "positionChangeReflectionDeclines": 66,
     "institutions": 3,
     "accounts": 6,
     "strategies": 1,
@@ -40,7 +40,11 @@
     "markCorrections": 1882,
     "acknowledgments": 0,
     "actions": 125404,
-    "editedActions": 2509
+    "editedActions": 2509,
+    "debts": 80,
+    "debtsSettled": 72,
+    "debtsDeclined": 6,
+    "debtsOutstanding": 2
   },
   "actionsByChoice": {
     "Exit": 6271,
@@ -48,8 +52,32 @@
     "Adjust": 6271,
     "Hold": 106591
   },
-  "generationMs": 5445378,
-  "generatedAt": "2026-10-29T09:38:59.354Z",
+  "dispositions": {
+    "complete": 260,
+    "declined": 60,
+    "answered": 72,
+    "declinedLater": 6,
+    "outstanding": 2
+  },
+  "asOfDueReflections": 2,
+  "outstandingDebts": [
+    {
+      "debtId": "aff4aed7-10a4-4ec1-9cbb-4a6b3de81d0c",
+      "tradeId": "ef17880b-a237-41d9-9a39-70e330564820",
+      "underlying": "QAJ",
+      "positionChange": 398,
+      "recordedSession": "2028-12-27"
+    },
+    {
+      "debtId": "6df73331-56a1-4d8f-867b-ca5796e75d9d",
+      "tradeId": "ef17880b-a237-41d9-9a39-70e330564820",
+      "underlying": "QAJ",
+      "positionChange": 399,
+      "recordedSession": "2028-12-28"
+    }
+  ],
+  "generationMs": 5980286,
+  "generatedAt": "2026-10-30T05:53:29.317Z",
   "engine": "chromium 153.0.8010.12",
   "host": {
     "platform": "darwin",
