@@ -1,0 +1,79 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 6466,
+    "input_tokens": 6371,
+    "output_tokens": 95,
+    "cache_read_tokens": 3840,
+    "elapsed": "9s"
+  },
+  "tool_calls": {
+    "total": 0,
+    "by_tool": {},
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/coordinators/trade-views/trade-views.ts",
+      "files": [
+        "src/coordinators/trade-views/trade-views.ts"
+      ]
+    }
+  ],
+  "session_id": "7a989986-f34d-4cad-a4d7-5f6291d39132",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7a989986-f34d-4cad-a4d7-5f6291d39132",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "20ea662",
+      "resolved_base": "fdb1b66503186f2e6fdd6003d19dcc27a8e7b898",
+      "resolved_head": "20ea662dbe23ecb0ed4c35fc570c271c6e938074",
+      "exact_range": "fdb1b66503186f2e6fdd6003d19dcc27a8e7b898..20ea662dbe23ecb0ed4c35fc570c271c6e938074",
+      "source_artifact_sha256": "d6fcf15bf680eea789d0807c2242f980dc966bfc166a16f1e9e205ebac058c83"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "d0cd8ab1ed0aebcee8775cb49ca9138757750854ce586739970a395e18074512"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3184381af3a4dc1ed41cfa385235a1bc1bba75e524cdb33d268576fdaa6d2652",
+          "path": "src/coordinators/trade-views/trade-views.ts",
+          "fingerprint": "d0cd8ab1ed0aebcee8775cb49ca9138757750854ce586739970a395e18074512"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 9390
+  }
+}

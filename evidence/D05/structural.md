@@ -405,3 +405,48 @@ Run 2026-10-29 20:56 EDT on commit `d872076`, Node v26.12.0.
 | Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.10-review-resolve-debt-checks.txt` |
 
 Failures: `verify:capacity` only (expected until T5.19).
+
+## T5.11 Trade Views: Debt on Trade Detail
+
+Implementation commit `fdb1b66`. Case 1 red (runtime `no Debt item for D-1`: the temporary filter dropped Debt) then green; the temporary filter is removed. **Cases 2 and 3 are flagged first-run passes**, each proven by a mutation check and restored:
+- Case 2 (settled and declined Debt shown once): T5.4 already built `answeredLater` and `declinedLater`. Mutation: dropping `answeredLater` failed with an `AssertionError` on the Entry item.
+- Case 3 (decision 56, outside coverage): case 1 already skipped classification when the frame has no resolution. Mutation: classifying as `Due` failed with `expected { kind: 'Debt', … } to not have property "dueStatus"`.
+
+New public types, re-exported from `src/app/types.ts`:
+- `DebtDueStatus` (`Due`, `DueInNextReview`, `DueInReviewAfterNext`).
+- `TradeDetailDebt extends NarrativeDebt` with an optional `dueStatus`.
+- `TradeDetailNarrativeItem`. The Open and Incoherent detail journals use it.
+
+**Interpretation, flagged:** an Incoherent Trade Detail lists its Debt without `dueStatus`. No frame resolves for a Trade that cannot be replayed, so there is no Expected Mark Date. The plan does not name this form; this applies decision 56's "no classification" reading.
+
+Other changes:
+- **UI placeholder:** `outcomesOnly` in `TradeDetail.tsx` hides Debt items. T5.17 replaces it.
+- **Compile-driven narrowing:** `tests/integration/d2/responses.test.ts` needed one narrowing to compile.
+- **Source label:** case 2 accepts the raw key `source.trade-detail` until T5.12 switches the manifest.
+
+ocr review of `fdb1b66`: session `b53df62f-1238-4bd4-884b-8d64d0a6a791`, 4 files reviewed, 1 comment. Raw output: `ocr/T5.11-fdb1b66.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| low | `src/coordinators/trade-views/trade-views.ts:398` | `dueStatus` is computed with a nested ternary | Valid (style; logic correct) | Bug task T5.11-B1 (structural) |
+
+### T5.11-B1 Debt due status without nested ternaries
+
+Structural: compute `dueStatus` with an if/else chain. Verified by the trade-views tests passing before and after.
+
+Implemented in `20ea662`: an if/else chain, same comparisons in the same order, the outside-coverage early return untouched. Trade-views tests 34 passed before and after; the four static checks exit 0.
+
+ocr review of `20ea662`: session `7a989986-f34d-4cad-a4d7-5f6291d39132`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.11-B1-20ea662.json`.
+
+### Cumulative run after T5.11
+
+Run 2026-10-29 21:39 EDT on commit `20ea662`, Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 68 passed (68)`, `Tests 861 passed (861)`, exit 0 | `suite-runs/t5.11-detail-debt-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 41 passed (41)`, `Tests 73 passed (73)`, exit 0 | `suite-runs/t5.11-detail-debt-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `142 passed (5.0m)`, exit 0 | `suite-runs/t5.11-detail-debt-browser.txt` |
+| Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.11-detail-debt-checks.txt` |
+
+Failures: `verify:capacity` only (expected until T5.19).
