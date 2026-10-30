@@ -163,6 +163,16 @@ describe('declining', () => {
     expect(await screen.findByRole('region', { name: 'Saved reflection' })).toBeTruthy();
     expect(screen.getByText('Declined to reflect.')).toBeTruthy();
   });
+
+  it('should move focus to the reason field when Decline is rejected with ReasonTooLong', async () => {
+    renderForm(() => Promise.resolve({ kind: 'Rejected', issues: [{ code: 'ReasonTooLong' }] }));
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText('Reason for declining (optional)'), 'Too long for the form.');
+    await user.click(screen.getByRole('button', { name: 'Decline' }));
+
+    await screen.findByText('Keep the reason for declining to 500 characters or fewer.');
+    expect(document.activeElement).toBe(screen.getByLabelText('Reason for declining (optional)'));
+  });
 });
 
 describe('one submission at a time', () => {

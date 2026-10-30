@@ -551,3 +551,80 @@ Run 2026-10-29 22:08 EDT on commit `71e9df3`, Node v26.12.0.
 | Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.14-entry-disposition-checks.txt` |
 
 Failures: `verify:capacity` only (expected until T5.19).
+
+## T5.15 UI: Debt form
+
+Implementation commit `9d7016d`. All six cases went red then green; none passed on its first run. Case 1 uses a revision-2 snapshot built in the test, with Reactive relabelled "Impulsive" and a required "Lesson" prompt placed first, matching the A74 fixture. Its name reads "that revision prompt wording" because the apostrophe breaks the `-t` filter.
+
+**Host adapter.** The form is `DebtForm` and takes a `submit({ binding, resolution })` adapter, where `resolution` is `Answer { answers }` or `Decline { reason? }`. The adapter returns one of:
+- `Resolved { entry?; decline?; debt }`
+- `Rejected { issues }`
+- `Conflict { currentOutcome? }`
+- `NotFound`
+- `RuntimeNotWritable`
+
+Each host maps its own result to these: Daily Review's `DebtResolved`, and Journal's `Saved`. The other props are `definition` (the snapshot), `binding`, and the optional callbacks `onResolved`, `onCancel` and `onDirtyChange`.
+
+After a save, the form renders the saved Entry or decline from the result alone. Without write access, Answer and Decline are not rendered and the fields are disabled.
+
+Supporting edits:
+- `ReflectionPrompts` gains an optional `disabled`.
+- The ReasonTooLong message is shared as `REASON_TOO_LONG` (no behavior change).
+
+**Left for the hosts (T5.16, T5.17):**
+- Moving focus after a save (A71).
+- Reporting `RuntimeNotWritable` to the shell from the adapter, as `ActionForm` does.
+- Prompt-derived ids would collide if two forms for one snapshot were open at once.
+
+**Not covered by planned cases:**
+- `NotFound` renders nothing.
+- A Rejected issue without a prompt, such as `DefinitionRevisionMismatch`, shows only the generic message.
+
+The ui tests pass: 306.
+
+ocr review of `9d7016d`: session `d6f17d9d-5efc-4115-8fa2-4a8e0329eb37`, 3 files reviewed, 6 comments. Raw output: `ocr/T5.15-9d7016d.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/ui/screens/DebtForm.tsx:102` | No in-flight guard: Answer then Decline can both be submitted while the first call is pending | Valid | Bug task T5.15-B1 |
+| medium | `src/ui/screens/DebtForm.tsx:103` | A rejected adapter promise is unhandled and the trader sees nothing | Valid | Bug task T5.15-B2 |
+| medium | `src/ui/screens/DebtForm.tsx:113` | NotFound gives no feedback and leaves the form looking usable | Valid | Bug task T5.15-B3 |
+| medium | `src/ui/screens/DebtForm.tsx:119` | A Rejected issue without a prompt (for example `DefinitionRevisionMismatch`) is never shown | Valid | Bug task T5.15-B4 |
+| medium | `src/ui/screens/DebtForm.tsx:99` | ReasonTooLong leaves focus on Decline, not on the reason field | Valid | Bug task T5.15-B5 |
+| low | `src/ui/screens/DebtForm.tsx:59` | Nested ternaries format a saved response | Doubtful (style) | Bug task T5.15-B6 (structural) |
+
+### T5.15-B1 One submission at a time
+- it should disable Answer and Decline while a submission is pending and make no second call
+
+Implemented in `56c42eb`: a `pending` state with an `inFlight` ref (the ReviewView idiom); `send` returns early while a call is in flight and resets in `.finally`; Answer and Decline are disabled while pending. Red (`expected false to be true`) then green.
+
+ocr review of `56c42eb`: session `97aefc7e-c5b0-446b-ab43-a7b42601bca8`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.15-B1-56c42eb.json`.
+
+### T5.15-B2 An adapter failure is shown
+- it should show an error and keep the entered values when the submit adapter throws
+
+Implemented in `018b46b`: `send` wraps the adapter call in try/catch/finally; a thrown save shows an alert banner ("This reflection could not be saved. Nothing was saved. Your values are kept, so you can try again.", after ActionForm's StorageFailure wording), keeps the values and re-enables Answer. Red (`Unable to find role="alert"`, plus the unhandled rejection) then green. **Noted, not fixed (D4 code, out of D5's scope):** the Review's `ActionForm` save uses try/finally without a catch, so a thrown save is unhandled there too.
+
+ocr review of `018b46b`: session `02a98c6d-eabc-4e57-8ab7-5528adb37e22`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.15-B2-018b46b.json`.
+
+### T5.15-B3 NotFound is shown
+- it should show that the reflection no longer exists and offer no Answer or Decline when the result is NotFound
+
+Implemented in `9b1afa0`: a `gone` state set by NotFound shows an alert ("This reflection no longer exists. Nothing was saved.") and hides Answer and Decline; the fields and Cancel stay. Red (`Unable to find role="alert"`) then green.
+
+ocr review of `9b1afa0`: session `c2d911f4-3f2d-47ab-ba01-286bca2f642b`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.15-B3-9b1afa0.json`.
+
+### T5.15-B4 Form-level rejections are shown
+- it should show a Rejected issue that names no prompt as a form-level error
+
+Implemented in `0e1ab54`: a `rejected` state, set when a Rejected result carries an issue with no prompt other than ReasonTooLong, shows an alert ("This reflection could not be saved. Reopen it and try again. Your values are kept.", after ActionForm's `COULD_NOT_SAVE`). Red (`Unable to find role="alert"`) then green.
+
+ocr review of `0e1ab54`: session `7e860d54-128d-408a-9416-78ec8c206790`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.15-B4-0e1ab54.json`.
+
+### T5.15-B5 ReasonTooLong focuses the reason
+- it should move focus to the reason field when Decline is rejected with ReasonTooLong
+
+Implemented in the T5.15-B5 commit: the focus effect keeps the first-prompt focus and, when no prompt has an issue, focuses the reason field by id (it has no name). Red (focus stayed on the Decline button) then green.
+
+### T5.15-B6 Saved-response formatting without nested ternaries
+Structural: format each saved response with a helper; ui tests pass before and after.

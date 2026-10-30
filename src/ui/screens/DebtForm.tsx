@@ -98,7 +98,9 @@ export function DebtForm({ definition, binding, submit, onResolved, onCancel, on
   useEffect(() => {
     const first = definition.prompts.find((p) => issues.some((i) => i.field === p.id));
     if (first) formRef.current?.querySelector<HTMLElement>(`[name="${first.id}"]`)?.focus();
-  }, [issues, definition]);
+    // The reason field comes after every prompt, so it takes focus only when no prompt has an issue.
+    else if (issues.some((i) => i.field === reasonField)) document.getElementById(reasonField)?.focus();
+  }, [issues, definition, reasonField]);
   // A submission is in flight: Answer and Decline are disabled, so only one call goes out at a time.
   const [pending, setPending] = useState(false);
   const inFlight = useRef(false);
