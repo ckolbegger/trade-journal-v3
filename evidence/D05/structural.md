@@ -1129,3 +1129,15 @@ Run 2026-10-30 12:28 EDT on commit `82865d5`, Node v26.12.0.
 | Static and verification checks (12 commands) | as at the end of D4 | 12 of 12 exit 0 | `suite-runs/t5.24--checks.txt` |
 
 Failures: none. The run covers T5.21's bug tasks, T5.22 and T5.24 with T5.24-B1 (output files carry a double hyphen from the label). It was taken before revision 18 and the tech-debt entry, which change plan text only.
+
+## T5.25 Independent browser-critic gate
+
+Critic 1 at `efeb68e`: every flow C5.1 to C5.10 (C5.5 as amended by decision 59) and the narrow-layout checks pass; no defects. Report: `critic-1.md`, with seven minor observations, none a failed pass condition or a contradiction of `specs/`.
+
+## Critic cost
+
+Figures from the critic's completion notice (the harness's own token count). Brief v2 = `.claude/docs/critic-brief.md` with setup helpers from `e2e/d5/support.ts`.
+
+| Critic | Commit | Brief | Tokens | Tool calls | Duration | Defects |
+|---|---|---|---|---|---|---|
+| critic-1 (T5.25) | `efeb68e` | v2 | 133,195 | 49 | 8 min 26 s | 0 |
