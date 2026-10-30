@@ -8,11 +8,13 @@ export interface ReflectionPromptsProps {
   readonly onChange: (answers: Answers) => void;
   // Issue messages by Prompt identity.
   readonly errors?: Readonly<Record<string, string>>;
+  // The values are shown but cannot be changed (the shell is read only).
+  readonly disabled?: boolean;
 }
 
 // Renders the exact definition revision loaded for the form, answering stable Prompt and
 // Option identities. Single choices are radio groups inside a labelled fieldset.
-export function ReflectionPrompts({ definition, answers, onChange, errors = {} }: ReflectionPromptsProps) {
+export function ReflectionPrompts({ definition, answers, onChange, errors = {}, disabled }: ReflectionPromptsProps) {
   const set = (promptId: string, answer: AnswerInput | undefined) => {
     const next = { ...answers };
     if (answer === undefined) delete next[promptId];
@@ -38,6 +40,7 @@ export function ReflectionPrompts({ definition, answers, onChange, errors = {} }
                 {prompt.text}
                 <textarea
                   name={prompt.id}
+                  disabled={disabled}
                   value={answer?.kind === 'Text' ? answer.text : ''}
                   onChange={(e) => set(prompt.id, e.target.value === '' ? undefined : { kind: 'Text', text: e.target.value })}
                   {...described}
@@ -66,6 +69,7 @@ export function ReflectionPrompts({ definition, answers, onChange, errors = {} }
                   type="radio"
                   name={prompt.id}
                   value={choice.value}
+                  disabled={disabled}
                   checked={selected === choice.value}
                   onChange={() => set(prompt.id, choice.answer)}
                 />

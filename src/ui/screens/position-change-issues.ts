@@ -4,6 +4,8 @@ import { describeJournalIssue, type FieldIssue, type Issue } from './plan-issues
 // The field name of one value in one Execution row, stable while rows are added or removed.
 export const rowField = (rowKey: number, field: string) => `row-${rowKey}-${field}`;
 
+export const REASON_TOO_LONG = 'Keep the reason for declining to 500 characters or fewer.';
+
 const DECIMAL: Record<string, string> = {
   quantity: 'enter a quantity greater than zero, with at most 6 decimal places.',
   price: 'enter a price greater than zero, with at most 6 decimal places.',
@@ -37,7 +39,7 @@ function describeIssue(issue: Issue & { readonly member?: number }, rowKeys: rea
     if (issue.member !== undefined) {
       return { field: rowField(rowKeys[issue.member]!, issue.field ?? ''), message: `Execution ${issue.member + 1}: ${memberMessage(issue)}` };
     }
-    if (issue.code === 'ReasonTooLong') return { field: 'reason', message: 'Keep the reason for declining to 500 characters or fewer.' };
+    if (issue.code === 'ReasonTooLong') return { field: 'reason', message: REASON_TOO_LONG };
     return describeJournalIssue(issue, definition);
   }
 }
