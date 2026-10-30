@@ -1,0 +1,81 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 8969,
+    "input_tokens": 8914,
+    "output_tokens": 55,
+    "cache_read_tokens": 1920,
+    "elapsed": "7s"
+  },
+  "tool_calls": {
+    "total": 1,
+    "by_tool": {
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/ui/screens/DebtForm.tsx",
+      "files": [
+        "src/ui/screens/DebtForm.tsx"
+      ]
+    }
+  ],
+  "session_id": "177d50b8-24fe-4978-89e8-dca803fb269d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "177d50b8-24fe-4978-89e8-dca803fb269d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "3ed732c",
+      "resolved_base": "705a68fd03ae39ae702061e5ed353d721009636d",
+      "resolved_head": "3ed732c57de4edb0af94c7976f6c2b9e64df7973",
+      "exact_range": "705a68fd03ae39ae702061e5ed353d721009636d..3ed732c57de4edb0af94c7976f6c2b9e64df7973",
+      "source_artifact_sha256": "c11296ed06210abe40a6cf0eebff87828bd7b37455288375e3e921621781a04a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "150741dcc4cc2f3b9795937c853b6881d9158f89b78c2fa680263d1a4ef46829",
+          "path": "src/ui/screens/DebtForm.tsx",
+          "fingerprint": "4bd9fb93a4d6b8fb9743afc70aff953759a9aea9dd03b830b76e9375a1c36fbf"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "150741dcc4cc2f3b9795937c853b6881d9158f89b78c2fa680263d1a4ef46829",
+          "path": "src/ui/screens/DebtForm.tsx",
+          "fingerprint": "4bd9fb93a4d6b8fb9743afc70aff953759a9aea9dd03b830b76e9375a1c36fbf"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 7463
+  }
+}

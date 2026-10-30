@@ -1,0 +1,179 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 3 selected item(s).",
+  "summary": {
+    "files_reviewed": 3,
+    "comments": 3,
+    "total_tokens": 137338,
+    "input_tokens": 135243,
+    "output_tokens": 2095,
+    "cache_read_tokens": 16640,
+    "elapsed": "2m6s"
+  },
+  "tool_calls": {
+    "total": 11,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2,
+      "file_read": 8
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "Reflection edits are reported as `debt:*`, but `onEntryDirty` only sets `actionDirty` for `action:*`. Consequently, entering reflection answers does not disable Trade selection, Continue, or blocker links; these can unmount the DebtForm and silently discard its values. Saving the Action can also advance the walk while a reflection draft exists. Include dirty reflection entries in the card-leaving guard and prevent Action-driven advancement from discarding them.",
+      "existing_code": "      {walk \u0026\u0026 \u003cTradeWalk facade={facade} review={review} selected={selected} afterSave={afterSave} holdId={actionDirty ? holdId : undefined} onSelect={(tradeId) =\u003e void select(tradeId)} onSaved={saved} onReflectionResolved={reflectionResolved} onRefresh={refreshTrade} onEntryDirty={onEntryDirty} /\u003e}",
+      "start_line": 404,
+      "end_line": 404,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/ui/screens/ReviewReflections.tsx",
+      "content": "DebtForm leaves Cancel enabled while submission is pending. If the user submits and cancels before the save completes, this unmounts the form holding the response state. The eventual `onResolved` marks the row resolved and mounts a fresh DebtForm, which has no saved outcome and instead displays an empty editable form for an already-resolved debt. Prevent closing during submission, or retain the saved result at row/parent level so it survives cancellation.",
+      "existing_code": "      {(isOpen || resolved) \u0026\u0026 \u003cDebtForm definition={reflection.definition} binding={reflection.saveBinding} submit={submit} onResolved={onResolved} onCancel={resolved ? undefined : onClose} onDirtyChange={dirty} /\u003e}",
+      "start_line": 59,
+      "end_line": 59,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "The selection token is only allocated here, after `reopen()` finishes. While that request is pending, the existing Trade buttons remain enabled and `select` does not check `inFlight`. A user can follow a blocker link, then select a different Trade, only to have this older blocker request replace their newer selection when the refresh finishes. Capture/check a navigation token before awaiting `reopen`, or disable all card navigation for the entire operation.",
+      "existing_code": "    await select(tradeId, result);",
+      "start_line": 377,
+      "end_line": 377,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/ui/screens/ReviewReflections.tsx",
+        "src/ui/screens/ReviewTrade.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "file": "src/ui/screens/ReviewReflections.tsx,src/ui/screens/ReviewTrade.tsx,src/ui/screens/ReviewView.tsx",
+      "message": "round 2: LLM completion error: received error while streaming: {\"type\":\"service_unavailable_error\",\"code\":\"server_is_overloaded\",\"headers\":{\"x-retry-metadata\":\"NO_MORE_RETRY\"},\"message\":\"Our servers are currently overloaded. Please try again later.\",\"param\":null}",
+      "type": "review_round_failed"
+    }
+  ],
+  "resume": {
+    "resumed_from": "4ea8b89a-21aa-467b-af1c-9b28e93197f7",
+    "reused_files": 0,
+    "rerun_files": 3,
+    "previous_model": "gpt-6.1-sol",
+    "current_model": "gpt-6.1-sol"
+  },
+  "session_id": "c2ec5452-ff44-4d26-b2fb-43a0193a8db3",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c2ec5452-ff44-4d26-b2fb-43a0193a8db3",
+    "parent_run_id": "4ea8b89a-21aa-467b-af1c-9b28e93197f7",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "e74afd2",
+      "requested_head": "3375bc0",
+      "resolved_base": "e74afd2223bbc3c0d4a4631c0beb96c7f6c600a4",
+      "resolved_head": "3375bc02141e7f5d1503d9426815f0117a5543af",
+      "exact_range": "e74afd2223bbc3c0d4a4631c0beb96c7f6c600a4..3375bc02141e7f5d1503d9426815f0117a5543af",
+      "source_artifact_sha256": "af32f5fa2578e2632a38d6f4b5dd6b73153c2da78671ae27853fde89c4f84d4f"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "04d7d94b00ac36473a7fabcd0ec15f063d048e42b27c68e574756c66b54aeae4",
+          "path": "src/ui/screens/ReviewTrade.tsx",
+          "fingerprint": "3ac651f53b4c9daa2fb525e47cc4923c9c2f13dfdd4fb54597d34683312c2dc0"
+        },
+        {
+          "item_id": "2aa0341444a1921ffd05d33525a1cd8b52950e6319bf29824d81bde09d8b550f",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "07f0ce55b942d2dcbd0d15a8ae5df62fe2d5d29f2e7e1f1ddcbb830bb0bf669a"
+        },
+        {
+          "item_id": "aa2708596e534e0f4af3be800ff87b088578d871caf765ae213f223c142c7b96",
+          "path": "src/ui/screens/ReviewReflections.tsx",
+          "fingerprint": "7888fc10418213970d4c4335e7e9262f0f0c8d1df833d42999912841f8ad31b9"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "04d7d94b00ac36473a7fabcd0ec15f063d048e42b27c68e574756c66b54aeae4",
+          "path": "src/ui/screens/ReviewTrade.tsx",
+          "fingerprint": "3ac651f53b4c9daa2fb525e47cc4923c9c2f13dfdd4fb54597d34683312c2dc0"
+        },
+        {
+          "item_id": "2aa0341444a1921ffd05d33525a1cd8b52950e6319bf29824d81bde09d8b550f",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "07f0ce55b942d2dcbd0d15a8ae5df62fe2d5d29f2e7e1f1ddcbb830bb0bf669a"
+        },
+        {
+          "item_id": "aa2708596e534e0f4af3be800ff87b088578d871caf765ae213f223c142c7b96",
+          "path": "src/ui/screens/ReviewReflections.tsx",
+          "fingerprint": "7888fc10418213970d4c4335e7e9262f0f0c8d1df833d42999912841f8ad31b9"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 126289
+  },
+  "retry_report": {
+    "schema_version": "ocr.llm-retry-report/v1",
+    "total_requests": 9,
+    "retried_requests": 0,
+    "total_retries": 0,
+    "recovered_requests": 0,
+    "failed_requests": 1,
+    "cancelled_requests": 0,
+    "requests": [
+      {
+        "logical_request_id": "45ff12136a5bb041da8cf682e48f29d4883340833a45649eda2df9e259da5590",
+        "provider": "chatgpt",
+        "model": "gpt-6.1-sol",
+        "file_path": "src/ui/screens/ReviewReflections.tsx,src/ui/screens/ReviewTrade.tsx,src/ui/screens/ReviewView.tsx",
+        "task_type": "main_task",
+        "request_no": 7,
+        "outcome": "failed",
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "error",
+            "error_class": "provider",
+            "failure_phase": "stream",
+            "status_code": 200,
+            "duration_to_headers_ms": 1464
+          }
+        ]
+      }
+    ]
+  }
+}

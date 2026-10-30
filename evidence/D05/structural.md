@@ -647,3 +647,71 @@ Run 2026-10-29 22:29 EDT on commit `992c991`, Node v26.12.0.
 | Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.15-debt-form-checks.txt` |
 
 Failures: `verify:capacity` only (expected until T5.19).
+
+## T5.16 UI: reflections in the Review's Trade card
+
+Implementation commit `2a98d70`, with its refactor log row in `3375bc0`. All three cases went red then green, with no first-run pass:
+- **Case 1:** red with no "Reflections" region. A first green attempt failed on a test bug that counted nested list items; the test was fixed, not production.
+- **Case 2:** red with no "Reflect on …" button.
+- **Case 3:** red with `expected [ 'Reflection due for XYZ', … ] to deeply equal [ '2 reflections due for XYZ', … ]`.
+
+What was built:
+- **Reflections section.** The new `ReviewReflections` section sits above the Action form. Each owed reflection shows:
+  - its Position Change's local date and time;
+  - its Executions (`Buy 100 XYZ @ $50.00`);
+  - its due text;
+  - a "Reflect on <date time>" button, which opens `DebtForm` inline. Only one form is open per card at a time.
+- **Save adapter.** It calls `DailyReview.save` with `ResolveReviewDebt`. `DebtResolved` maps to `Resolved`. Market-data issues are dropped from `Rejected`. `ReviewChanged`, `ChangedDuringAssembly` and `StorageFailure` are thrown, so the form shows its "could not be saved" banner and keeps the values.
+- **Focus after a save.** Focus moves to the next reflection, or to a focusable wrapper around the Action form when none remains.
+- **Blockers.** The overview's blockers read "Reflection due for XYZ" or "N reflections due for XYZ", with the Underlying as a link that opens that Trade's card. This replaces the T5.8 placeholder.
+
+**Design choices, flagged:**
+- After a reflection save, only completion and the binding are applied to the overview. The selected Trade stays, so the card can show the resolved reflection and keep the Action form as the focus target (A71). The returned next step is not followed.
+- A `ChangedDuringAssembly` post-save review is ignored until Continue.
+- The reflection list is not re-read after an Action Conflict refresh. A stale reflection gets `NotFound` or `Conflict` from the form.
+- The blocker link is `/review?trade=<id>` with the click intercepted. The query is not read on load.
+- The form's unsaved state counts as unsaved, but it does not hold the Review's buttons.
+
+The ui tests pass: 314.
+
+ocr review of `e74afd2..3375bc0`: session `c2ec5452-ff44-4d26-b2fb-43a0193a8db3` (a first attempt, `4ea8b89a-…`, failed on an LLM streaming error and was rerun), 3 files reviewed, 3 comments. Raw output: `ocr/T5.16-3375bc0.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| high | `src/ui/screens/ReviewView.tsx:404` | A reflection draft does not hold Trade selection, Continue, blocker links or the Action save's advance, so its values are discarded without warning | Valid (it overturns the flagged design choice above) | Bug task T5.16-B1 |
+| medium | `src/ui/screens/ReviewReflections.tsx:59` | Cancel stays enabled while a reflection save is pending; cancelling and then completing mounts an empty form for a resolved Debt | Valid | Bug task T5.16-B2 |
+| medium | `src/ui/screens/ReviewView.tsx:377` | A blocker link's reopen overwrites a Trade selected while it was in flight | Valid | Bug task T5.16-B3 |
+
+### T5.16-B1 A reflection draft holds the Review like an Action draft
+- it should hold Trade selection, Continue and the blocker links while a reflection draft has a value, as it does for an Action draft
+
+Implemented in `705a68f`: the hold flag is recomputed on every entry-dirty change and is true while any `action:` or `debt:` draft has a value (so two drafts cannot clear each other's hold); Mark entries still do not hold. Red (Continue enabled) then green; one green attempt failed on a test query matching two links. **Noted:** the hold message still reads "Save your Action or put back its saved values to leave this Trade." for a reflection draft.
+
+ocr review of `705a68f`: session `24e13c13-c44c-41e4-a3bf-43d1d07d8444`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.16-B1-705a68f.json`.
+
+### T5.16-B2 Cancel waits for a pending reflection save
+- it should disable Cancel while a reflection save is pending
+
+Implemented in `3ed732c`: Cancel is disabled while a save is pending, and re-enabled after a non-resolving result. Red (`expected false to be true`) then green.
+
+ocr review of `3ed732c`: session `177d50b8-24fe-4978-89e8-dca803fb269d`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.16-B2-3ed732c.json`.
+
+### T5.16-B3 A newer selection wins over a blocker link's reopen
+- it should keep a Trade selected while a blocker link's reopen is in flight
+
+Implemented in `4dafa91`: `openCard` takes the selection token before `reopen()` and, after applying the reopened Review, skips `select` when a newer selection was made. Red (DEF shown instead of the newer XYZ selection) then green.
+
+ocr review of `4dafa91`: session `7a7240fd-8e36-44b4-8b91-9cf9e0f1dd81`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.16-B3-4dafa91.json`.
+
+### Cumulative run after T5.16
+
+Run 2026-10-29 22:55 EDT on commit `4dafa91`, Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 69 passed (69)`, `Tests 883 passed (883)`, exit 0 | `suite-runs/t5.16-review-reflections-ui-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 41 passed (41)`, `Tests 73 passed (73)`, exit 0 | `suite-runs/t5.16-review-reflections-ui-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `142 passed (5.3m)`, exit 0 | `suite-runs/t5.16-review-reflections-ui-browser.txt` |
+| Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.16-review-reflections-ui-checks.txt` |
+
+Failures: `verify:capacity` only (expected until T5.19). A first run with this label was interrupted when the session ended; this is its complete rerun.
