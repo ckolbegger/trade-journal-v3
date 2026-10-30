@@ -182,6 +182,18 @@ function reflectionAnswers(n: number, symbol: string): Record<string, AnswerInpu
   };
 }
 
+// The Position Change Reflection given at capture: a Decline, a Complete, or a Defer (every other
+// disposition is answered or declined later, in a Review, or stays Outstanding).
+function captureReflection(disposition: BenchDisposition, n: number, symbol: string, definitionId: string) {
+  if (disposition === 'declined') {
+    return { kind: 'Decline' as const, definitionId, ...(n % 2 === 0 && { reason: 'Filled during a fast open; no time to reflect.' }) };
+  }
+  if (disposition === 'complete') {
+    return { kind: 'Complete' as const, form: { definitionId, answers: reflectionAnswers(n, symbol) } };
+  }
+  return { kind: 'Defer' as const };
+}
+
 function plannedQuantity(index: number): number {
   return 10 * (5 + (index % 15));
 }
@@ -506,12 +518,7 @@ async function generate() {
       }));
       const definitionId = changeDefinition.definition.id;
       const disposition = dispositions[n]!;
-      const reflection =
-        disposition === 'declined'
-          ? { kind: 'Decline' as const, definitionId, ...(n % 2 === 0 && { reason: 'Filled during a fast open; no time to reflect.' }) }
-          : disposition === 'complete'
-            ? { kind: 'Complete' as const, form: { definitionId, answers: reflectionAnswers(n, symbol) } }
-            : { kind: 'Defer' as const };
+      const reflection = captureReflection(disposition, n, symbol, definitionId);
       const recorded = await app.TradeWorkflows.recordPositionChange({
         originTradeId: tradeId,
         trades: [{ tradeId, expectedFactRevision: detail.view.factRevision }],
