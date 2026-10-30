@@ -1,0 +1,118 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 177073,
+    "input_tokens": 174479,
+    "output_tokens": 2594,
+    "cache_read_tokens": 28928,
+    "elapsed": "1m30s"
+  },
+  "tool_calls": {
+    "total": 28,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 7,
+      "file_find": 9,
+      "file_read": 10,
+      "file_read_diff": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/d5/query-count.ts",
+      "content": "These helper imports still assume the file is under `tests/integration/d5`: from this new location, `../../support/...` resolves to `src/support/...`, but both helpers exist only in `tests/support`. Because tsconfig includes `src`, this causes unresolved-module errors in `npm run typecheck` and prevents the suite from loading if explicitly registered. Restore the original test location or update these imports to the actual helper paths.",
+      "existing_code": "import { countRequests, type CountedRequest } from '../../support/request-counter.ts';\nimport { TEST_CAPACITY } from '../../support/stack.ts';",
+      "start_line": 10,
+      "end_line": 11,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/d5/query-count.ts",
+      "content": "None of these three cases is discovered by the configured Vitest projects: `vite.config.ts` includes only `src/**/*.test.{ts,tsx}` for unit tests and `tests/integration/**/*.test.ts` for integration tests. The accompanying benchmark-runner change does not register this suite either, so the relocated performance proof is silently omitted by the test commands. Keep it under `tests/integration/d5/query-count.test.ts`, or explicitly configure discovery for the new path.",
+      "existing_code": "describe('T5.22 query count: the Review open and Trade Detail read Debt', () =\u003e {",
+      "start_line": 143,
+      "end_line": 143,
+      "category": "test",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/itg/d5/query-count.ts",
+      "files": [
+        "src/itg/d5/query-count.ts"
+      ]
+    },
+    {
+      "label": "tools/bench-run.ts",
+      "files": [
+        "tools/bench-run.ts"
+      ]
+    }
+  ],
+  "session_id": "f6347c32-5b5f-4cac-8ed2-ac157b1742bd",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "f6347c32-5b5f-4cac-8ed2-ac157b1742bd",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "5f16cdd279bed20033b8dadf46e0d474ddb0989e",
+      "resolved_head": "f54310124414f59ec2e40d5b524c5790293af0ed",
+      "exact_range": "5f16cdd279bed20033b8dadf46e0d474ddb0989e..f54310124414f59ec2e40d5b524c5790293af0ed",
+      "source_artifact_sha256": "5e505bea26376f80b08b7345f3105bccdee43c7820d81eaf8f753aa2f2744a15"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "050676a7d9001ad82b5c4977cb7dbddf98401aad9cbfca57375fd6c0177af8d7",
+          "path": "tools/bench-run.ts",
+          "fingerprint": "63cb55322514216bdf9de4deb909911c4a9d912fd57f22d934327dfaac6ae0d2"
+        },
+        {
+          "item_id": "d98dae6d02c16360712d91c3a728124374ac674965db9d92d01651e597dfc745",
+          "path": "src/itg/d5/query-count.ts",
+          "fingerprint": "f984ecce174533e2e06959d83c4e9deeb35c49a642e519ede1f27ba98560b749"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "050676a7d9001ad82b5c4977cb7dbddf98401aad9cbfca57375fd6c0177af8d7",
+          "path": "tools/bench-run.ts",
+          "fingerprint": "63cb55322514216bdf9de4deb909911c4a9d912fd57f22d934327dfaac6ae0d2"
+        },
+        {
+          "item_id": "d98dae6d02c16360712d91c3a728124374ac674965db9d92d01651e597dfc745",
+          "path": "src/itg/d5/query-count.ts",
+          "fingerprint": "f984ecce174533e2e06959d83c4e9deeb35c49a642e519ede1f27ba98560b749"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 90411
+  }
+}
