@@ -31,12 +31,22 @@ export function OwedDebtItem({
 }) {
   const { writable, report } = useRuntime();
   const [definition, setDefinition] = useState<EntryDefinitionRecord>();
+  const [openFailed, setOpenFailed] = useState(false);
 
   const open = async () => {
+    setOpenFailed(false);
     onOpen();
-    const found = await facade.Journal.getDefinitions({ revision: debt.definitionId });
-    if (found.kind === 'Found') setDefinition(found.definition);
-    else onClose();
+    try {
+      const found = await facade.Journal.getDefinitions({ revision: debt.definitionId });
+      if (found.kind === 'Found') {
+        setDefinition(found.definition);
+        return;
+      }
+    } catch {
+      // Treated like a missing definition: shown below, and the item is released.
+    }
+    setOpenFailed(true);
+    onClose();
   };
   // The form that took focus is replaced by the saved reflection, so focus moves to it.
   const formArea = useRef<HTMLDivElement>(null);
@@ -94,6 +104,11 @@ export function OwedDebtItem({
           <dt>Due</dt>
           <dd>{DUE_TEXT[debt.dueStatus]}</dd>
         </dl>
+      )}
+      {openFailed && (
+        <p role="alert">
+          <strong>This reflection could not be opened.</strong> Try again.
+        </p>
       )}
       {definition ? (
         <div ref={formArea} tabIndex={-1}>

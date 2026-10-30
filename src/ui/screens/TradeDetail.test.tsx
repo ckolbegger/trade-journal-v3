@@ -1172,6 +1172,31 @@ describe('Debt on Trade Detail (A69, P17)', () => {
     expect(within(second).getByRole('button', { name: 'Reflect now' }).hasAttribute('disabled')).toBe(false);
   });
 
+  it('should show that the reflection could not be opened, and re-enable the other reflections, when its definition cannot be loaded', async () => {
+    const journal = [owedDebt('debt-1', 'pc-1', '2026-10-12T14:00:00Z', 'Due'), owedDebt('debt-2', 'pc-2', '2026-10-12T15:00:00Z', 'DueInNextReview')];
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: openDetailOf([PC1, PC2], { journal }), binding: {} } as never);
+    render(
+      <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
+        <MemoryRouter initialEntries={['/trades/trade-1']}>
+          <Routes>
+            <Route path="/trades/:tradeId" element={<TradeDetail facade={facade} timeZone="America/New_York" />} />
+          </Routes>
+        </MemoryRouter>
+      </RuntimeContext.Provider>,
+    );
+    const user = userEvent.setup();
+    const [first, second] = within(await screen.findByRole('region', { name: 'Journal (2)' })).getAllByRole('listitem') as [HTMLElement, HTMLElement];
+    for (const failure of [() => Promise.reject(new Error('storage')), () => Promise.resolve({ kind: 'NotFound' })]) {
+      vi.mocked(facade.Journal.getDefinitions).mockImplementation(failure as never);
+      await user.click(within(first).getByRole('button', { name: 'Reflect now' }));
+      expect((await within(first).findByRole('alert')).textContent).toContain('This reflection could not be opened.');
+      expect(within(first).queryByRole('form')).toBeNull();
+      expect(within(second).getByRole('button', { name: 'Reflect now' }).hasAttribute('disabled')).toBe(false);
+      expect(within(second).getByRole('button', { name: 'Decline' }).hasAttribute('disabled')).toBe(false);
+    }
+  });
+
   it('should move focus to the saved reflection after a Debt is resolved', async () => {
     const facade = facadeDouble();
     vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({
