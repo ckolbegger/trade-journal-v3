@@ -2,7 +2,7 @@
 // facade only and writes its raw dump and expected views (D1 T1.31). A committed fixture is never
 // regenerated, so an existing one is refused. Schema 2 (D2 T2.19) adds three Open Trades to D1's
 // content. Schema 3 (D4 T4.29) adds Marks, an acknowledgment, and Daily Trade Review Actions for the
-// Review Date of Monday 2026-10-19, 17:00 America/New_York.
+// Review Date of Monday 2026-10-19, 17:00 America/New_York. Schema 4 (D5 T5.20) adds four Debts at that instant.
 import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -105,15 +105,25 @@ const complete = (mode: string, emotion: string, confidence: number): Reflection
 });
 const decline = (reason?: string): ReflectionDisposition =>
   reason === undefined ? { kind: 'Decline', definitionId: pcDefinition.definition.id } : { kind: 'Decline', definitionId: pcDefinition.definition.id, reason };
+const deferred: ReflectionDisposition = { kind: 'Defer' };
+// Schema 4 (D5 T5.20) adds four Debts, as of Monday 17:00. The Expected Mark Date is Monday, so the
+// session before it closed Friday 16:00: a Debt anchored at or before then is Due. One anchored after the
+// Monday 16:00 close is not yet due (Trade Detail reads it as due in the Review after next).
 const referenceChanges = [
   { economicTime: '2026-10-12T14:00:00Z', quantity: '60', price: '50.10' },
   { economicTime: '2026-10-12T15:00:00Z', quantity: '40', price: '50.30' },
   { economicTime: '2026-10-12T18:00:00Z', quantity: '20', price: '51.00' },
+  // CSCO: an Outstanding Debt that is Due.
+  { economicTime: '2026-10-14T15:00:00Z', quantity: '10', price: '51.20' },
+  // CSCO: an Outstanding Debt not yet due (Position Change at Monday 16:05, after the 16:00 close).
+  { economicTime: '2026-10-19T20:05:00Z', quantity: '10', price: '51.50' },
 ];
 const openTrades = [
-  { symbol: 'CSCO', reflections: [complete('as-planned', 'calm', 4), complete('as-planned', 'calm', 4), decline('Added into strength; reflecting later.')] },
-  { symbol: 'KO', reflections: [complete('as-planned', 'eager', 3), decline()] },
-  { symbol: 'PFE', reflections: [decline('Entered between meetings.')] },
+  { symbol: 'CSCO', reflections: [complete('as-planned', 'calm', 4), complete('as-planned', 'calm', 4), decline('Added into strength; reflecting later.'), deferred, deferred] },
+  // KO's third Position Change is deferred, then answered in the Review (Source Daily Review).
+  { symbol: 'KO', reflections: [complete('as-planned', 'eager', 3), decline(), deferred] },
+  // PFE's Position Change is deferred, then declined on Trade Detail (Source Trade Detail).
+  { symbol: 'PFE', reflections: [decline('Entered between meetings.'), deferred] },
 ];
 for (const [i, open] of openTrades.entries()) {
   const account = accounts[i % accounts.length]!.record;
@@ -203,6 +213,33 @@ async function saveAction(underlying: string, action: 'Hold' | 'Exit', intent: s
 await saveAction('CSCO', 'Hold', 'Let the position work; the Stop at 47.50 still stands.');
 await saveAction('KO', 'Exit', 'Sell at tomorrow open if it fails to hold 49.');
 await saveAction('KO', 'Exit', 'Sell at tomorrow open if it fails to hold 49; take the loss on a close below 48.50.');
+
+// Schema 4 (D5 T5.20): KO's deferred reflection is answered in the Review (Source Daily Review), and
+// PFE's is declined on Trade Detail (Source Trade Detail). CSCO's two stay Outstanding.
+const koForm = await actionForm('KO');
+const owed = koForm.reflections[0];
+if (koForm.reflections.length !== 1 || !owed) throw new Error(`KO owes ${koForm.reflections.length} reflections, not 1`);
+const answered = await app.DailyReview.save({
+  kind: 'ResolveReviewDebt',
+  reviewDate: REVIEW_DATE,
+  binding: owed.saveBinding,
+  resolution: {
+    kind: 'Answer',
+    answers: {
+      'prompt.position-change-reflection.decision-mode': { kind: 'Option', optionId: 'option.position-change-reflection.decision-mode.as-planned' },
+      'prompt.position-change-reflection.primary-emotion': { kind: 'Option', optionId: 'option.position-change-reflection.primary-emotion.calm' },
+      'prompt.position-change-reflection.decision-confidence': { kind: 'Scale', value: 3 },
+    },
+  },
+});
+if (answered.kind !== 'DebtResolved') throw new Error(`ResolveReviewDebt KO: ${answered.kind}`);
+const outstanding = await app.Journal.query({ scope: 'OutstandingDebt' });
+if (!('debts' in outstanding)) throw new Error(`Journal.query OutstandingDebt: ${outstanding.kind}`);
+const pfeTrade =reviewed.find((t) => t.underlying === 'PFE');
+const pfeDebt = outstanding.debts.find((d) => d.anchor.tradeId === pfeTrade?.tradeId);
+if (!pfeDebt) throw new Error('PFE owes no Debt');
+const declined = await app.Journal.save({ intention: 'ResolveDebt', debtId: pfeDebt.debtId, expectedDebtRevision: pfeDebt.revision, resolution: { kind: 'Decline', reason: 'Nothing worth adding to the Journal.' } });
+if (declined.kind !== 'Saved') throw new Error(`ResolveDebt PFE: ${declined.kind}`);
 
 const dump: WorkspaceDump = { schemaVersion: SCHEMA_VERSION, generatorVersion: GENERATOR_VERSION, asOf: AS_OF, databases: await dumpDatabases(factory) };
 const views = await viewsOf(app, SCHEMA_VERSION, AS_OF);

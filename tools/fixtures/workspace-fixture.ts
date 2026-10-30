@@ -124,7 +124,10 @@ function normalize(value: unknown): unknown {
 // revision tokens and omitted.
 // From schema 3 it adds the Daily Review (D4 T4.29): its overview and each eligible Trade's Action form,
 // without their bindings, which are opaque revision tokens like the views' own.
-export async function viewsOf(app: Pick<Application, 'TradeViewsAndReporting'> & Partial<Pick<Application, 'DailyReview'>>, schemaVersion: number, asOf?: string): Promise<unknown> {
+// From schema 4 it adds the Debt-bearing views (D5 T5.20, A73): the Outstanding Debt list, without each
+// Debt's revision token, and each Trade's Outstanding reflections in the Review's Trade walk, without their
+// save bindings. Trade Detail already carries each Trade's Debt, settled or declined outcome in its narrative.
+export async function viewsOf(app: Pick<Application, 'TradeViewsAndReporting'> & Partial<Pick<Application, 'DailyReview' | 'Journal'>>, schemaVersion: number, asOf?: string): Promise<unknown> {
   const planned = await app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Planned' });
   if (planned.kind !== 'Ready') throw new Error(`browseTrades Planned: ${planned.kind}`);
   const open = schemaVersion >= 2 ? await app.TradeViewsAndReporting.browseTrades({ lifecycle: 'Open' }) : undefined;
@@ -138,12 +141,34 @@ export async function viewsOf(app: Pick<Application, 'TradeViewsAndReporting'> &
   const lists = open ? { planned: planned.view.items, open: open.view.items, details } : { planned: planned.view.items, details };
   if (schemaVersion < 3) return normalize(lists);
   if (!app.DailyReview || asOf === undefined) throw new Error('viewsOf: schema 3 needs DailyReview and the as-of instant');
-  return normalize({ ...lists, ...(await reviewViews(app.DailyReview, asOf)) });
+  const review = await reviewViews(app.DailyReview, asOf);
+  if (schemaVersion < 4) return normalize({ ...lists, ...review });
+  if (!app.Journal) throw new Error('viewsOf: schema 4 needs Journal');
+  return normalize({ ...lists, ...review, debts: await outstandingDebts(app.Journal) });
 }
 
-async function reviewViews(dailyReview: Application['DailyReview'], asOf: string) {
+async function outstandingDebts(journal: Application['Journal']) {
+  const outstanding = await journal.query({ scope: 'OutstandingDebt' });
+  if (!('debts' in outstanding)) throw new Error(`Journal.query OutstandingDebt: ${outstanding.kind}`);
+  return outstanding.debts.map((debt) => without(debt, 'revision'));
+}
+
+// A copy of the record without one opaque revision token.
+function without(record: object, key: string): object {
+  return Object.fromEntries(Object.entries(record).filter(([name]) => name !== key));
+}
+
+// The Debt-bearing views alone, for a Workspace migrated from an earlier schema (A73). A Workspace
+// with no Open Trade has an empty Review, so it has no Trade walk.
+export async function debtViewsOf(app: Pick<Application, 'DailyReview' | 'Journal'>, asOf: string): Promise<unknown> {
+  const review = await reviewViews(app.DailyReview, asOf, true);
+  return normalize({ ...review, debts: await outstandingDebts(app.Journal) });
+}
+
+async function reviewViews(dailyReview: Application['DailyReview'], asOf: string, emptyIsNoTrades = false) {
   const opened = await dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf });
-  if (opened.kind !== 'Ready') throw new Error(`DailyReview.open: ${opened.kind}`);
+  if (opened.kind === 'Empty' && emptyIsNoTrades) return { reviewTrades: [] };
+  if (opened.kind !== 'Ready')throw new Error(`DailyReview.open: ${opened.kind}`);
   const { binding, ...review } = opened;
   const trades = [];
   for (const family of opened.families) {
@@ -151,7 +176,7 @@ async function reviewViews(dailyReview: Application['DailyReview'], asOf: string
     for (const item of family.trades) {
       const form = await dailyReview.getTrade({ reviewDate: opened.reviewDate, tradeId: item.tradeId, binding });
       if (form.kind !== 'Ready') throw new Error(`DailyReview.getTrade ${item.tradeId}: ${form.kind}`);
-      trades.push({ ...form.trade, saveBinding: undefined });
+      trades.push({ ...form.trade, saveBinding: undefined, reflections: form.trade.reflections.map((owed) => without(owed, 'saveBinding')) });
     }
   }
   return { review, reviewTrades: trades };
