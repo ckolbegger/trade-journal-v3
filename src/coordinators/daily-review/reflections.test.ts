@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { debtFixture, TUESDAY_1700, TUESDAY_CUTOFF, type DebtFixture } from '../../../tests/support/debt-fixture.ts';
-import { breakFirstExecution, reviewStack, TEN_AM } from '../../../tests/support/review-fixture.ts';
+import { breakFirstExecution, ELEVEN_AM, reviewStack, TEN_AM } from '../../../tests/support/review-fixture.ts';
 import type { OpenDailyReviewResult } from './index.ts';
 
 const open = (fixture: DebtFixture) => fixture.stack.dailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: TUESDAY_1700 });
@@ -28,6 +28,50 @@ describe('reflections per walked Trade (P16, P17, A68)', () => {
       [g]: { due: 1, later: 0 },
       [h]: { due: 0, later: 1 },
     });
+  }, 60_000);
+});
+
+describe('owed reflections (A68)', () => {
+  it("should return T-A's Outstanding reflections D-1, D-2, and D-7 in anchor order alongside its Action form, each with its snapshot definition rendered as a form, the Position Change's Economic Time and Executions, its classification (Due, Due, Due in the next Review), and its save binding (Debt revision and definition revision)", async () => {
+    const fixture = await debtFixture();
+    const { debts, trades, stack } = fixture;
+    const { reviewDate, binding } = ready(await open(fixture));
+
+    const result = await stack.dailyReview.getTrade({ reviewDate, tradeId: trades.a, binding });
+    if (result.kind !== 'Ready') throw new Error(`expected Ready, got ${result.kind}`);
+
+    expect(result.trade.form.kind).toBe('Saved');
+    const definition = await stack.journal.getDefinitions({ revision: debts['D-1'].definitionId });
+    if (definition.kind !== 'Found') throw new Error('no definition');
+    const expected = [
+      { name: 'D-1', time: TEN_AM, quantity: '60', price: '50.10', classification: 'Due' },
+      { name: 'D-2', time: ELEVEN_AM, quantity: '40', price: '50.30', classification: 'Due' },
+      { name: 'D-7', time: '2026-10-13T14:00:00Z', quantity: '20', price: '51.00', classification: 'DueInNextReview' },
+    ] as const;
+    expect(result.trade.reflections).toEqual(
+      expected.map(({ name, time, quantity, price, classification }) => ({
+        debtId: debts[name].debtId,
+        definition: definition.definition,
+        economicTime: time,
+        executions: [expect.objectContaining({ quantity, price }) as unknown],
+        classification,
+        saveBinding: { debtId: debts[name].debtId, debtRevision: debts[name].revision, definitionRevision: debts[name].definitionId },
+      })),
+    );
+  }, 60_000);
+});
+
+describe('owed reflections resolved elsewhere (A68)', () => {
+  it("should return ReviewChanged when one of the Trade's reflections was resolved elsewhere since the overview binding", async () => {
+    const fixture = await debtFixture();
+    const { debts, trades, stack } = fixture;
+    const { reviewDate, binding } = ready(await open(fixture));
+    expect((await stack.dailyReview.getTrade({ reviewDate, tradeId: trades.a, binding })).kind).toBe('Ready');
+
+    const declined = await stack.journal.save({ intention: 'ResolveDebt', debtId: debts['D-2'].debtId, expectedDebtRevision: debts['D-2'].revision, resolution: { kind: 'Decline' } });
+    expect(declined.kind).toBe('Saved');
+
+    expect(await stack.dailyReview.getTrade({ reviewDate, tradeId: trades.a, binding })).toEqual({ kind: 'ReviewChanged' });
   }, 60_000);
 });
 

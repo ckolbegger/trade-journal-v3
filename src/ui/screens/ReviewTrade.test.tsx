@@ -23,6 +23,7 @@ const binding: ReviewBinding = {
   journalRevision: 1,
   marketDataSnapshotId: 'mds1:1:abc',
   factRevisions: { t1: 2 },
+  outstandingDebts: {},
 };
 const item = (tradeId: string, underlying: string, over: Partial<ReviewTradeItem> = {}): ReviewTradeItem => ({
   tradeId,
@@ -86,6 +87,7 @@ function tradeReview(tradeId: string, underlying: string, over: Partial<DailyTra
     attention: item(tradeId, underlying),
     labels: { strategy: 'Long Stock', account: 'Main', institution: 'Broker' },
     evaluation: evaluation(),
+    reflections: [],
     form: { kind: 'New', viewState: { selectedAction: 'Hold' } },
     definitionRevision: 'def1',
     saveBinding: savedBinding({ tradeId, obligationKey: { entryType: 'DailyTradeReview', trade: tradeId, reviewDate: '2026-10-12' } }),

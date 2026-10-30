@@ -21,6 +21,7 @@ const binding: ReviewBinding = {
   journalRevision: 1,
   marketDataSnapshotId: 'mds1:1:abc',
   factRevisions: {},
+  outstandingDebts: {},
 };
 const available = (price: string): MarkResolution => ({
   kind: 'Available',

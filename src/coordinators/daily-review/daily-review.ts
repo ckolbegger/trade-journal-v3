@@ -19,6 +19,8 @@ import type {
   MarkRow,
   OpenDailyReviewRequest,
   OpenDailyReviewResult,
+  OwedReflection,
+  ReflectionClassification,
   PostSaveReview,
   ReviewBinding,
   ReviewCompletion,
@@ -77,6 +79,16 @@ function observationNeeds(eligible: readonly EligibleTrade[]) {
   return { requirements, earliest };
 }
 
+// The Debt ids of each of the Trades that has any, in the order given.
+function outstandingDebtsOf(debts: readonly { readonly debtId: string; readonly anchor: { readonly tradeId: string } }[], tradeIds: readonly string[]) {
+  const byTrade: Record<string, string[]> = {};
+  for (const tradeId of tradeIds) {
+    const ids = debts.filter((debt) => debt.anchor.tradeId === tradeId).map((debt) => debt.debtId);
+    if (ids.length > 0) byTrade[tradeId] = ids;
+  }
+  return byTrade;
+}
+
 // The first obligation still open; a Trade is completed with its form after the read.
 type NextTask = Exclude<ReviewNextStep, { readonly kind: 'Trade' }> | { readonly kind: 'Trade'; readonly tradeId: string };
 
@@ -90,7 +102,7 @@ type Pass =
   | {
       readonly kind: 'Ready';
       readonly review: Omit<ReadyReview, 'kind' | 'binding'>;
-      readonly evidence: Pick<ReviewBinding, 'marketDataSnapshotId' | 'factRevisions'>;
+      readonly evidence: Pick<ReviewBinding, 'marketDataSnapshotId' | 'factRevisions' | 'outstandingDebts'>;
       // What a save continues from; `open` does not return it.
       readonly progress: ReviewProgress;
       readonly nextTask: NextTask;
@@ -298,6 +310,10 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       evidence: {
         marketDataSnapshotId: recovered.snapshotId,
         factRevisions: Object.fromEntries(derivations.map(({ analysis }) => [analysis.tradeId, analysis.factRevision])),
+        outstandingDebts: outstandingDebtsOf(
+          outstanding,
+          derivations.map(({ analysis }) => analysis.tradeId),
+        ),
       },
       nextTask: nextTaskOf(today, ranked.map(({ item }) => item.tradeId), actions.actions),
       progress: { tradesWithAction: ranked.filter(({ item }) => item.tradeId in actions.actions).length, tradesEligible: ranked.length },
@@ -331,6 +347,31 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     // Facts that cannot be replayed have no figures.
     const figures = evaluation && entry.derivation.kind === 'Derived' ? figuresOf(entry, entry.derivation, frames.frames, evaluation) : {};
     const saved = (await deps.journal.queryActions({ reviewDate })).actions[analysis.tradeId];
+    // The Trade's Outstanding Debt in anchor order, each classified against the closes around the Review Date (A63).
+    const outstanding = (await deps.journal.query({ scope: 'OutstandingDebt' })).debts.filter((debt) => debt.anchor.tradeId === analysis.tradeId);
+    // A resolution since the overview changes the Trade's list.
+    const bound = request.binding.outstandingDebts[analysis.tradeId] ?? [];
+    if (outstanding.length !== bound.length || outstanding.some((debt, i) => debt.debtId !== bound[i])) return { kind: 'ReviewChanged' };
+    const reflections: OwedReflection[] = [];
+    for (const debt of outstanding) {
+      const definition = await deps.journal.getDefinitions({ revision: debt.definitionId });
+      if (definition.kind !== 'Found') throw new Error(`no definition ${debt.definitionId}`);
+      const positionChange = analysis.positionChanges.find((pc) => pc.factId === debt.origin.factId);
+      const classification: ReflectionClassification =
+        Temporal.Instant.compare(debt.dueAnchor, frames.previousCloseInstant) <= 0
+          ? 'Due'
+          : Temporal.Instant.compare(debt.dueAnchor, cutoff) <= 0
+            ? 'DueInNextReview'
+            : 'DueInReviewAfterNext';
+      reflections.push({
+        debtId: debt.debtId,
+        definition: definition.definition,
+        economicTime: debt.momentTime,
+        executions: positionChange?.executions ?? [],
+        classification,
+        saveBinding: { debtId: debt.debtId, debtRevision: debt.revision, definitionRevision: debt.definitionId },
+      });
+    }
     const form: ActionForm = saved ? { kind: 'Saved', action: saved } : { kind: 'New', viewState: { selectedAction: 'Hold' } };
     // A saved Action's form is the Entry's first version's definition; a new form takes the latest.
     let definitionRevision = saved?.definitionId;
@@ -354,6 +395,7 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
             institution: resolved['account']?.institution?.label ?? '',
           },
           ...figures,
+          reflections,
           form,
           definitionRevision,
           saveBinding: {

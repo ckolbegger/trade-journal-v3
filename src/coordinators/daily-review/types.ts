@@ -1,11 +1,11 @@
 import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts';
 import type { Instant } from '../../domain/time/index.ts';
-import type { IncoherentFacts, IntegrityFinding, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
+import type { ExecutionFact, IncoherentFacts, IntegrityFinding, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import type { TradeSummary } from '../../domain/trade-summary.ts';
 import type { Rational } from '../../domain/values/index.ts';
 import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { StorageFailure } from '../mutation-guard.ts';
-import type { DailyAction, JournalIssue, JournalObligationKey } from '../../modules/journal/index.ts';
+import type { DailyAction, EntryDefinitionRecord, JournalIssue, JournalObligationKey } from '../../modules/journal/index.ts';
 import type { AcknowledgmentVersion, ExpectedResolutionRevision, MarkFrame, MarketDataIssue, MarkResolution } from '../../modules/market-data/index.ts';
 
 // The request names the date and the as-of instant (Daily Review, "Date, eligibility, and ordering").
@@ -133,6 +133,8 @@ export interface ReviewBinding {
   readonly marketDataSnapshotId: string;
   // The FactRevision of each eligible Trade, by Trade identity.
   readonly factRevisions: Readonly<Record<string, number>>;
+  // The Outstanding Debt of each eligible Trade that has any, in anchor order: a resolution elsewhere changes a Trade's list (A68).
+  readonly outstandingDebts: Readonly<Record<string, readonly string[]>>;
 }
 
 export type OpenDailyReviewResult =
@@ -171,6 +173,26 @@ export interface TradeSaveBinding {
   readonly databaseName: string;
 }
 
+// When an Outstanding reflection falls due, against the Review Date's closes (A63): Due now, in the next Review, or the one after.
+export type ReflectionClassification = 'Due' | 'DueInNextReview' | 'DueInReviewAfterNext';
+
+// What a resolution of one reflection must present: the Debt revision and the snapshot definition revision it was rendered from.
+export interface ReflectionSaveBinding {
+  readonly debtId: string;
+  readonly debtRevision: string;
+  readonly definitionRevision: string;
+}
+
+// One Outstanding reflection of the Trade: its snapshot definition as a form, the Position Change it follows, and how it is classified.
+export interface OwedReflection {
+  readonly debtId: string;
+  readonly definition: EntryDefinitionRecord;
+  readonly economicTime: Instant;
+  readonly executions: readonly ExecutionFact[];
+  readonly classification: ReflectionClassification;
+  readonly saveBinding: ReflectionSaveBinding;
+}
+
 export interface DailyTradeReview {
   readonly tradeId: string;
   readonly underlying: string;
@@ -185,6 +207,8 @@ export interface DailyTradeReview {
   readonly evaluation?: TradeEvaluation;
   // The Position held at the Stale context's close, valued with that session's own exact Mark (P13, A54).
   readonly datedLastClose?: { readonly tradingDate: string; readonly evaluation: TradeEvaluation };
+  // The Trade's Outstanding reflections, oldest anchor first then Debt identity (A68); they sit above the Action form.
+  readonly reflections: readonly OwedReflection[];
   readonly form: ActionForm;
   // The Daily Trade Review definition revision the form was rendered from.
   readonly definitionRevision: string;

@@ -388,6 +388,7 @@ describe('coherent read (A46)', () => {
       journalRevision: stored.value.journal.journalRevision,
       marketDataSnapshotId: frames.snapshotId,
       factRevisions,
+      outstandingDebts: {},
     });
   }, 30_000);
 });
