@@ -247,3 +247,35 @@ Run 2026-10-29 20:02 EDT on commit `42a16e4`, Node v26.12.0.
 | Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.6-record-defer-checks.txt` |
 
 Failures: `verify:capacity` only (expected until T5.19).
+
+## T5.7 Market Data: the previous session's close in frames
+
+Implementation commit `7856037`. `MarkFrame` gains `previousCloseInstant` (an ISO instant: the close of the session before the frame's trading date, from the session policy); it is set in the shared `frameResult`, so Current, Review and Historical frames and `recover`'s frames all carry it. Case 1 red (frame lacked the field) then green: Monday 2026-10-12 gives `2026-10-09T20:00:00Z`, Friday 2026-11-27 gives `2026-11-25T21:00:00Z`. **Case 2 is a flagged first-run pass:** `recover` reuses `frameResult`. Mutation check: `previousCloseInstant = day.close` failed with an `AssertionError` on the frame list, and the code was restored. Other changes: the existing Historical-context frame test expects the new field (`2026-10-08T20:00:00Z`); two `MarkFrame` fixtures in `TradeDetail.test.tsx` gained it to compile; `frameResult` returns the existing `SessionPolicyCoverage` rejection when the previous session is not covered (no case exercises it). Process slip: one test edit was appended with a python here-doc instead of the Edit tool.
+
+ocr review of `7856037`: session `31221c63-4733-464f-892a-4602da61571c`, 1 file reviewed, 1 comment. Raw output: `ocr/T5.7-7856037.json`.
+
+| Severity | Location | Claim | Assessment | Disposition |
+|---|---|---|---|---|
+| medium | `src/modules/market-data/market-data.ts:459` | The new `SessionPolicyCoverage` rejection when the previous session is not covered is dropped by `recover`, which returns `Rejected` with empty issues | Valid | Bug task T5.7-B1 |
+
+### T5.7-B1 `recover` reports the coverage rejection of its frames
+
+Defect: when the Review Date is the first session the policy covers, `recover` returns `Rejected` with no issues, losing the `SessionPolicyCoverage` diagnostic `query` reports.
+- it should reject recover with the SessionPolicyCoverage issue when the session before the Review Date is not covered
+
+Implemented in `d65cf1a`: `recover` returns the issues of a `Rejected` frame result. Red (`Rejected` with empty issues) then green, with a policy whose coverage starts at the Review Date 2026-10-12.
+
+ocr review of `d65cf1a`: session `9702336f-b7cd-45cd-8ec2-078232d28ee8`, 1 file reviewed, **No findings.** Raw output: `ocr/T5.7-B1-d65cf1a.json`.
+
+### Cumulative run after T5.7
+
+Run 2026-10-29 20:13 EDT on commit `d65cf1a`, Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 65 passed (65)`, `Tests 847 passed (847)`, exit 0 | `suite-runs/t5.7-previous-close-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 41 passed (41)`, `Tests 73 passed (73)`, exit 0 | `suite-runs/t5.7-previous-close-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `142 passed (4.9m)`, exit 0 | `suite-runs/t5.7-previous-close-browser.txt` |
+| Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.7-previous-close-checks.txt` |
+
+Failures: `verify:capacity` only (expected until T5.19).

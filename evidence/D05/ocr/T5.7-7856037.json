@@ -1,0 +1,93 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 89571,
+    "input_tokens": 88977,
+    "output_tokens": 594,
+    "cache_read_tokens": 19200,
+    "elapsed": "53s"
+  },
+  "tool_calls": {
+    "total": 9,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/market-data/market-data.ts",
+      "content": "This introduces a reachable rejection from `frameResult` when the requested date is the first covered session, but `recover()` discards it: its `queried.kind !== 'Frames'` branch returns `Rejected` with an empty `issues` array. Consequently recovery loses the coverage diagnostic while the equivalent frame query reports it. Propagate `queried` when it is `Rejected` in `recover()` so callers receive the uncovered date and coverage information.",
+      "existing_code": "  if (!previous.ok) return { kind: 'Rejected', issues: [{ field: 'asOf', code: 'SessionPolicyCoverage', date: previous.diagnostic.date, coverage: previous.diagnostic.coverage }] };",
+      "start_line": 459,
+      "end_line": 459,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/modules/market-data/market-data.ts",
+      "files": [
+        "src/modules/market-data/market-data.ts"
+      ]
+    }
+  ],
+  "session_id": "31221c63-4733-464f-892a-4602da61571c",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "31221c63-4733-464f-892a-4602da61571c",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "7856037",
+      "resolved_base": "8afd48c3fe43879a1a4ad6ccb13c131d3bca4d47",
+      "resolved_head": "7856037434f1a539878d87e3c9eceee9bd820e42",
+      "exact_range": "8afd48c3fe43879a1a4ad6ccb13c131d3bca4d47..7856037434f1a539878d87e3c9eceee9bd820e42",
+      "source_artifact_sha256": "b720ba3c5f50bd211dec0e22bf5c09640c3f03be394af3cc7bf8aecc529246e1"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "e819582e4e03cf873ea40dd80fb07a624325f3b4986b52a50f0e58d4a7e427d3"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "e819582e4e03cf873ea40dd80fb07a624325f3b4986b52a50f0e58d4a7e427d3"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 53372
+  }
+}
