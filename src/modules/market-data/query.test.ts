@@ -209,6 +209,7 @@ describe('Historical point context (A53)', () => {
         instrumentKey: 'XYZ',
         tradingDate: '2026-10-09',
         closeInstant: '2026-10-09T20:00:00Z',
+        previousCloseInstant: '2026-10-08T20:00:00Z',
         nextSession: { tradingDate: '2026-10-12', closeInstant: '2026-10-12T20:00:00Z' },
         resolution: { kind: 'Available', mark: { revisionId: 'rev-0001', revisionNumber: 1, price: '51.2', source: 'Manual', savedAt: TUESDAY_NOON } },
       },
@@ -389,5 +390,15 @@ describe('ResolveSession (T4.14: Daily Review resolves its date through Market D
       kind: 'Rejected',
       issues: [{ field: 'asOf', code: 'SessionPolicyCoverage', date: '2020-01-02', coverage: nyseSessionPolicy.identity.coverage }],
     });
+  });
+});
+
+describe("previous session's close (A75)", () => {
+  it('should return, with each Current and Review point frame, the close instant of the session before the frame\'s date (Friday 2026-10-09 16:00 for Monday 2026-10-12; Wednesday 2026-11-25 16:00 for Friday 2026-11-27, across Thanksgiving)', async () => {
+    const monday = await setup();
+    expect(framesOf(await monday.marketData.query(current(['XYZ'])))).toMatchObject([{ tradingDate: '2026-10-12', previousCloseInstant: '2026-10-09T20:00:00Z' }]);
+    const friday = await setup('2026-11-28T15:00:00Z');
+    const review = { kind: 'ResolveFrames' as const, context: { kind: 'Review' as const, reviewDate: '2026-11-27' }, instruments: ['XYZ'] };
+    expect(framesOf(await friday.marketData.query(review))).toMatchObject([{ tradingDate: '2026-11-27', previousCloseInstant: '2026-11-25T21:00:00Z' }]);
   });
 });

@@ -119,6 +119,8 @@ export interface MarkFrame {
   readonly instrumentKey: string;
   readonly tradingDate: string;
   readonly closeInstant: string;
+  // The close of the session before this date: the Debt due boundary (A75).
+  readonly previousCloseInstant: string;
   readonly nextSession?: { readonly tradingDate: string; readonly closeInstant: string };
   readonly resolution: MarkResolution;
 }
@@ -453,6 +455,9 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
     next.ok && Temporal.Instant.compare(at, Temporal.Instant.from(next.value.completion)) >= 0
       ? { tradingDate: next.value.date, closeInstant: next.value.close }
       : undefined;
+  const previous = deps.sessionPolicy.previousSession(day.date);
+  if (!previous.ok) return { kind: 'Rejected', issues: [{ field: 'asOf', code: 'SessionPolicyCoverage', date: previous.diagnostic.date, coverage: previous.diagnostic.coverage }] };
+  const previousCloseInstant = previous.value.close;
   // The context is serialized from its known fields so the caller's property order and extra properties cannot change the digest.
   const canonicalContext = canonicalContextOf(query.context);
   // The digest is computed after the read transaction closes (A45). It carries the as-of instant's material effect: the completed next session.
@@ -476,6 +481,7 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
       instrumentKey,
       tradingDate: day.date,
       closeInstant: day.close,
+      previousCloseInstant,
       ...(nextSession && { nextSession }),
       resolution: resolve(evidence[i]!.record, evidence[i]!.stale),
     })),

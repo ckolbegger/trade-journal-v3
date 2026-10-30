@@ -779,6 +779,7 @@ const tuesday = (resolution: Parameters<typeof openDetailAt>[1]['resolution']): 
   instrumentKey: 'XYZ',
   tradingDate: '2026-10-13',
   closeInstant: TUE_CLOSE,
+  previousCloseInstant: '2026-10-12T20:00:00Z',
   resolution,
 });
 
@@ -931,7 +932,7 @@ describe('missing or later evidence (P12, P13)', () => {
 
   it('should show an At entry section for shares bought after the dated close, with risk and reward labelled from entry and no P&L', async () => {
     const afterClose = positionChange('pc-9', 3, [execution('ex-9', '2026-10-12T21:00:00Z', 4, '40', '50.30', '1.00')]);
-    const monday = { instrumentKey: 'XYZ', tradingDate: '2026-10-12', closeInstant: MON_CLOSE, resolution: available('51.20') } as const;
+    const monday = { instrumentKey: 'XYZ', tradingDate: '2026-10-12', closeInstant: MON_CLOSE, previousCloseInstant: '2026-10-09T20:00:00Z', resolution: available('51.20') } as const;
     renderView(openDetailAt([PC1, afterClose], monday));
     const entry = await screen.findByRole('region', { name: 'At entry' });
     expect(termValue(entry, 'Quantity')).toBe('40 shares');

@@ -274,3 +274,15 @@ describe('recover outside session policy coverage (P8)', () => {
     });
   });
 });
+
+describe("previous session's close (A75)", () => {
+  it('should return the same field with the Review Date resolved by recover', async () => {
+    const { marketData } = await fixture();
+    const result = await marketData.recover(review([MNO, XYZ]));
+    if (result.kind !== 'Recovered') throw new Error('expected a recovery');
+    expect(result.frames.map((f) => [f.instrumentKey, f.tradingDate, f.previousCloseInstant])).toEqual([
+      ['MNO', '2026-10-12', '2026-10-09T20:00:00Z'],
+      ['XYZ', '2026-10-12', '2026-10-09T20:00:00Z'],
+    ]);
+  });
+});
