@@ -102,14 +102,24 @@ export function DebtForm({ definition, binding, submit, onResolved, onCancel, on
   // A submission is in flight: Answer and Decline are disabled, so only one call goes out at a time.
   const [pending, setPending] = useState(false);
   const inFlight = useRef(false);
+  // The last submission threw before any result came back.
+  const [failed, setFailed] = useState(false);
   const send = async (resolution: DebtResolutionInput) => {
     if (inFlight.current) return;
     inFlight.current = true;
     setPending(true);
-    const result = await submit({ binding, resolution }).finally(() => {
+    setFailed(false);
+    let result;
+    try {
+      result = await submit({ binding, resolution });
+    } catch {
+      // The adapter threw: nothing was saved, the values stay, and the trader may try again.
+      setFailed(true);
+      return;
+    } finally {
       inFlight.current = false;
       setPending(false);
-    });
+    }
     setIssues(
       result.kind === 'Rejected'
         ? result.issues.map((i): FieldIssue =>
@@ -149,6 +159,11 @@ export function DebtForm({ definition, binding, submit, onResolved, onCancel, on
             <strong>This reflection changed after you opened it.</strong> Nothing was saved. Your values are kept below.
           </p>
           {conflict.currentOutcome && <p>Current outcome: {OUTCOME[conflict.currentOutcome.kind]}</p>}
+        </div>
+      )}
+      {failed && (
+        <div role="alert" className="banner warning">
+          <strong>This reflection could not be saved.</strong> Nothing was saved. Your values are kept, so you can try again.
         </div>
       )}
       <ReflectionPrompts definition={definition} answers={answers} onChange={setAnswers} errors={promptErrors(definition)} disabled={!writable} />

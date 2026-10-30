@@ -188,6 +188,26 @@ describe('one submission at a time', () => {
   });
 });
 
+describe('adapter failure', () => {
+  it('should show an error and keep the entered values when the submit adapter throws', async () => {
+    const adapter = renderForm(() => Promise.reject(new Error('offline')));
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText('Lesson'), 'Wait for the close.');
+    await user.type(screen.getByLabelText('Reason for declining (optional)'), 'No time.');
+    await user.click(screen.getByRole('button', { name: 'Answer' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toContain('This reflection could not be saved');
+    expect(alert.textContent).toContain('Nothing was saved');
+    expect(screen.getByLabelText<HTMLTextAreaElement>('Lesson').value).toBe('Wait for the close.');
+    expect(screen.getByLabelText<HTMLTextAreaElement>('Reason for declining (optional)').value).toBe('No time.');
+    expect(screen.queryByRole('region', { name: 'Saved reflection' })).toBeNull();
+    // The trader may try again.
+    expect(screen.getByRole('button', { name: 'Answer' }).matches(':disabled')).toBe(false);
+    expect(adapter).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('conflict and leaving', () => {
   it('should show Conflict with the current outcome displayed and the entered values kept', async () => {
     renderForm(() => Promise.resolve({ kind: 'Conflict', currentOutcome: { kind: 'Decline', id: 'decline-9' } }));
