@@ -1,0 +1,158 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 6 selected item(s).",
+  "summary": {
+    "files_reviewed": 6,
+    "comments": 2,
+    "total_tokens": 987340,
+    "input_tokens": 986041,
+    "output_tokens": 1299,
+    "cache_read_tokens": 11520,
+    "elapsed": "1m25s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/app/bench-generator.ts",
+      "content": "The last two Position Changes are scheduled in different sessions (December 27 and 28), while the as-of session is December 29. Consequently one Outstanding debt is already overdue, rather than both originating in the immediately preceding session as section 1.4 requires. Select or schedule both Outstanding changes in the penultimate session and assert their recorded sessions; checking only the final due count does not enforce this scenario.",
+      "existing_code": "  return [...pool, ...Array.from({ length: BENCH_DISPOSITIONS.outstanding }, (): BenchDisposition =\u003e 'outstanding')];",
+      "start_line": 166,
+      "end_line": 166,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/app/bench-generator.ts",
+      "content": "This disposition selection introduces a nested ternary, which the review checklist explicitly prohibits. Use an if/else chain or a switch to construct the Decline, Complete, and Defer variants.",
+      "existing_code": "          : disposition === 'complete'\n            ? { kind: 'Complete' as const, form: { definitionId, answers: reflectionAnswers(n, symbol) } }\n            : { kind: 'Defer' as const };",
+      "start_line": 512,
+      "end_line": 514,
+      "category": "style",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Benchmark generation, datasets, and integration support",
+      "files": [
+        "bench/dataset.json",
+        "bench/expected-open-rows.json",
+        "src/app/bench-generator.ts",
+        "src/app/bench.ts",
+        "tests/integration/d5/support.ts",
+        "tools/bench-generate.ts"
+      ]
+    }
+  ],
+  "session_id": "998fe589-7996-4458-a450-fff58c0883d5",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "998fe589-7996-4458-a450-fff58c0883d5",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "range",
+      "requested_from": "ed84422^",
+      "requested_head": "09e752a",
+      "resolved_base": "70f318caddbcbd745119816264407cca2b3f45ec",
+      "resolved_head": "09e752a9b1401c1416f49388e6dbf4b67828cad7",
+      "exact_range": "70f318caddbcbd745119816264407cca2b3f45ec..09e752a9b1401c1416f49388e6dbf4b67828cad7",
+      "source_artifact_sha256": "8f72709e1dbd00889eefc66374c55ee9ffee5dd5ac16cd90e183ba820d19e8b7"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0c048f90468459f022b8dcf9552277b49b70dd81eaee91e94bf6682454129780",
+          "path": "tests/integration/d5/support.ts",
+          "fingerprint": "774317265797cdfa8674322fdd9eb81b568afd5e83b833b2addda567144261f8"
+        },
+        {
+          "item_id": "19877180358b74d28d09ba32465fc3b46fa3d3ad98177f02eb71eee93cfb38dc",
+          "path": "bench/expected-open-rows.json",
+          "fingerprint": "0adb8275fe3656962ca6a7f3ee9af5b0dd27991329812443edb5779f05b734b4"
+        },
+        {
+          "item_id": "20b041a131661266aa91b16c1d5231e4f57f570f3a0f958a5054b9bb987be472",
+          "path": "src/app/bench.ts",
+          "fingerprint": "06c4c26c10fc580564cbfe36c3b56e21de214ddd5b9293bdcc04dc37735f4e3c"
+        },
+        {
+          "item_id": "3419f465119ff186ff0cf66b90f6456285889425d7a6a27e01b94e7edfa3d96b",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "fa67b0d270131d5b048efed73fed0cb852a202d50e0719f10613ccb79e421193"
+        },
+        {
+          "item_id": "b495081dd1fc36bea13513566fb2744d2417c848ee7d5384704aad6bf1b2a276",
+          "path": "tools/bench-generate.ts",
+          "fingerprint": "52443116abd2e0f80a47cfa60243d0a3ee2736cd1dfec2ce8ef8d5a2d6026282"
+        },
+        {
+          "item_id": "eb6d71c51be2ab791c99eeca2c2f335507a2f53f72700089ee54413a8e06ab33",
+          "path": "bench/dataset.json",
+          "fingerprint": "aeed8ac7697159fd3e227058f6b808e61ed7a80d90f9044580876b54bee55a40"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0c048f90468459f022b8dcf9552277b49b70dd81eaee91e94bf6682454129780",
+          "path": "tests/integration/d5/support.ts",
+          "fingerprint": "774317265797cdfa8674322fdd9eb81b568afd5e83b833b2addda567144261f8"
+        },
+        {
+          "item_id": "19877180358b74d28d09ba32465fc3b46fa3d3ad98177f02eb71eee93cfb38dc",
+          "path": "bench/expected-open-rows.json",
+          "fingerprint": "0adb8275fe3656962ca6a7f3ee9af5b0dd27991329812443edb5779f05b734b4"
+        },
+        {
+          "item_id": "20b041a131661266aa91b16c1d5231e4f57f570f3a0f958a5054b9bb987be472",
+          "path": "src/app/bench.ts",
+          "fingerprint": "06c4c26c10fc580564cbfe36c3b56e21de214ddd5b9293bdcc04dc37735f4e3c"
+        },
+        {
+          "item_id": "3419f465119ff186ff0cf66b90f6456285889425d7a6a27e01b94e7edfa3d96b",
+          "path": "src/app/bench-generator.ts",
+          "fingerprint": "fa67b0d270131d5b048efed73fed0cb852a202d50e0719f10613ccb79e421193"
+        },
+        {
+          "item_id": "b495081dd1fc36bea13513566fb2744d2417c848ee7d5384704aad6bf1b2a276",
+          "path": "tools/bench-generate.ts",
+          "fingerprint": "52443116abd2e0f80a47cfa60243d0a3ee2736cd1dfec2ce8ef8d5a2d6026282"
+        },
+        {
+          "item_id": "eb6d71c51be2ab791c99eeca2c2f335507a2f53f72700089ee54413a8e06ab33",
+          "path": "bench/dataset.json",
+          "fingerprint": "aeed8ac7697159fd3e227058f6b808e61ed7a80d90f9044580876b54bee55a40"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 84969
+  }
+}

@@ -896,3 +896,127 @@ Run 2026-10-30 00:04 EDT on commit `73f8ae5`, Node v26.12.0.
 | Static and verification checks (12 commands) | as at the end of D4 | 12 of 12 exit 0 | `suite-runs/t5.20-b1-schema-fixtures-checks.txt` |
 
 Failures: none. T5.20 is complete.
+
+## T5.21 Benchmark generator: deferral and Debt resolution
+
+Generator code `ed84422` (generator 3: `src/app/bench.ts`, `src/app/bench-generator.ts`, `tools/bench-generate.ts`); dataset `09e752a` (`bench/dataset.json`, `bench/expected-open-rows.json`). No separate partial run; the full run was the sanity check.
+
+- `npm run build:bench && npm run bench:generate`: "bench:generate: cached profile is generator 2, schema 3; regenerating for generator 3, schema 4" ... "bench:generate OK: {...} in 5980286 ms" (99.7 minutes; D4 90.8). Apple M4 Max, chromium 153.0.8010.12, BENCH_PORT 5181. A stuck wait loop from an earlier suite run spun one core during the first part of the generation and was stopped.
+- Counts stored and checked by the generator against its own tallies:
+
+| Kind | D5 stored | Section 1.4 | D4 (T4.30) |
+|---|---|---|---|
+| Completed at capture | 260 | 260 | 320 |
+| Declined at capture | 60 | 60 | 80 |
+| Deferred, answered in the Review (Settled) | 72 | 72 | — |
+| Deferred, declined in the Review | 6 | 6 | — |
+| Deferred, Outstanding at the as-of instant | 2 | 2 | — |
+| Reflection Entries / declines | 332 / 66 | | 320 / 80 |
+| Trades / Open; Position Changes / Executions | 25,000 / 200; 400 / 800 | | same |
+| Sessions; Marks / corrections; Actions / edited | 1,255; 188,240 / 1,882; 125,404 / 2,509 | | same |
+
+- As-of `2028-12-29T21:35:00Z`, Review Date 2028-12-29, 2 reflections due in the as-of Review (asserted by the generator). Outstanding Debts: `aff4aed7-…` (Trade QAJ, Position Change 398, 2028-12-27) and `6df73331-…` (QAJ, Position Change 399, 2028-12-28). `bench/dataset.json` adds `dispositions`, `asOfDueReflections`, `outstandingDebts` and the Debt counts; `expected-open-rows.json` differs from D4's in ids only (the Debts shift the seeded id stream).
+- **Deviation, with the user:** section 1.4 says "The two Outstanding Debts are from the session before the as-of session". D4's unchanged schedule has one Position Change in that session, so the second comes from 2028-12-27, and the 2028-12-28 Review in the history stays Incomplete. Both are due at the as-of Review.
+- Mutation check: a second run reused the cache in 0.34 s; with `BENCH_GENERATOR_VERSION = 4` it printed "cached profile is generator 3, schema 4; regenerating for generator 4, schema 4" and began; stopped after about 12 s, version and profile restored, dataset shasums unchanged.
+- Static checks exit 0.
+
+ocr review of `ed84422^..09e752a`: session `998fe589-7996-4458-a450-fff58c0883d5`, 6 files, 2 comments. Raw output: `ocr/T5.21-09e752a.json`.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| medium | `src/app/bench-generator.ts:166` | The two Outstanding Debts come from different sessions | Valid; the deviation above, with the user | Pending the user's decision |
+| low | `src/app/bench-generator.ts:512` | A nested ternary picks the Decline/Complete/Defer disposition | Valid, style only | Bug task T5.21-B1 |
+
+## T5.23 part 1
+
+Node mock-free integration cases I5.1, I5.2, I5.13, I5.3, I5.4, I5.5 (plan section 6.1). Commit `86ca209`. Parts 2 and 3 add I5.6–I5.9 and I5.10–I5.12. Shared helpers: `tests/integration/d5/support.ts` (re-exports D4's; adds `recordDeferred`, `outstandingDebts`).
+
+| Case | File | Mutation (restored, `git diff -- src` empty) | Failure line |
+|---|---|---|---|
+| I5.1 migrate v1, v2, v3 | `d5/migration.test.ts` | the v4 Journal manifest drops `source.trade-detail` (`manifest.ts`) | `AssertionError: expected { manifestVersion: 4, additions: [] } to deeply equal { manifestVersion: 4, … }` |
+| I5.2 migration failure and retry | `d5/migration.test.ts` | `MissingDefinitionRevision` reported only for an empty definition id (`section.ts`) | `AssertionError: expected { kind: 'Opened', … } to deeply equal ObjectContaining{ kind: 'MigrationBlocked' … }` |
+| I5.13 fresh initialization at schema 4 | `d5/seed.test.ts` | the Trade Detail Source label truncated (`manifest.ts`) | `AssertionError: expected { id: 'source.trade-detail', … } to deeply equal ObjectContaining{…}` |
+| I5.3 Defer at capture | `d5/defer.test.ts` | the Debt staged with `dueAnchor` 30 minutes after the moment time (`journal.ts`) | `AssertionError: expected [ { kind: 'Debt', …(10) } ] to deeply equal [ ObjectContaining{…} ]` |
+| I5.4 Debt never blocks facts | `d5/defer.test.ts` | every Position Change Reflection obligation gets the same key (`journal.ts`) | `Error: recordPositionChange: {"kind":"StorageFailure","reason":"Error"}` (runtime exception) |
+| I5.5 due timing, counts | `d5/review.test.ts` | `dueDebtIds` compares with `<` instead of `<=` (`daily-review.ts`) | `AssertionError: expected 4 to be 5` |
+| I5.5 due timing, late deferral | `d5/review.test.ts` | the `ReflectionDue` reason emitted only when `due > 99` (`daily-review.ts`) | `AssertionError: expected { kind: 'Complete' } to deeply equal { kind: 'Incomplete', … }` |
+
+All passed at first run (behaviour built by T5.1–T5.20); each is flagged in `tdd-log.md`. Readings of the plan's wording: I5.1's receipt is `receipt.seeds.journal` = `{ manifestVersion: 4, additions }`, exactly `['source.trade-detail']` for v3; A73 via `viewsOf` against the fixture snapshot plus `debtViewsOf` empty. I5.2's unknown identity is one Daily Trade Review Entry's `definitionId` set to `fx-unknown` (block `MissingDefinitionRevision`). I5.3's "`Journal.query` for PC1's obligation key" uses the `OutstandingDebt` scope (the Journal has no per-key query) and finds the Debt by `obligationKey`; "Reflection owed" is asserted as the Detail's `Debt` journal item (the words are UI, covered by B5.x). I5.5's "T5.8 order" is the Journal's `OutstandingDebt` order (due anchor, then Debt id) applied to the walked cards' `Due` reflections: D-3, D-1, D-4, D-2, D-5, then D-6 and D-7 on Wednesday; "answering it" uses `Journal.save` `ResolveDebt`. `npm run test:integration` exit 0, 46 files, 85 tests; static checks exit 0.
+
+ocr review of `86ca209`: ocr excludes test files by default and has no option to include them, so the first session (`2913954c-bae7-476c-adab-90c5468e0870`) reviewed only `support.ts` and is superseded. The rerun on a scratch clone with the files renamed under `src/itg/` (session `6a13dbdd-abd2-43fd-a496-47ba3925fcb4`, 5 files, 3 comments). Raw output: `ocr/T5.23-p1-86ca209.json`.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| high | `src/itg/d5-support.ts:6` (clone) | Unresolved imports; the files will not run | Wrong: an artifact of the scratch-clone relocation; at `86ca209` the imports resolve and `test:integration` passes | Dismissed |
+| medium | `tests/integration/d5/review.test.ts:52` | I5.5's order assertion rebuilds the order from the Journal's `OutstandingDebt` query, so it passes whatever order the Review presents; the plan row requires "count 5 in the T5.8 order" | Valid | Bug task T5.23-B1 |
+| medium | `tests/integration/d5/defer.test.ts:50` | I5.3 checks only `origin.kind` is `PositionChange`, not that the Debt's origin is the committed PC1 ("origin PC1") | Valid | Bug task T5.23-B2 |
+
+## T5.23 part 2
+
+Cases I5.6–I5.9, commit `1d9f2f4`. Files: `d5/review-debt.test.ts` (I5.6, answer and decline runs), `d5/resolve.test.ts` (I5.7, I5.8a–c), `d5/snapshot.test.ts` (I5.9); `support.ts` adds `reflectionForm` and `journalStores`. Through the real facade on fake-indexeddb; D4's five-Trade shape without T-D rebuilt in the test, PC1 deferred.
+
+| Case | File | Mutation (restored, `git diff -- src` empty) | Failure line |
+|---|---|---|---|
+| I5.6 answer run | `review-debt.test.ts` | the Review's resolution uses Source `source.trade-detail` (`journal.ts`) | `AssertionError: expected 'source.trade-detail' to be 'source.daily-review'` |
+| I5.6 decline run | `review-debt.test.ts` | a settling decline moves the obligation outcome to kind Entry (`journal.ts`) | `AssertionError: expected [ { …(3) } ] to deeply equal [ ObjectContaining{…} ]` |
+| I5.7 resolve on Trade Detail before due | `resolve.test.ts` | the settling Entry's authored time set to the moment time (`journal.ts`) | `AssertionError: expected { id: 'id-0018', …(9) } to deeply equal ObjectContaining{…}` |
+| I5.8a repeated Defer | `resolve.test.ts` | the Conflict return made unreachable (`record-position-change.ts`) | `AssertionError: expected 'StorageFailure' to be 'Conflict'` |
+| I5.8b answered twice | `resolve.test.ts` | Conflict names `{kind:'Debt'}` instead of the stored outcome | `AssertionError: expected { kind: 'Conflict', …(1) } to deeply equal { kind: 'Conflict', …(1) }` |
+| I5.8c Review against `Journal.save` | `resolve.test.ts` | the prepare-time revision check, the `debt@` commit recheck and the `obligation@` recheck in `moveObligation` all disabled (any one alone keeps the guarantee) | `AssertionError: expected [ true, true ] to have a length of 1 but got 2` |
+| I5.9 snapshot after a later definition | `snapshot.test.ts` | the `DefinitionRevisionMismatch` check made unreachable | `AssertionError: expected { kind: 'Rejected', …(1) } to deeply equal { kind: 'Rejected', issues: [ …(1) ] }` |
+
+All passed at first run; each flagged in `tdd-log.md` (two needed test-side corrections first, noted there). Readings: Marks for all four symbols and a Hold Action for every Trade each day; I5.6's completion reasons interleave per Trade after the four `MarkMissing` (`ReflectionDue` follows T-A's `ActionMissing`), asserted present before the resolve and gone after it, Complete only after the last Action and after restart; "no Review-session record" is no store matching /review/i besides the `journal*` stores; I5.7's "Due in the Review after next" is the Detail Debt item's `dueStatus: 'DueInReviewAfterNext'`; I5.8a's repeat is the same command with the same `expectedFactRevision`; I5.8c runs both calls under `Promise.all` and asserts exactly one success, either side; I5.9 answers with "Reactive", which revision 2 relabels "Impulsive", and the Detail after restart still shows "Reactive" and no "Lesson" prompt. `npm run test:integration` exit 0, 49 files, 92 tests; static checks exit 0. Process slip: the implementer first appended the helpers to `support.ts` with a shell here-doc; content unchanged, later edits by Edit.
+
+### T5.23-B1 I5.5 asserts the order the Review itself presents
+Commit `f5cf087`. "The T5.8 order" read as the Review's own: the T5.8 completion case names due reflections "by Trade" and A68 has completion list them "by Trade", with `ReflectionDue.debtIds` in anchor order (T5.9, A68). So the order is Trades in walk (attention) order, anchor order within a Trade. Part 1's expected list (D-3, D-1, D-4, D-2, D-5) was the Journal's global order from T5.4's case, which the Review does not present. `dueDebts` now takes the cards' Due reflections in walk order then card order with no Journal re-sort: Tuesday D-1, D-2 (T-A), D-3 (T-F), D-5 (T-G), D-4 (T-E), also compared with the completion's flattened `ReflectionDue` `debtIds`; Wednesday D-1, D-2, D-7, D-6, D-5, D-4, D-3. The count, membership and Journal-order checks are kept. Mutation: `.reverse()` on the walked list in `daily-review.ts` gave `AssertionError: expected [ 'D-4', 'D-5', 'D-3', 'D-1', 'D-2' ] to deeply equal [ 'D-1', 'D-2', 'D-3', 'D-5', 'D-4' ]`, which the old assertion would have passed; restored. `test:integration` 49 files, 92 tests; static checks exit 0.
+
+ocr review of `1d9f2f4` (part 2), on a scratch clone with the test files under `src/itg/`: session `b619ac07-fe80-4919-a198-025a8c5eaeb0`, 4 files, 2 comments. Raw output: `ocr/T5.23-p2-1d9f2f4.json`.
+
+| Severity | Location | Claim | Assessment | Outcome |
+|---|---|---|---|---|
+| high | `src/itg/support.ts:6-8` (clone) | Relative imports do not resolve | Wrong: relocation artifact; they resolve at `tests/integration/d5/` | Dismissed |
+| medium | `src/itg/resolve.ts:14` (clone) | The suites match no Vitest include pattern | Wrong: relocation artifact; the real files match the integration include and ran (49 files, 92 tests) | Dismissed |
+
+The reviewer also read `resolve.test.ts` and `snapshot.test.ts` against rows I5.7–I5.9 and found no under-assertion.
+
+ocr review of `f5cf087` (scratch clone, `src/itg/`): session `70396e0e-6dce-40d4-9a68-82eafc7bb4d6`, 1 file, 1 comment: high, `src/itg/review-check.ts:39`, discovery and imports broken by the move. Wrong (relocation artifact); dismissed. No genuine findings. Raw output: `ocr/T5.23-B1-f5cf087.json`.
+
+### T5.23-B2 I5.3 proves the Debt's origin is PC1
+Commit `0a4b203`. I5.3 now takes PC1's id from the commit receipt (`createdFactIds[0]`, the Position Change listed ahead of its members) and asserts `stored.origin` equals `{ kind: 'PositionChange', factId: pc1Id }` and `obligationKey` is `PositionChangeReflection:<pc1Id>`; the obligation-record filter and the "no Entry" check use PC1's id rather than the Debt's own. Mutation: the Debt store mapping in `journal.ts` writes the anchor Trade's id as the origin's `factId` (kind unchanged): `AssertionError: expected { kind: 'PositionChange', …(1) } to deeply equal { kind: 'PositionChange', …(1) }`; restored. `test:integration` 49 files, 92 tests; static checks exit 0.
+
+ocr review of `0a4b203` (scratch clone, `src/itg/`): session `9d0bdd0c-1407-4acb-b87c-296eb102f0a8`, 2 files, 2 comments, both Wrong (relocation artifacts: unresolved relative imports; Vitest discovery) and dismissed. No finding on the change. The reviewer could not confirm that `createdFactIds[0]` is the Position Change; confirmed in `record-position-change.ts` (~line 283: "The Position Change, then its members in submitted order", `Object.values(staged.mapping)`), which `PositionChangeReceipt.tsx` also relies on. Raw output: `ocr/T5.23-B2-0a4b203.json`.
+
+## T5.23 part 3
+
+Cases I5.10–I5.12, commit `0508b92`. New `d5/rejections.test.ts` (I5.10, four tests), `d5/write-gate.test.ts` (I5.11, five), `d5/rebuild.test.ts` (I5.12); `withDebt()`, `fixture`, `SYMBOLS`, `PRICES`, `saveMarks` moved into `d5/support.ts`. All passed at first run; each mutation-checked in product code and restored (`git diff -- src` empty), flagged in `tdd-log.md`.
+
+| Case | Mutation | Failure line |
+|---|---|---|
+| I5.10 blank required prompt (whitespace Text answer; omitted answer) | `validateForm` never reports `RequiredAnswerMissing`; `isBlank` without `trim`; `isBlank` false for `undefined` | `expected { kind: 'Saved', … } to deeply equal { kind: 'Rejected', … }`; then `UnknownOption` instead of `RequiredAnswerMissing` for each of the two blank forms |
+| I5.10 501-character decline reason (and 500 accepted) | limit `MAX_DECLINE_REASON + 1`; limit `- 1` | `expected { kind: 'Saved', … } to deeply equal { kind: 'Rejected', … }`; `expected 'Rejected' to be 'Saved'` |
+| I5.10 decline of a Settled Debt (stale revision; the Settled version's own revision) | the prepare version check and the `debt@` recheck disabled; the outcome-kind clause and the `obligation@` recheck disabled | `AssertionError: stale revision: expected { kind: 'Saved', … } to deeply equal { kind: 'Conflict', … }`; `AssertionError: Settled revision: …` |
+| I5.10 Plan Reflection through `confirmPlan` | `validateForm` reports no `RequiredAnswerMissing` | `Error: confirmPlan: Confirmed` (see the open question below) |
+| I5.11 `recordPositionChange` Defer, `Journal.save` (Answer and Decline), `DailyReview.save` `ResolveReviewDebt`, direct `Persistence.commit` | the facade guard (`mutation-guard.ts`) and the persistence `writeGate` (`compose.ts`) both disabled (either alone keeps every boundary refused) | `expected { kind: 'Recorded' \| 'Saved' \| 'DebtResolved' \| 'Committed', … } to deeply equal ObjectContaining{…}`, one per boundary |
+| I5.11 Review, Detail and Debt readable | each read wrapped in the write guard | `Error: DailyReview.open: RuntimeNotWritable`; `Error: getTradeDetail: …`; `Error: Journal.query OutstandingDebt: …` |
+| I5.12 rebuild equivalence | `outstandingDue` set for every Debt; `anchorTradeId` rebuilt with a suffix; `rebuildObligations` skips declines | views differ at line 85 (first two); `expected [ … ] to have a length of 19 but got 20` |
+
+Readings: no Position Change Reflection prompt is a required Text prompt, so "blank" is a whitespace or omitted answer to the required decision-mode prompt. "Decline of a Settled Debt" returns Conflict with `currentOutcome` naming the Entry, tested at both revisions. I5.11's Defer is built before the host fails. I5.12's Workspace combines I5.6's Review answer with I5.7's Trade Detail flow on the other Trades (one answered, one declined) plus one Outstanding Debt; the index sizes are asserted (`byOutstandingDue` 1, `byAnchorTrade` 4). The I5.12 index comparisons ran in the passing case but each mutation failed first on the view comparison. `test:integration` exit 0, 52 files, 102 tests; static checks exit 0.
+
+**Open question (asked of the user):** I5.10's "Defer for a Plan Reflection through `confirmPlan`" expecting `DispositionNotAllowed` is not reachable. `ConfirmPlanCommand.reflection` carries only `{definitionId, answers}`, and `trade-workflows.ts` (~line 77) always passes `disposition: { kind: 'Complete', … }`. A cast Defer object reaches persistence as a `StorageFailure` from a `TypeError`. The test substitutes an unanswered Plan Reflection (`RequiredAnswerMissing` for thesis and invalidation, no writes). `DispositionNotAllowed` for the Plan Reflection is covered at module level (`src/modules/journal/journal.test.ts` ~line 265; `journal.ts` ~line 445).
+
+The user chose to reword the plan row: revision 16, decision 57 (2026-10-30). I5.10 now submits `confirmPlan` with its Plan Reflection unanswered and expects typed issues, as the part 3 test does; no test change was needed.
+
+ocr review of `0508b92` (scratch clone, `src/itg/`): session `eea05b20-f278-43f4-8415-f818789bb994`, 4 files, 2 comments, both Wrong (relocation artifacts: unresolved relative imports; Vitest discovery) and dismissed. Raw output: `ocr/T5.23-p3-0508b92.json`.
+
+### Cumulative run after T5.23
+
+Run 2026-10-30 01:55 EDT on commit `09e752a`, Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 69 passed (69)`, `Tests 893 passed (893)`, exit 0 | `suite-runs/t5.23-node-suite-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 52 passed (52)`, `Tests 102 passed (102)`, exit 0 | `suite-runs/t5.23-node-suite-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `142 passed (4.8m)`, exit 0 | `suite-runs/t5.23-node-suite-browser.txt` |
+| Static and verification checks (12 commands) | as at the end of D4 | 12 of 12 exit 0 | `suite-runs/t5.23-node-suite-checks.txt` |
+
+Failures: none. The run is at `09e752a`, which holds all of T5.23, plan revision 16 and the T5.21 dataset. T5.23 is complete.

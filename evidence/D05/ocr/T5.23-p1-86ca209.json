@@ -1,0 +1,154 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 3,
+    "total_tokens": 171441,
+    "input_tokens": 169256,
+    "output_tokens": 2185,
+    "cache_read_tokens": 19200,
+    "elapsed": "1m39s"
+  },
+  "tool_calls": {
+    "total": 23,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_find": 9,
+      "file_read": 10
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/d5-support.ts",
+      "content": "The five new files appear to be placed/named for a different directory layout. From src/itg, ../../../src resolves outside the repository, ../d4/support.ts does not exist, and the suites' ./support.ts does not match d5-support.ts. In addition, vite.config.ts only discovers tests/integration/**/*.test.ts for the integration project, so none of these cases will run, while tsc includes src and will encounter the unresolved imports. Move them to tests/integration/d5/{support.ts,defer.test.ts,migration.test.ts,review.test.ts,seed.test.ts}, or update both imports and test discovery consistently.",
+      "existing_code": "import type { Application } from '../../../src/app/compose.ts';",
+      "start_line": 6,
+      "end_line": 6,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/d5-review.ts",
+      "content": "This reconstructs the result in Journal query order after discarding the Review card order in a Set. Consequently, all ordering assertions still pass if getTrade returns reflections in the wrong order (for example D-2 before D-1 on T-A). Assert the ordered due reflections from each Review card directly; keep the separate OutstandingDebt assertion for the Journal's global order.",
+      "existing_code": "  return outstanding.debts.filter((debt) =\u003e due.has(debt.debtId)).map((debt) =\u003e names.find(([id]) =\u003e id === debt.debtId)![1]);",
+      "start_line": 52,
+      "end_line": 52,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/itg/d5-defer.ts",
+      "content": "I5.3 requires the Debt to belong to the committed PC1, but this only checks the origin discriminator. A wrong factId would pass, including the later no-Entry check because that check searches for the same unchecked ID. Assert the full origin against recorded.receipt.createdFactIds[0] (the committed Position Change), and assert obligationKey is PositionChangeReflection:\u003cthat ID\u003e, so agreement between result/query/storage cannot conceal an incorrectly linked Debt.",
+      "existing_code": "    expect(stored.origin.kind).toBe('PositionChange');",
+      "start_line": 50,
+      "end_line": 50,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "D5 integration workflows and shared support",
+      "files": [
+        "src/itg/d5-defer.ts",
+        "src/itg/d5-migration.ts",
+        "src/itg/d5-review.ts",
+        "src/itg/d5-seed.ts",
+        "src/itg/d5-support.ts"
+      ]
+    }
+  ],
+  "session_id": "6a13dbdd-abd2-43fd-a496-47ba3925fcb4",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "6a13dbdd-abd2-43fd-a496-47ba3925fcb4",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "ed84422f19ce92111224c99aa1a60a39e0bc72a4",
+      "resolved_head": "a36252956cd68431722ad8b0428e7f685b6b4f10",
+      "exact_range": "ed84422f19ce92111224c99aa1a60a39e0bc72a4..a36252956cd68431722ad8b0428e7f685b6b4f10",
+      "source_artifact_sha256": "bc6ec27cf65f12f011122d5ac08c4dbe96561dd6a02065aad2a36986475db334"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "1258ca01c591962e6de842c1ec61ac47cfe1e1e0a133c3a5f8bfdee2ce7b73d1",
+          "path": "src/itg/d5-defer.ts",
+          "fingerprint": "9306becccd77ffc745a644aa49bb23c84461206795deb81dc57bb6fa1f878e4d"
+        },
+        {
+          "item_id": "546f0003960972b378b604b90586ef73738d2c991fa6dfac62694313948698cc",
+          "path": "src/itg/d5-review.ts",
+          "fingerprint": "d116f91f514485cabab41d3874768b8eaec2f2970ad9d2afeac37103bd7a351a"
+        },
+        {
+          "item_id": "9862cf410fbde89df37c2a8c1a909bd2ce10298557acf8699a1ab5393f6371df",
+          "path": "src/itg/d5-seed.ts",
+          "fingerprint": "ac3f1f5dc1288640d1a7f70d8f2e93b629c233204e225a9e979f7708be30dbea"
+        },
+        {
+          "item_id": "af582c987b90d1ffc8f1e5589220274b2432f5fec07eef6e98a224d95f52ba24",
+          "path": "src/itg/d5-migration.ts",
+          "fingerprint": "ac593d91c9d66c29c43aacf05d9712562e5d760254a1e0b381e326d4bf8cb0ef"
+        },
+        {
+          "item_id": "b58d8e772aa4740d93673dfadace0d8359f0628466dc008052f8799a47c94db1",
+          "path": "src/itg/d5-support.ts",
+          "fingerprint": "2929ce6751d99f7e7bae58b2f588c2ab56eb6c41619bf99f6dd406c98ea6da10"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "1258ca01c591962e6de842c1ec61ac47cfe1e1e0a133c3a5f8bfdee2ce7b73d1",
+          "path": "src/itg/d5-defer.ts",
+          "fingerprint": "9306becccd77ffc745a644aa49bb23c84461206795deb81dc57bb6fa1f878e4d"
+        },
+        {
+          "item_id": "546f0003960972b378b604b90586ef73738d2c991fa6dfac62694313948698cc",
+          "path": "src/itg/d5-review.ts",
+          "fingerprint": "d116f91f514485cabab41d3874768b8eaec2f2970ad9d2afeac37103bd7a351a"
+        },
+        {
+          "item_id": "9862cf410fbde89df37c2a8c1a909bd2ce10298557acf8699a1ab5393f6371df",
+          "path": "src/itg/d5-seed.ts",
+          "fingerprint": "ac3f1f5dc1288640d1a7f70d8f2e93b629c233204e225a9e979f7708be30dbea"
+        },
+        {
+          "item_id": "af582c987b90d1ffc8f1e5589220274b2432f5fec07eef6e98a224d95f52ba24",
+          "path": "src/itg/d5-migration.ts",
+          "fingerprint": "ac593d91c9d66c29c43aacf05d9712562e5d760254a1e0b381e326d4bf8cb0ef"
+        },
+        {
+          "item_id": "b58d8e772aa4740d93673dfadace0d8359f0628466dc008052f8799a47c94db1",
+          "path": "src/itg/d5-support.ts",
+          "fingerprint": "2929ce6751d99f7e7bae58b2f588c2ab56eb6c41619bf99f6dd406c98ea6da10"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 99458
+  }
+}

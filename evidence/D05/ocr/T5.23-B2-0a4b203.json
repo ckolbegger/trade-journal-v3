@@ -1,0 +1,122 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 2,
+    "total_tokens": 91865,
+    "input_tokens": 90209,
+    "output_tokens": 1656,
+    "cache_read_tokens": 23040,
+    "elapsed": "1m25s"
+  },
+  "tool_calls": {
+    "total": 20,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 3,
+      "file_find": 5,
+      "file_read": 11
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 3,
+        "tool_name": "file_read",
+        "file_path": "src/itg/defer.ts,src/itg/support.ts",
+        "arguments": "{\"file_path\":\"src/d4/support.ts\",\"start_line\":1,\"end_line\":100}",
+        "error": "file \"src/d4/support.ts\" not found: git show HEAD:src/d4/support.ts: exit status 128: fatal: path 'src/d4/support.ts' does not exist in 'HEAD'\n"
+      }
+    ]
+  },
+  "comments": [
+    {
+      "path": "src/itg/support.ts",
+      "content": "These relative imports assume this helper is under tests/integration/d5, not src/itg: ../../../src/... resolves outside the repository, and ../d4/support.ts resolves to the nonexistent src/d4/support.ts (including the re-export below). Since tsconfig.json includes src, this breaks typechecking, and the suite cannot load the helper. Move it alongside the integration tests or update all imports to their actual repository locations.",
+      "existing_code": "import type { Application } from '../../../src/app/compose.ts';\nimport type { DebtProjection } from '../../../src/modules/journal/index.ts';\nimport { buy, complete, type Dump, type Fill, positionChange, workspaceStores } from '../d4/support.ts';",
+      "start_line": 6,
+      "end_line": 8,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/defer.ts",
+      "content": "Neither configured Vitest project discovers this file: the unit project includes src/**/*.test.{ts,tsx}, and the integration project includes tests/integration/**/*.test.ts. Consequently, npm run test:integration never executes either new scenario. Place the suite under tests/integration with a .test.ts suffix (and its helper alongside it), or explicitly update test discovery.",
+      "existing_code": "describe('I5.3 Defer at capture', () =\u003e {",
+      "start_line": 17,
+      "end_line": 17,
+      "category": "test",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "src/itg/defer.ts",
+        "src/itg/support.ts"
+      ]
+    }
+  ],
+  "session_id": "9d0bdd0c-1407-4acb-b87c-296eb102f0a8",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "9d0bdd0c-1407-4acb-b87c-296eb102f0a8",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "0a4b203065c4443cec467d9b44ec28d646641d44",
+      "resolved_head": "9cdc737319a78873feace2ed36d023f9703812cf",
+      "exact_range": "0a4b203065c4443cec467d9b44ec28d646641d44..9cdc737319a78873feace2ed36d023f9703812cf",
+      "source_artifact_sha256": "c3068aa2c6f094c02850d4b633513f93c73fba1e7d41646e471a443a2e69ef53"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "43dc8b7ef053d2695ca5afe556a3fd68bc680febd1ae389f43694ed949ce9292",
+          "path": "src/itg/support.ts",
+          "fingerprint": "92bcb1c4876d717d366ead682d40fed659f44291fe7ec11d75c01f45c6636430"
+        },
+        {
+          "item_id": "73424d7da331746f325d63d3871724716cd33535cd15d51673c14d1188be1a75",
+          "path": "src/itg/defer.ts",
+          "fingerprint": "7053c7cd40a29e5c49c055c1d18af1d87d2e3f041436e6960d704d86759625d5"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "43dc8b7ef053d2695ca5afe556a3fd68bc680febd1ae389f43694ed949ce9292",
+          "path": "src/itg/support.ts",
+          "fingerprint": "92bcb1c4876d717d366ead682d40fed659f44291fe7ec11d75c01f45c6636430"
+        },
+        {
+          "item_id": "73424d7da331746f325d63d3871724716cd33535cd15d51673c14d1188be1a75",
+          "path": "src/itg/defer.ts",
+          "fingerprint": "7053c7cd40a29e5c49c055c1d18af1d87d2e3f041436e6960d704d86759625d5"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 84756
+  }
+}

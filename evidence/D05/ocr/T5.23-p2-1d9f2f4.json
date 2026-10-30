@@ -1,0 +1,134 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 2,
+    "total_tokens": 153714,
+    "input_tokens": 151833,
+    "output_tokens": 1881,
+    "cache_read_tokens": 26624,
+    "elapsed": "1m34s"
+  },
+  "tool_calls": {
+    "total": 18,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 4,
+      "file_find": 6,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/itg/support.ts",
+      "content": "These relative paths do not resolve from src/itg: ../../../src points outside the repository, and ../d4/support.ts points to nonexistent src/d4/support.ts. The actual helpers are in tests/integration/d4. The same misplaced paths affect review-debt.ts's Application import and snapshot.ts's definition-revision fixture import (which lives in tests/support). Because tsconfig includes src, this breaks npm run typecheck even though the tests are not discovered. Move these suites and helpers to tests/integration/d5, where these relative paths are valid, or correct all affected imports.",
+      "existing_code": "import type { Application } from '../../../src/app/compose.ts';\nimport type { DebtProjection } from '../../../src/modules/journal/index.ts';\nimport { buy, complete, type Dump, type Fill, positionChange, workspaceStores } from '../d4/support.ts';",
+      "start_line": 6,
+      "end_line": 8,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/itg/resolve.ts",
+      "content": "None of the three new suites will run with the configured Vitest projects: vite.config.ts includes only src/**/*.test.{ts,tsx} for unit tests and tests/integration/**/*.test.ts for integration tests. resolve.ts, review-debt.ts, and snapshot.ts in src/itg match neither pattern, so test:integration silently omits all this acceptance coverage. Place them under tests/integration (e.g. d5) with .test.ts filenames, or explicitly configure their discovery.",
+      "existing_code": "describe('I5.7 Resolve on Trade Detail before due', () =\u003e {",
+      "start_line": 14,
+      "end_line": 14,
+      "category": "test",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "ITG resolution, review debt, snapshots, and shared support",
+      "files": [
+        "src/itg/resolve.ts",
+        "src/itg/review-debt.ts",
+        "src/itg/snapshot.ts",
+        "src/itg/support.ts"
+      ]
+    }
+  ],
+  "session_id": "b619ac07-fe80-4919-a198-025a8c5eaeb0",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "b619ac07-fe80-4919-a198-025a8c5eaeb0",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "86ca20971e91fa330a5c995d993e5fc12d111845",
+      "resolved_head": "49c049c9489823945e082ec48acb3df344753a3d",
+      "exact_range": "86ca20971e91fa330a5c995d993e5fc12d111845..49c049c9489823945e082ec48acb3df344753a3d",
+      "source_artifact_sha256": "f0926497b34724d2776de13c04bb7202e7c6134a54bcad1ae548a266b36d64ca"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "435669322d5251a9cacff296dde1861724339d53123f22cc0c4af0f0a4894913",
+          "path": "src/itg/snapshot.ts",
+          "fingerprint": "4a0b87581ef54577f01c90b58e4b2bbd8a363d95fdb57fe13d6e6b5426c6d111"
+        },
+        {
+          "item_id": "43dc8b7ef053d2695ca5afe556a3fd68bc680febd1ae389f43694ed949ce9292",
+          "path": "src/itg/support.ts",
+          "fingerprint": "92bcb1c4876d717d366ead682d40fed659f44291fe7ec11d75c01f45c6636430"
+        },
+        {
+          "item_id": "7dddcf996ed247c327238b9ce17e6078685624737af6d4b41d9ae0055c722503",
+          "path": "src/itg/review-debt.ts",
+          "fingerprint": "f0e36e85e5fce771b2a9afb440f00584b907b45bcfcbad5f1ec35688f3beffbf"
+        },
+        {
+          "item_id": "d3aca78474e3dfa2ce5bef2d29daa66587c14fcffb367ab9e5d111a3b0cedcfb",
+          "path": "src/itg/resolve.ts",
+          "fingerprint": "0335bed41ee9adacfe11db84cf10b6252743ed25c62485f361539f73bb044a17"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "435669322d5251a9cacff296dde1861724339d53123f22cc0c4af0f0a4894913",
+          "path": "src/itg/snapshot.ts",
+          "fingerprint": "4a0b87581ef54577f01c90b58e4b2bbd8a363d95fdb57fe13d6e6b5426c6d111"
+        },
+        {
+          "item_id": "43dc8b7ef053d2695ca5afe556a3fd68bc680febd1ae389f43694ed949ce9292",
+          "path": "src/itg/support.ts",
+          "fingerprint": "92bcb1c4876d717d366ead682d40fed659f44291fe7ec11d75c01f45c6636430"
+        },
+        {
+          "item_id": "7dddcf996ed247c327238b9ce17e6078685624737af6d4b41d9ae0055c722503",
+          "path": "src/itg/review-debt.ts",
+          "fingerprint": "f0e36e85e5fce771b2a9afb440f00584b907b45bcfcbad5f1ec35688f3beffbf"
+        },
+        {
+          "item_id": "d3aca78474e3dfa2ce5bef2d29daa66587c14fcffb367ab9e5d111a3b0cedcfb",
+          "path": "src/itg/resolve.ts",
+          "fingerprint": "0335bed41ee9adacfe11db84cf10b6252743ed25c62485f361539f73bb044a17"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 94498
+  }
+}
