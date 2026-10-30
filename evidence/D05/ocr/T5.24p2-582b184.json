@@ -1,0 +1,135 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 5 selected item(s).",
+  "summary": {
+    "files_reviewed": 5,
+    "comments": 0,
+    "total_tokens": 101994,
+    "input_tokens": 100295,
+    "output_tokens": 1699,
+    "cache_read_tokens": 9600,
+    "elapsed": "1m13s"
+  },
+  "tool_calls": {
+    "total": 16,
+    "by_tool": {
+      "code_search": 7,
+      "file_find": 2,
+      "file_read": 7
+    },
+    "failure": 1,
+    "failure_by_tool": {
+      "file_read": 1
+    },
+    "failure_details": [
+      {
+        "tool_call_number": 1,
+        "tool_name": "file_read",
+        "file_path": "src/itg/d5/faults.ts,src/itg/d5/kill-offline.ts,src/itg/d5/no-save.ts,src/itg/d5/responsive.ts,src/itg/d5/support.ts",
+        "arguments": "{\"file_path\":\"src/itg/d4/support.ts\",\"start_line\":1,\"end_line\":180}",
+        "error": "file \"src/itg/d4/support.ts\" not found: git show HEAD:src/itg/d4/support.ts: exit status 128: fatal: path 'src/itg/d4/support.ts' does not exist in 'HEAD'\n"
+      }
+    ]
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "D5 integration scenarios and shared support",
+      "files": [
+        "src/itg/d5/faults.ts",
+        "src/itg/d5/kill-offline.ts",
+        "src/itg/d5/no-save.ts",
+        "src/itg/d5/responsive.ts",
+        "src/itg/d5/support.ts"
+      ]
+    }
+  ],
+  "session_id": "0b078621-3833-4b59-a44a-1a4d3005915d",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "0b078621-3833-4b59-a44a-1a4d3005915d",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "3f7edd4cfc4c95b8334163f76c4cef39cc9c00c7",
+      "resolved_head": "466a7c3312e9430c4286a07dea6a14af71c610c1",
+      "exact_range": "3f7edd4cfc4c95b8334163f76c4cef39cc9c00c7..466a7c3312e9430c4286a07dea6a14af71c610c1",
+      "source_artifact_sha256": "1f99102efec20a4b18d7e6aef771a7df5e449587cb2cf24453993737d0569c73"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "622a90644d2145522c042e938b663788fb6b1d809ce38ac46ee99ac59204823d",
+          "path": "src/itg/d5/responsive.ts",
+          "fingerprint": "e23396bdeae8b41e8df558c3dbbaae40fb8b0050cbbdd6e7c5b2960fc7e1d4d7"
+        },
+        {
+          "item_id": "63f39450e1bfe63b2ec7a0c3c95bb90fcc815cd2da46bc81d25a9feed31f22b2",
+          "path": "src/itg/d5/kill-offline.ts",
+          "fingerprint": "521a9d0378b1a2f4f92a22d90927ab9a383d2750196edd21096694cb492e1542"
+        },
+        {
+          "item_id": "6a0534f64121b24f8ef987bcfad6f93a2a4acfcb4662e0917f6c84586c88dbf0",
+          "path": "src/itg/d5/faults.ts",
+          "fingerprint": "d81ef82b6ba21d14e8a3fe641858ae31acc1cc93856c018c197121db80d22f2e"
+        },
+        {
+          "item_id": "7957fd63969f7c1cd8eb5114debca26678a2547e294f758b51d34f0339a36fd7",
+          "path": "src/itg/d5/support.ts",
+          "fingerprint": "0bb94ad942175774788fffa40a691a2bad10c8cf422417e1fd87d3c0eb620bba"
+        },
+        {
+          "item_id": "e2cb0aa961036b1526dbfd07bb03def1f1bf63166f99969b519bbf509943e635",
+          "path": "src/itg/d5/no-save.ts",
+          "fingerprint": "59301b7bd48bd03f0d2c2111b74cb40e1397b9a0dc65b2f0a1a2d720fc0c2b4f"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "622a90644d2145522c042e938b663788fb6b1d809ce38ac46ee99ac59204823d",
+          "path": "src/itg/d5/responsive.ts",
+          "fingerprint": "e23396bdeae8b41e8df558c3dbbaae40fb8b0050cbbdd6e7c5b2960fc7e1d4d7"
+        },
+        {
+          "item_id": "63f39450e1bfe63b2ec7a0c3c95bb90fcc815cd2da46bc81d25a9feed31f22b2",
+          "path": "src/itg/d5/kill-offline.ts",
+          "fingerprint": "521a9d0378b1a2f4f92a22d90927ab9a383d2750196edd21096694cb492e1542"
+        },
+        {
+          "item_id": "6a0534f64121b24f8ef987bcfad6f93a2a4acfcb4662e0917f6c84586c88dbf0",
+          "path": "src/itg/d5/faults.ts",
+          "fingerprint": "d81ef82b6ba21d14e8a3fe641858ae31acc1cc93856c018c197121db80d22f2e"
+        },
+        {
+          "item_id": "7957fd63969f7c1cd8eb5114debca26678a2547e294f758b51d34f0339a36fd7",
+          "path": "src/itg/d5/support.ts",
+          "fingerprint": "0bb94ad942175774788fffa40a691a2bad10c8cf422417e1fd87d3c0eb620bba"
+        },
+        {
+          "item_id": "e2cb0aa961036b1526dbfd07bb03def1f1bf63166f99969b519bbf509943e635",
+          "path": "src/itg/d5/no-save.ts",
+          "fingerprint": "59301b7bd48bd03f0d2c2111b74cb40e1397b9a0dc65b2f0a1a2d720fc0c2b4f"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 73212
+  }
+}
