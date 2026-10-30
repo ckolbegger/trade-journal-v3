@@ -1090,3 +1090,5 @@ ocr review of `582b184` (scratch clone, the four spec files relocated under `src
 
 ### T5.24-B1 B5.4 checks "Due in the next Review" on Monday
 Revision 17 (decision 58) rewords B5.4. Commit `351fcf6` adds to the B5.4 case in `e2e/d5/due-timing.spec.ts` an exact "Due in the next Review" in Monday's XYZ Reflections region, keeping no exact "Due" on Monday, Monday Complete, and Tuesday "Due" with Incomplete; the title now reads "should list the reflection as due in the next Review in Monday's Review, which reaches Complete, and list it as Due in Tuesday's". First-run pass, flagged; mutation `DUE_TEXT.DueInNextReview` gains a trailing full stop, failing on the new locator (element not found), restored with `git diff -- src` empty. A first mutated run built into the default `dist` instead of `dist-releases/d5` and was discarded. `due-timing.spec.ts` after a clean d5 rebuild: 2 passed; the four static checks reported no errors (exit codes not captured; the cumulative run rechecks them).
+
+ocr review of `351fcf6` (scratch clone, `due-timing.spec.ts` and `support.ts` relocated under `src/itg/d5/`; `ocr/T5.24-B1-351fcf6.json`): 1 file reviewed, no findings.
