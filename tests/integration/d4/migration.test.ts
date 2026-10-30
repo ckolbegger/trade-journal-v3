@@ -13,8 +13,8 @@ const pointerRecords = async (factory: IDBFactory) => (await dumpAll(factory))['
 
 // What the Journal seed adds when migrating from each schema: the Daily Trade Review is new in 3.
 const JOURNAL_ADDITIONS = {
-  1: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'source.position-change', 'source.daily-review'],
-  2: ['entry-type.daily-trade-review', 'source.daily-review'],
+  1: ['entry-type.position-change-reflection', 'entry-type.daily-trade-review', 'source.position-change', 'source.daily-review', 'source.trade-detail'],
+  2: ['entry-type.daily-trade-review', 'source.daily-review', 'source.trade-detail'],
 } as const;
 
 // The D4 current figures of an Open list row: each must be Unavailable(MarkMissing) with no Mark (A51).
@@ -40,7 +40,7 @@ describe('I4.1 migrate earlier fixtures', () => {
       expect(opened.receipt.migration).toEqual(
         expect.objectContaining({ fromVersion: version, toVersion: 4, sourceDatabase: fixtureDatabase(version), databaseName: expect.stringMatching(/^tj-ws-/) as string }),
       );
-      expect(opened.receipt.seeds.journal).toEqual({ manifestVersion: 3, additions: JOURNAL_ADDITIONS[version] });
+      expect(opened.receipt.seeds.journal).toEqual({ manifestVersion: 4, additions: JOURNAL_ADDITIONS[version] });
       expect(opened.receipt.sessionPolicy).toEqual({ recorded: nyseSessionPolicy.identity, findings: [] });
       const newDatabase = opened.receipt.migration!.databaseName;
 

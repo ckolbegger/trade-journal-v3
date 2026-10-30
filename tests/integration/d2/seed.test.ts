@@ -13,8 +13,8 @@ describe('I2.12 fresh initialization at schema 2', () => {
     expect(opened.receipt.fresh).toBe(true);
     expect(opened.receipt.migration).toBeUndefined();
     expect(opened.receipt.seeds.journal).toEqual({
-      // The release's current manifest (v3 since D4 T4.17) includes D2's types.
-      manifestVersion: 3,
+      // The release's current manifest (v4 since D5 T5.12) includes D2's types.
+      manifestVersion: 4,
       additions: [
         'entry-type.plan-reflection',
         'entry-type.position-change-reflection',
@@ -22,6 +22,7 @@ describe('I2.12 fresh initialization at schema 2', () => {
         'source.plan-confirmation',
         'source.position-change',
         'source.daily-review',
+        'source.trade-detail',
       ],
     });
 
@@ -39,6 +40,7 @@ describe('I2.12 fresh initialization at schema 2', () => {
       'source.daily-review',
       'source.plan-confirmation',
       'source.position-change',
+      'source.trade-detail',
     ]);
   });
 });

@@ -14,7 +14,7 @@ describe('I4.12 fresh initialization at schema 3', () => {
     expect(opened.receipt.fresh).toBe(true);
     expect(opened.receipt.migration).toBeUndefined();
     expect(opened.receipt.seeds.journal).toEqual({
-      manifestVersion: 3,
+      manifestVersion: 4,
       additions: [
         'entry-type.plan-reflection',
         'entry-type.position-change-reflection',
@@ -22,6 +22,7 @@ describe('I4.12 fresh initialization at schema 3', () => {
         'source.plan-confirmation',
         'source.position-change',
         'source.daily-review',
+        'source.trade-detail',
       ],
     });
 
@@ -43,6 +44,7 @@ describe('I4.12 fresh initialization at schema 3', () => {
       'source.daily-review',
       'source.plan-confirmation',
       'source.position-change',
+      'source.trade-detail',
     ]);
 
     // A second launch adds nothing (AC-JOUR-007).

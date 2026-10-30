@@ -1,7 +1,7 @@
 import type { SafeAction } from '../../delivery/runtime-not-writable.ts';
 import { formatDecimal, type Rational } from '../../domain/values/index.ts';
 import {
-  D3_JOURNAL_MANIFEST,
+  D4_JOURNAL_MANIFEST,
   prepareJournalSeed,
   validateSection as validateJournal,
   type EntryDefinitionRecord,
@@ -130,7 +130,7 @@ export async function migrate(deps: MigrationDeps, source: string, fromVersion: 
   const journalSeed = prepareJournalSeed(
     await all<JournalTypeRecord>(records, 'journalTypes'),
     await all<EntryDefinitionRecord>(records, 'journalDefinitions'),
-    D3_JOURNAL_MANIFEST,
+    D4_JOURNAL_MANIFEST,
     ids,
   );
   if (catalogSeed.kind !== 'Additions' || journalSeed.kind !== 'Additions') throw new Error('Seed manifests conflict with stored defaults');

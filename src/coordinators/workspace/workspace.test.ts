@@ -31,7 +31,7 @@ describe('initialize', () => {
           seeds: {
             catalog: { manifestVersion: 1, additions: ['strategy.long-stock'] },
             journal: {
-              manifestVersion: 3,
+              manifestVersion: 4,
               additions: [
                 'entry-type.plan-reflection',
                 'entry-type.position-change-reflection',
@@ -39,6 +39,7 @@ describe('initialize', () => {
                 'source.plan-confirmation',
                 'source.position-change',
                 'source.daily-review',
+                'source.trade-detail',
               ],
             },
           },
@@ -54,7 +55,7 @@ describe('initialize', () => {
     );
     // Every seeded record was written by the one creating transaction (content revision 1).
     expect(stored?.['catalog']).toEqual([expect.objectContaining({ productKey: 'strategy.long-stock', revision: 1 })]);
-    expect(stored?.['journalTypes']).toHaveLength(6);
+    expect(stored?.['journalTypes']).toHaveLength(7);
     expect(stored?.['journalDefinitions']).toEqual([expect.objectContaining({ revision: 1 }), expect.objectContaining({ revision: 1 }), expect.objectContaining({ revision: 1 })]);
   });
 
@@ -79,7 +80,7 @@ describe('initialize', () => {
           fresh: false,
           seeds: {
             catalog: { manifestVersion: 1, additions: [] },
-            journal: { manifestVersion: 3, additions: [] },
+            journal: { manifestVersion: 4, additions: [] },
           },
         }) as unknown,
       }),
@@ -141,7 +142,7 @@ describe('initialize', () => {
         receipt: expect.objectContaining({
           seeds: {
             catalog: { manifestVersion: 1, additions: [] },
-            journal: { manifestVersion: 3, additions: [], completed: false },
+            journal: { manifestVersion: 4, additions: [], completed: false },
           },
         }) as unknown,
       }),
