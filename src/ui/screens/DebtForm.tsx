@@ -99,8 +99,17 @@ export function DebtForm({ definition, binding, submit, onResolved, onCancel, on
     const first = definition.prompts.find((p) => issues.some((i) => i.field === p.id));
     if (first) formRef.current?.querySelector<HTMLElement>(`[name="${first.id}"]`)?.focus();
   }, [issues, definition]);
+  // A submission is in flight: Answer and Decline are disabled, so only one call goes out at a time.
+  const [pending, setPending] = useState(false);
+  const inFlight = useRef(false);
   const send = async (resolution: DebtResolutionInput) => {
-    const result = await submit({ binding, resolution });
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setPending(true);
+    const result = await submit({ binding, resolution }).finally(() => {
+      inFlight.current = false;
+      setPending(false);
+    });
     setIssues(
       result.kind === 'Rejected'
         ? result.issues.map((i): FieldIssue =>
@@ -152,10 +161,10 @@ export function DebtForm({ definition, binding, submit, onResolved, onCancel, on
       </div>
       {writable && (
         <>
-          <button type="submit" className="pill primary">
+          <button type="submit" className="pill primary" disabled={pending}>
             Answer
           </button>
-          <button type="button" className="pill secondary" onClick={() => void send({ kind: 'Decline', ...(reason.trim() !== '' && { reason }) })}>
+          <button type="button" className="pill secondary" disabled={pending} onClick={() => void send({ kind: 'Decline', ...(reason.trim() !== '' && { reason }) })}>
             Decline
           </button>
         </>

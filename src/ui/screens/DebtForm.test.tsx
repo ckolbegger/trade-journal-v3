@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
@@ -162,6 +162,29 @@ describe('declining', () => {
     expect(adapter).toHaveBeenLastCalledWith({ binding, resolution: { kind: 'Decline' } });
     expect(await screen.findByRole('region', { name: 'Saved reflection' })).toBeTruthy();
     expect(screen.getByText('Declined to reflect.')).toBeTruthy();
+  });
+});
+
+describe('one submission at a time', () => {
+  it('should disable Answer and Decline while a submission is pending and make no second call', async () => {
+    let finish: (result: DebtSubmitResult) => void = () => undefined;
+    const adapter = renderForm(() => new Promise<DebtSubmitResult>((resolve) => (finish = resolve)));
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Answer' }));
+
+    expect(screen.getByRole('button', { name: 'Answer' }).matches(':disabled')).toBe(true);
+    expect(screen.getByRole('button', { name: 'Decline' }).matches(':disabled')).toBe(true);
+    await user.click(screen.getByRole('button', { name: 'Decline' }));
+    await user.click(screen.getByRole('button', { name: 'Answer' }));
+    expect(adapter).toHaveBeenCalledTimes(1);
+
+    // Once the call settles without resolving, the trader may submit again.
+    await act(() => {
+      finish({ kind: 'Conflict' });
+      return Promise.resolve();
+    });
+    expect(screen.getByRole('button', { name: 'Answer' }).matches(':disabled')).toBe(false);
+    expect(screen.getByRole('button', { name: 'Decline' }).matches(':disabled')).toBe(false);
   });
 });
 
