@@ -450,3 +450,34 @@ Run 2026-10-29 21:39 EDT on commit `20ea662`, Node v26.12.0.
 | Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.11-detail-debt-checks.txt` |
 
 Failures: `verify:capacity` only (expected until T5.19).
+
+## T5.12 Workspace: migration to schema 4
+
+Implementation commit `b27f1e1`. Red (receipt `manifestVersion: 3`, no `source.trade-detail`) then green; no first-run pass. A first green attempt failed on the test's own wrong v3 `meta` count; it is logged with a note.
+
+The Workspace and the migration now compose `D4_JOURNAL_MANIFEST`. The receipt's `seeds.journal` is `{ manifestVersion: 4, additions }`:
+- v1 adds the earlier additions plus `source.trade-detail`.
+- v2 adds `daily-trade-review`, `daily-review` and `trade-detail`.
+- v3 adds `source.trade-detail` only.
+
+Earlier expectations changed only for the switch (manifest version 3 to 4, the new Source among the additions, `journalTypes` 6 to 7):
+- `workspace.test.ts`: fresh, existing and interrupted-seed initialize, and the stored count.
+- `migration.test.ts`: the v1 and v2 receipts, the v1 one-candidate case, and two counts.
+- Integration: `d2/migration`, `d2/seed`, `d4/migration`, `d4/seed`.
+
+`D3_JOURNAL_MANIFEST` stays in use by journal module tests and `tests/support/review-fixture.ts`. Process slip: the manifest rename in two source files was made with `sed -i` instead of the Edit tool.
+
+ocr review of `b27f1e1`: session `1e1b28ff-13b4-4b93-acc7-5fbb01cddd4c`, 2 files reviewed, **No findings.** Raw output: `ocr/T5.12-b27f1e1.json`.
+
+### Cumulative run after T5.12
+
+Run 2026-10-29 21:49 EDT on commit `b27f1e1`, Node v26.12.0.
+
+| Suite | Command | Result | Output |
+|---|---|---|---|
+| Unit | `npx vitest run src --reporter=verbose` | `Test Files 68 passed (68)`, `Tests 862 passed (862)`, exit 0 | `suite-runs/t5.12-migration-v4-unit.txt` |
+| Node integration | `npx vitest run tests/integration --reporter=verbose` | `Test Files 41 passed (41)`, `Tests 73 passed (73)`, exit 0 | `suite-runs/t5.12-migration-v4-integration.txt` |
+| Browser (Chromium) | `npm run test:e2e` | `142 passed (4.8m)`, exit 0 | `suite-runs/t5.12-migration-v4-browser.txt` |
+| Static and verification checks (12 commands) | as at the end of D4 | 11 of 12 exit 0 | `suite-runs/t5.12-migration-v4-checks.txt` |
+
+Failures: `verify:capacity` only (expected until T5.19).
