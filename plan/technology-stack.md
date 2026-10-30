@@ -101,7 +101,7 @@ Pinned 2026-10-17 at the plan freeze (implementation plan, decision 42) and amen
 | `react-router` | 7.18.4 | 2026-09-15 |
 | `idb` | 8.0.3 | 2025-05-07 |
 | `temporal-polyfill` | 1.0.5 | 2026-09-11 |
-| `zod` | 4.6.5 | 2026-09-13 |
+| `zod` | 4.6.7 | 2026-10-12 (decision 60) |
 | `@noble/hashes` | 2.4.0 | 2026-08-27 |
 | `fflate` | 0.8.3 | 2026-05-16 |
 
@@ -112,7 +112,7 @@ Pinned 2026-10-17 at the plan freeze (implementation plan, decision 42) and amen
 | `typescript`, as the alias `npm:@typescript/typescript6@6.0.2` | 6.0.2 | 2026-07-06 |
 | `@typescript/old` (override of the compatibility package's dependency), as `npm:typescript@6.0.3` | 6.0.3 | 2026-04-16 |
 | `@typescript/native`, as the alias `npm:typescript@7.0.2` | 7.0.2 | 2026-07-08 |
-| `vite` | 8.3.2 | 2026-10-01 |
+| `vite` | 8.3.4 | 2026-10-08 (decision 60) |
 | `@vitejs/plugin-react` | 6.1.1 | 2026-08-28 |
 | `vitest` | 4.1.12 | 2026-10-15 |
 | `fake-indexeddb` | 6.2.5 | 2025-11-07 |
