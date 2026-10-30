@@ -5,6 +5,7 @@ import type {
   IncoherentTradeDetail,
   NarrativeItem,
   OpenTradeDetail,
+  TradeDetailNarrativeItem,
   PositionChangeFact,
   RecordedDeviation,
 } from '../../src/app/types.ts';
@@ -49,7 +50,7 @@ function openSummary(positions: OpenTradeDetail['positions']): OpenTradeDetail['
 export interface OpenDetailOptions {
   readonly storedLifecycle?: TradeAnalysisRecord['storedLifecycle'];
   readonly recordedDeviations?: readonly RecordedDeviation[];
-  readonly journal?: readonly NarrativeItem[];
+  readonly journal?: readonly TradeDetailNarrativeItem[];
 }
 
 export function openDetailOf(positionChanges: readonly PositionChangeFact[], options: OpenDetailOptions = {}): OpenTradeDetail {
@@ -139,7 +140,7 @@ export function openDetailUncovered(positionChanges: readonly PositionChangeFact
 export function incoherentDetailOf(
   positionChanges: readonly PositionChangeFact[],
   findings: readonly IncoherentFactFinding[],
-  journal: readonly NarrativeItem[] = [],
+  journal: readonly TradeDetailNarrativeItem[] = [],
 ): IncoherentTradeDetail {
   const open = openDetailOf([]);
   return {

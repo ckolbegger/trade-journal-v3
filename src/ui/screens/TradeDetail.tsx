@@ -24,6 +24,7 @@ import { decimalMoney as price, localTime, money, netCost, quantity, ratio, rMul
 import { BackIcon, ChevronIcon } from '../icons.tsx';
 import { useRuntime } from '../runtime.tsx';
 import { calculation, dollarsAndR, pnlText, signed } from '../figures.ts';
+import { OwedDebtItem } from './OwedDebtItem.tsx';
 
 export interface TradeDetailProps {
   readonly facade: UiFacade;
@@ -158,11 +159,11 @@ export function TradeDetail({ facade, timeZone }: TradeDetailProps) {
           </dl>
         </section>
       )}
-      {'positionChanges' in view && <OpenSections view={view} timeZone={timeZone} />}
+      {'positionChanges' in view && <OpenSections facade={facade} view={view} timeZone={timeZone} />}
       {'recordedPositionChanges' in view && (
         <>
           <ExecutionsSection positionChanges={view.recordedPositionChanges} journal={outcomesOnly(view.journal)} timeZone={timeZone} />
-          <JournalSection journal={outcomesOnly(view.journal)} symbol={view.plan.underlying} timeZone={timeZone} />
+          <JournalSection facade={facade} journal={view.journal} symbol={view.plan.underlying} timeZone={timeZone} />
         </>
       )}
       {!('findings' in view) && entry && 'responses' in entry && (
@@ -377,7 +378,7 @@ function RiskRewardSection({ evaluation, baseline }: { readonly evaluation: Open
 }
 
 // The Open form's derived Position and its recorded Position Changes (D2).
-function OpenSections({ view, timeZone }: { readonly view: OpenTradeDetail; readonly timeZone: string }) {
+function OpenSections({ facade, view, timeZone }: { readonly facade: UiFacade; readonly view: OpenTradeDetail; readonly timeZone: string }) {
   const executions = view.positionChanges.flatMap((change) => change.executions);
   const openedAt = (executionId: string) => localTime(executions.find((e) => e.factId === executionId)?.economicTime ?? '', timeZone);
   return (
@@ -430,12 +431,12 @@ function OpenSections({ view, timeZone }: { readonly view: OpenTradeDetail; read
       <EntryQualitySection view={view} timeZone={timeZone} />
       <FulfillmentSection view={view} />
       <DeviationsSection view={view} timeZone={timeZone} />
-      <JournalSection journal={outcomesOnly(view.journal)} symbol={view.plan.underlying} timeZone={timeZone} />
+      <JournalSection facade={facade} journal={view.journal} symbol={view.plan.underlying} timeZone={timeZone} />
     </>
   );
 }
 
-// Placeholder until T5.17 renders "Reflection owed" and the due status: Debt items are not shown yet.
+// The Executions list shows each Position Change's recorded outcome; an owed Debt is shown in the Journal.
 const outcomesOnly = (journal: readonly TradeDetailNarrativeItem[]): NarrativeItem[] =>
   journal.filter((item): item is NarrativeItem => item.kind !== 'Debt');
 
@@ -709,19 +710,49 @@ function IncoherentPanel({ view, timeZone }: { readonly view: IncoherentTradeDet
 
 // The Trade's narrative: each saved Entry with the Prompt and option labels saved with it, and each
 // decline with its reason, at its moment time.
-function JournalSection({ journal, symbol, timeZone }: { readonly journal: readonly NarrativeItem[]; readonly symbol: string; readonly timeZone: string }) {
+function JournalSection({
+  facade,
+  journal,
+  symbol,
+  timeZone,
+}: {
+  readonly facade: UiFacade;
+  readonly journal: readonly TradeDetailNarrativeItem[];
+  readonly symbol: string;
+  readonly timeZone: string;
+}) {
+  // At most one Debt form is open at a time; a resolved one stays as the result rendered it.
+  const [active, setActive] = useState<{ readonly debtId: string; readonly resolved: boolean }>();
   return (
     <section className="card" aria-labelledby="journal-heading">
       <h2 id="journal-heading">{`Journal (${journal.length})`}</h2>
       <ul className="narrative">
         {journal.map((item) => {
+          if (item.kind === 'Debt') {
+            return (
+              <OwedDebtItem
+                key={item.id}
+                facade={facade}
+                debt={item}
+                timeZone={timeZone}
+                blocked={active !== undefined && !active.resolved && active.debtId !== item.id}
+                onOpen={() => setActive({ debtId: item.id, resolved: false })}
+                onClose={() => setActive(undefined)}
+                onResolved={() => setActive({ debtId: item.id, resolved: true })}
+              />
+            );
+          }
           const moment = localTime(item.momentTime, timeZone);
           const authored = localTime(item.authoredTime, timeZone);
+          // A reflection resolved after it was deferred always shows when the trader resolved it.
+          const settledLater = item.kind === 'Entry' ? item.answeredLater : item.declinedLater;
+          const laterTimeLabel = settledLater && (item.kind === 'Entry' ? 'Answered' : 'Declined');
           return (
           <li key={item.id}>
             <h3>
               <Badge tone="neutral">{item.entryType}</Badge>
               {item.kind === 'Entry' && item.edited && <Badge tone="info">Edited</Badge>}
+              {item.kind === 'Entry' && item.answeredLater && <Badge tone="info">Deferred, answered</Badge>}
             </h3>
             <dl>
               {item.kind === 'Entry' && item.reviewDate !== undefined && (
@@ -736,9 +767,9 @@ function JournalSection({ journal, symbol, timeZone }: { readonly journal: reado
               <dd>{item.source}</dd>
               <dt>Moment</dt>
               <dd>{moment}</dd>
-              {authored !== moment && (
+              {(authored !== moment || laterTimeLabel) && (
                 <>
-                  <dt>Authored</dt>
+                  <dt>{laterTimeLabel ?? 'Authored'}</dt>
                   <dd>{authored}</dd>
                 </>
               )}
@@ -755,7 +786,7 @@ function JournalSection({ journal, symbol, timeZone }: { readonly journal: reado
             ) : (
               <>
                 <p>
-                  <Badge tone="warning">Reflection declined</Badge>
+                  <Badge tone="warning">{item.declinedLater ? 'Declined later' : 'Reflection declined'}</Badge>
                 </p>
                 <dl>
                   <dt>Reason</dt>

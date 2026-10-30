@@ -5,7 +5,8 @@ import { decimalMoney as price, localTime } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { DebtForm, type DebtSubmitResult, type DebtFormProps } from './DebtForm.tsx';
 
-const DUE_TEXT: Record<ReflectionClassification, string> = {
+// Shared with Trade Detail, whose Debt due status has the same three values.
+export const DUE_TEXT: Record<ReflectionClassification, string> = {
   Due: 'Due',
   DueInNextReview: 'Due in the next Review',
   DueInReviewAfterNext: 'Due in the Review after next',

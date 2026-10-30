@@ -18,9 +18,10 @@ import {
   pc3Excess,
   positionChange,
 } from '../../../tests/support/open-detail-fixtures.ts';
+import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
 import { plannedDetail } from '../../../tests/support/views-fixtures.ts';
 import type { UiFacade } from '../../app/compose.ts';
-import type { NarrativeItem, TradeDetailView } from '../../app/types.ts';
+import type { DebtDueStatus, NarrativeItem, TradeDetailDebt, TradeDetailView } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { TradeDetail } from './TradeDetail.tsx';
@@ -975,5 +976,261 @@ describe('Actions', () => {
     expect(termValue(exit!, 'Action')).toBe('Exit');
     expect(termValue(exit!, 'Intent')).toBe('Take the gain.');
     expect(within(exit!).getByText('Edited', { selector: '.badge' })).toBeTruthy();
+  });
+});
+
+describe('Debt on Trade Detail (A69, P17)', () => {
+  const owedDebt = (id: string, positionChangeId: string, momentTime: string, dueStatus?: DebtDueStatus): TradeDetailDebt => ({
+    kind: 'Debt',
+    id,
+    entryType: 'Position Change Reflection',
+    source: 'Position Change',
+    anchor: { kind: 'Trade', tradeId: 'trade-1' },
+    momentTime,
+    positionChangeId,
+    definitionId: 'def-pcr-1',
+    dueAnchor: '2026-10-13T20:00:00Z',
+    revision: `${id}-rev-1`,
+    ...(dueStatus && { dueStatus }),
+  });
+
+  it('should show each Outstanding Debt as "Reflection owed" beside its Position Change, with "Due" or "Due in the next Review" as text, and Reflect now and Decline actions only while Writable', async () => {
+    const journal = [
+      owedDebt('debt-1', 'pc-1', '2026-10-12T14:00:00Z', 'Due'),
+      owedDebt('debt-2', 'pc-2', '2026-10-12T15:00:00Z', 'DueInNextReview'),
+      owedDebt('debt-3', 'pc-3', '2026-10-12T16:00:00Z', 'DueInReviewAfterNext'),
+    ];
+    renderView(openDetailOf([PC1, PC2], { journal }));
+    const region = await screen.findByRole('region', { name: 'Journal (3)' });
+    const items = within(region).getAllByRole('listitem');
+    expect(items.map((item) => within(item).getByText('Reflection owed').tagName)).toEqual(['SPAN', 'SPAN', 'SPAN']);
+    expect(items.map((item) => item.textContent)).toEqual([
+      expect.stringContaining('Position Change at 2026-10-12 10:00'),
+      expect.stringContaining('Position Change at 2026-10-12 11:00'),
+      expect.stringContaining('Position Change at 2026-10-12 12:00'),
+    ]);
+    expect(termValue(items[0]!, 'Due')).toBe('Due');
+    expect(termValue(items[1]!, 'Due')).toBe('Due in the next Review');
+    expect(termValue(items[2]!, 'Due')).toBe('Due in the Review after next');
+    for (const item of items) {
+      expect(within(item).getByRole('button', { name: 'Reflect now' })).toBeTruthy();
+      expect(within(item).getByRole('button', { name: 'Decline' })).toBeTruthy();
+    }
+    cleanup();
+
+    renderView(openDetailOf([PC1, PC2], { journal }), false);
+    const readOnly = await screen.findByRole('region', { name: 'Journal (3)' });
+    expect(within(readOnly).getAllByText('Reflection owed')).toHaveLength(3);
+    expect(within(readOnly).queryByRole('button')).toBeNull();
+  });
+
+  it('should show a settled reflection once, marked "Deferred, answered" with its time, and a declined one once, marked "Declined later"', async () => {
+    const settled = { dueAnchor: '2026-10-13T20:00:00Z' };
+    const answered: NarrativeItem = { ...pc1Reflection, id: 'e-9', authoredTime: '2026-10-12T16:30:00Z', answeredLater: { debtId: 'debt-1', ...settled } } as NarrativeItem;
+    const declined: NarrativeItem = {
+      ...pc2Decline,
+      id: 'd-9',
+      authoredTime: '2026-10-12T17:15:00Z',
+      declinedLater: { debtId: 'debt-2', ...settled },
+    } as NarrativeItem;
+    renderView(openDetailOf([PC1, PC2], { journal: [answered, declined] }));
+    const region = await screen.findByRole('region', { name: 'Journal (2)' });
+    const [first, second] = within(region).getAllByRole('listitem') as [HTMLElement, HTMLElement];
+    expect(within(first).getByText('Deferred, answered', { selector: '.badge' })).toBeTruthy();
+    expect(termValue(first, 'Answered')).toBe('2026-10-12 12:30');
+    expect(termValue(first, 'Source')).toBe('Position Change');
+    expect(termValue(first, 'Decision mode')).toBe('Planned');
+    expect(within(second).getByText('Declined later', { selector: '.badge' })).toBeTruthy();
+    expect(within(second).queryByText('Reflection declined')).toBeNull();
+    expect(termValue(second, 'Declined')).toBe('2026-10-12 13:15');
+    expect(termValue(second, 'Reason')).toBe('Same plan, second fill.');
+    expect(within(region).queryByText('Reflection owed')).toBeNull();
+  });
+
+  it('should open DebtForm with the Debt snapshot definition loaded through getDefinitions by exact revision, and render the result after Save without reading the Trade again', async () => {
+    const MODE = 'prompt.position-change-reflection.decision-mode';
+    const EMOTION = 'prompt.position-change-reflection.primary-emotion';
+    const CONFIDENCE = 'prompt.position-change-reflection.decision-confidence';
+    const REACTIVE = 'option.position-change-reflection.decision-mode.reactive';
+    // The Debt's snapshot revision is not the current one: Reactive reads "Impulsive" in it.
+    const snapshot = {
+      ...reflectionDefinition,
+      prompts: reflectionDefinition.prompts.map((p) => ('options' in p ? { ...p, options: p.options.map((o) => (o.id === REACTIVE ? { ...o, label: 'Impulsive' } : o)) } : p)),
+    };
+    const debt = owedDebt('debt-1', 'pc-1', '2026-10-12T14:00:00Z', 'Due');
+    const entry = {
+      id: 'entry-9',
+      responses: [
+        { promptId: MODE, value: { kind: 'Option', optionId: REACTIVE } },
+        { promptId: EMOTION, value: { kind: 'Option', optionId: 'option.position-change-reflection.primary-emotion.calm' } },
+        { promptId: CONFIDENCE, value: { kind: 'Scale', value: 4 } },
+        { promptId: 'prompt.position-change-reflection.note', value: { kind: 'Unanswered' } },
+      ],
+    };
+    const settled = { kind: 'Debt', status: 'Settled', debtId: 'debt-1', revision: 'debt-1-rev-2' };
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: openDetailOf([PC1, PC2], { journal: [debt] }), binding: {} } as never);
+    vi.mocked(facade.Journal.getDefinitions).mockResolvedValue({ kind: 'Found', definition: snapshot } as never);
+    vi.mocked(facade.Journal.save).mockResolvedValue({
+      kind: 'Saved',
+      entry,
+      debt: settled,
+      currentOutcome: { kind: 'Entry', id: 'entry-9' },
+      snapshot: { journalRevision: 5 },
+    } as never);
+    const report = vi.fn();
+    render(
+      <RuntimeContext.Provider value={{ writable: true, report }}>
+        <MemoryRouter initialEntries={['/trades/trade-1']}>
+          <Routes>
+            <Route path="/trades/:tradeId" element={<TradeDetail facade={facade} timeZone="America/New_York" />} />
+          </Routes>
+        </MemoryRouter>
+      </RuntimeContext.Provider>,
+    );
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Reflect now' }));
+
+    const form = await screen.findByRole('form', { name: 'Reflection' });
+    expect(facade.Journal.getDefinitions).toHaveBeenCalledWith({ revision: 'def-pcr-1' });
+    await user.click(within(within(form).getByRole('radiogroup', { name: 'Decision mode' })).getByLabelText('Impulsive'));
+    await user.click(within(within(form).getByRole('radiogroup', { name: 'Primary emotion' })).getByLabelText('Calm'));
+    await user.click(within(within(form).getByRole('radiogroup', { name: 'Decision confidence' })).getByLabelText('4'));
+    await user.click(within(form).getByRole('button', { name: 'Answer' }));
+
+    expect(facade.Journal.save).toHaveBeenCalledWith({
+      intention: 'ResolveDebt',
+      debtId: 'debt-1',
+      expectedDebtRevision: 'debt-1-rev-1',
+      resolution: {
+        kind: 'Answer',
+        form: {
+          definitionId: 'def-pcr-1',
+          answers: {
+            [MODE]: { kind: 'Option', optionId: REACTIVE },
+            [EMOTION]: { kind: 'Option', optionId: 'option.position-change-reflection.primary-emotion.calm' },
+            [CONFIDENCE]: { kind: 'Scale', value: 4 },
+          },
+        },
+      },
+    });
+    expect(report).toHaveBeenLastCalledWith(expect.objectContaining({ kind: 'Saved' }));
+    const saved = await screen.findByRole('region', { name: 'Saved reflection' });
+    expect(within(saved).getByText('Impulsive')).toBeTruthy();
+    expect(facade.TradeViewsAndReporting.getTradeDetail).toHaveBeenCalledTimes(1);
+  });
+
+  it('should show an unclassified Outstanding Debt as "Reflection owed" with no due text, with Reflect now and Decline still offered while Writable', async () => {
+    const journal = [owedDebt('debt-1', 'pc-1', '2026-10-12T14:00:00Z')];
+    renderView(openDetailUncovered([PC1, PC2], '2026-10-12', { journal }));
+    const region = await screen.findByRole('region', { name: 'Journal (1)' });
+    const item = within(region).getByRole('listitem');
+    expect(within(item).getByText('Reflection owed')).toBeTruthy();
+    expect(item.textContent).toContain('Position Change at 2026-10-12 10:00');
+    expect(within(item).queryByText('Due', { exact: false })).toBeNull();
+    expect(within(item).queryByText('Due', { selector: 'dt' })).toBeNull();
+    expect(within(item).getByRole('button', { name: 'Reflect now' })).toBeTruthy();
+    expect(within(item).getByRole('button', { name: 'Decline' })).toBeTruthy();
+    cleanup();
+
+    renderView(openDetailUncovered([PC1, PC2], '2026-10-12', { journal }), false);
+    const readOnly = await screen.findByRole('region', { name: 'Journal (1)' });
+    expect(within(readOnly).getByText('Reflection owed')).toBeTruthy();
+    expect(within(readOnly).queryByRole('button')).toBeNull();
+  });
+
+  it('should keep one Debt form open at a time, disabling the other Debts actions until it is cancelled or resolved', async () => {
+    const journal = [owedDebt('debt-1', 'pc-1', '2026-10-12T14:00:00Z', 'Due'), owedDebt('debt-2', 'pc-2', '2026-10-12T15:00:00Z', 'DueInNextReview')];
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({ kind: 'Ready', view: openDetailOf([PC1, PC2], { journal }), binding: {} } as never);
+    vi.mocked(facade.Journal.getDefinitions).mockResolvedValue({ kind: 'Found', definition: reflectionDefinition } as never);
+    vi.mocked(facade.Journal.save).mockResolvedValue({ kind: 'Saved', decline: { id: 'decl-1' }, debt: { debtId: 'debt-1' }, currentOutcome: { kind: 'Decline', id: 'decl-1' }, snapshot: { journalRevision: 5 } } as never);
+    render(
+      <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
+        <MemoryRouter initialEntries={['/trades/trade-1']}>
+          <Routes>
+            <Route path="/trades/:tradeId" element={<TradeDetail facade={facade} timeZone="America/New_York" />} />
+          </Routes>
+        </MemoryRouter>
+      </RuntimeContext.Provider>,
+    );
+    const user = userEvent.setup();
+    const [first, second] = within(await screen.findByRole('region', { name: 'Journal (2)' })).getAllByRole('listitem') as [HTMLElement, HTMLElement];
+    await user.click(within(first).getByRole('button', { name: 'Reflect now' }));
+    await within(first).findByRole('form', { name: 'Reflection' });
+    expect(within(second).getByRole('button', { name: 'Reflect now' }).hasAttribute('disabled')).toBe(true);
+    expect(within(second).getByRole('button', { name: 'Decline' }).hasAttribute('disabled')).toBe(true);
+
+    await user.click(within(first).getByRole('button', { name: 'Cancel' }));
+    expect(within(first).queryByRole('form')).toBeNull();
+    expect(within(first).getByRole('button', { name: 'Reflect now' })).toBeTruthy();
+    expect(within(second).getByRole('button', { name: 'Reflect now' }).hasAttribute('disabled')).toBe(false);
+
+    await user.click(within(first).getByRole('button', { name: 'Reflect now' }));
+    await user.click(await within(first).findByRole('button', { name: 'Decline' }));
+    await within(first).findByRole('region', { name: 'Saved reflection' });
+    expect(within(second).getByRole('button', { name: 'Reflect now' }).hasAttribute('disabled')).toBe(false);
+  });
+
+  it('should move focus to the saved reflection after a Debt is resolved', async () => {
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({
+      kind: 'Ready',
+      view: openDetailOf([PC1, PC2], { journal: [owedDebt('debt-1', 'pc-1', '2026-10-12T14:00:00Z', 'Due')] }),
+      binding: {},
+    } as never);
+    vi.mocked(facade.Journal.getDefinitions).mockResolvedValue({ kind: 'Found', definition: reflectionDefinition } as never);
+    vi.mocked(facade.Journal.save).mockResolvedValue({ kind: 'Saved', decline: { id: 'decl-1' }, debt: { debtId: 'debt-1' }, currentOutcome: { kind: 'Decline', id: 'decl-1' }, snapshot: { journalRevision: 5 } } as never);
+    render(
+      <RuntimeContext.Provider value={{ writable: true, report: () => undefined }}>
+        <MemoryRouter initialEntries={['/trades/trade-1']}>
+          <Routes>
+            <Route path="/trades/:tradeId" element={<TradeDetail facade={facade} timeZone="America/New_York" />} />
+          </Routes>
+        </MemoryRouter>
+      </RuntimeContext.Provider>,
+    );
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Reflect now' }));
+    await user.click(await screen.findByRole('button', { name: 'Decline' }));
+
+    const saved = await screen.findByRole('region', { name: 'Saved reflection' });
+    expect(saved.parentElement?.contains(document.activeElement)).toBe(true);
+    expect(document.activeElement).not.toBe(document.body);
+  });
+
+  it('should report RuntimeNotWritable to the shell and keep the form when a Decline is refused', async () => {
+    const facade = facadeDouble();
+    vi.mocked(facade.TradeViewsAndReporting.getTradeDetail).mockResolvedValue({
+      kind: 'Ready',
+      view: openDetailOf([PC1, PC2], { journal: [owedDebt('debt-1', 'pc-1', '2026-10-12T14:00:00Z', 'Due')] }),
+      binding: {},
+    } as never);
+    vi.mocked(facade.Journal.getDefinitions).mockResolvedValue({ kind: 'Found', definition: reflectionDefinition } as never);
+    vi.mocked(facade.Journal.save).mockResolvedValue({ kind: 'RuntimeNotWritable' } as never);
+    const report = vi.fn();
+    render(
+      <RuntimeContext.Provider value={{ writable: true, report }}>
+        <MemoryRouter initialEntries={['/trades/trade-1']}>
+          <Routes>
+            <Route path="/trades/:tradeId" element={<TradeDetail facade={facade} timeZone="America/New_York" />} />
+          </Routes>
+        </MemoryRouter>
+      </RuntimeContext.Provider>,
+    );
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Decline' }));
+    const form = await screen.findByRole('form', { name: 'Reflection' });
+    await user.type(within(form).getByLabelText('Reason for declining (optional)'), 'No time.');
+    await user.click(within(form).getByRole('button', { name: 'Decline' }));
+
+    expect(facade.Journal.save).toHaveBeenCalledWith({
+      intention: 'ResolveDebt',
+      debtId: 'debt-1',
+      expectedDebtRevision: 'debt-1-rev-1',
+      resolution: { kind: 'Decline', reason: 'No time.' },
+    });
+    expect(report).toHaveBeenLastCalledWith({ kind: 'RuntimeNotWritable' });
+    expect(screen.getByRole('form', { name: 'Reflection' })).toBeTruthy();
   });
 });
