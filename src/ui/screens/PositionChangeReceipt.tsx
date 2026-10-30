@@ -26,6 +26,19 @@ function repairText(finding: IntegrityFinding): string {
   }
 }
 
+type Reflection = Recorded['postCommit']['reflection'];
+
+function reflectionMessage(reflection: Reflection): string {
+  switch (reflection.kind) {
+    case 'Entry':
+      return 'Reflection saved.';
+    case 'Debt':
+      return 'Reflection deferred.';
+    case 'Decline':
+      return `Reflection declined${reflection.decline.reason ? `: ${reflection.decline.reason}` : '.'}`;
+  }
+}
+
 // The saved entry, rendered from the command's post-commit result alone (AC-RESP-001): the
 // Position Change, Entry Quality once resolved, new Entry Size Deviations, what an earlier-dated
 // entry changed (P5), any repairs (P7), and the reflection outcome.
@@ -125,11 +138,7 @@ export function PositionChangeReceipt({ result, timeZone }: PositionChangeReceip
         </section>
       )}
       <p>
-        {reflection.kind === 'Entry'
-          ? 'Reflection saved.'
-          : reflection.kind === 'Debt'
-            ? 'Reflection deferred.'
-            : `Reflection declined${reflection.decline.reason ? `: ${reflection.decline.reason}` : '.'}`}
+        {reflectionMessage(reflection)}
       </p>
       <Link className="pill primary" to={`/trades/${receipt.tradeId}`}>Back to the Trade</Link>
     </section>
