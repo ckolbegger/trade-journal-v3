@@ -1,0 +1,103 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 2 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 2,
+    "total_tokens": 116428,
+    "input_tokens": 115064,
+    "output_tokens": 1364,
+    "cache_read_tokens": 20224,
+    "elapsed": "1m27s"
+  },
+  "tool_calls": {
+    "total": 9,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_find": 1,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "Revision movement only triggers the outer retry if assembleTrade reaches Ready. A write between the overview and card reads that changes a fact revision, frame snapshot, or outstanding debt instead makes assembleTrade return ReviewChanged, which bypasses settlement and immediately ends this assembly. Thus a single transient write can still force Refresh rather than re-reading the overview within the retry budget (the same applies to postSaveReview). For revision-bound reads, detect Workspace revision movement on these failure paths too and return Moved when appropriate; preserve the existing behavior for public getTrade.",
+      "existing_code": "      if (card.kind === 'Moved') return undefined;\n      if (card.kind !== 'Ready') return { kind: 'ChangedDuringAssembly' };",
+      "start_line": 637,
+      "end_line": 638,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/coordinators/daily-review/daily-review.ts",
+      "content": "This introduces a nested ternary, which the review checklist explicitly prohibits. Use a block-bodied settle callback with separate conditional returns for database mismatch and revision mismatch, followed by the Ready return.",
+      "existing_code": "            : atRevision !== undefined \u0026\u0026 workspace.contentRevision !== atRevision\n              ? { kind: 'Moved' }\n              : { kind: 'Ready', ...pass.review, trade: { ...pass.review.trade, saveBinding: { ...pass.review.trade.saveBinding, databaseName: workspace.databaseName } } },",
+      "start_line": 458,
+      "end_line": 460,
+      "category": "style",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/coordinators/daily-review/daily-review.ts",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts"
+      ]
+    }
+  ],
+  "session_id": "8690700b-ab89-46cd-9d2a-deba49f92577",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "8690700b-ab89-46cd-9d2a-deba49f92577",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "ec56fae",
+      "resolved_base": "a2494cb9dbf4fa7a5fbd4a2e59a9e4595a6ac4da",
+      "resolved_head": "ec56faea68b62f8d6419c1b928a86568b7f994aa",
+      "exact_range": "a2494cb9dbf4fa7a5fbd4a2e59a9e4595a6ac4da..ec56faea68b62f8d6419c1b928a86568b7f994aa",
+      "source_artifact_sha256": "4351984e5cf04c17f31ee2b0a0ebd61c3f9ccac54b4166d4507114c8b1608992"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "dbefe83952ca486abe9c319c9fd05a4d9ef7c02e4b192fa2c9301d955658129d"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "dbefe83952ca486abe9c319c9fd05a4d9ef7c02e4b192fa2c9301d955658129d"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 86947
+  }
+}

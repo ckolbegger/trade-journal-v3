@@ -334,3 +334,5 @@ Done: `settle` is now a block body with two plain `if` statements (database mism
 - `npx tsc6 --noEmit`: exit 0
 - `npm run lint`: exit 0
 - `npm run lint:deps`: exit 0
+
+Commit `3573bdc`. ocr review: one file reviewed, no findings. Raw output: [ocr/T5R.5-B3-3573bdc.json](ocr/T5R.5-B3-3573bdc.json).
