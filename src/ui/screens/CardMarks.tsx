@@ -339,7 +339,13 @@ export function CardMarks({ facade, tradeId, marks, underlying, onEntryDirty, on
       setNotices(Object.fromEntries(moved.map(({ id, conflicted }) => [id, conflicted.code === 'MarkExists' ? 'A Mark already exists for this date, so it cannot be marked unavailable. Nothing was saved.' : 'This Mark changed after you opened it. Nothing was saved. The current Mark is shown above, and your values are kept.'])));
     } else if (result.kind === 'MarksSaved') {
       setStandings((current) => ({ ...current, ...Object.fromEntries(result.marks.map((m) => [rowId(m.key.instrumentKey, m.key.tradingDate), { resolution: m.resolution, revision: m.resolutionRevision }])) }));
-      setDrafts({});
+      // A draft typed or changed while the save was pending is not what was sent, so it stays.
+      const unchanged = (id: string, current: Draft | undefined) => {
+        const was = drafts[id];
+        return current !== undefined && was !== undefined && current.price === was.price && current.unavailable === was.unavailable && current.reason === was.reason;
+      };
+      const sentIds = new Set(sent.map((s) => s.id));
+      setDrafts((current) => Object.fromEntries(Object.entries(current).filter(([id, draft]) => !(sentIds.has(id) && unchanged(id, draft)))));
     } else if (result.kind === 'Rejected') {
       // Each entry's issues sit beside its row, in the row order the entries were sent in.
       const found = result.issues.flatMap((issue) => {

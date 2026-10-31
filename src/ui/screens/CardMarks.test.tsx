@@ -272,6 +272,46 @@ describe('Save Marks (P37, A155) rendering', () => {
   });
 });
 
+describe('Save Marks (P37, A155) pending', () => {
+  it('should keep a draft typed or changed while Save Marks was pending, and clear only the drafts that were sent unchanged, when the result is MarksSaved', async () => {
+    const facade = cardFacade();
+    let finish: (result: SaveResult) => void = () => undefined;
+    vi.mocked(facade.DailyReview.save).mockImplementation(() => new Promise<SaveResult>((resolve) => (finish = resolve)));
+    renderReview(facade);
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    await user.type(within(rowOf(panel, 'XYZ', MONDAY_LABEL)).getByLabelText('Price'), '52.00');
+    await user.type(within(rowOf(panel, 'XYZ', FRIDAY_LABEL)).getByLabelText('Price'), '51.00');
+    await user.click(within(panel).getByRole('button', { name: 'Save Marks (2)' }));
+
+    // While it is pending: one sent draft is changed.
+    await user.type(within(rowOf(panel, 'XYZ', FRIDAY_LABEL)).getByLabelText('Price'), '1');
+    finish(marksSavedResult([savedKey('XYZ', MONDAY, '52.00'), savedKey('XYZ', FRIDAY, '51.00')]));
+
+    // Monday was sent unchanged, so it shows its saved Mark; Friday stays Unsaved with what was typed.
+    await waitFor(() => expect(within(rowOf(panel, 'XYZ', MONDAY_LABEL)).getByText('$52.00', { exact: false })).toBeTruthy());
+    expect(within(panel).getByRole('button', { name: 'Save Marks (1)' })).toBeTruthy();
+    expect(within(rowOf(panel, 'XYZ', FRIDAY_LABEL)).getByLabelText<HTMLInputElement>('Price').value).toBe('51.001');
+  });
+
+  it('should keep a draft for a key that was not sent when the result is MarksSaved', async () => {
+    const facade = cardFacade();
+    let finish: (result: SaveResult) => void = () => undefined;
+    vi.mocked(facade.DailyReview.save).mockImplementation(() => new Promise<SaveResult>((resolve) => (finish = resolve)));
+    renderReview(facade);
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    await user.type(within(rowOf(panel, 'XYZ', MONDAY_LABEL)).getByLabelText('Price'), '52.00');
+    await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
+    await user.type(within(rowOf(panel, 'XYZ', FRIDAY_LABEL)).getByLabelText('Price'), '51.00');
+    finish(marksSavedResult([savedKey('XYZ', MONDAY, '52.00')]));
+
+    await waitFor(() => expect(within(rowOf(panel, 'XYZ', MONDAY_LABEL)).getByText('$52.00', { exact: false })).toBeTruthy());
+    expect(within(panel).getByRole('button', { name: 'Save Marks (1)' })).toBeTruthy();
+    expect(within(rowOf(panel, 'XYZ', FRIDAY_LABEL)).getByLabelText<HTMLInputElement>('Price').value).toBe('51.00');
+  });
+});
+
 describe('Save Marks (P37, A155) refused', () => {
   it('should show each returned issue beside its row, move focus to the first, and keep every draft, when the result is Rejected', async () => {
     const facade = cardFacade();
