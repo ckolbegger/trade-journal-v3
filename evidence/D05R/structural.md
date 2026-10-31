@@ -82,7 +82,7 @@ The D4 and D5 browser cases have not moved onto cards yet (section 6.3 of the br
 
 ## T5R.2 Trade Analysis: Reward : risk now
 
-Commit: the `feat(trade-analysis): T5R.2` commit on this branch (see `git log`).
+Commit: `cfc1bad`.
 
 Cases (all red then green in `tdd-log.md`; no first-run passes):
 - T-A 8/9 at XYZ 52.00 and T-E 9/2 at JKL 21.00, as exact Values.
@@ -97,3 +97,22 @@ Decisions:
 - No change to Daily Review or anywhere outside `src/domain/trade-analysis/evaluate.ts` and its test.
 
 Checks: `npx vitest run src/domain src/coordinators` (306 passed), `typecheck`, `tsc6 --noEmit`, `lint`, `lint:deps` all exit 0.
+
+Evidence notes (main session):
+- The red row for "should return NotApplicable when Ongoing Risk to Stop is zero" has no failure excerpt. According to the task agent, it failed on the division by zero, because the zero branch did not exist yet. That is a genuine red for the planned behaviour, but the excerpt was not captured.
+- The first green of case 1 briefly held the zero and pass-through branches ahead of their cases. They were cut back before cases 2 and 3 ran, so both had reds from absent behaviour (refactor row in `tdd-log.md`).
+
+### ocr review of `cfc1bad`
+
+It reviewed `evaluate.ts` and found nothing. ocr warned that the background note (2,515 characters) was over its recommended 2,000. Raw output: [ocr/T5R.2-cfc1bad.json](ocr/T5R.2-cfc1bad.json).
+
+### Cumulative suite after T5R.2
+
+At `cfc1bad`, 2026-10-31, by `suite-runner`, label `t5r.2-reward-risk-now`. All passed.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 70 files, 905 tests passed; exit 0 | [unit](suite-runs/t5r.2-reward-risk-now-unit.txt) |
+| Node integration | 53 files, 105 tests passed; exit 0 | [integration](suite-runs/t5r.2-reward-risk-now-integration.txt) |
+| Browser (Chromium) | 155 passed (5.4 min); exit 0 | [browser](suite-runs/t5r.2-reward-risk-now-browser.txt) |
+| Static and verify checks (the same 12 as after T5R.1) | 12 of 12 exit 0 | [checks](suite-runs/t5r.2-reward-risk-now-checks.txt) |

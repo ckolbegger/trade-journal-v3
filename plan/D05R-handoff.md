@@ -281,7 +281,7 @@ Update this section at the end of each task.
 
 | | |
 |---|---|
-| Tasks done | Setup (`df352a7`); T5R.1 (`a101f74`, bug tasks B1 `733332e` and B3 `9e462e4`; cumulative suite green at `9e462e4`) |
-| Next step | **T5R.2 Trade Analysis: current Reward : risk** (3 cases in `TradeAnalysis.evaluate`, on the card fixture) |
-| Last commit | the commit that recorded T5R.1's reviews and suite run |
+| Tasks done | Setup (`df352a7`); T5R.1 (`a101f74`, bug tasks B1 `733332e` and B3 `9e462e4`; cumulative suite green at `9e462e4`); T5R.2 (`cfc1bad`, `TradeEvaluation.rewardRiskNow`; ocr no findings; suite green) |
+| Next step | **T5R.3 Daily Review: `open` with range positions and gap Trades** (4 cases; adds the shared card fixture to `tests/support/review-fixture.ts`) |
+| Last commit | the commit that recorded T5R.2's review and suite run |
 | Open questions | **From T5R.1, recorded in `evidence/D05R/structural.md`, not blocking:** one first-run pass (mutation-checked) and the planned regression guard on `save`, both flagged; an `AssertUnavailable` or `WithdrawAcknowledgment` entry adds one Stale-context read, which T5R.13 discloses; the ocr empty-batch finding was dismissed by the user as a caller precondition.<br>**Carried from D5, not blocking:** two tests each failed once under load and passed alone and in later cumulative runs. Rerun either once alone before treating it as real. Expect B4.13's narrow-layout check to be reworked when it moves onto cards.<br>• `src/ui/screens/TradeList.test.tsx:133` (the `tj:open-list-ready` mark count);<br>• B4.13, "Hold radio inside its chip at 375" (`e2e/d4/responsive-a11y.spec.ts:68`). |
