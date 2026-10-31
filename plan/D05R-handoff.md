@@ -103,7 +103,7 @@ Don't read `plan/spec-map.md` in full. Search it when the work touches a section
 2. Name the affected specification passages, acceptance scenarios and durable compatibility.
 3. Ask for approval to revise the plan.
 
-An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r23 and the next decision is 64 (r21 with decision 62 and r22 with decision 63 were made during T5R.3). Updating an acceptance row's status is not a revision. D5R adds no row, though: it re-proves existing rows, and the AC-REV-002 row already carries D5R's note.
+An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The next revision is r24 and the next decision is 65 (r21 with decision 62 and r22 with decision 63 were made during T5R.3; r23 with decision 64 while closing T5R.8). Updating an acceptance row's status is not a revision. D5R adds no row, though: it re-proves existing rows, and the AC-REV-002 row already carries D5R's note.
 
 ## 3. D5R specifics
 

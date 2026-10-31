@@ -587,3 +587,13 @@ ocr review of `4fdaa50`: one file reviewed (test excluded), no findings. Raw out
 | Checks | 12 of 12 exit 0 |
 
 Outputs: `suite-runs/t5r.8-cards-*.txt`. The failure is B4.1 (`e2e/d4/review.spec.ts:30`): `expect(rows.nth(0)).toContainText('ABC')`, received "Review XYZ Action Quantified pressure". The test enters all four Marks in the view it opened, then expects the attention order those Marks produce (ABC first, "Boundary reached"). Since T5R.8-B2 the cards keep the order the view first showed, before any Mark, as A150 requires ("stable within a Review view"). Under D4, Continue to Trades refreshed the order; on cards it is a no-op. The test and A150 disagree, so the session stopped for the user's decision.
+
+### The user's decision on B4.1: amend A150 (decision 64, revision 23)
+
+The user's direction: "Since we are entering marks on cards, we should resort when that changes the attention order. Let's amend A150." A150 now has the cards follow the newest Review the screen holds, with the open card staying open, its values kept, as it moves. B4.1 stands as written.
+
+#### T5R.8-B4 The cards re-sort when a save returns a refreshed Review
+
+Defect (against amended A150): since B2, the cards keep the order the screen first showed, so a saved Mark that moves a Trade into another band leaves it out of attention order. Cases:
+- B2's case changes: it should re-sort the cards when a refreshed Review returns the Trades in a different order;
+- it should keep the open card open, with its entered values, when a refreshed Review moves it.
