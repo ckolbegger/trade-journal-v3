@@ -48,3 +48,13 @@ Pending until `ocr auth login` (see the setup commit's review above).
 Case: "should disclose a Mark prepared earlier in the same batch as the Stale context of a later acknowledgment for the same instrument" (one batch: initial Manual Mark for XYZ on 2026-10-09, `AssertUnavailable` for XYZ on 2026-10-12; after commit, `query` must report the prepared resolution). Red: `AssertionError: expected { …(2) } to match object { …(2) }` (the prepared resolution had no `stale`).
 
 Fix: `prepareEffects` now overlays the batch's own prepared Marks (initial or correction) for the same instrument on earlier trading dates onto the stored Stale context of each acknowledgment entry, using the same latest-earlier-Mark rule as `staleContextOf` (a batch Mark on the stored context's date replaces it, so a `CorrectMark` price wins). No new request is made: the one read-only snapshot is unchanged.
+
+## T5R.1-B3 Entry rejection rules without a nested ternary
+
+Change: the `rejections` block of `prepareEffects` now calls a named `rejectionOf(intention, record)` that uses plain `if` statements in the same order and with the same codes (`NothingToCorrect`, `CorrectionUnchanged`, `NothingToWithdraw`); no behaviour change, no new test.
+
+- `npx vitest run src/modules/market-data src/coordinators`: exit 0, 259 passed
+- `npm run typecheck`: exit 0
+- `npx tsc6 --noEmit`: exit 0
+- `npm run lint`: exit 0
+- `npm run lint:deps`: exit 0

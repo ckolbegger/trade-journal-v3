@@ -562,19 +562,18 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
         return code ? [{ entryIndex, key, code, resolution: resolve(record), resolutionRevision: revisionOf(record) }] : [];
       });
       if (conflicts.length > 0) return { kind: 'Conflict', keys: conflicts };
+      const rejectionOf = (intention: MarketDataPrepareIntention,record: ObservationRecord | undefined): MarketDataIssue | undefined => {
+        if (intention.kind === 'CorrectMark') {
+          const effective = record?.marks.find((m) => m.revisionId === record.effectiveMarkId);
+          if (!effective) return { field: 'price', code: 'NothingToCorrect' };
+          if (effective.price === normalizedPrice(intention.price)) return { field: 'price', code: 'CorrectionUnchanged' };
+          return undefined;
+        }
+        if (intention.kind === 'WithdrawAcknowledgment' && resolve(record).kind !== 'AcknowledgedUnavailable') return { field: 'key', code: 'NothingToWithdraw' };
+        return undefined;
+      };
       const rejections = entries.flatMap(({ intention }, entryIndex): MarketDataPrepareIssue[] => {
-        const { record } = read[entryIndex]!;
-        const effective = record?.marks.find((m) => m.revisionId === record.effectiveMarkId);
-        const issue: MarketDataIssue | undefined =
-          intention.kind === 'CorrectMark'
-            ? !effective
-              ? { field: 'price', code: 'NothingToCorrect' }
-              : effective.price === normalizedPrice(intention.price)
-                ? { field: 'price', code: 'CorrectionUnchanged' }
-                : undefined
-            : intention.kind === 'WithdrawAcknowledgment' && resolve(record).kind !== 'AcknowledgedUnavailable'
-              ? { field: 'key', code: 'NothingToWithdraw' }
-              : undefined;
+        const issue = rejectionOf(intention, read[entryIndex]!.record);
         return issue ? [{ ...issue, entryIndex }] : [];
       });
       if (rejections.length > 0) return { kind: 'Rejected', issues: rejections };
