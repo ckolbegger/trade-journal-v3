@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import {
   acknowledgeMark, actionFormOf, cardHeader, cardList, completion, createTradeAt, createTrades, enterMark, expect, expectAccessible, firstPage, FOUR_TRADES, holdTradesStore, launchAt, markRow, MONDAY_1700, onboardedAt, onboardedPage,
-  openReview, panelHeader,openTradeFromOpenList, reachCard, reachPanel, READY, recordEntry, releaseTradesStore, reloadReview, saveAction, setClock, status, tabTo, test, tradeCard, TUESDAY_NOON, writeIntegrityFixture,
+  openReview, panelHeader, openTradeFromOpenList, reachCard, reachPanel, READY, recordEntry, releaseTradesStore, reloadReview, saveAction, setClock, status, tabTo, test, tradeCard, TUESDAY_NOON, writeIntegrityFixture,
 } from './support.ts';
 
 const DATE = 'Mon Oct 12';
@@ -272,9 +272,13 @@ test.describe('B4.13 Responsive and accessible', () => {
     await page.keyboard.press('Enter');
     // Save Marks moved the card on to its Action panel (A157); the saved row is read in the Marks panel, then the Action panel is back.
     await expect(panelHeader(page, 'XYZ', 'Action')).toHaveAttribute('aria-expanded', 'true', READY);
-    await reachPanel(page, 'XYZ', 'Marks');
+    await shiftTabTo(page, panelHeader(page, 'XYZ', 'Marks'));
+    await page.keyboard.press('Enter');
+    await expect(panelHeader(page, 'XYZ', 'Marks')).toHaveAttribute('aria-expanded', 'true', READY);
     await expect(entry.getByText('Manual')).toBeVisible();
-    await reachPanel(page, 'XYZ', 'Action');
+    await tabTo(page, panelHeader(page, 'XYZ', 'Action'));
+    await page.keyboard.press('Enter');
+    await expect(panelHeader(page, 'XYZ', 'Action')).toHaveAttribute('aria-expanded', 'true', READY);
     // The card is open from the start; Shift+Tab from the end of the card walks back to its header with a focus ring.
     await expect(cardList(page)).toBeVisible(READY);
     // The Review is read again after the Mark; Save waits for it.
