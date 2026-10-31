@@ -103,6 +103,11 @@ label.field { display: block; font-weight: 600; font-size: 0.9rem; margin: 0.35r
 .split > *, .card, .acc { min-width: 0; }
 .figs { display: flex; flex-wrap: wrap; gap: 0.1rem 1.1rem; font-size: 0.9rem; margin-top: 0.25rem; }
 .figs b { font-weight: 600; }
+.figgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr)); gap: 0.35rem 1rem; margin: 0.45rem 0 0.2rem; }
+.figgrid > div { min-width: 0; }
+.figgrid dt { font-size: 0.78rem; color: var(--muted); }
+.figgrid dd { margin: 0; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 0.92rem; }
+.figgrid dd .muted { font-weight: 400; }
 .refl { padding: 0.35rem 0 0.35rem 0.6rem; border-left: 3px solid var(--line); margin: 0.25rem 0; }
 .refl.due { border-left-color: var(--warning-line); }
 .refl.ok { border-left-color: var(--target); }
@@ -204,8 +209,18 @@ const FILLER = ['AMZN', 'GOOGL', 'META', 'NVDA', 'JPM', 'V', 'KO', 'PEP', 'XOM',
   const e = 50 + i * 17.25;
   INST[t] = t;
   return { id: t.toLowerCase(), name: t, meta: 'Long Stock · Swing · Schwab', opened: '2026-10-20', band: 'Routine', reason: 'No pressure toward the Stop or the Target',
-    stopTarget: `Stop ${'$' + (e * 0.92).toFixed(2)} · Target ${'$' + (e * 1.15).toFixed(2)}`, legs: [{ k: t, q: 20, m: 1, e }], refl: [] };
+    stopTarget: `Stop ${'$' + (e * 0.92).toFixed(2)} · Target ${'$' + (e * 1.15).toFixed(2)}`, legs: [{ k: t, q: 20, m: 1, e }], refl: [],
+    stopV: 20 * e * 0.92, targetV: 20 * e * 1.15, worstV: 0 };
 });
+// The Plan's boundaries as whole-position values in dollars: the value at the Stop, at the Target, and at
+// the worst case (stock at zero; a condor at full width). Every figure below is derived from these and the Marks.
+const PLAN_VALUES = {
+  spy: { stopV: -820, targetV: -100, worstV: -2000 },
+  aapl: { stopV: 150 * 218, targetV: 150 * 245, worstV: 0 },
+  aaplcc: { stopV: 100 * 205, targetV: 100 * 246.8, worstV: 0 },
+  msft: { stopV: 50 * 395, targetV: 50 * 450, worstV: 0 },
+};
+for (const b of BASE) Object.assign(b, PLAN_VALUES[b.id]);
 let POS = BASE;
 // Marks already recorded before this Review (earlier sessions).
 const REC = { 'MSFT|2026-10-27': 409.10, 'MSFT|2026-10-28': 413.75, 'AAPL 250C|2026-10-27': 2.40, 'AAPL 250C|2026-10-28': 2.70,
@@ -387,10 +402,38 @@ function actionSection(p, saveLabel = 'Save Action') {
     <div class="row" style="margin-top:.4rem"><button class="btn primary" data-act="saveAction" data-pid="${p.id}" data-fid="sa:${p.id}" ${ready && a.choice ? '' : 'disabled'}>${saveLabel}</button>
     ${!ready ? `<span class="hint">Enter ${DLABEL[TODAY]}’s Marks first.</span>` : !a.choice ? `<span class="hint">Choose an Action.</span>` : ''}</div>`;
 }
+// The Review's figures, as the app's Review card shows them (Current Marked Trade P&L, Ongoing Risk to Stop,
+// Worst-Case Ongoing Risk, Incremental Reward to Target, each in dollars and R, and At entry), plus Reward : risk.
+const rx = (n) => `${n < 0 ? '−' : ''}${Math.abs(n).toFixed(2)}R`;
+const ratio = (n) => n.toFixed(2).replace(/\.?0+$/, '');
+function figures(p) {
+  const entryV = p.legs.reduce((s, l) => s + l.q * l.m * l.e, 0);
+  const oneR = entryV - p.stopV;
+  const planned = { oneR, reward: p.targetV - entryV, rr: (p.targetV - entryV) / oneR };
+  const state = pnl(p);
+  if (state.kind !== 'ok') return { planned, state: state.kind };
+  const v = p.legs.reduce((s, l) => s + l.q * l.m * S.marks[key(l.k, TODAY)].v, 0);
+  const toStop = v - p.stopV, worst = v - p.worstV, toTarget = p.targetV - v;
+  return { planned, state: 'ok', pnl: v - entryV, toStop, worst, toTarget, rr: toStop > 0 && toTarget > 0 ? toTarget / toStop : null };
+}
+function figBlock(p) {
+  const f = figures(p);
+  const missing = f.state === 'needs' ? 'Mark missing' : 'Not calculated (Unavailable Mark)';
+  const dr = (n, sign = false) => f.state !== 'ok' ? `<span class="muted">${missing}</span>` : `${sign ? signed(n) : money(n)} · ${sign && n > 0 ? '+' : ''}${rx(n / f.planned.oneR)}`;
+  const rrNow = f.state !== 'ok' ? `<span class="muted">${missing}</span>` : f.rr == null ? '<span class="muted">Not meaningful past the Stop or Target</span>' : ratio(f.rr);
+  return `<dl class="figgrid">
+      <div><dt>Current P&amp;L</dt><dd>${dr(f.pnl, true)}</dd></div>
+      <div><dt>Risk to stop</dt><dd>${dr(f.toStop)}</dd></div>
+      <div><dt title="Worst-Case Ongoing Risk">Worst case (total risk)</dt><dd>${dr(f.worst)}</dd></div>
+      <div><dt>Reward to target</dt><dd>${dr(f.toTarget)}</dd></div>
+      <div><dt>Reward : risk</dt><dd>now ${rrNow} <span class="muted">· planned ${ratio(f.planned.rr)}</span></dd></div>
+    </dl>
+    <p class="hint">At entry: risk ${money(f.planned.oneR)} · 1.00R, reward ${money(f.planned.reward)} · ${rx(f.planned.reward / f.planned.oneR)} · ${p.stopTarget}</p>`;
+}
 function posHeader(p, tag = 'h2') {
   return `<div class="spread"><${tag} data-fid="hd:${p.id}" tabindex="-1">${esc(p.name)}</${tag}>${bandChip(p)}</div>
     <p class="muted small">${p.meta}</p>
-    <div class="figs"><span>${pnlText(p)}</span><span class="muted">${p.stopTarget}</span></div>
+    ${figBlock(p)}
     ${reasons(p).map((r) => `<p class="small">${r}</p>`).join('')}`;
 }
 
@@ -438,7 +481,7 @@ function bBody(p) {
   return `<div class="pcard-body" id="pb-${p.id}">
       ${S.ui.msg ? `<p role="status" class="small chip info" style="white-space:normal">${S.ui.msg}</p>` : ''}
       <p class="muted small">${p.meta}</p>
-      <div class="figs"><span>${pnlText(p)}</span><span class="muted">${p.stopTarget}</span></div>
+      ${figBlock(p)}
       ${reasons(p).map((r) => `<p class="small">${r}</p>`).join('')}
       ${panel('marks', 'Marks', marksSummary(p), doneChip(marksDone(p), marksDone(p) ? 'In' : `${marksLeft(p)} needed`), marksSection(p) + saveBar(p))}
       ${panel('refl', 'Reflections', p.refl.length ? `${p.refl.length} owed, ${rDue} due now` : 'none owed', p.refl.length ? doneChip(rDue === 0, rDue === 0 ? 'Nothing due' : `${rDue} due`) : '<span class="chip quiet">None</span>', reflSection(p))}
@@ -459,7 +502,7 @@ function viewB() {
     return `<li class="pcard ${open ? 'open' : ''} ${posDone(q) ? 'done' : ''}" id="pc-${q.id}">
       <h2 style="margin:0;font-size:inherit"><button class="pcard-btn" aria-expanded="${open}" aria-controls="pb-${q.id}" data-act="bSel" data-pid="${q.id}" data-fid="hd:${q.id}">
         <span class="q-name">${esc(q.name)}</span>
-        <span class="q-todo">${posDone(q) ? `Done · ${S.act[q.id].choice}` : todoText(q)}</span>
+        <span class="q-todo">${posDone(q) ? `Done · ${S.act[q.id].choice}` : todoText(q)}${(() => { const f = figures(q); return f.state === 'ok' ? ` · P&amp;L ${signed(f.pnl)} · risk to stop ${money(f.toStop)} · R:R ${f.rr == null ? '—' : ratio(f.rr)}` : ''; })()}</span>
         <span class="q-side">${posDone(q) ? '<span class="chip done">✓ Done</span>' : bandChip(q)}<span class="chev" aria-hidden="true">▸</span></span>
       </button></h2>
       ${open ? bBody(q) : ''}
@@ -491,7 +534,7 @@ function viewC() {
     const actCell = a?.saved ? `<button class="btn small" data-act="cOpen" data-pid="${p.id}" data-sec="action" data-fid="ca:${p.id}">✓ ${a.choice}</button>`
       : `<div class="row" style="gap:.25rem"><button class="btn small primary" data-act="quickHold" data-pid="${p.id}" data-fid="qh:${p.id}" ${marksDone(p) ? '' : 'disabled title="Enter today’s Marks first"'}>Hold</button><button class="btn small" data-act="cOpen" data-pid="${p.id}" data-sec="action" data-fid="co:${p.id}">Other…</button></div>`;
     const head = `<tr class="p-row ${posDone(p) ? 'done' : ''}"><td><button class="btn link" style="font-weight:700;text-align:left" data-act="cOpen" data-pid="${p.id}" data-sec="all" data-fid="cn:${p.id}">${esc(p.name)}</button></td>
-      <td colspan="3"><span class="row" style="gap:.4rem">${bandChip(p)}<span class="small">${pnlText(p)}</span><span class="hint">${reasons(p)[0]}</span></span></td>
+      <td colspan="3"><span class="row" style="gap:.4rem">${bandChip(p)}<span class="small">${pnlText(p)}</span>${(() => { const f = figures(p); return f.state === 'ok' ? `<span class="small">Risk to stop ${money(f.toStop)} · R:R ${f.rr == null ? '—' : ratio(f.rr)} <span class="muted">(plan ${ratio(f.planned.rr)})</span></span>` : ''; })()}<span class="hint">${reasons(p)[0]}</span></span></td>
       <td>${reflCell}</td><td>${actCell}</td></tr>`;
     const legs = p.legs.map((l) => `<tr class="leg"><td>${p.multi ? `${l.q > 0 ? 'Long' : 'Short'} ${Math.abs(l.q)} · ${INST[l.k]}` : `${l.q} shares`}${holders(l.k).length > 1 ? ' <span class="tag shared">shared</span>' : ''}</td>
       ${DATES.map((d) => sheetCell(p, l.k, d)).join('')}<td></td><td></td></tr>`).join('');
@@ -536,7 +579,8 @@ function render() {
         <button class="btn small" data-act="reset" data-fid="reset">Reset</button></div>
     </header>
     <div class="intro"><details><summary>${v.tab}: what this tries</summary><p>${v.idea}</p><ul><li><b>Multi-leg (D10):</b> ${v.multi}</li><li><b>Automatic pricing (D11):</b> ${v.auto}</li>
-      <li><b>Shared Marks:</b> AAPL is held by two positions; enter it once and it fills in both.</li></ul></details></div>
+      <li><b>Shared Marks:</b> AAPL is held by two positions; enter it once and it fills in both.</li>
+      <li><b>Figures:</b> each position keeps the app Review’s figures: Current P&amp;L, Risk to stop, Worst case (Worst-Case Ongoing Risk), Reward to target, each in dollars and R, and At entry. Reward : risk adds the planned ratio (shown today on Trade Detail and the Trades list) and a current one (Reward to target ÷ Risk to stop), which the app does not calculate yet. The app’s dated-close group (figures at an earlier close) is not in this sample data but is not dropped. Sample figures are illustrative.</li></ul></details></div>
     <main class="page">${body}
       <details class="state"><summary class="hint">Prototype state</summary><pre>${esc(JSON.stringify({ status: reviewStatus(), positions: Object.fromEntries(POS.map((p) => [p.id, todoText(p)])), marks: S.marks, unsavedMarks: S.mdraft, reflections: S.refl, actions: S.act }, null, 1))}</pre></details>
     </main>`;
