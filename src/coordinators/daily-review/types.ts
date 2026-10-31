@@ -75,9 +75,18 @@ export interface ReflectionCounts {
   readonly later: number;
 }
 
+export interface SliderFigures {
+  readonly riskToStop: TradeEvaluation['ongoingRiskToStop'];
+  readonly pnl: TradeEvaluation['currentMarkedPnl'];
+  readonly rewardRiskNow: TradeEvaluation['rewardRiskNow'];
+}
+
 // A Trade of the walk, with its reflection counts; an owed reflection never moves its band.
 export interface WalkedTrade extends ReviewTradeItem {
   readonly reflections: ReflectionCounts;
+  // The figures the card's slider describes (P39, A150): the same evaluation results `getTrade` returns, unformatted.
+  // Absent when the Trade's facts cannot be replayed.
+  readonly figures?: SliderFigures;
 }
 
 // One Instrument needing the Review-date Mark, with the eligible Trades that hold it. The task is

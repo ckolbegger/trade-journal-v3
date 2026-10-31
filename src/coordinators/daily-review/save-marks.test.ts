@@ -81,6 +81,21 @@ describe('SaveReviewMarks (P37, P38, A155)', () => {
     expect(reopened.kind === 'Ready' && reopened.binding).toEqual(review.binding);
   }, 30_000);
 
+  it('should return the same slider figures after SaveReviewMarks in PostMarksReview walked Trades: T-A Reward to risk now 8/9, equal to its card evaluation', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a } = await cardFixture(stack, { withoutMarks: true });
+
+    const review = ready(await saveMarks(stack, a, xyzEntries));
+
+    const walked = review.trades.find((t) => t.tradeId === a)!;
+    expect(walked.figures?.rewardRiskNow).toEqual({ kind: 'Value', value: Rational.of(8n, 9n) });
+    expect(walked.figures).toEqual({
+      riskToStop: review.trade.evaluation?.ongoingRiskToStop,
+      pnl: review.trade.evaluation?.currentMarkedPnl,
+      rewardRiskNow: review.trade.evaluation?.rewardRiskNow,
+    });
+  }, 30_000);
+
   it('should return the next step, preferring a card with a Missing Review-date Mark, T-C, for DEF', async () => {
     const stack = await reviewStack(MONDAY_1700);
     const { a, c } = await cardFixture(stack, { withoutMarks: true });

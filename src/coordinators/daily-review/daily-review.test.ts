@@ -807,8 +807,8 @@ describe('getTrade', () => {
     await breakFirstExecution(stack, e);
     const review = await overview(stack);
     const { reviewDate, binding } = review;
-    // The Trade card's attention is the overview item without its reflection counts (T5.8).
-    const items = walk(review).map((t) => Object.fromEntries(Object.entries(t).filter(([key]) => key !== 'reflections')));
+    // The Trade card's attention is the overview item without its reflection counts and slider figures (T5.8, T5R.3-B3).
+    const items = walk(review).map((t) => Object.fromEntries(Object.entries(t).filter(([key]) => key !== 'reflections' && key !== 'figures')));
 
     // A disagreement between stored records and facts keeps its Blocker reason, with the figures still evaluated.
     const disagreeing = await stack.dailyReview.getTrade({ reviewDate, tradeId: d, binding });
@@ -861,6 +861,33 @@ describe('range position per walked Trade (P39)', () => {
 
     expect(item!.reasons).toEqual([expect.objectContaining({ code: 'TargetReached' })]);
     expect(item!.rangePosition).toEqual({ kind: 'Placed', now: Rational.of(1n), atEntry: Rational.of(250n, 350n), pinned: 'Target' });
+  }, 30_000);
+});
+
+describe('slider figures per walked Trade (P39, A150)', () => {
+  it('should return each walked Trade Ongoing Risk to Stop, current P and L, and Reward to risk now from the Review-date evaluation: T-A at XYZ 52.00 with 8/9, T-B Not applicable, T-C Unavailable with the missing Mark', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a, b, c } = await cardFixture(stack);
+    const opened = ready(await open(stack, MONDAY_1700));
+    const trades = walk(opened);
+
+    const figuresOf = (tradeId: string) => trades.find((t) => t.tradeId === tradeId)!.figures;
+    expect(figuresOf(a)?.rewardRiskNow).toEqual({ kind: 'Value', value: Rational.of(8n, 9n) });
+    expect(figuresOf(b)?.rewardRiskNow.kind).toBe('NotApplicable');
+    const tc = figuresOf(c);
+    expect(tc?.riskToStop).toMatchObject({ kind: 'Unavailable' });
+    expect(tc?.pnl.kind).toBe('Unavailable');
+    expect(tc?.rewardRiskNow.kind).toBe('Unavailable');
+    // The collapsed card and the open card never disagree.
+    for (const tradeId of [a, b, c]) {
+      const result = await stack.dailyReview.getTrade({ reviewDate: opened.reviewDate, tradeId, binding: opened.binding });
+      const evaluation = result.kind === 'Ready' ? result.trade.evaluation : undefined;
+      expect(figuresOf(tradeId)).toEqual({
+        riskToStop: evaluation?.ongoingRiskToStop,
+        pnl: evaluation?.currentMarkedPnl,
+        rewardRiskNow: evaluation?.rewardRiskNow,
+      });
+    }
   }, 30_000);
 });
 

@@ -307,7 +307,13 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       const due = dueDebtIds(tradeId).length;
       return { due, later: outstanding.filter((debt) => debt.anchor.tradeId === tradeId).length - due };
     };
-    const walked = ranked.map(({ item }): WalkedTrade => ({ ...item, reflections: reflectionsOf(item.tradeId) }));
+    const walked = ranked.map(
+      ({ item, evaluation }): WalkedTrade => ({
+        ...item,
+        reflections: reflectionsOf(item.tradeId),
+        ...(evaluation && { figures: { riskToStop: evaluation.ongoingRiskToStop, pnl: evaluation.currentMarkedPnl, rewardRiskNow: evaluation.rewardRiskNow } }),
+      }),
+    );
     const families: ReviewFamily[] = [
       { family: 'Marks', today, earlier },
       { family: 'Trades', trades: walked },
