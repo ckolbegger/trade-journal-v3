@@ -314,8 +314,8 @@ describe('after a Mark save', () => {
   });
 });
 
-describe('card order within a view (A150)', () => {
-  it('should keep each card in its place within the view when a refreshed Review returns the Trades in a different order', async () => {
+describe('card order follows the newest Review (A150, decision 64)', () => {
+  it('should re-sort the cards when a refreshed Review returns the Trades in a different order', async () => {
     const user = userEvent.setup();
     const facade = cardFacade();
     const reordered = review({
@@ -346,7 +346,47 @@ describe('card order within a view (A150)', () => {
     await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(3));
 
     const underlyings = headers().map((h) => /Review (\w+)/.exec(h.getAttribute('aria-label') ?? h.textContent ?? '')?.[1]);
-    expect(underlyings).toEqual(['ABC', 'DEF', 'XYZ', 'XYZ', 'JKL']);
+    expect(underlyings).toEqual(['JKL', 'XYZ', 'XYZ', 'DEF', 'ABC']);
+  });
+
+  it('should keep the open card open, with its entered values, when a refreshed Review moves it', async () => {
+    const user = userEvent.setup();
+    const facade = cardFacade();
+    const reordered = review({
+      families: [
+        { family: 'Marks', today: [], earlier: [] },
+        { family: 'Trades', trades: [...WALK].reverse() },
+      ],
+    });
+    vi.mocked(facade.DailyReview.open).mockResolvedValueOnce(review()).mockResolvedValue(reordered);
+    vi.mocked(facade.MarketData.save).mockResolvedValue({
+      kind: 'Saved',
+      key: { instrumentKey: 'DEF', tradingDate: '2026-10-12' },
+      resolution: available('40.50'),
+      resolutionRevision: 1,
+      classification: 'InitialManual',
+      revision: { revisionId: 'r1', revisionNumber: 1, price: '40.50', source: 'Manual', intention: 'InitialManual', observedAt: CUTOFF, savedAt: CUTOFF },
+      binding: { instrumentKey: 'DEF', tradingDate: '2026-10-12', expectedResolutionRevision: 'None' },
+    } as never);
+    renderReview(facade);
+    await screen.findByRole('region', { name: 'ABC review' });
+    await user.click(headers()[1]!);
+    const card = await screen.findByRole('region', { name: 'DEF review' });
+    // A value is entered in the card's Action form before the Mark is saved.
+    const [field] = within(card).getAllByRole('textbox');
+    await user.type(field!, 'kept');
+    const entry = within(card).getByRole('region', { name: 'DEF Mark, Mon Oct 12' });
+    await user.click(within(entry).getByRole('button', { name: 'Enter' }));
+    await user.type(within(entry).getByLabelText('Price'), '40.50');
+    await user.click(within(entry).getByRole('button', { name: 'Save Mark' }));
+    await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(3));
+    await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+
+    const moved = headers().find((h) => h.textContent?.includes('DEF'))!;
+    expect(headers().indexOf(moved)).toBe(3);
+    expect(moved.getAttribute('aria-expanded')).toBe('true');
+    expect(within(screen.getByRole('region', { name: 'DEF review' })).getAllByRole('textbox')[0]).toHaveProperty('value', 'kept');
   });
 });
 
