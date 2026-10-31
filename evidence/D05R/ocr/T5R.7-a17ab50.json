@@ -1,0 +1,115 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 24646,
+    "input_tokens": 24310,
+    "output_tokens": 336,
+    "cache_read_tokens": 5760,
+    "elapsed": "22s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_search": 2,
+      "file_read": 5
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Stop target slider UI and daily review integration",
+      "files": [
+        "src/app/types.ts",
+        "src/coordinators/daily-review/index.ts",
+        "src/ui/app.css",
+        "src/ui/screens/StopTargetSlider.tsx"
+      ]
+    }
+  ],
+  "session_id": "614a8fd1-102d-407e-b61d-06698ab6b92e",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "614a8fd1-102d-407e-b61d-06698ab6b92e",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "a17ab50",
+      "resolved_base": "d1875da1d9f84477f8f548d38c2aa2bee175d00b",
+      "resolved_head": "a17ab50b377612a71d9b1b63d4c4e96edfd380fc",
+      "exact_range": "d1875da1d9f84477f8f548d38c2aa2bee175d00b..a17ab50b377612a71d9b1b63d4c4e96edfd380fc",
+      "source_artifact_sha256": "ccc936fdc4368d866db6642374e4322f8bd6bfaf42d268a622b122ef315d784c"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "53089953c0d9bedafa4d3c3ea76aeb18901db94886ffc8ac3802b6fb0e3cb348"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "0475efb3ea1a4143e5e88edfbf945280083feff6073cb409d333b4174b7d71f0"
+        },
+        {
+          "item_id": "7755ec7526e77ee9e402fcabe62ff07baa369eaabffd1676a709198f81126690",
+          "path": "src/ui/screens/StopTargetSlider.tsx",
+          "fingerprint": "fc7373310eb8fc58f56136b757d4ac0663891ad637c7d10b1bba93c623add24d"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "7dc183d318a98fbd2e545a0eab19f13315df3cef9c3eef3776f7e76bf38aa983"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "53089953c0d9bedafa4d3c3ea76aeb18901db94886ffc8ac3802b6fb0e3cb348"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "0475efb3ea1a4143e5e88edfbf945280083feff6073cb409d333b4174b7d71f0"
+        },
+        {
+          "item_id": "7755ec7526e77ee9e402fcabe62ff07baa369eaabffd1676a709198f81126690",
+          "path": "src/ui/screens/StopTargetSlider.tsx",
+          "fingerprint": "fc7373310eb8fc58f56136b757d4ac0663891ad637c7d10b1bba93c623add24d"
+        },
+        {
+          "item_id": "9d20a796225851b81f880f1d146ba251d198e8aa712f6f6be090422a42ed8150",
+          "path": "src/coordinators/daily-review/index.ts",
+          "fingerprint": "7dc183d318a98fbd2e545a0eab19f13315df3cef9c3eef3776f7e76bf38aa983"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 21727
+  }
+}

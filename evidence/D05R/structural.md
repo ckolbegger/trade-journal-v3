@@ -429,3 +429,28 @@ ocr review of `881d40c`: two files reviewed, no findings. Raw output: [ocr/T5R.6
 | Static and verify checks (the same 12) | 12 of 12 exit 0 | [checks](suite-runs/t5r.6-manifest-checks.txt) |
 
 The run included B4.13 with the B4.13-F1 retry, which passed.
+
+## T5R.7 UI: Stop-to-Target slider
+
+Commit `a17ab50`:
+- new: `src/ui/screens/StopTargetSlider.tsx` and its test;
+- slider CSS in `src/ui/app.css`;
+- `RangePosition` re-exported through `src/app/types.ts` and the coordinator index, since `lint:deps` forbids UI imports from coordinators.
+
+Four cases, each red then green, with no first-run passes:
+- placement: red `TypeError`, the dot element was null;
+- description: red, `aria-label` was null;
+- pinned: red, the pinned class was absent;
+- not placed: red, `expected null not to be null`.
+
+Checks: typecheck, `tsc6`, lint and `lint:deps` all exit 0.
+
+Props: `{ position: RangePosition, figures: { riskToStop, pnl, rewardToRisk } }`, where the figures are formatted strings and a `NotPlaced` position ignores them. Rendering: `<span class="slider" role="img" aria-label=…>`, with no visible text. Percentages come from the exact rationals, rounded half up.
+
+Implementation decisions, made by the main session:
+- **Date wording.** The not-placed description reads "Mark missing: DEF, Mon Oct 12", where the breakdown has "Oct 12". It reuses `shortDate`, as `src/ui/figures.ts` does, so the slider says it the same way as every other Mark-missing figure in the app. The case's wording is treated as an example of the form, not a literal string.
+- **Pinned side.** The component takes the pinned side from `RangePosition.pinned`, not from the attention reasons.
+
+Not covered by a planned case: `AwaitingClose` reads "Awaiting the next close" and `FactsIncoherent` reads "Not available".
+
+ocr review of `a17ab50`: four files reviewed (test excluded), no findings. Raw output: [ocr/T5R.7-a17ab50.json](ocr/T5R.7-a17ab50.json).
