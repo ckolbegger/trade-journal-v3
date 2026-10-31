@@ -1,4 +1,4 @@
-import { actionEntriesOf, checkForUpdate, completion, confirmReference, continueToTrades, enterMark, expect, identity, launchAt, markEntry, MONDAY_1700, onboardedPage, openReview, probe, READY, recordEntry, reloadFromNotice, rootOf, SECOND_PLAN, test, tradesFamily, saveAction, watchUpdatingAcrossDocuments, workspaceNames, workspaceOf } from './support.ts';
+import { actionEntriesOf, checkForUpdate, completion, confirmReference, enterMark, expect, identity, launchAt, markRow, MONDAY_1700, onboardedPage, openReview, probe, reachCard, READY, recordEntry, reloadFromNotice, rootOf, SECOND_PLAN, test, tradesFamily, saveAction, watchUpdatingAcrossDocuments, workspaceNames, workspaceOf } from './support.ts';
 
 const AT_10 = { quantity: '100', price: '50.00', fee: '1.00', time: '2026-10-12T10:00' };
 
@@ -27,12 +27,11 @@ test.describe('B4.7 update from D2 with data', () => {
     // The Review lists both Instruments' Marks; a Mark and an Action save.
     await openReview(page);
     await expect(completion(page)).toHaveText('Incomplete');
-    await expect(markEntry(page, 'XYZ', 'Mon Oct 12')).toContainText('Missing');
-    await expect(markEntry(page, 'ABC', 'Mon Oct 12')).toContainText('Missing');
+    await expect(await markRow(page, 'XYZ', 'Mon Oct 12')).toContainText('Missing');
+    await expect(await markRow(page, 'ABC', 'Mon Oct 12')).toContainText('Missing');
     await enterMark(page, 'XYZ', 'Mon Oct 12', '52.00');
-    await continueToTrades(page);
-    await tradesFamily(page).getByRole('button', { name: 'Review XYZ' }).click();
-    await saveAction(page, 'Hold');
+    await reachCard(page, 'XYZ');
+    await saveAction(page, 'Hold', undefined, 'XYZ');
     await expect(tradesFamily(page).getByRole('listitem').filter({ hasText: 'Review XYZ' })).toContainText('Action saved');
 
     // About: the d4 release at schema 3 with the session policy.

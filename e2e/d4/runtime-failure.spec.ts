@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { actionEntriesOf, actionForm, completion, continueToTrades, createTrades, enterMark, expect, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt, openCard, openReview, probe, READY, saveAction, status, test, tradesFamily, workspaceOf, markEntry } from './support.ts';
+import { actionEntriesOf, actionFormOf, completion, createTrades, enterMark, expect, firstPage, FOUR_TRADES, launchAt, MONDAY_1700, onboardedAt, openReview, probe, reachCard, reachPanel, READY, saveAction, status, test, workspaceOf, markRow } from './support.ts';
 
 // The open card's region ("XYZ review").
 const cardOf = (page: Page, symbol: string): Locator => page.getByRole('region', { name: `${symbol} review`, exact: true });
@@ -14,11 +14,10 @@ test.describe('B4.10 Recovery Only (faults build)', () => {
     await createTrades(first, [FOUR_TRADES[0]!, FOUR_TRADES[1]!]);
     await openReview(first);
     await enterMark(first, 'XYZ', DATE, '52.00');
-    await continueToTrades(first);
-    await tradesFamily(first).getByRole('button', { name: 'Review XYZ' }).click();
-    await saveAction(first, 'Hold');
-    await openCard(first, 'ABC');
-    await expect(markEntry(first, 'ABC', DATE)).toContainText('Missing');
+    await reachCard(first, 'XYZ');
+    await saveAction(first, 'Hold', undefined, 'XYZ');
+    await reachCard(first, 'ABC');
+    await expect(await markRow(first, 'ABC', DATE)).toContainText('Missing');
     const before = await probe(first);
     await setup.close();
 
@@ -31,25 +30,26 @@ test.describe('B4.10 Recovery Only (faults build)', () => {
     await openReview(page);
     await expect(completion(page)).toHaveText('Incomplete');
     await expect(status(page)).toContainText('Mark missing for ABC on Mon Oct 12');
-    await continueToTrades(page);
     // ABC's card: the Missing Mark with no way to enter it.
-    await openCard(page, 'ABC');
+    await reachCard(page, 'ABC');
     let card = cardOf(page, 'ABC');
-    await expect(markEntry(page, 'ABC', DATE)).toContainText('Missing');
+    await expect(await markRow(page, 'ABC', DATE)).toContainText('Missing');
     await expect(card.getByLabel('Price')).toHaveCount(0);
     await expect(card.getByRole('button', { name: "Can't get a price" })).toHaveCount(0);
     // XYZ's card: the Manual Mark with no Correct, and the saved Action with no Change.
-    await openCard(page, 'XYZ');
+    await reachCard(page, 'XYZ');
     card = cardOf(page, 'XYZ');
-    await expect(markEntry(page, 'XYZ', DATE)).toContainText('Manual');
+    await expect(await markRow(page, 'XYZ', DATE)).toContainText('Manual');
     await expect(card.getByRole('button', { name: 'Correct' })).toHaveCount(0);
+    await reachPanel(page, 'XYZ', 'Action');
     await expect(card.getByRole('region', { name: 'Saved Action' })).toContainText('Saved Action: Hold');
     await expect(card.getByRole('button', { name: 'Change' })).toHaveCount(0);
     // ABC's card again: no Action saved, and no form or Save.
-    await openCard(page, 'ABC');
+    await reachCard(page, 'ABC');
     card = cardOf(page, 'ABC');
+    await reachPanel(page, 'ABC', 'Action');
     await expect(card.getByText('No Action saved.')).toBeVisible();
-    await expect(actionForm(page)).toHaveCount(0);
+    await expect(await actionFormOf(page, 'ABC')).toHaveCount(0);
     await expect(card.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0);
     await expect(card.getByRole('button', { name: /^Save Marks/ })).toHaveCount(0);
 
@@ -74,9 +74,8 @@ test.describe('B4.11 Mid-session failure (faults build, AC-DEL-006)', () => {
     await createTrades(page, [FOUR_TRADES[0]!]);
     await openReview(page);
     await enterMark(page, 'XYZ', DATE, '52.00');
-    await continueToTrades(page);
-    await tradesFamily(page).getByRole('button', { name: 'Review XYZ' }).click();
-    const form = actionForm(page);
+    await reachCard(page, 'XYZ');
+    const form = await actionFormOf(page, 'XYZ');
     await form.getByRole('radio', { name: 'Exit', exact: true }).check();
     await form.getByLabel(/^Why are you taking this action\?/).fill('Taking the profit before the gap risk.');
     const before = workspaceOf(await probe(page))!;
@@ -88,8 +87,8 @@ test.describe('B4.11 Mid-session failure (faults build, AC-DEL-006)', () => {
     await expect(banner).toBeVisible(READY);
     await expect(banner.getByRole('listitem')).toHaveText(["The app's offline copy is missing or damaged, so it could not reopen without a network."]);
     // The values are kept and nothing is recorded.
-    await expect(actionForm(page).getByRole('radio', { name: 'Exit', exact: true })).toBeChecked();
-    await expect(actionForm(page).getByLabel(/^Why are you taking this action\?/)).toHaveValue('Taking the profit before the gap risk.');
+    await expect((await actionFormOf(page, 'XYZ')).getByRole('radio', { name: 'Exit', exact: true })).toBeChecked();
+    await expect((await actionFormOf(page, 'XYZ')).getByLabel(/^Why are you taking this action\?/)).toHaveValue('Taking the profit before the gap risk.');
     await expect(completion(page)).toHaveText('Incomplete');
     const workspace = workspaceOf(await probe(page))!;
     expect(actionEntriesOf(workspace)).toEqual([]);

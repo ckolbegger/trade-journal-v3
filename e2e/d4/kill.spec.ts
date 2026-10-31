@@ -1,4 +1,4 @@
-import { actionEntriesOf, BASE_URL, completion, continueToTrades, createTrades, enterMark, expect, firstPage, FOUR_TRADES, MONDAY_1700, observationsOf, onboardedPage, openReview, pinClock, probe, saveAction, spawnedBrowser, test, tradesFamily, workspaceOf } from './support.ts';
+import { actionEntriesOf, BASE_URL, cardList, completion, createTrades, enterMark, expect, firstPage, FOUR_TRADES, MONDAY_1700, observationsOf, onboardedPage, openReview, pinClock, probe, reachCard, saveAction, spawnedBrowser, test, workspaceOf } from './support.ts';
 
 test.describe('B4.8 Kill after commit', () => {
   test('should keep the Action after the browser is killed once its save result renders, and resume the Review from it', async ({ profile }) => {
@@ -9,10 +9,9 @@ test.describe('B4.8 Kill after commit', () => {
       await createTrades(page, [FOUR_TRADES[0]!]);
       await openReview(page);
       await enterMark(page, 'XYZ', 'Mon Oct 12', '52.00');
-      await continueToTrades(page);
-      await tradesFamily(page).getByRole('button', { name: 'Review XYZ' }).click();
+      await reachCard(page, 'XYZ');
       // saveAction returns once the save result has rendered; the browser is killed right after.
-      await saveAction(page, 'Exit', 'Take the profit.');
+      await saveAction(page, 'Exit', 'Take the profit.', 'XYZ');
       await expect(completion(page)).toHaveText('Complete');
     } finally {
       await killed.kill();
@@ -26,9 +25,8 @@ test.describe('B4.8 Kill after commit', () => {
       await openReview(page);
       // The Review resumes from the stored Action: Complete, the Action shown for the Trade.
       await expect(completion(page)).toHaveText('Complete');
-      await continueToTrades(page);
-      await expect(tradesFamily(page).getByRole('listitem').filter({ hasText: 'Review XYZ' })).toContainText('Action saved');
-      await tradesFamily(page).getByRole('button', { name: 'Review XYZ' }).click();
+      await expect(cardList(page).getByRole('listitem').filter({ hasText: 'Review XYZ' })).toContainText('Action saved');
+      await reachCard(page, 'XYZ');
       await expect(page.getByRole('region', { name: 'Saved Action' })).toContainText('Saved Action: Exit');
 
       const workspace = workspaceOf(await probe(page))!;

@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { actionEntriesOf, completion, continueToTrades, createTrades, enterMark, expect, firstPage, launchAt, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, saveAction, test, TUESDAY_1700, tradesFamily, workspaceOf } from './support.ts';
+import { actionEntriesOf, cardList, completion, createTrades, enterMark, expect, firstPage, launchAt, markRow, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, reachCard, saveAction, test, TUESDAY_1700, workspaceOf } from './support.ts';
 
 const SYMBOLS = ['XYZ', 'ABC', 'DEF', 'JKL'] as const;
 const MONDAY_MARKS = { XYZ: '52.00', ABC: '27.50', DEF: '40.50', JKL: '21.00' } as const;
@@ -9,10 +9,9 @@ const NOT_WRITABLE = { name: /Read only/ };
 async function completeReview(page: Page, date: string, marks: Record<string, string>): Promise<void> {
   await openReview(page);
   for (const symbol of SYMBOLS) await enterMark(page, symbol, date, marks[symbol]!);
-  await continueToTrades(page);
   for (const symbol of SYMBOLS) {
-    await tradesFamily(page).getByRole('button', { name: `Review ${symbol}` }).click();
-    await saveAction(page, 'Hold');
+    await reachCard(page, symbol);
+    await saveAction(page, 'Hold', undefined, symbol);
   }
   await expect(completion(page)).toHaveText('Complete');
 }
@@ -34,12 +33,11 @@ test.describe('B4.9 Offline cold restart (AC-DEL-001)', () => {
     await openReview(tuesday);
     await expect(tuesday.getByRole('region', NOT_WRITABLE)).toHaveCount(0);
     await expect(completion(tuesday)).toHaveText('Incomplete');
-    await expect(markFor(tuesday, 'XYZ')).toContainText('Missing');
+    await expect(await markRow(tuesday, 'XYZ', 'Tue Oct 13')).toContainText('Missing');
     for (const symbol of SYMBOLS) await enterMark(tuesday, symbol, 'Tue Oct 13', TUESDAY_MARKS[symbol]);
-    await continueToTrades(tuesday);
     for (const symbol of SYMBOLS) {
-      await tradesFamily(tuesday).getByRole('button', { name: `Review ${symbol}` }).click();
-      await saveAction(tuesday, 'Hold');
+      await reachCard(tuesday, symbol);
+      await saveAction(tuesday, 'Hold', undefined, symbol);
     }
     await expect(completion(tuesday)).toHaveText('Complete');
     await offline.close();
@@ -51,8 +49,7 @@ test.describe('B4.9 Offline cold restart (AC-DEL-001)', () => {
     await openReview(reopened);
     await expect(reopened.getByRole('region', NOT_WRITABLE)).toHaveCount(0);
     await expect(completion(reopened)).toHaveText('Complete');
-    await continueToTrades(reopened);
-    for (const symbol of SYMBOLS) await expect(tradesFamily(reopened).getByRole('listitem').filter({ hasText: `Review ${symbol}` })).toContainText('Action saved');
+    for (const symbol of SYMBOLS) await expect(cardList(reopened).getByRole('listitem').filter({ hasText: `Review ${symbol}` })).toContainText('Action saved');
     const workspace = workspaceOf(await probe(reopened))!;
     expect(actionEntriesOf(workspace)).toHaveLength(8);
     const dates = actionEntriesOf(workspace).map((e) => e.obligationKey?.[1]).sort();
@@ -64,4 +61,3 @@ test.describe('B4.9 Offline cold restart (AC-DEL-001)', () => {
   });
 });
 
-const markFor = (page: Page, symbol: string) => page.getByRole('region', { name: `${symbol} Mark, Tue Oct 13`, exact: true });

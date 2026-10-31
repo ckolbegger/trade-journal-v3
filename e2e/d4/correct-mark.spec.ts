@@ -1,4 +1,4 @@
-import { createTrades, enterMark, expect, FOUR_TRADES, markEntry, MONDAY_1700, observationsOf, onboardedAt, openReview, openTradeFromOpenList, probe, test, workspaceOf } from './support.ts';
+import { createTrades, enterMark, expect, FOUR_TRADES, markRow, MONDAY_1700, observationsOf, onboardedAt, openReview, openTradeFromOpenList, probe, test, workspaceOf } from './support.ts';
 
 const DATE = 'Mon Oct 12';
 
@@ -9,7 +9,7 @@ test.describe('B4.4 Correct a Mark', () => {
     await openReview(page);
     await enterMark(page, 'XYZ', DATE, '52.00');
 
-    const entry = markEntry(page, 'XYZ', DATE);
+    const entry = await markRow(page, 'XYZ', DATE);
     await entry.getByRole('button', { name: 'Correct', exact: true }).click();
     await entry.getByLabel('Price').fill('51.50');
     await entry.getByLabel('Reason (required)').fill('Misread the closing quote.');

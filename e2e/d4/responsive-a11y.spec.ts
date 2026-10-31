@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  acknowledgeMark, actionForm, completion, continueToTrades, createTradeAt, createTrades, enterMark, expect, expectAccessible, firstPage, FOUR_TRADES, holdTradesStore, launchAt, markEntry, marksFamily, MONDAY_1700, onboardedAt, onboardedPage,
-  openCard, openReview, openTradeFromOpenList, READY, recordEntry, releaseTradesStore, reloadReview, saveAction, setClock, status, tabTo, test, TUESDAY_NOON, tradesFamily, writeIntegrityFixture,
+  acknowledgeMark, actionFormOf, cardHeader, cardList, completion, createTradeAt, createTrades, enterMark, expect, expectAccessible, firstPage, FOUR_TRADES, holdTradesStore, launchAt, markRow, MONDAY_1700, onboardedAt, onboardedPage,
+  openReview, panelHeader,openTradeFromOpenList, reachCard, reachPanel, READY, recordEntry, releaseTradesStore, reloadReview, saveAction, setClock, status, tabTo, test, tradeCard, TUESDAY_NOON, writeIntegrityFixture,
 } from './support.ts';
 
 const DATE = 'Mon Oct 12';
@@ -45,10 +45,9 @@ test.describe('B4.13 Responsive and accessible', () => {
     await createTrades(page, [FOUR_TRADES[0]!]);
     await openReview(page);
     await enterMark(page, 'XYZ', DATE, '52.00');
-    await continueToTrades(page);
-    await tradesFamily(page).getByRole('button', { name: 'Review XYZ' }).click();
-    await actionForm(page).getByRole('radio', { name: 'Adjust', exact: true }).check();
-    await actionForm(page).getByLabel(/^Why are you taking this action\?/).fill('Move the Stop to break even.');
+    await reachCard(page, 'XYZ');
+    await (await actionFormOf(page, 'XYZ')).getByRole('radio', { name: 'Adjust', exact: true }).check();
+    await (await actionFormOf(page, 'XYZ')).getByLabel(/^Why are you taking this action\?/).fill('Move the Stop to break even.');
     await expect(nav(page)).toHaveAttribute('data-placement', 'sidebar');
 
     await page.setViewportSize({ width: 390, height: 844 });
@@ -59,8 +58,8 @@ test.describe('B4.13 Responsive and accessible', () => {
     await expect(nav(page)).toHaveAttribute('data-placement', 'sidebar');
     await page.setViewportSize({ width: 1280, height: 900 });
 
-    await expect(actionForm(page).getByRole('radio', { name: 'Adjust', exact: true })).toBeChecked();
-    await expect(actionForm(page).getByLabel(/^Why are you taking this action\?/)).toHaveValue('Move the Stop to break even.');
+    await expect((await actionFormOf(page, 'XYZ')).getByRole('radio', { name: 'Adjust', exact: true })).toBeChecked();
+    await expect((await actionFormOf(page, 'XYZ')).getByLabel(/^Why are you taking this action\?/)).toHaveValue('Move the Stop to break even.');
     await expect(completion(page)).toHaveText('Incomplete');
     await context.close();
   });
@@ -70,13 +69,12 @@ test.describe('B4.13 Responsive and accessible', () => {
     await createTrades(page, [FOUR_TRADES[0]!]);
     await openReview(page);
     await enterMark(page, 'XYZ', DATE, '52.00');
-    await continueToTrades(page);
-    await tradesFamily(page).getByRole('button', { name: 'Review XYZ' }).click();
+    await reachCard(page, 'XYZ');
     for (const width of [375, 320]) {
       await page.setViewportSize({ width, height: 800 });
       for (const choice of ['Hold', 'Exit', 'Roll', 'Adjust']) {
-        const radio = actionForm(page).getByRole('radio', { name: choice, exact: true });
-        const label = actionForm(page).locator('label', { hasText: new RegExp(`^${choice}$`) });
+        const radio = (await actionFormOf(page, 'XYZ')).getByRole('radio', { name: choice, exact: true });
+        const label = (await actionFormOf(page, 'XYZ')).locator('label', { hasText: new RegExp(`^${choice}$`) });
         // Both boxes are re-read together until the layout has settled at the new width.
         await expect(async () => {
           const [r, l] = [await radio.boundingBox(), await label.boundingBox()];
@@ -88,13 +86,13 @@ test.describe('B4.13 Responsive and accessible', () => {
           expect(l!.height, `${choice} chip height at ${width}`).toBeLessThanOrEqual(60);
         }).toPass({ timeout: 5000 });
       }
-      await actionForm(page).getByRole('group', { name: 'Action' }).scrollIntoViewIfNeeded();
+      await (await actionFormOf(page, 'XYZ')).getByRole('group', { name: 'Action' }).scrollIntoViewIfNeeded();
       await page.screenshot({ path: `test-results/critic-d04-1/b2-${width}-actionform.png` });
     }
     // Arrow keys move within the group.
-    await actionForm(page).getByRole('radio', { name: 'Hold', exact: true }).focus();
+    await (await actionFormOf(page, 'XYZ')).getByRole('radio', { name: 'Hold', exact: true }).focus();
     await page.keyboard.press('ArrowRight');
-    await expect(actionForm(page).getByRole('radio', { name: 'Exit', exact: true })).toBeChecked();
+    await expect((await actionFormOf(page, 'XYZ')).getByRole('radio', { name: 'Exit', exact: true })).toBeChecked();
     await expectAccessible(page, 'Action form chips');
     await context.close();
   });
@@ -104,13 +102,12 @@ test.describe('B4.13 Responsive and accessible', () => {
     await createTrades(page, [FOUR_TRADES[0]!]);
     await openReview(page);
     await enterMark(page, 'XYZ', DATE, '52.00');
-    await continueToTrades(page);
-    await tradesFamily(page).getByRole('button', { name: 'Review XYZ' }).click();
-    const chipStyle = (choice: string) => actionForm(page).locator('label.chip', { hasText: new RegExp(`^${choice}$`) })
+    await reachCard(page, 'XYZ');
+    const chipStyle = async (choice: string) => (await actionFormOf(page, 'XYZ')).locator('label.chip', { hasText: new RegExp(`^${choice}$`) })
       .evaluate((el) => ({ cursor: getComputedStyle(el).cursor, opacity: Number(getComputedStyle(el).opacity) }));
     expect((await chipStyle('Exit')).cursor).toBe('pointer');
     // The form disables its radios while saving or read only; disable one directly so the computed style is real.
-    await actionForm(page).getByRole('radio', { name: 'Exit', exact: true }).evaluate((el) => { (el as HTMLInputElement).disabled = true; });
+    await (await actionFormOf(page, 'XYZ')).getByRole('radio', { name: 'Exit', exact: true }).evaluate((el) => { (el as HTMLInputElement).disabled = true; });
     const disabled = await chipStyle('Exit');
     expect(disabled.cursor).toBe('not-allowed');
     expect(disabled.opacity).toBeLessThan(1);
@@ -136,26 +133,26 @@ test.describe('B4.13 Responsive and accessible', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await expectAccessible(page, 'Review Incomplete, narrow');
     await page.setViewportSize({ width: 1280, height: 900 });
-    await openCard(page, 'XYZ');
-    await markEntry(page, 'XYZ', DATE).getByLabel('Price').fill('1');
+    await reachCard(page, 'XYZ');
+    await (await markRow(page, 'XYZ', DATE)).getByLabel('Price').fill('1');
     await expectAccessible(page, 'Mark entry form');
-    await marksFamily(page).getByRole('button', { name: 'Discard' }).click();
+    await (await reachPanel(page, 'XYZ', 'Marks')).getByRole('button', { name: 'Discard' }).click();
 
     await enterMark(page, 'XYZ', DATE, '52.00');
     await enterMark(page, 'ABC', DATE, '27.50');
     await acknowledgeMark(page, 'DEF', DATE, 'No quote available.');
     await enterMark(page, 'JKL', 'Fri Oct 9', '20.80');
-    await openCard(page, 'ABC');
-    await markEntry(page, 'ABC', DATE).getByRole('button', { name: 'Correct' }).click();
+    await reachCard(page, 'ABC');
+    await (await markRow(page, 'ABC', DATE)).getByRole('button', { name: 'Correct' }).click();
     await expectAccessible(page, 'Mark correction form');
-    await markEntry(page, 'ABC', DATE).getByRole('button', { name: 'Cancel' }).click();
+    await (await markRow(page, 'ABC', DATE)).getByRole('button', { name: 'Cancel' }).click();
     // The words that tell the Marks apart without colour, each in its own card.
-    await openCard(page, 'XYZ');
-    await expect(markEntry(page, 'XYZ', DATE)).toContainText('Manual');
-    await openCard(page, 'DEF');
-    await expect(markEntry(page, 'DEF', DATE)).toContainText('Acknowledged Unavailable');
-    await openCard(page, 'JKL');
-    await expect(markEntry(page, 'JKL', DATE)).toContainText('Missing');
+    await reachCard(page, 'XYZ');
+    await expect(await markRow(page, 'XYZ', DATE)).toContainText('Manual');
+    await reachCard(page, 'DEF');
+    await expect(await markRow(page, 'DEF', DATE)).toContainText('Acknowledged Unavailable');
+    await reachCard(page, 'JKL');
+    await expect(await markRow(page, 'JKL', DATE)).toContainText('Missing');
     await expectAccessible(page, 'Review Marks family: Manual, Acknowledged Unavailable, Missing');
 
     // The Open list at Monday 17:00: Available, Unavailable (acknowledged), and Missing rows.
@@ -187,23 +184,22 @@ test.describe('B4.13 Responsive and accessible', () => {
 
     // The Review's Trades family and the Action form, half-filled and narrow.
     await openReview(page);
-    await continueToTrades(page);
     await expectAccessible(page, 'Review Trades family');
-    await tradesFamily(page).getByRole('button', { name: 'Review XYZ' }).click();
-    await expect(actionForm(page)).toBeVisible();
+    await reachCard(page, 'XYZ');
+    await expect(await actionFormOf(page, 'XYZ')).toBeVisible();
     await expectAccessible(page, 'Action form');
-    await actionForm(page).getByRole('radio', { name: 'Exit', exact: true }).check();
-    await actionForm(page).getByRole('button', { name: 'Save' }).click();
-    await expect(actionForm(page).getByText('Say why you are taking this action.')).toBeVisible();
+    await (await actionFormOf(page, 'XYZ')).getByRole('radio', { name: 'Exit', exact: true }).check();
+    await (await actionFormOf(page, 'XYZ')).getByRole('button', { name: 'Save' }).click();
+    await expect((await actionFormOf(page, 'XYZ')).getByText('Say why you are taking this action.')).toBeVisible();
     await expectAccessible(page, 'Action form with an Intent error');
     await page.setViewportSize({ width: 390, height: 844 });
     await expectAccessible(page, 'Action form with an Intent error, narrow');
     await page.setViewportSize({ width: 1280, height: 900 });
-    await saveAction(page, 'Hold');
+    await saveAction(page, 'Hold', undefined, 'XYZ');
     await expectAccessible(page, 'Review Trades family with a saved Action');
     for (const symbol of ['ABC', 'DEF', 'JKL']) {
-      await tradesFamily(page).getByRole('button', { name: `Review ${symbol}` }).click();
-      await saveAction(page, 'Hold');
+      await reachCard(page, symbol);
+      await saveAction(page, 'Hold', undefined, symbol);
     }
     await expect(completion(page)).toHaveText('Incomplete');
     await expectAccessible(page, 'Review Incomplete with every Action saved and a Mark missing');
@@ -264,23 +260,30 @@ test.describe('B4.13 Responsive and accessible', () => {
     await page.keyboard.press('Enter');
     await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible(READY);
     await expect(page.getByRole('region', { name: 'Review status' })).toBeVisible(READY);
-    const entry = markEntry(page, 'XYZ', DATE);
+    // Keyboard and focus steps assert navigation itself (section 6.4, rule 4): raw locators, no reaches.
+    const xyz = tradeCard(page, 'XYZ');
+    const entry = xyz.getByRole('region', { name: `XYZ Mark, ${DATE}`, exact: true });
+    const actionForm = xyz.getByRole('form', { name: 'Action' });
     await tabTo(page, entry.getByLabel('Price'));
     await page.keyboard.type('52.00');
     // Enter in the last price moves on to Save Marks (A153).
     await page.keyboard.press('Enter');
-    await expect(marksFamily(page).getByRole('button', { name: /^Save Marks/ })).toBeFocused();
+    await expect(xyz.getByRole('region', { name: 'Marks', exact: true }).getByRole('button', { name: /^Save Marks/ })).toBeFocused();
     await page.keyboard.press('Enter');
+    // Save Marks moved the card on to its Action panel (A157); the saved row is read in the Marks panel, then the Action panel is back.
+    await expect(panelHeader(page, 'XYZ', 'Action')).toHaveAttribute('aria-expanded', 'true', READY);
+    await reachPanel(page, 'XYZ', 'Marks');
     await expect(entry.getByText('Manual')).toBeVisible();
+    await reachPanel(page, 'XYZ', 'Action');
     // The card is open from the start; Shift+Tab from the end of the card walks back to its header with a focus ring.
-    await expect(tradesFamily(page)).toBeVisible(READY);
+    await expect(cardList(page)).toBeVisible(READY);
     // The Review is read again after the Mark; Save waits for it.
-    await expect(actionForm(page).getByRole('button', { name: 'Save' })).toBeEnabled(READY);
-    await tabTo(page, actionForm(page).getByRole('button', { name: 'Save' }));
-    await shiftTabTo(page, tradesFamily(page).getByRole('button', { name: 'Review XYZ' }));
+    await expect(actionForm.getByRole('button', { name: 'Save' })).toBeEnabled(READY);
+    await tabTo(page, actionForm.getByRole('button', { name: 'Save' }));
+    await shiftTabTo(page, cardHeader(page, 'XYZ'));
     // Hold is preselected: Save alone records the Action.
     await expect(page.getByRole('radio', { name: 'Hold', exact: true })).toBeChecked();
-    await tabTo(page, actionForm(page).getByRole('button', { name: 'Save' }));
+    await tabTo(page, actionForm.getByRole('button', { name: 'Save' }));
     await page.keyboard.press('Enter');
     await expect(completion(page)).toHaveText('Complete');
     await expect(page.getByText('Every Trade has an Action.')).toBeVisible();

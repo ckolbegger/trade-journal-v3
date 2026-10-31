@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { actionEntriesOf, actionForm, createTrades, enterMark, expect, firstPage, FOUR_TRADES, launchAt, markEntry, MONDAY_1700, observationsOf, onboardedAt, openCard, openReview, probe, READY, test, workspaceOf } from './support.ts';
+import { actionEntriesOf, actionFormOf, createTrades, enterMark, expect, firstPage, FOUR_TRADES, launchAt, markRow, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, reachCard, READY, test, workspaceOf } from './support.ts';
 
 const DATE = 'Mon Oct 12';
 // Distinctive values, so any trace of them in storage is unmistakable.
@@ -41,28 +41,29 @@ test.describe('B4.12 Nothing saved without Save (AC-JOUR-001)', () => {
     await openReview(page);
     await enterMark(page, 'XYZ', DATE, '52.00');
     await enterMark(page, 'ABC', DATE, '27.50');
-    await openCard(page, 'XYZ');
-    await expect(actionForm(page)).toBeVisible();
+    await reachCard(page, 'XYZ');
+    await expect(await actionFormOf(page, 'XYZ')).toBeVisible();
     const before = workspaceOf(await probe(page));
 
     // Type, and save nothing: a correction of XYZ's Mark with its reason, and an Exit with Intent, Conviction, considered text, and Note.
-    await markEntry(page, 'XYZ', DATE).getByRole('button', { name: 'Correct' }).click();
-    await markEntry(page, 'XYZ', DATE).getByLabel('Price').fill(TYPED.correctedPrice);
-    await markEntry(page, 'XYZ', DATE).getByLabel('Reason (required)').fill(TYPED.reason);
-    await actionForm(page).getByRole('radio', { name: 'Exit', exact: true }).check();
-    await actionForm(page).getByLabel(/^Why are you taking this action\?/).fill(TYPED.intent);
-    await actionForm(page).getByLabel('Conviction now').selectOption('4');
-    await actionForm(page).getByLabel('Anything you considered doing and decided against?').fill(TYPED.considered);
-    await actionForm(page).getByLabel(/^Note/).fill(TYPED.note);
+    // The reaches switch between the Marks and Action panels of the one card; the panels stay mounted, so the typed correction survives.
+    await (await markRow(page, 'XYZ', DATE)).getByRole('button', { name: 'Correct' }).click();
+    await (await markRow(page, 'XYZ', DATE)).getByLabel('Price').fill(TYPED.correctedPrice);
+    await (await markRow(page, 'XYZ', DATE)).getByLabel('Reason (required)').fill(TYPED.reason);
+    await (await actionFormOf(page, 'XYZ')).getByRole('radio', { name: 'Exit', exact: true }).check();
+    await (await actionFormOf(page, 'XYZ')).getByLabel(/^Why are you taking this action\?/).fill(TYPED.intent);
+    await (await actionFormOf(page, 'XYZ')).getByLabel('Conviction now').selectOption('4');
+    await (await actionFormOf(page, 'XYZ')).getByLabel('Anything you considered doing and decided against?').fill(TYPED.considered);
+    await (await actionFormOf(page, 'XYZ')).getByLabel(/^Note/).fill(TYPED.note);
 
     // Resize and back: the typed values are still there, none of them saved.
     await page.setViewportSize({ width: 390, height: 844 });
     await page.setViewportSize({ width: 1280, height: 900 });
-    await expect(markEntry(page, 'XYZ', DATE).getByLabel('Price')).toHaveValue(TYPED.correctedPrice);
-    await expect(markEntry(page, 'XYZ', DATE).getByLabel('Reason (required)')).toHaveValue(TYPED.reason);
-    await expect(actionForm(page).getByLabel(/^Why are you taking this action\?/)).toHaveValue(TYPED.intent);
-    await expect(actionForm(page).getByLabel('Conviction now')).toHaveValue('4');
-    await expect(actionForm(page).getByLabel(/^Note/)).toHaveValue(TYPED.note);
+    await expect((await markRow(page, 'XYZ', DATE)).getByLabel('Price')).toHaveValue(TYPED.correctedPrice);
+    await expect((await markRow(page, 'XYZ', DATE)).getByLabel('Reason (required)')).toHaveValue(TYPED.reason);
+    await expect((await actionFormOf(page, 'XYZ')).getByLabel(/^Why are you taking this action\?/)).toHaveValue(TYPED.intent);
+    await expect((await actionFormOf(page, 'XYZ')).getByLabel('Conviction now')).toHaveValue('4');
+    await expect((await actionFormOf(page, 'XYZ')).getByLabel(/^Note/)).toHaveValue(TYPED.note);
     expect(traces(await webStorage(page))).toEqual([]);
     expect(workspaceOf(await probe(page))).toEqual(before);
 
@@ -76,8 +77,8 @@ test.describe('B4.12 Nothing saved without Save (AC-JOUR-001)', () => {
     const again = await firstPage(relaunched);
     await again.goto('/');
     await openReview(again);
-    await openCard(again, 'XYZ');
-    await expect(markEntry(again, 'XYZ', DATE)).toContainText('$52.00');
+    await reachCard(again, 'XYZ');
+    await expect(await markRow(again, 'XYZ', DATE)).toContainText('$52.00');
     const probed = await probe(again);
     const workspace = workspaceOf(probed)!;
     expect(workspace).toEqual(before);
