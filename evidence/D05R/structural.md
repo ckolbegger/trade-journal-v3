@@ -674,8 +674,6 @@ Case: it should let the card close, with nothing left dirty, after Save Marks re
 
 Case: it should send an earlier-session draft with the resolution and revision of the newest Review after Refresh, not those of the first snapshot.
 
-Done in the T5R.9-B2 commit: the case (first save ChangedDuringAssembly, second Ready) went red (the notice stayed) then green; the fix is one `setStale(undefined)` on the Ready path of `marksSaved` in `ReviewView.tsx`. The test is in `CardMarks.test.tsx`.
-
 Done in commit `6c7c0ff` (T5R.9-B1):
 - **The case.** The test holds the save open, appends "1" to the sent Friday price, then resolves: Monday (sent unchanged) shows its saved Mark, and Friday stays Unsaved at 51.001. Red: no "Save Marks (1)" button (every draft cleared). Then green.
 - **An extra case**, for a key not sent (Monday sent, Friday typed while pending), was written after the fix: a flagged first-run pass, mutation-checked (the clearing filter always true: no "Save Marks (1)").
@@ -684,3 +682,5 @@ Done in commit `6c7c0ff` (T5R.9-B1):
 - **Process note:** the agent ran two no-op here-doc and python commands that changed nothing, against the Edit-only rule.
 
 ocr review of `6c7c0ff`: one file reviewed, no findings. Raw output: [ocr/T5R.9-B1-6c7c0ff.json](ocr/T5R.9-B1-6c7c0ff.json).
+
+Done in commit `eec558b` (T5R.9-B2): the first save returns ChangedDuringAssembly, the second a Ready Review. Red: `expected <strong></strong> to be null` (the notice stayed). Then green; no first-run passes. The fix is one `setStale(undefined)` on `marksSaved`'s Ready path, unconditional, since a Ready Review makes the figures current and `stale` holds one id. `npx vitest run src/ui` 23 files, 351 passed; typecheck, `tsc6`, lint and `lint:deps` exit 0. (The task agent's own note, placed above B1's record, was moved here.)
