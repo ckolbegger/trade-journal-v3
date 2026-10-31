@@ -899,3 +899,5 @@ ocr reviewed the two support files (ten specs excluded) and raised nothing. The 
 #### T5R.10-H3-B1 The read-only absent checks cover both panels
 
 In `faults.spec.ts`, order the read-only checks so the page-wide "no Save" check runs once with the Action panel open and once with the Reflections panel open (reorder or repeat the existing `expect`, matcher and value unchanged).
+
+Done in commit `a0e8b63` (T5R.10-H3-B1, structural): one identical "no Save" `expect` added right after the Answer and Decline absent checks, with the Reflections panel open; the original stays after `actionFormOf`, with the Action panel open. No other `expect` touched. `faults.spec.ts` 2 passed; typecheck, `tsc6`, lint and `lint:deps` exit 0. Not shown failing against a present Save button.
