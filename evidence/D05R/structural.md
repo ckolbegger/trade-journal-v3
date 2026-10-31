@@ -646,3 +646,30 @@ Implementation decisions and notes for later tasks:
 - **Types and props.** Type re-exports in `src/coordinators/daily-review/index.ts` and `src/app/types.ts`; `MarkEntry` gains `offerEntry?`, `children?` and a saved-result argument to `onSaved`; `ReviewCard` gains `advance`, `onSaveMarks`, `outOfDate`.
 
 Checks: typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 23 files, 348 passed; `build:faults` and `build:releases` exit 0; `npm run test:e2e` 155 passed.
+
+### ocr review of `f5ed966`
+
+Eight files reviewed, four findings (one internal ocr read past the end of `types.ts` failed, without effect on the findings). Raw output: [ocr/T5R.9-f5ed966.json](ocr/T5R.9-f5ed966.json).
+
+| Severity | Location | Claim | Assessment |
+|---|---|---|---|
+| high | `CardMarks.tsx:342` | On MarksSaved, `setDrafts({})` wipes every draft, including edits typed while the save was pending. | Valid: only Save is disabled while saving; inputs and Discard stay enabled, and nothing compares the drafts with what was sent. Bug task **T5R.9-B1**. |
+| medium | `ReviewView.tsx:338` | A later Ready Save Marks never clears `stale`, so the "figures out of date" notice stays. | Valid: only the refresh path clears it. Bug task **T5R.9-B2**. |
+| medium | `CardMarks.tsx:149` | After RuntimeNotWritable, drafts, Save and Discard disappear while the card stays dirty, so it can't be closed. | Valid against A156 and A162 (read only). Bug task **T5R.9-B3**. |
+| medium | `CardMarks.tsx:306` | Earlier-session drafts are sent with the `earlier` snapshot's resolution and revision, even after a Refresh brings newer data. | Doubtful: the overlay takes the newer of the two, but whether Refresh re-passes `earlier` wasn't checked. Bug task **T5R.9-B4** (a test decides). |
+
+#### T5R.9-B1 A save keeps drafts typed while it was pending
+
+Case: it should keep a draft typed or changed while Save Marks was pending, and clear only the drafts that were sent unchanged, when the result is MarksSaved.
+
+#### T5R.9-B2 A later saved result clears the out-of-date notice
+
+Case: it should clear the "figures are out of date" notice and its Refresh when a later Save Marks returns a Ready Review.
+
+#### T5R.9-B3 Not writable mid-session leaves the card closable
+
+Case: it should let the card close, with nothing left dirty, after Save Marks returns RuntimeNotWritable and the card turns read only, its drafts unsaved.
+
+#### T5R.9-B4 Earlier-session drafts carry the newest resolution and revision
+
+Case: it should send an earlier-session draft with the resolution and revision of the newest Review after Refresh, not those of the first snapshot.
