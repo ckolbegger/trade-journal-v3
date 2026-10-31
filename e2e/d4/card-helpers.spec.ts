@@ -59,6 +59,23 @@ test.describe('reach (decision 65)', () => {
     await context.close();
   });
 
+  test('should reach ABC’s card after an earlier refusal once XYZ’s draft is discarded, though the earlier hold message was shown', async ({ profile }) => {
+    const { context, page } = await onboardedAt(profile, MONDAY_1700);
+    await createTrades(page);
+    await openReview(page);
+
+    const row = await markRow(page, 'XYZ', DATE);
+    await row.getByLabel('Price').fill('52.00');
+    await expect(reachCard(page, 'ABC')).rejects.toThrow(/XYZ/);
+    await expect(page.getByRole('status').filter({ hasText: /^Save or discard what you entered for / })).toBeVisible();
+    await row.getByLabel('Price').fill('');
+
+    const card = await reachCard(page, 'ABC');
+    await expect(card).toBeVisible();
+    await expect(cardHeader(page, 'ABC')).toHaveAttribute('aria-expanded', 'true');
+    await context.close();
+  });
+
   test('should reach BRK’s card, not BRK.B’s, when both Trades are listed', async ({ profile }) => {
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     await createTrades(page, [
