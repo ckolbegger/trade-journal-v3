@@ -189,3 +189,15 @@ It reviewed `daily-review.ts` and `market-data.ts` and found nothing. Raw output
 | Node integration | 53 files, 105 tests passed; exit 0 | [integration](suite-runs/t5r.3-b1-gap-closes-integration.txt) |
 | Browser (Chromium) | 155 passed (5.7 min); exit 0 | [browser](suite-runs/t5r.3-b1-gap-closes-browser.txt) |
 | Static and verify checks (the same 12) | 12 of 12 exit 0 | [checks](suite-runs/t5r.3-b1-gap-closes-checks.txt) |
+
+## T5R.3-B2 Every holding Trade listed, from the Review date when no gap applies (decision 63)
+
+Defect: under decision 62 a Trade with no listed date at or after its earliest exposure was left out of the gap group, so a holder of the Instrument had no gap listing at all. Decision 63 lists every eligible holding Trade; `from` is the first listed date whose close is at or after the exposure, else the Review date.
+
+Cases (commands logged in `tdd-log.md` under T5R.3-B2):
+1. T5R.3's planned case, restored to its planned name and assertion (as at `d72476f`): "should list with XYZ gap group each eligible Trade that holds XYZ and the first session it is relevant from: T-A from Friday 2026-10-09, T-F from Monday 2026-10-12, so Friday gap belongs to T-A card only", expecting `[{ f, '2026-10-12' }, { a, '2026-10-09' }]`. Red (assertion): `AssertionError: expected [ { tradeId: 'id-0008', …(1) } ] to deeply equal [ { tradeId: 'id-0049', …(1) }, …(1) ]` (T-F absent). Green after the fix.
+2. B1's case "should list a Trade filled after a session close from the next session, so that session gap is not on its card", now expecting the Friday 21:00Z Trade listed with `from: '2026-10-12'` (the Review date) and T-A still from 2026-10-09. Red (assertion): `AssertionError: expected undefined to deeply equal { tradeId: 'id-0058', …(1) }` (Trade absent). Green after the fix.
+
+Fix: in `assemble` (`src/coordinators/daily-review/daily-review.ts`) the gap group's `trades` use `.map` with `firstRelevantGapDate(g.closes, r.earliestRelevance) ?? reviewDate` instead of dropping a Trade with no date. Nothing in Market Data, storage or schema changed.
+
+Checks (each alone, exit 0): `npx vitest run src/modules/market-data src/coordinators src/domain` (392 passed), `src/ui` (327), `tests/integration` (105), `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`.

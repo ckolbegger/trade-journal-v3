@@ -865,16 +865,19 @@ describe('range position per walked Trade (P39)', () => {
 });
 
 describe('historical gap groups name their Trades (A153)', () => {
-  it('should list with XYZ gap group each eligible Trade that holds XYZ and the first session it is relevant from: T-A from Friday 2026-10-09, T-F left out because no listed date is at or after its Monday fill, so Friday gap belongs to T-A card only', async () => {
+  it('should list with XYZ gap group each eligible Trade that holds XYZ and the first session it is relevant from: T-A from Friday 2026-10-09, T-F from Monday 2026-10-12, so Friday gap belongs to T-A card only', async () => {
     const stack = await reviewStack(MONDAY_1700);
-    const { a } = await cardFixture(stack);
+    const { a, f } = await cardFixture(stack);
 
     const { earlier } = marks(await open(stack, MONDAY_1700));
 
     expect(earlier).toHaveLength(1);
     expect(earlier[0]).toMatchObject({ instrumentKey: 'XYZ', missing: ['2026-10-09'] });
-    // T-F's first fill is Monday, after the only listed date (decision 62), so it is not listed.
-    expect(earlier[0]!.trades).toEqual([{ tradeId: a, from: '2026-10-09' }]);
+    // In the walk's order: T-F ranks before T-A. T-F has no listed date at or after its fill, so it is listed from the Review date (decision 63).
+    expect(earlier[0]!.trades).toEqual([
+      { tradeId: f, from: '2026-10-12' },
+      { tradeId: a, from: '2026-10-09' },
+    ]);
   }, 30_000);
 
   // Setup chosen: Monday Review, so Friday is the only listed date. A Trade filled Friday 17:00 New York
@@ -887,7 +890,8 @@ describe('historical gap groups name their Trades (A153)', () => {
 
     const { earlier } = marks(await open(stack, MONDAY_1700));
 
-    expect(earlier[0]!.trades).toEqual([{ tradeId: a, from: '2026-10-09' }]);
-    expect(earlier[0]!.trades.find((t) => t.tradeId === g.tradeId)).toBeUndefined();
+    // No listed date is at or after the fill, so the Trade is listed from the Review date (decision 63).
+    expect(earlier[0]!.trades.find((t) => t.tradeId === g.tradeId)).toEqual({ tradeId: g.tradeId, from: '2026-10-12' });
+    expect(earlier[0]!.trades.find((t) => t.tradeId === a)).toEqual({ tradeId: a, from: '2026-10-09' });
   }, 30_000);
 });

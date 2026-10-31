@@ -283,10 +283,8 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
           trades: ranked.flatMap(({ item }) =>
             requirements
               .filter((r) => r.tradeId === item.tradeId && r.instrument.symbol === g.instrumentKey)
-              .flatMap((r) => {
-                const from = firstRelevantGapDate(g.closes, r.earliestRelevance);
-                return from === undefined ? [] : [{ tradeId: r.tradeId, from }];
-              }),
+              // A Trade after every listed date is listed from the Review date (decision 63).
+              .map((r) => ({ tradeId: r.tradeId, from: firstRelevantGapDate(g.closes, r.earliestRelevance) ?? reviewDate })),
           ),
           blocking: false,
         }),
