@@ -970,3 +970,24 @@ Notes: blocker links are real anchors (`/review?trade=…`) with the click inter
 Checks: typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 24 files, 367 passed; `build:faults` and `build:releases` exit 0; `npm run test:e2e` 161 passed; ports clear before and after. No browser spec changed.
 
 **Open for the user:** an Action save whose next step is a Mark (`kind: 'Mark'`) still collapses the card and says "A Mark is needed before the next Trade. It is listed in its card." — D4-era behavior that `ReviewCard.test.tsx` asserts.
+
+**The user's decision (2026-10-31):** an Action save whose next step is a Mark collapses this card and opens the card holding that Mark on its Marks panel, focus in the row, as a Mark blocker link does (P36; T5R.10's case "after an Action save open the card the result names as the next step"). The `ReviewCard.test.tsx` expectation of the D4 message changes to match. Bug task T5R.12-B3.
+
+ocr review of `676775c`: two files reviewed. Raw output: [ocr/T5R.12-676775c.json](ocr/T5R.12-676775c.json).
+
+| Severity | Location | Claim | Assessment |
+|---|---|---|---|
+| medium | `ReviewView.tsx:40` | `CardLink` always calls `preventDefault`, blocking Ctrl/Cmd-click and middle-click new-tab opens; its `href` (`/review?trade=<id>`) drops the Instrument. | Valid: bug task T5R.12-B1. |
+| medium | `ReviewView.tsx:240` | `?instrument=` and `?trade=` are read only in a `useState` initializer, so a later search-param change on the mounted screen is ignored. | Doubtful (the brief said "once on load"; links from other screens remount): bug task T5R.12-B2. |
+
+### T5R.12-B1 Card links open in a new tab with their target
+
+A modified click (Ctrl, Cmd, Shift, middle button) on a blocker link is left to the browser, and the `href` carries the Instrument when the link has one (`/review?trade=<id>&instrument=<key>`), so a new tab lands on the same card, panel and row.
+
+### T5R.12-B2 Search-param changes on the mounted Review
+
+A change of `?instrument=` or `?trade=` while the Review is mounted opens the named card as on load, subject to the A156 hold.
+
+### T5R.12-B3 An Action save whose next step is a Mark opens that card on Marks
+
+Per the user's decision above, when nothing else is held on the card (carried item 1 still governs a held card).
