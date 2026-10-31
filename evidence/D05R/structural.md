@@ -351,3 +351,22 @@ Commit `3573bdc`. ocr review: one file reviewed, no findings. Raw output: [ocr/T
 The one failure is B4.13, "should lay the Action choices out as compact chips, each radio inside its label, at 375 and 320 px" (`e2e/d4/responsive-a11y.spec.ts:68`), at line 84: `Error: Hold radio inside its chip at 375` (expected true, received false). This is the flaky case carried over from D5. Following the rule (rerun once alone before treating it as real), `npx playwright test e2e/d4/responsive-a11y.spec.ts:68 --project=chromium` passed (1 passed, 4.6 s). It has now failed under load twice and passed alone both times. T5R.8 and T5R.15 rework this check when it moves onto cards.
 
 Process note: the suite-runner left several `sleep` waiter shells running, against its brief. The main session stopped the agent and killed them.
+
+## B4.13-F1 B4.13 stable under load (user's direction)
+
+Test-only fix to `e2e/d4/responsive-a11y.spec.ts:68`. The suite serves `dist-releases/d5` (set in `e2e/d4/support.ts`) at the fixed `http://localhost:5175` (`e2e/d1/support.ts`), so no build was needed for the baseline.
+
+| Command | Result |
+|---|---|
+| `npx playwright test e2e/d4/responsive-a11y.spec.ts:68 --project=chromium --repeat-each=50 --workers=8` | exit 1; 49 of 50 failed with `listen EADDRINUSE: address already in use 127.0.0.1:5175`. The fixed port cannot be shared, so parallel workers are impossible and this run says nothing about the hypothesis. Port 5175 only, as directed, so no other port was tried. |
+| Baseline: `npx playwright test e2e/d4/responsive-a11y.spec.ts:68 --project=chromium --repeat-each=50 --workers=1` | exit 1; **5 failed, 45 passed**; all 5: `Error: Hold radio inside its chip at 375`. Reproduced with no CPU throttle. |
+| Fix: wrap each choice's measurement and five assertions in `await expect(async () => {...}).toPass({ timeout: 5000 })` (assertions, messages and thresholds unchanged) | edit to the spec only |
+| After: the same `--repeat-each=50 --workers=1` command | exit 0; **50 passed, 0 failed** |
+| Plain rerun: `npx playwright test e2e/d4/responsive-a11y.spec.ts:68 --project=chromium` (no throttle was ever used) | exit 0; 1 passed |
+| Mutation: in `src/ui/app.css`, `label.chip input` `top: 50%` changed to `top: 500px` (radio outside its chip); `TJ_BUILD_LABEL=d5 npx vite build --outDir dist-releases/d5 --emptyOutDir` (exit 0); the single case | exit 1; 1 failed; `Error: Hold radio inside its chip at 375`, `Timeout 5000ms exceeded while waiting on the predicate` |
+| Restore: `top: 50%` put back, `git diff -- src` empty, rebuilt d5 with the same command (exit 0), single case | exit 0; 1 passed |
+| `npm run lint` | exit 0 |
+| `npm run typecheck` | exit 0 |
+| `npx playwright test e2e/d4/responsive-a11y.spec.ts --project=chromium` | exit 0; 5 passed |
+
+Failures before and after: 5 of 50 before, 0 of 50 after. Throttle: none. dist-faults was not rebuilt (this case does not use it).

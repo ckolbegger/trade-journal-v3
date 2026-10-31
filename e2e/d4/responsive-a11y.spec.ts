@@ -77,13 +77,16 @@ test.describe('B4.13 Responsive and accessible', () => {
       for (const choice of ['Hold', 'Exit', 'Roll', 'Adjust']) {
         const radio = actionForm(page).getByRole('radio', { name: choice, exact: true });
         const label = actionForm(page).locator('label', { hasText: new RegExp(`^${choice}$`) });
-        const [r, l] = [await radio.boundingBox(), await label.boundingBox()];
-        expect(r && l, `${choice} boxes at ${width}`).toBeTruthy();
-        expect(r!.width, `${choice} radio width at ${width}`).toBeLessThanOrEqual(120);
-        // The chip contains the radio and its text: one box, on one line.
-        expect(r!.x >= l!.x - 1 && r!.x + r!.width <= l!.x + l!.width + 1 && r!.y >= l!.y - 1 && r!.y + r!.height <= l!.y + l!.height + 1, `${choice} radio inside its chip at ${width}`).toBe(true);
-        expect(l!.width, `${choice} chip width at ${width}`).toBeLessThanOrEqual(200);
-        expect(l!.height, `${choice} chip height at ${width}`).toBeLessThanOrEqual(60);
+        // Both boxes are re-read together until the layout has settled at the new width.
+        await expect(async () => {
+          const [r, l] = [await radio.boundingBox(), await label.boundingBox()];
+          expect(r && l, `${choice} boxes at ${width}`).toBeTruthy();
+          expect(r!.width, `${choice} radio width at ${width}`).toBeLessThanOrEqual(120);
+          // The chip contains the radio and its text: one box, on one line.
+          expect(r!.x >= l!.x - 1 && r!.x + r!.width <= l!.x + l!.width + 1 && r!.y >= l!.y - 1 && r!.y + r!.height <= l!.y + l!.height + 1, `${choice} radio inside its chip at ${width}`).toBe(true);
+          expect(l!.width, `${choice} chip width at ${width}`).toBeLessThanOrEqual(200);
+          expect(l!.height, `${choice} chip height at ${width}`).toBeLessThanOrEqual(60);
+        }).toPass({ timeout: 5000 });
       }
       await actionForm(page).getByRole('group', { name: 'Action' }).scrollIntoViewIfNeeded();
       await page.screenshot({ path: `test-results/critic-d04-1/b2-${width}-actionform.png` });
