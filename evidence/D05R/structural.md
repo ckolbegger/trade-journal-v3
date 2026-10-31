@@ -416,3 +416,16 @@ Done: `capabilities.ts` and `routes.ts` restore the D5 lists of `browseTrades` (
 | `npm run lint:deps` | exit 0 |
 
 ocr review of `881d40c`: two files reviewed, no findings. Raw output: [ocr/T5R.6-B1-881d40c.json](ocr/T5R.6-B1-881d40c.json).
+
+### Cumulative suite at `902fdb2` (T5R.6 closed)
+
+2026-10-31, by `suite-runner`, label `t5r.6-manifest`. All passed.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 71 files, 921 tests passed; exit 0 | [unit](suite-runs/t5r.6-manifest-unit.txt) |
+| Node integration | 53 files, 105 tests passed; exit 0 | [integration](suite-runs/t5r.6-manifest-integration.txt) |
+| Browser (Chromium) | 155 passed (5.7 min); exit 0 | [browser](suite-runs/t5r.6-manifest-browser.txt) |
+| Static and verify checks (the same 12) | 12 of 12 exit 0 | [checks](suite-runs/t5r.6-manifest-checks.txt) |
+
+The run included B4.13 with the B4.13-F1 retry, which passed.
