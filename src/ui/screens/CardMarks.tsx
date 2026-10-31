@@ -290,8 +290,10 @@ export function CardMarks({ facade, tradeId, marks, underlying, onEntryDirty, on
     return own !== undefined && rank(own.revision) >= rank(listed.revision) ? own : listed;
   };
   const count = Object.values(drafts).filter(isDraft).length;
-  // The card holds while any draft does (A156); leaving the panel abandons them.
-  useEffect(() => onEntryDirty('marks', count > 0), [count, onEntryDirty]);
+  // The card holds while any draft does (A156); leaving the panel abandons them. A read-only card shows no draft
+  // fields and no Discard, so it holds nothing: the drafts stay unsaved in state, but they cannot keep the card open.
+  const held = writable && count > 0;
+  useEffect(() => onEntryDirty('marks', held), [held, onEntryDirty]);
   useEffect(() => () => onEntryDirty('marks', false), [onEntryDirty]);
   const section = useRef<HTMLElement>(null);
   const saveButton = useRef<HTMLButtonElement>(null);

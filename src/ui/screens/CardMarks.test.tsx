@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
@@ -539,6 +540,39 @@ describe('Save Marks (P37, A155) not written', () => {
     await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
     await waitFor(() => expect(within(panel).getByRole('alert').textContent).toContain('could not be saved'));
     expect(within(rowOf(panel, 'XYZ', MONDAY_LABEL)).getByLabelText<HTMLInputElement>('Price').value).toBe('52.00');
+  });
+});
+
+describe('Save Marks (P37, A155) when the runtime turns read only', () => {
+  it('should let the card close, with nothing left dirty, after Save Marks returns RuntimeNotWritable and the card turns read only, its drafts unsaved', async () => {
+    const facade = cardFacade();
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'RuntimeNotWritable', runtimeReadiness: 'RecoveryOnly', failedChecks: [], workspaceStatus: 'RecoveryOnly', safeActions: [] } as unknown as SaveResult);
+    const onDirtyChange = vi.fn();
+    // A shell in miniature: a refusal switches the runtime to read only.
+    function Shell() {
+      const [writable, setWritable] = useState(true);
+      return (
+        <RuntimeContext.Provider value={{ writable, timeZone: 'America/New_York', report: (result) => result.kind === 'RuntimeNotWritable' && setWritable(false) }}>
+          <MemoryRouter initialEntries={['/review']}>
+            <ReviewView facade={facade} now={() => '2026-10-12T21:00:00Z'} onDirtyChange={onDirtyChange} />
+          </MemoryRouter>
+        </RuntimeContext.Provider>
+      );
+    }
+    render(<Shell />);
+    const user = userEvent.setup();
+    const panel = await marksPanel();
+    await user.type(within(rowOf(panel, 'XYZ', MONDAY_LABEL)).getByLabelText('Price'), '52.00');
+    await waitFor(() => expect(onDirtyChange).toHaveBeenLastCalledWith(true));
+    await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
+
+    // Read only: no draft fields, and nothing holds the card.
+    await waitFor(() => expect(onDirtyChange).toHaveBeenLastCalledWith(false));
+    expect(within(panel).queryByRole('button', { name: /Save Marks/ })).toBeNull();
+    const open = screen.getAllByRole('button', { name: /^Review / }).find((header) => header.getAttribute('aria-expanded') === 'true')!;
+    await user.click(open);
+    expect(screen.queryByRole('region', { name: 'Marks' })).toBeNull();
+    expect(screen.queryByText(/Save or discard what you entered/)).toBeNull();
   });
 });
 
