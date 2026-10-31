@@ -141,6 +141,8 @@ export type {
   // Owed reflections inside the walk (D5 P17, A68) and their resolution.
   OwedReflection,
   RangePosition,
+  // The walked Trade's slider figures, unformatted; the slider's own props type is also called SliderFigures.
+  SliderFigures as SliderEvaluation,
   ReflectionClassification,
   ReflectionCounts,
   ReflectionSaveBinding,

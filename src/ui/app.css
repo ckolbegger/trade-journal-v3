@@ -1052,3 +1052,56 @@ table.lots td:first-child {
 .slider-now.slider-pinned {
   border-radius: 3px;
 }
+
+/* The Review's position cards (A150, A151): a header button with the slider in a fixed-width side column, so sliders line up. */
+.review-cards {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 1rem;
+}
+.review-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  margin-bottom: 0.5rem;
+  padding: 0 1rem 0.5rem;
+  scroll-margin-top: 1rem;
+}
+.review-card-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 9rem;
+  gap: 0.75rem;
+  align-items: center;
+}
+.review-card-head h3 {
+  margin: 0;
+}
+.review-card-head button {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.5rem 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.review-card-name {
+  font-weight: 700;
+}
+.review-card-remains {
+  color: var(--muted);
+}
+/* At narrow widths the slider takes its own full-width row under the Underlying (A162). */
+@media (max-width: 639.98px) {
+  .review-card-head {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    padding-bottom: 0.5rem;
+  }
+}

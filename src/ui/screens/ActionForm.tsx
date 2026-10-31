@@ -20,6 +20,8 @@ export interface ActionFormProps {
   readonly onRefresh: () => Promise<boolean>;
   // Reports whether a value differs from the returned state (update deferral, D1 A5).
   readonly onDirtyChange: (dirty: boolean) => void;
+  // The Review is being read again under a changed Mark: Save waits, so it never presents the old binding.
+  readonly pending?: boolean;
 }
 
 const NOTICE = {
@@ -81,7 +83,7 @@ function returnedValues(form: ActionFormState): Values {
 }
 
 // The Action for one Trade on the Review Date. Hold is preselected as view state only; nothing is recorded until Save.
-export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyChange }: ActionFormProps) {
+export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyChange, pending = false }: ActionFormProps) {
   const { writable, report } = useRuntime();
   const returned = returnedValues(form);
   const [action, setAction] = useState(returned.action);
@@ -240,7 +242,7 @@ export function ActionForm({ facade, form, binding, onSaved, onRefresh, onDirtyC
           <textarea value={note} disabled={saving || !writable} onChange={(e) => setNote(e.target.value)} />
         </label>
       </div>
-      <button type="submit" className="pill primary" disabled={saving || refreshing || !writable}>
+      <button type="submit" className="pill primary" disabled={saving || refreshing || pending || !writable}>
         Save
       </button>
     </form>

@@ -1,36 +1,41 @@
-import { actionEntriesOf, continueToTrades, createTrades, enterMark, expect, firstPage, launchAt, marksFamily, observationsOf, onboardedAt, openReview, probe, saveAction, status, test, tradesFamily, tradesOf, workspaceOf, MONDAY_1700 } from './support.ts';
+import { actionEntriesOf, continueToTrades, createTrades, enterMark, expect, firstPage, launchAt, marksFamily, observationsOf, onboardedAt, openCard, openReview, probe, saveAction, status, test, tradesFamily, tradesOf, workspaceOf, MONDAY_1700 } from './support.ts';
 
 const DATE = 'Mon Oct 12';
 
 test.describe('B4.1 Daily Review end to end', () => {
-  test('should show the Marks family before Trades in attention order with reasons and, after relaunch, Complete with every Action shown, with four Action Entries and four observation records stored', async ({ profile }) => {
+  test('should list the position cards with their Marks inside in attention order with reasons and, after relaunch, Complete with every Action shown, with four Action Entries and four observation records stored', async ({ profile }) => {
     const { context, page } = await onboardedAt(profile, MONDAY_1700);
     await createTrades(page);
     const facts = tradesOf(workspaceOf(await probe(page))!);
 
-    // The Marks family comes first: four Instruments to mark, no Trades yet.
+    // The cards are listed with the first one open on its Marks: four Instruments to mark, one in each card.
     await openReview(page);
     await expect(status(page)).toContainText('Incomplete');
+    await expect(tradesFamily(page).getByRole('button', { name: /^Review / })).toHaveCount(4);
     await expect(marksFamily(page)).toBeVisible();
-    await expect(tradesFamily(page)).toHaveCount(0);
-    for (const symbol of ['ABC', 'DEF', 'JKL', 'XYZ']) await expect(page.getByRole('region', { name: `${symbol} Mark, ${DATE}`, exact: true })).toContainText('Missing');
+    for (const symbol of ['ABC', 'DEF', 'JKL', 'XYZ']) {
+      await openCard(page, symbol);
+      await expect(page.getByRole('region', { name: `${symbol} Mark, ${DATE}`, exact: true })).toContainText('Missing');
+    }
 
     await enterMark(page, 'XYZ', DATE, '52.00');
     await enterMark(page, 'ABC', DATE, '27.50');
     await enterMark(page, 'DEF', DATE, '40.50');
     await enterMark(page, 'JKL', DATE, '21.00');
 
-    // Continue to Trades: the Trades family, in attention order with the reason for each.
+    // The cards in attention order with the band for each, and the reason once a card is open.
     await continueToTrades(page);
     const rows = tradesFamily(page).getByRole('listitem').filter({ has: page.getByRole('button', { name: /^Review / }) });
     await expect(rows).toHaveCount(4);
     await expect(rows.nth(0)).toContainText('ABC');
     await expect(rows.nth(0)).toContainText('Boundary reached');
-    await expect(rows.nth(0)).toContainText('Stop breached');
     for (const symbol of ['XYZ', 'JKL', 'DEF']) await expect(tradesFamily(page).getByRole('listitem').filter({ hasText: `Review ${symbol}` })).toContainText('Quantified pressure');
     await expect(rows.nth(1)).toContainText('XYZ');
     await expect(rows.nth(2)).toContainText('JKL');
     await expect(rows.nth(3)).toContainText('DEF');
+    await openCard(page, 'ABC');
+    await expect(rows.nth(0)).toContainText('Stop breached');
+    await openCard(page, 'XYZ');
     await expect(rows.nth(1)).toContainText('of the way from entry to the Target');
 
     // T-A's form opens with Hold preselected: Save alone records the Action.

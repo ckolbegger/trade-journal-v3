@@ -18,6 +18,8 @@ export interface MarkEntryProps {
   readonly withdraw?: boolean;
   // Reports whether a value has been entered (update deferral, D1 A5).
   readonly onDirtyChange: (dirty: boolean) => void;
+  // Called once a save has been written, so the host can read what the Mark changed again.
+  readonly onSaved?: () => void;
 }
 
 // The plan's and the acceptance rows' exact label, with a straight apostrophe.
@@ -34,7 +36,7 @@ const FITS: Record<'Enter' | 'Correct' | 'Acknowledge', readonly MarkResolution[
 };
 
 // One Instrument's Mark for one session: its resolution and the actions that change it.
-export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: initial, resolutionRevision: initialRevision, withdraw = true, onDirtyChange }: MarkEntryProps) {
+export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: initial, resolutionRevision: initialRevision, withdraw = true, onDirtyChange, onSaved }: MarkEntryProps) {
   const { writable, report } = useRuntime();
   const [resolution, setResolution] = useState(initial);
   const [revision, setRevision] = useState(initialRevision);
@@ -127,6 +129,7 @@ export function MarkEntry({ facade, instrumentKey, tradingDate, resolution: init
       setResolution(result.resolution);
       setRevision(result.resolutionRevision);
       closeForm();
+      onSaved?.();
     }
   };
   const submit = (event: FormEvent) => {

@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import {
   acknowledgeMark, actionForm, completion, continueToTrades, createTradeAt, createTrades, enterMark, expect, expectAccessible, firstPage, FOUR_TRADES, holdTradesStore, launchAt, markEntry, MONDAY_1700, onboardedAt, onboardedPage,
-  openReview, openTradeFromOpenList, READY, recordEntry, releaseTradesStore, reloadReview, saveAction, setClock, status, tabTo, test, TUESDAY_NOON, tradesFamily, writeIntegrityFixture,
+  openCard, openReview, openTradeFromOpenList, READY, recordEntry, releaseTradesStore, reloadReview, saveAction, setClock, status, tabTo, test, TUESDAY_NOON, tradesFamily, writeIntegrityFixture,
 } from './support.ts';
 
 const DATE = 'Mon Oct 12';
@@ -136,6 +136,7 @@ test.describe('B4.13 Responsive and accessible', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await expectAccessible(page, 'Review Incomplete, narrow');
     await page.setViewportSize({ width: 1280, height: 900 });
+    await openCard(page, 'XYZ');
     await markEntry(page, 'XYZ', DATE).getByRole('button', { name: 'Enter', exact: true }).click();
     await expectAccessible(page, 'Mark entry form');
     await markEntry(page, 'XYZ', DATE).getByRole('button', { name: 'Cancel' }).click();
@@ -144,12 +145,16 @@ test.describe('B4.13 Responsive and accessible', () => {
     await enterMark(page, 'ABC', DATE, '27.50');
     await acknowledgeMark(page, 'DEF', DATE, 'No quote available.');
     await enterMark(page, 'JKL', 'Fri Oct 9', '20.80');
+    await openCard(page, 'ABC');
     await markEntry(page, 'ABC', DATE).getByRole('button', { name: 'Correct' }).click();
     await expectAccessible(page, 'Mark correction form');
     await markEntry(page, 'ABC', DATE).getByRole('button', { name: 'Cancel' }).click();
-    // The words that tell the Marks apart without colour.
+    // The words that tell the Marks apart without colour, each in its own card.
+    await openCard(page, 'XYZ');
     await expect(markEntry(page, 'XYZ', DATE)).toContainText('Manual');
+    await openCard(page, 'DEF');
     await expect(markEntry(page, 'DEF', DATE)).toContainText('Acknowledged Unavailable');
+    await openCard(page, 'JKL');
     await expect(markEntry(page, 'JKL', DATE)).toContainText('Missing');
     await expectAccessible(page, 'Review Marks family: Manual, Acknowledged Unavailable, Missing');
 
@@ -267,13 +272,12 @@ test.describe('B4.13 Responsive and accessible', () => {
     await tabTo(page, entry.getByRole('button', { name: 'Save Mark' }));
     await page.keyboard.press('Enter');
     await expect(entry.getByText('Manual')).toBeVisible();
-    await tabTo(page, page.getByRole('button', { name: 'Continue to Trades' }));
-    await page.keyboard.press('Enter');
+    // The card is open from the start; Shift+Tab from the end of the card walks back to its header with a focus ring.
     await expect(tradesFamily(page)).toBeVisible(READY);
-    // Continue to Trades is disabled while the Review refreshes, which drops focus to the end of the page;
-    // Shift+Tab walks back from there to the Trade's button.
+    // The Review is read again after the Mark; Save waits for it.
+    await expect(actionForm(page).getByRole('button', { name: 'Save' })).toBeEnabled(READY);
+    await tabTo(page, actionForm(page).getByRole('button', { name: 'Save' }));
     await shiftTabTo(page, tradesFamily(page).getByRole('button', { name: 'Review XYZ' }));
-    await page.keyboard.press('Enter');
     // Hold is preselected: Save alone records the Action.
     await expect(page.getByRole('radio', { name: 'Hold', exact: true })).toBeChecked();
     await tabTo(page, actionForm(page).getByRole('button', { name: 'Save' }));

@@ -131,13 +131,64 @@ export async function reloadReview(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible(READY);
   await expect(status(page)).toBeVisible(READY);
 }
+// The Review is a list of position cards (D5R, A150); the open card holds its own Marks.
+export const cardList = (page: Page): Locator => page.getByRole('list', { name: 'Positions' });
+// The update cases first run a previous release, whose Review has the Marks family, Continue to Trades and the Trades family
+// instead of cards. The helpers follow whichever Review is on the page, once its status has rendered.
+async function hasCards(page: Page): Promise<boolean> {
+  await expect(page.getByRole('region', { name: 'Review status' })).toBeVisible(READY);
+  return (await cardList(page).count()) > 0;
+}
+// The Marks inside the open card.
 export const marksFamily = (page: Page): Locator => page.getByRole('region', { name: 'Marks', exact: true });
-export const tradesFamily = (page: Page): Locator => page.getByRole('region', { name: 'Trades', exact: true });
+
+// The open card's header names it "Review XYZ ...". Pressing the header of the card that is open collapses it, so a
+// press through the card list ("Review XYZ" becomes opening XYZ's card) leaves an open card as it is.
+// A member of the wrapped locator, bound to it so the locator's own methods keep working through the proxy.
+function member(target: Locator, property: string | symbol): unknown {
+  const value: unknown = Reflect.get(target, property, target);
+  return typeof value === 'function' ? (value as (...args: unknown[]) => unknown).bind(target) : value;
+}
+function opening(header: Locator): Locator {
+  return new Proxy(header, {
+    get(target, property) {
+      if (property === 'click') {
+        return async (options?: Parameters<Locator['click']>[0]) => {
+          if ((await target.getAttribute('aria-expanded')) !== 'true') await target.click(options);
+        };
+      }
+      return member(target, property);
+    },
+  });
+}
+export function tradesFamily(page: Page): Locator {
+  return new Proxy(page.locator('ol[aria-label="Positions"], section[aria-label="Trades"]'), {
+    get(target, property) {
+      if (property === 'getByRole') {
+        return (role: Parameters<Locator['getByRole']>[0], options?: Parameters<Locator['getByRole']>[1]) => {
+          const found = target.getByRole(role, options);
+          return role === 'button' && typeof options?.name === 'string' && options.name.startsWith('Review ') ? opening(found) : found;
+        };
+      }
+      return member(target, property);
+    },
+  });
+}
 
 // An Instrument's Mark entry for one session ("XYZ Mark, Mon Oct 12").
 export const markEntry = (page: Page, symbol: string, date: string): Locator => page.getByRole('region', { name: `${symbol} Mark, ${date}`, exact: true });
 
+// Opens the card of the Trade on the symbol, unless it is open, and waits for its content.
+export async function openCard(page: Page, symbol: string): Promise<void> {
+  const header = page.getByRole('button', { name: new RegExp(`^Review ${symbol}\\b`) });
+  await expect(header).toBeVisible(READY);
+  if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
+  await expect(header).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.getByRole('region', { name: `${symbol} review`, exact: true })).toBeVisible(READY);
+}
+
 export async function enterMark(page: Page, symbol: string, date: string, price: string): Promise<void> {
+  if (await hasCards(page)) await openCard(page, symbol);
   const entry = markEntry(page, symbol, date);
   await entry.getByRole('button', { name: 'Enter', exact: true }).click();
   await entry.getByLabel('Price').fill(price);
@@ -146,6 +197,7 @@ export async function enterMark(page: Page, symbol: string, date: string, price:
 }
 
 export async function acknowledgeMark(page: Page, symbol: string, date: string, reason: string): Promise<void> {
+  if (await hasCards(page)) await openCard(page, symbol);
   const entry = markEntry(page, symbol, date);
   await entry.getByRole('button', { name: "Can't get a price" }).click();
   await entry.getByLabel('Reason (required)').fill(reason);
@@ -153,8 +205,9 @@ export async function acknowledgeMark(page: Page, symbol: string, date: string, 
   await expect(entry.getByText('Acknowledged Unavailable')).toBeVisible();
 }
 
+// The cards are listed from the start, so there is nothing to continue to; a previous release still has the button.
 export async function continueToTrades(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Continue to Trades' }).click();
+  if (!(await hasCards(page))) await page.getByRole('button', { name: 'Continue to Trades' }).click();
   await expect(tradesFamily(page)).toBeVisible(READY);
 }
 

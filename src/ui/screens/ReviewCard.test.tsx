@@ -123,10 +123,10 @@ function walkFacade(review: Ready, ...trades: DailyTradeReview[]): UiFacade {
   for (const trade of trades) getTrade.mockResolvedValueOnce({ kind: 'Ready', reviewDate: '2026-10-12', cutoff: review.cutoff, trade });
   return facade;
 }
-// Opens the walk and the named Trade.
+// Opens the named Trade's card; the first card that is not Done is already open when the Review loads.
 async function openTrade(user: ReturnType<typeof userEvent.setup>, underlying: string) {
-  await user.click(await screen.findByRole('button', { name: 'Continue to Trades' }));
-  await user.click(await screen.findByRole('button', { name: `Review ${underlying}` }));
+  const header = await screen.findByRole('button', { name: new RegExp(`^Review ${underlying}\\b`) });
+  if (header.getAttribute('aria-expanded') !== 'true') await user.click(header);
   return screen.findByRole('region', { name: `${underlying} review` });
 }
 
@@ -279,9 +279,11 @@ describe('Action form (AC-REV-003)', () => {
     expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
     expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledTimes(opens);
     expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenCalledTimes(1);
-    // The walk's rows follow the returned completion.
-    const rows = within(screen.getByRole('region', { name: 'Trades' })).getAllByRole('listitem');
-    expect(rows.map((row) => within(row).getByText(/^Action (saved|missing)$/).textContent)).toEqual(['Action saved', 'Action missing']);
+    // The cards follow the returned completion: the first is Done, the second still owes its Action.
+    const cards = screen.getAllByRole('button', { name: /^Review / }).map((header) => header.textContent);
+    expect(cards[0]).toContain('Done · Action saved');
+    expect(cards[1]).toContain('Action');
+    expect(cards[1]).not.toContain('Done');
   });
 });
 
@@ -383,7 +385,7 @@ describe('Changed review', () => {
     const refreshedBinding: ReviewBinding = { ...binding, marketDataSnapshotId: 'mds1:2:def', factRevisions: { t1: 3 } };
     const refreshed = tradeReview('t1', 'XYZ', { evaluation: evaluation({ ongoingRiskToStop: value(350n) }), saveBinding: savedBinding({ factRevision: 3, marketDataSnapshotId: 'mds1:2:def' }) });
     const facade = walkFacade(ready([item('t1', 'XYZ')]), first, refreshed);
-    vi.mocked(facade.DailyReview.open).mockResolvedValueOnce(ready([item('t1', 'XYZ')])).mockResolvedValueOnce(ready([item('t1', 'XYZ')])).mockResolvedValue(ready([item('t1', 'XYZ')], undefined, { binding: refreshedBinding }));
+    vi.mocked(facade.DailyReview.open).mockResolvedValueOnce(ready([item('t1', 'XYZ')])).mockResolvedValue(ready([item('t1', 'XYZ')], undefined, { binding: refreshedBinding }));
     vi.mocked(facade.DailyReview.save)
       .mockResolvedValueOnce({ kind: 'ReviewChanged', evidence: { marketDataSnapshotId: 'mds1:2:def', frames: [], factRevision: 3 } })
       .mockResolvedValue({ kind: 'Saved', action: savedAction('Exit', 'Stopped out.'), review: { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding: refreshedBinding } });
@@ -469,45 +471,12 @@ describe('Leaving the form', () => {
   });
 });
 
-describe('Leaving an unsaved Action', () => {
-  it('should hold Continue to Trades and the other Reviews while the open Action form holds an unsaved value, and say why', async () => {
-    const facade = walkFacade(ready([item('t1', 'XYZ'), item('t2', 'DEF')]), tradeReview('t1', 'XYZ'));
-    renderWalk(facade);
-    const user = userEvent.setup();
-    const trade = await openTrade(user, 'XYZ');
-    const opens = vi.mocked(facade.DailyReview.open).mock.calls.length;
-    const reasonText = /Save your Action or put back its saved values to leave this Trade/;
-
-    expect(screen.queryByText(reasonText)).toBeNull();
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Continue to Trades' }).disabled).toBe(false);
-
-    await user.click(within(trade).getByRole('radio', { name: 'Exit' }));
-    const proceed = screen.getByRole<HTMLButtonElement>('button', { name: 'Continue to Trades' });
-    const other = screen.getByRole<HTMLButtonElement>('button', { name: 'Review DEF' });
-    expect(proceed.disabled).toBe(true);
-    expect(other.disabled).toBe(true);
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Review XYZ' }).disabled).toBe(true);
-    expect(screen.getByText(reasonText)).toBeTruthy();
-    expect(proceed.getAttribute('aria-describedby')).toBe(other.getAttribute('aria-describedby'));
-    expect(proceed.getAttribute('aria-describedby')).toBe(screen.getByText(reasonText).id);
-    await user.click(proceed);
-    await user.click(other);
-    expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledTimes(opens);
-    expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole('region', { name: 'XYZ review' })).toBeTruthy();
-
-    await user.click(within(trade).getByRole('radio', { name: 'Hold' }));
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Continue to Trades' }).disabled).toBe(false);
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Review DEF' }).disabled).toBe(false);
-    expect(screen.queryByText(reasonText)).toBeNull();
-  });
-});
-
 describe('Leaving an unsaved reflection', () => {
-  it('should hold Trade selection, Continue and the blocker links while a reflection draft has a value, as it does for an Action draft', async () => {
+  it('should hold Trade selection and the blocker links while a reflection draft has a value, as it does for an Action draft', async () => {
     const user = userEvent.setup();
     const reflections = [owed('d1', 'Due', '2026-10-09T14:30:00Z', [{}])];
-    const review = ready([item('t1', 'XYZ'), item('t2', 'DEF')], [], { completion: { kind: 'Incomplete', reasons: [{ code: 'ReflectionDue', tradeId: 't2', debtIds: ['d9'] }] } });
+    // XYZ still owes its Action, so it is the card open on load.
+    const review = ready([item('t1', 'XYZ'), item('t2', 'DEF')], [], { completion: { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't1' }, { code: 'ReflectionDue', tradeId: 't2', debtIds: ['d9'] }] } });
     const facade = walkFacade(review, tradeReview('t1', 'XYZ', { reflections }));
     renderWalk(facade);
     const trade = await openTrade(user, 'XYZ');
@@ -516,14 +485,13 @@ describe('Leaving an unsaved reflection', () => {
     await user.click(within(trade).getByRole('button', { name: /Reflect on 2026-10-09 10:30/ }));
     await user.type(within(trade).getByLabelText('Reason for declining (optional)'), 'No time.');
 
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Continue to Trades' }).disabled).toBe(true);
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Review DEF' }).disabled).toBe(true);
     const blocker = screen.getByText(/Reflection due for/).closest('li')!;
     await user.click(within(blocker).getByRole('link', { name: 'DEF' }));
-    await user.click(screen.getByRole('button', { name: 'Review DEF' }));
+    await user.click(screen.getByRole('button', { name: /^Review DEF/ }));
     expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledTimes(opens);
     expect(vi.mocked(facade.DailyReview.getTrade)).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('region', { name: 'XYZ review' })).toBeTruthy();
+    expect(screen.getByText(/Save or discard what you entered for XYZ to leave it/)).toBeTruthy();
     expect(within(trade).getByLabelText<HTMLTextAreaElement>('Reason for declining (optional)').value).toBe('No time.');
   });
 });
@@ -539,7 +507,7 @@ describe('Action form extras', () => {
     expect(within(trade).queryByRole('button', { name: 'Save' })).toBeNull();
     expect(within(trade).queryByRole('radio')).toBeNull();
     expect(within(trade).getByText('No Action saved.')).toBeTruthy();
-    await user.click(screen.getByRole('button', { name: 'Review DEF' }));
+    await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
     const other = await screen.findByRole('region', { name: 'DEF review' });
     expect(within(other).getByText('Saved Action: Hold')).toBeTruthy();
     expect(within(other).queryByRole('button', { name: 'Change' })).toBeNull();
@@ -570,11 +538,15 @@ describe('Action form when the shell turns read only after a refused write', () 
     expect(within(trade).queryByText('No Action saved.')).toBeNull();
   });
 
-  it('should release the unsaved hold so Continue to Trades works', async () => {
+  it('should release the unsaved hold so the card can be left', async () => {
     const { trade } = await refusedSave();
     await within(trade).findByRole('radio', { name: 'Exit' });
-    await vi.waitFor(() => expect(screen.getByRole('button', { name: 'Continue to Trades' })).toHaveProperty('disabled', false));
-    expect(screen.queryByText(/Save your Action or put back its saved values/)).toBeNull();
+    // Once the shell is read only the entered values no longer hold the card: its header collapses it.
+    await vi.waitFor(async () => {
+      await userEvent.setup().click(screen.getByRole('button', { name: /^Review XYZ\b/ }));
+      expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
+    });
+    expect(screen.queryByText(/Save or discard what you entered/)).toBeNull();
   });
 });
 
@@ -684,7 +656,6 @@ describe('Refresh to a different Review Date', () => {
     vi.mocked(facade.DailyReview.getTrade).mockResolvedValueOnce({ kind: 'Ready', reviewDate: '2026-10-13', cutoff: '2026-10-13T20:00:00Z', trade: moved });
     vi.mocked(facade.DailyReview.open)
       .mockResolvedValueOnce(ready([item('t1', 'XYZ')]))
-      .mockResolvedValueOnce(ready([item('t1', 'XYZ')]))
       .mockResolvedValue(ready([item('t1', 'XYZ')], undefined, { reviewDate: '2026-10-13' }));
     const save = vi.mocked(facade.DailyReview.save);
     save.mockResolvedValueOnce({ kind: 'Conflict' });
@@ -720,7 +691,6 @@ describe('Refresh to a different Review Date after a failed Trade read', () => {
       .mockRejectedValueOnce(new Error('offline'))
       .mockResolvedValueOnce({ kind: 'Ready', reviewDate: '2026-10-13', cutoff: '2026-10-13T20:00:00Z', trade: moved });
     vi.mocked(facade.DailyReview.open)
-      .mockResolvedValueOnce(ready([item('t1', 'XYZ')]))
       .mockResolvedValueOnce(ready([item('t1', 'XYZ')]))
       .mockResolvedValue(ready([item('t1', 'XYZ')], undefined, { reviewDate: '2026-10-13' }));
     const save = vi.mocked(facade.DailyReview.save);
@@ -764,8 +734,8 @@ describe('After a save', () => {
 
     const outcomes = [
       { nextStep: post({ kind: 'Done' }), text: 'Every Trade has an Action.' },
-      { nextStep: post({ kind: 'Mark', row: { instrumentKey: 'XYZ', tradingDate: '2026-10-12', trades: ['t1'], resolution: { kind: 'Missing' }, resolutionRevision: 'None', task: 'Manual' } }), text: 'A Mark is needed before the next Trade. It is listed under Marks.' },
-      { nextStep: { kind: 'ChangedDuringAssembly' } as const, text: 'The Action is saved. Continue to Trades to refresh the Review.' },
+      { nextStep: post({ kind: 'Mark', row: { instrumentKey: 'XYZ', tradingDate: '2026-10-12', trades: ['t1'], resolution: { kind: 'Missing' }, resolutionRevision: 'None', task: 'Manual' } }), text: 'A Mark is needed before the next Trade. It is listed in its card.' },
+      { nextStep: { kind: 'ChangedDuringAssembly' } as const, text: 'The Action is saved. Reload the Review to refresh it.' },
     ] as const;
     for (const { nextStep, text } of outcomes) {
       const again = walkFacade(ready(trades), tradeReview('t1', 'XYZ'));
@@ -985,6 +955,8 @@ describe('Results for a Trade no longer open', () => {
     ({ kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 3 }, completion: { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't2' }, { code: 'ActionMissing', tradeId: 't3' }] }, nextStep, binding }) as const;
   const trades = [item('t1', 'XYZ'), item('t2', 'DEF'), item('t3', 'GHI')];
   const ready1 = (trade: DailyTradeReview) => ({ kind: 'Ready' as const, reviewDate: '2026-10-12', cutoff: ready(trades).cutoff, trade });
+  // Whether each card, in list order, reads Done.
+  const doneCards = () => screen.getAllByRole('button', { name: /^Review / }).map((header) => header.textContent.includes('Done · Action saved'));
 
   it('should keep the open Trade and its entered values when a save for another Trade settles late', async () => {
     const user = userEvent.setup();
@@ -994,7 +966,7 @@ describe('Results for a Trade no longer open', () => {
     renderWalk(facade);
     const first = await openTrade(user, 'XYZ');
     await user.click(within(first).getByRole('button', { name: 'Save' }));
-    await user.click(screen.getByRole('button', { name: 'Review DEF' }));
+    await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
     const second = await screen.findByRole('region', { name: 'DEF review' });
     await user.click(within(second).getByRole('radio', { name: 'Exit' }));
     await user.type(within(second).getByRole('textbox', { name: INTENT_LABEL }), 'Keep me.');
@@ -1002,10 +974,7 @@ describe('Results for a Trade no longer open', () => {
     held.resolve({ kind: 'Saved', action: savedAction('Hold'), review: post({ kind: 'Trade', trade: tradeReview('t3', 'GHI') }) });
 
     // The save's walk-level effect applies; the selection does not move.
-    await vi.waitFor(() => {
-      const rows = within(screen.getByRole('region', { name: 'Trades' })).getAllByRole('listitem');
-      expect(rows.map((row) => within(row).getByText(/^Action (saved|missing)$/).textContent)).toEqual(['Action saved', 'Action missing', 'Action missing']);
-    });
+    await vi.waitFor(() => expect(doneCards()).toEqual([true, false, false]));
     const still = screen.getByRole('region', { name: 'DEF review' });
     expect(screen.queryByRole('region', { name: 'GHI review' })).toBeNull();
     expect(within(still).getByRole('radio', { name: 'Exit' })).toHaveProperty('checked', true);
@@ -1018,9 +987,8 @@ describe('Results for a Trade no longer open', () => {
     const slow = deferred<ReturnType<typeof ready1>>();
     vi.mocked(facade.DailyReview.getTrade).mockImplementation(((query: { tradeId: string }) => (query.tradeId === 't1' ? slow.promise : Promise.resolve(ready1(tradeReview('t2', 'DEF'))))));
     renderWalk(facade);
-    await user.click(await screen.findByRole('button', { name: 'Continue to Trades' }));
-    await user.click(await screen.findByRole('button', { name: 'Review XYZ' }));
-    await user.click(screen.getByRole('button', { name: 'Review DEF' }));
+    // The first card opens on load and its read is the slow one; the second is pressed before it settles.
+    await user.click(await screen.findByRole('button', { name: /^Review DEF\b/ }));
     await screen.findByRole('region', { name: 'DEF review' });
 
     slow.resolve(ready1(tradeReview('t1', 'XYZ')));
@@ -1041,7 +1009,7 @@ describe('Results for a Trade no longer open', () => {
     const alert = await within(first).findByRole('alert');
     vi.mocked(facade.DailyReview.getTrade).mockImplementation(((query: { tradeId: string }) => (query.tradeId === 't1' ? slow.promise : Promise.resolve(ready1(tradeReview('t2', 'DEF'))))));
     await user.click(within(alert).getByRole('button', { name: 'Refresh' }));
-    await user.click(screen.getByRole('button', { name: 'Review DEF' }));
+    await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
     await screen.findByRole('region', { name: 'DEF review' });
 
     slow.resolve(ready1(tradeReview('t1', 'XYZ')));
@@ -1063,36 +1031,15 @@ describe('Results for a Trade no longer open', () => {
     vi.mocked(facade.DailyReview.open).mockReturnValueOnce(heldOpen.promise);
     vi.mocked(facade.DailyReview.getTrade).mockImplementation(((query: { tradeId: string }) => Promise.resolve(ready1(query.tradeId === 't1' ? tradeReview('t1', 'XYZ') : tradeReview('t2', 'DEF')))));
     await user.click(within(alert).getByRole('button', { name: 'Refresh' }));
-    await user.click(screen.getByRole('button', { name: 'Review DEF' }));
-    await screen.findByRole('region', { name: 'DEF review' });
-
+    await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
+    // A card pressed while the Review is being asked for is read once that settles, under the binding it returned.
     heldOpen.resolve(ready(trades));
+    await screen.findByRole('region', { name: 'DEF review' });
+    await new Promise((r) => setTimeout(r, 20));
     await new Promise((r) => setTimeout(r, 20));
 
     expect(screen.getByRole('region', { name: 'DEF review' })).toBeTruthy();
     expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
-  });
-
-  it('should keep a Trade selected while a blocker link\'s reopen is in flight', async () => {
-    const user = userEvent.setup();
-    const review = ready(trades, [], { completion: { kind: 'Incomplete', reasons: [{ code: 'ReflectionDue', tradeId: 't2', debtIds: ['d9'] }] } });
-    const facade = walkFacade(review);
-    vi.mocked(facade.DailyReview.getTrade).mockImplementation(((query: { tradeId: string }) => Promise.resolve(ready1(query.tradeId === 't1' ? tradeReview('t1', 'XYZ') : tradeReview('t2', 'DEF')))));
-    renderWalk(facade);
-    await user.click(await screen.findByRole('button', { name: 'Continue to Trades' }));
-    await screen.findByRole('button', { name: 'Review XYZ' });
-    const heldOpen = deferred<Ready>();
-    vi.mocked(facade.DailyReview.open).mockReturnValueOnce(heldOpen.promise);
-    const blocker = screen.getByText(/Reflection due for/).closest('li')!;
-    await user.click(within(blocker).getByRole('link', { name: 'DEF' }));
-    await user.click(screen.getByRole('button', { name: 'Review XYZ' }));
-    await screen.findByRole('region', { name: 'XYZ review' });
-
-    heldOpen.resolve(review);
-    await new Promise((r) => setTimeout(r, 20));
-
-    expect(screen.getByRole('region', { name: 'XYZ review' })).toBeTruthy();
-    expect(screen.queryByRole('region', { name: 'DEF review' })).toBeNull();
   });
 
   it('should keep the form opened again when a save for the earlier opening of the same Trade settles late', async () => {
@@ -1104,43 +1051,30 @@ describe('Results for a Trade no longer open', () => {
     renderWalk(facade);
     const first = await openTrade(user, 'XYZ');
     await user.click(within(first).getByRole('button', { name: 'Save' }));
-    await user.click(screen.getByRole('button', { name: 'Review DEF' }));
+    await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
     await screen.findByRole('region', { name: 'DEF review' });
-    await user.click(screen.getByRole('button', { name: 'Review XYZ' }));
+    await user.click(screen.getByRole('button', { name: /^Review XYZ\b/ }));
     const again = await screen.findByRole('region', { name: 'XYZ review' });
     await user.click(within(again).getByRole('radio', { name: 'Exit' }));
     await user.type(within(again).getByRole('textbox', { name: INTENT_LABEL }), 'Keep me.');
 
     held.resolve({ kind: 'Saved', action: savedAction('Hold'), review: post({ kind: 'Trade', trade: tradeReview('t3', 'GHI') }) });
 
-    await vi.waitFor(() => {
-      const rows = within(screen.getByRole('region', { name: 'Trades' })).getAllByRole('listitem');
-      expect(rows.map((row) => within(row).getByText(/^Action (saved|missing)$/).textContent)).toEqual(['Action saved', 'Action missing', 'Action missing']);
-    });
+    await vi.waitFor(() => expect(doneCards()).toEqual([true, false, false]));
     expect(screen.queryByRole('region', { name: 'GHI review' })).toBeNull();
     expect(within(screen.getByRole('region', { name: 'XYZ review' })).getByRole('textbox', { name: INTENT_LABEL })).toHaveProperty('value', 'Keep me.');
   });
 
-  it('should replace an open Trade with nothing when Continue to Trades refreshes the Review', async () => {
+  it('should drop the after-save message when another card is opened', async () => {
     const user = userEvent.setup();
-    const facade = walkFacade(ready(trades), tradeReview('t1', 'XYZ'));
-    renderWalk(facade);
-    await openTrade(user, 'XYZ');
-    await user.click(screen.getByRole('button', { name: 'Continue to Trades' }));
-    await vi.waitFor(() => expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledTimes(3));
-    expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
-  });
-
-  it('should drop the after-save message when Continue to Trades refreshes the Review', async () => {
-    const user = userEvent.setup();
-    const facade = walkFacade(ready(trades), tradeReview('t1', 'XYZ'));
+    const facade = walkFacade(ready(trades), tradeReview('t1', 'XYZ'), tradeReview('t2', 'DEF'));
     vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Saved', action: savedAction('Hold'), review: post({ kind: 'Done' }) });
     renderWalk(facade);
     const first = await openTrade(user, 'XYZ');
     await user.click(within(first).getByRole('button', { name: 'Save' }));
     expect((await screen.findByRole('status')).textContent).toBe('Every Trade has an Action.');
-    await user.click(screen.getByRole('button', { name: 'Continue to Trades' }));
-    await vi.waitFor(() => expect(vi.mocked(facade.DailyReview.open)).toHaveBeenCalledTimes(3));
+    await user.click(screen.getByRole('button', { name: /^Review DEF\b/ }));
+    await screen.findByRole('region', { name: 'DEF review' });
     expect(screen.queryByRole('status')).toBeNull();
   });
 });
