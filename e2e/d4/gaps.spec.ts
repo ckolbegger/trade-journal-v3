@@ -1,4 +1,4 @@
-import { completion, createTradeAt, enterMark, expect, FOUR_TRADES, markRow, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, reachCard, reloadReview, saveAction, setClock, test, workspaceOf } from './support.ts';
+import { completion, createTradeAt, enterMark, expect, FOUR_TRADES, markRow, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, reachCard, reachPanel, reloadReview, saveAction, setClock, test, workspaceOf } from './support.ts';
 
 const MNO = { ...FOUR_TRADES[0]!.plan, symbol: 'MNO' };
 const WEDNESDAY_1700 = '2026-10-07T21:00:00Z';
@@ -38,7 +38,7 @@ test.describe('B4.6 Skipped sessions', () => {
     await enterMark(page, 'MNO', 'Fri Oct 9', '51.50');
     await reloadReview(page);
     await expect(completion(page)).toHaveText('Complete');
-    await reachCard(page, 'MNO');
+    await reachPanel(page, 'MNO', 'Marks');
     await expect(page.getByRole('group', { name: EARLIER })).toHaveCount(0);
     await expect(await markRow(page, 'MNO', 'Fri Oct 9')).toHaveCount(0);
     expect(observationsOf(workspaceOf(await probe(page))!).map((o) => [o.tradingDate, o.marks[0]!.price])).toEqual([['2026-10-07', '50.5'], ['2026-10-08', '51'], ['2026-10-09', '51.5'], ['2026-10-12', '52']]);

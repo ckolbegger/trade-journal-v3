@@ -1,4 +1,4 @@
-import { actionEntriesOf, actionFormOf, cardList, createTrades, enterMark, expect, firstPage, launchAt, markRow, marksFamily, observationsOf, onboardedAt, openReview, probe, reachCard, saveAction, status, test, tradesOf, workspaceOf, MONDAY_1700 } from './support.ts';
+import { actionEntriesOf, actionFormOf, cardList, createTrades, enterMark, expect, firstPage, launchAt, markRow, marksFamily, observationsOf, onboardedAt, openReview, probe, reachCard, reachPanel, saveAction, status, test, tradesOf, workspaceOf, MONDAY_1700 } from './support.ts';
 
 const DATE = 'Mon Oct 12';
 
@@ -70,7 +70,7 @@ test.describe('B4.1 Daily Review end to end', () => {
     const expected = { XYZ: 'Hold', ABC: 'Exit', JKL: 'Adjust', DEF: 'Hold' };
     for (const [symbol, action] of Object.entries(expected)) {
       await expect(cardList(again).getByRole('listitem').filter({ hasText: `Review ${symbol}` })).toContainText('Action saved');
-      await reachCard(again, symbol);
+      await reachPanel(again, symbol, 'Action');
       await expect(again.getByRole('region', { name: 'Saved Action' })).toContainText(`Saved Action: ${action}`);
     }
 
