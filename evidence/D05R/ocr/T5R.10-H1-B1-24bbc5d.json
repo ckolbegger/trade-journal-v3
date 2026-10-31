@@ -1,0 +1,79 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 3322,
+    "input_tokens": 3262,
+    "output_tokens": 60,
+    "cache_read_tokens": 1920,
+    "elapsed": "4s"
+  },
+  "tool_calls": {
+    "total": 0,
+    "by_tool": {},
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "e2e/d4/support.ts",
+      "files": [
+        "e2e/d4/support.ts"
+      ]
+    }
+  ],
+  "session_id": "a17911b3-d6ab-4e70-95fb-4640c484ccbb",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "a17911b3-d6ab-4e70-95fb-4640c484ccbb",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "24bbc5d",
+      "resolved_base": "a2f0cff78a93440808d12626005c342e330709c4",
+      "resolved_head": "24bbc5df7258b40f7769a017fc37917b5b7ce815",
+      "exact_range": "a2f0cff78a93440808d12626005c342e330709c4..24bbc5df7258b40f7769a017fc37917b5b7ce815",
+      "source_artifact_sha256": "6631bff4dfe7469d4939d65ebfc75e7723e8a080d413ad76af2aa8206ea9b68e"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "c9ebc73bf71335425979e9fa6a568933da43021fe87cbd129e6cb32129acf216"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "c9ebc73bf71335425979e9fa6a568933da43021fe87cbd129e6cb32129acf216"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 4002
+  }
+}
