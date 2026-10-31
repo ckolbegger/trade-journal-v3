@@ -895,3 +895,27 @@ describe('historical gap groups name their Trades (A153)', () => {
     expect(earlier[0]!.trades.find((t) => t.tradeId === a)).toEqual({ tradeId: a, from: '2026-10-09' });
   }, 30_000);
 });
+
+describe('Plan baseline (P40)', () => {
+  it('should return T-A Plan baseline: 1R $250.00, original planned reward $600.00, and planned Reward : risk 12/5, with Reward : risk now 8/9 in its evaluation', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a } = await cardFixture(stack);
+    const opened = ready(await open(stack, MONDAY_1700));
+
+    const result = await stack.dailyReview.getTrade({ reviewDate: opened.reviewDate, tradeId: a, binding: opened.binding });
+
+    expect(result.kind).toBe('Ready');
+    const evaluation = result.kind === 'Ready' ? result.trade.evaluation : undefined;
+    expect(evaluation?.oneR).toEqual({ kind: 'Value', value: Rational.of(250n) });
+    expect(evaluation?.planBaseline).toEqual({
+      kind: 'Value',
+      value: expect.objectContaining({
+        oneR: Rational.of(250n),
+        originalPlannedRisk: Rational.of(250n),
+        originalPlannedReward: Rational.of(600n),
+        rewardRiskRatio: Rational.of(12n, 5n),
+      }) as unknown,
+    });
+    expect(evaluation?.rewardRiskNow).toEqual({ kind: 'Value', value: Rational.of(8n, 9n) });
+  }, 30_000);
+});

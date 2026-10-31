@@ -220,3 +220,15 @@ It reviewed `daily-review.ts` and found nothing. Raw output: [ocr/T5R.3-B2-2a683
 | Static and verify checks (the same 12) | 12 of 12 exit 0 | [checks](suite-runs/t5r.3-b2-gap-trades-checks.txt) |
 
 The bug tasks of T5R.3 (B1 by the main session's review, B2 by the user's decision 63) left no ocr findings.
+
+## T5R.4 Daily Review: Plan baseline in getTrade
+
+Case (P40, A158), test `describe("Plan baseline (P40)")` in `src/coordinators/daily-review/daily-review.test.ts`: T-A at Monday 17:00 with Monday Marks returns 1R $250.00, original planned reward $600.00, planned Reward : risk 12/5, and Reward : risk now 8/9. All four figures came out exactly as planned.
+
+Flag, first-run pass: the case passed on its first run. T5R.2 built the behavior and `getTrade` already returns `trade.evaluation` (a `TradeEvaluation`). Mutation: `getTrade` set `evaluation: undefined`; the case failed with `AssertionError: expected undefined to deeply equal { kind: "Value", ... }`; restored (`git diff -- src` empty). Logged as a note row in `tdd-log.md`. The first logged green row for this task ran no test (parentheses broke -t filtering); the real green is the following row.
+
+Shape (no production change): `GetDailyTradeReviewResult` Ready `trade.evaluation.planBaseline: CalculationResult<PlanBaseline>` (`oneR`, `originalPlannedRisk`, `originalPlannedReward`, `rewardRiskRatio`, bases), plus `evaluation.oneR` and `evaluation.rewardRiskNow`. T5R.11 reads planned from `planBaseline.value.rewardRiskRatio`.
+
+Checks (each alone, exit 0): vitest src/coordinators src/domain src/modules (512 passed), src/ui, tests/integration, typecheck, tsc6, lint, lint:deps.
+
+Commit: this commit.
