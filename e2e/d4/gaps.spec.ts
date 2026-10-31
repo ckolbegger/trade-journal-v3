@@ -18,7 +18,8 @@ test.describe('B4.6 Skipped sessions', () => {
     // Monday 17:00: Friday was skipped and is listed as an optional gap, beside Monday's task.
     await setClock(context, page, MONDAY_1700);
     await openReview(page);
-    const earlier = page.getByRole('group', { name: EARLIER });
+    await reachPanel(page, 'MNO', 'Marks');
+    const earlier =page.getByRole('group', { name: EARLIER });
     await expect(earlier).toContainText('These sessions do not block the Review.');
     await expect(await markRow(page, 'MNO', 'Fri Oct 9')).toBeVisible();
     await expect(earlier).not.toContainText('Wed Oct 7');
