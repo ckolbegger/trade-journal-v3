@@ -452,12 +452,11 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
       if (pass.kind !== 'Ready') return { done: pass };
       // The overview's Workspace is the one this read must be in; its content revision moves with every write.
       return {
-        settle: ({ workspace }) =>
-          workspace.databaseName !== request.binding.workspace.databaseName
-            ? { kind: 'ReviewChanged' }
-            : atRevision !== undefined && workspace.contentRevision !== atRevision
-              ? { kind: 'Moved' }
-              : { kind: 'Ready', ...pass.review, trade: { ...pass.review.trade, saveBinding: { ...pass.review.trade.saveBinding, databaseName: workspace.databaseName } } },
+        settle: ({ workspace }) => {
+          if (workspace.databaseName !== request.binding.workspace.databaseName) return { kind: 'ReviewChanged' };
+          if (atRevision !== undefined && workspace.contentRevision !== atRevision) return { kind: 'Moved' };
+          return { kind: 'Ready', ...pass.review, trade: { ...pass.review.trade, saveBinding: { ...pass.review.trade.saveBinding, databaseName: workspace.databaseName } } };
+        },
       };
     });
 

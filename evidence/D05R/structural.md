@@ -250,17 +250,87 @@ At `c9d7ec9`, 2026-10-31, by `suite-runner`, label `t5r.4-plan-baseline`. A firs
 | Browser (Chromium) | 155 passed (5.7 min); exit 0 | [browser](suite-runs/t5r.4-plan-baseline-browser.txt) |
 | Static and verify checks (the same 12) | 12 of 12 exit 0 | [checks](suite-runs/t5r.4-plan-baseline-checks.txt) |
 
-### Cumulative suite at `c9d7ec9` (T5R.4 closed)
+Note on this run (added after the fact): two orchestrating sessions ran D5R in this worktree at once from 10:53 to about 11:03. One recorded this run. The other dispatched T5R.5 at about 10:58, before this run was recorded. The unit, integration and browser suites ran on the tree at `c9d7ec9`. The checks finished at 11:00:12, while T5R.5's uncommitted edits were in the tree (committed as `f53ccb4` at 11:01), so they prove T5R.4's code only together with those edits. T5R.4 is test-only, and T5R.5's cumulative run covers the 12 checks again. The user chose one session to continue, and the other stood down. Commit `55b4d9a` also swept in T5R.5's in-progress tdd-log rows.
 
-2026-10-31, by a `suite-runner` the previous session started (label `t5r.4-plan-baseline`); that session ended while the run was still going, and this session recorded its outputs.
+## T5R.5 Daily Review: `save` (`SaveReviewMarks`)
 
-| Suite | Result | Output |
-|---|---|---|
-| Unit | 70 files, 912 tests passed; exit 0 | [unit](suite-runs/t5r.4-plan-baseline-unit.txt) |
-| Node integration | 53 files, 105 tests passed; exit 0 | [integration](suite-runs/t5r.4-plan-baseline-integration.txt) |
-| Browser (Chromium) | 155 passed (5.7 min); exit 0 | [browser](suite-runs/t5r.4-plan-baseline-browser.txt) |
-| Static and verify checks | not counted (see below) | [checks](suite-runs/t5r.4-plan-baseline-checks.txt), partial |
+Commit `f53ccb4`: `daily-review.ts`, `types.ts`, and the new `save-marks.test.ts`. Its tdd-log rows were committed in `55b4d9a` (see the note above). Six cases, each with red and green rows or a flagged first-run note:
+1. XYZ saved for Monday and Friday from T-A's card in one commit, resolutions equal to the stored records. Red: `expected MarksSaved, got Rejected`.
+2. The revised completion, progress and binding, T-A's card (range position 9/17, Reward : risk now 8/9) and T-F's item (4/7) in the same result. Red: `expected a Ready review, got ChangedDuringAssembly`.
+3. Next step T-C for DEF. Red: `expected 'id-0008' to be 'id-0031'`.
+4. Rejected and Conflict passed back unchanged, nothing written. **First-run pass**, built by case 1. Mutation: Conflict returned with `keys: []`. Failure: `AssertionError: expected { kind: 'Conflict', keys: [] } to deeply equal …`.
+5. Saved Marks reported with the Review part as `ChangedDuringAssembly`. **First-run pass**, built by case 2. Mutation: report only the first saved Mark. Failure: `expected … to have a length of 2 but got 1`.
+6. Write gate. **First-run pass**, built by the existing `guard.run('DailyReview.save', …)`. Mutation: bypass the guard for `SaveReviewMarks`. Failure: `expected { kind: 'MarksSaved', … } to deeply equal ObjectContaining{…}`.
 
-The unit, integration and browser suites ran on the tree at `c9d7ec9` (10:53–11:00). The checks started at 11:00, after this session had dispatched T5R.5, whose edits were already in the working tree, so they don't count as evidence for `c9d7ec9`. That isn't a gap: T5R.4 is test-only and changes no production code. The checks passed 12 of 12 at `2a683c7`, and T5R.4's task agent ran typecheck, `tsc6`, lint and `lint:deps` on `c9d7ec9` (each exit 0). T5R.5's cumulative run covers all 12 checks again.
+Refactor: `readAfterSave` was extracted (the Review-date-only coherent assembly, which now also returns the walked Trades). `postSaveReview` and the new `postMarksReview` use it. Checks (each alone, exit 0): typecheck, `tsc6`, lint, `lint:deps`; the 87 `src/coordinators/daily-review` tests pass.
 
-Process note: this session dispatched T5R.5 while that run's browser suite was still going, before the run was recorded. Later runs are recorded before the next task starts.
+Public types: `SaveReviewMarksRequest` `{ kind, reviewDate, tradeId, binding, entries: MarketDataPrepareEntry[] }`; `SavedMark` `{ key, resolution, resolutionRevision, classification }`; `MarksNextStep` (`Mark` with `row` and `trade`, the first walked card in attention order holding the row's Instrument; `Trade`; `Done`), kept separate from `ReviewNextStep` so the Action save's results are unchanged; `PostMarksReview` (`Ready` with progress, completion, binding, `trades: WalkedTrade[]`, `trade`, `nextStep`; or `ChangedDuringAssembly`); `SaveDailyReviewResult` gains `MarksSaved`, `Conflict.keys?` and `MarketDataPrepareIssue` in `Rejected`.
+
+Agent's notes:
+- **The commit-level write gate isn't covered by T5R.5's test.** The guard stops the save before the commit. With the guard bypassed and the coordinator's post-commit `RuntimeNotWritable` line also removed, that unit setup committed and returned `MarksSaved`. The line was kept. Persistence's own gate for this path is for I5R.6 (T5R.14) to prove through the facade; that brief names this.
+- **A commit Conflict reruns `prepareEffects` to name the moved keys.** If the rerun returns Prepared, the result is `Conflict` with `keys: []`. A Conflict is never retried.
+
+### ocr review of `f53ccb4`
+
+Two files reviewed (test file excluded), two findings. Raw output: [ocr/T5R.5-f53ccb4.json](ocr/T5R.5-f53ccb4.json).
+
+| Severity | Location | Claim | Assessment |
+|---|---|---|---|
+| high | `daily-review.ts:658` | `saveReviewMarks` never checks `request.binding`, including its Workspace `databaseName`, so a request left over from another Workspace could write Marks into the active one. | Doubtful, with a failure scenario. The Action save checks `databaseName` (`checkBinding`). Bug task **T5R.5-B1**. |
+| medium | `daily-review.ts:612-613` | `postMarksReview` reads the overview, then calls `getTrade`, whose `settle` compares only `databaseName`. A write landing in between pairs a newer card with an older overview. | Valid. `postSaveReview` has the same pre-existing pattern. Bug task **T5R.5-B2**. |
+
+**Interpretation for B1 (implementation-level, not a plan deviation).** A155 says `SaveReviewMarks` "adds no other check", and gives the reason: "Market Data accepts any well-formed key on a completed session (D4 P10), and the screen offers only the Review's keys". That rules out checking the keys against the Review. It doesn't rule out checking that the command's `binding` names the Workspace being written, which every binding exists to guarantee (D4 A46). The command carries `binding` for that reason.
+
+#### T5R.5-B1 The binding's Workspace is checked before Marks are written
+
+Defect: a `SaveReviewMarks` whose binding names another Workspace database writes into the active one. Case:
+- it should return ReviewChanged and write nothing when the binding's Workspace database is not the active one.
+
+Done in commit `a2494cb`.
+- **The case.** Red: `expected { kind: 'MarksSaved', … } to deeply equal { kind: 'ReviewChanged' }`. Then green.
+- **The fix.** `saveReviewMarks` reads `currentBinding()` before preparing, and returns `{ kind: 'ReviewChanged' }` when the database name differs. Nothing is added inside the commit, and no key or revision is compared.
+- **The types.** `ReviewChanged`'s `evidence` stays required for the Action save, so its call sites are unchanged. To get there, `DailyReview.save` gained two overloads: Action and Debt requests return `SaveDailyReviewResult`, and the union returns the new `SaveReviewMarksResult` (`SaveDailyReviewResult | { kind: 'ReviewChanged'; evidence?: undefined }`). That needed a cast in `daily-review.ts` and in `compose.ts`'s forwarder.
+- **Checks.** typecheck, `tsc6`, lint and `lint:deps` exit 0; 89 tests in the daily-review directory and D4's changed-evidence integration pass.
+- **Note for the final report.** The overloads and casts are heavier than the defect needed. T5R.6 (the manifest and facade) is the natural place to check they're still worth it.
+
+ocr review of `a2494cb`: four files reviewed, no findings. Raw output: [ocr/T5R.5-B1-a2494cb.json](ocr/T5R.5-B1-a2494cb.json).
+
+#### T5R.5-B2 The post-save card and next step come from the overview's content revision
+
+Defect: after a commit, the overview (`readAfterSave`) and the cards (`getTrade`) are read in separate coherent passes. A write landing between them yields a result that mixes two revisions. Cases:
+- it should not return a MarksSaved card read at a later Workspace revision than its overview: when a write lands between the two reads, the post-save assembly is read again or reported as ChangedDuringAssembly;
+- it should do the same for the Action save's post-save next step (the same pattern in `postSaveReview`, from D4 and D5).
+
+Done in commit `ec56fae`. Both cases went red, then green, with no first-run passes:
+- Marks save. Red: `AssertionError: expected 15 to be 16` (Ready, with a binding older than the card's revision).
+- Action save. Red: `expected 21 to be 20`.
+
+In each test, one write lands on the second post-commit `ResolveSession`, between the overview read and the first card read. The Marks test writes an unrelated instrument (`ZZZ`), because an ABC Mark changes the card's snapshot and was already caught as `ReviewChanged`.
+
+The fix:
+- `getTrade` is a thin wrapper over an internal `readTrade(request, atRevision?)`. The post-save paths pass the overview's content revision, and a card that settles at another revision is reported internally as `Moved`.
+- A bounded `atOneRevision` re-reads the whole post-save assembly up to `ASSEMBLY_ATTEMPTS` times, then returns `ChangedDuringAssembly`. `postMarksReview` and `postSaveReview` both use it, so it covers the Action save and Debt resolution too.
+- Public `getTrade` semantics are unchanged, and the normal path adds no request.
+
+The tests depend on the post-save request order (`ResolveSession`, then `ResolveFrames`). Checks: typecheck, `tsc6`, lint and `lint:deps` exit 0; the daily-review unit tests and integration pass (59 files, 195 tests).
+
+### ocr review of `ec56fae`
+
+One file reviewed, two findings. Raw output: [ocr/T5R.5-B2-ec56fae.json](ocr/T5R.5-B2-ec56fae.json).
+
+| Severity | Location | Claim | Assessment |
+|---|---|---|---|
+| medium | `daily-review.ts:637` | A write between the overview and card reads that changes a fact revision, frame snapshot or Debt makes the card read return `ReviewChanged`. That skips the `Moved` re-read, so one transient write can force Refresh instead of a retry (same in `postSaveReview`). | **Dismissed (Wrong as a defect).** The result is still coherent, because the pair is never mixed. `ChangedDuringAssembly`, with Refresh, is the outcome A155 and A157 name, and B2's case wording allows it. A retry on this path would be a refinement, not a fix. Listed for the final report. |
+| low | `daily-review.ts:458` | `getTrade`'s `settle` nests a ternary (database mismatch, then `Moved`, then `Ready`). | Valid. As with T5R.1-B3, this is a refactor bug task, **T5R.5-B3**. |
+
+#### T5R.5-B3 `readTrade`'s settle without a nested ternary
+
+Change: rewrite the `settle` callback at `daily-review.ts` lines 456–460 with plain `if` statements in the same order, with no behaviour change and no new test. Verification: the daily-review unit tests, typecheck, `tsc6`, lint, `lint:deps`.
+
+Done: `settle` is now a block body with two plain `if` statements (database mismatch gives `ReviewChanged`, then revision mismatch gives `Moved`) and a final `return` of `Ready`, in the same order and with the same values; no behaviour change, no new test.
+
+- `npx vitest run src/coordinators tests/integration`: exit 0, 299 passed (69 files)
+- `npm run typecheck`: exit 0
+- `npx tsc6 --noEmit`: exit 0
+- `npm run lint`: exit 0
+- `npm run lint:deps`: exit 0
