@@ -1,0 +1,81 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 11685,
+    "input_tokens": 11606,
+    "output_tokens": 79,
+    "cache_read_tokens": 3072,
+    "elapsed": "8s"
+  },
+  "tool_calls": {
+    "total": 1,
+    "by_tool": {
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/coordinators/daily-review/daily-review.ts",
+      "files": [
+        "src/coordinators/daily-review/daily-review.ts"
+      ]
+    }
+  ],
+  "session_id": "3fa6c30e-6b53-44fa-b889-9c6cf9b82411",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3fa6c30e-6b53-44fa-b889-9c6cf9b82411",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "2a683c7",
+      "resolved_base": "df6b1c5ca1cac14f19b6287a67d888a25ed3e02b",
+      "resolved_head": "2a683c73f258b07525bf07ff772e2873de8acb6f",
+      "exact_range": "df6b1c5ca1cac14f19b6287a67d888a25ed3e02b..2a683c73f258b07525bf07ff772e2873de8acb6f",
+      "source_artifact_sha256": "fed01e21ed38fa464e4cde5c8a608f822a6672a0c4c6e01e3a551791e312b507"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "bcc86696d61ab2b506abf48ef42c9a1d92188047e15f030bb42c03db4c7ea4b7"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "bcc86696d61ab2b506abf48ef42c9a1d92188047e15f030bb42c03db4c7ea4b7"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 7714
+  }
+}

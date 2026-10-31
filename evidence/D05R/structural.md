@@ -201,3 +201,22 @@ Cases (commands logged in `tdd-log.md` under T5R.3-B2):
 Fix: in `assemble` (`src/coordinators/daily-review/daily-review.ts`) the gap group's `trades` use `.map` with `firstRelevantGapDate(g.closes, r.earliestRelevance) ?? reviewDate` instead of dropping a Trade with no date. Nothing in Market Data, storage or schema changed.
 
 Checks (each alone, exit 0): `npx vitest run src/modules/market-data src/coordinators src/domain` (392 passed), `src/ui` (327), `tests/integration` (105), `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`.
+
+Commit: `2a683c7`. With it, T5R.3's planned gap case stands as written (decision 63, plan revision 22, `df6b1c5`, tagged `claude-opus-5.5-plan-r22`).
+
+### ocr review of `2a683c7`
+
+It reviewed `daily-review.ts` and found nothing. Raw output: [ocr/T5R.3-B2-2a683c7.json](ocr/T5R.3-B2-2a683c7.json).
+
+### Cumulative suite at `2a683c7` (T5R.3 closed)
+
+2026-10-31, by `suite-runner`, label `t5r.3-b2-gap-trades`. All passed.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 70 files, 911 tests passed; exit 0 | [unit](suite-runs/t5r.3-b2-gap-trades-unit.txt) |
+| Node integration | 53 files, 105 tests passed; exit 0 | [integration](suite-runs/t5r.3-b2-gap-trades-integration.txt) |
+| Browser (Chromium) | 155 passed (5.5 min); exit 0 | [browser](suite-runs/t5r.3-b2-gap-trades-browser.txt) |
+| Static and verify checks (the same 12) | 12 of 12 exit 0 | [checks](suite-runs/t5r.3-b2-gap-trades-checks.txt) |
+
+The bug tasks of T5R.3 (B1 by the main session's review, B2 by the user's decision 63) left no ocr findings.
