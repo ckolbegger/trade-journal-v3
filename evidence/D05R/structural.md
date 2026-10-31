@@ -485,3 +485,14 @@ Done in commit `ed3cf69`. Both cases went red (`expected undefined to deeply equ
 - **Note for T5R.8.** The coordinator's `SliderFigures` (calculation results) and T5R.7's `SliderFigures` props (formatted strings) share a name. T5R.8 maps one to the other.
 
 ocr review of `ed3cf69`: three files reviewed, no findings. Raw output: [ocr/T5R.3-B3-ed3cf69.json](ocr/T5R.3-B3-ed3cf69.json).
+
+### Cumulative suite at `2cb6202` (T5R.3-B3 closed)
+
+2026-10-31, by `suite-runner`, label `t5r.3-b3-slider-figures`. All passed.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 72 files, 927 tests passed; exit 0 | [unit](suite-runs/t5r.3-b3-slider-figures-unit.txt) |
+| Node integration | 53 files, 105 tests passed; exit 0 | [integration](suite-runs/t5r.3-b3-slider-figures-integration.txt) |
+| Browser (Chromium) | 155 passed (5.6 min); exit 0 | [browser](suite-runs/t5r.3-b3-slider-figures-browser.txt) |
+| Static and verify checks (the same 12) | 12 of 12 exit 0 | [checks](suite-runs/t5r.3-b3-slider-figures-checks.txt) |
