@@ -1,0 +1,215 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 6 finding(s) across 8 selected item(s).",
+  "summary": {
+    "files_reviewed": 8,
+    "comments": 6,
+    "total_tokens": 407522,
+    "input_tokens": 403578,
+    "output_tokens": 3944,
+    "cache_read_tokens": 21120,
+    "elapsed": "2m49s"
+  },
+  "tool_calls": {
+    "total": 25,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 9,
+      "file_read": 14
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "An Action save advances or collapses the card even when another Mark or reflection form still contains entered values. Those forms are independently editable alongside the Action, so this unmounts them and loses their drafts, bypassing A156. Apply the returned completion/binding, but keep the current card mounted if any dirty entry other than the Action being saved remains.",
+      "existing_code": "      show(next.trade.tradeId, { trade: next.trade });\n    } else collapse();",
+      "start_line": 233,
+      "end_line": 234,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "Separate Mark rows can finish saving while an earlier Mark-triggered refresh is in flight. The second refresh calls reopen(), which immediately returns undefined because inFlight is set; it then replaces and clears refreshing.current and clears rereading while the first refresh is still running. Action Save becomes enabled and newly opened cards can read the old binding. Serialize/queue these refreshes (including a refresh covering the latest saved Mark), and keep pending active until all refresh work finishes.",
+      "existing_code": "    refreshing.current = asking;\n    const result = await asking;\n    if (refreshing.current === asking) refreshing.current = undefined;",
+      "start_line": 203,
+      "end_line": 205,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/CardMarks.tsx",
+      "content": "This preserves not only the earlier-session membership but also its original resolutions and revisions. After saving an earlier Mark, paging away and back remounts MarkEntry from this stale snapshot: the saved Mark appears Missing (or shows the old acknowledgment), and the next save carries an obsolete revision. Preserve the session list separately from its current saved resolution/revision, and update that evidence after each save so remounted rows remain accurate.",
+      "existing_code": "  const [earlier] = useState(marks.earlier);",
+      "start_line": 128,
+      "end_line": 128,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "Replacing the overview also replaces its trade order. DailyReview.open recalculates attention ordering, so entering/correcting a Mark can move cards within this same view, including the card currently being edited. A150 requires stable ordering within a Review view. Retain the initial trade-ID order when merging refreshed trade data rather than rendering the refreshed order directly.",
+      "existing_code": "      if (next) apply(() =\u003e next);",
+      "start_line": 200,
+      "end_line": 200,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "The initial selection now ignores the instrument query parameter. TradeList and TradeDetail still link missing Marks to /review?instrument=XYZ, but those links now open the first incomplete Trade instead of the card holding XYZ (or no card when all are Done). Resolve the requested Instrument to its owning card before falling back to the first incomplete card, and focus its Mark row to preserve the existing navigation contract.",
+      "existing_code": "  const [firstId] = useState(() =\u003e walkedTrades(initial).find((t) =\u003e isOwing(remainingOf(t.tradeId, initial.completion)))?.tradeId);",
+      "start_line": 149,
+      "end_line": 149,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewView.tsx",
+      "content": "Guard this callback with the opening that initiated the Mark write. Withdrawing an acknowledgment has no entered value, so the user can open another card while the write is pending. When the old MarkEntry finishes, this callback still captures the old openId, but refreshTrade captures the *new* selection.current. Its result therefore passes the selection check and replaces the new card with the old one, potentially discarding values entered in the new card. Refresh the overview after a late Mark save, but only replace card detail if the original opening is still current.",
+      "existing_code": "  const markSaved = () =\u003e {\n    if (openId === undefined) return;\n    setRereading(true);",
+      "start_line": 269,
+      "end_line": 271,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Card review and marking UI refactor with shared types, styling, and end-to-end support",
+      "files": [
+        "e2e/d4/support.ts",
+        "src/app/types.ts",
+        "src/ui/app.css",
+        "src/ui/screens/ActionForm.tsx",
+        "src/ui/screens/CardMarks.tsx",
+        "src/ui/screens/MarkEntry.tsx",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewView.tsx"
+      ]
+    }
+  ],
+  "session_id": "c3d6df24-df01-4903-9e3a-67b19a3e8a09",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c3d6df24-df01-4903-9e3a-67b19a3e8a09",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "5ab6a29",
+      "resolved_base": "2600a734e738165b6eea6e387e241ad8dc373a94",
+      "resolved_head": "5ab6a29c88847e03c7ca03622b398eb0502bddb7",
+      "exact_range": "2600a734e738165b6eea6e387e241ad8dc373a94..5ab6a29c88847e03c7ca03622b398eb0502bddb7",
+      "source_artifact_sha256": "a3b0ea65da8c0b9dd366fad5f1d8e8007a1dc267d757aebf17a4f674bce6345d"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "0d53a8afc918624d2b1e68bf1323fb02066a7325c1dd2d115b027b234534fa75"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "7b214390f098966787a8a89265b7bf39b49d103a9caa0e685ed5690f943b90d2"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "d686c65cb47d78a0b7a7c9e93c4469400942cea9eb4b01000c67e28fb66c2442"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "8b50c78ca555721d7f1c40e76775a2e7b349df99a7820569d46df41f2a1ecd89"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "a24e2f38c8ac344ed681f8fbeab4233938f1fae76be49762242215459e4f4c02"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "9f4dea65849871aef7e4367df856aeaeb421b8a4786e48e5a4a8b61cefa21971"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "e6f9b5eef19a30f72e4a285ba08e2f0d4437fae359fe422f8dfde065fd8586d0"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "47e446a7a874190fd3cc5b8728672491717b580e9fb8935f7b434fbfb477fe00"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "0d53a8afc918624d2b1e68bf1323fb02066a7325c1dd2d115b027b234534fa75"
+        },
+        {
+          "item_id": "28d9dac30140868b5ff82f3128fe52a527534ffce26da1ec10da0741844bd9af",
+          "path": "src/ui/screens/ActionForm.tsx",
+          "fingerprint": "7b214390f098966787a8a89265b7bf39b49d103a9caa0e685ed5690f943b90d2"
+        },
+        {
+          "item_id": "41e5b5fd9120773618275de28795e788717356305ec8adf32df169ba69aacacb",
+          "path": "src/app/types.ts",
+          "fingerprint": "d686c65cb47d78a0b7a7c9e93c4469400942cea9eb4b01000c67e28fb66c2442"
+        },
+        {
+          "item_id": "6903a9d0dd0bccd77bdf3134def1dc31529aa0443996868ada464eb5e2c06e4a",
+          "path": "src/ui/screens/ReviewView.tsx",
+          "fingerprint": "8b50c78ca555721d7f1c40e76775a2e7b349df99a7820569d46df41f2a1ecd89"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "a24e2f38c8ac344ed681f8fbeab4233938f1fae76be49762242215459e4f4c02"
+        },
+        {
+          "item_id": "8cafdf7056bcd91e91f1079e2cc3ad454d495596823efca5c67a82a9a5d41102",
+          "path": "src/ui/screens/CardMarks.tsx",
+          "fingerprint": "9f4dea65849871aef7e4367df856aeaeb421b8a4786e48e5a4a8b61cefa21971"
+        },
+        {
+          "item_id": "c986f208cd94f9f07b0ebb3c169ef0911febddecd602ee0263ec1950274b1035",
+          "path": "src/ui/screens/MarkEntry.tsx",
+          "fingerprint": "e6f9b5eef19a30f72e4a285ba08e2f0d4437fae359fe422f8dfde065fd8586d0"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "47e446a7a874190fd3cc5b8728672491717b580e9fb8935f7b434fbfb477fe00"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 168963
+  }
+}

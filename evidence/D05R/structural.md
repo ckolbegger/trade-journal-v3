@@ -538,3 +538,26 @@ Edits to `e2e/d4/acknowledge.spec.ts`, `gaps.spec.ts`, `runtime-failure.spec.ts`
 | `npm run typecheck` | exit 0 |
 
 ocr review of `32b180e`: not run, at the user's direction (test-only commit, as for B4.13-F1).
+
+### ocr review of `5ab6a29`
+
+Eight files reviewed (test files excluded), six findings. Raw output: [ocr/T5R.8-5ab6a29.json](ocr/T5R.8-5ab6a29.json).
+
+| Severity | Location | Claim | Assessment |
+|---|---|---|---|
+| high | `ReviewView.tsx:269` | `markSaved` takes the open card from its render, while `refreshTrade` takes `selection.current` when it runs. A Mark save that finishes after another card opened re-reads the old card and shows it in place of the new one, dropping its drafts. | Valid. The `selection.current !== request` guard compares against a request taken after the switch, so it doesn't catch this. `markSaved` and `refreshTrade` stay in `ReviewView` after T5R.9, so it isn't owned by the temporary rows. Bug task **T5R.8-B3**. |
+| high | `ReviewView.tsx:233` | An Action save advances or collapses the card while other forms hold values. | Dismissed: the next step after a save is T5R.12's ("links, blockers, and next step"). Carried into T5R.12's brief. |
+| medium | `ReviewView.tsx:200` | `apply(() => next)` replaces the whole Review, so a refresh after a Mark can reorder cards within one view. | Valid against A150 ("attention order, which is stable within a Review view"; a Done card "keeps its place"). Bug task **T5R.8-B2**. |
+| medium | `ReviewView.tsx:203` | Two Mark-triggered refreshes overlap: the second `reopen()` returns nothing while the first is in flight, so the "couldn't refresh" banner shows. | Dismissed: it needs two per-row saves in quick succession, which only the temporary `CardMarks` rows allow. T5R.9's single Save Marks replaces them. Carried into T5R.9's brief. |
+| medium | `CardMarks.tsx:128` | The `earlier` snapshot keeps its first resolutions, so paging away and back after a save shows stale rows. | Dismissed: `CardMarks.tsx` is temporary and T5R.9 replaces it. Carried into T5R.9's brief. |
+| medium | `ReviewView.tsx:149` | The first card ignores `?instrument=`, while the Open list and Detail still link with it. | Dismissed: links are T5R.12's (A161). |
+
+#### T5R.8-B2 Card order stays fixed within a Review view
+
+Defect: a refresh after a save rebuilds the card list from the new overview, so cards can change places within one view. Case:
+- it should keep each card in its place within the view when a refreshed Review returns the Trades in a different order.
+
+#### T5R.8-B3 A late Mark save never replaces the card opened since
+
+Defect: a Mark save that finishes after another card opened re-reads and shows the card it was entered on. Case:
+- it should keep the newly opened card shown, with its values, when a Mark saved on the previous card finishes after the switch.
