@@ -408,3 +408,54 @@ describe('observation binding', () => {
     expect(evaluate({ state, frame: availableFrame('52.00') }).observation).toEqual({ ...consulted, mark: null });
   });
 });
+
+// The card fixture's Trades (plan, fills, and Mark of the breakdown, section 4), built in the style of the
+// reference Trade so these cases need no stack.
+function cardTrade(symbol: string, stop: string, target: string, entry: string, fills: readonly (readonly [string, string, string])[]): DerivedTradeState {
+  const instrument = { kind: 'Stock', symbol } as const;
+  const changes = fills.map(([time, quantity, price], i) =>
+    positionChange(`pc-${i + 1}`, 2 * i + 1, [{ ...execution(`ex-${i + 1}`, time, 2 * i + 2, quantity, price, '1.00'), instrument }]),
+  );
+  const record = referenceRecord(changes);
+  return derivedState({
+    ...record,
+    plan: {
+      ...record.plan,
+      underlying: symbol,
+      legs: [{ factId: 'leg-1', side: 'Long', instrument, quantity: '100', intendedEntry: entry }],
+      stops: [{ factId: 'stop-1', kind: 'UnderlyingPrice', price: stop }],
+      targets: [{ factId: 'target-1', kind: 'UnderlyingPrice', price: target }],
+    },
+  });
+}
+// T-A: PC1 Friday 2026-10-09 10:00 and PC2 Monday 11:00; the others fill Monday 10:00.
+const T_A = () => cardTrade('XYZ', '47.5', '56', '50', [['2026-10-09T14:00:00Z', '60', '50.10'], ['2026-10-12T15:00:00Z', '40', '50.30']]);
+const T_B = () => cardTrade('ABC', '28', '36', '30', [['2026-10-12T14:00:00Z', '100', '30.00']]);
+const T_C = () => cardTrade('DEF', '38', '46', '40', [['2026-10-12T14:00:00Z', '100', '40.00']]);
+const T_E = () => cardTrade('JKL', '19', '30', '20', [['2026-10-12T14:00:00Z', '100', '20.00']]);
+const mondayFrame = (symbol: string, price: string): ObservationFrame => ({ ...availableFrame(price), instrument: { kind: 'Stock', symbol } });
+
+describe('Reward : risk now (P40)', () => {
+  it('should return Incremental Reward to Target divided by Ongoing Risk to Stop as an exact Value: T-A 8/9 at XYZ 52.00, T-E 9/2 at JKL 21.00', () => {
+    expect(exact(evaluate({ state: T_A(), frame: mondayFrame('XYZ', '52.00') }).rewardRiskNow)).toBe(q(8n, 9n));
+    expect(exact(evaluate({ state: T_E(), frame: mondayFrame('JKL', '21.00') }).rewardRiskNow)).toBe(q(9n, 2n));
+  });
+
+  it('should return NotApplicable when Ongoing Risk to Stop is zero (T-B past its Stop)', () => {
+    const evaluation = evaluate({ state: T_B(), frame: mondayFrame('ABC', '27.50') });
+    // Past the Stop the risk is exactly zero, not negative, and the reward is still positive.
+    expect(exact(evaluation.ongoingRiskToStop)).toBe(q(0n));
+    expect(exact(evaluation.incrementalRewardToTarget)).toBe(q(850n));
+    expect(evaluation.rewardRiskNow).toEqual({ kind: 'NotApplicable', reason: 'NoOngoingRisk' });
+  });
+
+  it('should return Unavailable with the missing Mark Instrument and date when either figure is Unavailable (T-C, DEF on 2026-10-12)', () => {
+    const missing: ObservationFrame = { ...mondayFrame('DEF', '0'), resolution: { kind: 'Missing' } };
+    const evaluation = evaluate({ state: T_C(), frame: missing });
+    expect(evaluation.rewardRiskNow).toEqual({
+      kind: 'Unavailable',
+      reason: 'MarkMissing',
+      detail: { instrument: { kind: 'Stock', symbol: 'DEF' }, date: '2026-10-12' },
+    });
+  });
+});

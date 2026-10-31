@@ -98,6 +98,8 @@ export interface TradeEvaluation {
   readonly ongoingRiskToStop: CalculationResult<Rational>;
   readonly worstCaseOngoingRisk: CalculationResult<Rational>;
   readonly incrementalRewardToTarget: CalculationResult<Rational>;
+  // Incremental Reward to Target over Ongoing Risk to Stop (P40); NotApplicable once risk is zero.
+  readonly rewardRiskNow: CalculationResult<Rational>;
   readonly conditions: readonly ConditionStatus[];
   // The observation the figures were computed from; mark is null when no exact Mark valued them.
   readonly observation: {
@@ -249,6 +251,14 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
       };
     }),
   });
+  const ongoingRiskToStop = marked((mark) => atLeastZero(quantity.mul(mark.sub(stop))));
+  const incrementalRewardToTarget = marked((mark) => atLeastZero(quantity.mul(target.sub(mark))));
+  const rewardRiskNowOf = (): CalculationResult<Rational> => {
+    if (ongoingRiskToStop.kind !== 'Value') return ongoingRiskToStop;
+    if (incrementalRewardToTarget.kind !== 'Value') return incrementalRewardToTarget;
+    if (ongoingRiskToStop.value.compare(ZERO) <= 0) return { kind: 'NotApplicable', reason: 'NoOngoingRisk' };
+    return value(incrementalRewardToTarget.value.div(ongoingRiskToStop.value));
+  };
   return {
     kind: 'Evaluated',
     valuationDate: date,
@@ -262,9 +272,10 @@ export function evaluate(input: TradeEvaluationInput): TradeEvaluation {
     currentMarkedPnl: marked(currentMarked),
     currentMarkedPnlInPlanR: marked((mark) => currentMarked(mark).div(state.baseline.oneR)),
     incurredFees: current(state.fees.incurredOpening),
-    ongoingRiskToStop: marked((mark) => atLeastZero(quantity.mul(mark.sub(stop)))),
+    ongoingRiskToStop,
     worstCaseOngoingRisk: marked((mark) => quantity.mul(mark)),
-    incrementalRewardToTarget: marked((mark) => atLeastZero(quantity.mul(target.sub(mark)))),
+    incrementalRewardToTarget,
+    rewardRiskNow: rewardRiskNowOf(),
     ongoingRiskToStopInPlanR: marked((mark) => atLeastZero(quantity.mul(mark.sub(stop))).div(state.baseline.oneR)),
     worstCaseOngoingRiskInPlanR: marked((mark) => quantity.mul(mark).div(state.baseline.oneR)),
     incrementalRewardToTargetInPlanR: marked((mark) => atLeastZero(quantity.mul(target.sub(mark))).div(state.baseline.oneR)),
