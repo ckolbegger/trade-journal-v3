@@ -165,6 +165,20 @@ interface PanelHeader {
   readonly done: boolean;
 }
 
+function marksStatus(needed: number, rows: number, earlier: number): string {
+  if (needed > 0) return `${needed} needed`;
+  if (rows > 0) return 'Saved';
+  if (earlier > 0) return 'Optional';
+  return 'None';
+}
+
+function reflectionsStatus(due: number, anyResolved: boolean, owed: number): string {
+  if (due > 0) return `${due} due`;
+  if (anyResolved) return 'Resolved';
+  if (owed > 0) return 'Not due';
+  return 'None';
+}
+
 function panelHeaders(trade: DailyTradeReview, marks: CardMarkRows, remaining: Remaining): Record<PanelName, PanelHeader> {
   const rows = marks.today.length;
   const earlier = marks.earlier.reduce((sum, group) => sum + group.missing.length + group.acknowledged.length, 0);
@@ -175,12 +189,12 @@ function panelHeaders(trade: DailyTradeReview, marks: CardMarkRows, remaining: R
   return {
     Marks: {
       summary: [rows > 0 ? `${remaining.marks} of ${rows} for ${date}` : `No Marks for ${date}`, ...(earlier > 0 ? [`${earlier} earlier optional`] : [])].join(' · '),
-      status: remaining.marks > 0 ? `${remaining.marks} needed` : rows > 0 ? 'Saved' : earlier > 0 ? 'Optional' : 'None',
+      status: marksStatus(remaining.marks, rows, earlier),
       done: remaining.marks === 0,
     },
     Reflections: {
       summary: owed > 0 ? `${owed} owed, ${due} due now` : 'None owed',
-      status: due > 0 ? `${due} due` : trade.reflections.some((r) => r.classification === 'Due') ? 'Resolved' : owed > 0 ? 'Not due' : 'None',
+      status: reflectionsStatus(due, trade.reflections.some((r) => r.classification === 'Due'), owed),
       done: due === 0,
     },
     Action: {
