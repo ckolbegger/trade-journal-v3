@@ -536,3 +536,5 @@ Edits to `e2e/d4/acknowledge.spec.ts`, `gaps.spec.ts`, `runtime-failure.spec.ts`
 | `npm run test:e2e` | 155 passed (5.5 min); exit 0 |
 | `npm run lint` | exit 0 |
 | `npm run typecheck` | exit 0 |
+
+ocr review of `32b180e`: not run, at the user's direction (test-only commit, as for B4.13-F1).
