@@ -869,3 +869,5 @@ ocr review of `2cbe809`: ocr selected nothing (three specs excluded). The review
 #### T5R.10-H2-B3 The first earlier-sessions read reaches the Marks panel
 
 In `gaps.spec.ts`, reach MNO's Marks panel before the first earlier-sessions read (lines 19–22), keeping every expectation.
+
+Done in commit `cf007eb` (T5R.10-H2-B3, structural): `reachPanel(page, 'MNO', 'Marks')` right after `openReview`, before the first earlier-sessions reads; every `expect` unchanged. `gaps.spec.ts` passed; typecheck, `tsc6`, lint and `lint:deps` exit 0.
