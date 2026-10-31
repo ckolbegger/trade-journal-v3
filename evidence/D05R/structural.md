@@ -574,3 +574,5 @@ Done in commit `4fdaa50` (T5R.8-B3):
 - **The setup.** Holding open an Enter or Correct save doesn't work, because the typed price keeps the card dirty and the A156 hold refuses the switch. The test therefore uses the one per-row save that leaves nothing typed: Withdraw on DEF's acknowledged Mark. It holds `MarketData.save` open, opens JKL, types into JKL's first textbox, then resolves the save. A 50 ms `act` wait follows, because the late refresh now ends with no further call to wait on.
 - **The fix.** `refreshTrade(tradeId, request = selection.current)`. `markSaved` passes `shown.opening`, so the refresh belongs to the opening the Mark was saved under. The Review itself still refreshes; only the shown card is protected.
 - **Checks.** typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 22 files, 335 passed.
+
+ocr review of `4fdaa50`: one file reviewed (test excluded), no findings. Raw output: [ocr/T5R.8-B3-4fdaa50.json](ocr/T5R.8-B3-4fdaa50.json).
