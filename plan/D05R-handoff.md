@@ -179,7 +179,12 @@ An approved revision is committed and tagged `claude-opus-5.5-plan-r<n>`. The ne
   - **In that clone:** relocate the test files under `src/itg/d5r/` as plain `.ts`, copying the `support.ts` files alongside in the parent commit.
   - **Relocation artifacts:** dismiss findings caused only by the relocation (import paths, suite discovery).
 - **The browser-critic gate (T5R.16).**
-  1. Run the complete cumulative unit, integration and browser suites with the `suite-runner` subagent until they pass, and record the run.
+  1. **Make sure a full green run covers the code the critic will see.** The main session does this before spawning a critic. The critic never reads `evidence/`. (User's direction, 2026-10-31.)
+     - Take the newest "Cumulative suite at `<sha>`" record in `evidence/D05R/structural.md`. Every suite and check in it must have passed.
+     - Run `git diff --quiet <sha> HEAD -- . ':!evidence' ':!plan'`, and `git status --porcelain -- . ':!evidence' ':!plan'`.
+     - **If the diff exits 0 and the status prints nothing,** no code has changed since that run. Reuse it: record in `structural.md` the run the critic relies on, with both commands and their results, and spawn the critic without a new run.
+     - **Otherwise,** run the complete cumulative unit, integration and browser suites with the `suite-runner` subagent until they pass, and record the run.
+     - **After critic defects are fixed,** the code has changed, so this check always leads to a new run before the next fresh critic, as the kickoff requires.
   2. Spawn a **fresh** `general-purpose` critic agent, briefed from `.claude/docs/critic-brief.md` (brief v2). The frozen plan authorizes this spawn. The brief:
      - names deliverable D5R, the worktree and the commit;
      - forbids reading `evidence/` and any other worktree;
