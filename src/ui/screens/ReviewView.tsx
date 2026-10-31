@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { UiFacade } from '../../app/compose.ts';
-import type { IncompleteReason, OpenDailyReviewResult, PostSaveReview, ReviewCompletion } from '../../app/types.ts';
+import type { IncompleteReason, MarketDataPrepareEntry, OpenDailyReviewResult, PostSaveReview, ReviewCompletion, SavedMark, SaveReviewMarksResult } from '../../app/types.ts';
 import { PageTitle } from '../PageTitle.tsx';
 import { shortDate } from '../format.ts';
 import type { SavedAction } from './ActionForm.tsx';
@@ -128,6 +128,45 @@ function marksOf(review: Ready, tradeId: string): CardMarkRows {
   return { today: family.today.filter((row) => row.trades.includes(tradeId)), earlier };
 }
 
+type MarksSaved = Extract<SaveReviewMarksResult, { kind: 'MarksSaved' }>;
+
+// The Review's Marks family after a Marks save: each saved key's resolution and revision on its Review-date row, and a
+// saved earlier session out of its Instrument's gap list (an acknowledged one stays, listed as acknowledged). The gap groups
+// are rebuilt at the next `open` (P38); until then no card holding the key shows it as it was.
+function withSavedMarks(review: Ready, saved: readonly SavedMark[]): Ready {
+  const savedFor = (instrumentKey: string, tradingDate: string) => saved.find((m) => m.key.instrumentKey === instrumentKey && m.key.tradingDate === tradingDate);
+  return {
+    ...review,
+    families: review.families.map((family) => {
+      if (family.family !== 'Marks') return family;
+      const today = family.today.map((row) => {
+        const mark = savedFor(row.instrumentKey, row.tradingDate);
+        return mark ? { ...row, resolution: mark.resolution, resolutionRevision: mark.resolutionRevision, task: mark.resolution.kind === 'Missing' ? ('Manual' as const) : null } : row;
+      });
+      const earlier = family.earlier.map((group) => {
+        const marked = [...group.missing, ...group.acknowledged].flatMap((date) => {
+          const mark = savedFor(group.instrumentKey, date);
+          return mark ? [{ date, mark }] : [];
+        });
+        if (marked.length === 0) return group;
+        const dates = new Set(marked.map((m) => m.date));
+        const acknowledgments = { ...group.acknowledgments };
+        const revisions = { ...group.revisions };
+        const acknowledged = group.acknowledged.filter((date) => !dates.has(date));
+        for (const { date, mark } of marked) {
+          revisions[date] = mark.resolutionRevision;
+          if (mark.resolution.kind === 'AcknowledgedUnavailable') {
+            acknowledgments[date] = mark.resolution.acknowledgment;
+            acknowledged.push(date);
+          }
+        }
+        return { ...group, missing: group.missing.filter((date) => !dates.has(date)), acknowledged, revisions, acknowledgments };
+      });
+      return { ...family, today, earlier };
+    }),
+  };
+}
+
 type ViewState =
   | { readonly kind: 'Loading' }
   | { readonly kind: 'Ready'; readonly review: Ready }
@@ -158,6 +197,10 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
   };
   // The card the trader pressed, and how many times a card has been asked for: it scrolls into view and takes focus.
   const [reveal, setReveal] = useState({ tradeId: '', count: 0 });
+  // The card whose Marks were saved but whose figures could not be read under them (ChangedDuringAssembly).
+  const [stale, setStale] = useState<string>();
+  // How many times Save Marks has finished on a card: it moves on to its next panel that is not done (A157).
+  const [advance, setAdvance] = useState({ tradeId: '', count: 0 });
   // What follows a save when no Trade is next, and a refresh that could not be made.
   const [afterSave, setAfterSave] = useState<string>();
   const [failed, setFailed] = useState(false);
@@ -184,14 +227,19 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
     setShown(undefined);
   };
   const openId = shown?.tradeId;
-  // The Review asked for again, one at a time; undefined when it could not be produced.
-  const inFlight = useRef(false);
-  const reopen = async (): Promise<Ready | undefined> => {
-    if (inFlight.current) return undefined;
-    inFlight.current = true;
-    const result = await facade.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: now() }).catch(() => undefined);
-    inFlight.current = false;
-    return result?.kind === 'Ready' ? result : undefined;
+  // The Review asked for again, one at a time: a request made while one is in flight shares its answer, so two quick saves
+  // are both refreshed. Undefined when it could not be produced.
+  const inFlight = useRef<Promise<Ready | undefined>>(undefined);
+  const reopen = (): Promise<Ready | undefined> => {
+    if (inFlight.current) return inFlight.current;
+    const asking = facade.DailyReview.open({ date: { kind: 'LatestCompleted' }, asOf: now() })
+      .catch(() => undefined)
+      .then((result) => {
+        inFlight.current = undefined;
+        return result?.kind === 'Ready' ? result : undefined;
+      });
+    inFlight.current = asking;
+    return asking;
   };
   // The Review and one Trade again, under the new binding. The Trade replaces the shown one without a loading state, so the form keeps its values.
   // The opening the refresh belongs to: the one the save was entered under, or the one shown when it is asked for.
@@ -207,6 +255,7 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
     if (!result) return false;
     const trade = await facade.DailyReview.getTrade({ reviewDate: result.reviewDate, tradeId, binding: result.binding }).catch(() => undefined);
     if (trade?.kind !== 'Ready') return false;
+    setStale(undefined);
     if (selection.current !== request) return true;
     // An Action belongs to one Review Date: the form is keyed by it, so the old date's draft is dropped, and the trader is told.
     // The date the shown form was opened under, not the overview's: a failed read can leave the two apart.
@@ -276,6 +325,28 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
       setRereading(false);
     });
   };
+  // Save Marks (P37): one command for the open card, under the newest binding the screen holds.
+  // The saved Marks and the Review under them are the screen's from here on, with no read (P38, A157): the Trades re-sort,
+  // and the open card shows its refreshed Trade in place, keeping what was entered in it.
+  const marksSaved = ({ marks, review: post }: MarksSaved, opening: number, tradeId: string) => {
+    apply((current) => withSavedMarks(current, marks));
+    if (post.kind !== 'Ready') {
+      // The Marks are saved, but the Review under them could not be read: the card says so until Refresh.
+      setStale(tradeId);
+      return;
+    }
+    apply((current) => ({ ...current, completion: post.completion, binding: post.binding, families: current.families.map((f) => (f.family === 'Trades' ? { ...f, trades: post.trades } : f)) }));
+    if (selection.current !== opening) return;
+    setShown({ tradeId: post.trade.tradeId, opening, detail: { trade: post.trade } });
+    setAdvance((current) => ({ tradeId: post.trade.tradeId, count: current.count + 1 }));
+  };
+  const saveMarks = async (entries: readonly MarketDataPrepareEntry[]): Promise<SaveReviewMarksResult> => {
+    const from = latest.current;
+    const opening = shown?.opening ?? -1;
+    const result = await facade.DailyReview.save({ kind: 'SaveReviewMarks', reviewDate: from.reviewDate, tradeId: openId ?? '', binding: from.binding, entries });
+    if (result.kind === 'MarksSaved') marksSaved(result, opening, openId ?? '');
+    return result;
+  };
   // Only the card open on load is read here; later presses call select themselves.
   useEffect(() => {
     if (firstId !== undefined) void read(firstId, 0);
@@ -299,6 +370,7 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
             expanded={trade.tradeId === openId}
             detail={trade.tradeId === openId ? shown?.detail : undefined}
             reveal={reveal.tradeId === trade.tradeId ? reveal.count : 0}
+            advance={advance.tradeId === trade.tradeId ? advance.count : 0}
             marks={marksOf(review, trade.tradeId)}
             underlying={underlying}
             onToggle={() => toggle(trade.tradeId)}
@@ -306,6 +378,8 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
             onReflectionResolved={reflectionResolved}
             onRefresh={() => refreshTrade(trade.tradeId)}
             onMarkSaved={markSaved}
+            onSaveMarks={saveMarks}
+            outOfDate={stale === trade.tradeId}
             holdMessage={refused && trade.tradeId === openId}
             pending={rereading}
             onEntryDirty={onEntryDirty}

@@ -115,6 +115,10 @@ export type {
   MarkFrame,
   MarketDataIssue,
   MarketDataIssueCode,
+  // The Marks panel's entries and what a rejected or conflicted Marks save reports about them (P37, A154).
+  MarketDataConflictedKey,
+  MarketDataPrepareEntry,
+  MarketDataPrepareIssue,
   MarketDataQuery,
   MarketDataQueryResult,
   MarketDataSaveCommand,
@@ -149,6 +153,7 @@ export type {
   ResolveReviewDebtRequest,
   WalkedTrade,
   PostSaveReview,
+  PostMarksReview,
   RefreshedEvidence,
   ReviewBinding,
   ReviewCompletion,
@@ -158,6 +163,9 @@ export type {
   ReviewTradeItem,
   SaveDailyReviewRequest,
   SaveDailyReviewResult,
+  SavedMark,
+  SaveReviewMarksRequest,
+  SaveReviewMarksResult,
   SaveTradeActionRequest,
   TradeSaveBinding,
 } from '../coordinators/daily-review/index.ts';

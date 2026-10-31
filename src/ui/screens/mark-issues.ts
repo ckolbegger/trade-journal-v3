@@ -1,5 +1,10 @@
-import type { MarketDataIssue } from '../../app/types.ts';
 import type { FieldIssue } from './plan-issues.ts';
+
+// The part of a Market Data issue, single-key or one entry of a Marks save, that decides where and how it is shown.
+interface MarkIssue {
+  readonly field: string;
+  readonly code: string;
+}
 
 const MESSAGES: Record<string, string> = {
   PriceNegative: 'A price cannot be negative.',
@@ -15,7 +20,7 @@ const FALLBACK = 'This Mark could not be saved. Reopen it and try again.';
 
 // Plain-language messages for a rejected Mark save, keyed to the form's field names (`price`,
 // `reason`) or `key` for an issue about the Mark as a whole, each under the form's own prefix.
-export function describeMarkIssues(issues: readonly MarketDataIssue[], prefix: string): FieldIssue[] {
+export function describeMarkIssues(issues: readonly MarkIssue[], prefix: string): FieldIssue[] {
   return issues.map((issue): FieldIssue => {
     const message = MESSAGES[issue.code];
     return message === undefined

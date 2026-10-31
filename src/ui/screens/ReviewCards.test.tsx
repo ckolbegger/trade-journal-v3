@@ -165,6 +165,25 @@ function renderReview(facade: UiFacade, options: { writable?: boolean; onDirtyCh
 // The collapsed header of each card, in list order.
 const headers = () => screen.getAllByRole('button', { name: /^Review / });
 
+// What MarketData.save answers to a correction of ABC's Mark, the per-row save that refreshes the Review.
+const correctedAbc = {
+  kind: 'Saved',
+  key: { instrumentKey: 'ABC', tradingDate: '2026-10-12' },
+  resolution: available('28.00'),
+  resolutionRevision: 2,
+  classification: 'Correction',
+  revision: { revisionId: 'r2', revisionNumber: 2, price: '28.00', source: 'Manual', intention: 'Correction', observedAt: CUTOFF, savedAt: CUTOFF },
+  binding: { instrumentKey: 'ABC', tradingDate: '2026-10-12', expectedResolutionRevision: 1 },
+} as never;
+// Corrects the card's ABC Mark and saves it.
+async function correctAbc(user: ReturnType<typeof userEvent.setup>, card: HTMLElement) {
+  const entry = within(card).getByRole('region', { name: 'ABC Mark, Mon Oct 12' });
+  await user.click(within(entry).getByRole('button', { name: 'Correct' }));
+  await user.type(within(entry).getByLabelText('Price'), '28.00');
+  await user.type(within(entry).getByLabelText('Reason (required)'), 'typo');
+  await user.click(within(entry).getByRole('button', { name: 'Save correction' }));
+}
+
 describe('card list (A150)', () => {
   it('should render one card per walked Trade in attention order, each a heading button showing the Underlying, what remains, its band as text, and its slider, with a Stop Target legend above the list and no Continue to Trades', async () => {
     renderReview(cardFacade());
@@ -277,40 +296,27 @@ describe('opening in place (A151)', () => {
   });
 });
 
-describe('after a Mark save', () => {
-  it('should read the Review through open and the open card through getTrade again, under the new binding, after a Mark is saved in the card', async () => {
+describe('after a per-row Mark save', () => {
+  it('should read the Review through open and the open card through getTrade again, under the new binding, after a Mark is corrected in the card', async () => {
     const user = userEvent.setup();
     const facade = cardFacade();
     const moved: ReviewBinding = { ...binding, marketDataSnapshotId: 'mds1:2:def' };
     const afterMark = review({ binding: moved, completion: incomplete(...actionMissing('t-b', 't-c', 't-f', 't-a', 't-e')) });
     vi.mocked(facade.DailyReview.open).mockResolvedValueOnce(review()).mockResolvedValue(afterMark);
-    const mark = available('40.50');
-    vi.mocked(facade.MarketData.save).mockResolvedValue({
-      kind: 'Saved',
-      key: { instrumentKey: 'DEF', tradingDate: '2026-10-12' },
-      resolution: mark,
-      resolutionRevision: 1,
-      classification: 'InitialManual',
-      revision: { revisionId: 'r1', revisionNumber: 1, price: '40.50', source: 'Manual', intention: 'InitialManual', observedAt: CUTOFF, savedAt: CUTOFF },
-      binding: { instrumentKey: 'DEF', tradingDate: '2026-10-12', expectedResolutionRevision: 'None' },
-    } as never);
+    vi.mocked(facade.MarketData.save).mockResolvedValue(correctedAbc);
     renderReview(facade);
-    await screen.findByRole('region', { name: 'ABC review' });
-
-    await user.click(headers()[1]!);
-    const card = await screen.findByRole('region', { name: 'DEF review' });
+    const card = await screen.findByRole('region', { name: 'ABC review' });
+    // DEF's card still owes its Mark.
     expect(headers()[1]!.textContent).toContain('1 Mark · Action');
-    const entry = within(card).getByRole('region', { name: 'DEF Mark, Mon Oct 12' });
-    await user.click(within(entry).getByRole('button', { name: 'Enter' }));
-    await user.type(within(entry).getByLabelText('Price'), '40.50');
-    await user.click(within(entry).getByRole('button', { name: 'Save Mark' }));
+
+    await correctAbc(user, card);
 
     await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
-    await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(3));
-    expect(vi.mocked(facade.DailyReview.getTrade).mock.calls[2]![0]).toMatchObject({ tradeId: 't-c', binding: moved });
-    // The card's summary follows the refreshed Review, and the card stays open.
+    await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(2));
+    expect(vi.mocked(facade.DailyReview.getTrade).mock.calls[1]![0]).toMatchObject({ tradeId: 't-b', binding: moved });
+    // The cards' summaries follow the refreshed Review, and the card stays open.
     expect(headers()[1]!.textContent).not.toContain('Mark ·');
-    expect(headers()[1]!.getAttribute('aria-expanded')).toBe('true');
+    expect(headers()[0]!.getAttribute('aria-expanded')).toBe('true');
   });
 });
 
@@ -325,25 +331,12 @@ describe('card order follows the newest Review (A150, decision 64)', () => {
       ],
     });
     vi.mocked(facade.DailyReview.open).mockResolvedValueOnce(review()).mockResolvedValue(reordered);
-    vi.mocked(facade.MarketData.save).mockResolvedValue({
-      kind: 'Saved',
-      key: { instrumentKey: 'DEF', tradingDate: '2026-10-12' },
-      resolution: available('40.50'),
-      resolutionRevision: 1,
-      classification: 'InitialManual',
-      revision: { revisionId: 'r1', revisionNumber: 1, price: '40.50', source: 'Manual', intention: 'InitialManual', observedAt: CUTOFF, savedAt: CUTOFF },
-      binding: { instrumentKey: 'DEF', tradingDate: '2026-10-12', expectedResolutionRevision: 'None' },
-    } as never);
+    vi.mocked(facade.MarketData.save).mockResolvedValue(correctedAbc);
     renderReview(facade);
-    await screen.findByRole('region', { name: 'ABC review' });
-    await user.click(headers()[1]!);
-    const card = await screen.findByRole('region', { name: 'DEF review' });
-    const entry = within(card).getByRole('region', { name: 'DEF Mark, Mon Oct 12' });
-    await user.click(within(entry).getByRole('button', { name: 'Enter' }));
-    await user.type(within(entry).getByLabelText('Price'), '40.50');
-    await user.click(within(entry).getByRole('button', { name: 'Save Mark' }));
+    const card = await screen.findByRole('region', { name: 'ABC review' });
+    await correctAbc(user, card);
     await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
-    await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(2));
 
     const underlyings = headers().map((h) => /Review (\w+)/.exec(h.getAttribute('aria-label') ?? h.textContent ?? '')?.[1]);
     expect(underlyings).toEqual(['JKL', 'XYZ', 'XYZ', 'DEF', 'ABC']);
@@ -359,34 +352,25 @@ describe('card order follows the newest Review (A150, decision 64)', () => {
       ],
     });
     vi.mocked(facade.DailyReview.open).mockResolvedValueOnce(review()).mockResolvedValue(reordered);
-    vi.mocked(facade.MarketData.save).mockResolvedValue({
-      kind: 'Saved',
-      key: { instrumentKey: 'DEF', tradingDate: '2026-10-12' },
-      resolution: available('40.50'),
-      resolutionRevision: 1,
-      classification: 'InitialManual',
-      revision: { revisionId: 'r1', revisionNumber: 1, price: '40.50', source: 'Manual', intention: 'InitialManual', observedAt: CUTOFF, savedAt: CUTOFF },
-      binding: { instrumentKey: 'DEF', tradingDate: '2026-10-12', expectedResolutionRevision: 'None' },
-    } as never);
+    vi.mocked(facade.MarketData.save).mockResolvedValue(correctedAbc);
     renderReview(facade);
-    await screen.findByRole('region', { name: 'ABC review' });
-    await user.click(headers()[1]!);
-    const card = await screen.findByRole('region', { name: 'DEF review' });
-    // A value is entered in the card's Action form before the Mark is saved.
-    const [field] = within(card).getAllByRole('textbox');
-    await user.type(field!, 'kept');
-    const entry = within(card).getByRole('region', { name: 'DEF Mark, Mon Oct 12' });
-    await user.click(within(entry).getByRole('button', { name: 'Enter' }));
-    await user.type(within(entry).getByLabelText('Price'), '40.50');
-    await user.click(within(entry).getByRole('button', { name: 'Save Mark' }));
+    const card = await screen.findByRole('region', { name: 'ABC review' });
+    // A value is entered in the card's Action form before the Mark is corrected.
+    const field = within(card).getAllByRole('textbox').find((box) => !box.closest('[aria-label="ABC Mark, Mon Oct 12"]'))!;
+    await user.type(field, 'kept');
+    const entry = within(card).getByRole('region', { name: 'ABC Mark, Mon Oct 12' });
+    await user.click(within(entry).getByRole('button', { name: 'Correct' }));
+    await user.type(within(entry).getByLabelText('Price'), '28.00');
+    await user.type(within(entry).getByLabelText('Reason (required)'), 'typo');
+    await user.click(within(entry).getByRole('button', { name: 'Save correction' }));
     await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
-    await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(2));
     await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
 
-    const moved = headers().find((h) => h.textContent?.includes('DEF'))!;
-    expect(headers().indexOf(moved)).toBe(3);
+    const moved = headers().find((h) => h.textContent?.includes('ABC'))!;
+    expect(headers().indexOf(moved)).toBe(4);
     expect(moved.getAttribute('aria-expanded')).toBe('true');
-    expect(within(screen.getByRole('region', { name: 'DEF review' })).getAllByRole('textbox')[0]).toHaveProperty('value', 'kept');
+    expect(within(screen.getByRole('region', { name: 'ABC review' })).getAllByRole('textbox').find((box) => (box as HTMLTextAreaElement | HTMLInputElement).value === 'kept')).toBeTruthy();
   });
 });
 

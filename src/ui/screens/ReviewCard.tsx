@@ -5,7 +5,7 @@ import { decimalMoney, money, ratio, shortDate } from '../format.ts';
 import { calculation, dollarsAndR, pnlText, signed } from '../figures.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import { ActionForm, type SavedAction } from './ActionForm.tsx';
-import { CardMarks, type CardMarkRows, type EntryDirty } from './CardMarks.tsx';
+import { CardMarks, type CardMarkRows, type CardMarksProps, type EntryDirty } from './CardMarks.tsx';
 import { ReviewReflections } from './ReviewReflections.tsx';
 import { BAND_TEXT, reasonText } from './review-attention.ts';
 import { StopTargetSlider } from './StopTargetSlider.tsx';
@@ -44,6 +44,8 @@ export interface ReviewCardProps {
   readonly detail: CardDetail | undefined;
   // A count that grows each time the trader asks for this card: it scrolls into view and takes focus on its header.
   readonly reveal: number;
+  // A count that grows each time Save Marks finishes on this card: it moves on to its next panel that is not done (A157).
+  readonly advance: number;
   readonly marks: CardMarkRows;
   readonly underlying: (tradeId: string) => string;
   readonly onToggle: () => void;
@@ -51,6 +53,9 @@ export interface ReviewCardProps {
   readonly onReflectionResolved: (review: PostSaveReview) => void;
   readonly onRefresh: () => Promise<boolean>;
   readonly onMarkSaved: () => void;
+  readonly onSaveMarks: CardMarksProps['onSaveMarks'];
+  // The Marks were saved but the figures were not read under them: the card says so and offers Refresh.
+  readonly outOfDate: boolean;
   // The trader tried to leave while the card holds an entered value (A156).
   readonly holdMessage: boolean;
   // The Review is being read again after a Mark save, so the Action cannot be saved yet.
@@ -59,7 +64,7 @@ export interface ReviewCardProps {
 }
 
 // One position of the Review: a collapsed header (Underlying, what remains, band, slider) over its content.
-export function ReviewCard({ facade, trade, remaining, expanded, detail, reveal, marks, underlying, onToggle, onSaved, onReflectionResolved, onRefresh, onMarkSaved, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
+export function ReviewCard({ facade, trade, remaining, expanded, detail, reveal, advance, marks, underlying, onToggle, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, holdMessage, pending, onEntryDirty }: ReviewCardProps) {
   const item = useRef<HTMLLIElement>(null);
   const header = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -90,12 +95,15 @@ export function ReviewCard({ facade, trade, remaining, expanded, detail, reveal,
           key={`${detail.trade.tradeId}:${detail.trade.saveBinding.reviewDate}`}
           facade={facade}
           trade={detail.trade}
+          advance={advance}
           marks={marks}
           underlying={underlying}
           onSaved={onSaved}
           onReflectionResolved={onReflectionResolved}
           onRefresh={onRefresh}
           onMarkSaved={onMarkSaved}
+          onSaveMarks={onSaveMarks}
+          outOfDate={outOfDate}
           pending={pending}
           onEntryDirty={onEntryDirty}
         />
@@ -132,22 +140,37 @@ function Figures({ evaluation }: { readonly evaluation: Evaluation }) {
 interface CardBodyProps {
   readonly facade: UiFacade;
   readonly trade: DailyTradeReview;
+  readonly advance: number;
   readonly marks: CardMarkRows;
   readonly underlying: (tradeId: string) => string;
   readonly onSaved: (saved: SavedAction) => void;
   readonly onReflectionResolved: (review: PostSaveReview) => void;
   readonly onRefresh: () => Promise<boolean>;
   readonly onMarkSaved: () => void;
+  readonly onSaveMarks: CardMarksProps['onSaveMarks'];
+  readonly outOfDate: boolean;
   readonly pending: boolean;
   readonly onEntryDirty: EntryDirty;
 }
 
 // The open card, in the spec's work order (P36): the Marks, then the reflections, then the figures, then the Action.
-function CardBody({ facade, trade, marks, underlying, onSaved, onReflectionResolved, onRefresh, onMarkSaved, pending, onEntryDirty }: CardBodyProps) {
+function CardBody({ facade, trade, advance, marks, underlying, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, pending, onEntryDirty }: CardBodyProps) {
   const uid = useId();
   // Resolving the last reflection moves focus to the Action form.
   const actionRef = useRef<HTMLElement>(null);
   const focusAction = useCallback(() => actionRef.current?.focus(), []);
+  // Save Marks moves on to the next panel that is not done: the reflections due now, else an Action not yet saved.
+  // The Reflections and Action panels arrive with T5R.10; until then the move is a focus on the section.
+  const reflectionsRef = useRef<HTMLDivElement>(null);
+  const reflectionsDue = trade.reflections.some((r) => r.classification === 'Due');
+  const actionOpen = trade.form.kind === 'New';
+  const handled = useRef(0);
+  useEffect(() => {
+    if (advance === handled.current) return;
+    handled.current = advance;
+    if (reflectionsDue) reflectionsRef.current?.querySelector('button')?.focus();
+    else if (actionOpen) actionRef.current?.focus();
+  }, [advance, reflectionsDue, actionOpen]);
   // The Action form reports under its Trade, so the Review's unsaved state counts it with the Mark entries.
   const tradeId = trade.tradeId;
   const report = useCallback((dirty: boolean) => onEntryDirty(`action:${tradeId}`, dirty), [tradeId, onEntryDirty]);
@@ -161,8 +184,10 @@ function CardBody({ facade, trade, marks, underlying, onSaved, onReflectionResol
       {trade.attention.reasons.map((reason, i) => (
         <p key={i}>{reasonText(reason, trade.attention.basis)}</p>
       ))}
-      <CardMarks facade={facade} marks={marks} underlying={underlying} onEntryDirty={onEntryDirty} onMarkSaved={onMarkSaved} />
-      <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={focusAction} onEntryDirty={onEntryDirty} />
+      <CardMarks facade={facade} tradeId={trade.tradeId} marks={marks} underlying={underlying} onEntryDirty={onEntryDirty} onMarkSaved={onMarkSaved} onSaveMarks={onSaveMarks} outOfDate={outOfDate} onRefresh={onRefresh} />
+      <div ref={reflectionsRef}>
+        <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={focusAction} onEntryDirty={onEntryDirty} />
+      </div>
       {evaluation && (
         <>
           {mark && (

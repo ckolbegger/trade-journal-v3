@@ -36,7 +36,7 @@ test.describe('B4.10 Recovery Only (faults build)', () => {
     await openCard(page, 'ABC');
     let card = cardOf(page, 'ABC');
     await expect(markEntry(page, 'ABC', DATE)).toContainText('Missing');
-    await expect(card.getByRole('button', { name: 'Enter', exact: true })).toHaveCount(0);
+    await expect(card.getByLabel('Price')).toHaveCount(0);
     await expect(card.getByRole('button', { name: "Can't get a price" })).toHaveCount(0);
     // XYZ's card: the Manual Mark with no Correct, and the saved Action with no Change.
     await openCard(page, 'XYZ');
@@ -51,7 +51,7 @@ test.describe('B4.10 Recovery Only (faults build)', () => {
     await expect(card.getByText('No Action saved.')).toBeVisible();
     await expect(actionForm(page)).toHaveCount(0);
     await expect(card.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0);
-    await expect(card.getByRole('button', { name: 'Save Mark' })).toHaveCount(0);
+    await expect(card.getByRole('button', { name: /^Save Marks/ })).toHaveCount(0);
 
     // The Open list and a Detail are readable.
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Trades' }).click();

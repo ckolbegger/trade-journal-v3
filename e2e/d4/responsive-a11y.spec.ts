@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  acknowledgeMark, actionForm, completion, continueToTrades, createTradeAt, createTrades, enterMark, expect, expectAccessible, firstPage, FOUR_TRADES, holdTradesStore, launchAt, markEntry, MONDAY_1700, onboardedAt, onboardedPage,
+  acknowledgeMark, actionForm, completion, continueToTrades, createTradeAt, createTrades, enterMark, expect, expectAccessible, firstPage, FOUR_TRADES, holdTradesStore, launchAt, markEntry, marksFamily, MONDAY_1700, onboardedAt, onboardedPage,
   openCard, openReview, openTradeFromOpenList, READY, recordEntry, releaseTradesStore, reloadReview, saveAction, setClock, status, tabTo, test, TUESDAY_NOON, tradesFamily, writeIntegrityFixture,
 } from './support.ts';
 
@@ -137,9 +137,9 @@ test.describe('B4.13 Responsive and accessible', () => {
     await expectAccessible(page, 'Review Incomplete, narrow');
     await page.setViewportSize({ width: 1280, height: 900 });
     await openCard(page, 'XYZ');
-    await markEntry(page, 'XYZ', DATE).getByRole('button', { name: 'Enter', exact: true }).click();
+    await markEntry(page, 'XYZ', DATE).getByLabel('Price').fill('1');
     await expectAccessible(page, 'Mark entry form');
-    await markEntry(page, 'XYZ', DATE).getByRole('button', { name: 'Cancel' }).click();
+    await marksFamily(page).getByRole('button', { name: 'Discard' }).click();
 
     await enterMark(page, 'XYZ', DATE, '52.00');
     await enterMark(page, 'ABC', DATE, '27.50');
@@ -265,11 +265,11 @@ test.describe('B4.13 Responsive and accessible', () => {
     await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible(READY);
     await expect(page.getByRole('region', { name: 'Review status' })).toBeVisible(READY);
     const entry = markEntry(page, 'XYZ', DATE);
-    await tabTo(page, entry.getByRole('button', { name: 'Enter', exact: true }));
-    await page.keyboard.press('Enter');
     await tabTo(page, entry.getByLabel('Price'));
     await page.keyboard.type('52.00');
-    await tabTo(page, entry.getByRole('button', { name: 'Save Mark' }));
+    // Enter in the last price moves on to Save Marks (A153).
+    await page.keyboard.press('Enter');
+    await expect(marksFamily(page).getByRole('button', { name: /^Save Marks/ })).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(entry.getByText('Manual')).toBeVisible();
     // The card is open from the start; Shift+Tab from the end of the card walks back to its header with a focus ring.

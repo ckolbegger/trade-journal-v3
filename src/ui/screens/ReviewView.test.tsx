@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import type { UiFacade } from '../../app/compose.ts';
-import type { DailyTradeReview, ExpectedResolutionRevision, IncompleteReason, MarkRow, MarkResolution, MarketDataSaveResult, OpenDailyReviewResult, ReviewBinding, ReviewCompletion, ReviewTradeItem } from '../../app/types.ts';
+import type { DailyTradeReview, ExpectedResolutionRevision, IncompleteReason, MarkRow, MarkResolution, MarketDataSaveResult, OpenDailyReviewResult, ReviewBinding, ReviewCompletion, ReviewTradeItem, SaveReviewMarksResult } from '../../app/types.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { RuntimeContext } from '../runtime.tsx';
 import { ReviewView } from './ReviewView.tsx';
@@ -128,11 +128,18 @@ const savedMark = (instrumentKey: string, tradingDate: string, price: string): M
     binding: { ...key, expectedResolutionRevision: 'None' },
   };
 };
-// Enters a price in the row and saves it.
-async function enterPrice(user: ReturnType<typeof userEvent.setup>, entry: HTMLElement, price: string) {
-  await user.click(within(entry).getByRole('button', { name: 'Enter' }));
+// What Save Marks answers when the Marks were written but the Review under them could not be read.
+const savedButNotRead = (instrumentKey: string, tradingDate: string, price: string): SaveReviewMarksResult => ({
+  kind: 'MarksSaved',
+  marks: [{ key: { instrumentKey, tradingDate }, resolution: available(price), resolutionRevision: 1, classification: 'InitialManual' }],
+  review: { kind: 'ChangedDuringAssembly' },
+});
+// Corrects the row's Mark and saves it: the per-row save, which refreshes the Review.
+async function correctPrice(user: ReturnType<typeof userEvent.setup>, entry: HTMLElement, price: string) {
+  await user.click(within(entry).getByRole('button', { name: 'Correct' }));
   await user.type(within(entry).getByLabelText('Price'), price);
-  await user.click(within(entry).getByRole('button', { name: 'Save Mark' }));
+  await user.type(within(entry).getByLabelText('Reason (required)'), 'typo');
+  await user.click(within(entry).getByRole('button', { name: 'Save correction' }));
 }
 
 describe('overview', () => {
@@ -251,7 +258,8 @@ describe('Marks in the card (P11, P15)', () => {
         completion: incomplete(markMissing('DEF', 't3'), ...actionMissing('t1', 't2', 't3')),
       }),
     );
-    vi.mocked(facade.MarketData.save).mockResolvedValue({ kind: 'Conflict', key: { instrumentKey: 'DEF', tradingDate: '2026-10-12' }, resolution: { kind: 'Missing' }, resolutionRevision: 'None' });
+    vi.mocked(facade.MarketData.save).mockResolvedValue({ kind: 'Conflict', key: { instrumentKey: 'XYZ', tradingDate: '2026-10-12' }, resolution: available('52'), resolutionRevision: 3 });
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Conflict' });
     renderReview(facade);
     const user = userEvent.setup();
 
@@ -259,7 +267,7 @@ describe('Marks in the card (P11, P15)', () => {
     const marks = await within(await screen.findByRole('region', { name: 'XYZ review' })).findByRole('region', { name: 'Marks' });
     const rows = within(within(marks).getByRole('list', { name: "Today's Marks" })).getAllByRole('listitem');
     expect(rows.map((row) => within(row).getByRole('heading', { level: 4 }).textContent)).toEqual(['XYZ']);
-    expect(within(rows[0]!).getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual(['/trades/t1', '/trades/t2']);
+    expect(within(rows[0]!).getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual(['/trades/t2']);
     // Its row is a MarkEntry bound to the key's revision.
     await user.click(within(rows[0]!).getByRole('button', { name: 'Correct' }));
     await user.type(within(rows[0]!).getByLabelText('Price'), '51.5');
@@ -274,11 +282,13 @@ describe('Marks in the card (P11, P15)', () => {
     const other = await screen.findByRole('region', { name: 'DEF review' });
     const otherRows = within(within(other).getByRole('list', { name: "Today's Marks" })).getAllByRole('listitem');
     expect(otherRows.map((row) => within(row).getByRole('heading', { level: 4 }).textContent)).toEqual(['DEF']);
-    expect(within(otherRows[0]!).getByRole('link').getAttribute('href')).toBe('/trades/t3');
-    await user.click(within(otherRows[0]!).getByRole('button', { name: 'Enter' }));
+    // Held by this card's Trade alone, it names no other Trade.
+    expect(within(otherRows[0]!).queryByRole('link')).toBeNull();
     await user.type(within(otherRows[0]!).getByLabelText('Price'), '12');
-    await user.click(within(otherRows[0]!).getByRole('button', { name: 'Save Mark' }));
-    expect(facade.MarketData.save).toHaveBeenLastCalledWith({ intention: 'RecordInitialManualMark', instrumentKey: 'DEF', tradingDate: '2026-10-12', price: '12', expectedResolutionRevision: 'None' });
+    await user.click(screen.getByRole('button', { name: 'Save Marks (1)' }));
+    expect(facade.DailyReview.save).toHaveBeenLastCalledWith(
+      expect.objectContaining({ kind: 'SaveReviewMarks', tradeId: 't3', entries: [{ key: { instrumentKey: 'DEF', tradingDate: '2026-10-12' }, expectedRevision: 'None', intention: { kind: 'RecordInitialManualMark', price: '12' } }] }),
+    );
   });
 
   it('should list a card Earlier sessions without Marks as optional per Instrument from the date the Trade is relevant, newest first, 20 per page, and say they do not block the Review', async () => {
@@ -301,7 +311,7 @@ describe('Marks in the card (P11, P15)', () => {
         completion: incomplete(markMissing('MNO', 't1'), ...actionMissing('t1')),
       }),
     );
-    vi.mocked(facade.MarketData.save).mockResolvedValue({ kind: 'Conflict', key: { instrumentKey: 'MNO', tradingDate: day(24) }, resolution: { kind: 'Missing' }, resolutionRevision: 4 });
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Conflict' });
     renderReview(facade);
     const user = userEvent.setup();
 
@@ -324,13 +334,14 @@ describe('Marks in the card (P11, P15)', () => {
     // ABC has its own single-row list, so it has no pager.
     expect(within(within(group).getByRole('region', { name: 'ABC earlier sessions' })).queryByRole('button', { name: 'Next page' })).toBeNull();
 
-    // Each row's entry is bound to its own date and revision.
-    await user.click(within(page1[1]!).getByRole('button', { name: 'Enter' }));
+    // Each row's draft is bound to its own date and revision.
     await user.type(within(page1[1]!).getByLabelText('Price'), '9');
-    await user.click(within(page1[1]!).getByRole('button', { name: 'Save Mark' }));
-    expect(facade.MarketData.save).toHaveBeenLastCalledWith({ intention: 'RecordInitialManualMark', instrumentKey: 'MNO', tradingDate: day(24), price: '9', expectedResolutionRevision: 4 });
+    await user.click(screen.getByRole('button', { name: 'Save Marks (1)' }));
+    expect(facade.DailyReview.save).toHaveBeenLastCalledWith(
+      expect.objectContaining({ entries: [{ key: { instrumentKey: 'MNO', tradingDate: day(24) }, expectedRevision: 4, intention: { kind: 'RecordInitialManualMark', price: '9' } }] }),
+    );
 
-    // The Conflict keeps the typed value, which holds paging; clear it so the pager is free.
+    // The refused save keeps the draft, which holds paging; clear it so the pager is free.
     await user.clear(within(page1[1]!).getByLabelText('Price'));
     expect(within(mno).getByText('Sessions 1 to 20 of 25')).toBeTruthy();
     expect(within(mno).queryByRole('button', { name: 'Previous page' })).toBeNull();
@@ -359,7 +370,6 @@ describe('Marks in the card (P11, P15)', () => {
     const user = userEvent.setup();
     const mno = await screen.findByRole('region', { name: 'MNO earlier sessions' });
     const row = within(mno).getAllByRole('listitem')[2]!;
-    await user.click(within(row).getByRole('button', { name: 'Enter' }));
     await user.type(within(row).getByLabelText('Price'), '9');
 
     const next = within(mno).getByRole('button', { name: 'Next page' });
@@ -376,7 +386,7 @@ describe('Marks in the card (P11, P15)', () => {
     expect(within(mno).getByText('Sessions 21 to 25 of 25')).toBeTruthy();
   });
 
-  it('should offer Enter on an acknowledged earlier-session date, saved under that date revision, without Withdraw', async () => {
+  it('should offer a price on an acknowledged earlier-session date, drafted under that date revision, without Withdraw', async () => {
     const acknowledgment = { versionId: 'a1', kind: 'Asserted', reason: 'no quote', savedAt: '2026-10-10T21:00:00Z' } as const;
     const facade = reviewFacade(
       ready({
@@ -386,23 +396,26 @@ describe('Marks in the card (P11, P15)', () => {
         completion: incomplete(...actionMissing('t1')),
       }),
     );
-    vi.mocked(facade.MarketData.save).mockResolvedValue({ kind: 'Conflict', key: { instrumentKey: 'DEF', tradingDate: '2026-10-09' }, resolution: { kind: 'AcknowledgedUnavailable', acknowledgment }, resolutionRevision: 2 });
+    vi.mocked(facade.DailyReview.save).mockResolvedValue({ kind: 'Conflict' });
     renderReview(facade);
     const user = userEvent.setup();
 
     const row = within(await screen.findByRole('region', { name: 'DEF earlier sessions' })).getByRole('listitem');
     expect(within(row).getByText(/no quote/)).toBeTruthy();
     expect(within(row).queryByRole('button', { name: 'Withdraw' })).toBeNull();
-    await user.click(within(row).getByRole('button', { name: 'Enter' }));
+    // An acknowledged date can take a price, but not another acknowledgment.
+    expect(within(row).queryByRole('button', { name: "Can't get a price" })).toBeNull();
     await user.type(within(row).getByLabelText('Price'), '9.5');
-    await user.click(within(row).getByRole('button', { name: 'Save Mark' }));
-    expect(facade.MarketData.save).toHaveBeenCalledWith(expect.objectContaining({ instrumentKey: 'DEF', tradingDate: '2026-10-09', price: '9.5', expectedResolutionRevision: 2 }));
+    await user.click(screen.getByRole('button', { name: 'Save Marks (1)' }));
+    expect(facade.DailyReview.save).toHaveBeenCalledWith(
+      expect.objectContaining({ entries: [{ key: { instrumentKey: 'DEF', tradingDate: '2026-10-09' }, expectedRevision: 2, intention: { kind: 'RecordInitialManualMark', price: '9.5' } }] }),
+    );
   });
 
   it('should keep a value typed into a Mark entry when the Review read again after a save brings that key a newer revision', async () => {
     const trades = [tradeItem('t1', 'DEF')];
-    const first = ready({ today: [markRow('DEF', ['t1']), markRow('XYZ', ['t1'])], trades, completion: incomplete(markMissing('DEF', 't1'), markMissing('XYZ', 't1'), ...actionMissing('t1')) });
-    // The refreshed key is acknowledged unavailable, so the open Enter form still fits it.
+    const first = ready({ today: [markRow('DEF', ['t1']), markRow('XYZ', ['t1'], available('52'), 1)], trades, completion: incomplete(markMissing('DEF', 't1'), ...actionMissing('t1')) });
+    // The refreshed key is acknowledged unavailable, so the typed price still fits it.
     const acknowledged: MarkResolution = { kind: 'AcknowledgedUnavailable', acknowledgment: { versionId: 'a1', kind: 'Asserted', savedAt: '2026-10-12T21:00:00Z' } };
     const second = ready({ today: [markRow('DEF', ['t1'], acknowledged, 1), markRow('XYZ', ['t1'], available('52'), 1)], trades, completion: incomplete(...actionMissing('t1')) });
     const facade = reviewFacade(first, second);
@@ -410,10 +423,9 @@ describe('Marks in the card (P11, P15)', () => {
     renderReview(facade);
     const user = userEvent.setup();
     const def = await screen.findByRole('region', { name: 'DEF Mark, Mon Oct 12' });
-    await user.click(within(def).getByRole('button', { name: 'Enter' }));
     await user.type(within(def).getByLabelText('Price'), '12.5');
 
-    await enterPrice(user, screen.getByRole('region', { name: 'XYZ Mark, Mon Oct 12' }), '52');
+    await correctPrice(user, screen.getByRole('region', { name: 'XYZ Mark, Mon Oct 12' }), '52');
     await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(within(screen.getByRole('region', { name: 'DEF Mark, Mon Oct 12' })).getByText(/Acknowledged Unavailable/)).toBeTruthy());
 
@@ -425,14 +437,16 @@ describe('Marks in the card (P11, P15)', () => {
     const facade = reviewFacade(returned);
     const key = { instrumentKey: 'DEF', tradingDate: '2026-10-09' };
     const mark = { revisionId: 'r9', revisionNumber: 1, price: '9', source: 'Manual', savedAt: '2026-10-12T21:00:00Z' } as const;
-    vi.mocked(facade.MarketData.save).mockResolvedValueOnce(savedMark('DEF', '2026-10-09', '9'));
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce(savedButNotRead('DEF', '2026-10-09', '9'));
     renderReview(facade);
     const user = userEvent.setup();
     const earlierEntry = await screen.findByRole('region', { name: 'DEF Mark, Fri Oct 9' });
-    await enterPrice(user, earlierEntry, '9');
+    await user.type(within(earlierEntry).getByLabelText('Price'), '9');
+    await user.click(screen.getByRole('button', { name: 'Save Marks (1)' }));
     await within(earlierEntry).findByText('$9.00', { exact: false });
 
-    // The save reads the Review again, which returns the same stale revision for that date.
+    // Refresh reads the Review again, which returns the same stale revision for that date.
+    await user.click(screen.getByRole('button', { name: 'Refresh' }));
     await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(2));
 
@@ -452,10 +466,12 @@ describe('Marks in the card (P11, P15)', () => {
     // Read again, the filled session is no longer a gap.
     const second = ready({ today: [markRow('DEF', ['t1'], available('12'), 1)], earlier: [], trades, completion: incomplete(...actionMissing('t1')) });
     const facade = reviewFacade(first, second);
-    vi.mocked(facade.MarketData.save).mockResolvedValueOnce(savedMark('DEF', '2026-10-09', '9'));
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce(savedButNotRead('DEF', '2026-10-09', '9'));
     renderReview(facade);
     const user = userEvent.setup();
-    await enterPrice(user, await screen.findByRole('region', { name: 'DEF Mark, Fri Oct 9' }), '9');
+    await user.type(within(await screen.findByRole('region', { name: 'DEF Mark, Fri Oct 9' })).getByLabelText('Price'), '9');
+    await user.click(screen.getByRole('button', { name: 'Save Marks (1)' }));
+    await user.click(await screen.findByRole('button', { name: 'Refresh' }));
     await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(2));
 
@@ -492,7 +508,7 @@ describe('Marks in the card (P11, P15)', () => {
 
   it('should show a fresh entry for an Instrument whose Review Date changed when the Review is read again', async () => {
     const trades = [tradeItem('t1', 'DEF')];
-    const monday = ready({ today: [markRow('DEF', ['t1']), markRow('XYZ', ['t1'])], trades, completion: incomplete(markMissing('DEF', 't1'), markMissing('XYZ', 't1'), ...actionMissing('t1')) });
+    const monday = ready({ today: [markRow('DEF', ['t1']), markRow('XYZ', ['t1'], available('52'), 1)], trades, completion: incomplete(markMissing('DEF', 't1'), ...actionMissing('t1')) });
     const tuesday: Ready = {
       ...ready({ today: [{ ...markRow('DEF', ['t1']), tradingDate: '2026-10-13' }], trades, completion: incomplete({ code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-13', trades: ['t1'] }, ...actionMissing('t1')) }),
       reviewDate: '2026-10-13',
@@ -502,16 +518,15 @@ describe('Marks in the card (P11, P15)', () => {
     renderReview(facade);
     const user = userEvent.setup();
     const def = await screen.findByRole('region', { name: 'DEF Mark, Mon Oct 12' });
-    await user.click(within(def).getByRole('button', { name: 'Enter' }));
     await user.type(within(def).getByLabelText('Price'), '12');
 
-    await enterPrice(user, screen.getByRole('region', { name: 'XYZ Mark, Mon Oct 12' }), '52');
+    await correctPrice(user, screen.getByRole('region', { name: 'XYZ Mark, Mon Oct 12' }), '52');
     await screen.findByRole('region', { name: 'DEF Mark, Tue Oct 13' });
 
-    // The Monday entry, with its typed price, is gone; Tuesday's key starts closed.
+    // The Monday draft, with its typed price, is gone; Tuesday's key starts empty and Unsaved is not shown.
     expect(screen.getByText('Tue Oct 13', { selector: 'time' })).toBeTruthy();
-    expect(screen.queryByLabelText('Price')).toBeNull();
-    expect(screen.getByRole('button', { name: 'Enter' })).toBeTruthy();
+    expect(screen.getByLabelText<HTMLInputElement>('Price').value).toBe('');
+    expect(screen.queryByText('Unsaved')).toBeNull();
   });
 
   it('should name each Mark entry region by Instrument and date', async () => {
@@ -528,7 +543,7 @@ describe('Marks in the card (P11, P15)', () => {
     expect(screen.getByRole('region', { name: 'DEF Mark, Fri Oct 9' })).toBeTruthy();
   });
 
-  it('should register as unsaved while any Mark entry holds a value, today or earlier, and clear when the last is cancelled', async () => {
+  it('should register as unsaved while any draft Mark holds a value, today or earlier, and clear when they are discarded', async () => {
     const dirty = vi.fn<(dirty: boolean) => void>();
     const facade = reviewFacade(
       ready({
@@ -544,15 +559,13 @@ describe('Marks in the card (P11, P15)', () => {
     const earlierEntry = screen.getByRole('region', { name: 'DEF Mark, Fri Oct 9' });
     expect(dirty).not.toHaveBeenCalledWith(true);
 
-    await user.click(within(todayEntry).getByRole('button', { name: 'Enter' }));
     await user.type(within(todayEntry).getByLabelText('Price'), '1');
     expect(dirty).toHaveBeenLastCalledWith(true);
-    await user.click(within(earlierEntry).getByRole('button', { name: 'Enter' }));
     await user.type(within(earlierEntry).getByLabelText('Price'), '2');
-    await user.click(within(todayEntry).getByRole('button', { name: 'Cancel' }));
-    // One entry still holds a value.
+    await user.clear(within(todayEntry).getByLabelText('Price'));
+    // One draft still holds a value.
     expect(dirty).toHaveBeenLastCalledWith(true);
-    await user.click(within(earlierEntry).getByRole('button', { name: 'Cancel' }));
+    await user.click(screen.getByRole('button', { name: 'Discard' }));
     expect(dirty).toHaveBeenLastCalledWith(false);
   });
 
@@ -575,22 +588,22 @@ describe('Marks in the card (P11, P15)', () => {
 
   it('should keep the Marks and say the Review could not be refreshed when the Review read after a save fails, then clear it once a refresh succeeds', async () => {
     const trades = [tradeItem('t1', 'XYZ')];
-    const first = ready({ today: [markRow('DEF', ['t1']), markRow('XYZ', ['t1']), markRow('GHI', ['t1'])], trades, completion: incomplete(markMissing('DEF', 't1'), markMissing('XYZ', 't1'), markMissing('GHI', 't1'), ...actionMissing('t1')) });
+    const first = ready({ today: [markRow('DEF', ['t1'], available('1'), 1), markRow('XYZ', ['t1'], available('1'), 1), markRow('GHI', ['t1'], available('1'), 1)], trades, completion: incomplete(...actionMissing('t1')) });
     const facade = reviewFacade(first);
     vi.mocked(facade.DailyReview.open).mockResolvedValueOnce(first).mockRejectedValueOnce(new Error('boom')).mockResolvedValueOnce({ kind: 'ChangedDuringAssembly' }).mockResolvedValue(first);
     vi.mocked(facade.MarketData.save).mockImplementation((command) => Promise.resolve(savedMark(command.instrumentKey, command.tradingDate, '1')));
     renderReview(facade);
     const user = userEvent.setup();
 
-    await enterPrice(user, await screen.findByRole('region', { name: 'DEF Mark, Mon Oct 12' }), '1');
+    await correctPrice(user, await screen.findByRole('region', { name: 'DEF Mark, Mon Oct 12' }), '2');
     expect((await screen.findByRole('alert')).textContent).toContain('We couldn’t refresh the Review. Nothing was changed.');
     expect(screen.getByRole('region', { name: 'XYZ Mark, Mon Oct 12' })).toBeTruthy();
 
     // A refused refresh says the same, and the next save's succeeds.
-    await enterPrice(user, screen.getByRole('region', { name: 'XYZ Mark, Mon Oct 12' }), '1');
+    await correctPrice(user, screen.getByRole('region', { name: 'XYZ Mark, Mon Oct 12' }), '2');
     await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(3));
     expect(screen.getByRole('alert').textContent).toContain('We couldn’t refresh the Review.');
-    await enterPrice(user, screen.getByRole('region', { name: 'GHI Mark, Mon Oct 12' }), '1');
+    await correctPrice(user, screen.getByRole('region', { name: 'GHI Mark, Mon Oct 12' }), '2');
     await waitFor(() => expect(screen.queryByRole('alert')).toBeNull());
     expect(facade.DailyReview.open).toHaveBeenCalledTimes(4);
   });

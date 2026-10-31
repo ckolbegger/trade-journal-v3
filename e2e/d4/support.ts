@@ -187,21 +187,31 @@ export async function openCard(page: Page, symbol: string): Promise<void> {
   await expect(page.getByRole('region', { name: `${symbol} review`, exact: true })).toBeVisible(READY);
 }
 
+// On cards the price is a draft in the open card's Marks panel, saved with Save Marks (D5R, A153); a previous release's
+// Review enters it in the row and saves it there.
 export async function enterMark(page: Page, symbol: string, date: string, price: string): Promise<void> {
-  if (await hasCards(page)) await openCard(page, symbol);
+  const cards = await hasCards(page);
+  if (cards) await openCard(page, symbol);
   const entry = markEntry(page, symbol, date);
-  await entry.getByRole('button', { name: 'Enter', exact: true }).click();
-  await entry.getByLabel('Price').fill(price);
-  await entry.getByRole('button', { name: 'Save Mark' }).click();
+  if (cards) {
+    await entry.getByLabel('Price').fill(price);
+    await marksFamily(page).getByRole('button', { name: /^Save Marks/ }).click();
+  } else {
+    await entry.getByRole('button', { name: 'Enter', exact: true }).click();
+    await entry.getByLabel('Price').fill(price);
+    await entry.getByRole('button', { name: 'Save Mark' }).click();
+  }
   await expect(entry.getByText('Manual')).toBeVisible();
 }
 
 export async function acknowledgeMark(page: Page, symbol: string, date: string, reason: string): Promise<void> {
-  if (await hasCards(page)) await openCard(page, symbol);
+  const cards = await hasCards(page);
+  if (cards) await openCard(page, symbol);
   const entry = markEntry(page, symbol, date);
   await entry.getByRole('button', { name: "Can't get a price" }).click();
   await entry.getByLabel('Reason (required)').fill(reason);
-  await entry.getByRole('button', { name: 'Save acknowledgment' }).click();
+  if (cards) await marksFamily(page).getByRole('button', { name: /^Save Marks/ }).click();
+  else await entry.getByRole('button', { name: 'Save acknowledgment' }).click();
   await expect(entry.getByText('Acknowledged Unavailable')).toBeVisible();
 }
 
