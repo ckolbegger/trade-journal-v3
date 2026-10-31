@@ -370,3 +370,5 @@ Test-only fix to `e2e/d4/responsive-a11y.spec.ts:68`. The suite serves `dist-rel
 | `npx playwright test e2e/d4/responsive-a11y.spec.ts --project=chromium` | exit 0; 5 passed |
 
 Failures before and after: 5 of 50 before, 0 of 50 after. Throttle: none. dist-faults was not rebuilt (this case does not use it).
+
+ocr review of `5aa2141`: not run, at the user's direction (test-only commit; the user accepted the stress and mutation checks above).
