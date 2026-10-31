@@ -1,0 +1,128 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 3 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 3,
+    "total_tokens": 128483,
+    "input_tokens": 126721,
+    "output_tokens": 1762,
+    "cache_read_tokens": 19200,
+    "elapsed": "1m14s"
+  },
+  "tool_calls": {
+    "total": 14,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 5,
+      "file_find": 1,
+      "file_read": 7
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/modules/market-data/market-data.ts",
+      "content": "The stale context is read only from persisted observations, so it ignores earlier Marks created or corrected in this same batch. For example, preparing a Friday Mark and a Monday acknowledgment for the same instrument reports the old (or absent) Friday context for Monday; after applying both entries, querying Monday reports the new Friday Mark instead. This violates the requirement that the committed resolution equal the prepared resolution. Compute acknowledgment context against the snapshot overlaid with all prepared Mark effects, and add a same-instrument, cross-date batch test.",
+      "existing_code": "            stale: intention.kind === 'AssertUnavailable' || intention.kind === 'WithdrawAcknowledgment' ? await staleContextOf(tx, deps.sessionPolicy, key) : undefined,",
+      "start_line": 553,
+      "end_line": 553,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/market-data/market-data.ts",
+      "content": "Only the upper entry-count bound is validated. An empty entries array returns `Prepared` and can be applied and committed as a successful no-op, despite the request contract requiring 1–100 entries. Reject zero entries with a request-level issue before reading the snapshot and add a lower-bound validation test.",
+      "existing_code": "      if (entries.length \u003e MAX_ENTRIES) return { kind: 'Rejected', issues: [{ field: 'entries', code: 'TooManyEntries' }] };",
+      "start_line": 539,
+      "end_line": 539,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/modules/market-data/market-data.ts",
+      "content": "This nested ternary combines intention selection, missing-Mark validation, and unchanged-price validation. The review checklist explicitly prohibits nested ternaries; use explicit conditional branches here (and for the conflict-code selection above) so the precedence of these business rules is easier to audit.",
+      "existing_code": "          intention.kind === 'CorrectMark'\n            ? !effective\n              ? { field: 'price', code: 'NothingToCorrect' }\n              : effective.price === normalizedPrice(intention.price)\n                ? { field: 'price', code: 'CorrectionUnchanged' }\n                : undefined",
+      "start_line": 569,
+      "end_line": 574,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "groups": [
+    {
+      "label": "src/modules/market-data/index.ts",
+      "files": [
+        "src/modules/market-data/index.ts"
+      ]
+    },
+    {
+      "label": "src/modules/market-data/market-data.ts",
+      "files": [
+        "src/modules/market-data/market-data.ts"
+      ]
+    }
+  ],
+  "session_id": "c3eff813-7151-4a8c-b375-7b702870b4bf",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "c3eff813-7151-4a8c-b375-7b702870b4bf",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "a101f74",
+      "resolved_base": "2176f513c033e7f92f7de485de4ee464c2e1b212",
+      "resolved_head": "a101f74ef0904ae66bc059a7749c98dea1c6c2b6",
+      "exact_range": "2176f513c033e7f92f7de485de4ee464c2e1b212..a101f74ef0904ae66bc059a7749c98dea1c6c2b6",
+      "source_artifact_sha256": "5198adb35ec85a0f82b5296ec2cf367f2579792630705c971627f39f61372aab"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "6cccbb3f63f207ad23e39c4400bffe0e0c2e16fcfcc0ece9effa6c41a429fdc1",
+          "path": "src/modules/market-data/index.ts",
+          "fingerprint": "904f299edae362f53a7a54f9abd78f3e4cc935615e51588b468a76336a0e1518"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "e632b187197cdc3f02e667c9002d7cf528c08c4ea2e24044e2d27d60b8a4308b"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "6cccbb3f63f207ad23e39c4400bffe0e0c2e16fcfcc0ece9effa6c41a429fdc1",
+          "path": "src/modules/market-data/index.ts",
+          "fingerprint": "904f299edae362f53a7a54f9abd78f3e4cc935615e51588b468a76336a0e1518"
+        },
+        {
+          "item_id": "70c9d5b6c3936c08c792eaf13450c0216fd2c8094414ca3361baf96d37547c3e",
+          "path": "src/modules/market-data/market-data.ts",
+          "fingerprint": "e632b187197cdc3f02e667c9002d7cf528c08c4ea2e24044e2d27d60b8a4308b"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 74040
+  }
+}
