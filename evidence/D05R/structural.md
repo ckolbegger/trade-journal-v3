@@ -1019,6 +1019,23 @@ Checks: typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 
 
 Per the user's decision above, when nothing else is held on the card (carried item 1 still governs a held card).
 
+Record. Four new cases in `ReviewCards.test.tsx` (describe "Action save whose next step is a Mark"), one table row changed in `ReviewCard.test.tsx`:
+
+| Case | Result |
+|---|---|
+| an Action save on ABC whose next step is a Missing Mark of DEF (`trades: ['t-c']`) collapses ABC, opens DEF on Marks, focus in the row, no status message | red: `Unable to find role="region" and name "DEF review"` |
+| the first card in the Review's order whose Trade is in `row.trades` opens (`['t-e','t-a']` opens T-A) | first-run pass (flagged); mutation: `find` to `findLast` in the lookup fails with `Unable to find role="region" and name "XYZ review"` |
+| no row Trade in the Review: the old message "A Mark is needed before the next Trade. It is listed in its card." and a collapsed card | first-run pass (flagged); mutation: the lookup matching every Trade fails with `Unable to find role="status"` |
+| a card holding a Mark draft stays and says "Save or discard what you entered for DEF" when the next step is a Mark (carried item 1 had only a Trade next step) | first-run pass (flagged); mutation: the hold check skipped for a Mark next step fails with `Unable to find role="status"` |
+
+Changed in `ReviewCard.test.tsx` ("After a save", the outcomes table): removed the row whose next step was a Mark of `t1` with the message "A Mark is needed before the next Trade…". Why: `t1` is in that Review, so the user's decision now opens its card instead (red: `expected 'Loading the Trade…' to be 'A Mark is needed…'`); the table is about the messages that follow a save with no card to go to, and the Mark landing is covered at the `ReviewView` level. The message itself is still used (and asserted in `ReviewCards.test.tsx`) as the fallback when no row Trade is in the Review, so `AFTER_SAVE.Mark` stays.
+
+Implementation (`ReviewView.tsx`, `saved`): for a `Mark` next step, the first walked Trade (current Review order) in `row.trades` is shown on Marks with the row's Instrument, revealed, and read. The three state updates and `show` are wrapped in `flushSync` before the read: unwrapped, the read's result batched into the same render as the reveal, and the card's header focus (parent effect, after the body's) took focus from the row.
+
+Grep `grep -rn "Mark is needed before the next Trade" e2e src`: `src/ui/screens/ReviewCards.test.tsx:781` (the fallback case) and `src/ui/screens/ReviewView.tsx:159` (`AFTER_SAVE.Mark`); nothing in `e2e`.
+
+Checks: typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 24 files, 383 passed. No e2e file touched, no browser run.
+
 ocr review of `da270ff` (T5R.12-B1): one file reviewed (three excluded); one round hit a provider 504, so coverage may be thinner. Raw output: [ocr/T5R.12-B1-da270ff.json](ocr/T5R.12-B1-da270ff.json).
 
 | Severity | Location | Claim | Assessment |

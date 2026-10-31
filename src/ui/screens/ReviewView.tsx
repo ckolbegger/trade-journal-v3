@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { flushSync } from 'react-dom';
 import { useSearchParams } from 'react-router';
 import type { UiFacade } from '../../app/compose.ts';
 import type { IncompleteReason, MarketDataPrepareEntry, OpenDailyReviewResult, PostSaveReview, ReviewCompletion, SavedMark, SaveReviewMarksResult } from '../../app/types.ts';
@@ -364,6 +365,21 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
     if (!open) return;
     const next = post.nextStep;
     setGo({ tradeId: undefined, go: NO_GO });
+    // A Mark is the next step: the first card holding it opens on its Marks panel with focus in the row, as a Mark blocker's link does.
+    const markCard = next.kind === 'Mark' ? walkedTrades(latest.current).find((t) => next.row.trades.includes(t.tradeId)) : undefined;
+    if (next.kind === 'Mark' && markCard !== undefined) {
+      // The card is shown before it is read: the read's result would otherwise batch into the same render, and the card's header,
+      // revealed after its body mounts, would take the focus from the row.
+      let request = 0;
+      flushSync(() => {
+        setAfterSave(undefined);
+        setReveal((current) => ({ tradeId: markCard.tradeId, count: current.count + 1 }));
+        setGo((current) => ({ tradeId: markCard.tradeId, go: { panel: 'Marks', instrument: next.row.instrumentKey, count: current.go.count + 1 } }));
+        request = show(markCard.tradeId, 'Loading');
+      });
+      void read(markCard.tradeId, request);
+      return;
+    }
     if (next.kind === 'Trade') {
       setReveal((current) => ({ tradeId: next.trade.tradeId, count: current.count + 1 }));
       show(next.trade.tradeId, { trade: next.trade });

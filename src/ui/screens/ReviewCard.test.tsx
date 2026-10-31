@@ -737,7 +737,6 @@ describe('After a save', () => {
 
     const outcomes = [
       { nextStep: post({ kind: 'Done' }), text: 'Every Trade has an Action.' },
-      { nextStep: post({ kind: 'Mark', row: { instrumentKey: 'XYZ', tradingDate: '2026-10-12', trades: ['t1'], resolution: { kind: 'Missing' }, resolutionRevision: 'None', task: 'Manual' } }), text: 'A Mark is needed before the next Trade. It is listed in its card.' },
       { nextStep: { kind: 'ChangedDuringAssembly' } as const, text: 'The Action is saved. Reload the Review to refresh it.' },
     ] as const;
     for (const { nextStep, text } of outcomes) {
