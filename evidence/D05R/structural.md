@@ -705,3 +705,21 @@ ocr review of `093a1a6`: one file reviewed (two excluded), no findings. Raw outp
 | Checks | 12 of 12 exit 0 |
 
 Outputs: `suite-runs/t5r.9-save-marks-*.txt`. HEAD moved to `1ee55fb` during the run, by evidence-only commits; the suite ran against `4ccd98d`, which holds every T5R.9 code change.
+
+## T5R.10 UI: Reflections and Action panels
+
+Commit `41b33a1`: Marks, Reflections and Action panels on the open card, one open at a time (A152). `npx vitest run src/ui` 23 files, 358 passed; typecheck, `tsc6`, lint and `lint:deps` exit 0; `build:faults` and `build:releases` exit 0.
+
+| Case | Red |
+|---|---|
+| panels | no button named `/^Marks\b/` |
+| reflections | no group "Fri Oct 9 · Due" (a first green then failed on a test bug, nested list items counted twice, fixed) |
+| Action (A159) | first-run pass (D4 built it), mutation-checked: ActionForm always sending `intent` fails the call assertion |
+| moving on | the move-on code was written with case 1, ahead of this case (code ahead of red, flagged); disabling it gave `expected [ 'Marks' ] to deeply equal [ 'Reflections' ]`, then restored and green. The Action-save half (open the card the result names) is T5R.8's behavior and held throughout. |
+
+- **Carried-in check:** ActionForm and DebtForm already report `dirty && writable`, so a read-only card isn't held. An extra test for the reflection draft was a first-run pass, mutation-checked (DebtForm reporting `dirty` alone fails).
+- **Left for T5R.12:** an Action save collapsing the card while other forms hold values (A156).
+- **Design choices:** panels stay mounted and only the open one shows, so drafts survive switching; after Save Marks the next panel not done opens and its header takes focus (replacing T5R.9's `advance` focus move); group labels are text ("Fri Oct 9 · Due"), grouped by session date in the runtime time zone; statuses are text ("N needed", "Saved", "Optional", "None"; "N due", "Resolved", "Not due", "None"; "Needed", "Saved").
+- **Process notes:** one no-op `cat >> /dev/null` and one `printf >>` to `tdd-log.md` (content fine), against the Edit-only rule.
+
+**Browser suite: not green.** 126 passed, 29 failed after the panels; 136 passed, 19 failed after `e2e/d4/support.ts`'s `enterMark` and `acknowledgeMark` reopen the Marks panel to check the saved row. The Due label then moved into its own span without a full rerun. The 19 fail because one panel is open at a time: specs read Mark rows while the card is open on the Action (`acknowledge.spec.ts:26`, `gaps.spec.ts:36`, `runtime-failure.spec.ts:44` and 49–52, `responsive-a11y.spec.ts:274`), read D5's Reflections while that panel is closed (`due-timing.spec.ts:16`, `review-debt.spec.ts:36` and `:79`, `update.spec.ts:60`), or time out, probably for the same reason (`correct-mark`, both `no-save`, `responsive-a11y.spec.ts:121`, `detail-debt`, `due-timing.spec.ts:31`, both `faults`, `kill-offline`, both `d5/responsive`, `review-debt`). Fixing them needs steps in the spec bodies that open a panel before reading it, beyond section 6.3's helper-only file list. No expectation is reported to need changing. `support.ts` gains `openPanel` and `showPanel`. The session stopped for the user's decision.
