@@ -837,3 +837,19 @@ Other: `offline.spec.ts`'s local `markFor` is replaced by `markRow`. The old exp
 #### T5R.10-H2-B1 The keyboard-only case reaches panels with the keyboard
 
 In `responsive-a11y.spec.ts`'s keyboard-only case, replace the two mouse reaches with the keyboard on the raw panel headers (focus the header, press Enter, check `aria-expanded`), keeping every expectation.
+
+### ocr review of `59f037b`
+
+ocr selected nothing (all 12 files excluded). The reviewing agent read the diff: every `expect` keeps its matcher and value; no navigation or focus check is made trivial by a reach; absent checks run with the right panel open; B4.12 still types its correction and Action and never saves. Raw output: [ocr/T5R.10-H2-59f037b.json](ocr/T5R.10-H2-59f037b.json).
+
+| Severity | Location | Claim | Assessment |
+|---|---|---|---|
+| medium | `responsive-a11y.spec.ts`, keyboard-only case | Mouse reaches in a keyboard-only case. | Known: bug task T5R.10-H2-B1, running. |
+| low | same case | An added `aria-expanded` assertion breaks "mechanical only". | Dismissed: already recorded above; a navigation check rule 4 allows, weakening nothing. |
+| low | `review.spec.ts` (relaunch loop), `kill.spec.ts` (resume) | "Saved Action" is read after `reachCard` only, so it relies on the card opening on its Action panel. | Doubtful: true, and that is navigation the helper should own (section 6.4); `runtime-failure.spec.ts` reaches the Action panel first. Bug task **T5R.10-H2-B2**. |
+| low | `no-save.spec.ts` | Nothing in the diff shows typed values survive the panel switch. | Dismissed: B4.12 passed in H2's run, and its existing expectations read the typed values back after the switch. |
+| trivial | `responsive-a11y.spec.ts` import line | A missing space after a comma. | Valid; folded into H2-B1 (same file). |
+
+#### T5R.10-H2-B2 "Saved Action" is read through the Action panel
+
+In `review.spec.ts`'s relaunch loop and `kill.spec.ts`'s resume step, reach XYZ's Action panel (`reachPanel(…, 'Action')`) before reading the "Saved Action" region, keeping every expectation.
