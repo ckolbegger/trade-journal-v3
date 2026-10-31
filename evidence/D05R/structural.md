@@ -807,3 +807,5 @@ Case: it should reach BRK's card, not BRK.B's, when both Trades are listed. If t
 #### T5R.10-H1-B2 A refusal is reported only for this press
 
 Case: it should reach ABC's card after an earlier refusal once XYZ's draft is discarded, though the earlier hold message was shown.
+
+Done in commit `24bbc5d` (T5R.10-H1-B1): the app accepts a dot in a symbol (`src/domain/trade-analysis/plan.ts:77`, `/^[A-Z][A-Z0-9.]{0,9}$/`; the same pattern in `form-issues.tsx:71` and `market-data.ts:316`); no other regex special is accepted. The case creates BRK.B and BRK, reaches BRK, and checks BRK expanded and BRK.B collapsed. Red: `strict mode violation: getByRole('button', { name: /^Review BRK\b/ }) resolved to 2 elements`. `cardHeader` now escapes the symbol and anchors on whitespace or the end; green, card-helpers 5 of 5. typecheck, `tsc6`, lint and `lint:deps` exit 0. The old `openCard` (`support.ts:183`) has the same pattern; it's among the exports H2 and H3 retire, so no separate task. **Process note:** one empty `python3 -` here-doc (no-op).
