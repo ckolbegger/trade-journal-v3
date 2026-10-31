@@ -935,3 +935,14 @@ Notes:
 Checks: typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 24 files, 363 passed; `build:faults` and `build:releases` exit 0; `npm run test:e2e` 161 passed; ports 5175, 9341 and 9342 clear before and after. No e2e spec changed.
 
 ocr review of `b2b5d04`: two files reviewed (`CardFigures.tsx`, `ReviewCard.tsx`; five test and log files excluded), no findings. Raw output: [ocr/T5R.11-b2b5d04.json](ocr/T5R.11-b2b5d04.json).
+
+### Cumulative suite at `ce741bc` (T5R.11 closed)
+
+| Suite | Result |
+|---|---|
+| Unit | 75 files, 959 passed |
+| Integration | 53 files, 105 passed |
+| Browser | 161 passed (5.8 min) |
+| Checks | 12 of 12 exit 0 |
+
+Outputs: `suite-runs/t5r.11-figures-*.txt`. Ports 5175, 9341 and 9342 clear before and after.
