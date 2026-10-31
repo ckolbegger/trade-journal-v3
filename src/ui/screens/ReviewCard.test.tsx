@@ -1173,7 +1173,8 @@ describe('reflections in the Trade card (A71)', () => {
     expect(vi.mocked(facade.DailyReview.save)).toHaveBeenLastCalledWith({ kind: 'ResolveReviewDebt', reviewDate: '2026-10-12', binding: reflections[0]!.saveBinding, resolution: { kind: 'Decline', reason: 'No time.' } });
     expect(report).toHaveBeenLastCalledWith(expect.objectContaining({ kind: 'DebtResolved' }));
     expect(await within(section).findByText('Declined to reflect. Reason: No time.')).toBeTruthy();
-    expect(document.activeElement).toBe(within(section).getByRole('button', { name: /Reflect on 2026-10-12 10:30/ }));
+    // The Review's progress renders before the reflection reports resolved, so focus lands a render later.
+    await vi.waitFor(() => expect(document.activeElement).toBe(within(section).getByRole('button', { name: /Reflect on 2026-10-12 10:30/ })));
     expect(screen.queryByText('Complete')).toBeNull();
 
     await user.click(within(section).getByRole('button', { name: /Reflect on 2026-10-12 10:30/ }));
@@ -1182,8 +1183,11 @@ describe('reflections in the Trade card (A71)', () => {
     expect(vi.mocked(facade.DailyReview.save)).toHaveBeenLastCalledWith({ kind: 'ResolveReviewDebt', reviewDate: '2026-10-12', binding: reflections[1]!.saveBinding, resolution: { kind: 'Decline' } });
     expect((await screen.findByText('Complete')).tagName).toBe('STRONG');
     // Nothing remains to resolve, so the Action panel opens and takes focus.
-    expect(panelHeader(trade, 'Action').getAttribute('aria-expanded')).toBe('true');
-    expect(document.activeElement).toBe(panelHeader(trade, 'Action'));
+    // "Complete" renders from the Review before the reflection reports resolved, so the panel opens and focus lands a render later.
+    await vi.waitFor(() => {
+      expect(panelHeader(trade, 'Action').getAttribute('aria-expanded')).toBe('true');
+      expect(document.activeElement).toBe(panelHeader(trade, 'Action'));
+    });
     expect(within(trade).getByRole('form', { name: 'Action' })).toBeTruthy();
     // The card stays open, with both reflections shown resolved.
     await user.click(panelHeader(trade, 'Reflections'));
