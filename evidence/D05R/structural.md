@@ -576,3 +576,14 @@ Done in commit `4fdaa50` (T5R.8-B3):
 - **Checks.** typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 22 files, 335 passed.
 
 ocr review of `4fdaa50`: one file reviewed (test excluded), no findings. Raw output: [ocr/T5R.8-B3-4fdaa50.json](ocr/T5R.8-B3-4fdaa50.json).
+
+### Cumulative suite at `206679d` (not green)
+
+| Suite | Result |
+|---|---|
+| Unit | 73 files, 931 passed |
+| Integration | 53 files, 105 passed |
+| Browser | 154 passed, 1 failed (5.6 min) |
+| Checks | 12 of 12 exit 0 |
+
+Outputs: `suite-runs/t5r.8-cards-*.txt`. The failure is B4.1 (`e2e/d4/review.spec.ts:30`): `expect(rows.nth(0)).toContainText('ABC')`, received "Review XYZ Action Quantified pressure". The test enters all four Marks in the view it opened, then expects the attention order those Marks produce (ABC first, "Boundary reached"). Since T5R.8-B2 the cards keep the order the view first showed, before any Mark, as A150 requires ("stable within a Review view"). Under D4, Continue to Trades refreshed the order; on cards it is a no-op. The test and A150 disagree, so the session stopped for the user's decision.
