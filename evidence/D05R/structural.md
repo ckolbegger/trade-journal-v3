@@ -916,3 +916,20 @@ T5R.10-H3's ocr findings are worked (H3-B1).
 | Checks | 12 of 12 exit 0 |
 
 Outputs: `suite-runs/t5r.10-panels-*.txt`. Ports 5175, 9341 and 9342 had no listeners before or after the run. `29174a9` holds every T5R.10 code change (H3-B1, `a0e8b63`, is its parent's code); later commits are evidence only.
+
+## T5R.11 UI: open-card figures
+
+Commit `b2b5d04`: a `CardFigures` component, rendered from the `getTrade` result after the attention reasons and before the panels.
+
+| Case | Red |
+|---|---|
+| T-A at XYZ 52.00: the four figures in dollars and R, Reward : risk now 0.89 and planned 2.4, then At entry | the stub rendered nothing ("Current Marked Trade P&L" not found) |
+| non-Values in words, never 0 (T-C "Mark missing: DEF, Mon Oct 12"; T-B Reward : risk "Not applicable") | first-run pass, mutation-checked: rendering "0" for a non-Value fails `expected '0' to be 'Mark missing: DEF, Mon Oct 12'` |
+| the dated last-close group beside the figures when the Mark is missing | first-run pass (existing D4 code moved into `CardFigures`), mutation-checked: forcing the group off fails on the "Fri Oct 9 close" group |
+
+Notes:
+- **Labels** keep the app's existing terms ("Current Marked Trade P&L", "Ongoing Risk to Stop", "Worst-Case Ongoing Risk", "Incremental Reward to Target"), which existing tests read; the plan's names are shorthand. New terms: "Reward : risk now" and "Reward : risk planned".
+- **Order** now follows A158: figures, Reward : risk, At entry, then the dated last close (before, the dated group came before At entry); no test depended on it.
+- **Fixtures:** the evaluation builders in `ReviewCard.test.tsx`, `ReviewCards.test.tsx` and `CardMarks.test.tsx` lacked `rewardRiskNow` and `planBaseline`, which the real `getTrade` always returns; 61 unit tests failed until both were added. Fixture-only; no expectation changed.
+
+Checks: typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 24 files, 363 passed; `build:faults` and `build:releases` exit 0; `npm run test:e2e` 161 passed; ports 5175, 9341 and 9342 clear before and after. No e2e spec changed.
