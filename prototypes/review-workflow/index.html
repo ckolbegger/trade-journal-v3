@@ -94,6 +94,9 @@ label.field { display: block; font-weight: 600; font-size: 0.9rem; margin: 0.35r
 .mrow { display: grid; grid-template-columns: minmax(8rem, 15rem) auto 1fr auto; gap: 0.25rem 0.6rem; align-items: center; padding: 0.2rem 0 0.2rem 0.6rem; border-left: 3px solid var(--line); }
 .mrow.req { border-left-color: var(--warning-line); }
 .mrow.okay { border-left-color: var(--target); }
+.mrow.dirty { border-left-color: var(--info-line); }
+.tag.unsaved { background: var(--info-ground); border-color: var(--info-line); color: var(--info-ink); font-weight: 700; }
+.savebar { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px dashed var(--line); }
 .mrow .who { font-size: 0.9rem; }
 /* Phones: name and price on one line, source and Unavailable beneath. */
 @media (max-width: 560px) { .mrow { grid-template-columns: 1fr auto; } }
@@ -228,7 +231,7 @@ function init(pricing = 'manual', variant = 'A', many = false) {
   }
   // A Manual Mark entered on Trade Detail earlier today; it wins over the provider's price.
   marks['SPY 600C|2026-10-29'] = { v: 2.40, src: 'manual', by: 'detail', provider: pricing === 'auto' ? 2.55 : undefined };
-  S = { variant, pricing, many, marks, refl: {}, draft: {}, act: {},
+  S = { variant, pricing, many, marks, mdraft: {}, refl: {}, draft: {}, act: {},
     ui: { openRefl: null, msg: null, aIdx: 0, aDone: false, bSel: POS[0].id, bPanel: null, cDrawer: null, focusSel: null } };
   S.ui.bPanel = firstPanel(POS[0]);
 }
@@ -300,19 +303,25 @@ function srcTag(mk, pid) {
 function lastClose(k) { const d = [...DATES].reverse().find((d) => d < TODAY && REC[key(k, d)] != null); return d ? REC[key(k, d)] : null; }
 
 // ---------- Shared work sections (A, B and C's drawer) ----------
+// In B, typed prices and Unavailable are drafts until Save Marks; A and C take them as entered.
+const drafting = () => S.variant === 'B';
 function markRow(mk, pid, required) {
   const m = S.marks[mk];
   const k = instOf(mk);
   const others = holders(k).filter((h) => h.id !== pid);
   const prev = lastClose(k);
-  const un = m.src === 'unavail';
-  return `<div class="mrow ${filled(mk) ? 'okay' : required ? 'req' : ''}">
+  const dirty = drafting() && mk in S.mdraft;
+  const dv = S.mdraft[mk];
+  const un = dirty ? dv === 'unavail' : m.src === 'unavail';
+  const shown = dirty ? (dv === 'unavail' ? '' : dv) : m.v != null ? m.v.toFixed(2) : '';
+  const err = dirty ? S.ui.mErr?.[mk] : m.err;
+  return `<div class="mrow ${dirty ? 'dirty' : filled(mk) ? 'okay' : required ? 'req' : ''}">
     <span class="who">${INST[k]}${others.length ? ` <span class="tag shared" title="One Mark serves every position holding this Instrument">also ${others.map((o) => esc(o.name)).join(', ')}</span>` : ''}</span>
     <input class="price ${required ? 'req' : 'opt'}" inputmode="decimal" aria-label="${INST[k]} close, ${DLABEL[dateOf(mk)]}" data-mark="${mk}" data-pid="${pid}" data-fid="m:${pid}:${mk}"
-      value="${m.v != null ? m.v.toFixed(2) : ''}" placeholder="${prev != null ? 'prev ' + prev.toFixed(2) : 'price'}" ${un ? 'disabled' : ''}>
-    <span>${srcTag(mk, pid)}${m.err ? `<span class="error"> ${m.err}</span>` : ''}</span>
+      value="${esc(shown)}" placeholder="${prev != null ? 'prev ' + prev.toFixed(2) : 'price'}" ${un ? 'disabled' : ''}>
+    <span>${dirty ? `<span class="tag unsaved">Unsaved${dv === 'unavail' ? ' · unavailable' : dv === '' ? ' · cleared' : ''}</span>` : srcTag(mk, pid)}${err ? `<span class="error"> ${err}</span>` : ''}</span>
     ${un ? `<button class="btn link" data-act="undoUnavail" data-key="${mk}" data-fid="u:${pid}:${mk}">Undo</button>`
-         : m.v == null ? `<button class="btn link" data-act="unavail" data-key="${mk}" data-fid="u:${pid}:${mk}">Unavailable</button>` : '<span></span>'}
+         : (dirty ? dv === '' : m.v == null) ? `<button class="btn link" data-act="unavail" data-key="${mk}" data-fid="u:${pid}:${mk}">Unavailable</button>` : '<span></span>'}
   </div>`;
 }
 function marksSection(p) {
@@ -431,10 +440,18 @@ function bBody(p) {
       <p class="muted small">${p.meta}</p>
       <div class="figs"><span>${pnlText(p)}</span><span class="muted">${p.stopTarget}</span></div>
       ${reasons(p).map((r) => `<p class="small">${r}</p>`).join('')}
-      ${panel('marks', 'Marks', marksSummary(p), doneChip(marksDone(p), marksDone(p) ? 'In' : `${marksLeft(p)} needed`), marksSection(p))}
+      ${panel('marks', 'Marks', marksSummary(p), doneChip(marksDone(p), marksDone(p) ? 'In' : `${marksLeft(p)} needed`), marksSection(p) + saveBar(p))}
       ${panel('refl', 'Reflections', p.refl.length ? `${p.refl.length} owed, ${rDue} due now` : 'none owed', p.refl.length ? doneChip(rDue === 0, rDue === 0 ? 'Nothing due' : `${rDue} due`) : '<span class="chip quiet">None</span>', reflSection(p))}
       ${panel('action', 'Action', a?.saved ? a.choice : 'Hold, Exit, Roll or Adjust', doneChip(actDone(p), actDone(p) ? 'Saved' : 'Needed'), actionSection(p))}
     </div>`;
+}
+function marksDirty(p) { return [...reqKeys(p), ...gapKeys(p)].filter((mk) => mk in S.mdraft); }
+function saveBar(p) {
+  const n = marksDirty(p).length;
+  return `<div class="savebar"><button class="btn primary" data-act="saveMarks" data-pid="${p.id}" data-fid="sm:${p.id}" ${n ? '' : 'disabled'}>Save Marks${n ? ` (${n})` : ''}</button>
+    ${n ? `<button class="btn link" data-act="discardMarks" data-pid="${p.id}" data-fid="dm:${p.id}">Discard</button>` : ''}
+    <span class="hint">${n ? 'Saved together, or not at all.' : 'Type the prices, then save them together.'}</span>
+    ${S.ui.mSaved === p.id ? '<span role="status" class="chip done">✓ Marks saved</span>' : ''}</div>`;
 }
 function viewB() {
   const cards = POS.map((q) => {
@@ -521,7 +538,7 @@ function render() {
     <div class="intro"><details><summary>${v.tab}: what this tries</summary><p>${v.idea}</p><ul><li><b>Multi-leg (D10):</b> ${v.multi}</li><li><b>Automatic pricing (D11):</b> ${v.auto}</li>
       <li><b>Shared Marks:</b> AAPL is held by two positions; enter it once and it fills in both.</li></ul></details></div>
     <main class="page">${body}
-      <details class="state"><summary class="hint">Prototype state</summary><pre>${esc(JSON.stringify({ status: reviewStatus(), positions: Object.fromEntries(POS.map((p) => [p.id, todoText(p)])), marks: S.marks, reflections: S.refl, actions: S.act }, null, 1))}</pre></details>
+      <details class="state"><summary class="hint">Prototype state</summary><pre>${esc(JSON.stringify({ status: reviewStatus(), positions: Object.fromEntries(POS.map((p) => [p.id, todoText(p)])), marks: S.marks, unsavedMarks: S.mdraft, reflections: S.refl, actions: S.act }, null, 1))}</pre></details>
     </main>`;
   const target = S.ui.focusSel ? document.querySelector(`[data-fid="${S.ui.focusSel}"]`) : fid ? document.querySelector(`[data-fid="${CSS.escape(fid)}"]`) : null;
   if (target) { target.focus({ preventScroll: !S.ui.focusSel }); if (S.ui.focusSel) target.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
@@ -563,12 +580,36 @@ app.addEventListener('click', (e) => {
   const p = POS.find((q) => q.id === d.pid);
   const reflPos = (id) => POS.find((q) => q.refl.some((r) => r.id === id));
   switch (d.act) {
-    case 'variant': S.variant = d.v; S.ui.msg = null; S.ui.cDrawer = null; break;
+    case 'variant': S.variant = d.v; S.ui.msg = null; S.ui.cDrawer = null; S.mdraft = {}; S.ui.mErr = null; break;
     case 'pricing': init(d.mode, S.variant, S.many); break;
     case 'many': init(S.pricing, S.variant, d.many === '1'); break;
     case 'reset': init(S.pricing, S.variant, S.many); break;
-    case 'unavail': S.marks[d.key] = { v: null, src: 'unavail' }; advanceB(POS.find((q) => q.id === S.ui.bSel), 'marks'); break;
-    case 'undoUnavail': S.marks[d.key] = { v: null, src: null }; break;
+    case 'unavail': if (drafting()) { S.mdraft[d.key] = 'unavail'; S.ui.mSaved = null; S.ui.focusSel = `u:${S.ui.bSel}:${d.key}`; break; }
+      S.marks[d.key] = { v: null, src: 'unavail' }; advanceB(POS.find((q) => q.id === S.ui.bSel), 'marks'); break;
+    case 'undoUnavail': if (drafting() && S.mdraft[d.key] === 'unavail') { delete S.mdraft[d.key]; break; }
+      if (drafting()) { S.mdraft[d.key] = ''; break; }
+      S.marks[d.key] = { v: null, src: null }; break;
+    case 'saveMarks': {
+      const keys = marksDirty(p);
+      const errs = {};
+      const parsed = {};
+      for (const mk of keys) {
+        const raw = S.mdraft[mk];
+        if (raw === 'unavail' || raw === '') { parsed[mk] = raw; continue; }
+        const v = Number(raw.replace(/[$,]/g, ''));
+        if (!Number.isFinite(v) || v <= 0) errs[mk] = 'Enter a price above 0.'; else parsed[mk] = v;
+      }
+      if (Object.keys(errs).length) { S.ui.mErr = errs; S.ui.focusSel = `m:${p.id}:${Object.keys(errs)[0]}`; break; }
+      for (const mk of keys) {
+        const prev = S.marks[mk];
+        const v = parsed[mk];
+        S.marks[mk] = v === 'unavail' ? { v: null, src: 'unavail' } : v === '' ? { v: null, src: null } : { v, src: 'manual', by: p.id, provider: prev.src === 'auto' ? prev.v : prev.provider };
+        delete S.mdraft[mk];
+      }
+      S.ui.mErr = null; S.ui.msg = null; S.ui.mSaved = p.id; S.ui.focusSel = `sm:${p.id}`;
+      advanceB(p, 'marks'); break;
+    }
+    case 'discardMarks': for (const mk of marksDirty(p)) delete S.mdraft[mk]; S.ui.mErr = null; S.ui.msg = null; S.ui.focusSel = `acc:${p.id}:marks`; break;
     case 'openRefl': S.ui.openRefl = d.id; S.ui.focusSel = `d:${d.id}:mode:${MODES[0]}`; break;
     case 'reopenRefl': delete S.refl[d.id]; S.ui.openRefl = d.id; S.ui.focusSel = `d:${d.id}:mode:${MODES[0]}`; break;
     case 'cancelRefl': { const id = S.ui.openRefl; S.ui.openRefl = null; S.ui.focusSel = `o:${id}`; break; }
@@ -593,11 +634,15 @@ app.addEventListener('click', (e) => {
     case 'aGo': S.ui.aIdx = +d.i; S.ui.aDone = false; S.ui.msg = null; S.ui.focusSel = `hd:${POS[+d.i].id}`; break;
     case 'aPrev': S.ui.aIdx = Math.max(0, S.ui.aIdx - 1); S.ui.msg = null; S.ui.focusSel = `hd:${POS[S.ui.aIdx].id}`; break;
     case 'aNext': { const n = nextIncomplete(S.ui.aIdx); S.ui.msg = null; if (n === -1) { S.ui.aDone = true; S.ui.focusSel = 'hd:done'; } else { S.ui.aIdx = n; S.ui.focusSel = `hd:${POS[n].id}`; } break; }
-    case 'bSel':
-      S.ui.msg = null; S.ui.focusSel = `hd:${p.id}`;
+    case 'bSel': {
+      const open = POS.find((q) => q.id === S.ui.bSel);
+      // Leaving a card would lose its unsaved prices, so it waits, as the app's Review does today.
+      if (open && open.id !== p.id && marksDirty(open).length) { S.ui.msg = `Save or discard the Marks you typed for ${open.name} to leave it.`; S.ui.bPanel = 'marks'; S.ui.focusSel = `sm:${open.id}`; break; }
+      S.ui.msg = null; S.ui.mSaved = null; S.ui.focusSel = `hd:${p.id}`;
       if (S.ui.bSel === p.id) S.ui.bSel = null;
       else { S.ui.bSel = p.id; S.ui.bPanel = firstPanel(p); S.ui.scrollTo = `pc-${p.id}`; }
       break;
+    }
     case 'bPanel': S.ui.bPanel = S.ui.bPanel === d.panel ? null : d.panel; break;
     case 'quickHold': S.act[p.id] = { choice: 'Hold', note: '', saved: true }; break;
     case 'cOpen': S.ui.cDrawer = { pid: p.id, sec: d.sec }; S.ui.msg = null; S.ui.focusSel = d.sec === 'refl' && p.refl.length ? `o:${(p.refl.find((r) => !S.refl[r.id]) ?? p.refl[0]).id}` : d.sec === 'action' ? (S.act[p.id]?.saved ? `ea:${p.id}` : `ch:${p.id}:Hold`) : `hd:${p.id}`; break;
@@ -616,7 +661,14 @@ function afterRefl(p) {
 app.addEventListener('change', (e) => {
   const t = e.target;
   const d = t.dataset;
-  if (d.mark) {
+  if (d.mark && drafting()) {
+    const raw = t.value.trim();
+    const m = S.marks[d.mark];
+    const saved = m.v != null ? m.v.toFixed(2) : '';
+    if (raw === saved || (raw !== '' && Number(raw) === m.v)) delete S.mdraft[d.mark]; else S.mdraft[d.mark] = raw;
+    if (S.ui.mErr) delete S.ui.mErr[d.mark];
+    S.ui.mSaved = null;
+  } else if (d.mark) {
     const raw = t.value.trim();
     const prev = S.marks[d.mark];
     if (raw === '') S.marks[d.mark] = { v: null, src: null };
@@ -644,7 +696,11 @@ app.addEventListener('keydown', (e) => {
   const col = t.dataset.col;
   const all = [...app.querySelectorAll(col ? `input.price[data-col="${col}"]:not(:disabled)` : 'input.price:not(:disabled)')];
   const next = all[all.indexOf(t) + 1];
-  if (next) next.focus(); else t.blur();
+  // Leaving the field commits it and re-renders, so the target is named before the blur and focused after.
+  const target = next ? next.dataset.fid : drafting() ? `sm:${t.dataset.pid}` : null;
+  S.ui.focusSel = target;
+  t.blur();
+  if (S.ui.focusSel) { app.querySelector(`[data-fid="${CSS.escape(target)}"]`)?.focus(); S.ui.focusSel = null; }
 });
 
 init('manual', 'A');
