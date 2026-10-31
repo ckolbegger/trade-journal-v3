@@ -1,6 +1,6 @@
 import {
-  answerDebt, AT_10, backToTrade, BASE_URL, confirmReference, continueToTrades, debtsOf, deferEntry, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, markAndOpenCard, MONDAY, MONDAY_1005,
-  onboardedAt, onboardedPage, openReview, pinClock, probe, reflectionsOf, spawnedBrowser, test, TUESDAY, TUESDAY_1700, tradesFamily, workspaceOf,
+  answerDebt, AT_10, backToTrade, BASE_URL, confirmReference, debtsOf, deferEntry, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, MONDAY, MONDAY_1005,
+  onboardedAt, onboardedPage, openReview, pinClock, probe, reachCard, reflectionsOf, spawnedBrowser, test, TUESDAY, TUESDAY_1700, workspaceOf,
 } from './support.ts';
 
 const NOT_WRITABLE = { name: /Read only/ };
@@ -15,12 +15,13 @@ test.describe('B5.7 Kill after commit', () => {
       await deferEntry(page, [AT_10]);
       await openReview(page);
       await enterMark(page, 'XYZ', MONDAY, '52.00');
-      await markAndOpenCard(page, 'XYZ', TUESDAY, '52.50');
-      await expect(reflectionsOf(page, 'XYZ').getByText('Due', { exact: true })).toBeVisible();
-      await reflectionsOf(page, 'XYZ').getByRole('button', { name: /^Reflect on / }).click();
+      await enterMark(page, 'XYZ', TUESDAY, '52.50');
+      await reachCard(page, 'XYZ');
+      await expect((await reflectionsOf(page, 'XYZ')).getByText('Due', { exact: true })).toBeVisible();
+      await (await reflectionsOf(page, 'XYZ')).getByRole('button', { name: /^Reflect on / }).click();
       await fillDebtAnswers(page);
       // answerDebt returns once the saved result has rendered; the browser is killed right after.
-      await answerDebt(page);
+      await answerDebt(page, 'XYZ');
     } finally {
       await killed.kill();
     }
@@ -31,10 +32,9 @@ test.describe('B5.7 Kill after commit', () => {
       const page = await firstPage(relaunched.context);
       await page.goto(`${BASE_URL}/`);
       await openReview(page);
-      await continueToTrades(page);
-      await tradesFamily(page).getByRole('button', { name: 'Review XYZ' }).click();
+      await reachCard(page, 'XYZ');
       await expect(page.getByRole('region', { name: 'XYZ review', exact: true })).toBeVisible();
-      await expect(reflectionsOf(page, 'XYZ')).toHaveCount(0);
+      await expect(await reflectionsOf(page, 'XYZ')).toHaveCount(0);
       await expect(page.getByRole('button', { name: /^Reflect on / })).toHaveCount(0);
 
       const workspace = workspaceOf(await probe(page))!;
@@ -68,7 +68,7 @@ test.describe('B5.8 Offline cold restart (AC-DEL-001)', () => {
     await expect(first.getByText('Reflection owed')).toBeVisible();
     await first.getByRole('button', { name: 'Reflect now' }).click();
     await fillDebtAnswers(first);
-    await answerDebt(first);
+    await answerDebt(first, undefined);
     await expect(first.getByText('Deferred, answered', { exact: true })).toBeVisible();
     await offline.close();
 

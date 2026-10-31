@@ -1,7 +1,7 @@
 import type { BrowserContext, Page } from '@playwright/test';
 import {
-  answerDebt, AT_10, backToTrade, completion, confirmReference, debtForm, debtsOf, declineDebt, declinesOf, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, markAndOpenCard, MONDAY, MONDAY_1005, MONDAY_1700,
-  onboardedAt, openReview, openTradeFromOpenList, probe, reflectionSection, reflectionsOf, reloadReview, saveAction, setClock, startEntry, status, test, TUESDAY, TUESDAY_1700, workspaceOf,
+  answerDebt, AT_10, backToTrade, completion, confirmReference, debtFormOf, debtsOf, declineDebt, declinesOf, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, MONDAY, MONDAY_1005, MONDAY_1700,
+  onboardedAt, openReview, openTradeFromOpenList, probe, reachCard, reflectionSection, reflectionsOf, reloadReview, saveAction, setClock, startEntry, status, test, TUESDAY, TUESDAY_1700, workspaceOf,
 } from './support.ts';
 
 // Monday 10:05: a deferred entry on the reference Plan. Monday 17:00: the Review's Mark and Hold, Complete without the reflection.
@@ -23,10 +23,11 @@ async function deferredThenMondayReview(profile: Parameters<typeof launchAt>[0])
   // Monday's Review shows the reflection in XYZ's card as due in the next Review and reads Complete without it.
   await setClock(context, page, MONDAY_1700);
   await openReview(page);
-  await markAndOpenCard(page, 'XYZ', MONDAY, '52.00');
-  await expect(reflectionsOf(page, 'XYZ').getByText('Due in the next Review', { exact: true })).toBeVisible();
-  await expect(reflectionsOf(page, 'XYZ').getByText('Due', { exact: true })).toHaveCount(0);
-  await saveAction(page, 'Hold');
+  await enterMark(page, 'XYZ', MONDAY, '52.00');
+  await reachCard(page, 'XYZ');
+  await expect((await reflectionsOf(page, 'XYZ')).getByText('Due in the next Review', { exact: true })).toBeVisible();
+  await expect((await reflectionsOf(page, 'XYZ')).getByText('Due', { exact: true })).toHaveCount(0);
+  await saveAction(page, 'Hold', undefined, 'XYZ');
   await expect(completion(page)).toHaveText('Complete');
   return { context, page };
 }
@@ -42,14 +43,15 @@ test.describe('B5.1 Defer, then answer in the Review', () => {
     await setClock(context, page, TUESDAY_1700);
     await openReview(page);
     await expect(completion(page)).toHaveText('Incomplete');
-    await markAndOpenCard(page, 'XYZ', TUESDAY, '52.50');
-    await expect(reflectionsOf(page, 'XYZ').getByText('Due', { exact: true })).toBeVisible();
+    await enterMark(page, 'XYZ', TUESDAY, '52.50');
+    await reachCard(page, 'XYZ');
+    await expect((await reflectionsOf(page, 'XYZ')).getByText('Due', { exact: true })).toBeVisible();
     await expect(completion(page)).toHaveText('Incomplete');
-    await reflectionsOf(page, 'XYZ').getByRole('button', { name: /^Reflect on / }).click();
+    await (await reflectionsOf(page, 'XYZ')).getByRole('button', { name: /^Reflect on / }).click();
     await fillDebtAnswers(page);
-    await answerDebt(page);
+    await answerDebt(page, 'XYZ');
     await expect(completion(page)).toHaveText('Incomplete');
-    await saveAction(page, 'Hold');
+    await saveAction(page, 'Hold', undefined, 'XYZ');
     await expect(completion(page)).toHaveText('Complete');
     await context.close();
 
@@ -79,13 +81,14 @@ test.describe('B5.2 Decline in the Review', () => {
     const { context, page } = await deferredThenMondayReview(profile);
     await setClock(context, page, TUESDAY_1700);
     await openReview(page);
-    await markAndOpenCard(page, 'XYZ', TUESDAY, '52.50');
+    await enterMark(page, 'XYZ', TUESDAY, '52.50');
+    await reachCard(page, 'XYZ');
     // The Hold alone does not complete the Review while the reflection is owed.
-    await saveAction(page, 'Hold');
+    await saveAction(page, 'Hold', undefined, 'XYZ');
     await expect(completion(page)).toHaveText('Incomplete');
-    await reflectionsOf(page, 'XYZ').getByRole('button', { name: /^Reflect on / }).click();
-    await expect(debtForm(page)).toBeVisible();
-    await declineDebt(page, 'Too rushed to write it up.');
+    await (await reflectionsOf(page, 'XYZ')).getByRole('button', { name: /^Reflect on / }).click();
+    await expect(await debtFormOf(page, 'XYZ')).toBeVisible();
+    await declineDebt(page, 'Too rushed to write it up.', 'XYZ');
     await expect(completion(page)).toHaveText('Complete');
     await reloadReview(page);
     await expect(completion(page)).toHaveText('Complete');

@@ -19,7 +19,7 @@ test.describe('B4.6 Skipped sessions', () => {
     await setClock(context, page, MONDAY_1700);
     await openReview(page);
     await reachPanel(page, 'MNO', 'Marks');
-    const earlier =page.getByRole('group', { name: EARLIER });
+    const earlier = page.getByRole('group', { name: EARLIER });
     await expect(earlier).toContainText('These sessions do not block the Review.');
     await expect(await markRow(page, 'MNO', 'Fri Oct 9')).toBeVisible();
     await expect(earlier).not.toContainText('Wed Oct 7');

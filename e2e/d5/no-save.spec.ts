@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import {
-  AT_10, confirmReference, debtForm, debtsOf, declinesOf, deferEntry, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, fillRows, firstPage, launchAt, markAndOpenCard, MONDAY, MONDAY_1005, onboardedAt,
-  openEntryForm, openReview, openTradeFromOpenList, probe, READY, reflectionSection, reflectionsOf, setClock, test, TUESDAY, TUESDAY_1700, tradesOf, workspaceOf, completeReflection, status,
+  AT_10, confirmReference, debtFormOf, debtsOf, declinesOf, deferEntry, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, fillRows, firstPage, launchAt, MONDAY, MONDAY_1005, onboardedAt,
+  openEntryForm, openReview, openTradeFromOpenList, probe, reachCard, READY, reflectionSection, reflectionsOf, setClock, test, TUESDAY, TUESDAY_1700, tradesOf, workspaceOf, completeReflection, status,
 } from './support.ts';
 
 // Distinctive values, so any trace of them in storage is unmistakable.
@@ -44,20 +44,21 @@ test.describe('B5.11 Nothing saved without Save (AC-JOUR-001)', () => {
     await setClock(context, page, TUESDAY_1700);
     await openReview(page);
     await enterMark(page, 'XYZ', MONDAY, '52.00');
-    await markAndOpenCard(page, 'XYZ', TUESDAY, '52.50');
-    await expect(reflectionsOf(page, 'XYZ').getByText('Due', { exact: true })).toBeVisible();
+    await enterMark(page, 'XYZ', TUESDAY, '52.50');
+    await reachCard(page, 'XYZ');
+    await expect((await reflectionsOf(page, 'XYZ')).getByText('Due', { exact: true })).toBeVisible();
     const before = workspaceOf(await probe(page));
 
     // A Debt answer: the required answers, a Note, and a decline reason, all unsaved; resize and back.
-    await reflectionsOf(page, 'XYZ').getByRole('button', { name: /^Reflect on / }).click();
+    await (await reflectionsOf(page, 'XYZ')).getByRole('button', { name: /^Reflect on / }).click();
     await fillDebtAnswers(page);
-    await debtForm(page).getByLabel('Note').fill(TYPED.debtNote);
-    await debtForm(page).getByLabel('Reason for declining (optional)').fill(TYPED.debtReason);
+    await (await debtFormOf(page, 'XYZ')).getByLabel('Note').fill(TYPED.debtNote);
+    await (await debtFormOf(page, 'XYZ')).getByLabel('Reason for declining (optional)').fill(TYPED.debtReason);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.setViewportSize({ width: 1280, height: 900 });
-    await expect(debtForm(page).getByLabel('Note')).toHaveValue(TYPED.debtNote);
-    await expect(debtForm(page).getByLabel('Reason for declining (optional)')).toHaveValue(TYPED.debtReason);
-    await expect(debtForm(page).getByRole('radiogroup', { name: 'Decision mode' }).getByLabel('As Planned')).toBeChecked();
+    await expect((await debtFormOf(page, 'XYZ')).getByLabel('Note')).toHaveValue(TYPED.debtNote);
+    await expect((await debtFormOf(page, 'XYZ')).getByLabel('Reason for declining (optional)')).toHaveValue(TYPED.debtReason);
+    await expect((await debtFormOf(page, 'XYZ')).getByRole('radiogroup', { name: 'Decision mode' }).getByLabel('As Planned')).toBeChecked();
     expect(traces(await webStorage(page))).toEqual([]);
     expect(workspaceOf(await probe(page))).toEqual(before);
 

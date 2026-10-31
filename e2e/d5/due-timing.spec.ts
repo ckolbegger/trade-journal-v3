@@ -1,6 +1,6 @@
 import {
-  AT_10, completeReflection, completion, confirmReference, debtsOf, deferEntry, enterMark, entriesWithSettledDebt, expect, markAndOpenCard, MONDAY, MONDAY_1005, MONDAY_1100, MONDAY_1700, onboardedAt, openReview, probe,
-  reflectionSection, reflectionsOf, saveAction, setClock, startEntry, test, TUESDAY, TUESDAY_1700, workspaceOf,
+  AT_10, completeReflection, completion, confirmReference, debtsOf, deferEntry, enterMark, entriesWithSettledDebt, expect, MONDAY, MONDAY_1005, MONDAY_1100, MONDAY_1700, onboardedAt, openReview, probe,
+  reachCard, reflectionSection, reflectionsOf, saveAction, setClock, startEntry, test, TUESDAY, TUESDAY_1700, workspaceOf,
 } from './support.ts';
 
 test.describe('B5.4 Due timing', () => {
@@ -11,17 +11,19 @@ test.describe('B5.4 Due timing', () => {
 
     await setClock(context, page, MONDAY_1700);
     await openReview(page);
-    await markAndOpenCard(page, 'XYZ', MONDAY, '52.00');
+    await enterMark(page, 'XYZ', MONDAY, '52.00');
+    await reachCard(page, 'XYZ');
     // Not due on Monday: the card lists the reflection as due in the next Review (never Due), and Hold completes the Review.
-    await expect(reflectionsOf(page, 'XYZ').getByText('Due in the next Review', { exact: true })).toBeVisible();
-    await expect(reflectionsOf(page, 'XYZ').getByText('Due', { exact: true })).toHaveCount(0);
-    await saveAction(page, 'Hold');
+    await expect((await reflectionsOf(page, 'XYZ')).getByText('Due in the next Review', { exact: true })).toBeVisible();
+    await expect((await reflectionsOf(page, 'XYZ')).getByText('Due', { exact: true })).toHaveCount(0);
+    await saveAction(page, 'Hold', undefined, 'XYZ');
     await expect(completion(page)).toHaveText('Complete');
 
     await setClock(context, page, TUESDAY_1700);
     await openReview(page);
-    await markAndOpenCard(page, 'XYZ', TUESDAY, '52.50');
-    await expect(reflectionsOf(page, 'XYZ').getByText('Due', { exact: true })).toBeVisible();
+    await enterMark(page, 'XYZ', TUESDAY, '52.50');
+    await reachCard(page, 'XYZ');
+    await expect((await reflectionsOf(page, 'XYZ')).getByText('Due', { exact: true })).toBeVisible();
     await expect(completion(page)).toHaveText('Incomplete');
     await context.close();
   });
@@ -46,9 +48,10 @@ test.describe('B5.5 Facts never blocked', () => {
     // The Review still lists the first reflection, as Due.
     await openReview(page);
     await enterMark(page, 'XYZ', MONDAY, '52.00');
-    await markAndOpenCard(page, 'XYZ', TUESDAY, '52.50');
-    await expect(reflectionsOf(page, 'XYZ').getByText('Due', { exact: true })).toBeVisible();
-    await expect(reflectionsOf(page, 'XYZ').getByRole('button', { name: /^Reflect on / })).toHaveCount(1);
+    await enterMark(page, 'XYZ', TUESDAY, '52.50');
+    await reachCard(page, 'XYZ');
+    await expect((await reflectionsOf(page, 'XYZ')).getByText('Due', { exact: true })).toBeVisible();
+    await expect((await reflectionsOf(page, 'XYZ')).getByRole('button', { name: /^Reflect on / })).toHaveCount(1);
     await expect(completion(page)).toHaveText('Incomplete');
 
     // Durable state: one Outstanding Debt, still owed; the new entry's reflection is its own Entry.

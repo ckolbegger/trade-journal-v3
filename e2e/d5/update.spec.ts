@@ -1,5 +1,5 @@
 import {
-  actionEntriesOf, AT_10, checkForUpdate, completion, confirmReference, continueToTrades, deferEntry, enterMark, expect, identity, launchAt, MONDAY, MONDAY_1700, onboardedPage, openReview, probe, READY, recordEntry,
+  actionEntriesOf, AT_10, checkForUpdate, completion, confirmReference, deferEntry, enterMark, expect, identity, launchAt, MONDAY, MONDAY_1700, onboardedPage, openReview, probe, reachCard, READY, recordEntry,
   reflectionsOf, reloadFromNotice, rootOf, saveAction, SECOND_PLAN, setClock, test, tradeCard, TUESDAY, TUESDAY_1700, tradesFamily, watchUpdatingAcrossDocuments, workspaceNames, workspaceOf,
 } from './support.ts';
 
@@ -18,10 +18,9 @@ test.describe('B5.6 Update from D4 with data', () => {
     await openReview(page);
     await enterMark(page, 'XYZ', MONDAY, '52.00');
     await enterMark(page, 'ABC', MONDAY, '27.50');
-    await continueToTrades(page);
     for (const symbol of ['ABC', 'XYZ']) {
-      await tradesFamily(page).getByRole('button', { name: `Review ${symbol}` }).click();
-      await saveAction(page, 'Hold');
+      await reachCard(page, symbol);
+      await saveAction(page, 'Hold', undefined, symbol);
     }
     await expect(completion(page)).toHaveText('Complete');
     // The update's Reload reloads the page it is on.
@@ -42,7 +41,6 @@ test.describe('B5.6 Update from D4 with data', () => {
     await expect(page.getByRole('table', { name: 'Open Trades' }).getByRole('link', { name: 'ABC', exact: true })).toBeVisible(READY);
     await openReview(page);
     await expect(completion(page)).toHaveText('Complete');
-    await continueToTrades(page);
     for (const symbol of ['ABC', 'XYZ']) {
       await expect(tradesFamily(page).getByRole('listitem').filter({ hasText: `Review ${symbol}` })).toContainText('Action saved');
     }
@@ -54,10 +52,9 @@ test.describe('B5.6 Update from D4 with data', () => {
     await openReview(page);
     await enterMark(page, 'XYZ', TUESDAY, '52.50');
     await enterMark(page, 'ABC', TUESDAY, '27.80');
-    await continueToTrades(page);
-    await tradesFamily(page).getByRole('button', { name: 'Review XYZ' }).click();
+    await reachCard(page, 'XYZ');
     await expect(tradeCard(page, 'XYZ')).toBeVisible();
-    await expect(reflectionsOf(page, 'XYZ').getByText('Due', { exact: true })).toBeVisible();
+    await expect((await reflectionsOf(page, 'XYZ')).getByText('Due', { exact: true })).toBeVisible();
 
     // About: the d5 release at schema 4.
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'About' }).click();

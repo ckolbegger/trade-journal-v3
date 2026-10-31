@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import {
-  AT_10, backToTrade, confirmReference, debtForm, declineDebt, deferEntry, enterMark, expect, expectAccessible, fillRows, MONDAY, MONDAY_1100, onboardedAt, openEntryForm, openReview, openTradeFromOpenList, READY,
-  reflectionSection, reflectionsOf, markAndOpenCard, setClock, tabTo, test, TUESDAY, TUESDAY_1230, TUESDAY_1700, type Row,
+  AT_10, backToTrade, confirmReference, debtForm, debtFormOf, declineDebt, deferEntry, enterMark, expect, expectAccessible, fillRows, MONDAY, MONDAY_1100, onboardedAt, openEntryForm, openReview, openTradeFromOpenList, reachCard, READY,
+  reflectionSection, reflectionsOf, setClock, tabTo, test, TUESDAY, TUESDAY_1230, TUESDAY_1700, type Row,
 } from './support.ts';
 
 const nav = (page: Page) => page.getByRole('navigation', { name: 'Primary' });
@@ -21,10 +21,11 @@ test.describe('B5.12 Responsive and accessible', () => {
     await setClock(context, page, TUESDAY_1700);
     await openReview(page);
     await enterMark(page, 'XYZ', MONDAY, '52.00');
-    await markAndOpenCard(page, 'XYZ', TUESDAY, '52.50');
-    await reflectionsOf(page, 'XYZ').getByRole('button', { name: /^Reflect on / }).click();
-    await debtForm(page).getByRole('radiogroup', { name: 'Primary emotion' }).getByLabel('Anxious').check();
-    await debtForm(page).getByLabel('Note').fill('Half-written note that must survive resizing.');
+    await enterMark(page, 'XYZ', TUESDAY, '52.50');
+    await reachCard(page, 'XYZ');
+    await (await reflectionsOf(page, 'XYZ')).getByRole('button', { name: /^Reflect on / }).click();
+    await (await debtFormOf(page, 'XYZ')).getByRole('radiogroup', { name: 'Primary emotion' }).getByLabel('Anxious').check();
+    await (await debtFormOf(page, 'XYZ')).getByLabel('Note').fill('Half-written note that must survive resizing.');
     await expect(nav(page)).toHaveAttribute('data-placement', 'sidebar');
 
     await page.setViewportSize({ width: 390, height: 844 });
@@ -35,8 +36,8 @@ test.describe('B5.12 Responsive and accessible', () => {
     await expect(nav(page)).toHaveAttribute('data-placement', 'sidebar');
     await page.setViewportSize({ width: 1280, height: 900 });
 
-    await expect(debtForm(page).getByRole('radiogroup', { name: 'Primary emotion' }).getByLabel('Anxious')).toBeChecked();
-    await expect(debtForm(page).getByLabel('Note')).toHaveValue('Half-written note that must survive resizing.');
+    await expect((await debtFormOf(page, 'XYZ')).getByRole('radiogroup', { name: 'Primary emotion' }).getByLabel('Anxious')).toBeChecked();
+    await expect((await debtFormOf(page, 'XYZ')).getByLabel('Note')).toHaveValue('Half-written note that must survive resizing.');
     await context.close();
   });
 
@@ -94,7 +95,7 @@ test.describe('B5.12 Responsive and accessible', () => {
 
     // Decline the 10:45 reflection, then read Detail with Outstanding, answered, and declined reflections.
     await owedItem(page, '2026-10-12 10:45').getByRole('button', { name: 'Decline', exact: true }).click();
-    await declineDebt(page, 'No time to write it up.');
+    await declineDebt(page, 'No time to write it up.', undefined);
     await page.reload();
     await expect(page.getByRole('heading', { name: 'XYZ', level: 1 })).toBeVisible(READY);
     await expect(settledItem(page, '2026-10-12 10:30')).toContainText('Deferred, answered');
@@ -111,8 +112,9 @@ test.describe('B5.12 Responsive and accessible', () => {
     await setClock(context, page, TUESDAY_1700);
     await openReview(page);
     await enterMark(page, 'XYZ', MONDAY, '52.00');
-    await markAndOpenCard(page, 'XYZ', TUESDAY, '52.50');
-    const reflections = reflectionsOf(page, 'XYZ');
+    await enterMark(page, 'XYZ', TUESDAY, '52.50');
+    await reachCard(page, 'XYZ');
+    const reflections = await reflectionsOf(page, 'XYZ');
     await expect(reflections.getByText('Due', { exact: true })).toBeVisible();
     await expect(reflections.getByText('Due in the next Review', { exact: true })).toBeVisible();
     await expectAccessible(page, 'Review Trade card with due and later reflections');

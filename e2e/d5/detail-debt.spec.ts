@@ -1,6 +1,6 @@
 import {
-  answerDebt, completion, confirmReference, continueToTrades, debtsOf, deferEntry, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, markEntry, onboardedAt, openReview, openTradeFromOpenList, probe, reflectionsOf, setClock, test,
-  tradesFamily, TUESDAY, TUESDAY_1005, TUESDAY_1230, WEDNESDAY, WEDNESDAY_1700, workspaceOf,
+  answerDebt, completion, confirmReference, debtsOf, deferEntry, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, markRow, onboardedAt, openReview, openTradeFromOpenList, probe, reachCard, reflectionsOf, setClock, test,
+  TUESDAY, TUESDAY_1005, TUESDAY_1230, WEDNESDAY, WEDNESDAY_1700, workspaceOf,
 } from './support.ts';
 
 test.describe('B5.3 Reflect on Trade Detail', () => {
@@ -15,7 +15,7 @@ test.describe('B5.3 Reflect on Trade Detail', () => {
     await expect(page.getByText('Due in the Review after next', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Reflect now' }).click();
     await fillDebtAnswers(page);
-    await answerDebt(page);
+    await answerDebt(page, undefined);
 
     // After the save, and after a reload: answered later, with the time the trader answered.
     await page.reload();
@@ -33,13 +33,12 @@ test.describe('B5.3 Reflect on Trade Detail', () => {
     // Wednesday's Review lists no reflection for the Trade.
     await setClock(context, page, WEDNESDAY_1700);
     await openReview(page);
-    await expect(markEntry(page, 'XYZ', TUESDAY)).toBeVisible();
+    await expect(await markRow(page, 'XYZ', TUESDAY)).toBeVisible();
     await enterMark(page, 'XYZ', TUESDAY, '52.00');
     await enterMark(page, 'XYZ', WEDNESDAY, '52.50');
-    await continueToTrades(page);
-    await tradesFamily(page).getByRole('button', { name: 'Review XYZ' }).click();
+    await reachCard(page, 'XYZ');
     await expect(page.getByRole('region', { name: 'XYZ review', exact: true })).toBeVisible();
-    await expect(reflectionsOf(page, 'XYZ')).toHaveCount(0);
+    await expect(await reflectionsOf(page, 'XYZ')).toHaveCount(0);
     await expect(page.getByRole('button', { name: /^Reflect on / })).toHaveCount(0);
     await expect(completion(page)).toHaveText('Incomplete');
     await expect(page.getByRole('region', { name: 'Review status' })).not.toContainText('eflection');

@@ -1,6 +1,6 @@
 import {
-  actionForm, AT_10, completion, confirmReference, continueToTrades, debtForm, debtsOf, deferEntry, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, markAndOpenCard, MONDAY, MONDAY_1005, onboardedAt,
-  openReview, openTradeFromOpenList, probe, READY, reflectionsOf, setClock, test, TUESDAY, TUESDAY_1700, tradesFamily, workspaceOf,
+  actionFormOf, AT_10, completion, confirmReference, debtForm, debtFormOf, debtsOf, deferEntry, enterMark, entriesWithSettledDebt, expect, fillDebtAnswers, firstPage, launchAt, MONDAY, MONDAY_1005, onboardedAt,
+  openReview, openTradeFromOpenList, probe, reachCard, READY, reflectionsOf, setClock, test, TUESDAY, TUESDAY_1700, workspaceOf,
 } from './support.ts';
 
 const READ_ONLY = "Read only: this browser can't save right now";
@@ -26,18 +26,17 @@ test.describe('B5.9 Recovery Only (faults build)', () => {
     // The Review lists the reflection as Due in the Trade's card, with no way to open it.
     await openReview(page);
     await expect(completion(page)).toHaveText('Incomplete');
-    await continueToTrades(page);
-    await tradesFamily(page).getByRole('button', { name: 'Review XYZ' }).click();
+    await reachCard(page, 'XYZ');
     await expect(page.getByRole('region', { name: 'XYZ review', exact: true })).toBeVisible();
-    await expect(reflectionsOf(page, 'XYZ').getByText('Due', { exact: true })).toBeVisible();
+    await expect((await reflectionsOf(page, 'XYZ')).getByText('Due', { exact: true })).toBeVisible();
     // The card's "Reflect on <time>" button (the Review's equivalent of Reflect now) is still offered in
     // Recovery Only; it opens the prompts read only. What must be absent is every control that answers,
     // declines, or saves (reading of B5.9 and C5.9, reported to the main session).
-    await reflectionsOf(page, 'XYZ').getByRole('button', { name: /^Reflect on / }).click();
-    await expect(debtForm(page).getByRole('radiogroup', { name: 'Decision mode' }).getByLabel('As Planned')).toBeDisabled();
-    await expect(debtForm(page).getByRole('button', { name: 'Answer', exact: true })).toHaveCount(0);
-    await expect(debtForm(page).getByRole('button', { name: 'Decline', exact: true })).toHaveCount(0);
-    await expect(actionForm(page)).toHaveCount(0);
+    await (await reflectionsOf(page, 'XYZ')).getByRole('button', { name: /^Reflect on / }).click();
+    await expect((await debtFormOf(page, 'XYZ')).getByRole('radiogroup', { name: 'Decision mode' }).getByLabel('As Planned')).toBeDisabled();
+    await expect((await debtFormOf(page, 'XYZ')).getByRole('button', { name: 'Answer', exact: true })).toHaveCount(0);
+    await expect((await debtFormOf(page, 'XYZ')).getByRole('button', { name: 'Decline', exact: true })).toHaveCount(0);
+    await expect(await actionFormOf(page, 'XYZ')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0);
 
     // Detail shows the Debt as owed, with no Reflect now or Decline.
@@ -63,19 +62,20 @@ test.describe('B5.10 Mid-session failure (faults build, AC-DEL-006)', () => {
     await setClock(context, page, TUESDAY_1700);
     await openReview(page);
     await enterMark(page, 'XYZ', MONDAY, '52.00');
-    await markAndOpenCard(page, 'XYZ', TUESDAY, '52.50');
-    await reflectionsOf(page, 'XYZ').getByRole('button', { name: /^Reflect on / }).click();
+    await enterMark(page, 'XYZ', TUESDAY, '52.50');
+    await reachCard(page, 'XYZ');
+    await (await reflectionsOf(page, 'XYZ')).getByRole('button', { name: /^Reflect on / }).click();
     await fillDebtAnswers(page);
     const before = workspaceOf(await probe(page))!;
 
     await page.evaluate(() => window.__tjFaults?.set(['inventory']));
-    await debtForm(page).getByRole('button', { name: 'Answer', exact: true }).click();
+    await (await debtFormOf(page, 'XYZ')).getByRole('button', { name: 'Answer', exact: true }).click();
 
     const banner = page.getByRole('region', { name: READ_ONLY });
     await expect(banner).toBeVisible(READY);
     await expect(banner.getByRole('listitem')).toHaveText(["The app's offline copy is missing or damaged, so it could not reopen without a network."]);
     // The values are kept and nothing is recorded.
-    const form = debtForm(page);
+    const form = await debtFormOf(page, 'XYZ');
     await expect(form.getByRole('radiogroup', { name: 'Decision mode' }).getByLabel('As Planned')).toBeChecked();
     await expect(form.getByRole('radiogroup', { name: 'Primary emotion' }).getByLabel('Calm')).toBeChecked();
     await expect(form.getByRole('radiogroup', { name: 'Decision confidence' }).getByLabel('4')).toBeChecked();

@@ -2,7 +2,7 @@
 // also patches Temporal, the production d5 release as the default served build, the Review steps), plus
 // the deferred entry, the Debt form, the Review card's reflections, and the Debt records read through the probe.
 import type { Locator, Page } from '@playwright/test';
-import { continueToTrades, debtFormOf, enterMark, expect, fillRows, openEntryForm, reflectionSection, tradeCard, tradesFamily, type ProbedDatabase, type Row } from '../d4/support.ts';
+import { debtFormOf, expect, fillRows, openEntryForm, reachPanel, READY, reflectionSection, type ProbedDatabase, type Row } from '../d4/support.ts';
 
 export * from '../d4/support.ts';
 
@@ -46,36 +46,31 @@ export async function fillDebtAnswers(page: Page): Promise<void> {
   await form.getByRole('radiogroup', { name: 'Decision confidence' }).getByLabel('4').check();
 }
 
-// Presses Answer and waits for the saved result to replace the form. With a symbol it reaches that Trade's Reflections
-// panel first; without one it uses the form on the page (specs not yet moved to the card helpers).
-export async function answerDebt(page: Page, symbol?: string): Promise<void> {
-  const form = symbol === undefined ? debtForm(page) : await debtFormOf(page, symbol);
-  await form.getByRole('button', { name: 'Answer', exact: true }).click();
+// Waits for the form to go, then shows the saved result. On a card the save also moves the card on to its next panel
+// (A157), so the Reflections panel is reached again before the result is read.
+async function expectSavedReflection(page: Page, form: Locator, symbol: string | undefined): Promise<void> {
+  if (symbol !== undefined) {
+    await expect(form).toBeHidden(READY);
+    await reachPanel(page, symbol, 'Reflections');
+  }
   await expect(page.getByRole('region', { name: 'Saved reflection' })).toBeVisible();
   await expect(debtForm(page)).toHaveCount(0);
 }
 
-// Types a reason (when given), presses Decline, and waits for the saved result.
-export async function declineDebt(page: Page, reason?: string, symbol?: string): Promise<void> {
+// Presses Answer and waits for the saved result to replace the form. With a symbol it reaches that Trade's Reflections
+// panel first; the symbol is undefined only on Trade Detail, which has no card and shows the form on the page.
+export async function answerDebt(page: Page, symbol: string | undefined): Promise<void> {
+  const form = symbol === undefined ? debtForm(page) : await debtFormOf(page, symbol);
+  await form.getByRole('button', { name: 'Answer', exact: true }).click();
+  await expectSavedReflection(page, form, symbol);
+}
+
+// Types a reason (when given), presses Decline, and waits for the saved result. The symbol is undefined only on Trade Detail.
+export async function declineDebt(page: Page, reason: string | undefined, symbol: string | undefined): Promise<void> {
   const form = symbol === undefined ? debtForm(page) : await debtFormOf(page, symbol);
   if (reason !== undefined) await form.getByLabel('Reason for declining (optional)').fill(reason);
   await form.getByRole('button', { name: 'Decline', exact: true }).click();
-  await expect(page.getByRole('region', { name: 'Saved reflection' })).toBeVisible();
-  await expect(debtForm(page)).toHaveCount(0);
-}
-
-// ---- The Review's Trade card -----------------------------------------------------------------------
-// tradeCard lives in D4's support (decision 65) and is re-exported above. Decision 65's async, reaching `reflectionsOf` is
-// D4's too; this synchronous one still shadows it for the d5 specs that read the open card as it is, until T5R.10-H3 moves
-// them onto the reach and deletes it.
-export const reflectionsOf = (page: Page, symbol: string): Locator => tradeCard(page, symbol).getByRole('region', { name: 'Reflections', exact: true });
-
-// Marks the one Instrument for the date and walks to its Trade card.
-export async function markAndOpenCard(page: Page, symbol: string, date: string, price: string): Promise<void> {
-  await enterMark(page, symbol, date, price);
-  await continueToTrades(page);
-  await tradesFamily(page).getByRole('button', { name: `Review ${symbol}` }).click();
-  await expect(tradeCard(page, symbol)).toBeVisible();
+  await expectSavedReflection(page, form, symbol);
 }
 
 // ---- Stored records, read through the probe --------------------------------------------------------

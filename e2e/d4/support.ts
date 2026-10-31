@@ -142,50 +142,9 @@ async function hasCards(page: Page): Promise<boolean> {
 // The Marks inside the open card.
 export const marksFamily = (page: Page): Locator => page.getByRole('region', { name: 'Marks', exact: true });
 
-// The open card's header names it "Review XYZ ...". Pressing the header of the card that is open collapses it, so a
-// press through the card list ("Review XYZ" becomes opening XYZ's card) leaves an open card as it is.
-// A member of the wrapped locator, bound to it so the locator's own methods keep working through the proxy.
-function member(target: Locator, property: string | symbol): unknown {
-  const value: unknown = Reflect.get(target, property, target);
-  return typeof value === 'function' ? (value as (...args: unknown[]) => unknown).bind(target) : value;
-}
-function opening(header: Locator): Locator {
-  return new Proxy(header, {
-    get(target, property) {
-      if (property === 'click') {
-        return async (options?: Parameters<Locator['click']>[0]) => {
-          if ((await target.getAttribute('aria-expanded')) !== 'true') await target.click(options);
-        };
-      }
-      return member(target, property);
-    },
-  });
-}
-export function tradesFamily(page: Page): Locator {
-  return new Proxy(page.locator('ol[aria-label="Positions"], section[aria-label="Trades"]'), {
-    get(target, property) {
-      if (property === 'getByRole') {
-        return (role: Parameters<Locator['getByRole']>[0], options?: Parameters<Locator['getByRole']>[1]) => {
-          const found = target.getByRole(role, options);
-          return role === 'button' && typeof options?.name === 'string' && options.name.startsWith('Review ') ? opening(found) : found;
-        };
-      }
-      return member(target, property);
-    },
-  });
-}
-
-// An Instrument's Mark entry for one session ("XYZ Mark, Mon Oct 12").
-export const markEntry = (page: Page, symbol: string, date: string): Locator => page.getByRole('region', { name: `${symbol} Mark, ${date}`, exact: true });
-
-// Opens the card of the Trade on the symbol, unless it is open, and waits for its content.
-export async function openCard(page: Page, symbol: string): Promise<void> {
-  const header = page.getByRole('button', { name: new RegExp(`^Review ${symbol}\\b`) });
-  await expect(header).toBeVisible(READY);
-  if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
-  await expect(header).toHaveAttribute('aria-expanded', 'true');
-  await expect(page.getByRole('region', { name: `${symbol} review`, exact: true })).toBeVisible(READY);
-}
+// The list of Trades: the cards' list, or a previous release's Trades section. A raw locator that never clicks, for the
+// steps that assert navigation (rule 4) or read an old release (rule 5), as marksFamily is.
+export const tradesFamily = (page: Page): Locator => page.locator('ol[aria-label="Positions"], section[aria-label="Trades"]');
 
 // The three panels of the open card, in order (D5R, A152), and the one that is open.
 const PANELS = ['Marks', 'Reflections', 'Action'] as const;
@@ -219,7 +178,8 @@ export async function openPanelOf(page: Page, symbol: string): Promise<Panel | u
 // A previous release's Review (rule 5): the Trade card is reached from the Trades family, and the Marks family is not a card's.
 async function reachOldCard(page: Page, symbol: string): Promise<Locator> {
   if ((await tradeCard(page, symbol).count()) === 0) {
-    await continueToTrades(page);
+    if ((await tradesFamily(page).count()) === 0) await page.getByRole('button', { name: 'Continue to Trades' }).click();
+    await expect(tradesFamily(page)).toBeVisible(READY);
     await tradesFamily(page).getByRole('button', { name: `Review ${symbol}` }).click();
   }
   await expect(tradeCard(page, symbol)).toBeVisible(READY);
@@ -309,20 +269,11 @@ export async function acknowledgeMark(page: Page, symbol: string, date: string, 
   else await expect(entry.getByText('Acknowledged Unavailable')).toBeVisible();
 }
 
-// The cards are listed from the start, so there is nothing to continue to; a previous release still has the button.
-export async function continueToTrades(page: Page): Promise<void> {
-  if (!(await hasCards(page))) await page.getByRole('button', { name: 'Continue to Trades' }).click();
-  await expect(tradesFamily(page)).toBeVisible(READY);
-}
-
-export const actionForm = (page: Page): Locator => page.getByRole('form', { name: 'Action' });
-
-// Fills the open Action form and presses Save; Hold needs no Intent. Returns once the save result has
+// Fills the Trade's Action form and presses Save; Hold needs no Intent. Returns once the save result has
 // rendered: a Saved result replaces the form (the next Trade's form, or none), so the element that was
 // pressed is gone. Until then the Review's binding is the old one, and opening another Trade would use it.
-// With a symbol it reaches that Trade's Action form; without one it uses the form on the page (specs not yet moved to the card helpers).
-export async function saveAction(page: Page, action: 'Hold' | 'Exit' | 'Roll' | 'Adjust', intent?: string, symbol?: string): Promise<void> {
-  const form = symbol === undefined ? actionForm(page) : await actionFormOf(page, symbol);
+export async function saveAction(page: Page, action: 'Hold' | 'Exit' | 'Roll' | 'Adjust', intent: string | undefined, symbol: string): Promise<void> {
+  const form = await actionFormOf(page, symbol);
   const pressed = await form.elementHandle();
   await form.getByRole('radio', { name: action, exact: true }).check();
   if (intent !== undefined) await form.getByLabel(/^Why are you taking this action\?/).fill(intent);
