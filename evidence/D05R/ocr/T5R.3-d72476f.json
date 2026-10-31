@@ -1,0 +1,116 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 0,
+    "total_tokens": 79939,
+    "input_tokens": 78474,
+    "output_tokens": 1465,
+    "cache_read_tokens": 11776,
+    "elapsed": "1m2s"
+  },
+  "tool_calls": {
+    "total": 16,
+    "by_tool": {
+      "code_search": 7,
+      "file_find": 3,
+      "file_read": 6
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "Daily review attention logic, types, and test fixture support",
+      "files": [
+        "src/coordinators/daily-review/attention.ts",
+        "src/coordinators/daily-review/daily-review.ts",
+        "src/coordinators/daily-review/types.ts",
+        "tests/support/review-fixture.ts"
+      ]
+    }
+  ],
+  "session_id": "3b746bba-e88c-4fad-aa4e-3f453614e8f2",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "3b746bba-e88c-4fad-aa4e-3f453614e8f2",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "d72476f",
+      "resolved_base": "d9389d2864201b95b4620536fdca90e498976bab",
+      "resolved_head": "d72476fa575143346fce917489fa3d41b6079d79",
+      "exact_range": "d9389d2864201b95b4620536fdca90e498976bab..d72476fa575143346fce917489fa3d41b6079d79",
+      "source_artifact_sha256": "4c5fa13a3c62ede3f6e13ef28e1c18665eb767a9967ec04380e5d37f7bc0688e"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "e8fbde899774c55bb56347069b77efb23970cf97e9a13155b20e11beb502774c"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "5c77be161154f1020a46508a07aa3cf67f24c83fa06f4f686779133ab2440bdd"
+        },
+        {
+          "item_id": "9fcc9106e1f1d3b34a703c3af12c8e441b2327bf74a78dbb4748f627b9a5c7a9",
+          "path": "tests/support/review-fixture.ts",
+          "fingerprint": "d5e96615c87ccbd3ccac30176e680a7fb0245cafaff23a2c7a643548943018f1"
+        },
+        {
+          "item_id": "d0be2164d0e1800eeaf3d8a4cfb980155f3541c2f9ad47e1bafc8e88ac22f9b0",
+          "path": "src/coordinators/daily-review/attention.ts",
+          "fingerprint": "7ba1b6cfd6aa36b128531b8e34a4456b561c43c1e5ed9a964395a1485eaddbd4"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "0d960367fbe439fef5b1d5ea3efed32b940a9d748cbdecc2bac3e3e10f72e646",
+          "path": "src/coordinators/daily-review/daily-review.ts",
+          "fingerprint": "e8fbde899774c55bb56347069b77efb23970cf97e9a13155b20e11beb502774c"
+        },
+        {
+          "item_id": "964f30536910024176638b56f2189c099007b160122e17ea46a4fbad916a1671",
+          "path": "src/coordinators/daily-review/types.ts",
+          "fingerprint": "5c77be161154f1020a46508a07aa3cf67f24c83fa06f4f686779133ab2440bdd"
+        },
+        {
+          "item_id": "9fcc9106e1f1d3b34a703c3af12c8e441b2327bf74a78dbb4748f627b9a5c7a9",
+          "path": "tests/support/review-fixture.ts",
+          "fingerprint": "d5e96615c87ccbd3ccac30176e680a7fb0245cafaff23a2c7a643548943018f1"
+        },
+        {
+          "item_id": "d0be2164d0e1800eeaf3d8a4cfb980155f3541c2f9ad47e1bafc8e88ac22f9b0",
+          "path": "src/coordinators/daily-review/attention.ts",
+          "fingerprint": "7ba1b6cfd6aa36b128531b8e34a4456b561c43c1e5ed9a964395a1485eaddbd4"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 61743
+  }
+}

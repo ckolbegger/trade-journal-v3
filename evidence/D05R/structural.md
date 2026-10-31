@@ -136,3 +136,22 @@ Commit: see the task's commit on branch `claude-opus-5.5` (message `feat(daily-r
 **Flags.** (1) `from` is the exchange (New York) date of the Trade's first exposure to the Instrument, not the first session whose close is at or after it: Daily Review does not see the session policy (D4 A39), so an exposure after a session's close keeps that date. T5R.5 or a later task can tighten it if needed. (2) The post-save assembly (`withGaps = false`) carries range positions but empty gap groups, as before. (3) No request was added: `open` reads the same data; `tests/integration` (53 files, 105 tests) passes. (4) UI and `attention.test.ts` test builders gained `rangePosition` and `trades: []` so they type-check.
 
 **Checks (each alone).** `npx vitest run src/coordinators src/domain` exit 0 (310 tests); `npx vitest run tests/integration` exit 0; `npm run typecheck` 0; `npx tsc6 --noEmit` 0; `npm run lint` 0; `npm run lint:deps` 0; `npx vitest run src/ui` 0.
+
+**Main-session review of flag (1).** The calendar-date `from` is wrong for an exposure after a session's close (a Friday 17:00 fill would count from Friday, not Monday), and it hard-codes the exchange time zone in Daily Review, against D4 A39. The user approved decision 62 (plan revision 21, `1085746`, tagged `claude-opus-5.5-plan-r21`): Market Data's computed `HistoricalGaps` returns each listed session's close, and Daily Review compares it with each Trade's earliest exposure. Bug task T5R.3-B1.
+
+Commit: `d72476f`.
+
+### ocr review of `d72476f`
+
+It reviewed `attention.ts`, `daily-review.ts`, `types.ts` and `tests/support/review-fixture.ts`, and found nothing. Raw output: [ocr/T5R.3-d72476f.json](ocr/T5R.3-d72476f.json).
+
+### Cumulative suite at `d72476f`
+
+2026-10-31, by `suite-runner`, label `t5r.3-range-positions`. All passed.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 70 files, 909 tests passed; exit 0 | [unit](suite-runs/t5r.3-range-positions-unit.txt) |
+| Node integration | 53 files, 105 tests passed; exit 0 | [integration](suite-runs/t5r.3-range-positions-integration.txt) |
+| Browser (Chromium) | 155 passed (5.6 min); exit 0 | [browser](suite-runs/t5r.3-range-positions-browser.txt) |
+| Static and verify checks (the same 12) | 12 of 12 exit 0 | [checks](suite-runs/t5r.3-range-positions-checks.txt) |
