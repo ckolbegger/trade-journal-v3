@@ -853,3 +853,5 @@ ocr selected nothing (all 12 files excluded). The reviewing agent read the diff:
 #### T5R.10-H2-B2 "Saved Action" is read through the Action panel
 
 In `review.spec.ts`'s relaunch loop and `kill.spec.ts`'s resume step, reach XYZ's Action panel (`reachPanel(…, 'Action')`) before reading the "Saved Action" region, keeping every expectation.
+
+Done in commit `4f27dcb` (T5R.10-H2-B1, structural): the keyboard-only case reaches the Marks panel with its existing `shiftTabTo` (which also checks the focus ring) and Enter, and the Action panel with `tabTo` and Enter, each followed by an `aria-expanded` check; the "Manual" check is unchanged, and the import spacing is fixed. The keyboard opens both panel headers, so there's no app accessibility defect. `responsive-a11y.spec.ts` passed 5 of 5, four times; typecheck, `tsc6`, lint and `lint:deps` exit 0.
