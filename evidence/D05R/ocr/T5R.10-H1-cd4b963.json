@@ -1,0 +1,105 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 1 finding(s) across 2 selected item(s).",
+  "summary": {
+    "files_reviewed": 2,
+    "comments": 1,
+    "total_tokens": 199236,
+    "input_tokens": 196887,
+    "output_tokens": 2349,
+    "cache_read_tokens": 24960,
+    "elapsed": "1m56s"
+  },
+  "tool_calls": {
+    "total": 26,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 9,
+      "file_find": 3,
+      "file_read": 13
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "e2e/d4/support.ts",
+      "content": "Match the literal, complete symbol rather than interpolating it directly into this regex. Dotted symbols such as BRK.B are supported, so `.` currently matches any character; additionally, `\\b` lets a request for BRK also match BRK.B. If both positions exist, `reachCard` fails with a strict-mode locator error instead of reaching the requested card. Escape regex metacharacters and require the whitespace separating the symbol from the remaining header text.",
+      "existing_code": "export const cardHeader = (page: Page, symbol: string): Locator =\u003e page.getByRole('button', { name: new RegExp(`^Review ${symbol}\\\\b`) });",
+      "start_line": 210,
+      "end_line": 210,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "small change set",
+      "files": [
+        "e2e/d4/support.ts",
+        "e2e/d5/support.ts"
+      ]
+    }
+  ],
+  "session_id": "18b4af1c-6d64-4f9a-9476-31ffe6fc6aef",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "18b4af1c-6d64-4f9a-9476-31ffe6fc6aef",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "cd4b963",
+      "resolved_base": "8d7165f4a5013cdb14965e42028fbcba433934be",
+      "resolved_head": "cd4b9635ca6a665eaed093a3605357279a2495d0",
+      "exact_range": "8d7165f4a5013cdb14965e42028fbcba433934be..cd4b9635ca6a665eaed093a3605357279a2495d0",
+      "source_artifact_sha256": "2973f75638005ca5dc6f000fdef39b4bc46976ea01ba97502a526ce6b7d7017a"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "3df9978f80fb8df171ba8e17242db730208f672e38c000fe3710ec250b5cf2b3",
+          "path": "e2e/d5/support.ts",
+          "fingerprint": "0de0cec12a846e77a2645d3dae7c88d2ae8cfdf73006865453323cf2171168b1"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "18800827b4d6ae377782b29e21284bc84a0cc9127881b372a0f9de561706e300"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "3df9978f80fb8df171ba8e17242db730208f672e38c000fe3710ec250b5cf2b3",
+          "path": "e2e/d5/support.ts",
+          "fingerprint": "0de0cec12a846e77a2645d3dae7c88d2ae8cfdf73006865453323cf2171168b1"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "18800827b4d6ae377782b29e21284bc84a0cc9127881b372a0f9de561706e300"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 115737
+  }
+}

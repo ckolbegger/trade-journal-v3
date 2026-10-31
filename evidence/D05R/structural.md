@@ -790,3 +790,20 @@ Notes for H2 and H3:
 - **The carried ocr finding** is fixed: `enterMark` and `acknowledgeMark` reach the Marks panel through `markRow`.
 - **Transitional shapes.** D5's synchronous `reflectionsOf` stays and shadows D4's async one for the D5 specs (about 20 synchronous call sites); H3 moves them and deletes it. `saveAction`, `answerDebt` and `declineDebt` take an optional trailing symbol; H2 and H3 pass it, then make it required. `tradeCard` moved to D4's support. The old private panel locator is now `anyPanelHeader`, still used by `openPanel` and `showPanel`.
 - **Not mutation-checked:** case 2's `aria-expanded` idempotency check and its "no Save or discard message" assertion (each case had a genuine red against the stubs).
+
+### ocr review of `cd4b963`
+
+Two files reviewed, one finding; the reviewing agent also read the diff against section 6.4's five rules (1, 3, 4 and 5 hold; one Doubtful point under rule 2). Raw output: [ocr/T5R.10-H1-cd4b963.json](ocr/T5R.10-H1-cd4b963.json).
+
+| Severity | Location | Claim | Assessment |
+|---|---|---|---|
+| medium | `e2e/d4/support.ts:210` | `cardHeader` puts the symbol into a regex unescaped, and `\b` lets `BRK` match `BRK.B`, so reaching one of two such Trades hits a strict-mode error. | Valid if a symbol can hold a dot; nothing fails today. Bug task **T5R.10-H1-B1** (first check whether the app accepts such symbols). |
+| (rule 2) | `reachCard` | The A156 hold message is matched by text only; a stale message left on the page could make a later slow open report a refusal early. | Doubtful: whether the app clears the message wasn't checked. Bug task **T5R.10-H1-B2**. |
+
+#### T5R.10-H1-B1 A symbol is matched exactly
+
+Case: it should reach BRK's card, not BRK.B's, when both Trades are listed. If the app's symbol rules can't produce such a pair, record that the defect is unreachable and leave the helper as it is.
+
+#### T5R.10-H1-B2 A refusal is reported only for this press
+
+Case: it should reach ABC's card after an earlier refusal once XYZ's draft is discarded, though the earlier hold message was shown.
