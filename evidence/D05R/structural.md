@@ -561,3 +561,8 @@ Defect: a refresh after a save rebuilds the card list from the new overview, so 
 
 Defect: a Mark save that finishes after another card opened re-reads and shows the card it was entered on. Case:
 - it should keep the newly opened card shown, with its values, when a Mark saved on the previous card finishes after the switch.
+
+Done in commit `5a2a27e`:
+- **The case.** Red: `expected ['JKL','XYZ','XYZ','DEF','ABC'] to equal ['ABC','DEF','XYZ','XYZ','JKL']`, after a Mark save on DEF's card with `open` returning the Trades reversed. Then green. No first-run passes.
+- **The fix.** `ReadyReview` holds the Trade ids in the order first shown (`order`, kept as state because lint rejects reading a ref during render). A refreshed Review adds a Trade new to it at the end, and a Trade it no longer holds gets no card. That choice isn't pinned by its own test. Each card's content still comes from the newest Review.
+- **Checks.** typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 334 passed.
