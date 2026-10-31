@@ -568,3 +568,9 @@ Done in commit `5a2a27e`:
 - **Checks.** typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 334 passed.
 
 ocr review of `5a2a27e`: one file reviewed (two excluded), no findings. Raw output: [ocr/T5R.8-B2-5a2a27e.json](ocr/T5R.8-B2-5a2a27e.json).
+
+Done in commit `4fdaa50` (T5R.8-B3):
+- **The case.** Red: `Unable to find an accessible element with the role "region" and name "JKL review"`, because DEF's card was shown in place of JKL's. Then green. No first-run passes. The first red attempt was a transform error (a duplicate `const facade`), logged but not counted as the red.
+- **The setup.** Holding open an Enter or Correct save doesn't work, because the typed price keeps the card dirty and the A156 hold refuses the switch. The test therefore uses the one per-row save that leaves nothing typed: Withdraw on DEF's acknowledged Mark. It holds `MarketData.save` open, opens JKL, types into JKL's first textbox, then resolves the save. A 50 ms `act` wait follows, because the late refresh now ends with no further call to wait on.
+- **The fix.** `refreshTrade(tradeId, request = selection.current)`. `markSaved` passes `shown.opening`, so the refresh belongs to the opening the Mark was saved under. The Review itself still refreshes; only the shown card is protected.
+- **Checks.** typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 22 files, 335 passed.
