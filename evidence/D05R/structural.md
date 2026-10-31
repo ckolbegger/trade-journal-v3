@@ -1006,3 +1006,13 @@ A change of `?instrument=` or `?trade=` while the Review is mounted opens the na
 ### T5R.12-B3 An Action save whose next step is a Mark opens that card on Marks
 
 Per the user's decision above, when nothing else is held on the card (carried item 1 still governs a held card).
+
+ocr review of `da270ff` (T5R.12-B1): one file reviewed (three excluded); one round hit a provider 504, so coverage may be thinner. Raw output: [ocr/T5R.12-B1-da270ff.json](ocr/T5R.12-B1-da270ff.json).
+
+| Severity | Location | Claim | Assessment |
+|---|---|---|---|
+| medium | `ReviewView.tsx:40` | The new-tab `href` omits the panel, so a modified click on an Action or Reflection blocker opens the card's first panel not done, not the panel a plain click opens. | Valid: bug task T5R.12-B1-B1. |
+
+### T5R.12-B1-B1 Card links carry their panel
+
+An Action or Reflection blocker's `href` names its panel (`&panel=<name>`), and the load path opens that panel, so a new tab matches a plain click.
