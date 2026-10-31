@@ -129,10 +129,19 @@ label.field { display: block; font-weight: 600; font-size: 0.9rem; margin: 0.35r
 .pcard { background: var(--card); border: 1px solid var(--line); border-radius: 12px; scroll-margin-top: 4.5rem; min-width: 0; }
 .pcard.open { border: 2px solid var(--ink); box-shadow: inset 4px 0 0 var(--ink); }
 .pcard.done:not(.open) { background: #f4faf5; }
-.pcard-btn { width: 100%; font: inherit; text-align: left; background: transparent; border: none; border-radius: 12px; padding: 0.5rem 0.75rem; cursor: pointer; min-height: 48px; display: grid; grid-template-columns: 1fr auto; gap: 0.1rem 0.6rem; align-items: center; }
+.pcard-btn { width: 100%; font: inherit; text-align: left; background: transparent; border: none; border-radius: 12px; padding: 0.5rem 0.75rem; cursor: pointer; min-height: 48px; display: grid; grid-template-columns: minmax(9rem, 1fr) minmax(8rem, 1.3fr) 11.5rem; gap: 0.1rem 1rem; align-items: center; }
+.pcard-btn .rr { grid-row: 1 / span 2; grid-column: 2; }
+@media (max-width: 560px) { .pcard-btn { grid-template-columns: 1fr auto; } .pcard-btn .q-side { grid-row: 1 / span 2; } .pcard-btn .rr { grid-row: 3; grid-column: 1 / -1; margin: 0.35rem 0 0.2rem; } }
+/* Stop-to-Target slider: red at the Stop, green at the Target; the dot is today's Mark, the tick is entry. */
+.rr { position: relative; display: block; height: 18px; }
+.rr-track { position: absolute; left: 0; right: 0; top: 5px; height: 8px; border-radius: 999px; background: linear-gradient(90deg, var(--stop), #d9a441 50%, var(--target)); }
+.rr.none .rr-track { background: var(--neutral-ground); border: 1px dashed var(--muted); }
+.rr-entry { position: absolute; top: 1px; width: 2px; height: 16px; margin-left: -1px; background: var(--ink); border-radius: 1px; }
+.rr-now { position: absolute; top: 2px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: #fff; border: 3px solid var(--ink); box-shadow: 0 0 0 2px #fff; }
+.rr-now.past { border-radius: 3px; }
 .pcard-btn .q-name { font-weight: 700; font-size: 1.05rem; }
 .pcard-btn .q-todo { font-size: 0.85rem; color: var(--muted); grid-column: 1; }
-.pcard-btn .q-side { grid-row: 1 / span 2; grid-column: 2; display: flex; gap: 0.4rem; align-items: center; }
+.pcard-btn .q-side { grid-row: 1 / span 2; grid-column: -2; justify-content: flex-end; display: flex; gap: 0.4rem; align-items: center; }
 .pcard-btn .chev { transition: transform 0.15s; }
 .pcard-btn[aria-expanded='true'] .chev { transform: rotate(90deg); }
 .pcard-body { padding: 0 0.75rem 0.75rem; }
@@ -227,7 +236,8 @@ const REC = { 'MSFT|2026-10-27': 409.10, 'MSFT|2026-10-28': 413.75, 'AAPL 250C|2
   'SPY 540P|2026-10-28': 1.95, 'SPY 560P|2026-10-28': 3.90, 'SPY 600C|2026-10-28': 2.80, 'SPY 620C|2026-10-28': 1.05 };
 // What the Pricing Provider returns in Automatic mode (D11). SPY 560P has no close; SPY 600C was overridden by hand.
 const AUTO = { 'AAPL|2026-10-27': 228.95, 'AAPL|2026-10-28': 231.40, 'AAPL|2026-10-29': 233.85, 'MSFT|2026-10-29': 418.20, 'AAPL 250C|2026-10-29': 2.85, 'SPY 540P|2026-10-29': 1.65, 'SPY 620C|2026-10-29': 0.90, 'SPY 600C|2026-10-29': 2.55 };
-for (const f of FILLER) { const e = f.legs[0].e; REC[`${f.name}|2026-10-27`] = +(e * 1.01).toFixed(2); REC[`${f.name}|2026-10-28`] = +(e * 1.02).toFixed(2); AUTO[`${f.name}|2026-10-29`] = +(e * 1.025).toFixed(2); }
+// Spread between the Stop (0.92) and the Target (1.15), so the sliders differ.
+FILLER.forEach((f, i) => { const e = f.legs[0].e; const r = 0.95 + ((i * 5) % 16) * 0.012; REC[`${f.name}|2026-10-27`] = +(e * (r - 0.01)).toFixed(2); REC[`${f.name}|2026-10-28`] = +(e * (r - 0.005)).toFixed(2); AUTO[`${f.name}|2026-10-29`] = +(e * r).toFixed(2); });
 const MODES = ['Planned', 'Deliberate Adjustment', 'Reactive', 'Impulsive'];
 const EMOTIONS = ['Calm', 'Confident', 'Curious', 'Anxious', 'Fearful', 'Frustrated', 'Excited', 'Bored'];
 const CHOICES = ['Hold', 'Exit', 'Roll', 'Adjust'];
@@ -414,7 +424,21 @@ function figures(p) {
   if (state.kind !== 'ok') return { planned, state: state.kind };
   const v = p.legs.reduce((s, l) => s + l.q * l.m * S.marks[key(l.k, TODAY)].v, 0);
   const toStop = v - p.stopV, worst = v - p.worstV, toTarget = p.targetV - v;
-  return { planned, state: 'ok', pnl: v - entryV, toStop, worst, toTarget, rr: toStop > 0 && toTarget > 0 ? toTarget / toStop : null };
+  return { planned, state: 'ok', v, entryV, pnl: v - entryV, toStop, worst, toTarget, rr: toStop > 0 && toTarget > 0 ? toTarget / toStop : null };
+}
+// The collapsed card's slider. No numbers on it; they are in its description for screen readers and on hover.
+function slider(p) {
+  const f = figures(p);
+  if (f.state !== 'ok') {
+    const why = f.state === 'needs' ? 'Mark missing' : 'Mark unavailable';
+    return `<span class="rr none" role="img" aria-label="Stop to Target: ${why}" title="${why}"><span class="rr-track"></span></span>`;
+  }
+  const at = (value) => ((value - p.stopV) / (p.targetV - p.stopV)) * 100;
+  const raw = at(f.v);
+  const now = Math.min(100, Math.max(0, raw));
+  const where = raw <= 0 ? 'past the Stop' : raw >= 100 ? 'past the Target' : `${Math.round(raw)}% of the way from the Stop to the Target`;
+  const text = `Stop to Target: ${where}, entry at ${Math.round(at(f.entryV))}%. Risk to stop ${money(f.toStop)}, P&L ${f.pnl < 0 ? '−' : '+'}${money(f.pnl)}, reward : risk ${f.rr == null ? 'not meaningful' : ratio(f.rr)}.`;
+  return `<span class="rr" role="img" aria-label="${text}" title="${text}"><span class="rr-track"></span><span class="rr-entry" style="left:${at(f.entryV)}%"></span><span class="rr-now ${raw <= 0 || raw >= 100 ? 'past' : ''}" style="left:${now}%"></span></span>`;
 }
 function figBlock(p) {
   const f = figures(p);
@@ -502,7 +526,8 @@ function viewB() {
     return `<li class="pcard ${open ? 'open' : ''} ${posDone(q) ? 'done' : ''}" id="pc-${q.id}">
       <h2 style="margin:0;font-size:inherit"><button class="pcard-btn" aria-expanded="${open}" aria-controls="pb-${q.id}" data-act="bSel" data-pid="${q.id}" data-fid="hd:${q.id}">
         <span class="q-name">${esc(q.name)}</span>
-        <span class="q-todo">${posDone(q) ? `Done · ${S.act[q.id].choice}` : todoText(q)}${(() => { const f = figures(q); return f.state === 'ok' ? ` · P&amp;L ${signed(f.pnl)} · risk to stop ${money(f.toStop)} · R:R ${f.rr == null ? '—' : ratio(f.rr)}` : ''; })()}</span>
+        <span class="q-todo">${posDone(q) ? `Done · ${S.act[q.id].choice}` : todoText(q)}</span>
+        ${slider(q)}
         <span class="q-side">${posDone(q) ? '<span class="chip done">✓ Done</span>' : bandChip(q)}<span class="chev" aria-hidden="true">▸</span></span>
       </button></h2>
       ${open ? bBody(q) : ''}
