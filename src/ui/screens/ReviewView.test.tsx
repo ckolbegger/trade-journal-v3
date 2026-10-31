@@ -134,6 +134,11 @@ const savedButNotRead = (instrumentKey: string, tradingDate: string, price: stri
   marks: [{ key: { instrumentKey, tradingDate }, resolution: available(price), resolutionRevision: 1, classification: 'InitialManual' }],
   review: { kind: 'ChangedDuringAssembly' },
 });
+// Opens the open card's Marks panel by its header, unless it is already open (A152).
+async function openMarks(user: ReturnType<typeof userEvent.setup>) {
+  const header = await screen.findByRole('button', { name: /^Marks\b/ });
+  if (header.getAttribute('aria-expanded') !== 'true') await user.click(header);
+}
 // Corrects the row's Mark and saves it: the per-row save, which refreshes the Review.
 async function correctPrice(user: ReturnType<typeof userEvent.setup>, entry: HTMLElement, price: string) {
   await user.click(within(entry).getByRole('button', { name: 'Correct' }));
@@ -264,7 +269,8 @@ describe('Marks in the card (P11, P15)', () => {
     const user = userEvent.setup();
 
     // The first card holds the shared Instrument alone, naming both Trades that hold it.
-    const marks = await within(await screen.findByRole('region', { name: 'XYZ review' })).findByRole('region', { name: 'Marks' });
+    await openMarks(user);
+    const marks =await within(await screen.findByRole('region', { name: 'XYZ review' })).findByRole('region', { name: 'Marks' });
     const rows = within(within(marks).getByRole('list', { name: "Today's Marks" })).getAllByRole('listitem');
     expect(rows.map((row) => within(row).getByRole('heading', { level: 4 }).textContent)).toEqual(['XYZ']);
     expect(within(rows[0]!).getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual(['/trades/t2']);
@@ -400,6 +406,7 @@ describe('Marks in the card (P11, P15)', () => {
     renderReview(facade);
     const user = userEvent.setup();
 
+    await openMarks(user);
     const row = within(await screen.findByRole('region', { name: 'DEF earlier sessions' })).getByRole('listitem');
     expect(within(row).getByText(/no quote/)).toBeTruthy();
     expect(within(row).queryByRole('button', { name: 'Withdraw' })).toBeNull();
@@ -440,6 +447,7 @@ describe('Marks in the card (P11, P15)', () => {
     vi.mocked(facade.DailyReview.save).mockResolvedValueOnce(savedButNotRead('DEF', '2026-10-09', '9'));
     renderReview(facade);
     const user = userEvent.setup();
+    await openMarks(user);
     const earlierEntry = await screen.findByRole('region', { name: 'DEF Mark, Fri Oct 9' });
     await user.type(within(earlierEntry).getByLabelText('Price'), '9');
     await user.click(screen.getByRole('button', { name: 'Save Marks (1)' }));
@@ -469,6 +477,7 @@ describe('Marks in the card (P11, P15)', () => {
     vi.mocked(facade.DailyReview.save).mockResolvedValueOnce(savedButNotRead('DEF', '2026-10-09', '9'));
     renderReview(facade);
     const user = userEvent.setup();
+    await openMarks(user);
     await user.type(within(await screen.findByRole('region', { name: 'DEF Mark, Fri Oct 9' })).getByLabelText('Price'), '9');
     await user.click(screen.getByRole('button', { name: 'Save Marks (1)' }));
     await user.click(await screen.findByRole('button', { name: 'Refresh' }));
@@ -497,7 +506,8 @@ describe('Marks in the card (P11, P15)', () => {
     expect(headers[1]!.textContent).toContain('1 Mark · Action');
     // The saved Mark comes from the returned state alone.
     await user.click(headers[0]!);
-    const xyz = await screen.findByRole('region', { name: 'XYZ Mark, Mon Oct 12' });
+    await openMarks(user);
+    const xyz =await screen.findByRole('region', { name: 'XYZ Mark, Mon Oct 12' });
     expect(within(xyz).getByText('$52.00', { exact: false })).toBeTruthy();
     // No Review session, stage, or progress is kept in the browser.
     expect(stored).not.toHaveBeenCalled();
@@ -595,6 +605,7 @@ describe('Marks in the card (P11, P15)', () => {
     renderReview(facade);
     const user = userEvent.setup();
 
+    await openMarks(user);
     await correctPrice(user, await screen.findByRole('region', { name: 'DEF Mark, Mon Oct 12' }), '2');
     expect((await screen.findByRole('alert')).textContent).toContain('We couldn’t refresh the Review. Nothing was changed.');
     expect(screen.getByRole('region', { name: 'XYZ Mark, Mon Oct 12' })).toBeTruthy();

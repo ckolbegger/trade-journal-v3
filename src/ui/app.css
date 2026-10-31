@@ -1097,6 +1097,34 @@ table.lots td:first-child {
 .review-card-remains {
   color: var(--muted);
 }
+/* The open card's panels (A152): a header button with its summary and status, one panel open at a time. */
+.review-panel {
+  border-top: 1px solid var(--line);
+}
+.review-panel h4 {
+  margin: 0;
+}
+.review-panel h4 button {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.5rem 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.review-panel-name {
+  font-weight: 700;
+}
+.review-panel-summary {
+  color: var(--muted);
+}
 /* At narrow widths the slider takes its own full-width row under the Underlying (A162). */
 @media (max-width: 639.98px) {
   .review-card-head {

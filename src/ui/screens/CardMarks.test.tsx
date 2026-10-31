@@ -128,6 +128,12 @@ function renderReview(facade: UiFacade, options: { writable?: boolean; onDirtyCh
 const marksPanel = () => screen.findByRole('region', { name: 'Marks' });
 const rowOf = (panel: HTMLElement, symbol: string, date: string) => within(panel).getByRole('region', { name: `${symbol} Mark, ${date}` });
 
+// Save Marks moves the card on to its next panel that is not done; the Marks come back by their header.
+async function backToMarks(user: ReturnType<typeof userEvent.setup>) {
+  await waitFor(() => expect(screen.getByRole('button', { name: /^Action\b/ }).getAttribute('aria-expanded')).toBe('true'));
+  await user.click(screen.getByRole('button', { name: /^Marks\b/ }));
+}
+
 const FRIDAY_LABEL = 'Fri Oct 9';
 const MONDAY_LABEL = 'Mon Oct 12';
 
@@ -253,6 +259,9 @@ describe('Save Marks (P37, A155) rendering', () => {
     await user.type(within(rowOf(panel, 'XYZ', FRIDAY_LABEL)).getByLabelText('Price'), '51.00');
     await user.click(within(panel).getByRole('button', { name: 'Save Marks (2)' }));
 
+    // The next panel that is not done opens (no reflection is owed, so the Action), and the Marks come back by their header.
+    await backToMarks(user);
+    expect(screen.getByRole('button', { name: /^Marks\b/ }).getAttribute('aria-expanded')).toBe('true');
     // Every row shows its saved Mark, and nothing is Unsaved.
     await waitFor(() => expect(within(rowOf(panel, 'XYZ', MONDAY_LABEL)).getByText('$52.00', { exact: false })).toBeTruthy());
     expect(within(rowOf(panel, 'XYZ', FRIDAY_LABEL)).getByText('$51.00', { exact: false })).toBeTruthy();
@@ -265,8 +274,6 @@ describe('Save Marks (P37, A155) rendering', () => {
     const [, sharedHeader] = screen.getAllByRole('button', { name: /^Review XYZ\b/ });
     expect(sharedHeader!.textContent).not.toContain('1 Mark');
     expect(within(sharedHeader!.closest('li')!).getByRole('img').getAttribute('aria-label')).toContain('50% of the way');
-    // The next panel that is not done: no reflection is owed, so the Action.
-    expect(document.activeElement).toBe(within(card).getByRole('region', { name: 'Action' }));
     // No read followed the save.
     expect(facade.DailyReview.open).toHaveBeenCalledTimes(1);
     expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1);
@@ -288,6 +295,7 @@ describe('Save Marks (P37, A155) pending', () => {
     // While it is pending: one sent draft is changed.
     await user.type(within(rowOf(panel, 'XYZ', FRIDAY_LABEL)).getByLabelText('Price'), '1');
     finish(marksSavedResult([savedKey('XYZ', MONDAY, '52.00'), savedKey('XYZ', FRIDAY, '51.00')]));
+    await backToMarks(user);
 
     // Monday was sent unchanged, so it shows its saved Mark; Friday stays Unsaved with what was typed.
     await waitFor(() => expect(within(rowOf(panel, 'XYZ', MONDAY_LABEL)).getByText('$52.00', { exact: false })).toBeTruthy());
@@ -306,6 +314,7 @@ describe('Save Marks (P37, A155) pending', () => {
     await user.click(within(panel).getByRole('button', { name: 'Save Marks (1)' }));
     await user.type(within(rowOf(panel, 'XYZ', FRIDAY_LABEL)).getByLabelText('Price'), '51.00');
     finish(marksSavedResult([savedKey('XYZ', MONDAY, '52.00')]));
+    await backToMarks(user);
 
     await waitFor(() => expect(within(rowOf(panel, 'XYZ', MONDAY_LABEL)).getByText('$52.00', { exact: false })).toBeTruthy());
     expect(within(panel).getByRole('button', { name: 'Save Marks (1)' })).toBeTruthy();
@@ -510,6 +519,7 @@ describe('earlier sessions after a save', () => {
     const list = await screen.findByRole('region', { name: 'XYZ earlier sessions' });
     await user.type(within(screen.getByRole('region', { name: 'XYZ Mark, Fri Sep 25' })).getByLabelText('Price'), '9');
     await user.click(screen.getByRole('button', { name: 'Save Marks (1)' }));
+    await backToMarks(user);
     await waitFor(() => expect(within(screen.getByRole('region', { name: 'XYZ Mark, Fri Sep 25' })).getByText('$9.00', { exact: false })).toBeTruthy());
 
     await user.click(within(list).getByRole('button', { name: 'Next page' }));

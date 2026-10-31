@@ -187,6 +187,31 @@ export async function openCard(page: Page, symbol: string): Promise<void> {
   await expect(page.getByRole('region', { name: `${symbol} review`, exact: true })).toBeVisible(READY);
 }
 
+// The three panels of the open card, in order (D5R, A152), and the one that is open.
+const PANELS = ['Marks', 'Reflections', 'Action'] as const;
+type Panel = (typeof PANELS)[number];
+const panelHeader = (page: Page, name: Panel): Locator => page.getByRole('region', { name: / review$/ }).getByRole('button', { name: new RegExp(`^${name}\\b`) });
+export async function openPanel(page: Page): Promise<Panel | undefined> {
+  for (const name of PANELS) if ((await panelHeader(page, name).getAttribute('aria-expanded')) === 'true') return name;
+  return undefined;
+}
+// Opens a panel of the open card by its header, unless it is already open.
+export async function showPanel(page: Page, name: Panel): Promise<void> {
+  const header = panelHeader(page, name);
+  await expect(header).toBeVisible(READY);
+  if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
+  await expect(header).toHaveAttribute('aria-expanded', 'true');
+}
+// Shows the saved row in the Marks panel, then puts back the panel Save Marks moved the card on to (A157).
+async function checkSavedRow(page: Page, entry: Locator, text: string): Promise<void> {
+  // The drafts are cleared with the same result that moves the card on; the panel may already be hidden.
+  await expect(page.locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', READY);
+  const moved = await openPanel(page);
+  await showPanel(page, 'Marks');
+  await expect(entry.getByText(text)).toBeVisible();
+  if (moved !== undefined && moved !== 'Marks') await showPanel(page, moved);
+}
+
 // On cards the price is a draft in the open card's Marks panel, saved with Save Marks (D5R, A153); a previous release's
 // Review enters it in the row and saves it there.
 export async function enterMark(page: Page, symbol: string, date: string, price: string): Promise<void> {
@@ -201,7 +226,8 @@ export async function enterMark(page: Page, symbol: string, date: string, price:
     await entry.getByLabel('Price').fill(price);
     await entry.getByRole('button', { name: 'Save Mark' }).click();
   }
-  await expect(entry.getByText('Manual')).toBeVisible();
+  if (cards) await checkSavedRow(page, entry, 'Manual');
+  else await expect(entry.getByText('Manual')).toBeVisible();
 }
 
 export async function acknowledgeMark(page: Page, symbol: string, date: string, reason: string): Promise<void> {
@@ -212,7 +238,8 @@ export async function acknowledgeMark(page: Page, symbol: string, date: string, 
   await entry.getByLabel('Reason (required)').fill(reason);
   if (cards) await marksFamily(page).getByRole('button', { name: /^Save Marks/ }).click();
   else await entry.getByRole('button', { name: 'Save acknowledgment' }).click();
-  await expect(entry.getByText('Acknowledged Unavailable')).toBeVisible();
+  if (cards) await checkSavedRow(page, entry, 'Acknowledged Unavailable');
+  else await expect(entry.getByText('Acknowledged Unavailable')).toBeVisible();
 }
 
 // The cards are listed from the start, so there is nothing to continue to; a previous release still has the button.

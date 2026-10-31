@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, type ReactNode } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import type { DailyTradeReview, PostSaveReview, SliderEvaluation, WalkedTrade } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
 import { decimalMoney, money, ratio, shortDate } from '../format.ts';
@@ -96,6 +96,7 @@ export function ReviewCard({ facade, trade, remaining, expanded, detail, reveal,
           facade={facade}
           trade={detail.trade}
           advance={advance}
+          remaining={remaining}
           marks={marks}
           underlying={underlying}
           onSaved={onSaved}
@@ -141,6 +142,7 @@ interface CardBodyProps {
   readonly facade: UiFacade;
   readonly trade: DailyTradeReview;
   readonly advance: number;
+  readonly remaining: Remaining;
   readonly marks: CardMarkRows;
   readonly underlying: (tradeId: string) => string;
   readonly onSaved: (saved: SavedAction) => void;
@@ -153,24 +155,71 @@ interface CardBodyProps {
   readonly onEntryDirty: EntryDirty;
 }
 
-// The open card, in the spec's work order (P36): the Marks, then the reflections, then the figures, then the Action.
-function CardBody({ facade, trade, advance, marks, underlying, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, pending, onEntryDirty }: CardBodyProps) {
+const PANELS = ['Marks', 'Reflections', 'Action'] as const;
+type PanelName = (typeof PANELS)[number];
+
+// What a panel's header says: a one-line summary and a status.
+interface PanelHeader {
+  readonly summary: string;
+  readonly status: string;
+  readonly done: boolean;
+}
+
+function panelHeaders(trade: DailyTradeReview, marks: CardMarkRows, remaining: Remaining): Record<PanelName, PanelHeader> {
+  const rows = marks.today.length;
+  const earlier = marks.earlier.reduce((sum, group) => sum + group.missing.length + group.acknowledged.length, 0);
+  const date = shortDate(trade.saveBinding.reviewDate);
+  const owed = trade.reflections.length;
+  const due = remaining.reflections;
+  const form = trade.form;
+  return {
+    Marks: {
+      summary: [rows > 0 ? `${remaining.marks} of ${rows} for ${date}` : `No Marks for ${date}`, ...(earlier > 0 ? [`${earlier} earlier optional`] : [])].join(' · '),
+      status: remaining.marks > 0 ? `${remaining.marks} needed` : rows > 0 ? 'Saved' : earlier > 0 ? 'Optional' : 'None',
+      done: remaining.marks === 0,
+    },
+    Reflections: {
+      summary: owed > 0 ? `${owed} owed, ${due} due now` : 'None owed',
+      status: due > 0 ? `${due} due` : trade.reflections.some((r) => r.classification === 'Due') ? 'Resolved' : owed > 0 ? 'Not due' : 'None',
+      done: due === 0,
+    },
+    Action: {
+      summary: form.kind === 'Saved' ? form.action.action : 'Hold, Exit, Roll or Adjust',
+      status: form.kind === 'Saved' ? 'Saved' : 'Needed',
+      done: form.kind === 'Saved',
+    },
+  };
+}
+
+// The open card: its figures, then the three panels in the spec's work order (P36, A152), one open at a time.
+function CardBody({ facade, trade, advance, remaining, marks, underlying, onSaved, onReflectionResolved, onRefresh, onMarkSaved, onSaveMarks, outOfDate, pending, onEntryDirty }: CardBodyProps) {
   const uid = useId();
-  // Resolving the last reflection moves focus to the Action form.
-  const actionRef = useRef<HTMLElement>(null);
-  const focusAction = useCallback(() => actionRef.current?.focus(), []);
-  // Save Marks moves on to the next panel that is not done: the reflections due now, else an Action not yet saved.
-  // The Reflections and Action panels arrive with T5R.10; until then the move is a focus on the section.
-  const reflectionsRef = useRef<HTMLDivElement>(null);
-  const reflectionsDue = trade.reflections.some((r) => r.classification === 'Due');
-  const actionOpen = trade.form.kind === 'New';
-  const handled = useRef(0);
+  const headers = panelHeaders(trade, marks, remaining);
+  // The next panel that is not done after this one, wrapping to the ones before it; none when every other panel is done.
+  const nextAfter = (from: PanelName): PanelName | undefined => {
+    const start = PANELS.indexOf(from);
+    return [...PANELS.slice(start + 1), ...PANELS.slice(0, start)].find((name) => !headers[name].done);
+  };
+  // The card opens on its first panel that is not done.
+  const [open, setOpen] = useState<PanelName>(() => PANELS.find((name) => !headers[name].done) ?? 'Action');
+  const panelButtons = useRef<Partial<Record<PanelName, HTMLButtonElement | null>>>({});
+  const [focusPanel, setFocusPanel] = useState<{ readonly panel: PanelName }>();
   useEffect(() => {
-    if (advance === handled.current) return;
-    handled.current = advance;
-    if (reflectionsDue) reflectionsRef.current?.querySelector('button')?.focus();
-    else if (actionOpen) actionRef.current?.focus();
-  }, [advance, reflectionsDue, actionOpen]);
+    if (focusPanel) panelButtons.current[focusPanel.panel]?.focus();
+  }, [focusPanel]);
+  // A panel's work is finished (Save Marks, or the last reflection resolved): the next panel that is not done opens and takes focus.
+  const [finished, setFinished] = useState(0);
+  const finishPanel = useCallback(() => setFinished((count) => count + 1), []);
+  const finishes = advance + finished;
+  const [handled, setHandled] = useState(finishes);
+  if (finishes !== handled) {
+    setHandled(finishes);
+    const next = nextAfter(open);
+    if (next) {
+      setOpen(next);
+      setFocusPanel({ panel: next });
+    }
+  }
   // The Action form reports under its Trade, so the Review's unsaved state counts it with the Mark entries.
   const tradeId = trade.tradeId;
   const report = useCallback((dirty: boolean) => onEntryDirty(`action:${tradeId}`, dirty), [tradeId, onEntryDirty]);
@@ -184,10 +233,6 @@ function CardBody({ facade, trade, advance, marks, underlying, onSaved, onReflec
       {trade.attention.reasons.map((reason, i) => (
         <p key={i}>{reasonText(reason, trade.attention.basis)}</p>
       ))}
-      <CardMarks facade={facade} tradeId={trade.tradeId} marks={marks} underlying={underlying} onEntryDirty={onEntryDirty} onMarkSaved={onMarkSaved} onSaveMarks={onSaveMarks} outOfDate={outOfDate} onRefresh={onRefresh} />
-      <div ref={reflectionsRef}>
-        <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={focusAction} onEntryDirty={onEntryDirty} />
-      </div>
       {evaluation && (
         <>
           {mark && (
@@ -213,9 +258,21 @@ function CardBody({ facade, trade, advance, marks, underlying, onSaved, onReflec
           </dl>
         </div>
       )}
-      <section aria-label="Action" ref={actionRef} tabIndex={-1}>
-        <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} />
-      </section>
+      {/* Every panel stays mounted, so a panel left open keeps its drafts; only the open one is shown. */}
+      {PANELS.map((name) => (
+        <div key={name} className="review-panel">
+          <h4>
+            <button type="button" ref={(button) => void (panelButtons.current[name] = button)} aria-expanded={open === name} aria-controls={`${uid}-${name}`} onClick={() => setOpen(name)}>
+              <span className="review-panel-name">{name}</span> <span className="review-panel-summary">{headers[name].summary}</span> <Badge tone="neutral">{headers[name].status}</Badge>
+            </button>
+          </h4>
+          <div id={`${uid}-${name}`} hidden={open !== name}>
+            {name === 'Marks' && <CardMarks facade={facade} tradeId={trade.tradeId} marks={marks} underlying={underlying} onEntryDirty={onEntryDirty} onMarkSaved={onMarkSaved} onSaveMarks={onSaveMarks} outOfDate={outOfDate} onRefresh={onRefresh} />}
+            {name === 'Reflections' && <ReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={finishPanel} onEntryDirty={onEntryDirty} />}
+            {name === 'Action' && <ActionForm facade={facade} form={trade.form} binding={trade.saveBinding} onSaved={onSaved} onRefresh={onRefresh} onDirtyChange={report} pending={pending} />}
+          </div>
+        </div>
+      ))}
     </section>
   );
 }

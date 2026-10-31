@@ -6,7 +6,7 @@ import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import type { UiFacade } from '../../app/compose.ts';
-import type { DailyTradeReview, OpenDailyReviewResult, OwedReflection, ReviewBinding, ReviewCompletion, ReviewTradeItem, SaveDailyReviewResult } from '../../app/types.ts';
+import type { DailyTradeReview, MarkRow, OpenDailyReviewResult, OwedReflection, ReviewBinding, ReviewCompletion, ReviewTradeItem, SaveDailyReviewResult } from '../../app/types.ts';
 import { reflectionDefinition } from '../../../tests/support/position-change-form-facade.ts';
 import { DAILY_TRADE_REVIEW_PROMPTS } from '../../domain/daily-trade-review-prompts.ts';
 import { Rational } from '../../domain/values/index.ts';
@@ -482,6 +482,7 @@ describe('Leaving an unsaved reflection', () => {
     const trade = await openTrade(user, 'XYZ');
     const opens = vi.mocked(facade.DailyReview.open).mock.calls.length;
 
+    await user.click(panelHeader(trade, 'Reflections'));
     await user.click(within(trade).getByRole('button', { name: /Reflect on 2026-10-09 10:30/ }));
     await user.type(within(trade).getByLabelText('Reason for declining (optional)'), 'No time.');
 
@@ -1124,26 +1125,28 @@ describe('reflections in the Trade card (A71)', () => {
     const facade = walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ', { reflections }));
     renderWalk(facade);
     const trade = await openTrade(user, 'XYZ');
+    // Nothing is due now, so the Action panel is open; the Reflections panel is one press away.
+    await user.click(panelHeader(trade, 'Reflections'));
 
     const section = within(trade).getByRole('region', { name: 'Reflections' });
-    const rows = Array.from(within(section).getAllByRole('list')[0]!.children) as HTMLElement[];
+    const groups = within(section).getAllByRole('group');
+    expect(groups.map((g) => g.querySelector('h5')?.textContent)).toEqual(['Fri Oct 9 · Due', 'Mon Oct 12 · Due in the next Review', 'Mon Oct 12 · Due in the Review after next']);
+    const rows = groups.map((g) => g.querySelector('li')!);
     expect(rows.map((r) => r.textContent)).toEqual([
       expect.stringContaining('2026-10-09 10:30'),
       expect.stringContaining('2026-10-12 10:30'),
       expect.stringContaining('2026-10-12 11:30'),
     ]);
-    expect(within(rows[0]!).getByText('Due')).toBeTruthy();
     expect(within(rows[0]!).getByText('Buy 100 XYZ @ $50.00')).toBeTruthy();
     expect(within(rows[0]!).getByText('Buy 20 XYZ @ $51.25')).toBeTruthy();
-    expect(within(rows[1]!).getByText('Due in the next Review')).toBeTruthy();
-    expect(within(rows[2]!).getByText('Due in the Review after next')).toBeTruthy();
-    const action = within(trade).getByRole('form', { name: 'Action' });
-    expect(section.compareDocumentPosition(action) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // The Reflections panel sits above the Action panel.
+    expect(panelHeader(trade, 'Reflections').compareDocumentPosition(panelHeader(trade, 'Action')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     cleanup();
 
     const none = walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ'));
     renderWalk(none);
     const bare = await openTrade(user, 'XYZ');
+    await user.click(panelHeader(bare, 'Reflections'));
     expect(within(bare).queryByRole('region', { name: 'Reflections' })).toBeNull();
   });
 
@@ -1160,6 +1163,7 @@ describe('reflections in the Trade card (A71)', () => {
     const report = vi.fn();
     renderWalk(facade, { report });
     const trade = await openTrade(user, 'XYZ');
+    await user.click(panelHeader(trade, 'Reflections'));
     const section = within(trade).getByRole('region', { name: 'Reflections' });
 
     await user.click(within(section).getByRole('button', { name: /Reflect on 2026-10-09 10:30/ }));
@@ -1177,9 +1181,191 @@ describe('reflections in the Trade card (A71)', () => {
 
     expect(vi.mocked(facade.DailyReview.save)).toHaveBeenLastCalledWith({ kind: 'ResolveReviewDebt', reviewDate: '2026-10-12', binding: reflections[1]!.saveBinding, resolution: { kind: 'Decline' } });
     expect((await screen.findByText('Complete')).tagName).toBe('STRONG');
-    const action = within(trade).getByRole('form', { name: 'Action' });
-    expect(document.activeElement?.contains(action)).toBe(true);
+    // Nothing remains to resolve, so the Action panel opens and takes focus.
+    expect(panelHeader(trade, 'Action').getAttribute('aria-expanded')).toBe('true');
+    expect(document.activeElement).toBe(panelHeader(trade, 'Action'));
+    expect(within(trade).getByRole('form', { name: 'Action' })).toBeTruthy();
     // The card stays open, with both reflections shown resolved.
+    await user.click(panelHeader(trade, 'Reflections'));
     expect(within(section).getAllByRole('region', { name: 'Saved reflection' })).toHaveLength(2);
+  });
+});
+
+// A card that owes two Marks, a reflection due and a later one, and its Action.
+const markRow = (instrumentKey: string): MarkRow => ({ instrumentKey, tradingDate: '2026-10-12', trades: ['t1'], resolution: { kind: 'Missing' }, resolutionRevision: 'None', task: 'Manual' });
+const owingCompletion: ReviewCompletion = {
+  kind: 'Incomplete',
+  reasons: [
+    { code: 'MarkMissing', instrumentKey: 'XYZ', tradingDate: '2026-10-12', trades: ['t1'] },
+    { code: 'MarkMissing', instrumentKey: 'ABC', tradingDate: '2026-10-12', trades: ['t1'] },
+    { code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] },
+    { code: 'ActionMissing', tradeId: 't1' },
+  ],
+};
+const owingReview = (): Ready =>
+  ready([item('t1', 'XYZ')], [], {
+    completion: owingCompletion,
+    families: [
+      {
+        family: 'Marks',
+        today: [markRow('XYZ'), markRow('ABC')],
+        earlier: [{ instrumentKey: 'XYZ', trades: [{ tradeId: 't1', from: '2026-10-09' }], missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false }],
+      },
+      { family: 'Trades', trades: [{ ...item('t1', 'XYZ'), reflections: { due: 1, later: 1 } }] },
+    ],
+  });
+const owedPair = [owed('d1', 'Due', '2026-10-09T14:30:00Z', [{}]), owed('d2', 'DueInNextReview', '2026-10-12T14:30:00Z', [{}])];
+const panelHeader = (card: HTMLElement, name: 'Marks' | 'Reflections' | 'Action') => within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) });
+
+describe('reflections', () => {
+  it('should group the card owed reflections by session date, label each group as text, and resolve one with DebtForm as in D5 A71', async () => {
+    const user = userEvent.setup();
+    const review = ready([item('t1', 'XYZ')], [], { completion: { kind: 'Incomplete', reasons: [{ code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }] } });
+    const facade = walkFacade(review, tradeReview('t1', 'XYZ', { reflections: owedPair }));
+    const post = { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 1 }, completion: { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't1' }] }, nextStep: { kind: 'Done' }, binding } as const;
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'DebtResolved', decline: { id: 'decl-1', reason: 'No time.' } as never, debt: { debtId: 'd1', status: 'Settled', revision: 'd1-rev-2' } as never, review: post });
+    renderWalk(facade);
+    const card = await openTrade(user, 'XYZ');
+
+    // The Reflections panel opens first: it is the first panel that is not done.
+    expect(panelHeader(card, 'Reflections').getAttribute('aria-expanded')).toBe('true');
+    const friday = within(card).getByRole('group', { name: 'Fri Oct 9 · Due' });
+    const monday = within(card).getByRole('group', { name: 'Mon Oct 12 · Due in the next Review' });
+    expect(friday.compareDocumentPosition(monday) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(friday).getAllByRole('button', { name: /^Reflect on/ })).toHaveLength(1);
+    expect(within(monday).getAllByRole('button', { name: /^Reflect on/ })).toHaveLength(1);
+
+    await user.click(within(friday).getByRole('button', { name: /Reflect on 2026-10-09 10:30/ }));
+    await user.type(within(friday).getByLabelText('Reason for declining (optional)'), 'No time.');
+    await user.click(within(friday).getByRole('button', { name: 'Decline' }));
+
+    expect(vi.mocked(facade.DailyReview.save)).toHaveBeenLastCalledWith({ kind: 'ResolveReviewDebt', reviewDate: '2026-10-12', binding: owedPair[0]!.saveBinding, resolution: { kind: 'Decline', reason: 'No time.' } });
+    expect(await within(friday).findByText('Declined to reflect. Reason: No time.')).toBeTruthy();
+    // The Monday reflection is still owed, so focus moves to it.
+    expect(document.activeElement).toBe(within(monday).getByRole('button', { name: /Reflect on 2026-10-12 10:30/ }));
+  });
+});
+
+describe('Action (A159)', () => {
+  it('should open the Action panel with Hold preselected and one visible Save, which records Hold with no other input', async () => {
+    const user = userEvent.setup();
+    const facade = walkFacade(owingReview(), tradeReview('t1', 'XYZ', { reflections: owedPair }));
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce({ kind: 'Saved', action: savedAction('Hold'), review: { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 1 }, completion: { kind: 'Complete' }, nextStep: { kind: 'Done' }, binding } });
+    renderWalk(facade);
+    const card = await openTrade(user, 'XYZ');
+
+    // The card owes Marks first; the Action panel opens when its header is pressed.
+    await user.click(panelHeader(card, 'Action'));
+    expect(within(card).getByRole('radio', { name: 'Hold' })).toHaveProperty('checked', true);
+    expect(within(card).getAllByRole('button', { name: /^Save/ }).map((b) => b.textContent)).toEqual(['Save']);
+    expect(facade.DailyReview.save).not.toHaveBeenCalled();
+
+    await user.click(within(card).getByRole('button', { name: 'Save' }));
+
+    expect(facade.DailyReview.save).toHaveBeenCalledTimes(1);
+    expect(facade.DailyReview.save).toHaveBeenCalledWith({ kind: 'SaveTradeAction', binding: savedBinding({ tradeId: 't1', obligationKey: { entryType: 'DailyTradeReview', trade: 't1', reviewDate: '2026-10-12' } }), action: 'Hold' });
+  });
+});
+
+describe('moving on', () => {
+  it('should open the next panel that is not done when a panel work is finished, and after an Action save open the card the result names as the next step, collapsing this one', async () => {
+    const user = userEvent.setup();
+    const walkedTrades = [item('t1', 'XYZ'), item('t2', 'DEF')].map((t) => ({ ...t, reflections: { due: 0, later: 0 } }));
+    const owing: ReviewCompletion = {
+      kind: 'Incomplete',
+      reasons: [{ code: 'MarkMissing', instrumentKey: 'XYZ', tradingDate: '2026-10-12', trades: ['t1'] }, { code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }, { code: 'ActionMissing', tradeId: 't2' }],
+    };
+    const review = ready([item('t1', 'XYZ'), item('t2', 'DEF')], [], { completion: owing, families: [{ family: 'Marks', today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: walkedTrades }] });
+    const first = tradeReview('t1', 'XYZ', { reflections: [owed('d1', 'Due', '2026-10-09T14:30:00Z', [{}])] });
+    const next = tradeReview('t2', 'DEF');
+    const facade = walkFacade(review, first);
+    const afterMarks: ReviewCompletion = { kind: 'Incomplete', reasons: owing.kind === 'Incomplete' ? owing.reasons.filter((r) => r.code !== 'MarkMissing') : [] };
+    const afterDebt: ReviewCompletion = { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't1' }, { code: 'ActionMissing', tradeId: 't2' }] };
+    const atT2: ReviewCompletion = { kind: 'Incomplete', reasons: [{ code: 'ActionMissing', tradeId: 't2' }] };
+    const keyOf = { instrumentKey: 'XYZ', tradingDate: '2026-10-12' };
+    const mark = { revisionId: 'r1', revisionNumber: 1, price: '52.00', source: 'Manual', savedAt: '2026-10-12T21:00:00Z' } as const;
+    vi.mocked(facade.DailyReview.save)
+      .mockResolvedValueOnce({
+        kind: 'MarksSaved',
+        marks: [{ key: keyOf, resolution: { kind: 'Available', mark }, resolutionRevision: 1, classification: 'InitialManual' }],
+        review: { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 2 }, completion: afterMarks, binding, trades: walkedTrades.map((t) => (t.tradeId === 't1' ? { ...t, reflections: { due: 1, later: 0 } } : t)), trade: first, nextStep: { kind: 'Trade', trade: first } },
+      })
+      .mockResolvedValueOnce({ kind: 'DebtResolved', decline: { id: 'decl-1' } as never, debt: { debtId: 'd1', status: 'Settled', revision: 'd1-rev-2' } as never, review: { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 2 }, completion: afterDebt, nextStep: { kind: 'Done' }, binding } })
+      .mockResolvedValueOnce({ kind: 'Saved', action: savedAction('Hold'), review: { kind: 'Ready', progress: { tradesWithAction: 1, tradesEligible: 2 }, completion: atT2, nextStep: { kind: 'Trade', trade: next }, binding } });
+    renderWalk(facade);
+    const card = await openTrade(user, 'XYZ');
+    const opened = () => (['Marks', 'Reflections', 'Action'] as const).filter((name) => panelHeader(card, name).getAttribute('aria-expanded') === 'true');
+    expect(opened()).toEqual(['Marks']);
+
+    // Save Marks finishes the Marks panel: the reflection due is the next panel that is not done.
+    await user.type(within(card).getByLabelText('Price'), '52.00');
+    await user.click(within(card).getByRole('button', { name: 'Save Marks (1)' }));
+    await vi.waitFor(() => expect(opened()).toEqual(['Reflections']));
+
+    // The last reflection resolved finishes that one: the Action panel opens.
+    await user.click(within(card).getByRole('button', { name: /Reflect on 2026-10-09 10:30/ }));
+    await user.click(within(card).getByRole('button', { name: 'Decline' }));
+    await vi.waitFor(() => expect(opened()).toEqual(['Action']));
+
+    // The Action save opens the card the result names, and this one collapses.
+    await user.click(within(card).getByRole('button', { name: 'Save' }));
+    const other = await screen.findByRole('region', { name: 'DEF review' });
+    expect(within(other).getByRole('form', { name: 'Action' })).toBeTruthy();
+    expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
+    expect(screen.getByRole('button', { name: /^Review XYZ\b/ }).getAttribute('aria-expanded')).toBe('false');
+    expect(screen.getByRole('button', { name: /^Review DEF\b/ }).getAttribute('aria-expanded')).toBe('true');
+  });
+});
+
+describe('a reflection draft when the shell turns read only', () => {
+  it('should release the unsaved hold on the card once the shell is read only, as the Action form does', async () => {
+    const user = userEvent.setup();
+    const refused = { kind: 'RuntimeNotWritable', runtimeReadiness: 'RecoveryOnly', failedChecks: [], workspaceStatus: 'RecoveryOnly', safeActions: [] } as const;
+    const review = ready([item('t1', 'XYZ')], [], { completion: { kind: 'Incomplete', reasons: [{ code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }] } });
+    const facade = walkFacade(review, tradeReview('t1', 'XYZ', { reflections: owedPair }));
+    vi.mocked(facade.DailyReview.save).mockResolvedValueOnce(refused);
+    renderWalk(facade, { shellLike: true });
+    const card = await openTrade(user, 'XYZ');
+    await user.click(within(card).getByRole('button', { name: /Reflect on 2026-10-09/ }));
+    await user.type(within(card).getByLabelText('Reason for declining (optional)'), 'No time.');
+    // A refused Action save turns the shell read only, with the reflection form still holding its value.
+    await user.click(panelHeader(card, 'Action'));
+    await user.click(within(card).getByRole('button', { name: 'Save' }));
+
+    await vi.waitFor(async () => {
+      await user.click(screen.getByRole('button', { name: /^Review XYZ\b/ }));
+      expect(screen.queryByRole('region', { name: 'XYZ review' })).toBeNull();
+    });
+    expect(screen.queryByText(/Save or discard what you entered/)).toBeNull();
+  });
+});
+
+describe('panels (A152)', () => {
+  it('should show Marks, Reflections, and Action panels in that order, with one open at a time, each header a button with its summary and status as text, and None on Reflections for a card that owes none', async () => {
+    const user = userEvent.setup();
+    renderWalk(walkFacade(owingReview(), tradeReview('t1', 'XYZ', { reflections: owedPair })));
+    const card = await openTrade(user, 'XYZ');
+
+    const [marks, reflections, action] = [panelHeader(card, 'Marks'), panelHeader(card, 'Reflections'), panelHeader(card, 'Action')] as const;
+    expect(marks.compareDocumentPosition(reflections) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(reflections.compareDocumentPosition(action) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(marks).getByText('2 of 2 for Mon Oct 12 · 1 earlier optional')).toBeTruthy();
+    expect(within(marks).getByText('2 needed')).toBeTruthy();
+    expect(within(reflections).getByText('2 owed, 1 due now')).toBeTruthy();
+    expect(within(reflections).getByText('1 due')).toBeTruthy();
+    expect(within(action).getByText('Hold, Exit, Roll or Adjust')).toBeTruthy();
+    expect(within(action).getByText('Needed')).toBeTruthy();
+    // The card opens on its first panel that is not done; pressing another header opens that one and closes this.
+    expect([marks, reflections, action].map((h) => h.getAttribute('aria-expanded'))).toEqual(['true', 'false', 'false']);
+    expect(within(card).queryByRole('form', { name: 'Action' })).toBeNull();
+    await user.click(action);
+    expect([marks, reflections, action].map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true']);
+    expect(within(card).getByRole('form', { name: 'Action' })).toBeTruthy();
+    expect(within(card).queryByRole('region', { name: 'Marks' })).toBeNull();
+    cleanup();
+
+    renderWalk(walkFacade(ready([item('t1', 'XYZ')]), tradeReview('t1', 'XYZ')));
+    const bare = await openTrade(user, 'XYZ');
+    expect(within(panelHeader(bare, 'Reflections')).getByText('None')).toBeTruthy();
   });
 });

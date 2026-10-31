@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { UiFacade } from '../../app/compose.ts';
 import type { OwedReflection, PostSaveReview, ReflectionClassification } from '../../app/types.ts';
-import { decimalMoney as price, localTime } from '../format.ts';
+import { decimalMoney as price, localTime, shortDate } from '../format.ts';
 import { useRuntime } from '../runtime.tsx';
 import { DebtForm, type DebtSubmitResult, type DebtFormProps } from './DebtForm.tsx';
 
@@ -51,7 +51,6 @@ function ReflectionRow({ reflection, timeZone, isOpen, resolved, blocked, submit
           <li key={e.factId}>{`${e.action} ${e.quantity} ${e.instrument.symbol} @ ${price(e.price)}`}</li>
         ))}
       </ul>
-      <p>{DUE_TEXT[reflection.classification]}</p>
       {!resolved && !isOpen && (
         <button type="button" ref={buttonRef} className="pill secondary" disabled={blocked} onClick={onOpen}>
           Reflect on {when}
@@ -102,29 +101,45 @@ export function ReviewReflections({ facade, reviewDate, reflections, onReview, o
     setResolved(new Set(resolved).add(debtId));
     setFocusNext({ debtId: reflections.find((r) => r.debtId !== debtId && !resolved.has(r.debtId))?.debtId });
   };
+  const headingId = useId();
   if (reflections.length === 0) return null;
   const openUnresolved = open !== undefined && !resolved.has(open);
+  // One group per session date of the Position Change, in the order the reflections come (oldest first).
+  const groups: { readonly key: string; readonly date: string; readonly classification: ReflectionClassification; readonly items: OwedReflection[] }[] = [];
+  for (const reflection of reflections) {
+    const date = localTime(reflection.economicTime, timeZone).slice(0, 10);
+    const key = `${date}:${reflection.classification}`;
+    const group = groups.find((g) => g.key === key);
+    if (group) group.items.push(reflection);
+    else groups.push({ key, date, classification: reflection.classification, items: [reflection] });
+  }
   return (
     <section aria-label="Reflections">
-      <h4>Reflections</h4>
-      <ul>
-        {reflections.map((reflection) => (
-          <ReflectionRow
-            key={reflection.debtId}
-            reflection={reflection}
-            timeZone={timeZone}
-            isOpen={open === reflection.debtId}
-            resolved={resolved.has(reflection.debtId)}
-            blocked={openUnresolved}
-            submit={submit}
-            onOpen={() => setOpen(reflection.debtId)}
-            onClose={() => setOpen(undefined)}
-            onResolved={() => resolvedOne(reflection.debtId)}
-            onEntryDirty={onEntryDirty}
-            buttonRef={(button) => (button ? buttons.current.set(reflection.debtId, button) : buttons.current.delete(reflection.debtId))}
-          />
-        ))}
-      </ul>
+      {groups.map((group) => (
+        <div key={group.key} role="group" aria-labelledby={`${headingId}-${group.key}`}>
+          <h5 id={`${headingId}-${group.key}`}>
+            {shortDate(group.date)} · <span>{DUE_TEXT[group.classification]}</span>
+          </h5>
+          <ul>
+            {group.items.map((reflection) => (
+              <ReflectionRow
+                key={reflection.debtId}
+                reflection={reflection}
+                timeZone={timeZone}
+                isOpen={open === reflection.debtId}
+                resolved={resolved.has(reflection.debtId)}
+                blocked={openUnresolved}
+                submit={submit}
+                onOpen={() => setOpen(reflection.debtId)}
+                onClose={() => setOpen(undefined)}
+                onResolved={() => resolvedOne(reflection.debtId)}
+                onEntryDirty={onEntryDirty}
+                buttonRef={(button) => (button ? buttons.current.set(reflection.debtId, button) : buttons.current.delete(reflection.debtId))}
+              />
+            ))}
+          </ul>
+        </div>
+      ))}
     </section>
   );
 }

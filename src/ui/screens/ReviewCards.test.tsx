@@ -175,8 +175,14 @@ const correctedAbc = {
   revision: { revisionId: 'r2', revisionNumber: 2, price: '28.00', source: 'Manual', intention: 'Correction', observedAt: CUTOFF, savedAt: CUTOFF },
   binding: { instrumentKey: 'ABC', tradingDate: '2026-10-12', expectedResolutionRevision: 1 },
 } as never;
+// Opens a panel of the card by its header, unless it is already open (A152).
+async function showPanel(user: ReturnType<typeof userEvent.setup>, card: HTMLElement, name: 'Marks' | 'Reflections' | 'Action') {
+  const header = within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) });
+  if (header.getAttribute('aria-expanded') !== 'true') await user.click(header);
+}
 // Corrects the card's ABC Mark and saves it.
 async function correctAbc(user: ReturnType<typeof userEvent.setup>, card: HTMLElement) {
+  await showPanel(user, card, 'Marks');
   const entry = within(card).getByRole('region', { name: 'ABC Mark, Mon Oct 12' });
   await user.click(within(entry).getByRole('button', { name: 'Correct' }));
   await user.type(within(entry).getByLabelText('Price'), '28.00');
@@ -247,10 +253,10 @@ describe('opening in place (A151)', () => {
     expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['true', 'false', 'false', 'false', 'false']);
     // The open card sits inside its own list item, under its header.
     expect(card.closest('li')).toBe(headers()[0]!.closest('li'));
-    // Its figures and panels: Marks, then the Action.
+    // Its figures and panels: Marks, Reflections, and the Action, which is the first not done.
     expect(within(card).getByText('Current Marked Trade P&L')).toBeTruthy();
-    expect(within(card).getByRole('region', { name: 'Marks' })).toBeTruthy();
-    expect(within(card).getByRole('region', { name: 'Action' })).toBeTruthy();
+    expect((['Marks', 'Reflections', 'Action'] as const).map((name) => within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) }).getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true']);
+    expect(within(card).getByRole('form', { name: 'Action' })).toBeTruthy();
 
     // With every card Done, none opens and nothing is read.
     cleanup();
@@ -358,6 +364,7 @@ describe('card order follows the newest Review (A150, decision 64)', () => {
     // A value is entered in the card's Action form before the Mark is corrected.
     const field = within(card).getAllByRole('textbox').find((box) => !box.closest('[aria-label="ABC Mark, Mon Oct 12"]'))!;
     await user.type(field, 'kept');
+    await showPanel(user, card, 'Marks');
     const entry = within(card).getByRole('region', { name: 'ABC Mark, Mon Oct 12' });
     await user.click(within(entry).getByRole('button', { name: 'Correct' }));
     await user.type(within(entry).getByLabelText('Price'), '28.00');
@@ -370,6 +377,7 @@ describe('card order follows the newest Review (A150, decision 64)', () => {
     const moved = headers().find((h) => h.textContent?.includes('ABC'))!;
     expect(headers().indexOf(moved)).toBe(4);
     expect(moved.getAttribute('aria-expanded')).toBe('true');
+    await showPanel(user, screen.getByRole('region', { name: 'ABC review' }), 'Action');
     expect(within(screen.getByRole('region', { name: 'ABC review' })).getAllByRole('textbox').find((box) => (box as HTMLTextAreaElement | HTMLInputElement).value === 'kept')).toBeTruthy();
   });
 });
@@ -435,11 +443,8 @@ describe('Save while the Review is read again', () => {
     renderReview(facade);
     const card = await screen.findByRole('region', { name: 'ABC review' });
 
-    const entry = within(card).getByRole('region', { name: 'ABC Mark, Mon Oct 12' });
-    await user.click(within(entry).getByRole('button', { name: 'Correct' }));
-    await user.type(within(entry).getByLabelText('Price'), '28.00');
-    await user.type(within(entry).getByLabelText('Reason (required)'), 'typo');
-    await user.click(within(entry).getByRole('button', { name: 'Save correction' }));
+    await correctAbc(user, card);
+    await showPanel(user, card, 'Action');
 
     await waitFor(() => expect(facade.DailyReview.open).toHaveBeenCalledTimes(2));
     const save = () => within(screen.getByRole('region', { name: 'ABC review' })).getByRole<HTMLButtonElement>('button', { name: 'Save' });
@@ -460,6 +465,7 @@ describe('unsaved work (A156)', () => {
     const card = await screen.findByRole('region', { name: 'ABC review' });
 
     // An entered Mark value holds the card.
+    await showPanel(user, card, 'Marks');
     const entry = within(card).getByRole('region', { name: 'ABC Mark, Mon Oct 12' });
     await user.click(within(entry).getByRole('button', { name: 'Correct' }));
     await user.type(within(entry).getByLabelText('Price'), '28.00');
@@ -519,13 +525,16 @@ describe('read only (A162)', () => {
 
     // The first card: its figures, and its Mark as saved, with nothing to enter.
     expect(within(first).getByText('Current Marked Trade P&L')).toBeTruthy();
-    expect(within(first).getByRole('region', { name: 'ABC Mark, Mon Oct 12' }).textContent).toContain('$27.50');
     expect(within(first).getByText('No Action saved.')).toBeTruthy();
+    await showPanel(user, first, 'Marks');
+    expect(within(first).getByRole('region', { name: 'ABC Mark, Mon Oct 12' }).textContent).toContain('$27.50');
     // The card with a reflection and a saved Action.
     await user.click(headers()[3]!);
     const card = await screen.findByRole('region', { name: 'XYZ review' });
-    expect(within(card).getByRole('region', { name: 'Reflections' })).toBeTruthy();
+    await showPanel(user, card, 'Action');
     expect(within(card).getByText('Saved Action: Hold')).toBeTruthy();
+    await showPanel(user, card, 'Reflections');
+    expect(within(card).getByRole('region', { name: 'Reflections' })).toBeTruthy();
     // Opening the reflection shows its questions, none of them enabled, as D5 renders a reflection read only.
     await user.click(within(card).getByRole('button', { name: /^Reflect on/ }));
     expect(within(card).getByRole('form', { name: 'Reflection' })).toBeTruthy();
