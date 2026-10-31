@@ -6,6 +6,7 @@ const item = (tradeId: string, lastActivity: string) => ({
   band: 'QuantifiedPressure',
   reasons: [],
   basis: { kind: 'Comparable', side: 'Losing', share: Rational.of(1n), atEntry: Rational.of(0n), now: Rational.of(0n) },
+  rangePosition: { kind: 'Placed', now: Rational.of(0n), atEntry: Rational.of(0n) },
   tradeId,
   lastActivity,
 }) as Attention & { tradeId: string; lastActivity: string };

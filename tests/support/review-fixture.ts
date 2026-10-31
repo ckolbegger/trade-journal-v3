@@ -181,6 +181,43 @@ export async function fiveTradeFixture(stack: ReviewStack, options: { readonly w
   return { a: a.tradeId, b: b.tradeId, c: c.tradeId, d: d.tradeId, e: e.tradeId };
 }
 
+export interface CardTrades {
+  readonly a: string;
+  readonly b: string;
+  readonly c: string;
+  readonly e: string;
+  readonly f: string;
+}
+
+export const FRIDAY_DATE = '2026-10-09';
+const FRIDAY_PLAN_TIME = '2026-10-09T13:00:00Z';
+const FRIDAY_1000 = '2026-10-09T14:00:00Z';
+const MONDAY_1030 = '2026-10-12T14:30:00Z';
+
+// The card fixture (breakdown D5R, section 4): D4's five Trades without T-D, plus T-F (a second XYZ Trade),
+// T-A's first Position Change moved to Friday, and T-A's two Position Changes deferred (D-1 due Monday,
+// D-2 due in the next Review). `withoutMarks` leaves Monday without XYZ, ABC and JKL Marks; DEF never has one.
+export async function cardFixture(stack: ReviewStack, options: { readonly withoutMarks?: boolean } = {}): Promise<CardTrades> {
+  const defer = { kind: 'Defer' } as const;
+  const a = await stack.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '56.00', planTime: FRIDAY_PLAN_TIME });
+  await stack.fill(a, FRIDAY_1000, '60', '50.10', defer);
+  await stack.fill(a, ELEVEN_AM, '40', '50.30', defer);
+  const b = await stack.confirm({ symbol: 'ABC', shares: '100', entry: '30.00', stop: '28.00', target: '36.00' });
+  await stack.fill(b, TEN_AM, '100', '30.00');
+  const c = await stack.confirm({ symbol: 'DEF', shares: '100', entry: '40.00', stop: '38.00', target: '46.00' });
+  await stack.fill(c, TEN_AM, '100', '40.00');
+  const e = await stack.confirm({ symbol: 'JKL', shares: '100', entry: '20.00', stop: '19.00', target: '30.00' });
+  await stack.fill(e, TEN_AM, '100', '20.00');
+  const f = await stack.confirm({ symbol: 'XYZ', shares: '50', entry: '50.00', stop: '48.00', target: '55.00' });
+  await stack.fill(f, MONDAY_1030, '50', '50.00');
+  if (!options.withoutMarks) {
+    await stack.saveMark('XYZ', '52.00');
+    await stack.saveMark('ABC', '27.50');
+    await stack.saveMark('JKL', '21.00');
+  }
+  return { a: a.tradeId, b: b.tradeId, c: c.tradeId, e: e.tradeId, f: f.tradeId };
+}
+
 // The integrity fixture writer: edits the stored Trade document directly, as the earlier
 // deliverables' integrity cases do.
 export async function rawEditTrade(stack: ReviewStack, tradeId: string, edit: (trade: Record<string, unknown>) => Record<string, unknown>): Promise<void> {

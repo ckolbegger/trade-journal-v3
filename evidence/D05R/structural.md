@@ -116,3 +116,23 @@ At `cfc1bad`, 2026-10-31, by `suite-runner`, label `t5r.2-reward-risk-now`. All 
 | Node integration | 53 files, 105 tests passed; exit 0 | [integration](suite-runs/t5r.2-reward-risk-now-integration.txt) |
 | Browser (Chromium) | 155 passed (5.4 min); exit 0 | [browser](suite-runs/t5r.2-reward-risk-now-browser.txt) |
 | Static and verify checks (the same 12 as after T5R.1) | 12 of 12 exit 0 | [checks](suite-runs/t5r.2-reward-risk-now-checks.txt) |
+
+## T5R.3 Daily Review: range positions and gap Trades
+
+Commit: see the task's commit on branch `claude-opus-5.5` (message `feat(daily-review): T5R.3 range positions and gap Trades in open`).
+
+**Cases (3 of the 4 planned, plus 1 added).**
+- Range position per walked Trade: T-A 9/17 and 134/425, T-E 2/11 and 1/11, T-F 4/7 and 2/7; walk order T-B, T-C, T-F, T-A, T-E confirmed.
+- T-B: now 0 with the StopBreached reason, `pinned: 'Stop'`, at entry 1/4; T-C `NotPlaced` `MissingInput` DEF 2026-10-12. The T-C half was a first-run pass (flagged in `tdd-log.md` with its mutation).
+- Added: share 1 pinned at the Target when the Mark is past the Target (the pin rule names it; no planned case did).
+- Gap Trades: XYZ's group lists `[T-F from 2026-10-12, T-A from 2026-10-09]`, in the walk's order (T-F ranks before T-A).
+- **Dropped:** the Worst-Case case. In `evaluate`, Ongoing Risk to Stop and Worst-Case Ongoing Risk are both `marked(...)`, so they are Unavailable together; no Long Stock Trade has the first not a Value and the second a Value, and `pressureOf` never reads Worst-Case. Basis selection is proven by the existing pressure tests in `daily-review.test.ts`: "should give T-A pressure 91/291 and T-E pressure 1/10 as winning shares...", "should give equal pressure 3/4 to a Trade marked 48.50 and one marked 53.00...", "should place T-E in quantified pressure, and a Trade marked at its average open cost in routine with pressure 0", and the "pressure that cannot be compared" cases.
+- D4's risk past the Stop is exactly 0 (as T5R.2 found); the share code treats risk at or below 0 as pinned at 0 and reward at or below 0 as 1.
+
+**Fixture.** `cardFixture(stack, { withoutMarks? })` in `tests/support/review-fixture.ts`, built through the real module APIs; returns `{ a, b, c, e, f }`. T-A is planned Friday 09:00 (its PC1 is Friday 10:00 at 60 @ 50.10, so the plan precedes it), both its Position Changes are recorded with Defer, T-F is XYZ 50 shares (plan 50.00 / 48.00 / 55.00, filled 50 @ 50.00 at Monday 10:30). Monday Marks XYZ 52.00, ABC 27.50, JKL 21.00 unless `withoutMarks`; DEF never has one. `FRIDAY_DATE` is exported.
+
+**Names.** `RangePosition` (in `types.ts`, exported through the module): `{ kind: 'Placed'; now; atEntry; pinned?: 'Stop' | 'Target' }` or `{ kind: 'NotPlaced'; reason: 'MissingInput'; instrumentKey; date }`, `{ reason: 'AwaitingClose'; after }`, `{ reason: 'FactsIncoherent' }`. `ReviewTradeItem.rangePosition` (so walked Trades, `getTrade`'s `attention`, and the post-save assembly all carry it). `HistoricalGapGroup.trades: readonly { tradeId; from }[]`, in the walk's order. `attention.ts`: `pressureOf` now takes the shared `riskRewardOf` figures.
+
+**Flags.** (1) `from` is the exchange (New York) date of the Trade's first exposure to the Instrument, not the first session whose close is at or after it: Daily Review does not see the session policy (D4 A39), so an exposure after a session's close keeps that date. T5R.5 or a later task can tighten it if needed. (2) The post-save assembly (`withGaps = false`) carries range positions but empty gap groups, as before. (3) No request was added: `open` reads the same data; `tests/integration` (53 files, 105 tests) passes. (4) UI and `attention.test.ts` test builders gained `rangePosition` and `trades: []` so they type-check.
+
+**Checks (each alone).** `npx vitest run src/coordinators src/domain` exit 0 (310 tests); `npx vitest run tests/integration` exit 0; `npm run typecheck` 0; `npx tsc6 --noEmit` 0; `npm run lint` 0; `npm run lint:deps` 0; `npx vitest run src/ui` 0.

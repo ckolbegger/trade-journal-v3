@@ -48,6 +48,10 @@ export interface DailyReviewDeps {
 
 const ASSEMBLY_ATTEMPTS = 3;
 
+// The exchange calendar date of an instant: the first date a Trade's exposure can be relevant from.
+// Daily Review does not see the session policy (D4 A39), so a date past that day's close is not moved on.
+const exchangeDateOf = (instant: string): string => Temporal.Instant.from(instant).toZonedDateTimeISO('America/New_York').toPlainDate().toString();
+
 // Facts that cannot be replayed make the Trade a Blocker with no mark-based figures to compare.
 function incoherentItem(identity: Pick<ReviewTradeItem, 'tradeId' | 'underlying' | 'lastActivity'>, incoherent: IncoherentFacts): ReviewTradeItem {
   return {
@@ -55,6 +59,7 @@ function incoherentItem(identity: Pick<ReviewTradeItem, 'tradeId' | 'underlying'
     band: 'Blocker',
     reasons: [{ code: 'IncoherentFacts', findings: incoherent.findings }],
     basis: { kind: 'NotComparable', reason: 'FactsIncoherent' },
+    rangePosition: { kind: 'NotPlaced', reason: 'FactsIncoherent' },
   };
 }
 
@@ -259,13 +264,20 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
         task: resolution.kind === 'Missing' ? 'Manual' : null,
       }),
     );
-    const earlier = recovered.gaps
-      .filter((g) => g.missing.length + g.acknowledged.length > 0)
-      .map((g): HistoricalGapGroup => ({ ...g, blocking: false }));
-
     const ranked = derivations
       .map((trade) => reviewItem(trade, recovered.frames))
       .sort((a, b) => byAttention(a.item, b.item));
+    const earlier = recovered.gaps
+      .filter((g) => g.missing.length + g.acknowledged.length > 0)
+      .map(
+        (g): HistoricalGapGroup => ({
+          ...g,
+          trades: ranked.flatMap(({ item }) =>
+            requirements.filter((r) => r.tradeId === item.tradeId && r.instrument.symbol === g.instrumentKey).map((r) => ({ tradeId: r.tradeId, from: exchangeDateOf(r.earliestRelevance) })),
+          ),
+          blocking: false,
+        }),
+      );
     // Outstanding Debt, read once (A63), classified against the close of the session before the Review Date (A75).
     const previousClose = recovered.previousCloseInstant;
     const outstanding = (await deps.journal.query({ scope: 'OutstandingDebt' })).debts;

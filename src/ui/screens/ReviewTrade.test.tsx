@@ -33,6 +33,7 @@ const item = (tradeId: string, underlying: string, over: Partial<ReviewTradeItem
   band: 'Routine',
   reasons: [{ code: 'NoPressure' }],
   basis: { kind: 'Comparable', side: 'None', share: Rational.of(0n, 1n) },
+  rangePosition: { kind: 'Placed', now: Rational.of(1n, 2n), atEntry: Rational.of(1n, 2n) },
   ...over,
 });
 function ready(trades: readonly ReviewTradeItem[], missing: readonly string[] = trades.map((t) => t.tradeId), over: Partial<Ready> = {}): Ready {

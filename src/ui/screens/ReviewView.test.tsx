@@ -42,6 +42,7 @@ const tradeItem = (tradeId: string, underlying: string, over: Partial<ReviewTrad
   band: 'Routine',
   reasons: [{ code: 'NoPressure' }],
   basis: { kind: 'Comparable', side: 'None', share: Rational.of(0n, 1n) },
+  rangePosition: { kind: 'Placed', now: Rational.of(1n, 2n), atEntry: Rational.of(1n, 2n) },
   ...over,
 });
 function ready(over: { today?: readonly MarkRow[]; earlier?: Extract<Ready['families'][number], { family: 'Marks' }>['earlier']; trades?: readonly ReviewTradeItem[]; completion?: ReviewCompletion } = {}): Ready {
@@ -226,8 +227,8 @@ describe('Marks family (P11, P15)', () => {
         today: [markRow('MNO', ['t1'])],
         trades: [tradeItem('t1', 'MNO')],
         earlier: [
-          { instrumentKey: 'MNO', missing, acknowledged: [day(10)], revisions, acknowledgments, blocking: false },
-          { instrumentKey: 'ABC', missing: ['2026-09-30'], acknowledged: [], revisions: { '2026-09-30': 'None' }, acknowledgments: {}, blocking: false },
+          { instrumentKey: 'MNO', trades: [], missing, acknowledged: [day(10)], revisions, acknowledgments, blocking: false },
+          { instrumentKey: 'ABC', trades: [], missing: ['2026-09-30'], acknowledged: [], revisions: { '2026-09-30': 'None' }, acknowledgments: {}, blocking: false },
         ],
         completion: incomplete({ code: 'MarkMissing', instrumentKey: 'MNO', tradingDate: '2026-10-12', trades: ['t1'] }),
       }),
@@ -281,7 +282,7 @@ describe('Marks family (P11, P15)', () => {
       ready({
         today: [markRow('MNO', ['t1'])],
         trades: [tradeItem('t1', 'MNO')],
-        earlier: [{ instrumentKey: 'MNO', missing, acknowledged: [], revisions: Object.fromEntries(missing.map((d) => [d, 'None'])), acknowledgments: {}, blocking: false }],
+        earlier: [{ instrumentKey: 'MNO', trades: [], missing, acknowledged: [], revisions: Object.fromEntries(missing.map((d) => [d, 'None'])), acknowledgments: {}, blocking: false }],
         completion: incomplete({ code: 'MarkMissing', instrumentKey: 'MNO', tradingDate: '2026-10-12', trades: ['t1'] }),
       }),
     );
@@ -311,7 +312,7 @@ describe('Marks family (P11, P15)', () => {
       reviewFacade(
         ready({
           today: [markRow('DEF', ['t3']), markRow('XYZ', ['t1'])],
-          earlier: [{ instrumentKey: 'MNO', missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false }],
+          earlier: [{ instrumentKey: 'MNO', trades: [], missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false }],
           trades: [tradeItem('t1', 'XYZ'), tradeItem('t3', 'DEF')],
           completion: incomplete({ code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-12', trades: ['t3'] }),
         }),
@@ -436,7 +437,7 @@ describe('moving on', () => {
       ready({
         today: [markRow('DEF', ['t1'], available('12'), 1)],
         trades: [tradeItem('t1', 'DEF')],
-        earlier: [{ instrumentKey: 'DEF', missing: [], acknowledged: ['2026-10-09'], revisions: { '2026-10-09': 2 }, acknowledgments: { '2026-10-09': acknowledgment }, blocking: false }],
+        earlier: [{ instrumentKey: 'DEF', trades: [], missing: [], acknowledged: ['2026-10-09'], revisions: { '2026-10-09': 2 }, acknowledgments: { '2026-10-09': acknowledgment }, blocking: false }],
       }),
     );
     vi.mocked(facade.MarketData.save).mockResolvedValue({ kind: 'Conflict', key: { instrumentKey: 'DEF', tradingDate: '2026-10-09' }, resolution: { kind: 'AcknowledgedUnavailable', acknowledgment }, resolutionRevision: 2 });
@@ -469,7 +470,7 @@ describe('moving on', () => {
   });
 
   it('should keep an earlier-session Mark\'s saved resolution when the Review re-renders without a newer revision', async () => {
-    const gap = { instrumentKey: 'DEF', missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false } as const;
+    const gap = { instrumentKey: 'DEF', trades: [], missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false } as const;
     const returned = ready({ today: [markRow('DEF', ['t1'], available('12'), 1)], earlier: [gap], trades: [tradeItem('t1', 'DEF')] });
     const facade = reviewFacade(returned);
     const key = { instrumentKey: 'DEF', tradingDate: '2026-10-09' };
@@ -556,7 +557,7 @@ describe('moving on', () => {
     const facade = reviewFacade(
       ready({
         today: [markRow('DEF', ['t1'])],
-        earlier: [{ instrumentKey: 'DEF', missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false }],
+        earlier: [{ instrumentKey: 'DEF', trades: [], missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false }],
         trades: [tradeItem('t1', 'DEF')],
         completion: incomplete({ code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-12', trades: ['t1'] }),
       }),
@@ -571,7 +572,7 @@ describe('moving on', () => {
     const facade = reviewFacade(
       ready({
         today: [markRow('DEF', ['t1'])],
-        earlier: [{ instrumentKey: 'DEF', missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false }],
+        earlier: [{ instrumentKey: 'DEF', trades: [], missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false }],
         trades: [tradeItem('t1', 'DEF')],
         completion: incomplete({ code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-12', trades: ['t1'] }),
       }),
@@ -618,7 +619,7 @@ describe('moving on', () => {
     const facade = reviewFacade(
       ready({
         today: [markRow('DEF', ['t1']), markRow('XYZ', ['t2'], available('52'), 1)],
-        earlier: [{ instrumentKey: 'DEF', missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false }],
+        earlier: [{ instrumentKey: 'DEF', trades: [], missing: ['2026-10-09'], acknowledged: [], revisions: { '2026-10-09': 'None' }, acknowledgments: {}, blocking: false }],
         trades: [tradeItem('t1', 'DEF'), tradeItem('t2', 'XYZ')],
         completion: incomplete({ code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-12', trades: ['t1'] }),
       }),

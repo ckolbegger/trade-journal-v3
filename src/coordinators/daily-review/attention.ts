@@ -1,7 +1,7 @@
 import { Temporal } from 'temporal-polyfill';
 import type { DerivedTradeState, IntegrityFinding, TradeEvaluation } from '../../domain/trade-analysis/index.ts';
 import { parseDecimal, Rational } from '../../domain/values/index.ts';
-import type { AttentionBand, AttentionReason, CalculationFamily, PressureBasis } from './types.ts';
+import type { AttentionBand, AttentionReason, CalculationFamily, PressureBasis, RangePosition } from './types.ts';
 
 // What orders Trades that tie on band and pressure.
 interface TieBreak {
@@ -13,6 +13,7 @@ export interface Attention {
   readonly band: AttentionBand;
   readonly reasons: readonly AttentionReason[];
   readonly basis: PressureBasis;
+  readonly rangePosition: RangePosition;
 }
 
 const ZERO = Rational.of(0n);
@@ -24,44 +25,77 @@ function decimal(text: string): Rational {
   return parsed.value;
 }
 
-// The share of the planned range travelled since entry (P14). The at-entry figures use each open
-// Lot's open cost, without fees, in place of the Mark; "now" is the evaluation's Value.
-function pressureOf(state: DerivedTradeState, evaluation: TradeEvaluation): PressureBasis {
+// The risk (toward the Stop) and reward (toward the Target) at the Review-date Mark and at entry: the
+// figures both the pressure basis and the range position use. The at-entry figures use each open Lot's
+// open cost, without fees, in place of the Mark; "now" is the evaluation's Value.
+type RiskReward =
+  | { readonly kind: 'Figures'; readonly riskNow: Rational; readonly rewardNow: Rational; readonly riskAtEntry: Rational; readonly rewardAtEntry: Rational; readonly mark: Rational; readonly averageCost: Rational }
+  | { readonly kind: 'Missing'; readonly detail: { readonly reason: 'MissingInput'; readonly instrumentKey: string; readonly date: string } | { readonly reason: 'AwaitingClose'; readonly after: string } };
+
+function riskRewardOf(state: DerivedTradeState, evaluation: TradeEvaluation): RiskReward {
   const risk = evaluation.ongoingRiskToStop;
   const reward = evaluation.incrementalRewardToTarget;
   if (risk.kind !== 'Value' || reward.kind !== 'Value' || evaluation.observation.mark === null) {
     const missing = risk.kind === 'Unavailable' ? risk : reward;
     if (missing.kind !== 'Unavailable') throw new Error('A pressure input is neither a Value nor Unavailable');
-    return 'instrument' in missing.detail
-      ? { kind: 'NotComparable', reason: 'MissingInput', instrumentKey: missing.detail.instrument.symbol, date: missing.detail.date }
-      : { kind: 'NotComparable', reason: 'AwaitingClose', after: missing.detail.after };
+    return {
+      kind: 'Missing',
+      detail:
+        'instrument' in missing.detail
+          ? { reason: 'MissingInput', instrumentKey: missing.detail.instrument.symbol, date: missing.detail.date }
+          : { reason: 'AwaitingClose', after: missing.detail.after },
+    };
   }
   const lots = state.positions.flatMap((p) => p.openLots);
   const stop = decimal(evaluation.conditions.find((c) => c.role === 'Stop')!.boundary);
   const target = decimal(evaluation.conditions.find((c) => c.role === 'Target')!.boundary);
   const quantity = sum(lots.map((l) => l.quantity));
-  const averageCost = sum(lots.map((l) => l.quantity.mul(l.price))).div(quantity);
-  const riskAtEntry = sum(lots.map((l) => l.quantity.mul(l.price.sub(stop))));
-  const rewardAtEntry = sum(lots.map((l) => l.quantity.mul(target.sub(l.price))));
-  const mark = decimal(evaluation.observation.mark.price);
+  return {
+    kind: 'Figures',
+    riskNow: risk.value,
+    rewardNow: reward.value,
+    riskAtEntry: sum(lots.map((l) => l.quantity.mul(l.price.sub(stop)))),
+    rewardAtEntry: sum(lots.map((l) => l.quantity.mul(target.sub(l.price)))),
+    mark: decimal(evaluation.observation.mark.price),
+    averageCost: sum(lots.map((l) => l.quantity.mul(l.price))).div(quantity),
+  };
+}
+
+// The share of the planned range travelled since entry (P14).
+function pressureOf(figures: RiskReward): PressureBasis {
+  if (figures.kind === 'Missing') return { kind: 'NotComparable', ...figures.detail };
+  const { riskNow, rewardNow, riskAtEntry, rewardAtEntry, mark, averageCost } = figures;
   if (mark.equals(averageCost)) return { kind: 'Comparable', side: 'None', share: ZERO };
   if (mark.compare(averageCost) < 0) {
     if (riskAtEntry.compare(ZERO) <= 0) return { kind: 'NotComparable', reason: 'NonPositiveAtEntry', side: 'Losing' };
-    return { kind: 'Comparable', side: 'Losing', share: riskAtEntry.sub(risk.value).div(riskAtEntry), atEntry: riskAtEntry, now: risk.value };
+    return { kind: 'Comparable', side: 'Losing', share: riskAtEntry.sub(riskNow).div(riskAtEntry), atEntry: riskAtEntry, now: riskNow };
   }
   if (rewardAtEntry.compare(ZERO) <= 0) return { kind: 'NotComparable', reason: 'NonPositiveAtEntry', side: 'Winning' };
-  return { kind: 'Comparable', side: 'Winning', share: rewardAtEntry.sub(reward.value).div(rewardAtEntry), atEntry: rewardAtEntry, now: reward.value };
+  return { kind: 'Comparable', side: 'Winning', share: rewardAtEntry.sub(rewardNow).div(rewardAtEntry), atEntry: rewardAtEntry, now: rewardNow };
+}
+
+// Risk ÷ (risk + reward) (P39).
+const shareOf = (risk: Rational, reward: Rational) => risk.div(risk.add(reward));
+
+function rangePositionOf(figures: RiskReward): RangePosition {
+  if (figures.kind === 'Missing') return { kind: 'NotPlaced', ...figures.detail };
+  const atEntry = shareOf(figures.riskAtEntry, figures.rewardAtEntry);
+  if (figures.riskNow.compare(ZERO) <= 0) return { kind: 'Placed', now: ZERO, atEntry, pinned: 'Stop' };
+  if (figures.rewardNow.compare(ZERO) <= 0) return { kind: 'Placed', now: Rational.of(1n), atEntry, pinned: 'Target' };
+  return { kind: 'Placed', now: shareOf(figures.riskNow, figures.rewardNow), atEntry };
 }
 
 export function attentionOf(state: DerivedTradeState, evaluation: TradeEvaluation, findings: readonly IntegrityFinding[]): Attention {
-  const basis = pressureOf(state, evaluation);
-  if (findings.length > 0) return { band: 'Blocker', reasons: [{ code: 'IntegrityDisagreement', findings }], basis };
+  const figures = riskRewardOf(state, evaluation);
+  const basis = pressureOf(figures);
+  const rangePosition = rangePositionOf(figures);
+  if (findings.length > 0) return { band: 'Blocker', reasons: [{ code: 'IntegrityDisagreement', findings }], basis, rangePosition };
   const crossed = evaluation.conditions.flatMap((c) =>
     c.result.kind === 'Value' && c.result.value.status !== 'Active' && c.result.value.overrun
       ? [{ code: c.role === 'Stop' ? ('StopBreached' as const) : ('TargetReached' as const), conditionId: c.id, overrun: c.result.value.overrun.dollars }]
       : [],
   );
-  if (crossed.length > 0) return { band: 'BoundaryReached', reasons: crossed, basis };
+  if (crossed.length > 0) return { band: 'BoundaryReached', reasons: crossed, basis, rangePosition };
   const unavailable = evaluation.ongoingRiskToStop;
   if (unavailable.kind === 'Unavailable') {
     const reason: AttentionReason =
@@ -72,12 +106,12 @@ export function attentionOf(state: DerivedTradeState, evaluation: TradeEvaluatio
             date: unavailable.detail.date,
           }
         : { code: 'AwaitingClose', after: unavailable.detail.after };
-    return { band: 'EvidenceLimited', reasons: [reason], basis };
+    return { band: 'EvidenceLimited', reasons: [reason], basis, rangePosition };
   }
   if (basis.kind === 'Comparable' && basis.side !== 'None') {
-    return { band: 'QuantifiedPressure', reasons: [{ code: basis.side === 'Losing' ? 'PressureTowardStop' : 'PressureTowardTarget' }], basis };
+    return { band: 'QuantifiedPressure', reasons: [{ code: basis.side === 'Losing' ? 'PressureTowardStop' : 'PressureTowardTarget' }], basis, rangePosition };
   }
-  return { band: 'Routine', reasons: [{ code: 'NoPressure' }], basis };
+  return { band: 'Routine', reasons: [{ code: 'NoPressure' }], basis, rangePosition };
 }
 
 const BAND_RANK: Record<AttentionBand, number> = { Blocker: 0, BoundaryReached: 1, EvidenceLimited: 2, QuantifiedPressure: 3, Routine: 4 };

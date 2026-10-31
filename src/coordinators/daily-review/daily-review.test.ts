@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { breakFirstExecution, fiveTradeFixture, rawEditTrade, MONDAY_1615, MONDAY_1700, MONDAY_CUTOFF, reviewStack, ELEVEN_AM, TEN_AM, type ReviewStack } from '../../../tests/support/review-fixture.ts';
+import { breakFirstExecution, cardFixture, fiveTradeFixture, rawEditTrade, MONDAY_1615, MONDAY_1700, MONDAY_CUTOFF, reviewStack, ELEVEN_AM, TEN_AM, type ReviewStack } from '../../../tests/support/review-fixture.ts';
 import { Rational } from '../../domain/values/index.ts';
 import { dumpAll } from '../../../tests/support/stack.ts';
 import { createDailyReview, type OpenDailyReviewResult } from './index.ts';
@@ -821,5 +821,62 @@ describe('getTrade', () => {
     expect(unreplayable.trade.attention.reasons).toEqual([expect.objectContaining({ code: 'IncoherentFacts' })]);
     expect(unreplayable.trade).not.toHaveProperty('evaluation');
     expect(unreplayable.trade.form).toEqual({ kind: 'New', viewState: { selectedAction: 'Hold' } });
+  }, 30_000);
+});
+
+describe('range position per walked Trade (P39)', () => {
+  it('should return each walked Trade share of its Stop-to-Target range now and at entry, from the same risk and reward its pressure basis selects: T-A 9/17 and 134/425, T-E 2/11 and 1/11', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a, b, c, e, f } = await cardFixture(stack);
+
+    const trades = walk(await open(stack, MONDAY_1700));
+
+    expect(trades.map((t) => t.tradeId)).toEqual([b, c, f, a, e]);
+    const positionOf = (tradeId: string) => trades.find((t) => t.tradeId === tradeId)!.rangePosition;
+    expect(positionOf(a)).toEqual({ kind: 'Placed', now: Rational.of(9n, 17n), atEntry: Rational.of(134n, 425n) });
+    expect(positionOf(e)).toEqual({ kind: 'Placed', now: Rational.of(2n, 11n), atEntry: Rational.of(1n, 11n) });
+    expect(positionOf(f)).toEqual({ kind: 'Placed', now: Rational.of(4n, 7n), atEntry: Rational.of(2n, 7n) });
+  }, 30_000);
+
+  it('should return T-B share now as 0 with its StopBreached reason, and T-C as not placed with the missing Instrument and date', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { b, c } = await cardFixture(stack);
+
+    const trades = walk(await open(stack, MONDAY_1700));
+
+    const tb = trades.find((t) => t.tradeId === b)!;
+    expect(tb.reasons).toEqual([expect.objectContaining({ code: 'StopBreached' })]);
+    expect(tb.rangePosition).toEqual({ kind: 'Placed', now: Rational.of(0n), atEntry: Rational.of(1n, 4n), pinned: 'Stop' });
+    expect(trades.find((t) => t.tradeId === c)!.rangePosition).toEqual({ kind: 'NotPlaced', reason: 'MissingInput', instrumentKey: 'DEF', date: '2026-10-12' });
+  }, 30_000);
+
+  // Added beyond the planned cases: the Target end of the pin rule (reward zero gives share 1).
+  it('should return the share 1 pinned at the Target when the Mark is past the Target', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const trade = await stack.confirm({ symbol: 'XYZ', shares: '100', entry: '50.00', stop: '47.50', target: '51.00' });
+    await stack.fill(trade, TEN_AM, '100', '50.00');
+    await stack.saveMark('XYZ', '52.00');
+
+    const [item] = walk(await open(stack, MONDAY_1700));
+
+    expect(item!.reasons).toEqual([expect.objectContaining({ code: 'TargetReached' })]);
+    expect(item!.rangePosition).toEqual({ kind: 'Placed', now: Rational.of(1n), atEntry: Rational.of(250n, 350n), pinned: 'Target' });
+  }, 30_000);
+});
+
+describe('historical gap groups name their Trades (A153)', () => {
+  it('should list with XYZ gap group each eligible Trade that holds XYZ and the first session it is relevant from: T-A from Friday 2026-10-09, T-F from Monday 2026-10-12, so Friday gap belongs to T-A card only', async () => {
+    const stack = await reviewStack(MONDAY_1700);
+    const { a, f } = await cardFixture(stack);
+
+    const { earlier } = marks(await open(stack, MONDAY_1700));
+
+    expect(earlier).toHaveLength(1);
+    expect(earlier[0]).toMatchObject({ instrumentKey: 'XYZ', missing: ['2026-10-09'] });
+    // In the walk's order: T-F ranks before T-A.
+    expect(earlier[0]!.trades).toEqual([
+      { tradeId: f, from: '2026-10-12' },
+      { tradeId: a, from: '2026-10-09' },
+    ]);
   }, 30_000);
 });

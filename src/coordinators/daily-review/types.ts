@@ -48,6 +48,15 @@ export type PressureBasis =
   // The risk (Losing) or reward (Winning) at entry was not positive on the side the Trade moved toward.
   | { readonly kind: 'NotComparable'; readonly reason: 'NonPositiveAtEntry'; readonly side: 'Losing' | 'Winning' };
 
+// Where the Review-date Mark sits in the Trade's Stop-to-Target range (P39): risk ÷ (risk + reward), with the
+// same risk and reward the pressure basis uses, now and at entry. `pinned` names the end the Mark is at or past:
+// risk is zero at the Stop (share 0), reward is zero at the Target (share 1).
+export type RangePosition =
+  | { readonly kind: 'Placed'; readonly now: Rational; readonly atEntry: Rational; readonly pinned?: 'Stop' | 'Target' }
+  | { readonly kind: 'NotPlaced'; readonly reason: 'MissingInput'; readonly instrumentKey: string; readonly date: string }
+  | { readonly kind: 'NotPlaced'; readonly reason: 'AwaitingClose'; readonly after: string }
+  | { readonly kind: 'NotPlaced'; readonly reason: 'FactsIncoherent' };
+
 // One eligible Trade in the walk.
 export interface ReviewTradeItem {
   readonly tradeId: string;
@@ -57,6 +66,7 @@ export interface ReviewTradeItem {
   readonly band: AttentionBand;
   readonly reasons: readonly AttentionReason[];
   readonly basis: PressureBasis;
+  readonly rangePosition: RangePosition;
 }
 
 // A walked Trade's Outstanding reflections (P16, A68): due in this Review, or falling due in a later one.
@@ -86,6 +96,9 @@ export interface MarkRow {
 // can be filled, but never block the Review (P15, AC-MARK-004).
 export interface HistoricalGapGroup {
   readonly instrumentKey: string;
+  // The eligible Trades that hold the Instrument, in the walk's order, with the first session each is
+  // relevant from: a gap before that date is not the Trade's (A153).
+  readonly trades: readonly { readonly tradeId: string; readonly from: string }[];
   readonly missing: readonly string[];
   // Sessions the trader acknowledged as unavailable; also listed apart from the Missing ones.
   readonly acknowledged: readonly string[];
