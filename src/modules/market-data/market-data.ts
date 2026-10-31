@@ -5,7 +5,7 @@ import type { RuntimeNotWritable } from '../../delivery/runtime-not-writable.ts'
 import type { CoverageRange, Covered, Session, SessionPolicy } from '../../domain/session-policy/index.ts';
 import type { Clock } from '../../domain/time/index.ts';
 import { parseDecimal } from '../../domain/values/index.ts';
-import type { BindingCheck, IdGenerator, Persistence, ReadTransaction } from '../../persistence/index.ts';
+import { beginSemanticTransaction, requireOpen, type BindingCheck, type IdGenerator, type Persistence, type ReadTransaction, type SemanticTransaction } from '../../persistence/index.ts';
 import {
   resolve,
   type AcknowledgmentVersion,
@@ -91,6 +91,66 @@ export type MarketDataSaveResult =
   // The key changed since the command was prepared; nothing was written.
   | { readonly kind: 'Conflict'; readonly key: ObservationKey; readonly resolution: MarkResolution; readonly resolutionRevision: ExpectedResolutionRevision }
   | RuntimeNotWritable;
+
+// What one entry of a prepare request asks for: the D4 intentions a single-key `save` accepts, as `{ kind, ...fields }`.
+export type MarketDataPrepareIntention =
+  | { readonly kind: 'RecordInitialManualMark'; readonly price: string }
+  | { readonly kind: 'CorrectMark'; readonly price: string; readonly reason: string }
+  | { readonly kind: 'AssertUnavailable'; readonly reason: string }
+  | { readonly kind: 'WithdrawAcknowledgment'; readonly reason?: string };
+
+export interface MarketDataPrepareEntry {
+  readonly key: ObservationKey;
+  readonly expectedRevision: ExpectedResolutionRevision;
+  readonly intention: MarketDataPrepareIntention;
+}
+
+// 1 to 100 entries with distinct keys (A154).
+export interface MarketDataPrepareRequest {
+  readonly entries: readonly MarketDataPrepareEntry[];
+}
+
+export type MarketDataPrepareIssueCode = MarketDataIssueCode | 'DuplicateKey' | 'TooManyEntries';
+
+// An issue of a prepare request: `entryIndex` names the entry it concerns, and is absent for the request as a whole.
+export interface MarketDataPrepareIssue extends Omit<MarketDataIssue, 'code' | 'field'> {
+  readonly entryIndex?: number;
+  readonly field: MarketDataIssue['field'] | 'entries';
+  readonly code: MarketDataPrepareIssueCode;
+}
+
+// One key's new record and what the key will report once the record is committed.
+export type PreparedMarketDataEntry = {
+  readonly key: ObservationKey;
+  // The revision the key was read at, which applying rechecks inside the commit.
+  readonly expectedRevision: ExpectedResolutionRevision;
+  readonly record: ObservationRecord;
+  readonly resolution: MarkResolution;
+  readonly resolutionRevision: number;
+} & (
+  | { readonly classification: 'InitialManual' | 'Correction'; readonly revision: MarkRevision }
+  | { readonly classification: 'Asserted' | 'Withdrawn'; readonly acknowledgment: AcknowledgmentVersion }
+);
+
+export interface PreparedMarketDataEffect {
+  readonly kind: 'Prepared';
+  readonly entries: readonly PreparedMarketDataEntry[];
+}
+
+// A key whose resolution revision is not the expected one, or an acknowledgment meeting an exact Mark.
+export interface MarketDataConflictedKey {
+  readonly entryIndex: number;
+  readonly key: ObservationKey;
+  readonly code: 'StaleRevision' | 'MarkExists';
+  readonly resolution: MarkResolution;
+  readonly resolutionRevision: ExpectedResolutionRevision;
+}
+
+export type MarketDataPrepareResult =
+  | PreparedMarketDataEffect
+  | { readonly kind: 'Rejected'; readonly issues: readonly MarketDataPrepareIssue[] }
+  // Every conflicted key, each with its current resolution; nothing was written.
+  | { readonly kind: 'Conflict'; readonly keys: readonly MarketDataConflictedKey[] };
 
 // A point context (A53): the Expected Mark Date comes from the as-of instant, the Review Date, or the date itself.
 export type FrameContext =
@@ -197,11 +257,18 @@ export type RecoverResult =
 
 export interface MarketData {
   save(command: MarketDataSaveCommand): Promise<MarketDataSaveResult>;
+  // The read half of `save` for many keys: validates every entry, reads each key once in one snapshot, and builds
+  // each new record. It writes nothing (P37).
+  prepareEffects(request: MarketDataPrepareRequest): Promise<MarketDataPrepareResult>;
+  // The write half: stages, per key, a check that the key is still at the revision prepared against and the new
+  // record, in the coordinator's semantic transaction (P37).
+  applyPreparedEffects(tx: SemanticTransaction, prepared: PreparedMarketDataEffect): void;
   query(query: MarketDataQuery): Promise<MarketDataQueryResult>;
   recover(request: RecoverRequest): Promise<RecoverResult>;
 }
 
 const MAX_REASON = 500;
+const MAX_ENTRIES = 100;
 
 // The exact decimal text without redundant digits: "52.000" is stored as "52".
 function normalizedPrice(price: string): string {
@@ -304,16 +371,18 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
     return issues;
   }
 
-  function validate(command: Exclude<MarketDataSaveCommand, { intention: 'OverrideManualValuation' | 'AssertUnavailable' | 'WithdrawAcknowledgment' }>): MarketDataIssue[] {
-    const issues = validateKey(command);
-    const price = parseDecimal(command.price);
-    if (!price.ok) issues.push({ field: 'price', code: 'InvalidPrice' });
-    else if (price.normalized.startsWith('-')) issues.push({ field: 'price', code: 'PriceNegative' });
-    if (command.intention === 'CorrectMark') {
-      const reason = command.reason.trim();
-      if (reason === '') issues.push({ field: 'reason', code: 'ReasonRequired' });
-      else if (reason.length > MAX_REASON) issues.push({ field: 'reason', code: 'ReasonTooLong' });
+  // The key, price, and reason checks of one prepare entry (A35, A37), all reported together.
+  function validateEntry({ key, intention }: MarketDataPrepareEntry): MarketDataIssue[] {
+    const issues = validateKey(key);
+    if (intention.kind === 'RecordInitialManualMark' || intention.kind === 'CorrectMark') {
+      const price = parseDecimal(intention.price);
+      if (!price.ok) issues.push({ field: 'price', code: 'InvalidPrice' });
+      else if (price.normalized.startsWith('-')) issues.push({ field: 'price', code: 'PriceNegative' });
     }
+    if (intention.kind === 'RecordInitialManualMark') return issues;
+    const reason = (intention.reason ?? '').trim();
+    if (intention.kind !== 'WithdrawAcknowledgment' && reason === '') issues.push({ field: 'reason', code: 'ReasonRequired' });
+    else if (reason.length > MAX_REASON) issues.push({ field: 'reason', code: 'ReasonTooLong' });
     return issues;
   }
 
@@ -324,50 +393,18 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
     return latest.value;
   }
 
-  async function saveAcknowledgment(command: Extract<MarketDataSaveCommand, { intention: 'AssertUnavailable' | 'WithdrawAcknowledgment' }>): Promise<MarketDataSaveResult> {
-    const key: ObservationKey = { instrumentKey: command.instrumentKey, tradingDate: command.tradingDate };
-    const reason = (command.reason ?? '').trim();
-    const asserting = command.intention === 'AssertUnavailable';
-    const issues = validateKey(key);
-    if (asserting && reason === '') issues.push({ field: 'reason', code: 'ReasonRequired' });
-    else if (reason.length > MAX_REASON) issues.push({ field: 'reason', code: 'ReasonTooLong' });
-    if (issues.length > 0) return { kind: 'Rejected', issues };
-    const { value: current } = await deps.persistence.readSnapshot(['observations'], async (tx) => ({
-      record: stripRevision(await tx.get('observations', [key.tradingDate, key.instrumentKey])),
-      stale: await staleContextOf(tx, deps.sessionPolicy, key),
-    }));
-    if (revisionOf(current.record) !== command.expectedResolutionRevision) return conflictOf(key, current.record);
-    if (asserting) {
-      if (current.record?.effectiveMarkId) return { kind: 'Rejected', issues: [{ field: 'key', code: 'MarkExists' }] };
-    } else if (resolve(current.record).kind !== 'AcknowledgedUnavailable') {
-      return { kind: 'Rejected', issues: [{ field: 'key', code: 'NothingToWithdraw' }] };
+  // The prepare entry intention a single-key save command asks for.
+  function intentionOf(command: Exclude<MarketDataSaveCommand, { intention: 'OverrideManualValuation' }>): MarketDataPrepareIntention {
+    switch (command.intention) {
+      case 'RecordInitialManualMark':
+        return { kind: command.intention, price: command.price };
+      case 'CorrectMark':
+        return { kind: command.intention, price: command.price, reason: command.reason };
+      case 'AssertUnavailable':
+        return { kind: command.intention, reason: command.reason };
+      case 'WithdrawAcknowledgment':
+        return { kind: command.intention, ...(command.reason !== undefined && { reason: command.reason }) };
     }
-    const savedAt = deps.clock.now();
-    const acknowledgment: AcknowledgmentVersion = { versionId: deps.ids.next(), kind: asserting ? 'Asserted' : 'Withdrawn', ...(reason !== '' && { reason }), savedAt };
-    const resolutionRevision = (current.record?.resolutionRevision ?? 0) + 1;
-    const record: ObservationRecord = {
-      ...key,
-      resolutionRevision,
-      marks: current.record?.marks ?? [],
-      effectiveMarkId: current.record?.effectiveMarkId ?? null,
-      acknowledgments: [...(current.record?.acknowledgments ?? []), acknowledgment],
-      effectiveAcknowledgmentId: acknowledgment.versionId,
-    };
-    const committed = await deps.persistence.commit({
-      checks: [keyUnchanged(key, command.expectedResolutionRevision)],
-      writes: [{ op: 'put', store: 'observations', value: { ...record } }],
-    });
-    if (committed.kind === 'RuntimeNotWritable') return committed;
-    if (committed.kind !== 'Committed') return conflictOf(key, await latestRecord(key));
-    return {
-      kind: 'Saved',
-      key,
-      resolution: resolve(record, current.stale),
-      resolutionRevision,
-      classification: acknowledgment.kind,
-      acknowledgment,
-      binding: { ...key, expectedResolutionRevision: command.expectedResolutionRevision },
-    };
   }
 
   // Per Instrument, the sessions before the Review Date without an effective Mark, from its relevance start (A56).
@@ -498,6 +535,107 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
   }
 
   const marketData: MarketData = {
+    async prepareEffects({ entries }) {
+      if (entries.length > MAX_ENTRIES) return { kind: 'Rejected', issues: [{ field: 'entries', code: 'TooManyEntries' }] };
+      const seen = new Set<string>();
+      const issues = entries.flatMap((entry, entryIndex): MarketDataPrepareIssue[] => {
+        const id = JSON.stringify([entry.key.tradingDate, entry.key.instrumentKey]);
+        const duplicate = seen.has(id);
+        seen.add(id);
+        return [...validateEntry(entry), ...(duplicate ? [{ field: 'key', code: 'DuplicateKey' } as const] : [])].map((issue) => ({ ...issue, entryIndex }));
+      });
+      if (issues.length > 0) return { kind: 'Rejected', issues };
+      const { value: read } = await deps.persistence.readSnapshot(['observations'], (tx) =>
+        Promise.all(
+          entries.map(async ({ key, intention }) => ({
+            record: stripRevision(await tx.get('observations', [key.tradingDate, key.instrumentKey])),
+            // An acknowledgment's resolution discloses the latest earlier Mark (A47).
+            stale: intention.kind === 'AssertUnavailable' || intention.kind === 'WithdrawAcknowledgment' ? await staleContextOf(tx, deps.sessionPolicy, key) : undefined,
+          })),
+        ),
+      );
+      const conflicts = entries.flatMap(({ key, expectedRevision, intention }, entryIndex): MarketDataConflictedKey[] => {
+        const { record } = read[entryIndex]!;
+        // A first Mark over an exact Mark is as stale as a moved revision: the trader saw no Mark.
+        const stale = revisionOf(record) !== expectedRevision || (intention.kind === 'RecordInitialManualMark' && record?.effectiveMarkId);
+        const code = stale ? 'StaleRevision' : intention.kind === 'AssertUnavailable' && record?.effectiveMarkId ? 'MarkExists' : undefined;
+        return code ? [{ entryIndex, key, code, resolution: resolve(record), resolutionRevision: revisionOf(record) }] : [];
+      });
+      if (conflicts.length > 0) return { kind: 'Conflict', keys: conflicts };
+      const rejections = entries.flatMap(({ intention }, entryIndex): MarketDataPrepareIssue[] => {
+        const { record } = read[entryIndex]!;
+        const effective = record?.marks.find((m) => m.revisionId === record.effectiveMarkId);
+        const issue: MarketDataIssue | undefined =
+          intention.kind === 'CorrectMark'
+            ? !effective
+              ? { field: 'price', code: 'NothingToCorrect' }
+              : effective.price === normalizedPrice(intention.price)
+                ? { field: 'price', code: 'CorrectionUnchanged' }
+                : undefined
+            : intention.kind === 'WithdrawAcknowledgment' && resolve(record).kind !== 'AcknowledgedUnavailable'
+              ? { field: 'key', code: 'NothingToWithdraw' }
+              : undefined;
+        return issue ? [{ ...issue, entryIndex }] : [];
+      });
+      if (rejections.length > 0) return { kind: 'Rejected', issues: rejections };
+      const prepared = entries.map((entry, i): PreparedMarketDataEntry => {
+        const { key, intention } = entry;
+        const { record: current, stale } = read[i]!;
+        const savedAt = deps.clock.now();
+        if (intention.kind === 'AssertUnavailable' || intention.kind === 'WithdrawAcknowledgment') {
+          const reason = (intention.reason ?? '').trim();
+          const asserting = intention.kind === 'AssertUnavailable';
+          const acknowledgment: AcknowledgmentVersion = { versionId: deps.ids.next(), kind: asserting ? 'Asserted' : 'Withdrawn', ...(reason !== '' && { reason }), savedAt };
+          const resolutionRevision = (current?.resolutionRevision ?? 0) + 1;
+          const record: ObservationRecord = {
+            ...key,
+            resolutionRevision,
+            marks: current?.marks ?? [],
+            effectiveMarkId: current?.effectiveMarkId ?? null,
+            acknowledgments: [...(current?.acknowledgments ?? []), acknowledgment],
+            effectiveAcknowledgmentId: acknowledgment.versionId,
+          };
+          return { key, expectedRevision: entry.expectedRevision, record, resolution: resolve(record, stale), resolutionRevision, classification: acknowledgment.kind, acknowledgment };
+        }
+        const effective = current?.marks.find((m) => m.revisionId === current.effectiveMarkId);
+        const base = { revisionId: deps.ids.next(), price: normalizedPrice(intention.price), source: 'Manual', observedAt: savedAt, savedAt } as const;
+        const revision: MarkRevision =
+          intention.kind === 'RecordInitialManualMark'
+            ? { ...base, revisionNumber: 1, intention: 'InitialManual' }
+            : {
+                ...base,
+                revisionNumber: effective!.revisionNumber + 1,
+                intention: 'Correction',
+                reason: intention.reason.trim(),
+                supersedes: effective!.revisionId,
+                correctionFootprint: {
+                  key,
+                  effectDate: key.tradingDate,
+                  savedAt,
+                  domains: ['Valuation', 'ConditionStatus', 'Replay'],
+                  replayInterval: { from: key.tradingDate, to: key.tradingDate },
+                },
+              };
+        const resolutionRevision = (current?.resolutionRevision ?? 0) + 1;
+        const record: ObservationRecord = {
+          ...key,
+          resolutionRevision,
+          marks: [...(current?.marks ?? []), revision],
+          effectiveMarkId: revision.revisionId,
+          acknowledgments: current?.acknowledgments ?? [],
+          effectiveAcknowledgmentId: current?.effectiveAcknowledgmentId ?? null,
+        };
+        return { key, expectedRevision: entry.expectedRevision, record, resolution: resolve(record), resolutionRevision, classification: revision.intention, revision };
+      });
+      return { kind: 'Prepared', entries: prepared };
+    },
+    applyPreparedEffects(tx, prepared) {
+      requireOpen(tx);
+      for (const { key, expectedRevision, record } of prepared.entries) {
+        tx.require(keyUnchanged(key, expectedRevision));
+        tx.stage({ op: 'put', store: 'observations', value: { ...record } });
+      }
+    },
     async query(query) {
       const resolved = resolveDay(query.context);
       if (resolved.kind === 'Rejected') return resolved;
@@ -507,68 +645,27 @@ export function createMarketData(deps: MarketDataDeps): MarketData {
       return frameResult(query, resolved.day, instruments, evidence);
     },
     async save(command) {
-      if (command.intention === 'AssertUnavailable' || command.intention === 'WithdrawAcknowledgment') return saveAcknowledgment(command);
-      const key: ObservationKey = { instrumentKey: command.instrumentKey, tradingDate: command.tradingDate };
       if (command.intention === 'OverrideManualValuation') return { kind: 'VariantNotInstalled', intention: command.intention };
-      const issues = validate(command);
-      if (issues.length > 0) return { kind: 'Rejected', issues };
-      const { value: current } = await deps.persistence.readSnapshot(['observations'], async (tx) => ({
-        record: stripRevision(await tx.get('observations', [key.tradingDate, key.instrumentKey])),
-      }));
-      if (revisionOf(current.record) !== command.expectedResolutionRevision) return conflictOf(key, current.record);
-      const effective = current.record?.marks.find((m) => m.revisionId === current.record?.effectiveMarkId);
-      if (command.intention === 'RecordInitialManualMark' && effective) return conflictOf(key, current.record);
-      if (command.intention === 'CorrectMark') {
-        if (!effective) return { kind: 'Rejected', issues: [{ field: 'price', code: 'NothingToCorrect' }] };
-        if (effective.price === normalizedPrice(command.price)) {
-          return { kind: 'Rejected', issues: [{ field: 'price', code: 'CorrectionUnchanged' }] };
-        }
+      const key: ObservationKey = { instrumentKey: command.instrumentKey, tradingDate: command.tradingDate };
+      const binding = { ...key, expectedResolutionRevision: command.expectedResolutionRevision };
+      const prepared = await marketData.prepareEffects({ entries: [{ key, expectedRevision: command.expectedResolutionRevision, intention: intentionOf(command) }] });
+      // One entry cannot produce a request-level or duplicate issue, so every issue here is one `save` already reported.
+      if (prepared.kind === 'Rejected') return { kind: 'Rejected', issues: prepared.issues.map(({ field, code }) => ({ field, code }) as MarketDataIssue) };
+      if (prepared.kind === 'Conflict') {
+        const [conflict] = prepared.keys;
+        if (conflict!.code === 'MarkExists') return { kind: 'Rejected', issues: [{ field: 'key', code: 'MarkExists' }] };
+        return { kind: 'Conflict', key, resolution: conflict!.resolution, resolutionRevision: conflict!.resolutionRevision };
       }
-      const savedAt = deps.clock.now();
-      const base = { revisionId: deps.ids.next(), price: normalizedPrice(command.price), source: 'Manual', observedAt: savedAt, savedAt } as const;
-      const revision: MarkRevision =
-        command.intention === 'RecordInitialManualMark'
-          ? { ...base, revisionNumber: 1, intention: 'InitialManual' }
-          : {
-              ...base,
-              revisionNumber: effective!.revisionNumber + 1,
-              intention: 'Correction',
-              reason: command.reason.trim(),
-              supersedes: effective!.revisionId,
-              correctionFootprint: {
-                key,
-                effectDate: key.tradingDate,
-                savedAt,
-                domains: ['Valuation', 'ConditionStatus', 'Replay'],
-                replayInterval: { from: key.tradingDate, to: key.tradingDate },
-              },
-            };
-      const resolutionRevision = (current.record?.resolutionRevision ?? 0) + 1;
-      const record: ObservationRecord = {
-        ...key,
-        resolutionRevision,
-        marks: [...(current.record?.marks ?? []), revision],
-        effectiveMarkId: revision.revisionId,
-        acknowledgments: current.record?.acknowledgments ?? [],
-        effectiveAcknowledgmentId: current.record?.effectiveAcknowledgmentId ?? null,
-      };
-      const committed = await deps.persistence.commit({
-        checks: [keyUnchanged(key, command.expectedResolutionRevision)],
-        writes: [{ op: 'put', store: 'observations', value: { ...record } }],
-      });
+      const tx = beginSemanticTransaction();
+      marketData.applyPreparedEffects(tx, prepared);
+      const { checks, writes } = tx.close();
+      const committed = await deps.persistence.commit({ checks, writes });
       if (committed.kind === 'RuntimeNotWritable') return committed;
-      if (committed.kind !== 'Committed') {
-        return conflictOf(key, await latestRecord(key));
-      }
-      return {
-        kind: 'Saved',
-        key,
-        resolution: resolve(record),
-        resolutionRevision,
-        classification: revision.intention,
-        revision,
-        binding: { ...key, expectedResolutionRevision: command.expectedResolutionRevision },
-      };
+      if (committed.kind !== 'Committed') return conflictOf(key, await latestRecord(key));
+      const [entry] = prepared.entries;
+      const { resolution, resolutionRevision } = entry!;
+      if ('revision' in entry!) return { kind: 'Saved', key, resolution, resolutionRevision, classification: entry.classification, revision: entry.revision, binding };
+      return { kind: 'Saved', key, resolution, resolutionRevision, classification: entry!.classification, acknowledgment: entry!.acknowledgment, binding };
     },
     async recover(request) {
       const invalid = request.instruments.filter((i) => !isInstant(i.earliestExposure));
