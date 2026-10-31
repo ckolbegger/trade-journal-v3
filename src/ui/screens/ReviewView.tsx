@@ -37,8 +37,10 @@ function holderOf(review: Ready, instrumentKey: string): string | undefined {
 function CardLink({ tradeId, open, panel, instrument, children }: { readonly tradeId: string; readonly open: OpenCard; readonly panel?: PanelName; readonly instrument?: string; readonly children: ReactNode }) {
   return (
     <a
-      href={`/review?trade=${tradeId}`}
+      href={`/review?trade=${tradeId}${instrument === undefined ? '' : `&instrument=${encodeURIComponent(instrument)}`}`}
       onClick={(event) => {
+        // A new-tab or new-window click is the browser's: the href names the same card, panel and row.
+        if (event.ctrlKey || event.metaKey || event.shiftKey || event.button !== 0) return;
         event.preventDefault();
         open(tradeId, panel, instrument);
       }}
@@ -240,10 +242,15 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
   const [params] = useSearchParams();
   const [link] = useState((): LinkedCard | undefined => {
     const instrument = params.get('instrument');
-    const holder = instrument === null ? undefined : holderOf(initial, instrument);
-    if (instrument !== null && holder !== undefined) return { tradeId: holder, panel: 'Marks', instrument };
     const wanted = params.get('trade');
-    return wanted !== null && walkedTrades(initial).some((t) => t.tradeId === wanted) ? { tradeId: wanted } : undefined;
+    // The Trade picks the card and the Instrument its row, when that card holds the Instrument.
+    if (wanted !== null && walkedTrades(initial).some((t) => t.tradeId === wanted)) {
+      const marks = marksOf(initial, wanted);
+      const holds = instrument !== null && (marks.today.some((row) => row.instrumentKey === instrument) || marks.earlier.some((group) => group.instrumentKey === instrument));
+      return holds ? { tradeId: wanted, panel: 'Marks', instrument } : { tradeId: wanted };
+    }
+    const holder = instrument === null ? undefined : holderOf(initial, instrument);
+    return instrument !== null && holder !== undefined ? { tradeId: holder, panel: 'Marks', instrument } : undefined;
   });
   const [firstId] = useState(() => link?.tradeId ?? walkedTrades(initial).find((t) => isOwing(remainingOf(t.tradeId, initial.completion)))?.tradeId);
   // The link the open card is to answer, and the card it is for.

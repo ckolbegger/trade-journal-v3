@@ -571,6 +571,56 @@ describe('links (A161)', () => {
     // Its Marks are saved and no reflection is due, so the Action is the first panel not done.
     expect((['Marks', 'Reflections', 'Action'] as const).map((name) => within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) }).getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true']);
   });
+
+  it('should open the card that the trade param names, with the row that the instrument param names, when both are given', async () => {
+    const facade = cardFacade();
+    renderReview(facade, { at: '/review?trade=t-a&instrument=XYZ' });
+    const card = await screen.findByRole('region', { name: 'XYZ review' });
+
+    // T-F also holds XYZ and comes first, but the Trade picks the card.
+    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'false', 'true', 'false']);
+    expect(vi.mocked(facade.DailyReview.getTrade).mock.calls[0]![0]).toMatchObject({ tradeId: 't-a' });
+    expect(within(card).getByRole('button', { name: /^Marks\b/ }).getAttribute('aria-expanded')).toBe('true');
+    expect(within(card).getByRole('region', { name: 'XYZ Mark, Mon Oct 12' }).contains(document.activeElement)).toBe(true);
+  });
+});
+
+describe('blocker links open in a new tab (A161)', () => {
+  const blockers = incomplete({ code: 'MarkMissing', instrumentKey: 'DEF', tradingDate: '2026-10-12', trades: ['t-c'] }, { code: 'ActionMissing', tradeId: 't-b' }, { code: 'ReflectionDue', tradeId: 't-a', debtIds: ['d1'] });
+
+  it('should give a Mark blocker link the Instrument in its href, and Action and Reflection links only the Trade', async () => {
+    renderReview(cardFacade(review({ completion: blockers })));
+    await screen.findByRole('region', { name: 'ABC review' });
+    const status = screen.getByRole('region', { name: 'Review status' });
+
+    expect(within(status).getByRole('link', { name: 'DEF' }).getAttribute('href')).toBe('/review?trade=t-c&instrument=DEF');
+    expect(within(status).getByRole('link', { name: 'ABC' }).getAttribute('href')).toBe('/review?trade=t-b');
+    expect(within(status).getByRole('link', { name: 'XYZ' }).getAttribute('href')).toBe('/review?trade=t-a');
+  });
+
+  it.each([
+    ['ctrlKey', { ctrlKey: true }],
+    ['metaKey', { metaKey: true }],
+    ['shiftKey', { shiftKey: true }],
+    ['middle button', { button: 1 }],
+  ])('should leave a click with %s to the browser, with the open card unchanged', async (_name, modifier) => {
+    renderReview(cardFacade(review({ completion: blockers })));
+    await screen.findByRole('region', { name: 'ABC review' });
+    const link = within(screen.getByRole('region', { name: 'Review status' })).getByRole('link', { name: 'DEF' });
+
+    // fireEvent answers false when a handler called preventDefault.
+    expect(fireEvent.click(link, modifier)).toBe(true);
+    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['true', 'false', 'false', 'false', 'false']);
+  });
+
+  it('should still open the card in place for a plain left click', async () => {
+    renderReview(cardFacade(review({ completion: blockers })));
+    await screen.findByRole('region', { name: 'ABC review' });
+    const link = within(screen.getByRole('region', { name: 'Review status' })).getByRole('link', { name: 'DEF' });
+
+    expect(fireEvent.click(link)).toBe(false);
+    await screen.findByRole('region', { name: 'DEF review' });
+  });
 });
 
 describe('header', () => {

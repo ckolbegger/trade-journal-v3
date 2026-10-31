@@ -984,6 +984,21 @@ ocr review of `676775c`: two files reviewed. Raw output: [ocr/T5R.12-676775c.jso
 
 A modified click (Ctrl, Cmd, Shift, middle button) on a blocker link is left to the browser, and the `href` carries the Instrument when the link has one (`/review?trade=<id>&instrument=<key>`), so a new tab lands on the same card, panel and row.
 
+Record. All in `ReviewCards.test.tsx`:
+
+| Case | Red |
+|---|---|
+| a Mark blocker link's `href` carries the Instrument; Action and Reflection links only the Trade | `expected '/review?trade=t-c' to be '/review?trade=t-c&instrument=DEF'` |
+| `?trade=t-a&instrument=XYZ` opens T-A (not T-F, the first holder), Marks panel, focus in XYZ's row | expanded flags `[…'true'…]` at T-F, not T-A |
+| a click with ctrlKey is left to the browser, card unchanged | `expected false to be true` (default prevented) |
+| a click with the middle button is left to the browser | `expected false to be true` |
+| metaKey, shiftKey (flagged first-run passes) | mutation: dropping each from the guard fails its case with `expected false to be true` |
+| a plain left click still opens the card in place (flagged first-run pass) | mutation: removing `preventDefault` fails with `expected true to be false` |
+
+The load path now lets `?trade=` pick the card, and `?instrument=` pick the Marks row when that card holds the Instrument; `?instrument=` alone still picks the first holder. The `href` Instrument is URL-encoded.
+
+Checks: typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 24 files, 374 passed. No browser spec changed.
+
 ### T5R.12-B2 Search-param changes on the mounted Review
 
 A change of `?instrument=` or `?trade=` while the Review is mounted opens the named card as on load, subject to the A156 hold.
