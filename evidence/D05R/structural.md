@@ -723,3 +723,26 @@ Commit `41b33a1`: Marks, Reflections and Action panels on the open card, one ope
 - **Process notes:** one no-op `cat >> /dev/null` and one `printf >>` to `tdd-log.md` (content fine), against the Edit-only rule.
 
 **Browser suite: not green.** 126 passed, 29 failed after the panels; 136 passed, 19 failed after `e2e/d4/support.ts`'s `enterMark` and `acknowledgeMark` reopen the Marks panel to check the saved row. The Due label then moved into its own span without a full rerun. The 19 fail because one panel is open at a time: specs read Mark rows while the card is open on the Action (`acknowledge.spec.ts:26`, `gaps.spec.ts:36`, `runtime-failure.spec.ts:44` and 49–52, `responsive-a11y.spec.ts:274`), read D5's Reflections while that panel is closed (`due-timing.spec.ts:16`, `review-debt.spec.ts:36` and `:79`, `update.spec.ts:60`), or time out, probably for the same reason (`correct-mark`, both `no-save`, `responsive-a11y.spec.ts:121`, `detail-debt`, `due-timing.spec.ts:31`, both `faults`, `kill-offline`, both `d5/responsive`, `review-debt`). Fixing them needs steps in the spec bodies that open a panel before reading it, beyond section 6.3's helper-only file list. No expectation is reported to need changing. `support.ts` gains `openPanel` and `showPanel`. The session stopped for the user's decision.
+
+### ocr review of `41b33a1`
+
+Four files reviewed, four findings. Raw output: [ocr/T5R.10-41b33a1.json](ocr/T5R.10-41b33a1.json).
+
+| Severity | Location | Claim | Assessment |
+|---|---|---|---|
+| medium | `ReviewReflections.tsx:~75-95`, wired at `ReviewCard.tsx:271` | The Reflections panel advances only when every owed reflection is resolved, including those due in the next Review, so a card with one Due and one future reflection stays on Reflections after the Due one is saved. | Valid: the header counts the panel done at `due === 0`, but `onNoneRemaining` fires only when none remain. Bug task **T5R.10-B1**. |
+| medium | `ReviewCard.tsx:217` | Advancing is computed from the panel open now (`nextAfter(open)`), not the one that finished, so opening Reflections during a pending Save Marks can advance to the Action while reflections are due. | Valid, a narrow race. Bug task **T5R.10-B2**. |
+| medium | `e2e/d4/support.ts` (`enterMark`, `acknowledgeMark`) | In card mode the helpers never open the Marks panel before filling, so a second entry on the same card hits hidden controls. | Valid, and part of the 19 browser failures. Dismissed here: the card helpers (decision 65, T5R.10-H1's `reachPanel`) replace this path; carried into H1's brief. |
+| low | `ReviewCard.tsx:178` | Nested ternaries in the Marks and Reflections status expressions. | Valid, cosmetic; the values are correct. Bug task **T5R.10-B3** (refactor, structural: unit tests unchanged and green). |
+
+#### T5R.10-B1 Reflections advance when nothing is due
+
+Case: it should open the next panel that is not done when the card's last Due reflection is resolved, though a reflection due in the next Review remains.
+
+#### T5R.10-B2 Advancing starts from the panel that finished
+
+Case: it should advance from the Marks panel when Save Marks finishes after the trader opened the Reflections panel, leaving Reflections open while a reflection is due.
+
+#### T5R.10-B3 Panel statuses without nested ternaries (refactor)
+
+Verification: `npx vitest run src/ui` unchanged and green; lint, typecheck exit 0.

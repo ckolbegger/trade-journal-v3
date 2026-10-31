@@ -1,0 +1,154 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 4 finding(s) across 4 selected item(s).",
+  "summary": {
+    "files_reviewed": 4,
+    "comments": 4,
+    "total_tokens": 256021,
+    "input_tokens": 252639,
+    "output_tokens": 3382,
+    "cache_read_tokens": 38272,
+    "elapsed": "2m22s"
+  },
+  "tool_calls": {
+    "total": 36,
+    "by_tool": {
+      "code_comment": 2,
+      "code_search": 13,
+      "file_find": 3,
+      "file_read": 18
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/ui/screens/ReviewCard.tsx",
+      "content": "Completion is evaluated relative to the currently open panel, not the panel that finished saving. Panel headers remain enabled during a save: if Save Marks is pending and the user opens Reflections, its completion calls nextAfter('Reflections') and opens Action even when reflections are still due. Track the completed panel explicitly (Marks for advance, Reflections for finishPanel), and compute progression from that panel; add a delayed-save test with a panel switch.",
+      "existing_code": "    const next = nextAfter(open);",
+      "start_line": 217,
+      "end_line": 217,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "e2e/d4/support.ts",
+      "content": "These helpers restore the post-save panel, but enterMark() and acknowledgeMark() only call openCard() before their next interaction; neither reopens Marks. Consequently, entering an optional earlier Mark on a completed card, or making another entry after automatic progression, tries to interact with hidden controls and times out. Explicitly showPanel(page, 'Marks') in both card-mode entry paths before locating/filling the row. The optional-Friday entry in gaps.spec.ts is an existing affected case.",
+      "existing_code": "  if (moved !== undefined \u0026\u0026 moved !== 'Marks') await showPanel(page, moved);",
+      "start_line": 212,
+      "end_line": 212,
+      "category": "test",
+      "severity": "medium"
+    },
+    {
+      "path": "src/ui/screens/ReviewCard.tsx",
+      "content": "The Marks and Reflections status expressions introduce nested ternaries, which the review checklist explicitly prohibits. Extract the status selection into named helpers or use if/else branches so the needed/saved/optional and due/resolved/not-due cases remain explicit.",
+      "existing_code": "      status: remaining.marks \u003e 0 ? `${remaining.marks} needed` : rows \u003e 0 ? 'Saved' : earlier \u003e 0 ? 'Optional' : 'None',",
+      "start_line": 178,
+      "end_line": 178,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "src/ui/screens/ReviewCard.tsx",
+      "content": "Panel advancement is only triggered when every owed reflection is resolved, rather than when all reflections due now are resolved. ReviewReflections selects the next unresolved debt without filtering its classification, so a card containing both a Due and a DueInNextReview reflection stays in Reflections after the Due one is saved, even though this panel now reports zero due and is considered done by panelHeaders. Trigger completion when the due-now count transitions to zero (while retaining access to optional future reflections), so Action opens without requiring early resolution of future debt.",
+      "existing_code": "            {name === 'Reflections' \u0026\u0026 \u003cReviewReflections facade={facade} reviewDate={trade.saveBinding.reviewDate} reflections={trade.reflections} onReview={onReflectionResolved} onNoneRemaining={finishPanel} onEntryDirty={onEntryDirty} /\u003e}",
+      "start_line": 271,
+      "end_line": 271,
+      "category": "bug",
+      "severity": "medium"
+    }
+  ],
+  "groups": [
+    {
+      "label": "Review screen UI, styling, and end-to-end support",
+      "files": [
+        "e2e/d4/support.ts",
+        "src/ui/app.css",
+        "src/ui/screens/ReviewCard.tsx",
+        "src/ui/screens/ReviewReflections.tsx"
+      ]
+    }
+  ],
+  "session_id": "7b93f0ac-02c9-4034-82c2-0fc9f7250801",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "7b93f0ac-02c9-4034-82c2-0fc9f7250801",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {
+      "identity_sha256": "d118767c8e164bdd3eb90348cdfa4f5b9101107b5cf2e876f8d86dd20d3984a6"
+    },
+    "input": {
+      "mode": "commit",
+      "requested_head": "41b33a1",
+      "resolved_base": "9eb80c7aebad0c077713fa9754fd78cd4c62a4a5",
+      "resolved_head": "41b33a1d7286b0cf6dbe1936d4d23c9976b7e026",
+      "exact_range": "9eb80c7aebad0c077713fa9754fd78cd4c62a4a5..41b33a1d7286b0cf6dbe1936d4d23c9976b7e026",
+      "source_artifact_sha256": "3fedc7eec0795a90926063ff6492d4f1cca5f55f870b0c1a9da5eac3112f96df"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "02d2b522fc8ad50e6ef168e466ec06ab756cf8ca676015178a348d1e1a98f989",
+          "path": "src/ui/screens/ReviewReflections.tsx",
+          "fingerprint": "27862960ab14c696783da346d7fc86fb53c1296783dbde56036efbc094355d84"
+        },
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "ee19a337711abf02635a2d73c03e2abbac6ce2c4233a42cd134d959ed51bb572"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "9acec6887ddfaae8e3eac638c1ecfcff588439a1abd04f5cdd49772074aeb6b1"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "ce6da3c6d1e27fe6c77d3679e0677f64cd3866d196cd0f616c719f551d147ab0"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "02d2b522fc8ad50e6ef168e466ec06ab756cf8ca676015178a348d1e1a98f989",
+          "path": "src/ui/screens/ReviewReflections.tsx",
+          "fingerprint": "27862960ab14c696783da346d7fc86fb53c1296783dbde56036efbc094355d84"
+        },
+        {
+          "item_id": "0963234000e95dd2a13a646d399fa2ac2e8e4d3792133c5d067e9fc2f8f3836f",
+          "path": "src/ui/app.css",
+          "fingerprint": "ee19a337711abf02635a2d73c03e2abbac6ce2c4233a42cd134d959ed51bb572"
+        },
+        {
+          "item_id": "77a09965bbc16832a6776b36503973c81fdfb4c349ef52771fbc221627efe7c5",
+          "path": "e2e/d4/support.ts",
+          "fingerprint": "9acec6887ddfaae8e3eac638c1ecfcff588439a1abd04f5cdd49772074aeb6b1"
+        },
+        {
+          "item_id": "f410807078335cc4b293f01b36b0a0e232f85b5a6741f4abea8b73d278e0fce3",
+          "path": "src/ui/screens/ReviewCard.tsx",
+          "fingerprint": "ce6da3c6d1e27fe6c77d3679e0677f64cd3866d196cd0f616c719f551d147ab0"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 142468
+  }
+}
