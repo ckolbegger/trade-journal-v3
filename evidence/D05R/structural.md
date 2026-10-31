@@ -887,3 +887,15 @@ Commit `0a21dc4`: the eight D5 specs moved onto the helpers, and the transitiona
 Decisions for review:
 - `answerDebt(page, symbol | undefined)` and `declineDebt(page, reason, symbol | undefined)` take `undefined` for the three cases that answer on Trade Detail, which has no card (detail-debt, B5.8, responsive); `debtForm(page)` and `fillDebtAnswers` stay for those steps.
 - `answerDebt` and `declineDebt` now wait for the form to hide, then reach the Reflections panel again before reading "Saved reflection", because the save moves the card on to its Action panel (A157). A helper change, not a spec change; without it B5.1 and B5.7 failed.
+
+### ocr review of `0a21dc4`
+
+ocr reviewed the two support files (ten specs excluded) and raised nothing. The reviewing agent read the whole diff: no `expect` changed; every content read and absent check goes through a helper that opens its panel; `tradesFamily` is a plain raw locator; no mouse reach in a keyboard step; removed exports have no callers; `answerDebt`/`declineDebt` can't hide a failed save (a refused save leaves the form visible, so `toBeHidden` fails). Raw output: [ocr/T5R.10-H3-0a21dc4.json](ocr/T5R.10-H3-0a21dc4.json).
+
+| Severity | Location | Claim | Assessment |
+|---|---|---|---|
+| low | `e2e/d5/faults.spec.ts:39-40` | `actionFormOf` opens the Action panel, so the page-wide "no Save" check on line 40 may run with Reflections collapsed. | Doubtful: Answer and Decline are still checked with Reflections open. Bug task **T5R.10-H3-B1**. |
+
+#### T5R.10-H3-B1 The read-only absent checks cover both panels
+
+In `faults.spec.ts`, order the read-only checks so the page-wide "no Save" check runs once with the Action panel open and once with the Reflections panel open (reorder or repeat the existing `expect`, matcher and value unchanged).
