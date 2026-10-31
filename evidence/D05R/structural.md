@@ -673,3 +673,10 @@ Case: it should let the card close, with nothing left dirty, after Save Marks re
 #### T5R.9-B4 Earlier-session drafts carry the newest resolution and revision
 
 Case: it should send an earlier-session draft with the resolution and revision of the newest Review after Refresh, not those of the first snapshot.
+
+Done in commit `6c7c0ff` (T5R.9-B1):
+- **The case.** The test holds the save open, appends "1" to the sent Friday price, then resolves: Monday (sent unchanged) shows its saved Mark, and Friday stays Unsaved at 51.001. Red: no "Save Marks (1)" button (every draft cleared). Then green.
+- **An extra case**, for a key not sent (Monday sent, Friday typed while pending), was written after the fix: a flagged first-run pass, mutation-checked (the clearing filter always true: no "Save Marks (1)").
+- **The fix.** The inputs stay enabled; on MarksSaved a draft is cleared only when its key was sent and its price, unavailable flag and reason all equal what was sent.
+- **Checks.** typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 23 files, 350 passed.
+- **Process note:** the agent ran two no-op here-doc and python commands that changed nothing, against the Edit-only rule.
