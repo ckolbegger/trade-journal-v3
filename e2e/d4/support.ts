@@ -190,55 +190,120 @@ export async function openCard(page: Page, symbol: string): Promise<void> {
 // The three panels of the open card, in order (D5R, A152), and the one that is open.
 const PANELS = ['Marks', 'Reflections', 'Action'] as const;
 type Panel = (typeof PANELS)[number];
-const panelHeader = (page: Page, name: Panel): Locator => page.getByRole('region', { name: / review$/ }).getByRole('button', { name: new RegExp(`^${name}\\b`) });
+const anyPanelHeader = (page: Page, name: Panel): Locator => page.getByRole('region', { name: / review$/ }).getByRole('button', { name: new RegExp(`^${name}\\b`) });
 export async function openPanel(page: Page): Promise<Panel | undefined> {
-  for (const name of PANELS) if ((await panelHeader(page, name).getAttribute('aria-expanded')) === 'true') return name;
+  for (const name of PANELS) if ((await anyPanelHeader(page, name).getAttribute('aria-expanded')) === 'true') return name;
   return undefined;
 }
 // Opens a panel of the open card by its header, unless it is already open.
 export async function showPanel(page: Page, name: Panel): Promise<void> {
-  const header = panelHeader(page, name);
+  const header = anyPanelHeader(page, name);
   await expect(header).toBeVisible(READY);
   if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
   await expect(header).toHaveAttribute('aria-expanded', 'true');
 }
+// ---- Card helpers (decision 65, D5R section 6.4) -----------------------------------------------
+
+export type CardPanel = Panel;
+export const tradeCard = (page: Page, symbol: string): Locator => page.getByRole('region', { name: `${symbol} review`, exact: true });
+// Raw locators: they never click, so a step that asserts which card or panel is open can read them before any reach.
+export const cardHeader = (page: Page, symbol: string): Locator => page.getByRole('button', { name: new RegExp(`^Review ${symbol}\\b`) });
+export const panelHeader = (page: Page, symbol: string, panel: Panel): Locator => tradeCard(page, symbol).getByRole('button', { name: new RegExp(`^${panel}\\b`) });
+export async function openPanelOf(page: Page, symbol: string): Promise<Panel | undefined> {
+  for (const name of PANELS) if ((await panelHeader(page, symbol, name).getAttribute('aria-expanded')) === 'true') return name;
+  return undefined;
+}
+
+// A previous release's Review (rule 5): the Trade card is reached from the Trades family, and the Marks family is not a card's.
+async function reachOldCard(page: Page, symbol: string): Promise<Locator> {
+  if ((await tradeCard(page, symbol).count()) === 0) {
+    await continueToTrades(page);
+    await tradesFamily(page).getByRole('button', { name: `Review ${symbol}` }).click();
+  }
+  await expect(tradeCard(page, symbol)).toBeVisible(READY);
+  return tradeCard(page, symbol);
+}
+
+// Opens the Trade's card unless it is open (a header press toggles), waits for its content, and returns its region.
+export async function reachCard(page: Page, symbol: string): Promise<Locator> {
+  if (!(await hasCards(page))) return reachOldCard(page, symbol);
+  const header = cardHeader(page, symbol);
+  await expect(header).toBeVisible(READY);
+  if ((await header.getAttribute('aria-expanded')) !== 'true') {
+    await header.click();
+    // Opening is refused while the open card holds unsaved work (A156): it says so, and stays open.
+    const hold = page.getByRole('status').filter({ hasText: /^Save or discard what you entered for / });
+    const outcome = async (): Promise<'opened' | 'refused' | 'waiting'> => {
+      if ((await header.getAttribute('aria-expanded')) === 'true') return 'opened';
+      return (await hold.count()) > 0 ? 'refused' : 'waiting';
+    };
+    await expect.poll(outcome, READY).not.toBe('waiting');
+    if ((await outcome()) === 'refused') {
+      const holder = /entered for (.+?) to leave it/.exec((await hold.first().textContent()) ?? '')?.[1] ?? 'the open card';
+      throw new Error(`Cannot reach ${symbol}'s card: ${holder}'s card holds unsaved work, so it stays open. Save or discard it first; the helper does neither.`);
+    }
+  }
+  await expect(header).toHaveAttribute('aria-expanded', 'true');
+  await expect(tradeCard(page, symbol)).toBeVisible(READY);
+  return tradeCard(page, symbol);
+}
+// Reaches the card, then opens the panel unless it is open; returns the panel's content.
+export async function reachPanel(page: Page, symbol: string, panel: Panel): Promise<Locator> {
+  if (!(await hasCards(page))) return panel === 'Marks' ? marksFamily(page) : reachOldCard(page, symbol);
+  await reachCard(page, symbol);
+  const header = panelHeader(page, symbol, panel);
+  await expect(header).toBeVisible(READY);
+  if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
+  await expect(header).toHaveAttribute('aria-expanded', 'true');
+  return page.locator(`[id="${await header.getAttribute('aria-controls')}"]`);
+}
+export async function markRow(page: Page, symbol: string, date: string): Promise<Locator> {
+  return (await reachPanel(page, symbol, 'Marks')).getByRole('region', { name: `${symbol} Mark, ${date}`, exact: true });
+}
+export async function actionFormOf(page: Page, symbol: string): Promise<Locator> {
+  return (await reachPanel(page, symbol, 'Action')).getByRole('form', { name: 'Action' });
+}
+export async function reflectionsOf(page: Page, symbol: string): Promise<Locator> {
+  return (await reachPanel(page, symbol, 'Reflections')).getByRole('region', { name: 'Reflections', exact: true });
+}
+export async function debtFormOf(page: Page, symbol: string): Promise<Locator> {
+  return (await reachPanel(page, symbol, 'Reflections')).getByRole('form', { name: 'Reflection' });
+}
+
 // Shows the saved row in the Marks panel, then puts back the panel Save Marks moved the card on to (A157).
-async function checkSavedRow(page: Page, entry: Locator, text: string): Promise<void> {
+async function checkSavedRow(page: Page, symbol: string, date: string, text: string): Promise<void> {
   // The drafts are cleared with the same result that moves the card on; the panel may already be hidden.
-  await expect(page.locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', READY);
-  const moved = await openPanel(page);
-  await showPanel(page, 'Marks');
-  await expect(entry.getByText(text)).toBeVisible();
-  if (moved !== undefined && moved !== 'Marks') await showPanel(page, moved);
+  await expect(tradeCard(page, symbol).locator('section[aria-label="Marks"] button', { hasText: /^Save Marks/ })).toHaveText('Save Marks (0)', READY);
+  const moved = await openPanelOf(page, symbol);
+  await expect(await markRow(page, symbol, date)).toContainText(text);
+  if (moved !== undefined && moved !== 'Marks') await reachPanel(page, symbol, moved);
 }
 
 // On cards the price is a draft in the open card's Marks panel, saved with Save Marks (D5R, A153); a previous release's
 // Review enters it in the row and saves it there.
 export async function enterMark(page: Page, symbol: string, date: string, price: string): Promise<void> {
   const cards = await hasCards(page);
-  if (cards) await openCard(page, symbol);
-  const entry = markEntry(page, symbol, date);
+  const entry = await markRow(page, symbol, date);
   if (cards) {
     await entry.getByLabel('Price').fill(price);
-    await marksFamily(page).getByRole('button', { name: /^Save Marks/ }).click();
+    await (await reachPanel(page, symbol, 'Marks')).getByRole('button', { name: /^Save Marks/ }).click();
   } else {
     await entry.getByRole('button', { name: 'Enter', exact: true }).click();
     await entry.getByLabel('Price').fill(price);
     await entry.getByRole('button', { name: 'Save Mark' }).click();
   }
-  if (cards) await checkSavedRow(page, entry, 'Manual');
+  if (cards) await checkSavedRow(page, symbol, date, 'Manual');
   else await expect(entry.getByText('Manual')).toBeVisible();
 }
 
 export async function acknowledgeMark(page: Page, symbol: string, date: string, reason: string): Promise<void> {
   const cards = await hasCards(page);
-  if (cards) await openCard(page, symbol);
-  const entry = markEntry(page, symbol, date);
+  const entry = await markRow(page, symbol, date);
   await entry.getByRole('button', { name: "Can't get a price" }).click();
   await entry.getByLabel('Reason (required)').fill(reason);
-  if (cards) await marksFamily(page).getByRole('button', { name: /^Save Marks/ }).click();
+  if (cards) await (await reachPanel(page, symbol, 'Marks')).getByRole('button', { name: /^Save Marks/ }).click();
   else await entry.getByRole('button', { name: 'Save acknowledgment' }).click();
-  if (cards) await checkSavedRow(page, entry, 'Acknowledged Unavailable');
+  if (cards) await checkSavedRow(page, symbol, date, 'Acknowledged Unavailable');
   else await expect(entry.getByText('Acknowledged Unavailable')).toBeVisible();
 }
 
@@ -253,8 +318,9 @@ export const actionForm = (page: Page): Locator => page.getByRole('form', { name
 // Fills the open Action form and presses Save; Hold needs no Intent. Returns once the save result has
 // rendered: a Saved result replaces the form (the next Trade's form, or none), so the element that was
 // pressed is gone. Until then the Review's binding is the old one, and opening another Trade would use it.
-export async function saveAction(page: Page, action: 'Hold' | 'Exit' | 'Roll' | 'Adjust', intent?: string): Promise<void> {
-  const form = actionForm(page);
+// With a symbol it reaches that Trade's Action form; without one it uses the form on the page (specs not yet moved to the card helpers).
+export async function saveAction(page: Page, action: 'Hold' | 'Exit' | 'Roll' | 'Adjust', intent?: string, symbol?: string): Promise<void> {
+  const form = symbol === undefined ? actionForm(page) : await actionFormOf(page, symbol);
   const pressed = await form.elementHandle();
   await form.getByRole('radio', { name: action, exact: true }).check();
   if (intent !== undefined) await form.getByLabel(/^Why are you taking this action\?/).fill(intent);

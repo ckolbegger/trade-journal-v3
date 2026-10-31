@@ -2,7 +2,7 @@
 // also patches Temporal, the production d5 release as the default served build, the Review steps), plus
 // the deferred entry, the Debt form, the Review card's reflections, and the Debt records read through the probe.
 import type { Locator, Page } from '@playwright/test';
-import { continueToTrades, enterMark, expect, fillRows, openEntryForm, reflectionSection, tradesFamily, type ProbedDatabase, type Row } from '../d4/support.ts';
+import { continueToTrades, debtFormOf, enterMark, expect, fillRows, openEntryForm, reflectionSection, tradeCard, tradesFamily, type ProbedDatabase, type Row } from '../d4/support.ts';
 
 export * from '../d4/support.ts';
 
@@ -46,24 +46,28 @@ export async function fillDebtAnswers(page: Page): Promise<void> {
   await form.getByRole('radiogroup', { name: 'Decision confidence' }).getByLabel('4').check();
 }
 
-// Presses Answer and waits for the saved result to replace the form.
-export async function answerDebt(page: Page): Promise<void> {
-  await debtForm(page).getByRole('button', { name: 'Answer', exact: true }).click();
+// Presses Answer and waits for the saved result to replace the form. With a symbol it reaches that Trade's Reflections
+// panel first; without one it uses the form on the page (specs not yet moved to the card helpers).
+export async function answerDebt(page: Page, symbol?: string): Promise<void> {
+  const form = symbol === undefined ? debtForm(page) : await debtFormOf(page, symbol);
+  await form.getByRole('button', { name: 'Answer', exact: true }).click();
   await expect(page.getByRole('region', { name: 'Saved reflection' })).toBeVisible();
   await expect(debtForm(page)).toHaveCount(0);
 }
 
 // Types a reason (when given), presses Decline, and waits for the saved result.
-export async function declineDebt(page: Page, reason?: string): Promise<void> {
-  if (reason !== undefined) await debtForm(page).getByLabel('Reason for declining (optional)').fill(reason);
-  await debtForm(page).getByRole('button', { name: 'Decline', exact: true }).click();
+export async function declineDebt(page: Page, reason?: string, symbol?: string): Promise<void> {
+  const form = symbol === undefined ? debtForm(page) : await debtFormOf(page, symbol);
+  if (reason !== undefined) await form.getByLabel('Reason for declining (optional)').fill(reason);
+  await form.getByRole('button', { name: 'Decline', exact: true }).click();
   await expect(page.getByRole('region', { name: 'Saved reflection' })).toBeVisible();
   await expect(debtForm(page)).toHaveCount(0);
 }
 
 // ---- The Review's Trade card -----------------------------------------------------------------------
-
-export const tradeCard = (page: Page, symbol: string): Locator => page.getByRole('region', { name: `${symbol} review`, exact: true });
+// tradeCard lives in D4's support (decision 65) and is re-exported above. Decision 65's async, reaching `reflectionsOf` is
+// D4's too; this synchronous one still shadows it for the d5 specs that read the open card as it is, until T5R.10-H3 moves
+// them onto the reach and deletes it.
 export const reflectionsOf = (page: Page, symbol: string): Locator => tradeCard(page, symbol).getByRole('region', { name: 'Reflections', exact: true });
 
 // Marks the one Instrument for the date and walks to its Trade card.
