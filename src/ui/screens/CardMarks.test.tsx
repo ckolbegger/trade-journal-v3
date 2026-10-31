@@ -236,6 +236,8 @@ const EVALUATED = {
   worstCaseOngoingRiskInPlanR: value(20n),
   incrementalRewardToTarget: value(1200n),
   incrementalRewardToTargetInPlanR: value(24n, 5n),
+  rewardRiskNow: value(3n),
+  planBaseline: { kind: 'Value' as const, value: { rewardRiskRatio: Rational.of(12n, 5n) } },
   atEntry: null,
 } as unknown as DailyTradeReview['evaluation'];
 // T-F shares XYZ: once the Mark is saved its slider is placed.

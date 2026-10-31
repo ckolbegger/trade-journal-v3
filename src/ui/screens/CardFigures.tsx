@@ -1,0 +1,72 @@
+import { useId, type ReactNode } from 'react';
+import type { DailyTradeReview } from '../../app/types.ts';
+import { decimalMoney, money, ratio, shortDate } from '../format.ts';
+import { calculation, dollarsAndR, pnlText } from '../figures.ts';
+
+type Evaluation = NonNullable<DailyTradeReview['evaluation']>;
+
+export interface CardFiguresProps {
+  readonly trade: DailyTradeReview;
+}
+
+function Figure({ term, children }: { readonly term: string; readonly children: ReactNode }) {
+  return (
+    <div>
+      <dt>{term}</dt>
+      <dd className="number">{children}</dd>
+    </div>
+  );
+}
+
+// Current Marked Trade P&L in dollars and R, then the Mark-dependent risk and reward.
+function Figures({ evaluation, children }: { readonly evaluation: Evaluation; readonly children?: ReactNode }) {
+  return (
+    <dl>
+      <Figure term="Current Marked Trade P&L">{pnlText(evaluation.currentMarkedPnl, evaluation.currentMarkedPnlInPlanR)}</Figure>
+      <Figure term="Ongoing Risk to Stop">{dollarsAndR(evaluation.ongoingRiskToStop, evaluation.ongoingRiskToStopInPlanR)}</Figure>
+      <Figure term="Worst-Case Ongoing Risk">{dollarsAndR(evaluation.worstCaseOngoingRisk, evaluation.worstCaseOngoingRiskInPlanR)}</Figure>
+      <Figure term="Incremental Reward to Target">{dollarsAndR(evaluation.incrementalRewardToTarget, evaluation.incrementalRewardToTargetInPlanR)}</Figure>
+      {children}
+    </dl>
+  );
+}
+
+// The open card's figures, read from a getTrade result (A158): the Review-date figures with Reward : risk now and planned (P40),
+// then the dated last close (D4 P12, P13) and the at-entry lots, each in its own group. A figure that is not a Value reads in words.
+export function CardFigures({ trade }: CardFiguresProps) {
+  const uid = useId();
+  const { evaluation, datedLastClose } = trade;
+  const mark = evaluation?.observation.mark;
+  return (
+    <>
+      {evaluation && (
+        <>
+          {mark && (
+            <p>
+              Mark {decimalMoney(mark.price)} for {evaluation.observation.instrument.symbol}, {shortDate(evaluation.observation.tradingDate)}
+            </p>
+          )}
+          <Figures evaluation={evaluation}>
+            <Figure term="Reward : risk now">{calculation(evaluation.rewardRiskNow, ratio)}</Figure>
+            <Figure term="Reward : risk planned">{calculation(evaluation.planBaseline, (baseline) => ratio(baseline.rewardRiskRatio))}</Figure>
+          </Figures>
+        </>
+      )}
+      {evaluation?.atEntry && (
+        <div role="group" aria-labelledby={`${uid}-entry`}>
+          <h4 id={`${uid}-entry`}>At entry</h4>
+          <dl>
+            <Figure term="Risk to stop">{money(evaluation.atEntry.riskFromEntry)}</Figure>
+            <Figure term="Reward to target">{money(evaluation.atEntry.rewardFromEntry)}</Figure>
+          </dl>
+        </div>
+      )}
+      {datedLastClose && (
+        <div role="group" aria-labelledby={`${uid}-dated`}>
+          <h4 id={`${uid}-dated`}>{shortDate(datedLastClose.tradingDate)} close</h4>
+          <Figures evaluation={datedLastClose.evaluation} />
+        </div>
+      )}
+    </>
+  );
+}

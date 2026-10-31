@@ -1,16 +1,15 @@
-import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { DailyTradeReview, PostSaveReview, SliderEvaluation, WalkedTrade } from '../../app/types.ts';
 import { Badge } from '../Badge.tsx';
-import { decimalMoney, money, ratio, shortDate } from '../format.ts';
-import { calculation, dollarsAndR, pnlText, signed } from '../figures.ts';
+import { money, ratio, shortDate } from '../format.ts';
+import { calculation, signed } from '../figures.ts';
 import type { UiFacade } from '../../app/compose.ts';
 import { ActionForm, type SavedAction } from './ActionForm.tsx';
-import { CardMarks, type CardMarkRows, type CardMarksProps, type EntryDirty } from './CardMarks.tsx';
+import { CardFigures } from './CardFigures.tsx';
+import { CardMarks,type CardMarkRows, type CardMarksProps, type EntryDirty } from './CardMarks.tsx';
 import { ReviewReflections } from './ReviewReflections.tsx';
 import { BAND_TEXT, reasonText } from './review-attention.ts';
 import { StopTargetSlider } from './StopTargetSlider.tsx';
-
-type Evaluation = NonNullable<DailyTradeReview['evaluation']>;
 
 // What a card still owes, from the Review's completion: Marks and reflections by count, the Action by presence.
 export interface Remaining {
@@ -110,31 +109,6 @@ export function ReviewCard({ facade, trade, remaining, expanded, detail, reveal,
         />
       )}
     </li>
-  );
-}
-
-function Figure({ term, children }: { readonly term: string; readonly children: ReactNode }) {
-  return (
-    <div>
-      <dt>{term}</dt>
-      <dd className="number">{children}</dd>
-    </div>
-  );
-}
-
-// Current Marked Trade P&L in dollars and R, then the Mark-dependent risk and reward.
-function Figures({ evaluation }: { readonly evaluation: Evaluation }) {
-  const pnl = evaluation.currentMarkedPnl;
-  const planR = evaluation.currentMarkedPnlInPlanR;
-  return (
-    <dl>
-      <Figure term="Current Marked Trade P&L">
-        {pnlText(pnl, planR)}
-      </Figure>
-      <Figure term="Ongoing Risk to Stop">{dollarsAndR(evaluation.ongoingRiskToStop, evaluation.ongoingRiskToStopInPlanR)}</Figure>
-      <Figure term="Worst-Case Ongoing Risk">{dollarsAndR(evaluation.worstCaseOngoingRisk, evaluation.worstCaseOngoingRiskInPlanR)}</Figure>
-      <Figure term="Incremental Reward to Target">{dollarsAndR(evaluation.incrementalRewardToTarget, evaluation.incrementalRewardToTargetInPlanR)}</Figure>
-    </dl>
   );
 }
 
@@ -245,8 +219,6 @@ function CardBody({ facade, trade, advance, remaining, marks, underlying, onSave
   // The Action form reports under its Trade, so the Review's unsaved state counts it with the Mark entries.
   const tradeId = trade.tradeId;
   const report = useCallback((dirty: boolean) => onEntryDirty(`action:${tradeId}`, dirty), [tradeId, onEntryDirty]);
-  const { evaluation, datedLastClose } = trade;
-  const mark = evaluation?.observation.mark;
   return (
     <section aria-label={`${trade.underlying} review`}>
       <p>
@@ -255,31 +227,7 @@ function CardBody({ facade, trade, advance, remaining, marks, underlying, onSave
       {trade.attention.reasons.map((reason, i) => (
         <p key={i}>{reasonText(reason, trade.attention.basis)}</p>
       ))}
-      {evaluation && (
-        <>
-          {mark && (
-            <p>
-              Mark {decimalMoney(mark.price)} for {evaluation.observation.instrument.symbol}, {shortDate(evaluation.observation.tradingDate)}
-            </p>
-          )}
-          <Figures evaluation={evaluation} />
-        </>
-      )}
-      {datedLastClose && (
-        <div role="group" aria-labelledby={`${uid}-dated`}>
-          <h4 id={`${uid}-dated`}>{shortDate(datedLastClose.tradingDate)} close</h4>
-          <Figures evaluation={datedLastClose.evaluation} />
-        </div>
-      )}
-      {evaluation?.atEntry && (
-        <div role="group" aria-labelledby={`${uid}-entry`}>
-          <h4 id={`${uid}-entry`}>At entry</h4>
-          <dl>
-            <Figure term="Risk to stop">{money(evaluation.atEntry.riskFromEntry)}</Figure>
-            <Figure term="Reward to target">{money(evaluation.atEntry.rewardFromEntry)}</Figure>
-          </dl>
-        </div>
-      )}
+      <CardFigures trade={trade} />
       {/* Every panel stays mounted, so a panel left open keeps its drafts; only the open one is shown. */}
       {PANELS.map((name) => (
         <div key={name} className="review-panel">
