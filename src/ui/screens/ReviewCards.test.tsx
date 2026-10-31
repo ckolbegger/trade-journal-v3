@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, useNavigate } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { facadeDouble } from '../../../tests/support/facade-double.ts';
 import type { UiFacade } from '../../app/compose.ts';
@@ -154,10 +154,21 @@ function cardFacade(overview: Ready = review()): UiFacade {
   return facade;
 }
 
-function renderReview(facade: UiFacade, options: { writable?: boolean; onDirtyChange?: (dirty: boolean) => void; at?: string } = {}) {
+// A test-only control: a button that navigates the router to the address, as a history change would.
+function NavigateTo({ to }: { readonly to: string }) {
+  const navigate = useNavigate();
+  return (
+    <button type="button" onClick={() => void navigate(to)}>
+      {`Navigate ${to}`}
+    </button>
+  );
+}
+
+function renderReview(facade: UiFacade, options: { writable?: boolean; onDirtyChange?: (dirty: boolean) => void; at?: string; navigateTo?: string } = {}) {
   render(
     <RuntimeContext.Provider value={{ writable: options.writable ?? true, timeZone: 'America/New_York', report: () => undefined }}>
       <MemoryRouter initialEntries={[options.at ?? '/review']}>
+        {options.navigateTo !== undefined && <NavigateTo to={options.navigateTo} />}
         <ReviewView facade={facade} now={() => '2026-10-12T21:00:00Z'} onDirtyChange={options.onDirtyChange ?? (() => undefined)} />
       </MemoryRouter>
     </RuntimeContext.Provider>,
@@ -599,6 +610,51 @@ describe('links (A161)', () => {
     const card = await screen.findByRole('region', { name: 'JKL review' });
 
     expect(panelStates(card)).toEqual(['false', 'false', 'true']);
+  });
+});
+
+describe('a search-param change on the mounted Review (A161)', () => {
+  it('should open the card that a changed trade param names, as on load, when nothing is held', async () => {
+    const user = userEvent.setup();
+    const facade = cardFacade();
+    renderReview(facade, { navigateTo: '/review?trade=t-e' });
+    await screen.findByRole('region', { name: 'ABC review' });
+
+    await user.click(screen.getByRole('button', { name: 'Navigate /review?trade=t-e' }));
+    const card = await screen.findByRole('region', { name: 'JKL review' });
+
+    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['false', 'false', 'false', 'false', 'true']);
+    expect(vi.mocked(facade.DailyReview.getTrade).mock.calls.at(-1)![0]).toMatchObject({ tradeId: 't-e' });
+    expect((['Marks', 'Reflections', 'Action'] as const).map((name) => within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) }).getAttribute('aria-expanded'))).toEqual(['false', 'false', 'true']);
+  });
+
+  it('should keep the held card open and say to save or discard what was entered when a changed param names another card', async () => {
+    const user = userEvent.setup();
+    const facade = cardFacade();
+    renderReview(facade, { navigateTo: '/review?trade=t-e' });
+    const card = await screen.findByRole('region', { name: 'ABC review' });
+    await user.click(within(within(card).getByRole('form', { name: 'Action' })).getByRole('radio', { name: 'Exit' }));
+
+    await user.click(screen.getByRole('button', { name: 'Navigate /review?trade=t-e' }));
+
+    expect(await screen.findByText('Save or discard what you entered for ABC to leave it.')).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'ABC review' })).toBe(card);
+    expect(headers().map((h) => h.getAttribute('aria-expanded'))).toEqual(['true', 'false', 'false', 'false', 'false']);
+    expect(facade.DailyReview.getTrade).toHaveBeenCalledTimes(1);
+  });
+
+  it('should switch to the panel that a changed param names on the held open card', async () => {
+    const user = userEvent.setup();
+    renderReview(cardFacade(), { navigateTo: '/review?trade=t-b&panel=Reflections' });
+    const card = await screen.findByRole('region', { name: 'ABC review' });
+    await user.click(within(within(card).getByRole('form', { name: 'Action' })).getByRole('radio', { name: 'Exit' }));
+    const states = () => (['Marks', 'Reflections', 'Action'] as const).map((name) => within(card).getByRole('button', { name: new RegExp(`^${name}\\b`) }).getAttribute('aria-expanded'));
+    expect(states()).toEqual(['false', 'false', 'true']);
+
+    await user.click(screen.getByRole('button', { name: 'Navigate /review?trade=t-b&panel=Reflections' }));
+
+    await waitFor(() => expect(states()).toEqual(['false', 'true', 'false']));
+    expect(screen.getByRole('region', { name: 'ABC review' })).toBe(card);
   });
 });
 

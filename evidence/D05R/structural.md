@@ -1003,6 +1003,18 @@ Checks: typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 
 
 A change of `?instrument=` or `?trade=` while the Review is mounted opens the named card as on load, subject to the A156 hold.
 
+Record. All in `ReviewCards.test.tsx`, driven by a test-only `NavigateTo` button (`useNavigate`) inside the existing `MemoryRouter` (`renderReview` takes `navigateTo`):
+
+| Case | Red |
+|---|---|
+| a changed `?trade=t-e` opens JKL's card on its Action panel, as on load, when nothing is held | `Unable to find role="region" and name "JKL review"` |
+| a changed param naming another card, with the open card holding an Action value, keeps it open and shows "Save or discard what you entered for ABC to leave it." | `Unable to find an element with the text: Save or discard what you entered for ABC to leave it.` |
+| a changed `?trade=t-b&panel=Reflections` on the held open ABC card switches to Reflections | `expected [ 'false', 'false', 'true' ] to deeply equal [ 'false', 'true', 'false' ]` |
+
+The load-path resolution is now `linkedCard(review, params)`, used for the initial state and for the change. An effect compares `params.toString()` with the last applied search string (a ref), so only a real change acts; it resolves against the newest Review (`latest.current`) and calls the same `openCard` a link click uses, so the A156 refusal and the panel switch on the open card are the existing paths. A change naming no card in the Review does nothing. No first-run passes.
+
+Checks: typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 24 files, 379 passed. No browser spec changed.
+
 ### T5R.12-B3 An Action save whose next step is a Mark opens that card on Marks
 
 Per the user's decision above, when nothing else is held on the card (carried item 1 still governs a held card).

@@ -166,6 +166,23 @@ interface LinkedCard {
   readonly instrument?: string;
 }
 
+// The card a link's search params name, if the Review holds it (A161): ?trade= picks the card, ?instrument= its Marks row when
+// that card holds the Instrument, else ?panel=; ?instrument= alone picks the first card holding it.
+function linkedCard(review: Ready, params: URLSearchParams): LinkedCard | undefined {
+  const instrument = params.get('instrument');
+  const wanted = params.get('trade');
+  if (wanted !== null && walkedTrades(review).some((t) => t.tradeId === wanted)) {
+    const marks = marksOf(review, wanted);
+    const holds = instrument !== null && (marks.today.some((row) => row.instrumentKey === instrument) || marks.earlier.some((group) => group.instrumentKey === instrument));
+    if (holds) return { tradeId: wanted, panel: 'Marks', instrument };
+    // An unknown panel name is ignored: the first panel not done opens.
+    const panel = PANELS.find((name) => name === params.get('panel'));
+    return panel === undefined ? { tradeId: wanted } : { tradeId: wanted, panel };
+  }
+  const holder = instrument === null ? undefined : holderOf(review, instrument);
+  return instrument !== null && holder !== undefined ? { tradeId: holder, panel: 'Marks', instrument } : undefined;
+}
+
 // A card is Done when it owes nothing (A150).
 const isOwing = (remaining: Remaining): boolean => remaining.marks > 0 || remaining.reflections > 0 || remaining.action;
 
@@ -243,21 +260,7 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
   // A link into the Review names the card that opens on load (A161): the first holding ?instrument=, on its Marks panel with
   // focus on the row, or ?trade=. Otherwise the first card that is not Done opens (A151).
   const [params] = useSearchParams();
-  const [link] = useState((): LinkedCard | undefined => {
-    const instrument = params.get('instrument');
-    const wanted = params.get('trade');
-    // The Trade picks the card and the Instrument its row, when that card holds the Instrument.
-    if (wanted !== null && walkedTrades(initial).some((t) => t.tradeId === wanted)) {
-      const marks = marksOf(initial, wanted);
-      const holds = instrument !== null && (marks.today.some((row) => row.instrumentKey === instrument) || marks.earlier.some((group) => group.instrumentKey === instrument));
-      if (holds) return { tradeId: wanted, panel: 'Marks', instrument };
-      // An unknown panel name is ignored: the first panel not done opens.
-      const panel = PANELS.find((name) => name === params.get('panel'));
-      return panel === undefined ? { tradeId: wanted } : { tradeId: wanted, panel };
-    }
-    const holder = instrument === null ? undefined : holderOf(initial, instrument);
-    return instrument !== null && holder !== undefined ? { tradeId: holder, panel: 'Marks', instrument } : undefined;
-  });
+  const [link] = useState(() => linkedCard(initial, params));
   const [firstId] = useState(() => link?.tradeId ?? walkedTrades(initial).find((t) => isOwing(remainingOf(t.tradeId, initial.completion)))?.tradeId);
   // The link the open card is to answer, and the card it is for.
   const [go, setGo] = useState<{ readonly tradeId: string | undefined; readonly go: Go }>({ tradeId: link?.tradeId, go: link ? { panel: link.panel, instrument: link.instrument, count: 1 } : NO_GO });
@@ -407,6 +410,16 @@ function ReadyReview({ facade, now, initial, onDirtyChange }: { readonly facade:
     }
     setGo((current) => ({ tradeId, go: { panel, instrument, count: current.go.count + 1 } }));
   };
+  // A change of the search params while the Review is mounted (a navigate, browser history) opens the card they name, as a link
+  // does; it only acts on a changed search string, not on an unrelated render.
+  const appliedSearch = useRef(params.toString());
+  useEffect(() => {
+    const search = params.toString();
+    if (search === appliedSearch.current) return;
+    appliedSearch.current = search;
+    const next = linkedCard(latest.current, params);
+    if (next !== undefined) openCard(next.tradeId, next.panel, next.instrument);
+  });
   // A saved Mark changes what the card's figures and the Action's binding are read at: the Review and the card are read again.
   const [rereading, setRereading] = useState(false);
   const markSaved = () => {
