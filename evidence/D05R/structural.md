@@ -172,3 +172,9 @@ Fix:
 Deviation flagged: the existing T5R.3 gap case expected T-F from 2026-10-12, but in a Monday Review the only listed date is Friday, and T-F's first fill (Monday 10:30) is after Friday's close, so under decision 62 T-F has no relevant listed date and is left out. That case's name and assertion were changed to T-A only (from 2026-10-09). The brief said it must stay green; it cannot, since decision 62 contradicts it.
 
 Checks (each alone, exit 0): `npx vitest run src/modules/market-data src/coordinators src/domain` (392 passed), `src/ui` (327), `tests/integration` (105), `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps`.
+
+The flagged deviation conflicts with T5R.3's planned case and is put to the user (see the handoff's open questions). Commit: `fd1415d`.
+
+### ocr review of `fd1415d`
+
+It reviewed `daily-review.ts` and `market-data.ts` and found nothing. Raw output: [ocr/T5R.3-B1-fd1415d.json](ocr/T5R.3-B1-fd1415d.json).
