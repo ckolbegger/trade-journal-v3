@@ -762,3 +762,5 @@ Done in commit `1210133` (T5R.10-B3, structural): `marksStatus` and `reflections
 #### T5R.10-B4 Focus after a resolved reflection lands every time
 
 Defect: focus sometimes stays on `body` after a reflection is saved, instead of moving to the next reflection or the Action form. Find whether the app moves focus before its target is shown (a real race, fixed in the component) or the test checks too early (fixed in the test), and prove it stable over repeated runs.
+
+ocr review of `1210133`: one file reviewed, no findings; the reviewing agent also compared the helpers with the parent commit's ternaries by hand (same condition order, strings and inputs). Raw output: [ocr/T5R.10-B3-1210133.json](ocr/T5R.10-B3-1210133.json).
