@@ -178,3 +178,14 @@ The flagged deviation conflicts with T5R.3's planned case and is put to the user
 ### ocr review of `fd1415d`
 
 It reviewed `daily-review.ts` and `market-data.ts` and found nothing. Raw output: [ocr/T5R.3-B1-fd1415d.json](ocr/T5R.3-B1-fd1415d.json).
+
+### Cumulative suite at `fd1415d`
+
+2026-10-31, at `589b1ed` (with the B1 fix `fd1415d`), by `suite-runner`, label `t5r.3-b1-gap-closes`. All passed.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 70 files, 911 tests passed; exit 0 | [unit](suite-runs/t5r.3-b1-gap-closes-unit.txt) |
+| Node integration | 53 files, 105 tests passed; exit 0 | [integration](suite-runs/t5r.3-b1-gap-closes-integration.txt) |
+| Browser (Chromium) | 155 passed (5.7 min); exit 0 | [browser](suite-runs/t5r.3-b1-gap-closes-browser.txt) |
+| Static and verify checks (the same 12) | 12 of 12 exit 0 | [checks](suite-runs/t5r.3-b1-gap-closes-checks.txt) |
