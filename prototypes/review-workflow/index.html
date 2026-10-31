@@ -1,0 +1,620 @@
+<!doctype html>
+<!--
+  PROTOTYPE — throwaway. Not part of the app, not tested, not built.
+  Question it answers: how should the Daily Review guide a trader through the work each position owes
+  (Marks across sessions, owed reflections, the Action), today and once multi-leg Strategies (D10) and
+  automatic closing prices (D11) arrive?
+  Open this file directly in a browser. All state is in memory; reload or press Reset to start over.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTOTYPE · Review workflow</title>
+<style>
+:root {
+  --ground: #f7f3ea; --card: #ffffff; --ink: #1c1b19; --muted: #55524b; --line: #d9d3c5;
+  --focus: #1f5fbf; --warning-ground: #fff4dd; --warning-line: #b26b00; --error: #a3261b;
+  --stop: #a3261b; --target: #1d6b34; --info-ground: #e4edfa; --info-ink: #163b75; --info-line: #1f5fbf;
+  --neutral-ground: #ece7da; --tint: #f3efe6; --radius: 14px;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; color: var(--ink); background: var(--ground); line-height: 1.4;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ground); font-size: 15px; }
+:focus-visible, input:focus, select:focus, textarea:focus { outline: 3px solid var(--focus); outline-offset: 2px; }
+h1 { font-size: 1.15rem; margin: 0; }
+h2 { font-size: 1.15rem; margin: 0; }
+h3 { font-size: 0.8rem; font-variant: small-caps; letter-spacing: 0.06em; text-transform: lowercase; color: var(--muted); margin: 0 0 0.35rem; }
+p { margin: 0.2rem 0; }
+.muted { color: var(--muted); }
+.small { font-size: 0.85rem; }
+.number { font-variant-numeric: tabular-nums; }
+.pos-num { color: var(--target); } .neg-num { color: var(--stop); }
+
+/* Prototype chrome */
+.topbar { position: sticky; top: 0; z-index: 20; background: var(--ink); color: #fff; padding: 0.5rem 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; }
+.topbar .proto { background: #fff4dd; color: var(--ink); border-radius: 999px; padding: 0 0.5rem; font-size: 0.75rem; font-weight: 700; }
+.tabs { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+.tabs button { font: inherit; font-weight: 600; background: transparent; color: #fff; border: 2px solid #fff6; border-radius: 999px; padding: 0.3rem 0.8rem; cursor: pointer; min-height: 36px; }
+.tabs button[aria-selected='true'] { background: #fff; color: var(--ink); border-color: #fff; }
+.topbar .controls { display: flex; gap: 0.5rem; align-items: center; margin-left: auto; flex-wrap: wrap; }
+.topbar .seg button { color: #fff; border-color: #fff6; }
+.topbar .seg button[aria-pressed='true'] { background: #fff; color: var(--ink); }
+.topbar .btn { color: #fff; border-color: #fff6; }
+.intro { max-width: 1100px; margin: 0.75rem auto 0; padding: 0 1rem; }
+.intro details { background: var(--tint); border: 1px solid var(--line); border-radius: 10px; padding: 0.4rem 0.75rem; }
+.intro summary { cursor: pointer; font-weight: 600; }
+.intro ul { margin: 0.3rem 0; padding-left: 1.2rem; }
+.page { max-width: 1100px; margin: 0 auto; padding: 0.75rem 1rem 3rem; }
+
+/* App-like pieces */
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.75rem 1rem; margin: 0 0 0.75rem; }
+.chip { display: inline-block; border: 1px solid var(--ink); border-radius: 999px; padding: 0 0.5rem; font-size: 0.78rem; font-weight: 600; background: var(--neutral-ground); white-space: nowrap; }
+.chip.info { background: var(--info-ground); border-color: var(--info-line); color: var(--info-ink); }
+.chip.warn { background: var(--warning-ground); border-color: var(--warning-line); }
+.chip.done { background: #e3f1e6; border-color: var(--target); color: #14532a; }
+.chip.quiet { background: transparent; border-color: var(--line); color: var(--muted); font-weight: 500; }
+.btn { font: inherit; font-weight: 600; border: 2px solid var(--ink); background: transparent; color: var(--ink); border-radius: 999px; padding: 0.3rem 0.9rem; min-height: 38px; cursor: pointer; }
+.btn.primary { background: var(--ink); color: #fff; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn.link { border: none; padding: 0.2rem 0.3rem; min-height: 32px; text-decoration: underline; font-weight: 500; }
+.btn.small { min-height: 32px; padding: 0.15rem 0.65rem; font-size: 0.85rem; }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 0.25rem; }
+.seg button { font: inherit; font-weight: 600; border: 2px solid var(--ink); background: transparent; color: var(--ink); border-radius: 999px; padding: 0.2rem 0.8rem; min-height: 36px; cursor: pointer; }
+.seg button[aria-pressed='true'] { background: var(--ink); color: #fff; }
+.seg button:disabled { opacity: 0.5; cursor: not-allowed; }
+input.price { font: inherit; font-variant-numeric: tabular-nums; width: 6.5rem; padding: 0.3rem 0.45rem; border: 1px solid var(--muted); border-radius: 8px; background: #fff; text-align: right; }
+input.price.req:placeholder-shown { border: 2px solid var(--warning-line); background: var(--warning-ground); }
+input.price.opt { border-style: dashed; }
+input.price:disabled { background: var(--tint); color: var(--muted); }
+textarea, select, input.text { font: inherit; width: 100%; padding: 0.35rem 0.5rem; border: 1px solid var(--muted); border-radius: 8px; background: #fff; }
+textarea { min-height: 2.6rem; resize: vertical; }
+fieldset { border: none; padding: 0; margin: 0.35rem 0; }
+legend { font-weight: 600; padding: 0; margin-bottom: 0.15rem; font-size: 0.9rem; }
+label.field { display: block; font-weight: 600; font-size: 0.9rem; margin: 0.35rem 0 0.15rem; }
+.radios { display: flex; flex-wrap: wrap; gap: 0.15rem 0.75rem; }
+.radios label { font-weight: 400; display: inline-flex; gap: 0.3rem; align-items: center; min-height: 32px; }
+.error { color: var(--error); font-weight: 600; font-size: 0.85rem; }
+.hint { color: var(--muted); font-size: 0.85rem; }
+.row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+.spread { display: flex; justify-content: space-between; gap: 0.5rem; align-items: baseline; flex-wrap: wrap; }
+.tag { font-size: 0.75rem; border-radius: 6px; padding: 0 0.35rem; white-space: nowrap; border: 1px solid var(--line); color: var(--muted); }
+.tag.auto { background: var(--info-ground); border-color: var(--info-line); color: var(--info-ink); }
+.tag.manual { background: var(--neutral-ground); color: var(--ink); border-color: var(--ink); }
+.tag.warn { background: var(--warning-ground); border-color: var(--warning-line); color: var(--ink); }
+.tag.shared { border-style: dashed; }
+
+/* Shared work sections */
+.work { border-top: 1px solid var(--line); padding-top: 0.55rem; margin-top: 0.55rem; }
+.work-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+.dategroup { margin: 0.3rem 0 0.5rem; }
+.dategroup > .dg-head { font-weight: 600; font-size: 0.9rem; display: flex; gap: 0.5rem; align-items: baseline; flex-wrap: wrap; }
+.mrow { display: grid; grid-template-columns: minmax(8rem, 15rem) auto 1fr auto; gap: 0.25rem 0.6rem; align-items: center; padding: 0.2rem 0 0.2rem 0.6rem; border-left: 3px solid var(--line); }
+.mrow.req { border-left-color: var(--warning-line); }
+.mrow.okay { border-left-color: var(--target); }
+.mrow .who { font-size: 0.9rem; }
+/* Phones: name and price on one line, source and Unavailable beneath. */
+@media (max-width: 560px) { .mrow { grid-template-columns: 1fr auto; } }
+.split > *, .card, .acc { min-width: 0; }
+.figs { display: flex; flex-wrap: wrap; gap: 0.1rem 1.1rem; font-size: 0.9rem; margin-top: 0.25rem; }
+.figs b { font-weight: 600; }
+.refl { padding: 0.35rem 0 0.35rem 0.6rem; border-left: 3px solid var(--line); margin: 0.25rem 0; }
+.refl.due { border-left-color: var(--warning-line); }
+.refl.ok { border-left-color: var(--target); }
+.refl ul { margin: 0.1rem 0; padding-left: 1.1rem; font-size: 0.88rem; }
+.rform { background: var(--tint); border-radius: 10px; padding: 0.5rem 0.75rem; margin-top: 0.35rem; }
+.saved-line { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+
+/* A — guided */
+.stepper { display: flex; gap: 0.35rem; flex-wrap: wrap; list-style: none; padding: 0; margin: 0 0 0.75rem; }
+.stepper button { font: inherit; text-align: left; border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 0.3rem 0.6rem; cursor: pointer; min-height: 44px; display: flex; gap: 0.4rem; align-items: center; }
+.stepper button[aria-current='step'] { border: 2px solid var(--ink); }
+.stepper .n { display: inline-grid; place-items: center; width: 1.4rem; height: 1.4rem; border-radius: 50%; background: var(--neutral-ground); font-size: 0.8rem; font-weight: 700; }
+.stepper .done .n { background: var(--target); color: #fff; }
+.statusbar { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; align-items: baseline; margin-bottom: 0.5rem; }
+.nav-foot { display: flex; justify-content: space-between; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
+
+/* B — choose, accordions */
+.split { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
+@media (min-width: 820px) { .split { grid-template-columns: 290px 1fr; align-items: start; } .queue { position: sticky; top: 4rem; } }
+.queue { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
+.queue button { width: 100%; font: inherit; text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 0.45rem 0.65rem; cursor: pointer; }
+.queue button[aria-current='true'] { border: 2px solid var(--ink); box-shadow: inset 4px 0 0 var(--ink); }
+.queue .q-name { font-weight: 700; }
+.queue .q-todo { font-size: 0.82rem; color: var(--muted); }
+.acc { border: 1px solid var(--line); border-radius: 10px; margin: 0.4rem 0; background: var(--card); }
+.acc > h3 { margin: 0; font-variant: normal; text-transform: none; letter-spacing: 0; color: var(--ink); font-size: 1rem; }
+.acc-btn { width: 100%; font: inherit; background: transparent; border: none; cursor: pointer; padding: 0.55rem 0.75rem; display: flex; gap: 0.5rem; align-items: center; justify-content: space-between; text-align: left; min-height: 44px; }
+.acc-btn .t { font-weight: 700; }
+.acc-btn .s { color: var(--muted); font-size: 0.85rem; font-weight: 400; }
+.acc-btn .chev { transition: transform 0.15s; }
+.acc-btn[aria-expanded='true'] .chev { transform: rotate(90deg); }
+.acc-body { padding: 0 0.75rem 0.65rem; }
+@media (prefers-reduced-motion: reduce) { .acc-btn .chev { transition: none; } }
+
+/* C — review sheet */
+.sheet-wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); }
+table.sheet { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 0.9rem; }
+.sheet th, .sheet td { padding: 0.3rem 0.5rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.sheet thead th { position: sticky; top: 0; background: var(--tint); text-align: left; font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+.sheet thead th.today { color: var(--ink); background: var(--warning-ground); }
+.sheet td.today { background: #fffbf1; }
+.sheet tr.p-row td { background: var(--tint); border-top: 2px solid var(--line); }
+.sheet tr.p-row.done td { background: #eef6ef; }
+.sheet tr.leg td:first-child { padding-left: 1.4rem; color: var(--muted); }
+.sheet .rec { color: var(--muted); font-variant-numeric: tabular-nums; text-align: right; display: block; width: 6.5rem; }
+.sheet .cell { display: flex; gap: 0.3rem; align-items: center; flex-wrap: wrap; }
+.sheet tr.leg td:first-child { white-space: nowrap; }
+.sheet input.price { width: 5.5rem; padding: 0.2rem 0.4rem; }
+.legend { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; align-items: center; font-size: 0.85rem; margin: 0.4rem 0; }
+.drawer-scrim { position: fixed; inset: 0; background: #1c1b1955; z-index: 30; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(440px, 100%); background: var(--card); z-index: 31; border-left: 1px solid var(--line); overflow-y: auto; padding: 0.75rem 1rem 2rem; box-shadow: -8px 0 24px #0002; }
+
+.state { margin-top: 1rem; }
+.state pre { font-size: 0.75rem; background: var(--tint); padding: 0.5rem; border-radius: 8px; overflow: auto; max-height: 260px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ---------- Sample data: Review Date Thu Oct 29 2026 ----------
+const TODAY = '2026-10-29';
+const DATES = ['2026-10-27', '2026-10-28', '2026-10-29'];
+const DLABEL = { '2026-10-26': 'Mon Oct 26', '2026-10-27': 'Tue Oct 27', '2026-10-28': 'Wed Oct 28', '2026-10-29': 'Thu Oct 29' };
+const INST = {
+  'AAPL': 'AAPL',
+  'MSFT': 'MSFT',
+  'AAPL 250C': 'AAPL Nov 20 250 Call',
+  'SPY 540P': 'SPY Nov 20 540 Put',
+  'SPY 560P': 'SPY Nov 20 560 Put',
+  'SPY 600C': 'SPY Nov 20 600 Call',
+  'SPY 620C': 'SPY Nov 20 620 Call',
+};
+// Ordered by attention, as the Review returns them.
+const POS = [
+  { id: 'spy', name: 'SPY Iron Condor', meta: 'Iron Condor · Income · IBKR', opened: '2026-10-28', multi: true, band: 'Quantified pressure', reason: '41% of the way from entry to the Stop',
+    stopTarget: 'Stop: close for $8.20 · Target: close for $1.00',
+    legs: [ { k: 'SPY 540P', q: 1, m: 100, e: 2.10 }, { k: 'SPY 560P', q: -1, m: 100, e: 4.35 }, { k: 'SPY 600C', q: -1, m: 100, e: 3.05 }, { k: 'SPY 620C', q: 1, m: 100, e: 1.20 } ],
+    refl: [ { id: 'r3', date: '2026-10-28', time: '11:15', due: 'Due', order: 'One order, 4 legs', exec: ['Buy 1 SPY Nov 20 540 Put @ $2.10', 'Sell 1 SPY Nov 20 560 Put @ $4.35', 'Sell 1 SPY Nov 20 600 Call @ $3.05', 'Buy 1 SPY Nov 20 620 Call @ $1.20'] } ] },
+  { id: 'aapl', name: 'AAPL', meta: 'Long Stock · Swing · Schwab', opened: '2026-10-27', band: 'Quantified pressure', reason: '62% of the way from entry to the Target',
+    stopTarget: 'Stop $218.00 · Target $245.00',
+    legs: [ { k: 'AAPL', q: 150, m: 1, e: 229.30 } ],
+    refl: [
+      { id: 'r1', date: '2026-10-27', time: '10:00', due: 'Due', exec: ['Buy 100 AAPL @ $228.40'] },
+      { id: 'r2', date: '2026-10-29', time: '10:30', due: 'Due in the next Review', exec: ['Buy 50 AAPL @ $231.10'] },
+    ] },
+  { id: 'aaplcc', name: 'AAPL Covered Call', meta: 'Covered Call · Income · Schwab', opened: '2026-10-26', multi: true, band: 'Routine', reason: 'No pressure toward the Stop or the Target',
+    stopTarget: 'Stop: structure $205.00 · Target: structure $246.80',
+    legs: [ { k: 'AAPL', q: 100, m: 1, e: 221.00 }, { k: 'AAPL 250C', q: -1, m: 100, e: 3.20 } ], refl: [] },
+  { id: 'msft', name: 'MSFT', meta: 'Long Stock · Swing · Schwab', opened: '2026-10-20', band: 'Routine', reason: 'No pressure toward the Stop or the Target',
+    stopTarget: 'Stop $395.00 · Target $450.00',
+    legs: [ { k: 'MSFT', q: 50, m: 1, e: 412.00 } ], refl: [] },
+];
+// Marks already recorded before this Review (earlier sessions).
+const REC = { 'MSFT|2026-10-27': 409.10, 'MSFT|2026-10-28': 413.75, 'AAPL 250C|2026-10-27': 2.40, 'AAPL 250C|2026-10-28': 2.70,
+  'SPY 540P|2026-10-28': 1.95, 'SPY 560P|2026-10-28': 3.90, 'SPY 600C|2026-10-28': 2.80, 'SPY 620C|2026-10-28': 1.05 };
+// What the Pricing Provider returns in Automatic mode (D11). SPY 560P has no close; SPY 600C was overridden by hand.
+const AUTO = { 'AAPL|2026-10-27': 228.95, 'AAPL|2026-10-28': 231.40, 'AAPL|2026-10-29': 233.85, 'MSFT|2026-10-29': 418.20, 'AAPL 250C|2026-10-29': 2.85, 'SPY 540P|2026-10-29': 1.65, 'SPY 620C|2026-10-29': 0.90, 'SPY 600C|2026-10-29': 2.55 };
+const MODES = ['Planned', 'Deliberate Adjustment', 'Reactive', 'Impulsive'];
+const EMOTIONS = ['Calm', 'Confident', 'Curious', 'Anxious', 'Fearful', 'Frustrated', 'Excited', 'Bored'];
+const CHOICES = ['Hold', 'Exit', 'Roll', 'Adjust'];
+const BAND_ORDER = ['Blocker', 'Boundary reached', 'Evidence limited', 'Quantified pressure', 'Routine'];
+
+// ---------- State ----------
+let S;
+function init(pricing = 'manual', variant = 'A') {
+  const marks = {};
+  for (const p of POS) for (const k of [...reqKeys(p), ...gapKeys(p)]) {
+    if (marks[k]) continue;
+    marks[k] = { v: null, src: null };
+    if (pricing === 'auto' && AUTO[k] != null) marks[k] = { v: AUTO[k], src: 'auto' };
+    if (pricing === 'auto' && k === 'SPY 560P|2026-10-29') marks[k] = { v: null, src: null, note: 'No provider close' };
+  }
+  // A Manual Mark entered on Trade Detail earlier today; it wins over the provider's price.
+  marks['SPY 600C|2026-10-29'] = { v: 2.40, src: 'manual', by: 'detail', provider: pricing === 'auto' ? 2.55 : undefined };
+  S = { variant, pricing, marks, refl: {}, draft: {}, act: {},
+    ui: { openRefl: null, msg: null, aIdx: 0, aDone: false, bSel: POS[0].id, bPanel: null, cDrawer: null, focusSel: null } };
+  S.ui.bPanel = firstPanel(POS[0]);
+}
+
+// ---------- Derived ----------
+const key = (k, d) => `${k}|${d}`;
+const instOf = (mk) => mk.split('|')[0];
+const dateOf = (mk) => mk.split('|')[1];
+const uniq = (xs) => [...new Set(xs)];
+function reqKeys(p) { return uniq(p.legs.map((l) => key(l.k, TODAY))); }
+function gapKeys(p) { return uniq(p.legs.flatMap((l) => DATES.filter((d) => d < TODAY && d >= p.opened && REC[key(l.k, d)] == null).map((d) => key(l.k, d)))); }
+const filled = (mk) => S.marks[mk] && (S.marks[mk].v != null || S.marks[mk].src === 'unavail');
+const marksDone = (p) => reqKeys(p).every(filled);
+const marksLeft = (p) => reqKeys(p).filter((k) => !filled(k)).length;
+const dueRefl = (p) => p.refl.filter((r) => r.due === 'Due');
+const reflLeft = (p) => dueRefl(p).filter((r) => !S.refl[r.id]).length;
+const actDone = (p) => !!S.act[p.id]?.saved;
+const posDone = (p) => marksDone(p) && reflLeft(p) === 0 && actDone(p);
+const holders = (k) => POS.filter((p) => p.legs.some((l) => l.k === k));
+function band(p) { return marksDone(p) ? p.band : 'Evidence limited'; }
+function reasons(p) {
+  const missing = reqKeys(p).filter((k) => !filled(k)).map((k) => `Mark missing for ${INST[instOf(k)]} on ${DLABEL[TODAY]}`);
+  if (missing.length > 1) return [`Marks missing for ${missing.length} Instruments on ${DLABEL[TODAY]}`];
+  return missing.length ? missing : [p.reason];
+}
+function pnl(p) {
+  if (!marksDone(p)) return { kind: 'needs' };
+  if (reqKeys(p).some((k) => S.marks[k].src === 'unavail')) return { kind: 'unavail' };
+  return { kind: 'ok', v: p.legs.reduce((s, l) => s + l.q * l.m * (S.marks[key(l.k, TODAY)].v - l.e), 0) };
+}
+function todoText(p) {
+  if (posDone(p)) return 'Done';
+  const parts = [];
+  const ml = marksLeft(p); if (ml) parts.push(`${ml} Mark${ml > 1 ? 's' : ''}`);
+  const rl = reflLeft(p); if (rl) parts.push(`${rl} reflection${rl > 1 ? 's' : ''} due`);
+  if (!actDone(p)) parts.push('Action');
+  return parts.join(' · ');
+}
+function reviewStatus() {
+  const left = POS.filter((p) => !posDone(p)).length;
+  return left === 0 ? (POS.some((p) => pnl(p).kind === 'unavail') ? 'Complete with Unavailable Marks' : 'Complete') : 'Incomplete';
+}
+function firstPanel(p) { return !marksDone(p) ? 'marks' : reflLeft(p) ? 'refl' : !actDone(p) ? 'action' : 'marks'; }
+
+// ---------- Formatting ----------
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+const money = (n) => '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const signed = (n) => `<span class="number ${n >= 0 ? 'pos-num' : 'neg-num'}">${n >= 0 ? '+' : '−'}${money(n)}</span>`;
+const bandChip = (p) => { const b = band(p); return `<span class="chip ${b === 'Evidence limited' ? 'warn' : b === 'Routine' ? 'quiet' : 'info'}">${b}</span>`; };
+const doneChip = (ok, text) => `<span class="chip ${ok ? 'done' : 'warn'}">${ok ? '✓ ' : ''}${text}</span>`;
+function pnlText(p) {
+  const r = pnl(p);
+  if (r.kind === 'needs') return `<span class="muted">P&amp;L needs today’s Marks</span>`;
+  if (r.kind === 'unavail') return `<span class="muted">P&amp;L not calculated (Unavailable Mark)</span>`;
+  return `P&amp;L ${signed(r.v)}`;
+}
+function srcTag(mk, pid) {
+  const m = S.marks[mk];
+  if (!m) return '';
+  if (m.src === 'unavail') return `<span class="tag warn">Acknowledged unavailable</span>`;
+  if (m.src === 'auto') return `<span class="tag auto">Marketdata.app</span>`;
+  if (m.src === 'manual') {
+    const by = m.by === 'detail' ? 'Manual · Trade Detail' : m.by && m.by !== pid ? `Manual · entered in ${POS.find((p) => p.id === m.by).name}` : 'Manual';
+    return `<span class="tag manual">${by}</span>${m.provider != null ? ` <span class="tag" title="Manual Marks win over provider prices">provider ${money(m.provider)}</span>` : ''}`;
+  }
+  if (m.note) return `<span class="tag warn">${m.note}</span>`;
+  return '';
+}
+function lastClose(k) { const d = [...DATES].reverse().find((d) => d < TODAY && REC[key(k, d)] != null); return d ? REC[key(k, d)] : null; }
+
+// ---------- Shared work sections (A, B and C's drawer) ----------
+function markRow(mk, pid, required) {
+  const m = S.marks[mk];
+  const k = instOf(mk);
+  const others = holders(k).filter((h) => h.id !== pid);
+  const prev = lastClose(k);
+  const un = m.src === 'unavail';
+  return `<div class="mrow ${filled(mk) ? 'okay' : required ? 'req' : ''}">
+    <span class="who">${INST[k]}${others.length ? ` <span class="tag shared" title="One Mark serves every position holding this Instrument">also ${others.map((o) => esc(o.name)).join(', ')}</span>` : ''}</span>
+    <input class="price ${required ? 'req' : 'opt'}" inputmode="decimal" aria-label="${INST[k]} close, ${DLABEL[dateOf(mk)]}" data-mark="${mk}" data-pid="${pid}" data-fid="m:${pid}:${mk}"
+      value="${m.v != null ? m.v.toFixed(2) : ''}" placeholder="${prev != null ? 'prev ' + prev.toFixed(2) : 'price'}" ${un ? 'disabled' : ''}>
+    <span>${srcTag(mk, pid)}${m.err ? `<span class="error"> ${m.err}</span>` : ''}</span>
+    ${un ? `<button class="btn link" data-act="undoUnavail" data-key="${mk}" data-fid="u:${pid}:${mk}">Undo</button>`
+         : m.v == null ? `<button class="btn link" data-act="unavail" data-key="${mk}" data-fid="u:${pid}:${mk}">Unavailable</button>` : '<span></span>'}
+  </div>`;
+}
+function marksSection(p) {
+  const req = reqKeys(p);
+  const gaps = gapKeys(p);
+  const byDate = {};
+  for (const g of gaps) (byDate[dateOf(g)] ??= []).push(g);
+  const gapDates = Object.keys(byDate).sort().reverse();
+  return `<div class="dategroup">
+      <div class="dg-head">${DLABEL[TODAY]} <span class="hint">needed for this Review</span></div>
+      ${req.map((k) => markRow(k, p.id, true)).join('')}
+    </div>
+    ${gapDates.length ? `<div class="dategroup"><div class="dg-head">Earlier sessions without Marks <span class="hint">optional, they don’t block the Review</span></div>
+      ${gapDates.map((d) => `<div class="hint" style="margin:.2rem 0 0">${DLABEL[d]}</div>${byDate[d].map((k) => markRow(k, p.id, false)).join('')}`).join('')}</div>` : ''}`;
+}
+function marksSummary(p) {
+  const req = reqKeys(p);
+  const n = req.filter(filled).length;
+  const auto = req.filter((k) => S.marks[k].src === 'auto').length;
+  const gaps = gapKeys(p).filter((k) => !filled(k)).length;
+  let s = `${n} of ${req.length} for ${DLABEL[TODAY]}`;
+  if (auto) s += ` · ${auto} fetched`;
+  if (gaps) s += ` · ${gaps} earlier optional`;
+  return s;
+}
+function reflSection(p) {
+  if (!p.refl.length) return `<p class="hint">No reflections owed.</p>`;
+  const byDate = {};
+  for (const r of p.refl) (byDate[r.date] ??= []).push(r);
+  return Object.keys(byDate).sort().map((d) => {
+    const rs = byDate[d];
+    return `<div class="dategroup"><div class="dg-head">${DLABEL[d]} <span class="chip ${rs[0].due === 'Due' ? 'warn' : 'quiet'}">${rs[0].due === 'Due' ? 'Due now' : 'Due in the next Review'}</span></div>
+      ${rs.map((r) => reflItem(p, r)).join('')}</div>`;
+  }).join('');
+}
+function reflItem(p, r) {
+  const res = S.refl[r.id];
+  const open = S.ui.openRefl === r.id;
+  const head = `<div class="spread"><span>Position Change at ${r.time}${r.order ? ` · <span class="hint">${r.order}</span>` : ''}</span></div>
+    <ul>${r.exec.map((e) => `<li>${e}</li>`).join('')}</ul>`;
+  if (res) return `<div class="refl ok">${head}<p class="small">${res.kind === 'answered' ? `<b>Answered</b> · ${esc(res.mode)}, ${esc(res.emo)}, confidence ${esc(res.conf)}${res.note ? ` · “${esc(res.note)}”` : ''}` : `<b>Declined</b>${res.reason ? ` · Reason: ${esc(res.reason)}` : ''}`}
+      <button class="btn link" data-act="reopenRefl" data-id="${r.id}" data-fid="ro:${r.id}">Change</button></p></div>`;
+  if (!open) return `<div class="refl ${r.due === 'Due' ? 'due' : ''}">${head}<button class="btn small" data-act="openRefl" data-id="${r.id}" data-fid="o:${r.id}" ${S.ui.openRefl ? 'disabled' : ''}>Reflect on ${r.time}</button></div>`;
+  const d = S.draft[r.id] ?? {};
+  return `<div class="refl ${r.due === 'Due' ? 'due' : ''}">${head}<div class="rform">
+    <fieldset><legend>Decision mode</legend><div class="radios">${MODES.map((m) => `<label><input type="radio" name="mode-${r.id}" value="${m}" data-draft="${r.id}" data-field="mode" data-fid="d:${r.id}:mode:${m}" ${d.mode === m ? 'checked' : ''}>${m}</label>`).join('')}</div></fieldset>
+    <div class="row" style="align-items:flex-end">
+      <div style="flex:1;min-width:10rem"><label class="field" for="emo-${r.id}">Primary emotion</label><select id="emo-${r.id}" data-draft="${r.id}" data-field="emo" data-fid="d:${r.id}:emo"><option value="">Choose…</option>${EMOTIONS.map((e) => `<option ${d.emo === e ? 'selected' : ''}>${e}</option>`).join('')}</select></div>
+      <fieldset style="margin:0"><legend>Confidence</legend><div class="seg">${[1, 2, 3, 4, 5].map((n) => `<button type="button" aria-pressed="${d.conf == n}" data-act="conf" data-id="${r.id}" data-n="${n}" data-fid="d:${r.id}:c${n}">${n}</button>`).join('')}</div></fieldset>
+    </div>
+    <label class="field" for="note-${r.id}">Note <span class="hint">optional</span></label><textarea id="note-${r.id}" data-draft="${r.id}" data-field="note" data-fid="d:${r.id}:note">${esc(d.note)}</textarea>
+    <label class="field" for="rsn-${r.id}">Reason for declining <span class="hint">optional</span></label><input class="text" id="rsn-${r.id}" data-draft="${r.id}" data-field="reason" data-fid="d:${r.id}:reason" value="${esc(d.reason)}">
+    ${d.err ? `<p class="error">${d.err}</p>` : ''}
+    <div class="row" style="margin-top:.4rem"><button class="btn primary small" data-act="answer" data-id="${r.id}" data-fid="a:${r.id}">Answer</button><button class="btn small" data-act="decline" data-id="${r.id}" data-fid="dc:${r.id}">Decline</button><button class="btn link" data-act="cancelRefl" data-fid="cx:${r.id}">Cancel</button></div>
+  </div></div>`;
+}
+function actionSection(p, saveLabel = 'Save Action') {
+  const a = S.act[p.id] ?? {};
+  if (a.saved) return `<div class="saved-line"><span class="chip done">✓ ${a.choice}</span>${a.note ? `<span class="small">“${esc(a.note)}”</span>` : ''}<button class="btn link" data-act="editAction" data-pid="${p.id}" data-fid="ea:${p.id}">Change</button></div>`;
+  const ready = marksDone(p);
+  return `<div class="seg" role="group" aria-label="Action for ${esc(p.name)}">${CHOICES.map((c) => `<button type="button" aria-pressed="${a.choice === c}" data-act="choose" data-pid="${p.id}" data-choice="${c}" data-fid="ch:${p.id}:${c}">${c}</button>`).join('')}</div>
+    <label class="field" for="an-${p.id}">Why <span class="hint">optional</span></label><textarea id="an-${p.id}" data-anote="${p.id}" data-fid="an:${p.id}" placeholder="What you see and why this Action">${esc(a.note)}</textarea>
+    <div class="row" style="margin-top:.4rem"><button class="btn primary" data-act="saveAction" data-pid="${p.id}" data-fid="sa:${p.id}" ${ready && a.choice ? '' : 'disabled'}>${saveLabel}</button>
+    ${!ready ? `<span class="hint">Enter ${DLABEL[TODAY]}’s Marks first.</span>` : !a.choice ? `<span class="hint">Choose an Action.</span>` : ''}</div>`;
+}
+function posHeader(p, tag = 'h2') {
+  return `<div class="spread"><${tag} data-fid="hd:${p.id}" tabindex="-1">${esc(p.name)}</${tag}>${bandChip(p)}</div>
+    <p class="muted small">${p.meta}</p>
+    <div class="figs"><span>${pnlText(p)}</span><span class="muted">${p.stopTarget}</span></div>
+    ${reasons(p).map((r) => `<p class="small">${r}</p>`).join('')}`;
+}
+
+// ---------- A: guided, one position at a time ----------
+function viewA() {
+  const p = POS[S.ui.aIdx];
+  const done = POS.filter(posDone).length;
+  const stepper = `<ol class="stepper" aria-label="Positions">${POS.map((q, i) => `<li class="${posDone(q) ? 'done' : ''}"><button data-act="aGo" data-i="${i}" data-fid="st:${i}" ${!S.ui.aDone && i === S.ui.aIdx ? 'aria-current="step"' : ''}>
+      <span class="n">${posDone(q) ? '✓' : i + 1}</span><span><b>${esc(q.name)}</b><br><span class="hint">${todoText(q)}</span></span></button></li>`).join('')}</ol>`;
+  const status = `<div class="statusbar"><span>Review Date <b>${DLABEL[TODAY]}</b></span><b>${reviewStatus()}</b><span class="hint">${done} of ${POS.length} positions done</span></div>`;
+  if (S.ui.aDone) {
+    return `${status}${stepper}<section class="card"><h2 data-fid="hd:done" tabindex="-1">Review ${reviewStatus().toLowerCase()}</h2>
+      <ul>${POS.map((q) => `<li>${esc(q.name)}: ${S.act[q.id]?.saved ? S.act[q.id].choice : 'no Action'}${posDone(q) ? '' : ` <span class="chip warn">${todoText(q)}</span>`}</li>`).join('')}</ul>
+      ${POS.some((q) => !posDone(q)) ? `<p class="hint">Positions with work left stay in the steps above.</p>` : ''}</section>`;
+  }
+  return `${status}${stepper}
+    <section class="card" aria-label="${esc(p.name)} review">
+      <div class="hint">Position ${S.ui.aIdx + 1} of ${POS.length}</div>
+      ${posHeader(p)}
+      <div class="work"><div class="work-head"><h3>1 · Marks</h3><span class="hint">${marksSummary(p)}</span></div>${marksSection(p)}</div>
+      <div class="work"><div class="work-head"><h3>2 · Reflections</h3><span class="hint">${p.refl.length ? `${reflLeft(p)} due now` : ''}</span></div>${reflSection(p)}</div>
+      <div class="work"><div class="work-head"><h3>3 · Action</h3></div>${actionSection(p, 'Save Action')}</div>
+      ${S.ui.msg ? `<p role="status" class="small" style="margin-top:.5rem">${S.ui.msg}</p>` : ''}
+      <div class="nav-foot">
+        <button class="btn" data-act="aPrev" data-fid="ap" ${S.ui.aIdx === 0 ? 'disabled' : ''}>← Previous</button>
+        <button class="btn ${posDone(p) ? 'primary' : ''}" data-act="aNext" data-fid="an">${nextIncomplete(S.ui.aIdx) === -1 ? 'Finish Review' : 'Next position →'}</button>
+      </div>
+    </section>`;
+}
+function nextIncomplete(from) {
+  for (let s = 1; s <= POS.length; s++) { const i = (from + s) % POS.length; if (!posDone(POS[i]) && i !== from) return i; }
+  return -1;
+}
+
+// ---------- B: choose next, accordion panels ----------
+function viewB() {
+  const p = POS.find((q) => q.id === S.ui.bSel);
+  const queue = `<ul class="queue" aria-label="Positions to review">${POS.map((q) => `<li><button data-act="bSel" data-pid="${q.id}" data-fid="q:${q.id}" aria-current="${q.id === p.id}">
+      <div class="spread"><span class="q-name">${esc(q.name)}</span>${posDone(q) ? '<span class="chip done">✓ Done</span>' : bandChip(q)}</div>
+      <div class="q-todo">${posDone(q) ? (S.act[q.id].choice) : todoText(q)}</div></button></li>`).join('')}</ul>`;
+  const panel = (id, title, summary, ok, body) => {
+    const open = S.ui.bPanel === id;
+    return `<div class="acc"><h3><button class="acc-btn" aria-expanded="${open}" aria-controls="acc-${id}" data-act="bPanel" data-panel="${id}" data-fid="acc:${p.id}:${id}">
+        <span><span class="t">${title}</span> <span class="s">${summary}</span></span><span class="row">${ok}<span class="chev" aria-hidden="true">▸</span></span></button></h3>
+      ${open ? `<div class="acc-body" id="acc-${id}">${body}</div>` : ''}</div>`;
+  };
+  const rDue = reflLeft(p);
+  const a = S.act[p.id];
+  return `<div class="statusbar"><span>Review Date <b>${DLABEL[TODAY]}</b></span><b>${reviewStatus()}</b><span class="hint">${POS.filter(posDone).length} of ${POS.length} positions done · pick any position</span></div>
+    <div class="split">
+      <nav aria-label="Review queue">${queue}</nav>
+      <section class="card" id="b-main" aria-label="${esc(p.name)} review">
+        ${posHeader(p)}
+        ${panel('marks', 'Marks', marksSummary(p), doneChip(marksDone(p), marksDone(p) ? 'In' : `${marksLeft(p)} needed`), marksSection(p))}
+        ${panel('refl', 'Reflections', p.refl.length ? `${p.refl.length} owed, ${rDue} due now` : 'none owed', p.refl.length ? doneChip(rDue === 0, rDue === 0 ? 'Nothing due' : `${rDue} due`) : '<span class="chip quiet">None</span>', reflSection(p))}
+        ${panel('action', 'Action', a?.saved ? a.choice : 'Hold, Exit, Roll or Adjust', doneChip(actDone(p), actDone(p) ? 'Saved' : 'Needed'), actionSection(p))}
+        ${S.ui.msg ? `<p role="status" class="small">${S.ui.msg}</p>` : ''}
+      </section>
+    </div>`;
+}
+
+// ---------- C: review sheet with a drawer ----------
+function sheetCell(p, k, d) {
+  const mk = key(k, d);
+  if (d < p.opened) return `<td class="${d === TODAY ? 'today' : ''}"></td>`;
+  if (REC[mk] != null) return `<td><span class="rec">${REC[mk].toFixed(2)}</span></td>`;
+  const m = S.marks[mk];
+  const req = d === TODAY;
+  const un = m.src === 'unavail';
+  const tag = m.src === 'auto' ? '<span class="tag auto">auto</span>' : m.src === 'manual' ? `<span class="tag manual">manual</span>${m.provider != null ? ` <span class="tag" title="provider ${money(m.provider)}">≠ ${m.provider.toFixed(2)}</span>` : ''}` : un ? '<span class="tag warn">unavailable</span>' : m.note ? `<span class="tag warn">${m.note}</span>` : '';
+  return `<td class="${req ? 'today' : ''}"><span class="cell"><input class="price ${req ? 'req' : 'opt'}" inputmode="decimal" aria-label="${INST[k]} ${DLABEL[d]}" data-mark="${mk}" data-pid="${p.id}" data-col="${d}" data-fid="c:${p.id}:${mk}" value="${m.v != null ? m.v.toFixed(2) : ''}" placeholder="${req ? 'needed' : 'optional'}" ${un ? 'disabled' : ''}>
+    ${tag}${m.v == null && req && !un ? `<button class="btn link small" data-act="unavail" data-key="${mk}" data-fid="cu:${p.id}:${mk}" aria-label="${INST[k]} close unavailable">n/a</button>` : ''}</span></td>`;
+}
+function viewC() {
+  const left = { marks: uniq(POS.flatMap(reqKeys)).filter((k) => !filled(k)).length, refl: POS.reduce((s, p) => s + reflLeft(p), 0), act: POS.filter((p) => !actDone(p)).length };
+  const rows = POS.map((p) => {
+    const a = S.act[p.id];
+    const rl = reflLeft(p);
+    const reflCell = !p.refl.length ? '<span class="muted">—</span>' : `<button class="btn small" data-act="cOpen" data-pid="${p.id}" data-sec="refl" data-fid="cr:${p.id}">${rl ? `${rl} due` : '✓'}${p.refl.length > rl ? ` +${p.refl.length - rl}` : ''}</button>`;
+    const actCell = a?.saved ? `<button class="btn small" data-act="cOpen" data-pid="${p.id}" data-sec="action" data-fid="ca:${p.id}">✓ ${a.choice}</button>`
+      : `<div class="row" style="gap:.25rem"><button class="btn small primary" data-act="quickHold" data-pid="${p.id}" data-fid="qh:${p.id}" ${marksDone(p) ? '' : 'disabled title="Enter today’s Marks first"'}>Hold</button><button class="btn small" data-act="cOpen" data-pid="${p.id}" data-sec="action" data-fid="co:${p.id}">Other…</button></div>`;
+    const head = `<tr class="p-row ${posDone(p) ? 'done' : ''}"><td><button class="btn link" style="font-weight:700;text-align:left" data-act="cOpen" data-pid="${p.id}" data-sec="all" data-fid="cn:${p.id}">${esc(p.name)}</button></td>
+      <td colspan="3"><span class="row" style="gap:.4rem">${bandChip(p)}<span class="small">${pnlText(p)}</span><span class="hint">${reasons(p)[0]}</span></span></td>
+      <td>${reflCell}</td><td>${actCell}</td></tr>`;
+    const legs = p.legs.map((l) => `<tr class="leg"><td>${p.multi ? `${l.q > 0 ? 'Long' : 'Short'} ${Math.abs(l.q)} · ${INST[l.k]}` : `${l.q} shares`}${holders(l.k).length > 1 ? ' <span class="tag shared">shared</span>' : ''}</td>
+      ${DATES.map((d) => sheetCell(p, l.k, d)).join('')}<td></td><td></td></tr>`).join('');
+    return head + legs;
+  }).join('');
+  return `<div class="statusbar"><span>Review Date <b>${DLABEL[TODAY]}</b></span><b>${reviewStatus()}</b>
+      <span class="hint">Left: ${left.marks} Marks · ${left.refl} reflections due · ${left.act} Actions</span></div>
+    <div class="legend"><span><input class="price req" style="width:5rem" placeholder="needed" disabled aria-hidden="true"> needed today</span><span><input class="price opt" style="width:5rem" placeholder="optional" disabled aria-hidden="true"> optional gap</span><span><span class="rec" style="display:inline;width:auto">409.10</span> already recorded</span><span class="hint">Enter moves down the column. Shared Instruments fill everywhere.</span></div>
+    <div class="sheet-wrap"><table class="sheet"><thead><tr><th>Position</th>${DATES.map((d) => `<th class="${d === TODAY ? 'today' : ''}">${DLABEL[d]}${d === TODAY ? ' · Review' : ''}</th>`).join('')}<th>Reflections</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table></div>
+    ${S.ui.cDrawer ? drawer() : ''}`;
+}
+function drawer() {
+  const p = POS.find((q) => q.id === S.ui.cDrawer.pid);
+  return `<div class="drawer-scrim" data-act="cClose"></div><aside class="drawer" role="dialog" aria-label="${esc(p.name)}">
+    <div class="spread"><span class="hint">Position detail</span><button class="btn small" data-act="cClose" data-fid="cx">Close</button></div>
+    ${posHeader(p)}
+    <div class="work"><div class="work-head"><h3>Marks</h3><span class="hint">${marksSummary(p)}</span></div>${marksSection(p)}</div>
+    <div class="work" id="dr-refl"><div class="work-head"><h3>Reflections</h3></div>${reflSection(p)}</div>
+    <div class="work" id="dr-action"><div class="work-head"><h3>Action</h3></div>${actionSection(p)}</div>
+    ${S.ui.msg ? `<p role="status" class="small">${S.ui.msg}</p>` : ''}
+  </aside>`;
+}
+
+// ---------- Shell ----------
+const VARIANTS = {
+  A: { tab: 'A · Guided', idea: 'Steps through positions in attention order. Each position shows all its work on one card: Marks grouped by session, reflections grouped by day, then the Action. The Review lands you back on the stepper when you finish.',
+    multi: 'A multi-leg position lists one Mark row per leg, under the same session heading.', auto: 'Fetched prices arrive filled and tagged; the Marks step becomes a quick check, and only the one missing leg asks for a price.' },
+  B: { tab: 'B · Choose next', idea: 'A queue of positions with what each still owes. Picking one opens its work in accordion panels, one open at a time; finishing a panel opens the next, finishing a position moves you to the next one.',
+    multi: 'The Marks panel header counts legs, so a 4-leg condor reads “3 of 4” without opening.', auto: 'Positions whose prices all arrived show their Marks panel as done and open straight to Reflections or Action.' },
+  C: { tab: 'C · Review sheet', idea: 'The whole Review on one screen as a sheet: positions with their legs as rows, the last three sessions as price columns, then Reflections and Action. Routine positions take one click (Hold); thinking work opens in a side drawer.',
+    multi: 'Legs are rows, so shared Instruments and synchronized same-date Marks line up in one column.', auto: 'Fetched cells show “auto”; the sheet becomes a scan for the few amber cells. Recorded earlier closes give context for typing a price.' },
+};
+function render() {
+  const fid = document.activeElement?.dataset?.fid;
+  const v = VARIANTS[S.variant];
+  const body = S.variant === 'A' ? viewA() : S.variant === 'B' ? viewB() : viewC();
+  document.getElementById('app').innerHTML = `
+    <header class="topbar"><h1>Review</h1><span class="proto">PROTOTYPE</span>
+      <div class="tabs" role="tablist" aria-label="Variants">${Object.entries(VARIANTS).map(([id, x]) => `<button role="tab" aria-selected="${S.variant === id}" data-act="variant" data-v="${id}" data-fid="tab:${id}">${x.tab}</button>`).join('')}</div>
+      <div class="controls"><span class="small">Pricing</span><div class="seg">${[['manual', 'Manual (today)'], ['auto', 'Automatic (D11)']].map(([m, t]) => `<button aria-pressed="${S.pricing === m}" data-act="pricing" data-mode="${m}" data-fid="pr:${m}">${t}</button>`).join('')}</div>
+        <button class="btn small" data-act="reset" data-fid="reset">Reset</button></div>
+    </header>
+    <div class="intro"><details><summary>${v.tab}: what this tries</summary><p>${v.idea}</p><ul><li><b>Multi-leg (D10):</b> ${v.multi}</li><li><b>Automatic pricing (D11):</b> ${v.auto}</li>
+      <li><b>Shared Marks:</b> AAPL is held by two positions; enter it once and it fills in both.</li></ul></details></div>
+    <main class="page">${body}
+      <details class="state"><summary class="hint">Prototype state</summary><pre>${esc(JSON.stringify({ status: reviewStatus(), positions: Object.fromEntries(POS.map((p) => [p.id, todoText(p)])), marks: S.marks, reflections: S.refl, actions: S.act }, null, 1))}</pre></details>
+    </main>`;
+  const target = S.ui.focusSel ? document.querySelector(`[data-fid="${S.ui.focusSel}"]`) : fid ? document.querySelector(`[data-fid="${CSS.escape(fid)}"]`) : null;
+  if (target) { target.focus({ preventScroll: !S.ui.focusSel }); if (S.ui.focusSel) target.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }
+  S.ui.focusSel = null;
+}
+
+// After work changes, the guided variants move the trader on.
+function advanceB(p, from) {
+  if (S.variant !== 'B' || S.ui.bSel !== p.id) return;
+  if (posDone(p)) {
+    const next = POS.find((q) => !posDone(q));
+    S.ui.msg = next ? `${p.name} is done. Next: ${next.name}.` : 'Every position is done. The Review is complete.';
+    if (next) { S.ui.bSel = next.id; S.ui.bPanel = firstPanel(next); S.ui.focusSel = `hd:${next.id}`; }
+    return;
+  }
+  const order = ['marks', 'refl', 'action'];
+  const ok = { marks: marksDone(p), refl: reflLeft(p) === 0, action: actDone(p) };
+  if (from && S.ui.bPanel === from && ok[from]) {
+    const nxt = order.find((id) => !ok[id]);
+    if (nxt) { S.ui.bPanel = nxt; S.ui.focusSel = `acc:${p.id}:${nxt}`; }
+  }
+}
+function advanceA(p) {
+  if (S.variant !== 'A') return;
+  if (posDone(p)) {
+    const n = nextIncomplete(S.ui.aIdx);
+    S.ui.msg = null;
+    if (n === -1) { S.ui.aDone = true; S.ui.focusSel = 'hd:done'; } else { S.ui.aIdx = n; S.ui.focusSel = `hd:${POS[n].id}`; S.ui.msg = `${p.name} is done.`; }
+  } else S.ui.msg = `Action saved. Still to do here: ${todoText(p)}.`;
+}
+
+const app = document.getElementById('app');
+app.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-act]');
+  if (!t || t.disabled) return;
+  const d = t.dataset;
+  const p = POS.find((q) => q.id === d.pid);
+  const reflPos = (id) => POS.find((q) => q.refl.some((r) => r.id === id));
+  switch (d.act) {
+    case 'variant': S.variant = d.v; S.ui.msg = null; S.ui.cDrawer = null; break;
+    case 'pricing': { const v = S.variant; init(d.mode, v); break; }
+    case 'reset': init(S.pricing, S.variant); break;
+    case 'unavail': S.marks[d.key] = { v: null, src: 'unavail' }; advanceB(POS.find((q) => q.id === S.ui.bSel), 'marks'); break;
+    case 'undoUnavail': S.marks[d.key] = { v: null, src: null }; break;
+    case 'openRefl': S.ui.openRefl = d.id; S.ui.focusSel = `d:${d.id}:mode:${MODES[0]}`; break;
+    case 'reopenRefl': delete S.refl[d.id]; S.ui.openRefl = d.id; S.ui.focusSel = `d:${d.id}:mode:${MODES[0]}`; break;
+    case 'cancelRefl': { const id = S.ui.openRefl; S.ui.openRefl = null; S.ui.focusSel = `o:${id}`; break; }
+    case 'conf': (S.draft[d.id] ??= {}).conf = d.n; break;
+    case 'answer': {
+      const dr = S.draft[d.id] ?? {};
+      const miss = !dr.mode ? 'Decision mode' : !dr.emo ? 'Primary emotion' : !dr.conf ? 'Confidence' : null;
+      if (miss) { dr.err = `Answer “${miss}”.`; S.draft[d.id] = dr; break; }
+      S.refl[d.id] = { kind: 'answered', mode: dr.mode, emo: dr.emo, conf: dr.conf, note: dr.note };
+      S.ui.openRefl = null; delete S.draft[d.id];
+      const rp = reflPos(d.id); afterRefl(rp); break;
+    }
+    case 'decline': {
+      const dr = S.draft[d.id] ?? {};
+      S.refl[d.id] = { kind: 'declined', reason: dr.reason };
+      S.ui.openRefl = null; delete S.draft[d.id];
+      afterRefl(reflPos(d.id)); break;
+    }
+    case 'choose': S.act[p.id] = { ...(S.act[p.id] ?? {}), choice: d.choice, saved: false }; break;
+    case 'saveAction': S.act[p.id].saved = true; S.ui.focusSel = `ea:${p.id}`; advanceA(p); advanceB(p, 'action'); break;
+    case 'editAction': S.act[p.id].saved = false; S.ui.focusSel = `ch:${p.id}:${S.act[p.id].choice}`; break;
+    case 'aGo': S.ui.aIdx = +d.i; S.ui.aDone = false; S.ui.msg = null; S.ui.focusSel = `hd:${POS[+d.i].id}`; break;
+    case 'aPrev': S.ui.aIdx = Math.max(0, S.ui.aIdx - 1); S.ui.msg = null; S.ui.focusSel = `hd:${POS[S.ui.aIdx].id}`; break;
+    case 'aNext': { const n = nextIncomplete(S.ui.aIdx); S.ui.msg = null; if (n === -1) { S.ui.aDone = true; S.ui.focusSel = 'hd:done'; } else { S.ui.aIdx = n; S.ui.focusSel = `hd:${POS[n].id}`; } break; }
+    case 'bSel': S.ui.bSel = p.id; S.ui.bPanel = firstPanel(p); S.ui.msg = null; S.ui.focusSel = `hd:${p.id}`; break;
+    case 'bPanel': S.ui.bPanel = S.ui.bPanel === d.panel ? null : d.panel; break;
+    case 'quickHold': S.act[p.id] = { choice: 'Hold', note: '', saved: true }; break;
+    case 'cOpen': S.ui.cDrawer = { pid: p.id, sec: d.sec }; S.ui.msg = null; S.ui.focusSel = d.sec === 'refl' && p.refl.length ? `o:${(p.refl.find((r) => !S.refl[r.id]) ?? p.refl[0]).id}` : d.sec === 'action' ? (S.act[p.id]?.saved ? `ea:${p.id}` : `ch:${p.id}:Hold`) : `hd:${p.id}`; break;
+    case 'cClose': { const pid = S.ui.cDrawer?.pid; S.ui.cDrawer = null; S.ui.focusSel = pid ? `cn:${pid}` : null; break; }
+    default: return;
+  }
+  render();
+});
+function afterRefl(p) {
+  const next = p.refl.find((r) => !S.refl[r.id]);
+  S.ui.focusSel = next ? `o:${next.id}` : null;
+  if (!next && S.variant === 'A') S.ui.focusSel = S.act[p.id]?.saved ? `ea:${p.id}` : `ch:${p.id}:Hold`;
+  if (S.variant === 'C' && !next) S.ui.focusSel = S.act[p.id]?.saved ? `ea:${p.id}` : `ch:${p.id}:Hold`;
+  advanceB(p, 'refl');
+}
+app.addEventListener('change', (e) => {
+  const t = e.target;
+  const d = t.dataset;
+  if (d.mark) {
+    const raw = t.value.trim();
+    const prev = S.marks[d.mark];
+    if (raw === '') S.marks[d.mark] = { v: null, src: null };
+    else {
+      const v = Number(raw.replace(/[$,]/g, ''));
+      if (!Number.isFinite(v) || v <= 0) S.marks[d.mark] = { ...prev, v: null, err: 'Enter a price above 0.' };
+      else S.marks[d.mark] = { v, src: 'manual', by: d.pid, provider: prev.src === 'auto' ? prev.v : prev.provider };
+    }
+    const p = POS.find((q) => q.id === d.pid);
+    if (S.variant === 'B') advanceB(p, 'marks');
+  } else if (d.draft) {
+    const dr = (S.draft[d.draft] ??= {});
+    dr[d.field] = t.value; delete dr.err;
+  } else if (d.anote) {
+    S.act[d.anote] = { ...(S.act[d.anote] ?? {}), note: t.value };
+    return;
+  } else return;
+  render();
+});
+app.addEventListener('keydown', (e) => {
+  const t = e.target;
+  if (e.key === 'Escape' && S.ui.cDrawer) { S.ui.cDrawer = null; render(); return; }
+  if (e.key !== 'Enter' || !t.matches('input.price')) return;
+  e.preventDefault();
+  const col = t.dataset.col;
+  const all = [...app.querySelectorAll(col ? `input.price[data-col="${col}"]:not(:disabled)` : 'input.price:not(:disabled)')];
+  const next = all[all.indexOf(t) + 1];
+  if (next) next.focus(); else t.blur();
+});
+
+init('manual', 'A');
+render();
+</script>
+</body>
+</html>
