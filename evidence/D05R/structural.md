@@ -403,3 +403,14 @@ The commit added a `RewardRiskNow` variant to `TradeViewsAndReporting.browseTrad
 #### T5R.6-B1 Reward : risk now advertised only where the Review presents it
 
 Change: remove `RewardRiskNow` from `browseTrades` and `getTradeDetail`, in the manifest and on the routes. Add it as a variant of `DailyReview.getTrade`, presented by the Review route, whose card shows it from T5R.11. Update the exact-manifest test. Verification: `npm run verify:capabilities` (19 / 10 / 8 / 3 / schema 4), the workspace manifest test, typecheck, `tsc6`, lint, `lint:deps`.
+
+Done: `capabilities.ts` and `routes.ts` restore the D5 lists of `browseTrades` (`Planned`, `Open`, `CurrentEvaluation`) and `getTradeDetail` (adds `Debt`), and add `RewardRiskNow` to `DailyReview.getTrade` beside `PlanBaseline`. The manifest comment now says only the Review presents it (P40, A158). The exact-manifest expectation in `workspace.test.ts` follows. `tools/verify-capabilities.ts` names none of these variants, so it is unchanged.
+
+| Command | Result |
+|---|---|
+| `npm run verify:capabilities` | exit 0; `19 operations, 10 variant-qualified, 8 routes, 3 Entry Types, schema 4` |
+| `npx vitest run src/coordinators/workspace src/app` | exit 0; 2 files, 40 tests passed |
+| `npm run typecheck` | exit 0 |
+| `npx tsc6 --noEmit` | exit 0 |
+| `npm run lint` | exit 0 |
+| `npm run lint:deps` | exit 0 |
