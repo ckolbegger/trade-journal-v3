@@ -496,3 +496,27 @@ ocr review of `ed3cf69`: three files reviewed, no findings. Raw output: [ocr/T5R
 | Node integration | 53 files, 105 tests passed; exit 0 | [integration](suite-runs/t5r.3-b3-slider-figures-integration.txt) |
 | Browser (Chromium) | 155 passed (5.6 min); exit 0 | [browser](suite-runs/t5r.3-b3-slider-figures-browser.txt) |
 | Static and verify checks (the same 12) | 12 of 12 exit 0 | [checks](suite-runs/t5r.3-b3-slider-figures-checks.txt) |
+
+## T5R.8 UI: position cards, opened in place
+
+Commit `5ab6a29` holds the unit side: the 7 planned cases plus 3 extras, each red then green. The read-only case was a first-run pass, mutation-checked (DebtForm's `writable` guard removed: `AssertionError: expected <button type="submit" …> to be null`). It also moves the D4 browser helpers onto cards (`e2e/d4/support.ts`, `review.spec.ts`, `responsive-a11y.spec.ts`). The task agent's report lists every unit case it deleted, moved or changed. `npx vitest run src/ui`: 22 files, 333 tests pass. Typecheck, `tsc6`, lint and `lint:deps` exit 0.
+
+The browser suite at `5ab6a29`: 151 passed, 4 failed. Each failure was rerun alone and failed the same way, so they're deterministic: B4.3 (`acknowledge.spec.ts:6`), B4.6 (`gaps.spec.ts:9`), B4.10 (`runtime-failure.spec.ts:7`) and B4.12 (`no-save.spec.ts:38`). Each one looks up a Mark row inline while that Instrument's card isn't open (A151). Fixing them needs edits to spec files beyond section 6.3's list, so the session stopped and walked the user through each case.
+
+### The four D4 cases (user's decisions, 2026-10-31)
+
+These extend breakdown section 6.3's file list to the four specs below. The edits are layout-only, and no expectation about saved data, completion or durable state changes, except B4.12's narrowing, which the user decided.
+- **B4.3** (still valid): open DEF's card before line 25, inside the reload loop, and before the Withdraw at line 29. No assertion changes.
+- **B4.6** (still valid): open MNO's card before line 35, and before lines 41–42, so the "count 0" checks are made with the card open and mean something. No assertion changes.
+- **B4.10** (still valid): restructure lines 16 and 29–42 into per-card blocks, so each "absent" check runs while the card it concerns is open:
+  - ABC: row Missing, no Enter, no "Can't get a price";
+  - XYZ: row Manual, no Correct, Saved Action Hold, no Change;
+  - ABC again: "No Action saved.", no Action form, no Save, no Save Mark.
+
+  Line 16's setup check opens ABC's card first. Every assertion is kept.
+- **B4.12** (narrowed by the user): several dirty cards at once is no longer possible (A156), so every part relying on more than one edited card is dropped. It becomes a single XYZ-card test:
+  - type a correction of XYZ's Mark with its reason, plus the full Action form (Exit, Intent, Conviction, considered text, Note), pressing no save;
+  - resize and back, and check the values survived and storage is unchanged;
+  - navigate away, restart, and check that XYZ is still 52.00 at revision 1 and ABC untouched, with no Entry and no marker trace in IndexedDB or Web Storage.
+
+  The DEF initial-price part is dropped: B5R.5 and T5R.9 re-prove unsaved drafts on cards.
