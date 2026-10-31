@@ -2,10 +2,12 @@
 // It wraps the request-issuing methods of fake-indexeddb's object stores, indexes and cursors so
 // each call is logged while a recording is open, then calls the original method with the same
 // receiver and arguments and returns its result. It never changes a request, a result, or timing.
-import { IDBCursor, IDBIndex, IDBObjectStore } from 'fake-indexeddb';
+import { IDBCursor, IDBDatabase, IDBIndex, IDBObjectStore } from 'fake-indexeddb';
 
 export interface CountedRequest {
-  readonly on: 'store' | 'index' | 'cursor';
+  // 'transaction' entries appear only when `countRequests` is asked for them (T5R.13): `store` lists the
+  // stores the transaction names, joined with commas, and `method` is its mode.
+  readonly on: 'store' | 'index' | 'cursor' | 'transaction';
   readonly store: string;
   readonly index?: string;
   readonly method: string;
@@ -25,14 +27,16 @@ function countOf(args: readonly unknown[]): number | undefined {
   return options && typeof options === 'object' && typeof options.count === 'number' ? options.count : undefined;
 }
 
-type Describe = (self: unknown, method: string, args: readonly unknown[]) => CountedRequest;
+// A describer may answer undefined to log nothing for a call.
+type Describe = (self: unknown, method: string, args: readonly unknown[]) => CountedRequest | undefined;
 
 function wrap(prototype: object, methods: readonly string[], describe: Describe) {
   const target = prototype as Record<string, (...args: unknown[]) => unknown>;
   for (const method of methods) {
     const original = target[method]!;
     target[method] = function (this: unknown, ...args: unknown[]) {
-      recording?.push(describe(this, method, args));
+      const request = recording && describe(this, method, args);
+      if (request) recording?.push(request);
       return original.apply(this, args);
     };
   }
@@ -57,17 +61,27 @@ function install() {
     return { on: 'index', store: index.objectStore.name, index: index.name, method, ...(method.startsWith('getAll') && count !== undefined && { count }) };
   });
   wrap(IDBCursor.prototype, CURSOR_METHODS, (self, method) => ({ on: 'cursor', ...sourceOf((self as { source: Store | Index }).source), method }));
+  wrap(IDBDatabase.prototype, ['transaction'], (_self, _method, args) => {
+    if (!withTransactions) return undefined;
+    const [stores, mode] = args as [string | string[], string | undefined];
+    return { on: 'transaction', store: (typeof stores === 'string' ? [stores] : stores).join(','), method: mode ?? 'readonly' };
+  });
 }
 
-// Runs `work` and returns its result with every IndexedDB request it issued, in order.
-export async function countRequests<T>(work: () => Promise<T>): Promise<{ result: T; requests: CountedRequest[] }> {
+let withTransactions = false;
+
+// Runs `work` and returns its result with every IndexedDB request it issued, in order. With
+// `transactions` set, each transaction it opens is logged too, so a snapshot and a commit can be told apart.
+export async function countRequests<T>(work: () => Promise<T>, options: { readonly transactions?: boolean } = {}): Promise<{ result: T; requests: CountedRequest[] }> {
   install();
   if (recording) throw new Error('countRequests does not nest');
   const requests: CountedRequest[] = [];
   recording = requests;
+  withTransactions = options.transactions === true;
   try {
     return { result: await work(), requests };
   } finally {
     recording = undefined;
+    withTransactions = false;
   }
 }

@@ -1093,3 +1093,31 @@ ocr review of `6561fe5` (T5R.12-B3): one file reviewed (four excluded), no findi
 | Checks | 12 of 12 exit 0 |
 
 Outputs: `suite-runs/t5r.12-links-*.txt` (renamed from a double-hyphen prefix that my brief caused). Ports 5175, 9341 and 9342 clear before and after. `3f0a259` holds every T5R.12 code change (B3, `6561fe5`, is the last); later commits are evidence only.
+
+## T5R.13 Query count and latency
+
+Test: `tests/integration/d5r/query-count.test.ts` (`npm run test:integration -- d5r/query-count`; the integration project already includes `tests/integration/**`). The request counter (`tests/support/request-counter.ts`) gained an opt-in `transactions` option that also logs each transaction (its stores and mode), default off, so D1-D5 counts are unchanged; it is how a snapshot and a commit are told apart. The data is D5's stack (100 sessions, four Trades, ten settled Debts and one Outstanding Debt), with the Missing Instrument also lacking its three sessions before the Review date, so a gap group and a Placed range position are in the Review.
+
+**Cases** (three, all first-run passes since T5R.2-T5R.6 built the behavior; each mutation-checked, rows in `tdd-log.md`):
+
+| Case | Asserts | Mutation | First failure line |
+|---|---|---|---|
+| should issue D5 counts for a Review open, with the range position and the gap Trades adding no request | the same request lists as T5.22's first case (Trades getAll of 201, one observations getAll, one cursor per Missing Instrument, one getAll per Instrument, one obligations getAll, one byOutstandingDue getAll); a Placed range position and the Missing Instrument's gap group are present | an extra `eligibleRecords(cutoff)` call in `assemble` | `expected [ { on: 'index', …(4) }, …(7) ] to deeply equal [ { on: 'index', …(4) }, …(6) ]` |
+| should save 1 Marks in one read-only snapshot and one read-write commit, then assemble as a Trade Action save does | one read-only transaction on observations before the commit with 1 get; the commit with 1 get (check) and 1 put; the transactions after the commit equal, request for request, a `SaveTradeAction`'s; none of them a cursor, a `byInstrumentDate` request or a write | a second `marketData.prepareEffects` in `saveReviewMarks`; and `readAfterSave` assembling with gaps | `expected [ { mode: 'readonly', …(3) }, …(1) ] to have a length of 1 but got 2`; `expected [ { on: 'index', …(3) }, …(2) ] to deeply equal []` |
+| should save 3 Marks in one read-only snapshot and one read-write commit, then assemble as a Trade Action save does | as above with 3 gets, 3 gets and 3 puts | the same two mutations | the same two lines |
+
+Each mutation was restored and `git diff -- src` was empty afterwards. How the Action comparison was made exact: the Marks save and the Action save run over the same Review state, so the data does not add a difference. The Missing Review-date Mark is filled first (otherwise the Action's next step is that Mark and nothing is read back), the Action is saved on the Trade that holds the Outstanding Debt so the next Trade it reads back has none (a Debt adds one definition read to a card, as the Marks card has none), and the Marks save follows the Action so the Review holds an Action (its Entry adds a read in both). The Marks entries are the Missing Instrument's earlier sessions, saved from its Trade's card.
+
+**Disclosed:** a Marks save of an `AssertUnavailable` or a `WithdrawAcknowledgment` entry adds one Stale-context read to the snapshot (T5R.1's note); the cases use `RecordInitialManualMark` entries, which add none, so the n record reads are exact for them only.
+
+**Bench** (`npm run bench:run`, alone, exit 0; full results in `evidence/D05R/bench.md`): gated cold p95 101.8 ms (D5: 104.8 ms) and warm p95 44.3 ms (D5: 43.6 ms), against 2,500 and 1,500 ms. Disclosed, not gated, on the cached mature profile (generator 3, not regenerated): open the first card median 1,854.8 ms (10 runs, 1,786.7 to 1,895.4; D5's press on Review to the Review status was 2,342 and 2,225 ms); Save Marks of one card's Marks median 79.8 ms (5 runs, 78.4 to 81.3); Trade Action save median 90.0 ms (5 runs, 86.2 to 90.5). Every Trade already holds an Action on the Review Date in that dataset, so the Action save is an edit of the saved Action (`SaveTradeAction` with its expected revision). Tech debt item 3 is measured, not fixed: the first `open` of a Review is about 1.85 s while both saves are under 100 ms, which is what P38 set out to do. The tool changes are in `tools/bench-run.ts` (the report now goes to `evidence/D05R/bench.md` and D5's `evidence/D05/bench.md` is left as it was). The first bench attempt crashed on a wrong Mark-row selector before writing anything; the second wrote the results above. One lint fix to `bench-run.ts` (an unused parameter) came after the run and changes no measured code.
+
+Ports 5175, 5181, 9341 and 9342: no listener before the first run, none after the second (`lsof -nP -iTCP:5175 -iTCP:5181 -iTCP:9341 -iTCP:9342 -sTCP:LISTEN` exit 1 each time).
+
+| Check | Result |
+|---|---|
+| `npm run typecheck`, `npx tsc6 --noEmit`, `npm run lint`, `npm run lint:deps` | each exit 0 |
+| `npm run test:integration -- d5r/query-count` | 3 passed |
+| `npm run test:integration` | 54 files, 108 passed |
+
+Process note: one no-op here-string (`cat > /dev/null <<< ""`) was run by mistake against the Edit-only rule; no file changed.

@@ -11,7 +11,9 @@
 // Instruments' rows) with bench/expected-open-rows.json. D5 (T5.22) also opens the as-of Review before
 // and after the runs and compares the reflections it lists as due (its blockers, by Trade) with the
 // generator's `asOfDueReflections` and `outstandingDebts` in bench/dataset.json; the time to render
-// that Review is disclosed, not gated. It writes evidence/D05/bench.md and fails
+// that Review is disclosed, not gated. D5R (T5R.13) then times, on the Review's cards and also disclosed and
+// not gated, "open the first card" (the Review's `open` plus one `getTrade`), a Save Marks of one card's Marks, and a
+// Trade Action save, each from the pointer press to the rendered result. It writes evidence/D05R/bench.md and fails
 // when either nearest-rank p95 exceeds its budget (cold 2,500 ms, warm 1,500 ms).
 import { execFileSync } from 'node:child_process';
 import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
@@ -29,8 +31,15 @@ const RUNS = 30;
 const COLD_BUDGET_MS = 2_500;
 const WARM_BUDGET_MS = 1_500;
 const BUILD_DIR = 'dist';
-const EVIDENCE_FILE = path.resolve('evidence/D05/bench.md');
+const EVIDENCE_FILE = path.resolve('evidence/D05R/bench.md');
 const WAIT_MS = 60_000;
+// D5's recorded results (evidence/D05/bench.md), which the report compares with.
+const D5_COLD_P95_MS = 104.8;
+const D5_WARM_P95_MS = 43.6;
+const D5_REVIEW_OPEN_MS = { before: 2342, after: 2225 };
+// Repetitions of each disclosed card timing (T5R.13).
+const OPEN_CARD_RUNS = 10;
+const SAVE_RUNS = 5;
 
 // Nearest-rank p95: the ceil(0.95 × n)-th smallest value (the 29th of 30).
 function p95(values: readonly number[]): number {
@@ -140,7 +149,133 @@ async function compareDueReflections(page: Page, when: string) {
   if (!equal) throw new Error(`the as-of Review's due reflections ${when} differ from bench/dataset.json (${expectedDue} expected, Review Date ${String(dataset['reviewDate'])})`);
 }
 
+// ---- Card timings (D5R, T5R.13): disclosed, not gated ---------------------------------------------------------
+// What "rendered" means for each timing. The condition is checked in the page on every DOM change, so the time is
+// the first change after which it holds, read from the real clock (the same timeline as the pointer press).
+type Rendered =
+  | { readonly kind: 'cardLoaded' } // some card's content is shown and no card is still loading
+  | { readonly kind: 'marksSaved'; readonly symbol: string } // the card's Save Marks counts no drafts: the same result cleared them
+  | { readonly kind: 'actionSaved'; readonly symbol: string }; // the card's Action form is gone and no card is loading (the result replaced it)
+
+// Runs `press` (one click) and returns the milliseconds from its pointer press to the rendered result.
+async function pressToRendered(page: Page, rendered: Rendered, press: () => Promise<void>): Promise<number> {
+  const waiting = await page.evaluate((r: Rendered) => {
+    const w = window as unknown as { __realPerf: Performance; __cardPress?: number; __cardDone?: number };
+    w.__cardPress = undefined;
+    w.__cardDone = undefined;
+    const loading = () => [...document.querySelectorAll('[role="status"]')].some((e) => (e.textContent ?? '').startsWith('Loading the Trade'));
+    const holds = (): boolean => {
+      if (r.kind === 'cardLoaded') return document.querySelector('section[aria-label$=" review"]') !== null && !loading();
+      const card = `section[aria-label="${r.symbol} review"]`;
+      if (r.kind === 'actionSaved') return document.querySelector(`${card} form[aria-label="Action"]`) === null && !loading();
+      return [...document.querySelectorAll(`${card} section[aria-label="Marks"] button`)].some((b) => b.textContent === 'Save Marks (0)');
+    };
+    const observer = new MutationObserver(() => {
+      if (w.__cardDone === undefined && holds()) {
+        w.__cardDone = w.__realPerf.now();
+        observer.disconnect();
+      }
+    });
+    observer.observe(document, { subtree: true, childList: true, characterData: true, attributes: true });
+    document.addEventListener('pointerdown', () => void (w.__cardPress ??= w.__realPerf.now()), { capture: true, once: true });
+    return holds();
+  }, rendered);
+  if (waiting) throw new Error(`the rendered condition ${JSON.stringify(rendered)} already held before the press`);
+  await press();
+  const done = (await page
+    .waitForFunction(() => (window as unknown as { __cardDone?: number }).__cardDone, null, { timeout: WAIT_MS, polling: 10 })
+    .then((handle) => handle.jsonValue())) as number;
+  const pressed = await page.evaluate(() => (window as unknown as { __cardPress?: number }).__cardPress);
+  if (pressed === undefined) throw new Error('no pointer press was seen');
+  return done - pressed;
+}
+
+const primaryLink = (page: Page, name: string) => page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name });
+const cardOf = (page: Page, symbol: string) => page.getByRole('region', { name: `${symbol} review`, exact: true }).first();
+
+// Leaves the Review for the Trades list, so the next press on Review opens it afresh.
+async function leaveReview(page: Page) {
+  await primaryLink(page, 'Trades').click();
+  await page.getByRole('table', { name: 'Open Trades' }).waitFor({ timeout: WAIT_MS });
+}
+
+// From the press on Review to the first card's content: the Review's `open` plus one `getTrade`.
+async function timeOpenFirstCard(page: Page): Promise<number> {
+  await leaveReview(page);
+  const ms = await pressToRendered(page, { kind: 'cardLoaded' }, () => primaryLink(page, 'Review').click());
+  await page.getByRole('region', { name: 'Review status' }).waitFor({ timeout: WAIT_MS });
+  return ms;
+}
+
+// Opens the Review afresh and the Trade's card, then waits for the card's content.
+async function reachCard(page: Page, symbol: string) {
+  await timeOpenFirstCard(page);
+  const header = page.getByRole('button', { name: new RegExp(`^Review ${symbol.replace(/\./g, '\\.')}(?:\\s|$)`) }).first();
+  if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
+  const card = cardOf(page, symbol);
+  await card.waitFor({ timeout: WAIT_MS });
+  await page.getByRole('status').filter({ hasText: /^Loading the Trade/ }).waitFor({ state: 'detached', timeout: WAIT_MS });
+  return card;
+}
+
+async function showPanel(card: ReturnType<typeof cardOf>, panel: 'Marks' | 'Action') {
+  const name = new RegExp(`^${panel}\\b`);
+  const header = card.getByRole('button', { name });
+  if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
+  await card.getByRole('button', { name, expanded: true }).waitFor({ timeout: WAIT_MS });
+}
+
+// A Save Marks of the Missing Instrument's Review-date price, from the press on Save Marks.
+async function timeSaveMarks(page: Page, symbol: string): Promise<number> {
+  const card = await reachCard(page, symbol);
+  await showPanel(card, 'Marks');
+  // The row's name carries the date as the Review shows it (Fri Dec 29), so it is found by the Instrument.
+  await card.getByRole('list', { name: "Today's Marks" }).getByRole('region', { name: new RegExp(`^${symbol} Mark, `) }).getByLabel('Price').fill('51.00');
+  const save = card.locator('section[aria-label="Marks"]').getByRole('button', { name: /^Save Marks/ });
+  return pressToRendered(page, { kind: 'marksSaved', symbol }, () => save.click());
+}
+
+// A Hold Action save, from the press on Save in the card's Action form.
+async function timeSaveAction(page: Page, symbol: string): Promise<number> {
+  const card = await reachCard(page, symbol);
+  await showPanel(card, 'Action');
+  // The dataset holds an Action for every Trade on the Review Date, so this save is an edit of it (its Change button).
+  await card.getByRole('button', { name: 'Change' }).click();
+  const form = card.getByRole('form', { name: 'Action' });
+  await form.getByRole('radio', { name: 'Hold', exact: true }).check();
+  await form.getByLabel(/^Why are you taking this action\?/).fill('bench edit');
+  return pressToRendered(page, { kind: 'actionSaved', symbol }, () => form.getByRole('button', { name: 'Save' }).click());
+}
+
+interface CardTimings {
+  readonly openFirstCard: number[];
+  readonly saveMarks: { symbol: string; ms: number }[];
+  readonly saveAction: { symbol: string; ms: number }[];
+}
+async function timeCards(page: Page): Promise<CardTimings> {
+  const timings: CardTimings = { openFirstCard: [], saveMarks: [], saveAction: [] };
+  for (let run = 1; run <= OPEN_CARD_RUNS; run++) {
+    timings.openFirstCard.push(await timeOpenFirstCard(page));
+    console.log(`bench:run: open the first card ${run}/${OPEN_CARD_RUNS} ${timings.openFirstCard.at(-1)!.toFixed(1)} ms`);
+  }
+  for (const symbol of missing.slice(0, SAVE_RUNS)) {
+    timings.saveMarks.push({ symbol, ms: await timeSaveMarks(page, symbol) });
+    console.log(`bench:run: Save Marks ${symbol} ${timings.saveMarks.at(-1)!.ms.toFixed(1)} ms`);
+  }
+  // Cards whose Instrument is not Missing and whose Trade owes no reflection, in the Review's order.
+  const owing = new Set(((dataset['outstandingDebts'] as { underlying: string }[] | undefined) ?? []).map((d) => d.underlying));
+  await timeOpenFirstCard(page);
+  const names = await page.locator('ol[aria-label="Positions"] .review-card-name').allTextContents();
+  const symbols = [...new Set(names.map((n) => n.trim()))].filter((s) => !missing.includes(s) && !owing.has(s)).slice(0, SAVE_RUNS);
+  for (const symbol of symbols) {
+    timings.saveAction.push({ symbol, ms: await timeSaveAction(page, symbol) });
+    console.log(`bench:run: Trade Action save ${symbol} ${timings.saveAction.at(-1)!.ms.toFixed(1)} ms`);
+  }
+  return timings;
+}
+
 let engine: string;
+let cardTimings: CardTimings;
 const cold: number[] = [];
 // Disclosed, not gated: from the call that launches the browser process to the same mark.
 const launchToMark: number[] = [];
@@ -197,6 +332,8 @@ try {
   }
   after = await compareOpenList(warmPage, 'after the runs');
   await compareDueReflections(warmPage, 'after the runs');
+  // Last, because the saves change the profile's copy.
+  cardTimings = await timeCards(warmPage);
   await context.close();
 } finally {
   // Closing an already closed context is a no-op; a failure must not leave Chromium on a removed profile.
@@ -218,9 +355,19 @@ const dueLine = (c: { when: string; due: DueComparison }) =>
 const commit = execFileSync('git', ['rev-parse', 'HEAD']).toString().trim();
 const dirty = execFileSync('git', ['status', '--porcelain', '--', 'src', 'tools', 'bench', 'package.json']).toString().trim() !== '';
 
-const report = `# D5 benchmark run (AC-PERF-001)
+const median = (values: readonly number[]) => {
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = sorted.length / 2;
+  return sorted.length % 2 === 1 ? sorted[Math.floor(mid)]! : (sorted[mid - 1]! + sorted[mid]!) / 2;
+};
+const spread = (values: readonly number[]) => `${values.length} | ${ms(median(values))} ms | ${ms(p95(values))} ms | ${ms(Math.min(...values))} ms | ${ms(Math.max(...values))} ms`;
+const openCard = cardTimings!.openFirstCard;
+const markMs = cardTimings!.saveMarks.map((s) => s.ms);
+const actionMs = cardTimings!.saveAction.map((s) => s.ms);
 
-Written by \`npm run bench:run\` (T2.21, extended by T4.31 and T5.22) on ${new Date().toISOString()}, at commit ${commit}${dirty ? ' plus uncommitted changes to src, tools, bench or package.json' : ''}.
+const report = `# D5R benchmark run (AC-PERF-001)
+
+Written by \`npm run bench:run\` (T2.21, extended by T4.31, T5.22 and T5R.13) on ${new Date().toISOString()}, at commit ${commit}${dirty ? ' plus uncommitted changes to src, tools, bench or package.json' : ''}.
 
 ## Result
 
@@ -238,6 +385,22 @@ The harness opens the Review from the primary navigation and reads its blockers:
 | When | Due reflections listed (by Trade) | Expected | Result | Time from the click on Review to its status (disclosed, not gated) |
 |---|---|---|---|---|
 ${dueComparisons.map(dueLine).join('\n')}
+
+## Card timings (T5R.13, disclosed, not gated)
+
+Each is the time from the pointer press to the rendered result, on the mature dataset above. The thresholds in the first table are the only gates.
+
+| Measure | Runs | Median | Nearest-rank p95 | Min | Max |
+|---|---|---|---|---|---|
+| Open the first card (press on Review to the first card's content: \`open\` plus one \`getTrade\`) | ${spread(openCard)} |
+| Save Marks of one card's Marks (press on Save Marks to the card's drafts cleared) | ${spread(markMs)} |
+| Trade Action save (press on Save in the Action form to the form replaced by the result) | ${spread(actionMs)} |
+
+- **Against D5:** D5 measured the cold start at ${D5_COLD_P95_MS} ms and the warm switch at ${D5_WARM_P95_MS} ms (p95); this run's are ${ms(coldP95)} ms and ${ms(warmP95)} ms. D5 timed the press on Review to the Review's status at ${D5_REVIEW_OPEN_MS.before} ms before its runs and ${D5_REVIEW_OPEN_MS.after} ms after (single measurements); opening the first card here, which adds the first Trade's \`getTrade\`, takes a median of ${ms(median(openCard))} ms.
+- **Tech debt item 3** (the Review's open cost grows with history) is measured here, not fixed: D5R takes the save path off it (P38) but not the first \`open\` of each Review, and the open-the-first-card timing is its baseline.
+- **The saves** are timed on cards of the cached profile's copy: ${cardTimings!.saveMarks.map((s) => `Save Marks on ${s.symbol}`).join(', ')}; and a Hold Action on ${cardTimings!.saveAction.map((s) => s.symbol).join(', ')}. A Marks save fills the Instrument's Missing Review-date Mark with 51.00. The dataset holds an Action for every Trade on the Review Date, so each Action save is an edit of the saved Action (Change, Hold, an Intent of "bench edit", Save): a \`SaveTradeAction\` with the entry's expected revision, with the same post-save rebuild as a first save. The Review is opened afresh before each, which is not timed.
+- **Raw timings (ms, in run order):** open the first card ${openCard.map(ms).join(', ')}; Save Marks ${markMs.map(ms).join(', ')}; Trade Action save ${actionMs.map(ms).join(', ')}.
+- **Method:** a MutationObserver in the page reads the real clock on the first DOM change after which the result holds (the card's content shown with no card still loading; the card's Save Marks counting no drafts; the card's Action form gone with no card still loading), and a capture-phase pointer press records the start on the same clock.
 
 ## Method
 
