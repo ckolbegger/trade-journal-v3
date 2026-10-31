@@ -21,6 +21,7 @@ import type {
   OpenDailyReviewResult,
   OwedReflection,
   ReflectionClassification,
+  PostMarksReview,
   PostSaveReview,
   ReviewBinding,
   ReviewCompletion,
@@ -33,6 +34,8 @@ import type {
   WalkedTrade,
   SaveDailyReviewRequest,
   SaveDailyReviewResult,
+  SavedMark,
+  SaveReviewMarksRequest,
   SaveTradeActionRequest,
   TradeSaveBinding,
 } from './types.ts';
@@ -570,19 +573,52 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
 
   // The Review under the facts the save left, read like `open`. A Review that is no longer Ready
   // (the Trade left the eligible set) is for the trader to open afresh.
-  async function postSaveReview(reviewDate: string, from?: string): Promise<PostSaveReview> {
-    const read = await coherently<Omit<Extract<PostSaveReview, { kind: 'Ready' }>, 'nextStep'> & { nextTask: NextTask } | Extract<PostSaveReview, { kind: 'ChangedDuringAssembly' }>>(async () => {
+  // Review-date frames only, no recovery or gap scan (P38). `trades` is the walk in attention order.
+  type ReadAfterSave = Omit<Extract<PostSaveReview, { kind: 'Ready' }>, 'nextStep'> & { readonly nextTask: NextTask; readonly trades: readonly WalkedTrade[] };
+  async function readAfterSave(reviewDate: string, from?: string) {
+    return coherently<ReadAfterSave | Extract<PostSaveReview, { kind: 'ChangedDuringAssembly' }>>(async () => {
       const pass = await assemble({ kind: 'Review', reviewDate }, false, from);
       if (pass.kind === 'Expired') return { retry: true };
       if (pass.kind !== 'Ready') return { done: { kind: 'ChangedDuringAssembly' } };
-      return { settle: (binding) => ({ kind: 'Ready', progress: pass.progress, completion: pass.review.completion, nextTask: pass.nextTask, binding: { ...binding, ...pass.evidence } }) };
+      const walk = pass.review.families.find((family) => family.family === 'Trades');
+      return {
+        settle: (binding) => ({
+          kind: 'Ready',
+          progress: pass.progress,
+          completion: pass.review.completion,
+          nextTask: pass.nextTask,
+          trades: walk?.family === 'Trades' ? walk.trades : [],
+          binding: { ...binding, ...pass.evidence },
+        }),
+      };
     });
+  }
+
+  async function postSaveReview(reviewDate: string, from?: string): Promise<PostSaveReview> {
+    const read = await readAfterSave(reviewDate, from);
     if (read.kind !== 'Ready') return read;
-    const { nextTask, ...review } = read;
+    const { nextTask } = read;
+    const review = { kind: read.kind, progress: read.progress, completion: read.completion, binding: read.binding };
     if (nextTask.kind !== 'Trade') return { ...review, nextStep: nextTask };
     const next = await getTrade({ reviewDate, tradeId: nextTask.tradeId, binding: read.binding });
     if (next.kind !== 'Ready') return { kind: 'ChangedDuringAssembly' };
     return { ...review, nextStep: { kind: 'Trade', trade: next.trade } };
+  }
+
+  // The Review under the Marks a save left, with the card they were saved from (P38, A155).
+  async function postMarksReview(reviewDate: string, tradeId: string): Promise<PostMarksReview> {
+    const read = await readAfterSave(reviewDate, tradeId);
+    if (read.kind !== 'Ready') return read;
+    const card = await getTrade({ reviewDate, tradeId, binding: read.binding });
+    if (card.kind !== 'Ready') return { kind: 'ChangedDuringAssembly' };
+    const { nextTask } = read;
+    const review = { kind: read.kind, progress: read.progress, completion: read.completion, binding: read.binding, trades: read.trades, trade: card.trade };
+    if (nextTask.kind === 'Done') return { ...review, nextStep: nextTask };
+    // A Missing Mark is shown on the first card of the walk that holds its Instrument (P36).
+    const nextId = nextTask.kind === 'Mark' ? read.trades.find(({ tradeId: id }) => nextTask.row.trades.includes(id))?.tradeId ?? tradeId : nextTask.tradeId;
+    const next = nextId === tradeId ? card : await getTrade({ reviewDate, tradeId: nextId, binding: read.binding });
+    if (next.kind !== 'Ready') return { kind: 'ChangedDuringAssembly' };
+    return { ...review, nextStep: nextTask.kind === 'Mark' ? { kind: 'Mark', row: nextTask.row, trade: next.trade } : { kind: 'Trade', trade: next.trade } };
   }
 
   // The Debt's resolution is prepared with Source Daily Review and staged in this coordinator's own commit (A64).
@@ -616,8 +652,33 @@ export function createDailyReview(deps: DailyReviewDeps): DailyReview {
     return { kind: 'ChangedDuringAssembly' };
   }
 
+  // The Marks are prepared by Market Data and staged in this coordinator's own commit (A155). A Conflict is
+  // reported, never retried: Market Data has no shared counter to wait out (ADR 0011).
+  async function saveReviewMarks(request: SaveReviewMarksRequest): Promise<SaveDailyReviewResult> {
+    const prepared = await deps.marketData.prepareEffects({ entries: request.entries });
+    if (prepared.kind !== 'Prepared') return prepared;
+    const tx = beginSemanticTransaction();
+    deps.marketData.applyPreparedEffects(tx, prepared);
+    const committed = await deps.persistence.commit(tx.close());
+    if (committed.kind === 'RuntimeNotWritable') return committed;
+    if (committed.kind === 'Conflict') {
+      // A key moved after preparation: prepare again to name which.
+      const again = await deps.marketData.prepareEffects({ entries: request.entries });
+      return again.kind === 'Prepared' ? { kind: 'Conflict', keys: [] } : again;
+    }
+    if (committed.kind !== 'Committed') throw new Error(`unexpected commit result: ${committed.kind}`);
+    const marks = prepared.entries.map(({ key, resolution, resolutionRevision, classification }): SavedMark => ({ key, resolution, resolutionRevision, classification }));
+    // The Marks are committed; a read that fails from here on only costs the refreshed Review, never the save.
+    const review = await postMarksReview(request.reviewDate, request.tradeId).catch((): PostMarksReview => ({ kind: 'ChangedDuringAssembly' }));
+    return { kind: 'MarksSaved', marks, review };
+  }
+
   return {
-    save: (request) => deps.guard.run('DailyReview.save', () => (request.kind === 'ResolveReviewDebt' ? resolveReviewDebt(request) : saveTradeAction(request))),
+    save: (request) =>
+      deps.guard.run('DailyReview.save', () => {
+        if (request.kind === 'ResolveReviewDebt') return resolveReviewDebt(request);
+        return request.kind === 'SaveReviewMarks' ? saveReviewMarks(request) : saveTradeAction(request);
+      }),
 
     // A Review is accepted only if the Workspace is unchanged across its assembly (A46).
     open: (request) =>

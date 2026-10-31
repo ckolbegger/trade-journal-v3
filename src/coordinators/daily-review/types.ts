@@ -6,7 +6,7 @@ import type { Rational } from '../../domain/values/index.ts';
 import type { WorkspaceSnapshotBinding } from '../../persistence/index.ts';
 import type { StorageFailure } from '../mutation-guard.ts';
 import type { AnswerInput, DailyAction, DebtProjection, DeclineProjection, EntryDefinitionRecord, EntryProjection, JournalIssue, JournalObligationKey, ObligationOutcome } from '../../modules/journal/index.ts';
-import type { AcknowledgmentVersion, ExpectedResolutionRevision, MarkFrame, MarketDataIssue, MarkResolution } from '../../modules/market-data/index.ts';
+import type { AcknowledgmentVersion, ExpectedResolutionRevision, MarkFrame, MarketDataConflictedKey, MarketDataIssue, MarketDataPrepareEntry, MarketDataPrepareIssue, MarkResolution, ObservationKey, PreparedMarketDataEntry } from '../../modules/market-data/index.ts';
 
 // The request names the date and the as-of instant (Daily Review, "Date, eligibility, and ordering").
 // D4 opens LatestCompleted only (P15); an exact date arrives in D15.
@@ -260,7 +260,17 @@ export interface ResolveReviewDebtRequest {
     | { readonly kind: 'Decline'; readonly reason?: string };
 }
 
-export type SaveDailyReviewRequest = SaveTradeActionRequest | ResolveReviewDebtRequest;
+// SaveReviewMarks: one card's Marks saved in one commit, every Mark or none (P37, A155). `tradeId` is the card
+// they were saved from; `binding` is the overview's. Market Data validates and checks every entry.
+export interface SaveReviewMarksRequest {
+  readonly kind: 'SaveReviewMarks';
+  readonly reviewDate: string;
+  readonly tradeId: string;
+  readonly binding: ReviewBinding;
+  readonly entries: readonly MarketDataPrepareEntry[];
+}
+
+export type SaveDailyReviewRequest = SaveTradeActionRequest | ResolveReviewDebtRequest | SaveReviewMarksRequest;
 
 // How many of the eligible Trades have an Action for the Review Date.
 export interface ReviewProgress {
@@ -288,6 +298,37 @@ export type PostSaveReview =
   // The Action is saved; writes kept landing while the Review was read again. Open it afresh.
   | { readonly kind: 'ChangedDuringAssembly' };
 
+// What each saved key now reports, equal to the record the commit wrote (AC-RESP-001).
+export interface SavedMark {
+  readonly key: ObservationKey;
+  readonly resolution: MarkResolution;
+  readonly resolutionRevision: number;
+  readonly classification: PreparedMarketDataEntry['classification'];
+}
+
+// The step after a Marks save: a Missing Review-date Mark first (P36), shown on the card of the first walked
+// Trade that holds the Instrument; otherwise as after an Action save.
+export type MarksNextStep =
+  | { readonly kind: 'Mark'; readonly row: MarkRow; readonly trade: DailyTradeReview }
+  | { readonly kind: 'Trade'; readonly trade: DailyTradeReview }
+  | { readonly kind: 'Done' };
+
+// The Review under the Marks a save left, rendered by the screen with no further read (P38, A157).
+export type PostMarksReview =
+  | {
+      readonly kind: 'Ready';
+      readonly progress: ReviewProgress;
+      readonly completion: ReviewCompletion;
+      readonly binding: ReviewBinding;
+      // Every walked Trade in attention order, with its revised band, reasons and range position.
+      readonly trades: readonly WalkedTrade[];
+      // The card the Marks were saved from, evaluated with them.
+      readonly trade: DailyTradeReview;
+      readonly nextStep: MarksNextStep;
+    }
+  // The Marks are saved; writes kept landing while the Review was read again. Refresh with `open` and `getTrade`.
+  | { readonly kind: 'ChangedDuringAssembly' };
+
 // The Review-date evidence as it is now, so the trader sees what changed.
 export interface RefreshedEvidence {
   readonly marketDataSnapshotId: string;
@@ -300,12 +341,15 @@ export type SaveDailyReviewResult =
   | { readonly kind: 'Saved'; readonly action: DailyAction; readonly review: PostSaveReview }
   // A reflection resolved: its Entry or decline, the Debt's transition, and the Review under the facts it left (A67).
   | { readonly kind: 'DebtResolved'; readonly entry?: EntryProjection; readonly decline?: DeclineProjection; readonly debt: DebtProjection; readonly review: PostSaveReview }
+  // Marks saved in one commit: each key's report and the Review under them (P37, P38).
+  | { readonly kind: 'MarksSaved'; readonly marks: readonly SavedMark[]; readonly review: PostMarksReview }
   // A Mark, an acknowledgment, or the Trade's facts changed since the binding; nothing was written.
   | { readonly kind: 'ReviewChanged'; readonly evidence: RefreshedEvidence }
   // Another Action was saved for the Trade and date since the binding, or the Debt was resolved elsewhere (with the obligation's current outcome); nothing was written.
-  | { readonly kind: 'Conflict'; readonly currentOutcome?: ObligationOutcome }
+  // For Marks, `keys` names every key that moved or already has an exact Mark, as Market Data reports them; never retried.
+  | { readonly kind: 'Conflict'; readonly currentOutcome?: ObligationOutcome; readonly keys?: readonly MarketDataConflictedKey[] }
   | { readonly kind: 'NotFound' }
-  | { readonly kind: 'Rejected'; readonly issues: readonly (JournalIssue | MarketDataIssue)[] }
+  | { readonly kind: 'Rejected'; readonly issues: readonly (JournalIssue | MarketDataIssue | MarketDataPrepareIssue)[] }
   | { readonly kind: 'ChangedDuringAssembly' }
   | RuntimeNotWritable
   | StorageFailure;
