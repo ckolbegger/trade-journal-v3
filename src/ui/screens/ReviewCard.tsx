@@ -207,18 +207,26 @@ function CardBody({ facade, trade, advance, remaining, marks, underlying, onSave
   useEffect(() => {
     if (focusPanel) panelButtons.current[focusPanel.panel]?.focus();
   }, [focusPanel]);
-  // A panel's work is finished (Save Marks, or the last reflection resolved): the next panel that is not done opens and takes focus.
-  const [finished, setFinished] = useState(0);
-  const finishPanel = useCallback(() => setFinished((count) => count + 1), []);
-  const finishes = advance + finished;
-  const [handled, setHandled] = useState(finishes);
-  if (finishes !== handled) {
-    setHandled(finishes);
-    const next = nextAfter(open);
-    if (next) {
+  // A panel's work is finished: the next panel that is not done after that one opens and takes focus. A trader who has
+  // since opened another panel that still has work stays on it.
+  const moveOn = (from: PanelName) => {
+    const next = nextAfter(from);
+    if (next && (open === from || headers[open].done)) {
       setOpen(next);
       setFocusPanel({ panel: next });
     }
+  };
+  const [finished, setFinished] = useState(0);
+  const finishPanel = useCallback(() => setFinished((count) => count + 1), []);
+  const [handledMarks, setHandledMarks] = useState(advance);
+  const [handledReflections, setHandledReflections] = useState(finished);
+  if (advance !== handledMarks) {
+    setHandledMarks(advance);
+    moveOn('Marks');
+  }
+  if (finished !== handledReflections) {
+    setHandledReflections(finished);
+    moveOn('Reflections');
   }
   // The Action form reports under its Trade, so the Review's unsaved state counts it with the Mark entries.
   const tradeId = trade.tradeId;

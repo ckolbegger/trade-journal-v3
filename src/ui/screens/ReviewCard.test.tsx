@@ -1338,6 +1338,36 @@ describe('moving on from Reflections', () => {
   });
 });
 
+describe('moving on from the panel that finished', () => {
+  it('should advance from the Marks panel when Save Marks finishes after the trader opened the Reflections panel, leaving Reflections open while a reflection is due', async () => {
+    const user = userEvent.setup();
+    const walkedTrades = [item('t1', 'XYZ')].map((t) => ({ ...t, reflections: { due: 0, later: 0 } }));
+    const owing: ReviewCompletion = { kind: 'Incomplete', reasons: [{ code: 'MarkMissing', instrumentKey: 'XYZ', tradingDate: '2026-10-12', trades: ['t1'] }, { code: 'ReflectionDue', tradeId: 't1', debtIds: ['d1'] }, { code: 'ActionMissing', tradeId: 't1' }] };
+    const review = ready([item('t1', 'XYZ')], [], { completion: owing, families: [{ family: 'Marks', today: [markRow('XYZ')], earlier: [] }, { family: 'Trades', trades: walkedTrades }] });
+    const trade = tradeReview('t1', 'XYZ', { reflections: owedPair });
+    const facade = walkFacade(review, trade);
+    const afterMarks: ReviewCompletion = { kind: 'Incomplete', reasons: owing.kind === 'Incomplete' ? owing.reasons.filter((r) => r.code !== 'MarkMissing') : [] };
+    const mark = { revisionId: 'r1', revisionNumber: 1, price: '52.00', source: 'Manual', savedAt: '2026-10-12T21:00:00Z' } as const;
+    const held = deferred<SaveDailyReviewResult>();
+    vi.mocked(facade.DailyReview.save).mockReturnValueOnce(held.promise);
+    renderWalk(facade);
+    const card = await openTrade(user, 'XYZ');
+    const opened = () => (['Marks', 'Reflections', 'Action'] as const).filter((name) => panelHeader(card, name).getAttribute('aria-expanded') === 'true');
+
+    await user.type(within(card).getByLabelText('Price'), '52.00');
+    await user.click(within(card).getByRole('button', { name: 'Save Marks (1)' }));
+    await user.click(panelHeader(card, 'Reflections'));
+    held.resolve({
+      kind: 'MarksSaved',
+      marks: [{ key: { instrumentKey: 'XYZ', tradingDate: '2026-10-12' }, resolution: { kind: 'Available', mark }, resolutionRevision: 1, classification: 'InitialManual' }],
+      review: { kind: 'Ready', progress: { tradesWithAction: 0, tradesEligible: 1 }, completion: afterMarks, binding, trades: walkedTrades.map((t) => ({ ...t, reflections: { due: 1, later: 1 } })), trade, nextStep: { kind: 'Trade', trade } },
+    });
+
+    await vi.waitFor(() => expect(within(panelHeader(card, 'Marks')).getByText('Saved')).toBeTruthy());
+    expect(opened()).toEqual(['Reflections']);
+  });
+});
+
 describe('a reflection draft when the shell turns read only', () => {
   it('should release the unsaved hold on the card once the shell is read only, as the Action form does', async () => {
     const user = userEvent.setup();
