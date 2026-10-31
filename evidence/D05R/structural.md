@@ -603,3 +603,5 @@ Done in commit `d9e81b0`:
 - **Open card moves with its values.** The test types "kept" into DEF's Action form, saves DEF's Mark, and `open` returns the Trades reversed. It checks DEF's header is fourth, still expanded, and still holds "kept". Red: `expected 1 to be 3` (the card didn't move). Then green. The red is on the position: the open and values assertions held before and after, and weren't mutation-checked on their own.
 - **The fix.** B2's `order` state and its merge in `apply` are removed; cards are `walkedTrades(review)` of the newest Review. B3's fix is untouched.
 - **Checks.** typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 22 files, 336 passed; after `npm run build:releases`, B4.1 alone passed.
+
+ocr review of `d9e81b0`: one file reviewed (test excluded), no findings. Raw output: [ocr/T5R.8-B4-d9e81b0.json](ocr/T5R.8-B4-d9e81b0.json).
