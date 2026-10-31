@@ -1080,3 +1080,5 @@ ocr review of `9f92e17` (T5R.12-B1-B1-B1): one file reviewed, no findings. Raw o
 ocr review of `899c795` (T5R.12-B2): one file reviewed (tests and evidence excluded), no findings. Raw output: [ocr/T5R.12-B2-899c795.json](ocr/T5R.12-B2-899c795.json).
 
 **Process note (T5R.12-B3):** the subagent ran one no-op here-string (`cat >/dev/null <<< ""`), against the Edit-only rule; no file changed. Three of its four cases were first-run passes, each mutation-checked and flagged in its record. It wraps the Mark landing in `flushSync` so the row keeps focus over the card header's focus effect.
+
+ocr review of `6561fe5` (T5R.12-B3): one file reviewed (four excluded), no findings. The reviewing agent read the `saved` handler: the hold returns first, `find` over `walkedTrades` gives the first card in Review order, and the `flushSync` (outside render and effects) commits the reveal before the read, so the row keeps focus. Raw output: [ocr/T5R.12-B3-6561fe5.json](ocr/T5R.12-B3-6561fe5.json). T5R.12's ocr findings are worked (B1, B1-B1, B1-B1-B1, B2, B3).
