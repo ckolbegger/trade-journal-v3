@@ -1,4 +1,4 @@
-import { completion, continueToTrades, createTradeAt, enterMark, expect, FOUR_TRADES, markEntry, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, reloadReview, saveAction, setClock, test, tradesFamily, workspaceOf } from './support.ts';
+import { completion, continueToTrades, createTradeAt, enterMark, expect, FOUR_TRADES, markEntry, MONDAY_1700, observationsOf, onboardedAt, openCard, openReview, probe, reloadReview, saveAction, setClock, test, tradesFamily, workspaceOf } from './support.ts';
 
 const MNO = { ...FOUR_TRADES[0]!.plan, symbol: 'MNO' };
 const WEDNESDAY_1700 = '2026-10-07T21:00:00Z';
@@ -32,12 +32,14 @@ test.describe('B4.6 Skipped sessions', () => {
     await expect(completion(page)).toHaveText('Complete');
     await reloadReview(page);
     await expect(completion(page)).toHaveText('Complete');
+    await openCard(page, 'MNO');
     await expect(markEntry(page, 'MNO', 'Fri Oct 9')).toContainText('Missing');
 
     // Friday's Mark from the optional list empties it.
     await enterMark(page, 'MNO', 'Fri Oct 9', '51.50');
     await reloadReview(page);
     await expect(completion(page)).toHaveText('Complete');
+    await openCard(page, 'MNO');
     await expect(page.getByRole('group', { name: EARLIER })).toHaveCount(0);
     await expect(markEntry(page, 'MNO', 'Fri Oct 9')).toHaveCount(0);
     expect(observationsOf(workspaceOf(await probe(page))!).map((o) => [o.tradingDate, o.marks[0]!.price])).toEqual([['2026-10-07', '50.5'], ['2026-10-08', '51'], ['2026-10-09', '51.5'], ['2026-10-12', '52']]);

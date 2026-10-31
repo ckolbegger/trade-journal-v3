@@ -1,4 +1,4 @@
-import { acknowledgeMark, completion, continueToTrades, createTrades, enterMark, expect, FOUR_TRADES, markEntry, MONDAY_1700, observationsOf, onboardedAt, openReview, probe, reloadReview, saveAction, status, test, tradesFamily, workspaceOf } from './support.ts';
+import { acknowledgeMark, completion, continueToTrades, createTrades, enterMark, expect, FOUR_TRADES, markEntry, MONDAY_1700, observationsOf, onboardedAt, openCard, openReview, probe, reloadReview, saveAction, status, test, tradesFamily, workspaceOf } from './support.ts';
 
 const DATE = 'Mon Oct 12';
 
@@ -22,10 +22,12 @@ test.describe('B4.3 Can\'t get a price', () => {
       const unavailable = page.getByRole('group', { name: 'Unavailable Marks' });
       await expect(unavailable).toContainText('Instruments: DEF');
       await expect(unavailable).toContainText('Trades: DEF');
+      await openCard(page, 'DEF');
       await expect(markEntry(page, 'DEF', DATE)).toContainText('Acknowledged Unavailable');
     }
 
     // Withdrawn: the Mark is missing again and the Review Incomplete.
+    await openCard(page, 'DEF');
     await markEntry(page, 'DEF', DATE).getByRole('button', { name: 'Withdraw' }).click();
     await expect(markEntry(page, 'DEF', DATE)).toContainText('Missing');
     await reloadReview(page);

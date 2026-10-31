@@ -520,3 +520,19 @@ These extend breakdown section 6.3's file list to the four specs below. The edit
   - navigate away, restart, and check that XYZ is still 52.00 at revision 1 and ABC untouched, with no Entry and no marker trace in IndexedDB or Web Storage.
 
   The DEF initial-price part is dropped: B5R.5 and T5R.9 re-prove unsaved drafts on cards.
+
+### T5R.8-B1 the four D4 cases on cards
+
+Edits to `e2e/d4/acknowledge.spec.ts`, `gaps.spec.ts`, `runtime-failure.spec.ts` (first test only) and `no-save.spec.ts`, as decided above. No app code or `support.ts` change. B4.10's absent checks are scoped to the open card's region ("ABC review", "XYZ review"). B4.12 is the single XYZ-card test: DEF and the 43.71 marker are removed, and after the restart it opens XYZ's card and reads `$52.00`.
+
+| Command (each alone) | Result |
+|---|---|
+| `npm run build:faults` | exit 0 |
+| `npm run build:releases` | exit 0 |
+| `npx playwright test e2e/d4/acknowledge.spec.ts --project=chromium` | 1 passed |
+| `npx playwright test e2e/d4/gaps.spec.ts --project=chromium` | 1 passed |
+| `npx playwright test e2e/d4/runtime-failure.spec.ts --project=chromium` | 2 passed (B4.10 and B4.11) |
+| `npx playwright test e2e/d4/no-save.spec.ts --project=chromium` | 1 passed |
+| `npm run test:e2e` | 155 passed (5.5 min); exit 0 |
+| `npm run lint` | exit 0 |
+| `npm run typecheck` | exit 0 |
