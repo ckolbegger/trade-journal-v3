@@ -859,3 +859,13 @@ Done in commit `4f27dcb` (T5R.10-H2-B1, structural): the keyboard-only case reac
 ocr review of `4f27dcb`: ocr selected nothing (spec excluded). The reviewing agent read the whole case: no clicks or reaches remain between entering the Review and the completion check; every `expect` keeps its matcher and value; the focus walk (tab to Save, Shift+Tab back to the card header with a focus ring at each stop) covers the same stretch. No findings. (`reachPanel` stays imported for another case in the file, at line 139; lint passes.) Raw output: [ocr/T5R.10-H2-B1-4f27dcb.json](ocr/T5R.10-H2-B1-4f27dcb.json).
 
 Done in commit `2cbe809` (T5R.10-H2-B2, structural): `review.spec.ts`'s relaunch loop and `kill.spec.ts`'s resume step reach the Action panel before reading "Saved Action". The sweep found one more: `gaps.spec.ts` checked the earlier-sessions group's count 0 after `reachCard` only, which would pass with the Marks panel closed; it now reaches the Marks panel first. Every `expect` unchanged. The sweep left `gaps.spec.ts`'s first earlier-sessions read (about line 19) alone: it's page-level with no reach before it, relying on the only card opening on its Marks panel. `npx playwright test e2e/d4` 24 passed; typecheck, `tsc6`, lint and `lint:deps` exit 0.
+
+ocr review of `2cbe809`: ocr selected nothing (three specs excluded). The reviewing agent read the diff: every `expect` unchanged, each read now has its panel open. Raw output: [ocr/T5R.10-H2-B2-2cbe809.json](ocr/T5R.10-H2-B2-2cbe809.json).
+
+| Severity | Location | Claim | Assessment |
+|---|---|---|---|
+| low | `gaps.spec.ts:19-22` | The first earlier-sessions read has no reach before it; it passes only because MNO's card opens on its Marks panel (A151), and its `not.toContainText` checks would pass with the panel closed. | Valid: a content read inside the Marks panel (`CardMarks.tsx:410`), not a rule 4 navigation check. Bug task **T5R.10-H2-B3**. |
+
+#### T5R.10-H2-B3 The first earlier-sessions read reaches the Marks panel
+
+In `gaps.spec.ts`, reach MNO's Marks panel before the first earlier-sessions read (lines 19–22), keeping every expectation.
