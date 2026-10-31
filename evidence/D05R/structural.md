@@ -905,3 +905,14 @@ Done in commit `a0e8b63` (T5R.10-H3-B1, structural): one identical "no Save" `ex
 ocr review of `a0e8b63`: ocr selected nothing (spec excluded). The reviewing agent read the diff: one line added, each "no Save" check now runs with its panel open, nothing else changed. No findings. Note: the Reflection form has no "Save" button (its controls are Answer, Decline and Cancel, `DebtForm.tsx:209-223`), so the added check is a page-wide backstop against a stray "Save"; the form's own submit is covered by the existing "no Answer" check. Raw output: [ocr/T5R.10-H3-B1-a0e8b63.json](ocr/T5R.10-H3-B1-a0e8b63.json).
 
 T5R.10-H3's ocr findings are worked (H3-B1).
+
+### Cumulative suite at `29174a9` (T5R.10 closed)
+
+| Suite | Result |
+|---|---|
+| Unit | 74 files, 956 passed |
+| Integration | 53 files, 105 passed |
+| Browser | 161 passed (5.9 min) |
+| Checks | 12 of 12 exit 0 |
+
+Outputs: `suite-runs/t5r.10-panels-*.txt`. Ports 5175, 9341 and 9342 had no listeners before or after the run. `29174a9` holds every T5R.10 code change (H3-B1, `a0e8b63`, is its parent's code); later commits are evidence only.
