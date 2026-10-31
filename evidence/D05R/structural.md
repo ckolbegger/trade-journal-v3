@@ -770,3 +770,23 @@ Done in commit `2cd48ab` (T5R.10-B4, test only): a test race, not an app bug. Th
 ocr review of `2cd48ab`: ocr selected nothing (test file and tdd log excluded). The reviewing agent read the test diff instead: each `vi.waitFor` wraps real `expect`s with the default 1000 ms timeout, neither condition holds before the focus chain finishes, and no assertion was weakened. No findings. Raw output: [ocr/T5R.10-B4-2cd48ab.json](ocr/T5R.10-B4-2cd48ab.json).
 
 Every ocr finding on T5R.10 is worked (B1–B4). T5R.10 closes after T5R.10-H1 to H3 and a cumulative run (decision 65).
+
+## T5R.10-H1 Browser card helpers (decision 65)
+
+Commit `cd4b963`. `tdd.sh` runs Vitest only, so the Playwright rows were logged by hand. Naive stubs of the new exports (no clicking) came first, so each red is an assertion or timeout, not an import error:
+
+| Case | Red |
+|---|---|
+| open ABC's collapsed card on Marks, Monday row Missing | `toContainText` "Missing": element not found |
+| XYZ's Action form reached again, typed Intent unchanged | timeout (the stub's form hidden behind Marks) |
+| refusal names XYZ's and ABC's cards, XYZ keeps its draft | Playwright's `toHaveAttribute` timeout text, not matching /XYZ/ |
+| previous release's Marks family row (dist-releases/d4) | `toBeVisible` timeout on "Review XYZ" |
+
+No first-run passes. `npx playwright test e2e/d4/card-helpers.spec.ts` 4 passed. `npm run test:e2e`: 148 passed, 11 failed (before: 136 and 19). All 11 are among the 19 known panel failures (acknowledge:6, correct-mark:6, gaps:9, d4 no-save:38, responsive-a11y:121 and :256, runtime-failure:11, due-timing:7, kill-offline:9, review-debt:35 and :78); nothing that passed before fails. typecheck, `tsc6`, lint, `lint:deps`, `build:faults` and `build:releases` exit 0.
+
+Notes for H2 and H3:
+- **Rule 2's signal** exists in the app: the open card's status "Save or discard what you entered for XYZ to leave it." (A156). `reachCard` presses the header, waits for opened or that message, and throws naming both cards. No app change.
+- **Rule 5:** without cards, `reachCard` goes through Continue to Trades and "Review SYM"; `reachPanel('Marks')` returns the Marks family, the other panels the Trade card.
+- **The carried ocr finding** is fixed: `enterMark` and `acknowledgeMark` reach the Marks panel through `markRow`.
+- **Transitional shapes.** D5's synchronous `reflectionsOf` stays and shadows D4's async one for the D5 specs (about 20 synchronous call sites); H3 moves them and deletes it. `saveAction`, `answerDebt` and `declineDebt` take an optional trailing symbol; H2 and H3 pass it, then make it required. `tradeCard` moved to D4's support. The old private panel locator is now `anyPanelHeader`, still used by `openPanel` and `showPanel`.
+- **Not mutation-checked:** case 2's `aria-expanded` idempotency check and its "no Save or discard message" assertion (each case had a genuine red against the stubs).
