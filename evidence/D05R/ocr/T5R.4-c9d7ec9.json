@@ -1,0 +1,81 @@
+{
+  "status": "complete",
+  "llm": {
+    "provider": "chatgpt",
+    "model": "gpt-6.1-sol"
+  },
+  "message": "Review complete: 0 finding(s) across 1 selected item(s).",
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 0,
+    "total_tokens": 30124,
+    "input_tokens": 29876,
+    "output_tokens": 248,
+    "cache_read_tokens": 7680,
+    "elapsed": "19s"
+  },
+  "tool_calls": {
+    "total": 7,
+    "by_tool": {
+      "code_search": 1,
+      "file_find": 3,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [],
+  "groups": [
+    {
+      "label": "src/itg/d5r/plan-baseline.ts",
+      "files": [
+        "src/itg/d5r/plan-baseline.ts"
+      ]
+    }
+  ],
+  "session_id": "47742796-761d-4cc8-a97f-a090027b6200",
+  "manifest": {
+    "schema_version": "ocr.run-manifest/v1",
+    "run_id": "47742796-761d-4cc8-a97f-a090027b6200",
+    "operation": "review",
+    "terminal_state": "complete",
+    "repository": {},
+    "input": {
+      "mode": "commit",
+      "requested_head": "HEAD",
+      "resolved_base": "033dff2366766f637ef44871474e01913cbd2ebf",
+      "resolved_head": "03e124ee6e8057678ec083fa226ac6e110e1db10",
+      "exact_range": "033dff2366766f637ef44871474e01913cbd2ebf..03e124ee6e8057678ec083fa226ac6e110e1db10",
+      "source_artifact_sha256": "d2e5d64e7da5ff38dd9a5ec5d97e6d0b80e638ed5660c65398b1e689f580b6e5"
+    },
+    "execution": {
+      "ocr_version": "v1.13.3",
+      "provider": "chatgpt",
+      "model": "gpt-6.1-sol",
+      "configured_concurrency": 8,
+      "rule_config_sha256": "7bdde30da0c66ee5643876474d879e4d72b8803bf0501749f82291f5b9b2b87a",
+      "runtime_config_sha256": "ac37b215f7682e8e5577fc8ae2adf8572407b91c8779368aef55ef01071d4dd1"
+    },
+    "coverage": {
+      "selected": [
+        {
+          "item_id": "905c487a028ea1d84554964b3577f3619f6b116234ad872a7291d15a2faeb1fc",
+          "path": "src/itg/d5r/plan-baseline.ts",
+          "fingerprint": "0dcd2b0f2d7213fd8447d76d32bd9e7c9731301ab5b46e471afb05df6af1d61e"
+        }
+      ],
+      "completed": [
+        {
+          "item_id": "905c487a028ea1d84554964b3577f3619f6b116234ad872a7291d15a2faeb1fc",
+          "path": "src/itg/d5r/plan-baseline.ts",
+          "fingerprint": "0dcd2b0f2d7213fd8447d76d32bd9e7c9731301ab5b46e471afb05df6af1d61e"
+        }
+      ],
+      "reused": [],
+      "failed": [],
+      "waived": []
+    },
+    "elapsed_ms": 19476
+  }
+}

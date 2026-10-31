@@ -231,4 +231,36 @@ Shape (no production change): `GetDailyTradeReviewResult` Ready `trade.evaluatio
 
 Checks (each alone, exit 0): vitest src/coordinators src/domain src/modules (512 passed), src/ui, tests/integration, typecheck, tsc6, lint, lint:deps.
 
-Commit: this commit.
+Commit: `c9d7ec9` (test only).
+
+Process note (main session): the task agent appended the first-run note row to `tdd-log.md` with a here-doc, which the working rules forbid (Edit tool only). The row's content is correct and was left as it is.
+
+### ocr review of `c9d7ec9`
+
+The commit is test-only, so the case was recreated in a scratch clone (at `c9d7ec9^`) as `src/itg/d5r/plan-baseline.ts`, with the "Plan baseline (P40)" block verbatim and its two local helpers (`open`, `ready`) and imports added, and ocr was run on that clone commit. No findings. The clone was deleted. Raw output: [ocr/T5R.4-c9d7ec9.json](ocr/T5R.4-c9d7ec9.json).
+
+### Cumulative suite after T5R.4
+
+At `c9d7ec9`, 2026-10-31, by `suite-runner`, label `t5r.4-plan-baseline`. A first run was cut off when the Claude Code process exited, and this rerun overwrote its partial outputs. All passed.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 70 files, 912 tests passed; exit 0 | [unit](suite-runs/t5r.4-plan-baseline-unit.txt) |
+| Node integration | 53 files, 105 tests passed; exit 0 | [integration](suite-runs/t5r.4-plan-baseline-integration.txt) |
+| Browser (Chromium) | 155 passed (5.7 min); exit 0 | [browser](suite-runs/t5r.4-plan-baseline-browser.txt) |
+| Static and verify checks (the same 12) | 12 of 12 exit 0 | [checks](suite-runs/t5r.4-plan-baseline-checks.txt) |
+
+### Cumulative suite at `c9d7ec9` (T5R.4 closed)
+
+2026-10-31, by a `suite-runner` the previous session started (label `t5r.4-plan-baseline`); that session ended while the run was still going, and this session recorded its outputs.
+
+| Suite | Result | Output |
+|---|---|---|
+| Unit | 70 files, 912 tests passed; exit 0 | [unit](suite-runs/t5r.4-plan-baseline-unit.txt) |
+| Node integration | 53 files, 105 tests passed; exit 0 | [integration](suite-runs/t5r.4-plan-baseline-integration.txt) |
+| Browser (Chromium) | 155 passed (5.7 min); exit 0 | [browser](suite-runs/t5r.4-plan-baseline-browser.txt) |
+| Static and verify checks | not counted (see below) | [checks](suite-runs/t5r.4-plan-baseline-checks.txt), partial |
+
+The unit, integration and browser suites ran on the tree at `c9d7ec9` (10:53–11:00). The checks started at 11:00, after this session had dispatched T5R.5, whose edits were already in the working tree, so they don't count as evidence for `c9d7ec9`. That isn't a gap: T5R.4 is test-only and changes no production code. The checks passed 12 of 12 at `2a683c7`, and T5R.4's task agent ran typecheck, `tsc6`, lint and `lint:deps` on `c9d7ec9` (each exit 0). T5R.5's cumulative run covers all 12 checks again.
+
+Process note: this session dispatched T5R.5 while that run's browser suite was still going, before the run was recorded. Later runs are recorded before the next task starts.
