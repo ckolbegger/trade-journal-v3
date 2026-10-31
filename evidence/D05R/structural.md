@@ -694,3 +694,14 @@ ocr review of `68eca9f`: one file reviewed (test and log excluded), no findings.
 Done in commit `093a1a6` (T5R.9-B4): the finding was valid. The test drafts Friday's earlier-session row and Saves Marks, which answers ReviewChanged; `open` then returns Friday acknowledged at revision 4, and after Refresh a second Save Marks must send `expectedRevision: 4` with the row shown as Acknowledged Unavailable. A first red failed on a wrong matcher (the row never shows the reason), a test error, not counted; the genuine red: `Unable to find an element with the text: Acknowledged Unavailable` (the row stayed at the first snapshot). Then green; no first-run passes. **Cause:** `CardMarks` froze `marks.earlier` in `useState`. **Fix:** `withNewest(opened, newest)` keeps the opened snapshot's list of sessions but reads each date's membership, revision and acknowledgment from the current Review when it still lists the date. A session the newest Review no longer lists keeps its snapshot, so a saved Mark stays visible until the card closes. `npx vitest run src/ui` 23 files, 353 passed; typecheck, `tsc6`, lint and `lint:deps` exit 0.
 
 ocr review of `093a1a6`: one file reviewed (two excluded), no findings. Raw output: [ocr/T5R.9-B4-093a1a6.json](ocr/T5R.9-B4-093a1a6.json).
+
+### Cumulative suite at `4ccd98d` (T5R.9 closed)
+
+| Suite | Result |
+|---|---|
+| Unit | 74 files, 949 passed |
+| Integration | 53 files, 105 passed |
+| Browser | 155 passed (5.4 min) |
+| Checks | 12 of 12 exit 0 |
+
+Outputs: `suite-runs/t5r.9-save-marks-*.txt`. HEAD moved to `1ee55fb` during the run, by evidence-only commits; the suite ran against `4ccd98d`, which holds every T5R.9 code change.
