@@ -946,3 +946,27 @@ ocr review of `b2b5d04`: two files reviewed (`CardFigures.tsx`, `ReviewCard.tsx`
 | Checks | 12 of 12 exit 0 |
 
 Outputs: `suite-runs/t5r.11-figures-*.txt`. Ports 5175, 9341 and 9342 clear before and after.
+
+## T5R.12 UI: links, blockers, and next step
+
+Commit `676775c`. All in `ReviewCards.test.tsx`:
+
+| Case | Red |
+|---|---|
+| `?instrument=XYZ` opens the first card holding XYZ (T-F) on Marks, focus in XYZ's row | no "XYZ review" region |
+| `?trade=t-e` opens T-E's card on its first panel not done (Action) | no "JKL review" region |
+| header: blockers Missing Marks first, each opening its card and panel | blocker order wrong, with `marksFirst` made the identity |
+| extra (carried item 1): an Action save while the card holds a Mark draft stays on the card | no `role="status"`, with the hold check forced off |
+
+**Process note: code ahead of red.** After case 1's green, the code for the other three was already written; each was broken in place for a genuine red, then restored (flagged). A first header red also exposed a wrong fixture string, fixed before the red was repeated. A further mutation (a blocker link opening the card with no panel or Instrument) fails the header case. No first-run passes.
+
+Carried items:
+1. **An Action save while the card holds other entered values** stays on the card, applies the returned completion and binding, re-reads the card so the Action shows saved, and says "The Action is saved. Save or discard what you entered for XYZ to go on." (A156), for every next-step kind.
+2. **`?instrument=` and `?trade=`** take effect once, on load (`useSearchParams`).
+3. **MarksSaved `nextStep`** stays unused: under A157 the open card stays open and moves to its next panel; P36's "Missing Marks first" is served by the blockers list.
+
+Notes: blocker links are real anchors (`/review?trade=…`) with the click intercepted; Mark blockers open the card on Marks with focus on the row, Action and Reflection blockers their panels; integrity and replay blockers stay plain text. A link switches panels on the open card even while it holds drafts; opening another card is still refused (A156). `ReviewCardProps` gains a required `go`; `Status` takes `openCard`; `ReviewView` needs a router context (every test already wraps it in `MemoryRouter`).
+
+Checks: typecheck, `tsc6`, lint and `lint:deps` exit 0; `npx vitest run src/ui` 24 files, 367 passed; `build:faults` and `build:releases` exit 0; `npm run test:e2e` 161 passed; ports clear before and after. No browser spec changed.
+
+**Open for the user:** an Action save whose next step is a Mark (`kind: 'Mark'`) still collapses the card and says "A Mark is needed before the next Trade. It is listed in its card." — D4-era behavior that `ReviewCard.test.tsx` asserts.
