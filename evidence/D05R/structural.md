@@ -746,3 +746,5 @@ Case: it should advance from the Marks panel when Save Marks finishes after the 
 #### T5R.10-B3 Panel statuses without nested ternaries (refactor)
 
 Verification: `npx vitest run src/ui` unchanged and green; lint, typecheck exit 0.
+
+Done in commit `ad1036e` (T5R.10-B1): red, the Action panel's `aria-expanded` was `'false'`; then green; no first-run passes. `resolvedOne` now moves focus to the next unresolved Due reflection and reports the panel finished when none is Due; later reflections stay listed and answerable. One T5R.10 test changed with it: the reflections case had asserted focus moving to Monday's reflection (due in the next Review) after Friday's resolved, which was the defect. It now asserts the Action panel opens, then reopens Reflections and finds Monday's "Reflect on" button. The plan's case text (grouping, labels, resolving with DebtForm) is unaffected. `npx vitest run src/ui` 359 passed; typecheck, `tsc6`, lint and `lint:deps` exit 0.
